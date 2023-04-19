@@ -1,0 +1,16 @@
+[llama-7B-4b]
+    [llama-7B-4b.metadata]
+        owned_by    = 'Defense Unicorns'
+        permission  = []
+        description = 'C++ implementation of LlaMA model, 7B parameters, 4-bit quantization'
+    [llama-7B-4b.network]
+        url = 'llama:50051'
+        type = 'gRPC'
+[text-embedding-ada-002]
+    [text-embedding-ada-002.metadata]
+        owned_by    = 'Defense Unicorns'
+        permission  = []
+        description = 'C++ implementation of LlaMA model, 7B parameters, 4-bit quantization'
+    [text-embedding-ada-002.network]
+        url = 'sentence-transformers:50051'
+        type = 'gRPC'   
