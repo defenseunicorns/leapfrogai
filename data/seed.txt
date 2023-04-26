@@ -1,0 +1,7 @@
+https://kubernetes.io
+https://csrc.nist.gov/publications/sp800
+https://istio.io
+https://github.com/defenseunicorns
+https://defenseunicorns.com
+https://cncf.io
+https://www.fedramp.gov

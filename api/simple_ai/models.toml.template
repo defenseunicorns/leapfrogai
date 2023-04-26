@@ -1,0 +1,9 @@
+[model]
+    [model.metadata]
+        owned_by    = '<Model owner>'
+        permission  = []
+        description = '<Description>'
+    [model.network]
+        type = 'gRPC'
+        url = 'localhost:50051'
+
