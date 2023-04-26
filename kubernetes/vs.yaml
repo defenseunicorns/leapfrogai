@@ -1,0 +1,16 @@
+apiVersion: networking.istio.io/v1beta1
+kind: VirtualService
+metadata:
+  name: leapfrogai
+  namespace: leapfrogai
+spec:
+  gateways:
+  - istio-system/public
+  hosts:
+  - leapfrogai.tom.bigbang.dev
+  http:
+  - route:
+    - destination:
+        host: api
+        port:
+          number: 8080
