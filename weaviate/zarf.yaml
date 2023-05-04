@@ -1,0 +1,52 @@
+# yaml-language-server: $schema=https://raw.githubusercontent.com/defenseunicorns/zarf/main/zarf.schema.json
+
+kind: ZarfPackageConfig
+metadata:
+  name: weaviate
+  description: "weaviate"
+  version: 0.1.1
+  architecture: amd64 
+constants:
+  - name: REPO
+    value: "###ZARF_PKG_VAR_REPO###"
+  - name: TAG
+    value: "###ZARF_PKG_VAR_TAG###"
+  - name: NAME
+    value: "###ZARF_PKG_VAR_NAME###"
+  - name: PATH
+    value: "###ZARF_PKG_VAR_PATH###"
+  - name: VALUES_FILE
+    value: "###ZARF_PKG_VAR_VALUES_FILE###"
+  - name: NAMESPACE
+    value: "###ZARF_PKG_VAR_NAMESPACE"
+
+components:
+  - name: values
+    required: true
+    files:
+      - source: "###ZARF_PKG_VAR_VALUES_FILE###"
+        target: values.yaml
+  # add awk object
+  - name: app
+    required: true
+    actions:
+      onDeploy:
+        before:
+          - cmd: awk '{printf "%s\\n", $0}' values.yaml | sed "s/\"/\\\\\"/g"
+            description: Read file contents.  Need to escape all new lines and quotes so that it injects into the Kubernetes Secret correctly
+            setVariable: CONTENTS      
+    description: "Deploy Flux wrapped Application"
+    manifests:
+    - name: app
+      files:
+      - manifests/secret.yaml
+      - manifests/gitrepository.yaml
+      - manifests/helmrelease.yaml
+      - manifests/namespace.yaml
+      - manifests/vs.yaml
+    repos:
+    - "###ZARF_PKG_VAR_REPO###"
+    images:
+    - "semitechnologies/weaviate:1.18.3"
+    - "ghcr.io/defenseunicorns/leapfrogai/weaviate:0.0.3"
+    - semitechnologies/transformers-inference:distilbert-base-uncased

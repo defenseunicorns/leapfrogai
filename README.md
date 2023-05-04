@@ -56,3 +56,30 @@ response = openai.Completion.create(
 )
 print(response.choices[0].text)
 ```
+
+
+
+
+
+## TODO
+
+### Data
+* add full wikipedia as datasource
+
+### Notebooks
+
+* Write weaviate notebook for ingesting into weaviate
+
+### Chat
+
+* Update the chat to use weaviate
+* Update to return the docs used for the context of the chat, not just the response
+
+### Weaviate
+
+* Weaviate can't seem to override how to access OpenAI: https://github.com/weaviate/weaviate/blob/f6e9c715f61e7687e817980f65b76a4f69ed3867/modules/generative-openai/clients/openai.go#L42
+* update the schema to also hold the URLs/filenames
+* update the query to return the URLs and filenames
+* Add variables to zarf package
+* Set default vectorizer?  is this supposed to be the API service?
+* weaviate metrics

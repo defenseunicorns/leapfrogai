@@ -11,3 +11,4 @@ ipykernel
 textract
 tiktoken
 transformers
+weaviate-client

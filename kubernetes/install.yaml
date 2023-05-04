@@ -88,14 +88,14 @@ spec:
         - name: llama-container
           # imagePullPolicy: Always
           imagePullPolicy: Never # Building on the node currently so we don't have to push/pull
-          image: ghcr.io/defenseunicorns/leapfrogai/llama:0.0.1
+          image: ghcr.io/defenseunicorns/leapfrogai/redpanda:0.0.1
           ports:
             - containerPort: 50051 # Assume this is the gRPC port
           resources:
             limits:
-              nvidia.com/gpu: 1
+              nvidia.com/gpu: 2
             requests:
-              nvidia.com/gpu: 1
+              nvidia.com/gpu: 2
 ---
 apiVersion: v1
 kind: Service

@@ -13,7 +13,7 @@ api:
 
 llama:
 	cd alpaca && \
-	docker build --network=host -t ghcr.io/defenseunicorns/leapfrogai/llama:0.0.1 .
+	docker build --network=host -t ghcr.io/defenseunicorns/leapfrogai/redpanda:0.0.1 .
 
 embeddings:
 	cd embeddings && \
