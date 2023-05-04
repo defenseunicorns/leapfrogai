@@ -2,22 +2,23 @@ import logging
 from dataclasses import dataclass
 from typing import Union
 
-from get_models import ALPACA_ID, LLAMA_ID, TOKENIZER_ID
+from get_models import ALPACA_ID, LLAMA_ID, TOKENIZER_ID, REDPANDA_ID
 from peft import PeftModel
 from simple_ai.api.grpc.completion.server import LanguageModel
-from transformers import GenerationConfig, LLaMAForCausalLM, LLaMATokenizer
+from transformers import GenerationConfig, LLaMAForCausalLM, LLaMATokenizer, AutoModelForCausalLM
 import torch
-# https://github.com/huggingface/transformers/issues/15799 might help us use multiple GPUs
+
+
 @dataclass(unsafe_hash=True)
-class AlpacaModel(LanguageModel):
+class RedPandaModel(LanguageModel):
     try:
         tokenizer = LLaMATokenizer.from_pretrained(TOKENIZER_ID)
     except Exception as ex:
         logging.exception(f"Could not load tokenizer: {ex}")
         tokenizer = None
     try:
-        model = LLaMAForCausalLM.from_pretrained(
-            LLAMA_ID,
+        model = AutoModelForCausalLM.from_pretrained(
+            REDPANDA_ID,
             load_in_8bit=True,
             device_map="auto",
         )
@@ -25,7 +26,7 @@ class AlpacaModel(LanguageModel):
         logging.exception(f"Could not load pretrained LlaMa model: {ex}")
         model = None
     try:
-        model = PeftModel.from_pretrained(model, ALPACA_ID)
+        model = PeftModel.from_pretrained(model, REDPANDA_ID)
     except Exception as ex:
         logging.exception(f"Could not load pretrained Peft model: {ex}")
         model = None

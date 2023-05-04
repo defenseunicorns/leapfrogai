@@ -1,7 +1,11 @@
 import logging
 
-from model import AlpacaModel as Model
+from red_pajama import RedPandaModel as Model
 from simple_ai.api.grpc.completion.server import LanguageModelServicer, serve
+import torch
+# reduce the default memory reserved by PyTorch
+torch.backends.cudnn.benchmark = True
+
 
 if __name__ == "__main__":
     import argparse

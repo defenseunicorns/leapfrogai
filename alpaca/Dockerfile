@@ -40,6 +40,8 @@ COPY . .
 # Publish port
 EXPOSE 50051:50051
 
+ENV PYTORCH_CUDA_ALLOC_CONF=max_split_size_mb:1024
+
 # Enjoy
 ENTRYPOINT ["python3", "server.py"]
 CMD ["--address", "0.0.0.0:50051"]

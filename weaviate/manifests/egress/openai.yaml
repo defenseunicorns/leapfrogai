@@ -1,0 +1,51 @@
+# create rules to re-route openai calls to the api we built
+apiVersion: networking.istio.io/v1alpha3
+kind: VirtualService
+metadata:
+  name: openai-to-leapfrog-redirect
+  namespace: weaviate
+spec:
+  hosts:
+  - api.openai.com
+  gateways:
+  - mesh
+  tls:
+  - match:
+    - gateways:
+      - mesh
+      port: 443
+      sniHosts:
+      - "api.openai.com"
+    route:
+    - destination:
+        host: api
+        port:
+          number: 8080
+  http:
+  - route:
+    - destination:
+        host: api
+        port:
+          number: 8080
+  - match:
+    - port: 443
+    route:
+    - destination:
+        host: api.leapfrogai.svc.cluster.local
+        port:
+          number: 8080
+---
+apiVersion: networking.istio.io/v1alpha3
+kind: ServiceEntry
+metadata:
+  name: openai-api
+  namespace: weaviate
+spec:
+  hosts:
+  - api.openai.com
+  ports:
+  - number: 443
+    name: https
+    protocol: HTTPS
+  resolution: DNS
+  location: MESH_EXTERNAL
