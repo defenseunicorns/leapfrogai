@@ -5,7 +5,7 @@ redis==4.5.4
 requests==2.28.2
 streamlit==1.20.0
 streamlit_chat==0.0.2.2
-termcolor==2.2.0
+termcolor==2.3.0
 jupyter
 ipykernel
 textract
