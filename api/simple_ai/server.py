@@ -79,6 +79,11 @@ app.add_exception_handler(exceptions.RequestValidationError, http422_error_handl
 app.debug = True
 
 # Models
+@app.get("/models")
+async def show_models2():
+    return list_models()
+
+# Models
 @app.get("/models/")
 async def show_models():
     return list_models()
@@ -220,7 +225,7 @@ async def edit(body: Annotated[InstructionInput, Body(example=dummy_edit)]):
 
 # Models
 @app.get("/embeddings")
-async def show_models():
+async def embeddings():
     return list_models()
 
 # Embeddings

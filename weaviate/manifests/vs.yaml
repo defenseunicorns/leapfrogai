@@ -7,7 +7,7 @@ spec:
   gateways:
   - istio-system/public
   hosts:
-  - weaviate.tom.bigbang.dev
+  - weaviate.leapfrogai.bigbang.dev
   http:
   - route:
     - destination:

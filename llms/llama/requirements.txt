@@ -1,0 +1,7 @@
+bitsandbytes
+datasets
+loralib
+sentencepiece
+transformers
+git+https://github.com/huggingface/peft.git
+simple_ai_server>=0.2
