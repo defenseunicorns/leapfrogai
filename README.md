@@ -63,8 +63,17 @@ print(response.choices[0].text)
 
 ## TODO
 
+### LeapfrogAI
+* Turn into Helm Chart
+* Make into Zarf Package
+
 ### Data
 * add full wikipedia as datasource
+* GitHub repos
+  * all DU ones
+  * K8s
+  * helm charts
+  * ???
 
 ### Notebooks
 
@@ -83,3 +92,10 @@ print(response.choices[0].text)
 * Add variables to zarf package
 * Set default vectorizer?  is this supposed to be the API service?
 * weaviate metrics
+
+### Model
+* Add 3b model
+* red pajama
+* stable LLM
+* repelet
+* multiGPU for larger models 

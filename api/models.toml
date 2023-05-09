@@ -6,6 +6,14 @@
     [llama-7B-4b.network]
         url = 'llama:50051'
         type = 'gRPC'
+[stablelm-3b]
+    [stablelm-3b.metadata]
+        owned_by    = 'Defense Unicorns'
+        permission  = []
+        description = 'Stablelm-3b tuned'
+    [stablelm-3b.network]
+        url = 'stablelm:50051'
+        type = 'gRPC'
 [text-embedding-ada-002]
     [text-embedding-ada-002.metadata]
         owned_by    = 'Defense Unicorns'

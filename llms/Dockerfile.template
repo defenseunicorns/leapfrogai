@@ -27,15 +27,17 @@ WORKDIR /home/$USER/app
 COPY requirements.txt .
 RUN pip install -r requirements.txt
 
-# Fix: OSError (non writable)
-RUN mkdir -p /home/$USER/.cache/huggingface/hub/models--tloen--alpaca-lora-7b
-RUN chmod a+rwx -R /home/$USER/.cache/huggingface/hub/models--tloen--alpaca-lora-7b
+# # Fix: OSError (non writable)
+# RUN mkdir -p /home/$USER/.cache/huggingface/hub/models--tloen--alpaca-lora-7b
+# RUN chmod a+rwx -R /home/$USER/.cache/huggingface/hub/models--tloen--alpaca-lora-7b
 
-COPY get_models.py get_models.py
-# Get model weights and tokenizer
-RUN python3 get_models.py
+# COPY get_models.py get_models.py
+# # Get model weights and tokenizer
+# RUN python3 get_models.py
 
-COPY . .
+COPY ./hub/models--tloen--alpaca-lora-7b/ /home/user/.cache/huggingface/hub/models--tloen--alpaca-lora-7b
+COPY ./hub/models--decapoda-research--llama-7b-hf /home/user/.cache/huggingface/hub/models--decapoda-research--llama-7b-hf
+COPY *.py .
 
 # Publish port
 EXPOSE 50051:50051

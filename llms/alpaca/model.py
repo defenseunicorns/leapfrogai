@@ -53,9 +53,20 @@ class AlpacaModel(LanguageModel):
             num_beams=4,
         )
 
-        inputs = self.tokenizer(prompt, return_tensors="pt")
-        input_ids = inputs["input_ids"]
-        input_ids = input_ids.cuda()
+        inputs = self.tokenizer(prompt, return_tensors="pt").to("cuda")
+        # input_ids = inputs["input_ids"]
+        # input_ids = input_ids.cuda()
+
+        tokens = model.generate(
+            **inputs,
+            max_new_tokens=64,
+            temperature=0.7,
+            do_sample=True,
+            stopping_criteria=StoppingCriteriaList([StopOnTokens()])
+        )
+        print(tokenizer.decode(tokens[0], skip_special_tokens=True))
+
+        
 
         output = self.model.generate(
             input_ids=input_ids,

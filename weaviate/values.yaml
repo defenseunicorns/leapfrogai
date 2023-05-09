@@ -23,3 +23,5 @@ modules:
     enabled: true
   text2vec-openai:
     enabled: true
+storage:
+  size: 32Gi # default

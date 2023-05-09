@@ -1,6 +1,7 @@
 import logging
 
-from red_pajama import RedPandaModel as Model
+# from red_pajama import RedPandaModel as Model
+from model import AlpacaModel as Model
 from simple_ai.api.grpc.completion.server import LanguageModelServicer, serve
 import torch
 # reduce the default memory reserved by PyTorch

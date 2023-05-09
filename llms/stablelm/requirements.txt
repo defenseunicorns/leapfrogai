@@ -2,6 +2,7 @@ bitsandbytes
 datasets
 loralib
 sentencepiece
-git+https://github.com/zphang/transformers@c3dc391
+transformers
 git+https://github.com/huggingface/peft.git
 simple_ai_server>=0.2
+cuda-python
