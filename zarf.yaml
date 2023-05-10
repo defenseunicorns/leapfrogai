@@ -1,0 +1,34 @@
+# yaml-language-server: $schema=https://raw.githubusercontent.com/defenseunicorns/zarf/main/zarf.schema.json
+
+kind: ZarfPackageConfig
+metadata:
+  name: leapfrogai
+  description: "LeapfrogAI"
+  version: 0.1.1
+  architecture: amd64 
+
+
+components:
+  - name: weaviate-values
+    required: true
+    import:
+      path: weaviate
+      name: values
+  - name: weaviate-app
+    required: true
+    import:
+      path: weaviate
+      name: app
+  - name: leapfrogai
+    required: true
+    manifests:
+      - name: leapfrogai
+        files:
+          - kubernetes/install.yaml
+          - kubernetes/namespace.yaml
+          - kubernetes/vs.yaml
+    images:
+      - "ghcr.io/defenseunicorns/leapfrogai/api:0.0.1"
+      - "ghcr.io/defenseunicorns/leapfrogai/stablelm-3b:0.0.1"
+      - "ghcr.io/defenseunicorns/leapfrogai/embeddings:0.0.1"
+      - "ghcr.io/defenseunicorns/leapfrogai/alpaca:0.0.1"
