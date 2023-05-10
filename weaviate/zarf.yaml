@@ -49,4 +49,4 @@ components:
     images:
     - "semitechnologies/weaviate:1.18.3"
     - "ghcr.io/defenseunicorns/leapfrogai/weaviate:0.0.3"
-    - semitechnologies/transformers-inference:distilbert-base-uncased
+    - semitechnologies/transformers-inference:sentence-transformers-all-MiniLM-L6-v2
