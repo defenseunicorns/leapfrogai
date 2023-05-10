@@ -15,7 +15,7 @@ image:
 env:
   # maybe set this to the internal URL:
   # OPENAI_BASE_URL: "http://api.leapfrogai.svc:8080"
-  OPENAI_BASE_URL: "https://leapfrogai.leapfrog.bigbang.dev"
+  OPENAI_BASE_URL: "https://leapfrogai.leapfrogai.bigbang.dev"
 
 modules:
   DEFAULT_VECTORIZER_MODULE: text2vec-transformers
