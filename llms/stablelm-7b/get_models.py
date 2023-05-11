@@ -1,7 +1,8 @@
 import logging
 
-TOKENIZER_ID = "stabilityai/stablelm-tuned-alpha-3b"
-MODEL_ID = "stabilityai/stablelm-tuned-alpha-3b"
+TOKENIZER_ID = "stabilityai/stablelm-tuned-alpha-7b"
+MODEL_ID = "stabilityai/stablelm-tuned-alpha-7b"
+
 from transformers import AutoModelForCausalLM, AutoTokenizer
 
 if __name__ == "__main__":
