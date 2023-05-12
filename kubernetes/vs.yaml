@@ -7,7 +7,7 @@ spec:
   gateways:
   - istio-system/public
   hosts:
-  - leapfrogai.tom.bigbang.dev
+  - leapfrogai.leapfrogai.bigbang.dev
   http:
   - route:
     - destination:
