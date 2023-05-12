@@ -71,8 +71,12 @@ class StableLM(LanguageModel):
             max_new_tokens=max_tokens, # probably adjust this
             temperature=temperature, # 
             do_sample=True,
+            pad_token_id=0,
+            eos_token_id=0,
             stopping_criteria=StoppingCriteriaList([StopOnTokens()])
         )
-        print(self.tokenizer.decode(tokens[0], skip_special_tokens=True))
+        # torch.cuda.empty_cache()
+
+        # print(self.tokenizer.decode(tokens[0], skip_special_tokens=True))
         return self.tokenizer.decode(tokens[0], skip_special_tokens=False)
 

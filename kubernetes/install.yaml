@@ -73,22 +73,25 @@ spec:
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: llama-deployment
+  name: stablelm-deployment
 spec:
   replicas: 1
   selector:
     matchLabels:
-      app: llama
+      app: stablelm
   template:
     metadata:
       labels:
-        app: llama
+        app: stablelm
     spec:
       containers:
-        - name: llama-container
+        - name: stablelm-container
           # imagePullPolicy: Always
           imagePullPolicy: Never # Building on the node currently so we don't have to push/pull
-          image: ghcr.io/defenseunicorns/leapfrogai/redpanda:0.0.1
+          image: ghcr.io/defenseunicorns/leapfrogai/stablelm-3b:0.0.1
+          env:
+          - name: CUDA_VISIBLE_DEVICES
+            value: "1"
           ports:
             - containerPort: 50051 # Assume this is the gRPC port
           resources:
@@ -100,10 +103,10 @@ spec:
 apiVersion: v1
 kind: Service
 metadata:
-  name: llama
+  name: stablelm
 spec:
   selector:
-    app: llama
+    app: stablelm
   ports:
     - name: grpc
       protocol: TCP

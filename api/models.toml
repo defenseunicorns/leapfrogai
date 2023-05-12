@@ -4,7 +4,7 @@
         permission  = []
         description = 'C++ implementation of LlaMA model, 7B parameters, 4-bit quantization'
     [llama-7B-4b.network]
-        url = 'llama:50051'
+        url = 'alpaca:50051'
         type = 'gRPC'
 [stablelm-3b]
     [stablelm-3b.metadata]
@@ -18,7 +18,15 @@
     [text-embedding-ada-002.metadata]
         owned_by    = 'Defense Unicorns'
         permission  = []
-        description = 'C++ implementation of LlaMA model, 7B parameters, 4-bit quantization'
+        description = 'A pretend implementation of ada-0002 tha's actually all-MiniLM-L6-v2'
     [text-embedding-ada-002.network]
+        url = 'sentence-transformers:50051'
+        type = 'gRPC'   
+[all-MiniLM-L6-v2]
+    [all-MiniLM-L6-v2.metadata]
+        owned_by    = 'Defense Unicorns'
+        permission  = []
+        description = ' By default, input text longer than 256 word pieces is truncated.'
+    [all-MiniLM-L6-v2.network]
         url = 'sentence-transformers:50051'
         type = 'gRPC'   
