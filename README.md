@@ -43,19 +43,13 @@ Large Language Models (LLMs) are a powerful resource for AI-driven decision maki
 
 #### K3d
 
-Zarf-k3d with custom image:
-
-* publish this as an actual package and create install instructions
-https://github.com/runyontr/zarf-package-k3d
-
-
-Deployment of Leapfrog AI requires a Kubernetes environment with at least 1 GPU to handle the StableLM-3B model that is deployed by default.  To perform an installation
+There's a Zarf package that deploys a k3d cluster with GPU support [here](github.com/runyontr/zarf-package-k3d).  To deploy the zarf package simply:
 
 ```shell
-zarf init -a amd64
-zarf package deploy oci://ghcr.io/defenseunicorns/packages/big-bang-distro-k3d/big-bang-distro-k3d:0.0.1-amd64
+zarf package deploy oci://ghcr.io/runyontr/zarf-package-k3d/k3d-local:v1.26.0-amd64
 ```
 
+on a node with at least 1 GPU
 
 #### EKSCTL
 
