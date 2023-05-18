@@ -7,7 +7,7 @@
 4. [Getting Started](#getting-started)
 5. [Usage](#usage)
 6. [Contributing](#contributing)
-7. [License](#license)
+7. [License](LICENSE)
 
 ## Project Goal <a name="project-goal"></a>
 
@@ -43,7 +43,7 @@ Large Language Models (LLMs) are a powerful resource for AI-driven decision maki
 
 #### K3d
 
-There's a Zarf package that deploys a k3d cluster with GPU support [here](github.com/runyontr/zarf-package-k3d).  To deploy the zarf package simply:
+There's a Zarf package that deploys a k3d cluster with GPU support [here](https://github.com/runyontr/zarf-package-k3d).  To deploy the zarf package simply:
 
 ```shell
 zarf package deploy oci://ghcr.io/runyontr/zarf-package-k3d/k3d-local:v1.26.0-amd64
