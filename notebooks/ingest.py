@@ -1,4 +1,13 @@
 import openai
+import sys
+
+import threading
+from queue import Queue
+import os
+import sys
+import multiprocessing
+import time
+
 # Put anything you want in `API key`
 openai.api_key = 'Free the models'
 
@@ -20,49 +29,49 @@ client = weaviate.Client(url="https://weaviate.leapfrogai.bigbang.dev",
                          additional_headers={
         'X-OpenAI-Api-Key': "foobar"
     })
-client.schema.get()
-client.get_meta()
+# client.schema.get()
+# client.get_meta()
 
-schema = {
-    "classes": [
-        {
-            "class": "Paragraph",
-            "description": "A written paragraph",
-            "vectorizer": "text2vec-transformers",
-              "moduleConfig": {
-                "text2vec-openai": {
-                  "model": "ada",
-                  "modelVersion": "002",
-                  "type": "text"
-                }
-              },
-            "properties": [
-                {
-                    "dataType": ["text"],
-                    "description": "The content of the paragraph",
-                    "moduleConfig": {
-                        "text2vec-transformers": {
-                          "skip": False,
-                          "vectorizePropertyName": False
-                        }
-                      },
-                    "name": "content",
-                },
-                {
-                    "dataType": ["text"],
-                    "description": "The source of the paragraph",
-                    "moduleConfig": {
-                        "text2vec-transformers": {
-                          "skip": False,
-                          "vectorizePropertyName": False
-                        }
-                      },
-                    "name": "source",
-                },
-            ],
-        },
-    ]
-}
+# schema = {
+#     "classes": [
+#         {
+#             "class": "Paragraph",
+#             "description": "A written paragraph",
+#             "vectorizer": "text2vec-transformers",
+#               "moduleConfig": {
+#                 "text2vec-openai": {
+#                   "model": "ada",
+#                   "modelVersion": "002",
+#                   "type": "text"
+#                 }
+#               },
+#             "properties": [
+#                 {
+#                     "dataType": ["text"],
+#                     "description": "The content of the paragraph",
+#                     "moduleConfig": {
+#                         "text2vec-transformers": {
+#                           "skip": False,
+#                           "vectorizePropertyName": False
+#                         }
+#                       },
+#                     "name": "content",
+#                 },
+#                 {
+#                     "dataType": ["text"],
+#                     "description": "The source of the paragraph",
+#                     "moduleConfig": {
+#                         "text2vec-transformers": {
+#                           "skip": False,
+#                           "vectorizePropertyName": False
+#                         }
+#                       },
+#                     "name": "source",
+#                 },
+#             ],
+#         },
+#     ]
+# }
 
 # client.schema.create(schema)
 
@@ -73,7 +82,7 @@ from langchain.document_loaders import PyPDFLoader, CSVLoader, Docx2txtLoader, U
 from typing import List
 from langchain.docstore.document import Document
 
-from langchain.text_splitter import CharacterTextSplitter
+from langchain.text_splitter import CharacterTextSplitter, TokenTextSplitter
 
 import os
 
@@ -103,7 +112,8 @@ def load_file(file_path) -> List[Document]:
         return UnstructuredFileLoader(file_path).load()
 
 def process_file(file_path, chunk_size=400, chunk_overlap=200):
-    text_splitter = CharacterTextSplitter(chunk_size=chunk_size, chunk_overlap=chunk_overlap)
+    # text_splitter = CharacterTextSplitter(chunk_size=chunk_size, chunk_overlap=chunk_overlap)
+    text_splitter = TokenTextSplitter(chunk_size=chunk_size, chunk_overlap=chunk_overlap)
     try:
         data = load_file(file_path=file_path)
         texts = text_splitter.split_documents(data)
@@ -130,4 +140,49 @@ def process_directory(folder_path):
             except Exception as e:
                 print(f"process_directory: Error processing file { file_path}: { e }")
 
-process_directory("../data/")
+def process_item(item):
+    print(f"Processing item: {item}")
+    process_file(item)
+    # Add your processing logic here
+def process_items(items):
+    print(f"Processing item: {items}")
+    for i in items:
+        process_file(i)
+
+
+def worker(queue):
+    while True:
+        item = queue.get()
+        if item is None:
+            break
+        process_item(item)
+        queue.task_done()
+
+def main():
+    folder_path = sys.argv[1]
+
+    max_threads = 24
+
+    item_queue = []
+    total_items = 0
+    
+    # Add items to the queue
+    for root, _, files in os.walk(folder_path):
+        for file in files:
+            group = []
+            file_path = os.path.join(root, file)
+            _, file_extension = os.path.splitext(file_path)
+            # only do file types we want to process
+            if file_extension.lower() in ('.pdf', '.md', '.txt', '.html', '.pptx', '.docx'):
+                group.append(file_path)
+                total_items= total_items+1
+            item_queue.append(group)
+
+    starttime = time.time()
+    pool = multiprocessing.Pool(processes=max_threads)
+    pool.map(process_items, item_queue)
+    pool.close()
+    print('That took {} seconds'.format(time.time() - starttime))
+    print(f"processing a total of {total_items} of files" )
+if __name__ == "__main__":
+    main()

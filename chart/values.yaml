@@ -1,0 +1,17 @@
+istio:
+  enabled: false
+  gateway: public
+
+domain: bigbang.dev
+
+
+models:
+  stablelm3b:
+    enabled: true
+    name: stablelm-3b
+
+  all_MiniLM_L6_v2:
+    enabled: true
+    name: all-MiniLM-L6-v2
+  
+
