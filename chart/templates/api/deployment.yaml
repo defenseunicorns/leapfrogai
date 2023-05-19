@@ -1,0 +1,20 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: api-deployment
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: api
+  template:
+    metadata:
+      labels:
+        app: api
+    spec:
+      containers:
+        - name: api-container
+          image: ghcr.io/defenseunicorns/leapfrogai/api:0.0.1
+          imagePullPolicy: Always
+          ports:
+            - containerPort: 50051
