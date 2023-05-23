@@ -1,0 +1,23 @@
+{{ if .Values.embeddings.enabled }}
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: embeddings-deployment
+  namespace: leapfrogai
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: embeddings
+  template:
+    metadata:
+      labels:
+        app: embeddings
+    spec:
+      containers:
+        - name: embeddings-container
+          imagePullPolicy: Always
+          image: ghcr.io/defenseunicorns/leapfrogai/embeddings:0.0.1
+          ports:
+            - containerPort: 50051 # Assume this is the gRPC port
+{{ end }}

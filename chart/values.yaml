@@ -1,0 +1,8 @@
+stablelm:
+  enabled: true
+
+stablelm_7b:
+  enabled: false
+
+embeddings:
+  enabled: true
