@@ -1,0 +1,29 @@
+{{ if .Values.stablelm.enabled }}
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: stablelm-deployment
+  namespace: leapfrogai
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: stablelm
+  template:
+    metadata:
+      labels:
+        app: stablelm
+    spec:
+      containers:
+        - name: stablelm-container
+          imagePullPolicy: Always
+          # imagePullPolicy: Never # Building on the node currently so we don't have to push/pull
+          image: ghcr.io/defenseunicorns/leapfrogai/stablelm-3b:0.0.1
+          ports:
+            - containerPort: 50051 # Assume this is the gRPC port
+          resources:
+            limits:
+              nvidia.com/gpu: 1
+            requests:
+              nvidia.com/gpu: 1
+{{ end }}

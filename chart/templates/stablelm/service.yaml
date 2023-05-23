@@ -1,0 +1,16 @@
+{{ if .Values.stablelm.enabled }}
+apiVersion: v1
+kind: Service
+metadata:
+  name: stablelm
+  namespace: leapfrogai
+spec:
+  selector:
+    app: stablelm
+  ports:
+    - name: grpc
+      protocol: TCP
+      port: 50051
+      targetPort: 50051
+  type: ClusterIP
+{{ end }}

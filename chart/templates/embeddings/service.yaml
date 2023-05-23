@@ -1,0 +1,16 @@
+{{ if .Values.embeddings.enabled }}
+apiVersion: v1
+kind: Service
+metadata:
+  name: sentence-transformers
+  namespace: leapfrogai
+spec:
+  selector:
+    app: embeddings
+  ports:
+    - name: grpc
+      protocol: TCP
+      port: 50051
+      targetPort: 50051
+  type: ClusterIP
+{{ end }}
