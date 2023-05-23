@@ -16,7 +16,7 @@ RUN chmod a+rwx -R  /home/$USER
 USER $USER
 
 
-RUN pip install --upgrade pip setuptools wheel
+RUN pip3 install --upgrade pip setuptools wheel
 
 
 # Define workdir

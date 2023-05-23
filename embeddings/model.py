@@ -16,6 +16,6 @@ class SentenceTransformerModel:
         logging.info(f"Processing inputs : {inputs}")
         embeddings = self.model.encode(inputs)
         logging.info(
-            f"Successfully computed embeddings (shape : {embeddings.shape}) for inputs : {inputs}"
+            f"Successfully computed embeddings (shape : {embeddings.shape}) for inputs : {inputs}" # type: ignore
         )
-        return embeddings.tolist()
+        return embeddings.tolist() # type: ignore

@@ -1,0 +1,17 @@
+[project]
+name = "leapfrogai"
+version = "0.1.0"
+description = "Add a short description here"
+authors = [
+    { name = "Gerred Dillon", email = "hello@gerred.org" }
+]
+dependencies = ["transformers~=4.29.2", "uvicorn~=0.22.0", "pydantic~=1.10.7", "fastapi~=0.95.2", "grpcio~=1.55.0", "sentence_transformers~=2.2.2", "peft~=0.3.0", "google~=3.0.0", "protobuf~=4.23.1", "tiktoken~=0.4.0"]
+readme = "README.md"
+requires-python = ">= 3.8"
+
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[tool.rye]
+managed = true

@@ -2,12 +2,12 @@ import logging
 from dataclasses import dataclass
 from typing import Union
 
-from get_models import TOKENIZER_ID, MODEL_ID
-from peft import PeftModel
-from simple_ai.api.grpc.completion.server import LanguageModel
 import torch
+from get_models import MODEL_ID, TOKENIZER_ID
+from transformers import (AutoModelForCausalLM, AutoTokenizer,
+                          StoppingCriteria, StoppingCriteriaList)
 
-from transformers import AutoModelForCausalLM, AutoTokenizer, StoppingCriteria, StoppingCriteriaList
+from api.simple_ai.api.grpc.completion.server import LanguageModel
 
 # tokenizer = AutoTokenizer.from_pretrained("StabilityAI/stablelm-base-alpha-3b")
 # model = AutoModelForCausalLM.from_pretrained("StabilityAI/stablelm-base-alpha-3b")
@@ -75,4 +75,3 @@ class StableLM(LanguageModel):
         )
         print(self.tokenizer.decode(tokens[0], skip_special_tokens=True))
         return self.tokenizer.decode(tokens[0], skip_special_tokens=False)
-

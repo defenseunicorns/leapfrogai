@@ -1,33 +1,25 @@
+import json
+import logging
 from datetime import datetime as dt
 from functools import partial
 from itertools import chain
-from typing import Annotated, Union, Optional, List
+from typing import Annotated, List, Optional, Union
 from uuid import uuid4
-import json
-
 
 import fastapi
-from fastapi import Body, FastAPI, Response, Request, middleware, exceptions
-from fastapi.responses import StreamingResponse
-from fastapi.responses import JSONResponse
-from pydantic import ValidationError
+from fastapi import Body, FastAPI, Request, Response, exceptions
+from fastapi.responses import JSONResponse, StreamingResponse
+from pydantic import BaseModel, ValidationError
 
-from .api_models import ChatCompletionInput, CompletionInput, EmbeddingInput, InstructionInput
-from .dummy import dummy_chat, dummy_complete, dummy_edit, dummy_embedding, dummy_engine
+from .api_models import (ChatCompletionInput, CompletionInput, EmbeddingInput,
+                         InstructionInput)
+from .dummy import (dummy_chat, dummy_complete, dummy_edit, dummy_embedding,
+                    dummy_engine)
 from .models import get_model, get_model_infos, list_models
-from .utils import (
-    add_instructions,
-    format_autocompletion_response,
-    format_autocompletion_stream_response,
-    format_chat_delta_response,
-    format_chat_response,
-    format_edits_response,
-    format_embeddings_results,
-)
-
-from pydantic import BaseModel
-
-import logging
+from .utils import (add_instructions, format_autocompletion_response,
+                    format_autocompletion_stream_response,
+                    format_chat_delta_response, format_chat_response,
+                    format_edits_response, format_embeddings_results)
 
 logger = logging.getLogger("fastapi")
 
@@ -43,17 +35,6 @@ app = FastAPI(
 
 )
 
-# @app.middleware("http")
-# async def log_stuff(request: Request, call_next):
-#     logger.error(f"{request.method} {request.url}")
-#     logger.error(f"{ request }")
-#     logger.error(f"Headers: { request.headers }")
-#     b = await request.body()
-#     logger.error(f"Request Body: { b }")
-#     response = await call_next(request)
-#     # logger.error(response)
-#     # logger.error(response.status_code)
-#     return response
 
 @app.exception_handler(exceptions.RequestValidationError)
 @app.exception_handler(ValidationError)
@@ -249,6 +230,7 @@ class EngineEmbedding(BaseModel):
 
 import tiktoken
 
+
 @app.post("/engines/{model_id}/embeddings")
 async def embed2(model_id: str, body: Annotated[EngineEmbedding, Body(example=dummy_engine)]):
 # async def embed2(model_id: str, body: Annotated[EngineEmbedding, Body(example=dummy_embedding)]):
@@ -264,4 +246,5 @@ async def embed2(model_id: str, body: Annotated[EngineEmbedding, Body(example=du
     # results = [llm.embed(inputs=prompt) for prompt in body.prompt]
     results = llm.embed(inputs=body.prompt)
     output = format_embeddings_results(model_name=llm.name, embeddings=results)
+    return output
     return output

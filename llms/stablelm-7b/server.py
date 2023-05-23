@@ -1,11 +1,9 @@
 import logging
 
-# from red_pajama import RedPandaModel as Model
 from stablelm7b import StableLM as Model
-from simple_ai.api.grpc.completion.server import LanguageModelServicer, serve
-import torch
-# reduce the default memory reserved by PyTorch
 
+from api.simple_ai.api.grpc.completion.server import (LanguageModelServicer,
+                                                      serve)
 
 if __name__ == "__main__":
     import argparse
@@ -19,4 +17,5 @@ if __name__ == "__main__":
     logging.info(f"Starting gRPC server on {args.address}")
 
     model_servicer = LanguageModelServicer(model=Model())
+    serve(address=args.address, model_servicer=model_servicer)
     serve(address=args.address, model_servicer=model_servicer)
