@@ -7,7 +7,11 @@ spec:
   gateways:
   - istio-system/{{ .Values.istio.gateway }}
   hosts:
+<<<<<<< HEAD
   - leapfrogai.{{ .Values.domain }}
+=======
+  - leapfrogai.{{ .Values.domain}}
+>>>>>>> origin/main
   http:
   - route:
     - destination:
