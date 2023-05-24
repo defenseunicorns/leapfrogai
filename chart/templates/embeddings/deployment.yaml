@@ -3,7 +3,6 @@ apiVersion: apps/v1
 kind: Deployment
 metadata:
   name: embeddings-deployment
-  namespace: leapfrogai
 spec:
   replicas: 1
   selector:
