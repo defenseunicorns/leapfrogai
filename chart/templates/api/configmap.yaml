@@ -4,7 +4,7 @@ metadata:
   name: api-model
 data:
   models.toml: | 
-{{- if .Values.stablelm.enabled }}
+{{- if .Values.models.stablelm3b.enabled }}
     [stablelm-3b]
         [stablelm-3b.metadata]
             owned_by    = 'Defense Unicorns'
@@ -14,7 +14,7 @@ data:
             url = 'stablelm:50051'
             type = 'gRPC'
 {{- end -}}
-{{ if .Values.embeddings.enabled }}
+{{ if .Values.models.all_MiniLM_L6_v2.enabled }}
     [text-embedding-ada-002]
         [text-embedding-ada-002.metadata]
             owned_by    = 'Defense Unicorns'
