@@ -1,3 +1,10 @@
+domain: bigbang.dev
+
+istio:
+  enabled: false
+  gateway: public
+
+
 stablelm:
   enabled: true
 
@@ -6,3 +13,5 @@ stablelm_7b:
 
 embeddings:
   enabled: true
+
+
