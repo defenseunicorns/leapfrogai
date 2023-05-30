@@ -1,8 +1,8 @@
+domain: bigbang.dev
+
 istio:
   enabled: false
   gateway: public
-
-domain: bigbang.dev
 
 
 models:

@@ -18,3 +18,14 @@ spec:
           imagePullPolicy: Always
           ports:
             - containerPort: 50051
+          volumeMounts:
+          - name: api-model
+            mountPath: /app/models.toml
+            subPath: models.toml
+      volumes:
+      - name: api-model
+        configMap:
+          name: api-model
+
+    
+  

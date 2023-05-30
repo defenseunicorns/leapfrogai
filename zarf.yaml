@@ -21,12 +21,13 @@ components:
       name: app
   - name: leapfrogai
     required: true
-    manifests:
-      - name: leapfrogai
-        files:
-          - kubernetes/install.yaml
-          - kubernetes/namespace.yaml
-          - kubernetes/vs.yaml
+    charts:
+    - name: leapfrogai
+      namespace: leapfrogai
+      localPath: chart
+      version: 0.0.1
+      valuesFiles:
+        - "values.yaml"
     images:
       - "ghcr.io/defenseunicorns/leapfrogai/api:0.0.1"
       - "ghcr.io/defenseunicorns/leapfrogai/stablelm-3b:0.0.1"

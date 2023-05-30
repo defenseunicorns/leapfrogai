@@ -1,7 +1,10 @@
 apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: api-model
 data:
-  models.toml: |
-{{ if .Values.models.stablelm3b.enabled }}
+  models.toml: | 
+{{- if .Values.models.stablelm3b.enabled }}
     [stablelm-3b]
         [stablelm-3b.metadata]
             owned_by    = 'Defense Unicorns'
@@ -11,12 +14,12 @@ data:
             url = 'stablelm:50051'
             type = 'gRPC'
 {{- end -}}
-{{- if .Values.models.all_MiniLM_L6_v2.enabled -}}
+{{ if .Values.models.all_MiniLM_L6_v2.enabled }}
     [text-embedding-ada-002]
         [text-embedding-ada-002.metadata]
             owned_by    = 'Defense Unicorns'
             permission  = []
-            description = 'A pretend implementation of ada-0002 tha's actually all-MiniLM-L6-v2'
+            description = 'A pretend implementation of ada-0002 thats actually all-MiniLM-L6-v2'
         [text-embedding-ada-002.network]
             url = 'sentence-transformers:50051'
             type = 'gRPC'   
@@ -27,9 +30,7 @@ data:
             description = ' By default, input text longer than 256 word pieces is truncated.'
         [all-MiniLM-L6-v2.network]
             url = 'sentence-transformers:50051'
-            type = 'gRPC'  
-{{- end -}} 
-kind: ConfigMap
-metadata:
-  creationTimestamp: null
-  name: api-model
+            type = 'gRPC'   
+{{- end -}}
+    
+    
