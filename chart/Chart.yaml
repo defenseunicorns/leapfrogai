@@ -22,3 +22,15 @@ version: 0.0.1
 # follow Semantic Versioning. They should reflect the version the application is using.
 # It is recommended to use it with quotes.
 appVersion: "1.16.0"
+
+
+annotations:
+  helm.sh/images: |
+    - name: api
+      image: ghcr.io/defenseunicorns/leapfrogai/api:0.0.1
+    - name: stable-3b
+      image: ghcr.io/defenseunicorns/leapfrogai/stablelm-3b:0.0.1
+    - name: embeddings
+      image: ghcr.io/defenseunicorns/leapfrogai/embeddings:0.0.1
+
+  
