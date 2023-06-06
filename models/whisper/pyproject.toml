@@ -1,0 +1,37 @@
+[project]
+name = "whisper"
+version = "0.1.0"
+description = "Add a short description here"
+authors = [
+    { name = "Gerred Dillon", email = "hello@gerred.org" }
+]
+dependencies = [
+    "datasets~=2.12.0",
+    "transformers~=4.29.2",
+    "torch~=2.0.1",
+    "soundfile~=0.12.1",
+    "librosa~=0.10.0.post2",
+    "jupyter~=1.0.0",
+    "pydub~=0.25.1",
+    "openai-whisper==20230314",
+    "numpy~=1.24.3",
+    "fastapi~=0.96.0",
+    "uvicorn~=0.22.0",
+    "python-multipart~=0.0.6",
+    "prometheus-fastapi-instrumentator~=6.0.0",
+    "asyncio~=3.4.3",
+    "aiofiles~=23.1.0",
+    "fastapi_utils~=0.2.1",
+]
+readme = "README.md"
+requires-python = ">= 3.8"
+
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[tool.rye]
+managed = true
+
+[tool.hatch.metadata]
+allow-direct-references = true
