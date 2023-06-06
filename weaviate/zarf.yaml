@@ -6,25 +6,28 @@ metadata:
   description: "weaviate"
   version: 0.1.1
   architecture: amd64 
+
+
 constants:
   - name: REPO
-    value: "###ZARF_PKG_VAR_REPO###"
+    value: "###ZARF_PKG_TMPL_REPO###"
   - name: TAG
-    value: "###ZARF_PKG_VAR_TAG###"
+    value: "###ZARF_PKG_TMPL_TAG###"
   - name: NAME
-    value: "###ZARF_PKG_VAR_NAME###"
+    value: "###ZARF_PKG_TMPL_NAME###"
   - name: PATH
-    value: "###ZARF_PKG_VAR_PATH###"
+    value: "###ZARF_PKG_TMPL_PATH###"
   - name: VALUES_FILE
-    value: "###ZARF_PKG_VAR_VALUES_FILE###"
+    # value: "###ZARF_PKG_TMPL_VALUES_FILE###"
+    value: "values.yaml"
   - name: NAMESPACE
-    value: "###ZARF_PKG_VAR_NAMESPACE"
+    value: "###ZARF_PKG_TMPL_NAMESPACE###"
 
 components:
   - name: values
     required: true
     files:
-      - source: "###ZARF_PKG_VAR_VALUES_FILE###"
+      - source: "###ZARF_PKG_TMPL_VALUES_FILE###"
         target: values.yaml
   # add awk object
   - name: app
@@ -34,7 +37,8 @@ components:
         before:
           - cmd: awk '{printf "%s\\n", $0}' values.yaml | sed "s/\"/\\\\\"/g"
             description: Read file contents.  Need to escape all new lines and quotes so that it injects into the Kubernetes Secret correctly
-            setVariable: CONTENTS      
+            setVariables: 
+            - name: CONTENTS       
     description: "Deploy Flux wrapped Application"
     manifests:
     - name: app

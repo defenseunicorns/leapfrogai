@@ -1,0 +1,7 @@
+configMapGenerator:
+- name: dcgm-dashboard
+  files:
+    - dcgm-exporter-dashboard.json
+
+commonLabels:
+  grafana_dashboard: "1"
