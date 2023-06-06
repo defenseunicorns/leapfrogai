@@ -1,3 +1,4 @@
+aiohttp
 numpy==1.24.3
 openai==0.27.7
 pandas==1.5.3
@@ -6,9 +7,19 @@ requests==2.31.0
 streamlit==1.23.1
 streamlit_chat==0.0.2.2
 termcolor==2.3.0
+langchain
 jupyter
 ipykernel
 textract
 tiktoken
 transformers
 weaviate-client
+GitPython
+google-api-python-client
+google-auth-httplib2
+google-auth-oauthlib
+unstructured
+pypdf
+pytesseract
+pdfminer.six
+pyyaml
