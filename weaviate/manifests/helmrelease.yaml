@@ -27,7 +27,7 @@ spec:
     cleanupOnFail: false
   values:
     env:
-      OPENAI_BASE: "https://leapfrogai.tom.bigbang.dev"
+      OPENAI_BASE: "https://leapfrogai.dd.bigbang.dev"
   valuesFrom:   
     - kind: Secret
       name: "bigbang-###ZARF_CONST_NAME###-values"
