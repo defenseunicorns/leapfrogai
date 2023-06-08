@@ -32,5 +32,14 @@ data:
             url = 'sentence-transformers:50051'
             type = 'gRPC'   
 {{- end -}}
-    
-    
+{{ if .Values.models.whisper.enabled }}
+    [whisper-1]
+        [whisper-1.metadata]
+            owned_by    = 'Defense Unicorns'
+            permission  = []
+            description = "OpenAI's Whisper Large v2"
+            tasks = ["translate", "transcribe"]
+        [whisper-1.network]
+            url = 'http://whisper:8000'
+            type = 'http'     
+{{- end -}}
