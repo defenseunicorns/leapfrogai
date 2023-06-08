@@ -12,15 +12,10 @@ image:
   tag: 0.0.3
   repo: defenseunicorns/leapfrogai/weaviate
 
-env:
-  # maybe set this to the internal URL:
-  # OPENAI_BASE_URL: "http://api.leapfrogai.svc:8080"
-  OPENAI_BASE_URL: "https://leapfrogai.leapfrogai.bigbang.dev"
-
 modules:
   DEFAULT_VECTORIZER_MODULE: text2vec-transformers
   text2vec-transformers:
-    enabled: true
+    enabled: false
   text2vec-openai:
     enabled: true
 storage:

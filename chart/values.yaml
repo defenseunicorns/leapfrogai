@@ -2,7 +2,11 @@ domain: bigbang.dev
 
 istio:
   enabled: false
-  gateway: public
+  gateway: tenant
+
+
+monitoring:
+  enabled: false
 
 models:
   stablelm3b:
