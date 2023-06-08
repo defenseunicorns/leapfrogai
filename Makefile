@@ -24,6 +24,12 @@ embeddings:
 	cd embeddings && \
 	docker build --network=host -t ghcr.io/defenseunicorns/leapfrogai/embeddings:0.0.1 .
 
+whisper:
+	cd models/whisper && \
+	docker build --network=host -t ghcr.io/defenseunicorns/leapfrogai/whisper:0.0.1 .
+
+whisper-push:
+	docker push ghcr.io/defenseunicorns/leapfrogai/whisper:0.0.1
 
 # This thing is massive, so directly pushing to the zarf registry is quicker/easier
 zarf-push-api:
