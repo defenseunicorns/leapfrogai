@@ -12,70 +12,70 @@ import time
 openai.api_key = 'Free the models'
 
 # Point to leapfrogai
-openai.api_base = "https://leapfrogai.leapfrogai.bigbang.dev"
+openai.api_base = "https://leapfrogai.dd.bigbang.dev"
 from langchain.embeddings import OpenAIEmbeddings
 
 embeddings = OpenAIEmbeddings(openai_api_key="foobar",
-                              openai_api_base="https://leapfrogai.leapfrogai.bigbang.dev",
+                              openai_api_base="https://leapfrogai.dd.bigbang.dev",
                               model="text-embedding-ada-002")
 
-print(print(openai.Model.list()))
+print(openai.Model.list())
 
 
 from langchain.vectorstores import Weaviate
 import weaviate
             
-client = weaviate.Client(url="https://weaviate.leapfrogai.bigbang.dev",
+client = weaviate.Client(url="https://weaviate.dd.bigbang.dev",
                          additional_headers={
         'X-OpenAI-Api-Key': "foobar"
     })
 # client.schema.get()
 # client.get_meta()
 
-# schema = {
-#     "classes": [
-#         {
-#             "class": "Paragraph",
-#             "description": "A written paragraph",
-#             "vectorizer": "text2vec-transformers",
-#               "moduleConfig": {
-#                 "text2vec-openai": {
-#                   "model": "ada",
-#                   "modelVersion": "002",
-#                   "type": "text"
-#                 }
-#               },
-#             "properties": [
-#                 {
-#                     "dataType": ["text"],
-#                     "description": "The content of the paragraph",
-#                     "moduleConfig": {
-#                         "text2vec-transformers": {
-#                           "skip": False,
-#                           "vectorizePropertyName": False
-#                         }
-#                       },
-#                     "name": "content",
-#                 },
-#                 {
-#                     "dataType": ["text"],
-#                     "description": "The source of the paragraph",
-#                     "moduleConfig": {
-#                         "text2vec-transformers": {
-#                           "skip": False,
-#                           "vectorizePropertyName": False
-#                         }
-#                       },
-#                     "name": "source",
-#                 },
-#             ],
-#         },
-#     ]
-# }
+schema = {
+    "classes": [
+        {
+            "class": "Company",
+            "description": "A written paragraph",
+            "vectorizer": "text2vec-transformers",
+              "moduleConfig": {
+                "text2vec-openai": {
+                  "model": "ada",
+                  "modelVersion": "002",
+                  "type": "text"
+                }
+              },
+            "properties": [
+                {
+                    "dataType": ["text"],
+                    "description": "The content of the paragraph",
+                    "moduleConfig": {
+                        "text2vec-transformers": {
+                          "skip": False,
+                          "vectorizePropertyName": False
+                        }
+                      },
+                    "name": "content",
+                },
+                {
+                    "dataType": ["text"],
+                    "description": "The source of the paragraph",
+                    "moduleConfig": {
+                        "text2vec-transformers": {
+                          "skip": False,
+                          "vectorizePropertyName": False
+                        }
+                      },
+                    "name": "source",
+                },
+            ],
+        },
+    ]
+}
 
-# client.schema.create(schema)
+client.schema.create(schema)
 
-vectordb = Weaviate(client, "Paragraph", "content", embedding=embeddings)
+vectordb = Weaviate(client, "Company", "content", embedding=embeddings)
 
 from langchain.document_loaders import UnstructuredMarkdownLoader, UnstructuredPDFLoader, UnstructuredHTMLLoader, UnstructuredFileLoader
 from langchain.document_loaders import PyPDFLoader, CSVLoader, Docx2txtLoader, UnstructuredPowerPointLoader
@@ -85,6 +85,20 @@ from langchain.docstore.document import Document
 from langchain.text_splitter import CharacterTextSplitter, TokenTextSplitter
 
 import os
+
+def clean_string(text):
+    # Split the string by spaces.
+    # This gives us a list where multi-spaces will be represented as ''.
+    text_list = text.split(' ')
+
+    # Rejoin with ' ' instead of ''
+    cleaned_text = ''.join([' ' if x == '' else x for x in text_list ])
+    return cleaned_text.replace("  ", " ")
+def percentage_of_char(input_string, char):
+    count_char = input_string.count(char)
+    total_chars = len(input_string)
+    percentage = (count_char / total_chars) * 100
+    return percentage
 
 def load_file(file_path) -> List[Document]:
     _, file_extension = os.path.splitext(file_path)
@@ -111,13 +125,21 @@ def load_file(file_path) -> List[Document]:
         # Perform action for other files or skip
         return UnstructuredFileLoader(file_path).load()
 
-def process_file(file_path, chunk_size=400, chunk_overlap=200):
+def process_file(file_path, chunk_size=1000, chunk_overlap=400):
     # text_splitter = CharacterTextSplitter(chunk_size=chunk_size, chunk_overlap=chunk_overlap)
     text_splitter = TokenTextSplitter(chunk_size=chunk_size, chunk_overlap=chunk_overlap)
     try:
         data = load_file(file_path=file_path)
         texts = text_splitter.split_documents(data)
-        
+        for t in texts:
+            if percentage_of_char(t.page_content, ' ') > 25:
+                print("REPLACING: ")
+                print(t.page_content)
+                print("WITH:")
+                clean = clean_string(t.page_content)
+                print(clean)
+                print("---------")
+                t.page_content = clean
         contents = [d.page_content for d in texts]
         metadatas = [d.metadata for d in texts] 
         vectordb.add_texts(
