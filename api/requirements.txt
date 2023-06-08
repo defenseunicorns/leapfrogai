@@ -4,6 +4,7 @@ colorama==0.4.6
 fastapi==0.96.0 
 grpcio==1.54.2 
 h11==0.14.0 
+httpx==0.24.0
 idna==3.4
 protobuf==4.23.2 
 pydantic==1.10.8 

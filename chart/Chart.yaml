@@ -23,7 +23,6 @@ version: 0.0.1
 # It is recommended to use it with quotes.
 appVersion: "1.16.0"
 
-
 annotations:
   helm.sh/images: |
     - name: api
@@ -32,5 +31,5 @@ annotations:
       image: ghcr.io/defenseunicorns/leapfrogai/stablelm-3b:0.0.1
     - name: embeddings
       image: ghcr.io/defenseunicorns/leapfrogai/embeddings:0.0.1
-
-  
+    - name: whisper
+      image: ghcr.io/defenseunicorns/leapfrogai/whisper:0.0.1

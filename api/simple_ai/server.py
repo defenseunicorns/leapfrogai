@@ -4,15 +4,21 @@ from itertools import chain
 from typing import Annotated, Union, Optional, List
 from uuid import uuid4
 import json
+import tiktoken
 
 
 import fastapi
-from fastapi import Body, FastAPI, Response, Request, middleware, exceptions
+from fastapi import Body, FastAPI, Response, Request, Form, UploadFile, File, exceptions
 from fastapi.responses import StreamingResponse
 from fastapi.responses import JSONResponse
 from pydantic import ValidationError
 
-from .api_models import ChatCompletionInput, CompletionInput, EmbeddingInput, InstructionInput
+from .api_models import (
+    ChatCompletionInput,
+    CompletionInput,
+    EmbeddingInput,
+    InstructionInput,
+)
 from .dummy import dummy_chat, dummy_complete, dummy_edit, dummy_embedding, dummy_engine
 from .models import get_model, get_model_infos, list_models
 from .utils import (
@@ -39,21 +45,9 @@ app = FastAPI(
     contact={
         "name": "TOMMY",
         "url": "https://github.com/defenseunicorns",
-    },  
-
+    },
 )
 
-# @app.middleware("http")
-# async def log_stuff(request: Request, call_next):
-#     logger.error(f"{request.method} {request.url}")
-#     logger.error(f"{ request }")
-#     logger.error(f"Headers: { request.headers }")
-#     b = await request.body()
-#     logger.error(f"Request Body: { b }")
-#     response = await call_next(request)
-#     # logger.error(response)
-#     # logger.error(response.status_code)
-#     return response
 
 @app.exception_handler(exceptions.RequestValidationError)
 @app.exception_handler(ValidationError)
@@ -62,9 +56,10 @@ async def validation_exception_handler(request, exc):
     exc_json = json.loads(exc.json())
     response = {"message": [], "data": None}
     for error in exc_json:
-        response['message'].append(f"{error['loc']}: {error['msg']}")
+        response["message"].append(f"{error['loc']}: {error['msg']}")
 
     return JSONResponse(response, status_code=422)
+
 
 async def http422_error_handler(
     _: Request, exc: Union[exceptions.RequestValidationError, ValidationError]
@@ -74,14 +69,17 @@ async def http422_error_handler(
         {"errors": exc.errors()}, status_code=exceptions.HTTP_422_UNPROCESSABLE_ENTITY
     )
 
+
 app.add_exception_handler(ValidationError, http422_error_handler)
 app.add_exception_handler(exceptions.RequestValidationError, http422_error_handler)
 app.debug = True
+
 
 # Models
 @app.get("/models")
 async def show_models2():
     return list_models()
+
 
 # Models
 @app.get("/models/")
@@ -125,7 +123,9 @@ async def complete(
             best_of=body.best_of,
             logit_bias=body.logit_bias,
         )
-        output = format_autocompletion_response(model_name=llm.name, predictions=predictions)
+        output = format_autocompletion_response(
+            model_name=llm.name, predictions=predictions
+        )
         return output
 
     predictions_stream = llm.stream_complete(
@@ -149,7 +149,9 @@ async def complete(
     uuid = uuid4().hex
     current_timestamp = int(dt.now().timestamp())
     postprocessed = map(
-        partial(format_autocompletion_stream_response, current_timestamp, uuid, body.model),
+        partial(
+            format_autocompletion_stream_response, current_timestamp, uuid, body.model
+        ),
         predictions_stream,
     )
     with_finaliser = chain(postprocessed, ("data: [DONE]\n",))
@@ -164,7 +166,10 @@ async def chat_complete(
     background_tasks: fastapi.background.BackgroundTasks,
 ):
     llm = get_model(model_id=body.model, task="chat")
-    messages = [[message.get("role", ""), message.get("content", "")] for message in body.messages]
+    messages = [
+        [message.get("role", ""), message.get("content", "")]
+        for message in body.messages
+    ]
     if not body.stream:
         predictions = llm.chat(
             messages=messages,
@@ -200,7 +205,8 @@ async def chat_complete(
     uuid = uuid4().hex
     current_timestamp = int(dt.now().timestamp())
     postprocessed = map(
-        partial(format_chat_delta_response, current_timestamp, uuid, body.model), predictions_stream
+        partial(format_chat_delta_response, current_timestamp, uuid, body.model),
+        predictions_stream,
     )
 
     with_finaliser = chain(postprocessed, ("data: [DONE]\n",))
@@ -223,10 +229,12 @@ async def edit(body: Annotated[InstructionInput, Body(example=dummy_edit)]):
     output = format_edits_response(model_name=llm.name, predictions=predictions)
     return output
 
+
 # Models
 @app.get("/embeddings")
 async def embeddings():
     return list_models()
+
 
 # Embeddings
 @app.post("/embeddings")
@@ -241,27 +249,61 @@ async def embed(body: Annotated[EmbeddingInput, Body(example=dummy_embedding)]):
     return output
 
 
+# Speech to text
+@app.post("/audio/transcriptions")
+async def transcribe(
+    file: Annotated[
+        UploadFile,
+        File(
+            description="The audio file object (not file name) to transcribe, in one of these formats: mp3, mp4, mpeg, mpga, m4a, wav, or webm."
+        ),
+    ],
+    model: Annotated[str, Form(description="The model to use")] = "whisper-1",
+    language: Annotated[
+        str,
+        Form(description="The ISO 3166-1 alpha-2 (two letter language) code to use"),
+    ] = "en",
+):
+    model = get_model(model_id=model)
+    result = await model.run(file, "transcribe", language)
+    return {"text": result}
+
+
+@app.post("/audio/translations")
+async def transcribe(
+    file: Annotated[
+        UploadFile,
+        File(
+            description="The audio file object (not file name) to transcribe, in one of these formats: mp3, mp4, mpeg, mpga, m4a, wav, or webm."
+        ),
+    ],
+    model: Annotated[str, Form(description="The model to use")] = "whisper-1",
+    language: Annotated[
+        str,
+        Form(description="The ISO 3166-1 alpha-2 (two letter language) code to use"),
+    ] = "en",
+):
+    model = get_model(model_id=model)
+    result = await model.run(file, "translate", language)
+    return {"text": result}
+
+
 class EngineEmbedding(BaseModel):
     encoding_format: Optional[str]
-    input:  Union[List[List[int]], list]
+    input: Union[List[List[int]], list]
     prompt: Optional[List[str]]
 
 
-import tiktoken
-
 @app.post("/engines/{model_id}/embeddings")
-async def embed2(model_id: str, body: Annotated[EngineEmbedding, Body(example=dummy_engine)]):
-# async def embed2(model_id: str, body: Annotated[EngineEmbedding, Body(example=dummy_embedding)]):
-    logger.error(f"Request for model: { model_id} with body { body }")
-    # return "WOOHOO"
+async def embed2(
+    model_id: str, body: Annotated[EngineEmbedding, Body(example=dummy_engine)]
+):
     llm = get_model(model_id=model_id, task="embed")
     encoding = tiktoken.model.encoding_for_model(model_id)
-    
-    body.prompt = [ encoding.decode(input) for input in body.input]
-    logger.error(f"Decoded: { body.prompt}")
-    
 
-    # results = [llm.embed(inputs=prompt) for prompt in body.prompt]
+    body.prompt = [encoding.decode(input) for input in body.input]
+    logger.error(f"Decoded: { body.prompt}")
+
     results = llm.embed(inputs=body.prompt)
     output = format_embeddings_results(model_name=llm.name, embeddings=results)
     return output
