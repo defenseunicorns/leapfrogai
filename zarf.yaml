@@ -4,9 +4,8 @@ kind: ZarfPackageConfig
 metadata:
   name: leapfrogai
   description: "LeapfrogAI"
-  version: 0.1.1
-  architecture: amd64 
-
+  version: 0.1.2
+  architecture: amd64
 
 components:
   - name: weaviate-values
@@ -22,19 +21,19 @@ components:
   - name: leapfrogai
     required: true
     charts:
-    - name: leapfrogai
-      namespace: leapfrogai
-      localPath: chart
-      version: 0.0.1
-      valuesFiles:
-        - "values.yaml"
+      - name: leapfrogai
+        namespace: leapfrogai
+        localPath: chart
+        version: 0.0.1
+        valuesFiles:
+          - "values.yaml"
   - name: dcgm-exporter
     required: true
     charts:
-    - name: dcgm-exporter
-      version: 3.1.4
-      url:  https://nvidia.github.io/dcgm-exporter/helm-charts
-      namespace: "leapfrogai"
+      - name: dcgm-exporter
+        version: 3.1.4
+        url: https://nvidia.github.io/dcgm-exporter/helm-charts
+        namespace: "leapfrogai"
     images:
       - "nvcr.io/nvidia/k8s/dcgm-exporter:3.1.7-3.1.4-ubuntu20.04"
   - name: dcgm-dashboard

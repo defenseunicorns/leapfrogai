@@ -1,6 +1,8 @@
 import os
 import pathlib
 import sys
+import asyncio
+import httpx
 from dataclasses import dataclass
 from typing import Union
 
@@ -166,6 +168,21 @@ class RpcChatLanguageModel:
         )
 
 
+@dataclass(unsafe_hash=True)
+class HttpClientAudioModel:
+    name: str
+    url: str
+
+    async def run(self, audio, task: str, source_language: str = "en") -> str:
+        async with httpx.AsyncClient() as client:
+            files = {"file": audio.file}
+            data = {"task": task, "language": source_language}
+            response = await client.post(
+                f"{self.url}/transcribe", files=files, data=data, timeout=None
+            )
+            return response.json()["result"]
+
+
 def select_model_type(model_interface: str = "gRPC", task: str = "complete"):
     if model_interface == "gRPC":
         if task == "embed":
@@ -173,6 +190,8 @@ def select_model_type(model_interface: str = "gRPC", task: str = "complete"):
         if task == "chat":
             return RpcChatLanguageModel
         return RpcCompletionLanguageModel
+    if model_interface == "http":
+        return HttpClientAudioModel
     return RpcCompletionLanguageModel
 
 
@@ -180,6 +199,7 @@ def get_model(model_id: str, metadata: dict = MODELS_ZOO, task: str = "complete"
     if model_id in metadata.keys():
         model_interface = metadata.get(model_id).get("network", dict())
         model_url = model_interface.get("url", None)
+        print(model_url)
         model_interface = model_interface.get("type", None)
         return select_model_type(model_interface, task)(name=model_id, url=model_url)
     else:
@@ -188,7 +208,8 @@ def get_model(model_id: str, metadata: dict = MODELS_ZOO, task: str = "complete"
 
 def list_models(metadata: dict = MODELS_ZOO) -> list:
     return dict(
-        data=[{"id": key, **meta.get("metadata")} for key, meta in metadata.items()], object="list"
+        data=[{"id": key, **meta.get("metadata")} for key, meta in metadata.items()],
+        object="list",
     )
 
 

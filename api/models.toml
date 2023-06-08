@@ -18,7 +18,7 @@
     [text-embedding-ada-002.metadata]
         owned_by    = 'Defense Unicorns'
         permission  = []
-        description = 'A pretend implementation of ada-0002 tha's actually all-MiniLM-L6-v2'
+        description = "A pretend implementation of ada-0002 that's actually all-MiniLM-L6-v2"
     [text-embedding-ada-002.network]
         url = 'sentence-transformers:50051'
         type = 'gRPC'   
@@ -30,3 +30,12 @@
     [all-MiniLM-L6-v2.network]
         url = 'sentence-transformers:50051'
         type = 'gRPC'   
+[whisper-1]
+    [whisper-1.metadata]
+        owned_by    = 'Defense Unicorns'
+        permission  = []
+        description = "OpenAI's Whisper Large v2"
+        tasks = ["translate", "transcribe"]
+    [whisper-1.network]
+        url = 'http://localhost:8000'
+        type = 'http'   
