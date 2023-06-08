@@ -199,7 +199,6 @@ def get_model(model_id: str, metadata: dict = MODELS_ZOO, task: str = "complete"
     if model_id in metadata.keys():
         model_interface = metadata.get(model_id).get("network", dict())
         model_url = model_interface.get("url", None)
-        print(model_url)
         model_interface = model_interface.get("type", None)
         return select_model_type(model_interface, task)(name=model_id, url=model_url)
     else:
