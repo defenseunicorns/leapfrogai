@@ -5,9 +5,9 @@ metadata:
   namespace: weaviate
 spec:
   gateways:
-  - istio-system/public
+  - istio-system/tenant
   hosts:
-  - weaviate.leapfrogai.bigbang.dev
+  - weaviate.dd.bigbang.dev
   http:
   - route:
     - destination:

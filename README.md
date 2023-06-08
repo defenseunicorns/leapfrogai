@@ -6,7 +6,6 @@
 3. [Features](#features)
 4. [Getting Started](#getting-started)
 5. [Usage](#usage)
-6. [Contributing](#contributing)
 7. [License](LICENSE)
 
 ## Project Goal <a name="project-goal"></a>
