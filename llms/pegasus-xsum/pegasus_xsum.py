@@ -23,7 +23,7 @@ class PegasusXSum(LanguageModel):
             self,
             prompt: str = "<|endoftext|>"
     ) -> str:
-        inputs = self.tokenizer(prompt, return_tensors="pt")
+        inputs = self.tokenizer(prompt, return_tensors="pt").to("cuda")
         
         tokens = self.model.generate(
             **inputs,
