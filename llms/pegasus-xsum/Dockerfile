@@ -20,14 +20,14 @@ WORKDIR /home/$USER/app
 RUN curl -sSf https://rye-up.com/get | RYE_VERSION="0.6.0" RYE_INSTALL_OPTION="--yes" bash
 
 # Install Project
-COPY --chown=user:user get_model.py .
+COPY --chown=user:user get_models.py .
 COPY --chown=user:user server.py .
 COPY --chown=user:user .python-version .
 COPY --chown=user:user requirements.lock .
 COPY --chown=user:user pyproject.toml .
 COPY --chown=user:user README.md .
 RUN /home/$USER/.rye/shims/rye sync --no-dev --no-lock
-RUN /home/$USER/.rye/shims/rye run python get_model.py
+RUN /home/$USER/.rye/shims/rye run python get_models.py
 
 # Publish port
 EXPOSE 50051:50051
