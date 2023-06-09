@@ -1,6 +1,6 @@
 import logging
 
-from pegasus-xsum import PegasusXSum as Model
+from pegasus_xsum import PegasusXSum as Model
 from simple_ai.api.grpc.completion.server import LanguageModelServicer, serve
 import torch
 # reduce the default memory reserved by PyTorch

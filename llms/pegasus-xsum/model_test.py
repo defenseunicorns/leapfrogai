@@ -1,6 +1,6 @@
 import unittest
 
-from pegasus-xsum import PegasusXSum as Model
+from pegasus_xsum import PegasusXSum as Model
 
 class PegasusXSum(unittest.TestCase):
     model = Model()
