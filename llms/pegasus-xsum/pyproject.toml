@@ -12,6 +12,7 @@ dependencies = [
     "simple_ai_server>=0.2",
     "bitsandbytes", 
     "loralib",
+    "peft",
     "sentencepiece",
     "cuda-python"
     ]
