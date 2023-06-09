@@ -6,16 +6,16 @@ authors = [
     { name = "Gregory Horvath", email = "gphorvath@defenseunicorns.com" }
 ]
 dependencies = [
-    "datasets~=2.12.0",
-    "transformers~=4.29.2",
-    "torch~=2.0.1",
-    "simple_ai_server>=0.2",
-    "bitsandbytes", 
+    "bitsandbytes",
+    "datasets",
     "loralib",
-    "peft",
     "sentencepiece",
+    "transformers",
+    "peft",
+    "simple_ai_server>=0.2",
     "cuda-python"
     ]
+
 readme = "README.md"
 requires-python = ">= 3.10"
 
