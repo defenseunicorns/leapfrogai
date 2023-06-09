@@ -1,7 +1,5 @@
 import logging
 
-"google/pegasus-xsum"
-
 TOKENIZER_ID = "google/pegasus-xsum"
 MODEL_ID = "google/pegasus-xsum"
 

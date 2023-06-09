@@ -2,7 +2,6 @@ import logging
 from dataclasses import dataclass
 
 from get_models import TOKENIZER_ID, MODEL_ID
-import torch
 from simple_ai.api.grpc.completion.server import LanguageModel
 from transformers import PegasusForConditionalGeneration, PegasusTokenizer
 
@@ -21,12 +20,14 @@ class PegasusXSum(LanguageModel):
 
     def complete(
             self,
-            prompt: str = "<|endoftext|>"
+            prompt: str = "<|endoftext|>",
+            max_tokens: int = 512
     ) -> str:
         inputs = self.tokenizer(prompt, return_tensors="pt").to("cuda")
         
         tokens = self.model.generate(
             **inputs,
+            max_new_tokens=max_tokens
         )
         print(self.tokenizer.decode(tokens[0], skip_special_tokens=True))
         return self.tokenizer.decode(tokens[0], skip_special_tokens=False)
