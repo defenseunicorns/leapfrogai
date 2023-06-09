@@ -14,6 +14,7 @@ class PegasusXSum(LanguageModel):
         tokenizer = None
     try:
         model = PegasusForConditionalGeneration.from_pretrained(MODEL_ID)
+        model.half().cuda()
     except:
         logging(f"Could not load pretrained Pegasus model: {ex}")
         model = None
