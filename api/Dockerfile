@@ -1,4 +1,4 @@
-FROM python:3.10
+FROM python:alpine
 
 # Set the working directory to /app
 WORKDIR /app
@@ -8,8 +8,6 @@ COPY requirements.txt .
 
 # Install any needed packages specified in requirements.txt
 RUN pip install --no-cache-dir -r requirements.txt
-
-RUN pip install peft
 
 ADD models.toml .
 
