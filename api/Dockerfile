@@ -1,4 +1,4 @@
-FROM python:alpine
+FROM cgr.dev/chainguard/python:3.10-dev
 
 # Set the working directory to /app
 WORKDIR /app
