@@ -6,20 +6,26 @@ This project use the [Google Pegasus-XSum](https://huggingface.co/google/pegasus
 
 ## Pre-requisites
 
-* [Rye](https://github.com/mitsuhiko/rye)
+* Poetry
 * System install of ffmpeg
 * GPU Currently Required!
 
 ## Setup
 
-* Ensure [Rye](https://github.com/mitsuhiko/rye) is setup.
-* Generate your environment and requirements files:
+### Poetry
 
-```shell
-rye sync
+``` shell
+poetry install
 ```
 
-* Build a docker image:
+Overloads include:
+
+``` shell
+--with jupyter
+--with cuda
+```
+
+### Build an image
 
 ``` shell
 docker build . -t pegasus-xsum:0.1
@@ -37,10 +43,4 @@ docker run -it --rm -p 50051:50051 --gpus all pegasus-xsum:0.1
 or 
 
 podman run -it --rm -p 50051:50051 --gpus all pegasus-xsum:0.1
-```
-
-* Run Simple AI Service:
-
-``` shell
-simple_ai serve [--host 127.0.0.1] [--port 8080]
 ```

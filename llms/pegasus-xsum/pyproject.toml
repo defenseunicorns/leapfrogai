@@ -1,30 +1,33 @@
-[project]
+[tool.poetry]
 name = "pegasus-xsum"
 version = "0.1.0"
-description = "Text summarization model."
-authors = [
-    { name = "Gregory Horvath", email = "gphorvath@defenseunicorns.com" }
-]
-dependencies = [
-    "bitsandbytes",
-    "datasets",
-    "loralib",
-    "sentencepiece",
-    "transformers",
-    "peft",
-    "simple_ai_server>=0.2",
-    "cuda-python"
-    ]
-
+description = ""
+authors = ["Gregory Horvath <gphorvath@defenseunicorns.com>"]
 readme = "README.md"
-requires-python = ">= 3.10"
+
+[tool.poetry.dependencies]
+python = "^3.10"
+simple-ai-server = "^0.2.1"
+bitsandbytes = "^0.39.0"
+datasets = "^2.12.0"
+loralib = "^0.1.1"
+sentencepiece = "^0.1.99"
+transformers = "^4.30.1"
+peft = "^0.3.0"
+torch = "^2.0.1"
+
+[tool.poetry.group.cuda]
+optional=true
+
+[tool.poetry.group.cuda.dependencies]
+cuda-python = "^12.1.0"
+
+[tool.poetry.group.jupyter]
+optional=true
+
+[tool.poetry.group.jupyter.dependencies]
+jupyter = "^1.0.0"
 
 [build-system]
-requires = ["hatchling"]
-build-backend = "hatchling.build"
-
-[tool.rye]
-managed = true
-
-[tool.hatch.metadata]
-allow-direct-references = true
+requires = ["poetry-core>=1.5.1"]
+build-backend = "poetry.core.masonry.api"

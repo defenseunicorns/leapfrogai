@@ -4,6 +4,7 @@ from dataclasses import dataclass
 from get_models import TOKENIZER_ID, MODEL_ID
 from simple_ai.api.grpc.completion.server import LanguageModel
 from transformers import PegasusForConditionalGeneration, PegasusTokenizer
+import torch
 
 @dataclass(unsafe_hash=True)
 class PegasusXSum(LanguageModel):
@@ -14,7 +15,7 @@ class PegasusXSum(LanguageModel):
         tokenizer = None
     try:
         model = PegasusForConditionalGeneration.from_pretrained(MODEL_ID)
-        model.half().cuda()
+        #model.half().cuda()
     except:
         logging(f"Could not load pretrained Pegasus model: {ex}")
         model = None
@@ -24,11 +25,13 @@ class PegasusXSum(LanguageModel):
             prompt: str = "<|endoftext|>",
             max_tokens: int = 512
     ) -> str:
-        inputs = self.tokenizer(prompt, return_tensors="pt").to("cuda")
+        device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+
+        inputs = self.tokenizer(prompt, return_tensors="pt").to(device)
         
         tokens = self.model.generate(
             **inputs,
             max_new_tokens=max_tokens
-        )
+        ).to(device)
         print(self.tokenizer.decode(tokens[0], skip_special_tokens=True))
         return self.tokenizer.decode(tokens[0], skip_special_tokens=False)
