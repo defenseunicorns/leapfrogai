@@ -36,6 +36,22 @@ Large Language Models (LLMs) are a powerful resource for AI-driven decision maki
 
 * Embeddings Creation: Embeddings are fundamental to the working of many AI algorithms. LeapfrogAI provides services to generate embeddings which can be used for a variety of tasks such as semantic similarity, clustering, and more.
 
+## Architecture
+
+Leapfrog exposes both Weaviate and LLM and embedding generative capabilities over HTTP.  However, internal communications are a combination of gRPC and HTTP connections as described below:
+
+```mermaid
+graph LR;
+    A[User] --HTTP--> L[LeapfrogAI]
+    L ---->|HTTP| B(API)
+    B ----> |gRPC| C(StableLM)
+    B ----> |gRPC| D(WhisperAI)
+    B ----> |gRPC| E(all-MiniLM-L6-v2)
+
+    L ---->|HTTP| W[Weaviate]
+    W --/embeddings-->B
+```
+
 ## Getting Started <a name="getting-started"></a>
 
 ### Setting up the Kubernetes Cluster
