@@ -84,7 +84,7 @@ zarf package deploy zarf-package-leapfrogai-amd64-0.1.1.tar.zst
 
 ### Configure DNS
 
-Ensure that the DNS record for `*.bigbang.dev` points to the load balancher for Istio.  By default this DNS record points at localhost, so for the k3d deployment, this should work out of the box with the loadbalancers configured.  For a remote EKS deployment, you may need to 
+Ensure that the DNS record for `*.bigbang.dev` points to the load balancer for Istio.  By default this DNS record points at localhost, so for the k3d deployment, this should work out of the box with the load balancers configured.  For a remote EKS deployment, you may need to 
 
 
 The OpenAI API service is hosted and then uses GRPC to talk to the embedding server and the alpaca-lora-7B instance
@@ -97,13 +97,13 @@ Reference one of the ipythonnotebooks that showcase a simple getting started.
 
 # Leapfrog AI
 
-Leapfrog AI is a deployable AI-as-a-service that brings the capabilities of AI models to egress limited environments by allowing teams to deploy APIs that mirror OpenAI's spec.  Teams are able to use tools built around OpenAIs models in their own environment, preventing the release of propriatary and sensive data to SaaS tools.
+Leapfrog AI is a deployable AI-as-a-service that brings the capabilities of AI models to egress limited environments by allowing teams to deploy APIs that mirror OpenAI's spec.  Teams are able to use tools built around OpenAIs models in their own environment, preventing the release of proprietary and sensitive data to SaaS tools.
 
 In addition, tools like [Weaviate](https://weaviate.io/) are deployed to allow for the creation of content augmented applications.
 
 
 ## Create the API Server
 
-See the [Getting Started Notebook](notebooks/gettingstarted.ipynb) for example of using the API with the openai python module.
+See the [Getting Started Notebook](notebooks/gettingstarted.ipynb) for example of using the API with the OpenAI python module.
 
 
