@@ -27,11 +27,15 @@ class PegasusXSum(LanguageModel):
     ) -> str:
         device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 
+        logging.info(f"Pegasus-XSum Execution on {device}. \n")
+
         inputs = self.tokenizer(prompt, return_tensors="pt").to(device)
         
         tokens = self.model.generate(
             **inputs,
             max_new_tokens=max_tokens
         ).to(device)
-        print(self.tokenizer.decode(tokens[0], skip_special_tokens=True))
+
+        
+
         return self.tokenizer.decode(tokens[0], skip_special_tokens=False)

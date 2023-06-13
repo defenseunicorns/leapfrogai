@@ -8,39 +8,50 @@ This project use the [Google Pegasus-XSum](https://huggingface.co/google/pegasus
 
 * Poetry
 * System install of ffmpeg
-* GPU Currently Required!
 
 ## Setup
 
-### Poetry
+### Local with Poetry
 
 ``` shell
-poetry install
+# Set the location of the Poetry Virtual Environment to the project folder
+poetry config virtualenvs.in-project true
+
+# Install dependencies into a Poetry Virtual Environment
+poetry install # CPU execution
+
+<or>
+
+poetry install --with cuda # GPU execution
+
 ```
 
-Overloads include:
-
 ``` shell
---with jupyter
---with cuda
+# Run locally in a Poetry Virtual Environment
+
+poetry shell # opens the Poetry Virtual Environment
+
+python model_test.py # Runs the model with
 ```
 
-### Build an image
+### Build an image (uses Cuda)
 
 ``` shell
+# Build an image with Docker or Podman
+
 docker build . -t pegasus-xsum:0.1
 
-or
+<or>
 
 podman build . -t pegasus-xsum:0.1
 ```
 
-* Start Service
-
 ``` shell
+# Start Service (Requires Cuda)
+
 docker run -it --rm -p 50051:50051 --gpus all pegasus-xsum:0.1
 
-or 
+<or>
 
 podman run -it --rm -p 50051:50051 --gpus all pegasus-xsum:0.1
 ```
