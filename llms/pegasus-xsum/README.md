@@ -28,7 +28,6 @@ poetry install --with cuda # GPU execution
 
 ``` shell
 # Run locally in a Poetry Virtual Environment
-
 poetry shell # opens the Poetry Virtual Environment
 
 python model_test.py # Runs the model with
@@ -38,7 +37,6 @@ python model_test.py # Runs the model with
 
 ``` shell
 # Build an image with Docker or Podman
-
 docker build . -t pegasus-xsum:0.1
 
 <or>
@@ -48,7 +46,6 @@ podman build . -t pegasus-xsum:0.1
 
 ``` shell
 # Start Service (Requires Cuda)
-
 docker run -it --rm -p 50051:50051 --gpus all pegasus-xsum:0.1
 
 <or>
