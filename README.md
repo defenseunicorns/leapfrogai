@@ -36,6 +36,22 @@ Large Language Models (LLMs) are a powerful resource for AI-driven decision maki
 
 * Embeddings Creation: Embeddings are fundamental to the working of many AI algorithms. LeapfrogAI provides services to generate embeddings which can be used for a variety of tasks such as semantic similarity, clustering, and more.
 
+## Architecture
+
+Leapfrog exposes both Weaviate and LLM and embedding generative capabilities over HTTP.  However, internal communications are a combination of gRPC and HTTP connections as described below:
+
+```mermaid
+graph LR;
+    A[User] --HTTP--> L[LeapfrogAI]
+    L ---->|HTTP| B(API)
+    B ----> |gRPC| C(StableLM)
+    B ----> |gRPC| D(WhisperAI)
+    B ----> |gRPC| E(all-MiniLM-L6-v2)
+
+    L ---->|HTTP| W[Weaviate]
+    W --/embeddings-->B
+```
+
 ## Getting Started <a name="getting-started"></a>
 
 ### Setting up the Kubernetes Cluster
@@ -68,7 +84,7 @@ zarf package deploy zarf-package-leapfrogai-amd64-0.1.1.tar.zst
 
 ### Configure DNS
 
-Ensure that the DNS record for `*.bigbang.dev` points to the load balancher for Istio.  By default this DNS record points at localhost, so for the k3d deployment, this should work out of the box with the loadbalancers configured.  For a remote EKS deployment, you may need to 
+Ensure that the DNS record for `*.bigbang.dev` points to the load balancer for Istio.  By default this DNS record points at localhost, so for the k3d deployment, this should work out of the box with the load balancers configured.  For a remote EKS deployment, you may need to 
 
 
 The OpenAI API service is hosted and then uses GRPC to talk to the embedding server and the alpaca-lora-7B instance
@@ -81,13 +97,13 @@ Reference one of the ipythonnotebooks that showcase a simple getting started.
 
 # Leapfrog AI
 
-Leapfrog AI is a deployable AI-as-a-service that brings the capabilities of AI models to egress limited environments by allowing teams to deploy APIs that mirror OpenAI's spec.  Teams are able to use tools built around OpenAIs models in their own environment, preventing the release of propriatary and sensive data to SaaS tools.
+Leapfrog AI is a deployable AI-as-a-service that brings the capabilities of AI models to egress limited environments by allowing teams to deploy APIs that mirror OpenAI's spec.  Teams are able to use tools built around OpenAIs models in their own environment, preventing the release of proprietary and sensitive data to SaaS tools.
 
 In addition, tools like [Weaviate](https://weaviate.io/) are deployed to allow for the creation of content augmented applications.
 
 
 ## Create the API Server
 
-See the [Getting Started Notebook](notebooks/gettingstarted.ipynb) for example of using the API with the openai python module.
+See the [Getting Started Notebook](notebooks/gettingstarted.ipynb) for example of using the API with the OpenAI python module.
 
 
