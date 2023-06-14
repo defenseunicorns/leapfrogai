@@ -13,8 +13,5 @@ jobs:
     - name: Check out code
       uses: actions/checkout@v2
 
-    - name: Set up Docker
-      uses: docker/setup-docker@v1
-
     - name: Run Makefile command
       run: make api
