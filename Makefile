@@ -1,6 +1,6 @@
 build: api embeddings
 
-TAG ?= 0.0.2
+TAG ?= 0.1.2 # want to keep things all aligned here
 
 .PHONY: api embeddings push
 
