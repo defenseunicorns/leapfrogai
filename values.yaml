@@ -16,7 +16,7 @@ image:
 env:
   # maybe set this to the internal URL:
   # OPENAI_BASE_URL: "http://api.leapfrogai.svc:8080"
-  OPENAI_BASE_URL: "https://leapfrogai.###ZARF_VAR_DOMAIN###"
+  OPENAI_BASE_URL: "https://leapfrogai.dd.bigbang.dev"
 
 modules:
   DEFAULT_VECTORIZER_MODULE: text2vec-transformers
@@ -38,11 +38,11 @@ modules:
 storage:
   size: 32Gi # default
 
-domain: "###ZARF_VAR_DOMAIN"
+domain: "###ZARF_VAR_DOMAIN###"
 
 istio:
-  enabled: ###ZARF_VAR_ISTIO_ENABLED###
+  enabled: true
 
 monitoring:
-  enabled: ###ZARF_VAR_MONITORING_ENABLED###
+  enabled: true
 
