@@ -1,6 +1,6 @@
 syntax = "proto3";
 
-package leapfrog;
+package generate;
 
 // CompletionRequest is the payload to request completion
 message CompletionRequest {

@@ -1,6 +1,9 @@
 import grpc
 import generate_pb2
 import generate_pb2_grpc
+import name_pb2_grpc
+import name_pb2
+from google.protobuf import empty_pb2 as google_dot_protobuf_dot_empty__pb2
 
 def run():
     # Set up a channel to the server
@@ -20,5 +23,8 @@ def run():
         # Print the response
         print("Received response: ", response.completion)
 
+        name = name_pb2_grpc.NameServiceStub(channel)
+        response = name.Name(google_dot_protobuf_dot_empty__pb2.Empty())
+        print(f"Recieved name: { response }")
 if __name__ == "__main__":
     run()

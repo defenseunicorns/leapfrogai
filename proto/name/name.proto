@@ -1,0 +1,15 @@
+syntax = "proto3";
+
+
+import "google/protobuf/empty.proto";
+
+package name;
+
+// NameResponse are what's returned by the gRPC service
+message NameResponse {
+    string name = 1;
+}
+
+service NameService {
+    rpc Name (google.protobuf.Empty) returns (NameResponse);
+}
