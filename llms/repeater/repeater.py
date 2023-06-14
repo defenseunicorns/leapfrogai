@@ -33,9 +33,9 @@ def serve():
     server = grpc.server(futures.ThreadPoolExecutor(max_workers=1))
     r = Repeater()
     generate_pb2_grpc.add_GenerateServiceServicer_to_server(r, server)
-    # embeddings_pb2_grpc.add_GenerateServiceServicer_to_server(Repeater(), server)
+    embeddings_pb2_grpc.add_GenerateServiceServicer_to_server(r, server)
     name_pb2_grpc.add_NameServiceServicer_to_server(r, server)
-    # audio_pb2_grpc.add_GenerateServiceServicer_to_server(Repeater(), server)
+    audio_pb2_grpc.add_GenerateServiceServicer_to_server(r, server)
 
     # Listen on port 50051
     print('Starting server. Listening on port 50051.')
