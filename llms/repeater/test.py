@@ -1,6 +1,8 @@
 import grpc
 import generate_pb2
 import generate_pb2_grpc
+import embeddings_pb2_grpc
+import embeddings_pb2
 import name_pb2_grpc
 import name_pb2
 from google.protobuf import empty_pb2 as google_dot_protobuf_dot_empty__pb2
@@ -26,5 +28,11 @@ def run():
         name = name_pb2_grpc.NameServiceStub(channel)
         response = name.Name(google_dot_protobuf_dot_empty__pb2.Empty())
         print(f"Recieved name: { response }")
+
+        embed = embeddings_pb2_grpc.GenerateServiceStub(channel)
+        r = embed.CreateEmbedding(embeddings_pb2.EmbeddingRequest(
+            inputs=["foobar"]
+        ))
+        print(f"Recieved embedding: { r }")
 if __name__ == "__main__":
     run()
