@@ -24,10 +24,21 @@ modules:
     enabled: true
   text2vec-openai:
     enabled: true
+  stablelm3b:
+    enabled: ###ZARF_VAR_STABLELM_3B_ENABLED###
+    name: stablelm-3b
+
+  all_MiniLM_L6_v2:
+    enabled: ###ZARF_VAR_ALL_MINILM_L6_V2_ENABLED###
+    name: all-MiniLM-L6-v2
+
+  whisper:
+    enabled: ###ZARF_VAR_WHISPER_ENABLED###
+    name: whisper
 storage:
   size: 32Gi # default
 
-domain: dd.bigbang.dev
+domain: "###ZARF_VAR_DOMAIN###"
 
 istio:
   enabled: true
@@ -35,16 +46,3 @@ istio:
 monitoring:
   enabled: true
 
-
-models:
-  stablelm3b:
-    enabled: true
-    name: stablelm-3b
-
-  all_MiniLM_L6_v2:
-    enabled: true
-    name: all-MiniLM-L6-v2
-
-  whisper:
-    enabled: true
-    name: whisper
