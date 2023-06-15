@@ -15,11 +15,6 @@ stablelm:
 	cd llms/stablelm && \
 	docker build --network=host -t ghcr.io/defenseunicorns/leapfrogai/stablelm-3b:0.0.1 .
 
-stablelm-7b:
-	cd llms/stablelm-7b && \
-	docker build --network=host -t ghcr.io/defenseunicorns/leapfrogai/stablelm-7b:0.0.1 .
-
-
 embeddings:
 	cd embeddings && \
 	docker build --network=host -t ghcr.io/defenseunicorns/leapfrogai/embeddings:0.0.1 .
