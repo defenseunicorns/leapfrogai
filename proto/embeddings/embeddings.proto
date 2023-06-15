@@ -12,6 +12,6 @@ message EmbeddingResponse {
     repeated string embeddings = 1;
 }
 
-service GenerateService {
+service EmbeddingsService {
     rpc CreateEmbedding(EmbeddingRequest) returns (EmbeddingResponse);
 }
