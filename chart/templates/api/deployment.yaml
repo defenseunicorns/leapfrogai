@@ -14,7 +14,7 @@ spec:
     spec:
       containers:
         - name: api-container
-          image: ghcr.io/defenseunicorns/leapfrogai/api:0.0.1
+          image: ghcr.io/defenseunicorns/leapfrogai/api:0.0.4
           imagePullPolicy: Always
           ports:
             - containerPort: 50051

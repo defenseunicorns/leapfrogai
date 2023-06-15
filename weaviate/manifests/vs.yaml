@@ -7,7 +7,7 @@ spec:
   gateways:
   - istio-system/tenant
   hosts:
-  - weaviate.dd.bigbang.dev
+  - "weaviate.###ZARF_VAR_DOMAIN###"
   http:
   - route:
     - destination:
