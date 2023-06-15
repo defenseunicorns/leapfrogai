@@ -37,8 +37,8 @@ zarf-port-forward:
 
 
 gen:
-	python -m grpc_tools.protoc --proto_path=proto/ generate/generate.proto --python_out=llms/leapfrog  --pyi_out=llms/leapfrog --grpc_python_out=llms/leapfrog
-	python -m grpc_tools.protoc --proto_path=proto audio/audio.proto --python_out=llms/leapfrog  --pyi_out=llms/leapfrog --grpc_python_out=llms/leapfrog
-	python -m grpc_tools.protoc --proto_path=proto embeddings/embeddings.proto --python_out=llms/leapfrog  --pyi_out=llms/leapfrog --grpc_python_out=llms/leapfrog
-	python -m grpc_tools.protoc --proto_path=proto name/name.proto --python_out=llms/leapfrog  --pyi_out=llms/leapfrog --grpc_python_out=llms/leapfrog
+	python3 -m grpc_tools.protoc --proto_path=proto/ generate/generate.proto --python_out=leapfrog  --pyi_out=leapfrog --grpc_python_out=leapfrog
+	python3 -m grpc_tools.protoc --proto_path=proto audio/audio.proto --python_out=leapfrog  --pyi_out=leapfrog --grpc_python_out=leapfrog
+	python3 -m grpc_tools.protoc --proto_path=proto embeddings/embeddings.proto --python_out=leapfrog  --pyi_out=leapfrog --grpc_python_out=leapfrog
+	python3 -m grpc_tools.protoc --proto_path=proto name/name.proto --python_out=leapfrog  --pyi_out=leapfrog --grpc_python_out=leapfrog
 	

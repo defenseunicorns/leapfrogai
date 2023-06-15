@@ -102,12 +102,12 @@ def format_chat_delta_response(
     return f"data: {json.dumps(data)}\n\n"
 
 
-def format_embeddings_results(model_name: str, embeddings: list, usage: dict = dummy_usage) -> dict:
+def format_embeddings_results(model_name: str, embeddings: list[float], usage: dict = dummy_usage) -> dict:
+    print(embeddings)
     return {
         "object": "list",
         "data": [
-            {"object": "embedding", "embedding": embedding, "index": idx}
-            for idx, embedding in enumerate(embeddings)
+            {"object": "embedding", "embedding": list(embeddings), "index": 0}
         ],
         "model": model_name,
         "usage": usage,
