@@ -8,3 +8,6 @@ package:
       path: "./weaviate"
       namespace: "weaviate"
     max_package_size: "1000000000"
+  deploy:
+    set:
+      domain: dd.bigbang.dev

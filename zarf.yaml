@@ -24,13 +24,13 @@ components:
     - name: leapfrogai
       namespace: leapfrogai
       localPath: chart
-      version: 0.0.1
+      version: 0.0.2
       valuesFiles:
         - "values.yaml"
-    # images:
-    #   - "ghcr.io/defenseunicorns/leapfrogai/api:0.0.1"
-    #   # - "ghcr.io/defenseunicorns/leapfrogai/stablelm-3b:0.0.1"
-    #   - "ghcr.io/defenseunicorns/leapfrogai/embeddings:0.0.1"
+    images:
+      - "ghcr.io/defenseunicorns/leapfrogai/api:0.0.4"
+      - "ghcr.io/defenseunicorns/leapfrogai/stablelm-3b:0.0.1"
+      - "ghcr.io/defenseunicorns/leapfrogai/embeddings:0.0.1"
   - name: dcgm-exporter
     required: true
     charts:
