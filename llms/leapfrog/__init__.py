@@ -11,5 +11,7 @@ from .audio.audio_pb2 import CompletionRequest,CompletionResponse
 from .name.name_pb2_grpc import NameService,NameServiceServicer,NameServiceStub
 from .name.name_pb2 import NameResponse
 from .serve import serve
+from grpc import ServicerContext as GrpcContext
+
 
 print("Initializing Leapfrog")
