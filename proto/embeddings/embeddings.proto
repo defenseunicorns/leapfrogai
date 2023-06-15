@@ -9,7 +9,7 @@ message EmbeddingRequest {
 
 // EmbeddingResponse are what's returned by the gRPC service
 message EmbeddingResponse {
-    repeated string embeddings = 1;
+    repeated double embeddings = 1;
 }
 
 service EmbeddingsService {
