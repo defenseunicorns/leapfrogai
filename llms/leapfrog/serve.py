@@ -1,17 +1,26 @@
 from concurrent import futures
+
 import grpc
 
-from .generate import generate_pb2_grpc
-from .name import name_pb2_grpc
 from .audio import audio_pb2_grpc
 from .embeddings import embeddings_pb2_grpc
+from .generate import generate_pb2_grpc
+from .name import name_pb2_grpc
+
 
 def serve(o):
     # Create a gRPC server
     server = grpc.server(futures.ThreadPoolExecutor(max_workers=1))
-    generate_pb2_grpc.add_CompletionServiceServicer_to_server(o, server)
-    embeddings_pb2_grpc.add_EmbeddingsServiceServicer_to_server(o, server)
-    name_pb2_grpc.add_NameServiceServicer_to_server(o, server)
+    
+    if hasattr(o, "Complete"):
+        generate_pb2_grpc.add_CompletionServiceServicer_to_server(o, server)
+    
+    if hasattr(o, "CreateEmbedding"):
+        embeddings_pb2_grpc.add_EmbeddingsServiceServicer_to_server(o, server)
+    
+    if hasattr(o, "Name"):
+        name_pb2_grpc.add_NameServiceServicer_to_server(o, server)
+        
     audio_pb2_grpc.add_GenerateServiceServicer_to_server(o, server)
 
     # Listen on port 50051
