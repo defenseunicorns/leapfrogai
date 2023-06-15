@@ -8,15 +8,13 @@ from .dummy import dummy_usage
 def format_autocompletion_response(model_name, predictions, usage=dummy_usage) -> dict:
     response_id = uuid.uuid4()
     current_timestamp = int(dt.now().timestamp())
-
     return {
         "id": response_id,
         "object": "text_completion",
         "created": current_timestamp,
         "model": model_name,
         "choices": [
-            {"text": text, "index": idx, "logprobs": None, "finish_reason": ""}
-            for idx, text in enumerate(predictions)
+            {"text": predictions, "index": 0, "logprobs": None, "finish_reason": ""}
         ],
         "usage": usage,
     }

@@ -1,19 +1,17 @@
 import os
 import pathlib
 import sys
-import asyncio
-import httpx
 from dataclasses import dataclass
-from typing import Union
+from typing import Any, Iterable, Union
+
+import grpc
+import httpx
+import leapfrog
 
 if sys.version_info >= (3, 11):
     import tomllib
 else:
     import tomli as tomllib
-
-from .api.grpc.chat import client as chat_client
-from .api.grpc.completion import client as lm_client
-from .api.grpc.embedding import client as embed_client
 
 path = pathlib.Path(os.environ.get("SIMPLEAI_CONFIG_PATH", "models.toml"))
 with path.open(mode="rb") as fp:
@@ -36,64 +34,33 @@ class RpcCompletionLanguageModel:
         stream: bool = False,
         logprobs: int = 0,
         echo: bool = False,
-        stop: Union[str, list] = "",
+        stop: str = "",
         presence_penalty: float = 0.0,
         frequence_penalty: float = 0.0,
         best_of: int = 0,
         logit_bias: dict = {},
     ) -> str:
-        return lm_client.run(
-            url=self.url,
-            prompt=prompt,
-            suffix=suffix,
-            max_tokens=max_tokens,
-            temperature=temperature,
-            top_p=top_p,
-            n=n,
-            stream=stream,
-            logprobs=logprobs,
-            echo=echo,
-            stop=stop,
-            presence_penalty=presence_penalty,
-            frequence_penalty=frequence_penalty,
-            best_of=best_of,
-            logit_bias=logit_bias,
-        )
+        with grpc.insecure_channel(self.url) as channel:
+            stub = leapfrog.CompletionServiceStub(channel)
+            request = leapfrog.CompletionRequest(
+                prompt=prompt,
+                suffix=suffix,
+                max_tokens=max_tokens,
+                temperature=temperature,
+                top_p=top_p,
+                n=n,
+                stream=stream,
+                logprobs=logprobs,
+                echo=echo,
+                stop=stop,
+                presence_penalty=presence_penalty,
+                frequence_penalty=frequence_penalty,
+                best_of=best_of,
+                logit_bias=logit_bias
+            )
 
-    def stream_complete(
-        self,
-        prompt: str = "<|endoftext|>",
-        suffix: str = "",
-        max_tokens: int = 7,
-        temperature: float = 1.0,
-        top_p: float = 1.0,
-        n: int = 1,
-        stream: bool = False,
-        logprobs: int = 0,
-        echo: bool = False,
-        stop: Union[str, list] = "",
-        presence_penalty: float = 0.0,
-        frequence_penalty: float = 0.0,
-        best_of: int = 0,
-        logit_bias: dict = {},
-    ) -> str:
-        yield from lm_client.run_stream(
-            url=self.url,
-            prompt=prompt,
-            suffix=suffix,
-            max_tokens=max_tokens,
-            temperature=temperature,
-            top_p=top_p,
-            n=n,
-            stream=stream,
-            logprobs=logprobs,
-            echo=echo,
-            stop=stop,
-            presence_penalty=presence_penalty,
-            frequence_penalty=frequence_penalty,
-            best_of=best_of,
-            logit_bias=logit_bias,
-        )
+            response: leapfrog.CompletionResponse = stub.Complete(request)
+            return response.completion
 
 
 @dataclass(unsafe_hash=True)
@@ -104,68 +71,13 @@ class RpcEmbeddingLanguageModel:
     def embed(
         self,
         inputs: Union[str, list] = "",
-    ) -> str:
-        return embed_client.run(url=self.url, inputs=inputs)
-
-
-@dataclass(unsafe_hash=True)
-class RpcChatLanguageModel:
-    name: str
-    url: str
-
-    def chat(
-        self,
-        messages: list[list[str]] = [],
-        max_tokens: int = 64,
-        temperature: float = 1.0,
-        top_p: float = 1.0,
-        n: int = 1,
-        stream: bool = False,
-        stop: Union[str, list] = "",
-        presence_penalty: float = 0.0,
-        frequence_penalty: float = 0.0,
-        logit_bias: dict = {},
-    ) -> str:
-        return chat_client.run(
-            url=self.url,
-            messages=messages,
-            max_tokens=max_tokens,
-            temperature=temperature,
-            top_p=top_p,
-            n=n,
-            stream=stream,
-            stop=stop,
-            presence_penalty=presence_penalty,
-            frequence_penalty=frequence_penalty,
-            logit_bias=logit_bias,
-        )
-
-    def stream(
-        self,
-        messages: list[list[str]] = [],
-        max_tokens: int = 64,
-        temperature: float = 1.0,
-        top_p: float = 1.0,
-        n: int = 1,
-        stream: bool = False,
-        stop: Union[str, list] = "",
-        presence_penalty: float = 0.0,
-        frequence_penalty: float = 0.0,
-        logit_bias: dict = {},
-    ) -> str:
-        yield from chat_client.run_stream(
-            url=self.url,
-            messages=messages,
-            max_tokens=max_tokens,
-            temperature=temperature,
-            top_p=top_p,
-            n=n,
-            stream=stream,
-            stop=stop,
-            presence_penalty=presence_penalty,
-            frequence_penalty=frequence_penalty,
-            logit_bias=logit_bias,
-        )
+    ) -> Iterable[str]:
+        with grpc.insecure_channel(self.url) as channel:
+            stub = leapfrog.EmbeddingsServiceStub(channel)
+            request = leapfrog.EmbeddingRequest(inputs=inputs)
+            response: leapfrog.EmbeddingResponse = stub.CreateEmbedding(
+                request)
+            return response.embeddings
 
 
 @dataclass(unsafe_hash=True)
@@ -187,8 +99,6 @@ def select_model_type(model_interface: str = "gRPC", task: str = "complete"):
     if model_interface == "gRPC":
         if task == "embed":
             return RpcEmbeddingLanguageModel
-        if task == "chat":
-            return RpcChatLanguageModel
         return RpcCompletionLanguageModel
     if model_interface == "http":
         return HttpClientAudioModel
@@ -205,14 +115,15 @@ def get_model(model_id: str, metadata: dict = MODELS_ZOO, task: str = "complete"
         return None
 
 
-def list_models(metadata: dict = MODELS_ZOO) -> list:
+def list_models(metadata: dict = MODELS_ZOO) -> dict[str, list[dict[str, Any]] | str]:
     return dict(
-        data=[{"id": key, **meta.get("metadata")} for key, meta in metadata.items()],
+        data=[{"id": key, **meta.get("metadata")}
+              for key, meta in metadata.items()],
         object="list",
     )
 
 
-def get_model_infos(model_id, metadata: dict = MODELS_ZOO) -> list:
+def get_model_infos(model_id, metadata: dict = MODELS_ZOO) -> dict[str, Any]:
     if model_id in metadata.keys():
         return {"id": model_id, **metadata.get(model_id).get("metadata")}
     return {}

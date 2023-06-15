@@ -1,39 +1,27 @@
+import json
+import logging
 from datetime import datetime as dt
 from functools import partial
 from itertools import chain
-from typing import Annotated, Union, Optional, List
+from typing import Annotated, List, Optional, Union
 from uuid import uuid4
-import json
-import tiktoken
-
 
 import fastapi
-from fastapi import Body, FastAPI, Response, Request, Form, UploadFile, File, exceptions
-from fastapi.responses import StreamingResponse
-from fastapi.responses import JSONResponse
-from pydantic import ValidationError
+import tiktoken
+from fastapi import (Body, FastAPI, File, Form, Request, Response, UploadFile,
+                     exceptions)
+from fastapi.responses import JSONResponse, StreamingResponse
+from pydantic import BaseModel, ValidationError
 
-from .api_models import (
-    ChatCompletionInput,
-    CompletionInput,
-    EmbeddingInput,
-    InstructionInput,
-)
-from .dummy import dummy_chat, dummy_complete, dummy_edit, dummy_embedding, dummy_engine
+from .api_models import (ChatCompletionInput, CompletionInput, EmbeddingInput,
+                         InstructionInput)
+from .dummy import (dummy_chat, dummy_complete, dummy_edit, dummy_embedding,
+                    dummy_engine)
 from .models import get_model, get_model_infos, list_models
-from .utils import (
-    add_instructions,
-    format_autocompletion_response,
-    format_autocompletion_stream_response,
-    format_chat_delta_response,
-    format_chat_response,
-    format_edits_response,
-    format_embeddings_results,
-)
-
-from pydantic import BaseModel
-
-import logging
+from .utils import (add_instructions, format_autocompletion_response,
+                    format_autocompletion_stream_response,
+                    format_chat_delta_response, format_chat_response,
+                    format_edits_response, format_embeddings_results)
 
 logger = logging.getLogger("fastapi")
 
@@ -71,7 +59,8 @@ async def http422_error_handler(
 
 
 app.add_exception_handler(ValidationError, http422_error_handler)
-app.add_exception_handler(exceptions.RequestValidationError, http422_error_handler)
+app.add_exception_handler(
+    exceptions.RequestValidationError, http422_error_handler)
 app.debug = True
 
 
@@ -107,6 +96,7 @@ async def complete(
 
     llm = get_model(model_id=body.model)
     if not body.stream:
+        print("hit")
         predictions = llm.complete(
             prompt=prompt,
             suffix=body.suffix,
@@ -184,7 +174,8 @@ async def chat_complete(
             logit_bias=body.logit_bias,
         )
 
-        output = format_chat_response(model_name=llm.name, predictions=predictions)
+        output = format_chat_response(
+            model_name=llm.name, predictions=predictions)
         return output
 
     predictions_stream = llm.stream(
@@ -205,7 +196,8 @@ async def chat_complete(
     uuid = uuid4().hex
     current_timestamp = int(dt.now().timestamp())
     postprocessed = map(
-        partial(format_chat_delta_response, current_timestamp, uuid, body.model),
+        partial(format_chat_delta_response,
+                current_timestamp, uuid, body.model),
         predictions_stream,
     )
 
@@ -217,7 +209,8 @@ async def chat_complete(
 @app.post("/edits/")
 async def edit(body: Annotated[InstructionInput, Body(example=dummy_edit)]):
     llm = get_model(model_id=body.model)
-    input_text = add_instructions(instructions=body.instruction, text=body.input)
+    input_text = add_instructions(
+        instructions=body.instruction, text=body.input)
 
     predictions = llm.complete(
         prompt=input_text,
@@ -226,7 +219,8 @@ async def edit(body: Annotated[InstructionInput, Body(example=dummy_edit)]):
         n=body.n,
         max_tokens=body.max_tokens,
     )
-    output = format_edits_response(model_name=llm.name, predictions=predictions)
+    output = format_edits_response(
+        model_name=llm.name, predictions=predictions)
     return output
 
 
