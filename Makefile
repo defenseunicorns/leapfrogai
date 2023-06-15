@@ -39,3 +39,11 @@ zarf-push-api:
 
 zarf-port-forward:
 	kubectl port-forward -n zarf svc/zarf-docker-registry 5001:5000
+
+
+gen:
+	python -m grpc_tools.protoc --proto_path=proto/ generate/generate.proto --python_out=llms/leapfrog  --pyi_out=llms/leapfrog --grpc_python_out=llms/leapfrog
+	python -m grpc_tools.protoc --proto_path=proto audio/audio.proto --python_out=llms/leapfrog  --pyi_out=llms/leapfrog --grpc_python_out=llms/leapfrog
+	python -m grpc_tools.protoc --proto_path=proto embeddings/embeddings.proto --python_out=llms/leapfrog  --pyi_out=llms/leapfrog --grpc_python_out=llms/leapfrog
+	python -m grpc_tools.protoc --proto_path=proto name/name.proto --python_out=llms/leapfrog  --pyi_out=llms/leapfrog --grpc_python_out=llms/leapfrog
+	
