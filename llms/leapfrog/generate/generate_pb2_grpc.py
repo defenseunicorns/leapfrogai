@@ -2,10 +2,10 @@
 """Client and server classes corresponding to protobuf-defined services."""
 import grpc
 
-import audio_pb2 as audio__pb2
+from . import generate_pb2 as generate_dot_generate__pb2
 
 
-class GenerateServiceStub(object):
+class CompletionServiceStub(object):
     """Missing associated documentation comment in .proto file."""
 
     def __init__(self, channel):
@@ -15,13 +15,13 @@ class GenerateServiceStub(object):
             channel: A grpc.Channel.
         """
         self.Complete = channel.unary_unary(
-                '/audio.GenerateService/Complete',
-                request_serializer=audio__pb2.CompletionRequest.SerializeToString,
-                response_deserializer=audio__pb2.CompletionResponse.FromString,
+                '/generate.CompletionService/Complete',
+                request_serializer=generate_dot_generate__pb2.CompletionRequest.SerializeToString,
+                response_deserializer=generate_dot_generate__pb2.CompletionResponse.FromString,
                 )
 
 
-class GenerateServiceServicer(object):
+class CompletionServiceServicer(object):
     """Missing associated documentation comment in .proto file."""
 
     def Complete(self, request, context):
@@ -31,21 +31,21 @@ class GenerateServiceServicer(object):
         raise NotImplementedError('Method not implemented!')
 
 
-def add_GenerateServiceServicer_to_server(servicer, server):
+def add_CompletionServiceServicer_to_server(servicer, server):
     rpc_method_handlers = {
             'Complete': grpc.unary_unary_rpc_method_handler(
                     servicer.Complete,
-                    request_deserializer=audio__pb2.CompletionRequest.FromString,
-                    response_serializer=audio__pb2.CompletionResponse.SerializeToString,
+                    request_deserializer=generate_dot_generate__pb2.CompletionRequest.FromString,
+                    response_serializer=generate_dot_generate__pb2.CompletionResponse.SerializeToString,
             ),
     }
     generic_handler = grpc.method_handlers_generic_handler(
-            'audio.GenerateService', rpc_method_handlers)
+            'generate.CompletionService', rpc_method_handlers)
     server.add_generic_rpc_handlers((generic_handler,))
 
 
  # This class is part of an EXPERIMENTAL API.
-class GenerateService(object):
+class CompletionService(object):
     """Missing associated documentation comment in .proto file."""
 
     @staticmethod
@@ -59,8 +59,8 @@ class GenerateService(object):
             wait_for_ready=None,
             timeout=None,
             metadata=None):
-        return grpc.experimental.unary_unary(request, target, '/audio.GenerateService/Complete',
-            audio__pb2.CompletionRequest.SerializeToString,
-            audio__pb2.CompletionResponse.FromString,
+        return grpc.experimental.unary_unary(request, target, '/generate.CompletionService/Complete',
+            generate_dot_generate__pb2.CompletionRequest.SerializeToString,
+            generate_dot_generate__pb2.CompletionResponse.FromString,
             options, channel_credentials,
             insecure, call_credentials, compression, wait_for_ready, timeout, metadata)

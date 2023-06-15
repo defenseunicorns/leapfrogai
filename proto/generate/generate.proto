@@ -25,6 +25,6 @@ message CompletionResponse {
     string completion = 1;
 }
 
-service GenerateService {
+service CompletionService {
     rpc Complete (CompletionRequest) returns (CompletionResponse);
 }

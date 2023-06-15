@@ -2,10 +2,11 @@
 """Client and server classes corresponding to protobuf-defined services."""
 import grpc
 
-import generate_pb2 as generate__pb2
+from google.protobuf import empty_pb2 as google_dot_protobuf_dot_empty__pb2
+from . import name_pb2 as name_dot_name__pb2
 
 
-class GenerateServiceStub(object):
+class NameServiceStub(object):
     """Missing associated documentation comment in .proto file."""
 
     def __init__(self, channel):
@@ -14,42 +15,42 @@ class GenerateServiceStub(object):
         Args:
             channel: A grpc.Channel.
         """
-        self.Complete = channel.unary_unary(
-                '/generate.GenerateService/Complete',
-                request_serializer=generate__pb2.CompletionRequest.SerializeToString,
-                response_deserializer=generate__pb2.CompletionResponse.FromString,
+        self.Name = channel.unary_unary(
+                '/name.NameService/Name',
+                request_serializer=google_dot_protobuf_dot_empty__pb2.Empty.SerializeToString,
+                response_deserializer=name_dot_name__pb2.NameResponse.FromString,
                 )
 
 
-class GenerateServiceServicer(object):
+class NameServiceServicer(object):
     """Missing associated documentation comment in .proto file."""
 
-    def Complete(self, request, context):
+    def Name(self, request, context):
         """Missing associated documentation comment in .proto file."""
         context.set_code(grpc.StatusCode.UNIMPLEMENTED)
         context.set_details('Method not implemented!')
         raise NotImplementedError('Method not implemented!')
 
 
-def add_GenerateServiceServicer_to_server(servicer, server):
+def add_NameServiceServicer_to_server(servicer, server):
     rpc_method_handlers = {
-            'Complete': grpc.unary_unary_rpc_method_handler(
-                    servicer.Complete,
-                    request_deserializer=generate__pb2.CompletionRequest.FromString,
-                    response_serializer=generate__pb2.CompletionResponse.SerializeToString,
+            'Name': grpc.unary_unary_rpc_method_handler(
+                    servicer.Name,
+                    request_deserializer=google_dot_protobuf_dot_empty__pb2.Empty.FromString,
+                    response_serializer=name_dot_name__pb2.NameResponse.SerializeToString,
             ),
     }
     generic_handler = grpc.method_handlers_generic_handler(
-            'generate.GenerateService', rpc_method_handlers)
+            'name.NameService', rpc_method_handlers)
     server.add_generic_rpc_handlers((generic_handler,))
 
 
  # This class is part of an EXPERIMENTAL API.
-class GenerateService(object):
+class NameService(object):
     """Missing associated documentation comment in .proto file."""
 
     @staticmethod
-    def Complete(request,
+    def Name(request,
             target,
             options=(),
             channel_credentials=None,
@@ -59,8 +60,8 @@ class GenerateService(object):
             wait_for_ready=None,
             timeout=None,
             metadata=None):
-        return grpc.experimental.unary_unary(request, target, '/generate.GenerateService/Complete',
-            generate__pb2.CompletionRequest.SerializeToString,
-            generate__pb2.CompletionResponse.FromString,
+        return grpc.experimental.unary_unary(request, target, '/name.NameService/Name',
+            google_dot_protobuf_dot_empty__pb2.Empty.SerializeToString,
+            name_dot_name__pb2.NameResponse.FromString,
             options, channel_credentials,
             insecure, call_credentials, compression, wait_for_ready, timeout, metadata)

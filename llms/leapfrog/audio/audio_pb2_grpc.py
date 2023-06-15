@@ -2,7 +2,7 @@
 """Client and server classes corresponding to protobuf-defined services."""
 import grpc
 
-import embeddings_pb2 as embeddings__pb2
+from . import audio_pb2 as audio_dot_audio__pb2
 
 
 class GenerateServiceStub(object):
@@ -14,17 +14,17 @@ class GenerateServiceStub(object):
         Args:
             channel: A grpc.Channel.
         """
-        self.CreateEmbedding = channel.unary_unary(
-                '/embedding.GenerateService/CreateEmbedding',
-                request_serializer=embeddings__pb2.EmbeddingRequest.SerializeToString,
-                response_deserializer=embeddings__pb2.EmbeddingResponse.FromString,
+        self.Complete = channel.unary_unary(
+                '/audio.GenerateService/Complete',
+                request_serializer=audio_dot_audio__pb2.CompletionRequest.SerializeToString,
+                response_deserializer=audio_dot_audio__pb2.CompletionResponse.FromString,
                 )
 
 
 class GenerateServiceServicer(object):
     """Missing associated documentation comment in .proto file."""
 
-    def CreateEmbedding(self, request, context):
+    def Complete(self, request, context):
         """Missing associated documentation comment in .proto file."""
         context.set_code(grpc.StatusCode.UNIMPLEMENTED)
         context.set_details('Method not implemented!')
@@ -33,14 +33,14 @@ class GenerateServiceServicer(object):
 
 def add_GenerateServiceServicer_to_server(servicer, server):
     rpc_method_handlers = {
-            'CreateEmbedding': grpc.unary_unary_rpc_method_handler(
-                    servicer.CreateEmbedding,
-                    request_deserializer=embeddings__pb2.EmbeddingRequest.FromString,
-                    response_serializer=embeddings__pb2.EmbeddingResponse.SerializeToString,
+            'Complete': grpc.unary_unary_rpc_method_handler(
+                    servicer.Complete,
+                    request_deserializer=audio_dot_audio__pb2.CompletionRequest.FromString,
+                    response_serializer=audio_dot_audio__pb2.CompletionResponse.SerializeToString,
             ),
     }
     generic_handler = grpc.method_handlers_generic_handler(
-            'embedding.GenerateService', rpc_method_handlers)
+            'audio.GenerateService', rpc_method_handlers)
     server.add_generic_rpc_handlers((generic_handler,))
 
 
@@ -49,7 +49,7 @@ class GenerateService(object):
     """Missing associated documentation comment in .proto file."""
 
     @staticmethod
-    def CreateEmbedding(request,
+    def Complete(request,
             target,
             options=(),
             channel_credentials=None,
@@ -59,8 +59,8 @@ class GenerateService(object):
             wait_for_ready=None,
             timeout=None,
             metadata=None):
-        return grpc.experimental.unary_unary(request, target, '/embedding.GenerateService/CreateEmbedding',
-            embeddings__pb2.EmbeddingRequest.SerializeToString,
-            embeddings__pb2.EmbeddingResponse.FromString,
+        return grpc.experimental.unary_unary(request, target, '/audio.GenerateService/Complete',
+            audio_dot_audio__pb2.CompletionRequest.SerializeToString,
+            audio_dot_audio__pb2.CompletionResponse.FromString,
             options, channel_credentials,
             insecure, call_credentials, compression, wait_for_ready, timeout, metadata)

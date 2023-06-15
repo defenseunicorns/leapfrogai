@@ -2,11 +2,10 @@
 """Client and server classes corresponding to protobuf-defined services."""
 import grpc
 
-from google.protobuf import empty_pb2 as google_dot_protobuf_dot_empty__pb2
-import name_pb2 as name__pb2
+from . import embeddings_pb2 as embeddings_dot_embeddings__pb2
 
 
-class NameServiceStub(object):
+class EmbeddingsServiceStub(object):
     """Missing associated documentation comment in .proto file."""
 
     def __init__(self, channel):
@@ -15,42 +14,42 @@ class NameServiceStub(object):
         Args:
             channel: A grpc.Channel.
         """
-        self.Name = channel.unary_unary(
-                '/name.NameService/Name',
-                request_serializer=google_dot_protobuf_dot_empty__pb2.Empty.SerializeToString,
-                response_deserializer=name__pb2.NameResponse.FromString,
+        self.CreateEmbedding = channel.unary_unary(
+                '/embedding.EmbeddingsService/CreateEmbedding',
+                request_serializer=embeddings_dot_embeddings__pb2.EmbeddingRequest.SerializeToString,
+                response_deserializer=embeddings_dot_embeddings__pb2.EmbeddingResponse.FromString,
                 )
 
 
-class NameServiceServicer(object):
+class EmbeddingsServiceServicer(object):
     """Missing associated documentation comment in .proto file."""
 
-    def Name(self, request, context):
+    def CreateEmbedding(self, request, context):
         """Missing associated documentation comment in .proto file."""
         context.set_code(grpc.StatusCode.UNIMPLEMENTED)
         context.set_details('Method not implemented!')
         raise NotImplementedError('Method not implemented!')
 
 
-def add_NameServiceServicer_to_server(servicer, server):
+def add_EmbeddingsServiceServicer_to_server(servicer, server):
     rpc_method_handlers = {
-            'Name': grpc.unary_unary_rpc_method_handler(
-                    servicer.Name,
-                    request_deserializer=google_dot_protobuf_dot_empty__pb2.Empty.FromString,
-                    response_serializer=name__pb2.NameResponse.SerializeToString,
+            'CreateEmbedding': grpc.unary_unary_rpc_method_handler(
+                    servicer.CreateEmbedding,
+                    request_deserializer=embeddings_dot_embeddings__pb2.EmbeddingRequest.FromString,
+                    response_serializer=embeddings_dot_embeddings__pb2.EmbeddingResponse.SerializeToString,
             ),
     }
     generic_handler = grpc.method_handlers_generic_handler(
-            'name.NameService', rpc_method_handlers)
+            'embedding.EmbeddingsService', rpc_method_handlers)
     server.add_generic_rpc_handlers((generic_handler,))
 
 
  # This class is part of an EXPERIMENTAL API.
-class NameService(object):
+class EmbeddingsService(object):
     """Missing associated documentation comment in .proto file."""
 
     @staticmethod
-    def Name(request,
+    def CreateEmbedding(request,
             target,
             options=(),
             channel_credentials=None,
@@ -60,8 +59,8 @@ class NameService(object):
             wait_for_ready=None,
             timeout=None,
             metadata=None):
-        return grpc.experimental.unary_unary(request, target, '/name.NameService/Name',
-            google_dot_protobuf_dot_empty__pb2.Empty.SerializeToString,
-            name__pb2.NameResponse.FromString,
+        return grpc.experimental.unary_unary(request, target, '/embedding.EmbeddingsService/CreateEmbedding',
+            embeddings_dot_embeddings__pb2.EmbeddingRequest.SerializeToString,
+            embeddings_dot_embeddings__pb2.EmbeddingResponse.FromString,
             options, channel_credentials,
             insecure, call_credentials, compression, wait_for_ready, timeout, metadata)
