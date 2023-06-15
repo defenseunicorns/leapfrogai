@@ -16,15 +16,23 @@ class StopOnTokens(StoppingCriteria):
                 return True
         return False
 
+
 class StableLM(CompletionServiceServicer):
     tokenizer = AutoTokenizer.from_pretrained(TOKENIZER_ID)
     model = AutoModelForCausalLM.from_pretrained(MODEL_ID)
-    device = 'cuda' if torch.cuda.is_available() else 'cpu'
-    
+
+    if torch.cuda.is_available():
+        device = "cuda"
+    elif torch.backends.mps.is_available():
+        device = "mps"
+    else:
+        device = "cpu"
+
     def Complete(self, request: CompletionRequest, context: GrpcContext) -> CompletionResponse:
-        inputs = self.tokenizer(request.prompt, return_tensors="pt").to(self.device)
+        inputs = self.tokenizer(
+            request.prompt, return_tensors="pt").to(self.device)
         model = self.model.to(self.device)
-        
+
         tokens = model.generate(
             **inputs,
             max_new_tokens=request.max_tokens,
@@ -35,7 +43,8 @@ class StableLM(CompletionServiceServicer):
             stopping_criteria=StoppingCriteriaList([StopOnTokens()])
         )
         return CompletionResponse(completion=self.tokenizer.decode(tokens[0], skip_special_tokens=False))
-        
+
+
 if __name__ == "__main__":
     logging.basicConfig(level=logging.INFO)
     serve(StableLM())
