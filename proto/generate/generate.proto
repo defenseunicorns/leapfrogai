@@ -2,6 +2,8 @@ syntax = "proto3";
 
 package generate;
 
+option go_package = "github.com/defenseunicorns/leapfrogai/pkg/client/generate";
+
 // CompletionRequest is the payload to request completion
 message CompletionRequest {
     string prompt = 1;
