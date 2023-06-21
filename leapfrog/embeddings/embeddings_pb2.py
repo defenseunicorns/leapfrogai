@@ -13,13 +13,14 @@ _sym_db = _symbol_database.Default()
 
 
 
-DESCRIPTOR = _descriptor_pool.Default().AddSerializedFile(b'\n\x1b\x65mbeddings/embeddings.proto\x12\tembedding\"\"\n\x10\x45mbeddingRequest\x12\x0e\n\x06inputs\x18\x01 \x03(\t\"\'\n\x11\x45mbeddingResponse\x12\x12\n\nembeddings\x18\x01 \x03(\x01\x32\x61\n\x11\x45mbeddingsService\x12L\n\x0f\x43reateEmbedding\x12\x1b.embedding.EmbeddingRequest\x1a\x1c.embedding.EmbeddingResponseb\x06proto3')
+DESCRIPTOR = _descriptor_pool.Default().AddSerializedFile(b'\n\x1b\x65mbeddings/embeddings.proto\x12\tembedding\"\"\n\x10\x45mbeddingRequest\x12\x0e\n\x06inputs\x18\x01 \x03(\t\"\'\n\x11\x45mbeddingResponse\x12\x12\n\nembeddings\x18\x01 \x03(\x01\x32\x61\n\x11\x45mbeddingsService\x12L\n\x0f\x43reateEmbedding\x12\x1b.embedding.EmbeddingRequest\x1a\x1c.embedding.EmbeddingResponseB<Z:github.com/defenseunicorns/leapfrogai/pkg/client/embeddingb\x06proto3')
 
 _builder.BuildMessageAndEnumDescriptors(DESCRIPTOR, globals())
 _builder.BuildTopDescriptorsAndMessages(DESCRIPTOR, 'embeddings.embeddings_pb2', globals())
 if _descriptor._USE_C_DESCRIPTORS == False:
 
   DESCRIPTOR._options = None
+  DESCRIPTOR._serialized_options = b'Z:github.com/defenseunicorns/leapfrogai/pkg/client/embedding'
   _EMBEDDINGREQUEST._serialized_start=42
   _EMBEDDINGREQUEST._serialized_end=76
   _EMBEDDINGRESPONSE._serialized_start=78

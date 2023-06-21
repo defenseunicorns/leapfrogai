@@ -2,6 +2,8 @@ syntax = "proto3";
 
 package embedding;
 
+option go_package = "github.com/defenseunicorns/leapfrogai/pkg/client/embedding";
+
 // EmbeddingRequest is the payload to embedding creation
 message EmbeddingRequest {
     repeated string inputs = 1;

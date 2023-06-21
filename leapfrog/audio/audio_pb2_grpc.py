@@ -15,10 +15,10 @@ class GenerateServiceStub(object):
             channel: A grpc.Channel.
         """
         self.Complete = channel.unary_unary(
-            '/audio.GenerateService/Complete',
-            request_serializer=audio_dot_audio__pb2.CompletionRequest.SerializeToString,
-            response_deserializer=audio_dot_audio__pb2.CompletionResponse.FromString,
-        )
+                '/audio.GenerateService/Complete',
+                request_serializer=audio_dot_audio__pb2.CompletionRequest.SerializeToString,
+                response_deserializer=audio_dot_audio__pb2.CompletionResponse.FromString,
+                )
 
 
 class GenerateServiceServicer(object):
@@ -33,35 +33,34 @@ class GenerateServiceServicer(object):
 
 def add_GenerateServiceServicer_to_server(servicer, server):
     rpc_method_handlers = {
-        'Complete': grpc.unary_unary_rpc_method_handler(
-            servicer.Complete,
-            request_deserializer=audio_dot_audio__pb2.CompletionRequest.FromString,
-            response_serializer=audio_dot_audio__pb2.CompletionResponse.SerializeToString,
-        ),
+            'Complete': grpc.unary_unary_rpc_method_handler(
+                    servicer.Complete,
+                    request_deserializer=audio_dot_audio__pb2.CompletionRequest.FromString,
+                    response_serializer=audio_dot_audio__pb2.CompletionResponse.SerializeToString,
+            ),
     }
     generic_handler = grpc.method_handlers_generic_handler(
-        'audio.GenerateService', rpc_method_handlers)
+            'audio.GenerateService', rpc_method_handlers)
     server.add_generic_rpc_handlers((generic_handler,))
 
+
  # This class is part of an EXPERIMENTAL API.
-
-
 class GenerateService(object):
     """Missing associated documentation comment in .proto file."""
 
     @staticmethod
     def Complete(request,
-                 target,
-                 options=(),
-                 channel_credentials=None,
-                 call_credentials=None,
-                 insecure=False,
-                 compression=None,
-                 wait_for_ready=None,
-                 timeout=None,
-                 metadata=None):
+            target,
+            options=(),
+            channel_credentials=None,
+            call_credentials=None,
+            insecure=False,
+            compression=None,
+            wait_for_ready=None,
+            timeout=None,
+            metadata=None):
         return grpc.experimental.unary_unary(request, target, '/audio.GenerateService/Complete',
-                                             audio_dot_audio__pb2.CompletionRequest.SerializeToString,
-                                             audio_dot_audio__pb2.CompletionResponse.FromString,
-                                             options, channel_credentials,
-                                             insecure, call_credentials, compression, wait_for_ready, timeout, metadata)
+            audio_dot_audio__pb2.CompletionRequest.SerializeToString,
+            audio_dot_audio__pb2.CompletionResponse.FromString,
+            options, channel_credentials,
+            insecure, call_credentials, compression, wait_for_ready, timeout, metadata)
