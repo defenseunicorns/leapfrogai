@@ -1,6 +1,6 @@
 build: api embeddings
 
-TAG ?= 0.1.2 # want to keep things all aligned here
+TAG ?= 0.2.0 # want to keep things all aligned here
 
 .PHONY: api embeddings push
 
@@ -12,7 +12,6 @@ push:
 	docker push ghcr.io/defenseunicorns/leapfrogai/embeddings:${TAG}
 
 api:
-	cd api && \
 	docker build --network=host -t ghcr.io/defenseunicorns/leapfrogai/api:${TAG} .
 
 stablelm:
