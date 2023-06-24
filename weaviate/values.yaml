@@ -20,3 +20,7 @@ modules:
     enabled: true
 storage:
   size: 32Gi # default
+
+
+custom_config_map:
+  enabled: false

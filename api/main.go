@@ -28,6 +28,7 @@ func main() {
 		log.Fatalf("Error loading model config file: %v", err)
 	}
 
+	gin.SetMode(gin.ReleaseMode)
 	r := gin.Default()
 
 	r.GET("/models", showModels)
@@ -35,17 +36,23 @@ func main() {
 	r.POST("/completions", complete)
 	// Define other routes...
 
-	r.Run() // Run on default port 8080
+	r.Run()
+	// r.Run("0.0.0.0:8080") // Run on default port 8080
 }
 
 func showModels(c *gin.Context) {
 	// Implement the logic to show models here
 	// Send the response with c.JSON(), c.XML(), etc.
-	models := make([]string, len(cfg))
-	for k, _ := range cfg {
-		models = append(models, k)
+	var m openai.ModelsList
+	m.Models = make([]openai.Model, 0)
+	for k, model := range cfg {
+		m.Models = append(m.Models, openai.Model{
+			OwnedBy:    model.Metadata.OwnedBy,
+			Permission: []openai.Permission{},
+			ID:         k,
+		})
 	}
-	c.JSON(200, models)
+	c.JSON(200, m)
 }
 
 // r.GET("/models/:model_id", showModel)

@@ -13,4 +13,6 @@ RUN GOOS=linux GOARCH=amd64  CGO_ENABLED=0 go build -ldflags '-extldflags "-stat
 FROM cgr.dev/chainguard/static:latest
 COPY --from=build /work/app /app
 COPY api/models.toml .
+
+EXPOSE 8080
 CMD ["/app"]

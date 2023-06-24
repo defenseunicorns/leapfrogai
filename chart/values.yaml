@@ -20,3 +20,5 @@ models:
   whisper:
     enabled: true
     name: whisper
+  repeater:
+    enabled: false

@@ -2,7 +2,7 @@ package:
   create: 
     set:
       repo: "https://github.com/weaviate/weaviate-helm"
-      tag: "v16.1.0"
+      tag: "v16.3.1"
       name: "weaviate"
       values_file: "values.yaml"
       path: "./weaviate"
