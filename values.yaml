@@ -16,7 +16,14 @@ image:
 env:
   # maybe set this to the internal URL:
   # OPENAI_BASE_URL: "http://api.leapfrogai.svc:8080"
-  OPENAI_BASE_URL: "https://leapfrogai.dd.bigbang.dev"
+  OPENAI_BASE_URL: "https://leapfrogai.leapfrogai.bigbang.dev"
+
+initContainers:
+  sysctlInitContainer:
+    enabled: false
+
+service:
+  type: ClusterIP
 
 modules:
   DEFAULT_VECTORIZER_MODULE: text2vec-transformers
@@ -46,3 +53,15 @@ istio:
 monitoring:
   enabled: true
 
+
+
+models:
+  stablelm3b:
+    enabled: false
+  all_MiniLM_L6_v2:
+    enabled: false
+  whisper:
+    enabled: false
+  repeater: 
+    enabled: true
+  

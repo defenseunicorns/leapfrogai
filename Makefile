@@ -1,18 +1,20 @@
 build: api embeddings
 
-TAG ?= 0.2.0 # want to keep things all aligned here
+TAG ?= 0.0.4 # want to keep things all aligned here
 
 .PHONY: api embeddings push
 
 build: api stablelm stablelm-7b embeddings whisper
 
 push:
-	docker push ghcr.io/defenseunicorns/leapfrogai/api:${TAG}
+	
 	docker push ghcr.io/defenseunicorns/leapfrogai/stablelm-3b:${TAG}
 	docker push ghcr.io/defenseunicorns/leapfrogai/embeddings:${TAG}
 
 api:
 	docker build --network=host -t ghcr.io/defenseunicorns/leapfrogai/api:${TAG} .
+api-push:
+	docker push ghcr.io/defenseunicorns/leapfrogai/api:${TAG}
 
 stablelm:
 	cd llms/stablelm && \
@@ -28,6 +30,13 @@ whisper:
 
 whisper-push:
 	docker push ghcr.io/defenseunicorns/leapfrogai/whisper:${TAG}
+
+repeater:
+	cd models/test/repeater && \
+	docker build --network=host -t ghcr.io/defenseunicorns/leapfrogai/repeater:${TAG} .
+
+repeater-push:
+	docker push ghcr.io/defenseunicorns/leapfrogai/repeater:${TAG}
 
 # This thing is massive, so directly pushing to the zarf registry is quicker/easier
 zarf-push-api:

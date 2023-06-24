@@ -17,10 +17,10 @@ spec:
           image: ghcr.io/defenseunicorns/leapfrogai/api:0.0.4
           imagePullPolicy: Always
           ports:
-            - containerPort: 50051
+            - containerPort: 8080
           volumeMounts:
           - name: api-model
-            mountPath: /app/models.toml
+            mountPath: /models.toml
             subPath: models.toml
       volumes:
       - name: api-model

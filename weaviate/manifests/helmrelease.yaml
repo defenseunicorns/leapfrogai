@@ -25,9 +25,6 @@ spec:
   rollback:
     timeout: 10m
     cleanupOnFail: false
-  values:
-    env:
-      OPENAI_BASE: "https://leapfrogai.dd.bigbang.dev"
   valuesFrom:   
     - kind: Secret
       name: "bigbang-###ZARF_CONST_NAME###-values"
