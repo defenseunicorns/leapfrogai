@@ -1,11 +1,13 @@
 package main
 
 import (
+	"bufio"
 	"context"
 	"fmt"
 	"log"
 	"os"
 	"reflect"
+	"strings"
 	"time"
 
 	"github.com/defenseunicorns/leapfrogai/api/config"
@@ -113,183 +115,163 @@ func createEmbeddings(c *gin.Context) {
 	c.JSON(200, response)
 }
 
-func audioTranscriptions(c *gin.Context) {
-	var input openai.AudioRequest
-	if err := c.BindJSON(&input); err != nil {
-		log.Printf("500: Error marshalling input to object: %v\n", err)
-		// Handle error
-		c.JSON(500, err)
-		return
-	}
-	conn := getModelClient(c, input.Model)
-	if conn == nil {
-		return
-	}
-	client := audio.NewAudioClient(conn)
-
-	// get the data from the request
-
-	request := audio.AudioRequest{
-		Model:         input.Model,
-		Data:          []byte{},
-		Prompt:        input.Prompt,
-		Temperature:   input.Temperature,
-		Inputlanguage: input.Language,
-		Format:        string(input.Format),
-	}
-
-	grpcResponse, err := client.Transcribe(context.Background(), &request)
-	if err != nil {
-		log.Printf("500: Error transcribing via %v: %v", input.Model, err)
-		c.JSON(500, err)
-		return
-	}
-
-	response := openai.AudioResponse{
-		Task:     grpcResponse.Task,
-		Language: grpcResponse.Language,
-		Duration: grpcResponse.Duration,
-		Text:     grpcResponse.Text,
-	}
-	response.Segments = make([]struct {
-		ID               int     "json:\"id\""
-		Seek             int     "json:\"seek\""
-		Start            float64 "json:\"start\""
-		End              float64 "json:\"end\""
-		Text             string  "json:\"text\""
-		Tokens           []int   "json:\"tokens\""
-		Temperature      float64 "json:\"temperature\""
-		AvgLogprob       float64 "json:\"avg_logprob\""
-		CompressionRatio float64 "json:\"compression_ratio\""
-		NoSpeechProb     float64 "json:\"no_speech_prob\""
-		Transient        bool    "json:\"transient\""
-	}, 0)
-	for i, seg := range grpcResponse.Segments {
-		response.Segments = append(response.Segments,
-			struct {
-				ID               int     "json:\"id\""
-				Seek             int     "json:\"seek\""
-				Start            float64 "json:\"start\""
-				End              float64 "json:\"end\""
-				Text             string  "json:\"text\""
-				Tokens           []int   "json:\"tokens\""
-				Temperature      float64 "json:\"temperature\""
-				AvgLogprob       float64 "json:\"avg_logprob\""
-				CompressionRatio float64 "json:\"compression_ratio\""
-				NoSpeechProb     float64 "json:\"no_speech_prob\""
-				Transient        bool    "json:\"transient\""
-			}{
-				ID:               int(seg.Id),
-				Seek:             int(seg.Seek),
-				Start:            seg.Start,
-				End:              seg.End,
-				Text:             seg.Text,
-				Temperature:      seg.Temperature,
-				AvgLogprob:       seg.AvgLogprob,
-				CompressionRatio: seg.CompressionRatio,
-				NoSpeechProb:     seg.NoSpeechProb,
-				Transient:        seg.Transient,
-			},
-		)
-		// convert int32 to int
-		tokens := make([]int, len(seg.Tokens))
-		for i, t := range seg.Tokens {
-			tokens[i] = int(t)
-		}
-		response.Segments[i].Tokens = tokens
-	}
-
-	c.JSON(200, response)
-
+type AudioRequest struct {
+	Model          string  `form:"model"`
+	Prompt         string  `form:"prompt"`
+	ResponseFormat string  `form:"prompt"`
+	Temperature    float32 `form:"temperature"`
+	InputLanguage  string  `form:"language"`
 }
 
-func audioTranslations(c *gin.Context) {
-	var input openai.AudioRequest
-	if err := c.BindJSON(&input); err != nil {
-		log.Printf("500: Error marshalling input to object: %v\n", err)
-		// Handle error
-		c.JSON(500, err)
-		return
-	}
-	conn := getModelClient(c, input.Model)
-	if conn == nil {
-		return
-	}
-	client := audio.NewAudioClient(conn)
-
-	// get the data from the request
-
-	request := audio.AudioRequest{
-		Model:         input.Model,
-		Data:          []byte{},
-		Prompt:        input.Prompt,
-		Temperature:   input.Temperature,
-		Inputlanguage: input.Language,
-		Format:        string(input.Format),
-	}
-
-	grpcResponse, err := client.Translate(context.Background(), &request)
+func audioTranscriptions(c *gin.Context) {
+	var r AudioRequest
+	c.Bind(&r)
+	f, err := c.FormFile("file")
 	if err != nil {
-		log.Printf("500: Error translating via %v: %v", input.Model, err)
 		c.JSON(500, err)
 		return
 	}
 
-	response := openai.AudioResponse{
-		Task:     grpcResponse.Task,
-		Language: grpcResponse.Language,
-		Duration: grpcResponse.Duration,
-		Text:     grpcResponse.Text,
+	file, err := f.Open()
+	defer file.Close()
+
+	if err != nil {
+		c.JSON(500, err)
+		return
 	}
-	response.Segments = make([]struct {
-		ID               int     "json:\"id\""
-		Seek             int     "json:\"seek\""
-		Start            float64 "json:\"start\""
-		End              float64 "json:\"end\""
-		Text             string  "json:\"text\""
-		Tokens           []int   "json:\"tokens\""
-		Temperature      float64 "json:\"temperature\""
-		AvgLogprob       float64 "json:\"avg_logprob\""
-		CompressionRatio float64 "json:\"compression_ratio\""
-		NoSpeechProb     float64 "json:\"no_speech_prob\""
-		Transient        bool    "json:\"transient\""
-	}, 0)
-	for i, seg := range grpcResponse.Segments {
-		response.Segments = append(response.Segments,
-			struct {
-				ID               int     "json:\"id\""
-				Seek             int     "json:\"seek\""
-				Start            float64 "json:\"start\""
-				End              float64 "json:\"end\""
-				Text             string  "json:\"text\""
-				Tokens           []int   "json:\"tokens\""
-				Temperature      float64 "json:\"temperature\""
-				AvgLogprob       float64 "json:\"avg_logprob\""
-				CompressionRatio float64 "json:\"compression_ratio\""
-				NoSpeechProb     float64 "json:\"no_speech_prob\""
-				Transient        bool    "json:\"transient\""
-			}{
-				ID:               int(seg.Id),
-				Seek:             int(seg.Seek),
-				Start:            seg.Start,
-				End:              seg.End,
-				Text:             seg.Text,
-				Temperature:      seg.Temperature,
-				AvgLogprob:       seg.AvgLogprob,
-				CompressionRatio: seg.CompressionRatio,
-				NoSpeechProb:     seg.NoSpeechProb,
-				Transient:        seg.Transient,
+	conn := getModelClient(c, r.Model)
+	client := audio.NewAudioClient(conn)
+	stream, err := client.Transcribe(context.Background())
+
+	if r.ResponseFormat == "" {
+		r.ResponseFormat = "json"
+	}
+	responseFormat := audio.AudioMetadata_AudioFormat_value[strings.ToUpper(r.ResponseFormat)]
+
+	stream.Send(&audio.AudioRequest{
+		Request: &audio.AudioRequest_Metadata{
+			Metadata: &audio.AudioMetadata{
+				Prompt:        r.Prompt,
+				Temperature:   r.Temperature,
+				Inputlanguage: r.InputLanguage,
+				Format:        audio.AudioMetadata_AudioFormat(responseFormat),
 			},
-		)
-		// convert int32 to int
-		tokens := make([]int, len(seg.Tokens))
-		for i, t := range seg.Tokens {
-			tokens[i] = int(t)
+		},
+	})
+
+	reader := bufio.NewReader(file)
+	chunkSize := 1024
+
+	for {
+		chunk := make([]byte, chunkSize)
+		n, err := reader.Read(chunk)
+
+		if err != nil {
+			if err.Error() == "EOF" {
+				break
+			}
+			c.JSON(500, err)
+			return
 		}
-		response.Segments[i].Tokens = tokens
+
+		r := &audio.AudioRequest{
+			Request: &audio.AudioRequest_ChunkData{
+				ChunkData: chunk,
+			},
+		}
+
+		if err = stream.Send(r); err != nil {
+			c.JSON(500, err)
+			return
+		}
+
+		if err == nil && n < chunkSize {
+			break
+		}
 	}
 
-	c.JSON(200, response)
+	reply, err := stream.CloseAndRecv()
+	if err != nil {
+		c.JSON(500, err)
+	}
+
+	c.JSON(200, reply)
+}
+
+// # TODO abstract this and transcriptions
+func audioTranslations(c *gin.Context) {
+	var r AudioRequest
+	c.Bind(&r)
+	f, err := c.FormFile("file")
+	if err != nil {
+		c.JSON(500, err)
+		return
+	}
+
+	file, err := f.Open()
+	defer file.Close()
+
+	if err != nil {
+		c.JSON(500, err)
+		return
+	}
+	conn := getModelClient(c, r.Model)
+	client := audio.NewAudioClient(conn)
+	stream, err := client.Translate(context.Background())
+
+	if r.ResponseFormat == "" {
+		r.ResponseFormat = "json"
+	}
+	responseFormat := audio.AudioMetadata_AudioFormat_value[strings.ToUpper(r.ResponseFormat)]
+
+	stream.Send(&audio.AudioRequest{
+		Request: &audio.AudioRequest_Metadata{
+			Metadata: &audio.AudioMetadata{
+				Prompt:        r.Prompt,
+				Temperature:   r.Temperature,
+				Inputlanguage: r.InputLanguage,
+				Format:        audio.AudioMetadata_AudioFormat(responseFormat),
+			},
+		},
+	})
+
+	reader := bufio.NewReader(file)
+	chunkSize := 1024
+
+	for {
+		chunk := make([]byte, chunkSize)
+		n, err := reader.Read(chunk)
+
+		if err != nil {
+			if err.Error() == "EOF" {
+				break
+			}
+			c.JSON(500, err)
+			return
+		}
+
+		r := &audio.AudioRequest{
+			Request: &audio.AudioRequest_ChunkData{
+				ChunkData: chunk,
+			},
+		}
+
+		if err = stream.Send(r); err != nil {
+			c.JSON(500, err)
+			return
+		}
+
+		if err == nil && n < chunkSize {
+			break
+		}
+	}
+
+	reply, err := stream.CloseAndRecv()
+	if err != nil {
+		c.JSON(500, err)
+	}
+
+	c.JSON(200, reply)
 }
 
 func showModels(c *gin.Context) {
