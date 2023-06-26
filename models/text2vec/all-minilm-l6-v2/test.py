@@ -16,9 +16,10 @@ def run():
         embed = leapfrog.EmbeddingsServiceStub(channel)
         r: leapfrog.EmbeddingResponse = embed.CreateEmbedding(leapfrog.EmbeddingRequest(
             inputs=["foobar"]
+            
         ))
 
-        print(f"Recieved embedding: { r.embeddings }")
+        print(f"Recieved embedding: { r }")
 
 
 if __name__ == "__main__":
