@@ -11,21 +11,24 @@ push:
 	docker push ghcr.io/defenseunicorns/leapfrogai/stablelm-3b:${TAG}
 	docker push ghcr.io/defenseunicorns/leapfrogai/embeddings:${TAG}
 
+base:
+	docker build --network=host -t ghcr.io/defenseunicorns/leapfrogai/base:${TAG} -f leapfrog/Dockerfile leapfrog
+
 api:
 	docker build --network=host -t ghcr.io/defenseunicorns/leapfrogai/api:${TAG} .
 api-push:
 	docker push ghcr.io/defenseunicorns/leapfrogai/api:${TAG}
 
 stablelm:
-	cd llms/stablelm && \
+	cd models/llms/stablelm && \
 	docker build --network=host -t ghcr.io/defenseunicorns/leapfrogai/stablelm-3b:${TAG} .
 
 embeddings:
-	cd embeddings && \
+	cd  models/text2vec/all-minilm-l6-v2/ && \
 	docker build --network=host -t ghcr.io/defenseunicorns/leapfrogai/embeddings:${TAG} .
 
 whisper:
-	cd models/whisper && \
+	cd models/speech2text/whisper && \
 	docker build --network=host -t ghcr.io/defenseunicorns/leapfrogai/whisper:${TAG} .
 
 whisper-push:
@@ -66,3 +69,12 @@ gen-go:
 	protoc --go_out=pkg/client --go_opt=paths=source_relative --go-grpc_out=pkg/client --go-grpc_opt=paths=source_relative --proto_path=proto/ name/name.proto
 	protoc --go_out=pkg/client --go_opt=paths=source_relative --go-grpc_out=pkg/client --go-grpc_opt=paths=source_relative --proto_path=proto/ embeddings/embeddings.proto
 
+
+update-embeddings: embeddings
+	docker tag ghcr.io/defenseunicorns/leapfrogai/embeddings:0.0.4 localhost:5001/defenseunicorns/leapfrogai/embeddings:0.0.4-zarf-230844594
+	docker push localhost:5001/defenseunicorns/leapfrogai/embeddings:0.0.4-zarf-230844594
+	kubectl delete pods -n leapfrogai -l app=embeddings
+update-api: api
+	docker tag ghcr.io/defenseunicorns/leapfrogai/api:0.0.4 localhost:5001/defenseunicorns/leapfrogai/api:0.0.4-zarf-1702594131
+	docker push localhost:5001/defenseunicorns/leapfrogai/api:0.0.4-zarf-1702594131
+	kubectl delete pods -n leapfrogai -l app=api

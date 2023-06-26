@@ -5,7 +5,7 @@ import grpc
 from . import audio_pb2 as audio_dot_audio__pb2
 
 
-class GenerateServiceStub(object):
+class AudioStub(object):
     """Missing associated documentation comment in .proto file."""
 
     def __init__(self, channel):
@@ -14,42 +14,58 @@ class GenerateServiceStub(object):
         Args:
             channel: A grpc.Channel.
         """
-        self.Complete = channel.unary_unary(
-                '/audio.GenerateService/Complete',
-                request_serializer=audio_dot_audio__pb2.CompletionRequest.SerializeToString,
-                response_deserializer=audio_dot_audio__pb2.CompletionResponse.FromString,
+        self.Translate = channel.unary_unary(
+                '/audio.Audio/Translate',
+                request_serializer=audio_dot_audio__pb2.AudioRequest.SerializeToString,
+                response_deserializer=audio_dot_audio__pb2.AudioResponse.FromString,
+                )
+        self.Transcribe = channel.unary_unary(
+                '/audio.Audio/Transcribe',
+                request_serializer=audio_dot_audio__pb2.AudioRequest.SerializeToString,
+                response_deserializer=audio_dot_audio__pb2.AudioResponse.FromString,
                 )
 
 
-class GenerateServiceServicer(object):
+class AudioServicer(object):
     """Missing associated documentation comment in .proto file."""
 
-    def Complete(self, request, context):
+    def Translate(self, request, context):
+        """Missing associated documentation comment in .proto file."""
+        context.set_code(grpc.StatusCode.UNIMPLEMENTED)
+        context.set_details('Method not implemented!')
+        raise NotImplementedError('Method not implemented!')
+
+    def Transcribe(self, request, context):
         """Missing associated documentation comment in .proto file."""
         context.set_code(grpc.StatusCode.UNIMPLEMENTED)
         context.set_details('Method not implemented!')
         raise NotImplementedError('Method not implemented!')
 
 
-def add_GenerateServiceServicer_to_server(servicer, server):
+def add_AudioServicer_to_server(servicer, server):
     rpc_method_handlers = {
-            'Complete': grpc.unary_unary_rpc_method_handler(
-                    servicer.Complete,
-                    request_deserializer=audio_dot_audio__pb2.CompletionRequest.FromString,
-                    response_serializer=audio_dot_audio__pb2.CompletionResponse.SerializeToString,
+            'Translate': grpc.unary_unary_rpc_method_handler(
+                    servicer.Translate,
+                    request_deserializer=audio_dot_audio__pb2.AudioRequest.FromString,
+                    response_serializer=audio_dot_audio__pb2.AudioResponse.SerializeToString,
+            ),
+            'Transcribe': grpc.unary_unary_rpc_method_handler(
+                    servicer.Transcribe,
+                    request_deserializer=audio_dot_audio__pb2.AudioRequest.FromString,
+                    response_serializer=audio_dot_audio__pb2.AudioResponse.SerializeToString,
             ),
     }
     generic_handler = grpc.method_handlers_generic_handler(
-            'audio.GenerateService', rpc_method_handlers)
+            'audio.Audio', rpc_method_handlers)
     server.add_generic_rpc_handlers((generic_handler,))
 
 
  # This class is part of an EXPERIMENTAL API.
-class GenerateService(object):
+class Audio(object):
     """Missing associated documentation comment in .proto file."""
 
     @staticmethod
-    def Complete(request,
+    def Translate(request,
             target,
             options=(),
             channel_credentials=None,
@@ -59,8 +75,25 @@ class GenerateService(object):
             wait_for_ready=None,
             timeout=None,
             metadata=None):
-        return grpc.experimental.unary_unary(request, target, '/audio.GenerateService/Complete',
-            audio_dot_audio__pb2.CompletionRequest.SerializeToString,
-            audio_dot_audio__pb2.CompletionResponse.FromString,
+        return grpc.experimental.unary_unary(request, target, '/audio.Audio/Translate',
+            audio_dot_audio__pb2.AudioRequest.SerializeToString,
+            audio_dot_audio__pb2.AudioResponse.FromString,
+            options, channel_credentials,
+            insecure, call_credentials, compression, wait_for_ready, timeout, metadata)
+
+    @staticmethod
+    def Transcribe(request,
+            target,
+            options=(),
+            channel_credentials=None,
+            call_credentials=None,
+            insecure=False,
+            compression=None,
+            wait_for_ready=None,
+            timeout=None,
+            metadata=None):
+        return grpc.experimental.unary_unary(request, target, '/audio.Audio/Transcribe',
+            audio_dot_audio__pb2.AudioRequest.SerializeToString,
+            audio_dot_audio__pb2.AudioResponse.FromString,
             options, channel_credentials,
             insecure, call_credentials, compression, wait_for_ready, timeout, metadata)

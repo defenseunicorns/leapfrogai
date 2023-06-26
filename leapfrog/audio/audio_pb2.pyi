@@ -1,51 +1,61 @@
 from google.protobuf.internal import containers as _containers
 from google.protobuf import descriptor as _descriptor
 from google.protobuf import message as _message
-from typing import ClassVar as _ClassVar, Mapping as _Mapping, Optional as _Optional
+from typing import ClassVar as _ClassVar, Iterable as _Iterable, Mapping as _Mapping, Optional as _Optional, Union as _Union
 
 DESCRIPTOR: _descriptor.FileDescriptor
 
-class CompletionRequest(_message.Message):
-    __slots__ = ["best_of", "echo", "frequence_penalty", "logit_bias", "logprobs", "max_tokens", "n", "presence_penalty", "prompt", "stop", "stream", "suffix", "temperature", "top_p"]
-    class LogitBiasEntry(_message.Message):
-        __slots__ = ["key", "value"]
-        KEY_FIELD_NUMBER: _ClassVar[int]
-        VALUE_FIELD_NUMBER: _ClassVar[int]
-        key: str
-        value: float
-        def __init__(self, key: _Optional[str] = ..., value: _Optional[float] = ...) -> None: ...
-    BEST_OF_FIELD_NUMBER: _ClassVar[int]
-    ECHO_FIELD_NUMBER: _ClassVar[int]
-    FREQUENCE_PENALTY_FIELD_NUMBER: _ClassVar[int]
-    LOGIT_BIAS_FIELD_NUMBER: _ClassVar[int]
-    LOGPROBS_FIELD_NUMBER: _ClassVar[int]
-    MAX_TOKENS_FIELD_NUMBER: _ClassVar[int]
-    N_FIELD_NUMBER: _ClassVar[int]
-    PRESENCE_PENALTY_FIELD_NUMBER: _ClassVar[int]
+class AudioRequest(_message.Message):
+    __slots__ = ["data", "format", "inputlanguage", "model", "prompt", "temperature"]
+    DATA_FIELD_NUMBER: _ClassVar[int]
+    FORMAT_FIELD_NUMBER: _ClassVar[int]
+    INPUTLANGUAGE_FIELD_NUMBER: _ClassVar[int]
+    MODEL_FIELD_NUMBER: _ClassVar[int]
     PROMPT_FIELD_NUMBER: _ClassVar[int]
-    STOP_FIELD_NUMBER: _ClassVar[int]
-    STREAM_FIELD_NUMBER: _ClassVar[int]
-    SUFFIX_FIELD_NUMBER: _ClassVar[int]
     TEMPERATURE_FIELD_NUMBER: _ClassVar[int]
-    TOP_P_FIELD_NUMBER: _ClassVar[int]
-    best_of: int
-    echo: bool
-    frequence_penalty: float
-    logit_bias: _containers.ScalarMap[str, float]
-    logprobs: int
-    max_tokens: int
-    n: int
-    presence_penalty: float
+    data: bytes
+    format: str
+    inputlanguage: str
+    model: str
     prompt: str
-    stop: str
-    stream: bool
-    suffix: str
     temperature: float
-    top_p: float
-    def __init__(self, prompt: _Optional[str] = ..., suffix: _Optional[str] = ..., max_tokens: _Optional[int] = ..., temperature: _Optional[float] = ..., top_p: _Optional[float] = ..., n: _Optional[int] = ..., stream: bool = ..., logprobs: _Optional[int] = ..., echo: bool = ..., stop: _Optional[str] = ..., presence_penalty: _Optional[float] = ..., frequence_penalty: _Optional[float] = ..., best_of: _Optional[int] = ..., logit_bias: _Optional[_Mapping[str, float]] = ...) -> None: ...
+    def __init__(self, model: _Optional[str] = ..., data: _Optional[bytes] = ..., prompt: _Optional[str] = ..., temperature: _Optional[float] = ..., inputlanguage: _Optional[str] = ..., format: _Optional[str] = ...) -> None: ...
 
-class CompletionResponse(_message.Message):
-    __slots__ = ["completion"]
-    COMPLETION_FIELD_NUMBER: _ClassVar[int]
-    completion: str
-    def __init__(self, completion: _Optional[str] = ...) -> None: ...
+class AudioResponse(_message.Message):
+    __slots__ = ["duration", "language", "segments", "task", "text"]
+    class Segment(_message.Message):
+        __slots__ = ["avg_logprob", "compression_ratio", "end", "id", "no_speech_prob", "seek", "start", "temperature", "text", "tokens", "transient"]
+        AVG_LOGPROB_FIELD_NUMBER: _ClassVar[int]
+        COMPRESSION_RATIO_FIELD_NUMBER: _ClassVar[int]
+        END_FIELD_NUMBER: _ClassVar[int]
+        ID_FIELD_NUMBER: _ClassVar[int]
+        NO_SPEECH_PROB_FIELD_NUMBER: _ClassVar[int]
+        SEEK_FIELD_NUMBER: _ClassVar[int]
+        START_FIELD_NUMBER: _ClassVar[int]
+        TEMPERATURE_FIELD_NUMBER: _ClassVar[int]
+        TEXT_FIELD_NUMBER: _ClassVar[int]
+        TOKENS_FIELD_NUMBER: _ClassVar[int]
+        TRANSIENT_FIELD_NUMBER: _ClassVar[int]
+        avg_logprob: float
+        compression_ratio: float
+        end: float
+        id: int
+        no_speech_prob: float
+        seek: int
+        start: float
+        temperature: float
+        text: str
+        tokens: _containers.RepeatedScalarFieldContainer[int]
+        transient: bool
+        def __init__(self, id: _Optional[int] = ..., seek: _Optional[int] = ..., start: _Optional[float] = ..., end: _Optional[float] = ..., text: _Optional[str] = ..., tokens: _Optional[_Iterable[int]] = ..., temperature: _Optional[float] = ..., avg_logprob: _Optional[float] = ..., compression_ratio: _Optional[float] = ..., no_speech_prob: _Optional[float] = ..., transient: bool = ...) -> None: ...
+    DURATION_FIELD_NUMBER: _ClassVar[int]
+    LANGUAGE_FIELD_NUMBER: _ClassVar[int]
+    SEGMENTS_FIELD_NUMBER: _ClassVar[int]
+    TASK_FIELD_NUMBER: _ClassVar[int]
+    TEXT_FIELD_NUMBER: _ClassVar[int]
+    duration: float
+    language: str
+    segments: _containers.RepeatedCompositeFieldContainer[AudioResponse.Segment]
+    task: str
+    text: str
+    def __init__(self, task: _Optional[str] = ..., language: _Optional[str] = ..., duration: _Optional[float] = ..., segments: _Optional[_Iterable[_Union[AudioResponse.Segment, _Mapping]]] = ..., text: _Optional[str] = ...) -> None: ...
