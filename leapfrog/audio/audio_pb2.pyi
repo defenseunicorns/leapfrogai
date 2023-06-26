@@ -1,25 +1,39 @@
 from google.protobuf.internal import containers as _containers
+from google.protobuf.internal import enum_type_wrapper as _enum_type_wrapper
 from google.protobuf import descriptor as _descriptor
 from google.protobuf import message as _message
 from typing import ClassVar as _ClassVar, Iterable as _Iterable, Mapping as _Mapping, Optional as _Optional, Union as _Union
 
 DESCRIPTOR: _descriptor.FileDescriptor
+TRANSCRIBE: AudioTask
+TRANSLATE: AudioTask
 
-class AudioRequest(_message.Message):
-    __slots__ = ["data", "format", "inputlanguage", "model", "prompt", "temperature"]
-    DATA_FIELD_NUMBER: _ClassVar[int]
+class AudioMetadata(_message.Message):
+    __slots__ = ["format", "inputlanguage", "prompt", "temperature"]
+    class AudioFormat(int, metaclass=_enum_type_wrapper.EnumTypeWrapper):
+        __slots__ = []
     FORMAT_FIELD_NUMBER: _ClassVar[int]
     INPUTLANGUAGE_FIELD_NUMBER: _ClassVar[int]
-    MODEL_FIELD_NUMBER: _ClassVar[int]
+    JSON: AudioMetadata.AudioFormat
     PROMPT_FIELD_NUMBER: _ClassVar[int]
+    SRT: AudioMetadata.AudioFormat
     TEMPERATURE_FIELD_NUMBER: _ClassVar[int]
-    data: bytes
-    format: str
+    TEXT: AudioMetadata.AudioFormat
+    VERBOSE_JSON: AudioMetadata.AudioFormat
+    VTT: AudioMetadata.AudioFormat
+    format: AudioMetadata.AudioFormat
     inputlanguage: str
-    model: str
     prompt: str
     temperature: float
-    def __init__(self, model: _Optional[str] = ..., data: _Optional[bytes] = ..., prompt: _Optional[str] = ..., temperature: _Optional[float] = ..., inputlanguage: _Optional[str] = ..., format: _Optional[str] = ...) -> None: ...
+    def __init__(self, prompt: _Optional[str] = ..., temperature: _Optional[float] = ..., inputlanguage: _Optional[str] = ..., format: _Optional[_Union[AudioMetadata.AudioFormat, str]] = ...) -> None: ...
+
+class AudioRequest(_message.Message):
+    __slots__ = ["chunk_data", "metadata"]
+    CHUNK_DATA_FIELD_NUMBER: _ClassVar[int]
+    METADATA_FIELD_NUMBER: _ClassVar[int]
+    chunk_data: bytes
+    metadata: AudioMetadata
+    def __init__(self, metadata: _Optional[_Union[AudioMetadata, _Mapping]] = ..., chunk_data: _Optional[bytes] = ...) -> None: ...
 
 class AudioResponse(_message.Message):
     __slots__ = ["duration", "language", "segments", "task", "text"]
@@ -56,6 +70,9 @@ class AudioResponse(_message.Message):
     duration: float
     language: str
     segments: _containers.RepeatedCompositeFieldContainer[AudioResponse.Segment]
-    task: str
+    task: AudioTask
     text: str
-    def __init__(self, task: _Optional[str] = ..., language: _Optional[str] = ..., duration: _Optional[float] = ..., segments: _Optional[_Iterable[_Union[AudioResponse.Segment, _Mapping]]] = ..., text: _Optional[str] = ...) -> None: ...
+    def __init__(self, task: _Optional[_Union[AudioTask, str]] = ..., language: _Optional[str] = ..., duration: _Optional[float] = ..., segments: _Optional[_Iterable[_Union[AudioResponse.Segment, _Mapping]]] = ..., text: _Optional[str] = ...) -> None: ...
+
+class AudioTask(int, metaclass=_enum_type_wrapper.EnumTypeWrapper):
+    __slots__ = []
