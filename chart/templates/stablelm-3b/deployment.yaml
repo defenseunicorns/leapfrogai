@@ -5,6 +5,8 @@ metadata:
   name: stablelm-deployment
 spec:
   replicas: 1
+  strategy:
+    type: Recreate
   selector:
     matchLabels:
       app: stablelm
@@ -17,7 +19,7 @@ spec:
         - name: stablelm-container
           # imagePullPolicy: Always
           imagePullPolicy: Always # Building on the node currently so we don't have to push/pull
-          image: ghcr.io/defenseunicorns/leapfrogai/stablelm-3b:0.0.1
+          image: ghcr.io/defenseunicorns/leapfrogai/stablelm-3b:{{ .Values.image.tag }}
           ports:
             - containerPort: 50051 # Assume this is the gRPC port
           resources:

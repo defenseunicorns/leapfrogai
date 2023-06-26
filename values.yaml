@@ -9,7 +9,8 @@ image:
   # of weaviate. In accordance with Infra-as-code, you should pin this value
   # down and only change it if you explicitly want to upgrade the Weaviate
   # version.
-  tag: 0.0.3
+  
+  tag: 0.0.4
   repo: defenseunicorns/leapfrogai/weaviate
 
 
@@ -57,7 +58,7 @@ monitoring:
 
 models:
   stablelm3b:
-    enabled: false
+    enabled: true
   all_MiniLM_L6_v2:
     enabled: false
   whisper:

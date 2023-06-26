@@ -19,89 +19,126 @@ import (
 const _ = grpc.SupportPackageIsVersion7
 
 const (
-	GenerateService_Complete_FullMethodName = "/audio.GenerateService/Complete"
+	Audio_Translate_FullMethodName  = "/audio.Audio/Translate"
+	Audio_Transcribe_FullMethodName = "/audio.Audio/Transcribe"
 )
 
-// GenerateServiceClient is the client API for GenerateService service.
+// AudioClient is the client API for Audio service.
 //
 // For semantics around ctx use and closing/ending streaming RPCs, please refer to https://pkg.go.dev/google.golang.org/grpc/?tab=doc#ClientConn.NewStream.
-type GenerateServiceClient interface {
-	Complete(ctx context.Context, in *CompletionRequest, opts ...grpc.CallOption) (*CompletionResponse, error)
+type AudioClient interface {
+	Translate(ctx context.Context, in *AudioRequest, opts ...grpc.CallOption) (*AudioResponse, error)
+	Transcribe(ctx context.Context, in *AudioRequest, opts ...grpc.CallOption) (*AudioResponse, error)
 }
 
-type generateServiceClient struct {
+type audioClient struct {
 	cc grpc.ClientConnInterface
 }
 
-func NewGenerateServiceClient(cc grpc.ClientConnInterface) GenerateServiceClient {
-	return &generateServiceClient{cc}
+func NewAudioClient(cc grpc.ClientConnInterface) AudioClient {
+	return &audioClient{cc}
 }
 
-func (c *generateServiceClient) Complete(ctx context.Context, in *CompletionRequest, opts ...grpc.CallOption) (*CompletionResponse, error) {
-	out := new(CompletionResponse)
-	err := c.cc.Invoke(ctx, GenerateService_Complete_FullMethodName, in, out, opts...)
+func (c *audioClient) Translate(ctx context.Context, in *AudioRequest, opts ...grpc.CallOption) (*AudioResponse, error) {
+	out := new(AudioResponse)
+	err := c.cc.Invoke(ctx, Audio_Translate_FullMethodName, in, out, opts...)
 	if err != nil {
 		return nil, err
 	}
 	return out, nil
 }
 
-// GenerateServiceServer is the server API for GenerateService service.
-// All implementations must embed UnimplementedGenerateServiceServer
+func (c *audioClient) Transcribe(ctx context.Context, in *AudioRequest, opts ...grpc.CallOption) (*AudioResponse, error) {
+	out := new(AudioResponse)
+	err := c.cc.Invoke(ctx, Audio_Transcribe_FullMethodName, in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+// AudioServer is the server API for Audio service.
+// All implementations must embed UnimplementedAudioServer
 // for forward compatibility
-type GenerateServiceServer interface {
-	Complete(context.Context, *CompletionRequest) (*CompletionResponse, error)
-	mustEmbedUnimplementedGenerateServiceServer()
+type AudioServer interface {
+	Translate(context.Context, *AudioRequest) (*AudioResponse, error)
+	Transcribe(context.Context, *AudioRequest) (*AudioResponse, error)
+	mustEmbedUnimplementedAudioServer()
 }
 
-// UnimplementedGenerateServiceServer must be embedded to have forward compatible implementations.
-type UnimplementedGenerateServiceServer struct {
+// UnimplementedAudioServer must be embedded to have forward compatible implementations.
+type UnimplementedAudioServer struct {
 }
 
-func (UnimplementedGenerateServiceServer) Complete(context.Context, *CompletionRequest) (*CompletionResponse, error) {
-	return nil, status.Errorf(codes.Unimplemented, "method Complete not implemented")
+func (UnimplementedAudioServer) Translate(context.Context, *AudioRequest) (*AudioResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method Translate not implemented")
 }
-func (UnimplementedGenerateServiceServer) mustEmbedUnimplementedGenerateServiceServer() {}
+func (UnimplementedAudioServer) Transcribe(context.Context, *AudioRequest) (*AudioResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method Transcribe not implemented")
+}
+func (UnimplementedAudioServer) mustEmbedUnimplementedAudioServer() {}
 
-// UnsafeGenerateServiceServer may be embedded to opt out of forward compatibility for this service.
-// Use of this interface is not recommended, as added methods to GenerateServiceServer will
+// UnsafeAudioServer may be embedded to opt out of forward compatibility for this service.
+// Use of this interface is not recommended, as added methods to AudioServer will
 // result in compilation errors.
-type UnsafeGenerateServiceServer interface {
-	mustEmbedUnimplementedGenerateServiceServer()
+type UnsafeAudioServer interface {
+	mustEmbedUnimplementedAudioServer()
 }
 
-func RegisterGenerateServiceServer(s grpc.ServiceRegistrar, srv GenerateServiceServer) {
-	s.RegisterService(&GenerateService_ServiceDesc, srv)
+func RegisterAudioServer(s grpc.ServiceRegistrar, srv AudioServer) {
+	s.RegisterService(&Audio_ServiceDesc, srv)
 }
 
-func _GenerateService_Complete_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(CompletionRequest)
+func _Audio_Translate_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(AudioRequest)
 	if err := dec(in); err != nil {
 		return nil, err
 	}
 	if interceptor == nil {
-		return srv.(GenerateServiceServer).Complete(ctx, in)
+		return srv.(AudioServer).Translate(ctx, in)
 	}
 	info := &grpc.UnaryServerInfo{
 		Server:     srv,
-		FullMethod: GenerateService_Complete_FullMethodName,
+		FullMethod: Audio_Translate_FullMethodName,
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(GenerateServiceServer).Complete(ctx, req.(*CompletionRequest))
+		return srv.(AudioServer).Translate(ctx, req.(*AudioRequest))
 	}
 	return interceptor(ctx, in, info, handler)
 }
 
-// GenerateService_ServiceDesc is the grpc.ServiceDesc for GenerateService service.
+func _Audio_Transcribe_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(AudioRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(AudioServer).Transcribe(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: Audio_Transcribe_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(AudioServer).Transcribe(ctx, req.(*AudioRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+// Audio_ServiceDesc is the grpc.ServiceDesc for Audio service.
 // It's only intended for direct use with grpc.RegisterService,
 // and not to be introspected or modified (even as a copy)
-var GenerateService_ServiceDesc = grpc.ServiceDesc{
-	ServiceName: "audio.GenerateService",
-	HandlerType: (*GenerateServiceServer)(nil),
+var Audio_ServiceDesc = grpc.ServiceDesc{
+	ServiceName: "audio.Audio",
+	HandlerType: (*AudioServer)(nil),
 	Methods: []grpc.MethodDesc{
 		{
-			MethodName: "Complete",
-			Handler:    _GenerateService_Complete_Handler,
+			MethodName: "Translate",
+			Handler:    _Audio_Translate_Handler,
+		},
+		{
+			MethodName: "Transcribe",
+			Handler:    _Audio_Transcribe_Handler,
 		},
 	},
 	Streams:  []grpc.StreamDesc{},

@@ -6,6 +6,28 @@ from enum import Enum
 from fastapi import FastAPI, UploadFile, File, Form
 from pydantic import BaseModel
 from prometheus_fastapi_instrumentator import Instrumentator
+import leapfrog
+import logging
+
+class Whisper(leapfrog.AudioService):
+    model = whisper.load_model("large")
+
+    def Translate(self, request: leapfrog.AudioRequest, context: leapfrog.GrpcContext):
+        # TODO @gerred can you complete this?
+        raise NotImplementedError('Method not implemented!')
+
+    def Transcribe(self, request: leapfrog.AudioRequest, context: leapfrog.GrpcContext):
+        # TODO @gerred can you complete this?
+        raise NotImplementedError('Method not implemented!')
+
+    def Name(self, request, context):
+        return leapfrog.NameResponse ( name = "repeater" )
+
+if __name__ == "__main__":
+    logging.basicConfig(level=logging.INFO)
+    leapfrog.serve(Whisper())
+
+
 
 app = FastAPI()
 

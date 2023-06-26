@@ -8,6 +8,8 @@ spec:
   selector:
     matchLabels:
       app: repeater
+  strategy:
+    type: Recreate
   template:
     metadata:
       labels:
@@ -17,12 +19,7 @@ spec:
         - name: repeater-container
           imagePullPolicy: Always
           # imagePullPolicy: Never # Building on the node currently so we don't have to push/pull
-          image: ghcr.io/defenseunicorns/leapfrogai/repeater:0.0.4
+          image: ghcr.io/defenseunicorns/leapfrogai/repeater:{{ .Values.image.tag }}
           ports:
             - containerPort: 50051 # Assume this is the gRPC port
-          resources:
-            limits:
-              nvidia.com/gpu: 1
-            requests:
-              nvidia.com/gpu: 1
 {{ end }}
