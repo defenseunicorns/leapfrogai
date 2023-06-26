@@ -16,7 +16,7 @@ spec:
       containers:
         - name: embeddings-container
           imagePullPolicy: Always
-          image: ghcr.io/defenseunicorns/leapfrogai/embeddings:0.0.1
+          image: ghcr.io/defenseunicorns/leapfrogai/embeddings:{{ .Values.image.tag }}
           ports:
             - containerPort: 50051 # Assume this is the gRPC port
 {{ end }}
