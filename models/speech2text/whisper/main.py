@@ -1,141 +1,70 @@
-import whisper
-import aiofiles
-import asyncio
-from typing import Annotated
-from enum import Enum
-from fastapi import FastAPI, UploadFile, File, Form
-from pydantic import BaseModel
-from prometheus_fastapi_instrumentator import Instrumentator
-import leapfrog
 import logging
+import tempfile
+from typing import Iterator
 
-class Whisper(leapfrog.AudioService):
-    model = whisper.load_model("large")
+import whisper
 
-    def Translate(self, request: leapfrog.AudioRequest, context: leapfrog.GrpcContext):
-        # TODO @gerred can you complete this?
-        raise NotImplementedError('Method not implemented!')
+import leapfrog
 
-    def Transcribe(self, request: leapfrog.AudioRequest, context: leapfrog.GrpcContext):
-        # TODO @gerred can you complete this?
-        raise NotImplementedError('Method not implemented!')
+model = whisper.load_model("large")
+
+
+def make_transcribe_request(filename, task, language, temperature, prompt):
+    return model.transcribe(
+        filename, task=task, language=language, temperature=temperature, prompt=prompt
+    )
+
+
+def call_whisper(
+    request_iterator: Iterator[leapfrog.AudioRequest], task: str
+) -> leapfrog.AudioResponse:
+    data = bytearray()
+    prompt = ""
+    temperature = 0.0
+    inputLanguage = "en"
+
+    for request in request_iterator:
+        if (
+            request.metadata.prompt
+            and request.metadata.temperature
+            and request.metadata.inputlanguage
+        ):
+            prompt = request.metadata.prompt
+            temperature = request.metadata.temperature
+            inputLanguage = request.metadata.inputlanguage
+            audioFormat = request.metadata.format
+            continue
+
+        data.extend(request.chunk_data)
+
+    with tempfile.NamedTemporaryFile("wb") as f:
+        f.write(data)
+        result = make_transcribe_request(
+            f.name, task, inputLanguage, temperature, prompt
+        )
+        text = str(result["text"])
+        return leapfrog.AudioResponse(text=text)
+
+
+class Whisper(leapfrog.AudioServicer):
+    def Translate(
+        self,
+        request_iterator: Iterator[leapfrog.AudioRequest],
+        context: leapfrog.GrpcContext,
+    ):
+        return call_whisper(request_iterator, "translate")
+
+    def Transcribe(
+        self,
+        request_iterator: Iterator[leapfrog.AudioRequest],
+        context: leapfrog.GrpcContext,
+    ):
+        return call_whisper(request_iterator, "transcribe")
 
     def Name(self, request, context):
-        return leapfrog.NameResponse ( name = "repeater" )
+        return leapfrog.NameResponse(name="whisper")
+
 
 if __name__ == "__main__":
     logging.basicConfig(level=logging.INFO)
     leapfrog.serve(Whisper())
-
-
-
-app = FastAPI()
-
-model = whisper.load_model("large")
-loop = asyncio.get_event_loop()
-
-
-def make_transcribe_request(filename, task, language):
-    return model.transcribe(filename, task=task, language=language)
-
-
-class WhisperTask(str, Enum):
-    transcribe = "transcribe"
-    translate = "translate"
-
-
-# TODO: Make this class use a dict, and show languages in Swagger
-class LanguageCode(str, Enum):
-    af = "af"
-    ar = "ar"
-    az = "az"
-    be = "be"
-    bg = "bg"
-    bs = "bs"
-    ca = "ca"
-    cs = "cs"
-    cy = "cy"
-    da = "da"
-    de = "de"
-    el = "el"
-    en = "en"
-    es = "es"
-    et = "et"
-    fa = "fa"
-    fi = "fi"
-    fr = "fr"
-    gl = "gl"
-    he = "he"
-    hi = "hi"
-    hr = "hr"
-    hu = "hu"
-    hy = "hy"
-    id = "id"
-    icelandic = "is"
-    it = "it"
-    ja = "ja"
-    kk = "kk"
-    kn = "kn"
-    ko = "ko"
-    lt = "lt"
-    lv = "lv"
-    mk = "mk"
-    ms = "ms"
-    mr = "mr"
-    mi = "mi"
-    nl = "nl"
-    ne = "ne"
-    no = "no"
-    pl = "pl"
-    pt = "pt"
-    ro = "ro"
-    ru = "ru"
-    sk = "sk"
-    sl = "sl"
-    sr = "sr"
-    sv = "sv"
-    sw = "sw"
-    ta = "ta"
-    th = "th"
-    tl = "tl"
-    tr = "tr"
-    uk = "uk"
-    ur = "ur"
-    vi = "vi"
-    zh = "zh"
-
-
-class TranscribeResponse(BaseModel):
-    result: str
-
-
-@app.post("/transcribe")
-async def transcribe(
-    file: Annotated[
-        UploadFile, File(description="Audio file to run the Whisper model on")
-    ],
-    task: Annotated[
-        WhisperTask, Form(description="The Whisper task to perform")
-    ] = "transcribe",
-    language: Annotated[
-        LanguageCode,
-        Form(
-            description="The ISO 3166-1 alpha-2 (two letter language) code of the source audio"
-        ),
-    ] = "en",
-) -> TranscribeResponse:
-    async with aiofiles.tempfile.NamedTemporaryFile("wb") as f:
-        contents = await file.read()
-        await f.write(contents)
-        result = await loop.run_in_executor(
-            None, make_transcribe_request, f.name, task, language
-        )
-        return TranscribeResponse(result=result["text"])
-
-
-@app.get("/healthz")
-async def healthz():
-    return {"status": "ok"}
-
-
-Instrumentator().instrument(app).expose(app)
