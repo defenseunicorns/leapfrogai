@@ -7,6 +7,7 @@ setup(
     install_requires=[           # Add your project dependencies here.
         # 'requests',
         # 'numpy',
+        'grpc'
     ],
     author='Tom Runyon and Gerred Dillon',
     author_email='ai@defenseunicorns.com',

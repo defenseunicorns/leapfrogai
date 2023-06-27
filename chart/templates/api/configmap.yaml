@@ -4,6 +4,16 @@ metadata:
   name: api-model
 data:
   models.toml: | 
+{{- if .Values.models.repeater.enabled }}
+    [repeater]
+        [repeater.metadata]
+            owned_by    = 'Defense Unicorns'
+            permission  = []
+            description = 'I just repeat back what you said'
+        [repeater.network]
+            url = 'repeater:50051'
+            type = 'gRPC'
+{{- end -}}
 {{- if .Values.models.stablelm3b.enabled }}
     [stablelm-3b]
         [stablelm-3b.metadata]

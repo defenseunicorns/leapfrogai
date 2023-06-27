@@ -4,6 +4,8 @@ metadata:
   name: api-deployment
 spec:
   replicas: 1
+  strategy:
+    type: Recreate
   selector:
     matchLabels:
       app: api
@@ -14,13 +16,13 @@ spec:
     spec:
       containers:
         - name: api-container
-          image: ghcr.io/defenseunicorns/leapfrogai/api:0.0.4
+          image: ghcr.io/defenseunicorns/leapfrogai/api:{{ .Values.image.tag }}
           imagePullPolicy: Always
           ports:
-            - containerPort: 50051
+            - containerPort: 8080
           volumeMounts:
           - name: api-model
-            mountPath: /app/models.toml
+            mountPath: /models.toml
             subPath: models.toml
       volumes:
       - name: api-model

@@ -13,21 +13,26 @@ _sym_db = _symbol_database.Default()
 
 
 
-DESCRIPTOR = _descriptor_pool.Default().AddSerializedFile(b'\n\x11\x61udio/audio.proto\x12\x05\x61udio\"\xe9\x02\n\x11\x43ompletionRequest\x12\x0e\n\x06prompt\x18\x01 \x01(\t\x12\x0e\n\x06suffix\x18\x02 \x01(\t\x12\x12\n\nmax_tokens\x18\x03 \x01(\x05\x12\x13\n\x0btemperature\x18\x04 \x01(\x02\x12\r\n\x05top_p\x18\x05 \x01(\x02\x12\t\n\x01n\x18\x06 \x01(\x05\x12\x0e\n\x06stream\x18\x07 \x01(\x08\x12\x10\n\x08logprobs\x18\x08 \x01(\x05\x12\x0c\n\x04\x65\x63ho\x18\t \x01(\x08\x12\x0c\n\x04stop\x18\n \x01(\t\x12\x18\n\x10presence_penalty\x18\x0b \x01(\x02\x12\x19\n\x11\x66requence_penalty\x18\x0c \x01(\x02\x12\x0f\n\x07\x62\x65st_of\x18\r \x01(\x05\x12;\n\nlogit_bias\x18\x0e \x03(\x0b\x32\'.audio.CompletionRequest.LogitBiasEntry\x1a\x30\n\x0eLogitBiasEntry\x12\x0b\n\x03key\x18\x01 \x01(\t\x12\r\n\x05value\x18\x02 \x01(\x02:\x02\x38\x01\"(\n\x12\x43ompletionResponse\x12\x12\n\ncompletion\x18\x01 \x01(\t2R\n\x0fGenerateService\x12?\n\x08\x43omplete\x12\x18.audio.CompletionRequest\x1a\x19.audio.CompletionResponseb\x06proto3')
+DESCRIPTOR = _descriptor_pool.Default().AddSerializedFile(b'\n\x11\x61udio/audio.proto\x12\x05\x61udio\"\xc4\x01\n\rAudioMetadata\x12\x0e\n\x06prompt\x18\x01 \x01(\t\x12\x13\n\x0btemperature\x18\x02 \x01(\x02\x12\x15\n\rinputlanguage\x18\x03 \x01(\t\x12\x30\n\x06\x66ormat\x18\x04 \x01(\x0e\x32 .audio.AudioMetadata.AudioFormat\"E\n\x0b\x41udioFormat\x12\x08\n\x04JSON\x10\x00\x12\x08\n\x04TEXT\x10\x01\x12\x07\n\x03SRT\x10\x02\x12\x10\n\x0cVERBOSE_JSON\x10\x03\x12\x07\n\x03VTT\x10\x04\"Y\n\x0c\x41udioRequest\x12(\n\x08metadata\x18\x01 \x01(\x0b\x32\x14.audio.AudioMetadataH\x00\x12\x14\n\nchunk_data\x18\x02 \x01(\x0cH\x00\x42\t\n\x07request\"\xe1\x02\n\rAudioResponse\x12\x1e\n\x04task\x18\x01 \x01(\x0e\x32\x10.audio.AudioTask\x12\x10\n\x08language\x18\x02 \x01(\t\x12\x10\n\x08\x64uration\x18\x03 \x01(\x01\x12.\n\x08segments\x18\x04 \x03(\x0b\x32\x1c.audio.AudioResponse.Segment\x12\x0c\n\x04text\x18\x05 \x01(\t\x1a\xcd\x01\n\x07Segment\x12\n\n\x02id\x18\x01 \x01(\x05\x12\x0c\n\x04seek\x18\x02 \x01(\x05\x12\r\n\x05start\x18\x03 \x01(\x01\x12\x0b\n\x03\x65nd\x18\x04 \x01(\x01\x12\x0c\n\x04text\x18\x05 \x01(\t\x12\x0e\n\x06tokens\x18\x06 \x03(\x05\x12\x13\n\x0btemperature\x18\x07 \x01(\x01\x12\x13\n\x0b\x61vg_logprob\x18\x08 \x01(\x01\x12\x19\n\x11\x63ompression_ratio\x18\t \x01(\x01\x12\x16\n\x0eno_speech_prob\x18\n \x01(\x01\x12\x11\n\ttransient\x18\x0b \x01(\x08**\n\tAudioTask\x12\x0e\n\nTRANSCRIBE\x10\x00\x12\r\n\tTRANSLATE\x10\x01\x32|\n\x05\x41udio\x12\x38\n\tTranslate\x12\x13.audio.AudioRequest\x1a\x14.audio.AudioResponse(\x01\x12\x39\n\nTranscribe\x12\x13.audio.AudioRequest\x1a\x14.audio.AudioResponse(\x01\x42\x38Z6github.com/defenseunicorns/leapfrogai/pkg/client/audiob\x06proto3')
 
 _builder.BuildMessageAndEnumDescriptors(DESCRIPTOR, globals())
 _builder.BuildTopDescriptorsAndMessages(DESCRIPTOR, 'audio.audio_pb2', globals())
 if _descriptor._USE_C_DESCRIPTORS == False:
 
   DESCRIPTOR._options = None
-  _COMPLETIONREQUEST_LOGITBIASENTRY._options = None
-  _COMPLETIONREQUEST_LOGITBIASENTRY._serialized_options = b'8\001'
-  _COMPLETIONREQUEST._serialized_start=29
-  _COMPLETIONREQUEST._serialized_end=390
-  _COMPLETIONREQUEST_LOGITBIASENTRY._serialized_start=342
-  _COMPLETIONREQUEST_LOGITBIASENTRY._serialized_end=390
-  _COMPLETIONRESPONSE._serialized_start=392
-  _COMPLETIONRESPONSE._serialized_end=432
-  _GENERATESERVICE._serialized_start=434
-  _GENERATESERVICE._serialized_end=516
+  DESCRIPTOR._serialized_options = b'Z6github.com/defenseunicorns/leapfrogai/pkg/client/audio'
+  _AUDIOTASK._serialized_start=674
+  _AUDIOTASK._serialized_end=716
+  _AUDIOMETADATA._serialized_start=29
+  _AUDIOMETADATA._serialized_end=225
+  _AUDIOMETADATA_AUDIOFORMAT._serialized_start=156
+  _AUDIOMETADATA_AUDIOFORMAT._serialized_end=225
+  _AUDIOREQUEST._serialized_start=227
+  _AUDIOREQUEST._serialized_end=316
+  _AUDIORESPONSE._serialized_start=319
+  _AUDIORESPONSE._serialized_end=672
+  _AUDIORESPONSE_SEGMENT._serialized_start=467
+  _AUDIORESPONSE_SEGMENT._serialized_end=672
+  _AUDIO._serialized_start=718
+  _AUDIO._serialized_end=842
 # @@protoc_insertion_point(module_scope)
