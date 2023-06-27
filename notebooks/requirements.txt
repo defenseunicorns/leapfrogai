@@ -1,5 +1,5 @@
 aiohttp
-numpy==1.24.3
+numpy==1.25.0
 openai==0.27.7
 pandas==1.5.3
 redis==4.5.5
