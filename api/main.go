@@ -38,12 +38,13 @@ func main() {
 	gin.SetMode(gin.ReleaseMode)
 	r := gin.Default()
 
-	r.GET("/models", showModels)
-	r.GET("/models/:model_id", showModel)
-	r.POST("/completions", complete)
-	r.POST("/embeddings", createEmbeddings)
-	r.POST("/audio/transcriptions", audioTranscriptions)
-	r.POST("/audio/translations", audioTranslations)
+	r.GET("/openai/models", showModels)
+	r.GET("/openai/models/:model_id", showModel)
+	r.POST("/openai/completions", complete)
+	r.POST("/openai/embeddings", createEmbeddings)
+	r.POST("/openai/audio/transcriptions", audioTranscriptions)
+	r.POST("/openai/audio/translations", audioTranslations)
+	// r.POST("/copilot/completion", copilotComplete)
 	// Define other routes...
 
 	r.Run()
@@ -366,7 +367,7 @@ func complete(c *gin.Context) {
 			return
 		}
 		choice := openai.CompletionChoice{
-			Text:         response.GetCompletion(),
+			Text:         strings.TrimPrefix(response.GetCompletion(), input.Prompt.(string)),
 			FinishReason: response.GetFinishReason(),
 			Index:        i,
 		}

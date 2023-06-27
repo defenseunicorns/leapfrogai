@@ -34,23 +34,26 @@ class StableLM(CompletionServiceServicer):
         inputs = self.tokenizer(
             request.prompt, return_tensors="pt").to(self.device)
         logging.error(f"Request:  { request }")
+        # error checking for valid params
         tokens = self.model.generate(
                 **inputs,
                 max_new_tokens=request.max_tokens,
                 temperature=request.temperature,
                 # repetition_penalty=request.frequence_penalty,
-                # top_p=request.top_p,
+                top_p=request.top_p,
                 do_sample=True,
-                # pad_token_id=self.tokenizer.eos_token_id,
-                # eos_token_id=self.tokenizer.eos_token_id,
-                pad_token_id=0,
-                eos_token_id=0,
+                pad_token_id=self.tokenizer.eos_token_id,
+                eos_token_id=self.tokenizer.eos_token_id,
                 stopping_criteria=StoppingCriteriaList([StopOnTokens()])
             )
         logging.error(f"Response {tokens}")
-        response = self.tokenizer.decode(tokens[0], skip_special_tokens=False)
-        logging.error(f"Decoded Response: {response}")
-        return CompletionResponse(completion=response)
+        # Extract out only the completion tokens
+        completion_tokens = tokens[0][inputs['input_ids'].size(1):]
+        completion = self.tokenizer.decode(completion_tokens, skip_special_tokens=True)
+
+        # response = self.tokenizer.decode(tokens[0], skip_special_tokens=False)
+        logging.error(f"Decoded Response: {completion}")
+        return CompletionResponse(completion=completion)
 
 
 if __name__ == "__main__":

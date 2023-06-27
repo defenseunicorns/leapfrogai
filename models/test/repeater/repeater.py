@@ -3,7 +3,7 @@ import logging
 
 class Repeater(leapfrog.CompletionServiceServicer):
     def Complete(self, request: leapfrog.CompletionRequest, context: leapfrog.GrpcContext) -> leapfrog.CompletionResponse:
-        result = request.prompt+request.prompt # just returns what's provided
+        result = request.prompt # just returns what's provided
         print(f"Repeater.Complete:  { request }")
         return leapfrog.CompletionResponse(completion=[result for _ in range(request.n)])
 
