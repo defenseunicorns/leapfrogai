@@ -1,11 +1,11 @@
-{{ if .Values.models.stablelm3b.enabled }}
+{{ if .Values.models.repeater.enabled }}
 apiVersion: v1
 kind: Service
 metadata:
-  name: stablelm
+  name: repeater
 spec:
   selector:
-    app: stablelm
+    app: repeater
   ports:
     - name: grpc
       protocol: TCP

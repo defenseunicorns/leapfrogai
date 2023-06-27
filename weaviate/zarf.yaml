@@ -50,8 +50,8 @@ components:
       - manifests/vs.yaml
     repos:
     - "###ZARF_PKG_VAR_REPO###"
-    # images:
-    # - "semitechnologies/weaviate:1.18.3"
-    # - "ghcr.io/defenseunicorns/leapfrogai/weaviate:0.0.3"
-    # - semitechnologies/transformers-inference:sentence-transformers-all-MiniLM-L6-v2
-    # - semitechnologies/transformers-inference:distilbert-base-uncased
+    images:
+    - "semitechnologies/weaviate:1.18.3"
+    - "ghcr.io/defenseunicorns/leapfrogai/weaviate:0.0.3"
+    - semitechnologies/transformers-inference:sentence-transformers-all-MiniLM-L6-v2
+    - semitechnologies/transformers-inference:distilbert-base-uncased

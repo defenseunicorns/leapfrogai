@@ -21,12 +21,12 @@ def serve(o):
     if hasattr(o, "Name"):
         name_pb2_grpc.add_NameServiceServicer_to_server(o, server)
 
-    if hasattr(o, "Complete"):
-        audio_pb2_grpc.add_GenerateServiceServicer_to_server(o, server)
+    if hasattr(o, "Transcribe") and hasattr(o, "Translate"):
+        audio_pb2_grpc.add_AudioServicer_to_server(o, server)
 
     # Listen on port 50051
-    print('Starting server. Listening on port 50051.')
-    server.add_insecure_port('[::]:50051')
+    print("Starting server. Listening on port 50051.")
+    server.add_insecure_port("[::]:50051")
     server.start()
     server.wait_for_termination()
 

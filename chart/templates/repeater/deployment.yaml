@@ -1,28 +1,25 @@
-{{ if .Values.models.stablelm3b.enabled }}
+{{ if .Values.models.repeater.enabled }}
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: stablelm-deployment
+  name: repeater-deployment
 spec:
   replicas: 1
   selector:
     matchLabels:
-      app: stablelm
+      app: repeater
+  strategy:
+    type: Recreate
   template:
     metadata:
       labels:
-        app: stablelm
+        app: repeater
     spec:
       containers:
-        - name: stablelm-container
+        - name: repeater-container
           imagePullPolicy: Always
           # imagePullPolicy: Never # Building on the node currently so we don't have to push/pull
-          image: ghcr.io/defenseunicorns/leapfrogai/stablelm-3b:0.0.1
+          image: ghcr.io/defenseunicorns/leapfrogai/repeater:{{ .Values.image.tag }}
           ports:
             - containerPort: 50051 # Assume this is the gRPC port
-          resources:
-            limits:
-              nvidia.com/gpu: 1
-            requests:
-              nvidia.com/gpu: 1
 {{ end }}
