@@ -5,6 +5,8 @@ metadata:
   name: whisper-deployment
 spec:
   replicas: 1
+  strategy:
+    type: Recreate
   selector:
     matchLabels:
       app: whisper
@@ -17,7 +19,7 @@ spec:
         - name: whisper-container
           # imagePullPolicy: Always
           imagePullPolicy: Always # Building on the node currently so we don't have to push/pull
-          image: ghcr.io/defenseunicorns/leapfrogai/whisper:0.0.1
+          image: ghcr.io/defenseunicorns/leapfrogai/whisper:{{ .Values.image.tag }}
           ports:
             - containerPort: 8000
           resources:

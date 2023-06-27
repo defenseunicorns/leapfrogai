@@ -33,3 +33,5 @@ annotations:
       image: ghcr.io/defenseunicorns/leapfrogai/embeddings:0.0.2
     - name: whisper
       image: ghcr.io/defenseunicorns/leapfrogai/whisper:0.0.2
+    - name: repeater
+      image: ghcr.io/defenseunicorns/leapfrogai/repeater:0.0.2

@@ -1,5 +1,8 @@
 domain: bigbang.dev
 
+image: 
+  tag: 0.0.4
+
 istio:
   enabled: false
   gateway: tenant
@@ -20,3 +23,5 @@ models:
   whisper:
     enabled: true
     name: whisper
+  repeater:
+    enabled: false

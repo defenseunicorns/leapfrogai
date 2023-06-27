@@ -1,0 +1,17 @@
+syntax = "proto3";
+
+import "google/protobuf/empty.proto";
+
+package name;
+
+option go_package = "github.com/defenseunicorns/leapfrogai/pkg/client/name";
+
+
+// NameResponse are what's returned by the gRPC service
+message NameResponse {
+    string name = 1;
+}
+
+service NameService {
+    rpc Name (google.protobuf.Empty) returns (NameResponse);
+}
