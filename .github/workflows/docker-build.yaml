@@ -16,3 +16,5 @@ jobs:
     - name: Run Makefile command
       # just building, not pushing them
       run: make api base repeater
+    - name: Simple Test
+      run: make test-init test teardown
