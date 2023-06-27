@@ -88,3 +88,11 @@ update-stablelm: stablelm
 	docker tag ghcr.io/defenseunicorns/leapfrogai/stablelm-3b:${TAG} localhost:5001/defenseunicorns/leapfrogai/stablelm-3b:${TAG}-zarf-1442747400
 	docker push localhost:5001/defenseunicorns/leapfrogai/stablelm-3b:${TAG}-zarf-1442747400
 	kubectl delete pods -n leapfrogai -l app=stablelm
+
+test-init:
+	docker run -p 50051:50051 -d --rm --name repeater  ghcr.io/defenseunicorns/leapfrogai/repeater:${TAG}
+	
+test:
+	PYTHONPATH="." python3 models/test/repeater/test.py
+teardown:
+	docker kill repeater
