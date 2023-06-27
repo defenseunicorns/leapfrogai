@@ -15,4 +15,4 @@ jobs:
 
     - name: Run Makefile command
       # just building, not pushing them
-      run: make api base repeater stablelm whisper
+      run: make api base repeater
