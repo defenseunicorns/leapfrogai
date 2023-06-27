@@ -1,5 +1,5 @@
 import logging
-
+from typing import List
 import torch
 from get_models import MODEL_ID, TOKENIZER_ID
 from leapfrog import (CompletionRequest, CompletionResponse,
@@ -27,22 +27,30 @@ class StableLM(CompletionServiceServicer):
         device = "mps"
     else:
         device = "cpu"
+    model = model.to(device)
+    logging.error("StableLM Loaded...")
 
     def Complete(self, request: CompletionRequest, context: GrpcContext) -> CompletionResponse:
         inputs = self.tokenizer(
             request.prompt, return_tensors="pt").to(self.device)
-        model = self.model.to(self.device)
-
-        tokens = model.generate(
-            **inputs,
-            max_new_tokens=request.max_tokens,
-            temperature=request.temperature,
-            do_sample=True,
-            pad_token_id=0,
-            eos_token_id=0,
-            stopping_criteria=StoppingCriteriaList([StopOnTokens()])
-        )
-        return CompletionResponse(completion=self.tokenizer.decode(tokens[0], skip_special_tokens=False))
+        logging.error(f"Request:  { request }")
+        tokens = self.model.generate(
+                **inputs,
+                max_new_tokens=request.max_tokens,
+                temperature=request.temperature,
+                # repetition_penalty=request.frequence_penalty,
+                # top_p=request.top_p,
+                do_sample=True,
+                # pad_token_id=self.tokenizer.eos_token_id,
+                # eos_token_id=self.tokenizer.eos_token_id,
+                pad_token_id=0,
+                eos_token_id=0,
+                stopping_criteria=StoppingCriteriaList([StopOnTokens()])
+            )
+        logging.error(f"Response {tokens}")
+        response = self.tokenizer.decode(tokens[0], skip_special_tokens=False)
+        logging.error(f"Decoded Response: {response}")
+        return CompletionResponse(completion=response)
 
 
 if __name__ == "__main__":

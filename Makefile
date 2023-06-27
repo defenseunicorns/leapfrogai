@@ -1,6 +1,7 @@
 build: api embeddings
 
-TAG ?= 0.0.4 # want to keep things all aligned here
+TAG ?= 0.0.4
+# want to keep things all aligned here
 
 .PHONY: api embeddings push
 
@@ -71,10 +72,20 @@ gen-go:
 
 
 update-embeddings: embeddings
-	docker tag ghcr.io/defenseunicorns/leapfrogai/embeddings:0.0.4 localhost:5001/defenseunicorns/leapfrogai/embeddings:0.0.4-zarf-230844594
-	docker push localhost:5001/defenseunicorns/leapfrogai/embeddings:0.0.4-zarf-230844594
+	docker tag ghcr.io/defenseunicorns/leapfrogai/embeddings:${TAG} localhost:5001/defenseunicorns/leapfrogai/embeddings:${TAG}-zarf-230844594
+	docker push localhost:5001/defenseunicorns/leapfrogai/embeddings:${TAG}-zarf-230844594
 	kubectl delete pods -n leapfrogai -l app=embeddings
 update-api: api
-	docker tag ghcr.io/defenseunicorns/leapfrogai/api:0.0.4 localhost:5001/defenseunicorns/leapfrogai/api:0.0.4-zarf-1702594131
-	docker push localhost:5001/defenseunicorns/leapfrogai/api:0.0.4-zarf-1702594131
+	docker tag ghcr.io/defenseunicorns/leapfrogai/api:${TAG} localhost:5001/defenseunicorns/leapfrogai/api:${TAG}-zarf-1702594131
+	docker push localhost:5001/defenseunicorns/leapfrogai/api:${TAG}-zarf-1702594131
 	kubectl delete pods -n leapfrogai -l app=api
+
+update-repeater: repeater
+	docker tag ghcr.io/defenseunicorns/leapfrogai/repeater:${TAG} localhost:5001/defenseunicorns/leapfrogai/repeater:${TAG}-zarf-4122428005
+	docker push localhost:5001/defenseunicorns/leapfrogai/repeater:${TAG}-zarf-4122428005
+	kubectl delete pods -n leapfrogai -l app=repeater
+
+update-stablelm: stablelm
+	docker tag ghcr.io/defenseunicorns/leapfrogai/stablelm-3b:${TAG} localhost:5001/defenseunicorns/leapfrogai/stablelm-3b:${TAG}-zarf-1442747400
+	docker push localhost:5001/defenseunicorns/leapfrogai/stablelm-3b:${TAG}-zarf-1442747400
+	kubectl delete pods -n leapfrogai -l app=stablelm

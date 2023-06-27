@@ -11,3 +11,4 @@ package:
   deploy:
     set:
       domain: leapfrogai.bigbang.dev
+      whisper_enabled: "true"
