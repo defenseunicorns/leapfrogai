@@ -9,14 +9,22 @@ image:
   # of weaviate. In accordance with Infra-as-code, you should pin this value
   # down and only change it if you explicitly want to upgrade the Weaviate
   # version.
-  tag: 0.0.3
+  
+  tag: 0.0.4
   repo: defenseunicorns/leapfrogai/weaviate
 
 
 env:
   # maybe set this to the internal URL:
   # OPENAI_BASE_URL: "http://api.leapfrogai.svc:8080"
-  OPENAI_BASE_URL: "https://leapfrogai.dd.bigbang.dev"
+  OPENAI_BASE_URL: "https://leapfrogai.leapfrogai.bigbang.dev"
+
+initContainers:
+  sysctlInitContainer:
+    enabled: false
+
+service:
+  type: ClusterIP
 
 modules:
   DEFAULT_VECTORIZER_MODULE: text2vec-transformers
@@ -46,3 +54,15 @@ istio:
 monitoring:
   enabled: true
 
+
+
+models:
+  stablelm3b:
+    enabled: true
+  all_MiniLM_L6_v2:
+    enabled: false
+  whisper:
+    enabled: false
+  repeater: 
+    enabled: true
+  
