@@ -28,12 +28,12 @@ class StableLM(CompletionServiceServicer):
     else:
         device = "cpu"
     model = model.to(device)
-    logging.error("StableLM Loaded...")
+    logging.info("StableLM Loaded...")
 
     def Complete(self, request: CompletionRequest, context: GrpcContext) -> CompletionResponse:
         inputs = self.tokenizer(
             request.prompt, return_tensors="pt").to(self.device)
-        logging.error(f"Request:  { request }")
+        logging.debug(f"Request:  { request }")
         # error checking for valid params
         tokens = self.model.generate(
                 **inputs,
@@ -46,13 +46,13 @@ class StableLM(CompletionServiceServicer):
                 eos_token_id=self.tokenizer.eos_token_id,
                 stopping_criteria=StoppingCriteriaList([StopOnTokens()])
             )
-        logging.error(f"Response {tokens}")
+        logging.debug(f"Response {tokens}")
         # Extract out only the completion tokens
         completion_tokens = tokens[0][inputs['input_ids'].size(1):]
         completion = self.tokenizer.decode(completion_tokens, skip_special_tokens=True)
 
         # response = self.tokenizer.decode(tokens[0], skip_special_tokens=False)
-        logging.error(f"Decoded Response: {completion}")
+        logging.debug(f"Decoded Response: {completion}")
         return CompletionResponse(completion=completion)
 
 
