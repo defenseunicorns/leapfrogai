@@ -324,40 +324,55 @@ func complete(c *gin.Context) {
 	if conn == nil {
 		return
 	}
-	client := generate.NewCompletionServiceClient(conn)
-	// Implement the completion logic here, using the data from `input`
-	response, err := client.Complete(c.Request.Context(), &generate.CompletionRequest{
-		Prompt:      input.Prompt.(string),
-		Suffix:      input.Suffix,
-		MaxTokens:   int32(input.MaxTokens),
-		Temperature: input.Temperature,
-		TopP:        input.TopP,
-		N:           int32(input.N),
-		Stream:      input.Stream,
-		Logprobs:    int32(input.LogProbs),
-		Echo:        input.Echo,
-		// Stop:             input.Stop, // Wrong type here...
-		PresencePenalty:  input.PresencePenalty,
-		FrequencePenalty: input.FrequencyPenalty,
-		BestOf:           int32(input.BestOf),
-		// LogitBias:        input.LogitBias, // Wrong type here
-	})
-	if err != nil {
-		log.Printf("500: Error completing via backend(%v): %v\n", input.Model, err)
-		c.JSON(500, err)
-		return
+
+	logit := make(map[string]int32)
+	for k, v := range input.LogitBias {
+		logit[k] = int32(v)
 	}
+
+	client := generate.NewCompletionServiceClient(conn)
+
 	id, _ := uuid.NewRandom()
+	if input.N == 0 {
+		input.N = 1
+	}
 	resp := openai.CompletionResponse{
 		ID:      id.String(),
 		Created: time.Now().Unix(),
 		Model:   input.Model,
-		Choices: []openai.CompletionChoice{
-			{
-				Text: response.GetCompletion(),
-			},
-		},
+		Choices: make([]openai.CompletionChoice, input.N),
 	}
+
+	for i := 0; i < input.N; i++ {
+		// Implement the completion logic here, using the data from `input`
+		response, err := client.Complete(c.Request.Context(), &generate.CompletionRequest{
+			Prompt:           input.Prompt.(string),
+			Suffix:           input.Suffix,
+			MaxTokens:        int32(input.MaxTokens),
+			Temperature:      input.Temperature,
+			TopP:             input.TopP,
+			Stream:           input.Stream,
+			Logprobs:         int32(input.LogProbs),
+			Echo:             input.Echo,
+			Stop:             input.Stop, // Wrong type here...
+			PresencePenalty:  input.PresencePenalty,
+			FrequencePenalty: input.FrequencyPenalty,
+			BestOf:           int32(input.BestOf),
+			LogitBias:        logit, // Wrong type here
+		})
+		if err != nil {
+			log.Printf("500: Error completing via backend(%v): %v\n", input.Model, err)
+			c.JSON(500, err)
+			return
+		}
+		choice := openai.CompletionChoice{
+			Text:         response.GetCompletion(),
+			FinishReason: response.GetFinishReason(),
+			Index:        i,
+		}
+		resp.Choices[i] = choice
+	}
+
 	c.JSON(200, resp)
 	// Send the response
 }
