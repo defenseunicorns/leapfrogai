@@ -1,6 +1,6 @@
 [project]
 name = "leapfrogai"
-version = "0.2.0"
+version = "0.2.0.post6"
 
 description = "A tool for building gRPC-based model backends for LeapfrogAI"
 authors = [
@@ -30,4 +30,4 @@ build-backend = "hatchling.build"
 
 [tool.hatch.build]
 include = ["leapfrogai/"]
-exclude = ["leapfrogai/pyvenv.cfg"]
+exclude = ["leapfrogai/pyvenv.cfg", "leapfrogai/requirements.txt"]

@@ -24,6 +24,6 @@ WORKDIR /home/$USER/app
 
 
 ENV PYTORCH_CUDA_ALLOC_CONF=max_split_size_mb:1024
-COPY requirements.txt leapfrog/requirements.txt
-RUN pip3 install -r leapfrog/requirements.txt
-COPY . leapfrog/
+COPY requirements.txt leapfrogai/requirements.txt
+RUN pip3 install -r leapfrogai/requirements.txt
+COPY . leapfrogai/
