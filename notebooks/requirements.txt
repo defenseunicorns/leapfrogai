@@ -1,6 +1,6 @@
 aiohttp
 numpy==1.25.0
-openai==0.27.7
+openai==0.27.8
 pandas==1.5.3
 redis==4.6.0
 requests==2.31.0
