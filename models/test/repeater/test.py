@@ -1,20 +1,23 @@
-from pathlib import Path
 import sys
+from pathlib import Path
+
 path_root = Path(__file__).parents[2]
 sys.path.append(str(path_root))
 print(sys.path)
 import grpc
-import leapfrog
 from google.protobuf import empty_pb2 as google_dot_protobuf_dot_empty__pb2
+
+import leapfrogai
+
 
 def run():
     # Set up a channel to the server
-    with grpc.insecure_channel('localhost:50051') as channel:
+    with grpc.insecure_channel("localhost:50051") as channel:
         # Instantiate a stub (client)
-        stub = leapfrog.CompletionServiceStub(channel)
+        stub = leapfrogai.CompletionServiceStub(channel)
 
         # Create a request
-        request = leapfrog.CompletionRequest(
+        request = leapfrogai.CompletionRequest(
             prompt="Hello, Chatbot!",
             # add other parameters as necessary
         )
@@ -25,14 +28,14 @@ def run():
         # Print the response
         print("Received response: ", response.completion)
 
-        name = leapfrog.NameServiceStub(channel)
+        name = leapfrogai.NameServiceStub(channel)
         response = name.Name(google_dot_protobuf_dot_empty__pb2.Empty())
         print(f"Recieved name: { response }")
 
-        embed = leapfrog.EmbeddingsServiceStub(channel)
-        r = embed.CreateEmbedding(leapfrog.EmbeddingRequest(
-            inputs=["foobar"]
-        ))
+        embed = leapfrogai.EmbeddingsServiceStub(channel)
+        r = embed.CreateEmbedding(leapfrogai.EmbeddingRequest(inputs=["foobar"]))
         print(f"Recieved embedding: { r }")
+
+
 if __name__ == "__main__":
     run()
