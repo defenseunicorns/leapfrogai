@@ -7,12 +7,15 @@ TAG ?= 0.2.0
 
 build: api stablelm stablelm-7b embeddings whisper
 
+requirements:
+	pip-compile -o leapfrogai/requirements.txt pyproject.toml
+
 push:
 	docker push ghcr.io/defenseunicorns/leapfrogai/stablelm-3b:${TAG}
 	docker push ghcr.io/defenseunicorns/leapfrogai/embeddings:${TAG}
 
 base:
-	docker build --network=host -t ghcr.io/defenseunicorns/leapfrogai/base:${TAG} -f leapfrog/Dockerfile leapfrog
+	docker build --network=host -t ghcr.io/defenseunicorns/leapfrogai/base:${TAG} -f leapfrogai/Dockerfile leapfrogai
 
 api:
 	docker build --network=host -t ghcr.io/defenseunicorns/leapfrogai/api:${TAG} .
@@ -55,10 +58,10 @@ gen: gen-go gen-python
 
 
 gen-python:
-	python3 -m grpc_tools.protoc --proto_path=proto/ generate/generate.proto --python_out=leapfrog  --pyi_out=leapfrog --grpc_python_out=leapfrog
-	python3 -m grpc_tools.protoc --proto_path=proto audio/audio.proto --python_out=leapfrog  --pyi_out=leapfrog --grpc_python_out=leapfrog
-	python3 -m grpc_tools.protoc --proto_path=proto embeddings/embeddings.proto --python_out=leapfrog  --pyi_out=leapfrog --grpc_python_out=leapfrog
-	python3 -m grpc_tools.protoc --proto_path=proto name/name.proto --python_out=leapfrog  --pyi_out=leapfrog --grpc_python_out=leapfrog
+	python3 -m grpc_tools.protoc --proto_path=proto/ generate/generate.proto --python_out=leapfrogai  --pyi_out=leapfrogai --grpc_python_out=leapfrogai
+	python3 -m grpc_tools.protoc --proto_path=proto audio/audio.proto --python_out=leapfrogai  --pyi_out=leapfrogai --grpc_python_out=leapfrogai
+	python3 -m grpc_tools.protoc --proto_path=proto embeddings/embeddings.proto --python_out=leapfrogai  --pyi_out=leapfrogai --grpc_python_out=leapfrogai
+	python3 -m grpc_tools.protoc --proto_path=proto name/name.proto --python_out=leapfrogai  --pyi_out=leapfrogai --grpc_python_out=leapfrogai
 
 
 gen-go:

@@ -4,7 +4,7 @@ from typing import Iterator
 
 import whisper
 
-import leapfrog
+import leapfrogai
 
 model = whisper.load_model("large")
 
@@ -16,8 +16,8 @@ def make_transcribe_request(filename, task, language, temperature, prompt):
 
 
 def call_whisper(
-    request_iterator: Iterator[leapfrog.AudioRequest], task: str
-) -> leapfrog.AudioResponse:
+    request_iterator: Iterator[leapfrogai.AudioRequest], task: str
+) -> leapfrogai.AudioResponse:
     data = bytearray()
     prompt = ""
     temperature = 0.0
@@ -43,28 +43,28 @@ def call_whisper(
             f.name, task, inputLanguage, temperature, prompt
         )
         text = str(result["text"])
-        return leapfrog.AudioResponse(text=text)
+        return leapfrogai.AudioResponse(text=text)
 
 
-class Whisper(leapfrog.AudioServicer):
+class Whisper(leapfrogai.AudioServicer):
     def Translate(
         self,
-        request_iterator: Iterator[leapfrog.AudioRequest],
-        context: leapfrog.GrpcContext,
+        request_iterator: Iterator[leapfrogai.AudioRequest],
+        context: leapfrogai.GrpcContext,
     ):
         return call_whisper(request_iterator, "translate")
 
     def Transcribe(
         self,
-        request_iterator: Iterator[leapfrog.AudioRequest],
-        context: leapfrog.GrpcContext,
+        request_iterator: Iterator[leapfrogai.AudioRequest],
+        context: leapfrogai.GrpcContext,
     ):
         return call_whisper(request_iterator, "transcribe")
 
     def Name(self, request, context):
-        return leapfrog.NameResponse(name="whisper")
+        return leapfrogai.NameResponse(name="whisper")
 
 
 if __name__ == "__main__":
     logging.basicConfig(level=logging.INFO)
-    leapfrog.serve(Whisper())
+    leapfrogai.serve(Whisper())

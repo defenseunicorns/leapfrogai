@@ -1,0 +1,33 @@
+[project]
+name = "leapfrogai"
+version = "0.2.0"
+
+description = "A tool for building gRPC-based model backends for LeapfrogAI"
+authors = [
+    { name = "LeapfrogAI Authors", email = "ai@defenseunicorns.com" },
+    { name = "Gerred Dillon", email = "gerred@defenseunicorns.com" },
+    { name = "Tom Runyon", email = "tom@defenseunicorns.com" },
+]
+license = { file = "LICENSE" }
+readme = "leapfrogai/README.md"
+classifiers = [
+    "Programming Language :: Python :: 3",
+    "License :: OSI Approved :: Apache Software License",
+    "Operating System :: OS Independent",
+    "Topic :: Scientific/Engineering :: Artificial Intelligence",
+    "Development Status :: 3 - Alpha",
+]
+requires-python = ">=3.9"
+dependencies = ["grpcio >= 1.56.0", "protobuf >= 4.23.3"]
+
+[project.optional-dependencies]
+tests = ["pytest"]
+build = ["build", "hatchling", "twine"]
+
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[tool.hatch.build]
+include = ["leapfrogai/"]
+exclude = ["leapfrogai/pyvenv.cfg", "leapfrogai/requirements.txt"]
