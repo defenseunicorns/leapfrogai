@@ -1,4 +1,4 @@
-![LeapfrogAI Logo](docs/imgs/leapfrogai.png)
+![LeapfrogAI Logo](https://github.com/defenseunicorns/leapfrogai/raw/main/docs/imgs/leapfrogai.png)
 
 ## Table of Contents
 1. [Project Goal](#project-goal)
