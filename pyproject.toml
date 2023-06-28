@@ -9,7 +9,7 @@ authors = [
     { name = "Tom Runyon", email = "tom@defenseunicorns.com" },
 ]
 license = { file = "LICENSE" }
-readme = "README.md"
+readme = "leapfrogai/README.md"
 classifiers = [
     "Programming Language :: Python :: 3",
     "License :: OSI Approved :: Apache Software License",
