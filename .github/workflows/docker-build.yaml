@@ -15,7 +15,7 @@ jobs:
 
     - name: Run Makefile command
       # just building, not pushing them
-      run: make api base repeater
+      run: make api repeater
     - name: install deps
       run: pip install -r models/test/repeater/requirements.txt
     - name: Simple Test
