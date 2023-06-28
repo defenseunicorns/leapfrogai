@@ -37,22 +37,6 @@ Large Language Models (LLMs) are a powerful resource for AI-driven decision maki
 
 * Embeddings Creation: Embeddings are fundamental to the working of many AI algorithms. LeapfrogAI provides services to generate embeddings which can be used for a variety of tasks such as semantic similarity, clustering, and more.
 
-## Architecture
-
-Leapfrog exposes both Weaviate and LLM and embedding generative capabilities over HTTP.  However, internal communications are a combination of gRPC and HTTP connections as described below:
-
-```mermaid
-graph LR;
-    A[User] --HTTP--> L[LeapfrogAI]
-    L ---->|HTTP| B(API)
-    B ----> |gRPC| C(StableLM)
-    B ----> |gRPC| D(WhisperAI)
-    B ----> |gRPC| E(all-MiniLM-L6-v2)
-
-    L ---->|HTTP| W[Weaviate]
-    W --/embeddings-->B
-```
-
 ## Getting Started <a name="getting-started"></a>
 
 ### Setting up the Kubernetes Cluster
@@ -108,25 +92,11 @@ In addition, tools like [Weaviate](https://weaviate.io/) are deployed to allow f
 See the [Getting Started Notebook](notebooks/gettingstarted.ipynb) for example of using the API with the OpenAI python module.
 
 
-# Building `leapfrogai` and updating PyPi
+# Contributing
+
+## Building `leapfrogai` and updating PyPi
 
 1. Change the version in `pyproject.toml`
 2. `python3 -m pip install --upgrade build hatchling twine`
 3. `python3 -m build`
 4. `python3 -m twine upload dist/*`
-
-
-# Community
-
-Real-time discussions about LeapfrogAI development happen in [Discord](https://discord.com/invite/leapfrog). Discussions should be civil and focused on the open source development of LeapfrogAI. Distribution of proprietary or non-distributable code or model weights are prohibited and will be removed.
-
-LeapfrogAI is supported by a community of users and contributors, including:
-
-* [Defense Unicorns](https://defenseunicorns.com)
-* [Beast Code](https://beast-code.com)
-* [Hypergiant](https://www.hypergiant.com/)
-* [United States Navy](https://www.navy.mil/)
-
-[![Defense Unicorns logo](docs/imgs/user-logos/defense-unicorns.png)](https://defenseunicorns.com)[![Beast Code logo](docs/imgs/user-logos/beast-code.png)](https://beast-code.com)[![Hypergiant logo](docs/imgs/user-logos/hypergiant.png)](https://hypergiant.com)
-
-*Want to add your organization or logo to this list? [Open a PR!](https://github.com/defenseunicorns/leapfrogai/edit/main/README.md)*

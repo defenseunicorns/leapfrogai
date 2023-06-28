@@ -21,13 +21,9 @@ RUN pip install --upgrade pip setuptools wheel
 
 # Define workdir
 WORKDIR /home/$USER/app
-# Install Rye
-
-RUN curl -sSf https://rye-up.com/get | RYE_VERSION="0.6.0" RYE_INSTALL_OPTION="--yes" bash
-
 
 
 ENV PYTORCH_CUDA_ALLOC_CONF=max_split_size_mb:1024
-COPY requirements.txt leapfrog/requirements.txt
-RUN pip3 install -r leapfrog/requirements.txt
-COPY . leapfrog/
+COPY requirements.txt leapfrogai/requirements.txt
+RUN pip3 install -r leapfrogai/requirements.txt
+COPY . leapfrogai/

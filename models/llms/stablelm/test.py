@@ -5,7 +5,8 @@ path_root = Path(__file__).parents[2]
 sys.path.append(str(path_root))
 print(sys.path)
 import grpc
-import leapfrog
+
+import leapfrogai
 
 system_prompt = """<|SYSTEM|># StableLM Tuned (Alpha version)
 - StableLM is a helpful and harmless open-source AI language model developed by StabilityAI.
@@ -19,12 +20,12 @@ prompt = f"{system_prompt}<|USER|>What's your mood today?<|ASSISTANT|>"
 
 def run():
     # Set up a channel to the server
-    with grpc.insecure_channel('localhost:50051') as channel:
+    with grpc.insecure_channel("localhost:50051") as channel:
         # Instantiate a stub (client)
-        stub = leapfrog.CompletionServiceStub(channel)
+        stub = leapfrogai.CompletionServiceStub(channel)
 
         # Create a request
-        request = leapfrog.CompletionRequest(
+        request = leapfrogai.CompletionRequest(
             prompt=prompt,
             max_tokens=64,
             temperature=0.01,
@@ -35,5 +36,7 @@ def run():
 
         # Print the response
         print("Received response: ", response.completion)
+
+
 if __name__ == "__main__":
     run()
