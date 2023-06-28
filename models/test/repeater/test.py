@@ -9,13 +9,14 @@ from google.protobuf import empty_pb2 as google_dot_protobuf_dot_empty__pb2
 
 def run():
     # Set up a channel to the server
-    with grpc.insecure_channel('localhost:50051') as channel:
+    with grpc.insecure_channel('127.0.0.1:50051') as channel:
         # Instantiate a stub (client)
         stub = leapfrog.CompletionServiceStub(channel)
 
         # Create a request
         request = leapfrog.CompletionRequest(
             prompt="Hello, Chatbot!",
+            max_tokens=150,
             # add other parameters as necessary
         )
 

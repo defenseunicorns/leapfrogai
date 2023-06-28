@@ -8,7 +8,6 @@ TAG ?= 0.2.0
 build: api stablelm stablelm-7b embeddings whisper
 
 push:
-	
 	docker push ghcr.io/defenseunicorns/leapfrogai/stablelm-3b:${TAG}
 	docker push ghcr.io/defenseunicorns/leapfrogai/embeddings:${TAG}
 
@@ -22,22 +21,22 @@ api-push:
 
 stablelm:
 	cd models/llms/stablelm && \
-	docker build --network=host -t ghcr.io/defenseunicorns/leapfrogai/stablelm-3b:${TAG} .
+	docker build --network=host --build-arg IMAGE_TAG=${TAG} -t ghcr.io/defenseunicorns/leapfrogai/stablelm-3b:${TAG} .
 
 embeddings:
 	cd  models/text2vec/all-minilm-l6-v2/ && \
-	docker build --network=host -t ghcr.io/defenseunicorns/leapfrogai/embeddings:${TAG} .
+	docker build --network=host --build-arg IMAGE_TAG=${TAG} -t ghcr.io/defenseunicorns/leapfrogai/embeddings:${TAG} .
 
 whisper:
 	cd models/speech2text/whisper && \
-	docker build --network=host -t ghcr.io/defenseunicorns/leapfrogai/whisper:${TAG} .
+	docker build --network=host --build-arg IMAGE_TAG=${TAG} -t ghcr.io/defenseunicorns/leapfrogai/whisper:${TAG} .
 
 whisper-push:
 	docker push ghcr.io/defenseunicorns/leapfrogai/whisper:${TAG}
 
 repeater:
 	cd models/test/repeater && \
-	docker build --network=host -t ghcr.io/defenseunicorns/leapfrogai/repeater:${TAG} .
+	docker build --network=host --build-arg IMAGE_TAG=${TAG} -t ghcr.io/defenseunicorns/leapfrogai/repeater:${TAG} .
 
 repeater-push:
 	docker push ghcr.io/defenseunicorns/leapfrogai/repeater:${TAG}
@@ -89,3 +88,11 @@ update-stablelm: stablelm
 	docker tag ghcr.io/defenseunicorns/leapfrogai/stablelm-3b:${TAG} localhost:5001/defenseunicorns/leapfrogai/stablelm-3b:${TAG}-zarf-1442747400
 	docker push localhost:5001/defenseunicorns/leapfrogai/stablelm-3b:${TAG}-zarf-1442747400
 	kubectl delete pods -n leapfrogai -l app=stablelm
+
+test-init:
+	docker run -p 50051:50051 -d --rm --name repeater  ghcr.io/defenseunicorns/leapfrogai/repeater:${TAG}
+	
+test:
+	PYTHONPATH="." python3 models/test/repeater/test.py
+teardown:
+	docker kill repeater
