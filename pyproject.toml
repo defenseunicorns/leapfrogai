@@ -21,6 +21,7 @@ dependencies = ["grpcio >= 1.56.0", "protobuf >= 4.23.3"]
 
 [project.optional-dependencies]
 tests = ["pytest"]
+build = ["build", "hatchling", "twine"]
 
 [build-system]
 requires = ["hatchling"]
