@@ -1,4 +1,5 @@
-FROM ghcr.io/defenseunicorns/leapfrogai/base:0.0.4
+ARG IMAGE_TAG
+FROM ghcr.io/defenseunicorns/leapfrogai/base:${IMAGE_TAG}
 
 COPY requirements.txt .
 RUN pip3 install -r requirements.txt
