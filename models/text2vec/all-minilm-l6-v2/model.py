@@ -3,8 +3,14 @@ import logging
 from get_models import MODEL_ID
 from sentence_transformers import SentenceTransformer
 
-from leapfrog import (EmbeddingRequest, EmbeddingResponse, Embedding,
-                      EmbeddingsServiceServicer, GrpcContext, serve)
+from leapfrogai import (
+    Embedding,
+    EmbeddingRequest,
+    EmbeddingResponse,
+    EmbeddingsServiceServicer,
+    GrpcContext,
+    serve,
+)
 
 
 class AllMiniLML6V2(EmbeddingsServiceServicer):
@@ -13,7 +19,7 @@ class AllMiniLML6V2(EmbeddingsServiceServicer):
     def CreateEmbedding(self, request: EmbeddingRequest, context: GrpcContext):
         embeddings = self.model.encode(request.inputs)
         print(embeddings)
-        
+
         embeddings = [Embedding(embedding=inner_list) for inner_list in embeddings]
         return EmbeddingResponse(embeddings=embeddings)
 
