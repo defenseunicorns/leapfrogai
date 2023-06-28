@@ -7,7 +7,7 @@ authors = [
 ]
 dependencies = [
     "datasets~=2.13.1",
-    "transformers~=4.29.2",
+    "transformers~=4.30.2",
     "torch~=2.0.1",
     "soundfile~=0.12.1",
     "librosa~=0.10.0.post2",
