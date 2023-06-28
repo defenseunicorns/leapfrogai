@@ -19,6 +19,7 @@ def run():
         # Create a request
         request = leapfrogai.CompletionRequest(
             prompt="Hello, Chatbot!",
+            max_tokens=150,
             # add other parameters as necessary
         )
 
