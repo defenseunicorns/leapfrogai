@@ -2,7 +2,7 @@ aiohttp
 numpy==1.25.0
 openai==0.27.7
 pandas==1.5.3
-redis==4.5.5
+redis==4.6.0
 requests==2.31.0
 streamlit==1.23.1
 streamlit_chat==0.0.2.2
