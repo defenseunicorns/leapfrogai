@@ -1,7 +1,7 @@
 import openai
 
 openai.api_base = "http://localhost:8080/openai"
-openai.api_key = "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"
+openai.api_key = "removed"
 
 # prompt = """<|im_start|>system
 # A conversation between a user and an LLM-based AI assistant. The assistant gives helpful, honest, and convcise answers.
