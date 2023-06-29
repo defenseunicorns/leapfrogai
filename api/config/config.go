@@ -1,6 +1,10 @@
 package config
 
 import (
+	"fmt"
+	"os"
+	"path/filepath"
+
 	"github.com/BurntSushi/toml"
 )
 
@@ -23,9 +27,34 @@ type Network struct {
 	Type string `toml:"type"`
 }
 
-func LoadConfig(path string) (Config, error) {
-	var config Config
-	_, err := toml.DecodeFile(path, &config)
+func LoadConfigs(path string) (Config, error) {
+	// get all *.toml files in the path
+	c := make(Config)
+	files, err := os.ReadDir(path)
+	if err != nil {
+		return c, err
+	}
 
-	return config, err
+	for _, file := range files {
+		if file.IsDir() {
+			continue
+		}
+
+		if filepath.Ext(file.Name()) != ".toml" {
+			continue
+		}
+		fileName := filepath.Join(path, file.Name())
+		fmt.Printf("Loading config from %v\n", fileName)
+		var config Config
+		_, err = toml.DecodeFile(fileName, &config)
+		if err != nil {
+			fmt.Printf("Error loading toml file %v: %v", fileName, err)
+			continue
+		}
+		for k, v := range config {
+			c[k] = v
+		}
+	}
+
+	return c, nil
 }

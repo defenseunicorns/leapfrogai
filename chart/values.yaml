@@ -7,6 +7,9 @@ istio:
   enabled: false
   gateway: tenant
 
+api:
+  replicas: 1
+  port: 8080
 
 monitoring:
   enabled: false

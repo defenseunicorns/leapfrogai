@@ -14,8 +14,10 @@ import (
 	"github.com/defenseunicorns/leapfrogai/pkg/client/audio"
 	embedding "github.com/defenseunicorns/leapfrogai/pkg/client/embeddings"
 	"github.com/defenseunicorns/leapfrogai/pkg/client/generate"
+	"github.com/fsnotify/fsnotify"
 	"github.com/gin-gonic/gin"
 	"github.com/google/uuid"
+	"github.com/penglongli/gin-metrics/ginmetrics"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/credentials/insecure"
 
@@ -25,19 +27,21 @@ import (
 var cfg config.Config
 
 func main() {
-	var err error
-	modelPath := os.Getenv("CONFIG_PATH")
-	if modelPath == "" {
-		modelPath = "models.toml"
-	}
-	cfg, err = config.LoadConfig(modelPath)
-	if err != nil {
-		log.Fatalf("Error loading model config file: %v", err)
-	}
 
-	gin.SetMode(gin.ReleaseMode)
+	go watch_config()
+	// gin.SetMode(gin.ReleaseMode)
 	r := gin.Default()
 
+	// Add promtheus endpoint for custom metrics
+	// get global Monitor object
+	m := ginmetrics.GetMonitor()
+
+	// +optional set metric path, default /debug/metrics
+	m.SetMetricPath("/metrics")
+
+	m.Use(r)
+
+	r.GET("/healthz")
 	r.GET("/openai/models", showModels)
 	r.GET("/openai/models/:model_id", showModel)
 	r.POST("/openai/completions", complete)
@@ -135,7 +139,6 @@ func audioTranscriptions(c *gin.Context) {
 
 	file, err := f.Open()
 	defer file.Close()
-
 	if err != nil {
 		c.JSON(500, err)
 		return
@@ -143,7 +146,10 @@ func audioTranscriptions(c *gin.Context) {
 	conn := getModelClient(c, r.Model)
 	client := audio.NewAudioClient(conn)
 	stream, err := client.Transcribe(context.Background())
-
+	if err != nil {
+		log.Default().Printf("Error calling transcribe to %v: %v", r.Model, err)
+		c.JSON(500, err)
+	}
 	if r.ResponseFormat == "" {
 		r.ResponseFormat = "json"
 	}
@@ -409,4 +415,49 @@ type EmbeddingRequest struct {
 	Model openai.EmbeddingModel `json:"model"`
 	// A unique identifier representing your end-user, which will help OpenAI to monitor and detect abuse.
 	User string `json:"user"`
+}
+
+func watch_config() {
+	var err error
+	modelPath := os.Getenv("CONFIG_PATH")
+	if modelPath == "" {
+		modelPath = "."
+	}
+	fmt.Printf("Using config path: %v\n", modelPath)
+	cfg, err = config.LoadConfigs(modelPath)
+	if err != nil {
+		log.Fatalf("Error loading model config file: %v", err)
+	}
+	// Watch the config file
+	watcher, err := fsnotify.NewWatcher()
+	if err != nil {
+		log.Fatalf("Failed to create watcher: %v", err)
+	}
+	defer watcher.Close()
+	err = watcher.Add(modelPath)
+	if err != nil {
+		log.Fatalf("Failed to add file to watcher: %v", err)
+	}
+
+	for {
+		select {
+		case event := <-watcher.Events:
+			// Check if the file was modified
+			if event.Op&fsnotify.Write == fsnotify.Write {
+				fmt.Println("Configuration file changed, reloading...")
+
+				// Reload the config file
+
+				c, err := config.LoadConfigs(modelPath)
+				if err != nil {
+					fmt.Printf("Error loading model config file: %v", err)
+					fmt.Printf("Falling back to previous version")
+					continue
+				}
+				cfg = c
+			}
+		case err := <-watcher.Errors:
+			log.Printf("Watcher error: %v", err)
+		}
+	}
 }
