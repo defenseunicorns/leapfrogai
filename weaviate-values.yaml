@@ -47,22 +47,3 @@ storage:
   size: 32Gi # default
 
 domain: "###ZARF_VAR_DOMAIN###"
-
-istio:
-  enabled: true
-
-monitoring:
-  enabled: true
-
-
-
-models:
-  stablelm3b:
-    enabled: true
-  all_MiniLM_L6_v2:
-    enabled: false
-  whisper:
-    enabled: false
-  repeater: 
-    enabled: true
-  

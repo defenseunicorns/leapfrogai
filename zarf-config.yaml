@@ -4,7 +4,7 @@ package:
       repo: "https://github.com/weaviate/weaviate-helm"
       tag: "v16.3.1"
       name: "weaviate"
-      values_file: "../values.yaml"
+      values_file: "../weaviate-values.yaml"
       path: "./weaviate"
       namespace: "weaviate"
     max_package_size: "1000000000"
