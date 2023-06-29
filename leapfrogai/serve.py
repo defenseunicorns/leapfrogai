@@ -15,6 +15,10 @@ def serve(o):
     if hasattr(o, "Complete"):
         generate_pb2_grpc.add_CompletionServiceServicer_to_server(o, server)
 
+    if hasattr(o, "CompleteStream"):
+        print("adding streaming endpoint")
+        generate_pb2_grpc.add_CompletionStreamServiceServicer_to_server(o, server)
+
     if hasattr(o, "CreateEmbedding"):
         embeddings_pb2_grpc.add_EmbeddingsServiceServicer_to_server(o, server)
 

@@ -1,12 +1,11 @@
-[stablelm-3b]
+[ctransformers]
 
-[stablelm-3b.metadata]
+[ctransformers.metadata]
 owned_by = 'Defense Unicorns'
 permission = []
-description = 'Stablelm-3b tuned'
+description = 'ctransformers tuned'
 tasks = ["completion"]
 
-[stablelm-3b.network]
+[ctransformers.network]
 url = 'localhost:50051'
 type = 'gRPC'
-
