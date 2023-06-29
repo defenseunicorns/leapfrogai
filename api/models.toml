@@ -6,19 +6,8 @@
 #     [llama-7B-4b.network]
 #         url = 'alpaca:50051'
 #         type = 'gRPC'
-[stablelm-3b]
-
-[stablelm-3b.metadata]
-owned_by = 'Defense Unicorns'
-permission = []
-description = 'Stablelm-3b tuned'
-tasks = ["completion"]
-
-[stablelm-3b.network]
-url = 'localhost:50051'
-type = 'gRPC'
-
 [text-embedding-ada-002]
+
 
 [text-embedding-ada-002.metadata]
 owned_by = 'Defense Unicorns'

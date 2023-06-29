@@ -1,0 +1,12 @@
+[stablelm-3b]
+
+[stablelm-3b.metadata]
+owned_by = 'Defense Unicorns'
+permission = []
+description = 'Stablelm-3b tuned'
+tasks = ["completion"]
+
+[stablelm-3b.network]
+url = 'localhost:50051'
+type = 'gRPC'
+
