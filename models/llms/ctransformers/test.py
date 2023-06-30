@@ -35,14 +35,14 @@ def run():
         # Create a request
         request = leapfrogai.CompletionRequest(
             prompt=system_prompt,
-            max_tokens=512,
+            max_new_tokens=512,
             temperature=1.0,
         )
 
         # Make a call to the server and get a response
         response: leapfrogai.CompletionResponse = stub.Complete(request)
 
-        print(response.completion)
+        print(response)
 
 
 if __name__ == "__main__":

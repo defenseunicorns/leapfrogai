@@ -13,8 +13,9 @@ import (
 
 	"github.com/defenseunicorns/leapfrogai/api/config"
 	"github.com/defenseunicorns/leapfrogai/pkg/client/audio"
+	"github.com/defenseunicorns/leapfrogai/pkg/client/completion"
 	embedding "github.com/defenseunicorns/leapfrogai/pkg/client/embeddings"
-	"github.com/defenseunicorns/leapfrogai/pkg/client/generate"
+	"github.com/defenseunicorns/leapfrogai/pkg/util"
 	"github.com/gin-gonic/gin"
 	"github.com/google/uuid"
 	"github.com/sashabaranov/go-openai"
@@ -315,12 +316,12 @@ func (o *OpenAIHandler) complete(c *gin.Context) {
 	id, _ := uuid.NewRandom()
 
 	if input.Stream {
-		chanStream := make(chan *generate.CompletionResponse, 10)
-		client := generate.NewCompletionStreamServiceClient(conn)
-		stream, err := client.CompleteStream(context.Background(), &generate.CompletionRequest{
-			Prompt:      input.Prompt.(string),
-			MaxTokens:   int32(input.MaxTokens),
-			Temperature: input.Temperature,
+		chanStream := make(chan *completion.CompletionResponse, 10)
+		client := completion.NewCompletionStreamServiceClient(conn)
+		stream, err := client.CompleteStream(context.Background(), &completion.CompletionRequest{
+			Prompt:       input.Prompt.(string),
+			MaxNewTokens: util.Int32(int32(input.MaxTokens)),
+			Temperature:  util.Float32(input.Temperature),
 		})
 
 		if err != nil {
@@ -350,7 +351,7 @@ func (o *OpenAIHandler) complete(c *gin.Context) {
 					Choices: []openai.CompletionChoice{
 						{
 							Index: 0,
-							Text:  msg.GetCompletion(),
+							Text:  msg.GetChoices()[0].GetText(),
 						},
 					},
 				})
@@ -370,7 +371,7 @@ func (o *OpenAIHandler) complete(c *gin.Context) {
 			logit[k] = int32(v)
 		}
 
-		client := generate.NewCompletionServiceClient(conn)
+		client := completion.NewCompletionServiceClient(conn)
 
 		if input.N == 0 {
 			input.N = 1
@@ -384,20 +385,19 @@ func (o *OpenAIHandler) complete(c *gin.Context) {
 
 		for i := 0; i < input.N; i++ {
 			// Implement the completion logic here, using the data from `input`
-			response, err := client.Complete(c.Request.Context(), &generate.CompletionRequest{
+			response, err := client.Complete(c.Request.Context(), &completion.CompletionRequest{
 				Prompt:           input.Prompt.(string),
-				Suffix:           input.Suffix,
-				MaxTokens:        int32(input.MaxTokens),
-				Temperature:      input.Temperature,
-				TopP:             input.TopP,
-				Stream:           input.Stream,
-				Logprobs:         int32(input.LogProbs),
-				Echo:             input.Echo,
-				Stop:             input.Stop, // Wrong type here...
-				PresencePenalty:  input.PresencePenalty,
-				FrequencePenalty: input.FrequencyPenalty,
-				BestOf:           int32(input.BestOf),
-				LogitBias:        logit, // Wrong type here
+				Suffix:           util.String(input.Suffix),
+				MaxNewTokens:     util.Int32(int32(input.MaxTokens)),
+				Temperature:      util.Float32(input.Temperature),
+				TopP:             util.Float32(input.TopP),
+				Logprobs:         util.Int32(int32(input.LogProbs)),
+				Echo:             util.Bool(input.Echo),
+				Stop:             input.Stop,
+				PresencePenalty:  util.Float32(input.PresencePenalty),
+				FrequencePenalty: util.Float32(input.FrequencyPenalty),
+				BestOf:           util.Int32(int32(input.BestOf)),
+				LogitBias:        logit,
 			})
 			if err != nil {
 				log.Printf("500: Error completing via backend(%v): %v\n", input.Model, err)
@@ -405,8 +405,8 @@ func (o *OpenAIHandler) complete(c *gin.Context) {
 				return
 			}
 			choice := openai.CompletionChoice{
-				Text:         strings.TrimPrefix(response.GetCompletion(), input.Prompt.(string)),
-				FinishReason: response.GetFinishReason(),
+				Text:         response.Choices[i].GetText(),
+				FinishReason: strings.ToLower(response.Choices[i].GetFinishReason().Enum().String()),
 				Index:        i,
 			}
 			resp.Choices[i] = choice
@@ -436,7 +436,7 @@ func (o *OpenAIHandler) getModelClient(c *gin.Context, model string) *grpc.Clien
 
 // EmbeddingRequest is the input to a Create embeddings request.
 type EmbeddingRequest struct {
-	// Input is a slice of strings for which you want to generate an Embedding vector.
+	// Input is a slice of strings for which you want to completion an Embedding vector.
 	// Each input must not exceed 2048 tokens in length.
 	// OpenAPI suggests replacing newlines (\n) in your input with a single space, as they
 	// have observed inferior results when newlines are present.
