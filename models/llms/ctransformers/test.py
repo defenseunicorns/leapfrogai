@@ -30,7 +30,7 @@ def run():
     with grpc.insecure_channel("localhost:50051") as channel:
         # Instantiate a stub (client)
 
-        stub = leapfrogai.CompletionStreamServiceStub(channel)
+        stub = leapfrogai.CompletionServiceStub(channel)
 
         # Create a request
         request = leapfrogai.CompletionRequest(
@@ -40,10 +40,9 @@ def run():
         )
 
         # Make a call to the server and get a response
-        response: Iterator[leapfrogai.CompletionResponse] = stub.CompleteStream(request)
+        response: leapfrogai.CompletionResponse = stub.Complete(request)
 
-        for text in response:
-            print(text, end="")
+        print(response.completion)
 
 
 if __name__ == "__main__":
