@@ -4,58 +4,46 @@ package chat;
 
 option go_package = "github.com/defenseunicorns/leapfrogai/pkg/client/chat";
 
-// ChatRequest is the payload to Chat creation
-message ChatRequest {
-    repeated string inputs = 1;
-}
-
-message Chat {
-    repeated float chat = 1;
-}
-
-// ChatResponse are what's returned by the gRPC service
-message ChatResponse {
-    repeated Chat chat = 1;
-}
-
-service ChatsService {
-    rpc ChatCompletion(ChatRequest) returns (ChatResponse);
-    rpc ChatCompletionStream(ChatRequest) returns (stream ChatResponse);
-}
-
-// Generic OpenAI
-enum OpenAIChatRole {
+// What role in the conversation are we trying to represent
+enum ChatRole {
     USER = 0;
     SYSTEM = 1;
     FUNCTION = 2;
     ASSISTANT = 3;
 }
 
-message OpenAIChatItem {
-  OpenAIChatRole role = 1;
+message ChatItem {
+  ChatRole role = 1;
   string content = 2;
 }
 
-// OpenAI ChatCompletion Request
-message OpenAIChatCompletionRequest {
-    string model = 1; // added
-    repeated OpenAIChatItem chat_items = 2; // added
-    float temperature = 3; // added
-    float top_p = 4; // added
-    int32 n = 5; //added
-    bool stream = 7; // will be used to route to either 
-    repeated string stop = 8; //added
-    int32 max_tokens = 9; // max_new_tokens
-    float presence_penalty = 10;  // added
-    float frequency_penalty = 11; // added
-    map<string, int32> logit_bias = 12; // added
-    string user = 13; // added
+// OpenAI ChatCompletion Request + HF Generate
+message ChatCompletionRequest {
+    repeated ChatItem chat_items = 1;
+    int32 max_new_tokens = 2; // max_tokens in openai
+    optional float temperature = 3;
+    optional float top_k = 4;
+    optional float top_p = 5;
+    optional bool do_sample = 6;
+    optional int32 n = 7;
+    repeated string stop = 8;
+    optional float repetition_penalty = 9;
+    optional float presence_penalty = 10;
+    optional float frequency_penalty = 11;
+    optional string best_of = 12;
+    map<string, int32> logit_bias = 13;
+    optional bool return_full_text = 14;
+    optional int32 truncate = 15;
+    optional float typical_p = 16;
+    optional bool watermark = 17; 
+    optional int32 seed = 18;
+    optional string user = 19;
 }
 
 // OpenAI ChatCompletion Request
-message OpenAICompletionChoice {
+message CompletionChoice {
     int32 index = 1;
-    OpenAIChatItem chas_item = 2;
+    ChatItem chat_item = 2;
     string finish_reason = 3;
 }
   
@@ -65,10 +53,19 @@ message Usage {
     int32 total_tokens = 3;
 }
   
-message ChatCompletionRequest {
+message ChatCompletionResponse {
     string id = 1;
     string object = 2;
     int64 created = 3;
-    repeated OpenAICompletionChoice choices = 4;
+    repeated CompletionChoice choices = 4;
     Usage usage = 5;
 }
+
+service ChatCompletionService {
+    rpc ChatComplete(ChatCompletionRequest) returns (ChatCompletionResponse);
+    rpc ChatCompleteStream(ChatCompletionRequest) returns (stream ChatCompletionResponse);
+}
+
+// service ChatCompletionStreamService {
+//     rpc ChatCompletionStream(ChatCompletionRequest) returns (stream ChatCompletionResponse);
+// }

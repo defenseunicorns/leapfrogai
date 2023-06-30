@@ -61,12 +61,12 @@ class CompletionRequest(_message.Message):
     best_of: int
     logit_bias: _containers.ScalarMap[str, int]
     return_full_text: bool
-    truncate: str
+    truncate: int
     typical_p: float
     watermark: bool
     seed: int
     user: str
-    def __init__(self, prompt: _Optional[str] = ..., suffix: _Optional[str] = ..., max_new_tokens: _Optional[int] = ..., temperature: _Optional[float] = ..., top_k: _Optional[int] = ..., top_p: _Optional[float] = ..., do_sample: bool = ..., n: _Optional[int] = ..., logprobs: _Optional[int] = ..., echo: bool = ..., stop: _Optional[_Iterable[str]] = ..., repetition_penalty: _Optional[float] = ..., presence_penalty: _Optional[float] = ..., frequence_penalty: _Optional[float] = ..., best_of: _Optional[int] = ..., logit_bias: _Optional[_Mapping[str, int]] = ..., return_full_text: bool = ..., truncate: _Optional[str] = ..., typical_p: _Optional[float] = ..., watermark: bool = ..., seed: _Optional[int] = ..., user: _Optional[str] = ...) -> None: ...
+    def __init__(self, prompt: _Optional[str] = ..., suffix: _Optional[str] = ..., max_new_tokens: _Optional[int] = ..., temperature: _Optional[float] = ..., top_k: _Optional[int] = ..., top_p: _Optional[float] = ..., do_sample: bool = ..., n: _Optional[int] = ..., logprobs: _Optional[int] = ..., echo: bool = ..., stop: _Optional[_Iterable[str]] = ..., repetition_penalty: _Optional[float] = ..., presence_penalty: _Optional[float] = ..., frequence_penalty: _Optional[float] = ..., best_of: _Optional[int] = ..., logit_bias: _Optional[_Mapping[str, int]] = ..., return_full_text: bool = ..., truncate: _Optional[int] = ..., typical_p: _Optional[float] = ..., watermark: bool = ..., seed: _Optional[int] = ..., user: _Optional[str] = ...) -> None: ...
 
 class CompletionChoice(_message.Message):
     __slots__ = ["text", "index", "finish_reason"]

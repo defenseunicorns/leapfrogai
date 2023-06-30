@@ -15,12 +15,12 @@ class CompletionServiceStub(object):
             channel: A grpc.Channel.
         """
         self.Complete = channel.unary_unary(
-                '/generate.CompletionService/Complete',
+                '/completion.CompletionService/Complete',
                 request_serializer=completion__pb2.CompletionRequest.SerializeToString,
                 response_deserializer=completion__pb2.CompletionResponse.FromString,
                 )
         self.CompleteStream = channel.unary_stream(
-                '/generate.CompletionService/CompleteStream',
+                '/completion.CompletionService/CompleteStream',
                 request_serializer=completion__pb2.CompletionRequest.SerializeToString,
                 response_deserializer=completion__pb2.CompletionResponse.FromString,
                 )
@@ -56,7 +56,7 @@ def add_CompletionServiceServicer_to_server(servicer, server):
             ),
     }
     generic_handler = grpc.method_handlers_generic_handler(
-            'generate.CompletionService', rpc_method_handlers)
+            'completion.CompletionService', rpc_method_handlers)
     server.add_generic_rpc_handlers((generic_handler,))
 
 
@@ -75,7 +75,7 @@ class CompletionService(object):
             wait_for_ready=None,
             timeout=None,
             metadata=None):
-        return grpc.experimental.unary_unary(request, target, '/generate.CompletionService/Complete',
+        return grpc.experimental.unary_unary(request, target, '/completion.CompletionService/Complete',
             completion__pb2.CompletionRequest.SerializeToString,
             completion__pb2.CompletionResponse.FromString,
             options, channel_credentials,
@@ -92,7 +92,7 @@ class CompletionService(object):
             wait_for_ready=None,
             timeout=None,
             metadata=None):
-        return grpc.experimental.unary_stream(request, target, '/generate.CompletionService/CompleteStream',
+        return grpc.experimental.unary_stream(request, target, '/completion.CompletionService/CompleteStream',
             completion__pb2.CompletionRequest.SerializeToString,
             completion__pb2.CompletionResponse.FromString,
             options, channel_credentials,

@@ -1,8 +1,8 @@
 syntax = "proto3";
 
-package generate;
+package completion;
 
-option go_package = "github.com/defenseunicorns/leapfrogai/pkg/client/generate";
+option go_package = "github.com/defenseunicorns/leapfrogai/pkg/client/completion";
 
 // CompletionRequest is the payload to request completion
 message CompletionRequest {
@@ -23,7 +23,7 @@ message CompletionRequest {
     optional int32 best_of = 15;
     map<string, int32> logit_bias = 16;  // Maps are represented as a pair of a key type and a value type.
     optional bool return_full_text = 17;
-    optional string truncate = 18;
+    optional int32 truncate = 18;
     optional float typical_p = 19;
     optional bool watermark = 20; 
     optional int32 seed = 21;
@@ -50,7 +50,7 @@ message CompletionUsage {
 // CompletionRespones are what's returned by the gRPC service
 message CompletionResponse {
     repeated CompletionChoice choices = 1;
-    CompletionUsage usage = 2;
+    optional CompletionUsage usage = 2;
 }
 
 service CompletionService {
