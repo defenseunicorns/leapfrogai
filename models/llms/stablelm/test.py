@@ -35,7 +35,7 @@ def run():
         response = stub.Complete(request)
 
         # Print the response
-        print("Received response: ", response.completion)
+        print("Received response: ", response)
 
 
 if __name__ == "__main__":

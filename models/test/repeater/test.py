@@ -27,7 +27,7 @@ def run():
         response = stub.Complete(request)
 
         # Print the response
-        print("Received response: ", response.completion)
+        print("Received response: ", response)
 
         name = leapfrogai.NameServiceStub(channel)
         response = name.Name(google_dot_protobuf_dot_empty__pb2.Empty())
