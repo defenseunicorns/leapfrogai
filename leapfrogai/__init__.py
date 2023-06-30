@@ -11,8 +11,14 @@ from .embeddings.embeddings_pb2_grpc import (
     EmbeddingsServiceServicer,
     EmbeddingsServiceStub,
 )
-from .generate.generate_pb2 import CompletionRequest, CompletionResponse
-from .generate.generate_pb2_grpc import (
+from .completion.completion_pb2 import (
+    CompletionRequest,
+    CompletionResponse,
+    CompletionChoice,
+    CompletionUsage, 
+    CompletionFinishReason,
+)
+from .completion.completion_pb2_grpc import (
     CompletionService,
     CompletionServiceServicer,
     CompletionServiceStub,

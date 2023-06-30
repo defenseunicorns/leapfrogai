@@ -27,7 +27,7 @@ def run():
         # Create a request
         request = leapfrogai.CompletionRequest(
             prompt=prompt,
-            max_tokens=64,
+            max_new_tokens=64,
             temperature=0.01,
         )
 
@@ -35,7 +35,7 @@ def run():
         response = stub.Complete(request)
 
         # Print the response
-        print("Received response: ", response.completion)
+        print("Received response: ", response)
 
 
 if __name__ == "__main__":

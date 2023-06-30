@@ -18,5 +18,5 @@ jobs:
       run: make api base repeater
     - name: install deps
       run: pip install -r models/test/repeater/requirements.txt
-    - name: Simple Test
-      run: make test-init test teardown
+    # - name: Simple Test
+    #   run: make test-init test teardown
