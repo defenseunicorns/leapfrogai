@@ -17,14 +17,6 @@ Write two sequences composed of 3 'A's and 2 'B's such that there are no two suc
 <|im_assistant|>
 """
 
-
-class Completion:
-    text: str
-
-    def __init__(self, completion):
-        self.text = completion.completion
-
-
 def run():
     # Set up a channel to the server
     with grpc.insecure_channel("localhost:50051") as channel:

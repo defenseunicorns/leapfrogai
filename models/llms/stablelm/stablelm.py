@@ -51,7 +51,7 @@ class StableLM(CompletionServiceServicer):
         # error checking for valid params
         tokens = self.model.generate(
             **inputs,
-            max_new_tokens=request.max_tokens,
+            max_new_tokens=request.max_new_tokens,
             temperature=request.temperature,
             # repetition_penalty=request.frequence_penalty,
             top_p=request.top_p,
@@ -77,7 +77,7 @@ class StableLM(CompletionServiceServicer):
         generation_kwargs = dict(
             inputs,
             streamer=streamer,
-            max_new_tokens=request.max_tokens,
+            max_new_tokens=request.max_new_tokens,
             temperature=request.temperature,
             top_p=request.top_p,
             do_sample=True,

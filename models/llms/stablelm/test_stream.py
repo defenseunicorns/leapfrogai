@@ -29,7 +29,7 @@ def run():
         # Create a request
         request = leapfrogai.CompletionRequest(
             prompt=prompt,
-            max_tokens=64,
+            max_new_tokens=64,
             temperature=0.01,
         )
 
