@@ -10,10 +10,11 @@ import grpc
 
 import leapfrogai
 
-system_prompt = """Below is an instruction that describes a task. Write a response that appropriately completes the request.
-### Instruction:
-Tell me a story about cats
-### Response:
+system_prompt = """<|im_start|>system
+You are an AI assistant that answers participates in chat discussions in an honest, concise, friendly way.<|im_end|>
+<|im_start|>user
+Write two sequences composed of 3 'A's and 2 'B's such that there are no two successive identical letter. Be consice.<|im_end|>
+<|im_assistant|>
 """
 
 
