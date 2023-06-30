@@ -3,7 +3,9 @@ package openai
 import (
 	"bufio"
 	"context"
+	"encoding/json"
 	"fmt"
+	"io"
 	"log"
 	"reflect"
 	"strings"
@@ -310,56 +312,108 @@ func (o *OpenAIHandler) complete(c *gin.Context) {
 	if conn == nil {
 		return
 	}
-
-	logit := make(map[string]int32)
-	for k, v := range input.LogitBias {
-		logit[k] = int32(v)
-	}
-
-	client := generate.NewCompletionServiceClient(conn)
-
 	id, _ := uuid.NewRandom()
-	if input.N == 0 {
-		input.N = 1
-	}
-	resp := openai.CompletionResponse{
-		ID:      id.String(),
-		Created: time.Now().Unix(),
-		Model:   input.Model,
-		Choices: make([]openai.CompletionChoice, input.N),
-	}
 
-	for i := 0; i < input.N; i++ {
-		// Implement the completion logic here, using the data from `input`
-		response, err := client.Complete(c.Request.Context(), &generate.CompletionRequest{
-			Prompt:           input.Prompt.(string),
-			Suffix:           input.Suffix,
-			MaxTokens:        int32(input.MaxTokens),
-			Temperature:      input.Temperature,
-			TopP:             input.TopP,
-			Stream:           input.Stream,
-			Logprobs:         int32(input.LogProbs),
-			Echo:             input.Echo,
-			Stop:             input.Stop, // Wrong type here...
-			PresencePenalty:  input.PresencePenalty,
-			FrequencePenalty: input.FrequencyPenalty,
-			BestOf:           int32(input.BestOf),
-			LogitBias:        logit, // Wrong type here
+	if input.Stream {
+		chanStream := make(chan *generate.CompletionResponse, 10)
+		client := generate.NewCompletionStreamServiceClient(conn)
+		stream, err := client.CompleteStream(context.Background(), &generate.CompletionRequest{
+			Prompt:      input.Prompt.(string),
+			MaxTokens:   int32(input.MaxTokens),
+			Temperature: input.Temperature,
 		})
+
 		if err != nil {
-			log.Printf("500: Error completing via backend(%v): %v\n", input.Model, err)
 			c.JSON(500, err)
 			return
 		}
-		choice := openai.CompletionChoice{
-			Text:         strings.TrimPrefix(response.GetCompletion(), input.Prompt.(string)),
-			FinishReason: response.GetFinishReason(),
-			Index:        i,
-		}
-		resp.Choices[i] = choice
-	}
 
-	c.JSON(200, resp)
+		go func() {
+			defer close(chanStream)
+			for {
+				cResp, err := stream.Recv()
+				if err == io.EOF {
+					break
+				}
+				chanStream <- cResp
+			}
+		}()
+		c.Stream(func(w io.Writer) bool {
+			if msg, ok := <-chanStream; ok {
+
+				// OpenAI places a space in between the data key and payload in HTTP. So, I guess we're bug-for-bug compatible.
+				res, err := json.Marshal(openai.CompletionResponse{
+					ID:      id.String(),
+					Created: time.Now().Unix(),
+					Model:   input.Model,
+					Object:  "text_completion",
+					Choices: []openai.CompletionChoice{
+						{
+							Index: 0,
+							Text:  msg.GetCompletion(),
+						},
+					},
+				})
+				if err != nil {
+					return false
+				}
+				c.SSEvent("", fmt.Sprintf(" %s", res))
+				return true
+			}
+			c.SSEvent("", " [DONE]")
+			return false
+		})
+	} else {
+
+		logit := make(map[string]int32)
+		for k, v := range input.LogitBias {
+			logit[k] = int32(v)
+		}
+
+		client := generate.NewCompletionServiceClient(conn)
+
+		if input.N == 0 {
+			input.N = 1
+		}
+		resp := openai.CompletionResponse{
+			ID:      id.String(),
+			Created: time.Now().Unix(),
+			Model:   input.Model,
+			Choices: make([]openai.CompletionChoice, input.N),
+		}
+
+		for i := 0; i < input.N; i++ {
+			// Implement the completion logic here, using the data from `input`
+			response, err := client.Complete(c.Request.Context(), &generate.CompletionRequest{
+				Prompt:           input.Prompt.(string),
+				Suffix:           input.Suffix,
+				MaxTokens:        int32(input.MaxTokens),
+				Temperature:      input.Temperature,
+				TopP:             input.TopP,
+				Stream:           input.Stream,
+				Logprobs:         int32(input.LogProbs),
+				Echo:             input.Echo,
+				Stop:             input.Stop, // Wrong type here...
+				PresencePenalty:  input.PresencePenalty,
+				FrequencePenalty: input.FrequencyPenalty,
+				BestOf:           int32(input.BestOf),
+				LogitBias:        logit, // Wrong type here
+			})
+			if err != nil {
+				log.Printf("500: Error completing via backend(%v): %v\n", input.Model, err)
+				c.JSON(500, err)
+				return
+			}
+			choice := openai.CompletionChoice{
+				Text:         strings.TrimPrefix(response.GetCompletion(), input.Prompt.(string)),
+				FinishReason: response.GetFinishReason(),
+				Index:        i,
+			}
+			resp.Choices[i] = choice
+		}
+
+		c.JSON(200, resp)
+	}
 	// Send the response
 }
 
