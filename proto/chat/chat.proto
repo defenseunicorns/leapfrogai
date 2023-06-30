@@ -1,0 +1,74 @@
+syntax = "proto3";
+
+package chat;
+
+option go_package = "github.com/defenseunicorns/leapfrogai/pkg/client/chat";
+
+// ChatRequest is the payload to Chat creation
+message ChatRequest {
+    repeated string inputs = 1;
+}
+
+message Chat {
+    repeated float chat = 1;
+}
+
+// ChatResponse are what's returned by the gRPC service
+message ChatResponse {
+    repeated Chat chat = 1;
+}
+
+service ChatsService {
+    rpc ChatCompletion(ChatRequest) returns (ChatResponse);
+    rpc ChatCompletionStream(ChatRequest) returns (stream ChatResponse);
+}
+
+// Generic OpenAI
+enum OpenAIChatRole {
+    USER = 0;
+    SYSTEM = 1;
+    FUNCTION = 2;
+    ASSISTANT = 3;
+}
+
+message OpenAIChatItem {
+  OpenAIChatRole role = 1;
+  string content = 2;
+}
+
+// OpenAI ChatCompletion Request
+message OpenAIChatCompletionRequest {
+    string model = 1; // added
+    repeated OpenAIChatItem chat_items = 2; // added
+    float temperature = 3; // added
+    float top_p = 4; // added
+    int32 n = 5; //added
+    bool stream = 7; // will be used to route to either 
+    repeated string stop = 8; //added
+    int32 max_tokens = 9; // max_new_tokens
+    float presence_penalty = 10;  // added
+    float frequency_penalty = 11; // added
+    map<string, int32> logit_bias = 12; // added
+    string user = 13; // added
+}
+
+// OpenAI ChatCompletion Request
+message OpenAICompletionChoice {
+    int32 index = 1;
+    OpenAIChatItem chas_item = 2;
+    string finish_reason = 3;
+}
+  
+message Usage {
+    int32 prompt_tokens = 1;
+    int32 completion_tokens = 2;
+    int32 total_tokens = 3;
+}
+  
+message ChatCompletionRequest {
+    string id = 1;
+    string object = 2;
+    int64 created = 3;
+    repeated OpenAICompletionChoice choices = 4;
+    Usage usage = 5;
+}
