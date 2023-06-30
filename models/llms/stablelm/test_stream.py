@@ -36,8 +36,8 @@ def run():
         # Make a call to the server and get a response
         response: Iterator[leapfrogai.CompletionResponse] = stub.CompleteStream(request)
 
-        for text in response:
-            print(text)
+        for completion in response:
+            print(completion.choices[0].text, end="")
 
 
 if __name__ == "__main__":
