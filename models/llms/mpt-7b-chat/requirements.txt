@@ -1,0 +1,6 @@
+bitsandbytes
+datasets
+loralib
+sentencepiece
+transformers
+cuda-python

@@ -5,7 +5,7 @@ import grpc
 import chat_pb2 as chat__pb2
 
 
-class ChatsServiceStub(object):
+class ChatCompletionServiceStub(object):
     """Missing associated documentation comment in .proto file."""
 
     def __init__(self, channel):
@@ -14,58 +14,58 @@ class ChatsServiceStub(object):
         Args:
             channel: A grpc.Channel.
         """
-        self.ChatCompletion = channel.unary_unary(
-                '/chat.ChatsService/ChatCompletion',
-                request_serializer=chat__pb2.ChatRequest.SerializeToString,
-                response_deserializer=chat__pb2.ChatResponse.FromString,
+        self.ChatComplete = channel.unary_unary(
+                '/chat.ChatCompletionService/ChatComplete',
+                request_serializer=chat__pb2.ChatCompletionRequest.SerializeToString,
+                response_deserializer=chat__pb2.ChatCompletionResponse.FromString,
                 )
-        self.ChatCompletionStream = channel.unary_stream(
-                '/chat.ChatsService/ChatCompletionStream',
-                request_serializer=chat__pb2.ChatRequest.SerializeToString,
-                response_deserializer=chat__pb2.ChatResponse.FromString,
+        self.ChatCompleteStream = channel.unary_stream(
+                '/chat.ChatCompletionService/ChatCompleteStream',
+                request_serializer=chat__pb2.ChatCompletionRequest.SerializeToString,
+                response_deserializer=chat__pb2.ChatCompletionResponse.FromString,
                 )
 
 
-class ChatsServiceServicer(object):
+class ChatCompletionServiceServicer(object):
     """Missing associated documentation comment in .proto file."""
 
-    def ChatCompletion(self, request, context):
+    def ChatComplete(self, request, context):
         """Missing associated documentation comment in .proto file."""
         context.set_code(grpc.StatusCode.UNIMPLEMENTED)
         context.set_details('Method not implemented!')
         raise NotImplementedError('Method not implemented!')
 
-    def ChatCompletionStream(self, request, context):
+    def ChatCompleteStream(self, request, context):
         """Missing associated documentation comment in .proto file."""
         context.set_code(grpc.StatusCode.UNIMPLEMENTED)
         context.set_details('Method not implemented!')
         raise NotImplementedError('Method not implemented!')
 
 
-def add_ChatsServiceServicer_to_server(servicer, server):
+def add_ChatCompletionServiceServicer_to_server(servicer, server):
     rpc_method_handlers = {
-            'ChatCompletion': grpc.unary_unary_rpc_method_handler(
-                    servicer.ChatCompletion,
-                    request_deserializer=chat__pb2.ChatRequest.FromString,
-                    response_serializer=chat__pb2.ChatResponse.SerializeToString,
+            'ChatComplete': grpc.unary_unary_rpc_method_handler(
+                    servicer.ChatComplete,
+                    request_deserializer=chat__pb2.ChatCompletionRequest.FromString,
+                    response_serializer=chat__pb2.ChatCompletionResponse.SerializeToString,
             ),
-            'ChatCompletionStream': grpc.unary_stream_rpc_method_handler(
-                    servicer.ChatCompletionStream,
-                    request_deserializer=chat__pb2.ChatRequest.FromString,
-                    response_serializer=chat__pb2.ChatResponse.SerializeToString,
+            'ChatCompleteStream': grpc.unary_stream_rpc_method_handler(
+                    servicer.ChatCompleteStream,
+                    request_deserializer=chat__pb2.ChatCompletionRequest.FromString,
+                    response_serializer=chat__pb2.ChatCompletionResponse.SerializeToString,
             ),
     }
     generic_handler = grpc.method_handlers_generic_handler(
-            'chat.ChatsService', rpc_method_handlers)
+            'chat.ChatCompletionService', rpc_method_handlers)
     server.add_generic_rpc_handlers((generic_handler,))
 
 
  # This class is part of an EXPERIMENTAL API.
-class ChatsService(object):
+class ChatCompletionService(object):
     """Missing associated documentation comment in .proto file."""
 
     @staticmethod
-    def ChatCompletion(request,
+    def ChatComplete(request,
             target,
             options=(),
             channel_credentials=None,
@@ -75,14 +75,14 @@ class ChatsService(object):
             wait_for_ready=None,
             timeout=None,
             metadata=None):
-        return grpc.experimental.unary_unary(request, target, '/chat.ChatsService/ChatCompletion',
-            chat__pb2.ChatRequest.SerializeToString,
-            chat__pb2.ChatResponse.FromString,
+        return grpc.experimental.unary_unary(request, target, '/chat.ChatCompletionService/ChatComplete',
+            chat__pb2.ChatCompletionRequest.SerializeToString,
+            chat__pb2.ChatCompletionResponse.FromString,
             options, channel_credentials,
             insecure, call_credentials, compression, wait_for_ready, timeout, metadata)
 
     @staticmethod
-    def ChatCompletionStream(request,
+    def ChatCompleteStream(request,
             target,
             options=(),
             channel_credentials=None,
@@ -92,8 +92,8 @@ class ChatsService(object):
             wait_for_ready=None,
             timeout=None,
             metadata=None):
-        return grpc.experimental.unary_stream(request, target, '/chat.ChatsService/ChatCompletionStream',
-            chat__pb2.ChatRequest.SerializeToString,
-            chat__pb2.ChatResponse.FromString,
+        return grpc.experimental.unary_stream(request, target, '/chat.ChatCompletionService/ChatCompleteStream',
+            chat__pb2.ChatCompletionRequest.SerializeToString,
+            chat__pb2.ChatCompletionResponse.FromString,
             options, channel_credentials,
             insecure, call_credentials, compression, wait_for_ready, timeout, metadata)
