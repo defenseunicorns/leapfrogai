@@ -16,6 +16,9 @@ from .generate.generate_pb2_grpc import (
     CompletionService,
     CompletionServiceServicer,
     CompletionServiceStub,
+    CompletionStreamService,
+    CompletionStreamServiceServicer,
+    CompletionStreamServiceStub,
 )
 from .name.name_pb2 import NameResponse
 from .name.name_pb2_grpc import NameService, NameServiceServicer, NameServiceStub

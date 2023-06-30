@@ -1,4 +1,5 @@
 import logging
+from threading import Thread
 from typing import List
 
 import torch
@@ -8,6 +9,7 @@ from transformers import (
     AutoTokenizer,
     StoppingCriteria,
     StoppingCriteriaList,
+    TextIteratorStreamer,
 )
 
 from leapfrogai import (
@@ -36,8 +38,6 @@ class StableLM(CompletionServiceServicer):
 
     if torch.cuda.is_available():
         device = "cuda"
-    elif torch.backends.mps.is_available():
-        device = "mps"
     else:
         device = "cpu"
     model = model.to(device)
@@ -68,6 +68,29 @@ class StableLM(CompletionServiceServicer):
         # response = self.tokenizer.decode(tokens[0], skip_special_tokens=False)
         logging.debug(f"Decoded Response: {completion}")
         return CompletionResponse(completion=completion)
+
+    def CompleteStream(self, request: CompletionRequest, context: GrpcContext):
+        inputs = self.tokenizer(request.prompt, return_tensors="pt").to(self.device)
+        logging.debug(f"Request:  { request }")
+
+        streamer = TextIteratorStreamer(self.tokenizer, skip_prompt=True)
+        generation_kwargs = dict(
+            inputs,
+            streamer=streamer,
+            max_new_tokens=request.max_tokens,
+            temperature=request.temperature,
+            top_p=request.top_p,
+            do_sample=True,
+            pad_token_id=self.tokenizer.eos_token_id,
+            eos_token_id=self.tokenizer.eos_token_id,
+            stopping_criteria=StoppingCriteriaList([StopOnTokens()]),
+        )
+        thread = Thread(target=self.model.generate, kwargs=generation_kwargs)
+        thread.start()
+        for text in streamer:
+            print(text)
+            yield text
+        # logging.debug(f"Response {tokens}")
 
 
 if __name__ == "__main__":
