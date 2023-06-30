@@ -29,15 +29,15 @@ def run():
         # Create a request
         request = leapfrogai.CompletionRequest(
             prompt=prompt,
-            max_tokens=64,
+            max_new_tokens=64,
             temperature=0.01,
         )
 
         # Make a call to the server and get a response
         response: Iterator[leapfrogai.CompletionResponse] = stub.CompleteStream(request)
 
-        for text in response:
-            print(text)
+        for completion in response:
+            print(completion.choices[0].text, end="")
 
 
 if __name__ == "__main__":
