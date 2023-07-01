@@ -40,7 +40,6 @@ message ChatCompletionRequest {
     optional string user = 19;
 }
 
-// OpenAI ChatCompletion Request
 message CompletionChoice {
     int32 index = 1;
     ChatItem chat_item = 2;
@@ -63,9 +62,8 @@ message ChatCompletionResponse {
 
 service ChatCompletionService {
     rpc ChatComplete(ChatCompletionRequest) returns (ChatCompletionResponse);
-    rpc ChatCompleteStream(ChatCompletionRequest) returns (stream ChatCompletionResponse);
 }
 
-// service ChatCompletionStreamService {
-//     rpc ChatCompletionStream(ChatCompletionRequest) returns (stream ChatCompletionResponse);
-// }
+service ChatCompletionStreamService {
+    rpc ChatCompleteStream(ChatCompletionRequest) returns (stream ChatCompletionResponse);
+}
