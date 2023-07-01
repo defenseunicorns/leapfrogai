@@ -55,5 +55,8 @@ message CompletionResponse {
 
 service CompletionService {
     rpc Complete (CompletionRequest) returns (CompletionResponse);
+}
+
+service CompletionStreamService {
     rpc CompleteStream (CompletionRequest) returns (stream CompletionResponse);
 }

@@ -2,7 +2,7 @@
 """Client and server classes corresponding to protobuf-defined services."""
 import grpc
 
-import completion_pb2 as completion__pb2
+from . import completion_pb2 as completion__pb2
 
 
 class CompletionServiceStub(object):
