@@ -126,7 +126,7 @@ LeapfrogAI is supported by a community of users and contributors, including:
 * [Beast Code](https://beast-code.com)
 * [Hypergiant](https://www.hypergiant.com/)
 * [Chainguard](https://www.chainguard.dev/)
-* [Pulze}(https://www.pulze.ai)
+* [Pulze](https://www.pulze.ai)
 * [United States Navy](https://www.navy.mil/)
 * [United States Air Force](https://www.airforce.com)
 * [United States Space Force](https://www.spaceforce.mil)
