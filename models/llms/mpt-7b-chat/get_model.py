@@ -5,6 +5,8 @@ from transformers import AutoModelForCausalLM, AutoTokenizer
 if __name__ == "__main__":
     """Load a model from a remote repository or local file path and save it in this directory
     so it can be copied into the container by the docker build script
+
+    You also have to download the other 
     """
     tokenizer = AutoTokenizer.from_pretrained(
         PRETRAINED_MODEL_NAME_OR_PATH,
