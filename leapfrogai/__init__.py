@@ -30,13 +30,16 @@ from .chat.chat_pb2 import (
     ChatCompletionRequest,
     ChatRole,
     ChatItem,
-    CompletionChoice,
+    ChatCompletionChoice,
     ChatCompletionResponse,
 )
 from .chat.chat_pb2_grpc import (
     ChatCompletionService,
     ChatCompletionServiceServicer,
     ChatCompletionServiceStub,
+    ChatCompletionStreamService,
+    ChatCompletionStreamServiceServicer,
+    ChatCompletionStreamServiceStub,
 )
 from .name.name_pb2 import NameResponse
 from .name.name_pb2_grpc import NameService, NameServiceServicer, NameServiceStub

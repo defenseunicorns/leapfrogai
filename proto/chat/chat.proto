@@ -40,7 +40,7 @@ message ChatCompletionRequest {
     optional string user = 19;
 }
 
-message CompletionChoice {
+message ChatCompletionChoice {
     int32 index = 1;
     ChatItem chat_item = 2;
     string finish_reason = 3;
@@ -56,7 +56,7 @@ message ChatCompletionResponse {
     string id = 1;
     string object = 2;
     int64 created = 3;
-    repeated CompletionChoice choices = 4;
+    repeated ChatCompletionChoice choices = 4;
     Usage usage = 5;
 }
 
