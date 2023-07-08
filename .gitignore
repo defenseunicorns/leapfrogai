@@ -8,11 +8,14 @@ venv
 .DS_Store
 dist/
 
-# local model files
-pytorch_model.bin
-model.bin
+# local model + tokenizer files
+*.bin
+pytorch_model.bin.index.json
+special_tokens_map.json
+tokenizer_config.json
 tokenizer.json
 config.json
+generation_config.json
 vocabulary.json
 
 # go binaries
