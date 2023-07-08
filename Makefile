@@ -58,7 +58,7 @@ gen: gen-go gen-python
 
 
 gen-python:
-	python3 -m grpc_tools.protoc --proto_path=proto/ generate/generate.proto --python_out=leapfrogai  --pyi_out=leapfrogai --grpc_python_out=leapfrogai
+	python3 -m grpc_tools.protoc --proto_path=proto/ completion/completion.proto --python_out=leapfrogai  --pyi_out=leapfrogai --grpc_python_out=leapfrogai
 	python3 -m grpc_tools.protoc --proto_path=proto audio/audio.proto --python_out=leapfrogai  --pyi_out=leapfrogai --grpc_python_out=leapfrogai
 	python3 -m grpc_tools.protoc --proto_path=proto embeddings/embeddings.proto --python_out=leapfrogai  --pyi_out=leapfrogai --grpc_python_out=leapfrogai
 	python3 -m grpc_tools.protoc --proto_path=proto name/name.proto --python_out=leapfrogai  --pyi_out=leapfrogai --grpc_python_out=leapfrogai
@@ -67,7 +67,7 @@ gen-python:
 gen-go:
 	rm -rf pkg/client
 	mkdir -p pkg/client
-	protoc --go_out=pkg/client --go_opt=paths=source_relative --go-grpc_out=pkg/client --go-grpc_opt=paths=source_relative --proto_path=proto/ generate/generate.proto
+	protoc --go_out=pkg/client --go_opt=paths=source_relative --go-grpc_out=pkg/client --go-grpc_opt=paths=source_relative --proto_path=proto/ completion/completion.proto
 	protoc --go_out=pkg/client --go_opt=paths=source_relative --go-grpc_out=pkg/client --go-grpc_opt=paths=source_relative --proto_path=proto/ audio/audio.proto
 	protoc --go_out=pkg/client --go_opt=paths=source_relative --go-grpc_out=pkg/client --go-grpc_opt=paths=source_relative --proto_path=proto/ name/name.proto
 	protoc --go_out=pkg/client --go_opt=paths=source_relative --go-grpc_out=pkg/client --go-grpc_opt=paths=source_relative --proto_path=proto/ embeddings/embeddings.proto

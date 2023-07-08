@@ -1,5 +1,6 @@
 import sys
 from pathlib import Path
+from typing import Iterator
 
 path_root = Path(__file__).parents[2]
 sys.path.append(str(path_root))
@@ -22,7 +23,8 @@ def run():
     # Set up a channel to the server
     with grpc.insecure_channel("localhost:50051") as channel:
         # Instantiate a stub (client)
-        stub = leapfrogai.CompletionServiceStub(channel)
+
+        stub = leapfrogai.CompletionStreamServiceStub(channel)
 
         # Create a request
         request = leapfrogai.CompletionRequest(
@@ -32,10 +34,10 @@ def run():
         )
 
         # Make a call to the server and get a response
-        response = stub.Complete(request)
+        response: Iterator[leapfrogai.CompletionResponse] = stub.CompleteStream(request)
 
-        # Print the response
-        print("Received response: ", response)
+        for completion in response:
+            print(completion.choices[0].text, end="")
 
 
 if __name__ == "__main__":
