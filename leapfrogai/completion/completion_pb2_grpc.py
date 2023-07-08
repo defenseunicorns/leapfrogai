@@ -2,7 +2,7 @@
 """Client and server classes corresponding to protobuf-defined services."""
 import grpc
 
-from . import completion_pb2 as completion__pb2
+from . import completion_pb2 as completion_dot_completion__pb2
 
 
 class CompletionServiceStub(object):
@@ -16,13 +16,8 @@ class CompletionServiceStub(object):
         """
         self.Complete = channel.unary_unary(
                 '/completion.CompletionService/Complete',
-                request_serializer=completion__pb2.CompletionRequest.SerializeToString,
-                response_deserializer=completion__pb2.CompletionResponse.FromString,
-                )
-        self.CompleteStream = channel.unary_stream(
-                '/completion.CompletionService/CompleteStream',
-                request_serializer=completion__pb2.CompletionRequest.SerializeToString,
-                response_deserializer=completion__pb2.CompletionResponse.FromString,
+                request_serializer=completion_dot_completion__pb2.CompletionRequest.SerializeToString,
+                response_deserializer=completion_dot_completion__pb2.CompletionResponse.FromString,
                 )
 
 
@@ -35,24 +30,13 @@ class CompletionServiceServicer(object):
         context.set_details('Method not implemented!')
         raise NotImplementedError('Method not implemented!')
 
-    def CompleteStream(self, request, context):
-        """Missing associated documentation comment in .proto file."""
-        context.set_code(grpc.StatusCode.UNIMPLEMENTED)
-        context.set_details('Method not implemented!')
-        raise NotImplementedError('Method not implemented!')
-
 
 def add_CompletionServiceServicer_to_server(servicer, server):
     rpc_method_handlers = {
             'Complete': grpc.unary_unary_rpc_method_handler(
                     servicer.Complete,
-                    request_deserializer=completion__pb2.CompletionRequest.FromString,
-                    response_serializer=completion__pb2.CompletionResponse.SerializeToString,
-            ),
-            'CompleteStream': grpc.unary_stream_rpc_method_handler(
-                    servicer.CompleteStream,
-                    request_deserializer=completion__pb2.CompletionRequest.FromString,
-                    response_serializer=completion__pb2.CompletionResponse.SerializeToString,
+                    request_deserializer=completion_dot_completion__pb2.CompletionRequest.FromString,
+                    response_serializer=completion_dot_completion__pb2.CompletionResponse.SerializeToString,
             ),
     }
     generic_handler = grpc.method_handlers_generic_handler(
@@ -76,10 +60,54 @@ class CompletionService(object):
             timeout=None,
             metadata=None):
         return grpc.experimental.unary_unary(request, target, '/completion.CompletionService/Complete',
-            completion__pb2.CompletionRequest.SerializeToString,
-            completion__pb2.CompletionResponse.FromString,
+            completion_dot_completion__pb2.CompletionRequest.SerializeToString,
+            completion_dot_completion__pb2.CompletionResponse.FromString,
             options, channel_credentials,
             insecure, call_credentials, compression, wait_for_ready, timeout, metadata)
+
+
+class CompletionStreamServiceStub(object):
+    """Missing associated documentation comment in .proto file."""
+
+    def __init__(self, channel):
+        """Constructor.
+
+        Args:
+            channel: A grpc.Channel.
+        """
+        self.CompleteStream = channel.unary_stream(
+                '/completion.CompletionStreamService/CompleteStream',
+                request_serializer=completion_dot_completion__pb2.CompletionRequest.SerializeToString,
+                response_deserializer=completion_dot_completion__pb2.CompletionResponse.FromString,
+                )
+
+
+class CompletionStreamServiceServicer(object):
+    """Missing associated documentation comment in .proto file."""
+
+    def CompleteStream(self, request, context):
+        """Missing associated documentation comment in .proto file."""
+        context.set_code(grpc.StatusCode.UNIMPLEMENTED)
+        context.set_details('Method not implemented!')
+        raise NotImplementedError('Method not implemented!')
+
+
+def add_CompletionStreamServiceServicer_to_server(servicer, server):
+    rpc_method_handlers = {
+            'CompleteStream': grpc.unary_stream_rpc_method_handler(
+                    servicer.CompleteStream,
+                    request_deserializer=completion_dot_completion__pb2.CompletionRequest.FromString,
+                    response_serializer=completion_dot_completion__pb2.CompletionResponse.SerializeToString,
+            ),
+    }
+    generic_handler = grpc.method_handlers_generic_handler(
+            'completion.CompletionStreamService', rpc_method_handlers)
+    server.add_generic_rpc_handlers((generic_handler,))
+
+
+ # This class is part of an EXPERIMENTAL API.
+class CompletionStreamService(object):
+    """Missing associated documentation comment in .proto file."""
 
     @staticmethod
     def CompleteStream(request,
@@ -92,8 +120,8 @@ class CompletionService(object):
             wait_for_ready=None,
             timeout=None,
             metadata=None):
-        return grpc.experimental.unary_stream(request, target, '/completion.CompletionService/CompleteStream',
-            completion__pb2.CompletionRequest.SerializeToString,
-            completion__pb2.CompletionResponse.FromString,
+        return grpc.experimental.unary_stream(request, target, '/completion.CompletionStreamService/CompleteStream',
+            completion_dot_completion__pb2.CompletionRequest.SerializeToString,
+            completion_dot_completion__pb2.CompletionResponse.FromString,
             options, channel_credentials,
             insecure, call_credentials, compression, wait_for_ready, timeout, metadata)

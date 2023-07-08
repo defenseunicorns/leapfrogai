@@ -5,7 +5,7 @@ import grpc
 from .audio import audio_pb2_grpc
 from .chat import chat_pb2_grpc
 from .embeddings import embeddings_pb2_grpc
-from .generate import generate_pb2_grpc
+from .completion import completion_pb2_grpc
 from .name import name_pb2_grpc
 
 
@@ -15,9 +15,12 @@ def serve(o):
 
     if hasattr(o, "ChatComplete") and hasattr(o, "ChatCompleteStream"):
         chat_pb2_grpc.add_ChatCompletionServiceServicer_to_server(o, server)
+    
+    if hasattr(o, "Complete"):
+        completion_pb2_grpc.add_CompletionServiceServicer_to_server(o, server)
 
-    if hasattr(o, "Complete") and hasattr(o, "CompleteStream"):
-        generate_pb2_grpc.add_CompletionServiceServicer_to_server(o, server)
+    if hasattr(o, "CompleteStream"):
+        completion_pb2_grpc.add_CompletionStreamServiceServicer_to_server(o, server)
 
     if hasattr(o, "CreateEmbedding"):
         embeddings_pb2_grpc.add_EmbeddingsServiceServicer_to_server(o, server)
