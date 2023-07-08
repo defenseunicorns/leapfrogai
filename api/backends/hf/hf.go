@@ -5,7 +5,6 @@ import (
 	"encoding/json"
 	"io"
 	"log"
-	"strings"
 
 	"github.com/defenseunicorns/leapfrogai/api/config"
 	"github.com/defenseunicorns/leapfrogai/pkg/client/completion"
@@ -20,7 +19,6 @@ type Handler struct {
 	Prefix string
 }
 
-// https://ab2e29d8f299.ngrok.app/
 // Routes maps the routes
 func (h *Handler) Routes(r *gin.Engine) {
 	sr := r.Group(h.Prefix)
@@ -65,8 +63,8 @@ func (h *Handler) inference(c *gin.Context) {
 				chanStream <- cResp
 			}
 		}()
+		generatedText := ""
 		c.Stream(func(w io.Writer) bool {
-			var text []string
 			if msg, ok := <-chanStream; ok {
 
 				// OpenAI places a space in between the data key and payload in HTTP. So, I guess we're bug-for-bug compatible.
@@ -77,18 +75,17 @@ func (h *Handler) inference(c *gin.Context) {
 						Logprob: 0.0,
 						Special: false,
 					},
-					GeneratedText: "",
+					GeneratedText: "", // TODO: update proto to allow me to be nil; HF returns null for non-final tokens
 					Details:       nil,
 				})
 				if err != nil {
 					return false
 				}
-				text = append(text, msg.Choices[0].GetText())
+				generatedText = generatedText + msg.Choices[0].GetText()
 				c.SSEvent("", string(res))
 				return true
 			}
 
-			gt := strings.Join(text, "")
 			r, _ := json.Marshal(&GenerateStreamResponse{
 				Token: &Token{
 					ID:      0,
@@ -96,11 +93,11 @@ func (h *Handler) inference(c *gin.Context) {
 					Logprob: 0.0,
 					Special: false,
 				},
-				GeneratedText: gt,
+				GeneratedText: generatedText,
 				Details: &Details{
 					BestOfSequences: []BestOfSequence{
 						{
-							GeneratedText: gt,
+							GeneratedText: generatedText,
 						},
 					},
 				},
