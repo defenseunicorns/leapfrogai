@@ -74,7 +74,7 @@ class ChatCompletionRequest(_message.Message):
     user: str
     def __init__(self, chat_items: _Optional[_Iterable[_Union[ChatItem, _Mapping]]] = ..., max_new_tokens: _Optional[int] = ..., temperature: _Optional[float] = ..., top_k: _Optional[float] = ..., top_p: _Optional[float] = ..., do_sample: bool = ..., n: _Optional[int] = ..., stop: _Optional[_Iterable[str]] = ..., repetition_penalty: _Optional[float] = ..., presence_penalty: _Optional[float] = ..., frequency_penalty: _Optional[float] = ..., best_of: _Optional[str] = ..., logit_bias: _Optional[_Mapping[str, int]] = ..., return_full_text: bool = ..., truncate: _Optional[int] = ..., typical_p: _Optional[float] = ..., watermark: bool = ..., seed: _Optional[int] = ..., user: _Optional[str] = ...) -> None: ...
 
-class CompletionChoice(_message.Message):
+class ChatCompletionChoice(_message.Message):
     __slots__ = ["index", "chat_item", "finish_reason"]
     INDEX_FIELD_NUMBER: _ClassVar[int]
     CHAT_ITEM_FIELD_NUMBER: _ClassVar[int]
@@ -104,6 +104,6 @@ class ChatCompletionResponse(_message.Message):
     id: str
     object: str
     created: int
-    choices: _containers.RepeatedCompositeFieldContainer[CompletionChoice]
+    choices: _containers.RepeatedCompositeFieldContainer[ChatCompletionChoice]
     usage: Usage
-    def __init__(self, id: _Optional[str] = ..., object: _Optional[str] = ..., created: _Optional[int] = ..., choices: _Optional[_Iterable[_Union[CompletionChoice, _Mapping]]] = ..., usage: _Optional[_Union[Usage, _Mapping]] = ...) -> None: ...
+    def __init__(self, id: _Optional[str] = ..., object: _Optional[str] = ..., created: _Optional[int] = ..., choices: _Optional[_Iterable[_Union[ChatCompletionChoice, _Mapping]]] = ..., usage: _Optional[_Union[Usage, _Mapping]] = ...) -> None: ...

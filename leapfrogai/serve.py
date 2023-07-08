@@ -13,8 +13,11 @@ def serve(o):
     # Create a gRPC server
     server = grpc.server(futures.ThreadPoolExecutor(max_workers=3))
 
-    if hasattr(o, "ChatComplete") and hasattr(o, "ChatCompleteStream"):
+    if hasattr(o, "ChatComplete"):
         chat_pb2_grpc.add_ChatCompletionServiceServicer_to_server(o, server)
+
+    if hasattr(o, "ChatCompleteStream"):
+        chat_pb2_grpc.add_ChatCompletionStreamServiceServicer_to_server(o, server)
     
     if hasattr(o, "Complete"):
         completion_pb2_grpc.add_CompletionServiceServicer_to_server(o, server)
