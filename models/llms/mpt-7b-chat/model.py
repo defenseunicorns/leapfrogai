@@ -6,14 +6,15 @@ from threading import Thread
 import torch
 
 from transformers import (
+    AutoConfig,
     AutoModelForCausalLM,
     AutoTokenizer,
     StoppingCriteria,
     StoppingCriteriaList,
     TextIteratorStreamer,
 )
+import transformers.utils.logging
 
-from get_models import MODEL_ID
 from leapfrogai import (
     ChatCompletionRequest,
     ChatRole,
@@ -24,6 +25,16 @@ from leapfrogai import (
     GrpcContext,
     serve,
 )
+
+logging.basicConfig(
+    format="%(asctime)s - %(levelname)s - %(name)s - %(message)s",
+    datefmt="%m/%d/%Y %H:%M:%S",
+    level=logging.INFO,
+)
+transformers.utils.logging.disable_progress_bar()
+transformers.utils.logging.set_verbosity_debug()
+
+MODEL_SAVE_PATH = "mpt-7b-chat-offline"
 
 class StopOnTokens(StoppingCriteria):
     def __call__(
@@ -38,17 +49,26 @@ class StopOnTokens(StoppingCriteria):
 
 
 class MPTChat(ChatCompletionServiceServicer):
-    tokenizer = AutoTokenizer.from_pretrained(MODEL_ID)
-    model = AutoModelForCausalLM.from_pretrained(MODEL_ID)
+    # create a config, configure the model, and load
+    config = AutoConfig.from_pretrained(
+        MODEL_SAVE_PATH,
+        local_files_only=True,
+        trust_remote_code=True
+    )
+    config.attn_config['attn_impl'] = 'torch'
+    config.max_seq_len = 8192
+    config.init_device = 'cuda:0'
 
-    if torch.cuda.is_available():
-        device = "cuda"
-    elif torch.backends.mps.is_available():
-        device = "mps"
-    else:
-        device = "cpu"
-    model = model.to(device)
-    logging.info("MPT Loaded...")
+    model = AutoModelForCausalLM.from_pretrained(
+        MODEL_SAVE_PATH,
+        config=config,
+        torch_dtype=torch.bfloat16,
+        trust_remote_code=True,
+        local_files_only=True,
+    )
+    
+    # load the tokenizer
+    tokenizer = AutoTokenizer.from_pretrained(MODEL_SAVE_PATH, local_files_only=True)
 
     def ChatComplete(
         self, request: ChatCompletionRequest, context: GrpcContext
@@ -101,8 +121,6 @@ class MPTChat(ChatCompletionServiceServicer):
         for text in streamer:
             print(text)
             yield text
-        # logging.debug(f"Response {tokens}")
-
 
 if __name__ == "__main__":
     logging.basicConfig(level=logging.INFO)

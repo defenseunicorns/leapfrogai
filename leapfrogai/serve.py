@@ -35,11 +35,7 @@ def serve(o):
     print("Starting server. Listening on port 50051.")
     server.add_insecure_port("[::]:50051")
     server.start()
-    server.wait_for_termination()
 
-    # Keep thread alive
-    try:
-        while True:
-            pass
-    except KeyboardInterrupt:
-        server.stop(0)
+    # block the thread until the server terminates...without using async to await the completion
+    # of all requests, this is the best we can do to gracefully wait while the server responds to requests
+    server.wait_for_termination()
