@@ -2,7 +2,7 @@
 """Client and server classes corresponding to protobuf-defined services."""
 import grpc
 
-from . import chat_pb2 as chat__pb2
+from . import chat_pb2 as chat_dot_chat__pb2
 
 
 class ChatCompletionServiceStub(object):
@@ -16,13 +16,8 @@ class ChatCompletionServiceStub(object):
         """
         self.ChatComplete = channel.unary_unary(
                 '/chat.ChatCompletionService/ChatComplete',
-                request_serializer=chat__pb2.ChatCompletionRequest.SerializeToString,
-                response_deserializer=chat__pb2.ChatCompletionResponse.FromString,
-                )
-        self.ChatCompleteStream = channel.unary_stream(
-                '/chat.ChatCompletionService/ChatCompleteStream',
-                request_serializer=chat__pb2.ChatCompletionRequest.SerializeToString,
-                response_deserializer=chat__pb2.ChatCompletionResponse.FromString,
+                request_serializer=chat_dot_chat__pb2.ChatCompletionRequest.SerializeToString,
+                response_deserializer=chat_dot_chat__pb2.ChatCompletionResponse.FromString,
                 )
 
 
@@ -35,24 +30,13 @@ class ChatCompletionServiceServicer(object):
         context.set_details('Method not implemented!')
         raise NotImplementedError('Method not implemented!')
 
-    def ChatCompleteStream(self, request, context):
-        """Missing associated documentation comment in .proto file."""
-        context.set_code(grpc.StatusCode.UNIMPLEMENTED)
-        context.set_details('Method not implemented!')
-        raise NotImplementedError('Method not implemented!')
-
 
 def add_ChatCompletionServiceServicer_to_server(servicer, server):
     rpc_method_handlers = {
             'ChatComplete': grpc.unary_unary_rpc_method_handler(
                     servicer.ChatComplete,
-                    request_deserializer=chat__pb2.ChatCompletionRequest.FromString,
-                    response_serializer=chat__pb2.ChatCompletionResponse.SerializeToString,
-            ),
-            'ChatCompleteStream': grpc.unary_stream_rpc_method_handler(
-                    servicer.ChatCompleteStream,
-                    request_deserializer=chat__pb2.ChatCompletionRequest.FromString,
-                    response_serializer=chat__pb2.ChatCompletionResponse.SerializeToString,
+                    request_deserializer=chat_dot_chat__pb2.ChatCompletionRequest.FromString,
+                    response_serializer=chat_dot_chat__pb2.ChatCompletionResponse.SerializeToString,
             ),
     }
     generic_handler = grpc.method_handlers_generic_handler(
@@ -76,10 +60,54 @@ class ChatCompletionService(object):
             timeout=None,
             metadata=None):
         return grpc.experimental.unary_unary(request, target, '/chat.ChatCompletionService/ChatComplete',
-            chat__pb2.ChatCompletionRequest.SerializeToString,
-            chat__pb2.ChatCompletionResponse.FromString,
+            chat_dot_chat__pb2.ChatCompletionRequest.SerializeToString,
+            chat_dot_chat__pb2.ChatCompletionResponse.FromString,
             options, channel_credentials,
             insecure, call_credentials, compression, wait_for_ready, timeout, metadata)
+
+
+class ChatCompletionStreamServiceStub(object):
+    """Missing associated documentation comment in .proto file."""
+
+    def __init__(self, channel):
+        """Constructor.
+
+        Args:
+            channel: A grpc.Channel.
+        """
+        self.ChatCompleteStream = channel.unary_stream(
+                '/chat.ChatCompletionStreamService/ChatCompleteStream',
+                request_serializer=chat_dot_chat__pb2.ChatCompletionRequest.SerializeToString,
+                response_deserializer=chat_dot_chat__pb2.ChatCompletionResponse.FromString,
+                )
+
+
+class ChatCompletionStreamServiceServicer(object):
+    """Missing associated documentation comment in .proto file."""
+
+    def ChatCompleteStream(self, request, context):
+        """Missing associated documentation comment in .proto file."""
+        context.set_code(grpc.StatusCode.UNIMPLEMENTED)
+        context.set_details('Method not implemented!')
+        raise NotImplementedError('Method not implemented!')
+
+
+def add_ChatCompletionStreamServiceServicer_to_server(servicer, server):
+    rpc_method_handlers = {
+            'ChatCompleteStream': grpc.unary_stream_rpc_method_handler(
+                    servicer.ChatCompleteStream,
+                    request_deserializer=chat_dot_chat__pb2.ChatCompletionRequest.FromString,
+                    response_serializer=chat_dot_chat__pb2.ChatCompletionResponse.SerializeToString,
+            ),
+    }
+    generic_handler = grpc.method_handlers_generic_handler(
+            'chat.ChatCompletionStreamService', rpc_method_handlers)
+    server.add_generic_rpc_handlers((generic_handler,))
+
+
+ # This class is part of an EXPERIMENTAL API.
+class ChatCompletionStreamService(object):
+    """Missing associated documentation comment in .proto file."""
 
     @staticmethod
     def ChatCompleteStream(request,
@@ -92,8 +120,8 @@ class ChatCompletionService(object):
             wait_for_ready=None,
             timeout=None,
             metadata=None):
-        return grpc.experimental.unary_stream(request, target, '/chat.ChatCompletionService/ChatCompleteStream',
-            chat__pb2.ChatCompletionRequest.SerializeToString,
-            chat__pb2.ChatCompletionResponse.FromString,
+        return grpc.experimental.unary_stream(request, target, '/chat.ChatCompletionStreamService/ChatCompleteStream',
+            chat_dot_chat__pb2.ChatCompletionRequest.SerializeToString,
+            chat_dot_chat__pb2.ChatCompletionResponse.FromString,
             options, channel_credentials,
             insecure, call_credentials, compression, wait_for_ready, timeout, metadata)

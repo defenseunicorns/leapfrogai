@@ -4,7 +4,7 @@
 // - protoc             v4.23.3
 // source: embeddings/embeddings.proto
 
-package embedding
+package embeddings
 
 import (
 	context "context"
@@ -35,7 +35,7 @@ func NewEmbeddingsServiceClient(cc grpc.ClientConnInterface) EmbeddingsServiceCl
 
 func (c *embeddingsServiceClient) CreateEmbedding(ctx context.Context, in *EmbeddingRequest, opts ...grpc.CallOption) (*EmbeddingResponse, error) {
 	out := new(EmbeddingResponse)
-	err := c.cc.Invoke(ctx, "/embedding.EmbeddingsService/CreateEmbedding", in, out, opts...)
+	err := c.cc.Invoke(ctx, "/embeddings.EmbeddingsService/CreateEmbedding", in, out, opts...)
 	if err != nil {
 		return nil, err
 	}
@@ -80,7 +80,7 @@ func _EmbeddingsService_CreateEmbedding_Handler(srv interface{}, ctx context.Con
 	}
 	info := &grpc.UnaryServerInfo{
 		Server:     srv,
-		FullMethod: "/embedding.EmbeddingsService/CreateEmbedding",
+		FullMethod: "/embeddings.EmbeddingsService/CreateEmbedding",
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
 		return srv.(EmbeddingsServiceServer).CreateEmbedding(ctx, req.(*EmbeddingRequest))
@@ -92,7 +92,7 @@ func _EmbeddingsService_CreateEmbedding_Handler(srv interface{}, ctx context.Con
 // It's only intended for direct use with grpc.RegisterService,
 // and not to be introspected or modified (even as a copy)
 var EmbeddingsService_ServiceDesc = grpc.ServiceDesc{
-	ServiceName: "embedding.EmbeddingsService",
+	ServiceName: "embeddings.EmbeddingsService",
 	HandlerType: (*EmbeddingsServiceServer)(nil),
 	Methods: []grpc.MethodDesc{
 		{
