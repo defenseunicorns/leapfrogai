@@ -120,8 +120,10 @@ func (o *OpenAIHandler) complete(c *gin.Context) {
 				c.JSON(500, err)
 				return
 			}
+			// remove StopToken from the returned text
+			t := strings.ReplaceAll(response.Choices[i].GetText(), StopToken, "")
 			choice := openai.CompletionChoice{
-				Text:         response.Choices[i].GetText(),
+				Text:         t,
 				FinishReason: strings.ToLower(response.Choices[i].GetFinishReason().Enum().String()),
 				Index:        i,
 			}

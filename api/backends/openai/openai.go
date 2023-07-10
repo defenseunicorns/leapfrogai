@@ -15,11 +15,15 @@ type OpenAIHandler struct {
 	Prefix string
 }
 
+// TODO: this should get factored out into the .toml files for each model, but this is an intermediate fix
+const StopToken = "<|im_end|>"
+
 func (o *OpenAIHandler) Routes(r *gin.Engine) {
 	sr := r.Group(o.Prefix)
 	{
 		sr.GET("/models", o.showModels)
 		sr.GET("/models/:model_id", o.showModel)
+		sr.POST("/chat/completions", o.chat)
 		sr.POST("/completions", o.complete)
 		sr.POST("/embeddings", o.createEmbeddings)
 		sr.POST("/audio/transcriptions", o.audioTranscriptions)
