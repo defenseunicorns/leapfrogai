@@ -1,5 +1,7 @@
 syntax = "proto3";
 
+import "google/protobuf/empty.proto";
+
 package completion;
 
 option go_package = "github.com/defenseunicorns/leapfrogai/pkg/client/completion";
@@ -60,10 +62,26 @@ message CompletionResponse {
     optional CompletionUsage usage = 2;
 }
 
+message LLMConfigResponse {
+    optional int32 model_max_length = 1; // Max context size for the model
+    optional string bos_token = 2; // Beginning of sentence token. Used for separating input and output tokens
+    optional string eos_token = 3; // End of sentence token. Used for ending an output of tokens
+    optional string unk_token = 4; // Used to set an unknown token. Used for models that are trained to output unknown tokens during generation
+    optional string sep_token = 5; // Separation token. Used for models that have separations in context and query sequences
+    optional string pad_token = 6; // Padding token. Used for models that add extra tokens to the end of short sequences to pad for batch sizes
+    optional string cls_token = 7; // Classification token. Used for models that classify across an entire sequence with full-depth self-attention
+    optional string mask_token = 8; // Masking token. Used for training models that use masked language modeling or masked attention
+    map<string, string> special_tokens = 9; // Additional special tokens. Map where keys are intended usage and value is the token
+}
+
 service CompletionService {
     rpc Complete (CompletionRequest) returns (CompletionResponse);
 }
 
 service CompletionStreamService {
     rpc CompleteStream (CompletionRequest) returns (stream CompletionResponse);
+}
+
+service LLMConfigService {
+    rpc LLMConfig (google.protobuf.Empty) returns (CompletionResponse);
 }

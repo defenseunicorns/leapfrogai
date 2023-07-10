@@ -6,6 +6,7 @@ from threading import Thread
 import torch
 
 from google.protobuf.internal.containers import RepeatedCompositeFieldContainer
+from google.protobuf.empty_pb2 import Empty
 
 from transformers import (
     AutoConfig,
@@ -37,6 +38,12 @@ from leapfrogai import (
     ChatCompletionResponse,
     ChatCompletionServiceServicer,
     ChatCompletionStreamServiceServicer,
+)
+
+# config
+from leapfrogai import (
+    LLMConfigResponse,
+    LLMConfigServiceServicer,
 )
 
 # general
@@ -102,6 +109,7 @@ class MPTChat(
     ChatCompletionStreamServiceServicer,
     CompletionServiceServicer,
     CompletionStreamServiceServicer,
+    LLMConfigServiceServicer,
 ):
     # create a config, configure the model, and load
     config = AutoConfig.from_pretrained(
@@ -225,6 +233,18 @@ class MPTChat(
         for text_chunk in completion_stream:
             choice = CompletionChoice(text=text_chunk, index=0)
             yield CompletionResponse(choices=[choice])
+
+    def LLMConfig(self, request: Empty, context: GrpcContext) -> LLMConfigResponse:
+        return LLMConfigResponse(
+            model_maX_length=2048,
+            bos_token="<|endoftext|>",
+            eos_token="<|endoftext|>",
+            unk_token="<|endoftext|>",
+            special_tokens={
+                "chat_start": "<|im_start|>",
+                "chat_end": "<|im_end|>",
+            },
+        )
 
 
 if __name__ == "__main__":

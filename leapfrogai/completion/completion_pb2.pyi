@@ -1,3 +1,4 @@
+from google.protobuf import empty_pb2 as _empty_pb2
 from google.protobuf.internal import containers as _containers
 from google.protobuf.internal import enum_type_wrapper as _enum_type_wrapper
 from google.protobuf import descriptor as _descriptor
@@ -95,3 +96,32 @@ class CompletionResponse(_message.Message):
     choices: _containers.RepeatedCompositeFieldContainer[CompletionChoice]
     usage: CompletionUsage
     def __init__(self, choices: _Optional[_Iterable[_Union[CompletionChoice, _Mapping]]] = ..., usage: _Optional[_Union[CompletionUsage, _Mapping]] = ...) -> None: ...
+
+class LLMConfigResponse(_message.Message):
+    __slots__ = ["model_max_length", "bos_token", "eos_token", "unk_token", "sep_token", "pad_token", "cls_token", "mask_token", "special_tokens"]
+    class SpecialTokensEntry(_message.Message):
+        __slots__ = ["key", "value"]
+        KEY_FIELD_NUMBER: _ClassVar[int]
+        VALUE_FIELD_NUMBER: _ClassVar[int]
+        key: str
+        value: str
+        def __init__(self, key: _Optional[str] = ..., value: _Optional[str] = ...) -> None: ...
+    MODEL_MAX_LENGTH_FIELD_NUMBER: _ClassVar[int]
+    BOS_TOKEN_FIELD_NUMBER: _ClassVar[int]
+    EOS_TOKEN_FIELD_NUMBER: _ClassVar[int]
+    UNK_TOKEN_FIELD_NUMBER: _ClassVar[int]
+    SEP_TOKEN_FIELD_NUMBER: _ClassVar[int]
+    PAD_TOKEN_FIELD_NUMBER: _ClassVar[int]
+    CLS_TOKEN_FIELD_NUMBER: _ClassVar[int]
+    MASK_TOKEN_FIELD_NUMBER: _ClassVar[int]
+    SPECIAL_TOKENS_FIELD_NUMBER: _ClassVar[int]
+    model_max_length: int
+    bos_token: str
+    eos_token: str
+    unk_token: str
+    sep_token: str
+    pad_token: str
+    cls_token: str
+    mask_token: str
+    special_tokens: _containers.ScalarMap[str, str]
+    def __init__(self, model_max_length: _Optional[int] = ..., bos_token: _Optional[str] = ..., eos_token: _Optional[str] = ..., unk_token: _Optional[str] = ..., sep_token: _Optional[str] = ..., pad_token: _Optional[str] = ..., cls_token: _Optional[str] = ..., mask_token: _Optional[str] = ..., special_tokens: _Optional[_Mapping[str, str]] = ...) -> None: ...

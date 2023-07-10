@@ -18,7 +18,10 @@ def serve(o):
 
     if hasattr(o, "ChatCompleteStream"):
         chat_pb2_grpc.add_ChatCompletionStreamServiceServicer_to_server(o, server)
-    
+
+    if hasattr(o, "LLMConfig"):
+        completion_pb2_grpc.add_LLMConfigServiceServicer_to_server(o, server)
+
     if hasattr(o, "Complete"):
         completion_pb2_grpc.add_CompletionServiceServicer_to_server(o, server)
 
