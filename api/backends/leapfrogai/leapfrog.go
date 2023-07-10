@@ -1,4 +1,4 @@
-package leapfrog
+package leapfrogai
 
 import "github.com/gin-gonic/gin"
 
@@ -9,6 +9,6 @@ type LeapfrogHandler struct {
 func (l *LeapfrogHandler) Routes(r *gin.Engine) {
 	sr := r.Group(l.Prefix)
 	{
-		sr.GET("/config", l.Config)
+		sr.GET("/models/config", l.Config)
 	}
 }

@@ -157,7 +157,6 @@ class MPTChat(
         thread = Thread(target=self.model.generate, kwargs=generation_kwargs)
         thread.start()
         for text in streamer:
-            print(text)
             yield text
 
     def ChatComplete(
@@ -210,7 +209,6 @@ class MPTChat(
         thread = Thread(target=self.model.generate, kwargs=generation_kwargs)
         thread.start()
         for text in streamer:
-            print(text)
             yield text
 
     def Complete(
@@ -234,13 +232,13 @@ class MPTChat(
 
     def LLMConfig(self, request: Empty, context: GrpcContext) -> LLMConfigResponse:
         return LLMConfigResponse(
-            model_maX_length=2048,
+            model_max_length=8192,
             bos_token="<|endoftext|>",
             eos_token="<|endoftext|>",
             unk_token="<|endoftext|>",
             special_tokens={
                 "chat_start": "<|im_start|>",
-                "chat_end": "<|im_end|>",
+                "chat_stop": "<|im_end|>",
             },
         )
 

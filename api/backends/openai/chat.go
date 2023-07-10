@@ -63,7 +63,6 @@ func ToJsonMessage(chatItem *chat.ChatItem) (openai.ChatCompletionMessage, error
 	}
 	// remove StopToken from the returned text
 	message.Content = strings.ReplaceAll(chatItem.Content, StopToken, "")
-
 	return message, nil
 }
 

@@ -1,4 +1,4 @@
-package leapfrog
+package leapfrogai
 
 import (
 	"log"

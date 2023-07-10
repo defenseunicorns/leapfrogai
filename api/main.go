@@ -2,7 +2,7 @@ package main
 
 import (
 	"github.com/defenseunicorns/leapfrogai/api/backends/hf"
-	"github.com/defenseunicorns/leapfrogai/api/backends/leapfrog"
+	"github.com/defenseunicorns/leapfrogai/api/backends/leapfrogai"
 	"github.com/defenseunicorns/leapfrogai/api/backends/openai"
 	"github.com/defenseunicorns/leapfrogai/api/config"
 	"github.com/gin-gonic/gin"
@@ -17,13 +17,13 @@ func main() {
 	m.SetMetricPath("/metrics")
 
 	m.Use(r)
-	oaiHandler := &openai.OpenAIHandler{Prefix: "/openai"}
+	oaiHandler := &openai.OpenAIHandler{Prefix: "/openai/v1"}
 	oaiHandler.Routes(r)
 
 	hfHandler := &hf.Handler{Prefix: "/huggingface"}
 	hfHandler.Routes(r)
 
-	lfHandler := &leapfrog.LeapfrogHandler{Prefix: "/leapfrog"}
+	lfHandler := &leapfrogai.LeapfrogHandler{Prefix: "/leapfrogai"}
 	lfHandler.Routes(r)
 
 	r.Run()
