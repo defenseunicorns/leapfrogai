@@ -2,6 +2,7 @@ package main
 
 import (
 	"github.com/defenseunicorns/leapfrogai/api/backends/hf"
+	"github.com/defenseunicorns/leapfrogai/api/backends/leapfrog"
 	"github.com/defenseunicorns/leapfrogai/api/backends/openai"
 	"github.com/defenseunicorns/leapfrogai/api/config"
 	"github.com/gin-gonic/gin"
@@ -21,6 +22,9 @@ func main() {
 
 	hfHandler := &hf.Handler{Prefix: "/huggingface"}
 	hfHandler.Routes(r)
+
+	lfHandler := &leapfrog.LeapfrogHandler{Prefix: "/leapfrog"}
+	lfHandler.Routes(r)
 
 	r.Run()
 }

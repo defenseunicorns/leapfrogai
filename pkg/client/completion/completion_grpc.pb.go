@@ -223,7 +223,7 @@ var CompletionStreamService_ServiceDesc = grpc.ServiceDesc{
 //
 // For semantics around ctx use and closing/ending streaming RPCs, please refer to https://pkg.go.dev/google.golang.org/grpc/?tab=doc#ClientConn.NewStream.
 type LLMConfigServiceClient interface {
-	LLMConfig(ctx context.Context, in *emptypb.Empty, opts ...grpc.CallOption) (*CompletionResponse, error)
+	LLMConfig(ctx context.Context, in *emptypb.Empty, opts ...grpc.CallOption) (*LLMConfigResponse, error)
 }
 
 type lLMConfigServiceClient struct {
@@ -234,8 +234,8 @@ func NewLLMConfigServiceClient(cc grpc.ClientConnInterface) LLMConfigServiceClie
 	return &lLMConfigServiceClient{cc}
 }
 
-func (c *lLMConfigServiceClient) LLMConfig(ctx context.Context, in *emptypb.Empty, opts ...grpc.CallOption) (*CompletionResponse, error) {
-	out := new(CompletionResponse)
+func (c *lLMConfigServiceClient) LLMConfig(ctx context.Context, in *emptypb.Empty, opts ...grpc.CallOption) (*LLMConfigResponse, error) {
+	out := new(LLMConfigResponse)
 	err := c.cc.Invoke(ctx, "/completion.LLMConfigService/LLMConfig", in, out, opts...)
 	if err != nil {
 		return nil, err
@@ -247,7 +247,7 @@ func (c *lLMConfigServiceClient) LLMConfig(ctx context.Context, in *emptypb.Empt
 // All implementations must embed UnimplementedLLMConfigServiceServer
 // for forward compatibility
 type LLMConfigServiceServer interface {
-	LLMConfig(context.Context, *emptypb.Empty) (*CompletionResponse, error)
+	LLMConfig(context.Context, *emptypb.Empty) (*LLMConfigResponse, error)
 	mustEmbedUnimplementedLLMConfigServiceServer()
 }
 
@@ -255,7 +255,7 @@ type LLMConfigServiceServer interface {
 type UnimplementedLLMConfigServiceServer struct {
 }
 
-func (UnimplementedLLMConfigServiceServer) LLMConfig(context.Context, *emptypb.Empty) (*CompletionResponse, error) {
+func (UnimplementedLLMConfigServiceServer) LLMConfig(context.Context, *emptypb.Empty) (*LLMConfigResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method LLMConfig not implemented")
 }
 func (UnimplementedLLMConfigServiceServer) mustEmbedUnimplementedLLMConfigServiceServer() {}

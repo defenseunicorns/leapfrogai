@@ -1,6 +1,6 @@
 import logging
 
-from typing import Any, Generator, List
+from typing import Any, Generator
 from threading import Thread
 
 import torch
@@ -22,8 +22,6 @@ import transformers.utils.logging
 from leapfrogai import (
     CompletionRequest,
     CompletionChoice,
-    CompletionFinishReason,
-    CompletionUsage,
     CompletionResponse,
     CompletionServiceServicer,
     CompletionStreamServiceServicer,

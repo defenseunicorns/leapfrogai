@@ -166,7 +166,7 @@ class LLMConfigServiceStub(object):
         self.LLMConfig = channel.unary_unary(
             "/completion.LLMConfigService/LLMConfig",
             request_serializer=google_dot_protobuf_dot_empty__pb2.Empty.SerializeToString,
-            response_deserializer=completion_dot_completion__pb2.CompletionResponse.FromString,
+            response_deserializer=completion_dot_completion__pb2.LLMConfigResponse.FromString,
         )
 
 
@@ -185,7 +185,7 @@ def add_LLMConfigServiceServicer_to_server(servicer, server):
         "LLMConfig": grpc.unary_unary_rpc_method_handler(
             servicer.LLMConfig,
             request_deserializer=google_dot_protobuf_dot_empty__pb2.Empty.FromString,
-            response_serializer=completion_dot_completion__pb2.CompletionResponse.SerializeToString,
+            response_serializer=completion_dot_completion__pb2.LLMConfigResponse.SerializeToString,
         ),
     }
     generic_handler = grpc.method_handlers_generic_handler(
@@ -216,7 +216,7 @@ class LLMConfigService(object):
             target,
             "/completion.LLMConfigService/LLMConfig",
             google_dot_protobuf_dot_empty__pb2.Empty.SerializeToString,
-            completion_dot_completion__pb2.CompletionResponse.FromString,
+            completion_dot_completion__pb2.LLMConfigResponse.FromString,
             options,
             channel_credentials,
             insecure,

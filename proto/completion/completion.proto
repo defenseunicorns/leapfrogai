@@ -83,5 +83,5 @@ service CompletionStreamService {
 }
 
 service LLMConfigService {
-    rpc LLMConfig (google.protobuf.Empty) returns (CompletionResponse);
+    rpc LLMConfig (google.protobuf.Empty) returns (LLMConfigResponse);
 }
