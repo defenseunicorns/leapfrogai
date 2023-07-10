@@ -5,6 +5,7 @@ import (
 	"encoding/json"
 	"io"
 	"log"
+	"strings"
 
 	"github.com/defenseunicorns/leapfrogai/api/config"
 	"github.com/defenseunicorns/leapfrogai/pkg/client/completion"
@@ -13,6 +14,8 @@ import (
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/credentials/insecure"
 )
+
+const StopToken = "<|im_end|>"
 
 // Handler is a HuggingFace handler
 type Handler struct {
@@ -86,10 +89,12 @@ func (h *Handler) inference(c *gin.Context) {
 				return true
 			}
 
+			// remove the end of sequence token from the generated text we return
+			generatedText = strings.ReplaceAll(generatedText, StopToken, "")
 			r, _ := json.Marshal(&GenerateStreamResponse{
 				Token: &Token{
 					ID:      0,
-					Text:    "<|im_end|>",
+					Text:    StopToken,
 					Logprob: 0.0,
 					Special: false,
 				},
@@ -114,13 +119,15 @@ func (h *Handler) inference(c *gin.Context) {
 			Temperature:  input.Parameters.Temperature,
 		})
 
+		// remove the end of sequence token from the generated text we return
+		generatedText := strings.ReplaceAll(gr.Choices[0].Text, StopToken, "")
 		r := &[]GenerateResponse{
 			{
-				GeneratedText: gr.Choices[0].Text,
+				GeneratedText: generatedText,
 				Details: &Details{
 					BestOfSequences: []BestOfSequence{
 						{
-							GeneratedText: gr.Choices[0].Text,
+							GeneratedText: generatedText,
 						},
 					},
 				},

@@ -1,8 +1,8 @@
 syntax = "proto3";
 
-package embedding;
+package embeddings;
 
-option go_package = "github.com/defenseunicorns/leapfrogai/pkg/client/embedding";
+option go_package = "github.com/defenseunicorns/leapfrogai/pkg/client/embeddings";
 
 // EmbeddingRequest is the payload to embedding creation
 message EmbeddingRequest {
