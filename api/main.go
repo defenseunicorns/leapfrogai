@@ -16,6 +16,6 @@ func main() {
 	m.Use(r)
 	oaiHandler := &openai.OpenAIHandler{Prefix: "/openai"}
 	oaiHandler.Routes(r)
-
+	r.GET("/healthz")
 	r.Run()
 }
