@@ -1,6 +1,7 @@
 package main
 
 import (
+	"github.com/defenseunicorns/leapfrogai/api/backends/hf"
 	"github.com/defenseunicorns/leapfrogai/api/backends/openai"
 	"github.com/defenseunicorns/leapfrogai/api/config"
 	"github.com/gin-gonic/gin"
@@ -13,9 +14,14 @@ func main() {
 
 	m := ginmetrics.GetMonitor()
 	m.SetMetricPath("/metrics")
+
 	m.Use(r)
 	oaiHandler := &openai.OpenAIHandler{Prefix: "/openai"}
 	oaiHandler.Routes(r)
 	r.GET("/healthz")
+
+	hfHandler := &hf.Handler{Prefix: "/huggingface"}
+	hfHandler.Routes(r)
+
 	r.Run()
 }

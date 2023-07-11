@@ -26,6 +26,21 @@ from .completion.completion_pb2_grpc import (
     CompletionStreamServiceServicer,
     CompletionStreamServiceStub,
 )
+from .chat.chat_pb2 import (
+    ChatCompletionRequest,
+    ChatRole,
+    ChatItem,
+    ChatCompletionChoice,
+    ChatCompletionResponse,
+)
+from .chat.chat_pb2_grpc import (
+    ChatCompletionService,
+    ChatCompletionServiceServicer,
+    ChatCompletionServiceStub,
+    ChatCompletionStreamService,
+    ChatCompletionStreamServiceServicer,
+    ChatCompletionStreamServiceStub,
+)
 from .name.name_pb2 import NameResponse
 from .name.name_pb2_grpc import NameService, NameServiceServicer, NameServiceStub
 from .serve import serve

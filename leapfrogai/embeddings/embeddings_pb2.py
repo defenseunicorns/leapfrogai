@@ -13,13 +13,14 @@ _sym_db = _symbol_database.Default()
 
 
 
-DESCRIPTOR = _descriptor_pool.Default().AddSerializedFile(b'\n\x1b\x65mbeddings/embeddings.proto\x12\tembedding\"\"\n\x10\x45mbeddingRequest\x12\x0e\n\x06inputs\x18\x01 \x03(\t\"\x1e\n\tEmbedding\x12\x11\n\tembedding\x18\x01 \x03(\x02\"=\n\x11\x45mbeddingResponse\x12(\n\nembeddings\x18\x01 \x03(\x0b\x32\x14.embedding.Embedding2a\n\x11\x45mbeddingsService\x12L\n\x0f\x43reateEmbedding\x12\x1b.embedding.EmbeddingRequest\x1a\x1c.embedding.EmbeddingResponseB<Z:github.com/defenseunicorns/leapfrogai/pkg/client/embeddingb\x06proto3')
+DESCRIPTOR = _descriptor_pool.Default().AddSerializedFile(b'\n\x1b\x65mbeddings/embeddings.proto\x12\nembeddings\"\"\n\x10\x45mbeddingRequest\x12\x0e\n\x06inputs\x18\x01 \x03(\t\"\x1e\n\tEmbedding\x12\x11\n\tembedding\x18\x01 \x03(\x02\">\n\x11\x45mbeddingResponse\x12)\n\nembeddings\x18\x01 \x03(\x0b\x32\x15.embeddings.Embedding2c\n\x11\x45mbeddingsService\x12N\n\x0f\x43reateEmbedding\x12\x1c.embeddings.EmbeddingRequest\x1a\x1d.embeddings.EmbeddingResponseB=Z;github.com/defenseunicorns/leapfrogai/pkg/client/embeddingsb\x06proto3')
 
 _builder.BuildMessageAndEnumDescriptors(DESCRIPTOR, globals())
 _builder.BuildTopDescriptorsAndMessages(DESCRIPTOR, 'embeddings.embeddings_pb2', globals())
 if _descriptor._USE_C_DESCRIPTORS == False:
 
   DESCRIPTOR._options = None
+<<<<<<< HEAD
   DESCRIPTOR._serialized_options = b'Z:github.com/defenseunicorns/leapfrogai/pkg/client/embedding'
   _EMBEDDINGREQUEST._serialized_start=42
   _EMBEDDINGREQUEST._serialized_end=76
@@ -29,4 +30,15 @@ if _descriptor._USE_C_DESCRIPTORS == False:
   _EMBEDDINGRESPONSE._serialized_end=171
   _EMBEDDINGSSERVICE._serialized_start=173
   _EMBEDDINGSSERVICE._serialized_end=270
+=======
+  DESCRIPTOR._serialized_options = b'Z;github.com/defenseunicorns/leapfrogai/pkg/client/embeddings'
+  _globals['_EMBEDDINGREQUEST']._serialized_start=43
+  _globals['_EMBEDDINGREQUEST']._serialized_end=77
+  _globals['_EMBEDDING']._serialized_start=79
+  _globals['_EMBEDDING']._serialized_end=109
+  _globals['_EMBEDDINGRESPONSE']._serialized_start=111
+  _globals['_EMBEDDINGRESPONSE']._serialized_end=173
+  _globals['_EMBEDDINGSSERVICE']._serialized_start=175
+  _globals['_EMBEDDINGSSERVICE']._serialized_end=274
+>>>>>>> origin/main
 # @@protoc_insertion_point(module_scope)

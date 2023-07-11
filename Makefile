@@ -1,6 +1,6 @@
 build: api embeddings
 
-TAG ?= 0.2.1
+TAG ?= 0.3.0
 # want to keep things all aligned here
 
 .PHONY: api embeddings push
@@ -44,11 +44,6 @@ repeater:
 repeater-push:
 	docker push ghcr.io/defenseunicorns/leapfrogai/repeater:${TAG}
 
-# This thing is massive, so directly pushing to the zarf registry is quicker/easier
-zarf-push-api:
-	docker tag ghcr.io/defenseunicorns/leapfrogai/api:0.0.1 localhost:5001/defenseunicorns/leapfrogai/api:0.0.1-zarf-1702594131
-	docker push localhost:5001/defenseunicorns/leapfrogai/api:0.0.1-zarf-1702594131
-
 
 zarf-port-forward:
 	kubectl port-forward -n zarf svc/zarf-docker-registry 5001:5000
@@ -58,7 +53,8 @@ gen: gen-go gen-python
 
 
 gen-python:
-	python3 -m grpc_tools.protoc --proto_path=proto/ completion/completion.proto --python_out=leapfrogai  --pyi_out=leapfrogai --grpc_python_out=leapfrogai
+	python3 -m grpc_tools.protoc --proto_path=proto chat/chat.proto --python_out=leapfrogai  --pyi_out=leapfrogai --grpc_python_out=leapfrogai
+	python3 -m grpc_tools.protoc --proto_path=proto completion/completion.proto --python_out=leapfrogai  --pyi_out=leapfrogai --grpc_python_out=leapfrogai
 	python3 -m grpc_tools.protoc --proto_path=proto audio/audio.proto --python_out=leapfrogai  --pyi_out=leapfrogai --grpc_python_out=leapfrogai
 	python3 -m grpc_tools.protoc --proto_path=proto embeddings/embeddings.proto --python_out=leapfrogai  --pyi_out=leapfrogai --grpc_python_out=leapfrogai
 	python3 -m grpc_tools.protoc --proto_path=proto name/name.proto --python_out=leapfrogai  --pyi_out=leapfrogai --grpc_python_out=leapfrogai
@@ -68,6 +64,7 @@ gen-go:
 	rm -rf pkg/client
 	mkdir -p pkg/client
 	protoc --go_out=pkg/client --go_opt=paths=source_relative --go-grpc_out=pkg/client --go-grpc_opt=paths=source_relative --proto_path=proto/ --experimental_allow_proto3_optional completion/completion.proto
+	protoc --go_out=pkg/client --go_opt=paths=source_relative --go-grpc_out=pkg/client --go-grpc_opt=paths=source_relative --proto_path=proto/ --experimental_allow_proto3_optional chat/chat.proto
 	protoc --go_out=pkg/client --go_opt=paths=source_relative --go-grpc_out=pkg/client --go-grpc_opt=paths=source_relative --proto_path=proto/ audio/audio.proto
 	protoc --go_out=pkg/client --go_opt=paths=source_relative --go-grpc_out=pkg/client --go-grpc_opt=paths=source_relative --proto_path=proto/ name/name.proto
 	protoc --go_out=pkg/client --go_opt=paths=source_relative --go-grpc_out=pkg/client --go-grpc_opt=paths=source_relative --proto_path=proto/ embeddings/embeddings.proto
