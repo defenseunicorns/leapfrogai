@@ -4,7 +4,7 @@
 // - protoc             v3.12.4
 // source: embeddings/embeddings.proto
 
-package embedding
+package embeddings
 
 import (
 	context "context"
@@ -19,7 +19,7 @@ import (
 const _ = grpc.SupportPackageIsVersion7
 
 const (
-	EmbeddingsService_CreateEmbedding_FullMethodName = "/embedding.EmbeddingsService/CreateEmbedding"
+	EmbeddingsService_CreateEmbedding_FullMethodName = "/embeddings.EmbeddingsService/CreateEmbedding"
 )
 
 // EmbeddingsServiceClient is the client API for EmbeddingsService service.
@@ -96,7 +96,7 @@ func _EmbeddingsService_CreateEmbedding_Handler(srv interface{}, ctx context.Con
 // It's only intended for direct use with grpc.RegisterService,
 // and not to be introspected or modified (even as a copy)
 var EmbeddingsService_ServiceDesc = grpc.ServiceDesc{
-	ServiceName: "embedding.EmbeddingsService",
+	ServiceName: "embeddings.EmbeddingsService",
 	HandlerType: (*EmbeddingsServiceServer)(nil),
 	Methods: []grpc.MethodDesc{
 		{

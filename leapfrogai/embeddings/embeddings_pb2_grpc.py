@@ -15,7 +15,7 @@ class EmbeddingsServiceStub(object):
             channel: A grpc.Channel.
         """
         self.CreateEmbedding = channel.unary_unary(
-                '/embedding.EmbeddingsService/CreateEmbedding',
+                '/embeddings.EmbeddingsService/CreateEmbedding',
                 request_serializer=embeddings_dot_embeddings__pb2.EmbeddingRequest.SerializeToString,
                 response_deserializer=embeddings_dot_embeddings__pb2.EmbeddingResponse.FromString,
                 )
@@ -40,7 +40,7 @@ def add_EmbeddingsServiceServicer_to_server(servicer, server):
             ),
     }
     generic_handler = grpc.method_handlers_generic_handler(
-            'embedding.EmbeddingsService', rpc_method_handlers)
+            'embeddings.EmbeddingsService', rpc_method_handlers)
     server.add_generic_rpc_handlers((generic_handler,))
 
 
@@ -59,7 +59,7 @@ class EmbeddingsService(object):
             wait_for_ready=None,
             timeout=None,
             metadata=None):
-        return grpc.experimental.unary_unary(request, target, '/embedding.EmbeddingsService/CreateEmbedding',
+        return grpc.experimental.unary_unary(request, target, '/embeddings.EmbeddingsService/CreateEmbedding',
             embeddings_dot_embeddings__pb2.EmbeddingRequest.SerializeToString,
             embeddings_dot_embeddings__pb2.EmbeddingResponse.FromString,
             options, channel_credentials,

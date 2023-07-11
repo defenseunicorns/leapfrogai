@@ -1,0 +1,69 @@
+syntax = "proto3";
+
+package chat;
+
+option go_package = "github.com/defenseunicorns/leapfrogai/pkg/client/chat";
+
+// What role in the conversation are we trying to represent
+enum ChatRole {
+    USER = 0;
+    SYSTEM = 1;
+    FUNCTION = 2;
+    ASSISTANT = 3;
+}
+
+message ChatItem {
+  ChatRole role = 1;
+  string content = 2;
+}
+
+// OpenAI ChatCompletion Request + HF Generate
+message ChatCompletionRequest {
+    repeated ChatItem chat_items = 1;
+    int32 max_new_tokens = 2; // max_tokens in openai
+    optional float temperature = 3;
+    optional float top_k = 4;
+    optional float top_p = 5;
+    optional bool do_sample = 6;
+    optional int32 n = 7;
+    repeated string stop = 8;
+    optional float repetition_penalty = 9;
+    optional float presence_penalty = 10;
+    optional float frequency_penalty = 11;
+    optional string best_of = 12;
+    map<string, int32> logit_bias = 13;
+    optional bool return_full_text = 14;
+    optional int32 truncate = 15;
+    optional float typical_p = 16;
+    optional bool watermark = 17; 
+    optional int32 seed = 18;
+    optional string user = 19;
+}
+
+message ChatCompletionChoice {
+    int32 index = 1;
+    ChatItem chat_item = 2;
+    string finish_reason = 3;
+}
+  
+message Usage {
+    int32 prompt_tokens = 1;
+    int32 completion_tokens = 2;
+    int32 total_tokens = 3;
+}
+  
+message ChatCompletionResponse {
+    string id = 1;
+    string object = 2;
+    int64 created = 3;
+    repeated ChatCompletionChoice choices = 4;
+    Usage usage = 5;
+}
+
+service ChatCompletionService {
+    rpc ChatComplete(ChatCompletionRequest) returns (ChatCompletionResponse);
+}
+
+service ChatCompletionStreamService {
+    rpc ChatCompleteStream(ChatCompletionRequest) returns (stream ChatCompletionResponse);
+}

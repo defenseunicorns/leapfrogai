@@ -72,14 +72,21 @@ type CompletionRequest struct {
 	sizeCache     protoimpl.SizeCache
 	unknownFields protoimpl.UnknownFields
 
-	Prompt            string           `protobuf:"bytes,1,opt,name=prompt,proto3" json:"prompt,omitempty"` // huggingface `inputs`
-	Suffix            *string          `protobuf:"bytes,2,opt,name=suffix,proto3,oneof" json:"suffix,omitempty"`
-	MaxNewTokens      *int32           `protobuf:"varint,3,opt,name=max_new_tokens,json=maxNewTokens,proto3,oneof" json:"max_new_tokens,omitempty"` // openai `max_tokens`
-	Temperature       *float32         `protobuf:"fixed32,4,opt,name=temperature,proto3,oneof" json:"temperature,omitempty"`
-	TopK              *int32           `protobuf:"varint,5,opt,name=top_k,json=topK,proto3,oneof" json:"top_k,omitempty"`
-	TopP              *float32         `protobuf:"fixed32,6,opt,name=top_p,json=topP,proto3,oneof" json:"top_p,omitempty"`
-	DoSample          *bool            `protobuf:"varint,7,opt,name=do_sample,json=doSample,proto3,oneof" json:"do_sample,omitempty"`
-	N                 *int32           `protobuf:"varint,8,opt,name=n,proto3,oneof" json:"n,omitempty"`
+	Prompt       string   `protobuf:"bytes,1,opt,name=prompt,proto3" json:"prompt,omitempty"` // huggingface `inputs`
+	Suffix       *string  `protobuf:"bytes,2,opt,name=suffix,proto3,oneof" json:"suffix,omitempty"`
+	MaxNewTokens *int32   `protobuf:"varint,3,opt,name=max_new_tokens,json=maxNewTokens,proto3,oneof" json:"max_new_tokens,omitempty"` // openai `max_tokens`
+	Temperature  *float32 `protobuf:"fixed32,4,opt,name=temperature,proto3,oneof" json:"temperature,omitempty"`
+	TopK         *int32   `protobuf:"varint,5,opt,name=top_k,json=topK,proto3,oneof" json:"top_k,omitempty"`
+	TopP         *float32 `protobuf:"fixed32,6,opt,name=top_p,json=topP,proto3,oneof" json:"top_p,omitempty"`
+	DoSample     *bool    `protobuf:"varint,7,opt,name=do_sample,json=doSample,proto3,oneof" json:"do_sample,omitempty"`
+	N            *int32   `protobuf:"varint,8,opt,name=n,proto3,oneof" json:"n,omitempty"`
+	// Include the log probabilities on the logprobs most likely tokens, as
+	// well the chosen tokens. For example, if logprobs is 5, the API will return
+	// a list of the 5 most likely tokens. The API will always return the logprob
+	// of the sampled token, so there may be up to logprobs+1 elements in the
+	// response.
+	//
+	// The maximum value for logprobs is 5.
 	Logprobs          *int32           `protobuf:"varint,9,opt,name=logprobs,proto3,oneof" json:"logprobs,omitempty"`
 	Echo              *bool            `protobuf:"varint,10,opt,name=echo,proto3,oneof" json:"echo,omitempty"`
 	Stop              []string         `protobuf:"bytes,11,rep,name=stop,proto3" json:"stop,omitempty"` // You can only represent Union[str, list] as a string.

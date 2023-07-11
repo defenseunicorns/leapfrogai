@@ -5,17 +5,17 @@ from typing import ClassVar as _ClassVar, Iterable as _Iterable, Mapping as _Map
 
 DESCRIPTOR: _descriptor.FileDescriptor
 
-class EmbeddingRequest(_message.Message):
-    __slots__ = ["inputs"]
-    INPUTS_FIELD_NUMBER: _ClassVar[int]
-    inputs: _containers.RepeatedScalarFieldContainer[str]
-    def __init__(self, inputs: _Optional[_Iterable[str]] = ...) -> None: ...
-
 class Embedding(_message.Message):
     __slots__ = ["embedding"]
     EMBEDDING_FIELD_NUMBER: _ClassVar[int]
     embedding: _containers.RepeatedScalarFieldContainer[float]
     def __init__(self, embedding: _Optional[_Iterable[float]] = ...) -> None: ...
+
+class EmbeddingRequest(_message.Message):
+    __slots__ = ["inputs"]
+    INPUTS_FIELD_NUMBER: _ClassVar[int]
+    inputs: _containers.RepeatedScalarFieldContainer[str]
+    def __init__(self, inputs: _Optional[_Iterable[str]] = ...) -> None: ...
 
 class EmbeddingResponse(_message.Message):
     __slots__ = ["embeddings"]
