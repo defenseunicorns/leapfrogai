@@ -1,6 +1,6 @@
 build: api embeddings
 
-TAG ?= 0.2.0
+TAG ?= 0.2.1
 # want to keep things all aligned here
 
 .PHONY: api embeddings push
@@ -67,7 +67,7 @@ gen-python:
 gen-go:
 	rm -rf pkg/client
 	mkdir -p pkg/client
-	protoc --go_out=pkg/client --go_opt=paths=source_relative --go-grpc_out=pkg/client --go-grpc_opt=paths=source_relative --proto_path=proto/ completion/completion.proto
+	protoc --go_out=pkg/client --go_opt=paths=source_relative --go-grpc_out=pkg/client --go-grpc_opt=paths=source_relative --proto_path=proto/ --experimental_allow_proto3_optional completion/completion.proto
 	protoc --go_out=pkg/client --go_opt=paths=source_relative --go-grpc_out=pkg/client --go-grpc_opt=paths=source_relative --proto_path=proto/ audio/audio.proto
 	protoc --go_out=pkg/client --go_opt=paths=source_relative --go-grpc_out=pkg/client --go-grpc_opt=paths=source_relative --proto_path=proto/ name/name.proto
 	protoc --go_out=pkg/client --go_opt=paths=source_relative --go-grpc_out=pkg/client --go-grpc_opt=paths=source_relative --proto_path=proto/ embeddings/embeddings.proto
