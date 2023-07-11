@@ -34,9 +34,115 @@ func (o *OpenAIHandler) Routes(r *gin.Engine) {
 		sr.GET("/models/:model_id", o.showModel)
 		sr.POST("/completions", o.complete)
 		sr.POST("/embeddings", o.createEmbeddings)
+		sr.POST("/engines/:model_id/embeddings", o.createEngineEmbeddings)
 		sr.POST("/audio/transcriptions", o.audioTranscriptions)
 		sr.POST("/audio/translations", o.audioTranslations)
 	}
+}
+
+// @app.post("/engines/{model_id}/embeddings")
+// async def embed2(
+//     model_id: str, body: Annotated[EngineEmbedding, Body(example=dummy_engine)]
+// ):
+//     llm = get_model(model_id=model_id, task="embed")
+//     encoding = tiktoken.model.encoding_for_model(model_id)
+
+//     body.prompt = [encoding.decode(input) for input in body.input]
+//     logger.error(f"Decoded: { body.prompt}")
+
+//     results = llm.embed(inputs=body.prompt)
+//     output = format_embeddings_results(model_name=llm.name, embeddings=results)
+//     return output
+
+func (o *OpenAIHandler) createEngineEmbeddings(c *gin.Context) {
+	var input openai.EmbeddingRequest
+	var i2 EmbeddingRequest
+	// Get path parameter with c.Param()
+	modelID := c.Param("model_id")
+	log.Printf("Model from URL: %v\n", modelID)
+	// var m *openai.EmbeddingModel
+	// err := m.UnmarshalText([]byte(modelID))
+	//XXX do this lookup
+	m := openai.AdaEmbeddingV2
+	// if err != nil {
+	// 	log.Printf("500: Model ID didn't map to an Embedding Model: %v", err)
+	// 	c.JSON(500, err)
+	// }
+	if err := c.BindJSON(&i2); err != nil {
+		log.Printf("500: Error marshalling input to object: %v\n", err)
+		// Handle error
+		c.JSON(500, err)
+		return
+	}
+	// input was just a string, so convert back to the openai object
+	input = openai.EmbeddingRequest{
+		Model: m,
+		User:  i2.User,
+	}
+	o.doEmbedding(c, input, i2.Input)
+
+}
+
+func (o *OpenAIHandler) doEmbedding(c *gin.Context, req openai.EmbeddingRequest, input any) {
+
+	log.Printf("DEBUG: INPUT TYPE: %v\n", reflect.TypeOf(input))
+	switch v := input.(type) {
+	case string:
+		log.Printf("embedding request for string")
+		req.Input = []string{input.(string)}
+	case []interface{}:
+		log.Printf("embedding request for []interface")
+		req.Input = make([]string, len(v))
+		for i, s := range v {
+			str, _ := s.(string)
+			// if !ok {
+			// 	log.Printf("%v is not a string", s)
+			// 	ar := s.([]interface{})
+			// 	log.Printf("Printing Array:\n")
+			// 	for i, a := range ar {
+			// 		log.Printf("(%v,%v): %v\n", i, a, reflect.TypeOf(a))
+			// 	}
+			// }
+			req.Input[i] = str
+		}
+
+	default:
+		log.Printf("400: embedding request for unknown type: %v", v)
+		c.JSON(400, fmt.Errorf("object Input was not of type string or []string: %v", v))
+	}
+
+	conn := o.getModelClient(c, req.Model.String())
+	if conn == nil {
+		return
+	}
+	client := embedding.NewEmbeddingsServiceClient(conn)
+	request := embedding.EmbeddingRequest{
+		Inputs: req.Input,
+	}
+	grpcResponse, err := client.CreateEmbedding(c, &request)
+	if err != nil {
+		log.Printf("500: Error creating embedding for %v: %v", req.Model.String(), err)
+		c.JSON(500, fmt.Errorf("error creating embedding: %v", err))
+		return
+	}
+
+	response := openai.EmbeddingResponse{
+		// Don't know what this object is
+		Object: "",
+		Model:  req.Model,
+		// No idea what this is for
+		Usage: openai.Usage{},
+	}
+	response.Data = make([]openai.Embedding, len(grpcResponse.Embeddings))
+	for i, e := range grpcResponse.Embeddings {
+		embed := openai.Embedding{
+			Object:    "", //No idea what this should be
+			Embedding: e.Embedding,
+			Index:     i,
+		}
+		response.Data[i] = embed
+	}
+	c.JSON(200, response)
 }
 
 func (o *OpenAIHandler) createEmbeddings(c *gin.Context) {
@@ -53,55 +159,7 @@ func (o *OpenAIHandler) createEmbeddings(c *gin.Context) {
 		Model: i2.Model,
 		User:  i2.User,
 	}
-	log.Printf("DEBUG: INPUT TYPE: %v\n", reflect.TypeOf(i2.Input))
-	switch v := i2.Input.(type) {
-	case string:
-		log.Printf("embedding request for string")
-		input.Input = []string{i2.Input.(string)}
-	case []interface{}:
-		log.Printf("embedding request for []interface")
-		input.Input = make([]string, len(v))
-		for i, s := range v {
-			input.Input[i] = s.(string)
-		}
-
-	default:
-		log.Printf("400: embedding request for unknown type: %v", v)
-		c.JSON(400, fmt.Errorf("object Input was not of type string or []string: %v", v))
-	}
-
-	conn := o.getModelClient(c, input.Model.String())
-	if conn == nil {
-		return
-	}
-	client := embedding.NewEmbeddingsServiceClient(conn)
-	request := embedding.EmbeddingRequest{
-		Inputs: input.Input,
-	}
-	grpcResponse, err := client.CreateEmbedding(c, &request)
-	if err != nil {
-		log.Printf("500: Error creating embedding for %v: %v", input.Model.String(), err)
-		c.JSON(500, fmt.Errorf("error creating embedding: %v", err))
-		return
-	}
-
-	response := openai.EmbeddingResponse{
-		// Don't know what this object is
-		Object: "",
-		Model:  input.Model,
-		// No idea what this is for
-		Usage: openai.Usage{},
-	}
-	response.Data = make([]openai.Embedding, len(grpcResponse.Embeddings))
-	for i, e := range grpcResponse.Embeddings {
-		embed := openai.Embedding{
-			Object:    "", //No idea what this should be
-			Embedding: e.Embedding,
-			Index:     i,
-		}
-		response.Data[i] = embed
-	}
-	c.JSON(200, response)
+	o.doEmbedding(c, input, i2.Input)
 }
 
 type AudioRequest struct {
@@ -404,6 +462,7 @@ func (o *OpenAIHandler) complete(c *gin.Context) {
 				c.JSON(500, err)
 				return
 			}
+
 			choice := openai.CompletionChoice{
 				Text:         response.Choices[i].GetText(),
 				FinishReason: strings.ToLower(response.Choices[i].GetFinishReason().Enum().String()),
