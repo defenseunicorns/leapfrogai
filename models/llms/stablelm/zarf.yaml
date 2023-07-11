@@ -1,0 +1,20 @@
+kind: ZarfPackageConfig
+metadata:
+  name: stablelm-3b
+  version: 0.2.1 # maybe this lives in the LF repo?
+  description: >
+    StableLM-3B model
+
+constants:
+  - name: VERSION
+    default: ###ZARF_PKG_TMPL_VERSION###
+  - name: NAME
+    default: ###ZARF_PKG_TMPL_NAME###
+
+components:
+  - name: import-model
+    required: true
+    import:
+      name: model
+      url: oci://ghcr.io/defenseunicorns/packages/leapfrogai-model:0.2.1-skeleton
+

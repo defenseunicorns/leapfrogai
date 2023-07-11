@@ -34,8 +34,10 @@ class StopOnTokens(StoppingCriteria):
 
 class StableLM(CompletionServiceServicer):
     tokenizer = AutoTokenizer.from_pretrained(TOKENIZER_ID)
+    # model = AutoModelForCausalLM.from_pretrained(MODEL_ID)
     model = AutoModelForCausalLM.from_pretrained(MODEL_ID)
-
+    model.half().cuda()
+    
     if torch.cuda.is_available():
         device = "cuda"
     else:
