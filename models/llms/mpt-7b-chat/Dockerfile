@@ -22,13 +22,6 @@ COPY --chown=user:user mpt-7b-chat-offline ./mpt-7b-chat-offline
 # Move the rest of the python files (most likely place layer cache will be invalidated)
 COPY --chown=user:user *.py .
 
-# install locally built leapfrog-0.3.0
-COPY --chown=user:user leapfrogai-0.3.0-py3-none-any.whl .
-RUN pip install leapfrogai-0.3.0-py3-none-any.whl
-RUN rm leapfrogai-0.3.0-py3-none-any.whl
-
-RUN ls -lah mpt-7b-chat-offline
-
 # Publish port
 EXPOSE 50051:50051
 
