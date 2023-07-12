@@ -1,6 +1,6 @@
 import logging
 
-from get_models import MODEL_ID
+from get_model import MODEL_ID
 from sentence_transformers import SentenceTransformer
 
 from leapfrogai import (

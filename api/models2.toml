@@ -10,6 +10,17 @@ tasks = ["completion", "chat"]
 url = 'localhost:50051'
 type = 'gRPC'
 
+[all-minilm-l6-v2]
+
+[all-minilm-l6-v2.metadata]
+owned_by = ''
+permission = []
+description = 'all-minilm-l6-v2 english embeddings model'
+tasks = ["embeddings"]
+
+[all-minilm-l6-v2.network]
+url = 'localhost:50051'
+type = 'gRPC'
 
 [ctransformers]
 
