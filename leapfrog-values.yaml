@@ -24,7 +24,7 @@ models:
   stablelm3b:
     enabled: false
   all_MiniLM_L6_v2:
-    enabled: false
+    enabled: true
   whisper:
     enabled: false
   repeater: 

@@ -20,25 +20,13 @@ _builder.BuildTopDescriptorsAndMessages(DESCRIPTOR, 'embeddings.embeddings_pb2',
 if _descriptor._USE_C_DESCRIPTORS == False:
 
   DESCRIPTOR._options = None
-<<<<<<< HEAD
-  DESCRIPTOR._serialized_options = b'Z:github.com/defenseunicorns/leapfrogai/pkg/client/embedding'
-  _EMBEDDINGREQUEST._serialized_start=42
-  _EMBEDDINGREQUEST._serialized_end=76
-  _EMBEDDING._serialized_start=78
-  _EMBEDDING._serialized_end=108
-  _EMBEDDINGRESPONSE._serialized_start=110
-  _EMBEDDINGRESPONSE._serialized_end=171
-  _EMBEDDINGSSERVICE._serialized_start=173
-  _EMBEDDINGSSERVICE._serialized_end=270
-=======
   DESCRIPTOR._serialized_options = b'Z;github.com/defenseunicorns/leapfrogai/pkg/client/embeddings'
-  _globals['_EMBEDDINGREQUEST']._serialized_start=43
-  _globals['_EMBEDDINGREQUEST']._serialized_end=77
-  _globals['_EMBEDDING']._serialized_start=79
-  _globals['_EMBEDDING']._serialized_end=109
-  _globals['_EMBEDDINGRESPONSE']._serialized_start=111
-  _globals['_EMBEDDINGRESPONSE']._serialized_end=173
-  _globals['_EMBEDDINGSSERVICE']._serialized_start=175
-  _globals['_EMBEDDINGSSERVICE']._serialized_end=274
->>>>>>> origin/main
+  _EMBEDDINGREQUEST._serialized_start=43
+  _EMBEDDINGREQUEST._serialized_end=77
+  _EMBEDDING._serialized_start=79
+  _EMBEDDING._serialized_end=109
+  _EMBEDDINGRESPONSE._serialized_start=111
+  _EMBEDDINGRESPONSE._serialized_end=173
+  _EMBEDDINGSSERVICE._serialized_start=175
+  _EMBEDDINGSSERVICE._serialized_end=274
 # @@protoc_insertion_point(module_scope)

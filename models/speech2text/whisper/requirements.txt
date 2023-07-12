@@ -1,0 +1,2 @@
+leapfrogai==0.2.0
+openai-whisper==20230314
