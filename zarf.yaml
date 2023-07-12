@@ -4,7 +4,7 @@ kind: ZarfPackageConfig
 metadata:
   name: leapfrogai
   description: "LeapfrogAI"
-  version: 0.2.1
+  version: 0.3.1
   architecture: amd64
 
 components:
@@ -24,26 +24,26 @@ components:
     - name: leapfrogai
       namespace: leapfrogai
       localPath: chart
-      version: 0.0.2
+      version: 0.3.1
       valuesFiles:
         - "leapfrog-values.yaml"
     images:
-      - "ghcr.io/defenseunicorns/leapfrogai/api:0.2.1"
-      - "ghcr.io/defenseunicorns/leapfrogai/stablelm-3b:0.2.1"
-      - "ghcr.io/defenseunicorns/leapfrogai/embeddings:0.2.1"
-  - name: dcgm-exporter
-    required: true
-    charts:
-      - name: dcgm-exporter
-        version: 3.1.4
-        url: https://nvidia.github.io/dcgm-exporter/helm-charts
-        namespace: "leapfrogai"
-    images:
-      - "nvcr.io/nvidia/k8s/dcgm-exporter:3.1.7-3.1.4-ubuntu20.04"
-  - name: dcgm-dashboard
-    required: true
-    manifests:
-      - name: dashboard
-        namespace: monitoring
-        kustomizations:
-          - kubernetes/observibility
+      - "ghcr.io/defenseunicorns/leapfrogai/api:0.3.1"
+      # - "ghcr.io/defenseunicorns/leapfrogai/stablelm-3b:0.3.1"
+      - "ghcr.io/defenseunicorns/leapfrogai/embeddings:0.3.1"
+  # - name: dcgm-exporter
+  #   required: true
+  #   charts:
+  #     - name: dcgm-exporter
+  #       version: 3.1.4
+  #       url: https://nvidia.github.io/dcgm-exporter/helm-charts
+  #       namespace: "leapfrogai"
+  #   images:
+  #     # - "nvcr.io/nvidia/k8s/dcgm-exporter:3.1.7-3.1.4-ubuntu20.04"
+  # - name: dcgm-dashboard
+  #   required: true
+  #   manifests:
+  #     - name: dashboard
+  #       namespace: monitoring
+  #       kustomizations:
+  #         - kubernetes/observibility
