@@ -30,6 +30,11 @@ embeddings:
 	cd  models/text2vec/all-minilm-l6-v2/ && \
 	docker build --network=host --build-arg IMAGE_TAG=${TAG} -t ghcr.io/defenseunicorns/leapfrogai/embeddings:${TAG} .
 
+mpt-7b-chat:
+	cd models/llms/mpt-7b-chat && \
+	docker build --network=host --build-arg IMAGE_TAG=${TAG} -t ghcr.io/defenseunicorns/leapfrogai/mpt-7b-chat:${TAG} .
+
+
 whisper:
 	cd models/speech2text/whisper && \
 	docker build --network=host --build-arg IMAGE_TAG=${TAG} -t ghcr.io/defenseunicorns/leapfrogai/whisper:${TAG} .

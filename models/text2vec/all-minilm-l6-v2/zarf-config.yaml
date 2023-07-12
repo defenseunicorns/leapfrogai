@@ -1,0 +1,16 @@
+package:
+  create:
+    set:
+      image_repository: "ghcr.io/defenseunicorns/leapfrogai/embeddings"
+      version: 0.3.1
+      name: embeddings
+    max_package_size: "1000000000"
+  deploy:
+    set:
+      limits_cpu: 1
+      limits_memory: 4Gi
+      requests_cpu: 1
+      requests_memory: 4Gi
+      name: embeddings
+      image_repository: "ghcr.io/defenseunicorns/leapfrogai/embeddings"
+      version: 0.3.1
