@@ -3,6 +3,7 @@ package openai
 import (
 	"fmt"
 	"log"
+	"reflect"
 
 	"github.com/defenseunicorns/leapfrogai/pkg/client/embeddings"
 	"github.com/gin-gonic/gin"
@@ -45,42 +46,55 @@ type Usage struct {
 	TotalTokens      int `json:"total_tokens"`
 }
 
-func (o *OpenAIHandler) createEmbeddings(c *gin.Context) {
+func (o *OpenAIHandler) createEngineEmbeddings(c *gin.Context) {
 	var input EmbeddingRequest
+	// Get path parameter with c.Param()
+	modelID := c.Param("model_id")
+	log.Printf("Model from URL: %v\n", modelID)
+	input.Model = modelID
 	if err := c.BindJSON(&input); err != nil {
 		log.Printf("500: Error marshalling input to object: %v\n", err)
 		// Handle error
 		c.JSON(500, err)
 		return
 	}
-	conn := o.getModelClient(c, input.Model)
-	if conn == nil {
-		return
-	}
-	var request embeddings.EmbeddingRequest
-	switch v := input.Input.(type) {
+	o.doEmbedding(c, input)
+
+}
+
+func (o *OpenAIHandler) doEmbedding(c *gin.Context, req EmbeddingRequest) {
+	input := req.Input
+	inputs := make([]string, 0)
+	log.Printf("DEBUG: INPUT TYPE: %v\n", reflect.TypeOf(input))
+	switch v := input.(type) {
 	case string:
 		log.Printf("embedding request for string")
-		request = embeddings.EmbeddingRequest{
-			Inputs: []string{v},
-		}
+		inputs = []string{input.(string)}
 	case []interface{}:
 		log.Printf("embedding request for []interface")
-		inputString := make([]string, len(v))
+		req.Input = make([]string, len(v))
+		inputs = make([]string, len(v))
 		for i, s := range v {
-			inputString[i] = s.(string)
-		}
-		request = embeddings.EmbeddingRequest{
-			Inputs: inputString,
+			str, _ := s.(string)
+			inputs[i] = str
 		}
 	default:
 		log.Printf("400: embedding request for unknown type: %v", v)
 		c.JSON(400, fmt.Errorf("object Input was not of type string or []string: %v", v))
+		return
+	}
+
+	conn := o.getModelClient(c, req.Model)
+	if conn == nil {
+		return
 	}
 	client := embeddings.NewEmbeddingsServiceClient(conn)
+	request := embeddings.EmbeddingRequest{
+		Inputs: inputs,
+	}
 	grpcResponse, err := client.CreateEmbedding(c, &request)
 	if err != nil {
-		log.Printf("500: Error creating embedding for %v: %v", input.Model, err)
+		log.Printf("500: Error creating embedding for %v: %v", req.Model, err)
 		c.JSON(500, fmt.Errorf("error creating embedding: %v", err))
 		return
 	}
@@ -88,7 +102,7 @@ func (o *OpenAIHandler) createEmbeddings(c *gin.Context) {
 	response := EmbeddingResponse{
 		// Don't know what this object is
 		Object: "",
-		Model:  input.Model,
+		Model:  req.Model,
 		// No idea what this is for
 		Usage: Usage{},
 	}
@@ -102,6 +116,18 @@ func (o *OpenAIHandler) createEmbeddings(c *gin.Context) {
 		response.Data[i] = embed
 	}
 	c.JSON(200, response)
+}
+
+func (o *OpenAIHandler) createEmbeddings(c *gin.Context) {
+	var input EmbeddingRequest
+	// Get path parameter with c.Param()
+	if err := c.BindJSON(&input); err != nil {
+		log.Printf("500: Error marshalling input to object: %v\n", err)
+		// Handle error
+		c.JSON(500, err)
+		return
+	}
+	o.doEmbedding(c, input)
 }
 
 func NewEmbeddingsServiceClient(conn *grpc.ClientConn) {

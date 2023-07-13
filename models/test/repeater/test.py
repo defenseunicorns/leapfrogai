@@ -18,8 +18,9 @@ def run():
 
         # Create a request
         request = leapfrogai.CompletionRequest(
-            prompt="Hello, Chatbot!",
+            prompt="This is a story about a cat named whiskers:\n",
             max_new_tokens=150,
+            temperature=0.7,
             # add other parameters as necessary
         )
 
@@ -29,13 +30,13 @@ def run():
         # Print the response
         print("Received response: ", response)
 
-        name = leapfrogai.NameServiceStub(channel)
-        response = name.Name(google_dot_protobuf_dot_empty__pb2.Empty())
-        print(f"Recieved name: { response }")
+        # name = leapfrogai.NameServiceStub(channel)
+        # response = name.Name(google_dot_protobuf_dot_empty__pb2.Empty())
+        # print(f"Recieved name: { response }")
 
-        embed = leapfrogai.EmbeddingsServiceStub(channel)
-        r = embed.CreateEmbedding(leapfrogai.EmbeddingRequest(inputs=["foobar"]))
-        print(f"Recieved embedding: { r }")
+        # embed = leapfrogai.EmbeddingsServiceStub(channel)
+        # r = embed.CreateEmbedding(leapfrogai.EmbeddingRequest(inputs=["foobar"]))
+        # print(f"Recieved embedding: { r }")
 
 
 if __name__ == "__main__":

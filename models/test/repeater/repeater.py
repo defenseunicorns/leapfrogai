@@ -9,7 +9,8 @@ class Repeater(leapfrogai.CompletionServiceServicer):
     ) -> leapfrogai.CompletionResponse:
         result = request.prompt  # just returns what's provided
         print(f"Repeater.Complete:  { request }")
-        return leapfrogai.CompletionResponse(completion=result)
+        completion = leapfrogai.CompletionChoice(text=result, index=0)
+        return leapfrogai.CompletionResponse(choices=[completion])
 
     def CreateEmbedding(self, request, context):
         return leapfrogai.EmbeddingResponse(

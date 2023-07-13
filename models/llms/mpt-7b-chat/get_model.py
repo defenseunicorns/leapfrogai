@@ -10,13 +10,13 @@ if __name__ == "__main__":
     """
     tokenizer = AutoTokenizer.from_pretrained(
         PRETRAINED_MODEL_NAME_OR_PATH,
-        # trust_remote_code=True
+        trust_remote_code=True
     )
     tokenizer.save_pretrained(MODEL_SAVE_PATH)
     
     # load the model and save it to this directory in safetensors format
     model = AutoModelForCausalLM.from_pretrained(
         PRETRAINED_MODEL_NAME_OR_PATH,
-        # trust_remote_code=True
+        trust_remote_code=True
     )
     model.save_pretrained(MODEL_SAVE_PATH, use_safetensors=True)

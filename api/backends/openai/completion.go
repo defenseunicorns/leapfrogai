@@ -32,6 +32,7 @@ func (o *OpenAIHandler) complete(c *gin.Context) {
 	id, _ := uuid.NewRandom()
 
 	if input.Stream {
+		log.Printf("Attempting to stream for model %v\n", input.Model)
 		chanStream := make(chan *completion.CompletionResponse, 10)
 		client := completion.NewCompletionStreamServiceClient(conn)
 		stream, err := client.CompleteStream(context.Background(), &completion.CompletionRequest{
