@@ -18,7 +18,8 @@ This is a quick guide to get LeapFrogAI running locally.
 LeapFrogAI's API server is written in go. To launch the API Server:
 
 ``` shell
-go run ./api/main.go
+cd ./api
+go run main.go
 ```
 
 ### mpt-7b-chat
