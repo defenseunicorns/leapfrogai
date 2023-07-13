@@ -2,7 +2,7 @@ package:
   create:
     set:
       image_repository: "ghcr.io/defenseunicorns/leapfrogai/stablelm-3b"
-      version: 0.3.1
+      version: 0.3.2
       name: stablelm-3b
     max_package_size: "1000000000"
   deploy:
@@ -15,4 +15,4 @@ package:
       requests_gpu: 0
       name: stablelm-3b
       image_repository: "ghcr.io/defenseunicorns/leapfrogai/stablelm-3b"
-      version: 0.3.1
+      version: 0.3.2

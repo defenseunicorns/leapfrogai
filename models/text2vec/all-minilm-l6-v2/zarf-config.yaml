@@ -1,9 +1,9 @@
 package:
   create:
     set:
-      image_repository: "ghcr.io/defenseunicorns/leapfrogai/embeddings"
-      version: 0.3.1
-      name: embeddings
+      image_repository: "ghcr.io/defenseunicorns/leapfrogai/all-minilm-l6-v2"
+      version: 0.3.2
+      name: all-minilm-l6-v2
     max_package_size: "1000000000"
   deploy:
     set:
@@ -11,6 +11,6 @@ package:
       limits_memory: 4Gi
       requests_cpu: 1
       requests_memory: 4Gi
-      name: embeddings
-      image_repository: "ghcr.io/defenseunicorns/leapfrogai/embeddings"
-      version: 0.3.1
+      name: all-minilm-l6-v2
+      image_repository: "ghcr.io/defenseunicorns/leapfrogai/all-minilm-l6-v2"
+      version: 0.3.2
