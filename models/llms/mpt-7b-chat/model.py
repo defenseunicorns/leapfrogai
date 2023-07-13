@@ -1,11 +1,12 @@
 import logging
 
-from typing import Any, Generator, List
+from typing import Any, Generator
 from threading import Thread
 
 import torch
 
 from google.protobuf.internal.containers import RepeatedCompositeFieldContainer
+from google.protobuf.empty_pb2 import Empty
 
 from transformers import (
     AutoConfig,
@@ -21,8 +22,6 @@ import transformers.utils.logging
 from leapfrogai import (
     CompletionRequest,
     CompletionChoice,
-    CompletionFinishReason,
-    CompletionUsage,
     CompletionResponse,
     CompletionServiceServicer,
     CompletionStreamServiceServicer,
@@ -37,6 +36,12 @@ from leapfrogai import (
     ChatCompletionResponse,
     ChatCompletionServiceServicer,
     ChatCompletionStreamServiceServicer,
+)
+
+# config
+from leapfrogai import (
+    LLMConfigResponse,
+    LLMConfigServiceServicer,
 )
 
 # general
@@ -102,6 +107,7 @@ class MPTChat(
     ChatCompletionStreamServiceServicer,
     CompletionServiceServicer,
     CompletionStreamServiceServicer,
+    LLMConfigServiceServicer,
 ):
     # create a config, configure the model, and load
     config = AutoConfig.from_pretrained(
@@ -151,7 +157,6 @@ class MPTChat(
         thread = Thread(target=self.model.generate, kwargs=generation_kwargs)
         thread.start()
         for text in streamer:
-            print(text)
             yield text
 
     def ChatComplete(
@@ -204,7 +209,6 @@ class MPTChat(
         thread = Thread(target=self.model.generate, kwargs=generation_kwargs)
         thread.start()
         for text in streamer:
-            print(text)
             yield text
 
     def Complete(
@@ -225,6 +229,18 @@ class MPTChat(
         for text_chunk in completion_stream:
             choice = CompletionChoice(text=text_chunk, index=0)
             yield CompletionResponse(choices=[choice])
+
+    def LLMConfig(self, request: Empty, context: GrpcContext) -> LLMConfigResponse:
+        return LLMConfigResponse(
+            model_max_length=8192,
+            bos_token="<|endoftext|>",
+            eos_token="<|endoftext|>",
+            unk_token="<|endoftext|>",
+            special_tokens={
+                "chat_start": "<|im_start|>",
+                "chat_stop": "<|im_end|>",
+            },
+        )
 
 
 if __name__ == "__main__":

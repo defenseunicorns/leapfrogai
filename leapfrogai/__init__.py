@@ -15,8 +15,9 @@ from .completion.completion_pb2 import (
     CompletionRequest,
     CompletionResponse,
     CompletionChoice,
-    CompletionUsage, 
+    CompletionUsage,
     CompletionFinishReason,
+    LLMConfigResponse,
 )
 from .completion.completion_pb2_grpc import (
     CompletionService,
@@ -25,6 +26,9 @@ from .completion.completion_pb2_grpc import (
     CompletionStreamService,
     CompletionStreamServiceServicer,
     CompletionStreamServiceStub,
+    LLMConfigService,
+    LLMConfigServiceServicer,
+    LLMConfigServiceStub,
 )
 from .chat.chat_pb2 import (
     ChatCompletionRequest,
