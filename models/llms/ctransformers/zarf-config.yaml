@@ -1,9 +1,9 @@
 package:
   create:
     set:
-      image_repository: "ghcr.io/defenseunicorns/leapfrogai/stablelm-3b"
+      image_repository: "ghcr.io/defenseunicorns/leapfrogai/ctransformers"
       version: 0.3.2
-      name: stablelm-3b
+      name: ctransformers
     max_package_size: "1000000000"
   deploy:
     set:
@@ -13,6 +13,6 @@ package:
       requests_cpu: 1
       requests_memory: 4Gi
       requests_gpu: 0
-      name: stablelm-3b
-      image_repository: "ghcr.io/defenseunicorns/leapfrogai/stablelm-3b"
+      name: ctransformers
+      image_repository: "ghcr.io/defenseunicorns/leapfrogai/ctransformers"
       version: 0.3.2

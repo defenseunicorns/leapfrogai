@@ -1,9 +1,9 @@
 kind: ZarfPackageConfig
 metadata:
-  name: stablelm-3b
+  name: all-minilm-l6-v2
   version: 0.3.1 # maybe this lives in the LF repo?
   description: >
-    StableLM-3B model
+    all-minilm-l6-v2 model
 
 constants:
   - name: VERSION
@@ -16,5 +16,5 @@ components:
     required: true
     import:
       name: model
-      url: oci://ghcr.io/defenseunicorns/packages/leapfrogai-model:0.3.1-skeleton
+      url: oci://ghcr.io/defenseunicorns/packages/leapfrogai-model:0.3.2-skeleton
 

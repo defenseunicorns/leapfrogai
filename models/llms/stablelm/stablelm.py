@@ -41,13 +41,7 @@ class StableLM(CompletionServiceServicer):
         device = "cpu"
     tokenizer = AutoTokenizer.from_pretrained(TOKENIZER_ID)
     model = AutoModelForCausalLM.from_pretrained(MODEL_ID)
-    # model = AutoModelForCausalLM.from_pretrained(MODEL_ID,torch_dtype=torch.float16)
-    # model = model.to(torch.cuda.current_device())
-
-    # tokenizer = AutoTokenizer.from_pretrained("StabilityAI/stablelm-tuned-alpha-7b")
-    # model = AutoModelForCausalLM.from_pretrained("StabilityAI/stablelm-tuned-alpha-7b")
     model.half().cuda()
-    # model = model.to(device)
     print("StableLM Loaded...")
     
     def Complete(

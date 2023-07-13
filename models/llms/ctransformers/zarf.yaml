@@ -1,9 +1,9 @@
 kind: ZarfPackageConfig
 metadata:
-  name: mpt-7b-chat
-  version: 0.3.2 # maybe this lives in the LF repo?
+  name: ctransformers
+  version: 0.3.2 
   description: >
-    MPT-7B-chat model
+    ctransformers model
 
 constants:
   - name: VERSION

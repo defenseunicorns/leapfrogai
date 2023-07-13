@@ -6,7 +6,7 @@ COPY --chown=user:user requirements.txt .
 RUN pip install -r requirements.txt
 
 COPY --chown=user:user main.py .
-COPY --chown=user:user get_model.py .
+# COPY --chown=user:user get_model.py .
 COPY --chown=user:user .python-version .
 
 COPY --chown=user:user pyproject.toml .

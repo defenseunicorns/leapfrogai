@@ -10,24 +10,10 @@ from .name import name_pb2_grpc
 from grpclib.health.service import Health
 from grpclib.health.check import ServiceCheck
 
-
-async def up():
-    return True
-
 def serve(o):
-    
-
-    health = Health()
-
-
-    health = Health({ServiceCheck(up)})
-
-    # s = grpc.Server([health])
 
     # Create a gRPC server
-    server = grpc.server(futures.ThreadPoolExecutor(max_workers=3), handlers=[health])
-
-
+    server = grpc.server(futures.ThreadPoolExecutor(max_workers=3))
 
     if hasattr(o, "ChatComplete"):
         chat_pb2_grpc.add_ChatCompletionServiceServicer_to_server(o, server)
