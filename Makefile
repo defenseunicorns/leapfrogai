@@ -17,6 +17,9 @@ push:
 base:
 	docker build --network=host -t ghcr.io/defenseunicorns/leapfrogai/base:${TAG} -f leapfrogai/Dockerfile leapfrogai
 
+base-push:
+	docker push ghcr.io/defenseunicorns/leapfrogai/base:${TAG}
+
 api:
 	docker build --network=host -t ghcr.io/defenseunicorns/leapfrogai/api:${TAG} .
 api-push:
