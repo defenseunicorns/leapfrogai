@@ -57,9 +57,11 @@ graph LR;
 
 ### Setting up the Kubernetes Cluster
 
-#### K3d
+LeapfrogAI's API server and [weaviate](https://github.com/weaviate/weaviate)'s vector database don't require GPUs, however some models will not function without GPUs.  If using a CPU based platform, see the [ctransformers](./models/llms/ctransformers/) folder for working with GGML architectures.
 
-There's a Zarf package that deploys a k3d cluster with GPU support [here](https://github.com/runyontr/zarf-package-k3d).  To deploy the zarf package simply:
+#### K3d w/ GPU support
+
+If developing on a node that has a GPU, there's a Zarf package that deploys a k3d cluster with GPU support [here](https://github.com/runyontr/zarf-package-k3d).  To deploy the zarf package simply:
 
 ```shell
 zarf package deploy oci://ghcr.io/runyontr/zarf-package-k3d/k3d-local:v1.26.0-amd64
@@ -67,20 +69,23 @@ zarf package deploy oci://ghcr.io/runyontr/zarf-package-k3d/k3d-local:v1.26.0-am
 
 on a node with at least 1 GPU
 
-#### EKSCTL
+#### Initialize Cluster
+
+The supported install method uses [zarf](https://zarf.dev) to initialize the cluster and then deploy [Big Bang](https://github.com/defenseunicorns/uds-package-dubbd) on top:
 
 ```shell
-eckctl create cluster -f config.yaml
 zarf init -a amd64
-zarf package deploy oci://ghcr.io/defenseunicorns/packages/big-bang-distro-k3d/big-bang-distro-k3d:0.0.1-amd64
+zarf package deploy oci://ghcr.io/defenseunicorns/packages/dubbd-k3d:0.4.2-amd64 
 ```
 
 
 ### Deploy
 
+To build and deploy Leapfrg
+
 ```shell
-zarf package create
-zarf package deploy zarf-package-leapfrogai-amd64-0.1.1.tar.zst
+zarf package create .
+zarf package deploy zarf-package-leapfrogai-*.zst --confirm
 ```
 
 ### Configure DNS
@@ -88,7 +93,18 @@ zarf package deploy zarf-package-leapfrogai-amd64-0.1.1.tar.zst
 Ensure that the DNS record for `*.bigbang.dev` points to the load balancer for Istio.  By default this DNS record points at localhost, so for the k3d deployment, this should work out of the box with the load balancers configured.  For a remote EKS deployment, you may need to 
 
 
-The OpenAI API service is hosted and then uses GRPC to talk to the embedding server and the alpaca-lora-7B instance
+The OpenAI API service is hosted and is watching for new models to get installed in the cluster.
+
+### Install a model
+
+```shell
+$ cd models/test/repeater
+$ zarf package create .
+$ zarf package deploy zarf-package-*.zst --confirm
+$ kubectl get pods -n leapfrogai
+NAME                              READY   STATUS    RESTARTS   AGE
+api-deployment-65cd6fbf95-l5dzw   2/2     Running   0          5m23s
+```
 
 
 ## Usage <a name="usage"></a>

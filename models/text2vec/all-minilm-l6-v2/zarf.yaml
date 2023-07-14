@@ -1,0 +1,20 @@
+kind: ZarfPackageConfig
+metadata:
+  name: all-minilm-l6-v2
+  version: 0.3.1 # maybe this lives in the LF repo?
+  description: >
+    all-minilm-l6-v2 model
+
+constants:
+  - name: VERSION
+    default: ###ZARF_PKG_TMPL_VERSION###
+  - name: NAME
+    default: ###ZARF_PKG_TMPL_NAME###
+
+components:
+  - name: import-model
+    required: true
+    import:
+      name: model
+      url: oci://ghcr.io/defenseunicorns/packages/leapfrogai-model:0.3.2-skeleton
+

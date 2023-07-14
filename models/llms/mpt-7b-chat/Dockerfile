@@ -1,23 +1,14 @@
-FROM pytorch/pytorch:2.0.1-cuda11.7-cudnn8-devel
+ARG IMAGE_TAG
+FROM ghcr.io/defenseunicorns/leapfrogai/base:${IMAGE_TAG}
 
-# Create user instead of using root
-ENV USER='user'
-RUN groupadd -r user && useradd -r -g $USER $USER
-RUN mkdir -p /home/$USER
-RUN chown -R $USER /home/$USER
-RUN chmod a+rwx -R  /home/$USER
-USER $USER
-
-# Define workdir
-RUN mkdir /home/$USER/app
-WORKDIR /home/$USER/app
 
 # Install requirements
-COPY --chown=user:user requirements.txt .
+COPY requirements.txt .
 RUN pip install -r requirements.txt
 
-# Move model files
-COPY --chown=user:user mpt-7b-chat-offline ./mpt-7b-chat-offline
+COPY get_model.py get_model.py
+# # Get model weights and tokenizer
+RUN python3 get_model.py
 
 # Move the rest of the python files (most likely place layer cache will be invalidated)
 COPY --chown=user:user *.py .
