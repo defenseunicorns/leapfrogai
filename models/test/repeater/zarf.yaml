@@ -1,7 +1,7 @@
 kind: ZarfPackageConfig
 metadata:
   name: repeater
-  version: 0.3.1 # maybe this lives in the LF repo?
+  version: 0.3.2
   description: >
     repeater
 

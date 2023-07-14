@@ -7,8 +7,6 @@ from .chat import chat_pb2_grpc
 from .embeddings import embeddings_pb2_grpc
 from .completion import completion_pb2_grpc
 from .name import name_pb2_grpc
-from grpclib.health.service import Health
-from grpclib.health.check import ServiceCheck
 
 def serve(o):
 
