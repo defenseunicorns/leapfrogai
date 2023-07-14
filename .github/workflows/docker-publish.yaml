@@ -40,6 +40,6 @@ jobs:
         download-init-package: false
     - name: Build Zarf Package
       # just building, not pushing them
-      run: zarf package create .
+      run: zarf package create . --confirm
     - name: Publish Zarf Package
       run: zarf package publish zarf-package-*.zst oci://ghcr.io/defenseunicorns/packages
