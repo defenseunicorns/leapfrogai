@@ -1,9 +1,9 @@
 kind: ZarfPackageConfig
 metadata:
-  name: whsiper
+  name: whisper
   version: 0.3.1 # maybe this lives in the LF repo?
   description: >
-    whsiper model
+    whisper model
 
 constants:
   - name: VERSION
