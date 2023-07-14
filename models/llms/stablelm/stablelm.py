@@ -13,6 +13,7 @@ from transformers import (
 )
 
 from leapfrogai import (
+    CompletionChoice,
     CompletionRequest,
     CompletionResponse,
     CompletionServiceServicer,
@@ -33,28 +34,28 @@ class StopOnTokens(StoppingCriteria):
 
 
 class StableLM(CompletionServiceServicer):
-    tokenizer = AutoTokenizer.from_pretrained(TOKENIZER_ID)
-    model = AutoModelForCausalLM.from_pretrained(MODEL_ID)
-
+    torch.cuda.init()
     if torch.cuda.is_available():
         device = "cuda"
     else:
         device = "cpu"
-    model = model.to(device)
-    logging.info("StableLM Loaded...")
-
+    tokenizer = AutoTokenizer.from_pretrained(TOKENIZER_ID)
+    model = AutoModelForCausalLM.from_pretrained(MODEL_ID)
+    model.half().cuda()
+    print("StableLM Loaded...")
+    
     def Complete(
         self, request: CompletionRequest, context: GrpcContext
     ) -> CompletionResponse:
-        inputs = self.tokenizer(request.prompt, return_tensors="pt").to(self.device)
-        logging.debug(f"Request:  { request }")
+        print(f"Request:  { request }")
+        inputs = self.tokenizer(request.prompt, return_tensors="pt").to(torch.cuda.current_device())
         # error checking for valid params
         tokens = self.model.generate(
             **inputs,
             max_new_tokens=request.max_new_tokens,
             temperature=request.temperature,
             # repetition_penalty=request.frequence_penalty,
-            top_p=request.top_p,
+            # top_p=request.top_p,
             do_sample=True,
             pad_token_id=self.tokenizer.eos_token_id,
             eos_token_id=self.tokenizer.eos_token_id,
@@ -65,9 +66,9 @@ class StableLM(CompletionServiceServicer):
         completion_tokens = tokens[0][inputs["input_ids"].size(1) :]
         completion = self.tokenizer.decode(completion_tokens, skip_special_tokens=True)
 
-        # response = self.tokenizer.decode(tokens[0], skip_special_tokens=False)
+        c = CompletionChoice(text=completion, index=0)
         logging.debug(f"Decoded Response: {completion}")
-        return CompletionResponse(completion=completion)
+        return CompletionResponse(choices=[c])
 
     def CompleteStream(self, request: CompletionRequest, context: GrpcContext):
         inputs = self.tokenizer(request.prompt, return_tensors="pt").to(self.device)
@@ -94,5 +95,5 @@ class StableLM(CompletionServiceServicer):
 
 
 if __name__ == "__main__":
-    logging.basicConfig(level=logging.INFO)
+    logging.basicConfig(level=logging.DEBUG)
     serve(StableLM())
