@@ -10,10 +10,12 @@ import (
 	"time"
 
 	"github.com/defenseunicorns/leapfrogai/pkg/client/chat"
+	"github.com/defenseunicorns/leapfrogai/pkg/client/completion"
 	"github.com/defenseunicorns/leapfrogai/pkg/util"
 	"github.com/gin-gonic/gin"
 	"github.com/google/uuid"
 	"github.com/sashabaranov/go-openai"
+	"google.golang.org/protobuf/types/known/emptypb"
 )
 
 // Turn a list of openai.ChatCompletionMessages into a list of chat.ChatItems that
@@ -46,7 +48,7 @@ func ToChatItems(messages []openai.ChatCompletionMessage) ([]*chat.ChatItem, err
 // This only operates on a single ChatItem because the response from the inference server
 // should only be a single ChatItem per prompt. If you request N responses to your prompt,
 // this will get called separately for each of them.
-func ToJsonMessage(chatItem *chat.ChatItem) (openai.ChatCompletionMessage, error) {
+func ToJsonMessage(chatItem *chat.ChatItem, stopToken string) (openai.ChatCompletionMessage, error) {
 	var message openai.ChatCompletionMessage
 	// convert the enum role to a string
 	switch {
@@ -62,7 +64,7 @@ func ToJsonMessage(chatItem *chat.ChatItem) (openai.ChatCompletionMessage, error
 		return message, fmt.Errorf("invalid ChatRole: %v", chatItem.Role.String())
 	}
 	// remove StopToken from the returned text
-	message.Content = strings.ReplaceAll(chatItem.Content, StopToken, "")
+	message.Content = strings.ReplaceAll(chatItem.Content, stopToken, "")
 	return message, nil
 }
 
@@ -80,6 +82,17 @@ func (o *OpenAIHandler) chat(c *gin.Context) {
 		return
 	}
 	id, _ := uuid.NewRandom()
+	mc := completion.NewLLMConfigServiceClient(conn)
+	modelConfig, err := mc.LLMConfig(context.Background(), &emptypb.Empty{})
+	if err != nil {
+		c.JSON(500, err)
+		return
+	}
+
+	if _, ok := modelConfig.SpecialTokens["chat_stop"]; !ok {
+		log.Printf("Unable to read model's stop token: %v\n", input.Model)
+		c.JSON(422, fmt.Sprintf("Unable to read model's stop token: %v\n", input.Model))
+	}
 
 	if input.Stream {
 		chanStream := make(chan *chat.ChatCompletionResponse, 10)
@@ -114,7 +127,7 @@ func (o *OpenAIHandler) chat(c *gin.Context) {
 		}()
 		c.Stream(func(w io.Writer) bool {
 			if msg, ok := <-chanStream; ok {
-				m, err := ToJsonMessage(msg.Choices[0].GetChatItem())
+				m, err := ToJsonMessage(msg.Choices[0].GetChatItem(), modelConfig.SpecialTokens["chat_stop"])
 				if err != nil {
 					log.Printf("500: Bad message Role: %v\n", err)
 					// Handle error
@@ -187,7 +200,7 @@ func (o *OpenAIHandler) chat(c *gin.Context) {
 				c.JSON(500, err)
 				return
 			}
-			m, err := ToJsonMessage(response.Choices[i].GetChatItem())
+			m, err := ToJsonMessage(response.Choices[i].GetChatItem(), modelConfig.SpecialTokens["chat_stop"])
 			if err != nil {
 				log.Printf("500: Bad message Role: %v\n", err)
 				// Handle error
@@ -203,5 +216,4 @@ func (o *OpenAIHandler) chat(c *gin.Context) {
 
 		c.JSON(200, resp)
 	}
-	// Send the response
 }

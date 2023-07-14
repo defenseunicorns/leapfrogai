@@ -14,6 +14,7 @@ import (
 	"github.com/gin-gonic/gin"
 	"github.com/google/uuid"
 	"github.com/sashabaranov/go-openai"
+	"google.golang.org/protobuf/types/known/emptypb"
 )
 
 func (o *OpenAIHandler) complete(c *gin.Context) {
@@ -30,6 +31,18 @@ func (o *OpenAIHandler) complete(c *gin.Context) {
 		return
 	}
 	id, _ := uuid.NewRandom()
+
+	mc := completion.NewLLMConfigServiceClient(conn)
+	modelConfig, err := mc.LLMConfig(context.Background(), &emptypb.Empty{})
+	if err != nil {
+		c.JSON(500, err)
+		return
+	}
+
+	if _, ok := modelConfig.SpecialTokens["chat_stop"]; !ok {
+		log.Printf("Unable to read model's stop token: %v\n", input.Model)
+		c.JSON(422, fmt.Sprintf("Unable to read model's stop token: %v\n", input.Model))
+	}
 
 	if input.Stream {
 		log.Printf("Attempting to stream for model %v\n", input.Model)
@@ -122,7 +135,7 @@ func (o *OpenAIHandler) complete(c *gin.Context) {
 				return
 			}
 			// remove StopToken from the returned text
-			t := strings.ReplaceAll(response.Choices[i].GetText(), StopToken, "")
+			t := strings.ReplaceAll(response.Choices[i].GetText(), modelConfig.SpecialTokens["chat_stop"], "")
 			choice := openai.CompletionChoice{
 				Text:         t,
 				FinishReason: strings.ToLower(response.Choices[i].GetFinishReason().Enum().String()),

@@ -15,9 +15,6 @@ type OpenAIHandler struct {
 	Prefix string
 }
 
-// TODO: this should get factored out into the .toml files for each model, but this is an intermediate fix
-const StopToken = "<|im_end|>"
-
 func (o *OpenAIHandler) Routes(r *gin.Engine) {
 	sr := r.Group(o.Prefix)
 	{
