@@ -76,7 +76,7 @@ gen-go:
 
 
 update-embeddings: embeddings
-	docker tag ghcr.io/defenseunicorns/leapfrogai/embeddings:${TAG} localhost:5001/defenseunicorns/leapfrogai/embeddings:${TAG}-zarf-230844594
+	docker tag ghcr.io/defenseunicorns/leapfrogai/all-minilm-l6-v2:${TAG} localhost:5001/defenseunicorns/leapfrogai/embeddings:${TAG}-zarf-230844594
 	docker push localhost:5001/defenseunicorns/leapfrogai/embeddings:${TAG}-zarf-230844594
 	kubectl delete pods -n leapfrogai -l app=embeddings
 update-api: api
