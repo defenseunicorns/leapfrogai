@@ -1,31 +1,23 @@
-# [llama-7B-4b]
-#     [llama-7B-4b.metadata]
-#         owned_by    = 'Defense Unicorns'
-#         permission  = []
-#         description = 'C++ implementation of LlaMA model, 7B parameters, 4-bit quantization'
-#     [llama-7B-4b.network]
-#         url = 'alpaca:50051'
-#         type = 'gRPC'
 [text-embedding-ada-002]
-
-
 [text-embedding-ada-002.metadata]
 owned_by = 'Defense Unicorns'
 permission = []
 tasks = ["embedding"]
 description = "A pretend implementation of ada-0002 that's actually all-MiniLM-L6-v2"
-
 [text-embedding-ada-002.network]
 url = 'localhost:50051'
 type = 'gRPC'
-# [all-MiniLM-L6-v2]
-#     [all-MiniLM-L6-v2.metadata]
-#         owned_by    = 'Defense Unicorns'
-#         permission  = []
-#         description = ' By default, input text longer than 256 word pieces is truncated.'
-#     [all-MiniLM-L6-v2.network]
-#         url = 'sentence-transformers:50051'
-#         type = 'gRPC'   
+
+[instructorxl]
+[instructorxl.metadata]
+owned_by = 'Defense Unicorns'
+permission = []
+tasks = ["embedding"]
+description = "InstructorXL embedding"
+[instructorxl.network]
+url = 'localhost:50051'
+type = 'gRPC'
+
 [whisper-1]
 
 [whisper-1.metadata]
@@ -35,5 +27,30 @@ description = "OpenAI's Whisper Large v2"
 tasks = ["translate", "transcribe"]
 
 [whisper-1.network]
+url = 'localhost:50051'
+type = 'gRPC'
+
+[mpt-7b-chat]
+
+[mpt-7b-chat.metadata]
+owned_by = ''
+permission = []
+description = 'MPT-7b-chat on GPU'
+tasks = ["completion", "chat"]
+
+[mpt-7b-chat.network]
+url = 'localhost:50051'
+type = 'gRPC'
+
+
+[ctransformers]
+
+[ctransformers.metadata]
+owned_by = 'Defense Unicorns'
+permission = []
+description = 'ctransformers tuned'
+tasks = ["completion"]
+
+[ctransformers.network]
 url = 'localhost:50051'
 type = 'gRPC'
