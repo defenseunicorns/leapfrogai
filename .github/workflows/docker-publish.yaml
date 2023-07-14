@@ -20,7 +20,7 @@ jobs:
         password: ${{ secrets.GITHUB_TOKEN }}
     - name: Run Makefile command
       # just building, not pushing them
-      run: make api api-push
+      run: make base base-push api api-push
   zarf:
     runs-on: ubuntu-latest
     steps:
