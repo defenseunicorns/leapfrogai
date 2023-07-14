@@ -26,6 +26,7 @@ func (o *OpenAIHandler) Routes(r *gin.Engine) {
 		sr.POST("/chat/completions", o.chat)
 		sr.POST("/completions", o.complete)
 		sr.POST("/embeddings", o.createEmbeddings)
+		sr.POST("/engines/:model_id/embeddings", o.createEngineEmbeddings)
 		sr.POST("/audio/transcriptions", o.audioTranscriptions)
 		sr.POST("/audio/translations", o.audioTranslations)
 	}

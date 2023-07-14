@@ -4,7 +4,7 @@ kind: ZarfPackageConfig
 metadata:
   name: weaviate
   description: "weaviate"
-  version: 0.1.1
+  version: 0.3.2
   architecture: amd64 
 
 
@@ -52,6 +52,6 @@ components:
     - "###ZARF_PKG_VAR_REPO###"
     images:
     - "semitechnologies/weaviate:1.18.3"
-    - "ghcr.io/defenseunicorns/leapfrogai/weaviate:0.0.3"
+    - "ghcr.io/defenseunicorns/leapfrogai/weaviate:0.0.4"
     - semitechnologies/transformers-inference:sentence-transformers-all-MiniLM-L6-v2
     - semitechnologies/transformers-inference:distilbert-base-uncased

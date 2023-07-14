@@ -8,8 +8,8 @@ from .embeddings import embeddings_pb2_grpc
 from .completion import completion_pb2_grpc
 from .name import name_pb2_grpc
 
-
 def serve(o):
+
     # Create a gRPC server
     server = grpc.server(futures.ThreadPoolExecutor(max_workers=3))
 

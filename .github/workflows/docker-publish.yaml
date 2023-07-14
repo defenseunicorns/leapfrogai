@@ -1,0 +1,45 @@
+name: Publish Artifacts 
+
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  api:
+    runs-on: ubuntu-latest
+    
+    steps:
+    - name: Check out code
+      uses: actions/checkout@v2
+    - name: Login to GHCR
+      uses: docker/login-action@v2
+      with:
+        registry: ghcr.io
+        username: ${{ github.actor }}
+        password: ${{ secrets.GITHUB_TOKEN }}
+    - name: Run Makefile command
+      # just building, not pushing them
+      run: make base base-push api api-push
+  zarf:
+    runs-on: ubuntu-latest
+    steps:
+    - name: Check out code
+      uses: actions/checkout@v2
+    - name: Login to GHCR
+      uses: docker/login-action@v2
+      with:
+        registry: ghcr.io
+        username: ${{ github.actor }}
+        password: ${{ secrets.GITHUB_TOKEN }}
+    - name: Install Zarf
+      uses: defenseunicorns/setup-zarf@main
+      with:
+        # renovate: datasource=github-tags depName=defenseunicorns/zarf versioning=semver
+        version: v0.28.2
+        download-init-package: false
+    - name: Build Zarf Package
+      # just building, not pushing them
+      run: zarf package create . --confirm
+    - name: Publish Zarf Package
+      run: zarf package publish zarf-package-*.zst oci://ghcr.io/defenseunicorns/packages

@@ -1,6 +1,6 @@
 build: api embeddings
 
-TAG ?= 0.2.0
+TAG ?= 0.3.2
 # want to keep things all aligned here
 
 .PHONY: api embeddings push
@@ -12,42 +12,45 @@ requirements:
 
 push:
 	docker push ghcr.io/defenseunicorns/leapfrogai/stablelm-3b:${TAG}
-	docker push ghcr.io/defenseunicorns/leapfrogai/embeddings:${TAG}
+	docker push ghcr.io/defenseunicorns/leapfrogai/all-minilm-l6-v2:${TAG}
 
 base:
 	docker build --network=host -t ghcr.io/defenseunicorns/leapfrogai/base:${TAG} -f leapfrogai/Dockerfile leapfrogai
+
+base-push:
+	docker push ghcr.io/defenseunicorns/leapfrogai/base:${TAG}
 
 api:
 	docker build --network=host -t ghcr.io/defenseunicorns/leapfrogai/api:${TAG} .
 api-push:
 	docker push ghcr.io/defenseunicorns/leapfrogai/api:${TAG}
 
-stablelm:
+stablelm: base
 	cd models/llms/stablelm && \
 	docker build --network=host --build-arg IMAGE_TAG=${TAG} -t ghcr.io/defenseunicorns/leapfrogai/stablelm-3b:${TAG} .
 
-embeddings:
+embeddings: base
 	cd  models/text2vec/all-minilm-l6-v2/ && \
-	docker build --network=host --build-arg IMAGE_TAG=${TAG} -t ghcr.io/defenseunicorns/leapfrogai/embeddings:${TAG} .
+	docker build --network=host --build-arg IMAGE_TAG=${TAG} -t ghcr.io/defenseunicorns/leapfrogai/all-minilm-l6-v2:${TAG} .
 
-whisper:
+mpt-7b-chat: base
+	cd models/llms/mpt-7b-chat && \
+	docker build --network=host --build-arg IMAGE_TAG=${TAG} -t ghcr.io/defenseunicorns/leapfrogai/mpt-7b-chat:${TAG} .
+
+
+whisper: base
 	cd models/speech2text/whisper && \
 	docker build --network=host --build-arg IMAGE_TAG=${TAG} -t ghcr.io/defenseunicorns/leapfrogai/whisper:${TAG} .
 
 whisper-push:
 	docker push ghcr.io/defenseunicorns/leapfrogai/whisper:${TAG}
 
-repeater:
+repeater: base
 	cd models/test/repeater && \
 	docker build --network=host --build-arg IMAGE_TAG=${TAG} -t ghcr.io/defenseunicorns/leapfrogai/repeater:${TAG} .
 
 repeater-push:
 	docker push ghcr.io/defenseunicorns/leapfrogai/repeater:${TAG}
-
-# This thing is massive, so directly pushing to the zarf registry is quicker/easier
-zarf-push-api:
-	docker tag ghcr.io/defenseunicorns/leapfrogai/api:0.0.1 localhost:5001/defenseunicorns/leapfrogai/api:0.0.1-zarf-1702594131
-	docker push localhost:5001/defenseunicorns/leapfrogai/api:0.0.1-zarf-1702594131
 
 
 zarf-port-forward:
@@ -68,15 +71,15 @@ gen-python:
 gen-go:
 	rm -rf pkg/client
 	mkdir -p pkg/client
-	protoc --go_out=pkg/client --go_opt=paths=source_relative --go-grpc_out=pkg/client --go-grpc_opt=paths=source_relative --proto_path=proto/ chat/chat.proto
-	protoc --go_out=pkg/client --go_opt=paths=source_relative --go-grpc_out=pkg/client --go-grpc_opt=paths=source_relative --proto_path=proto/ completion/completion.proto
+	protoc --go_out=pkg/client --go_opt=paths=source_relative --go-grpc_out=pkg/client --go-grpc_opt=paths=source_relative --proto_path=proto/ --experimental_allow_proto3_optional completion/completion.proto
+	protoc --go_out=pkg/client --go_opt=paths=source_relative --go-grpc_out=pkg/client --go-grpc_opt=paths=source_relative --proto_path=proto/ --experimental_allow_proto3_optional chat/chat.proto
 	protoc --go_out=pkg/client --go_opt=paths=source_relative --go-grpc_out=pkg/client --go-grpc_opt=paths=source_relative --proto_path=proto/ audio/audio.proto
 	protoc --go_out=pkg/client --go_opt=paths=source_relative --go-grpc_out=pkg/client --go-grpc_opt=paths=source_relative --proto_path=proto/ name/name.proto
 	protoc --go_out=pkg/client --go_opt=paths=source_relative --go-grpc_out=pkg/client --go-grpc_opt=paths=source_relative --proto_path=proto/ embeddings/embeddings.proto
 
 
 update-embeddings: embeddings
-	docker tag ghcr.io/defenseunicorns/leapfrogai/embeddings:${TAG} localhost:5001/defenseunicorns/leapfrogai/embeddings:${TAG}-zarf-230844594
+	docker tag ghcr.io/defenseunicorns/leapfrogai/all-minilm-l6-v2:${TAG} localhost:5001/defenseunicorns/leapfrogai/embeddings:${TAG}-zarf-230844594
 	docker push localhost:5001/defenseunicorns/leapfrogai/embeddings:${TAG}-zarf-230844594
 	kubectl delete pods -n leapfrogai -l app=embeddings
 update-api: api
@@ -94,6 +97,10 @@ update-stablelm: stablelm
 	docker push localhost:5001/defenseunicorns/leapfrogai/stablelm-3b:${TAG}-zarf-1442747400
 	kubectl delete pods -n leapfrogai -l app=stablelm
 
+ctransformers: base
+	cd models/llms/ctransformers && \
+	docker build --network=host --build-arg IMAGE_TAG=${TAG} -t ghcr.io/defenseunicorns/leapfrogai/ctransformers:${TAG} .
+
 test-init:
 	docker run -p 50051:50051 -d --rm --name repeater  ghcr.io/defenseunicorns/leapfrogai/repeater:${TAG}
 	
@@ -101,3 +108,6 @@ test:
 	PYTHONPATH="." python3 models/test/repeater/test.py
 teardown:
 	docker kill repeater
+
+
+images: api base stablelm whisper repeater mpt-7b-chat embeddings
