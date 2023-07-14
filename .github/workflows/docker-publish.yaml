@@ -6,7 +6,7 @@ on:
       - main
 
 jobs:
-  api:
+  images:
     runs-on: ubuntu-latest
     
     steps:
@@ -23,6 +23,7 @@ jobs:
       run: make base base-push api api-push
   zarf:
     runs-on: ubuntu-latest
+    needs: images
     steps:
     - name: Check out code
       uses: actions/checkout@v2
@@ -38,6 +39,8 @@ jobs:
         # renovate: datasource=github-tags depName=defenseunicorns/zarf versioning=semver
         version: v0.28.2
         download-init-package: false
+    - name: Run Makefile command
+      run: make api base repeater
     - name: Build Zarf Package
       # just building, not pushing them
       run: zarf package create . --confirm
