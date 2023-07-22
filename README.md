@@ -75,7 +75,7 @@ The supported install method uses [zarf](https://zarf.dev) to initialize the clu
 
 ```shell
 zarf init -a amd64
-zarf package deploy oci://ghcr.io/defenseunicorns/packages/dubbd-k3d:0.4.2-amd64 
+zarf package deploy oci://ghcr.io/defenseunicorns/packages/dubbd-k3d:0.4.2-amd64
 ```
 
 
@@ -90,7 +90,7 @@ zarf package deploy zarf-package-leapfrogai-*.zst --confirm
 
 ### Configure DNS
 
-Ensure that the DNS record for `*.bigbang.dev` points to the load balancer for Istio.  By default this DNS record points at localhost, so for the k3d deployment, this should work out of the box with the load balancers configured.  For a remote EKS deployment, you may need to 
+Ensure that the DNS record for `*.bigbang.dev` points to the load balancer for Istio.  By default this DNS record points at localhost, so for the k3d deployment, this should work out of the box with the load balancers configured.  For a remote EKS deployment, you may need to
 
 
 The OpenAI API service is hosted and is watching for new models to get installed in the cluster.
@@ -147,6 +147,6 @@ LeapfrogAI is supported by a community of users and contributors, including:
 * [United States Air Force](https://www.airforce.com)
 * [United States Space Force](https://www.spaceforce.mil)
 
-[![Defense Unicorns logo](docs/imgs/user-logos/defense-unicorns.png)](https://defenseunicorns.com)[![Beast Code logo](docs/imgs/user-logos/beast-code.png)](https://beast-code.com)[![Hypergiant logo](docs/imgs/user-logos/hypergiant.png)](https://hypergiant.com)
+[![Defense Unicorns logo](docs/imgs/user-logos/defense-unicorns.png)](https://defenseunicorns.com)[![Beast Code logo](docs/imgs/user-logos/beast-code.png)](https://beast-code.com)[![Hypergiant logo](docs/imgs/user-logos/hypergiant.png)](https://hypergiant.com)[![Pulze logo](docs/imgs/user-logos/pulze.png)](https://pulze.ai)
 
 *Want to add your organization or logo to this list? [Open a PR!](https://github.com/defenseunicorns/leapfrogai/edit/main/README.md)*
