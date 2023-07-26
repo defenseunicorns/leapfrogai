@@ -39,7 +39,7 @@ description = 'MPT-7b-chat on GPU'
 tasks = ["completion", "chat"]
 
 [mpt-7b-chat.network]
-url = 'localhost:50051'
+url = 'mpt-7b-chat:50051'
 type = 'gRPC'
 
 
