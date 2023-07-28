@@ -70,12 +70,14 @@ func ToJsonMessage(chatItem *chat.ChatItem) (openai.ChatCompletionMessage, error
 func (o *OpenAIHandler) chat(c *gin.Context) {
 	// Bind JSON body to a struct with c.BindJSON()
 	var input openai.ChatCompletionRequest
+	log.Printf("context: %v", c.Request.Body)
 	if err := c.BindJSON(&input); err != nil {
 		log.Printf("500: Error marshalling input to object: %v\n", err)
 		// Handle error
 		c.JSON(500, err)
 		return
 	}
+	log.Printf("Input: %v", input)
 	conn := o.getModelClient(c, input.Model)
 	if conn == nil {
 		return
@@ -86,6 +88,10 @@ func (o *OpenAIHandler) chat(c *gin.Context) {
 		chanStream := make(chan *chat.ChatCompletionResponse, 10)
 		client := chat.NewChatCompletionStreamServiceClient(conn)
 		items, err := ToChatItems(input.Messages)
+		for _, item := range items {
+			log.Printf("Items: %v", item)
+		}
+
 		if err != nil {
 			log.Printf("500: Bad message Role: %v\n", err)
 			// Handle error
@@ -93,9 +99,9 @@ func (o *OpenAIHandler) chat(c *gin.Context) {
 			return
 		}
 		stream, err := client.ChatCompleteStream(context.Background(), &chat.ChatCompletionRequest{
-			ChatItems:    items,
-			MaxNewTokens: int32(input.MaxTokens),
-			Temperature:  util.Float32(input.Temperature),
+			ChatItems: items,
+			// MaxNewTokens: int32(input.MaxTokens),
+			Temperature: util.Float32(input.Temperature),
 		})
 
 		if err != nil {
@@ -113,6 +119,7 @@ func (o *OpenAIHandler) chat(c *gin.Context) {
 				chanStream <- cResp
 			}
 		}()
+		var lastMessage bool = false
 		c.Stream(func(w io.Writer) bool {
 			if msg, ok := <-chanStream; ok {
 				m, err := ToJsonMessage(msg.Choices[0].GetChatItem())
@@ -135,14 +142,37 @@ func (o *OpenAIHandler) chat(c *gin.Context) {
 						},
 					},
 				})
+				log.Printf("%v", res)
 				if err != nil {
 					return false
 				}
 				c.SSEvent("", fmt.Sprintf(" %s", res))
 				return true
 			}
-			c.SSEvent("", " [DONE]")
-			return false
+			if !lastMessage {
+				res, err := json.Marshal(openai.ChatCompletionResponse{
+					ID:      id.String(),
+					Created: time.Now().Unix(),
+					Model:   input.Model,
+					Object:  "chat.completion",
+					Choices: []openai.ChatCompletionChoice{
+						{
+							Index:        0,
+							Message:      openai.ChatCompletionMessage{Role: "assistant", Content: ""},
+							FinishReason: openai.FinishReasonStop,
+						},
+					},
+				})
+				if err != nil {
+					return false
+				}
+				c.SSEvent("", fmt.Sprintf(" %s", res))
+				lastMessage = true
+				return true
+			} else {
+				c.SSEvent("", " [DONE]")
+				return false
+			}
 		})
 	} else {
 
