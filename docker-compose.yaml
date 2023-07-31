@@ -16,42 +16,39 @@ services:
       HOSTNAME: leapfrog-postgres
       PASSWORD: test
 
+  chat-mongo:
+    image: bitnami/mongodb:6.0.7
+    ports:
+      - 27017:27017
 
+  chat-ui:
+    image: chat-ui-local
+    ports:
+      - 3000:3000
+    environment:
+      HOST: "0.0.0.0"
+      NODE_DEBUG: cluster,net,http,fs,tls,timers
+      # MONGODB_URL: "mongodb://chat-mongo:27017"
+      # HF_API_ROOT: "http://leapfrog-api:8080/huggingface/models"
+      # HF_ACCESS_TOKEN: IDONTMATTER
+      # PUBLIC_ORIGIN: "#http://leapfrog-api:8080/huggingface"
+    command:
+      - node
+      - build
 
-  
-  # chat-mongo:
-  #   image: bitnami/mongodb:6.0.7
-  #   ports:
-  #     - 27017:27017
-
-  # chat-ui:
-  #   image: chat-ui-local
-  #   ports:
-  #     - 3000:3000
-  #   environment:
-  #     HOST: "0.0.0.0"
-  #     NODE_DEBUG: cluster,net,http,fs,tls,timers
-  #     # MONGODB_URL: "mongodb://chat-mongo:27017"
-  #     # HF_API_ROOT: "http://leapfrog-api:8080/huggingface/models"
-  #     # HF_ACCESS_TOKEN: IDONTMATTER
-  #     # PUBLIC_ORIGIN: "#http://leapfrog-api:8080/huggingface"
-  #   command:
-  #     - node
-  #     - build
-
-  # mpt-7b-chat:
-  #   image: leapfrogai/mpt-7b-chat
-  #   container_name: mpt-7b-chat
-  #   restart: on-failure
-  #   ports:
-  #     - '50051:50051'
-  #   # GPU use
-  #   deploy:
-  #     resources:
-  #       reservations:
-  #         devices:
-  #           - driver: nvidia
-  #             capabilities: [gpu]   
+  mpt-7b-chat:
+    image: leapfrogai/mpt-7b-chat
+    container_name: mpt-7b-chat
+    restart: on-failure
+    ports:
+      - '50051:50051'
+    # GPU use
+    deploy:
+      resources:
+        reservations:
+          devices:
+            - driver: nvidia
+              capabilities: [gpu]
 
   # docker build --tag leapfrogai/api .
   leapfrog-api:
