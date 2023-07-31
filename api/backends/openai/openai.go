@@ -25,8 +25,11 @@ func (o *OpenAIHandler) Routes(r *gin.Engine) {
 	if o.Database == nil { // if no db/auth
 		sr = r.Group(o.Prefix)
 	} else { // if db is being used for auth
+		// unauthenticated routes
+		ar := r.Group(o.Prefix)
+		ar.POST("/register", o.registerUser)
+		// authenticated routes
 		sr = r.Group(o.Prefix, apiKeyMiddleware(o.Database))
-
 	}
 	{
 		sr.GET("/models", o.showModels)

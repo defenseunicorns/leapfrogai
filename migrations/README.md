@@ -32,3 +32,17 @@ In production, the following process will allow you to take a fresh PostgreSQL d
 docker run -v {{ migration dir }}:/migrations --network host migrate/migrate
     -path=/migrations/ -database postgres://localhost:5432/database up 2
 ```
+
+## Testing
+
+Is the API key after hash and base64 encode reallllly the right length (88 characters)? What about trailing `==` signs in the base64?
+
+`piVGcTaFcwWE7QJRPMX56RlG5BScibEYGpYNfT+/vX9e7MvH3Bi29xw9d6TE3TS5YfU78TCARTlRT5pbC75kyg==` is 88 characters, including the `==` sign.
+
+Trying the following SQL statement in `psql` proves that postgres won't truncate in the background...it'll just straight up refuse to take your input if it's over 88 characters.
+
+```sql
+\c leapfrogai
+insert into api_keys VALUES ('aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa', 'test');
+ERROR:  value too long for type character varying(88)
+```

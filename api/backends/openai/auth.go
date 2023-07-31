@@ -5,6 +5,7 @@ import (
 	"crypto/sha512"
 	"database/sql"
 	"encoding/base64"
+	"log"
 	"net/http"
 	"strings"
 
@@ -13,6 +14,12 @@ import (
 
 const customDictionary = "0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz"
 const apiKeyLength = 64
+
+// Hash the raw API key using SHA-512 and Base64 encode it
+func base64Sha512Hash(apiKey string) string {
+	hash := sha512.Sum512([]byte(apiKey))
+	return base64.StdEncoding.EncodeToString(hash[:])
+}
 
 // apiKeyMiddleware checks the SHA-512 hash of the API key against the stored hashes in the PostgreSQL database.
 func apiKeyMiddleware(db *sql.DB) gin.HandlerFunc {
@@ -38,12 +45,11 @@ func apiKeyMiddleware(db *sql.DB) gin.HandlerFunc {
 		apiKey := strings.TrimPrefix(authHeader, bearerPrefix)
 
 		// Hash the incoming API key using SHA-512
-		hash := sha512.Sum512([]byte(apiKey))
-		hashedAPIKey := base64.StdEncoding.EncodeToString(hash[:])
+		apiKeyHashBase64 := base64Sha512Hash(apiKey)
 
 		// Query the database to check the validity of the hashed API key
 		var dbAPIKeyHash string
-		err := db.QueryRow("SELECT api_key_hash FROM api_keys WHERE api_key_hash = $1", hashedAPIKey).Scan(&dbAPIKeyHash)
+		err := db.QueryRow("SELECT api_key_sha512_base64 FROM api_keys WHERE api_key_sha512_base64 = $1", apiKeyHashBase64).Scan(&dbAPIKeyHash)
 		if err != nil {
 			if err == sql.ErrNoRows {
 				c.JSON(http.StatusUnauthorized, gin.H{"error": "Invalid API key"})
@@ -61,6 +67,7 @@ func apiKeyMiddleware(db *sql.DB) gin.HandlerFunc {
 	}
 }
 
+// Generate a random 64 character API Key
 func generateAPIKey() (string, error) {
 	dictionaryLength := len(customDictionary)
 	apiKeyBytes := make([]byte, apiKeyLength)
@@ -76,27 +83,19 @@ func generateAPIKey() (string, error) {
 	return string(apiKeyBytes), nil
 }
 
-func insertAPIKey(username, apiKey string) error {
+func (o *OpenAIHandler) insertAPIKey(user_id, apiKey string) error {
 	// Hash the API key using SHA-512
-	hash := sha512.Sum512([]byte(apiKey))
-	apiKeyHash := base64.StdEncoding.EncodeToString(hash[:])
-
-	// Connect to the PostgreSQL database
-	db, err := sql.Open("postgres", "user=yourdbuser password=yourdbpassword dbname=yourdbname sslmode=disable")
-	if err != nil {
-		return err
-	}
-	defer db.Close()
+	apiKeyHashBase64 := base64Sha512Hash(apiKey)
 
 	// Prepare the SQL statement
-	stmt, err := db.Prepare("INSERT INTO api_keys (api_key_hash, username) VALUES ($1, $2)")
+	stmt, err := o.Database.Prepare("INSERT INTO api_keys (api_key_sha512_base64, user_id) VALUES ($1, $2)")
 	if err != nil {
 		return err
 	}
 	defer stmt.Close()
 
 	// Execute the SQL statement
-	_, err = stmt.Exec(apiKeyHash, username)
+	_, err = stmt.Exec(apiKeyHashBase64, user_id)
 	if err != nil {
 		return err
 	}
@@ -105,9 +104,9 @@ func insertAPIKey(username, apiKey string) error {
 }
 
 func (o *OpenAIHandler) registerUser(c *gin.Context) {
-	// Get the username from the request body
+	// Get the user_id from the request body
 	var reqBody struct {
-		Username string `json:"username"`
+		UserID string `json:"user_id"`
 	}
 	if err := c.ShouldBindJSON(&reqBody); err != nil {
 		c.JSON(400, gin.H{"error": "Invalid request body"})
@@ -116,8 +115,15 @@ func (o *OpenAIHandler) registerUser(c *gin.Context) {
 	// Generate the API key
 	apiKey, err := generateAPIKey()
 	if err != nil {
+		log.Println("Failed to generate API key...rng generation was unsuccessful")
 		c.JSON(500, gin.H{"error": "Failed to generate API key"})
 		return
+	}
+
+	err = o.insertAPIKey(reqBody.UserID, apiKey)
+	if err != nil {
+		log.Println("Failed to generate API key...new user record insertion failed")
+		c.JSON(500, gin.H{"error": "Failed to generate API key"})
 	}
 
 	c.JSON(200, gin.H{"api_key": apiKey})

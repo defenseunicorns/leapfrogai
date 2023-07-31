@@ -53,12 +53,19 @@ services:
   #           - driver: nvidia
   #             capabilities: [gpu]   
 
+  # docker build --tag leapfrogai/api .
   leapfrog-api:
     image: leapfrogai/api
     container_name: leapfrog
     restart: on-failure
     ports:
       - '8080:8080'
+    environment:
+      DB_USER: postgres
+      DB_PASS: test
+      DB_HOST: leapfrog-postgres
+      DB_PORT: 5432
+      DB_NAME: leapfrogai
     depends_on:
       leapfrog-postgres-bootstrapper:
         condition: service_completed_successfully
