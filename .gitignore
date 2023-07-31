@@ -20,3 +20,4 @@ vocabulary.json
 
 # go binaries
 api/main
+bin

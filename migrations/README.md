@@ -4,7 +4,10 @@
 
 Install `migrate`
 
-`go install github.com/golang-migrate/migrate/v4/cmd/migrate@v4.16.2`
+```shell
+go get -u -d github.com/mattes/migrate/cli github.com/lib/pq
+go build -tags 'postgres' -o bin/migrate github.com/mattes/migrate/cli
+```
 
 ## Adding Migrations
 
@@ -15,7 +18,7 @@ migrate create -ext sql -dir /path/to/migrations -seq create_api_keys_table
 So in our case:
 
 ```shell
-migrate create -ext sql -dir . -seq create_api_keys_table
+./bin/migrate -path "migrations" -database "postgres://postgres:test@localhost:5432/leapfrogai?sslmode=disable" up
 ```
 
 ## Docker

@@ -61,7 +61,7 @@ if [ $? -ne 0 ]; then
 fi
 
 echo "Running all migrations"
-migrate -source /app -database "$CONNECTION_STRING" up
+./bin/migrate -path "/app" -database "$CONNECTION_STRING/leapfrogai?sslmode=disable" up
 # Check the exit status using $?
 if [ $? -ne 0 ]; then
     echo "Error: migrate returned a non-zero exit status."

@@ -5,13 +5,20 @@ RUN apt-get update && apt-get install -y \
   postgresql-client \
   && rm -rf /var/lib/apt/lists/*
 
-# install the migrate script
-RUN go install github.com/golang-migrate/migrate/v4/cmd/migrate@v4.16.2
-
 WORKDIR /app
 
+# install the migrate script
+RUN go mod init defenseunicorns.com/leapfrogai/migrate
+RUN go get -u -d github.com/mattes/migrate/cli github.com/lib/pq
+RUN go build -tags 'postgres' -o bin/migrate github.com/mattes/migrate/cli
+# RUN go install github.com/golang-migrate/migrate/v4/cmd/migrate@v4.16.2
+
+# Copy in scripts
 COPY create_db.sh .
 COPY db_bootstrap.sh .
+
+# Copy in sql migration files
+COPY *.sql .
 
 # Create a non-root user 'nonroot'
 RUN groupadd -g 1000 nonroot && useradd -u 1000 -g nonroot -ms /bin/bash nonroot
