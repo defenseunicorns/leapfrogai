@@ -1,39 +1,57 @@
 version: "3.9"
 
 services:
-  chat-mongo:
-    image: bitnami/mongodb:6.0.7
+  leapfrog-postgres:
+    image: postgres:15.3-bullseye
     ports:
-      - 27017:27017
-
-  chat-ui:
-    image: chat-ui-local
-    ports:
-      - 3000:3000
+      - 5432:5432
     environment:
-      HOST: "0.0.0.0"
-      NODE_DEBUG: cluster,net,http,fs,tls,timers
-      # MONGODB_URL: "mongodb://chat-mongo:27017"
-      # HF_API_ROOT: "http://leapfrog-api:8080/huggingface/models"
-      # HF_ACCESS_TOKEN: IDONTMATTER
-      # PUBLIC_ORIGIN: "#http://leapfrog-api:8080/huggingface"
-    command:
-      - node
-      - build
-
-  mpt-7b-chat:
-    image: leapfrogai/mpt-7b-chat
-    container_name: mpt-7b-chat
+      POSTGRES_PASSWORD: test
+  
+  # docker build --tag leapfrogai/migrate .
+  leapfrog-postgres-bootstrapper:
+    image: leapfrogai/migrate
     restart: on-failure
-    ports:
-      - '50051:50051'
-    # GPU use
-    deploy:
-      resources:
-        reservations:
-          devices:
-            - driver: nvidia
-              capabilities: [gpu]   
+    environment:
+      HOSTNAME: leapfrog-postgres
+      PASSWORD: test
+
+
+
+  
+  # chat-mongo:
+  #   image: bitnami/mongodb:6.0.7
+  #   ports:
+  #     - 27017:27017
+
+  # chat-ui:
+  #   image: chat-ui-local
+  #   ports:
+  #     - 3000:3000
+  #   environment:
+  #     HOST: "0.0.0.0"
+  #     NODE_DEBUG: cluster,net,http,fs,tls,timers
+  #     # MONGODB_URL: "mongodb://chat-mongo:27017"
+  #     # HF_API_ROOT: "http://leapfrog-api:8080/huggingface/models"
+  #     # HF_ACCESS_TOKEN: IDONTMATTER
+  #     # PUBLIC_ORIGIN: "#http://leapfrog-api:8080/huggingface"
+  #   command:
+  #     - node
+  #     - build
+
+  # mpt-7b-chat:
+  #   image: leapfrogai/mpt-7b-chat
+  #   container_name: mpt-7b-chat
+  #   restart: on-failure
+  #   ports:
+  #     - '50051:50051'
+  #   # GPU use
+  #   deploy:
+  #     resources:
+  #       reservations:
+  #         devices:
+  #           - driver: nvidia
+  #             capabilities: [gpu]   
 
   leapfrog-api:
     image: leapfrogai/api
@@ -41,6 +59,11 @@ services:
     restart: on-failure
     ports:
       - '8080:8080'
+    depends_on:
+      leapfrog-postgres-bootstrapper:
+        condition: service_completed_successfully
+        restart: true
+
 
 #   minio:
 #     image: quay.io/minio/minio:RELEASE.2023-06-23T20-26-00Z
@@ -69,45 +92,3 @@ services:
 #     file: ./.secrets/minio-root-user.txt
 #   minio_root_password:
 #     file: ./.secrets/minio-root-password.txt
- 
- 
-  # prometheus:
-  #   image: quay.io/prometheus/prometheus:v2.40.5
-  #   container_name: prometheus
-  #   volumes:
-  #     - ./config/prometheus/prometheus.yml:/etc/prometheus/prometheus.yml
-
-  # grafana:
-  #   image: grafana/grafana-oss:9.3.1
-  #   container_name: grafana
-  #   ports:
-  #     - 3000:3000
-
-# -target=all -> Run in Monolithic mode where only one loki container is needed for both read + write paths
-# https://grafana.com/docs/loki/latest/fundamentals/architecture/deployment-modes/
-# Stopped at: fixing this error when adding loki config to grafana
-# https://github.com/grafana/loki/blob/main/docs/sources/operations/troubleshooting.md#data-source-connected-but-no-labels-received-verify-that-loki-and-promtail-is-configured-properly
-#   loki:
-#     container_name: loki
-#     image: grafana/loki:2.6.1
-#     command: "-config.file=/etc/loki/config.yaml"
-#     ports:
-#       - 3102:3100
-#       - 7946
-#       - 9095
-#     volumes:
-#       - ./config/loki/loki-config.yaml:/etc/loki/config.yaml
-#     depends_on:
-#       - minio
-
-#   promtail:
-#     container_name: promtail
-#     image: grafana/promtail:2.6.0
-#     volumes:
-#       - ./config/promtail/promtail-config.yaml:/etc/promtail/promtail-config.yaml
-#       - ./config/promtail/data:/data
-#     command: -config.file=/etc/promtail/promtail-config.yaml
-
-# volumes:
-#   data: {}
-#   config: {}

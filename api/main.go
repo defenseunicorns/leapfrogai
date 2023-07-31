@@ -1,6 +1,10 @@
 package main
 
 import (
+	"flag"
+	"fmt"
+	"os"
+
 	"github.com/defenseunicorns/leapfrogai/api/backends/hf"
 	"github.com/defenseunicorns/leapfrogai/api/backends/openai"
 	"github.com/defenseunicorns/leapfrogai/api/config"
@@ -9,6 +13,9 @@ import (
 )
 
 func main() {
+	noDB := flag.Bool("nodb", false, "Run the API server without a database (no authentication or request logging performed)")
+	flag.Parse()
+
 	go config.Watch()
 	r := gin.Default()
 
@@ -16,7 +23,19 @@ func main() {
 	m.SetMetricPath("/metrics")
 
 	m.Use(r)
-	oaiHandler := &openai.OpenAIHandler{Prefix: "/openai/v1"}
+	var oaiHandler *openai.OpenAIHandler
+	// check if database connection is desired
+	if *noDB {
+		oaiHandler = &openai.OpenAIHandler{Prefix: "/openai/v1", Database: nil}
+		fmt.Print(noDB)
+	} else {
+		oaiDatabase, err := openai.ConnectDB()
+		if err != nil {
+			fmt.Printf("ERROR: %v\n", err)
+			os.Exit(-1)
+		}
+		oaiHandler = &openai.OpenAIHandler{Prefix: "/openai/v1", Database: oaiDatabase}
+	}
 	oaiHandler.Routes(r)
 	r.GET("/healthz")
 

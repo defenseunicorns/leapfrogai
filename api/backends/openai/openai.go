@@ -1,6 +1,7 @@
 package openai
 
 import (
+	"database/sql"
 	"fmt"
 	"log"
 
@@ -12,14 +13,21 @@ import (
 )
 
 type OpenAIHandler struct {
-	Prefix string
+	Prefix   string
+	Database *sql.DB
 }
 
 // TODO: this should get factored out into the .toml files for each model, but this is an intermediate fix
 const StopToken = "<|im_end|>"
 
 func (o *OpenAIHandler) Routes(r *gin.Engine) {
-	sr := r.Group(o.Prefix)
+	var sr *gin.RouterGroup
+	if o.Database == nil { // if no db/auth
+		sr = r.Group(o.Prefix)
+	} else { // if db is being used for auth
+		sr = r.Group(o.Prefix, apiKeyMiddleware(o.Database))
+
+	}
 	{
 		sr.GET("/models", o.showModels)
 		sr.GET("/models/:model_id", o.showModel)
