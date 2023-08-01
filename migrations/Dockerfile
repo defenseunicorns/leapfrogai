@@ -9,8 +9,8 @@ WORKDIR /app
 
 # install the migrate script
 RUN go mod init defenseunicorns.com/leapfrogai/migrate
-RUN go get -u -d github.com/mattes/migrate/cli github.com/lib/pq
-RUN go build -tags 'postgres' -o bin/migrate github.com/mattes/migrate/cli
+RUN go get -u -d github.com/golang-migrate/migrate/v4/cli github.com/lib/pq
+RUN go build -v -tags 'postgres' -o bin/migrate github.com/golang-migrate/migrate/v4/cli
 # RUN go install github.com/golang-migrate/migrate/v4/cmd/migrate@v4.16.2
 
 # Copy in scripts

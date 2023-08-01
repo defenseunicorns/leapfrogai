@@ -27,7 +27,7 @@ services:
       - 3000:3000
     environment:
       HOST: "0.0.0.0"
-      NODE_DEBUG: cluster,net,http,fs,tls,timers
+      NODE_DEBUG: http
       # MONGODB_URL: "mongodb://chat-mongo:27017"
       # HF_API_ROOT: "http://leapfrog-api:8080/huggingface/models"
       # HF_ACCESS_TOKEN: IDONTMATTER

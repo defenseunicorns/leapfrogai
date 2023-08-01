@@ -2,11 +2,11 @@
 
 ## Prerequisites
 
-Install `migrate`
+Build a local copy of the `migrate` cli
 
 ```shell
-go get -u -d github.com/mattes/migrate/cli github.com/lib/pq
-go build -tags 'postgres' -o bin/migrate github.com/mattes/migrate/cli
+go get -u -d github.com/golang-migrate/migrate/v4/cli github.com/lib/pq
+go build -v -tags 'postgres' -o bin/migrate github.com/golang-migrate/migrate/v4/cli
 ```
 
 ## Adding Migrations
@@ -15,7 +15,13 @@ go build -tags 'postgres' -o bin/migrate github.com/mattes/migrate/cli
 migrate create -ext sql -dir /path/to/migrations -seq create_api_keys_table
 ```
 
-So in our case:
+So in our case (run from the leapfrogai root directory):
+
+```shell
+./bin/migrate create -ext sql -dir migrations -seq create_chat_table
+```
+
+Execute the migrations against your docker postgres running on localhost:
 
 ```shell
 ./bin/migrate -path "migrations" -database "postgres://postgres:test@localhost:5432/leapfrogai?sslmode=disable" up

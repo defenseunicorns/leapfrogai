@@ -14,6 +14,7 @@ import (
 	"github.com/gin-gonic/gin"
 	"github.com/google/uuid"
 	"github.com/sashabaranov/go-openai"
+	"google.golang.org/grpc"
 )
 
 // Turn a list of openai.ChatCompletionMessages into a list of chat.ChatItems that
@@ -67,172 +68,212 @@ func ToJsonMessage(chatItem *chat.ChatItem) (openai.ChatCompletionMessage, error
 	return message, nil
 }
 
+// Respond to a chat request with a stream of server sent events (SSE)
+func chatStream(c *gin.Context, conn *grpc.ClientConn, input openai.ChatCompletionRequest) (string, error) {
+	// Set up channel that will pass ChatCompletionResponses from the gRPC stream to the SSE streamer
+	chanStream := make(chan *chat.ChatCompletionResponse, 10)
+	client := chat.NewChatCompletionStreamServiceClient(conn)
+	items, err := ToChatItems(input.Messages)
+	if err != nil {
+		log.Printf("500: Bad message Role: %v\n", err)
+		// Handle error
+		c.JSON(500, err)
+		return "", err
+	}
+
+	// Set up the gRPC stream for Chat Completion
+	stream, err := client.ChatCompleteStream(context.Background(), &chat.ChatCompletionRequest{
+		ChatItems:    items,
+		MaxNewTokens: int32(input.MaxTokens),
+		Temperature:  util.Float32(input.Temperature),
+	})
+	if err != nil {
+		c.JSON(500, err)
+		return "", err
+	}
+
+	// consume the gRPC stream and push items into the channel to be set as SSEs
+	go func() {
+		defer close(chanStream)
+		for {
+			cResp, err := stream.Recv()
+			if err == io.EOF {
+				break
+			}
+			chanStream <- cResp
+		}
+	}()
+
+	// create stream variables and start streaming SSEs from the channel
+	var responseBuilder strings.Builder
+	id, _ := uuid.NewRandom()
+	var lastMessage bool = false
+	c.Stream(func(w io.Writer) bool {
+		if msg, ok := <-chanStream; ok {
+			m, err := ToJsonMessage(msg.Choices[0].GetChatItem())
+			if err != nil {
+				log.Printf("500: Bad message Role: %v\n", err)
+				c.JSON(500, err)
+				return false
+			}
+			// OpenAI places a space in between the data key and payload in HTTP. So, I guess we're bug-for-bug compatible.
+			res, err := json.Marshal(openai.ChatCompletionResponse{
+				ID:      id.String(),
+				Created: time.Now().Unix(),
+				Model:   input.Model,
+				Object:  "chat.completion",
+				Choices: []openai.ChatCompletionChoice{
+					{
+						Index:   0,
+						Message: m,
+					},
+				},
+			})
+			if err != nil {
+				return false
+			}
+
+			// append to the running string builder and send the SSE
+			responseBuilder.WriteString(m.Content)
+			c.SSEvent("", fmt.Sprintf(" %s", res))
+			return true
+		}
+
+		// The final json message sent to the client should contain a finish_reason of "stop"
+		if !lastMessage {
+			res, err := json.Marshal(openai.ChatCompletionResponse{
+				ID:      id.String(),
+				Created: time.Now().Unix(),
+				Model:   input.Model,
+				Object:  "chat.completion",
+				Choices: []openai.ChatCompletionChoice{
+					{
+						Index:        0,
+						Message:      openai.ChatCompletionMessage{Role: "assistant", Content: ""},
+						FinishReason: openai.FinishReasonStop,
+					},
+				},
+			})
+			if err != nil {
+				return false
+			}
+			c.SSEvent("", fmt.Sprintf(" %s", res))
+			lastMessage = true
+			return true
+		} else { // and the last one should be " [DONE]"
+			c.SSEvent("", " [DONE]")
+			return false
+		}
+	})
+
+	// return the string version of the model's response
+	return responseBuilder.String(), nil
+}
+
+// Respond to a ChatCompletionRequest with a single response
+func chatNoStream(c *gin.Context, conn *grpc.ClientConn, input openai.ChatCompletionRequest) (string, error) {
+	var message string
+	logit := make(map[string]int32)
+	for k, v := range input.LogitBias {
+		logit[k] = int32(v)
+	}
+
+	client := chat.NewChatCompletionServiceClient(conn)
+
+	if input.N == 0 {
+		input.N = 1
+	}
+	id, _ := uuid.NewRandom()
+	resp := openai.ChatCompletionResponse{
+		ID:      id.String(),
+		Created: time.Now().Unix(),
+		Model:   input.Model,
+		Choices: make([]openai.ChatCompletionChoice, input.N),
+	}
+
+	// TODO: this doesn't really work for multiple N, but it mirrors the setup in
+	// the completion.go file
+	for i := 0; i < input.N; i++ {
+		// convert the messages into ChatItems
+		items, err := ToChatItems(input.Messages)
+		if err != nil {
+			log.Printf("500: Bad message Role: %v\n", err)
+			// Handle error
+			c.JSON(500, err)
+			return "", err
+		}
+		response, err := client.ChatComplete(c.Request.Context(), &chat.ChatCompletionRequest{
+			ChatItems:       items,
+			MaxNewTokens:    int32(input.MaxTokens),
+			Temperature:     util.Float32(input.Temperature),
+			TopP:            util.Float32(input.TopP),
+			Stop:            input.Stop,
+			PresencePenalty: util.Float32(input.PresencePenalty),
+			LogitBias:       logit,
+		})
+		if err != nil {
+			log.Printf("500: Error completing via backend(%v): %v\n", input.Model, err)
+			c.JSON(500, err)
+			return "", err
+		}
+		m, err := ToJsonMessage(response.Choices[i].GetChatItem())
+		if err != nil {
+			log.Printf("500: Bad message Role: %v\n", err)
+			// Handle error
+			c.JSON(500, err)
+			return "", err
+		}
+		choice := openai.ChatCompletionChoice{
+			Message: m,
+			Index:   i,
+		}
+		resp.Choices[i] = choice
+
+		// since this function only works in the n = 1 case, doing this is okay
+		message = m.Content
+	}
+
+	c.JSON(200, resp)
+	return message, nil
+}
+
 func (o *OpenAIHandler) chat(c *gin.Context) {
 	// Bind JSON body to a struct with c.BindJSON()
 	var input openai.ChatCompletionRequest
 	log.Printf("context: %v", c.Request.Body)
 	if err := c.BindJSON(&input); err != nil {
 		log.Printf("500: Error marshalling input to object: %v\n", err)
-		// Handle error
 		c.JSON(500, err)
 		return
 	}
 	log.Printf("Input: %v", input)
+
+	// Get a gRPC connection to the model that will serve this request (nil if model isn't registered)
 	conn := o.getModelClient(c, input.Model)
 	if conn == nil {
 		return
 	}
-	id, _ := uuid.NewRandom()
 
+	// logic for selecting streaming/non-streaming and error checking
+	var response string
+	var err error
 	if input.Stream {
-		chanStream := make(chan *chat.ChatCompletionResponse, 10)
-		client := chat.NewChatCompletionStreamServiceClient(conn)
-		items, err := ToChatItems(input.Messages)
-		for _, item := range items {
-			log.Printf("Items: %v", item)
-		}
-
-		if err != nil {
-			log.Printf("500: Bad message Role: %v\n", err)
-			// Handle error
-			c.JSON(500, err)
-			return
-		}
-		stream, err := client.ChatCompleteStream(context.Background(), &chat.ChatCompletionRequest{
-			ChatItems: items,
-			// MaxNewTokens: int32(input.MaxTokens),
-			Temperature: util.Float32(input.Temperature),
-		})
-
-		if err != nil {
-			c.JSON(500, err)
-			return
-		}
-
-		go func() {
-			defer close(chanStream)
-			for {
-				cResp, err := stream.Recv()
-				if err == io.EOF {
-					break
-				}
-				chanStream <- cResp
-			}
-		}()
-		var lastMessage bool = false
-		c.Stream(func(w io.Writer) bool {
-			if msg, ok := <-chanStream; ok {
-				m, err := ToJsonMessage(msg.Choices[0].GetChatItem())
-				if err != nil {
-					log.Printf("500: Bad message Role: %v\n", err)
-					// Handle error
-					c.JSON(500, err)
-					return false
-				}
-				// OpenAI places a space in between the data key and payload in HTTP. So, I guess we're bug-for-bug compatible.
-				res, err := json.Marshal(openai.ChatCompletionResponse{
-					ID:      id.String(),
-					Created: time.Now().Unix(),
-					Model:   input.Model,
-					Object:  "chat.completion",
-					Choices: []openai.ChatCompletionChoice{
-						{
-							Index:   0,
-							Message: m,
-						},
-					},
-				})
-				log.Printf("%v", res)
-				if err != nil {
-					return false
-				}
-				c.SSEvent("", fmt.Sprintf(" %s", res))
-				return true
-			}
-			if !lastMessage {
-				res, err := json.Marshal(openai.ChatCompletionResponse{
-					ID:      id.String(),
-					Created: time.Now().Unix(),
-					Model:   input.Model,
-					Object:  "chat.completion",
-					Choices: []openai.ChatCompletionChoice{
-						{
-							Index:        0,
-							Message:      openai.ChatCompletionMessage{Role: "assistant", Content: ""},
-							FinishReason: openai.FinishReasonStop,
-						},
-					},
-				})
-				if err != nil {
-					return false
-				}
-				c.SSEvent("", fmt.Sprintf(" %s", res))
-				lastMessage = true
-				return true
-			} else {
-				c.SSEvent("", " [DONE]")
-				return false
-			}
-		})
+		response, err = chatStream(c, conn, input)
 	} else {
-
-		logit := make(map[string]int32)
-		for k, v := range input.LogitBias {
-			logit[k] = int32(v)
-		}
-
-		client := chat.NewChatCompletionServiceClient(conn)
-
-		if input.N == 0 {
-			input.N = 1
-		}
-		resp := openai.ChatCompletionResponse{
-			ID:      id.String(),
-			Created: time.Now().Unix(),
-			Model:   input.Model,
-			Choices: make([]openai.ChatCompletionChoice, input.N),
-		}
-
-		// TODO: this doesn't really work for multiple N, but it mirrors the setup in
-		// the completion.go file
-		for i := 0; i < input.N; i++ {
-			// convert the messages into ChatItems
-			items, err := ToChatItems(input.Messages)
-			if err != nil {
-				log.Printf("500: Bad message Role: %v\n", err)
-				// Handle error
-				c.JSON(500, err)
-				return
-			}
-			response, err := client.ChatComplete(c.Request.Context(), &chat.ChatCompletionRequest{
-				ChatItems:       items,
-				MaxNewTokens:    int32(input.MaxTokens),
-				Temperature:     util.Float32(input.Temperature),
-				TopP:            util.Float32(input.TopP),
-				Stop:            input.Stop,
-				PresencePenalty: util.Float32(input.PresencePenalty),
-				LogitBias:       logit,
-			})
-			if err != nil {
-				log.Printf("500: Error completing via backend(%v): %v\n", input.Model, err)
-				c.JSON(500, err)
-				return
-			}
-			m, err := ToJsonMessage(response.Choices[i].GetChatItem())
-			if err != nil {
-				log.Printf("500: Bad message Role: %v\n", err)
-				// Handle error
-				c.JSON(500, err)
-				return
-			}
-			choice := openai.ChatCompletionChoice{
-				Message: m,
-				Index:   i,
-			}
-			resp.Choices[i] = choice
-		}
-
-		c.JSON(200, resp)
+		response, err = chatNoStream(c, conn, input)
 	}
-	// Send the response
+	if err != nil {
+		log.Printf("500: Error completing inference request: %v\n", err)
+		c.JSON(500, err)
+		return
+	}
+
+	// if we're using a database
+	if o.Database != nil {
+		err = o.Database.saveChat(c.GetString("username"), input.Model, input.Messages, response)
+		if err != nil {
+			log.Printf("500: Failed to write inference result to DB: %v\n", err)
+			c.JSON(500, err)
+		}
+	}
 }

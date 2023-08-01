@@ -1,7 +1,6 @@
 package openai
 
 import (
-	"database/sql"
 	"fmt"
 	"log"
 
@@ -14,7 +13,7 @@ import (
 
 type OpenAIHandler struct {
 	Prefix   string
-	Database *sql.DB
+	Database *DBHandler
 }
 
 // TODO: this should get factored out into the .toml files for each model, but this is an intermediate fix

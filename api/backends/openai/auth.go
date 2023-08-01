@@ -22,7 +22,7 @@ func base64Sha512Hash(apiKey string) string {
 }
 
 // apiKeyMiddleware checks the SHA-512 hash of the API key against the stored hashes in the PostgreSQL database.
-func apiKeyMiddleware(db *sql.DB) gin.HandlerFunc {
+func apiKeyMiddleware(h *DBHandler) gin.HandlerFunc {
 	return func(c *gin.Context) {
 		authHeader := c.GetHeader("Authorization")
 
@@ -47,9 +47,9 @@ func apiKeyMiddleware(db *sql.DB) gin.HandlerFunc {
 		// Hash the incoming API key using SHA-512
 		apiKeyHashBase64 := base64Sha512Hash(apiKey)
 
-		// Query the database to check the validity of the hashed API key
-		var dbAPIKeyHash string
-		err := db.QueryRow("SELECT api_key_sha512_base64 FROM api_keys WHERE api_key_sha512_base64 = $1", apiKeyHashBase64).Scan(&dbAPIKeyHash)
+		// Query the database to get the username associated with the hashed API key
+		var userID string // Change the data type to match your database schema
+		err := h.db.QueryRow("SELECT username FROM api_keys WHERE api_key_sha512_base64 = $1", apiKeyHashBase64).Scan(&userID)
 		if err != nil {
 			if err == sql.ErrNoRows {
 				c.JSON(http.StatusUnauthorized, gin.H{"error": "Invalid API key"})
@@ -60,6 +60,10 @@ func apiKeyMiddleware(db *sql.DB) gin.HandlerFunc {
 			c.Abort()
 			return
 		}
+
+		// If the API key hash exists in the database, the key is valid.
+		// Add the username to the Gin context for later use in the request processing pipeline.
+		c.Set("username", userID)
 
 		// If the API key hash exists in the database, the key is valid.
 		// You can pass control to the next middleware or route handler.
@@ -83,19 +87,19 @@ func generateAPIKey() (string, error) {
 	return string(apiKeyBytes), nil
 }
 
-func (o *OpenAIHandler) insertAPIKey(user_id, apiKey string) error {
+func (h *DBHandler) insertAPIKey(username, apiKey string) error {
 	// Hash the API key using SHA-512
 	apiKeyHashBase64 := base64Sha512Hash(apiKey)
 
 	// Prepare the SQL statement
-	stmt, err := o.Database.Prepare("INSERT INTO api_keys (api_key_sha512_base64, user_id) VALUES ($1, $2)")
+	stmt, err := h.db.Prepare("INSERT INTO api_keys (api_key_sha512_base64, username) VALUES ($1, $2)")
 	if err != nil {
 		return err
 	}
 	defer stmt.Close()
 
 	// Execute the SQL statement
-	_, err = stmt.Exec(apiKeyHashBase64, user_id)
+	_, err = stmt.Exec(apiKeyHashBase64, username)
 	if err != nil {
 		return err
 	}
@@ -104,9 +108,9 @@ func (o *OpenAIHandler) insertAPIKey(user_id, apiKey string) error {
 }
 
 func (o *OpenAIHandler) registerUser(c *gin.Context) {
-	// Get the user_id from the request body
+	// Get the username from the request body
 	var reqBody struct {
-		UserID string `json:"user_id"`
+		UserID string `json:"username"`
 	}
 	if err := c.ShouldBindJSON(&reqBody); err != nil {
 		c.JSON(400, gin.H{"error": "Invalid request body"})
@@ -120,7 +124,7 @@ func (o *OpenAIHandler) registerUser(c *gin.Context) {
 		return
 	}
 
-	err = o.insertAPIKey(reqBody.UserID, apiKey)
+	err = o.Database.insertAPIKey(reqBody.UserID, apiKey)
 	if err != nil {
 		log.Println("Failed to generate API key...new user record insertion failed")
 		c.JSON(500, gin.H{"error": "Failed to generate API key"})
