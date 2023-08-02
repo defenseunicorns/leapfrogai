@@ -2,11 +2,11 @@ package config
 
 import (
 	"fmt"
-	"log"
 	"os"
 	"path/filepath"
 
 	"github.com/BurntSushi/toml"
+	"github.com/defenseunicorns/leapfrogai/api/logger"
 	"github.com/fsnotify/fsnotify"
 )
 
@@ -38,6 +38,7 @@ func loadConfigs(path string) (*Config, error) {
 	c := &Config{Models: map[string]*Model{}}
 	files, err := os.ReadDir(path)
 	if err != nil {
+		logger.Logger.Printf("Failed to read files from %v: %v", path, err)
 		return c, err
 	}
 
@@ -54,7 +55,7 @@ func loadConfigs(path string) (*Config, error) {
 		var config Config
 		_, err = toml.DecodeFile(fileName, &config.Models)
 		if err != nil {
-			fmt.Printf("Error loading toml file %v: %v", fileName, err)
+			logger.Logger.Printf("Error loading toml file %v: %v", fileName, err)
 			continue
 		}
 		for k, v := range config.Models {
@@ -74,18 +75,18 @@ func Watch() {
 	fmt.Printf("Using config path: %v\n", modelPath)
 	DefaultConfig, err = loadConfigs(modelPath)
 	if err != nil {
-		log.Fatalf("Error loading model config file: %v", err)
+		logger.Logger.Fatalf("Error loading model config file: %v", err)
 	}
 
 	// Watch the config file
 	watcher, err := fsnotify.NewWatcher()
 	if err != nil {
-		log.Fatalf("Failed to create watcher: %v", err)
+		logger.Logger.Fatalf("Failed to create watcher: %v", err)
 	}
 	defer watcher.Close()
 	err = watcher.Add(modelPath)
 	if err != nil {
-		log.Fatalf("Failed to add file to watcher: %v", err)
+		logger.Logger.Fatalf("Failed to add file to watcher: %v", err)
 	}
 
 	for {
@@ -93,20 +94,20 @@ func Watch() {
 		case event := <-watcher.Events:
 			// Check if the file was modified
 			if event.Op&fsnotify.Write == fsnotify.Write {
-				fmt.Println("Configuration file changed, reloading...")
+				logger.Logger.Println("Configuration file changed, reloading...")
 
 				// Reload the config file
 
 				c, err := loadConfigs(modelPath)
 				if err != nil {
-					fmt.Printf("Error loading model config file: %v", err)
-					fmt.Printf("Falling back to previous version")
+					logger.Logger.Printf("Error loading model config file: %v", err)
+					logger.Logger.Printf("Falling back to previous version")
 					continue
 				}
 				DefaultConfig = c
 			}
 		case err := <-watcher.Errors:
-			log.Printf("Watcher error: %v", err)
+			logger.Logger.Printf("Watcher error: %v", err)
 		}
 	}
 }

@@ -9,6 +9,7 @@ import (
 	"strings"
 	"time"
 
+	"github.com/defenseunicorns/leapfrogai/api/logger"
 	"github.com/defenseunicorns/leapfrogai/pkg/client/completion"
 	"github.com/defenseunicorns/leapfrogai/pkg/util"
 	"github.com/gin-gonic/gin"
@@ -20,13 +21,18 @@ func (o *OpenAIHandler) complete(c *gin.Context) {
 	// Bind JSON body to a struct with c.BindJSON()
 	var input openai.CompletionRequest
 	if err := c.BindJSON(&input); err != nil {
-		log.Printf("500: Error marshalling input to object: %v\n", err)
+		logger.Logger.Printf("Error marshalling input to object: %v\n", err)
 		// Handle error
 		c.JSON(500, err)
 		return
 	}
+	logger.Logger.Printf("Received openai completion request %v\n", input)
 	conn := o.getModelClient(c, input.Model)
+
+	// if we fail to establish a gRPC connection
 	if conn == nil {
+		logger.Logger.Println("Failed to establish gRPC connection, returned connection was null")
+		c.JSON(500, nil)
 		return
 	}
 	id, _ := uuid.NewRandom()
@@ -40,8 +46,9 @@ func (o *OpenAIHandler) complete(c *gin.Context) {
 			MaxNewTokens: util.Int32(int32(input.MaxTokens)),
 			Temperature:  util.Float32(input.Temperature),
 		})
-
+		// if we fail to create a gRPC Completion stream
 		if err != nil {
+			logger.Logger.Printf("Failed to create CompletionStream gRPC request: %v\n", err)
 			c.JSON(500, err)
 			return
 		}
@@ -73,6 +80,7 @@ func (o *OpenAIHandler) complete(c *gin.Context) {
 					},
 				})
 				if err != nil {
+					logger.Logger.Printf("Failed to marshal ChatCompletion response from gRPC stream's channel: %v\n", err)
 					return false
 				}
 				c.SSEvent("", fmt.Sprintf(" %s", res))
@@ -117,7 +125,7 @@ func (o *OpenAIHandler) complete(c *gin.Context) {
 				LogitBias:        logit,
 			})
 			if err != nil {
-				log.Printf("500: Error completing via backend(%v): %v\n", input.Model, err)
+				logger.Logger.Printf("Error completing via backend(%v): %v\n", input.Model, err)
 				c.JSON(500, err)
 				return
 			}
@@ -133,5 +141,4 @@ func (o *OpenAIHandler) complete(c *gin.Context) {
 
 		c.JSON(200, resp)
 	}
-	// Send the response
 }

@@ -2,9 +2,9 @@ package openai
 
 import (
 	"fmt"
-	"log"
 
 	"github.com/defenseunicorns/leapfrogai/api/config"
+	"github.com/defenseunicorns/leapfrogai/api/logger"
 	"github.com/gin-gonic/gin"
 	"github.com/sashabaranov/go-openai"
 	"google.golang.org/grpc"
@@ -56,7 +56,9 @@ func (o *OpenAIHandler) showModel(c *gin.Context) {
 	var m *config.Model
 	var ok bool
 	if m, ok = config.DefaultConfig.Models[modelID]; !ok {
-		c.JSON(404, fmt.Errorf("model %v not found", modelID))
+		err := fmt.Errorf("model %v not found", modelID)
+		logger.Logger.Printf("Failed to complete inference request: %v\n", err)
+		c.JSON(404, err)
 		return
 	}
 	model := openai.Model{
@@ -66,22 +68,24 @@ func (o *OpenAIHandler) showModel(c *gin.Context) {
 	}
 
 	c.JSON(200, model)
-	// Send the response
 }
 
 func (o *OpenAIHandler) getModelClient(c *gin.Context, model string) *grpc.ClientConn {
 	m, ok := config.DefaultConfig.Models[model]
 	if !ok {
-		log.Printf("404: Did not find requested model (%v) in list\n", model)
-		c.JSON(404, "Model not found")
+		err := fmt.Errorf("model %v not found", model)
+		logger.Logger.Printf("Failed to complete inference request: %v\n", err)
+		c.JSON(404, err)
 		return nil
 	}
 	url := m.Network.URL
-	conn, err := grpc.Dial(url, grpc.WithTransportCredentials(insecure.NewCredentials()), grpc.WithBlock())
+	logger.Logger.Printf("Connecting to model %v at address %v\n", model, url)
+	conn, err := grpc.Dial(url, grpc.WithTransportCredentials(insecure.NewCredentials()))
 	if err != nil {
-		log.Printf("500: Error connecting to backend(%v): %v\n", url, err)
+		logger.Logger.Printf("Error connecting to backend(%v): %v\n", url, err)
 		c.JSON(500, err)
 		return nil
 	}
+	logger.Logger.Printf("Connected to model %v on gRPC connection %v\n", model, conn)
 	return conn
 }
