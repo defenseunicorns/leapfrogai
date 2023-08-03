@@ -13,8 +13,8 @@ import leapfrogai
 system_prompt = """<|im_start|>system
 You are an AI assistant that answers participates in chat discussions in an honest, concise, friendly way.<|im_end|>
 <|im_start|>user
-Write two sequences composed of 3 'A's and 2 'B's such that there are no two successive identical letter. Be concise.<|im_end|>
-<|im_assistant|>
+Write a story about a frog who leaps<|im_end|>
+<|im_start|>assistant
 """
 
 def run():
@@ -35,7 +35,7 @@ def run():
         response: Iterator[leapfrogai.CompletionResponse] = stub.CompleteStream(request)
 
         for completion in response:
-            print(completion.choices[0].text, end="")
+            print(completion.choices[0].text, end="", flush=True)
 
 
 if __name__ == "__main__":
