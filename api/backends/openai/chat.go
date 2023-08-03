@@ -76,75 +76,15 @@ func (o *OpenAIHandler) chat(c *gin.Context) {
 		c.JSON(500, err)
 		return
 	}
+	b, _ := json.MarshalIndent(input, "", "\n")
+	fmt.Printf("%v\n", string(b))
 	conn := o.getModelClient(c, input.Model)
 	if conn == nil {
 		return
 	}
 	id, _ := uuid.NewRandom()
 
-	if input.Stream {
-		chanStream := make(chan *chat.ChatCompletionResponse, 10)
-		client := chat.NewChatCompletionStreamServiceClient(conn)
-		items, err := ToChatItems(input.Messages)
-		if err != nil {
-			log.Printf("500: Bad message Role: %v\n", err)
-			// Handle error
-			c.JSON(500, err)
-			return
-		}
-		stream, err := client.ChatCompleteStream(context.Background(), &chat.ChatCompletionRequest{
-			ChatItems:    items,
-			MaxNewTokens: int32(input.MaxTokens),
-			Temperature:  util.Float32(input.Temperature),
-		})
-
-		if err != nil {
-			c.JSON(500, err)
-			return
-		}
-
-		go func() {
-			defer close(chanStream)
-			for {
-				cResp, err := stream.Recv()
-				if err == io.EOF {
-					break
-				}
-				chanStream <- cResp
-			}
-		}()
-		c.Stream(func(w io.Writer) bool {
-			if msg, ok := <-chanStream; ok {
-				m, err := ToJsonMessage(msg.Choices[0].GetChatItem())
-				if err != nil {
-					log.Printf("500: Bad message Role: %v\n", err)
-					// Handle error
-					c.JSON(500, err)
-					return false
-				}
-				// OpenAI places a space in between the data key and payload in HTTP. So, I guess we're bug-for-bug compatible.
-				res, err := json.Marshal(openai.ChatCompletionResponse{
-					ID:      id.String(),
-					Created: time.Now().Unix(),
-					Model:   input.Model,
-					Object:  "chat.completion",
-					Choices: []openai.ChatCompletionChoice{
-						{
-							Index:   0,
-							Message: m,
-						},
-					},
-				})
-				if err != nil {
-					return false
-				}
-				c.SSEvent("", fmt.Sprintf(" %s", res))
-				return true
-			}
-			c.SSEvent("", " [DONE]")
-			return false
-		})
-	} else {
+	if !input.Stream {
 
 		logit := make(map[string]int32)
 		for k, v := range input.LogitBias {
@@ -203,6 +143,188 @@ func (o *OpenAIHandler) chat(c *gin.Context) {
 		}
 
 		c.JSON(200, resp)
+	} else {
+		if false {
+			id, _ := uuid.NewRandom()
+			// DEMO things
+			res, _ := json.Marshal(openai.ChatCompletionStreamResponse{
+				ID:      id.String(),
+				Created: time.Now().Unix(),
+				Model:   input.Model,
+				Object:  "chat.completion",
+				Choices: []openai.ChatCompletionStreamChoice{
+					{
+						Delta: openai.ChatCompletionStreamChoiceDelta{
+							Role: openai.ChatMessageRoleAssistant,
+						},
+					},
+				},
+			})
+			c.SSEvent("", fmt.Sprintf(" %s", res))
+			res, _ = json.Marshal(openai.ChatCompletionStreamResponse{
+				ID:      id.String(),
+				Created: time.Now().Unix(),
+				Model:   input.Model,
+				Object:  "chat.completion",
+				Choices: []openai.ChatCompletionStreamChoice{
+					{
+						Delta: openai.ChatCompletionStreamChoiceDelta{
+							Content: "That's a great question and this is your response",
+						},
+					},
+				},
+			})
+			c.SSEvent("", fmt.Sprintf(" %s", res))
+			res, _ = json.Marshal(openai.ChatCompletionStreamResponse{
+				ID:      id.String(),
+				Created: time.Now().Unix(),
+				Model:   input.Model,
+				Object:  "chat.completion",
+				Choices: []openai.ChatCompletionStreamChoice{
+					{
+						FinishReason: openai.FinishReasonStop,
+					},
+				},
+			})
+			c.SSEvent("", fmt.Sprintf(" %s", res))
+			c.SSEvent("", " [DONE]")
+			return
+		}
+
+		chanStream := make(chan *chat.ChatCompletionResponse, 10)
+		client := chat.NewChatCompletionStreamServiceClient(conn)
+		items, err := ToChatItems(input.Messages)
+		if err != nil {
+			log.Printf("500: Bad message Role: %v\n", err)
+			// Handle error
+			c.JSON(500, err)
+			return
+		}
+		b, _ := json.MarshalIndent(items, "", "\n")
+		fmt.Printf("%v\n", string(b))
+		fmt.Printf("Sending completion request to model")
+		start := time.Now()
+		stream, err := client.ChatCompleteStream(context.Background(), &chat.ChatCompletionRequest{
+			ChatItems:    items,
+			MaxNewTokens: int32(input.MaxTokens),
+			Temperature:  util.Float32(input.Temperature),
+		})
+		fmt.Printf("Took %v to complete the chat message\n", time.Since(start))
+
+		if err != nil {
+			c.JSON(500, err)
+			return
+		}
+		go func() {
+			defer close(chanStream)
+			for {
+				cResp, err := stream.Recv()
+				if err == io.EOF {
+					break
+				}
+				chanStream <- cResp
+			}
+		}()
+
+		first := true
+		c.Stream(func(w io.Writer) bool {
+			// OpenAI places a space in between the data key and payload in HTTP. So, I guess we're bug-for-bug compatible.
+			if first {
+				res, err := json.Marshal(openai.ChatCompletionStreamResponse{
+					ID:      id.String(),
+					Created: time.Now().Unix(),
+					Model:   input.Model,
+					Object:  "chat.completion",
+					Choices: []openai.ChatCompletionStreamChoice{
+						{
+							Delta: openai.ChatCompletionStreamChoiceDelta{
+								Role: openai.ChatMessageRoleAssistant,
+							},
+						},
+					},
+				})
+				if err != nil {
+					log.Printf("Error marshalling chat completion message: %v\n", err)
+				}
+				fmt.Printf("Sending role update for new message to Client")
+				c.SSEvent("", fmt.Sprintf(" %s", res))
+				first = false
+			}
+			if msg, ok := <-chanStream; ok {
+				if msg == nil {
+					log.Printf("Recieved nil object from stream.")
+					return true // Try agin?
+				}
+				fmt.Printf("recieved message from model: %v\n", msg)
+				fmt.Printf("Content:\n\n%v\n", msg.Choices[0].GetChatItem().Content)
+				// m, err := ToJsonMessage(msg.Choices[0].GetChatItem())
+				// if err != nil {
+				// 	log.Printf("500: Bad message Role: %v\n", err)
+				// 	// Handle error
+				// 	c.JSON(500, err)
+				// 	return false
+				// }
+
+				// OpenAI places a space in between the data key and payload in HTTP. So, I guess we're bug-for-bug compatible.
+				res, err := json.Marshal(openai.ChatCompletionStreamResponse{
+					ID:      id.String(),
+					Created: time.Now().Unix(),
+					Model:   input.Model,
+					Object:  "chat.completion",
+					Choices: []openai.ChatCompletionStreamChoice{
+						{
+							Delta: openai.ChatCompletionStreamChoiceDelta{
+								Content: msg.Choices[0].GetChatItem().Content,
+							},
+						},
+					},
+				})
+
+				// res, err := json.Marshal(openai.ChatCompletionResponse{
+				// 	ID:      id.String(),
+				// 	Created: time.Now().Unix(),
+				// 	Model:   input.Model,
+				// 	Object:  "chat.completion",
+				// 	Choices: []openai.ChatCompletionChoice{
+				// 		{
+				// 			Index:   0,
+				// 			Message: m,
+				// 		},
+				// 	},
+				// })
+				if err != nil {
+					log.Printf("Error marshalling chat completion message: %v\n", err)
+					return false
+				}
+				fmt.Printf("Sent update to client\n")
+				c.SSEvent("", fmt.Sprintf(" %s", res))
+				return true
+			} else {
+				fmt.Printf("Not okay from stream.  SEnding stop reason")
+				// Close the stream with a finish reason
+				res, err := json.Marshal(openai.ChatCompletionStreamResponse{
+					ID:      id.String(),
+					Created: time.Now().Unix(),
+					Model:   input.Model,
+					Object:  "chat.completion",
+					Choices: []openai.ChatCompletionStreamChoice{
+						{
+							Delta: openai.ChatCompletionStreamChoiceDelta{
+								Content: "",
+							},
+							FinishReason: openai.FinishReasonStop,
+						},
+					},
+				})
+				if err != nil {
+					return false
+				}
+				c.SSEvent("", fmt.Sprintf(" %s", res))
+				c.SSEvent("", " [DONE]")
+				return false
+			}
+			return true
+		})
 	}
 	// Send the response
 }
