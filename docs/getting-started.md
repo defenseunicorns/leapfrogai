@@ -2,7 +2,7 @@
 
 ## Description
 
-This is a quick guide to get LeapFrogAI running locally.
+This is a quick guide to get LeapFrogAI running locally for 64 bit architecture systems with access to an Nvidia GPU.
 
 ## Requirements
 
@@ -33,7 +33,13 @@ python3 -m venv venv
 source ./venv/bin/activate
 ```
 
-3. Pull the model (this will take some time):
+3. Install the dependency requirements:
+
+``` shell
+pip install -r requirements.txt
+```
+
+4. Pull the model (this will take some time):
 
 ``` shell
 python get_model.py
