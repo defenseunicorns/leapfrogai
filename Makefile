@@ -1,6 +1,6 @@
 build: api embeddings
 
-TAG ?= 0.3.2
+TAG ?= 0.3.3
 # want to keep things all aligned here
 
 .PHONY: api embeddings push
@@ -100,6 +100,12 @@ update-stablelm: stablelm
 ctransformers: base
 	cd models/llms/ctransformers && \
 	docker build --network=host --build-arg IMAGE_TAG=${TAG} -t ghcr.io/defenseunicorns/leapfrogai/ctransformers:${TAG} .
+
+update-ctransformers: ctransformers
+	docker tag ghcr.io/defenseunicorns/leapfrogai/ctransformers:0.3.3 127.0.0.1:5001/defenseunicorns/leapfrogai/ctransformers:0.3.3-zarf-721929940
+	docker push 127.0.0.1:5001/defenseunicorns/leapfrogai/ctransformers:0.3.3-zarf-721929940
+	kubectl delete pods -n leapfrogai -l app.kubernetes.io/instance=mpt-30b-chat-ggml-model
+	kubectl delete pods -n leapfrogai -l app.kubernetes.io/instance=mpt-30b-instruct-ggml-model
 
 test-init:
 	docker run -p 50051:50051 -d --rm --name repeater  ghcr.io/defenseunicorns/leapfrogai/repeater:${TAG}

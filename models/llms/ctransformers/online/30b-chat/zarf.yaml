@@ -1,0 +1,20 @@
+kind: ZarfPackageConfig
+metadata:
+  name: mpt-30b-chat-ggml
+  version: 0.3.3
+  description: >
+    TheBloke/mpt-30B-instruct-GGML
+
+constants:
+  - name: VERSION
+    default: ###ZARF_PKG_TMPL_VERSION###
+  - name: NAME
+    default: ###ZARF_PKG_TMPL_NAME###
+
+components:
+  - name: import-model
+    required: true
+    import:
+      name: model
+      url: oci://ghcr.io/defenseunicorns/packages/leapfrogai-model:0.3.3-skeleton
+

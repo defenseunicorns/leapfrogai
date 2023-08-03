@@ -1,0 +1,21 @@
+package:
+  create:
+    set:
+      image_repository: "ghcr.io/defenseunicorns/leapfrogai/ctransformers"
+      version: 0.3.3
+      name: mpt-30b-chat-ggml
+      pvc_enabled: "true"
+    max_package_size: "1000000000"
+  deploy:
+    set:
+      limits_cpu: 1
+      limits_memory: 4Gi
+      limits_gpu: 0
+      requests_cpu: 1
+      requests_memory: 4Gi
+      requests_gpu: 0
+      name: mpt-30b-chat-ggml
+      image_repository: "ghcr.io/defenseunicorns/leapfrogai/ctransformers"
+      version: 0.3.3
+      model_name: TheBloke/mpt-30B-chat-GGML
+      pvc_enabled: "true"
