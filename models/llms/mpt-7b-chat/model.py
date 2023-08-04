@@ -53,7 +53,47 @@ logging.basicConfig(
 transformers.utils.logging.disable_progress_bar()
 transformers.utils.logging.set_verbosity_debug()
 
-MODEL_SAVE_PATH = "mpt-7b-chat-offline"
+# Check for model downloaded.
+# 
+# 
+# Download model
+import os
+PRETRAINED_MODEL_NAME_OR_PATH = os.environ.get("MODEL_NAME")
+if PRETRAINED_MODEL_NAME_OR_PATH is None:
+    PRETRAINED_MODEL_NAME_OR_PATH = "mosaicml/mpt-7b-chat"
+MODEL_SAVE_PATH = "./model"
+
+# try:
+#     # create a config, configure the model, and load
+#     config = AutoConfig.from_pretrained(
+#         MODEL_SAVE_PATH, local_files_only=True, trust_remote_code=True
+#     )
+#     config.attn_config["attn_impl"] = "torch"
+#     config.max_seq_len = 8192
+#     config.init_device = "cuda:1"
+
+#     model = AutoModelForCausalLM.from_pretrained(
+#         MODEL_SAVE_PATH,
+#         config=config,
+#         torch_dtype=torch.bfloat16,
+#         trust_remote_code=True,
+#         local_files_only=True,
+#     )
+
+# except:
+#     tokenizer = AutoTokenizer.from_pretrained(
+#         PRETRAINED_MODEL_NAME_OR_PATH,
+#         trust_remote_code=True
+#     )
+#     tokenizer.save_pretrained(MODEL_SAVE_PATH)
+    
+#     # load the model and save it to this directory in safetensors format
+#     model = AutoModelForCausalLM.from_pretrained(
+#         PRETRAINED_MODEL_NAME_OR_PATH,
+#         trust_remote_code=True
+#     )
+#     model.save_pretrained(MODEL_SAVE_PATH, use_safetensors=True)
+
 
 # Prompt Templates
 SYSTEM_FORMAT = "<|im_start|>system\n{}<|im_end|>\n"
@@ -109,7 +149,7 @@ class MPTChat(
     )
     config.attn_config["attn_impl"] = "torch"
     config.max_seq_len = 8192
-    config.init_device = "cuda:0"
+    config.init_device = "cuda"
 
     model = AutoModelForCausalLM.from_pretrained(
         MODEL_SAVE_PATH,
@@ -117,7 +157,7 @@ class MPTChat(
         torch_dtype=torch.bfloat16,
         trust_remote_code=True,
         local_files_only=True,
-    )
+    ).to("cuda")
 
     # load the tokenizer
     tokenizer = AutoTokenizer.from_pretrained(MODEL_SAVE_PATH, local_files_only=True)

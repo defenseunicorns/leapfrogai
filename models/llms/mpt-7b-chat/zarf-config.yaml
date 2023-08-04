@@ -1,18 +1,18 @@
 package:
   create:
     set:
-      image_repository: "ghcr.io/defenseunicorns/leapfrogai/stablelm-3b"
-      version: 0.3.2
-      name: stablelm-3b
+      image_repository: "ghcr.io/defenseunicorns/leapfrogai/mpt-7b-chat"
+      version: 0.3.3
+      name: mpt-7b-chat
     max_package_size: "1000000000"
   deploy:
     set:
       limits_cpu: 1
       limits_memory: 4Gi
-      limits_gpu: 0
+      limits_gpu: 1
       requests_cpu: 1
       requests_memory: 4Gi
-      requests_gpu: 0
-      name: stablelm-3b
-      image_repository: "ghcr.io/defenseunicorns/leapfrogai/stablelm-3b"
-      version: 0.3.2
+      requests_gpu: 1
+      name: mpt-7b-chat
+      image_repository: "ghcr.io/defenseunicorns/leapfrogai/mpt-7b-chat"
+      version: 0.3.3
