@@ -17,7 +17,7 @@ from leapfrogai import (
 
 class CTransformers:
     llm = AutoModelForCausalLM.from_pretrained(
-        "Sidharthkr/MPT-7b-chat-GGML", model_type="mpt"
+        "TheBloke/mpt-7b-chat-GGML", model_type="mpt"
     )
 
     def Complete(
