@@ -140,9 +140,9 @@ LeapfrogAI is supported by a community of users and contributors, including:
 
 * [Defense Unicorns](https://defenseunicorns.com)
 * [Beast Code](https://beast-code.com)
+* [Chainguard](https://www.chainguard.dev/)
 * [Exovera](https://exovera.com/)
 * [Hypergiant](https://www.hypergiant.com/)
-* [Chainguard](https://www.chainguard.dev/)
 * [Pulze](https://www.pulze.ai)
 * [SOSi](https://www.sosi.com/)
 * [United States Navy](https://www.navy.mil/)
