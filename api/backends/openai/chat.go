@@ -117,6 +117,7 @@ func (o *OpenAIHandler) chat(c *gin.Context) {
 				chanStream <- cResp
 			}
 		}()
+		var lastMessage bool = false
 		c.Stream(func(w io.Writer) bool {
 			if msg, ok := <-chanStream; ok {
 				m, err := ToJsonMessage(msg.Choices[0].GetChatItem())
@@ -144,8 +145,30 @@ func (o *OpenAIHandler) chat(c *gin.Context) {
 				c.SSEvent("", fmt.Sprintf(" %s", res))
 				return true
 			}
-			c.SSEvent("", " [DONE]")
-			return false
+			if !lastMessage {
+				res, err := json.Marshal(openai.ChatCompletionResponse{
+					ID:      id.String(),
+					Created: time.Now().Unix(),
+					Model:   input.Model,
+					Object:  "chat.completion",
+					Choices: []openai.ChatCompletionChoice{
+						{
+							Index:        0,
+							Message:      openai.ChatCompletionMessage{Role: "assistant", Content: ""},
+							FinishReason: openai.FinishReasonStop,
+						},
+					},
+				})
+				if err != nil {
+					return false
+				}
+				c.SSEvent("", fmt.Sprintf(" %s", res))
+				lastMessage = true
+				return true
+			} else {
+				c.SSEvent("", " [DONE]")
+				return false
+			}
 		})
 	} else {
 
