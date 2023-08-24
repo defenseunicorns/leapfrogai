@@ -9,7 +9,7 @@ ENV USER='user'
 RUN groupadd -r user && useradd -r -g $USER $USER
 
 
-RUN mkdir -p /home/$USER
+RUN mkdir -p /home/$USER/app
 
 RUN chown -R $USER /home/$USER
 RUN chmod a+rwx -R  /home/$USER
