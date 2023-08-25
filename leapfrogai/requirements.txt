@@ -6,5 +6,5 @@
 #
 grpcio==1.56.0
     # via leapfrogai (pyproject.toml)
-protobuf==4.23.3
+protobuf==4.24.2
     # via leapfrogai (pyproject.toml)
