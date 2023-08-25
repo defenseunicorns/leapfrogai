@@ -6,6 +6,8 @@ sys.path.append(str(path_root))
 print(sys.path)
 import grpc
 from google.protobuf import empty_pb2 as google_dot_protobuf_dot_empty__pb2
+from grpc_health.v1 import health_pb2
+from grpc_health.v1 import health_pb2_grpc
 
 import leapfrogai
 
@@ -29,6 +31,12 @@ def run():
 
         # Print the response
         print("Received response: ", response)
+
+        # Check the healthcheck endpoitn
+        health_stub = health_pb2_grpc.HealthStub(channel)
+        health_request = health_pb2.HealthCheckRequest()
+        health_resp = health_stub.Check(health_request)
+        print("Response of health stub: ", health_resp)
 
         # name = leapfrogai.NameServiceStub(channel)
         # response = name.Name(google_dot_protobuf_dot_empty__pb2.Empty())
