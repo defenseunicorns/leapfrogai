@@ -2,3 +2,5 @@ grpcio==1.54.2
 setuptools
 google
 protobuf
+grpcio-health-checking
+grpcio-reflection
