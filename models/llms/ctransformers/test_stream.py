@@ -35,7 +35,7 @@ def run():
         response: Iterator[leapfrogai.CompletionResponse] = stub.CompleteStream(request)
 
         for completion in response:
-            print(completion.choices[0].text, end="")
+            print(completion.choices[0].text, end="", flush=True)
 
 
 if __name__ == "__main__":
