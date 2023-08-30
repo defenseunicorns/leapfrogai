@@ -14,7 +14,7 @@ system_prompt = """<|im_start|>system
 You are an AI assistant that answers participates in chat discussions in an honest, concise, friendly way.<|im_end|>
 <|im_start|>user
 Write two sequences composed of 3 'A's and 2 'B's such that there are no two successive identical letter. Be concise.<|im_end|>
-<|im_assistant|>
+<|im_start|>assistant
 """
 
 def run():
