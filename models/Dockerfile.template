@@ -1,4 +1,4 @@
-FROM ghcr.io/defenseunicorns/leapfrogai/base:0.0.4
+FROM ghcr.io/defenseunicorns/leapfrogai/base:0.3.2
 
 # Install project
 COPY requirements.txt .
