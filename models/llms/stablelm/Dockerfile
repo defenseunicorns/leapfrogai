@@ -9,7 +9,7 @@ COPY get_models.py get_models.py
 # # Get model weights and tokenizer
 RUN python3 get_models.py
 
-COPY *.py .
+COPY *.py ./
 
 # Publish port
 EXPOSE 50051:50051

@@ -11,7 +11,7 @@ COPY get_model.py get_model.py
 RUN python3 get_model.py
 
 # Move the rest of the python files (most likely place layer cache will be invalidated)
-COPY --chown=user:user *.py .
+COPY --chown=user:user *.py ./
 
 # Publish port
 EXPOSE 50051:50051
