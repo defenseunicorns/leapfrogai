@@ -5,10 +5,10 @@ import (
 	"encoding/json"
 	"fmt"
 	"io"
-	"log"
 	"strings"
 	"time"
 
+	"github.com/defenseunicorns/leapfrogai/api/logger"
 	"github.com/defenseunicorns/leapfrogai/pkg/client/chat"
 	"github.com/defenseunicorns/leapfrogai/pkg/util"
 	"github.com/gin-gonic/gin"
@@ -71,13 +71,17 @@ func (o *OpenAIHandler) chat(c *gin.Context) {
 	// Bind JSON body to a struct with c.BindJSON()
 	var input openai.ChatCompletionRequest
 	if err := c.BindJSON(&input); err != nil {
-		log.Printf("500: Error marshalling input to object: %v\n", err)
-		// Handle error
+		logger.Logger.Printf("Error marshalling input to object: %v\n", err)
 		c.JSON(500, err)
 		return
 	}
+	logger.Logger.Printf("Received openai chat completion request %v\n", input)
 	conn := o.getModelClient(c, input.Model)
+
+	// if we fail to establish a gRPC connection
 	if conn == nil {
+		logger.Logger.Println("Failed to establish gRPC connection, returned connection was null")
+		c.JSON(500, nil)
 		return
 	}
 	id, _ := uuid.NewRandom()
@@ -87,8 +91,7 @@ func (o *OpenAIHandler) chat(c *gin.Context) {
 		client := chat.NewChatCompletionStreamServiceClient(conn)
 		items, err := ToChatItems(input.Messages)
 		if err != nil {
-			log.Printf("500: Bad message Role: %v\n", err)
-			// Handle error
+			logger.Logger.Printf("Bad message Role: %v\n", err)
 			c.JSON(500, err)
 			return
 		}
@@ -97,8 +100,9 @@ func (o *OpenAIHandler) chat(c *gin.Context) {
 			MaxNewTokens: int32(input.MaxTokens),
 			Temperature:  util.Float32(input.Temperature),
 		})
-
+		// if we fail to create a gRPC ChatCompletion stream
 		if err != nil {
+			logger.Logger.Printf("Failed to create ChatCompletionStream gRPC request: %v\n", err)
 			c.JSON(500, err)
 			return
 		}
@@ -113,12 +117,12 @@ func (o *OpenAIHandler) chat(c *gin.Context) {
 				chanStream <- cResp
 			}
 		}()
+		var lastMessage bool = false
 		c.Stream(func(w io.Writer) bool {
 			if msg, ok := <-chanStream; ok {
 				m, err := ToJsonMessage(msg.Choices[0].GetChatItem())
 				if err != nil {
-					log.Printf("500: Bad message Role: %v\n", err)
-					// Handle error
+					logger.Logger.Printf("Bad message Role: %v\n", err)
 					c.JSON(500, err)
 					return false
 				}
@@ -141,8 +145,30 @@ func (o *OpenAIHandler) chat(c *gin.Context) {
 				c.SSEvent("", fmt.Sprintf(" %s", res))
 				return true
 			}
-			c.SSEvent("", " [DONE]")
-			return false
+			if !lastMessage {
+				res, err := json.Marshal(openai.ChatCompletionResponse{
+					ID:      id.String(),
+					Created: time.Now().Unix(),
+					Model:   input.Model,
+					Object:  "chat.completion",
+					Choices: []openai.ChatCompletionChoice{
+						{
+							Index:        0,
+							Message:      openai.ChatCompletionMessage{Role: "assistant", Content: ""},
+							FinishReason: openai.FinishReasonStop,
+						},
+					},
+				})
+				if err != nil {
+					return false
+				}
+				c.SSEvent("", fmt.Sprintf(" %s", res))
+				lastMessage = true
+				return true
+			} else {
+				c.SSEvent("", " [DONE]")
+				return false
+			}
 		})
 	} else {
 
@@ -169,8 +195,7 @@ func (o *OpenAIHandler) chat(c *gin.Context) {
 			// convert the messages into ChatItems
 			items, err := ToChatItems(input.Messages)
 			if err != nil {
-				log.Printf("500: Bad message Role: %v\n", err)
-				// Handle error
+				logger.Logger.Printf("Bad message Role: %v\n", err)
 				c.JSON(500, err)
 				return
 			}
@@ -184,14 +209,13 @@ func (o *OpenAIHandler) chat(c *gin.Context) {
 				LogitBias:       logit,
 			})
 			if err != nil {
-				log.Printf("500: Error completing via backend(%v): %v\n", input.Model, err)
+				logger.Logger.Printf("Error completing via backend(%v): %v\n", input.Model, err)
 				c.JSON(500, err)
 				return
 			}
 			m, err := ToJsonMessage(response.Choices[i].GetChatItem())
 			if err != nil {
-				log.Printf("500: Bad message Role: %v\n", err)
-				// Handle error
+				logger.Logger.Printf("Bad message Role: %v\n", err)
 				c.JSON(500, err)
 				return
 			}
@@ -204,5 +228,4 @@ func (o *OpenAIHandler) chat(c *gin.Context) {
 
 		c.JSON(200, resp)
 	}
-	// Send the response
 }

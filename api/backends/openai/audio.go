@@ -5,6 +5,7 @@ import (
 	"context"
 	"strings"
 
+	"github.com/defenseunicorns/leapfrogai/api/logger"
 	"github.com/defenseunicorns/leapfrogai/pkg/client/audio"
 	"github.com/gin-gonic/gin"
 )
@@ -22,20 +23,25 @@ func (o *OpenAIHandler) audioTranscriptions(c *gin.Context) {
 	c.Bind(&r)
 	f, err := c.FormFile("file")
 	if err != nil {
+		logger.Logger.Printf("Failed to get file from form: %v", err)
 		c.JSON(500, err)
 		return
 	}
 
 	file, err := f.Open()
+	if err != nil {
+		logger.Logger.Printf("Failed to open file from form: %v", err)
+		c.JSON(500, err)
+	}
 	defer file.Close()
 
-	if err != nil {
-		c.JSON(500, err)
-		return
-	}
 	conn := o.getModelClient(c, r.Model)
 	client := audio.NewAudioClient(conn)
 	stream, err := client.Transcribe(context.Background())
+	if err != nil {
+		logger.Logger.Printf("Failed to create transcription client: %v", err)
+		c.JSON(500, err)
+	}
 
 	if r.ResponseFormat == "" {
 		r.ResponseFormat = "json"
@@ -64,6 +70,7 @@ func (o *OpenAIHandler) audioTranscriptions(c *gin.Context) {
 			if err.Error() == "EOF" {
 				break
 			}
+			logger.Logger.Printf("Failed to read bytes from file: %v", err)
 			c.JSON(500, err)
 			return
 		}
@@ -75,6 +82,7 @@ func (o *OpenAIHandler) audioTranscriptions(c *gin.Context) {
 		}
 
 		if err = stream.Send(r); err != nil {
+			logger.Logger.Printf("Failed to send inference request to gRPC server: %v", err)
 			c.JSON(500, err)
 			return
 		}
@@ -86,6 +94,7 @@ func (o *OpenAIHandler) audioTranscriptions(c *gin.Context) {
 
 	reply, err := stream.CloseAndRecv()
 	if err != nil {
+		logger.Logger.Printf("Failed to get transcription reply from gRPC server: %v", err)
 		c.JSON(500, err)
 	}
 
@@ -98,20 +107,26 @@ func (o *OpenAIHandler) audioTranslations(c *gin.Context) {
 	c.Bind(&r)
 	f, err := c.FormFile("file")
 	if err != nil {
+		logger.Logger.Printf("Failed to get file from form: %v", err)
 		c.JSON(500, err)
 		return
 	}
 
 	file, err := f.Open()
-	defer file.Close()
-
 	if err != nil {
+		logger.Logger.Printf("Failed to open file from form: %v", err)
 		c.JSON(500, err)
 		return
 	}
+	defer file.Close()
+
 	conn := o.getModelClient(c, r.Model)
 	client := audio.NewAudioClient(conn)
 	stream, err := client.Translate(context.Background())
+	if err != nil {
+		logger.Logger.Printf("Failed to create translation client: %v", err)
+		c.JSON(500, err)
+	}
 
 	if r.ResponseFormat == "" {
 		r.ResponseFormat = "json"
@@ -140,6 +155,7 @@ func (o *OpenAIHandler) audioTranslations(c *gin.Context) {
 			if err.Error() == "EOF" {
 				break
 			}
+			logger.Logger.Printf("Failed to read bytes from file: %v", err)
 			c.JSON(500, err)
 			return
 		}
@@ -151,6 +167,7 @@ func (o *OpenAIHandler) audioTranslations(c *gin.Context) {
 		}
 
 		if err = stream.Send(r); err != nil {
+			logger.Logger.Printf("Failed to send inference request to gRPC server: %v", err)
 			c.JSON(500, err)
 			return
 		}
@@ -162,6 +179,7 @@ func (o *OpenAIHandler) audioTranslations(c *gin.Context) {
 
 	reply, err := stream.CloseAndRecv()
 	if err != nil {
+		logger.Logger.Printf("Failed to get translation reply from gRPC server: %v", err)
 		c.JSON(500, err)
 	}
 

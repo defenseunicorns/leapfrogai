@@ -151,12 +151,12 @@ class MPTChat(
         thread = Thread(target=self.model.generate, kwargs=generation_kwargs)
         thread.start()
         for text in streamer:
-            print(text)
             yield text
 
     def ChatComplete(
         self, request: ChatCompletionRequest, context: GrpcContext
     ) -> ChatCompletionResponse:
+        logging.info(f"Received non-streaming ChatCompletion request: {request}")
         chat_stream = self.chat_stream(request)
         content = ""
         for text_chunk in chat_stream:
@@ -170,6 +170,7 @@ class MPTChat(
     def ChatCompleteStream(
         self, request: ChatCompletionRequest, context: GrpcContext
     ) -> Generator[ChatCompletionResponse, Any, Any]:
+        logging.info(f"Received streaming ChatCompletion request: {request}")
         chat_stream = self.chat_stream(request)
         for text_chunk in chat_stream:
             item = ChatItem(role=ChatRole.ASSISTANT, content=text_chunk)
@@ -204,12 +205,12 @@ class MPTChat(
         thread = Thread(target=self.model.generate, kwargs=generation_kwargs)
         thread.start()
         for text in streamer:
-            print(text)
             yield text
 
     def Complete(
         self, request: CompletionRequest, context: GrpcContext
     ) -> CompletionResponse:
+        logging.info(f"Received non-streaming Completion request: {request}")
         completion_stream = self.completion_stream(request)
         text = ""
         for text_chunk in completion_stream:
@@ -221,6 +222,7 @@ class MPTChat(
     def CompleteStream(
         self, request: CompletionRequest, context
     ) -> Generator[CompletionResponse, Any, Any]:
+        logging.info(f"Received streaming Completion request: {request}")
         completion_stream = self.completion_stream(request)
         for text_chunk in completion_stream:
             choice = CompletionChoice(text=text_chunk, index=0)

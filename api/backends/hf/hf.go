@@ -8,6 +8,7 @@ import (
 	"strings"
 
 	"github.com/defenseunicorns/leapfrogai/api/config"
+	"github.com/defenseunicorns/leapfrogai/api/logger"
 	"github.com/defenseunicorns/leapfrogai/pkg/client/completion"
 	"github.com/defenseunicorns/leapfrogai/pkg/util"
 	"github.com/gin-gonic/gin"
@@ -138,25 +139,20 @@ func (h *Handler) inference(c *gin.Context) {
 	}
 }
 
-// func (h *Handler) doGenerate(c *gin.Context, stream bool) {
-// 	var input GenerateRequest
-
-// }
-
-// TODO: unify between backends
 func (h *Handler) getModelClient(c *gin.Context, model string) *grpc.ClientConn {
 	m, ok := config.DefaultConfig.Models[model]
 	if !ok {
-		log.Printf("404: Did not find requested model (%v) in list\n", model)
+		logger.Logger.Printf("Did not find requested model (%v) in list\n", model)
 		c.JSON(404, "Model not found")
 		return nil
 	}
 	url := m.Network.URL
-	conn, err := grpc.Dial(url, grpc.WithTransportCredentials(insecure.NewCredentials()), grpc.WithBlock())
+	conn, err := grpc.Dial(url, grpc.WithTransportCredentials(insecure.NewCredentials()))
 	if err != nil {
-		log.Printf("500: Error connecting to backend(%v): %v\n", url, err)
+		logger.Logger.Printf("Error connecting to backend(%v): %v\n", url, err)
 		c.JSON(500, err)
 		return nil
 	}
+	logger.Logger.Printf("Got connection to model backend %v\n", conn)
 	return conn
 }
