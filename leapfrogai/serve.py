@@ -15,6 +15,9 @@ from .name import name_pb2_grpc
 
 
 async def serve(o):
+    # Create a tuple of all of the services we want to export via reflection.
+    services = (reflection.SERVICE_NAME, health.SERVICE_NAME)
+
     # Create a gRPC server
     server = grpc.aio.server(futures.ThreadPoolExecutor(max_workers=40))
 
@@ -24,6 +27,7 @@ async def serve(o):
 
     if hasattr(o, "ChatCompleteStream"):
         chat_pb2_grpc.add_ChatCompletionStreamServiceServicer_to_server(o, server)
+        services += ("chat.ChatCompletionStreamService",)
 
     if hasattr(o, "Complete"):
         completion_pb2_grpc.add_CompletionServiceServicer_to_server(o, server)
