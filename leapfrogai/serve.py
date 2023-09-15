@@ -13,6 +13,7 @@ from .embeddings import embeddings_pb2_grpc
 from .completion import completion_pb2_grpc
 from .name import name_pb2_grpc
 
+
 async def serve(o):
     # Create a gRPC server
     server = grpc.aio.server(futures.ThreadPoolExecutor(max_workers=40))
@@ -23,7 +24,6 @@ async def serve(o):
 
     if hasattr(o, "ChatCompleteStream"):
         chat_pb2_grpc.add_ChatCompletionStreamServiceServicer_to_server(o, server)
-        services += ("chat.ChatCompletionStreamService",)
 
     if hasattr(o, "Complete"):
         completion_pb2_grpc.add_CompletionServiceServicer_to_server(o, server)
@@ -50,14 +50,12 @@ async def serve(o):
 
     # Create a health_servicer and list all services as 'healthy'
     # NOTE: Health checks can be validated via `grpcurl --plaintext -d {"service": "SERVICE_NAME"}' localhost:50051 grpc.health.v1.Health/Check`
-    health_servicer = health.HealthServicer(
-        experimental_non_blocking=True
-    )
+    health_servicer = health.HealthServicer(experimental_non_blocking=True)
     health_pb2_grpc.add_HealthServicer_to_server(health_servicer, server)
     for service in services:
         # TODO: I still need to modify the protos for the services to add a 'check' endpoint
         health_servicer.set(service, health_pb2.HealthCheckResponse.SERVING)
-    
+
     # Listen on port 50051
     print("Starting server. Listening on port 50051.")
     server.add_insecure_port("[::]:50051")
