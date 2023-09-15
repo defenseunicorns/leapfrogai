@@ -10,7 +10,7 @@ image:
   # down and only change it if you explicitly want to upgrade the Weaviate
   # version.
   
-  tag: 0.2.1
+  tag: 0.3.2
 
 domain: "###ZARF_VAR_DOMAIN###"
 

@@ -29,6 +29,7 @@ components:
         - "leapfrog-values.yaml"
     images:
       - "ghcr.io/defenseunicorns/leapfrogai/api:0.3.2"
+      - "registry1.dso.mil/ironbank/kiwigrid/k8s-sidecar:1.23.3"
   - name: dcgm-exporter
     charts:
       - name: dcgm-exporter
