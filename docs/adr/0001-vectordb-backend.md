@@ -7,17 +7,13 @@ Contents:
   - [Decision](#decision)
   - [Rationale](#rationale)
   - [Status](#status)
-- [Context](#Context)
+- [Context](#context)
   - [Important Factors](#important-factors)
   - [Options](#options)
   - [Supporting Information](#supporting-information)
   - [Assumptions](#assumptions)
   - [Constraints](#constraints)
   - [Implications](#implications)
-- [Decision](#decision)
-    - [Rationale](#rationale)
-    - [Status](#status)
-    - [Consequences](#consequences)
 
 ## Summary
 
