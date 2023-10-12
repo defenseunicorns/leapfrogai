@@ -1,5 +1,4 @@
-ARG IMAGE_TAG
-FROM ghcr.io/defenseunicorns/leapfrogai/base:${IMAGE_TAG}
+FROM cgr.dev/chainguard/python:latest
 # Install project
 # RUN curl -sSf https://rye-up.com/get | bash
 COPY --chown=user:user requirements.txt .
