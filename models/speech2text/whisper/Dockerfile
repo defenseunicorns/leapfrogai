@@ -1,7 +1,7 @@
 ARG IMAGE_TAG
 FROM ghcr.io/defenseunicorns/leapfrogai/base:${IMAGE_TAG}
 # Install project
-RUN curl -sSf https://rye-up.com/get | bash
+RUN curl -sSf https://rye-up.com/get | RYE_VERSION="0.4.0" RYE_INSTALL_OPTION="--yes" bash
 COPY --chown=user:user requirements.txt .
 RUN rye sync
 
