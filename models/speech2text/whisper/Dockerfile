@@ -11,4 +11,4 @@ COPY --chown=user:user pyproject.toml .
 COPY --chown=user:user README.md .
 
 # Enjoy
-ENTRYPOINT ["python3", "main.py"]
+ENTRYPOINT ["python3", "-u", "main.py"]
