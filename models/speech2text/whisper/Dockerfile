@@ -1,8 +1,10 @@
-FROM cgr.dev/chainguard/python:latest
+FROM cgr.dev/chainguard/python:latest-dev as builder
+
 # Install project
-# RUN curl -sSf https://rye-up.com/get | bash
 COPY --chown=user:user requirements.txt .
-RUN pip install -r requirements.txt
+RUN pip install -r requirements.txt --user
+
+FROM cgr.dev/chainguard/python:latest
 
 COPY --chown=user:user main.py .
 # COPY --chown=user:user get_model.py .
