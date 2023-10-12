@@ -10,10 +10,13 @@
 
 ```shell
 rye sync
-rye run uvicorn main:app --reload
+rye run python main.py
+```
 
-# to enter a Python shell:
-rye shell
+## Docker Build
+
+```shell
+docker build --build-arg IMAGE_TAG=${IMAGE_TAG} -t leapfrogai-whisper .
 ```
 
 ## Usage
