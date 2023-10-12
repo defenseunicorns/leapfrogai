@@ -22,6 +22,7 @@ dependencies = [
     "asyncio~=3.4.3",
     "aiofiles~=23.1.0",
     "fastapi_utils~=0.2.1",
+    "leapfrogai~=0.3.3",
 ]
 readme = "README.md"
 requires-python = ">= 3.8"
