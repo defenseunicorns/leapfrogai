@@ -1,17 +1,8 @@
-FROM cgr.dev/chainguard/python:latest-dev as builder
-
-WORKDIR /whisper
+FROM python:3.11.6-bookworm
 
 # Install project
 COPY --chown=user:user requirements.txt .
-COPY . .
-RUN pip install -r requirements.txt --user
-
-FROM cgr.dev/chainguard/python:latest
-
-WORKDIR /whisper
-
-COPY --from=builder /home/nonroot/.local/lib/python3.11/site-packages /home/nonroot/.local/lib/python3.11/site-packages
+RUN pip3 install -r requirements.txt
 
 COPY --chown=user:user main.py .
 COPY --chown=user:user .python-version .
