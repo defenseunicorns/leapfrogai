@@ -1,2 +1,3 @@
-openai-whisper==20230314
-ffmpeg-python==0.2.0
+openai-whisper
+ffmpeg-python
+leapfrogai
