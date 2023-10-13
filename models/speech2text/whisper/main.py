@@ -1,6 +1,7 @@
 import logging
 import tempfile
 from typing import Iterator
+import asyncio
 
 import whisper
 
@@ -64,7 +65,9 @@ class Whisper(leapfrogai.AudioServicer):
     def Name(self, request, context):
         return leapfrogai.NameResponse(name="whisper")
 
+async def main():
+    logging.basicConfig(level=logging.INFO)
+    await leapfrogai.serve(Whisper())
 
 if __name__ == "__main__":
-    logging.basicConfig(level=logging.INFO)
-    leapfrogai.serve(Whisper())
+    asyncio.run(main())

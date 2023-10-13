@@ -10,15 +10,15 @@
 
 ```shell
 rye sync
-rye run uvicorn main:app --reload
-
-# to enter a Python shell:
-rye shell
+rye run python main.py
 ```
 
-## Usage
+## Docker Build
 
-Open `http://localhost:8000/docs` for a Swagger interface.
+```shell
+docker build -t leapfrogai-whisper .
+docker run --gpus all --ipc=host --ulimit memlock=-1 --ulimit stack=67108864 -p 0.0.0.0:8000:8000 -p 0.0.0.0:50051:50051 -d <image-id>
+```
 
 ## TODO
 
