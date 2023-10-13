@@ -1,5 +1,5 @@
 # Using this instead of chainguard due to whisper having a dependency on an incompatible Python version
-FROM python:3.11.6-bookworm
+FROM python:3.12.0-bookworm
 
 RUN apt-get -y update
 RUN apt-get install -y ffmpeg
