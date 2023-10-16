@@ -7,10 +7,8 @@ import whisper
 
 import leapfrogai
 
-model = whisper.load_model("large")
-
-
 def make_transcribe_request(filename, task, language, temperature, prompt):
+    model = whisper.load_model("large")
     return model.transcribe(
         filename, task=task, language=language, temperature=temperature, prompt=prompt
     )
