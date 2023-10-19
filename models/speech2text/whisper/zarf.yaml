@@ -7,14 +7,14 @@ metadata:
 
 constants:
   - name: VERSION
-    default: ###ZARF_PKG_TMPL_VERSION###
+    value: "###ZARF_PKG_TMPL_VERSION###"
   - name: NAME
-    default: ###ZARF_PKG_TMPL_NAME###
+    value: "###ZARF_PKG_TMPL_NAME###"
 
 components:
   - name: import-model
     required: true
     import:
       name: model
-      url: oci://ghcr.io/defenseunicorns/packages/leapfrogai-model:0.3.2-skeleton
+      url: oci://ghcr.io/defenseunicorns/packages/lfai-model:0.3.2-skeleton
 
