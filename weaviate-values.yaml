@@ -46,4 +46,4 @@ modules:
 storage:
   size: 32Gi # default
 
-domain: "###ZARF_VAR_DOMAIN###"
+domain: ###ZARF_VAR_DOMAIN###
