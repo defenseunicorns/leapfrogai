@@ -1,3 +1,4 @@
+# temporary deployment and development artifacts
 data/*
 *.tar.zst
 __pycache__
@@ -7,8 +8,12 @@ __pycache__
 venv
 .DS_Store
 dist/
+tmp/
+temp/
+zarf-sbom/
+/values.yaml
 
-# local model + tokenizer files
+# local model and tokenizer files
 *.bin
 pytorch_model.bin.index.json
 special_tokens_map.json
