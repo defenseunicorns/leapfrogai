@@ -1,4 +1,4 @@
-ARG IMAGE_TAG
+ARG IMAGE_TAG=0.3.2
 FROM ghcr.io/defenseunicorns/leapfrogai/base:${IMAGE_TAG}
 
 
