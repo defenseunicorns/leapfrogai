@@ -4,6 +4,11 @@ Chat + Completions RPC demo
 
 ## Running the docker container
 
+* **Prerequisites**
+  * `python >= 3.9`
+  * `docker`
+    * For GPU support please consult: https://docs.docker.com/config/containers/resource_constraints/#gpu
+
 * **Build** - Choose one method to build the image
   1) Simple Build *(recommended)* - Use the default LeapfrogAI base version defined in the docker image
      * `docker build . --tag leapfrogai/mpt-7b-chat:latest`
@@ -14,4 +19,8 @@ Chat + Completions RPC demo
      * `docker build . --tag leapfrogai/mpt-7b-chat:latest --build-arg="$IMAGE_TAG"`
 
 * **Run**
-  * `docker run --rm --gpus all -p 50051:50051 -d --name mpt-7b-chat leapfrogai/mpt-7b-chat:latest`
+  * GPU
+    * `docker run --ipc host --network host --rm --gpus all -d --name mpt-7b-chat leapfrogai/mpt-7b-chat:latest`
+      * `--gpus device=<device-num>` to target a specific GPU device ex: `--gpus device=0`
+  * CPU
+    * `docker run --ipc host --network host --rm -d --name mpt-7b-chat leapfrogai/mpt-7b-chat:latest`
