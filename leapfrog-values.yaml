@@ -12,7 +12,7 @@ image:
   
   tag: 0.3.2
 
-domain: "###ZARF_VAR_DOMAIN###"
+domain: ###ZARF_VAR_DOMAIN###
 
 istio:
   enabled: true

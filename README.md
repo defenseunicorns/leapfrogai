@@ -61,11 +61,7 @@ LeapfrogAI's API server and [weaviate](https://github.com/weaviate/weaviate)'s v
 
 #### K3d w/ GPU support
 
-If developing on a node that has a GPU, there's a Zarf package that deploys a k3d cluster with GPU support [here](https://github.com/runyontr/zarf-package-k3d).  To deploy the zarf package simply:
-
-```shell
-zarf package deploy oci://ghcr.io/runyontr/zarf-package-k3d/k3d-local:v1.26.0-amd64
-```
+If developing on a node that has a GPU, there's a Zarf package that deploys a k3d cluster with GPU support clone and follow the instructions in the repository [here](https://github.com/defenseunicorns/zarf-package-k3d-airgap).
 
 on a node with at least 1 GPU
 
@@ -75,7 +71,7 @@ The supported install method uses [zarf](https://zarf.dev) to initialize the clu
 
 ```shell
 zarf init -a amd64
-zarf package deploy oci://ghcr.io/defenseunicorns/packages/dubbd-k3d:0.4.2-amd64
+zarf package deploy oci://ghcr.io/defenseunicorns/packages/dubbd-k3d:0.11.0-amd64 --set APPROVED_REGISTRIES="ghcr.io/runyontr/* | ghcr.io/defenseunicorns/* | nvcr.io/nvidia/k8s/* | semitechnologies/*"
 ```
 
 
@@ -90,7 +86,7 @@ zarf package deploy zarf-package-leapfrogai-*.zst --confirm
 
 ### Configure DNS
 
-Ensure that the DNS record for `*.bigbang.dev` points to the load balancer for Istio.  By default this DNS record points at localhost, so for the k3d deployment, this should work out of the box with the load balancers configured.  For a remote EKS deployment, you may need to
+Ensure that the DNS record for `*.bigbang.dev` points to the load balancer for Istio.  By default this DNS record points at localhost, so for the k3d deployment, this should work out of the box with the load balancers configured.
 
 
 The OpenAI API service is hosted and is watching for new models to get installed in the cluster.
