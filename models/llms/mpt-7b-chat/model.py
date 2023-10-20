@@ -4,6 +4,7 @@ from typing import Any, Generator, List
 from threading import Thread
 
 import torch
+import asyncio
 
 from google.protobuf.internal.containers import RepeatedCompositeFieldContainer
 
@@ -229,32 +230,4 @@ class MPTChat(
 
 if __name__ == "__main__":
     logging.basicConfig(level=logging.INFO)
-    serve(MPTChat())
-
-# prompt = chat_items_to_prompt(request.chat_items)
-# inputs = self.tokenizer(prompt, return_tensors="pt").to("cuda")
-# logging.debug(f"Request:  { request }")
-# # error checking for valid params
-# tokens = self.model.generate(
-#     **inputs,
-#     max_new_tokens=request.max_new_tokens,
-#     temperature=request.temperature,
-#     # repetition_penalty=request.frequence_penalty,
-#     top_p=request.top_p,
-#     do_sample=True,
-#     pad_token_id=self.tokenizer.eos_token_id,
-#     eos_token_id=self.tokenizer.eos_token_id,
-#     stopping_criteria=StoppingCriteriaList([StopOnTokens()]),
-# )
-# logging.debug(f"Response {tokens}")
-# # Extract out only the completion tokens
-# completion_tokens = tokens[0][inputs["input_ids"].size(1) :]
-# completion = self.tokenizer.decode(completion_tokens, skip_special_tokens=True)
-
-# # TODO: extend the completion to the multi-response (n>1) case
-# # response = self.tokenizer.decode(tokens[0], skip_special_tokens=False)
-# logging.debug(f"Decoded Response: {completion}")
-# role = ChatRole.ASSISTANT
-# item = ChatItem(role=role, content=completion)
-# choice = CompletionChoice(index=0, chat_item=item)
-# return ChatCompletionResponse(choices=[choice])
+    asyncio.run(serve(MPTChat()))
