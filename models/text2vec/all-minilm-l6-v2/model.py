@@ -1,7 +1,9 @@
 import logging
+import asyncio
 
 from get_model import MODEL_ID
 from sentence_transformers import SentenceTransformer
+
 
 from leapfrogai import (
     Embedding,
