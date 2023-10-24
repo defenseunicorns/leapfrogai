@@ -1,5 +1,5 @@
 leapfrogai==0.3.3
-grpcio==1.54.2
+grpcio
 setuptools
 google
 protobuf
