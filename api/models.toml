@@ -27,7 +27,7 @@ description = "OpenAI's Whisper Large v2"
 tasks = ["translate", "transcribe"]
 
 [whisper-1.network]
-url = 'localhost:50051'
+url = 'localhost:50052'
 type = 'gRPC'
 
 [mpt-7b-chat]
