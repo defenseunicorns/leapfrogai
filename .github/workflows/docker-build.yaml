@@ -13,10 +13,18 @@ jobs:
     - name: Check out code
       uses: actions/checkout@v2
 
+    - name: Setup Python
+      uses: actions/setup-python@v4
+      with:
+        python-version: '3.11.4'
+        cache: 'pip'
+
     - name: Run Makefile command
       # just building, not pushing them
       run: make base repeater
+
     - name: install deps
       run: pip install -r models/test/repeater/requirements.txt
+
     - name: Simple Test
       run: make test-init test teardown

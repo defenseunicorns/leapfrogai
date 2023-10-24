@@ -1,3 +1,4 @@
+import asyncio
 import logging
 from threading import Thread
 from typing import List
@@ -99,4 +100,4 @@ class StableLM(CompletionServiceServicer, CompletionStreamServiceServicer):
 
 if __name__ == "__main__":
     logging.basicConfig(level=logging.DEBUG)
-    serve(StableLM())
+    asyncio.run(serve(StableLM()))

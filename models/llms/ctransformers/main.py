@@ -1,15 +1,13 @@
+import asyncio
 import logging
-import time
 from typing import Any, Generator
 
 from ctransformers import AutoModelForCausalLM
 
 from leapfrogai import (
     CompletionChoice,
-    CompletionFinishReason,
     CompletionRequest,
     CompletionResponse,
-    CompletionUsage,
     GrpcContext,
     serve,
 )
@@ -56,4 +54,4 @@ class CTransformers:
 
 if __name__ == "__main__":
     logging.basicConfig(level=logging.INFO)
-    serve(CTransformers())
+    asyncio.run(serve(CTransformers()))
