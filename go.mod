@@ -10,7 +10,7 @@ require (
 	github.com/google/uuid v1.3.0
 	github.com/penglongli/gin-metrics v0.1.10
 	github.com/sashabaranov/go-openai v1.11.2
-	google.golang.org/grpc v1.56.1
+	google.golang.org/grpc v1.56.3
 	google.golang.org/protobuf v1.30.0
 )
 
