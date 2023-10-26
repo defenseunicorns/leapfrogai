@@ -16,5 +16,5 @@ components:
     required: true
     import:
       name: model
-      url: oci://ghcr.io/defenseunicorns/leapfrogai/leapfrogai-model:0.3.3-skeleton
+      url: oci://ghcr.io/defenseunicorns/packages/lfai-model:0.3.4-skeleton
 
