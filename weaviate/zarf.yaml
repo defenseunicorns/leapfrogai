@@ -49,7 +49,7 @@ components:
       - manifests/namespace.yaml
       - manifests/vs.yaml
     repos:
-    - "###ZARF_PKG_VAR_REPO###"
+    - "###ZARF_PKG_TMPL_REPO###"
     images:
     - "semitechnologies/weaviate:1.18.3"
     - "ghcr.io/defenseunicorns/leapfrogai/weaviate:0.0.4"
