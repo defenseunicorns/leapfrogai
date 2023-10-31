@@ -19,4 +19,4 @@ components:
     import:
       name: model
       url: oci://ghcr.io/defenseunicorns/packages/leapfrgai/leapfrogai-model:0.4.0-skeleton
-
+      
