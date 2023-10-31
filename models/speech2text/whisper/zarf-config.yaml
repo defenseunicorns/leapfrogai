@@ -2,7 +2,7 @@ package:
   create:
     set:
       image_repository: "ghcr.io/defenseunicorns/leapfrogai/whisper"
-      version: 0.0.6
+      image_version: 0.0.6
       name: whisper
     max_package_size: "1000000000"
   deploy:
@@ -13,6 +13,3 @@ package:
       requests_cpu: 1
       requests_memory: 4Gi
       requests_gpu: 0
-      name: whisper
-      image_repository: "ghcr.io/defenseunicorns/leapfrogai/whisper"
-      version: 0.0.6
