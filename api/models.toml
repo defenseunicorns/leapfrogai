@@ -18,15 +18,15 @@ description = "InstructorXL embedding"
 url = 'localhost:50051'
 type = 'gRPC'
 
-[whisper-1]
+[whisper]
 
-[whisper-1.metadata]
+[whisper.metadata]
 owned_by = 'Defense Unicorns'
 permission = []
 description = "OpenAI's Whisper Large v2"
 tasks = ["translate", "transcribe"]
 
-[whisper-1.network]
+[whisper.network]
 url = 'localhost:50052'
 type = 'gRPC'
 
