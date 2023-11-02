@@ -31,7 +31,7 @@ ChromaDB
 
 ### Rationale
 
-We decided on ChromaDB due to it's simple implementation and performance. At this maturity level, we expect individual capabilities on top of LeapfrogAI to maintain their own Vector DB with ChromaDB and will expand support as common themes surface.
+We decided on ChromaDB due to it's simple implementation, performance, and Apache 2.0 license. At this maturity level, we expect individual capabilities on top of LeapfrogAI to maintain their own Vector DB with ChromaDB and will expand support as common themes surface.
 
 ### Status
 
