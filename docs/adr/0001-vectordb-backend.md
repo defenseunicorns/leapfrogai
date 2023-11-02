@@ -1,43 +1,50 @@
-# 1. VectorDB
+# VectorDB
 
-Contents:
+## Table of Contents
 
-- [Summary](#summary)
-  - [Issue](#issue)
-  - [Decision](#decision)
-  - [Rationale](#rationale)
-  - [Status](#status)
-- [Context](#context)
-  - [Important Factors](#important-factors)
-  - [Options](#options)
-  - [Supporting Information](#supporting-information)
-  - [Assumptions](#assumptions)
-  - [Constraints](#constraints)
-  - [Implications](#implications)
+- [VectorDB](#vectordb)
+  - [Table of Contents](#table-of-contents)
+  - [Summary](#summary)
+    - [Issue](#issue)
+    - [Decision](#decision)
+    - [Rationale](#rationale)
+    - [Status](#status)
+  - [Context](#context)
+    - [Important Factors](#important-factors)
+    - [Options](#options)
+    - [Supporting information](#supporting-information)
+      - [Benchmarks](#benchmarks)
+    - [Indexing](#indexing)
+    - [Assumptions](#assumptions)
+    - [Constraints](#constraints)
+    - [Implications](#implications)
 
 ## Summary
 
 ### Issue
 
-We need to support a vector db for retrieval-augmented generation (RAG), there are many options but we need to choose between them. 
+We need to support a Vector DB for retrieval-augmented generation (RAG), there are many options but we need to choose between them.
 
-### Decision 
+### Decision
 
-TBD
+ChromaDB
 
-### Rationale 
-TBD
+### Rationale
+
+We decided on ChromaDB due to it's simple implementation and performance.
 
 ### Status
+
 Provisional
 
 ## Context
 
 ### Important Factors
+
 - OpenSource
 - Performance
-    - Queries per second
-    - Latency
+  - Queries per second
+  - Latency
 - RBAC
 - Self-hosted
 - Portability
@@ -49,7 +56,9 @@ Provisional
 
 - [Pinecone](https://www.pinecone.io/)
 - [Weaviate](https://weaviate.io/)
-- [Milvus](https://milvus.io/) - [GitHub](https://github.com/milvus-io/milvus) - [Architecture](https://milvus.io/docs/architecture_overview.md)
+- [Milvus](https://milvus.io/)
+- [GitHub](https://github.com/milvus-io/milvus)
+- [Architecture](https://milvus.io/docs/architecture_overview.md)
 - [Qdrant](https://qdrant.tech/)
 - [Chroma](https://www.trychroma.com/)
 - [Elasticsearch](https://www.elastic.co/elasticsearch/)
@@ -64,13 +73,13 @@ Provisional
 - https://github.com/milvus-io/milvus/discussions/4939
 
 ### Indexing
+
 - https://weaviate.io/blog/ann-algorithms-vamana-vs-hnsw
 - https://thedataquarry.com/posts/vector-db-3/
 
-
 ### Assumptions
 
-- Choosing a single vector db is desirable
+- We will start with a single preferred VectorDB, but LeapfrogAI should be extensible to accommodate other options.
 - Not bundling the vector db with the app layer is desirable
 
 ### Constraints
