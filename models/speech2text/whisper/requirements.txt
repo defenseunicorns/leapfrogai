@@ -1,4 +1,0 @@
-leapfrogai==0.3.3
-openai-whisper
-ffmpeg-python
-leapfrogai
