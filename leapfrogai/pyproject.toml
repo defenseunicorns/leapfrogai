@@ -3,13 +3,9 @@ name = "leapfrogai"
 version = "0.4.0-pre"
 
 description = "A tool for building gRPC-based model backends for LeapfrogAI"
-authors = [
-    { name = "LeapfrogAI Authors", email = "ai@defenseunicorns.com" },
-    { name = "Gerred Dillon", email = "gerred@defenseunicorns.com" },
-    { name = "Tom Runyon", email = "tom@defenseunicorns.com" },
-]
+authors = [{ name = "LeapfrogAI Authors", email = "ai@defenseunicorns.com" }]
 license = { file = "LICENSE" }
-readme = "leapfrogai/README.md"
+readme = "README.md"
 classifiers = [
     "Programming Language :: Python :: 3",
     "License :: OSI Approved :: Apache Software License",
@@ -39,7 +35,7 @@ build-backend = "hatchling.build"
 include = ["src/*"]
 
 [tool.hatch.build.targets.wheel]
-packages = ["src/openai"]
+packages = ["src/leapfrogai"]
 
 [tool.pytest.ini_options]
 addopts = ["--import-mode=importlib"]
