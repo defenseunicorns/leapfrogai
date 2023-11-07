@@ -37,42 +37,70 @@ Large Language Models (LLMs) are a powerful resource for AI-driven decision maki
 
 * Embeddings Creation: Embeddings are fundamental to the working of many AI algorithms. LeapfrogAI provides services to generate embeddings which can be used for a variety of tasks such as semantic similarity, clustering, and more.
 
+## Architecture
+
+Leapfrog exposes both Weaviate and LLM and embedding generative capabilities over HTTP.  However, internal communications are a combination of gRPC and HTTP connections as described below:
+
+```mermaid
+graph LR;
+    A[User] --HTTP--> L[LeapfrogAI]
+    L ---->|HTTP| B(API)
+    B ----> |gRPC| C(StableLM)
+    B ----> |gRPC| D(WhisperAI)
+    B ----> |gRPC| E(all-MiniLM-L6-v2)
+
+    L ---->|HTTP| W[Weaviate]
+    W --/embeddings-->B
+```
+
 ## Getting Started <a name="getting-started"></a>
 
 ### Setting up the Kubernetes Cluster
 
-#### K3d
+LeapfrogAI's API server and [weaviate](https://github.com/weaviate/weaviate)'s vector database don't require GPUs, however some models will not function without GPUs.  If using a CPU based platform, see the [ctransformers](./models/llms/ctransformers/) folder for working with GGML architectures.
 
-There's a Zarf package that deploys a k3d cluster with GPU support [here](https://github.com/runyontr/zarf-package-k3d).  To deploy the zarf package simply:
+#### K3d w/ GPU support
 
-```shell
-zarf package deploy oci://ghcr.io/runyontr/zarf-package-k3d/k3d-local:v1.26.0-amd64
-```
+If developing on a node that has a GPU, there's a Zarf package that deploys a k3d cluster with GPU support clone and follow the instructions in the repository [here](https://github.com/defenseunicorns/zarf-package-k3d-airgap).
 
 on a node with at least 1 GPU
 
-#### EKSCTL
+#### Initialize Cluster
+
+The supported install method uses [zarf](https://zarf.dev) to initialize the cluster and then deploy [Big Bang](https://github.com/defenseunicorns/uds-package-dubbd) on top:
 
 ```shell
-eckctl create cluster -f config.yaml
 zarf init -a amd64
-zarf package deploy oci://ghcr.io/defenseunicorns/packages/big-bang-distro-k3d/big-bang-distro-k3d:0.0.1-amd64
+zarf package deploy oci://ghcr.io/defenseunicorns/packages/dubbd-k3d:0.11.0-amd64 --set APPROVED_REGISTRIES="ghcr.io/runyontr/* | ghcr.io/defenseunicorns/* | nvcr.io/nvidia/k8s/* | semitechnologies/*"
 ```
 
 
 ### Deploy
 
+To build and deploy Leapfrg
+
 ```shell
-zarf package create
-zarf package deploy zarf-package-leapfrogai-amd64-0.1.1.tar.zst
+zarf package create .
+zarf package deploy zarf-package-leapfrogai-*.zst --confirm
 ```
 
 ### Configure DNS
 
-Ensure that the DNS record for `*.bigbang.dev` points to the load balancer for Istio.  By default this DNS record points at localhost, so for the k3d deployment, this should work out of the box with the load balancers configured.  For a remote EKS deployment, you may need to 
+Ensure that the DNS record for `*.bigbang.dev` points to the load balancer for Istio.  By default this DNS record points at localhost, so for the k3d deployment, this should work out of the box with the load balancers configured.
 
 
-The OpenAI API service is hosted and then uses GRPC to talk to the embedding server and the alpaca-lora-7B instance
+The OpenAI API service is hosted and is watching for new models to get installed in the cluster.
+
+### Install a model
+
+```shell
+$ cd models/test/repeater
+$ zarf package create .
+$ zarf package deploy zarf-package-*.zst --confirm
+$ kubectl get pods -n leapfrogai
+NAME                              READY   STATUS    RESTARTS   AGE
+api-deployment-65cd6fbf95-l5dzw   2/2     Running   0          5m23s
+```
 
 
 ## Usage <a name="usage"></a>
@@ -92,11 +120,31 @@ In addition, tools like [Weaviate](https://weaviate.io/) are deployed to allow f
 See the [Getting Started Notebook](notebooks/gettingstarted.ipynb) for example of using the API with the OpenAI python module.
 
 
-# Contributing
-
-## Building `leapfrogai` and updating PyPi
+# Building `leapfrogai` and updating PyPi
 
 1. Change the version in `pyproject.toml`
 2. `python3 -m pip install --upgrade build hatchling twine`
 3. `python3 -m build`
 4. `python3 -m twine upload dist/*`
+
+
+# Community
+
+Real-time discussions about LeapfrogAI development happen in [Discord](https://discord.com/invite/leapfrog). Discussions should be civil and focused on the open source development of LeapfrogAI. Distribution of proprietary or non-distributable code or model weights are prohibited and will be removed.
+
+LeapfrogAI is supported by a community of users and contributors, including:
+
+* [Defense Unicorns](https://defenseunicorns.com)
+* [Beast Code](https://beast-code.com)
+* [Chainguard](https://www.chainguard.dev/)
+* [Exovera](https://exovera.com/)
+* [Hypergiant](https://www.hypergiant.com/)
+* [Pulze](https://www.pulze.ai)
+* [SOSi](https://www.sosi.com/)
+* [United States Navy](https://www.navy.mil/)
+* [United States Air Force](https://www.airforce.com)
+* [United States Space Force](https://www.spaceforce.mil)
+
+[![Defense Unicorns logo](docs/imgs/user-logos/defense-unicorns.png)](https://defenseunicorns.com)[![Beast Code logo](docs/imgs/user-logos/beast-code.png)](https://beast-code.com)[![Hypergiant logo](docs/imgs/user-logos/hypergiant.png)](https://hypergiant.com)[![Pulze logo](docs/imgs/user-logos/pulze.png)](https://pulze.ai)
+
+*Want to add your organization or logo to this list? [Open a PR!](https://github.com/defenseunicorns/leapfrogai/edit/main/README.md)*
