@@ -1,10 +1,10 @@
-name: Makefile Workflow
+name: Run Tests
 
 on:
   pull_request:
     branches:
-      - main
-
+      - "*"
+      
 jobs:
   build:
     runs-on: ubuntu-latest
@@ -19,12 +19,8 @@ jobs:
         python-version: '3.11.4'
         cache: 'pip'
 
-    - name: Run Makefile command
-      # just building, not pushing them
-      run: make base repeater
-
     - name: install deps
-      run: pip install -r models/test/repeater/requirements.txt
+      run: pip install -r requirements.txt pytest
 
     - name: Simple Test
-      run: make test-init test teardown
+      run: pytest
