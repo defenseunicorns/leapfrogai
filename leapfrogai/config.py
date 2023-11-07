@@ -1,4 +1,9 @@
+import os
+
 from confz import BaseConfig, FileSource
+from google.protobuf.internal.containers import RepeatedCompositeFieldContainer
+
+from chat.chat_pb2 import ChatItem, ChatRole
 
 
 class LLMDefaults(BaseConfig):
@@ -25,7 +30,24 @@ class BackendConfig(BaseConfig):
     prompt_format: PromptFormat
     defaults: LLMDefaults
 
-    CONFIG_SOURCES = FileSource(file="config.yaml")
+    CONFIG_SOURCES = FileSource(file=os.getenv("LEAPFROGAI_CONFIG_FILE", "config.yaml"))
 
-    def apply_chat_template(prompt):
-        pass
+    def apply_chat_template(
+        self, chat_items: RepeatedCompositeFieldContainer[ChatItem]
+    ) -> str:
+        response_prefix = self.prompt_format.chat.assistant.split("{}")[0]
+        prompt = ""
+        for item in chat_items:
+            if item.role == ChatRole.SYSTEM:
+                prompt += self.prompt_format.chat.system.format(item.content)
+            elif item.role == ChatRole.ASSISTANT:
+                prompt += self.prompt_format.chat.assistant.format(item.content)
+            elif item.role == ChatRole.USER:
+                prompt += self.prompt_format.chat.user.format(item.content)
+            elif item.role == ChatRole.FUNCTION:
+                logging.warning(
+                    "ChatRole FUNCTION is not implemented for this model and this ChatItem will be ignored."
+                )
+        # add the response prefix to start the model's reponse
+        prompt += response_prefix
+        return prompt
