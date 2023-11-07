@@ -12,6 +12,7 @@ tmp/
 temp/
 zarf-sbom/
 /values.yaml
+.pytest_cache
 
 # local model and tokenizer files
 *.bin
