@@ -11,6 +11,8 @@ class LLMDefaults(BaseConfig):
     temperature: float = 0.5
     top_k: int = 80
     top_p: float = 0.9
+    repetition_penalty: float = 1.0
+    max_new_tokens: int = 256
 
 
 class ChatFormat(BaseConfig):
@@ -23,11 +25,18 @@ class PromptFormat(BaseConfig):
     chat: ChatFormat | None = None
 
 
+class ModelConfig(BaseConfig):
+    type: str | None = None
+    source: str | None = "./model"
+    file: str | None = None
+    allow_remote_caching: bool = False
+    trust_remote_code: bool = False
+
+
 class BackendConfig(BaseConfig):
     name: str
-    model_type: str | None = None
-    trust_remote_code: bool = False
-    model_context_length: int = 2048
+    model: ModelConfig | None = None
+    max_seq_len: int = 2048
     prompt_format: PromptFormat
     defaults: LLMDefaults
 
