@@ -1,16 +1,13 @@
 from concurrent import futures
+
 import grpc
-
-from grpc_health.v1 import health
-from grpc_health.v1 import health_pb2
-from grpc_health.v1 import health_pb2_grpc
-
+from grpc_health.v1 import health, health_pb2, health_pb2_grpc
 from grpc_reflection.v1alpha import reflection
 
 from .audio import audio_pb2_grpc
 from .chat import chat_pb2_grpc
-from .embeddings import embeddings_pb2_grpc
 from .completion import completion_pb2_grpc
+from .embeddings import embeddings_pb2_grpc
 from .name import name_pb2_grpc
 
 
