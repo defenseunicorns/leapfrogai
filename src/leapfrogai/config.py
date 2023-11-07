@@ -34,13 +34,15 @@ class ModelConfig(BaseConfig):
 
 
 class BackendConfig(BaseConfig):
-    name: str
+    name: str | None = None
     model: ModelConfig | None = None
     max_seq_len: int = 2048
     prompt_format: PromptFormat | None = None
     defaults: LLMDefaults = LLMDefaults()
 
-    CONFIG_SOURCES = FileSource(file=os.getenv("LEAPFROGAI_CONFIG_FILE", "config.yaml"))
+    CONFIG_SOURCES = FileSource(
+        file=os.getenv("LEAPFROGAI_CONFIG_FILE", "config.yaml"), optional=True
+    )
 
     def apply_chat_template(
         self, chat_items: RepeatedCompositeFieldContainer[ChatItem]
