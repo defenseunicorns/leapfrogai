@@ -36,8 +36,10 @@ requires = ["hatchling"]
 build-backend = "hatchling.build"
 
 [tool.hatch.build]
-include = ["src/leapfrogai/"]
-exclude = ["src/leapfrogai/pyvenv.cfg", "src/leapfrogai/requirements.txt"]
+include = ["src/*"]
+
+[tool.hatch.build.targets.wheel]
+packages = ["src/openai"]
 
 [tool.pytest.ini_options]
 addopts = ["--import-mode=importlib"]
