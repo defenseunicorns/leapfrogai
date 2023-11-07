@@ -2,7 +2,7 @@ import os
 
 os.environ["LEAPFROGAI_CONFIG_FILE"] = "tests/fixtures/config.yaml"
 
-from leapfrogai.chat.chat_pb2 import ChatItem, ChatRole
+from leapfrogai import ChatItem, ChatRole
 from leapfrogai.config import BackendConfig
 
 
