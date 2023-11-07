@@ -4,6 +4,8 @@
 #
 #    pip-compile --output-file=leapfrogai/requirements.txt pyproject.toml
 #
+confz==2.0.1
+    # via leapfrogai (pyproject.toml)
 grpcio==1.58.0
     # via
     #   grpcio-health-checking
@@ -18,3 +20,15 @@ protobuf==4.23.3
     #   grpcio-health-checking
     #   grpcio-reflection
     #   leapfrogai (pyproject.toml)
+pydantic==1.10.13
+    # via
+    #   confz
+    #   leapfrogai (pyproject.toml)
+python-dotenv==1.0.0
+    # via confz
+pyyaml==6.0.1
+    # via confz
+toml==0.10.2
+    # via confz
+typing-extensions==4.8.0
+    # via pydantic
