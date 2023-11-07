@@ -4,7 +4,7 @@ import os
 from confz import BaseConfig, FileSource
 from google.protobuf.internal.containers import RepeatedCompositeFieldContainer
 
-from .chat.chat_pb2 import ChatItem, ChatRole
+from leapfrogai import ChatItem, ChatRole
 
 
 class LLMDefaults(BaseConfig):
@@ -37,8 +37,8 @@ class BackendConfig(BaseConfig):
     name: str
     model: ModelConfig | None = None
     max_seq_len: int = 2048
-    prompt_format: PromptFormat
-    defaults: LLMDefaults
+    prompt_format: PromptFormat | None = None
+    defaults: LLMDefaults = LLMDefaults()
 
     CONFIG_SOURCES = FileSource(file=os.getenv("LEAPFROGAI_CONFIG_FILE", "config.yaml"))
 
