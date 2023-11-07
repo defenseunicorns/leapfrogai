@@ -4,11 +4,11 @@ import grpc
 from grpc_health.v1 import health, health_pb2, health_pb2_grpc
 from grpc_reflection.v1alpha import reflection
 
-from .audio import audio_pb2_grpc
-from .chat import chat_pb2_grpc
-from .completion import completion_pb2_grpc
-from .embeddings import embeddings_pb2_grpc
-from .name import name_pb2_grpc
+from leapfrogai.audio import audio_pb2_grpc
+from leapfrogai.chat import chat_pb2_grpc
+from leapfrogai.completion import completion_pb2_grpc
+from leapfrogai.embeddings import embeddings_pb2_grpc
+from leapfrogai.name import name_pb2_grpc
 
 
 async def serve(o):
