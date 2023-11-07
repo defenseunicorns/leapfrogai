@@ -1,0 +1,11 @@
+name: "mpt-7b-8k-chat"
+model_type: "mpt"
+trust_remote_code: true # defaults to false
+model_context_length: 8192
+prompt_format:
+  chat:
+    system: "<|im_start|>system\n{}<|im_end|>\n"
+    assistant: "<|im_start|>assistant\n{}<|im_end|>\n"
+    user: "<|im_start|>user\n{}<|im_end|>\n"
+defaults:
+  temperature: 0.5
