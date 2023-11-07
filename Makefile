@@ -5,11 +5,7 @@ requirements:
 gen: gen-python
 
 gen-python:
-	python3 -m grpc_tools.protoc --proto_path=proto chat/chat.proto --python_out=leapfrogai  --pyi_out=leapfrogai --grpc_python_out=leapfrogai
-	python3 -m grpc_tools.protoc --proto_path=proto completion/completion.proto --python_out=leapfrogai  --pyi_out=leapfrogai --grpc_python_out=leapfrogai
-	python3 -m grpc_tools.protoc --proto_path=proto audio/audio.proto --python_out=leapfrogai  --pyi_out=leapfrogai --grpc_python_out=leapfrogai
-	python3 -m grpc_tools.protoc --proto_path=proto embeddings/embeddings.proto --python_out=leapfrogai  --pyi_out=leapfrogai --grpc_python_out=leapfrogai
-	python3 -m grpc_tools.protoc --proto_path=proto name/name.proto --python_out=leapfrogai  --pyi_out=leapfrogai --grpc_python_out=leapfrogai
+	python3 -m grpc_tools.protoc -I proto --pyi_out=src/. --python_out=src/. --grpc_python_out=src/. proto/leapfrogai/**/*.proto
 
 test:
 	pytest

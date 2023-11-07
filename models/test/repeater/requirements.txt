@@ -1,7 +1,0 @@
-leapfrogai==0.3.3
-grpcio
-setuptools
-google
-protobuf
-grpcio-health-checking
-grpcio-reflection

@@ -2,7 +2,7 @@
 """Client and server classes corresponding to protobuf-defined services."""
 import grpc
 
-from . import embeddings_pb2 as embeddings_dot_embeddings__pb2
+from leapfrogai.embeddings import embeddings_pb2 as leapfrogai_dot_embeddings_dot_embeddings__pb2
 
 
 class EmbeddingsServiceStub(object):
@@ -15,10 +15,10 @@ class EmbeddingsServiceStub(object):
             channel: A grpc.Channel.
         """
         self.CreateEmbedding = channel.unary_unary(
-            "/embeddings.EmbeddingsService/CreateEmbedding",
-            request_serializer=embeddings_dot_embeddings__pb2.EmbeddingRequest.SerializeToString,
-            response_deserializer=embeddings_dot_embeddings__pb2.EmbeddingResponse.FromString,
-        )
+                '/embeddings.EmbeddingsService/CreateEmbedding',
+                request_serializer=leapfrogai_dot_embeddings_dot_embeddings__pb2.EmbeddingRequest.SerializeToString,
+                response_deserializer=leapfrogai_dot_embeddings_dot_embeddings__pb2.EmbeddingResponse.FromString,
+                )
 
 
 class EmbeddingsServiceServicer(object):
@@ -27,53 +27,40 @@ class EmbeddingsServiceServicer(object):
     def CreateEmbedding(self, request, context):
         """Missing associated documentation comment in .proto file."""
         context.set_code(grpc.StatusCode.UNIMPLEMENTED)
-        context.set_details("Method not implemented!")
-        raise NotImplementedError("Method not implemented!")
+        context.set_details('Method not implemented!')
+        raise NotImplementedError('Method not implemented!')
 
 
 def add_EmbeddingsServiceServicer_to_server(servicer, server):
     rpc_method_handlers = {
-        "CreateEmbedding": grpc.unary_unary_rpc_method_handler(
-            servicer.CreateEmbedding,
-            request_deserializer=embeddings_dot_embeddings__pb2.EmbeddingRequest.FromString,
-            response_serializer=embeddings_dot_embeddings__pb2.EmbeddingResponse.SerializeToString,
-        ),
+            'CreateEmbedding': grpc.unary_unary_rpc_method_handler(
+                    servicer.CreateEmbedding,
+                    request_deserializer=leapfrogai_dot_embeddings_dot_embeddings__pb2.EmbeddingRequest.FromString,
+                    response_serializer=leapfrogai_dot_embeddings_dot_embeddings__pb2.EmbeddingResponse.SerializeToString,
+            ),
     }
     generic_handler = grpc.method_handlers_generic_handler(
-        "embeddings.EmbeddingsService", rpc_method_handlers
-    )
+            'embeddings.EmbeddingsService', rpc_method_handlers)
     server.add_generic_rpc_handlers((generic_handler,))
 
 
-# This class is part of an EXPERIMENTAL API.
+ # This class is part of an EXPERIMENTAL API.
 class EmbeddingsService(object):
     """Missing associated documentation comment in .proto file."""
 
     @staticmethod
-    def CreateEmbedding(
-        request,
-        target,
-        options=(),
-        channel_credentials=None,
-        call_credentials=None,
-        insecure=False,
-        compression=None,
-        wait_for_ready=None,
-        timeout=None,
-        metadata=None,
-    ):
-        return grpc.experimental.unary_unary(
-            request,
+    def CreateEmbedding(request,
             target,
-            "/embeddings.EmbeddingsService/CreateEmbedding",
-            embeddings_dot_embeddings__pb2.EmbeddingRequest.SerializeToString,
-            embeddings_dot_embeddings__pb2.EmbeddingResponse.FromString,
-            options,
-            channel_credentials,
-            insecure,
-            call_credentials,
-            compression,
-            wait_for_ready,
-            timeout,
-            metadata,
-        )
+            options=(),
+            channel_credentials=None,
+            call_credentials=None,
+            insecure=False,
+            compression=None,
+            wait_for_ready=None,
+            timeout=None,
+            metadata=None):
+        return grpc.experimental.unary_unary(request, target, '/embeddings.EmbeddingsService/CreateEmbedding',
+            leapfrogai_dot_embeddings_dot_embeddings__pb2.EmbeddingRequest.SerializeToString,
+            leapfrogai_dot_embeddings_dot_embeddings__pb2.EmbeddingResponse.FromString,
+            options, channel_credentials,
+            insecure, call_credentials, compression, wait_for_ready, timeout, metadata)
