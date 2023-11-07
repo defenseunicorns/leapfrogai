@@ -1,9 +1,8 @@
 import os
 
+from chat.chat_pb2 import ChatItem, ChatRole
 from confz import BaseConfig, FileSource
 from google.protobuf.internal.containers import RepeatedCompositeFieldContainer
-
-from chat.chat_pb2 import ChatItem, ChatRole
 
 
 class LLMDefaults(BaseConfig):
