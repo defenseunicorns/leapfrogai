@@ -13,7 +13,7 @@ services:
       - doug-translate-volume:/doug-translate
 
   ctransformers:
-    image: ghcr.io/defenseunicorns/leapfrogai/ctransformers:0.0.1
+    image: ghcr.io/defenseunicorns/leapfrogai/ctransformers:0.3.0
     container_name: ctransformers
     ports:
       - "50051:50051"
