@@ -21,7 +21,7 @@ services:
       - ctransformers-volume:/ctransformers
 
   whisper:
-    image: ghcr.io/defenseunicorns/leapfrogai/whisper:0.0.6
+    image: ghcr.io/defenseunicorns/leapfrogai/whisper:0.3.0
     container_name: whisper
     ipc: host
     ulimits:
