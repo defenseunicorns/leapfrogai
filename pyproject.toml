@@ -1,15 +1,11 @@
 [project]
 name = "leapfrogai"
-version = "0.3.3"
+version = "0.4.0-pre"
 
 description = "A tool for building gRPC-based model backends for LeapfrogAI"
-authors = [
-    { name = "LeapfrogAI Authors", email = "ai@defenseunicorns.com" },
-    { name = "Gerred Dillon", email = "gerred@defenseunicorns.com" },
-    { name = "Tom Runyon", email = "tom@defenseunicorns.com" },
-]
+authors = [{ name = "LeapfrogAI Authors", email = "ai@defenseunicorns.com" }]
 license = { file = "LICENSE" }
-readme = "leapfrogai/README.md"
+readme = "README.md"
 classifiers = [
     "Programming Language :: Python :: 3",
     "License :: OSI Approved :: Apache Software License",
@@ -17,12 +13,14 @@ classifiers = [
     "Topic :: Scientific/Engineering :: Artificial Intelligence",
     "Development Status :: 3 - Alpha",
 ]
-requires-python = ">=3.9"
+requires-python = ">=3.10, <3.12"
 dependencies = [
     "grpcio >= 1.56.0",
     "protobuf >= 4.23.3",
     "grpcio-reflection >=1.58.0",
     "grpcio-health-checking >=1.58.0",
+    "confz >= 2.0.1",
+    "pydantic < 2",
 ]
 
 [project.optional-dependencies]
@@ -34,5 +32,10 @@ requires = ["hatchling"]
 build-backend = "hatchling.build"
 
 [tool.hatch.build]
-include = ["leapfrogai/"]
-exclude = ["leapfrogai/pyvenv.cfg", "leapfrogai/requirements.txt"]
+include = ["src/*"]
+
+[tool.hatch.build.targets.wheel]
+packages = ["src/leapfrogai"]
+
+[tool.pytest.ini_options]
+addopts = ["--import-mode=importlib"]

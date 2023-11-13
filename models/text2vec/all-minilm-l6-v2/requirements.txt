@@ -1,2 +1,0 @@
-leapfrogai==0.3.3
-sentence-transformers==2.2.2
