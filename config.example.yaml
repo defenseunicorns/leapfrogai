@@ -1,0 +1,13 @@
+name: "mpt-7b-8k-chat"
+model:
+  type: mpt
+  source: "./model"
+  trust_remote_code: true
+max_seq_len: 8192
+prompt_format:
+  chat:
+    system: "<|im_start|>system\n{}<|im_end|>\n"
+    assistant: "<|im_start|>assistant\n{}<|im_end|>\n"
+    user: "<|im_start|>user\n{}<|im_end|>\n"
+defaults:
+  temperature: 0.5

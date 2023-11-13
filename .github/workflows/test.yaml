@@ -1,0 +1,50 @@
+name: Run Tests
+
+on:
+  pull_request:
+    branches:
+      - "*"
+
+jobs:
+  "build-310":
+    name: Build and Test on Python 3.10
+    runs-on: ubuntu-latest
+    
+    steps:
+    - name: Check out code
+      uses: actions/checkout@v2
+
+    - name: Setup Python
+      uses: actions/setup-python@v4
+      with:
+        python-version: '>=3.10 <3.11'
+
+    - name: install deps
+      run: pip install -r requirements.txt pytest
+
+    - name: install module in editable mode
+      run: pip install -e .
+
+    - name: Tests
+      run: make test
+  build:
+    name: "Build on latest"
+    runs-on: ubuntu-latest
+    
+    steps:
+    - name: Check out code
+      uses: actions/checkout@v2
+
+    - name: Setup Python
+      uses: actions/setup-python@v4
+      with:
+        python-version-file: 'pyproject.toml'
+
+    - name: install deps
+      run: pip install -r requirements.txt pytest
+
+    - name: install module in editable mode
+      run: pip install -e .
+
+    - name: Tests
+      run: make test

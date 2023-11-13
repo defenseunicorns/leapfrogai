@@ -1,3 +1,0 @@
-leapfrogai==0.3.3
-transformers
-torch
