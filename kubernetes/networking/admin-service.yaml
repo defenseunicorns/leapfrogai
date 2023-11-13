@@ -1,0 +1,27 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: admin-ingressgateway
+  namespace: istio-system
+spec:
+  ports:
+  - name: status-port
+    nodePort: 30511
+    port: 15021
+    protocol: TCP
+    targetPort: 15021
+  - name: http2
+    nodePort: 32138
+    port: 80
+    protocol: TCP
+    targetPort: 8080
+  - name: https
+    nodePort: 30181
+    port: 443
+    protocol: TCP
+    targetPort: 8443
+  selector:
+    app: admin-ingressgateway
+    istio: ingressgateway
+  sessionAffinity: None
+  type: LoadBalancer
