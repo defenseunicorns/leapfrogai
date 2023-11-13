@@ -1,6 +1,6 @@
 TAG ?= 0.3.2
 requirements:
-	pip-compile -o leapfrogai/requirements.txt pyproject.toml
+	pip-compile -o requirements.txt pyproject.toml
 
 gen: gen-python
 
