@@ -13,7 +13,7 @@ classifiers = [
     "Topic :: Scientific/Engineering :: Artificial Intelligence",
     "Development Status :: 3 - Alpha",
 ]
-requires-python = ">=3.9"
+requires-python = ">=3.10"
 dependencies = [
     "grpcio >= 1.56.0",
     "protobuf >= 4.23.3",

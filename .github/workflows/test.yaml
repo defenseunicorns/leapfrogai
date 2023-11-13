@@ -6,7 +6,8 @@ on:
       - "*"
 
 jobs:
-  build-39x:
+  "build-310":
+    name: Build and Test on Python 3.10
     runs-on: ubuntu-latest
     
     steps:
@@ -16,7 +17,7 @@ jobs:
     - name: Setup Python
       uses: actions/setup-python@v4
       with:
-        python-version: '>=3.9 <3.10'
+        python-version: '>=3.10 <3.11'
         cache: 'pip'
 
     - name: install deps
