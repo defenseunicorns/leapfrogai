@@ -8,4 +8,4 @@ gen-python:
 	python3 -m grpc_tools.protoc -I proto --pyi_out=src/. --python_out=src/. --grpc_python_out=src/. proto/leapfrogai/**/*.proto
 
 test:
-	pytest
+	pytest -v
