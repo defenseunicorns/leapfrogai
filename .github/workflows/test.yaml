@@ -26,8 +26,8 @@ jobs:
     - name: install module in editable mode
       run: pip install -e .
 
-    - name: Simple Test
-      run: pytest
+    - name: Tests
+      run: make test
   build:
     runs-on: ubuntu-latest
     
@@ -47,5 +47,5 @@ jobs:
     - name: install module in editable mode
       run: pip install -e .
 
-    - name: Simple Test
-      run: pytest
+    - name: Tests
+      run: pytest -v
