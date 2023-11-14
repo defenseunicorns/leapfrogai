@@ -31,7 +31,7 @@ class GenerationConfig(BaseModel):
     stop: List[str]
     repetition_penalty: float
     presence_penalty: float
-    frequency_penalty: float
+    frequency_penalty: float | None = None
     best_of: str
     logit_bias: dict[str, int]
     return_full_text: bool
@@ -58,10 +58,9 @@ def LLM(_cls):
                 top_p=request.top_p,
                 do_sample=request.do_sample,
                 n=request.n,
-                stop=request.stop,
+                stop=list(request.stop),
                 repetition_penalty=request.repetition_penalty,
                 presence_penalty=request.presence_penalty,
-                frequency_penalty=request.frequency_penalty,
                 best_of=request.best_of,
                 logit_bias=request.logit_bias,
                 return_full_text=request.return_full_text,
@@ -107,9 +106,6 @@ def LLM(_cls):
             for text_chunk in gen_stream:
                 choice = CompletionChoice(index=0, text=text_chunk)
                 yield CompletionResponse(choices=[choice])
-        
-        def serve(self, host, port):
-            asyncio.run(serve(self, host, port))
             
     NewClass.__name__ = _cls.__name__
     return NewClass

@@ -1,8 +1,10 @@
 import click
 import sys
+import asyncio
 
 from leapfrogai.errors import AppImportError
 from leapfrogai.utils import import_app
+from leapfrogai.serve import serve
 
 @click.argument("app", envvar="LEAPFROGAI_APP")
 @click.option(
@@ -31,7 +33,7 @@ def cli(app: str, host: str, port: str, app_dir: str):
     sys.path.insert(0, app_dir)
     """Leapfrog AI CLI"""
     app = import_app(app)
-    app().serve(host, port)
+    asyncio.run(serve(app(), host, port))
 
     
 if __name__ == "__main__":
