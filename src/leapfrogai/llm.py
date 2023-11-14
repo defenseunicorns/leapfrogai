@@ -108,8 +108,8 @@ def LLM(_cls):
                 choice = CompletionChoice(index=0, text=text_chunk)
                 yield CompletionResponse(choices=[choice])
         
-        def serve(self):
-            asyncio.run(serve(self))
+        def serve(self, host, port):
+            asyncio.run(serve(self, host, port))
             
     NewClass.__name__ = _cls.__name__
     return NewClass

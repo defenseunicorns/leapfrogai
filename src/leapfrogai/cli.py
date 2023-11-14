@@ -19,12 +19,19 @@ from leapfrogai.utils import import_app
     help="Bind socket to this port. If 0, an available port will be picked.",
     show_default=True,
 )
+@click.option(
+    "--app-dir",
+    type=str,
+    default="",
+    help="Path to the directory containing the app module. Defaults to the current directory.",
+    show_default=True,
+)
 @click.command()
-def cli(app: str, host: str, port: str):
-    sys.path.insert(0, ".")
+def cli(app: str, host: str, port: str, app_dir: str):
+    sys.path.insert(0, app_dir)
     """Leapfrog AI CLI"""
     app = import_app(app)
-    app().serve()
+    app().serve(host, port)
 
     
 if __name__ == "__main__":

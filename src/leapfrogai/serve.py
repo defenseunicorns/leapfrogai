@@ -11,7 +11,7 @@ from leapfrogai.embeddings import embeddings_pb2_grpc
 from leapfrogai.name import name_pb2_grpc
 
 
-async def serve(o):
+async def serve(o, host, port):
     # Create a tuple of all of the services we want to export via reflection.
     services = (reflection.SERVICE_NAME, health.SERVICE_NAME)
 
@@ -58,8 +58,8 @@ async def serve(o):
         health_servicer.set(service, health_pb2.HealthCheckResponse.SERVING)
 
     # Listen on port 50051
-    print("Starting server. Listening on port 50051.")
-    server.add_insecure_port("[::]:50051")
+    server.add_insecure_port("{}:{}".format(host, port))
+    print("Starting server. Listening on {}:{}.".format(host, port))
     await server.start()
 
     # block the thread until the server terminates...without using async to await the completion
