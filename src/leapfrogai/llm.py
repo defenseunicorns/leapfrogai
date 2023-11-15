@@ -1,4 +1,3 @@
-import asyncio
 from typing import Any, Generator, List
 
 from pydantic import BaseModel
@@ -14,7 +13,6 @@ from leapfrogai import (
     CompletionRequest,
     CompletionResponse,
     GrpcContext,
-    serve,
 )
 
 
