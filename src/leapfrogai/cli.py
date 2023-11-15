@@ -2,7 +2,6 @@ import click
 import sys
 import asyncio
 
-from leapfrogai.errors import AppImportError
 from leapfrogai.utils import import_app
 from leapfrogai.serve import serve
 

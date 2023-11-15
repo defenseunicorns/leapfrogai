@@ -1,3 +1,5 @@
+# Adapted from Gunicorn's utils module.
+
 import sys
 import ast
 import importlib
@@ -5,7 +7,6 @@ import logging
 import traceback
 from leapfrogai.errors import AppImportError
    
-# Adapted from Gunicorn's util module 
 def import_app(module):
     parts = module.split(":", 1)
     if len(parts) == 1:
