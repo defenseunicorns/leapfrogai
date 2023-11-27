@@ -22,7 +22,7 @@ protobuf==4.23.3
     #   grpcio-health-checking
     #   grpcio-reflection
     #   leapfrogai (pyproject.toml)
-pydantic==1.10.13
+pydantic==2.5.2
     # via
     #   confz
     #   leapfrogai (pyproject.toml)
