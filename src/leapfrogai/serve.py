@@ -13,7 +13,7 @@ from leapfrogai.embeddings import embeddings_pb2_grpc
 from leapfrogai.name import name_pb2_grpc
 
 
-async def serve(o, host, port):
+async def serve(o, host="0.0.0.0", port=50051):
     # Create a tuple of all of the services we want to export via reflection.
     services = (reflection.SERVICE_NAME, health.SERVICE_NAME)
 
