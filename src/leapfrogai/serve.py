@@ -1,3 +1,5 @@
+import asyncio
+import signal
 from concurrent import futures
 
 import grpc
@@ -11,7 +13,7 @@ from leapfrogai.embeddings import embeddings_pb2_grpc
 from leapfrogai.name import name_pb2_grpc
 
 
-async def serve(o, host, port):
+async def serve(o, host="0.0.0.0", port=50051):
     # Create a tuple of all of the services we want to export via reflection.
     services = (reflection.SERVICE_NAME, health.SERVICE_NAME)
 
@@ -62,6 +64,20 @@ async def serve(o, host, port):
     print("Starting server. Listening on {}:{}.".format(host, port))
     await server.start()
 
-    # block the thread until the server terminates...without using async to await the completion
-    # of all requests, this is the best we can do to gracefully wait while the server responds to requests
-    await server.wait_for_termination()
+    # Setup graceful shutdown
+    shutdown_event = asyncio.Event()
+
+    def signal_handler(*_):
+        print("Shutdown signal received")
+        shutdown_event.set()
+
+    loop = asyncio.get_running_loop()
+    for sig in (signal.SIGINT, signal.SIGTERM):
+        loop.add_signal_handler(sig, signal_handler)
+
+    # Wait for shutdown signal
+    await shutdown_event.wait()
+
+    # Properly shutdown the server
+    await server.stop(5)
+    print("Server has been shut down")
