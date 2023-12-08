@@ -54,6 +54,8 @@ LeapfrogAI provides an API that closely matches that of OpenAI's. This feature a
 > GitHub Repos:
 >
 > - [llama-cpp-python](https://github.com/defenseunicorns/leapfrogai-backend-llama-cpp-python)
+> - [whisper](https://github.com/defenseunicorns/leapfrogai-backend-whisper)
+> - [instructor-xl](https://github.com/defenseunicorns/leapfrogai-backend-instructor-xl)
 > - [ctransformers](https://github.com/defenseunicorns/leapfrogai-backend-ctransformers)
 
 LeapfrogAI provides several backends for a variety of use cases.
