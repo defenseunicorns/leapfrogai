@@ -52,13 +52,13 @@ LeapfrogAI provides an API that closely matches that of OpenAI's. This feature a
 ### Backends
 
 > GitHub Repos:
-> | Repo | CPU Support | GPU Support |
-> | --- | --- | --- |
-> | [llama-cpp-python](https://github.com/defenseunicorns/leapfrogai-backend-llama-cpp-python) | ✅ | 🚧 |
-> | [whisper](https://github.com/defenseunicorns/leapfrogai-backend-whisper) | ✅ | 🚧 |
-> | [instructor-xl](https://github.com/defenseunicorns/leapfrogai-backend-instructor-xl) | ✅ | 🚧 |
-> | [ctransformers](https://github.com/defenseunicorns/leapfrogai-backend-ctransformers) | ✅ | 🚧 |
-> | [vllm](https://github.com/defenseunicorns/leapfrogai-backend-vllm) | ❌ | 🚧 |
+> | Repo | AMD64 Support | ARM64 Support | Cuda Support | Docker Ready | K8s Ready | Zarf Ready |
+> | --- | --- | --- | --- | --- | --- | --- |
+> | [llama-cpp-python](https://github.com/defenseunicorns/leapfrogai-backend-llama-cpp-python) | ✅ | 🚧 | 🚧 | ✅ | ✅ | ✅ |
+> | [whisper](https://github.com/defenseunicorns/leapfrogai-backend-whisper) | ✅ | 🚧 | 🚧 | ✅ | ✅ | ✅ |
+> | [ctransformers](https://github.com/defenseunicorns/leapfrogai-backend-ctransformers) | ✅ | 🚧 | 🚧 | ✅ | ✅ | ✅ |
+> | [instructor-xl](https://github.com/defenseunicorns/leapfrogai-backend-instructor-xl) | ✅ | 🚧 | 🚧 | 🚧 | 🚧 | 🚧 |
+> | [vllm](https://github.com/defenseunicorns/leapfrogai-backend-vllm) | ❌ | ❌ | 🚧 | 🚧 | 🚧 | 🚧 |
 
 LeapfrogAI provides several backends for a variety of use cases.
 
