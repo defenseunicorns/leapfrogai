@@ -84,6 +84,14 @@ The LeapfrogAI SDK provides a standard set of protobuff and python utilities for
 
 LeapfrogAI provides some options of UI to get started with common use-cases such as chat, summarization, and transcription.
 
+### Advanced Deployments
+
+> GitHub Repo:
+>
+> - [leapfrogai-deployment](https://github.com/defenseunicorns/leapfrogai-deployment)
+
+These instructions will assist advanced users in standing up the latest production version of LeapfrogAI on Kubernetes.
+
 ## Community
 
 LeapfrogAI is supported by a community of users and contributors, including:
