@@ -2,7 +2,7 @@
 
 First off, thanks so much for wanting to help out! :tada:
 
-This document describes the steps and requirements for contributing a bug fix or feature in a Pull Request to all Leapfrog AI products! If you have any questions about the process or the pull request you are working on feel free to reach out in the [AI for Nation Security Slack Channel](https://defense-unicorns.slack.com/archives/C06C4SF44LE).
+This document describes the steps and requirements for contributing a bug fix or feature in a Pull Request to all LeapfrogAI products! If you have any questions about the process or the pull request you are working on feel free to reach out in the [LFAI Discord Channel](https://discord.gg/s2Ja5cmZRQ).
 
 ## Developer Experience
 
@@ -22,7 +22,7 @@ Specifically:
 :key: == Required by automation
 
 1. Look at the next due [issue] and pick an issue that you want to work on. If you don't see anything that interests you, create an issue and assign it to yourself.
-2. Drop a comment in the issue to let everyone know you're working on it and submit a Draft PR (step 4) as soon as you are able. If you have any questions as you work through the code, reach out in the [AI for Nation Security Slack Channel](https://defense-unicorns.slack.com/archives/C06C4SF44LE).
+2. Drop a comment in the issue to let everyone know you're working on it and submit a Draft PR (step 4) as soon as you are able. If you have any questions as you work through the code, reach out in the [LFAI Discord Channel](https://discord.gg/s2Ja5cmZRQ).
 3. :key: Set up your Git config to GPG sign all commits. [Here's some documentation on how to set it up](https://docs.github.com/en/authentication/managing-commit-signature-verification/signing-commits). You won't be able to merge your PR if you have any unverified commits.
 4. Create a Draft Pull Request as soon as you can, even if it is just 5 minutes after you started working on it. We lean towards working in the open as much as we can. If you're not sure what to put in the PR description, just put a link to the issue you're working on. If you're not sure what to put in the PR title, just put "WIP" (Work In Progress) and we'll help you out with the rest.
 5. :key: Automated tests will begin based on the paths you have edited in your Pull Request.
@@ -33,19 +33,7 @@ Specifically:
 
 ## Testing
 
-This section dives deeper into how we test LFAI products
-
-### (Optional) Pre-Commit Hooks and Linting
-
-In this repo you can optionally use [pre-commit](https://pre-commit.com/) hooks for automated validation and linting, but if not CI will run these checks for you.
-
-### Code Testing
-
-Our E2E tests can be found in the `/test` folder and follow the journey of someone as they would run a Zarf package of LFAI to validate it can be deployed and run successfully.
-
-For UI components, Unit Tests: Playwright tests can be found in the `/test` folder. These are primarily used to test routing and Svelte UI.
-
-All of our tests should be able to be run locally or in CI.
+TBD
 
 ## Documentation
 
