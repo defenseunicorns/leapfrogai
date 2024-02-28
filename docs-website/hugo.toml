@@ -1,0 +1,100 @@
+baseURL         = "https://example.com/"
+enableGitInfo   = true
+enableRobotsTXT = true
+
+# Set uglyURLs & relativeURLs for hugo to build local offline pages in public/
+# When these are set `npm start` will no longer host functioning webpages. Instead
+#   use `npm run build` to construct the offline public/ directory
+relativeURLs = false
+uglyURLs     = false
+
+# Mount any external directories for use by hugo
+#
+# source:
+#   The source directory of the mount. For the main project, this can be either
+#   project-relative or absolute and even a symbolic link. For other modules it must be
+#   project-relative.
+# target
+#   Where it should be mounted into Hugo’s virtual filesystem. It must start with one of
+#   Hugo’s component folders: static, content, layouts, data, assets, i18n, or archetypes.
+#   E.g. content/blog.
+
+# [[module.mounts]]
+#   source = '../docs/*.md'
+#   target = 'content/en/docs'
+
+[[module.mounts]]
+  source = "content/en"
+  target = "content"
+
+[module]
+proxy = "direct"
+
+  [[module.imports]]
+    path = "github.com/defenseunicorns/defense-unicorns-hugo-theme"
+
+  [[module.imports]]
+    path = "github.com/defenseunicorns/defense-unicorns-hugo-theme/dependencies"
+
+[languages.en]
+  languageName = "English"
+
+  [languages.en.params]
+    description = "LeapfrogAI"
+    title       = "LeapfrogAI"
+
+[params]
+  # this merge bring is the theme defaults and allows overriding them if needed.
+  _merge = 'deep'
+
+  archived_version    = false
+  copyright           = "Defense Unicorns"
+  github_project_repo = "https://github.com/defenseunicorns/leapfrogai-docs"
+  github_repo         = "https://github.com/defenseunicorns/leapfrogai-docs"
+  version             = "v1.0.0"
+
+  # version_menu = "v1"
+  # url_latest_version = "https://latest-version"
+  # Add your release versions here that references the deployed release branch for that version.
+  # [[params.versions]]
+  # version = "v0.3 - Latest"
+  # url = "https://latest-version"
+  # [[params.versions]]
+  # version = "v0.2"
+  # url = "https://v02-version"
+  [params.ui]
+    navbar_logo = "img/leapfrogai.svg" # The product logo on the navbar
+
+  [[params.socialLinks]]
+    desc = ""
+    icon = "fa-brands fa-github"
+    name = "GitHub"
+    url  = "https://github.com/defenseunicorns/leapfrogai"
+
+    ### Other social links
+    # [[params.socialLinks]]
+    # name = "Community Slack"
+    # url = "https://communityinviter.com/apps/kubernetes/community"
+    # icon = "fa-brands fa-slack"
+    # desc = "Discussion and help from your fellow users"
+    # [[params.socialLinks]]
+    # name = "Twitter"
+    # url = "https://twitter.com/DefenseUnicorns"
+    # icon = "fa-brands fa-twitter"
+    # desc = "Defense Unicorns Twitter"
+    ### Mermaid theme choices
+    #[params.mermaid]
+    # theme = "neutral" # You can override this default dark theme with other Mermaid themes
+
+## The following merge in theme defaults from: https://github.com/defenseunicorns/defense-unicorns-hugo-theme/tree/main/config/_default
+[markup]
+  _merge = 'shallow'
+
+[outputs]
+  _merge = 'shallow'
+
+[imaging]
+  _merge = 'shallow'
+
+[taxonomies]
+  _merge = 'shallow'
