@@ -1,0 +1,33 @@
+{
+  "name": "leapfrogai-docs",
+  "version": "1.0.0",
+  "description": "Documentation for LeapfrogAI",
+  "license": "Apache 2.0",
+  "author": "Defense Unicorns",
+  "directories": {
+    "doc": "docs"
+  },
+  "scripts": {
+    "build": "hugo",
+    "build:production": "npm run build -- --gc --minify",
+    "clean": "rm -Rf public resources && hugo mod clean",
+    "format:toml": "taplo format '**/**/*.toml'",
+    "link-check": "npm run build && linkinator ./public --config .linkinator.config.json ",
+    "lint": "markdownlint ./content/**/*.md --ignore node_modules",
+    "lint:fix": "markdownlint -f ./content/**/*.md ./docs/**/*.md --ignore node_modules",
+    "lint:toml": "taplo lint '**/**/*.toml'",
+    "start": "npm run clean && hugo serve",
+    "test": "npm run clean && npm run lint && npm run link-check",
+    "update": "hugo mod get -u ./... && hugo mod tidy && npx npm-check-updates -u && npm install"
+  },
+  "devDependencies": {
+    "@fontsource/roboto": "^5.0.8",
+    "@taplo/cli": "^0.7.0",
+    "autoprefixer": "^10.4.17",
+    "hugo-extended": "^0.123.1",
+    "linkinator": "^6.0.4",
+    "markdownlint-cli": "0.39.0",
+    "postcss-cli": "^11.0.0",
+    "prettier": "^3.2.5"
+  }
+}

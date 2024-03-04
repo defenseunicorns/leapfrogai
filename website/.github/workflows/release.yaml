@@ -1,0 +1,25 @@
+name: Release
+
+on:
+  workflow_run:
+    workflows: ['Build and Test']
+    branches: [main]
+    types:
+      - completed
+
+permissions:
+  contents: write
+  pull-requests: write
+
+jobs:
+  release-please:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Create release tag
+        id: tag
+        uses: google-github-actions/release-please-action@v4
+        with:
+          release-type: node
+          package-name: uds
+          extra-files: hugo.toml
+          changelog-path: CHANGELOG.md
