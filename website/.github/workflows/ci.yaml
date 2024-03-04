@@ -1,0 +1,28 @@
+name: Build and Test
+
+on:
+  push:
+  pull_request:
+    branches:
+      - main
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup Hugo
+        uses: peaceiris/actions-hugo@v2
+        with:
+          hugo-version: 'latest'
+          extended: true
+
+      - name: Run Tests
+        uses: actions/setup-node@v4
+        with:
+          node-version: 'lts/Hydrogen'
+          cache: 'npm'
+      - run: npm ci
+      - run: npm test
