@@ -77,7 +77,7 @@ Accepted
 - vLLM
 - Transformers
 - Llama.cpp
-- python-llama-cpp
+- llama-cpp-python
 - Lorax
 - text-generation-inference
 - ctranslate2
@@ -87,7 +87,7 @@ Accepted
 
 ### Assumptions
 
-* GPU-only is preferred for MVP
+* GPU-only is an acceptable tradeoff for MVP
 * Flash Attention / other batching and concurrency features are required
 * Must run LLM architectures commonly in use in the community
 
