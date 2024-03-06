@@ -28,6 +28,7 @@ LeapfrogAI offers several backends for a variety of use cases:
 | [whisper](https://github.com/defenseunicorns/leapfrogai-backend-whisper)                   | AMD64, Docker, Kubernetes, Zarf |
 | [text-embeddings](https://github.com/defenseunicorns/leapfrogai-backend-text-embeddings)   | AMD64, Docker, Kubernetes, Zarf |
 | [VLLM](https://github.com/defenseunicorns/leapfrogai-backend-vllm)                         | AMD64, Docker, Kubernetes, Zarf |
+| [RAG](https://github.com/defenseunicorns/leapfrogai-backend-rag)                           | AMD64, Docker, Kubernetes, Zarf |
 
 ### Image Hardening
 
