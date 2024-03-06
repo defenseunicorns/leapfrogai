@@ -58,7 +58,7 @@ LeapfrogAI provides an API that closely matches that of OpenAI's. This feature a
 > | [whisper](https://github.com/defenseunicorns/leapfrogai-backend-whisper) | ✅ | 🚧 | ✅ | ✅ | ✅ | ✅ |
 > | [text-embeddings](https://github.com/defenseunicorns/leapfrogai-backend-text-embeddings) | ✅ | 🚧 | ✅ | ✅ | ✅ | ✅ |
 > | [vllm](https://github.com/defenseunicorns/leapfrogai-backend-vllm) | ✅ | ❌ | ✅ | ✅ | ✅ | ✅ |
-> | [rag](https://github.com/defenseunicorns/leapfrogai-backend-rag) | ✅ | ❌ | ❌ | ✅ | ✅ | ✅ |
+> | [rag](https://github.com/defenseunicorns/leapfrogai-backend-rag) | ✅ | ✅ | ❌ | ✅ | ✅ | ✅ |
 
 LeapfrogAI provides several backends for a variety of use cases.
 
