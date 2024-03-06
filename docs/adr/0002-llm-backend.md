@@ -46,7 +46,9 @@ Initially, the priority for backend support will focus on GPU and concurrent ser
 
 ### Decision
 
-[vLLM](https://github.com/vllm-project/vllm)
+For production use cases we will support [vLLM](https://github.com/vllm-project/vllm), which requires a GPU to function.
+
+For single user instances (local Mac/AMD64) we will support [Llama-cpp-python](https://github.com/abetlen/llama-cpp-python), which runs well on most CPUs.
 
 ### Rationale
 
