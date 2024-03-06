@@ -54,7 +54,7 @@ LeapfrogAI provides an API that closely matches that of OpenAI's. This feature a
 > GitHub Repos:
 > | Repo | AMD64 Support | ARM64 Support | Cuda Support | Docker Ready | K8s Ready | Zarf Ready |
 > | --- | --- | --- | --- | --- | --- | --- |
-> | [llama-cpp-python](https://github.com/defenseunicorns/leapfrogai-backend-llama-cpp-python) | ✅ | 🚧 | 🚧 | ✅ | ✅ | ✅ |
+> | [llama-cpp-python](https://github.com/defenseunicorns/leapfrogai-backend-llama-cpp-python) | ✅ | 🚧 | ✅ | ✅ | ✅ | ✅ |
 > | [whisper](https://github.com/defenseunicorns/leapfrogai-backend-whisper) | ✅ | 🚧 | ✅ | ✅ | ✅ | ✅ |
 > | [text-embeddings](https://github.com/defenseunicorns/leapfrogai-backend-text-embeddings) | ✅ | 🚧 | ✅ | ✅ | ✅ | ✅ |
 > | [vllm](https://github.com/defenseunicorns/leapfrogai-backend-vllm) | ✅ | ❌ | ✅ | ✅ | ✅ | ✅ |
