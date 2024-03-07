@@ -57,7 +57,7 @@ Initially, the priority for backend support will focus on GPU and concurrent ser
 
 ### Status
 
-Accepted
+Pending (In-Progress)
 
 ## Context
 
