@@ -254,7 +254,7 @@ zarf package deploy zarf-package-*.tar.zst --set GPU_ENABLED=true --confirm
 
 ### LLaMA CPP Python
 
-This backend comes pre-packaged with synthia-7b-v2.0.Q4_K_M, and `llama-cpp-python` as the inferencing engine.
+This backend comes pre-packaged with [synthia-7b-v2.0.Q4_K_M](https://huggingface.co/TheBloke/SynthIA-7B-v2.0-GGUF#:~:text=v2.0.Q4_K_M.gguf-,Q4_K_M,-4), and `llama-cpp-python` as the inferencing engine and is primarily aimed at single user CPU deployments.
 
 ```git
 # download
@@ -272,6 +272,28 @@ The package deployment command is modified for GPU deployments:
 ```git
 # deploy
 zarf package deploy zarf-package-*.tar.zst --set GPU_ENABLED=true --confirm
+```
+
+### VLLM
+
+This backend comes pre-packaged with [synthia-7b-v2.0-awq](https://huggingface.co/TheBloke/SynthIA-7B-v2.0-AWQ), and `vllm` as the inferencing engine and is primarily aimed at multi-user GPU deployments.
+
+```git
+# download
+git clone https://github.com/defenseunicorns/leapfrogai-backend-vllm.git
+cd leapfrogai-backend-vllm
+
+# create
+zarf package create --confirm
+```
+
+Additional considerations are necessary for GPU deployments:
+
+The package deployment command is modified for GPU deployments:
+
+```git
+# deploy
+zarf package deploy zarf-package-*.tar.zst --set GPU_ENABLED=true --set REQUESTS_GPU=1 --set LIMITS_GPU=1 --set REQUESTS_CPU=0 --set LIMITS_CPU=0 --confirm
 ```
 
 ### LeapfrogAI UI (Optional)

@@ -59,7 +59,7 @@ For single user instances (local Mac/AMD64) we will support [Llama-cpp-python](h
 
 ### Status
 
-Accepted
+Pending (In-Progress)
 
 ## Context
 
