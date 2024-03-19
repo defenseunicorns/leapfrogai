@@ -1,0 +1,72 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: api-deployment
+spec:
+  replicas: {{ .Values.api.replcias }}
+  strategy:
+    type: Recreate
+  selector:
+    matchLabels:
+      app: api
+  template:
+    metadata:
+      labels:
+        app: api
+    spec:
+      serviceAccountName: read-configmaps
+      containers:
+        - name: sidecar
+          image: kiwigrid/k8s-sidecar:{{ .Values.image.kiwigridTag }}
+          volumeMounts:
+          - name:  api-model
+            mountPath: /config/
+          env:
+          - name: LABEL
+            value: "leapfrogai"
+          - name: FOLDER
+            value: /config/
+          - name: RESOURCE
+            value: both
+          - name: UNIQUE_FILENAMES
+            value: "true"
+          - name: NAMESPACE
+            value: leapfrogai
+        - name: api-container
+          image: ghcr.io/defenseunicorns/leapfrogai/api:{{ .Values.image.lfaiAPITag }}
+          imagePullPolicy: Always
+          env:
+          - name: LFAI_CONFIG_PATH
+            value: /config/
+          - name: LFAI_CONFIG_FILENAME
+            value: "*.toml"
+          - name: PORT
+            value: "{{ .Values.api.port }}"
+          ports:
+            - containerPort: 8080
+          livenessProbe:
+            httpGet:
+              path: /healthz
+              port: 8080
+            initialDelaySeconds: 10
+            periodSeconds: 10
+          readinessProbe:
+            httpGet:
+              path: /healthz
+              port: 8080
+            initialDelaySeconds: 10
+            periodSeconds: 10
+          securityContext:
+            runAsUser: 65532
+            runAsGroup: 65532
+            fsGroup: 65532
+          volumeMounts:
+          - name: api-model
+            mountPath: /config
+      volumes:
+      - name: api-model
+        emptyDir: {}
+        
+
+    
+  
