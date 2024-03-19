@@ -1,6 +1,6 @@
 ![LeapfrogAI Logo](https://github.com/defenseunicorns/leapfrogai/raw/main/docs/imgs/leapfrogai.png)
 
-[![](https://dcbadge.vercel.app/api/server/s2Ja5cmZRQ)](https://discord.gg/s2Ja5cmZRQ)
+[![OpenSSF Scorecard](https://api.securityscorecards.dev/projects/github.com/defenseunicorns/leapfrogai/badge)](https://api.securityscorecards.dev/projects/github.com/defenseunicorns/leapfrogai)
 
 ## Table of Contents
 - [Table of Contents](#table-of-contents)
@@ -13,6 +13,7 @@
   - [Image Hardening](#image-hardening)
   - [SDK](#sdk)
   - [User Interface](#user-interface)
+  - [Advanced Deployments](#advanced-deployments)
 - [Community](#community)
 
 ## Overview
