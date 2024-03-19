@@ -1,0 +1,6 @@
+# This repository is owned by the LeapfrogAI Team
+* @defenseunicorns/leapfrogai
+
+# Additional privileged files
+/CODEOWNERS @jeff-mccoy @austenbryan @gerred
+/LICENSE @jeff-mccoy @austenbryan @gerred
