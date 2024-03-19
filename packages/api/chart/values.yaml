@@ -1,0 +1,10 @@
+image: 
+  lfaiAPITag: v0.4.6 
+  kiwigridTag: 1.23.3
+
+api:
+  replicas: 1
+  port: 8080
+
+package:
+  host: leapfrogai-api
