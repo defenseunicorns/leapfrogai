@@ -37,8 +37,30 @@ local-registry: ## Start up a local container registry. Errors in this target ar
 
 
 build-api: local-registry build-wheel ## Build the leapfrogai_api container and Zarf package
+	## Copy the wheel to the package directory
 	cp build/leapfrogai_api-*.whl packages/api/
+
+	## Build the image (and tag it)
 	docker build -t ghcr.io/defenseunicorns/leapfrogai/api:${LOCAL_VERSION} packages/api
 	docker tag ghcr.io/defenseunicorns/leapfrogai/api:${LOCAL_VERSION} localhost:5000/defenseunicorns/leapfrogai/api:${LOCAL_VERSION}
+
+	## Push the image to the local registry (Zarf is super slow if the image is only in the local daemon)
 	docker push localhost:5000/defenseunicorns/leapfrogai/api:${LOCAL_VERSION}
+
+	## Build the Zarf package
 	zarf package create packages/api --registry-override=ghcr.io=localhost:5000 --insecure --set LEAPFROGAI_IMAGE_VERSION=${LOCAL_VERSION} --confirm
+
+
+build-llama: local-registry build-wheel ## Build the llama (cpu) container and Zarf package
+	## Copy the wheel to the package directory
+	cp build/leapfrogai_api-*.whl packages/llama/
+
+	## Build the image (and tag it for the local registry)
+	docker build -t ghcr.io/defenseunicorns/leapfrogai/llama:${LOCAL_VERSION} packages/llama
+	docker tag ghcr.io/defenseunicorns/leapfrogai/llama:${LOCAL_VERSION} localhost:5000/defenseunicorns/leapfrogai/llama:${LOCAL_VERSION}
+
+	## Push the image to the local registry (Zarf is super slow if the image is only in the local daemon)
+	docker push localhost:5000/defenseunicorns/leapfrogai/llama:${LOCAL_VERSION}
+
+	## Build the Zarf package
+	zarf package create packages/llama --registry-override=ghcr.io=localhost:5000 --insecure --set IMAGE_VERSION=${LOCAL_VERSION} --confirm
