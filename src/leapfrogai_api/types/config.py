@@ -35,7 +35,7 @@ class ModelConfig(BaseConfig):
 
 class BackendConfig(BaseConfig):
     name: str | None = None
-    model: ModelConfig | None = None
+    model: ModelConfig | None = ModelConfig
     max_context_length: int = 2048
     stop_tokens: list[str] | None = None
     prompt_format: PromptFormat | None = None
