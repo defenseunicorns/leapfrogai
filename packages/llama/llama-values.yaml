@@ -1,0 +1,6 @@
+image:
+  tag: "###ZARF_CONST_IMAGE_VERSION###"
+
+
+# TODO @JPERRY: Maybe don't expose this as a variable?
+gpuEnabled: "###ZARF_VAR_GPU_ENABLED###"
