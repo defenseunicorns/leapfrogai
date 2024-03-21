@@ -35,16 +35,8 @@ ENV PATH="/home/leapfrogai/.venv/bin:$PATH"
 # # create virtual environment for light-weight portability and minimal libraries
 # # NOTE: We are copying to this filename because installing 'optional extras' from a wheel requires the absolute path to the wheel file (instead of a wildcard whl)
 COPY build/*.whl build/
-COPY build/*.tar.gz build/
 COPY build/leapfrogai_api*.whl leapfrogai_api-100.100.100-py3-none-any.whl
-
-
-# TODO @JPERRY: THIS IS A HACK TO GET THE WHEEL TO INSTALL.. FIND A BETTER SOLUTION
-RUN pip install build/quantile-python-1.1.tar.gz
-
-
 RUN pip install "leapfrogai_api-100.100.100-py3-none-any.whl[vllm]" --no-index --find-links=build/
-# RUN pip install "leapfrogai_api-100.100.100-py3-none-any.whl[vllm]" --only-binary=:all: --no-index --find-links=build/
 
 # download model
 ARG REPO_ID=TheBloke/Synthia-7B-v2.0-AWQ

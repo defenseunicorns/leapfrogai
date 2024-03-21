@@ -68,13 +68,12 @@ build-llama: local-registry build-wheel ## Build the llama (cpu) container and Z
 
 build-vllm: local-registry build-wheel
 	## Download the wheels for the optional 'vllm' dependencies
-	pip download ".[vllm]" -d build
+	pip wheel ".[vllm]" -w build
 
 	## Copy the deps to the package directory
 	-rm packages/vllm/build/*.whl
 	-mkdir packages/vllm/build
 	cp build/*.whl packages/vllm/build/
-	cp build/*.tar.gz packages/vllm/build/
 
 	## Build the image (and tag it for the local registry)
 	docker build -t ghcr.io/defenseunicorns/leapfrogai/vllm:${LOCAL_VERSION} packages/vllm
