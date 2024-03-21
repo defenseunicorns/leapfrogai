@@ -84,3 +84,24 @@ build-vllm: local-registry build-wheel
 
 	## Build the Zarf package
 	zarf package create packages/vllm --registry-override=ghcr.io=localhost:5000 --insecure --set IMAGE_VERSION=${LOCAL_VERSION} --confirm
+
+
+build-text-embeddings: local-registry build-wheel ## Build the text-embeddings container and Zarf package
+	## Download the wheels for the optional 'text-embeddings' dependencies
+	pip download ".[text-embeddings]" -d build
+
+	## Copy the deps to the package directory
+	-rm packages/text-embeddings/build/*.whl
+	-mkdir packages/text-embeddings/build
+	cp build/*.whl packages/text-embeddings/build/
+	cp build/*.tar.gz packages/text-embeddings/build/
+
+	## Build the image (and tag it for the local registry)
+	docker build -t ghcr.io/defenseunicorns/leapfrogai/text-embeddings:${LOCAL_VERSION} packages/text-embeddings
+	docker tag ghcr.io/defenseunicorns/leapfrogai/text-embeddings:${LOCAL_VERSION} localhost:5000/defenseunicorns/leapfrogai/text-embeddings:${LOCAL_VERSION}
+
+	## Push the image to the local registry (Zarf is super slow if the image is only in the local daemon)
+	docker push localhost:5000/defenseunicorns/leapfrogai/text-embeddings:${LOCAL_VERSION}
+
+	## Build the Zarf package
+	zarf package create packages/text-embeddings --registry-override=ghcr.io=localhost:5000 --insecure --set IMAGE_VERSION=${LOCAL_VERSION} --confirm
