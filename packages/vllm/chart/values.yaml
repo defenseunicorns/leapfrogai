@@ -37,8 +37,6 @@ service:
   type: ClusterIP
   port: 50051
 
-gpuEnabled: false 
-
 resources: 
   # We usually recommend not to specify default resources and to leave this as a conscious
   # choice for the user. This also increases chances charts run on environments with little
@@ -51,7 +49,7 @@ resources:
   requests:
     cpu: 0
     memory: 0
-    nvidia.com/gpu: 0
+    nvidia.com/gpu: 1
 
 autoscaling:
   enabled: false
