@@ -88,13 +88,12 @@ build-vllm: local-registry build-wheel
 
 build-text-embeddings: local-registry build-wheel ## Build the text-embeddings container and Zarf package
 	## Download the wheels for the optional 'text-embeddings' dependencies
-	pip download ".[text-embeddings]" -d build
+	pip wheel ".[text-embeddings]" -w build
 
 	## Copy the deps to the package directory
 	-rm packages/text-embeddings/build/*.whl
 	-mkdir packages/text-embeddings/build
 	cp build/*.whl packages/text-embeddings/build/
-	cp build/*.tar.gz packages/text-embeddings/build/
 
 	## Build the image (and tag it for the local registry)
 	docker build -t ghcr.io/defenseunicorns/leapfrogai/text-embeddings:${LOCAL_VERSION} packages/text-embeddings

@@ -13,9 +13,7 @@ ENV PATH="/leapfrogai/.venv/bin:$PATH"
 # NOTE: We are copying the leapfrog whl to this filename because installing 'optional extras' from 
 #       a wheel requires the absolute path to the wheel file (instead of a wildcard whl)
 COPY build/*.whl build/
-COPY build/*.tar.gz build/
 COPY build/leapfrogai_api*.whl leapfrogai_api-100.100.100-py3-none-any.whl
-RUN pip install build/*.tar.gz --no-deps
 RUN pip install "leapfrogai_api-100.100.100-py3-none-any.whl[text-embeddings]" --no-index --find-links=build/
 
 
