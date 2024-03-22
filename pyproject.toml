@@ -69,6 +69,11 @@ text-embeddings = [
     "transformers == 4.36.0",
 ]
 
+whisper = [
+    "faster-whisper == 0.10.0",
+]
+
+
 [tool.pip-tools]
 generate-hashes = true
 
