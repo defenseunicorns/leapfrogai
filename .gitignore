@@ -27,13 +27,5 @@ config.json
 generation_config.json
 vocabulary.json
 
-
-# Generated Code
-src/leapfrogai_api/types/audio
-src/leapfrogai_api/types/chat
-src/leapfrogai_api/types/completion
-src/leapfrogai_api/types/embeddings
-src/leapfrogai_api/types/name
-
 # go binaries
 api/main
