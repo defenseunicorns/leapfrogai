@@ -46,6 +46,7 @@ sdk = [
 dev = [
     "pip-tools == 7.3.0",
     "pytest",
+    "httpx",
     "ruff",
 ]
 
