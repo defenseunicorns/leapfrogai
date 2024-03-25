@@ -113,13 +113,12 @@ build-text-embeddings: local-registry build-wheel ## Build the text-embeddings c
 
 build-whisper: local-registry build-wheel ## Build the whisper container and zarf package
 	# Download the wheels for the optional 'whisper' dependencies
-	pip download ".[whisper]" -d build
+	pip wheel ".[whisper]" -w build
 
 	# Copy the deps to the package directory
 	-rm packages/whisper/build/*.whl
 	-mkdir packages/whisper/build
 	cp build/*.whl packages/whisper/build/
-	cp build/*.tar.gz packages/whisper/build/
 
 	## Build the image (and tag it for the local registry)
 	docker build -t ghcr.io/defenseunicorns/leapfrogai/whisper:${LOCAL_VERSION} packages/whisper

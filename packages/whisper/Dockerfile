@@ -7,7 +7,7 @@ RUN python3.11 -m venv .venv
 ENV PATH="/leapfrogai/.venv/bin:$PATH"
 
 # download and covnert OpenAI's whisper base
-# TOOD @JPERRY: Move this model download to a separate build stage (within its own FROM section)
+# TODO @JPERRY: Move this model download to a separate build stage (within its own FROM section)
 #               We don't dirty our .venv with libraries only needed for model download...
 ARG MODEL_NAME=openai/whisper-base
 RUN pip install transformers[torch]
@@ -15,11 +15,9 @@ RUN pip install ctranslate2
 RUN ct2-transformers-converter --model ${MODEL_NAME} --output_dir .model --copy_files tokenizer.json --quantization float32
 
 COPY build/*.whl build/
-COPY build/*.tar.gz build/
 COPY build/leapfrogai_api*.whl leapfrogai_api-100.100.100-py3-none-any.whl
 
-RUN pip install build/*.tar.gz --no-deps
-RUN pip install leapfrogai_api-100.100.100-py3-none-any.whl[whisper]
+RUN pip install leapfrogai_api-100.100.100-py3-none-any.whl[whisper] --no-index --find-links=build/
 
 # Use hardened ffmpeg image to get compiled binaries
 FROM cgr.dev/chainguard/ffmpeg:latest as ffmpeg
