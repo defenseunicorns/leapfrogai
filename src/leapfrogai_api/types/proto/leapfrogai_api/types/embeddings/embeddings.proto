@@ -1,0 +1,23 @@
+syntax = "proto3";
+
+package embeddings;
+
+option go_package = "github.com/defenseunicorns/leapfrogai/pkg/client/embeddings";
+
+// EmbeddingRequest is the payload to embedding creation
+message EmbeddingRequest {
+    repeated string inputs = 1;
+}
+
+message Embedding {
+    repeated float embedding = 1;
+}
+
+// EmbeddingResponse are what's returned by the gRPC service
+message EmbeddingResponse {
+    repeated Embedding embeddings = 1;
+}
+
+service EmbeddingsService {
+    rpc CreateEmbedding(EmbeddingRequest) returns (EmbeddingResponse);
+}

@@ -13,6 +13,9 @@ temp/
 zarf-sbom/
 /values.yaml
 .pytest_cache
+*egg-info
+build/
+*.whl
 
 # local model and tokenizer files
 *.bin
