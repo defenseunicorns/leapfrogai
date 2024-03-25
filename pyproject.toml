@@ -87,6 +87,14 @@ addopts = ["--import-mode=importlib"]
 
 [tool.ruff]
 target-version = "py311"
+# exclude generated grpc code
+exclude = [
+    "src/leapfrogai_api/types/audio",
+    "src/leapfrogai_api/types/chat",
+    "src/leapfrogai_api/types/completion",
+    "src/leapfrogai_api/types/embeddings",
+    "src/leapfrogai_api/types/name",
+]
 
 
 [build-system]
