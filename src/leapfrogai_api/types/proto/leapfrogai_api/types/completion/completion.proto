@@ -1,0 +1,69 @@
+syntax = "proto3";
+
+package completion;
+
+option go_package = "github.com/defenseunicorns/leapfrogai/pkg/client/completion";
+
+// CompletionRequest is the payload to request completion
+message CompletionRequest {
+    string prompt = 1; // huggingface `inputs`
+    optional string suffix = 2;
+    optional int32 max_new_tokens = 3; // openai `max_tokens`
+    optional float temperature = 4;
+    optional int32 top_k = 5;
+    optional float top_p = 6;
+    optional bool do_sample = 7;
+    optional int32 n = 8;
+    /* Include the log probabilities on the logprobs most likely tokens, as
+    well the chosen tokens. For example, if logprobs is 5, the API will return
+    a list of the 5 most likely tokens. The API will always return the logprob
+    of the sampled token, so there may be up to logprobs+1 elements in the
+    response.
+
+    The maximum value for logprobs is 5. */
+    optional int32 logprobs = 9;
+    optional bool echo = 10;
+    repeated string stop = 11;  // You can only represent Union[str, list] as a string. 
+    optional float repetition_penalty = 12;
+    optional float presence_penalty = 13;
+    optional float frequence_penalty = 14;
+    optional int32 best_of = 15;
+    map<string, int32> logit_bias = 16;  // Maps are represented as a pair of a key type and a value type.
+    optional bool return_full_text = 17;
+    optional int32 truncate = 18;
+    optional float typical_p = 19;
+    optional bool watermark = 20; 
+    optional int32 seed = 21;
+    optional string user = 22;
+}
+
+enum CompletionFinishReason {
+    STOP = 0;
+    LENGTH = 1;
+}
+
+message CompletionChoice {
+    string text = 1;
+    int32 index = 2;
+    CompletionFinishReason finish_reason = 3;
+}
+
+message CompletionUsage {
+    int32 prompt_tokens = 1;
+    int32 completion_tokens = 2;
+    int32 total_tokens = 3;
+}
+
+// CompletionRespones are what's returned by the gRPC service
+message CompletionResponse {
+    repeated CompletionChoice choices = 1;
+    optional CompletionUsage usage = 2;
+}
+
+service CompletionService {
+    rpc Complete (CompletionRequest) returns (CompletionResponse);
+}
+
+service CompletionStreamService {
+    rpc CompleteStream (CompletionRequest) returns (stream CompletionResponse);
+}
