@@ -47,7 +47,6 @@ dev = [
     "pip-tools == 7.3.0",
     "pytest",
     "ruff",
-    "huggingface_hub", #TODO: @JPERRY Figure out the sub modules (cli & hf_transfer)
 ]
 
 llama-cpp-python = [
