@@ -48,7 +48,7 @@ build-api: local-registry build-wheel ## Build the leapfrogai_api container and 
 	docker push localhost:5000/defenseunicorns/leapfrogai/api:${LOCAL_VERSION}
 
 	## Build the Zarf package
-	zarf package create packages/api --registry-override=ghcr.io=localhost:5000 --insecure --set LEAPFROGAI_IMAGE_VERSION=${LOCAL_VERSION} --confirm
+	uds zarf package create packages/api --registry-override=ghcr.io=localhost:5000 --insecure --set LEAPFROGAI_IMAGE_VERSION=${LOCAL_VERSION} --confirm
 
 
 build-llama: local-registry build-wheel ## Build the llama (cpu) container and Zarf package
@@ -68,7 +68,7 @@ build-llama: local-registry build-wheel ## Build the llama (cpu) container and Z
 	docker push localhost:5000/defenseunicorns/leapfrogai/llama:${LOCAL_VERSION}
 
 	## Build the Zarf package
-	zarf package create packages/llama --registry-override=ghcr.io=localhost:5000 --insecure --set IMAGE_VERSION=${LOCAL_VERSION} --confirm
+	uds zarf package create packages/llama --registry-override=ghcr.io=localhost:5000 --insecure --set IMAGE_VERSION=${LOCAL_VERSION} --confirm
 
 
 build-vllm: local-registry build-wheel
@@ -88,7 +88,7 @@ build-vllm: local-registry build-wheel
 	docker push localhost:5000/defenseunicorns/leapfrogai/vllm:${LOCAL_VERSION}
 
 	## Build the Zarf package
-	zarf package create packages/vllm --registry-override=ghcr.io=localhost:5000 --insecure --set IMAGE_VERSION=${LOCAL_VERSION} --confirm
+	uds zarf package create packages/vllm --registry-override=ghcr.io=localhost:5000 --insecure --set IMAGE_VERSION=${LOCAL_VERSION} --confirm
 
 
 build-text-embeddings: local-registry build-wheel ## Build the text-embeddings container and Zarf package
@@ -108,7 +108,7 @@ build-text-embeddings: local-registry build-wheel ## Build the text-embeddings c
 	docker push localhost:5000/defenseunicorns/leapfrogai/text-embeddings:${LOCAL_VERSION}
 
 	## Build the Zarf package
-	zarf package create packages/text-embeddings --registry-override=ghcr.io=localhost:5000 --insecure --set IMAGE_VERSION=${LOCAL_VERSION} --confirm
+	uds zarf package create packages/text-embeddings --registry-override=ghcr.io=localhost:5000 --insecure --set IMAGE_VERSION=${LOCAL_VERSION} --confirm
 
 
 build-whisper: local-registry build-wheel ## Build the whisper container and zarf package
@@ -128,4 +128,4 @@ build-whisper: local-registry build-wheel ## Build the whisper container and zar
 	docker push localhost:5000/defenseunicorns/leapfrogai/whisper:${LOCAL_VERSION}
 
 	## Build the Zarf package
-	zarf package create packages/whisper --registry-override=ghcr.io=localhost:5000 --insecure --set IMAGE_VERSION=${LOCAL_VERSION} --confirm
+	uds zarf package create packages/whisper --registry-override=ghcr.io=localhost:5000 --insecure --set IMAGE_VERSION=${LOCAL_VERSION} --confirm
