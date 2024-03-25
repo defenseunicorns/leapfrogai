@@ -48,7 +48,6 @@ def call_whisper(
             prompt = request.metadata.prompt
             temperature = request.metadata.temperature
             inputLanguage = request.metadata.inputlanguage
-            audioFormat = request.metadata.format
             continue
 
         data.extend(request.chunk_data)
