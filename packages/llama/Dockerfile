@@ -20,10 +20,12 @@ RUN mv .model/*.gguf .model/model.gguf
 RUN python3.11 -m venv .venv
 ENV PATH="/leapfrogai/.venv/bin:$PATH"
 
+# copy the llama build dependencies over
 # NOTE: We are copying to this filename because installing 'optional extras' from a wheel requires the absolute path to the wheel file (instead of a wildcard whl)
 # TODO: This install seems slow. Evaluate options such as copying ALL of the whl's to this image OR vendoring/bundling the dependencies inside of our built .whl
-COPY leapfrogai_api*.whl leapfrogai_api-100.100.100-py3-none-any.whl
-RUN pip install leapfrogai_api-100.100.100-py3-none-any.whl[llama]
+COPY build/*.whl build/
+COPY build/leapfrogai_api*.whl leapfrogai_api-100.100.100-py3-none-any.whl
+RUN pip install leapfrogai_api-100.100.100-py3-none-any.whl[llama] --no-index --find-links=build/
 
 # hardened and slim python image
 FROM --platform=$BUILDPLATFORM ghcr.io/defenseunicorns/leapfrogai/python:3.11
