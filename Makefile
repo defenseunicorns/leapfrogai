@@ -84,3 +84,44 @@ build-vllm: local-registry build-wheel
 
 	## Build the Zarf package
 	zarf package create packages/vllm --registry-override=ghcr.io=localhost:5000 --insecure --set IMAGE_VERSION=${LOCAL_VERSION} --confirm
+
+
+build-text-embeddings: local-registry build-wheel ## Build the text-embeddings container and Zarf package
+	## Download the wheels for the optional 'text-embeddings' dependencies
+	pip wheel ".[text-embeddings]" -w build
+
+	## Copy the deps to the package directory
+	-rm packages/text-embeddings/build/*.whl
+	-mkdir packages/text-embeddings/build
+	cp build/*.whl packages/text-embeddings/build/
+
+	## Build the image (and tag it for the local registry)
+	docker build -t ghcr.io/defenseunicorns/leapfrogai/text-embeddings:${LOCAL_VERSION} packages/text-embeddings
+	docker tag ghcr.io/defenseunicorns/leapfrogai/text-embeddings:${LOCAL_VERSION} localhost:5000/defenseunicorns/leapfrogai/text-embeddings:${LOCAL_VERSION}
+
+	## Push the image to the local registry (Zarf is super slow if the image is only in the local daemon)
+	docker push localhost:5000/defenseunicorns/leapfrogai/text-embeddings:${LOCAL_VERSION}
+
+	## Build the Zarf package
+	zarf package create packages/text-embeddings --registry-override=ghcr.io=localhost:5000 --insecure --set IMAGE_VERSION=${LOCAL_VERSION} --confirm
+
+
+build-whisper: local-registry build-wheel ## Build the whisper container and zarf package
+	# Download the wheels for the optional 'whisper' dependencies
+	pip download ".[whisper]" -d build
+
+	# Copy the deps to the package directory
+	-rm packages/whisper/build/*.whl
+	-mkdir packages/whisper/build
+	cp build/*.whl packages/whisper/build/
+	cp build/*.tar.gz packages/whisper/build/
+
+	## Build the image (and tag it for the local registry)
+	docker build -t ghcr.io/defenseunicorns/leapfrogai/whisper:${LOCAL_VERSION} packages/whisper
+	docker tag ghcr.io/defenseunicorns/leapfrogai/whisper:${LOCAL_VERSION} localhost:5000/defenseunicorns/leapfrogai/whisper:${LOCAL_VERSION}
+
+	## Push the image to the local registry (Zarf is super slow if the image is only in the local daemon)
+	docker push localhost:5000/defenseunicorns/leapfrogai/whisper:${LOCAL_VERSION}
+
+	## Build the Zarf package
+	zarf package create packages/whisper --registry-override=ghcr.io=localhost:5000 --insecure --set IMAGE_VERSION=${LOCAL_VERSION} --confirm
