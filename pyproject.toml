@@ -49,6 +49,7 @@ dev = [
     "ruff",
     "huggingface_hub", #TODO: @JPERRY Figure out the sub modules (cli & hf_transfer)
 ]
+
 llama = [
     "llama-cpp-python == 0.2.28",
 ]

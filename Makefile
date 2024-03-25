@@ -52,8 +52,13 @@ build-api: local-registry build-wheel ## Build the leapfrogai_api container and 
 
 
 build-llama: local-registry build-wheel ## Build the llama (cpu) container and Zarf package
-	## Copy the wheel to the package directory
-	cp build/leapfrogai_api-*.whl packages/llama/
+	## Download the wheels for the optional 'llama' dependencies
+	pip wheel ".[llama]" -w build
+	
+	## Copy the deps to the package directory
+	-rm packages/llama/build/*.whl
+	-mkdir packages/llama/build
+	cp build/*.whl packages/llama/build/
 
 	## Build the image (and tag it for the local registry)
 	docker build -t ghcr.io/defenseunicorns/leapfrogai/llama:${LOCAL_VERSION} packages/llama
