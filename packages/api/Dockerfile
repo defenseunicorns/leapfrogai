@@ -4,9 +4,11 @@ FROM ghcr.io/defenseunicorns/leapfrogai/python:3.11-dev-${ARCH} as builder
 
 WORKDIR /leapfrogai
 
-# Copy the .whl that contains the API library and all of its dependencies
-COPY leapfrogai_api*.whl .
-RUN pip install *.whl
+# copy the api dependencies over
+# NOTE: We are copying to this filename because installing 'optional extras' from a wheel requires the absolute path to the wheel file (instead of a wildcard whl)
+COPY build/*.whl build/
+COPY build/leapfrogai_api*.whl leapfrogai_api-100.100.100-py3-none-any.whl
+RUN pip install leapfrogai_api-100.100.100-py3-none-any.whl --no-index --find-links=build/
 
 FROM ghcr.io/defenseunicorns/leapfrogai/python:3.11-${ARCH}
 
