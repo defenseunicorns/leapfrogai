@@ -1,7 +1,7 @@
 kind: ZarfPackageConfig
 metadata:
-  name: vllm 
-  version: 0.0.1 
+  name: vllm
+  version: "###ZARF_PKG_TMPL_IMAGE_VERSION###"
   description: >
     vLLM model
 

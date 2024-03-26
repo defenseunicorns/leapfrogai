@@ -2,7 +2,7 @@
 kind: ZarfPackageConfig
 metadata:
   name: text-embeddings
-  version: 0.0.1
+  version: "###ZARF_PKG_TMPL_IMAGE_VERSION###"
   description: >
     text embeddings model
 
@@ -12,10 +12,10 @@ constants:
 
 variables:
   - name: REQUESTS_GPU
-    description: Use GPU for inferencing. 
+    description: Use GPU for inferencing.
     default: "0"
     pattern: "^[0-9]+$"
-  
+
 components:
   - name: text-embeddings-model
     required: true
