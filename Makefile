@@ -88,7 +88,7 @@ setup-text-embeddings-deps: ## Download the wheels for the optional 'text-embedd
 	-rm packages/text-embeddings/build/*.whl
 	python -m pip wheel ".[text-embeddings]" -w packages/text-embeddings/build
 
-build-text-embeddings: local-registry build-wheel ## Build the text-embeddings container and Zarf package
+build-text-embeddings: local-registry setup-text-embeddings-deps ## Build the text-embeddings container and Zarf package
 	## Build the image (and tag it for the local registry)
 	docker build -t ghcr.io/defenseunicorns/leapfrogai/text-embeddings:${LOCAL_VERSION} packages/text-embeddings
 	docker tag ghcr.io/defenseunicorns/leapfrogai/text-embeddings:${LOCAL_VERSION} localhost:5000/defenseunicorns/leapfrogai/text-embeddings:${LOCAL_VERSION}
@@ -104,7 +104,7 @@ setup-whisper-deps: ## Download the wheels for the optional 'whisper' dependenci
 	-rm packages/whisper/build/*.whl
 	python -m pip wheel ".[whisper]" -w packages/whisper/build
 
-build-whisper: local-registry build-wheel ## Build the whisper container and zarf package
+build-whisper: local-registry setup-whisper-deps ## Build the whisper container and zarf package
 	## Build the image (and tag it for the local registry)
 	docker build -t ghcr.io/defenseunicorns/leapfrogai/whisper:${LOCAL_VERSION} packages/whisper
 	docker tag ghcr.io/defenseunicorns/leapfrogai/whisper:${LOCAL_VERSION} localhost:5000/defenseunicorns/leapfrogai/whisper:${LOCAL_VERSION}
