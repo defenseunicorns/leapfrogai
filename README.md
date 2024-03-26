@@ -6,6 +6,7 @@
 - [Table of Contents](#table-of-contents)
 - [Overview](#overview)
 - [Why Host Your Own LLM?](#why-host-your-own-llm)
+- [Structure](#structure)
 - [Getting Started](#getting-started)
 - [Components](#components)
   - [API](#api)
@@ -13,6 +14,7 @@
   - [Image Hardening](#image-hardening)
   - [SDK](#sdk)
   - [User Interface](#user-interface)
+- [Usage](#usage)
 - [Community](#community)
 
 ## Overview
@@ -30,6 +32,28 @@ Large Language Models (LLMs) are a powerful resource for AI-driven decision maki
 - **Scalability**: Pay-as-you-go AI services can become expensive, especially when large volumes of data are involved and require constant connectivity. Running your own LLM can often be a more cost-effective solution for missions of all sizes.
 
 - **Mission Integration**: By hosting your own LLM, you have the ability to customize the model's parameters, training data, and more, tailoring the AI to your specific needs.
+
+## Structure
+
+The LeapfrogAI repository follows a monorepo structure based around an [API](#api) with each of the [components](#components) included in a dedicated `packages` directory. Each of these package directories contains the source code for each component as well as the deployment infrastructure. The structure looks as follows:
+
+```
+leapfrogai/
+├── src/
+│   └── leapfrogai_api/
+│       ├── main.py
+│       └── ...
+├── packages/
+│   ├── api/
+│   ├── llama/
+│   ├── text-embeddings/
+│   ├── vllm/
+│   └── whisper/
+├── Makefile
+├── pyproject.toml
+├── README.md
+└── ...
+```
 
 ## Getting Started
 
@@ -73,6 +97,40 @@ The LeapfrogAI SDK provides a standard set of protobuff and python utilities for
 > - [leapfrog-ui](https://github.com/defenseunicorns/leapfrog-ui)
 
 LeapfrogAI provides some options of UI to get started with common use-cases such as chat, summarization, and transcription.
+
+## Usage
+
+LeapfrogAI can be deployed and run locally via UDS, built out using [Zarf](https://zarf.dev) packages. This pulls the most recent package images and is the most stable way of running a local LeapfrogAI deployment. These instructions can be found in the [UDS-LeapfrogAI](https://github.com/defenseunicorns/uds-leapfrogai) repository and has options for handling CPU and GPU deployments.
+
+If you want to make some changes to LeapfrogAI before deploying (for example in a dev environment), you can follow these instructions:
+
+Make sure your system has the [required dependencies](https://docs.leapfrog.ai/docs/local-deploy-guide/dependencies/).
+
+For ease, it's best to create a virtual environment:
+```
+python -m venv .venv
+source .venv/bin/activate
+```
+
+Each component is built into its own Zarf package. This can be done easily using the provided `Make` targets:
+```
+make build-api
+make build-vllm           # if you have GPUs
+make build-llama          # if you have CPU only
+make build-text-embeddings
+make build-whisper
+```
+
+Once the packages are created, you can deploy either a CPU or GPU-enabled deployment via one of the UDS bundles:
+
+CPU
+```
+LOCAL_VERSION=$(git rev-parse --short HEAD)  # set the local package version associated with the created zarf packages
+cd uds/cpu
+uds create .
+uds deploy k3d-core-istio-dev:0.14.1
+uds deploy uds-bundle-leapfrog*.tar.zst
+``1
 
 ## Community
 
