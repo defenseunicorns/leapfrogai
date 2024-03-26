@@ -47,9 +47,10 @@ jobs:
             username: ${{ secrets.IRON_BANK_ROBOT_USERNAME }}
             password: ${{ secrets.IRON_BANK_ROBOT_PASSWORD }}
 
+        # NOTE: We are not testing vllm in this workflow, but it is still nice to verify that it will build
         - name: Build all packages
           run: |
-            make clean build-api build-llama build-text-embeddings build-whisper LOCAL_VERSION=e2e-test
+            make clean build-api build-llama build-vllm build-text-embeddings build-whisper LOCAL_VERSION=e2e-test
 
         - name: Create UDS Cluster
           run: |
@@ -83,7 +84,7 @@ jobs:
 
         - name: Test text-embeddings
           run: |
-            python -m pytest ./tests/e2e/test_text-embeddings.py -v
+            python -m pytest ./tests/e2e/test_text_embeddings.py -v
 
         - name: Cleanup text-embeddings
           run: |
