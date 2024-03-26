@@ -40,7 +40,7 @@ setup-api-deps: ## Download the wheels for the leapfrogai_api dependencies
 	-rm packages/api/build/*.whl
 	python -m pip wheel . -w packages/api/build
 
-build-api: local-registry build-wheel ## Build the leapfrogai_api container and Zarf package
+build-api: local-registry setup-api-deps ## Build the leapfrogai_api container and Zarf package
 	## Build the image (and tag it for the local registry)
 	docker build -t ghcr.io/defenseunicorns/leapfrogai/api:${LOCAL_VERSION} packages/api
 	docker tag ghcr.io/defenseunicorns/leapfrogai/api:${LOCAL_VERSION} localhost:5000/defenseunicorns/leapfrogai/api:${LOCAL_VERSION}
