@@ -39,7 +39,7 @@ jobs:
 
         # TODO @JPERRY: We should be generating the proto files before this...
         - name: Install Python Deps
-          run: python -m pip install ".[e2e-test]"
+          run: python -m pip install ".[dev,e2e-test]"
 
         - name: Setup UDS Environment
           uses: defenseunicorns/uds-common/.github/actions/setup@05f42bb3117b66ebef8c72ae050b34bce19385f5
