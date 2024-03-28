@@ -31,7 +31,7 @@ gen-python: ## Generate the protobufs for the OpenAI typing within the leapfroga
 			--grpc_python_out=src/. \
 			src/leapfrogai_api/types/proto/leapfrogai_api/types/**/*.proto
 
-
+# TODO: Make the port a variable with an uncommon default
 local-registry: ## Start up a local container registry. Errors in this target are ignored.
 	-docker run -d -p 5000:5000 --restart=always --name registry registry:2
 
@@ -51,24 +51,24 @@ build-api: local-registry build-wheel ## Build the leapfrogai_api container and 
 	zarf package create packages/api --registry-override=ghcr.io=localhost:5000 --insecure --set LEAPFROGAI_IMAGE_VERSION=${LOCAL_VERSION} --confirm
 
 
-build-llama: local-registry build-wheel ## Build the llama (cpu) container and Zarf package
-	## Download the wheels for the optional 'llama' dependencies
-	pip wheel ".[llama]" -w build
-	
+build-llama-cpp-python: local-registry build-wheel ## Build the llama-cpp-python (cpu) container and Zarf package
+	## Download the wheels for the optional 'llama-cpp-python' dependencies
+	pip wheel ".[llama-cpp-python]" -w build
+
 	## Copy the deps to the package directory
-	-rm packages/llama/build/*.whl
-	-mkdir packages/llama/build
-	cp build/*.whl packages/llama/build/
+	-rm packages/llama-cpp-python/build/*.whl
+	-mkdir packages/llama-cpp-python/build
+	cp build/*.whl packages/llama-cpp-python/build/
 
 	## Build the image (and tag it for the local registry)
-	docker build -t ghcr.io/defenseunicorns/leapfrogai/llama:${LOCAL_VERSION} packages/llama
-	docker tag ghcr.io/defenseunicorns/leapfrogai/llama:${LOCAL_VERSION} localhost:5000/defenseunicorns/leapfrogai/llama:${LOCAL_VERSION}
+	docker build -t ghcr.io/defenseunicorns/leapfrogai/llama-cpp-python:${LOCAL_VERSION} packages/llama-cpp-python
+	docker tag ghcr.io/defenseunicorns/leapfrogai/llama-cpp-python:${LOCAL_VERSION} localhost:5000/defenseunicorns/leapfrogai/llama-cpp-python:${LOCAL_VERSION}
 
 	## Push the image to the local registry (Zarf is super slow if the image is only in the local daemon)
-	docker push localhost:5000/defenseunicorns/leapfrogai/llama:${LOCAL_VERSION}
+	docker push localhost:5000/defenseunicorns/leapfrogai/llama-cpp-python:${LOCAL_VERSION}
 
 	## Build the Zarf package
-	zarf package create packages/llama --registry-override=ghcr.io=localhost:5000 --insecure --set IMAGE_VERSION=${LOCAL_VERSION} --confirm
+	zarf package create packages/llama-cpp-python --registry-override=ghcr.io=localhost:5000 --insecure --set IMAGE_VERSION=${LOCAL_VERSION} --confirm
 
 
 build-vllm: local-registry build-wheel
