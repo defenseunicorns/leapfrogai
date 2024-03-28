@@ -10,7 +10,6 @@ image:
   # Overrides the image tag whose default is the chart appVersion.
   tag: 0.0.1 #TODO: Validate this package version exists
 
-imagePullSecrets: []
 nameOverride: llama-cpp-python
 fullnameOverride: ""
 
