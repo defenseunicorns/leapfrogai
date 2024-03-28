@@ -4,7 +4,7 @@ kind: ZarfPackageConfig
 metadata:
   description: "LeapfrogAI"
   name: leapfrogai-api
-  version: 0.0.1 
+  version: 0.1.0
   architecture: amd64
 
 constants:
@@ -18,7 +18,7 @@ components:
   - name: leapfrogai
     required: true
     charts:
-    - name: leapfrogai 
+    - name: leapfrogai
       namespace: leapfrogai
       localPath: chart
       version: 0.0.1

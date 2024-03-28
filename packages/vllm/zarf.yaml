@@ -1,0 +1,24 @@
+kind: ZarfPackageConfig
+metadata:
+  name: vllm
+  version: 0.1.0
+  description: >
+    vLLM model
+
+constants:
+  - name: IMAGE_VERSION
+    value: "###ZARF_PKG_TMPL_IMAGE_VERSION###"
+
+components:
+  - name: import-model
+    required: true
+    charts:
+      - name: vllm-model
+        namespace: leapfrogai
+        localPath: chart
+        releaseName: vllm-model
+        version: 0.0.1 #TODO: Validate this package version
+        valuesFiles:
+          - "vllm-values.yaml"
+    images:
+      - ghcr.io/defenseunicorns/leapfrogai/vllm:###ZARF_PKG_TMPL_IMAGE_VERSION###
