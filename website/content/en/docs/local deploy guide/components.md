@@ -1,7 +1,7 @@
 ---
 title: Components 
 type: docs
-weight: 2
+weight: 3
 ---
 
 ## Components
