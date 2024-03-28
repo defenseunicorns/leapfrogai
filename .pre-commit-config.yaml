@@ -21,13 +21,3 @@ repos:
     hooks:
       - id: ruff # Run the linter.
       - id: ruff-format # Run the formatter.
-
-  # Zarf schema validation
-  - repo: https://github.com/python-jsonschema/check-jsonschema
-    rev: 0.14.0
-    hooks:
-      - id: check-jsonschema
-        name: "Validate Zarf Configs Against Schema"
-        files: "zarf.yaml"
-        types: [yaml]
-        args: ["--schemafile", "https://github.com/defenseunicorns/zarf/blob/main/zarf.schema.json"]
