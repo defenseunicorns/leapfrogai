@@ -9,6 +9,12 @@ constants:
   - name: IMAGE_VERSION
     value: "###ZARF_PKG_TMPL_IMAGE_VERSION###"
 
+variables:
+  - name: GPU_LIMIT
+    description: The GPU limit for the model inferencing.
+    default: "0"
+    pattern: "^[0-9]+$"
+
 components:
   - name: whisper-model
     required: true

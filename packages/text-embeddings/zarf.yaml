@@ -11,8 +11,8 @@ constants:
     value: "###ZARF_PKG_TMPL_IMAGE_VERSION###"
 
 variables:
-  - name: REQUESTS_GPU
-    description: Use GPU for inferencing.
+  - name: GPU_LIMIT
+    description: The GPU limit for the model inferencing.
     default: "0"
     pattern: "^[0-9]+$"
 

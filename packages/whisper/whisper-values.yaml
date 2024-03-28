@@ -1,11 +1,6 @@
 image:
   tag: "###ZARF_CONST_IMAGE_VERSION###"
 
-
-# NOTE: This is not a typo, the request and limit values NEED to be the same
-# TODO @JPERRY: Is there a better way to name this variable to make that more clear without needing to read the above comment?
 resources:
-  requests:
-    nvidia.com/gpu: "###ZARF_VAR_REQUESTS_GPU###"
   limits:
-    nvidia.com/gpu: "###ZARF_VAR_REQUESTS_GPU###"
+    nvidia.com/gpu: "###ZARF_VAR_GPU_LIMIT###"
