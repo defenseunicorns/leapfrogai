@@ -2,6 +2,7 @@ apiVersion: apps/v1
 kind: Deployment
 metadata:
   name: api-deployment
+  namespace: {{ .Release.Namespace }}
 spec:
   replicas: {{ .Values.api.replcias }}
   strategy:
@@ -66,7 +67,3 @@ spec:
       volumes:
       - name: api-model
         emptyDir: {}
-        
-
-    
-  

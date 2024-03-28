@@ -2,7 +2,7 @@ apiVersion: v1
 kind: ConfigMap
 metadata:
   name: "{{ .Values.nameOverride }}-configmap"
-  namespace: leapfrogai
+  namespace: {{ .Release.Namespace }}
   labels:
     leapfrogai: sparkle
 data:
