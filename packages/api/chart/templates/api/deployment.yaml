@@ -6,7 +6,9 @@ metadata:
 spec:
   replicas: {{ .Values.api.replcias }}
   strategy:
-    type: Recreate
+    rollingUpdate:
+      maxUnavailable: 0
+    type: RollingUpdate
   selector:
     matchLabels:
       app: api

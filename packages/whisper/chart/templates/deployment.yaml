@@ -7,7 +7,9 @@ metadata:
     {{- include "chart.labels" . | nindent 4 }}
 spec:
   strategy:
-    type: Recreate
+    rollingUpdate:
+      maxUnavailable: 0
+    type: RollingUpdate
   {{- if not .Values.autoscaling.enabled }}
   replicas: {{ .Values.replicaCount }}
   {{- end }}
