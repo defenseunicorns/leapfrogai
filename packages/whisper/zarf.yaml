@@ -1,7 +1,7 @@
 kind: ZarfPackageConfig
 metadata:
   name: "whisper"
-  version: 0.0.1
+  version: 0.1.0
   description: >
     whisper model
 
