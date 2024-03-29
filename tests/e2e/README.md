@@ -28,8 +28,8 @@ uds zarf package deploy zarf-package-leapfrogai-api-*.tar.zst
 
 # Build and Deploy the model backend you want to test.
 # NOTE: In this case we are showing llama.cpp
-make build-llama
-uds zarf package deploy zarf-package-llama-*.tar.zst
+make build-llama-cpp-python
+uds zarf package deploy zarf-package-llama-cpp-python*.tar.zst
 
 # Install the python dependencies
 python -m pip install ".[e2e-test]"

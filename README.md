@@ -35,7 +35,7 @@ Large Language Models (LLMs) are a powerful resource for AI-driven decision maki
 
 ## Structure
 
-The LeapfrogAI repository follows a monorepo structure based around an [API](#api) with each of the [components](#components) included in a dedicated `packages` directory. Each of these package directories contains the source code for each component as well as the deployment infrastructure. The structure looks as follows:
+The LeapfrogAI repository follows a monorepo structure based around an [API](#api) with each of the [components](#components) included in a dedicated `packages` directory. Each of these package directories contains the source code for each component as well as the deployment infrastructure. The UDS bundles that handle the development and latest deployments of LeapfrogAI are in the `uds-bundles` directory. The structure looks as follows:
 
 ```
 leapfrogai/
@@ -45,10 +45,13 @@ leapfrogai/
 │       └── ...
 ├── packages/
 │   ├── api/
-│   ├── llama/
+│   ├── llama-cpp-python/
 │   ├── text-embeddings/
 │   ├── vllm/
 │   └── whisper/
+├── uds-bundles/
+│   ├── dev/
+│   └── prod/
 ├── Makefile
 ├── pyproject.toml
 ├── README.md
@@ -115,8 +118,8 @@ source .venv/bin/activate
 Each component is built into its own Zarf package. This can be done easily using the provided `Make` targets:
 ```
 make build-api
-make build-vllm           # if you have GPUs
-make build-llama          # if you have CPU only
+make build-vllm                 # if you have GPUs
+make build-llama-cpp-python     # if you have CPU only
 make build-text-embeddings
 make build-whisper
 ```
