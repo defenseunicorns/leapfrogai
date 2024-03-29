@@ -1,12 +1,10 @@
 ---
-title: Deployment (deprecated)
+title: Advanced Deployments & Air Gap
 type: docs
 weight: 6
 ---
 
-**THIS INSTRUCTION SET IS DEPRECATED AND IS NO LONGER BEING MAINTAINED**
-
-**IT IS HIGHLY RECOMMENDED TO USE THE QUICK START DEPLOYMENT INSTRUCTIONS**
+These instructions are for users who are looking for a more customizable deployment of LeapfrogAI or require air gap deployment considerations.
 
 To successfully proceed with the installation and deployment of LeapfrogAI, steps must be executed in the order that they are presented in the following instructions. The LeapfrogAI deployment instructions are designed to guide advanced users through the process of deploying the latest version of LeapfrogAI on Kubernetes.
 
