@@ -38,7 +38,7 @@ These `vllm` specific environment variables must be set at the model skeleton le
 
 ## Instructions
 
-Start by cloning the repository which contain the LeapfrogAI UDS bundles:
+Start by cloning the repository which contains the LeapfrogAI UDS bundles:
 
 ``` bash
 git clone https://github.com/defenseunicorns/uds-leapfrogai.git
