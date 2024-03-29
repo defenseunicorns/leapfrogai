@@ -37,15 +37,11 @@ Large Language Models (LLMs) are a powerful resource for AI-driven decision maki
 
 ### UDS
 
-UDS is the preferrred method for a full local deployment of LeapfrogAI. Instructions can be found on the [LeapfrogAI Documentation Site](https://docs.leapfrog.ai/docs/).
+The preferred method for running LeapfrogAI is a local [Kubernetes](https://kubernetes.io/) deployment using [UDS](https://github.com/defenseunicorns/uds-core). Simple instructions for this type of deployment can be found on the [LeapfrogAI Documentation Site](https://docs.leapfrog.ai/docs/).
 
 ### Tadpole
 
-> GitHub Repo:
->
-> - [Tadpole](https://github.com/defenseunicorns/tadpole)
-
-Tadpole is a simple way to get LeapfrogAI up and running in a sandbox environment. While not intended for production, it helps the user to understand the various components of LeapfrogAI and how they interact.
+[Tadpole](https://github.com/defenseunicorns/tadpole) is a simple, lightweight way to get LeapfrogAI up and running in a sandbox environment using Docker. While not intended for production, it helps the user to understand the various components of LeapfrogAI and how they interact.
 
 ## Components
 
