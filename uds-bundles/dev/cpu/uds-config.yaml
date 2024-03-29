@@ -34,14 +34,14 @@ variables:
     requests_gpu: 0
     limits_gpu: 0
 
-  # rag:
-  #   model: llama-cpp-python
-  #   ssl_verification: "false" # if certs exist in-cluster, make true
-  #   response_mode: "raw" # default mode for query endpoint
-  #   temperature: 0 # refine method temperature for vllm
-  #   max_output: 2048
-  #   context_window: 4096
-  #   chunk_size: 512
-  #   overlap_size: 64
-  #   embedding_model_name: text-embeddings
-  #   top_k: 20
+  rag:
+    model: llama-cpp-python
+    ssl_verification: "false" # if certs exist in-cluster, make true
+    response_mode: "raw" # default mode for query endpoint
+    temperature: 0 # refine method temperature for vllm
+    max_output: 2048
+    context_window: 4096
+    chunk_size: 512
+    overlap_size: 64
+    embedding_model_name: text-embeddings
+    top_k: 20

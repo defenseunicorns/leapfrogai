@@ -26,7 +26,7 @@ variables:
     requests_gpu: 0
     limits_gpu: 0
 
-  vllm: # default is synthia-7b
+  vllm:
     requests_cpu: 0
     limits_cpu: 0
     requests_memory: 0

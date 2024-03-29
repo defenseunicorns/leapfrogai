@@ -2,7 +2,8 @@ ARCH ?= amd64
 KEY ?= ""
 
 VERSION ?= $(shell git describe --abbrev=0 --tags)
-LOCAL_VERSION ?= $(shell git rev-parse --short HEAD)
+LOCAL_VERSION ?= "dev"
+#LOCAL_VERSION ?= $(shell git rev-parse --short HEAD)
 
 ######################################################################################
 
