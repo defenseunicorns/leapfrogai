@@ -16,8 +16,8 @@ packages:
     ref: 0.3.5
 
   # Chat Model
-  - name: llama
-    path: ../../packages/llama/
+  - name: llama-cpp-python
+    path: ../../packages/llama-cpp-python/
     ref: feff99d
 
   # Text Embeddings Model

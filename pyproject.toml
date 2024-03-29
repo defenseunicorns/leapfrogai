@@ -50,7 +50,7 @@ dev = [
     "ruff",
 ]
 
-llama = [
+llama-cpp-python = [
     "llama-cpp-python == 0.2.28",
 ]
 
