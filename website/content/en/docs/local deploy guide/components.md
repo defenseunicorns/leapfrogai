@@ -6,17 +6,9 @@ weight: 3
 
 ## Components
 
-### Sandbox Deployment
-
-[Tadpole](https://github.com/defenseunicorns/tadpole) serves as a straightforward method to set up LeapfrogAI for local use. Although **not suitable for production environments**, it aids users in understanding the different components of LeapfrogAI and their interactions.
-
-### Advanced LeapfrogAI Deployment
-
-The LeapfrogAI deployment guide is designed to guide advanced users through the process of deploying the latest production version of LeapfrogAI locally on Kubernetes.
-
 ### LeapfrogAI API
 
-LeapfrogAI offers an [API](https://github.com/defenseunicorns/leapfrogai-api) closely aligned with OpenAI's, facilitating seamless compatibility for tools developed with OpenAI/ChatGPT to operate seamlessly with a LeapfrogAI backend. The LeapfrogAI API is a Python API that exposes LLM backends, via FastAPI and gRPC, in the OpenAI API specification.
+LeapfrogAI offers an API closely aligned with OpenAI's, facilitating seamless compatibility for tools developed with OpenAI/ChatGPT to operate seamlessly with a LeapfrogAI backend. The LeapfrogAI API is a Python API that exposes LLM backends, via FastAPI and gRPC, in the OpenAI API specification.
 
 ### Backend
 
@@ -24,10 +16,10 @@ LeapfrogAI offers several backends for a variety of use cases:
 
 | Backend                                                                                    | Support                         |
 | ------------------------------------------------------------------------------------------ | ------------------------------- |
-| [llama-cpp-python](https://github.com/defenseunicorns/leapfrogai-backend-llama-cpp-python) | AMD64, Docker, Kubernetes, Zarf |
-| [whisper](https://github.com/defenseunicorns/leapfrogai-backend-whisper)                   | AMD64, Docker, Kubernetes, Zarf |
-| [text-embeddings](https://github.com/defenseunicorns/leapfrogai-backend-text-embeddings)   | AMD64, Docker, Kubernetes, Zarf |
-| [VLLM](https://github.com/defenseunicorns/leapfrogai-backend-vllm)                         | AMD64, Docker, Kubernetes, Zarf |
+| [llama-cpp-python](https://github.com/defenseunicorns/leapfrogai/tree/main/packages/llama-cpp-python) | AMD64, Docker, Kubernetes, Zarf |
+| [whisper](https://github.com/defenseunicorns/leapfrogai/tree/main/packages/whisper)                   | AMD64, Docker, Kubernetes, Zarf |
+| [text-embeddings](https://github.com/defenseunicorns/leapfrogai/tree/main/packages/text-embeddings)   | AMD64, Docker, Kubernetes, Zarf |
+| [VLLM](https://github.com/defenseunicorns/leapfrogai/tree/main/packages/vllm)                         | AMD64, Docker, Kubernetes, Zarf |
 | [RAG](https://github.com/defenseunicorns/leapfrogai-backend-rag)                           | AMD64, Docker, Kubernetes, Zarf |
 
 ### Image Hardening
