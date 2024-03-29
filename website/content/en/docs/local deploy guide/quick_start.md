@@ -10,6 +10,7 @@ The fastest and easiest way to get started with a deployment of LeapfrogAI is by
 
 ## Prerequisites
 
+- [Docker](https://docs.docker.com/engine/install/)
 - [K3D](https://k3d.io/)
 - [UDS CLI](https://github.com/defenseunicorns/uds-cli)
 
@@ -21,11 +22,9 @@ GPU considerations (NVIDIA GPUs only):
 
 ## Disclaimers
 
-It is recommended to run UDS as root.
-
 GPU workloads **_WILL NOT_** run if GPU resources are unavailable to the pod(s). You must provide sufficient NVIDIA GPU scheduling or else the pod(s) will go into a crash loop.
 
-`whisper` can run without without GPU scheduling - just turn off the `GPU_ENABLED` boolean.
+`whisper` can run without GPU scheduling - just set the `GPU_LIMIT` value to `0`.
 
 If `vllm` is being used with:
 
@@ -51,7 +50,7 @@ From within the cloned repository, deploy K3D and the LeapfrogAI bundle:
 ``` bash
 cd bundles/cpu/
 uds create .
-uds deploy k3d-core-istio-dev:0.14.1
+uds deploy k3d-core-istio-dev:0.14.1      # be sure to check if a newer version exists
 uds deploy uds-bundle-leapfrogai-*.tar.zst --confirm
 ```
 
@@ -62,7 +61,7 @@ In order to test the GPU deployment locally on K3d, use the following command wh
 ```bash
  cd bundles/gpu/
  uds create .
- uds deploy k3d-core-istio-dev:0.14.1 --set K3D_EXTRA_ARGS="--gpus=all --image=ghcr.io/justinthelaw/k3d-gpu-support:v1.27.4-k3s1-cuda"
+ uds deploy k3d-core-istio-dev:0.14.1 --set K3D_EXTRA_ARGS="--gpus=all --image=ghcr.io/justinthelaw/k3d-gpu-support:v1.27.4-k3s1-cuda"     # be sure to check if a newer version exists
  uds deploy uds-bundle-leapfrogai-*.tar.zst --confirm
 ```
 
