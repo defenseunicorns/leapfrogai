@@ -7,8 +7,6 @@
 - [Overview](#overview)
 - [Why Host Your Own LLM?](#why-host-your-own-llm)
 - [Getting Started](#getting-started)
-  - [UDS](#uds)
-  - [Tadpole](#tadpole)
 - [Components](#components)
   - [API](#api)
   - [Backends](#backends)
@@ -35,13 +33,7 @@ Large Language Models (LLMs) are a powerful resource for AI-driven decision maki
 
 ## Getting Started
 
-### UDS
-
 The preferred method for running LeapfrogAI is a local [Kubernetes](https://kubernetes.io/) deployment using [UDS](https://github.com/defenseunicorns/uds-core). Simple instructions for this type of deployment can be found on the [LeapfrogAI Documentation Site](https://docs.leapfrog.ai/docs/).
-
-### Tadpole
-
-[Tadpole](https://github.com/defenseunicorns/tadpole) is a simple, lightweight way to get LeapfrogAI up and running in a sandbox environment using Docker. While not intended for production, it helps the user to understand the various components of LeapfrogAI and how they interact.
 
 ## Components
 
@@ -54,10 +46,10 @@ LeapfrogAI provides an API that closely matches that of OpenAI's. This feature a
 > Available Backends:
 > | Backend | AMD64 Support | ARM64 Support | Cuda Support | Docker Ready | K8s Ready | Zarf Ready |
 > | --- | --- | --- | --- | --- | --- | --- |
-> | llama-cpp-python | ✅ | 🚧 | ✅ | ✅ | ✅ | ✅ |
-> | whisper | ✅ | 🚧 | ✅ | ✅ | ✅ | ✅ |
-> | text-embeddings | ✅ | 🚧 | ✅ | ✅ | ✅ | ✅ |
-> | vllm | ✅ | ❌ | ✅ | ✅ | ✅ | ✅ |
+> | [llama-cpp-python](packages/llama-cpp-python/) | ✅ | 🚧 | ✅ | ✅ | ✅ | ✅ |
+> | [whisper](packages/whisper/) | ✅ | 🚧 | ✅ | ✅ | ✅ | ✅ |
+> | [text-embeddings](packages/text-embeddings/) | ✅ | 🚧 | ✅ | ✅ | ✅ | ✅ |
+> | [vllm](packages/vllm/) | ✅ | ❌ | ✅ | ✅ | ✅ | ✅ |
 > | [rag](https://github.com/defenseunicorns/leapfrogai-backend-rag) (repo integration soon) | ✅ | ✅ | ❌ | ✅ | ✅ | ✅ |
 
 LeapfrogAI provides several backends for a variety of use cases.
