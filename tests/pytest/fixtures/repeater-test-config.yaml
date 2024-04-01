@@ -1,3 +1,0 @@
-models:
-- name: repeater
-  backend: localhost:50051
