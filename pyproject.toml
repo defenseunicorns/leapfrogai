@@ -74,10 +74,6 @@ whisper = [
     "faster-whisper == 0.10.0",
 ]
 
-e2e-test = [
-    "openai"
-]
-
 [tool.pip-tools]
 generate-hashes = true
 
