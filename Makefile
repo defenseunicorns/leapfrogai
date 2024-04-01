@@ -54,7 +54,7 @@ build-api: local-registry setup-api-deps ## Build the leapfrogai_api container a
 
 setup-llama-deps:  ## Download the wheels for the optional 'llama' dependencies
 	-rm packages/llama/build/*.whl
-	python -m pip wheel ".[llama-cpp-python]" -w packages/llama/build
+	python -m pip wheel ".[llama-cpp-python]" -w packages/llama-cpp-python/build
 
 build-llama-cpp-python: local-registry setup-llama-deps ## Build the llama-cpp-python (cpu) container and Zarf package
 	## Build the image (and tag it for the local registry)

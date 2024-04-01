@@ -63,17 +63,17 @@ jobs:
         ##########
         # llama
         ##########
-        - name: Deploy llama
+        - name: Deploy llama-cpp-python
           run: |
-            uds zarf package deploy zarf-package-llama-*.tar.zst --confirm
+            uds zarf package deploy zarf-package-llama-cpp-python-*.tar.zst --confirm
 
-        - name: Test llama
+        - name: Test llama-cpp-python
           run: |
             python -m pytest ./tests/e2e/test_llama.py -v
 
-        - name: Cleanup llama
+        - name: Cleanup llama-cpp-python
           run: |
-            uds zarf package remove llama --confirm
+            uds zarf package remove llama-cpp-python --confirm
 
         ##########
         # text-embeddings
