@@ -39,7 +39,7 @@ spec:
               protocol: TCP
           env:
             - name: GPU_REQUEST
-              value: {{ (index .Values.resources.requests "nvidia.com/gpu") | default "0"}}
+              value: "{{ (index .Values.resources.requests "nvidia.com/gpu") | default "0" }}"
           resources:
             {{- toYaml .Values.resources | nindent 12 }}
       {{- with .Values.nodeSelector }}
