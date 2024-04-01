@@ -103,11 +103,15 @@ LeapfrogAI provides some options of UI to get started with common use-cases such
 
 ## Usage
 
-LeapfrogAI can be deployed and run locally via UDS, built out using [Zarf](https://zarf.dev) packages. This pulls the most recent package images and is the most stable way of running a local LeapfrogAI deployment. These instructions can be found in the [UDS-LeapfrogAI](https://github.com/defenseunicorns/uds-leapfrogai) repository and has options for handling CPU and GPU deployments.
+### UDS (Latest)
 
-If you want to make some changes to LeapfrogAI before deploying (for example in a dev environment), you can follow these instructions:
+LeapfrogAI can be deployed and run locally via UDS and Kubernetes, built out using [Zarf](https://zarf.dev) packages. This pulls the most recent package images and is the most stable way of running a local LeapfrogAI deployment. These instructions can be found on the [LeapfrogAI Docs](https://docs.leapfrog.ai/docs/) site.
 
-Make sure your system has the [required dependencies](https://docs.leapfrog.ai/docs/local-deploy-guide/dependencies/).
+### UDS (Dev)
+
+If you want to make some changes to LeapfrogAI before deploying via UDS (for example in a dev environment), you can follow these instructions:
+
+Make sure your system has the [required dependencies](https://docs.leapfrog.ai/docs/local-deploy-guide/quick_start/#prerequisites).
 
 For ease, it's best to create a virtual environment:
 ```
@@ -126,14 +130,44 @@ make build-whisper
 
 Once the packages are created, you can deploy either a CPU or GPU-enabled deployment via one of the UDS bundles:
 
-CPU
+#### CPU
 ```
 LOCAL_VERSION=$(git rev-parse --short HEAD)  # set the local package version associated with the created zarf packages
-cd uds/cpu
+cd uds-bundles/dev/cpu
 uds create .
 uds deploy k3d-core-istio-dev:0.14.1
 uds deploy uds-bundle-leapfrog*.tar.zst
-``1
+```
+
+#### GPU
+```
+LOCAL_VERSION=$(git rev-parse --short HEAD)  # set the local package version associated with the created zarf packages
+cd uds-bundles/dev/gpu
+uds create .
+uds deploy k3d-core-istio-dev:0.14.1 --set K3D_EXTRA_ARGS="--gpus=all --image=ghcr.io/justinthelaw/k3d-gpu-support:v1.27.4-k3s1-cuda"     # be sure to check if a newer version exists
+uds deploy uds-bundle-leapfrogai-*.tar.zst --confirm
+```
+
+### Local Dev
+
+The following instructions are for running each of the LFAI components for local development. This is useful when testing changes to a specific component, but will not assist in a full deployment of LeapfrogAI. Please refer to the above sections for deployment instructions.
+
+It is highly recommended to make a virtual environment to keep the development environment clean:
+
+```
+python -m venv .venv
+source .venv/bin/activate
+```
+
+#### API
+
+To run the LeapfrogAI API locally:
+
+```
+python -m pip install .[api,dev]
+cd src
+uvicorn leapfrogai_api.main:app --port 3000 --reload
+```
 
 ## Community
 
