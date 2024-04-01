@@ -1,7 +1,7 @@
 ---
 title: Dependencies 
 type: docs
-weight: 4
+weight: 5
 ---
 
 This documentation addresses the local deployment dependencies of LeapfrogAI, a self-hosted generative AI platform. LeapfrogAI extends the diverse capabilities and modalities of AI models to various environments, ranging from cloud-based deployments to servers with ingress and egress limitations. With LeapfrogAI, teams can deploy APIs aligned with OpenAI's API specifications, empowering teams to create and utilize tools compatible with nearly any model and code library available. Importantly, all operations take place locally, ensuring users can maintain the security of their information and sensitive data within their own environments
