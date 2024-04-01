@@ -50,7 +50,7 @@ jobs:
         # NOTE: We are not testing vllm in this workflow, but it is still nice to verify that it will build
         - name: Build all packages
           run: |
-            make clean build-api build-llama build-vllm build-text-embeddings build-whisper LOCAL_VERSION=e2e-test
+            make clean build-api build-llama-cpp-python build-vllm build-text-embeddings build-whisper LOCAL_VERSION=e2e-test
 
         - name: Create UDS Cluster
           run: |

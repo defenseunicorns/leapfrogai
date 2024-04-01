@@ -65,7 +65,7 @@ build-llama-cpp-python: local-registry setup-llama-deps ## Build the llama-cpp-p
 	docker push localhost:5000/defenseunicorns/leapfrogai/llama-cpp-python:${LOCAL_VERSION}
 
 	## Build the Zarf package
-	zarf package create packages/llama-cpp-python --registry-override=ghcr.io=localhost:5000 --insecure --set IMAGE_VERSION=${LOCAL_VERSION} --confirm
+	uds zarf package create packages/llama-cpp-python --registry-override=ghcr.io=localhost:5000 --insecure --set IMAGE_VERSION=${LOCAL_VERSION} --confirm
 
 
 setup-vllm-deps: ## Download the wheels for the optional 'vllm' dependencies
