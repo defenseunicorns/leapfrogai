@@ -6,14 +6,13 @@
 - [Table of Contents](#table-of-contents)
 - [Overview](#overview)
 - [Why Host Your Own LLM?](#why-host-your-own-llm)
+- [Getting Started](#getting-started)
 - [Components](#components)
-  - [Getting Started](#getting-started)
   - [API](#api)
   - [Backends](#backends)
   - [Image Hardening](#image-hardening)
   - [SDK](#sdk)
   - [User Interface](#user-interface)
-  - [Advanced Deployments](#advanced-deployments)
 - [Community](#community)
 
 ## Overview
@@ -32,34 +31,26 @@ Large Language Models (LLMs) are a powerful resource for AI-driven decision maki
 
 - **Mission Integration**: By hosting your own LLM, you have the ability to customize the model's parameters, training data, and more, tailoring the AI to your specific needs.
 
+## Getting Started
+
+The preferred method for running LeapfrogAI is a local [Kubernetes](https://kubernetes.io/) deployment using [UDS](https://github.com/defenseunicorns/uds-core). Simple instructions for this type of deployment can be found on the [LeapfrogAI Documentation Site](https://docs.leapfrog.ai/docs/).
+
 ## Components
 
-### Getting Started
-
-> GitHub Repo:
->
-> - [Tadpole](https://github.com/defenseunicorns/tadpole)
-
-Tadpole is a simple way to get LeapfrogAI up and running locally. While not intended for production, it helps the user to understand the various components of LeapfrogAI and how they interact.
-
 ### API
-
-> GitHub Repo:
->
-> - [leapfrog-api](https://github.com/defenseunicorns/leapfrogai-api)
 
 LeapfrogAI provides an API that closely matches that of OpenAI's. This feature allows tools that have been built with OpenAI/ChatGPT to function seamlessly with a LeapfrogAI backend.
 
 ### Backends
 
-> GitHub Repos:
-> | Repo | AMD64 Support | ARM64 Support | Cuda Support | Docker Ready | K8s Ready | Zarf Ready |
+> Available Backends:
+> | Backend | AMD64 Support | ARM64 Support | Cuda Support | Docker Ready | K8s Ready | Zarf Ready |
 > | --- | --- | --- | --- | --- | --- | --- |
-> | [llama-cpp-python](https://github.com/defenseunicorns/leapfrogai-backend-llama-cpp-python) | ✅ | 🚧 | ✅ | ✅ | ✅ | ✅ |
-> | [whisper](https://github.com/defenseunicorns/leapfrogai-backend-whisper) | ✅ | 🚧 | ✅ | ✅ | ✅ | ✅ |
-> | [text-embeddings](https://github.com/defenseunicorns/leapfrogai-backend-text-embeddings) | ✅ | 🚧 | ✅ | ✅ | ✅ | ✅ |
-> | [vllm](https://github.com/defenseunicorns/leapfrogai-backend-vllm) | ✅ | ❌ | ✅ | ✅ | ✅ | ✅ |
-> | [rag](https://github.com/defenseunicorns/leapfrogai-backend-rag) | ✅ | ✅ | ❌ | ✅ | ✅ | ✅ |
+> | [llama-cpp-python](packages/llama-cpp-python/) | ✅ | 🚧 | ✅ | ✅ | ✅ | ✅ |
+> | [whisper](packages/whisper/) | ✅ | 🚧 | ✅ | ✅ | ✅ | ✅ |
+> | [text-embeddings](packages/text-embeddings/) | ✅ | 🚧 | ✅ | ✅ | ✅ | ✅ |
+> | [vllm](packages/vllm/) | ✅ | ❌ | ✅ | ✅ | ✅ | ✅ |
+> | [rag](https://github.com/defenseunicorns/leapfrogai-backend-rag) (repo integration soon) | ✅ | ✅ | ❌ | ✅ | ✅ | ✅ |
 
 LeapfrogAI provides several backends for a variety of use cases.
 
@@ -73,8 +64,6 @@ LeapfrogAI leverages Chainguard's [apko](https://github.com/chainguard-dev/apko)
 
 ### SDK
 
-> GitHub Repo: [leapfrogai-sdk](https://github.com/defenseunicorns/leapfrogai-sdk)
-
 The LeapfrogAI SDK provides a standard set of protobuff and python utilities for implementing backends and gRPC.
 
 ### User Interface
@@ -84,14 +73,6 @@ The LeapfrogAI SDK provides a standard set of protobuff and python utilities for
 > - [leapfrog-ui](https://github.com/defenseunicorns/leapfrog-ui)
 
 LeapfrogAI provides some options of UI to get started with common use-cases such as chat, summarization, and transcription.
-
-### Advanced Deployments
-
-> GitHub Repo:
->
-> - [leapfrogai-deployment](https://github.com/defenseunicorns/leapfrogai-deployment)
-
-These instructions will assist advanced users in standing up the latest production version of LeapfrogAI on Kubernetes.
 
 ## Community
 
