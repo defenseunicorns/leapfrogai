@@ -12,8 +12,9 @@ ARG REVISION=3f65d882253d1f15a113dabf473a7c02a004d2b5
 
 # TODO: Standardize on a better approach for how we download models into our images across our packages
 COPY scripts/model_download.py scripts/model_download.py
-RUN REPO_ID=${REPO_ID} FILENAME=${FILENAME} REVISION=${REVISION} python3.11 scripts/model_download.py
-RUN mv .model/*.gguf .model/model.gguf
+COPY build/*.gguf .model/
+RUN if [[ -f .model/model.gguf ]] ; then : ; else REPO_ID=${REPO_ID} FILENAME=${FILENAME} REVISION=${REVISION} python3.11 scripts/model_download.py ; fi
+RUN if [[ -f.model/model.gguf ]] ; then : ; else mv .model/*.gguf .model/model.gguf ; fi
 
 
 # create virtual environment for light-weight portability and minimal libraries
