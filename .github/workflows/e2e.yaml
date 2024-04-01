@@ -35,7 +35,7 @@ jobs:
         - name: Setup Python
           uses: actions/setup-python@0a5c61591373683505ea898e09a3ea4f39ef2b9c #v5.0.0
           with:
-            python-version-file: 'pyproject.toml'
+            python-version: '3.11.6'
 
         # TODO @JPERRY: We should be generating the proto files before this...
         - name: Install Python Deps
@@ -54,7 +54,7 @@ jobs:
 
         - name: Create UDS Cluster
           run: |
-            uds deploy oci://ghcr.io/defenseunicorns/packages/uds/bundles/k3d-core-istio-dev:0.15.1 --confirm
+            uds deploy k3d-core-istio-dev:0.16.1 --confirm
 
         - name: Deploy LFAI-API
           run: |
