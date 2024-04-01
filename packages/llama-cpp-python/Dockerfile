@@ -14,7 +14,7 @@ ARG REVISION=3f65d882253d1f15a113dabf473a7c02a004d2b5
 COPY scripts/model_download.py scripts/model_download.py
 COPY build/*.gguf .model/
 RUN if [[ -f .model/model.gguf ]] ; then : ; else REPO_ID=${REPO_ID} FILENAME=${FILENAME} REVISION=${REVISION} python3.11 scripts/model_download.py ; fi
-RUN if [[ -f.model/model.gguf ]] ; then : ; else mv .model/*.gguf .model/model.gguf ; fi
+RUN if [[ -f .model/model.gguf ]] ; then : ; else mv .model/*.gguf .model/model.gguf ; fi
 
 
 # create virtual environment for light-weight portability and minimal libraries
