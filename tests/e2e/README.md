@@ -20,16 +20,16 @@ There are several ways you can setup and run these tests. Here is one such way:
 # Setup the UDS cluster
 # NOTE: This stands up a k3d cluster and installs istio & pepr
 # NOTE: Be sure to use the latest released version at the time you're reading this!
-uds deploy oci://ghcr.io/defenseunicorns/packages/uds/bundles/k3d-core-istio-dev:0.13.1 --confirm
+uds deploy oci://ghcr.io/defenseunicorns/packages/uds/bundles/k3d-core-slim-dev:0.18.0 --confirm
 
 # Build and Deploy the LFAI API
 make build-api
 uds zarf package deploy zarf-package-leapfrogai-api-*.tar.zst
 
 # Build and Deploy the model backend you want to test.
-# NOTE: In this case we are showing llama.cpp
-make build-llama
-uds zarf package deploy zarf-package-llama-*.tar.zst
+# NOTE: In this case we are showing llama-cpp-python
+make build-llama-cpp-python
+uds zarf package deploy zarf-package-llama-cpp-python-*.tar.zst
 
 # Install the python dependencies
 python -m pip install ".[e2e-test]"

@@ -11,18 +11,6 @@ client = OpenAI(
 model_name = "llama-cpp-python"
 
 
-# def test_completions():
-#     completion = client.completions.create(
-#         model=model_name,
-#         prompt="What is your name?",
-#     )
-
-#     assert completion.model == model_name
-#     assert len(completion.choices) == 1
-#     assert len(completion.choices[0].text) > 0
-#     assert len(completion.choices[0].text) < 500
-
-
 def test_chat_completions():
     messages = [
         {"role": "system", "content": "You are a helpful assistant."},
