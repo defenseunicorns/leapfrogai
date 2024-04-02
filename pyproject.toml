@@ -26,6 +26,7 @@ readme = "README.md"
 api = [
     "fastapi >= 0.109.1",
     "uvicorn >= 0.23.2",
+    "openai >= 0.10.0",
     "pydantic",
     "python-multipart >= 0.0.7", #indirect dep of FastAPI to receive form data for file uploads
     "watchfiles >= 0.21.0",
