@@ -52,6 +52,12 @@ jobs:
           run: |
             make clean build-api build-llama-cpp-python build-vllm build-text-embeddings build-whisper LOCAL_VERSION=e2e-test
 
+        - name: Remove system pressure
+          run: |
+            docker stop registry
+            docker rm registry
+            docker image prune -f
+
         - name: Create UDS Cluster
           run: |
             uds deploy k3d-core-istio-dev:0.16.1 --confirm
