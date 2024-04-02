@@ -35,7 +35,7 @@ jobs:
         - name: Setup Python
           uses: actions/setup-python@0a5c61591373683505ea898e09a3ea4f39ef2b9c #v5.0.0
           with:
-            python-version: '3.11.6'
+            python-version-file: 'pyproject.toml'
 
         # TODO @JPERRY: We should be generating the proto files before this...
         - name: Install Python Deps
@@ -111,3 +111,13 @@ jobs:
         - name: Cleanup whisper
           run: |
             uds zarf package remove whisper -l=trace --confirm
+
+
+        ##########
+        # vLLM
+        # NOTE: We are not deploying and testing vLLM in this workflow because it requires a GPU
+        #     : This workflow simply verifies that the vLLM package can be built
+        ##########
+        - name: Build vLLM
+          run: |
+            make build-vllm LOCAL_VERSION=e2e-test
