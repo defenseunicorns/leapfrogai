@@ -29,6 +29,7 @@ You can optionally specify different models or quantization types using the foll
 - `--build-arg REPO_ID="TheBloke/Synthia-7B-v2.0-GPTQ"`: HuggingFace repository ID for the model
 - `--build-arg REVISION="gptq-4bit-32g-actorder_True"`: Revision or commit hash for the model
 - `--build-arg QUANTIZATION="gptq"`: Quantization type (e.g., gptq, awq, or empty for un-quantized)
+- `--build-arg TENSOR_PARALLEL_SIZE="1"`: The number of gpus to spread the tensor processing across
 
 ### Run Locally
 
