@@ -20,8 +20,16 @@ from leapfrogai_api.backends.openai.types import (
     CreateEmbeddingResponse,
     CreateTranscriptionRequest,
     CreateTranscriptionResponse,
+    DeleteFileRequest,
+    DeleteFileResponse,
+    ListFilesRequest,
+    ListFilesResponse,
     ModelResponse,
     ModelResponseModel,
+    RetrieveFileContentRequest,
+    RetrieveFileContentResponse,
+    RetrieveFileRequest,
+    RetrieveFileResponse,
     UploadFileRequest,
     UploadFileResponse,
 )
@@ -156,7 +164,7 @@ async def files(request: UploadFileRequest = Depends(UploadFileRequest.as_form))
     )
 
 @router.get("/files")
-async def files():
+async def files(request: ListFilesRequest = Depends(ListFilesRequest.as_form)) -> ListFilesResponse:
     # TODO: https://github.com/defenseunicorns/leapfrogai/issues/287
     raise HTTPException(
         status_code=501,
@@ -164,7 +172,7 @@ async def files():
     )
 
 @router.get("/files/{file_id}")
-async def files(file_id: str):
+async def files(request: RetrieveFileRequest) -> RetrieveFileResponse:
     # TODO: https://github.com/defenseunicorns/leapfrogai/issues/338
     raise HTTPException(
         status_code=501,
@@ -172,7 +180,7 @@ async def files(file_id: str):
     )
 
 @router.delete("/files/{file_id}")
-async def files(file_id: str):
+async def files(request: DeleteFileRequest) -> DeleteFileResponse:
     # TODO: https://github.com/defenseunicorns/leapfrogai/issues/339
     raise HTTPException(
         status_code=501,
@@ -180,7 +188,7 @@ async def files(file_id: str):
     )
 
 @router.get("/files/{file_id}/content")
-async def files(file_id: str):
+async def files(request: RetrieveFileContentRequest) -> RetrieveFileContentResponse:
     # TODO: https://github.com/defenseunicorns/leapfrogai/issues/289
     raise HTTPException(
         status_code=501,
