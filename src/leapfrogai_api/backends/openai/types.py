@@ -169,58 +169,64 @@ class CreateTranscriptionRequest(BaseModel):
 
 class CreateTranscriptionResponse(BaseModel):
     text: str
-    
+
+
 ##########
 # Files
-##########  
-    
+##########
+
+
 class UploadFileRequest(BaseModel):
     file: UploadFile
     purpose: str = "assistants"
-    
+
     @classmethod
     def as_form(
-        cls, 
+        cls,
         file: UploadFile = File(...),
         purpose: Optional[str] = Form("assistants"),
     ) -> UploadFileRequest:
-        return cls(
-            file=file,
-            purpose=purpose
-        )
-    
+        return cls(file=file, purpose=purpose)
+
+
 class UploadFileResponse(BaseModel):
     file_object: FileObject
-    
+
+
 class ListFilesRequest(BaseModel):
     purpose: Optional[str] = None
-    
+
     @classmethod
     def as_form(
-        cls, 
+        cls,
         purpose: Optional[str] = Form(None),
     ) -> ListFilesRequest:
-        return cls(
-            purpose=purpose
-        )
+        return cls(purpose=purpose)
+
 
 class ListFilesResponse(BaseModel):
     files: list[FileObject]
-    
+
+
 class RetrieveFileRequest(BaseModel):
     file_id: str
-    
+
+
 class RetrieveFileResponse(BaseModel):
     file_object: FileObject
-    
+
+
 class DeleteFileRequest(BaseModel):
     file_id: str
 
+
 class DeleteFileResponse(BaseModel):
     deletion_status: FileDeleted
-    
+
+
 class RetrieveFileContentRequest(BaseModel):
     file_id: str
-    
+
+
 class RetrieveFileContentResponse(BaseModel):
     file_content: FileContent
