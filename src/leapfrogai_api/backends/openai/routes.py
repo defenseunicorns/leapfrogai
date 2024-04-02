@@ -160,7 +160,7 @@ async def files(request: UploadFileRequest = Depends(UploadFileRequest.as_form))
     # TODO: https://github.com/defenseunicorns/leapfrogai/issues/286
     raise HTTPException(
         status_code=501,
-        detail="This endpoint is not implemented yet."
+        detail=f"POST {request.file.filename}: This endpoint is not implemented yet."
     )
 
 @router.get("/files")
@@ -168,7 +168,7 @@ async def files(request: ListFilesRequest = Depends(ListFilesRequest.as_form)) -
     # TODO: https://github.com/defenseunicorns/leapfrogai/issues/287
     raise HTTPException(
         status_code=501,
-        detail="This endpoint is not implemented yet."
+        detail=f"GET {request.purpose} Files: This endpoint is not implemented yet."
     )
 
 @router.get("/files/{file_id}")
@@ -176,7 +176,7 @@ async def files(request: RetrieveFileRequest) -> RetrieveFileResponse:
     # TODO: https://github.com/defenseunicorns/leapfrogai/issues/338
     raise HTTPException(
         status_code=501,
-        detail="This endpoint is not implemented yet."
+        detail=f"GET {request.file_id} File: This endpoint is not implemented yet."
     )
 
 @router.delete("/files/{file_id}")
@@ -184,7 +184,7 @@ async def files(request: DeleteFileRequest) -> DeleteFileResponse:
     # TODO: https://github.com/defenseunicorns/leapfrogai/issues/339
     raise HTTPException(
         status_code=501,
-        detail="This endpoint is not implemented yet."
+        detail=f"DELETE {request.file_id} File: This endpoint is not implemented yet."
     )
 
 @router.get("/files/{file_id}/content")
@@ -192,5 +192,5 @@ async def files(request: RetrieveFileContentRequest) -> RetrieveFileContentRespo
     # TODO: https://github.com/defenseunicorns/leapfrogai/issues/289
     raise HTTPException(
         status_code=501,
-        detail="This endpoint is not implemented yet."
+        detail=f"GET {request.file_id} File Content: This endpoint is not implemented yet."
     )
