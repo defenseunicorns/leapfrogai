@@ -170,7 +170,7 @@ class Model:
             dtype="auto",
             worker_use_ray=True,
             gpu_memory_utilization=0.90,
-            tensor_parallel_size=1,
+            tensor_parallel_size=AppConfig().backend_options.tensor_parallel_size,
         )
         print(self.engine_args)
         self.engine = AsyncLLMEngine.from_engine_args(self.engine_args)

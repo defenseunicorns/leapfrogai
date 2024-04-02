@@ -9,6 +9,13 @@ class ConfigOptions(BaseConfig):
         default=None,
         description="Type of quantization, for un-quantized models omit this field",
     )
+    tensor_parallel_size: int = Field(
+        default=1,
+        title="GPU Utilization Count",
+        description="The number of gpus to spread the tensor processing across."
+                    "This must be divisible to the number of attention heads in the model",
+        examples=[1, 2, 3],
+    )
 
 
 class DownloadOptions(BaseConfig):
@@ -41,6 +48,7 @@ class AppConfig(BaseConfig):
                 "repo_id": "download_options.repo_id",
                 "revision": "download_options.revision",
                 "quantization": "backend_options.quantization",
+                "tensor_parallel_size": "backend_options.tensor_parallel_size",
             },
         )
     ]
