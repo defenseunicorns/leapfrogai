@@ -45,58 +45,61 @@ jobs:
         run: |
           docker buildx build --platform amd64,arm64 -t ghcr.io/defenseunicorns/leapfrogai/leapfrogai-api:${{ steps.get_version.outputs.version-without-v }} --push packages/api
 
-          zarf package create . --set=LEAPFROGAI_IMAGE_VERSION=${{ steps.get_version.outputs.version-without-v }} --architecture amd64 --confirm
-          zarf package create . --set=LEAPFROGAI_IMAGE_VERSION=${{ steps.get_version.outputs.version-without-v }} --architecture arm64 --confirm
+          zarf package create packages/api --set=LEAPFROGAI_IMAGE_VERSION=${{ steps.get_version.outputs.version-without-v }} --architecture amd64 --confirm
+          zarf package create packages/api --set=LEAPFROGAI_IMAGE_VERSION=${{ steps.get_version.outputs.version-without-v }} --architecture arm64 --confirm
 
           zarf package publish zarf-package-leapfrogai-api-amd64-${{ steps.get_version.outputs.version-without-v }}.tar.zst oci://ghcr.io/defenseunicorns/packages/leapfrogai
           zarf package publish zarf-package-leapfrogai-api-arm64-${{ steps.get_version.outputs.version-without-v }}.tar.zst oci://ghcr.io/defenseunicorns/packages/leapfrogai
 
+          docker image prune -af
           rm zarf-package-leapfrogai-api-*.tar.zst
 
       - name: Build and Publish llama
-      # TODO: Is this the name we want for the image?
-      # TODO: HERE AND ELSWHERE: PACKAGE_VERSION is not used in the new zarf package config. Maybe just update the zarf.yaml IMAGE_VERSION to have the version metadata set by
         run: |
-          docker buildx build --platform amd64,arm64 -t ghcr.io/defenseunicorns/leapfrogai/llama-cpp-python:${{ steps.get_version.outputs.version-without-v }} --push packages/llama
+          docker buildx build --platform amd64,arm64 -t ghcr.io/defenseunicorns/leapfrogai/llama-cpp-python:${{ steps.get_version.outputs.version-without-v }} --push packages/llama-cpp-python
 
-          zarf package create . --set=IMAGE_VERSION=${{ steps.get_version.outputs.version-without-v }} --architecture amd64 --confirm
-          zarf package create . --set=IMAGE_VERSION=${{ steps.get_version.outputs.version-without-v }} --architecture arm64 --confirm
+          zarf package create packages/llama-cpp-python --set=IMAGE_VERSION=${{ steps.get_version.outputs.version-without-v }} --architecture amd64 --confirm
+          zarf package create packages/llama-cpp-python --set=IMAGE_VERSION=${{ steps.get_version.outputs.version-without-v }} --architecture arm64 --confirm
 
-          zarf package publish zarf-package-llama-amd64-${{ steps.get_version.outputs.version-without-v }}.tar.zst oci://ghcr.io/defenseunicorns/packages/leapfrogai
-          zarf package publish zarf-package-llama-arm64-${{ steps.get_version.outputs.version-without-v }}.tar.zst oci://ghcr.io/defenseunicorns/packages/leapfrogai
+          zarf package publish zarf-package-llama-cpp-python-amd64-${{ steps.get_version.outputs.version-without-v }}.tar.zst oci://ghcr.io/defenseunicorns/packages/leapfrogai
+          zarf package publish zarf-package-llama-cpp-python-arm64-${{ steps.get_version.outputs.version-without-v }}.tar.zst oci://ghcr.io/defenseunicorns/packages/leapfrogai
 
+          docker image prune -af
           rm zarf-package-llama-*.tar.zst
 
       - name: Build and Publish vLLM
         run: |
           docker buildx build -t ghcr.io/defenseunicorns/leapfrogai/vllm:${{ steps.get_version.outputs.version-without-v }} --push packages/vllm
 
-          zarf package create . --set=IMAGE_VERSION=${{ steps.get_version.outputs.version-without-v }} --confirm
+          zarf package create packages/vllm --set=IMAGE_VERSION=${{ steps.get_version.outputs.version-without-v }} --confirm
 
           zarf package publish zarf-package-vllm-amd64-${{ steps.get_version.outputs.version-without-v }}.tar.zst oci://ghcr.io/defenseunicorns/packages/leapfrogai
 
+          docker image prune -af
           rm zarf-package-vllm-*.tar.zst
 
       - name: Build and Publish Text-Embeddings
         run: |
           docker buildx build --platform amd64,arm64 -t ghcr.io/defenseunicorns/leapfrogai/text-embeddings:${{ steps.get_version.outputs.version-without-v }} --push packages/text-embeddings
 
-          zarf package create . --set=IMAGE_VERSION=${{ steps.get_version.outputs.version-without-v }} --architecture amd64 --confirm
-          zarf package create . --set=IMAGE_VERSION=${{ steps.get_version.outputs.version-without-v }} --architecture arm64 --confirm
+          zarf package create packages/text-embeddings --set=IMAGE_VERSION=${{ steps.get_version.outputs.version-without-v }} --architecture amd64 --confirm
+          zarf package create packages/text-embeddings --set=IMAGE_VERSION=${{ steps.get_version.outputs.version-without-v }} --architecture arm64 --confirm
 
           zarf package publish zarf-package-text-embeddings-amd64-${{ steps.get_version.outputs.version-without-v }}.tar.zst oci://ghcr.io/defenseunicorns/packages/leapfrogai
           zarf package publish zarf-package-text-embeddings-arm64-${{ steps.get_version.outputs.version-without-v }}.tar.zst oci://ghcr.io/defenseunicorns/packages/leapfrogai
 
+          docker image prune -af
           rm zarf-package-text-embeddings-*.tar.zst
 
       - name: Build and Publish whisper
         run: |
           docker buildx build --platform amd64,arm64 -t ghcr.io/defenseunicorns/leapfrogai/whisper:${{ steps.get_version.outputs.version-without-v }} --push packages/whisper
 
-          zarf package create . --set=IMAGE_VERSION=${{ steps.get_version.outputs.version-without-v }} --architecture amd64 --confirm
-          zarf package create . --set=IMAGE_VERSION=${{ steps.get_version.outputs.version-without-v }} --architecture arm64 --confirm
+          zarf package create packages/whisper --set=IMAGE_VERSION=${{ steps.get_version.outputs.version-without-v }} --architecture amd64 --confirm
+          zarf package create packages/whisper --set=IMAGE_VERSION=${{ steps.get_version.outputs.version-without-v }} --architecture arm64 --confirm
 
           zarf package publish zarf-package-whisper-amd64-${{ steps.get_version.outputs.version-without-v }}.tar.zst oci://ghcr.io/defenseunicorns/packages/leapfrogai
           zarf package publish zarf-package-whisper-arm64-${{ steps.get_version.outputs.version-without-v }}.tar.zst oci://ghcr.io/defenseunicorns/packages/leapfrogai
 
+          docker image prune -af
           rm zarf-package-whisper-*.tar.zst
