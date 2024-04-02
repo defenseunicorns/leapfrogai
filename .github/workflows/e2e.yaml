@@ -49,7 +49,7 @@ jobs:
 
         - name: Create UDS Cluster
           run: |
-            uds deploy k3d-core-istio-dev:0.16.1 --confirm
+            uds deploy k3d-core-slim-dev:0.18.0 --confirm
 
         - name: Deploy LFAI-API
           run: |
