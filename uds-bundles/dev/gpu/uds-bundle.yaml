@@ -2,12 +2,12 @@ kind: UDSBundle
 metadata:
   name: leapfrogai
   description: A UDS bundle for deploying LeapfrogAI with GPU support
-  version: 0.2.1
+  version: dev
 
 packages:
   # OpenAI-like API 
   - name: leapfrogai-api
-    repository: ../../../packages/api
+    path: ../../../packages/api
     ref: dev
 
   # AI chat, transcription, and summarization frontend - not currently in this repo so it builds from ghcr
@@ -17,12 +17,12 @@ packages:
 
   # Model for generic chat and summarization
   - name: vllm
-    repository: ../../../packages//vllm
+    path: ../../../packages//vllm
     ref: dev
 
   # Model for providing vector embeddings for text
   - name: text-embeddings
-    repository: ../../../packages/text-embeddings
+    path: ../../../packages/text-embeddings
     ref: dev
 
   # Backend capability for RAG and VectorDB - - not currently in this repo so it builds from ghcr
@@ -32,5 +32,5 @@ packages:
 
   # Model for converting audio to text
   - name: whisper
-    repository: ../../../packages/whisper
+    path: ../../../packages/whisper
     ref: dev

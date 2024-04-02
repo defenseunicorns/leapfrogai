@@ -51,7 +51,7 @@ dev = [
 ]
 
 llama-cpp-python = [
-    "llama-cpp-python == 0.2.28",
+    "llama-cpp-python == 0.2.56",
 ]
 
 vllm = [

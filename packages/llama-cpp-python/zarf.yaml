@@ -1,7 +1,7 @@
 kind: ZarfPackageConfig
 metadata:
   name: llama-cpp-python
-  version: "###ZARF_PKG_TMPL_LEAPFROGAI_IMAGE_VERSION###"
+  version: "###ZARF_PKG_TMPL_IMAGE_VERSION###"
   description: >
     llama-cpp-python model
 

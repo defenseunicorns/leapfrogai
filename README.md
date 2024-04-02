@@ -138,7 +138,7 @@ Once the packages are created, you can deploy either a CPU or GPU-enabled deploy
 cd uds-bundles/dev/cpu
 uds create .
 uds deploy k3d-core-slim-dev:0.18.0
-uds deploy uds-bundle-leapfrog*.tar.zst
+uds deploy uds-bundle-leapfrogai*.tar.zst
 ```
 
 #### GPU

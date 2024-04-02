@@ -26,9 +26,9 @@ packages:
     ref: dev
 
   # RAG Backend - not currently in this repo so it builds from ghcr
-   - name: rag
-     repository: ghcr.io/defenseunicorns/packages/leapfrogai/rag
-     ref: 0.3.1
+  - name: rag
+    repository: ghcr.io/defenseunicorns/packages/leapfrogai/rag
+    ref: 0.3.1
 
   # Transcription Model
   - name: whisper
