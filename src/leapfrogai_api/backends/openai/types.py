@@ -208,7 +208,7 @@ class ListFilesResponse(BaseModel):
     files: list[FileObject]
     
 class RetrieveFileRequest(BaseModel):
-    file_id: str = None
+    file_id: str
     
 class RetrieveFileResponse(BaseModel):
     file_object: FileObject
@@ -220,7 +220,7 @@ class DeleteFileResponse(BaseModel):
     deletion_status: FileDeleted
     
 class RetrieveFileContentRequest(BaseModel):
-    file_id: str = None
+    file_id: str
     
 class RetrieveFileContentResponse(BaseModel):
     file_content: FileContent
