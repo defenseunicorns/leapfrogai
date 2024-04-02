@@ -8,7 +8,7 @@ packages:
   # OpenAI-like API 
   - name: leapfrogai-api
     repository: ../../../packages/api
-    ref: 0.5.3
+    ref: dev
 
   # AI chat, transcription, and summarization frontend - not currently in this repo so it builds from ghcr
   - name: leapfrogai-ui
@@ -18,12 +18,12 @@ packages:
   # Model for generic chat and summarization
   - name: vllm
     repository: ../../../packages//vllm
-    ref: 0.1.0
+    ref: dev
 
   # Model for providing vector embeddings for text
   - name: text-embeddings
     repository: ../../../packages/text-embeddings
-    ref: 0.1.0
+    ref: dev
 
   # Backend capability for RAG and VectorDB - - not currently in this repo so it builds from ghcr
   - name: rag
@@ -33,4 +33,4 @@ packages:
   # Model for converting audio to text
   - name: whisper
     repository: ../../../packages/whisper
-    ref: 0.5.2
+    ref: dev

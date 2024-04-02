@@ -135,7 +135,6 @@ Once the packages are created, you can deploy either a CPU or GPU-enabled deploy
 
 #### CPU
 ```
-LOCAL_VERSION=$(git rev-parse --short HEAD)  # set the local package version associated with the created zarf packages
 cd uds-bundles/dev/cpu
 uds create .
 uds deploy k3d-core-istio-dev:0.14.1
@@ -144,7 +143,6 @@ uds deploy uds-bundle-leapfrog*.tar.zst
 
 #### GPU
 ```
-LOCAL_VERSION=$(git rev-parse --short HEAD)  # set the local package version associated with the created zarf packages
 cd uds-bundles/dev/gpu
 uds create .
 uds deploy k3d-core-istio-dev:0.14.1 --set K3D_EXTRA_ARGS="--gpus=all --image=ghcr.io/justinthelaw/k3d-gpu-support:v1.27.4-k3s1-cuda"     # be sure to check if a newer version exists
