@@ -155,42 +155,51 @@ async def transcribe(
 
     return await create_transcription(model, request_iterator)
 
+
 @router.post("/files")
-async def files(request: UploadFileRequest = Depends(UploadFileRequest.as_form)) -> UploadFileResponse:
+async def files(
+    request: UploadFileRequest = Depends(UploadFileRequest.as_form),
+) -> UploadFileResponse:
     # TODO: https://github.com/defenseunicorns/leapfrogai/issues/286
     raise HTTPException(
         status_code=501,
-        detail=f"POST {request.file.filename}: This endpoint is not implemented yet."
+        detail=f"POST {request.file.filename}: This endpoint is not implemented yet.",
     )
 
+
 @router.get("/files")
-async def files(request: ListFilesRequest = Depends(ListFilesRequest.as_form)) -> ListFilesResponse:
+async def files(  # noqa: F811
+    request: ListFilesRequest = Depends(ListFilesRequest.as_form),
+) -> ListFilesResponse:
     # TODO: https://github.com/defenseunicorns/leapfrogai/issues/287
     raise HTTPException(
         status_code=501,
-        detail=f"GET {request.purpose} Files: This endpoint is not implemented yet."
+        detail=f"GET {request.purpose}  Files: This endpoint is not implemented yet.",
     )
 
+
 @router.get("/files/{file_id}")
-async def files(request: RetrieveFileRequest) -> RetrieveFileResponse:
+async def files(request: RetrieveFileRequest) -> RetrieveFileResponse:  # noqa: F811
     # TODO: https://github.com/defenseunicorns/leapfrogai/issues/338
     raise HTTPException(
         status_code=501,
-        detail=f"GET {request.file_id} File: This endpoint is not implemented yet."
+        detail=f"GET {request.file_id} File: This endpoint is not implemented yet.",
     )
 
+
 @router.delete("/files/{file_id}")
-async def files(request: DeleteFileRequest) -> DeleteFileResponse:
+async def files(request: DeleteFileRequest) -> DeleteFileResponse:  # noqa: F811
     # TODO: https://github.com/defenseunicorns/leapfrogai/issues/339
     raise HTTPException(
         status_code=501,
-        detail=f"DELETE {request.file_id} File: This endpoint is not implemented yet."
+        detail=f"DELETE {request.file_id} File: This endpoint is not implemented yet.",
     )
 
+
 @router.get("/files/{file_id}/content")
-async def files(request: RetrieveFileContentRequest) -> RetrieveFileContentResponse:
+async def files(request: RetrieveFileContentRequest) -> RetrieveFileContentResponse:  # noqa: F811
     # TODO: https://github.com/defenseunicorns/leapfrogai/issues/289
     raise HTTPException(
         status_code=501,
-        detail=f"GET {request.file_id} File Content: This endpoint is not implemented yet."
+        detail=f"GET {request.file_id} File Content: This endpoint is not implemented yet.",
     )
