@@ -157,7 +157,7 @@ async def transcribe(
 
 
 @router.post("/files")
-async def files(
+async def upload_file(
     request: UploadFileRequest = Depends(UploadFileRequest.as_form),
 ) -> UploadFileResponse:
     # TODO: https://github.com/defenseunicorns/leapfrogai/issues/286
@@ -168,7 +168,7 @@ async def files(
 
 
 @router.get("/files")
-async def files(  # noqa: F811
+async def list_files(
     request: ListFilesRequest = Depends(ListFilesRequest.as_form),
 ) -> ListFilesResponse:
     # TODO: https://github.com/defenseunicorns/leapfrogai/issues/287
@@ -179,7 +179,7 @@ async def files(  # noqa: F811
 
 
 @router.get("/files/{file_id}")
-async def files(request: RetrieveFileRequest) -> RetrieveFileResponse:  # noqa: F811
+async def get_file(request: RetrieveFileRequest) -> RetrieveFileResponse:
     # TODO: https://github.com/defenseunicorns/leapfrogai/issues/338
     raise HTTPException(
         status_code=501,
@@ -188,7 +188,7 @@ async def files(request: RetrieveFileRequest) -> RetrieveFileResponse:  # noqa: 
 
 
 @router.delete("/files/{file_id}")
-async def files(request: DeleteFileRequest) -> DeleteFileResponse:  # noqa: F811
+async def delete_file(request: DeleteFileRequest) -> DeleteFileResponse:
     # TODO: https://github.com/defenseunicorns/leapfrogai/issues/339
     raise HTTPException(
         status_code=501,
@@ -197,7 +197,9 @@ async def files(request: DeleteFileRequest) -> DeleteFileResponse:  # noqa: F811
 
 
 @router.get("/files/{file_id}/content")
-async def files(request: RetrieveFileContentRequest) -> RetrieveFileContentResponse:  # noqa: F811
+async def get_file_content(
+    request: RetrieveFileContentRequest,
+) -> RetrieveFileContentResponse:
     # TODO: https://github.com/defenseunicorns/leapfrogai/issues/289
     raise HTTPException(
         status_code=501,
