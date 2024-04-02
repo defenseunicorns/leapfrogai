@@ -15,6 +15,9 @@
   - [SDK](#sdk)
   - [User Interface](#user-interface)
 - [Usage](#usage)
+  - [UDS (Latest)](#uds-latest)
+  - [UDS (Dev)](#uds-dev)
+  - [Local Dev](#local-dev)
 - [Community](#community)
 
 ## Overview
@@ -51,7 +54,7 @@ leapfrogai/
 │   └── whisper/
 ├── uds-bundles/
 │   ├── dev/
-│   └── prod/
+│   └── latest/
 ├── Makefile
 ├── pyproject.toml
 ├── README.md
@@ -161,12 +164,55 @@ source .venv/bin/activate
 
 #### API
 
-To run the LeapfrogAI API locally:
+To run the LeapfrogAI API locally (starting from the root directory of the repository):
 
 ```
 python -m pip install .[api,dev]
 cd src
 uvicorn leapfrogai_api.main:app --port 3000 --reload
+```
+
+#### Backend: llama-cpp-python
+
+To run the llama-cpp-python backend locally (starting from the root directory of the repository):
+
+```
+python -m pip install .[llama-cpp-python,dev]
+cd packages/llama-cpp-python
+python scripts/model_download.py
+mv .model/*.gguf .model/model.gguf
+python -m leapfrogai_api.types.cli --app-dir=. main:Model
+```
+
+#### Backend: text-embeddings
+To run the text-embeddings backend locally (starting from the root directory of the repository):
+
+```
+python -m pip install .[text-embeddings,dev]
+cd packages/text-embeddings
+python scripts/model_download.py
+python -u main.py
+```
+
+#### Backend: vllm
+To run the vllm backend locally (starting from the root directory of the repository):
+
+```
+python -m pip install .[vllm,dev]
+cd packages/vllm
+python scripts/model_download.py
+export QUANTIZATION=awq
+python -m leapfrogai_api.types.cli --app-dir=. main:Model
+```
+
+#### Backend: whisper
+To run the vllm backend locally (starting from the root directory of the repository):
+
+```
+python -m pip install .[whisper,dev]
+cd packages/whisper
+ct2-transformers-converter --model openai/whisper-base --output_dir .model --copy_files tokenizer.json --quantization float32
+python -u main.py
 ```
 
 ## Community

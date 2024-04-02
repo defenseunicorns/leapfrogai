@@ -26,6 +26,7 @@ tokenizer.json
 config.json
 generation_config.json
 vocabulary.json
+packages/*/.model
 
 # go binaries
 api/main
