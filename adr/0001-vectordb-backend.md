@@ -4,7 +4,7 @@
 
 - [VectorDB](#vectordb)
   - [Table of Contents](#table-of-contents)
-  - [Summary](#summary)
+  - [Status](#status)
     - [Issue](#issue)
     - [Decision](#decision)
     - [Rationale](#rationale)
@@ -19,7 +19,9 @@
     - [Constraints](#constraints)
     - [Implications](#implications)
 
-## Summary
+## Status
+
+SUPERSEDED by [0003-database.md](0003-database.md)
 
 ### Issue
 
