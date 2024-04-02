@@ -63,7 +63,7 @@ leapfrogai/
 
 ## Getting Started
 
-The preferred method for running LeapfrogAI is a local [Kubernetes](https://kubernetes.io/) deployment using [UDS](https://github.com/defenseunicorns/uds-core). Simple instructions for this type of deployment can be found on the [LeapfrogAI Documentation Site](https://docs.leapfrog.ai/docs/).
+The preferred method for running LeapfrogAI is a local [Kubernetes](https://kubernetes.io/) deployment using [UDS](https://github.com/defenseunicorns/uds-core). Refer to the [Quick Start](https://docs.leapfrog.ai/docs/local-deploy-guide/quick_start/) section of the LeapfrogAI documentation site for instructions on this type of deployment.
 
 ## Components
 
