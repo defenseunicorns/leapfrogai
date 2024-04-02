@@ -95,7 +95,7 @@ jobs:
             uds zarf package remove text-embeddings -l=trace --confirm
 
         ##########
-        # whipser
+        # whisper
         ##########
         - name: Deploy whisper
           run: |
