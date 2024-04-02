@@ -34,7 +34,7 @@ RUN apt-get -y update \
     && apt-get -y update
 
 # get deps for vllm compilation, model download, and pyenv
-RUN apt-get -y install git python3-venv make build-essential libssl-dev zlib1g-dev libbz2-dev libreadline-dev libsqlite3-dev wget curl llvm libncurses5-dev libncursesw5-dev xz-utils tk-dev libffi-dev liblzma-dev
+RUN apt-get -y install git python3-venv make build-essential libssl-dev zlib1g-dev libbz2-dev libreadline-dev libsqlite3-dev wget curl llvm libncurses5-dev libncursesw5-dev tk-dev libffi-dev
 
 RUN chown -R nonroot /home/leapfrogai/
 USER nonroot
