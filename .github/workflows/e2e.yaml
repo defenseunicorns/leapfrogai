@@ -47,31 +47,26 @@ jobs:
             username: ${{ secrets.IRON_BANK_ROBOT_USERNAME }}
             password: ${{ secrets.IRON_BANK_ROBOT_PASSWORD }}
 
-        # NOTE: We are not testing vllm in this workflow, but it is still nice to verify that it will build
-        - name: Build all packages
-          run: |
-            make clean build-api build-llama-cpp-python build-vllm build-text-embeddings build-whisper LOCAL_VERSION=e2e-test
-
-        - name: Remove system pressure
-          run: |
-            docker stop registry
-            docker rm registry
-            docker image prune -f
-
         - name: Create UDS Cluster
           run: |
             uds deploy k3d-core-istio-dev:0.16.1 --confirm
 
         - name: Deploy LFAI-API
           run: |
-            uds zarf package deploy zarf-package-leapfrogai-api-*.tar.zst --confirm
+            make build-api LOCAL_VERSION=e2e-test
+            docker image prune -af
+            uds zarf package deploy zarf-package-leapfrogai-api-amd64-e2e-test.tar.zst --confirm
+            rm zarf-package-leapfrogai-api-amd64-e2e-test.tar.zst
 
         ##########
         # llama
         ##########
         - name: Deploy llama-cpp-python
           run: |
-            uds zarf package deploy zarf-package-llama-cpp-python-*.tar.zst --confirm
+            make build-llama-cpp-python LOCAL_VERSION=e2e-test
+            docker image prune -af
+            uds zarf package deploy zarf-package-llama-cpp-python-amd64-e2e-test.tar.zst -l=trace --confirm
+            rm zarf-package-llama-cpp-python-amd64-e2e-test.tar.zst
 
         - name: Test llama-cpp-python
           run: |
@@ -79,14 +74,17 @@ jobs:
 
         - name: Cleanup llama-cpp-python
           run: |
-            uds zarf package remove llama-cpp-python --confirm
+            uds zarf package remove llama-cpp-python -l=trace --confirm
 
         ##########
         # text-embeddings
         ##########
         - name: Deploy text-embeddings
           run: |
-            uds zarf package deploy zarf-package-text-embeddings-*.tar.zst --confirm
+            make build-text-embeddings LOCAL_VERSION=e2e-test
+            docker image prune -af
+            uds zarf package deploy zarf-package-text-embeddings-amd64-e2e-test.tar.zst -l=trace --confirm
+            rm zarf-package-text-embeddings-amd64-e2e-test.tar.zst
 
         - name: Test text-embeddings
           run: |
@@ -94,14 +92,17 @@ jobs:
 
         - name: Cleanup text-embeddings
           run: |
-            uds zarf package remove text-embeddings --confirm
+            uds zarf package remove text-embeddings -l=trace --confirm
 
         ##########
         # whipser
         ##########
         - name: Deploy whisper
           run: |
-            uds zarf package deploy zarf-package-whisper-*.tar.zst --confirm
+            make build-whisper LOCAL_VERSION=e2e-test
+            docker image prune -af
+            uds zarf package deploy zarf-package-whisper-amd64-e2e-test.tar.zst -l=trace --confirm
+            rm zarf-package-whisper-amd64-e2e-test.tar.zst
 
         - name: Test whisper
           run: |
@@ -109,4 +110,4 @@ jobs:
 
         - name: Cleanup whisper
           run: |
-            uds zarf package remove whisper --confirm
+            uds zarf package remove whisper -l=trace --confirm
