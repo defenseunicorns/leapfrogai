@@ -14,10 +14,10 @@ jobs:
       - name: Validate Lint
         uses: chartboost/ruff-action@e18ae971ccee1b2d7bbef113930f00c670b78da4 # v1.0.0
         with:
-          version: 0.2.2
+          version: 0.3.4
 
       - name: Validate Formatting
         uses: chartboost/ruff-action@e18ae971ccee1b2d7bbef113930f00c670b78da4 # v1.0.0
         with:
-          version: 0.2.2
+          version: 0.3.4
           args: format --check
