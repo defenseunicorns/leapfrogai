@@ -22,6 +22,8 @@ from leapfrogai_api.backends.openai.types import (
     CreateTranscriptionResponse,
     ModelResponse,
     ModelResponseModel,
+    UploadFileRequest,
+    UploadFileResponse,
 )
 from leapfrogai_api.utils import get_model_config
 from leapfrogai_api.utils.config import Config
@@ -144,3 +146,43 @@ async def transcribe(
     request_iterator = chain((audio_metadata_request,), chunk_iterator)
 
     return await create_transcription(model, request_iterator)
+
+@router.post("/files")
+async def files(request: UploadFileRequest = Depends(UploadFileRequest.as_form)) -> UploadFileResponse:
+    # TODO: https://github.com/defenseunicorns/leapfrogai/issues/286
+    raise HTTPException(
+        status_code=501,
+        detail="This endpoint is not implemented yet."
+    )
+
+@router.get("/files")
+async def files():
+    # TODO: https://github.com/defenseunicorns/leapfrogai/issues/287
+    raise HTTPException(
+        status_code=501,
+        detail="This endpoint is not implemented yet."
+    )
+
+@router.get("/files/{file_id}")
+async def files(file_id: str):
+    # TODO: https://github.com/defenseunicorns/leapfrogai/issues/338
+    raise HTTPException(
+        status_code=501,
+        detail="This endpoint is not implemented yet."
+    )
+
+@router.delete("/files/{file_id}")
+async def files(file_id: str):
+    # TODO: https://github.com/defenseunicorns/leapfrogai/issues/339
+    raise HTTPException(
+        status_code=501,
+        detail="This endpoint is not implemented yet."
+    )
+
+@router.get("/files/{file_id}/content")
+async def files(file_id: str):
+    # TODO: https://github.com/defenseunicorns/leapfrogai/issues/289
+    raise HTTPException(
+        status_code=501,
+        detail="This endpoint is not implemented yet."
+    )
