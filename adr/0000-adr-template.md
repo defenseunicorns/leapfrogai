@@ -22,7 +22,7 @@
 ## Decision
 [Describe the decision made]
 
-## Consequences
+## Rationale
 [Describe the potential consequences and impacts of the decision]
 
 ## Alternatives
