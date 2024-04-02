@@ -13,7 +13,7 @@ class ConfigOptions(BaseConfig):
         default=1,
         title="GPU Utilization Count",
         description="The number of gpus to spread the tensor processing across."
-                    "This must be divisible to the number of attention heads in the model",
+        "This must be divisible to the number of attention heads in the model",
         examples=[1, 2, 3],
     )
 
