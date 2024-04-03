@@ -8,3 +8,6 @@ export const messageSchema: ObjectSchema<AIMessage> = object({
 	.strict();
 
 export const messagesSchema = array().of(messageSchema).strict();
+
+
+export const uuidSchema = string().uuid().required();

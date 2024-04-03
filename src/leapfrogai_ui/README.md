@@ -78,8 +78,10 @@ To run the E2E tests, have the app running then:
 `npm run test:integration:ui`
 Click the play button in the Playwright UI.
 
-Note - running the script above will reset the locally running Supabase instance and re-seed the database. You will
+Notes:
+1. Running the script above will reset the locally running Supabase instance and re-seed the database. You will
 lose existing data.
+2. if you run the tests in headless mode (```npm run test:integration```) you do not need the app running, it will build the app and run on port 4173.
 
 # Supabase and Keycloak Integration
 

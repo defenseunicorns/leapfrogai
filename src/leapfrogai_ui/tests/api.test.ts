@@ -8,3 +8,7 @@ test('/api/chat returns a 400 when messages are incorrectly formatted', async ({
 	expect(res.status()).toEqual(400);
 });
 
+test('/api/conversations/delete returns a 400 if the id is not a uuid', async ({request}) => {
+	const res = await request.delete('/api/conversations/delete', {data: {conversationId: "123"}});
+	expect(res.status()).toEqual(400);
+})
