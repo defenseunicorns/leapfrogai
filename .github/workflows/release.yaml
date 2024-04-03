@@ -35,6 +35,11 @@ jobs:
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@0d103c3126aa41d772a8362f6aa67afac040f80c # v3.1.0
 
+      - name: Setup Python
+        uses: actions/setup-python@0a5c61591373683505ea898e09a3ea4f39ef2b9c #v5.0.0
+        with:
+          python-version-file: 'pyproject.toml'
+
       - name: Download Python Wheels
         run: make setup-api-deps setup-llama-deps setup-vllm-deps setup-text-embeddings-deps setup-whisper-deps
 
