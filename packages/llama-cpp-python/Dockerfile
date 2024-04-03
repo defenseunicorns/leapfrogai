@@ -11,6 +11,8 @@ ARG FILENAME=synthia-7b-v2.0.Q4_K_M.gguf
 ARG REVISION=3f65d882253d1f15a113dabf473a7c02a004d2b5
 
 # TODO: Standardize on a better approach for how we download models into our images across our packages
+# NOTE: This is checking for a pre-downloaded model file in the local build dir before downloading the model from HuggingFace
+# TODO: Add checksum validation to verify the model in the local build-dir is the model we expect
 COPY scripts/model_download.py scripts/model_download.py
 COPY build/*.gguf .model/
 RUN if [[ -f .model/model.gguf ]] ; then : ; else REPO_ID=${REPO_ID} FILENAME=${FILENAME} REVISION=${REVISION} python3.11 scripts/model_download.py ; fi
