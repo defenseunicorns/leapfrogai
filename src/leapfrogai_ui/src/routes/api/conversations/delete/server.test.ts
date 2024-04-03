@@ -2,7 +2,7 @@ import { faker } from '@faker-js/faker';
 import { DELETE } from './+server';
 
 describe('/api/conversations/delete', () => {
-	it('returns a 400 when messages are missing from the request', async () => {
+	it('returns a 400 when conversationId is not a uuid', async () => {
 		const request = new Request('http://localhost:5173/api/conversations/delete', {
 			method: 'POST',
 			body: JSON.stringify({ conversationId: '123' })
@@ -12,9 +12,19 @@ describe('/api/conversations/delete', () => {
 			status: 400
 		});
 	});
-	it('returns a 400 when id is missing', async () => {
+	it('returns a 400 when conversationId is missing', async () => {
 		const request = new Request('http://localhost:5173/api/conversations/delete', {
 			method: 'DELETE'
+		});
+
+		await expect(DELETE({ request, locals: { supabase: {} } })).rejects.toMatchObject({
+			status: 400
+		});
+	});
+	it('returns a 400 when extra body arguments are passed', async () => {
+		const request = new Request('http://localhost:5173/api/conversations/delete', {
+			method: 'DELETE',
+			body: JSON.stringify({ conversationId: faker.string.uuid(), wrong: 'key' })
 		});
 
 		await expect(DELETE({ request, locals: { supabase: {} } })).rejects.toMatchObject({

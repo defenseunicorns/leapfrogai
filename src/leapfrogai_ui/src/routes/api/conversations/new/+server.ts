@@ -1,7 +1,17 @@
 import { error, json, redirect } from '@sveltejs/kit';
+import { newConversationSchema } from '../../../../schemas/chat';
 
 export async function POST({ request, locals: { supabase, getSession } }) {
-	const { label } = await request.json();
+	let requestData: { label: string };
+	// Validate request body
+	try {
+		requestData = await request.json();
+		const isValid = await newConversationSchema.isValid(requestData);
+		if (!isValid) error(400, 'Bad Request');
+	} catch {
+		error(400, 'Bad Request');
+	}
+
 	const session = await getSession();
 
 	if (!session) {
@@ -9,7 +19,7 @@ export async function POST({ request, locals: { supabase, getSession } }) {
 	}
 
 	const conversation: Omit<Conversation, 'id' | 'inserted_at' | 'messages'> = {
-		label,
+		label: requestData.label,
 		user_id: session.user.id
 	};
 

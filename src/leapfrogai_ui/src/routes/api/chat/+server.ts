@@ -17,35 +17,31 @@ export const config = {
 
 // This endpoint is called by the Vercel AI SDK handleSubmit function
 export async function POST({ request }) {
+	let requestData: { messages: AIMessage[] };
+
+	// Validate request body
+	try {
+		requestData = await request.json();
+		const isValid = await messagesSchema.isValid(requestData);
+		if (!isValid) error(400, 'Bad Request');
+	} catch {
+		error(400, 'Bad Request');
+	}
 
 	const openai = new OpenAI({
 		apiKey: env.LEAPFROGAI_API_KEY,
 		baseURL: PUBLIC_LEAPFROGAI_API_BASE_URL
 	});
 
-	let messages: AIMessage[];
-
-	try {
-		const body = await request.json();
-		messages = body.messages;
-	} catch (e) {
-		error(400, { message: 'Bad Request' });
-	}
-	if (!messages) error(400, { message: 'Bad Request' });
-
-	const validMessages = await messagesSchema.isValid(messages);
-
-	if (!validMessages) error(400, { message: 'Bad Request' });
-
 	// Add the default system prompt to the beginning of the messages
-	messages.unshift({ content: PUBLIC_DEFAULT_SYSTEM_PROMPT, role: 'system' });
+	requestData.messages.unshift({ content: PUBLIC_DEFAULT_SYSTEM_PROMPT, role: 'system' });
 
 	const response = await openai.chat.completions.create({
 		model: PUBLIC_DEFAULT_MODEL,
 		temperature: Number(PUBLIC_DEFAULT_TEMPERATURE),
 		max_tokens: 1000,
 		stream: true,
-		messages: messages
+		messages: requestData.messages
 	});
 
 	const stream = OpenAIStream(response);

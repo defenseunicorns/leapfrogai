@@ -9,7 +9,7 @@ describe('/api/chat', () => {
 		vi.restoreAllMocks();
 	});
 
-	it('returns a 400 when messages are missing from the request', async () => {
+	it('returns a 400 when messages are incorrectly formatted', async () => {
 		const request = new Request('http://localhost:5173/api/chat', {
 			method: 'POST',
 			body: JSON.stringify({ messages: [{ break: 'me' }] })
@@ -17,9 +17,18 @@ describe('/api/chat', () => {
 
 		await expect(POST({ request })).rejects.toMatchObject({ status: 400 });
 	});
-	it('returns a 400 when messages are incorrectly formatted', async () => {
+	it('returns a 400 when messages are missing from the request', async () => {
 		const request = new Request('http://localhost:5173/api/chat', {
 			method: 'POST'
+		});
+
+		await expect(POST({ request })).rejects.toMatchObject({ status: 400 });
+	});
+	it('returns a 400 when extra body parameters are passed', async () => {
+		const validMessage: AIMessage = { content: 'test', role: 'user' };
+		const request = new Request('http://localhost:5173/api/chat', {
+			method: 'POST',
+			body: JSON.stringify({ messages: [validMessage], wrong: 'key' })
 		});
 
 		await expect(POST({ request })).rejects.toMatchObject({ status: 400 });
