@@ -13,11 +13,18 @@ on:
       - "!**.md"
       - "!docs/**"
       - "!website/**"
+      - "!netlify.toml"
 
       # Ignore updates to generic github metadata files
       - "!CODEOWNERS"
       - "!.gitignore"
-      - "!CONTRIBUTING.md"
+      - "!LICENSE"
+
+      # Ignore local development files
+      - "!pre-commit-config.yaml"
+
+      # Ignore non e2e tests
+      - "!tests/e2e/**"
 
 
 concurrency:
