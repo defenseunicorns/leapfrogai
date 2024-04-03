@@ -1,0 +1,10 @@
+docker run -v "$(pwd):/workdir" -i --rm trufflesecurity/trufflehog:latest git file:///workdir --only-verified --fail
+
+npm run format 
+npm run lint
+
+git add .
+
+if [ "$SKIP_TEST" != "true" ]; then
+    npm run test
+fi

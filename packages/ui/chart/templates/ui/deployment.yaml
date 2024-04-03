@@ -1,0 +1,45 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: leapfrogai-ui
+  namespace: leapfrogai
+spec:
+  selector:
+    matchLabels:
+      app: leapfrogai-ui
+  replicas: 1
+  template:
+    metadata:
+      labels:
+        app: leapfrogai-ui
+    spec:
+      containers:
+        - name: leapfrogai-ui
+          image: 'ghcr.io/defenseunicorns/leapfrogai/leapfrogai-ui:###ZARF_CONST_IMAGE_VERSION###'
+          ports:
+            - containerPort: 3000
+          env:
+            - name: PUBLIC_LEAPFROGAI_API_BASE_URL
+              value: '###ZARF_VAR_LEAPFROGAI_API_BASE_URL###'
+            - name: ORIGIN
+              value: '###ZARF_VAR_DOMAIN###'
+            - name: PUBLIC_DEFAULT_MODEL
+              value: '###ZARF_VAR_MODEL###'
+            - name: PUBLIC_DEFAULT_SYSTEM_PROMPT
+              value: '###ZARF_VAR_SYSTEM_PROMPT###'
+            - name: PUBLIC_DEFAULT_TEMPERATURE
+              value: '###ZARF_VAR_TEMPERATURE###'
+            - name: LEAPFROGAI_API_KEY
+              value: '###ZARF_VAR_LEAPFROGAI_API_KEY###'
+            - name: PUBLIC_SUPABASE_URL
+              value: '###ZARF_VAR_SUPABASE_URL###'
+            - name: PUBLIC_SUPABASE_ANON_KEY
+              value: '###ZARF_VAR_SUPABASE_ANON_KEY###'
+
+          resources:
+            requests:
+              memory: '5Gi'
+              cpu: '500m'
+            limits:
+              memory: '5Gi'
+              cpu: '1000m'
