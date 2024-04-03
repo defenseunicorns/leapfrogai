@@ -94,9 +94,9 @@ class ChatCompletionResponse(BaseModel):
     object: str = "chat.completion"
     created: int = 0
     model: str = ""
-    choices: list[ChatChoice] | list[
-        ChatStreamChoice
-    ]  # TODO: @JPERRY look into this more, difference between streaming and not streaming
+    choices: (
+        list[ChatChoice] | list[ChatStreamChoice]
+    )  # TODO: @JPERRY look into this more, difference between streaming and not streaming
     usage: Usage | None = None
 
 
