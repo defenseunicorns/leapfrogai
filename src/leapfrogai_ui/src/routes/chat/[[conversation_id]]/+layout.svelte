@@ -1,5 +1,4 @@
 <script lang="ts">
-	import 'carbon-components-svelte/css/all.css';
 	import { Header, HeaderAction, HeaderUtilities, Theme } from 'carbon-components-svelte';
 	import UserAvatar from 'carbon-icons-svelte/lib/UserAvatar.svelte';
 	import { page } from '$app/stores';
