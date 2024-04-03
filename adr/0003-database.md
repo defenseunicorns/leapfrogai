@@ -18,7 +18,7 @@ PROPOSED
 
 ## Context
 
-LeapfrogAI began with a need for a basic vector store. As LeapfrogAI expands into providing a production ready front end the demands of the database expand to include authentication, user data, and additional data types for Retrieval Augmented Generation. This ADR proposes ***Supabase*** as a single database solution for all current LeapfrogAI needs.
+LeapfrogAI began with a need for a basic vector store. As LeapfrogAI expands into providing a production ready front end the demands of the database expand to include authentication, user data, object storage, and additional data types for Retrieval Augmented Generation. This ADR proposes ***Supabase*** as a single database solution for all current LeapfrogAI needs.
 
 ## Decision
 
@@ -27,8 +27,15 @@ Move to Supabase for all current LeapfrogAI Database needs.
 ## Rationale
 
 ### General Features
-
+- Open Source, Apache 2.0 license
+- Integrates easily into frontend with SDK
+- Easy to run Supabase locally for development 
+- Row Level Security with Postgres enables protection of data at the request level
+- Supabase Auth system integrates with Keycloak to enable UDS SSO (OpenID)
 - [Supabase CLI](https://supabase.com/docs/guides/cli/getting-started) is user friendly and feature rich. The CLI can be used for initializing and configuring the database, then saving schemas and migrations to make our configuration easily reproducible and deployable. It can also be used to [automate tests via GitHub Actions](https://supabase.com/docs/guides/cli/github-action/testing)
+- Additional features built in if we need them in the future - like realtime subscriptions and edge functions
+- Well supported and adopted in the community, also supports various frameworks (Svelte, Nuxt, Next.js, React, Flutter, etc...)
+- Documentation provides lots of useful examples/recipes although documentation for self-hosted situations can be outdated
 
 ### As Vector Store:
 
