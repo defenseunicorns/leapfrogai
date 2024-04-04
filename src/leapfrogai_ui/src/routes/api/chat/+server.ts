@@ -16,7 +16,12 @@ export const config = {
 };
 
 // This endpoint is called by the Vercel AI SDK handleSubmit function
-export async function POST({ request }) {
+export async function POST({ request, locals: { getSession } }) {
+	const session = await getSession();
+	if (!session) {
+		error(401, 'Unauthorized');
+	}
+
 	let requestData: { messages: AIMessage[] };
 
 	// Validate request body

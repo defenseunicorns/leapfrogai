@@ -1,14 +1,26 @@
 import { error } from '@sveltejs/kit';
+import { updateConversationSchema } from '../../../../../schemas/chat';
 
-export async function PUT({ request, locals: { supabase } }) {
-	const { id, label } = await request.json();
+export async function PUT({ request, locals: { supabase, getSession } }) {
+	const session = await getSession();
+	if (!session) {
+		error(401, 'Unauthorized');
+	}
 
-	// TODO - for validation, ensure max length MAX_LABEL_SIZE
+	let requestData: { id: string; label: string };
+	// Validate request body
+	try {
+		requestData = await request.json();
+		const isValid = await updateConversationSchema.isValid(requestData);
+		if (!isValid) error(400, 'Bad Request');
+	} catch {
+		error(400, 'Bad Request');
+	}
 
 	const { error: responseError } = await supabase
 		.from('conversations')
-		.update({ label: label })
-		.eq('id', id);
+		.update({ label: requestData.label })
+		.eq('id', requestData.id);
 
 	if (responseError) {
 		console.log(

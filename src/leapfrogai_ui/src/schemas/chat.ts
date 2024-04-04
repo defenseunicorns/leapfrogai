@@ -18,8 +18,17 @@ export const uuidSchema = object({
 	.noUnknown(true)
 	.strict();
 
+const labelSchema = string().min(1).max(MAX_LABEL_SIZE).required();
+
 export const newConversationSchema = object({
-	label: string().min(1).max(MAX_LABEL_SIZE).required()
+	label: labelSchema
+})
+	.noUnknown(true)
+	.strict();
+
+export const updateConversationSchema = object({
+	id: string().uuid().required(),
+	label: labelSchema
 })
 	.noUnknown(true)
 	.strict();
