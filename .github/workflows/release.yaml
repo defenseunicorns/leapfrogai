@@ -11,7 +11,7 @@ permissions:
 
 
 jobs:
-  insert-better-name-here:
+  build-and-publish-artifacts:
     runs-on: ai-ubuntu-big-boy-8-core
 
     steps:
