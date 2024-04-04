@@ -19,11 +19,3 @@ type AIMessage = {
 	role: 'user' | 'system';
 	content: string;
 };
-
-type ChatRequest = {
-	key: string;
-	messages: AIMessage[];
-	model: string;
-	max_tokens: number;
-	temperature: number;
-};

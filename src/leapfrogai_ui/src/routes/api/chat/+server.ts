@@ -39,7 +39,9 @@ export async function POST({ request, locals: { getSession } }) {
 	});
 
 	// Add the default system prompt to the beginning of the messages
-	requestData.messages.unshift({ content: PUBLIC_DEFAULT_SYSTEM_PROMPT, role: 'system' });
+	if (requestData.messages[0].content !== PUBLIC_DEFAULT_SYSTEM_PROMPT) {
+		requestData.messages.unshift({ content: PUBLIC_DEFAULT_SYSTEM_PROMPT, role: 'system' });
+	}
 
 	const response = await openai.chat.completions.create({
 		model: PUBLIC_DEFAULT_MODEL,

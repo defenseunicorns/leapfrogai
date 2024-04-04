@@ -12,6 +12,13 @@ export const messagesSchema = object({ messages: array().of(messageSchema).stric
 	.noUnknown(true)
 	.strict();
 
+export const supabaseMessagesSchema = messageSchema
+	.shape({
+		conversation_id: string().uuid().required()
+	})
+	.noUnknown(true)
+	.strict();
+
 export const uuidSchema = object({
 	conversationId: string().uuid().required()
 })

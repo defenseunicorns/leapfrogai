@@ -10,6 +10,8 @@ describe('/api/chat', () => {
 		vi.restoreAllMocks();
 	});
 
+	// NOTE - message streaming success is tested via E2E test
+
 	it('returns a 401 when there is no session', async () => {
 		const request = new Request('http://localhost:5173/api/chat', {
 			method: 'POST',
@@ -25,8 +27,6 @@ describe('/api/chat', () => {
 			status: 401
 		});
 	});
-
-	// NOTE - message streaming success is tested via E2E test
 
 	it('returns a 400 when messages are incorrectly formatted', async () => {
 		const request = new Request('http://localhost:5173/api/chat', {

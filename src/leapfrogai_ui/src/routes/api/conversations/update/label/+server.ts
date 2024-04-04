@@ -24,7 +24,7 @@ export async function PUT({ request, locals: { supabase, getSession } }) {
 
 	if (responseError) {
 		console.log(
-			`error updating conversation,  error: ${responseError?.code}: ${responseError?.message}`
+			`error updating conversation, error status: ${responseError?.code}: ${responseError?.message}`
 		);
 		error(500, { message: 'Internal Server Error' });
 	}

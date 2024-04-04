@@ -26,7 +26,7 @@ export async function DELETE({ request, locals: { supabase, getSession } }) {
 
 	if (responseError) {
 		console.log(
-			`error deleting conversation, error: ${responseError?.code}: ${responseError?.message}`
+			`error deleting conversation, error status: ${responseError?.code}: ${responseError?.message}`
 		);
 		error(500, 'Error deleting conversation');
 	}

@@ -35,7 +35,7 @@ export async function POST({ request, locals: { supabase, getSession } }) {
 
 	if (responseError) {
 		console.log(
-			`error creating conversation,  error: ${responseError.code}: ${responseError.message}`
+			`error creating conversation, error status: ${responseError.code}: ${responseError.message}`
 		);
 		error(500, { message: 'Internal Server Error' });
 	}
