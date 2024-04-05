@@ -38,8 +38,8 @@ spec:
 
           resources:
             requests:
-              memory: '1Gi'
-              cpu: '500m'
+              memory: '0'
+              cpu: '0'
             limits:
-              memory: '2Gi'
-              cpu: '1000m'
+              memory: '0'
+              cpu: '0'
