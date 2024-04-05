@@ -49,7 +49,7 @@ class CompletionResponse(BaseModel):
 
 class ChatFunction(BaseModel):
     name: str
-    parameters: Dict[str, str]
+    parameters: Dict[str, object]
     description: str
 
 
