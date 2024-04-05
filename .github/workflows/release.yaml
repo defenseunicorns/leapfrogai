@@ -1,0 +1,110 @@
+name: Publish Release Artifacts
+
+on:
+  push:
+    tags:
+      - "*"
+
+permissions:
+  contents: read
+  packages: write
+
+
+jobs:
+  build-and-publish-artifacts:
+    runs-on: ai-ubuntu-big-boy-8-core
+
+    steps:
+      - name: Checkout Repo
+        uses: actions/checkout@b4ffde65f46336ab88eb53be808477a3936bae11 # v4.1.1
+
+      - name: Version
+        id: get_version
+        uses: battila7/get-version-action@90eb8fc70f6dfcf3f9b95ed8f164d2c05038e729 # v2.2.1
+
+      - name: Login to GitHub Container Registry
+        uses: docker/login-action@343f7c4344506bcbf9b4de18042ae17996df046d # v3.0.0
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Set up QEMU
+        uses: docker/setup-qemu-action@68827325e0b33c7199eb31dd4e31fbe9023e06e3 # v3.0.0
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@0d103c3126aa41d772a8362f6aa67afac040f80c # v3.1.0
+
+      - name: Setup Python
+        uses: actions/setup-python@0a5c61591373683505ea898e09a3ea4f39ef2b9c #v5.0.0
+        with:
+          python-version-file: 'pyproject.toml'
+
+      - name: Download Python Wheels
+        run: make setup-api-deps setup-llama-deps setup-vllm-deps setup-text-embeddings-deps setup-whisper-deps
+
+      - name: Install Zarf
+        uses: defenseunicorns/setup-zarf@f95763914e20e493bb5d45d63e30e17138f981d6 # v1.0.0
+
+      - name: Build and Publish API
+        run: |
+          docker buildx build --platform amd64,arm64 -t ghcr.io/defenseunicorns/leapfrogai/leapfrogai-api:${{ steps.get_version.outputs.version-without-v }} --push packages/api
+
+          zarf package create packages/api --set=LEAPFROGAI_IMAGE_VERSION=${{ steps.get_version.outputs.version-without-v }} --architecture amd64 --confirm
+          zarf package create packages/api --set=LEAPFROGAI_IMAGE_VERSION=${{ steps.get_version.outputs.version-without-v }} --architecture arm64 --confirm
+
+          zarf package publish zarf-package-leapfrogai-api-amd64-${{ steps.get_version.outputs.version-without-v }}.tar.zst oci://ghcr.io/defenseunicorns/packages/leapfrogai
+          zarf package publish zarf-package-leapfrogai-api-arm64-${{ steps.get_version.outputs.version-without-v }}.tar.zst oci://ghcr.io/defenseunicorns/packages/leapfrogai
+
+          docker image prune -af
+          rm zarf-package-leapfrogai-api-*.tar.zst
+
+      - name: Build and Publish llama
+        run: |
+          docker buildx build --platform amd64,arm64 -t ghcr.io/defenseunicorns/leapfrogai/llama-cpp-python:${{ steps.get_version.outputs.version-without-v }} --push packages/llama-cpp-python
+
+          zarf package create packages/llama-cpp-python --set=IMAGE_VERSION=${{ steps.get_version.outputs.version-without-v }} --architecture amd64 --confirm
+          zarf package create packages/llama-cpp-python --set=IMAGE_VERSION=${{ steps.get_version.outputs.version-without-v }} --architecture arm64 --confirm
+
+          zarf package publish zarf-package-llama-cpp-python-amd64-${{ steps.get_version.outputs.version-without-v }}.tar.zst oci://ghcr.io/defenseunicorns/packages/leapfrogai
+          zarf package publish zarf-package-llama-cpp-python-arm64-${{ steps.get_version.outputs.version-without-v }}.tar.zst oci://ghcr.io/defenseunicorns/packages/leapfrogai
+
+          docker image prune -af
+          rm zarf-package-llama-*.tar.zst
+
+      - name: Build and Publish vLLM
+        run: |
+          docker buildx build -t ghcr.io/defenseunicorns/leapfrogai/vllm:${{ steps.get_version.outputs.version-without-v }} --push packages/vllm
+
+          zarf package create packages/vllm --set=IMAGE_VERSION=${{ steps.get_version.outputs.version-without-v }} --confirm
+
+          zarf package publish zarf-package-vllm-amd64-${{ steps.get_version.outputs.version-without-v }}.tar.zst oci://ghcr.io/defenseunicorns/packages/leapfrogai
+
+          docker image prune -af
+          rm zarf-package-vllm-*.tar.zst
+
+      - name: Build and Publish Text-Embeddings
+        run: |
+          docker buildx build --platform amd64,arm64 -t ghcr.io/defenseunicorns/leapfrogai/text-embeddings:${{ steps.get_version.outputs.version-without-v }} --push packages/text-embeddings
+
+          zarf package create packages/text-embeddings --set=IMAGE_VERSION=${{ steps.get_version.outputs.version-without-v }} --architecture amd64 --confirm
+          zarf package create packages/text-embeddings --set=IMAGE_VERSION=${{ steps.get_version.outputs.version-without-v }} --architecture arm64 --confirm
+
+          zarf package publish zarf-package-text-embeddings-amd64-${{ steps.get_version.outputs.version-without-v }}.tar.zst oci://ghcr.io/defenseunicorns/packages/leapfrogai
+          zarf package publish zarf-package-text-embeddings-arm64-${{ steps.get_version.outputs.version-without-v }}.tar.zst oci://ghcr.io/defenseunicorns/packages/leapfrogai
+
+          docker image prune -af
+          rm zarf-package-text-embeddings-*.tar.zst
+
+      - name: Build and Publish whisper
+        run: |
+          docker buildx build --platform amd64,arm64 -t ghcr.io/defenseunicorns/leapfrogai/whisper:${{ steps.get_version.outputs.version-without-v }} --push packages/whisper
+
+          zarf package create packages/whisper --set=IMAGE_VERSION=${{ steps.get_version.outputs.version-without-v }} --architecture amd64 --confirm
+          zarf package create packages/whisper --set=IMAGE_VERSION=${{ steps.get_version.outputs.version-without-v }} --architecture arm64 --confirm
+
+          zarf package publish zarf-package-whisper-amd64-${{ steps.get_version.outputs.version-without-v }}.tar.zst oci://ghcr.io/defenseunicorns/packages/leapfrogai
+          zarf package publish zarf-package-whisper-arm64-${{ steps.get_version.outputs.version-without-v }}.tar.zst oci://ghcr.io/defenseunicorns/packages/leapfrogai
+
+          docker image prune -af
+          rm zarf-package-whisper-*.tar.zst
