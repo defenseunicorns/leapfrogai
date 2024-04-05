@@ -41,6 +41,7 @@ Move to Supabase for all current LeapfrogAI Database needs.
 
 - Supabase has a pgvector extension for supporting vector storage for RAG
 - Because Supabase is Postgres/pgvector under the hood, is it is compatible with a multitude of Python libraries ([LangChain](https://python.langchain.com/docs/integrations/vectorstores/supabase), [LlamaIndex](https://docs.llamaindex.ai/en/stable/examples/vector_stores/SupabaseVectorIndexDemo/), [Vecs](https://github.com/supabase/vecs), [NeumAI](https://github.com/NeumTry/NeumAI), etc.)
+- [Supabase Buckets](https://supabase.com/docs/guides/storage/buckets/fundamentals) provides object storage that is compatible with other Supabase security features. Buckets will be useful for storing and retrieving the source files used by our API (Files and Assistants endpoint).
 
 ## Alternatives
 
@@ -52,6 +53,7 @@ Move to Supabase for all current LeapfrogAI Database needs.
 ## References
 - [Supabase Documentation](https://supabase.com/docs/)
 - [Supabase CLI Documentation](https://supabase.com/docs/guides/cli/getting-started)
+- [Supabase Buckets](https://supabase.com/docs/guides/storage/buckets/fundamentals)
 - [LangChain Python Library](https://python.langchain.com/docs/integrations/vectorstores/supabase)
 - [LlamaIndex Python Library](https://docs.llamaindex.ai/en/stable/examples/vector_stores/SupabaseVectorIndexDemo/)
 - [Vecs Python Library](https://github.com/supabase/vecs)
