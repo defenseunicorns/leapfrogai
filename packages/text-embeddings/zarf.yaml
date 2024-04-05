@@ -2,7 +2,7 @@
 kind: ZarfPackageConfig
 metadata:
   name: text-embeddings
-  version: 0.1.0
+  version: "###ZARF_PKG_TMPL_IMAGE_VERSION###"
   description: >
     text embeddings model
 
