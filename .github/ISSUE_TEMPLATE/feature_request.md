@@ -8,14 +8,14 @@ assignees: ''
 
 ### User Story
 
-**As a** [user persona] <br>
-**I want** [desired feature] <br>
+**As a** [user persona]  
+**I want** [desired feature]  
 **So that** [value derived from feature]
 
 ### Acceptance Criteria
 
-**Given** [a state] <br>
-**When** [an action is taken] <br>
+**Given** [a state]  
+**When** [an action is taken]  
 **Then** [something happens]
 
 ### Describe alternatives you've considered
