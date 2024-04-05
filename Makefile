@@ -2,7 +2,7 @@ ARCH ?= amd64
 KEY ?= ""
 
 VERSION ?= $(shell git describe --abbrev=0 --tags)
-LOCAL_VERSION ?= dev
+LOCAL_VERSION ?= $(shell git rev-parse --short HEAD)
 ######################################################################################
 
 .PHONY: help
@@ -48,7 +48,7 @@ build-api: local-registry setup-api-deps ## Build the leapfrogai_api container a
 	docker push localhost:5000/defenseunicorns/leapfrogai/leapfrogai-api:${LOCAL_VERSION}
 
 	## Build the Zarf package
-	uds zarf package create packages/api --registry-override=ghcr.io=localhost:5000 --insecure --set LEAPFROGAI_IMAGE_VERSION=${LOCAL_VERSION} --confirm
+	uds zarf package create packages/api -o packages/api --registry-override=ghcr.io=localhost:5000 --insecure --set LEAPFROGAI_IMAGE_VERSION=${LOCAL_VERSION} --confirm
 
 
 setup-llama-cpp-python-deps:  ## Download the wheels for the optional 'llama-cpp-python' dependencies
@@ -64,7 +64,7 @@ build-llama-cpp-python: local-registry setup-llama-cpp-python-deps ## Build the 
 	docker push localhost:5000/defenseunicorns/leapfrogai/llama-cpp-python:${LOCAL_VERSION}
 
 	## Build the Zarf package
-	uds zarf package create packages/llama-cpp-python --registry-override=ghcr.io=localhost:5000 --insecure --set IMAGE_VERSION=${LOCAL_VERSION} --confirm
+	uds zarf package create packages/llama-cpp-python -o packages/llama-cpp-python --registry-override=ghcr.io=localhost:5000 --insecure --set IMAGE_VERSION=${LOCAL_VERSION} --confirm
 
 
 setup-vllm-deps: ## Download the wheels for the optional 'vllm' dependencies
@@ -80,7 +80,7 @@ build-vllm: local-registry setup-vllm-deps
 	docker push localhost:5000/defenseunicorns/leapfrogai/vllm:${LOCAL_VERSION}
 
 	## Build the Zarf package
-	uds zarf package create packages/vllm --registry-override=ghcr.io=localhost:5000 --insecure --set IMAGE_VERSION=${LOCAL_VERSION} --confirm
+	uds zarf package create packages/vllm -o packages/vllm --registry-override=ghcr.io=localhost:5000 --insecure --set IMAGE_VERSION=${LOCAL_VERSION} --confirm
 
 
 setup-text-embeddings-deps: ## Download the wheels for the optional 'text-embeddings' dependencies
@@ -96,7 +96,7 @@ build-text-embeddings: local-registry setup-text-embeddings-deps ## Build the te
 	docker push localhost:5000/defenseunicorns/leapfrogai/text-embeddings:${LOCAL_VERSION}
 
 	## Build the Zarf package
-	uds zarf package create packages/text-embeddings --registry-override=ghcr.io=localhost:5000 --insecure --set IMAGE_VERSION=${LOCAL_VERSION} --confirm
+	uds zarf package create packages/text-embeddings -o packages/text-embeddings --registry-override=ghcr.io=localhost:5000 --insecure --set IMAGE_VERSION=${LOCAL_VERSION} --confirm
 
 
 setup-whisper-deps: ## Download the wheels for the optional 'whisper' dependencies
@@ -112,6 +112,10 @@ build-whisper: local-registry setup-whisper-deps ## Build the whisper container 
 	docker push localhost:5000/defenseunicorns/leapfrogai/whisper:${LOCAL_VERSION}
 
 	## Build the Zarf package
-	uds zarf package create packages/whisper --registry-override=ghcr.io=localhost:5000 --insecure --set IMAGE_VERSION=${LOCAL_VERSION} --confirm
+	uds zarf package create packages/whisper -o packages/whisper --registry-override=ghcr.io=localhost:5000 --insecure --set IMAGE_VERSION=${LOCAL_VERSION} --confirm
+
+build-cpu: build-api build-llama-cpp-python build-text-embeddings build-whisper
+
+build-gpu: build-api build-vllm build-text-embeddings build-whisper
 
 build-all: build-api build-llama-cpp-python build-vllm build-text-embeddings build-whisper

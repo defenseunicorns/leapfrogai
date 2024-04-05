@@ -130,6 +130,15 @@ make build-llama-cpp-python     # if you have CPU only
 make build-text-embeddings
 make build-whisper
 ```
+**OR**
+
+You can build all of the packages you need at once with the following make targets:
+
+```
+make build-cpu    # api, llama-cpp-python, text-embeddings, whisper
+make build-gpu    # api, vllm, text-embeddings, whisper
+make build-all    # all of the backends
+```
 
 Once the packages are created, you can deploy either a CPU or GPU-enabled deployment via one of the UDS bundles:
 
