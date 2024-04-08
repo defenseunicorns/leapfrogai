@@ -71,6 +71,7 @@ text-embeddings = [
 
 whisper = [
     "faster-whisper == 0.10.0",
+    "ctranslate2 >= 4.1.0"
 ]
 
 e2e-test = [
