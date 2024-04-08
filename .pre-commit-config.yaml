@@ -20,4 +20,5 @@ repos:
     rev: v0.2.2
     hooks:
       - id: ruff # Run the linter.
+        exclude: src/leapfrogai_sdk
       - id: ruff-format # Run the formatter.

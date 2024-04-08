@@ -1,0 +1,41 @@
+[project]
+name = "leapfrogai-sdk"
+version = "0.1.0"
+dependencies = [
+    "grpcio >= 1.56.0",
+    "grpcio-tools >= 1.62.1",
+    "protobuf >= 4.23.3",
+    "grpcio-reflection >=1.58.0",
+    "grpcio-health-checking >=1.58.0",
+    "confz >= 2.0.1",
+    "pydantic >= 2.0",
+    "click >= 8.1.7",
+]
+requires-python = "~=3.11"
+
+[tool.pip-tools]
+generate-hashes = true
+
+[tool.setuptools.packages.find]
+where = ["../"]
+include = ["leapfrogai_sdk"]
+namespaces = false
+
+[tool.pytest.ini_options]
+addopts = ["--import-mode=importlib"]
+
+[tool.ruff]
+target-version = "py311"
+# exclude generated grpc code
+exclude = [
+    "types/audio",
+    "types/chat",
+    "types/completion",
+    "types/embeddings",
+    "types/name",
+]
+
+
+[build-system]
+requires = ["setuptools"]
+build-backend = "setuptools.build_meta"

@@ -24,11 +24,11 @@ build-wheel: ## Build the wheel for the leapfrogai_api module
 
 
 gen-python: ## Generate the protobufs for the OpenAI typing within the leapfrogai_api module
-	python3 -m grpc_tools.protoc -I src/leapfrogai_api/types/proto \
+	python3 -m grpc_tools.protoc -I src/leapfrogai_sdk/proto \
 			--pyi_out=src/. \
 			--python_out=src/. \
 			--grpc_python_out=src/. \
-			src/leapfrogai_api/types/proto/leapfrogai_api/types/**/*.proto
+			src/leapfrogai_sdk/proto/leapfrogai_sdk/**/*.proto
 
 # TODO: Make the port a variable with an uncommon default
 local-registry: ## Start up a local container registry. Errors in this target are ignored.
