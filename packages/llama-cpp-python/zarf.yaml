@@ -1,3 +1,5 @@
+# yaml-language-server: $schema=https://raw.githubusercontent.com/defenseunicorns/zarf/main/zarf.schema.json
+
 kind: ZarfPackageConfig
 metadata:
   name: llama-cpp-python
@@ -10,7 +12,7 @@ constants:
     value: "###ZARF_PKG_TMPL_IMAGE_VERSION###"
 
 components:
-  - name: import-model
+  - name: llama-cpp-python-model
     required: true
     charts:
       - name: llama-cpp-python-model
