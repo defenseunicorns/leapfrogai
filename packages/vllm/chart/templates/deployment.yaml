@@ -25,7 +25,6 @@ spec:
       labels:
         {{- include "chart.selectorLabels" . | nindent 8 }}
     spec:
-      serviceAccountName: {{ include "chart.serviceAccountName" . }}
       securityContext:
         {{- toYaml .Values.podSecurityContext | nindent 8 }}
       containers:

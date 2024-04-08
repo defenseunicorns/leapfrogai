@@ -36,7 +36,7 @@ spec:
           - name: NAMESPACE
             value: leapfrogai
         - name: api-container
-          image: ghcr.io/defenseunicorns/leapfrogai/api:{{ .Values.image.lfaiAPITag }}
+          image: ghcr.io/defenseunicorns/leapfrogai/leapfrogai-api:{{ .Values.image.lfaiAPITag }}
           imagePullPolicy: Always
           env:
           - name: LFAI_CONFIG_PATH
