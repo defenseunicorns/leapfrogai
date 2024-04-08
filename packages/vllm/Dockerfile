@@ -38,7 +38,6 @@ COPY build/*.whl build/
 COPY build/leapfrogai_api*.whl leapfrogai_api-100.100.100-py3-none-any.whl
 RUN pip install "leapfrogai_api-100.100.100-py3-none-any.whl[vllm]" --no-index --find-links=build/
 
-
 # download model
 ARG REPO_ID=TheBloke/Synthia-7B-v2.0-AWQ
 ARG REVISION=main

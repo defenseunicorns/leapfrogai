@@ -62,8 +62,8 @@ jobs:
           run: |
             make build-api LOCAL_VERSION=e2e-test
             docker image prune -af
-            uds zarf package deploy zarf-package-leapfrogai-api-amd64-e2e-test.tar.zst --confirm
-            rm zarf-package-leapfrogai-api-amd64-e2e-test.tar.zst
+            uds zarf package deploy packages/api/zarf-package-leapfrogai-api-amd64-e2e-test.tar.zst --confirm
+            rm packages/api/zarf-package-leapfrogai-api-amd64-e2e-test.tar.zst
 
         ##########
         # llama
@@ -72,8 +72,8 @@ jobs:
           run: |
             make build-llama-cpp-python LOCAL_VERSION=e2e-test
             docker image prune -af
-            uds zarf package deploy zarf-package-llama-cpp-python-amd64-e2e-test.tar.zst -l=trace --confirm
-            rm zarf-package-llama-cpp-python-amd64-e2e-test.tar.zst
+            uds zarf package deploy packages/llama-cpp-python/zarf-package-llama-cpp-python-amd64-e2e-test.tar.zst -l=trace --confirm
+            rm packages/llama-cpp-python/zarf-package-llama-cpp-python-amd64-e2e-test.tar.zst
 
         - name: Test llama-cpp-python
           run: |
@@ -90,8 +90,8 @@ jobs:
           run: |
             make build-text-embeddings LOCAL_VERSION=e2e-test
             docker image prune -af
-            uds zarf package deploy zarf-package-text-embeddings-amd64-e2e-test.tar.zst -l=trace --confirm
-            rm zarf-package-text-embeddings-amd64-e2e-test.tar.zst
+            uds zarf package deploy packages/text-embeddings/zarf-package-text-embeddings-amd64-e2e-test.tar.zst -l=trace --confirm
+            rm packages/text-embeddings/zarf-package-text-embeddings-amd64-e2e-test.tar.zst
 
         - name: Test text-embeddings
           run: |
@@ -108,8 +108,8 @@ jobs:
           run: |
             make build-whisper LOCAL_VERSION=e2e-test
             docker image prune -af
-            uds zarf package deploy zarf-package-whisper-amd64-e2e-test.tar.zst -l=trace --confirm
-            rm zarf-package-whisper-amd64-e2e-test.tar.zst
+            uds zarf package deploy packages/whisper/zarf-package-whisper-amd64-e2e-test.tar.zst -l=trace --confirm
+            rm packages/whisper/zarf-package-whisper-amd64-e2e-test.tar.zst
 
         - name: Test whisper
           run: |
