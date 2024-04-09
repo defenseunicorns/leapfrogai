@@ -7,7 +7,7 @@ on:
 
       # Ignore updates to the .github directory, unless it's this current file
       - "!.github/**"
-      - ".github/workflows/e2e.yml"
+      - ".github/workflows/e2e.yaml"
 
       # Ignore docs and website things
       - "!**.md"
@@ -24,7 +24,7 @@ on:
       - "!pre-commit-config.yaml"
 
       # Ignore non e2e tests
-      - "!tests/e2e/**"
+      - "!tests/pytest/**"
 
 
 concurrency:
