@@ -44,7 +44,6 @@ jobs:
           with:
             python-version-file: 'pyproject.toml'
 
-        # TODO @JPERRY: We should be generating the proto files before this...
         - name: Install Python Deps
           run: python -m pip install ".[dev,e2e-test]"
 
