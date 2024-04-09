@@ -1,0 +1,30 @@
+[project]
+name = "leapfrogai-api"
+version = "0.5.3"
+dependencies = [
+    "fastapi >= 0.109.1",
+    "uvicorn >= 0.23.2",
+    "pydantic",
+    "python-multipart >= 0.0.7", #indirect dep of FastAPI to receive form data for file uploads
+    "watchfiles >= 0.21.0",
+    "leapfrogai_sdk == 0.1.0",
+]
+requires-python = "~=3.11"
+
+[tool.pip-tools]
+generate-hashes = true
+
+[tool.setuptools.packages.find]
+where = ["../"]
+include = ["leapfrogai_api*"]
+namespaces = false
+
+[tool.pytest.ini_options]
+addopts = ["--import-mode=importlib"]
+
+[tool.ruff]
+target-version = "py311"
+
+[build-system]
+requires = ["setuptools"]
+build-backend = "setuptools.build_meta"

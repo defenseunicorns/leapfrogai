@@ -3,6 +3,7 @@ KEY ?= ""
 
 VERSION ?= $(shell git describe --abbrev=0 --tags)
 LOCAL_VERSION ?= $(shell git rev-parse --short HEAD)
+SDK_DEST ?= src/leapfrogai_sdk/build
 ######################################################################################
 
 .PHONY: help
@@ -19,10 +20,6 @@ clean: ## Clean up all the things (packages, build dirs, compiled .whl files, py
 	find . -name '*.egg-info' -type d -exec rm -rf {} +
 
 
-build-wheel: ## Build the wheel for the leapfrogai_api module
-	python -m pip wheel . -w build
-
-
 gen-python: ## Generate the protobufs for the OpenAI typing within the leapfrogai_api module
 	python3 -m grpc_tools.protoc -I src/leapfrogai_sdk/proto \
 			--pyi_out=src/. \
@@ -33,10 +30,14 @@ gen-python: ## Generate the protobufs for the OpenAI typing within the leapfroga
 local-registry: ## Start up a local container registry. Errors in this target are ignored.
 	-docker run -d -p 5000:5000 --restart=always --name registry registry:2
 
+build-sdk: ## build the leapfrogai_sdk package as a dependency for other lfai components
+	-rm ${SDK_DEST}/*.whl
+	python -m pip wheel src/leapfrogai_sdk -w ${SDK_DEST}
 
-setup-api-deps: ## Download the wheels for the leapfrogai_api dependencies
+setup-api-deps: build-sdk ## Download the wheels for the leapfrogai_api dependencies
 	-rm packages/api/build/*.whl
-	python -m pip wheel . -w packages/api/build
+	mv ${SDK_DEST}/*.whl packages/api/build
+	python -m pip wheel src/leapfrogai_api -w packages/api/build --find-links=packages/api/build
 
 build-api: local-registry setup-api-deps ## Build the leapfrogai_api container and Zarf package
 	## Build the image (and tag it for the local registry)
