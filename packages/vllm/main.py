@@ -9,8 +9,8 @@ import time
 from typing import Any, Dict, Generator
 
 from dotenv import load_dotenv
-from leapfrogai_api.types import BackendConfig
-from leapfrogai_api.types.llm import LLM, GenerationConfig
+from leapfrogai_sdk import BackendConfig
+from leapfrogai_sdk.llm import LLM, GenerationConfig
 from vllm import SamplingParams
 from vllm.engine.arg_utils import AsyncEngineArgs
 from vllm.engine.async_llm_engine import AsyncLLMEngine

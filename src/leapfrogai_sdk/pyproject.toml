@@ -18,7 +18,10 @@ generate-hashes = true
 
 [tool.setuptools.packages.find]
 where = ["../"]
-include = ["leapfrogai_sdk"]
+include = ["leapfrogai_sdk*"]
+exclude = [
+    "leapfrogai_sdk/proto",
+]
 namespaces = false
 
 [tool.pytest.ini_options]

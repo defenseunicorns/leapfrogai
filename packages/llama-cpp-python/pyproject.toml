@@ -3,7 +3,7 @@ name = "lfai-llama-cpp-python"
 version = "0.2.1"
 dependencies = [
     "llama-cpp-python == 0.2.28",
-    "leapfrogai-api == 0.5.3",
+    "leapfrogai-sdk == 0.1.0",
 ]
 requires-python = "~=3.11"
 readme = "README.md"
@@ -12,7 +12,7 @@ readme = "README.md"
 generate-hashes = true
 
 [tool.setuptools]
-packages = ["leapfrogai_api"]
+packages = ["leapfrogai_sdk"]
 package-dir = {"" = "../../src"}
 
 [tool.pytest.ini_options]

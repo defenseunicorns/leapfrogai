@@ -188,7 +188,7 @@ python -m pip install ".[llama-cpp-python,dev]"
 cd packages/llama-cpp-python
 python scripts/model_download.py
 mv .model/*.gguf .model/model.gguf
-python -m leapfrogai_api.types.cli --app-dir=. main:Model
+python -m leapfrogai_sdk.cli --app-dir=. main:Model
 ```
 
 #### Backend: text-embeddings
@@ -209,7 +209,7 @@ python -m pip install ".[vllm,dev]"
 cd packages/vllm
 python scripts/model_download.py
 export QUANTIZATION=awq
-python -m leapfrogai_api.types.cli --app-dir=. main:Model
+python -m leapfrogai_sdk.cli --app-dir=. main:Model
 ```
 
 #### Backend: whisper

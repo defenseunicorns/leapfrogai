@@ -4,7 +4,7 @@ import os
 import tempfile
 from typing import Iterator
 
-import leapfrogai_api.types as lfai_types
+import leapfrogai_sdk as lfai
 from faster_whisper import WhisperModel
 
 logger = logging.getLogger(__name__)
@@ -32,8 +32,8 @@ def make_transcribe_request(filename, task, language, temperature, prompt):
 
 
 def call_whisper(
-    request_iterator: Iterator[lfai_types.AudioRequest], task: str
-) -> lfai_types.AudioResponse:
+    request_iterator: Iterator[lfai.AudioRequest], task: str
+) -> lfai.AudioResponse:
     data = bytearray()
     prompt = ""
     temperature = 0.0
@@ -59,32 +59,32 @@ def call_whisper(
         )
         text = str(result["text"])
         logger.info("Transcription complete!")
-        return lfai_types.AudioResponse(text=text)
+        return lfai.AudioResponse(text=text)
 
 
-class Whisper(lfai_types.AudioServicer):
+class Whisper(lfai.AudioServicer):
     def Translate(
         self,
-        request_iterator: Iterator[lfai_types.AudioRequest],
-        context: lfai_types.GrpcContext,
+        request_iterator: Iterator[lfai.AudioRequest],
+        context: lfai.GrpcContext,
     ):
         return call_whisper(request_iterator, "translate")
 
     def Transcribe(
         self,
-        request_iterator: Iterator[lfai_types.AudioRequest],
-        context: lfai_types.GrpcContext,
+        request_iterator: Iterator[lfai.AudioRequest],
+        context: lfai.GrpcContext,
     ):
         return call_whisper(request_iterator, "transcribe")
 
     def Name(self, request, context):
-        return lfai_types.NameResponse(name="whisper")
+        return lfai.NameResponse(name="whisper")
 
 
 async def main():
     logging.basicConfig(level=logging.INFO)
     logger.info(f"GPU_ENABLED = {GPU_ENABLED}")
-    await lfai_types.serve(Whisper())
+    await lfai.serve(Whisper())
 
 
 if __name__ == "__main__":

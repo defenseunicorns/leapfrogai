@@ -2,7 +2,7 @@ from typing import Any, Generator, List
 
 from pydantic import BaseModel
 
-from leapfrogai_api.types import (
+from leapfrogai_sdk import (
     BackendConfig,
     ChatCompletionChoice,
     ChatCompletionRequest,

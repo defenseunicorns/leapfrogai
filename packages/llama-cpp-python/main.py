@@ -1,8 +1,8 @@
 import os
 from typing import Any, Generator
 
-from leapfrogai_api.types import BackendConfig
-from leapfrogai_api.types.llm import LLM, GenerationConfig
+from leapfrogai_sdk import BackendConfig
+from leapfrogai_sdk.llm import LLM, GenerationConfig
 from llama_cpp import Llama
 
 GPU_ENABLED = (

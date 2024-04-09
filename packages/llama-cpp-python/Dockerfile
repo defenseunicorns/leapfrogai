@@ -45,4 +45,4 @@ COPY config.yaml .
 
 EXPOSE 50051:50051
 
-ENTRYPOINT ["python", "-m", "leapfrogai_api.types.cli", "--app-dir=.", "main:Model"]
+ENTRYPOINT ["python", "-m", "leapfrogai_sdk.cli", "--app-dir=.", "main:Model"]
