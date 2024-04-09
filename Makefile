@@ -30,7 +30,6 @@ gen-python: ## Generate the protobufs for the OpenAI typing within the leapfroga
 			--grpc_python_out=src/. \
 			src/leapfrogai_sdk/proto/leapfrogai_sdk/**/*.proto
 
-# TODO: Make the port a variable with an uncommon default
 local-registry: ## Start up a local container registry. Errors in this target are ignored.
 	-docker run -d -p 5000:5000 --restart=always --name registry registry:2
 

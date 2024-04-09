@@ -2,18 +2,13 @@
 name = "leapfrogai"
 version = "0.1.0"
 dependencies = [
-]
-requires-python = "~=3.11"
-readme = "README.md"
-
-[packages.optional-dependencies]
-
-dev = [
     "pip-tools == 7.3.0",
     "pytest",
     "httpx",
     "ruff",
 ]
+requires-python = "~=3.11"
+readme = "README.md"
 
 [tool.pip-tools]
 generate-hashes = true

@@ -174,8 +174,9 @@ source .venv/bin/activate
 To run the LeapfrogAI API locally (starting from the root directory of the repository):
 
 ```
-python -m pip install ".[api,dev]"
-cd src
+python -m pip install src/leapfrogai_sdk
+cd src/leapfrogai_api
+python -m pip install .
 uvicorn leapfrogai_api.main:app --port 3000 --reload
 ```
 
@@ -184,8 +185,9 @@ uvicorn leapfrogai_api.main:app --port 3000 --reload
 To run the llama-cpp-python backend locally (starting from the root directory of the repository):
 
 ```
-python -m pip install ".[llama-cpp-python,dev]"
+python -m pip install src/leapfrogai_sdk
 cd packages/llama-cpp-python
+python -m pip install .
 python scripts/model_download.py
 mv .model/*.gguf .model/model.gguf
 python -m leapfrogai_sdk.cli --app-dir=. main:Model
@@ -195,8 +197,9 @@ python -m leapfrogai_sdk.cli --app-dir=. main:Model
 To run the text-embeddings backend locally (starting from the root directory of the repository):
 
 ```
-python -m pip install ".[text-embeddings,dev]"
+python -m pip install src/leapfrogai_sdk
 cd packages/text-embeddings
+python -m pip install .
 python scripts/model_download.py
 python -u main.py
 ```
@@ -205,8 +208,9 @@ python -u main.py
 To run the vllm backend locally (starting from the root directory of the repository):
 
 ```
-python -m pip install ".[vllm,dev]"
+python -m pip install src/leapfrogai_sdk
 cd packages/vllm
+python -m pip install .
 python scripts/model_download.py
 export QUANTIZATION=awq
 python -m leapfrogai_sdk.cli --app-dir=. main:Model
@@ -216,8 +220,9 @@ python -m leapfrogai_sdk.cli --app-dir=. main:Model
 To run the vllm backend locally (starting from the root directory of the repository):
 
 ```
-python -m pip install ".[whisper,dev]"
+python -m pip install src/leapfrogai_sdk
 cd packages/whisper
+python -m pip install .
 ct2-transformers-converter --model openai/whisper-base --output_dir .model --copy_files tokenizer.json --quantization float32
 python -u main.py
 ```

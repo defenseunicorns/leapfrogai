@@ -15,7 +15,6 @@ GPU_ENABLED = True if int(os.environ.get("GPU_REQUEST", 0)) > 0 else False
 
 
 def make_transcribe_request(filename, task, language, temperature, prompt):
-    # TODO @JPERRY does this make sense to be in the function? This seems like something that should be done during initialization
     device = "cuda" if GPU_ENABLED else "cpu"
     model = WhisperModel(model_path, device=device, compute_type="float32")
 
