@@ -1,3 +1,4 @@
+# yaml-language-server: $schema=https://raw.githubusercontent.com/defenseunicorns/zarf/main/zarf.schema.json
 kind: ZarfPackageConfig
 metadata:
   name: vllm
@@ -10,7 +11,7 @@ constants:
     value: "###ZARF_PKG_TMPL_IMAGE_VERSION###"
 
 components:
-  - name: import-model
+  - name: vllm-model
     required: true
     charts:
       - name: vllm-model
