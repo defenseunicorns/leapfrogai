@@ -7,8 +7,6 @@ RUN python3.11 -m venv .venv
 ENV PATH="/leapfrogai/.venv/bin:$PATH"
 
 # download and covnert OpenAI's whisper base
-# TODO @JPERRY: Move this model download to a separate build stage (within its own FROM section)
-#               We don't dirty our .venv with libraries only needed for model download...
 ARG MODEL_NAME=openai/whisper-base
 RUN pip install transformers[torch]
 RUN pip install ctranslate2

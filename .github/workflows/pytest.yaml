@@ -31,7 +31,6 @@ jobs:
         with:
           python-version-file: 'pyproject.toml'
 
-      # TODO @JPERRY: This repeater image is floating in the void. Give it a home in this repo???
       - name: Run Repeater
         run: docker run -p 50051:50051 -d ghcr.io/defenseunicorns/leapfrogai/repeater:0.3.3
 
