@@ -3,7 +3,7 @@ name = "lfai-whisper"
 version = "0.1.0"
 dependencies = [
     "faster-whisper == 0.10.0",
-    "leapfrogai-api == 0.5.3",    
+    "leapfrogai-sdk == 0.1.0",
 ]
 requires-python = "~=3.11"
 readme = "README.md"

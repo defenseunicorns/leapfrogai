@@ -13,9 +13,9 @@ RUN pip install ctranslate2
 RUN ct2-transformers-converter --model ${MODEL_NAME} --output_dir .model --copy_files tokenizer.json --quantization float32
 
 COPY build/*.whl build/
-COPY build/leapfrogai_api*.whl leapfrogai_api-100.100.100-py3-none-any.whl
+COPY build/lfai_whisper*.whl lfai_whisper-100.100.100-py3-none-any.whl
 
-RUN pip install leapfrogai_api-100.100.100-py3-none-any.whl[whisper] --no-index --find-links=build/
+RUN pip install lfai_whisper-100.100.100-py3-none-any.whl --no-index --find-links=build/
 
 # Use hardened ffmpeg image to get compiled binaries
 FROM cgr.dev/chainguard/ffmpeg:latest as ffmpeg
