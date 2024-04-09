@@ -12,7 +12,7 @@ readme = "README.md"
 generate-hashes = true
 
 [tool.setuptools]
-packages = ["leapfrogai_api"]
+packages = ["leapfrogai_sdk"]
 package-dir = {"" = "../../src"}
 
 [tool.pytest.ini_options]
