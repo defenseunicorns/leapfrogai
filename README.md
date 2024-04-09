@@ -174,7 +174,7 @@ source .venv/bin/activate
 To run the LeapfrogAI API locally (starting from the root directory of the repository):
 
 ```
-python -m pip install ".[api,dev]"
+python -m pip install ".[dev]"
 cd src
 uvicorn leapfrogai_api.main:app --port 3000 --reload
 ```
