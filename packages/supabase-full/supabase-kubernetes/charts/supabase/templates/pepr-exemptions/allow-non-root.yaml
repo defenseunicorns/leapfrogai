@@ -1,0 +1,43 @@
+apiVersion: uds.dev/v1alpha1
+kind: Exemption
+metadata:
+ name: uds-policy-exemptions
+ namespace: uds-dev-stack
+spec:
+ exemptions:
+  - description: Supabase Kong root permissions for file writes
+    matcher:
+      kind: pod
+      name: "^supabase-supabase-kong.*"
+      namespace: leapfrogai
+    policies:
+    - RequireNonRootUser
+    - DropAllCapabilities
+    title: Supabase Kong Root Exemption
+  - description: Supabase Auth root permissions for file writes
+    matcher:
+      kind: pod
+      name: "^supabase-supabase-auth.*"
+      namespace: leapfrogai
+    policies:
+    - RequireNonRootUser
+    - DropAllCapabilities
+    title: Supabase Auth Root Exemption
+  - description: Supabase DB root permissions for file writes
+    matcher:
+      kind: pod
+      name: "^supabase-supabase-db.*"
+      namespace: leapfrogai
+    policies:
+    - RequireNonRootUser
+    - DropAllCapabilities
+    title: Supabase DB Root Exemption
+  - description: Supabase Realtime root permissions for file writes
+    matcher:
+      kind: pod
+      name: "^supabase-supabase-realtime.*"
+      namespace: leapfrogai
+    policies:
+    - RequireNonRootUser
+    - DropAllCapabilities
+    title: Supabase Realtime Root Exemption

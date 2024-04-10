@@ -2,7 +2,7 @@
 kind: ZarfPackageConfig
 metadata:
   name: supabase
-  version: 0.0.1
+  version: 0.1.1
   description: >
     supabase instance and all of its dependencies
 
@@ -20,8 +20,11 @@ components:
     images:
       - supabase/studio:20230127-6bfd87b
       - supabase/postgres:14.1.0.105
+      - postgres:15-alpine
       - supabase/gotrue:v2.146.0
       - postgrest/postgrest:latest
       - supabase/realtime:v2.1.0
       - supabase/storage-api:v0.26.1
       - kong:2.8.1
+      - busybox:1.28
+      - supabase/postgres-meta:latest
