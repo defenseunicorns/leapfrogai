@@ -36,14 +36,14 @@ COPY build/leapfrogai_api*.whl leapfrogai_api-100.100.100-py3-none-any.whl
 RUN pip install "leapfrogai_api-100.100.100-py3-none-any.whl[vllm]" --no-index --find-links=build/
 
 # download model
-ARG REPO_ID=TheBloke/Synthia-7B-v2.0-AWQ
-ARG REVISION=main
+ARG REPO_ID=TheBloke/Synthia-7B-v2.0-GPTQ
+ARG REVISION=gptq-4bit-32g-actorder_True
 ENV HF_HOME=/home/leapfrogai/.cache/huggingface
 COPY scripts/model_download.py scripts/model_download.py
 
 RUN REPO_ID=${REPO_ID} FILENAME=${FILENAME} REVISION=${REVISION} python3.11 scripts/model_download.py
 
-ENV QUANTIZATION=awq
+ENV QUANTIZATION=gptq
 
 COPY main.py .
 COPY config.yaml .
