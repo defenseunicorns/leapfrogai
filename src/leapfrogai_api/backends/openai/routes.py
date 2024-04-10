@@ -2,7 +2,7 @@ from itertools import chain
 from typing import Annotated
 
 from fastapi import Depends, HTTPException
-from leapfrogai_api import types
+import leapfrogai_sdk as lfai
 from leapfrogai_api.backends.openai import router
 from leapfrogai_api.backends.openai.grpc_client import (
     chat_completion,
@@ -39,7 +39,7 @@ async def complete(
             detail=f"Model {req.model} not found. Currently supported models are {list(model_config.models.keys())}",
         )
 
-    request = types.CompletionRequest(
+    request = lfai.CompletionRequest(
         prompt=req.prompt,  # type: ignore
         max_new_tokens=req.max_tokens,
         temperature=req.temperature,
@@ -64,12 +64,10 @@ async def chat_complete(
             detail=f"Model {req.model} not found. Currently supported models are {list(model_config.models.keys())}",
         )
 
-    chat_items: list[types.ChatItem] = []
+    chat_items: list[lfai.ChatItem] = []
     for m in req.messages:
-        chat_items.append(
-            types.ChatItem(role=grpc_chat_role(m.role), content=m.content)
-        )
-    request = types.ChatCompletionRequest(
+        chat_items.append(lfai.ChatItem(role=grpc_chat_role(m.role), content=m.content))
+    request = lfai.ChatCompletionRequest(
         chat_items=chat_items,
         max_new_tokens=req.max_tokens,
         temperature=req.temperature,
@@ -106,9 +104,9 @@ async def embeddings(
         )
 
     if isinstance(req.input, str):
-        request = types.EmbeddingRequest(inputs=[req.input])
+        request = lfai.EmbeddingRequest(inputs=[req.input])
     # elif isinstance(req.input, list) and all(isinstance(i, str) for i in req.input):
-    # request = types.EmbeddingRequest(inputs=req.input)
+    # request = lfai.EmbeddingRequest(inputs=req.input)
     else:
         raise HTTPException(
             status_code=405,
@@ -132,10 +130,10 @@ async def transcribe(
         )
 
     # Create a request that contains the metadata for the AudioRequest
-    audio_metadata = types.AudioMetadata(
+    audio_metadata = lfai.AudioMetadata(
         prompt=req.prompt, temperature=req.temperature, inputlanguage=req.language
     )
-    audio_metadata_request = types.AudioRequest(metadata=audio_metadata)
+    audio_metadata_request = lfai.AudioRequest(metadata=audio_metadata)
 
     # Read the file and get an iterator of all the data chunks
     chunk_iterator = read_chunks(req.file.file, 1024)
