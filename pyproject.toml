@@ -13,15 +13,6 @@ readme = "README.md"
 
 [tool.ruff]
 target-version = "py311"
-# exclude generated grpc code
-exclude = [
-    "src/leapfrogai_sdk/chat",
-    "src/leapfrogai_sdk/audio",
-    "src/leapfrogai_sdk/completion",
-    "src/leapfrogai_sdk/embeddings",
-    "src/leapfrogai_sdk/name",
-    "src/leapfrogai_sdk/proto/*",
-]
 
 [build-system]
 requires = ["setuptools"]

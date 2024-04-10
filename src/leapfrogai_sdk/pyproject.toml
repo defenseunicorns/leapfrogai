@@ -31,11 +31,11 @@ addopts = ["--import-mode=importlib"]
 target-version = "py311"
 # exclude generated grpc code
 exclude = [
-    "types/audio",
-    "types/chat",
-    "types/completion",
-    "types/embeddings",
-    "types/name",
+    "audio",
+    "chat",
+    "completion",
+    "embeddings",
+    "name",
 ]
 
 
