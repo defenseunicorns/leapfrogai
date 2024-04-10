@@ -224,7 +224,7 @@ To run the vllm backend locally (starting from the root directory of the reposit
 ```
 python -m pip install src/leapfrogai_sdk
 cd packages/whisper
-python -m pip install .
+python -m pip install ".[dev]"
 ct2-transformers-converter --model openai/whisper-base --output_dir .model --copy_files tokenizer.json --quantization float32
 python -u main.py
 ```
