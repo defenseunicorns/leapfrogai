@@ -36,8 +36,7 @@ sdk-wheel: ## build wheels for the leapfrogai_sdk package as a dependency for ot
 
 setup-api-deps: sdk-wheel ## Download the wheels for the leapfrogai_api dependencies
 	-rm packages/api/build/*.whl
-	mv ${SDK_DEST}/*.whl packages/api/build
-	python -m pip wheel src/leapfrogai_api -w packages/api/build --find-links=packages/api/build
+	python -m pip wheel src/leapfrogai_api -w packages/api/build --find-links=${SDK_DEST}
 
 build-api: local-registry setup-api-deps ## Build the leapfrogai_api container and Zarf package
 	## Build the image (and tag it for the local registry)
@@ -53,8 +52,7 @@ build-api: local-registry setup-api-deps ## Build the leapfrogai_api container a
 
 setup-llama-cpp-python-deps: sdk-wheel ## Download the wheels for the optional 'llama-cpp-python' dependencies
 	-rm packages/llama-cpp-python/build/*.whl
-	mv ${SDK_DEST}/*.whl packages/llama-cpp-python/build
-	python -m pip wheel packages/llama-cpp-python -w packages/llama-cpp-python/build --find-links=packages/llama-cpp-python/build
+	python -m pip wheel packages/llama-cpp-python -w packages/llama-cpp-python/build --find-links=${SDK_DEST}
 
 build-llama-cpp-python: local-registry setup-llama-cpp-python-deps ## Build the llama-cpp-python (cpu) container and Zarf package
 	## Build the image (and tag it for the local registry)
@@ -70,8 +68,7 @@ build-llama-cpp-python: local-registry setup-llama-cpp-python-deps ## Build the 
 
 setup-vllm-deps: sdk-wheel ## Download the wheels for the optional 'vllm' dependencies
 	-rm packages/vllm/build/*.whl
-	mv ${SDK_DEST}/*.whl packages/vllm/build
-	python -m pip wheel packages/vllm -w packages/vllm/build --find-links=packages/vllm/build
+	python -m pip wheel packages/vllm -w packages/vllm/build --find-links=${SDK_DEST}
 
 build-vllm: local-registry setup-vllm-deps ## Build the vllm container and Zarf package
 	## Build the image (and tag it for the local registry)
@@ -87,8 +84,7 @@ build-vllm: local-registry setup-vllm-deps ## Build the vllm container and Zarf 
 
 setup-text-embeddings-deps: sdk-wheel ## Download the wheels for the optional 'text-embeddings' dependencies
 	-rm packages/text-embeddings/build/*.whl
-	mv ${SDK_DEST}/*.whl packages/text-embeddings/build
-	python -m pip wheel packages/text-embeddings -w packages/text-embeddings/build --find-links=packages/text-embeddings/build
+	python -m pip wheel packages/text-embeddings -w packages/text-embeddings/build --find-links=${SDK_DEST}
 
 build-text-embeddings: local-registry setup-text-embeddings-deps ## Build the text-embeddings container and Zarf package
 	## Build the image (and tag it for the local registry)
@@ -104,8 +100,7 @@ build-text-embeddings: local-registry setup-text-embeddings-deps ## Build the te
 
 setup-whisper-deps: sdk-wheel ## Download the wheels for the optional 'whisper' dependencies
 	-rm packages/whisper/build/*.whl
-	mv ${SDK_DEST}/*.whl packages/whisper/build
-	python -m pip wheel packages/whisper -w packages/whisper/build --find-links=packages/text-embeddings/build
+	python -m pip wheel packages/whisper -w packages/whisper/build --find-links=${SDK_DEST}
 
 build-whisper: local-registry setup-whisper-deps ## Build the whisper container and zarf package
 	## Build the image (and tag it for the local registry)
