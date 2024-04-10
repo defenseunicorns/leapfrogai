@@ -30,11 +30,11 @@ gen-python: ## Generate the protobufs for the OpenAI typing within the leapfroga
 local-registry: ## Start up a local container registry. Errors in this target are ignored.
 	-docker run -d -p 5000:5000 --restart=always --name registry registry:2
 
-build-sdk: ## build the leapfrogai_sdk package as a dependency for other lfai components
+sdk-wheel: ## build wheels for the leapfrogai_sdk package as a dependency for other lfai components
 	-rm ${SDK_DEST}/*.whl
 	python -m pip wheel src/leapfrogai_sdk -w ${SDK_DEST}
 
-setup-api-deps: build-sdk ## Download the wheels for the leapfrogai_api dependencies
+setup-api-deps: sdk-wheel ## Download the wheels for the leapfrogai_api dependencies
 	-rm packages/api/build/*.whl
 	mv ${SDK_DEST}/*.whl packages/api/build
 	python -m pip wheel src/leapfrogai_api -w packages/api/build --find-links=packages/api/build
@@ -51,7 +51,7 @@ build-api: local-registry setup-api-deps ## Build the leapfrogai_api container a
 	uds zarf package create packages/api -o packages/api --registry-override=ghcr.io=localhost:5000 --insecure --set LEAPFROGAI_IMAGE_VERSION=${LOCAL_VERSION} --confirm
 
 
-setup-llama-cpp-python-deps: build-sdk ## Download the wheels for the optional 'llama-cpp-python' dependencies
+setup-llama-cpp-python-deps: sdk-wheel ## Download the wheels for the optional 'llama-cpp-python' dependencies
 	-rm packages/llama-cpp-python/build/*.whl
 	mv ${SDK_DEST}/*.whl packages/llama-cpp-python/build
 	python -m pip wheel packages/llama-cpp-python -w packages/llama-cpp-python/build --find-links=packages/llama-cpp-python/build
@@ -68,7 +68,7 @@ build-llama-cpp-python: local-registry setup-llama-cpp-python-deps ## Build the 
 	uds zarf package create packages/llama-cpp-python -o packages/llama-cpp-python --registry-override=ghcr.io=localhost:5000 --insecure --set IMAGE_VERSION=${LOCAL_VERSION} --confirm
 
 
-setup-vllm-deps: build-sdk ## Download the wheels for the optional 'vllm' dependencies
+setup-vllm-deps: sdk-wheel ## Download the wheels for the optional 'vllm' dependencies
 	-rm packages/vllm/build/*.whl
 	mv ${SDK_DEST}/*.whl packages/vllm/build
 	python -m pip wheel packages/vllm -w packages/vllm/build --find-links=packages/vllm/build
@@ -85,7 +85,7 @@ build-vllm: local-registry setup-vllm-deps ## Build the vllm container and Zarf 
 	uds zarf package create packages/vllm -o packages/vllm --registry-override=ghcr.io=localhost:5000 --insecure --set IMAGE_VERSION=${LOCAL_VERSION} --confirm
 
 
-setup-text-embeddings-deps: build-sdk ## Download the wheels for the optional 'text-embeddings' dependencies
+setup-text-embeddings-deps: sdk-wheel ## Download the wheels for the optional 'text-embeddings' dependencies
 	-rm packages/text-embeddings/build/*.whl
 	mv ${SDK_DEST}/*.whl packages/text-embeddings/build
 	python -m pip wheel packages/text-embeddings -w packages/text-embeddings/build --find-links=packages/text-embeddings/build
@@ -102,7 +102,7 @@ build-text-embeddings: local-registry setup-text-embeddings-deps ## Build the te
 	uds zarf package create packages/text-embeddings -o packages/text-embeddings --registry-override=ghcr.io=localhost:5000 --insecure --set IMAGE_VERSION=${LOCAL_VERSION} --confirm
 
 
-setup-whisper-deps: build-sdk ## Download the wheels for the optional 'whisper' dependencies
+setup-whisper-deps: sdk-wheel ## Download the wheels for the optional 'whisper' dependencies
 	-rm packages/whisper/build/*.whl
 	mv ${SDK_DEST}/*.whl packages/whisper/build
 	python -m pip wheel packages/whisper -w packages/whisper/build --find-links=packages/text-embeddings/build

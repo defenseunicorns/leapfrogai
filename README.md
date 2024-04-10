@@ -94,7 +94,7 @@ LeapfrogAI leverages Chainguard's [apko](https://github.com/chainguard-dev/apko)
 
 ### SDK
 
-The LeapfrogAI SDK provides a standard set of protobuff and python utilities for implementing backends and gRPC.
+The LeapfrogAI [SDK](src/leapfrogai_sdk/) provides a standard set of protobuff and python utilities for implementing backends and gRPC.
 
 ### User Interface
 
@@ -122,22 +122,24 @@ python -m venv .venv
 source .venv/bin/activate
 ```
 
-Each component is built into its own Zarf package. This can be done easily using the provided `Make` targets:
+Each component is built into its own Zarf package. You can build all of the packages you need at once with the following `Make` targets:
+
+```
+make build-cpu    # api, llama-cpp-python, text-embeddings, whisper
+make build-gpu    # api, vllm, text-embeddings, whisper
+make build-all    # all of the backends
+```
+
+**OR**
+
+You can build components individually using teh following `Make` targets:
+
 ```
 make build-api
 make build-vllm                 # if you have GPUs
 make build-llama-cpp-python     # if you have CPU only
 make build-text-embeddings
 make build-whisper
-```
-**OR**
-
-You can build all of the packages you need at once with the following make targets:
-
-```
-make build-cpu    # api, llama-cpp-python, text-embeddings, whisper
-make build-gpu    # api, vllm, text-embeddings, whisper
-make build-all    # all of the backends
 ```
 
 Once the packages are created, you can deploy either a CPU or GPU-enabled deployment via one of the UDS bundles:
