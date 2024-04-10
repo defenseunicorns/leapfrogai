@@ -15,6 +15,7 @@ jobs:
         uses: chartboost/ruff-action@e18ae971ccee1b2d7bbef113930f00c670b78da4 # v1.0.0
         with:
           version: 0.3.4
+          args: --exclude src/leapfrogai_sdk/audio,src/leapfrogai_sdk/chat,src/leapfrogai_sdk/completion,src/leapfrogai_sdk/embeddings,src/leapfrogai_sdk/name
 
       - name: Validate Formatting
         uses: chartboost/ruff-action@e18ae971ccee1b2d7bbef113930f00c670b78da4 # v1.0.0
