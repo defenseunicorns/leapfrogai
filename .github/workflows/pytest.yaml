@@ -1,0 +1,43 @@
+name: pytest
+on:
+  pull_request:
+    paths-ignore:
+    - "**.md"
+    - "CODEOWNERS"
+    - "CONTRIBUTING.md"
+    - ".gitignore"
+    - "docs/**"
+    - "adr/**"
+    - "website/**"
+    - "tests/e2e/**"
+    - "packages/**"
+
+# Declare default permissions as read only.
+permissions: read-all
+
+concurrency:
+  group: pytest-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  pytest:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout Repo
+        uses: actions/checkout@b4ffde65f46336ab88eb53be808477a3936bae11 # v4.1.1
+
+      - uses: actions/setup-python@0a5c61591373683505ea898e09a3ea4f39ef2b9c #v5.0.0
+        with:
+          python-version-file: 'pyproject.toml'
+
+      - name: Run Repeater
+        run: docker run -p 50051:50051 -d ghcr.io/defenseunicorns/leapfrogai/repeater:0.3.3
+
+      - name: Install Python Deps
+        run: pip install ".[dev]"
+
+      - name: Run Pytest
+        run: python -m pytest tests/pytest -v
+        env:
+          LFAI_RUN_REPEATER_TESTS: true

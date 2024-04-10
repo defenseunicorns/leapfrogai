@@ -1,0 +1,39 @@
+kind: UDSBundle
+metadata:
+  name: leapfrogai
+  description: A UDS bundle for deploying LeapfrogAI with CPU-only support
+  version: dev
+
+packages:
+  # API
+  - name: leapfrogai-api
+    path: ../../../packages/api/
+    ref: dev
+
+  # Legacy UI - not currently in this repo so it builds from ghcr
+  - name: leapfrogai-ui
+    repository: ghcr.io/defenseunicorns/packages/leapfrogai/leapfrogai-ui
+    ref: 0.3.5
+
+  # Chat Model
+  - name: llama-cpp-python
+    path: ../../../packages/llama-cpp-python/
+    ref: dev
+
+  # Text Embeddings Model
+  - name: text-embeddings
+    path: ../../../packages/text-embeddings/
+    ref: dev
+
+  # RAG Backend - not currently in this repo so it builds from ghcr
+  - name: rag
+    repository: ghcr.io/defenseunicorns/packages/leapfrogai/rag
+    ref: 0.3.1
+
+  # Transcription Model
+  - name: whisper
+    path: ../../../packages/whisper/
+    ref: dev
+
+
+

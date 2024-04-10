@@ -13,7 +13,6 @@ RUN groupadd -g 65532 vglusers && \
 WORKDIR /home/leapfrogai
 
 # grab necesary python dependencies
-# TODO @JPERRY: Get context as to why we are doing this for this Dockerfile but not our other ones
 RUN apt-get -y update \
     && apt-get -y install software-properties-common \
     && add-apt-repository universe \
@@ -21,8 +20,6 @@ RUN apt-get -y update \
     && apt-get -y update
 
 
-# TODO @JPERRY: Install python 3.11.6 specifically by installing it via pyenv...
-# TODO @JPERRY: Determine if we really need to be installing 'git' here
 RUN apt-get -y install python3.11-full
 
 # get deps for vllm compilation and model download
@@ -37,7 +34,6 @@ ENV PATH="/home/leapfrogai/.venv/bin:$PATH"
 COPY build/*.whl build/
 COPY build/leapfrogai_api*.whl leapfrogai_api-100.100.100-py3-none-any.whl
 RUN pip install "leapfrogai_api-100.100.100-py3-none-any.whl[vllm]" --no-index --find-links=build/
-
 
 # download model
 ARG REPO_ID=TheBloke/Synthia-7B-v2.0-AWQ

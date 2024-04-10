@@ -1,0 +1,47 @@
+# see individual zarf packaging configuration for more variables and variable descriptions
+variables:
+  leapfrogai-ui:
+    domain: https://ai.uds.dev
+    model: vllm
+    concurrent_requests: "true"
+    ai4ns_branding: "false"
+    leapfrogai_rag_url: http://rag.leapfrogai.svc.cluster.local:8000
+    max_tokens: 16384
+
+  text-embeddings:
+    requests_cpu: 0
+    limits_cpu: 0
+    requests_memory: 0
+    limits_memory: 0
+    requests_gpu: 0
+    limits_gpu: 0
+
+  whisper:
+    requests_cpu: 0
+    limits_cpu: 0
+    requests_memory: 0
+    limits_memory: 0
+    requests_gpu: 0
+    limits_gpu: 0
+
+  vllm: # default is synthia-7b
+    requests_cpu: 0
+    limits_cpu: 0
+    requests_memory: 0
+    limits_memory: 0
+    requests_gpu: 1
+    limits_gpu: 1
+    quantization: gptq
+    # tensor_parallel_size: 1  # TODO: reintroduce when vllm changes get merged in
+    
+  rag:
+    model: vllm
+    ssl_verification: "false" # if certs exist in-cluster, make true
+    response_mode: "raw" # default mode for query endpoint
+    temperature: 0 # refine method temperature for vllm
+    max_output: 2048
+    context_window: 9216 # 55% of synthia-7b max window filled with RAG context
+    chunk_size: 1024
+    overlap_size: 128
+    embedding_model_name: text-embeddings
+    top_k: 20

@@ -4,7 +4,7 @@ kind: ZarfPackageConfig
 metadata:
   description: "LeapfrogAI"
   name: leapfrogai-api
-  version: 0.1.0
+  version: "###ZARF_PKG_TMPL_LEAPFROGAI_IMAGE_VERSION###"
   architecture: amd64
 
 constants:
@@ -25,5 +25,5 @@ components:
       valuesFiles:
         - "lfai-values.yaml"
     images:
-      - "ghcr.io/defenseunicorns/leapfrogai/api:###ZARF_PKG_TMPL_LEAPFROGAI_IMAGE_VERSION###"
+      - "ghcr.io/defenseunicorns/leapfrogai/leapfrogai-api:###ZARF_PKG_TMPL_LEAPFROGAI_IMAGE_VERSION###"
       - "kiwigrid/k8s-sidecar:1.23.3"

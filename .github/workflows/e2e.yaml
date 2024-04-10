@@ -1,0 +1,129 @@
+name: e2e
+on:
+  pull_request:
+    paths:
+      # Catch-all
+      - "*"
+
+      # Ignore updates to the .github directory, unless it's this current file
+      - "!.github/**"
+      - ".github/workflows/e2e.yaml"
+
+      # Ignore docs and website things
+      - "!**.md"
+      - "!docs/**"
+      - "!website/**"
+      - "!netlify.toml"
+
+      # Ignore updates to generic github metadata files
+      - "!CODEOWNERS"
+      - "!.gitignore"
+      - "!LICENSE"
+
+      # Ignore local development files
+      - "!pre-commit-config.yaml"
+
+      # Ignore non e2e tests
+      - "!tests/pytest/**"
+
+
+concurrency:
+  group: e2e-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  e2e:
+    runs-on: ai-ubuntu-big-boy-8-core
+
+    steps:
+        - name: Checkout Repo
+          uses: actions/checkout@b4ffde65f46336ab88eb53be808477a3936bae11 # v4.1.1
+
+        - name: Setup Python
+          uses: actions/setup-python@0a5c61591373683505ea898e09a3ea4f39ef2b9c #v5.0.0
+          with:
+            python-version-file: 'pyproject.toml'
+
+        - name: Install Python Deps
+          run: python -m pip install ".[dev,e2e-test]"
+
+        - name: Setup UDS Environment
+          uses: defenseunicorns/uds-common/.github/actions/setup@05f42bb3117b66ebef8c72ae050b34bce19385f5
+          with:
+            username: ${{ secrets.IRON_BANK_ROBOT_USERNAME }}
+            password: ${{ secrets.IRON_BANK_ROBOT_PASSWORD }}
+
+        - name: Create UDS Cluster
+          run: |
+            uds deploy k3d-core-slim-dev:0.18.0 --confirm
+
+        - name: Deploy LFAI-API
+          run: |
+            make build-api LOCAL_VERSION=e2e-test
+            docker image prune -af
+            uds zarf package deploy packages/api/zarf-package-leapfrogai-api-amd64-e2e-test.tar.zst --confirm
+            rm packages/api/zarf-package-leapfrogai-api-amd64-e2e-test.tar.zst
+
+        ##########
+        # llama
+        ##########
+        - name: Deploy llama-cpp-python
+          run: |
+            make build-llama-cpp-python LOCAL_VERSION=e2e-test
+            docker image prune -af
+            uds zarf package deploy packages/llama-cpp-python/zarf-package-llama-cpp-python-amd64-e2e-test.tar.zst -l=trace --confirm
+            rm packages/llama-cpp-python/zarf-package-llama-cpp-python-amd64-e2e-test.tar.zst
+
+        - name: Test llama-cpp-python
+          run: |
+            python -m pytest ./tests/e2e/test_llama.py -v
+
+        - name: Cleanup llama-cpp-python
+          run: |
+            uds zarf package remove llama-cpp-python -l=trace --confirm
+
+        ##########
+        # text-embeddings
+        ##########
+        - name: Deploy text-embeddings
+          run: |
+            make build-text-embeddings LOCAL_VERSION=e2e-test
+            docker image prune -af
+            uds zarf package deploy packages/text-embeddings/zarf-package-text-embeddings-amd64-e2e-test.tar.zst -l=trace --confirm
+            rm packages/text-embeddings/zarf-package-text-embeddings-amd64-e2e-test.tar.zst
+
+        - name: Test text-embeddings
+          run: |
+            python -m pytest ./tests/e2e/test_text_embeddings.py -v
+
+        - name: Cleanup text-embeddings
+          run: |
+            uds zarf package remove text-embeddings -l=trace --confirm
+
+        ##########
+        # whisper
+        ##########
+        - name: Deploy whisper
+          run: |
+            make build-whisper LOCAL_VERSION=e2e-test
+            docker image prune -af
+            uds zarf package deploy packages/whisper/zarf-package-whisper-amd64-e2e-test.tar.zst -l=trace --confirm
+            rm packages/whisper/zarf-package-whisper-amd64-e2e-test.tar.zst
+
+        - name: Test whisper
+          run: |
+            python -m pytest ./tests/e2e/test_whisper.py -v
+
+        - name: Cleanup whisper
+          run: |
+            uds zarf package remove whisper -l=trace --confirm
+
+
+        ##########
+        # vLLM
+        # NOTE: We are not deploying and testing vLLM in this workflow because it requires a GPU
+        #     : This workflow simply verifies that the vLLM package can be built
+        ##########
+        - name: Build vLLM
+          run: |
+            make build-vllm LOCAL_VERSION=e2e-test
