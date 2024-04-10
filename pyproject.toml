@@ -20,7 +20,6 @@ readme = "README.md"
 
 [project.optional-dependencies]
 
-<<<<<<< HEAD
 # NOTE @JPERRY: I have removed 'toml >= 0.10.2', 'pydantic >= 2.3.0', and 'pyyaml >= 6.0.1'
 # TODO @JPERRY: These deps are no in the core 'dependencies' list. Consider removing this list.
 api = [
@@ -44,8 +43,6 @@ sdk = [
     "click >= 8.1.7",
 ]
 
-=======
->>>>>>> 904ef2245072226ecd77636343a35b308fbadf1c
 dev = [
     "pip-tools == 7.3.0",
     "pytest",
