@@ -192,7 +192,7 @@ cd packages/llama-cpp-python
 python -m pip install .
 python scripts/model_download.py
 mv .model/*.gguf .model/model.gguf
-python -m leapfrogai_sdk.cli --app-dir=. main:Model
+lfai-cli --app-dir=. main:Model
 ```
 
 #### Backend: text-embeddings
@@ -215,7 +215,7 @@ cd packages/vllm
 python -m pip install .
 python scripts/model_download.py
 export QUANTIZATION=awq
-python -m leapfrogai_sdk.cli --app-dir=. main:Model
+lfai-cli --app-dir=. main:Model
 ```
 
 #### Backend: whisper

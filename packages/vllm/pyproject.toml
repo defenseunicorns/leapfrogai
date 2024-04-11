@@ -1,6 +1,8 @@
 [project]
 name = "lfai-vllm"
 version = "0.1.0"
+description = "A LeapfrogAI API-compatible VLLM wrapper for quantized and un-quantized model inferencing across GPU infrastructures."
+
 dependencies = [
     "pydantic >= 2.3.0",
     "vllm==0.3.2",

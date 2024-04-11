@@ -1,6 +1,8 @@
 [project]
 name = "leapfrogai-api"
 version = "0.5.3"
+description = "An API for LeapfrogAI that allows LeapfrogAI backends to connect seamlessly"
+
 dependencies = [
     "fastapi >= 0.109.1",
     "uvicorn >= 0.23.2",
