@@ -16,6 +16,8 @@ help: ## Display this help information
 clean: ## Clean up all the things (packages, build dirs, compiled .whl files, python eggs)
 	-rm zarf-package-*.tar.zst
 	-rm -rf build/*
+	-rm -rf src/**/build/*
+	-rm -rf packages/**/build/*
 	find . -name '*.whl' -delete
 	find . -name '*.egg-info' -type d -exec rm -rf {} +
 
