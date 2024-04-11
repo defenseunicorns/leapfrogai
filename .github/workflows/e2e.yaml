@@ -3,7 +3,7 @@ on:
   pull_request:
     paths:
       # Catch-all
-      - "*"
+      - "**"
 
       # Ignore updates to the .github directory, unless it's this current file
       - "!.github/**"

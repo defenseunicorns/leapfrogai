@@ -1,16 +1,5 @@
 name: pytest
-on:
-  pull_request:
-    paths-ignore:
-    - "**.md"
-    - "CODEOWNERS"
-    - "CONTRIBUTING.md"
-    - ".gitignore"
-    - "docs/**"
-    - "adr/**"
-    - "website/**"
-    - "tests/e2e/**"
-    - "packages/**"
+on: [pull_request]
 
 # Declare default permissions as read only.
 permissions: read-all

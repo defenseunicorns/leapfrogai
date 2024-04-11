@@ -93,6 +93,9 @@ class Model:
             quantization=os.environ["QUANTIZATION"] or None,
             max_context_len_to_capture=self.backend_config.max_context_length,
             worker_use_ray=True,
+            max_model_len=self.backend_config.max_context_length,
+            dtype="auto",
+            gpu_memory_utilization=0.90,
         )
         self.engine = AsyncLLMEngine.from_engine_args(self.engine_args)
 

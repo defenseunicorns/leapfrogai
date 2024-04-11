@@ -9,31 +9,15 @@ variables:
     max_tokens: 16384
 
   text-embeddings:
-    requests_cpu: 0
-    limits_cpu: 0
-    requests_memory: 0
-    limits_memory: 0
-    requests_gpu: 0
-    limits_gpu: 0
+    gpu_limit: 1
 
   whisper:
-    requests_cpu: 0
-    limits_cpu: 0
-    requests_memory: 0
-    limits_memory: 0
-    requests_gpu: 0
-    limits_gpu: 0
+    gpu_limit: 1
 
-  vllm: # default is synthia-7b
-    requests_cpu: 0
-    limits_cpu: 0
-    requests_memory: 0
-    limits_memory: 0
-    requests_gpu: 1
-    limits_gpu: 1
-    quantization: gptq
-    # tensor_parallel_size: 1  # TODO: reintroduce when vllm changes get merged in
-    
+  vllm:
+    gpu_limit: 1
+    #tensor_parallel_size: 1   # TODO: reintroduce when vllm changes get pulled in
+
   rag:
     model: vllm
     ssl_verification: "false" # if certs exist in-cluster, make true
