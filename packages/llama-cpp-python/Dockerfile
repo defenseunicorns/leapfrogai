@@ -10,10 +10,12 @@ ARG REPO_ID=TheBloke/SynthIA-7B-v2.0-GGUF
 ARG FILENAME=synthia-7b-v2.0.Q4_K_M.gguf
 ARG REVISION=3f65d882253d1f15a113dabf473a7c02a004d2b5
 
-# TODO: Standardize on a better approach for how we download models into our images across our packages
+# NOTE: This is checking for a pre-downloaded model file in the local build dir before downloading the model from HuggingFace
+# TODO: Add checksum validation to verify the model in the local build-dir is the model we expect
 COPY scripts/model_download.py scripts/model_download.py
-RUN REPO_ID=${REPO_ID} FILENAME=${FILENAME} REVISION=${REVISION} python3.11 scripts/model_download.py
-RUN mv .model/*.gguf .model/model.gguf
+COPY build/*.gguf .model/
+RUN if [[ -f .model/model.gguf ]] ; then : ; else REPO_ID=${REPO_ID} FILENAME=${FILENAME} REVISION=${REVISION} python3.11 scripts/model_download.py ; fi
+RUN if [[ -f .model/model.gguf ]] ; then : ; else mv .model/*.gguf .model/model.gguf ; fi
 
 
 # create virtual environment for light-weight portability and minimal libraries
@@ -22,7 +24,6 @@ ENV PATH="/leapfrogai/.venv/bin:$PATH"
 
 # copy the llama-cpp-python build dependencies over
 # NOTE: We are copying to this filename because installing 'optional extras' from a wheel requires the absolute path to the wheel file (instead of a wildcard whl)
-# TODO: This install seems slow. Evaluate options such as copying ALL of the whl's to this image OR vendoring/bundling the dependencies inside of our built .whl
 COPY build/*.whl build/
 COPY build/leapfrogai_api*.whl leapfrogai_api-100.100.100-py3-none-any.whl
 RUN pip install leapfrogai_api-100.100.100-py3-none-any.whl[llama-cpp-python] --no-index --find-links=build/

@@ -49,7 +49,7 @@ class CompletionResponse(BaseModel):
 
 class ChatFunction(BaseModel):
     name: str
-    parameters: Dict[str, str]
+    parameters: Dict[str, object]
     description: str
 
 
@@ -86,7 +86,6 @@ class ChatStreamChoice(BaseModel):
     finish_reason: str | None = ""
 
 
-# TODO @JPERRY do we want two distinct response types for stream vs not-stream or do we want the choices to be unioned?
 class ChatCompletionResponse(BaseModel):
     """https://platform.openai.com/docs/api-reference/chat/object"""
 
@@ -94,9 +93,7 @@ class ChatCompletionResponse(BaseModel):
     object: str = "chat.completion"
     created: int = 0
     model: str = ""
-    choices: (
-        list[ChatChoice] | list[ChatStreamChoice]
-    )  # TODO: @JPERRY look into this more, difference between streaming and not streaming
+    choices: list[ChatChoice] | list[ChatStreamChoice]
     usage: Usage | None = None
 
 

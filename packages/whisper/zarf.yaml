@@ -1,7 +1,9 @@
+# yaml-language-server: $schema=https://raw.githubusercontent.com/defenseunicorns/zarf/main/zarf.schema.json
+
 kind: ZarfPackageConfig
 metadata:
   name: "whisper"
-  version: 0.1.0
+  version: "###ZARF_PKG_TMPL_IMAGE_VERSION###"
   description: >
     whisper model
 
@@ -23,7 +25,7 @@ components:
         namespace: leapfrogai
         localPath: chart
         releaseName: whisper-model
-        version: 0.0.1 #TODO: Validate this package version
+        version: 0.0.1
         valuesFiles:
           - "whisper-values.yaml"
     images:

@@ -13,7 +13,6 @@ dependencies = [
     "grpcio-reflection >=1.58.0",
     "grpcio-health-checking >=1.58.0",
     "confz >= 2.0.1",
-    "pydantic >= 2.0",
     "click >= 8.1.7",
 ]
 requires-python = "~=3.11"
@@ -21,37 +20,15 @@ readme = "README.md"
 
 [project.optional-dependencies]
 
-# NOTE @JPERRY: I have removed 'toml >= 0.10.2', 'pydantic >= 2.3.0', and 'pyyaml >= 6.0.1'
-# TODO @JPERRY: These deps are no in the core 'dependencies' list. Consider removing this list.
-api = [
-    "fastapi >= 0.109.1",
-    "uvicorn >= 0.23.2",
-    "pydantic",
-    "python-multipart >= 0.0.7", #indirect dep of FastAPI to receive form data for file uploads
-    "watchfiles >= 0.21.0",
-]
-
-# TODO @JPERRY: These deps are no in the core 'dependencies' list. Consider removing this list.
-sdk = [
-    "grpcio >= 1.56.0",
-    "grpcio-tools >= 1.62.1",
-    "protobuf >= 4.23.3",
-    "grpcio-reflection >=1.58.0",
-    "grpcio-health-checking >=1.58.0",
-    "confz >= 2.0.1",
-    "pydantic >= 2.0",
-    "click >= 8.1.7",
-]
-
 dev = [
     "pip-tools == 7.3.0",
     "pytest",
+    "httpx",
     "ruff",
-    "huggingface_hub", #TODO: @JPERRY Figure out the sub modules (cli & hf_transfer)
 ]
 
 llama-cpp-python = [
-    "llama-cpp-python == 0.2.28",
+    "llama-cpp-python == 0.2.56",
 ]
 
 vllm = [
@@ -72,8 +49,12 @@ text-embeddings = [
 
 whisper = [
     "faster-whisper == 0.10.0",
+    "ctranslate2 >= 4.1.0"
 ]
 
+e2e-test = [
+    "openai"
+]
 
 [tool.pip-tools]
 generate-hashes = true

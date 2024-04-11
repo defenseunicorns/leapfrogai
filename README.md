@@ -6,6 +6,7 @@
 - [Table of Contents](#table-of-contents)
 - [Overview](#overview)
 - [Why Host Your Own LLM?](#why-host-your-own-llm)
+- [Structure](#structure)
 - [Getting Started](#getting-started)
 - [Components](#components)
   - [API](#api)
@@ -13,6 +14,10 @@
   - [Image Hardening](#image-hardening)
   - [SDK](#sdk)
   - [User Interface](#user-interface)
+- [Usage](#usage)
+  - [UDS (Latest)](#uds-latest)
+  - [UDS (Dev)](#uds-dev)
+  - [Local Dev](#local-dev)
 - [Community](#community)
 
 ## Overview
@@ -31,9 +36,34 @@ Large Language Models (LLMs) are a powerful resource for AI-driven decision maki
 
 - **Mission Integration**: By hosting your own LLM, you have the ability to customize the model's parameters, training data, and more, tailoring the AI to your specific needs.
 
+## Structure
+
+The LeapfrogAI repository follows a monorepo structure based around an [API](#api) with each of the [components](#components) included in a dedicated `packages` directory. Each of these package directories contains the source code for each component as well as the deployment infrastructure. The UDS bundles that handle the development and latest deployments of LeapfrogAI are in the `uds-bundles` directory. The structure looks as follows:
+
+```
+leapfrogai/
+├── src/
+│   └── leapfrogai_api/
+│       ├── main.py
+│       └── ...
+├── packages/
+│   ├── api/
+│   ├── llama-cpp-python/
+│   ├── text-embeddings/
+│   ├── vllm/
+│   └── whisper/
+├── uds-bundles/
+│   ├── dev/
+│   └── latest/
+├── Makefile
+├── pyproject.toml
+├── README.md
+└── ...
+```
+
 ## Getting Started
 
-The preferred method for running LeapfrogAI is a local [Kubernetes](https://kubernetes.io/) deployment using [UDS](https://github.com/defenseunicorns/uds-core). Simple instructions for this type of deployment can be found on the [LeapfrogAI Documentation Site](https://docs.leapfrog.ai/docs/).
+The preferred method for running LeapfrogAI is a local [Kubernetes](https://kubernetes.io/) deployment using [UDS](https://github.com/defenseunicorns/uds-core). Refer to the [Quick Start](https://docs.leapfrog.ai/docs/local-deploy-guide/quick_start/) section of the LeapfrogAI documentation site for instructions on this type of deployment.
 
 ## Components
 
@@ -73,6 +103,124 @@ The LeapfrogAI SDK provides a standard set of protobuff and python utilities for
 > - [leapfrog-ui](https://github.com/defenseunicorns/leapfrog-ui)
 
 LeapfrogAI provides some options of UI to get started with common use-cases such as chat, summarization, and transcription.
+
+## Usage
+
+### UDS (Latest)
+
+LeapfrogAI can be deployed and run locally via UDS and Kubernetes, built out using [Zarf](https://zarf.dev) packages. This pulls the most recent package images and is the most stable way of running a local LeapfrogAI deployment. These instructions can be found on the [LeapfrogAI Docs](https://docs.leapfrog.ai/docs/) site.
+
+### UDS (Dev)
+
+If you want to make some changes to LeapfrogAI before deploying via UDS (for example in a dev environment), you can follow these instructions:
+
+Make sure your system has the [required dependencies](https://docs.leapfrog.ai/docs/local-deploy-guide/quick_start/#prerequisites).
+
+For ease, it's best to create a virtual environment:
+```
+python -m venv .venv
+source .venv/bin/activate
+```
+
+Each component is built into its own Zarf package. This can be done easily using the provided `Make` targets:
+```
+make build-api
+make build-vllm                 # if you have GPUs
+make build-llama-cpp-python     # if you have CPU only
+make build-text-embeddings
+make build-whisper
+```
+**OR**
+
+You can build all of the packages you need at once with the following make targets:
+
+```
+make build-cpu    # api, llama-cpp-python, text-embeddings, whisper
+make build-gpu    # api, vllm, text-embeddings, whisper
+make build-all    # all of the backends
+```
+
+Once the packages are created, you can deploy either a CPU or GPU-enabled deployment via one of the UDS bundles:
+
+#### CPU
+```
+cd uds-bundles/dev/cpu
+uds create .
+uds deploy k3d-core-slim-dev:0.18.0
+uds deploy uds-bundle-leapfrogai*.tar.zst
+```
+
+#### GPU
+```
+cd uds-bundles/dev/gpu
+uds create .
+uds deploy k3d-core-slim-dev:0.18.0 --set K3D_EXTRA_ARGS="--gpus=all --image=ghcr.io/justinthelaw/k3d-gpu-support:v1.27.4-k3s1-cuda"     # be sure to check if a newer version exists
+uds deploy uds-bundle-leapfrogai-*.tar.zst --confirm
+```
+
+### Local Dev
+
+The following instructions are for running each of the LFAI components for local development. This is useful when testing changes to a specific component, but will not assist in a full deployment of LeapfrogAI. Please refer to the above sections for deployment instructions.
+
+It is highly recommended to make a virtual environment to keep the development environment clean:
+
+```
+python -m venv .venv
+source .venv/bin/activate
+```
+
+#### API
+
+To run the LeapfrogAI API locally (starting from the root directory of the repository):
+
+```
+python -m pip install ".[dev]"
+cd src
+uvicorn leapfrogai_api.main:app --port 3000 --reload
+```
+
+#### Backend: llama-cpp-python
+
+To run the llama-cpp-python backend locally (starting from the root directory of the repository):
+
+```
+python -m pip install ".[llama-cpp-python,dev]"
+cd packages/llama-cpp-python
+python scripts/model_download.py
+mv .model/*.gguf .model/model.gguf
+python -m leapfrogai_api.types.cli --app-dir=. main:Model
+```
+
+#### Backend: text-embeddings
+To run the text-embeddings backend locally (starting from the root directory of the repository):
+
+```
+python -m pip install ".[text-embeddings,dev]"
+cd packages/text-embeddings
+python scripts/model_download.py
+python -u main.py
+```
+
+#### Backend: vllm
+To run the vllm backend locally (starting from the root directory of the repository):
+
+```
+python -m pip install ".[vllm,dev]"
+cd packages/vllm
+python scripts/model_download.py
+export QUANTIZATION=awq
+python -m leapfrogai_api.types.cli --app-dir=. main:Model
+```
+
+#### Backend: whisper
+To run the vllm backend locally (starting from the root directory of the repository):
+
+```
+python -m pip install ".[whisper,dev]"
+cd packages/whisper
+ct2-transformers-converter --model openai/whisper-base --output_dir .model --copy_files tokenizer.json --quantization float32
+python -u main.py
+```
 
 ## Community
 

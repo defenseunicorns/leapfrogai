@@ -1,8 +1,9 @@
 # yaml-language-server: $schema=https://raw.githubusercontent.com/defenseunicorns/zarf/main/zarf.schema.json
+
 kind: ZarfPackageConfig
 metadata:
   name: text-embeddings
-  version: 0.1.0
+  version: "###ZARF_PKG_TMPL_IMAGE_VERSION###"
   description: >
     text embeddings model
 
@@ -24,7 +25,7 @@ components:
         namespace: leapfrogai
         localPath: chart
         releaseName: text-embeddings-model
-        version: 0.0.1 #TODO: Validate this package version
+        version: 0.0.1
         valuesFiles:
           - "embedding-values.yaml"
     images:
