@@ -41,7 +41,7 @@ jobs:
           python-version-file: 'pyproject.toml'
 
       - name: Download Python Wheels
-        run: make setup-api-deps setup-llama-deps setup-vllm-deps setup-text-embeddings-deps setup-whisper-deps
+        run: make setup-api-deps setup-llama-cpp-python-deps setup-vllm-deps setup-text-embeddings-deps setup-whisper-deps
 
       - name: Install Zarf
         uses: defenseunicorns/setup-zarf@f95763914e20e493bb5d45d63e30e17138f981d6 # v1.0.0
