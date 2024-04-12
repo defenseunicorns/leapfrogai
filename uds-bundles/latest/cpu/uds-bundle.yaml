@@ -8,7 +8,7 @@ packages:
   # API
   - name: leapfrogai-api
     repository: ghcr.io/defenseunicorns/packages/leapfrogai/leapfrogai-api
-    ref: 0.6.0
+    ref: 0.6.1
 
   # Legacy: AI chat, transcription, and summarization frontend
   - name: leapfrogai-ui
@@ -18,12 +18,12 @@ packages:
   # Chat Model
   - name: llama-cpp-python
     repository: ghcr.io/defenseunicorns/packages/leapfrogai/llama-cpp-python
-    ref: 0.6.0
+    ref: 0.6.1
 
   # Text Embeddings Model
   - name: text-embeddings
     repository: ghcr.io/defenseunicorns/packages/leapfrogai/text-embeddings
-    ref: 0.6.0
+    ref: 0.6.1
 
   # Legacy: Backend capability for RAG and VectorDB
   - name: rag
@@ -33,4 +33,4 @@ packages:
   # Transcription Model
   - name: whisper
     repository: ghcr.io/defenseunicorns/packages/leapfrogai/whisper
-    ref: 0.6.0
+    ref: 0.6.1
