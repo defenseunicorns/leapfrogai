@@ -31,6 +31,10 @@ spec:
       initContainers:
         - name: init-db
           image: postgres:15-alpine
+          resources:
+            limits:
+              cpu: 100m
+              memory: 128Mi
           imagePullPolicy: IfNotPresent
           env:
             - name: DB_HOST
