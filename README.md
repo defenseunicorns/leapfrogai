@@ -44,8 +44,9 @@ The LeapfrogAI repository follows a monorepo structure based around an [API](#ap
 leapfrogai/
 ├── src/
 │   └── leapfrogai_api/
-│       ├── main.py
-│       └── ...
+│   │   ├── main.py
+│   │   └── ...
+│   └── leapfrogai_sdk/
 ├── packages/
 │   ├── api/
 │   ├── llama-cpp-python/
