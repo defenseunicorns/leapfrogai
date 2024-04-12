@@ -39,7 +39,6 @@ resources:
   requests:
     cpu: 0
     memory: 0
-    nvidia.com/gpu: 0
 
 autoscaling:
   enabled: false
