@@ -43,7 +43,7 @@ The LeapfrogAI repository follows a monorepo structure based around an [API](#ap
 ```
 leapfrogai/
 ├── src/
-│   └── leapfrogai_api/
+│   ├── leapfrogai_api/
 │   │   ├── main.py
 │   │   └── ...
 │   └── leapfrogai_sdk/
