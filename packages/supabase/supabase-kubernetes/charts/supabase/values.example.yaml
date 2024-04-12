@@ -9,7 +9,7 @@ db:
   image:
     repository: supabase/postgres
     pullPolicy: IfNotPresent
-    tag: "latest"
+    tag: "14.1.0.105"
   podSecurityContext:
     readOnlyRootFilesystem: true
     runAsNonRoot: false
