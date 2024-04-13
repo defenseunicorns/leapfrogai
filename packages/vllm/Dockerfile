@@ -12,7 +12,7 @@ RUN groupadd -g 65532 vglusers && \
 
 WORKDIR /home/leapfrogai
 
-# grab necesary python dependencies
+# grab necessary python dependencies
 RUN apt-get -y update \
     && apt-get -y install software-properties-common \
     && add-apt-repository universe \
