@@ -8,6 +8,8 @@ import toml
 import yaml
 from watchfiles import Change, awatch
 
+logging.basicConfig(level=logging.INFO)
+
 
 class Model:
     name: str
@@ -78,6 +80,8 @@ class Config:
         logging.info("All models have been removed")
 
     def load_config_file(self, directory: str, config_file: str):
+        logging.info("Loading config file: {}/{}".format(directory, config_file))
+
         # load the config file into the config object
         config_path = os.path.join(directory, config_file)
         with open(config_path) as c:
@@ -100,15 +104,21 @@ class Config:
         return
 
     def load_all_configs(self, directory="", filename="config.yaml"):
+        logging.info(
+            "Loading all configs in {} that match the name '{}'".format(
+                directory, filename
+            )
+        )
+
         if not os.path.exists(directory):
+            logging.error("The config directory ({}) does not exist".format(directory))
             return "THE CONFIG DIRECTORY DOES NOT EXIST"
 
-        # Get all config files
+        # Get all config files and load them into the config object
         config_files = glob.glob(os.path.join(directory, filename))
-
-        # load all the found config files into the config object
         for config_path in config_files:
-            self.load_config_file(directory, filename)
+            dir_path, file_path = os.path.split(config_path)
+            self.load_config_file(directory=dir_path, config_file=file_path)
 
         return
 
