@@ -52,6 +52,11 @@ variables:
     default: ''
     prompt: true
     sensitive: false
+  - name: DISABLE_KEYCLOAK
+    description:  Disable keycloak true or false
+    default: 'true'
+    prompt: true
+    sensitive: false
 
 components:
   - name: leapfrogai-ui
