@@ -2,10 +2,14 @@
 	import logo from '$assets/LeapfrogAI.png';
 	import { goto } from '$app/navigation';
 	import { Button } from 'carbon-components-svelte';
+	import { Auth } from '@supabase/auth-ui-svelte';
+	import { PUBLIC_DISABLE_KEYCLOAK } from '$env/static/public';
+	import { ThemeSupa } from '@supabase/auth-ui-shared';
 
 	export let data;
 	export let queryParams: { [key: string]: string } | undefined = undefined;
 
+	let isSignup = true;
 	let { session } = data;
 	$: ({ session } = data);
 
@@ -29,7 +33,23 @@
 	<div class="logo">
 		<img alt="LeapfrogAI Logo" src={logo} class="logo" />
 	</div>
-	<Button on:click={signInWithKeycloak} kind="secondary">Log In with UDS SSO</Button>
+	{#if PUBLIC_DISABLE_KEYCLOAK === 'true'}
+		<Auth
+			supabaseClient={data.supabase}
+			view={isSignup ? 'sign_up' : 'sign_in'}
+			redirectTo={`${data.url}/auth/callback`}
+			showLinks={false}
+			appearance={{ theme: ThemeSupa, style: { input: 'color: #fff' } }}
+		/>
+		<Button
+			kind="ghost"
+			on:click={() => {
+				isSignup = !isSignup;
+			}}>{isSignup ? 'Already have an account? Sign In' : 'Need an account? Sign Up'}</Button
+		>
+	{:else}
+		<Button on:click={signInWithKeycloak} kind="secondary">Log In with UDS SSO</Button>
+	{/if}
 </div>
 
 <style lang="scss">
