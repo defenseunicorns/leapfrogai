@@ -16,6 +16,8 @@ zarf-sbom/
 *egg-info
 build/
 *.whl
+.model/
+*.gguf
 
 # local model and tokenizer files
 *.bin
@@ -26,6 +28,7 @@ tokenizer.json
 config.json
 generation_config.json
 vocabulary.json
+.model/
 
 # go binaries
 api/main

@@ -1,5 +1,5 @@
-image: 
-  lfaiAPITag: v0.5.1
+image:
+  lfaiAPITag: 0.6.1
   kiwigridTag: 1.23.3
 
 api:
