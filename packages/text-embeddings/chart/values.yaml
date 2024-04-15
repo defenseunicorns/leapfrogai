@@ -8,7 +8,7 @@ image:
   repository: "ghcr.io/defenseunicorns/leapfrogai/text-embeddings"
   pullPolicy: Always
   # Overrides the image tag whose default is the chart appVersion.
-  tag: 0.0.1 #TODO: Validate this package version exists
+  tag: 0.6.1
 
 nameOverride: text-embeddings
 fullnameOverride: ""
@@ -39,7 +39,6 @@ resources:
   requests:
     cpu: 0
     memory: 0
-    nvidia.com/gpu: 0
 
 autoscaling:
   enabled: false

@@ -18,7 +18,7 @@ components:
         namespace: leapfrogai
         localPath: chart
         releaseName: vllm-model
-        version: 0.0.1
+        version: 0.6.1
         valuesFiles:
           - "vllm-values.yaml"
     images:

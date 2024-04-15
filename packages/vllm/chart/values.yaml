@@ -8,7 +8,7 @@ image:
   repository: "ghcr.io/defenseunicorns/leapfrogai/vllm"
   pullPolicy: Always
   # Overrides the image tag whose default is the chart appVersion.
-  tag: 0.0.1 #TODO: Validate this package version exists
+  tag: 0.6.1
 
 nameOverride: vllm
 fullnameOverride: ""

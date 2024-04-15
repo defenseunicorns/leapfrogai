@@ -19,7 +19,7 @@ components:
         namespace: leapfrogai
         localPath: chart
         releaseName: llama-cpp-python-model
-        version: 0.0.1
+        version: 0.6.1
         valuesFiles:
           - "llama-cpp-python-values.yaml"
     images:
