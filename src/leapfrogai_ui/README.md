@@ -30,24 +30,6 @@ You can preview the production build with `npm run preview`.
 
 ### Tooling
 
-#### Husky
-
-This repository utilizes [Husky](https://typicode.github.io/husky/) for pre-commit checks (git hooks).
-
-If you need to commit and skip the git hooks:
-
-```
-git commit -m "..." -n # Skips Git hooks
-```
-
-To commit without running tests:
-
-```
-SKIP_TEST=true git commit -m "chore: my commit msg"
-```
-
-[reference the docs](https://typicode.github.io/husky/how-to.html) for other helpful tips on using husky or configuring for CI and Docker
-
 ### Supabase
 
 We use Supabase for authentication and a database. Playwright tests run against a running instance of Supabase that you can start locally. You need the [Supabase CLI](https://supabase.com/docs/guides/cli/getting-started) installed to do so. Before running Playwright tests, make sure Supabase and the frontend are running `npm run dev` will start both.
