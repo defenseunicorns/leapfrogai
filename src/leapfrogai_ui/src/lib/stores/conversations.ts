@@ -1,6 +1,8 @@
 import { writable } from 'svelte/store';
 import { MAX_LABEL_SIZE } from '$lib/constants';
 import { goto } from '$app/navigation';
+import { error } from '@sveltejs/kit';
+import { toastStore } from '$stores/index';
 
 type ConversationsStore = {
 	conversations: Conversation[];
@@ -9,6 +11,70 @@ type ConversationsStore = {
 const defaultValues: ConversationsStore = {
 	conversations: []
 };
+
+const createConversation = async (input: NewConversationInput) => {
+	const newConversationInput = {
+		...input,
+		label: input.label.substring(0, MAX_LABEL_SIZE)
+	};
+	const res = await fetch('/api/conversations/new', {
+		method: 'POST',
+		body: JSON.stringify(newConversationInput),
+		headers: {
+			'Content-Type': 'application/json'
+		}
+	});
+
+	if (res.ok) return res.json();
+
+	return error(500, 'Error creating conversation');
+};
+
+const createMessage = async (input: NewMessageInput) => {
+	const res = await fetch('/api/messages/new', {
+		method: 'POST',
+		body: JSON.stringify({
+			...input
+		}),
+		headers: {
+			'Content-Type': 'application/json'
+		}
+	});
+	if (res.ok) return res.json();
+
+	return error(500, 'Error saving message');
+};
+
+const deleteConversation = async (id: String) => {
+	// A constraint on messages table will cascade delete all messages when the conversation is deleted
+	const res = await fetch('/api/conversations/delete', {
+		method: 'DELETE',
+		body: JSON.stringify({ conversationId: id }),
+		headers: {
+			'Content-Type': 'application/json'
+		}
+	});
+
+	if (res.ok) return;
+
+	return error(500, 'Error deleting conversation');
+};
+
+const updateConversationLabel = async (editConversationId: string, editLabelText: string) => {
+	const res = await fetch('/api/conversations/update/label', {
+		method: 'PUT',
+		body: JSON.stringify({ id: editConversationId, label: editLabelText }),
+		headers: {
+			'Content-Type': 'application/json'
+		}
+	});
+
+	if (res.ok) {
+		return;
+	}
+	return error(500, 'Error updating conversation label');
+};
+
 
 const createConversationsStore = () => {
 	const { subscribe, set, update } = writable<ConversationsStore>({ ...defaultValues });
@@ -23,77 +89,135 @@ const createConversationsStore = () => {
 			await goto(`/chat/${newId}`);
 		},
 		newConversation: async (label: string) => {
-			const res = await fetch('/api/conversations/new', {
-				method: 'POST',
-				body: JSON.stringify({ label: label.substring(0, MAX_LABEL_SIZE) }),
-				headers: {
-					'Content-Type': 'application/json'
-				}
-			});
-			if (res.ok) {
-				const newConversation = { ...(await res.json()), messages: [] };
-				update((old) => {
-					return {
-						...old,
-						conversations: [...old.conversations, newConversation]
-					};
+			try {
+				const newConversation = await createConversation({
+					label: label.substring(0, MAX_LABEL_SIZE)
 				});
-				await goto(`/chat/${newConversation.id}`);
+				if (newConversation) {
+					newConversation.messages = [];
+					update((old) => {
+						return {
+							...old,
+							conversations: [...old.conversations, newConversation]
+						};
+					});
+					await goto(`/chat/${newConversation.id}`);
+				}
+			} catch {
+				toastStore.addToast({
+					kind: 'error',
+					title: 'Error',
+					subtitle: `Error saving conversation.`
+				});
 			}
 		},
 
-		newMessage: async (conversation_id: string, content: string, role: 'system' | 'user') => {
-			const res = await fetch('/api/messages/new', {
-				method: 'POST',
-				body: JSON.stringify({
-					role,
-					content,
-					conversation_id
-				}),
-				headers: {
-					'Content-Type': 'application/json'
+		newMessage: async (message: NewMessageInput) => {
+			try {
+				const newMessage = await createMessage(message);
+
+				if (newMessage) {
+					update((old) => {
+						const updatedConversations = [...old.conversations];
+						const conversationIndex = old.conversations.findIndex(
+							(c) => c.id === newMessage.conversation_id
+						);
+						const oldConversation = old.conversations[conversationIndex];
+
+						updatedConversations[conversationIndex] = {
+							...oldConversation,
+							messages: [...oldConversation.messages, newMessage]
+						};
+						return {
+							...old,
+							conversations: updatedConversations
+						};
+					});
 				}
-			});
-			if (res.ok) {
-				const responseMessage = await res.json();
+			} catch {
+				toastStore.addToast({
+					kind: 'error',
+					title: 'Error',
+					subtitle: `Error creating message.`
+				});
+			}
+		},
+		deleteConversation: async (id: string) => {
+			try {
+				await deleteConversation(id);
+				update((old) => ({
+					...old,
+					conversations: old.conversations.filter((c) => c.id !== id)
+				}));
+				await goto('/chat');
+			} catch {
+				toastStore.addToast({
+					kind: 'error',
+					title: 'Error',
+					subtitle: `Error deleting conversation.`
+				});
+			}
+		},
+		updateConversationLabel: async (id: string, newLabel: string) => {
+			try {
+				await updateConversationLabel(id, newLabel);
+				return update((old) => {
+					const updatedConversationIndex = old.conversations.findIndex((c) => c.id === id);
+					const updatedConversation = { ...old.conversations[updatedConversationIndex] };
+					updatedConversation.label = newLabel;
 
-				update((old) => {
 					const updatedConversations = [...old.conversations];
-					const conversationIndex = old.conversations.findIndex((c) => c.id === conversation_id);
-					const oldConversation = old.conversations[conversationIndex];
+					updatedConversations[updatedConversationIndex] = updatedConversation;
 
-					updatedConversations[conversationIndex] = {
-						...oldConversation,
-						messages: [...oldConversation.messages, responseMessage]
-					};
 					return {
 						...old,
 						conversations: updatedConversations
 					};
 				});
+			} catch (e) {
+				toastStore.addToast({
+					kind: 'error',
+					title: 'Error',
+					subtitle: 'Error updating label.'
+				});
 			}
 		},
-		deleteConversation: async (id: string) => {
-			update((old) => ({
-				...old,
-				conversations: old.conversations.filter((c) => c.id !== id)
-			}));
-			await goto('/chat');
-		},
-		updateConversationLabel: (id: string, newLabel: string) =>
+		importConversations: async (data: Conversation[]) => {
+			const newConversations: Conversation[] = [];
+			for (const conversation of data) {
+				try {
+					const createdConversation = await createConversation({
+						label: conversation.label,
+						inserted_at: conversation.inserted_at
+					});
+					createdConversation.messages = [];
+
+					const { messages } = conversation;
+					for (const message of messages) {
+						const createdMessage = await createMessage({
+							role: message.role,
+							content: message.content,
+							conversation_id: createdConversation.id,
+							inserted_at: message.inserted_at
+						});
+						createdConversation.messages.push(createdMessage);
+					}
+					newConversations.push({ ...conversation });
+				} catch (e) {
+					toastStore.addToast({
+						kind: 'error',
+						title: 'Error',
+						subtitle: `Error importing conversation: ${conversation.label}`
+					});
+				}
+			}
 			update((old) => {
-				const updatedConversationIndex = old.conversations.findIndex((c) => c.id === id);
-				const updatedConversation = { ...old.conversations[updatedConversationIndex] };
-				updatedConversation.label = newLabel;
-
-				const updatedConversations = [...old.conversations];
-				updatedConversations[updatedConversationIndex] = updatedConversation;
-
 				return {
 					...old,
-					conversations: updatedConversations
+					conversations: [...old.conversations, ...newConversations]
 				};
-			})
+			});
+		}
 	};
 };
 
