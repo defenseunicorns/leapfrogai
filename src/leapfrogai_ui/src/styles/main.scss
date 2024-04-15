@@ -1,0 +1,10 @@
+:root {
+	--header-height: 3rem;
+	--sidebar-width: 16rem;
+}
+
+.centered-flexbox {
+	display: flex;
+	justify-content: center;
+	align-items: center;
+}
