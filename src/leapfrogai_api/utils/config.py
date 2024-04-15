@@ -117,7 +117,8 @@ class Config:
         # Get all config files and load them into the config object
         config_files = glob.glob(os.path.join(directory, filename))
         for config_path in config_files:
-            self.load_config_file(directory="", config_file=config_path)
+            dir_path, file_path = os.path.split(config_path)
+            self.load_config_file(directory=dir_path, config_file=file_path)
 
         return
 
