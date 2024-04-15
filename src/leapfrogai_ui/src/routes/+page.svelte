@@ -29,7 +29,7 @@
 	<div class="logo">
 		<img alt="LeapfrogAI Logo" src={logo} class="logo" />
 	</div>
-	<Button on:click={signInWithKeycloak} kind="secondary">Log In</Button>
+	<Button on:click={signInWithKeycloak} kind="secondary">Log In with UDS SSO</Button>
 </div>
 
 <style lang="scss">

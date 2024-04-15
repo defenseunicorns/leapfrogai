@@ -7,7 +7,7 @@ import {
 } from '$env/static/public';
 import { env } from '$env/dynamic/private';
 import { OpenAIStream, StreamingTextResponse } from 'ai';
-import { messagesSchema } from '../../../schemas/chat';
+import { messagesInputSchema } from '../../../schemas/chat';
 import { error } from '@sveltejs/kit';
 
 // Set the runtime to edge for best performance
@@ -27,7 +27,7 @@ export async function POST({ request, locals: { getSession } }) {
 	// Validate request body
 	try {
 		requestData = await request.json();
-		const isValid = await messagesSchema.isValid(requestData);
+		const isValid = await messagesInputSchema.isValid(requestData);
 		if (!isValid) error(400, 'Bad Request');
 	} catch {
 		error(400, 'Bad Request');

@@ -1,5 +1,11 @@
 import { expect, type Page } from '@playwright/test';
 
+export const loadChatPage = async (page: Page) => {
+	await page.goto('/chat');
+	await expect(page).toHaveTitle('LeapfrogAI - Chat');
+};
+
+
 export const deleteConversation = async (page: Page, label: string) => {
 	await page.getByTestId(`overflow-menu-${label}`).click();
 	await page.getByTestId(`overflow-menu-delete-${label}`).click();
