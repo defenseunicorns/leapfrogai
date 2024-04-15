@@ -1,0 +1,74 @@
+kind: ZarfPackageConfig
+metadata:
+  name: '###ZARF_PKG_TMPL_NAME###'
+  version: '###ZARF_PKG_TMPL_IMAGE_VERSION###'
+  description: >
+    A UI for LeapfrogAI
+
+constants:
+  - name: IMAGE_VERSION
+    value: '###ZARF_PKG_TMPL_IMAGE_VERSION###'
+  - name: NAME
+    value: '###ZARF_PKG_TMPL_NAME###'
+
+variables:
+  - name: LEAPFROGAI_API_BASE_URL #LEAPFROGAI_API_BASE_URL
+    description: The base URL for the LeapfrogAI API
+    default: http://api.leapfrogai.svc.cluster.local:8080/openai/v1
+    prompt: true
+    sensitive: true
+  - name: LEAPFROGAI_API_KEY
+    description: The api key the LeapfrogAI API (can be left default for local development)
+    default: my-test-key
+    prompt: true
+    sensitive: true
+  - name: DOMAIN
+    description: The domain to use for the application, Istio-ingress configuration
+    default: https://lfaiui.uds.dev
+    prompt: true
+    sensitive: true
+  - name: MODEL
+    description: The default LLM model to use for chat and summarization
+    default: vllm
+    prompt: true
+    sensitive: false
+  - name: SYSTEM_PROMPT
+    description: The default system prompt to use for the LLM
+    default: 'You are a helpful AI assistant created by Defense Unicorns.'
+    prompt: true
+    sensitive: false
+  - name: TEMPERATURE
+    description: The default temperature for the LLM
+    default: '0.1'
+    prompt: true
+    sensitive: false
+  - name: SUPABASE_URL
+    description: URL for supabase
+    default: 'http://supabase.leapfrogai.svc.cluster.local:8080'
+    prompt: true
+    sensitive: false
+  - name: SUPABASE_ANON_KEY
+    description: Public key for Supabase
+    default: ''
+    prompt: true
+    sensitive: false
+
+components:
+  - name: leapfrogai-ui
+    required: true
+    charts:
+      - name: leapfrogai-ui
+        namespace: leapfrogai
+        localPath: chart
+        version: '###ZARF_PKG_TMPL_IMAGE_VERSION###'
+    images:
+      - '###ZARF_PKG_TMPL_IMAGE_REPOSITORY###:###ZARF_PKG_TMPL_IMAGE_VERSION###'
+    actions:
+      onDeploy:
+        after:
+          - wait:
+              cluster:
+                kind: Deployment
+                name: leapfrogai-ui
+                namespace: leapfrogai
+                condition: Available
