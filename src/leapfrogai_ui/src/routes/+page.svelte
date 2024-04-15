@@ -3,7 +3,7 @@
 	import { goto } from '$app/navigation';
 	import { Button } from 'carbon-components-svelte';
 	import { Auth } from '@supabase/auth-ui-svelte';
-	import { PUBLIC_DISABLE_KEYCLOAK } from '$env/static/public';
+	import { env } from '$env/dynamic/public';
 	import { ThemeSupa } from '@supabase/auth-ui-shared';
 
 	export let data;
@@ -33,7 +33,7 @@
 	<div class="logo">
 		<img alt="LeapfrogAI Logo" src={logo} class="logo" />
 	</div>
-	{#if PUBLIC_DISABLE_KEYCLOAK === 'true'}
+	{#if env.PUBLIC_DISABLE_KEYCLOAK === 'true'}
 		<Auth
 			supabaseClient={data.supabase}
 			view={isSignup ? 'sign_up' : 'sign_in'}
