@@ -2,9 +2,13 @@
 kind: ZarfPackageConfig
 metadata:
   name: supabase
-  version: 0.1.1
+  version: 0.1.3
   description: >
     supabase instance and all of its dependencies
+
+constants:
+  - name: ISTIOCTL_VERSION
+    value: 1.21.1
 
 components:
   - name: supabase
@@ -28,7 +32,13 @@ components:
       - kong:2.8.1
       - busybox:1.28
       - supabase/postgres-meta:latest
+    files:
+      - source: istio-###ZARF_CONST_ISTIOCTL_VERSION###/bin/istioctl
+        target: istioctl
     actions:
+      onCreate:
+        before:
+          - cmd: curl -L https://istio.io/downloadIstio | ISTIO_VERSION=###ZARF_CONST_ISTIOCTL_VERSION### TARGET_ARCH=x86_64 sh -
       onDeploy:
         before:
           - cmd: kubectl label namespace leapfrogai istio-injection=disabled --overwrite
