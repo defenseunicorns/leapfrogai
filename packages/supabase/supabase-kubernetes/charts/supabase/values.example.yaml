@@ -98,6 +98,10 @@ realtime:
     repository: supabase/realtime
     pullPolicy: IfNotPresent
     tag: v2.1.0
+  podSecurityContext:
+    readOnlyRootFilesystem: true
+    runAsNonRoot: false
+    runAsUser: 0
   environment:
     DB_HOST: supabase-supabase-db.leapfrogai.svc.cluster.local
     DB_PORT: "5432"
