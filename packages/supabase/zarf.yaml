@@ -28,3 +28,18 @@ components:
       - kong:2.8.1
       - busybox:1.28
       - supabase/postgres-meta:latest
+    files:
+      - source: istio-###ZARF_PKG_TMPL_ISTIOCTL_VERSION###/bin/istioctl
+        target: istioctl
+    actions:
+      onCreate:
+        before:
+          - cmd: curl -L https://istio.io/downloadIstio | ISTIO_VERSION="###ZARF_PKG_TMPL_ISTIOCTL_VERSION###" TARGET_ARCH=x86_64 sh -
+      onDeploy:
+        before:
+          - cmd: kubectl label namespace leapfrogai istio-injection=disabled --overwrite
+        after:
+          - cmd: kubectl label namespace leapfrogai istio-injection=enabled --overwrite
+          - cmd: kubectl get deployment supabase-supabase-realtime -n leapfrogai -o yaml | ./istioctl kube-inject -f - | kubectl apply -f -
+          - cmd: kubectl get deployment supabase-supabase-auth -n leapfrogai -o yaml | ./istioctl kube-inject -f - | kubectl apply -f -
+          - cmd: kubectl get deployment supabase-supabase-storage -n leapfrogai -o yaml | ./istioctl kube-inject -f - | kubectl apply -f -
