@@ -1,0 +1,32 @@
+{
+    "packages": {
+      ".": {
+        "release-type": "simple",
+        "draft-pull-request": true,
+        "changelog-path": "CHANGELOG.md",
+        "changelog-sections": [
+          { "type": "feat", "section": "Features", "hidden": false },
+          { "type": "fix", "section": "Bug Fixes", "hidden": false },
+          { "type": "chore", "section": "Miscellaneous", "hidden": false }
+        ],
+        "versioning": "default",
+        "extra-files": [
+          {
+            "type": "yaml",
+            "path": "**/Chart.yaml",
+            "glob": true
+          },
+          {
+            "type": "yaml",
+            "path": "**/values.yaml",
+            "glob": true   
+          },
+          {
+            "type": "toml",
+            "path": "pyproject.toml",
+            "glob": true
+          }
+        ]
+      }
+    }
+  }

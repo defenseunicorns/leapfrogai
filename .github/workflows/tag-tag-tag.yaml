@@ -1,0 +1,21 @@
+
+name: Release LeapfrogAI 
+
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  tag-new-version:
+    permissions: 
+      contents: write
+      pull-requests: write
+    runs-on: ubuntu-latest
+    steps:
+      - name: Create release tag
+        id: tag
+        uses: google-github-actions/release-please-action@a37ac6e4f6449ce8b3f7607e4d97d0146028dc0b # v4
+        with:
+          config-file: .github/release-please-config.json
+          manifest-file: .github/release-please-manifest.json
