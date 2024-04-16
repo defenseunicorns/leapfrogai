@@ -23,10 +23,10 @@ studio:
     pullPolicy: IfNotPresent
     tag: 20230127-6bfd87b
   environment:
-    SUPABASE_URL: http://localhost
-    SUPABASE_REST_URL: http://localhost/rest/v1/
+    SUPABASE_URL: http://supabase-studio.uds.dev
+    SUPABASE_REST_URL: http://supabase-rest.uds.dev/rest/v1/
     STUDIO_PG_META_URL: http://demo-supabase-kong.leapfrogai.svc.cluster.local:8000/pg
-    SUPABASE_PUBLIC_URL: http://localhost/
+    SUPABASE_PUBLIC_URL: http://supabase-studio.uds.dev/
   ingress:
     enabled: true
     className: "nginx"
