@@ -1,8 +1,12 @@
 [project]
 name = "leapfrogai"
-version = "0.6.1"
 description = "ChatGPT type capabilities for secure, local, air-gapped systems."
 authors = [{ name = "LeapfrogAI Team", email = "ai@defenseunicorns.com" }]
+
+# x-release-please-start-version
+version = "0.6.1"
+# x-release-please-end
+
 readme = "README.md"
 license = {file = "LICENSE"}
 
