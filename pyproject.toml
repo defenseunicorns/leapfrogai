@@ -1,6 +1,10 @@
 [project]
 name = "leapfrogai-api"
-version = "0.6.1"
+
+# x-release-please-start-version
+version: 0.6.1
+# x-release-please-end
+
 dependencies = [
     "fastapi >= 0.109.1",
     "uvicorn >= 0.23.2",
