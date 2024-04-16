@@ -34,3 +34,8 @@ packages:
   - name: whisper
     path: ../../../packages/whisper
     ref: dev
+
+  # UI
+  - name: ui
+    path: ../../../packages/ui/
+    ref: 0.1.8
