@@ -1,17 +1,17 @@
 apiVersion: uds.dev/v1alpha1
 kind: Package
 metadata:
-  name: supabase
+  name: supabase-studio
   namespace: {{ .Release.Namespace }}
 spec:
   network:
     expose:
-        - service: supabase-studio
-            podLabels:
-                app: supabase-studio
-            host: supabase-studio
-            gateway: tenant
-            port: 3000
+      - service: supabase-studio
+        podLabels:
+          app.kubernetes.io/instance: supabase
+        host: supabase-studio
+        gateway: tenant
+        port: 3000
 
     allow:
       - direction: Ingress
@@ -22,5 +22,5 @@ spec:
 
       - direction: Egress
         podLabels:
-          app: supabase-supabase-*
+          app.kubernetes.io/instance: supabase
         remoteGenerated: Anywhere
