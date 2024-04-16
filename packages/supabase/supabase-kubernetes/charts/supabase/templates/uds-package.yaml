@@ -9,7 +9,7 @@ spec:
         - service: supabase-studio
             podLabels:
                 app: supabase-studio
-            host: {{ .Values.package.host }}
+            host: supabase-studio
             gateway: tenant
             port: 3000
 
