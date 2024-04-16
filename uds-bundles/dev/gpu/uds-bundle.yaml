@@ -10,11 +10,6 @@ packages:
     path: ../../../packages/api
     ref: dev
 
-  # AI chat, transcription, and summarization frontend - not currently in this repo so it builds from ghcr
-  - name: leapfrogai-ui
-    repository: ghcr.io/defenseunicorns/packages/leapfrogai/leapfrogai-ui
-    ref: 0.3.5
-
   # Model for generic chat and summarization
   - name: vllm
     path: ../../../packages//vllm
@@ -36,6 +31,6 @@ packages:
     ref: dev
 
   # UI
-  - name: ui
+  - name: leapfrogai-ui
     path: ../../../packages/ui/
     ref: 0.1.8

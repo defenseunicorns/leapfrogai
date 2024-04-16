@@ -36,6 +36,7 @@ packages:
     ref: 0.6.1
 
   # UI
-  - name: ui
+  - name: leapfrogai-ui
+#    path: ghcr.io/defenseunicorns/leapfrogai/leapfrogai-ui
     path: ../../../packages/ui/
     ref: 0.1.8
