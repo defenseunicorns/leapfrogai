@@ -105,8 +105,6 @@ async def embeddings(
 
     if isinstance(req.input, str):
         request = lfai.EmbeddingRequest(inputs=[req.input])
-    # elif isinstance(req.input, list) and all(isinstance(i, str) for i in req.input):
-    # request = lfai.EmbeddingRequest(inputs=req.input)
     else:
         raise HTTPException(
             status_code=405,
