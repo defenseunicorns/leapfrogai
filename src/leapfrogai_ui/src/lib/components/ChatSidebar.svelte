@@ -7,18 +7,18 @@
 		SideNav,
 		SideNavDivider,
 		SideNavItems,
-		SideNavLink,
 		SideNavMenu,
 		SideNavMenuItem,
 		TextInput
 	} from 'carbon-components-svelte';
-	import { AddComment, Download, Export } from 'carbon-icons-svelte';
+	import { AddComment } from 'carbon-icons-svelte';
 	import { dates } from '$helpers';
 	import { MAX_LABEL_SIZE } from '$lib/constants';
-	import { conversationsStore, toastStore } from '$stores';
+	import { conversationsStore } from '$stores';
 	import { page } from '$app/stores';
 	import { browser } from '$app/environment';
 	import ImportExport from '$components/ImportExport.svelte';
+	import Fuse, { type FuseResult } from 'fuse.js';
 
 	export let isSideNavOpen: boolean;
 
@@ -33,6 +33,9 @@
 	let scrollOffset = 0;
 	let activeConversationRef: HTMLElement | null;
 	let scrollBoxRef: HTMLElement;
+	let searchText = '';
+	let searchResults: FuseResult<Conversation>[];
+	let filteredConversations: Conversation[] = [];
 
 	$: activeConversation = $conversationsStore.conversations.find(
 		(conversation) => conversation.id === $page.params.conversation_id
@@ -40,7 +43,9 @@
 
 	$: editMode = !!activeConversation?.id && editConversationId === activeConversation.id;
 
-	$: organizedConversations = dates.organizeConversationsByDate($conversationsStore.conversations);
+	$: organizedConversations = dates.organizeConversationsByDate(
+		searchText !== '' ? filteredConversations : $conversationsStore.conversations
+	);
 
 	$: dateCategories = Array.from(
 		new Set([
@@ -110,6 +115,16 @@
 			scrollOffset = 0;
 		}
 	}
+
+	const options = {
+		keys: ['label', 'messages.content']
+	};
+
+	$: if (searchText) {
+		const fuse = new Fuse($conversationsStore.conversations, options);
+		searchResults = fuse.search(searchText);
+		filteredConversations = searchResults.map((result) => result.item);
+	}
 </script>
 
 <SideNav bind:isOpen={isSideNavOpen} aria-label="side navigation" style="background-color: g90;">
@@ -126,10 +141,16 @@
 						aria-label="new conversation"
 						on:click={() => handleActiveConversationChange('')}>New Chat</Button
 					>
-					<TextInput light size="sm" placeholder="Search..." />
+					<TextInput
+						light
+						size="sm"
+						placeholder="Search..."
+						bind:value={searchText}
+						maxlength={25}
+					/>
 					<SideNavDivider />
 				</div>
-
+				Ï
 				<div
 					class:noScroll={disableScroll || editMode}
 					bind:this={scrollBoxRef}
@@ -210,7 +231,7 @@
 				</div>
 				<div>
 					<SideNavDivider />
-                    <ImportExport  />
+					<ImportExport />
 				</div>
 			</div>
 		</SideNavItems>

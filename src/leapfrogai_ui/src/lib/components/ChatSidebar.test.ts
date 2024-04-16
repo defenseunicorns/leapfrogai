@@ -302,4 +302,50 @@ describe('ChatSidebar', () => {
 
 		expect(goToSpy).toHaveBeenCalledTimes(1);expect(goToSpy).toHaveBeenCalledWith(`/chat/${fakeConversation.id}`);
 	});
+
+	it("search finds conversations by label", async () => {
+		const fakeConversation1 = getFakeConversation({ numMessages: 2 });
+		const fakeConversation2 = getFakeConversation({ numMessages: 2 });
+		const fakeConversation3 = getFakeConversation({ numMessages: 2 });
+
+		conversationsStore.set({
+			conversations: [fakeConversation1, fakeConversation2, fakeConversation3]
+		});
+
+		render(ChatSidebar, { isSideNavOpen: true });
+
+		expect(screen.queryByText(fakeConversation1.label)).toBeInTheDocument();
+		expect(screen.queryByText(fakeConversation2.label)).toBeInTheDocument();
+		expect(screen.queryByText(fakeConversation3.label)).toBeInTheDocument();
+
+		const searchBox = screen.getByPlaceholderText('Search...');
+		await userEvent.type(searchBox, `${fakeConversation1.label} ${fakeConversation2.label}`);
+
+		expect(screen.queryByText(fakeConversation1.label)).toBeInTheDocument();
+		expect(screen.queryByText(fakeConversation2.label)).toBeInTheDocument();
+		expect(screen.queryByText(fakeConversation3.label)).not.toBeInTheDocument();
+	})
+
+	it("search finds conversations by messages", async () => {
+		const fakeConversation1 = getFakeConversation({ numMessages: 2 });
+		const fakeConversation2 = getFakeConversation({ numMessages: 2 });
+		const fakeConversation3 = getFakeConversation({ numMessages: 2 });
+
+		conversationsStore.set({
+			conversations: [fakeConversation1, fakeConversation2, fakeConversation3]
+		});
+
+		render(ChatSidebar, { isSideNavOpen: true });
+
+		expect(screen.queryByText(fakeConversation1.label)).toBeInTheDocument();
+		expect(screen.queryByText(fakeConversation2.label)).toBeInTheDocument();
+		expect(screen.queryByText(fakeConversation3.label)).toBeInTheDocument();
+
+		const searchBox = screen.getByPlaceholderText('Search...');
+		await userEvent.type(searchBox, fakeConversation1.messages[0].content);
+
+		expect(screen.queryByText(fakeConversation1.label)).toBeInTheDocument();
+		expect(screen.queryByText(fakeConversation2.label)).not.toBeInTheDocument();
+		expect(screen.queryByText(fakeConversation3.label)).not.toBeInTheDocument();
+	})
 });
