@@ -33,12 +33,12 @@ components:
       - busybox:1.28
       - supabase/postgres-meta:latest
     files:
-      - source: istio-###ZARF_CONST_ISTIOCTL_VERSION###/bin/istioctl
+      - source: "istio-###ZARF_CONST_ISTIOCTL_VERSION###/bin/istioctl"
         target: istioctl
     actions:
       onCreate:
         before:
-          - cmd: curl -L https://istio.io/downloadIstio | ISTIO_VERSION=###ZARF_CONST_ISTIOCTL_VERSION### TARGET_ARCH=x86_64 sh -
+          - cmd: curl -L https://istio.io/downloadIstio | ISTIO_VERSION="###ZARF_CONST_ISTIOCTL_VERSION###" TARGET_ARCH=x86_64 sh -
       onDeploy:
         before:
           - cmd: kubectl label namespace leapfrogai istio-injection=disabled --overwrite
