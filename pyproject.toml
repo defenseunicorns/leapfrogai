@@ -1,6 +1,6 @@
 [project]
 name = "leapfrogai"
-version = "0.1.0"
+version = "0.6.1"
 description = "ChatGPT type capabilities for secure, local, air-gapped systems."
 authors = [{ name = "LeapfrogAI Team", email = "ai@defenseunicorns.com" }]
 readme = "README.md"

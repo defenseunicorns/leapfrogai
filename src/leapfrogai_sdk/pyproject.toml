@@ -1,6 +1,6 @@
 [project]
 name = "leapfrogai-sdk"
-version = "0.1.0"
+version = "0.6.1"
 description = "A tool for building gRPC-based model backends for LeapfrogAI"
 
 dependencies = [

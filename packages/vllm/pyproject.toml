@@ -1,6 +1,6 @@
 [project]
 name = "lfai-vllm"
-version = "0.1.0"
+version = "0.6.1"
 description = "A LeapfrogAI API-compatible VLLM wrapper for quantized and un-quantized model inferencing across GPU infrastructures."
 
 dependencies = [

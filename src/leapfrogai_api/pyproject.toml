@@ -1,6 +1,6 @@
 [project]
 name = "leapfrogai-api"
-version = "0.6.0"
+version = "0.6.1"
 description = "An API for LeapfrogAI that allows LeapfrogAI backends to connect seamlessly"
 
 dependencies = [

@@ -1,6 +1,6 @@
 [project]
 name = "lfai-llama-cpp-python"
-version = "0.2.1"
+version = "0.6.1"
 description = "A LeapfrogAI API-compatible llama-cpp-python wrapper for quantized and un-quantized model inferencing on CPU infrastructures."
 
 dependencies = [
