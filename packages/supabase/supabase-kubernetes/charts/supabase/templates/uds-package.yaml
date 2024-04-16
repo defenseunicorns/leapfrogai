@@ -8,17 +8,16 @@ spec:
     expose:
       - service: supabase-supabase-studio
         podLabels:
-          app.kubernetes.io/instance: supabase
+          app.kubernetes.io/name: supabase-studio
         host: supabase-studio
         gateway: tenant
         port: 3000
       - service: supabase-supabase-rest
         podLabels:
-          app.kubernetes.io/instance: supabase
+          app.kubernetes.io/name: supabase-storage
         host: supabase-rest
         gateway: tenant
         port: 3000
-
 
     allow:
       - direction: Ingress
