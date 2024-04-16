@@ -35,8 +35,4 @@ packages:
     path: ../../../packages/whisper/
     ref: dev
 
-  - name: supabase
-    path: ../../../packages/supabase/
-    ref: 0.1.3
-
 

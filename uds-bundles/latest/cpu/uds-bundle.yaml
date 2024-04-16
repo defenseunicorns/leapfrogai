@@ -34,3 +34,7 @@ packages:
   - name: whisper
     repository: ghcr.io/defenseunicorns/packages/leapfrogai/whisper
     ref: 0.6.0
+
+  - name: supabase
+    path: ../../../packages/supabase/
+    ref: 0.1.3
