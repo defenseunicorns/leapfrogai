@@ -5,7 +5,7 @@ description = "A LeapfrogAI API-compatible llama-cpp-python wrapper for quantize
 
 dependencies = [
     "llama-cpp-python == 0.2.28",
-    "leapfrogai-sdk == 0.1.0",
+    "leapfrogai-sdk",
 ]
 requires-python = "~=3.11"
 readme = "README.md"

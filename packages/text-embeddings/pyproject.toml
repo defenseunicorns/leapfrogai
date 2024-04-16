@@ -10,7 +10,7 @@ dependencies = [
     "tqdm == 4.66.1",
     "sentence-transformers == 2.2.2",
     "transformers == 4.36.0",
-    "leapfrogai-sdk == 0.1.0",
+    "leapfrogai-sdk",
 ]
 requires-python = "~=3.11"
 readme = "README.md"

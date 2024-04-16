@@ -8,7 +8,7 @@ dependencies = [
     "vllm==0.3.2",
     "python-dotenv>=1.0.1",
     "aiostream>=0.5.2",
-    "leapfrogai-sdk == 0.1.0",
+    "leapfrogai-sdk",
 ]
 requires-python = "~=3.11"
 readme = "README.md"
