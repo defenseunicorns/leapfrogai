@@ -10,11 +10,6 @@ packages:
     repository: ghcr.io/defenseunicorns/packages/leapfrogai/leapfrogai-api
     ref: 0.6.1
 
-  # Legacy: AI chat, transcription, and summarization frontend
-  - name: leapfrogai-ui
-    repository: ghcr.io/defenseunicorns/packages/leapfrogai/leapfrogai-ui
-    ref: 0.3.5
-
   # Chat Model
   - name: llama-cpp-python
     repository: ghcr.io/defenseunicorns/packages/leapfrogai/llama-cpp-python
@@ -37,6 +32,5 @@ packages:
 
   # UI
   - name: leapfrogai-ui
-#    path: ghcr.io/defenseunicorns/leapfrogai/leapfrogai-ui
-    path: ../../../packages/ui/
+    path: ghcr.io/defenseunicorns/leapfrogai/leapfrogai-ui
     ref: 0.1.8

@@ -44,7 +44,7 @@ variables:
     sensitive: false
   - name: SUPABASE_URL
     description: URL for supabase
-    default: 'http://supabase.leapfrogai.svc.cluster.local:8080'
+    default: 'http://supabase-supabase-studio.leapfrogai.svc.cluster.local:3000'
     prompt: true
     sensitive: false
   - name: SUPABASE_ANON_KEY
