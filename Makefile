@@ -103,7 +103,7 @@ build-text-embeddings: local-registry setup-text-embeddings-deps ## Build the te
 
 setup-whisper-deps: sdk-wheel ## Download the wheels for the optional 'whisper' dependencies
 	-rm packages/whisper/build/*.whl
-	python -m pip wheel packages/whisper -w packages/whisper/build --find-links=${SDK_DEST}
+	python -m pip wheel "packages/whisper[dev]" -w packages/whisper/build --find-links=${SDK_DEST}
 
 build-whisper: local-registry setup-whisper-deps ## Build the whisper container and zarf package
 	## Build the image (and tag it for the local registry)
