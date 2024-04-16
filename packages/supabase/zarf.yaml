@@ -40,6 +40,7 @@ components:
           - cmd: kubectl label namespace leapfrogai istio-injection=disabled --overwrite
         after:
           - cmd: kubectl label namespace leapfrogai istio-injection=enabled --overwrite
+          - cmd: chmod +x istioctl
           - cmd: kubectl get deployment supabase-supabase-realtime -n leapfrogai -o yaml | ./istioctl kube-inject -f - | kubectl apply -f -
           - cmd: kubectl get deployment supabase-supabase-auth -n leapfrogai -o yaml | ./istioctl kube-inject -f - | kubectl apply -f -
           - cmd: kubectl get deployment supabase-supabase-storage -n leapfrogai -o yaml | ./istioctl kube-inject -f - | kubectl apply -f -
