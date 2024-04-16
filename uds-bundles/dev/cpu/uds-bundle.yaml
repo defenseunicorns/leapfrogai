@@ -33,5 +33,5 @@ packages:
   # UI
   - name: leapfrogai-ui
     path: ../../../packages/ui/
-    ref: 0.1.8
+    ref: dev
 
