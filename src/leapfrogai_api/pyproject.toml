@@ -9,7 +9,7 @@ dependencies = [
     "pydantic",
     "python-multipart >= 0.0.7", #indirect dep of FastAPI to receive form data for file uploads
     "watchfiles >= 0.21.0",
-    "leapfrogai_sdk == 0.1.0",
+    "leapfrogai_sdk",
 ]
 requires-python = "~=3.11"
 
