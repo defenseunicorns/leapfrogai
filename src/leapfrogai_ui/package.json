@@ -67,6 +67,7 @@
 		"@sveltejs/vite-plugin-svelte": "^3.0.2",
 		"@testing-library/user-event": "^14.5.2",
 		"ai": "^3.0.13",
+		"fuse.js": "^7.0.0",
 		"msw": "^2.2.3",
 		"openai": "^4.29.0",
 		"playwright": "^1.42.1",

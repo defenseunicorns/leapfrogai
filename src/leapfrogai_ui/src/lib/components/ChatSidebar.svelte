@@ -150,7 +150,7 @@
 					/>
 					<SideNavDivider />
 				</div>
-				Ï
+
 				<div
 					class:noScroll={disableScroll || editMode}
 					bind:this={scrollBoxRef}

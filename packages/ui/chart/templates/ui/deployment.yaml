@@ -34,10 +34,12 @@ spec:
             - name: PUBLIC_SUPABASE_URL
               value: '###ZARF_VAR_SUPABASE_URL###'
             - name: PUBLIC_SUPABASE_ANON_KEY
-              value: '###ZARF_VAR_SUPABASE_ANON_KEY###'
+              valueFrom:
+                secretKeyRef:
+                  name: demo-supabase-jwt
+                  key: anonKey
             - name: PUBLIC_DISABLE_KEYCLOAK
               value: '###ZARF_VAR_DISABLE_KEYCLOAK###'
-
           resources:
             requests:
               memory: '0'
