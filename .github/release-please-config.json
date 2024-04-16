@@ -1,0 +1,37 @@
+{
+  "packages": {
+    ".": {
+      "release-type": "simple",
+      "changelog-path": "CHANGELOG.md",
+      "changelog-sections": [
+        { "type": "feat", "section": "Features", "hidden": false },
+        { "type": "fix", "section": "Bug Fixes", "hidden": false },
+        { "type": "chore", "section": "Miscellaneous", "hidden": false }
+      ],
+      "versioning": "default",
+      "extra-files": [
+        "pyproject.toml",
+        {
+          "type": "generic",
+          "path": "**/Chart.yaml",
+          "glob": true
+        },
+        {
+          "type": "generic",
+          "path": "**/values.yaml",
+          "glob": true
+        },
+        {
+          "type": "generic",
+          "path": "**/zarf.yaml",
+          "glob": true
+        },
+        {
+          "type": "generic",
+          "path": "**/uds-bundle.yaml",
+          "glob": true
+        }
+      ]
+    }
+  }
+}
