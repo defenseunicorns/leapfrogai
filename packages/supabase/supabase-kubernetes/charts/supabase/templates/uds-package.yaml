@@ -6,7 +6,7 @@ metadata:
 spec:
   network:
     expose:
-      - service: supabase-studio
+      - service: supabase-supabase-studio
         podLabels:
           app.kubernetes.io/instance: supabase
         host: supabase-studio
