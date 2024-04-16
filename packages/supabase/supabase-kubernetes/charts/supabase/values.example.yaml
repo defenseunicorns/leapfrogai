@@ -4,9 +4,6 @@ jwt:
 smtp:
   secretName: "demo-supabase-smtp"
 
-labels:
-  sidecar.istio.io/inject: false
-
 db:
   enabled: true
   image:
