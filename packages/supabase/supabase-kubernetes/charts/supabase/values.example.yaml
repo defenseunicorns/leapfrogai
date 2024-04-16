@@ -4,6 +4,9 @@ jwt:
 smtp:
   secretName: "demo-supabase-smtp"
 
+labels:
+  sidecar.istio.io/inject: false
+
 db:
   enabled: true
   image:
@@ -50,6 +53,7 @@ auth:
     repository: supabase/gotrue
     pullPolicy: IfNotPresent
     tag: v2.146.0
+  
   environment:
     DB_HOST: supabase-supabase-db.leapfrogai.svc.cluster.local
     DB_PORT: "5432"
