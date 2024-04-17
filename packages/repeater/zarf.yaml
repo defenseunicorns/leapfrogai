@@ -1,0 +1,21 @@
+kind: ZarfPackageConfig
+metadata:
+  name: repeater
+  version: 0.6.1
+  description: >
+    repeater
+
+constants:
+  - name: IMAGE_VERSION
+    value: "###ZARF_PKG_TMPL_IMAGE_VERSION###"
+  - name: NAME
+    value: "###ZARF_PKG_TMPL_NAME###"
+  - name: IMAGE_REPOSITORY
+    value: "###ZARF_PKG_TMPL_IMAGE_REPOSITORY###"
+
+components:
+  - name: import-model
+    required: true
+    import:
+      name: model
+      url: oci://ghcr.io/defenseunicorns/packages/leapfrogai/leapfrogai-model:0.4.0-skeleton
