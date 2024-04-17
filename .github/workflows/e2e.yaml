@@ -27,7 +27,7 @@ on:
       - "!tests/pytest/**"
 
       # Ignore changes to the repeater model
-      - "!packages/repeater/*"
+      - "!packages/repeater/**"
 
 
 concurrency:
