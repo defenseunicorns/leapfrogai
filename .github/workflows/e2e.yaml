@@ -26,6 +26,9 @@ on:
       # Ignore non e2e tests
       - "!tests/pytest/**"
 
+      # Ignore changes to the repeater model
+      - "!packages/repeater/*"
+
 
 concurrency:
   group: e2e-${{ github.ref }}
