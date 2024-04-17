@@ -21,7 +21,7 @@
 
 ## Status
 
-SUPERSEDED by [0003-database.md](0003-database.md)
+ACCEPTED (Candidate to be superseded by [0003-database.md](0003-database.md))
 
 ### Issue
 
