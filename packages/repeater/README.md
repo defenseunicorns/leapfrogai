@@ -24,7 +24,13 @@ cd packages/repeater
 pip install .
 ```
 
-Now just launch the repeater model:
+Next, launch the repeater model:
 ```
 python repeater.py
+```
+
+Now the basic API tests can be run in full. In a new terminal, starting from the root of the project repository:
+```
+export LFAI_RUN_REPEATER_TESTS=true    # this is needed to run the tests that require the repeater model, otherwise they get skipped
+pytest tests/pytest/test_api.py
 ```
