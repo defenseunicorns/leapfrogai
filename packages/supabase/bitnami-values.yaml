@@ -3105,7 +3105,7 @@ kong:
   enabled: true
   ## @param kong.database Database to use
   # We will use declarative configuration so we don't need the database
-  database: "on"
+  database: "off"
   ## @param kong.initContainers [string] Add additional init containers to the Kong pods
   ##
   initContainers: |
@@ -3259,7 +3259,7 @@ postgresql:
   ##
   auth:
     postgresPassword: ""
-    existingSecret: "supabase-postgresql"
+    existingSecret: ""
   ## @param postgresql.architecture PostgreSQL architecture (`standalone` or `replication`)
   ##
   architecture: standalone
