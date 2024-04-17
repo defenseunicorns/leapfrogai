@@ -31,6 +31,9 @@ on:
       - "!src/leapfrogai_ui/**"
       - "!packages/ui/**"
 
+      # Ignore changes to the repeater model
+      - "!packages/repeater/*"
+
 
 concurrency:
   group: e2e-${{ github.ref }}

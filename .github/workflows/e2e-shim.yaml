@@ -27,6 +27,9 @@ on:
       - "src/leapfrogai_ui/**"
       - "packages/ui/**"
 
+      # Catch changes to the repeater model
+      - "packages/repeater/**"
+
 
 permissions:
   contents: read
