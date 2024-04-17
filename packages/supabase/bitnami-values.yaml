@@ -60,8 +60,7 @@ fullnameOverride: ""
 namespaceOverride: ""
 ## @param commonLabels Labels to add to all deployed objects
 ##
-commonLabels:
-  sidecar.istio.io/inject: "false"
+commonLabels: {}
 ## @param commonAnnotations Annotations to add to all deployed objects
 ##
 commonAnnotations: {}
@@ -100,7 +99,7 @@ jwt:
   autoGenerate:
     ## @param jwt.autoGenerate.forceRun Force the run of the JWT generation job
     ##
-    forceRun: false
+    forceRun: true
     ## Bitnami JWT CLI image
     ## ref: https://hub.docker.com/r/bitnami/jwt-cli/tags/
     ## @param jwt.autoGenerate.image.registry [default: REGISTRY_NAME] JWT CLI image registry
