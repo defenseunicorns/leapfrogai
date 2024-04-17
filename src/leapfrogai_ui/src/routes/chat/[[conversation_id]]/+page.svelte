@@ -3,7 +3,7 @@
 	import { Button, Content, TextInput, Tile } from 'carbon-components-svelte';
 	import { afterUpdate, onMount, tick } from 'svelte';
 	import { conversationsStore, toastStore } from '$stores';
-	import { ArrowRight, Attachment, UserAvatar } from 'carbon-icons-svelte';
+	import { ArrowRight, Attachment, StopFilledAlt, UserAvatar } from 'carbon-icons-svelte';
 	import { type Message as AIMessage, useChat } from 'ai/svelte';
 	import frog from '$assets/frog.png';
 	import { page } from '$app/stores';
@@ -121,16 +121,32 @@
 						placeholder="Type your message here..."
 						aria-label="message input"
 					/>
-
-					<Button
-						kind="secondary"
-						icon={ArrowRight}
-						iconDescription="Send"
-						size="field"
-						type="submit"
-						aria-label="send"
-						disabled={$isLoading || !$input}
-					/>
+					{#if !$isLoading}
+						<Button
+							kind="secondary"
+							icon={ArrowRight}
+							iconDescription="Send"
+							size="field"
+							type="submit"
+							aria-label="send"
+							disabled={$isLoading || !$input}
+						/>
+					{:else}
+						<Button
+							kind="secondary"
+							size="field"
+							icon={StopFilledAlt}
+							iconDescription="Cancel"
+							on:click={() => {
+								toastStore.addToast({
+									kind: 'info',
+									title: 'Response Canceled',
+									subtitle: 'Response generation canceled.'
+								});
+								stopThenSave();
+							}}
+						/>
+					{/if}
 				</div>
 			</form>
 
