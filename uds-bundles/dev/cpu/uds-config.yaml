@@ -16,3 +16,7 @@ variables:
     overlap_size: 64
     embedding_model_name: text-embeddings
     top_k: 20
+
+  leapfrogai-ui:
+    SUPABASE_URL: https://xemtkzebcveqpikvpyuz.supabase.co
+    SUPABASE_ANON_KEY: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InhlbXRremViY3ZlcXBpa3ZweXV6Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3MTAzNTI2NjcsImV4cCI6MjAyNTkyODY2N30.iXc9rDJlGfhXPzxkOhB8-oMuzn-NBcpHwlG5KIjRx4s # This is a public key
