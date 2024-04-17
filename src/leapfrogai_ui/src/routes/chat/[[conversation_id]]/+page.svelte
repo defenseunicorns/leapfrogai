@@ -43,24 +43,34 @@
 
 	const onSubmit = async (e: SubmitEvent) => {
 		e.preventDefault();
-		if (!activeConversation?.id) {
-			// new conversation thread
-			await conversationsStore.newConversation($input);
-			await tick(); // allow store to update
-			if (activeConversation?.id) {
+		if ($isLoading) {
+			// response in progress
+			await stopThenSave();
+		} else {
+			if (!activeConversation?.id) {
+				// new conversation thread
+				await conversationsStore.newConversation($input);
+				await tick(); // allow store to update
+				if (activeConversation?.id) {
+					await conversationsStore.newMessage(activeConversation?.id, $input, 'user');
+				}
+			} else {
+				// store user input
 				await conversationsStore.newMessage(activeConversation?.id, $input, 'user');
 			}
-		} else {
-			// store user input
-			await conversationsStore.newMessage(activeConversation?.id, $input, 'user');
-		}
 
-		handleSubmit(e); // submit to AI (/api/chat)
+			handleSubmit(e); // submit to AI (/api/chat)
+		}
 	};
 
 	const stopThenSave = async () => {
 		if ($isLoading) {
 			stop();
+			toastStore.addToast({
+				kind: 'info',
+				title: 'Response Canceled',
+				subtitle: 'Response generation canceled.'
+			});
 			if (activeConversation?.id) {
 				await conversationsStore.newMessage(
 					activeConversation?.id,
@@ -135,16 +145,10 @@
 						<Button
 							kind="secondary"
 							size="field"
+							aria-label="cancel"
 							icon={StopFilledAlt}
 							iconDescription="Cancel"
-							on:click={() => {
-								toastStore.addToast({
-									kind: 'info',
-									title: 'Response Canceled',
-									subtitle: 'Response generation canceled.'
-								});
-								stopThenSave();
-							}}
+							on:click={stopThenSave}
 						/>
 					{/if}
 				</div>

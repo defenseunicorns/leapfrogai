@@ -10,7 +10,7 @@ import ChatPage from './+page.svelte';
 import ChatPageWithToast from './ChatPageWithToast.test.svelte';
 import userEvent from '@testing-library/user-event';
 import stores from '$app/stores';
-import { vi } from 'vitest';
+import { afterEach, vi } from 'vitest';
 
 import * as navigation from '$app/navigation';
 
@@ -25,6 +25,9 @@ import { delay } from 'msw';
 const { getStores } = await vi.hoisted(() => import('../../../lib/mocks/svelte'));
 
 describe('The Chat Page', () => {
+	afterEach(() => {
+		vi.resetAllMocks();
+	});
 	it('changes the active chat thread', async () => {
 		const goToSpy = vi.spyOn(navigation, 'goto');
 
@@ -80,7 +83,6 @@ describe('The Chat Page', () => {
 
 		render(ChatPage);
 
-		// TODO - the $messages from useChat are not getting populated by setMessages so this test fails
 		// The test does show that the conversation_id and activeConversation are being set correctly
 		for (let i = 0; i < fakeConversations[0].messages.length; i++) {
 			await screen.findByText(fakeConversations[0].messages[0].content);
@@ -127,7 +129,7 @@ describe('The Chat Page', () => {
 			expect(input.value).toBe('');
 		});
 
-		it('disables the input while a response is being processed', async () => {
+		it('replaces submit with a cancel button while response is being processed', async () => {
 			const delayTime = 500;
 			mockNewConversation();
 			mockChatCompletion({ withDelay: true, delayTime: delayTime });
@@ -147,14 +149,12 @@ describe('The Chat Page', () => {
 			await user.type(input, question);
 			await user.click(submitBtn);
 
-			// submit is disabled while waiting for AI response
-			expect(submitBtn).toHaveProperty('disabled', true);
+			expect(screen.getByLabelText('cancel')).toBeInTheDocument();
 
 			await delay(delayTime);
 
 			await user.type(input, 'new question');
-			// submit re-enabled after getting response
-			expect(submitBtn).toHaveProperty('disabled', false);
+			expect(screen.queryByLabelText('cancel')).not.toBeInTheDocument();
 		});
 
 		it('displays a toast error notification when there is an error with the AI response', async () => {
@@ -171,6 +171,67 @@ describe('The Chat Page', () => {
 			await user.click(submitBtn);
 
 			await screen.findAllByText('Error getting AI Response');
+		});
+
+		it('sends a toast when a message response is cancelled', async () => {
+			// Note - testing actual cancel with E2E test because the mockChatCompletion mock is no
+			// setup properly yet to return the AI responses
+			// Need an active conversation set to ensure the call to save the message is reached
+			vi.mock('$app/stores', (): typeof stores => {
+				const page: typeof stores.page = {
+					subscribe(fn) {
+						return getStores({
+							url: `http://localhost/chat/${fakeConversations[0].id}`,
+							params: { conversation_id: fakeConversations[0].id }
+						}).page.subscribe(fn);
+					}
+				};
+				const navigating: typeof stores.navigating = {
+					subscribe(fn) {
+						return getStores().navigating.subscribe(fn);
+					}
+				};
+				const updated: typeof stores.updated = {
+					subscribe(fn) {
+						return getStores().updated.subscribe(fn);
+					},
+					check: () => Promise.resolve(false)
+				};
+
+				return {
+					getStores,
+					navigating,
+					page,
+					updated
+				};
+			});
+
+			const delayTime = 500;
+			mockNewConversation();
+			mockChatCompletion({
+				withDelay: true,
+				delayTime: delayTime,
+				responseMsg: ['Fake', 'AI', 'Response']
+			});
+			mockNewMessage(fakeMessage);
+
+			conversationsStore.set({
+				conversations: [fakeConversations[0]]
+			});
+			const user = userEvent.setup();
+
+			const { getByLabelText } = render(ChatPageWithToast);
+
+			const input = getByLabelText('message input') as HTMLInputElement;
+			const submitBtn = getByLabelText('send');
+
+			await user.type(input, question);
+			await user.click(submitBtn);
+			await delay(delayTime / 2);
+			const cancelBtn = screen.getByLabelText('cancel');
+			await user.click(cancelBtn);
+
+			await screen.findAllByText('Response Canceled');
 		});
 	});
 });

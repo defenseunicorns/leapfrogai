@@ -40,20 +40,6 @@ export const mockChatCompletionError = () => {
 	);
 };
 
-// export const mockNewChatSubmission = (fakeConversation: Conversation, fakeMessage: Message) => {
-// 	server.use(
-// 		http.post('/', () => {
-// 			return HttpResponse.json({
-// 				type: 'success',
-// 				status: 200,
-// 				// Svelte form actions return data in a weird format that uses templating to build the object
-// 				// not sure how to easily replicate this yet without hard coding the values like this
-// 				data: `[{"newConversation":1},{"id":2,"user_id":3,"label":4,"inserted_at":5,"messages":6},"${fakeConversation.id}","${fakeConversation.user_id}","${fakeConversation.label}","${fakeConversation.inserted_at}",[7],{"id":8,"user_id":3,"conversation_id":2,"role":9,"content":4,"inserted_at":10},"${fakeMessage.id}","user","${fakeMessage.inserted_at}"]`
-// 			});
-// 		})
-// 	);
-// };
-
 export const mockNewConversation = () => {
 	server.use(
 		http.post('/api/conversations/new', () => {
