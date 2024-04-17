@@ -16,7 +16,6 @@
 	import { MAX_LABEL_SIZE } from '$lib/constants';
 	import { conversationsStore, toastStore } from '$stores';
 	import { page } from '$app/stores';
-
 	let deleteModalOpen = false;
 	let editConversationId: string | null = null;
 	let editLabelText: string | undefined = undefined;
@@ -27,18 +26,6 @@
 	);
 
 	$: organizedConversations = dates.organizeConversationsByDate($conversationsStore.conversations);
-
-	$: dateCategories = Array.from(
-		new Set([
-			'Today',
-			'Yesterday',
-			'This Month',
-			...dates.sortMonthsReverse(
-				Object.keys(organizedConversations).filter((item) => item !== 'Old')
-			),
-			'Old'
-		])
-	);
 
 	const resetEditMode = () => {
 		editConversationId = null;
@@ -121,10 +108,10 @@
 	</div>
 
 	<div class="conversations" data-testid="conversations">
-		{#each dateCategories as category}
-			<SideNavMenu text={category} expanded data-testid="side-nav-menu">
-				{#if organizedConversations[category]}
-					{#each organizedConversations[category] as conversation (conversation.id)}
+		{#each organizedConversations as category}
+			{#if category.conversations.length > 0}
+				<SideNavMenu text={category.label} expanded data-testid="side-nav-menu">
+					{#each category.conversations as conversation (conversation.id)}
 						{@const editMode = editConversationId && editConversationId === conversation.id}
 						<div class:label-edit-mode={editMode}>
 							<SideNavMenuItem
@@ -179,8 +166,8 @@
 							</SideNavMenuItem>
 						</div>
 					{/each}
-				{/if}
-			</SideNavMenu>
+				</SideNavMenu>
+			{/if}
 		{/each}
 	</div>
 	<Modal

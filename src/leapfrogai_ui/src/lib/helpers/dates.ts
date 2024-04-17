@@ -1,6 +1,18 @@
-const formatOptions: Intl.DateTimeFormatOptions = {
-	month: 'long'
-};
+const NUM_MONTHS_TO_DISPLAY = 6;
+const monthNames = [
+	'January',
+	'February',
+	'March',
+	'April',
+	'May',
+	'June',
+	'July',
+	'August',
+	'September',
+	'October',
+	'November',
+	'December'
+];
 
 /**
  * Calculates the number of months between a past date and the current date.
@@ -20,39 +32,6 @@ export const getNumMonthsAgo = (pastDate: Date) => {
 
 	return yearDiff * 12 + monthDiff;
 };
-
-/**
- * Returns the category of a given date based on its proximity to the current date.
- * Categories include 'Today', 'Yesterday', 'This Month', the 'month name' and/or 'month name - year', and 'Old'
- * @param {Date} date - The date to categorize.
- * @param {number} [numMonthsToDisplay=4] numMonthsToDisplay - How many months to go back before putting in 'Old' category
- * @param {Date} [today=new Date()] today - The current date. Defaults to the current date.
- * @returns The category of the date.
- */
-
-// function formatDate(someDateTimeStamp) {
-// 	var dt = new Date(someDateTimeStamp),
-// 		date = dt.getDate(),
-// 		month = months[dt.getMonth()],
-// 		timeDiff = someDateTimeStamp - Date.now(),
-// 		diffDays = new Date().getDate() - date,
-// 		diffMonths = new Date().getMonth() - dt.getMonth(),
-// 		diffYears = new Date().getFullYear() - dt.getFullYear();
-//
-// 	if(diffYears === 0 && diffDays === 0 && diffMonths === 0){
-// 		return "Today";
-// 	}else if(diffYears === 0 && diffDays === 1) {
-// 		return "Yesterday";
-// 	}else if(diffYears === 0 && diffDays === -1) {
-// 		return "Tomorrow";
-// 	}else if(diffYears === 0 && (diffDays < -1 && diffDays > -7)) {
-// 		return fulldays[dt.getDay()];
-// 	}else if(diffYears >= 1){
-// 		return month + " " + date + ", " + new Date(someDateTimeStamp).getFullYear();
-// 	}else {
-// 		return month + " " + date;
-// 	}
-// }
 
 /**
  * Checks if two dates are the same day.
@@ -87,10 +66,65 @@ function isOneDayBefore(firstDate: Date, secondDate: Date): boolean {
 	return diff === 24 * 60 * 60 * 1000;
 }
 
-export const getDateCategory = (date: Date, numMonthsToDisplay = 4, today = new Date()) => {
-	// How many months to go back before putting in 'Old' category
-	const dateToCheck = new Date(date);
+/**
+ * Generates an array of date categories based on the current date and a specified number of months to display.
+ *
+ * @param {Object} [params] - An optional parameters object.
+ * @param {Date} [params.today=new Date()] - The current date. Defaults to the current date. Can override for testing purposes.
+ * @param {number} [params.numMonthsToDisplay=NUM_MONTHS_TO_DISPLAY] - The number of months to display before putting in the 'Old' category.
+ * @returns {string[]} - An array of date categories.
+ *
+ * This function generates an array of date categories, which includes 'Today', 'Yesterday', 'This Month',
+ * the past NUM_MONTHS_TO_DISPLAY months by name, and 'Old'.
+ */
 
+type GetDateCategoriesParams = {
+	today?: Date;
+	numMonthsToDisplay?: number;
+};
+export const getDateCategories = ({
+	today = new Date(),
+	numMonthsToDisplay = NUM_MONTHS_TO_DISPLAY
+}: GetDateCategoriesParams = {}): string[] => {
+	let currentMonth = today.getMonth();
+
+	let months = [];
+	for (let i = 1; i <= numMonthsToDisplay; i++) {
+		// Subtract one month at a time and wrap around using modulo operator
+		let monthIndex = (currentMonth - i + 12) % 12;
+		months.push(monthNames[monthIndex]);
+	}
+
+	return ['Today', 'Yesterday', 'This Month', ...months, 'Old'];
+};
+
+/**
+ * Determines the date category for a given date.
+ *
+ * @param {Object} params - An object containing the parameters for the function.
+ * @param {Date} params.date - The date to categorize.
+ * @param {number} [params.numMonthsToDisplay=NUM_MONTHS_TO_DISPLAY] - The number of months to display before categorizing as 'Old'.
+ * @param {Date} [params.today=new Date()] - The current date. Defaults to the current date. Can be overridden for testing purposes.
+ * @returns {string} - The date category for the given date.
+ *
+ * This function checks the given date against a set of predefined categories:
+ * 'Today', 'Yesterday', 'This Month', the past NUM_MONTHS_TO_DISPLAY months by name, and 'Old'.
+ * It returns the category that the date falls into.
+ * If the date is more than NUM_MONTHS_TO_DISPLAY months in the past, it returns 'Old'.
+ */
+
+type GetDateCategoryParams = {
+	date: Date;
+	numMonthsToDisplay?: number;
+	today?: Date;
+};
+export const getDateCategory = ({
+	date,
+	numMonthsToDisplay = NUM_MONTHS_TO_DISPLAY,
+	today = new Date()
+}: GetDateCategoryParams): string => {
+	const dateCategories = getDateCategories({ today, numMonthsToDisplay });
+	const dateToCheck = new Date(date);
 	const yearsDiff = Math.abs(dateToCheck.getFullYear() - today.getFullYear());
 	const monthsDiff = getNumMonthsAgo(dateToCheck);
 
@@ -108,74 +142,52 @@ export const getDateCategory = (date: Date, numMonthsToDisplay = 4, today = new 
 		return 'This Month';
 	}
 
-	if (yearsDiff > 0) {
-		if (monthsDiff <= numMonthsToDisplay) {
-			// Ex. November - 2023
-			return `${dateToCheck.toLocaleString('en-US', formatOptions)} - ${dateToCheck.getFullYear()}`;
-		}
-	} else return dateToCheck.toLocaleString('en-US', formatOptions);
+	const month = monthNames[dateToCheck.getMonth()];
+	if (monthsDiff <= numMonthsToDisplay && dateCategories.includes(month)) return month;
+	else return 'Old';
 };
 
 /**
- * Organizes an array of conversations by date category.
+ * Organizes an array of conversations by date category and sorts the 'Old' category by date.
  *
  * @param {Conversation[]} conversations - The array of conversations to be organized.
- * @param {Date} [today=new Date()] today - The current date. Defaults to the current date.
- * @returns An object containing conversations grouped by date category.
- */
-export const organizeConversationsByDate = (conversations: Conversation[], today = new Date()) => {
-	const result: { [category: string]: Conversation[] } = {};
-	for (const conversation of conversations) {
-		const dateCategory = getDateCategory(
-			new Date(conversation.inserted_at),
-			undefined,
-			today
-		) as keyof typeof result;
-		!result[dateCategory]
-			? (result[dateCategory] = [conversation])
-			: result[dateCategory].push(conversation);
-	}
-	return result;
-};
-
-/**
- * Sorts an array of months in reverse order.
- * Months can be in the format "MonthName" or "MonthName - Year". If the year is omitted, the current year is assumed.
- * e.g. "March - 2023" or "January".
+ * @param {Date} [today=new Date()] - The current date. Defaults to the current date. Can override for testing purposes.
+ * @param {number} [numMonthsToDisplay=NUM_MONTHS_TO_DISPLAY] - The number of months to display before putting in the 'Old' category. * @returns An object with date categories as keys and arrays of conversations as values.
  *
- * @param {string[]} months - The array of months to be sorted. Each month string should follow the
- * format "MonthName - Year" or "MonthName", where "MonthName" is the full name of the month.
- * @returns {string[]} The sorted array of months in reverse chronological order.
+ * This function first gets the date categories and initializes the result object.
+ * Then, for each conversation, it finds its date category and adds it to the corresponding array in the result.
+ * Finally, it sorts the conversations in the 'Old' category by date.
  */
-export const sortMonthsReverse = (months: string[]) => {
-	const monthOrder = [
-		'January',
-		'February',
-		'March',
-		'April',
-		'May',
-		'June',
-		'July',
-		'August',
-		'September',
-		'October',
-		'November',
-		'December'
-	];
+export const organizeConversationsByDate = (
+	conversations: Conversation[],
+	today: Date = new Date(),
+	numMonthsToDisplay: number = NUM_MONTHS_TO_DISPLAY
+) => {
+	const dateCategories = getDateCategories({ today, numMonthsToDisplay });
 
-	return months.sort((a, b) => {
-		const [monthA, yearA = new Date().getFullYear().toString()] = a.split(' - ');
-		const [monthB, yearB = new Date().getFullYear().toString()] = b.split(' - ');
+	const result: { label: string; conversations: Conversation[] }[] = [];
 
-		const monthIndexA = monthOrder.indexOf(monthA);
-		const monthIndexB = monthOrder.indexOf(monthB);
+	// Initialize result object with empty arrays for each date category and the proper labels
+	for (const category of dateCategories) {
+		result.push({ label: category, conversations: [] });
+	}
 
-		const yearComparison = parseInt(yearB) - parseInt(yearA);
+	// Add conversations to the corresponding date category
+	for (const conversation of conversations) {
+		const dateCategory = getDateCategory({
+			date: new Date(conversation.inserted_at),
+			numMonthsToDisplay,
+			today
+		});
+		const index = dateCategories.indexOf(dateCategory);
 
-		if (yearComparison === 0) {
-			return monthIndexB - monthIndexA;
-		}
+		result[index].conversations.push(conversation);
+	}
 
-		return yearComparison;
-	});
+	// Sort conversations in the old category by date
+	const oldConversationsIndex = dateCategories.indexOf('Old');
+	result[oldConversationsIndex].conversations = result[oldConversationsIndex].conversations.sort(
+		(a, b) => new Date(b.inserted_at).getTime() - new Date(a.inserted_at).getTime()
+	);
+	return result;
 };
