@@ -10,6 +10,7 @@ on:
       # Catch docs and website things
       - "**.md"
       - "docs/**"
+      - "adr/**"
       - "website/**"
       - "netlify.toml"
 
@@ -17,7 +18,7 @@ on:
       - "CODEOWNERS"
       - ".gitignore"
       - "LICENSE"
-      - "pre-comimt-config.yaml"
+      - "pre-commit-config.yaml"
 
       # Catch pytests
       - "tests/pytest/**"
