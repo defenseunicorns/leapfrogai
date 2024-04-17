@@ -43,24 +43,20 @@
 
 	const onSubmit = async (e: SubmitEvent) => {
 		e.preventDefault();
-		if ($isLoading) {
-			// response in progress
-			await stopThenSave();
-		} else {
-			if (!activeConversation?.id) {
-				// new conversation thread
-				await conversationsStore.newConversation($input);
-				await tick(); // allow store to update
-				if (activeConversation?.id) {
-					await conversationsStore.newMessage(activeConversation?.id, $input, 'user');
-				}
-			} else {
-				// store user input
+
+		if (!activeConversation?.id) {
+			// new conversation thread
+			await conversationsStore.newConversation($input);
+			await tick(); // allow store to update
+			if (activeConversation?.id) {
 				await conversationsStore.newMessage(activeConversation?.id, $input, 'user');
 			}
-
-			handleSubmit(e); // submit to AI (/api/chat)
+		} else {
+			// store user input
+			await conversationsStore.newMessage(activeConversation?.id, $input, 'user');
 		}
+
+		handleSubmit(e); // submit to AI (/api/chat)
 	};
 
 	const stopThenSave = async () => {
@@ -146,6 +142,7 @@
 							kind="secondary"
 							size="field"
 							aria-label="cancel"
+							type="submit"
 							icon={StopFilledAlt}
 							iconDescription="Cancel"
 							on:click={stopThenSave}
