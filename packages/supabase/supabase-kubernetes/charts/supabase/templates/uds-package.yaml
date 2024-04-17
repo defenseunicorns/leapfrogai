@@ -18,6 +18,12 @@ spec:
         host: supabase-rest
         gateway: tenant
         port: 3000
+      - service: supabase-supabase-kong
+        podLabels:
+          app.kubernetes.io/name: supabase-kong
+        host: supabase-kong
+        gateway: tenant
+        port: 8000
 
     allow:
       - direction: Ingress
