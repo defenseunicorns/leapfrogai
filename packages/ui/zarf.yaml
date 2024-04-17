@@ -47,6 +47,11 @@ variables:
     default: 'https://supabase.uds.dev'
     prompt: true
     sensitive: false
+  - name: SUPABASE_ANON_KEY
+    description: Public key for Supabase
+    default: ''
+    prompt: true
+    sensitive: false
   - name: DISABLE_KEYCLOAK
     description:  Disable keycloak true or false
     default: 'true'
