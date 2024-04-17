@@ -12,25 +12,19 @@ components:
     charts:
       - name: supabase
         namespace: leapfrogai
-        localPath: supabase-kubernetes/charts/supabase
+        url: oci://registry-1.docker.io/bitnamicharts/supabase
         releaseName: supabase
-        version: 0.0.1
+        version: 4.0.1
         valuesFiles:
-          - "supabase-kubernetes/charts/supabase/values.example.yaml"
+          - "bitnami-values.yaml"
     images:
-      - supabase/studio:20230127-6bfd87b  
-      - supabase/postgres:14.1.0.105
-      - postgres:15-alpine
-      - supabase/gotrue:v2.146.0
-      - postgrest/postgrest:latest
-      - supabase/realtime:v2.1.0
-      - supabase/storage-api:v0.26.1
-      - kong:2.8.1
-      - busybox:1.28
-      - supabase/postgres-meta:latest
-    actions:
-      onDeploy:
-        before:
-          - cmd: kubectl label namespace leapfrogai istio-injection=disabled --overwrite
-        after:
-          - cmd: kubectl label namespace leapfrogai istio-injection=enabled --overwrite
+      - docker.io/bitnami/gotrue:2.149.0-debian-12-r0
+      - docker.io/bitnami/jwt-cli:6.0.0-debian-12-r19
+      - docker.io/bitnami/kubectl:1.29.3-debian-12-r4
+      - docker.io/bitnami/os-shell:12-debian-12-r18
+      - docker.io/bitnami/postgrest:11.2.2-debian-12-r14
+      - docker.io/bitnami/supabase-postgres:15.1.1-debian-12-r24
+      - docker.io/bitnami/supabase-postgres-meta:0.80.0-debian-12-r1
+      - docker.io/bitnami/supabase-realtime:2.28.22-debian-12-r0
+      - docker.io/bitnami/supabase-storage:0.48.4-debian-12-r0
+      - docker.io/bitnami/supabase-studio:0.24.3-debian-12-r0
