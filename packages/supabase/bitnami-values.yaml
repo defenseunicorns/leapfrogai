@@ -3105,7 +3105,7 @@ kong:
   enabled: true
   ## @param kong.database Database to use
   # We will use declarative configuration so we don't need the database
-  database: "off"
+  database: "on"
   ## @param kong.initContainers [string] Add additional init containers to the Kong pods
   ##
   initContainers: |
