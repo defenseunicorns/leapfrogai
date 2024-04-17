@@ -8,9 +8,10 @@ import {
 import { conversationsStore, toastStore } from '$stores';
 import { render, screen, within } from '@testing-library/svelte';
 import userEvent from '@testing-library/user-event';
-import { fakeConversations } from '../../testUtils/fakeData';
+import { fakeConversations, getFakeConversation } from '../../testUtils/fakeData';
 import { vi } from 'vitest';
 import stores from '$app/stores';
+import { monthNames } from '$helpers/dates';
 
 const { getStores } = await vi.hoisted(() => import('../../lib/mocks/svelte'));
 
@@ -74,6 +75,36 @@ describe('ChatSidebar', () => {
 		fakeConversations.forEach((conversation) => {
 			expect(within(conversationsSection).getByText(conversation.label)).toBeInTheDocument();
 		});
+	});
+
+	it('does not render date categories that have no conversations', async () => {
+		const today = new Date();
+		const fakeTodayConversation = getFakeConversation();
+		const fakeYesterdayConversation = getFakeConversation({
+			insertedAt: new Date(
+				today.getFullYear(),
+				today.getMonth(),
+				today.getDate() - 1
+			).toDateString()
+		});
+
+		conversationsStore.set({
+			conversations: [fakeTodayConversation, fakeYesterdayConversation] // uses date override starting in March
+		});
+
+		render(ChatSidebar);
+		const conversationsSection = screen.getByTestId('conversations');
+
+		expect(within(conversationsSection).getByText(fakeTodayConversation.label)).toBeInTheDocument();
+		expect(
+			within(conversationsSection).getByText(fakeYesterdayConversation.label)
+		).toBeInTheDocument();
+
+		expect(screen.getByText('Today')).toBeInTheDocument();
+		expect(screen.getByText('Yesterday')).toBeInTheDocument();
+
+		expect(screen.queryByText(monthNames[today.getMonth()])).not.toBeInTheDocument();
+		expect(screen.queryByText(monthNames[today.getMonth() - 1])).not.toBeInTheDocument();
 	});
 
 	it('deletes conversations', async () => {

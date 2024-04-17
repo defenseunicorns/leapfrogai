@@ -1,5 +1,5 @@
 const NUM_MONTHS_TO_DISPLAY = 6;
-const monthNames = [
+export const monthNames = [
 	'January',
 	'February',
 	'March',
