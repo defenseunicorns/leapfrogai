@@ -3259,7 +3259,7 @@ postgresql:
   ##
   auth:
     postgresPassword: ""
-    existingSecret: ""
+    existingSecret: "supabase-postgresql"
   ## @param postgresql.architecture PostgreSQL architecture (`standalone` or `replication`)
   ##
   architecture: standalone
