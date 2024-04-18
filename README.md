@@ -133,7 +133,7 @@ make build-all    # all of the backends
 
 **OR**
 
-You can build components individually using teh following `Make` targets:
+You can build components individually using the following `Make` targets:
 
 ```
 make build-api

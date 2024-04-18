@@ -116,8 +116,23 @@ build-whisper: local-registry setup-whisper-deps ## Build the whisper container 
 	## Build the Zarf package
 	uds zarf package create packages/whisper -o packages/whisper --registry-override=ghcr.io=localhost:5000 --insecure --set IMAGE_VERSION=${LOCAL_VERSION} --confirm
 
+setup-repeater-deps: sdk-wheel ## Download the wheels for the optional 'repeater' dependencies
+	-rm packages/repeater/build/*.whl
+	python -m pip wheel packages/repeater -w packages/repeater/build --find-links=${SDK_DEST}
+
+build-repeater: local-registry setup-repeater-deps ## Build the repeater container and zarf package
+	## Build the image (and tag it for the local registry)
+	docker build -t ghcr.io/defenseunicorns/leapfrogai/repeater:${LOCAL_VERSION} packages/repeater
+	docker tag ghcr.io/defenseunicorns/leapfrogai/repeater:${LOCAL_VERSION} localhost:5000/defenseunicorns/leapfrogai/repeater:${LOCAL_VERSION}
+
+	## Push the image to the local registry (Zarf is super slow if the image is only in the local daemon)
+	docker push localhost:5000/defenseunicorns/leapfrogai/repeater:${LOCAL_VERSION}
+
+	## Build the Zarf package
+	uds zarf package create packages/repeater -o packages/repeater --registry-override=ghcr.io=localhost:5000 --insecure --set IMAGE_VERSION=${LOCAL_VERSION} --confirm
+
 build-cpu: build-api build-llama-cpp-python build-text-embeddings build-whisper ## Build all zarf packages for a cpu-enabled deployment of LFAI
 
 build-gpu: build-api build-vllm build-text-embeddings build-whisper ## Build all zarf packages for a gpu-enabled deployment of LFAI
 
-build-all: build-api build-llama-cpp-python build-vllm build-text-embeddings build-whisper ## Build all of the LFAI packages
+build-all: build-api build-llama-cpp-python build-vllm build-text-embeddings build-whisper build-repeater ## Build all of the LFAI packages
