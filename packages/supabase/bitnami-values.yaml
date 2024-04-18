@@ -60,8 +60,7 @@ fullnameOverride: ""
 namespaceOverride: ""
 ## @param commonLabels Labels to add to all deployed objects
 ##
-commonLabels:
-  proxy.istio.io/config: {{ `{ "holdApplicationUntilProxyStarts": true }` | toJson | quote }}
+commonLabels: {}
 ## @param commonAnnotations Annotations to add to all deployed objects
 ##
 commonAnnotations: {}
