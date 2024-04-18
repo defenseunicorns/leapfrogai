@@ -3177,6 +3177,14 @@ kong:
     ##     memory: 1024Mi
     ##
     resources: {}
+    ## @param jwt.autoGenerate.livenessProbe.timeoutSeconds Timeout seconds for livenessProbe
+    ##
+    livenessProbe:
+      timeoutSeconds: 20
+    ## @param jwt.autoGenerate.readinessProbe.successThreshold Success threshold for readinessProbe
+    ##
+    readinessProbe:
+      timeoutSeconds: 20
   ## @param kong.extraVolumes [array] Additional volumes to the Kong pods
   ##
   extraVolumes:
