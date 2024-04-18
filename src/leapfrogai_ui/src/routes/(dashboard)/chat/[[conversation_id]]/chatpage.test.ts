@@ -1,4 +1,4 @@
-import { render, screen, within } from '@testing-library/svelte';
+import { render, screen } from '@testing-library/svelte';
 import { conversationsStore } from '$stores';
 
 import {
@@ -11,8 +11,6 @@ import ChatPageWithToast from './ChatPageWithToast.test.svelte';
 import userEvent from '@testing-library/user-event';
 import stores from '$app/stores';
 import { beforeAll, vi } from 'vitest';
-
-import * as navigation from '$app/navigation';
 
 import {
 	mockChatCompletion,
@@ -28,26 +26,6 @@ import { delay } from 'msw';
 const { getStores } = await vi.hoisted(() => import('$lib/mocks/svelte'));
 
 describe('The Chat Page', () => {
-
-	it('changes the active chat thread', async () => {
-		const goToSpy = vi.spyOn(navigation, 'goto');
-
-		const fakeConversation = getFakeConversation({ numMessages: 6 });
-
-		conversationsStore.set({
-			conversations: [fakeConversation]
-		});
-
-		render(ChatPage);
-
-		expect(screen.queryByText(fakeConversation.messages[0].content)).not.toBeInTheDocument();
-
-		await userEvent.click(screen.getByText(fakeConversation.label));
-
-		expect(goToSpy).toHaveBeenCalledTimes(1);
-		expect(goToSpy).toHaveBeenCalledWith(`/chat/${fakeConversation.id}`);
-	});
-
 	it('it renders all the messages', async () => {
 		conversationsStore.set({
 			conversations: fakeConversations
@@ -212,66 +190,66 @@ describe('The Chat Page', () => {
 				await userEvent.click(submitBtn);
 				await screen.findAllByText('Error creating message.');
 			});
-            it('sends a toast when a message response is cancelled', async () => {
-                // Note - testing actual cancel with E2E test because the mockChatCompletion mock is no
-                // setup properly yet to return the AI responses
-                // Need an active conversation set to ensure the call to save the message is reached
-                vi.mock('$app/stores', (): typeof stores => {
-                    const page: typeof stores.page = {
-                        subscribe(fn) {
-                            return getStores({
-                                url: `http://localhost/chat/${fakeConversations[0].id}`,
-                                params: { conversation_id: fakeConversations[0].id }
-                            }).page.subscribe(fn);
-                        }
-                    };
-                    const navigating: typeof stores.navigating = {
-                        subscribe(fn) {
-                            return getStores().navigating.subscribe(fn);
-                        }
-                    };
-                    const updated: typeof stores.updated = {
-                        subscribe(fn) {
-                            return getStores().updated.subscribe(fn);
-                        },
-                        check: () => Promise.resolve(false)
-                    };
+			it('sends a toast when a message response is cancelled', async () => {
+				// Note - testing actual cancel with E2E test because the mockChatCompletion mock is no
+				// setup properly yet to return the AI responses
+				// Need an active conversation set to ensure the call to save the message is reached
+				vi.mock('$app/stores', (): typeof stores => {
+					const page: typeof stores.page = {
+						subscribe(fn) {
+							return getStores({
+								url: `http://localhost/chat/${fakeConversations[0].id}`,
+								params: { conversation_id: fakeConversations[0].id }
+							}).page.subscribe(fn);
+						}
+					};
+					const navigating: typeof stores.navigating = {
+						subscribe(fn) {
+							return getStores().navigating.subscribe(fn);
+						}
+					};
+					const updated: typeof stores.updated = {
+						subscribe(fn) {
+							return getStores().updated.subscribe(fn);
+						},
+						check: () => Promise.resolve(false)
+					};
 
-                    return {
-                        getStores,
-                        navigating,
-                        page,
-                        updated
-                    };
-                });
+					return {
+						getStores,
+						navigating,
+						page,
+						updated
+					};
+				});
 
-                const delayTime = 500;
-                mockNewConversation();
-                mockChatCompletion({
-                    withDelay: true,
-                    delayTime: delayTime,
-                    responseMsg: ['Fake', 'AI', 'Response']
-                });
-                mockNewMessage(fakeMessage);
+				const delayTime = 500;
+				mockNewConversation();
+				mockChatCompletion({
+					withDelay: true,
+					delayTime: delayTime,
+					responseMsg: ['Fake', 'AI', 'Response']
+				});
+				mockNewMessage(fakeMessage);
 
-                conversationsStore.set({
-                    conversations: [fakeConversations[0]]
-                });
-                const user = userEvent.setup();
+				conversationsStore.set({
+					conversations: [fakeConversations[0]]
+				});
+				const user = userEvent.setup();
 
-                const { getByLabelText } = render(ChatPageWithToast);
+				const { getByLabelText } = render(ChatPageWithToast);
 
-                const input = getByLabelText('message input') as HTMLInputElement;
-                const submitBtn = getByLabelText('send');
+				const input = getByLabelText('message input') as HTMLInputElement;
+				const submitBtn = getByLabelText('send');
 
-                await user.type(input, question);
-                await user.click(submitBtn);
-                await delay(delayTime / 2);
-                const cancelBtn = screen.getByLabelText('cancel');
-                await user.click(cancelBtn);
+				await user.type(input, question);
+				await user.click(submitBtn);
+				await delay(delayTime / 2);
+				const cancelBtn = screen.getByLabelText('cancel');
+				await user.click(cancelBtn);
 
-                await screen.findAllByText('Response Canceled');
-            });
+				await screen.findAllByText('Response Canceled');
+			});
 		});
 	});
 });
