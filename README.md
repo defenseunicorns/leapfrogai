@@ -46,11 +46,14 @@ leapfrogai/
 │   ├── leapfrogai_api/
 │   │   ├── main.py
 │   │   └── ...
-│   └── leapfrogai_sdk/
+│   ├── leapfrogai_sdk/
+│   └── leapfrogai_ui/
 ├── packages/
 │   ├── api/
 │   ├── llama-cpp-python/
+│   ├── repeater/
 │   ├── text-embeddings/
+│   ├── ui/
 │   ├── vllm/
 │   └── whisper/
 ├── uds-bundles/
@@ -103,7 +106,7 @@ LeapfrogAI provides a [User Interface](src/leapfrogai_ui/) with support for comm
 
 ### Repeater
 
-The [repeater](packages/repeater/) "model" is a basic "backend" that parrots all inputs it receives back to the user. It is built out the same way all the actual backends are and it primarily used for testing the API.
+The [repeater](packages/repeater/) "model" is a basic backend that parrots all inputs it receives back to the user. It's lightweight makes it a useful model for testing the API.
 
 ## Usage
 
