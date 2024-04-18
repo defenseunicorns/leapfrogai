@@ -60,7 +60,8 @@ fullnameOverride: ""
 namespaceOverride: ""
 ## @param commonLabels Labels to add to all deployed objects
 ##
-commonLabels: {}
+commonLabels:
+  proxy.istio.io/config: "{ \"holdApplicationUntilProxyStarts\": true }"
 ## @param commonAnnotations Annotations to add to all deployed objects
 ##
 commonAnnotations: {}
@@ -589,8 +590,7 @@ auth:
   ## @param auth.podLabels Extra labels for Supabase auth pods
   ## ref: https://kubernetes.io/docs/concepts/overview/working-with-objects/labels/
   ##
-  podLabels:
-    proxy.istio.io/config: {{ '{ "holdApplicationUntilProxyStarts": true }' }}
+  podLabels: {}
   ## @param auth.podAnnotations Annotations for Supabase auth pods
   ## ref: https://kubernetes.io/docs/concepts/overview/working-with-objects/annotations/
   ##
