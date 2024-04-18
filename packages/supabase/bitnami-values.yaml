@@ -60,11 +60,11 @@ fullnameOverride: ""
 namespaceOverride: ""
 ## @param commonLabels Labels to add to all deployed objects
 ##
-commonLabels:
-  proxy.istio.io/config: "{ \"holdApplicationUntilProxyStarts\": true }"
+commonLabels: {}
 ## @param commonAnnotations Annotations to add to all deployed objects
 ##
-commonAnnotations: {}
+commonAnnotations:
+  proxy.istio.io/config: '{ "holdApplicationUntilProxyStarts": true }'
 ## @param clusterDomain Kubernetes cluster domain name
 ##
 clusterDomain: cluster.local
