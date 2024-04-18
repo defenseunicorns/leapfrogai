@@ -25,6 +25,10 @@ on:
       # Catch changes to the repeater model
       - "packages/repeater/**"
 
+      # Catch LFAI-UI things
+      - "src/leapfrogai_ui/**"
+      - "packages/ui/**"
+
 
 permissions:
   contents: read
