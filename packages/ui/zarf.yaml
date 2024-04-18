@@ -14,7 +14,7 @@ constants:
 variables:
   - name: LEAPFROGAI_API_BASE_URL #LEAPFROGAI_API_BASE_URL
     description: The base URL for the LeapfrogAI API
-    default: http://api.leapfrogai.svc.cluster.local:8080/openai/v1
+    default: api.leapfrogai.svc.cluster.local:8080/openai/v1
     prompt: true
     sensitive: true
   - name: LEAPFROGAI_API_KEY
@@ -29,7 +29,7 @@ variables:
     sensitive: true
   - name: MODEL
     description: The default LLM model to use for chat and summarization
-    default: vllm
+    default: llama-cpp-python
     prompt: true
     sensitive: false
   - name: SYSTEM_PROMPT
@@ -44,12 +44,17 @@ variables:
     sensitive: false
   - name: SUPABASE_URL
     description: URL for supabase
-    default: 'http://supabase.leapfrogai.svc.cluster.local:8080'
+    default: 'https://supabase.uds.dev'
     prompt: true
     sensitive: false
   - name: SUPABASE_ANON_KEY
     description: Public key for Supabase
     default: ''
+    prompt: true
+    sensitive: false
+  - name: DISABLE_KEYCLOAK
+    description:  Disable keycloak true or false
+    default: 'true'
     prompt: true
     sensitive: false
 

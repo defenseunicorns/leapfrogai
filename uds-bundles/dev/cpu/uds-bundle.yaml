@@ -10,11 +10,6 @@ packages:
     path: ../../../packages/api/
     ref: dev
 
-  # Legacy UI - not currently in this repo so it builds from ghcr
-  - name: leapfrogai-ui
-    repository: ghcr.io/defenseunicorns/packages/leapfrogai/leapfrogai-ui
-    ref: 0.3.5
-
   # Chat Model
   - name: llama-cpp-python
     path: ../../../packages/llama-cpp-python/
@@ -35,5 +30,8 @@ packages:
     path: ../../../packages/whisper/
     ref: dev
 
-
+  # UI
+  - name: leapfrogai-ui
+    path: ../../../packages/ui/
+    ref: dev
 

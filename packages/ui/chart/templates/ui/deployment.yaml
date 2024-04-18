@@ -19,15 +19,15 @@ spec:
           ports:
             - containerPort: 3000
           env:
-            - name: PUBLIC_LEAPFROGAI_API_BASE_URL
+            - name: LEAPFROGAI_API_BASE_URL
               value: '###ZARF_VAR_LEAPFROGAI_API_BASE_URL###'
             - name: ORIGIN
               value: '###ZARF_VAR_DOMAIN###'
-            - name: PUBLIC_DEFAULT_MODEL
+            - name: DEFAULT_MODEL
               value: '###ZARF_VAR_MODEL###'
-            - name: PUBLIC_DEFAULT_SYSTEM_PROMPT
+            - name: DEFAULT_SYSTEM_PROMPT
               value: '###ZARF_VAR_SYSTEM_PROMPT###'
-            - name: PUBLIC_DEFAULT_TEMPERATURE
+            - name: DEFAULT_TEMPERATURE
               value: '###ZARF_VAR_TEMPERATURE###'
             - name: LEAPFROGAI_API_KEY
               value: '###ZARF_VAR_LEAPFROGAI_API_KEY###'
@@ -35,7 +35,14 @@ spec:
               value: '###ZARF_VAR_SUPABASE_URL###'
             - name: PUBLIC_SUPABASE_ANON_KEY
               value: '###ZARF_VAR_SUPABASE_ANON_KEY###'
-
+{{/*              Use this instead once we have Supabase hosted*/}}
+{{/*            - name: PUBLIC_SUPABASE_ANON_KEY*/}}
+{{/*              valueFrom:*/}}
+{{/*                secretKeyRef:*/}}
+{{/*                  name: demo-supabase-jwt*/}}
+{{/*                  key: anonKey*/}}
+            - name: PUBLIC_DISABLE_KEYCLOAK
+              value: '###ZARF_VAR_DISABLE_KEYCLOAK###'
           resources:
             requests:
               memory: '0'

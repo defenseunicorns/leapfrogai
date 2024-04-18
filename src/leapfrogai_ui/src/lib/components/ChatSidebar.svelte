@@ -6,233 +6,251 @@
 		OverflowMenuItem,
 		SideNav,
 		SideNavDivider,
-		SideNavLink,
+		SideNavItems,
 		SideNavMenu,
 		SideNavMenuItem,
 		TextInput
 	} from 'carbon-components-svelte';
-	import { AddComment, Download, Export, Settings } from 'carbon-icons-svelte';
+	import { AddComment } from 'carbon-icons-svelte';
 	import { dates } from '$helpers';
 	import { MAX_LABEL_SIZE } from '$lib/constants';
 	import { conversationsStore, toastStore } from '$stores';
 	import { page } from '$app/stores';
+	import { browser } from '$app/environment';
+	import ImportExport from '$components/ImportExport.svelte';
+
+	export let isSideNavOpen: boolean;
 
 	let deleteModalOpen = false;
+	let editMode = false;
 	let editConversationId: string | null = null;
 	let editLabelText: string | undefined = undefined;
-	let inputDisabled = false;
+	let editLabelInputDisabled = false;
+	let disableScroll = false;
+	let overflowMenuOpen = false;
+	let menuOffset = 0;
+	let scrollOffset = 0;
+	let activeConversationRef: HTMLElement | null;
+	let scrollBoxRef: HTMLElement;
 
 	$: activeConversation = $conversationsStore.conversations.find(
 		(conversation) => conversation.id === $page.params.conversation_id
 	);
 
+	$: editMode = !!activeConversation?.id && editConversationId === activeConversation.id;
+
 	$: organizedConversations = dates.organizeConversationsByDate($conversationsStore.conversations);
 
-	$: dateCategories = Array.from(
-		new Set([
-			'Today',
-			'Yesterday',
-			'This Month',
-			...dates.sortMonthsReverse(
-				Object.keys(organizedConversations).filter((item) => item !== 'Old')
-			),
-			'Old'
-		])
-	);
-
 	const resetEditMode = () => {
+		disableScroll = false;
 		editConversationId = null;
 		editLabelText = undefined;
-		inputDisabled = false;
+		editLabelInputDisabled = false;
 	};
 
 	const saveNewLabel = async () => {
 		if (editConversationId && editLabelText) {
-			inputDisabled = true;
-			const response = await fetch('/api/conversations/update/label', {
-				method: 'PUT',
-				body: JSON.stringify({ id: editConversationId, label: editLabelText }),
-				headers: {
-					'Content-Type': 'application/json'
-				}
-			});
-
-			if (response.ok) {
-				conversationsStore.updateConversationLabel(editConversationId, editLabelText);
-			} else {
-				toastStore.addToast({
-					kind: 'error',
-					title: 'Error',
-					subtitle: 'Error updating label'
-				});
-			}
+			editLabelInputDisabled = true;
+			await conversationsStore.updateConversationLabel(editConversationId, editLabelText);
 			resetEditMode();
 		}
 	};
 
-	const handleEdit = async (e: KeyboardEvent) => {
-		if (e.key === 'Escape') {
-			resetEditMode();
-			return;
-		}
-
-		if (e.key === 'Enter' || e.key === 'Tab') {
+	const handleEdit = async (e: KeyboardEvent | FocusEvent) => {
+		if (e.type === 'blur') {
 			await saveNewLabel();
+		}
+		if (e.type === 'keydown') {
+			const keyboardEvent = e as KeyboardEvent;
+			if (keyboardEvent.key === 'Escape') {
+				resetEditMode();
+				return;
+			}
+
+			if (keyboardEvent.key === 'Enter' || keyboardEvent.key === 'Tab') {
+				await saveNewLabel();
+			}
 		}
 	};
 
 	const handleDelete = async () => {
 		if (activeConversation?.id) {
-			// A constraint on messages table will cascade delete all messages when the conversation is deleted
-			const res = await fetch('/api/conversations/delete', {
-				method: 'DELETE',
-				body: JSON.stringify({ conversationId: activeConversation.id }),
-				headers: {
-					'Content-Type': 'application/json'
-				}
-			});
-			if (res.ok) {
-				conversationsStore.deleteConversation(activeConversation.id);
-			} else {
-				toastStore.addToast({
-					kind: 'error',
-					title: 'Error',
-					subtitle: 'Error deleting conversation'
-				});
-			}
+			await conversationsStore.deleteConversation(activeConversation.id);
 		}
 
 		deleteModalOpen = false;
 	};
+
+	const handleActiveConversationChange = (id: string) => {
+		conversationsStore.changeConversation(id);
+		activeConversationRef = document.getElementById(`side-nav-menu-item-${id}`);
+	};
+
+	// To properly display the overflow menu items for each conversation, we have to calculate the height they
+	// should be displayed at due to the carbon override for allowing overflow
+	$: if (browser && activeConversationRef) {
+		menuOffset = activeConversationRef?.offsetTop;
+		scrollOffset = scrollBoxRef?.scrollTop;
+	} else {
+		if (!activeConversationRef) {
+			menuOffset = 0;
+			scrollOffset = 0;
+		}
+	}
 </script>
 
-<SideNav aria-label="side navigation" isOpen={true} style="background-color: g90;">
-	<div class="new-chat-container">
-		<Button
-			kind="secondary"
-			size="small"
-			icon={AddComment}
-			class="new-chat-btn"
-			id="new-chat-btn"
-			on:click={() => conversationsStore.changeConversation(null)}>New Chat</Button
-		>
-		<TextInput light size="sm" placeholder="Search..." />
-		<SideNavDivider />
-	</div>
+<SideNav bind:isOpen={isSideNavOpen} aria-label="side navigation" style="background-color: g90;">
+	<div style="height: 100%">
+		<SideNavItems>
+			<div class="side-nav-items-container">
+				<div class="new-chat-container">
+					<Button
+						kind="secondary"
+						size="small"
+						icon={AddComment}
+						class="new-chat-btn"
+						id="new-chat-btn"
+						aria-label="new conversation"
+						on:click={() => handleActiveConversationChange('')}>New Chat</Button
+					>
+					<TextInput light size="sm" placeholder="Search..." />
+					<SideNavDivider />
+				</div>
 
-	<div class="conversations" data-testid="conversations">
-		{#each dateCategories as category}
-			<SideNavMenu text={category} expanded data-testid="side-nav-menu">
-				{#if organizedConversations[category]}
-					{#each organizedConversations[category] as conversation (conversation.id)}
-						{@const editMode = editConversationId && editConversationId === conversation.id}
-						<div class:label-edit-mode={editMode}>
-							<SideNavMenuItem
-								data-testid="side-nav-menu-item-{conversation.label}"
-								isSelected={activeConversation?.id === conversation.id}
-								on:click={() => conversationsStore.changeConversation(conversation.id)}
-							>
-								<div class="menu-content">
-									{#if editMode}
-										<TextInput
-											bind:value={editLabelText}
-											size="sm"
-											class="edit-conversation"
-											on:keydown={(e) => handleEdit(e)}
-											on:blur={async () => {
-												await saveNewLabel();
-												resetEditMode();
-											}}
-											autofocus
-											maxlength={MAX_LABEL_SIZE}
-											readonly={inputDisabled}
-											aria-label="edit conversation"
-										/>
-									{:else}
-										<div data-testid="conversation-label-{conversation.id}" class="menu-text">
-											{conversation.label}
+				<div
+					class:noScroll={disableScroll || editMode}
+					bind:this={scrollBoxRef}
+					class="conversations"
+					data-testid="conversations"
+				>
+					{#each organizedConversations as category}
+			{#if category.conversations.length > 0}
+						<SideNavMenu text={category.label} expanded data-testid="side-nav-menu">
+
+								{#each category.conversations as conversation (conversation.id)}
+									<SideNavMenuItem
+										data-testid="side-nav-menu-item-{conversation.label}"
+										id="side-nav-menu-item-{conversation.id}"
+										isSelected={activeConversation?.id === conversation.id}
+										on:click={() => handleActiveConversationChange(conversation.id)}
+									>
+										<div class="menu-content">
+											{#if editMode && activeConversation?.id === conversation.id}
+												<TextInput
+													bind:value={editLabelText}
+													size="sm"
+													class="edit-conversation"
+													on:keydown={(e) => handleEdit(e)}
+													on:blur={(e) => {
+														handleEdit(e);
+													}}
+													autofocus
+													maxlength={MAX_LABEL_SIZE}
+													readonly={editLabelInputDisabled}
+													aria-label="edit conversation"
+												/>
+											{:else}
+												<div data-testid="conversation-label-{conversation.id}" class="menu-text">
+													{conversation.label}
+												</div>
+												<div>
+													<OverflowMenu
+														id={`overflow-menu-${conversation.id}`}
+														on:close={() => {
+															overflowMenuOpen = false;
+															disableScroll = false;
+														}}
+														on:click={(e) => {
+															e.stopPropagation();
+															overflowMenuOpen = true;
+															handleActiveConversationChange(conversation.id);
+															disableScroll = true;
+														}}
+														data-testid="overflow-menu-{conversation.label}"
+														style={overflowMenuOpen && activeConversation?.id === conversation.id
+															? `position: fixed; top: 0; left: 0; transform: translate(224px, ${menuOffset - scrollOffset + 48}px)`
+															: ''}
+													>
+														<OverflowMenuItem
+															text="Edit"
+															on:click={() => {
+																editConversationId = conversation.id;
+																editLabelText = conversation.label;
+															}}
+														/>
+
+														<OverflowMenuItem
+															data-testid="overflow-menu-delete-{conversation.label}"
+															text="Delete"
+															on:click={() => {
+																deleteModalOpen = true;
+															}}
+														/>
+													</OverflowMenu>
+												</div>
+											{/if}
 										</div>
-										<OverflowMenu
-											on:click={(e) => {
-												e.stopPropagation();
-												if (activeConversation?.id !== conversation.id) {
-													conversationsStore.changeConversation(conversation.id);
-												}
-											}}
-											data-testid="overflow-menu-{conversation.label}"
-										>
-											<OverflowMenuItem
-												text="Edit"
-												on:click={() => {
-													editConversationId = conversation.id;
-													editLabelText = conversation.label;
-												}}
-											/>
-											<OverflowMenuItem
-												text="Delete"
-												on:click={() => (deleteModalOpen = true)}
-												data-testid="overflow-menu-delete-{conversation.label}"
-											/>
-										</OverflowMenu>
-									{/if}
-								</div>
-							</SideNavMenuItem>
-						</div>
-					{/each}
-				{/if}
-			</SideNavMenu>
-		{/each}
-	</div>
-	<Modal
-		danger
-		bind:open={deleteModalOpen}
-		modalHeading="Delete Chat"
-		primaryButtonText="Delete"
-		secondaryButtonText="Cancel"
-		on:click:button--secondary={() => (deleteModalOpen = false)}
-		on:open
-		on:close
-		on:submit={handleDelete}
-		>Are you sure you want to delete your <strong
-			>{activeConversation?.label.substring(0, MAX_LABEL_SIZE)}</strong
-		> chat?</Modal
-	>
+									</SideNavMenuItem>
 
-	<div class="sidenav-links">
-		<SideNavLink>Import Data<slot name="icon"><Download /></slot></SideNavLink>
-		<SideNavLink>Export Data<slot name="icon"><Export /></slot></SideNavLink>
-		<SideNavLink>System Settings<slot name="icon"><Settings /></slot></SideNavLink>
-	</div>
-</SideNav>
+								{/each}
+							</SideNavMenu>
+						{/if}
+					{/each}
+				</div>
+				<div>
+					<SideNavDivider />
+					<ImportExport />
+				</div>
+			</div>
+		</SideNavItems>
+
+		<Modal
+			danger
+			bind:open={deleteModalOpen}
+			modalHeading="Delete Chat"
+			primaryButtonText="Delete"
+			secondaryButtonText="Cancel"
+			on:click:button--secondary={() => (deleteModalOpen = false)}
+			on:open
+			on:close
+			on:submit={handleDelete}
+			>Are you sure you want to delete your <strong
+				>{activeConversation?.label.substring(0, MAX_LABEL_SIZE)}</strong
+			> chat?</Modal
+		>
+	</div></SideNav
+>
 
 <!-- NOTE - Carbon Components Svelte does not yet support theming of the UI Shell components so several
 properties had to be manually overridden.
 https://github.com/carbon-design-system/carbon-components-svelte/issues/892
-We might also want to investigate the Layer component once implemented in  Carbon Components Svelte V11.
 -->
 <style lang="scss">
-	.new-chat-container {
+	.noScroll {
+		overflow-y: hidden !important;
+	}
+	.side-nav-items-container {
+		height: 100%;
 		display: flex;
 		flex-direction: column;
-		gap: 8px;
-		padding: 16px;
-		:global(button.new-chat-btn) {
-			width: 100%;
-		}
+		justify-content: space-between;
+		padding: 0 0 layout.$spacing-05 0;
 		:global(.bx--side-nav__divider) {
-			margin: 8px 0 0 0;
+			margin: layout.$spacing-03 0 0 0;
 			background-color: themes.$border-subtle-01;
 		}
 	}
-	.sidenav-links {
+
+	.new-chat-container {
 		display: flex;
 		flex-direction: column;
-		padding: 8px 0 8px 0;
-		stroke: themes.$text-secondary;
-		:global(.bx--side-nav__link-text) {
-			color: themes.$text-secondary;
+		gap: layout.$spacing-03;
+		padding: layout.$spacing-05;
+		:global(button.new-chat-btn) {
+			width: 100%;
 		}
 	}
+
 	.menu-content {
 		width: 100% !important;
 		position: relative;
@@ -250,6 +268,7 @@ We might also want to investigate the Layer component once implemented in  Carbo
 		:global(.bx--overflow-menu) {
 			width: 16px;
 			height: 32px;
+			z-index: 1;
 		}
 	}
 
@@ -259,10 +278,12 @@ We might also want to investigate the Layer component once implemented in  Carbo
 	// The !important is necessary for the changes to work in production builds.
 	.conversations {
 		flex-grow: 1;
-		overflow-y: scroll;
 		scrollbar-width: none;
-		border-bottom: 2px solid themes.$border-subtle-01;
-		overflow: visible !important;
+		overflow-y: auto;
+	}
+
+	:global(.bx--overflow-menu-options) {
+		left: 20px !important;
 	}
 
 	:global(.bx--side-nav__navigation) {
@@ -287,6 +308,7 @@ We might also want to investigate the Layer component once implemented in  Carbo
 		display: flex;
 		flex-grow: 1;
 		justify-content: space-between;
+		text-align: left;
 		overflow: visible !important;
 		color: themes.$text-secondary !important;
 	}
@@ -296,6 +318,12 @@ We might also want to investigate the Layer component once implemented in  Carbo
 		list-style: none;
 		height: calc(100vh - var(--header-height)) !important;
 		color: themes.$text-secondary !important;
+	}
+
+	:global(.bx--side-nav__items) {
+		text-align: center;
+		overflow: visible !important;
+		height: 100%;
 	}
 
 	:global(.bx--side-nav__submenu) {
@@ -310,7 +338,7 @@ We might also want to investigate the Layer component once implemented in  Carbo
 
 	.label-edit-mode {
 		:global(.bx--side-nav__link) {
-			padding: 0 layout.$spacing-04 0 layout.$spacing-07;
+			padding: 0 layout.$spacing-05 0 layout.$spacing-07;
 		}
 		:global(.bx--side-nav__link[aria-current='page']) {
 			background-color: themes.$layer-01 !important;

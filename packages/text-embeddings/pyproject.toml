@@ -1,0 +1,33 @@
+[project]
+name = "lfai-text-embeddings"
+version = "0.6.1"
+description = "A LeapfrogAI API-compatible embeddings library wrapper for text-based embedding generation."
+
+dependencies = [
+    "InstructorEmbedding >= 1.0.1",
+    "torch == 2.1.2",
+    "numpy == 1.26.3",
+    "tqdm == 4.66.1",
+    "sentence-transformers == 2.2.2",
+    "transformers == 4.36.0",
+    "leapfrogai-sdk",
+]
+requires-python = "~=3.11"
+readme = "README.md"
+
+[tool.pip-tools]
+generate-hashes = true
+
+[tool.setuptools]
+packages = ["leapfrogai_sdk"]
+package-dir = {"" = "../../src"}
+
+[tool.pytest.ini_options]
+addopts = ["--import-mode=importlib"]
+
+[tool.ruff]
+target-version = "py311"
+
+[build-system]
+requires = ["setuptools"]
+build-backend = "setuptools.build_meta"

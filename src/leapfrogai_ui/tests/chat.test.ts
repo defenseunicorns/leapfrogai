@@ -1,6 +1,6 @@
 import { faker } from '@faker-js/faker';
 import { test, expect, type Page } from './fixtures';
-import { sendMessage } from './helpers';
+import {  loadChatPage, sendMessage } from './helpers';
 
 const loadPage = async (page: Page) => {
 	await page.goto('/chat');
@@ -16,7 +16,7 @@ test('it can start a new conversation and receive a response', async ({ page }) 
 	let messages = await page.getByTestId('message');
 	await expect(messages).toHaveCount(0);
 
-	await loadPage(page);
+	await loadChatPage(page);
 	await sendMessage(page, newMessage);
 
 	messages = await page.getByTestId('message');
@@ -30,7 +30,7 @@ test.skip('it saves in progress responses when interrupted by a page reload', as
 	test.use({ defaultBrowserType: 'chromium' }); // This sets the browser to Chrome for this test
 
 	const newMessage = faker.lorem.words(20);
-	await loadPage(page);
+	await loadChatPage(page);
 	const messages = page.getByTestId('message');
 	await sendMessage(page, newMessage);
 	await expect(messages).toHaveCount(2);
@@ -41,7 +41,7 @@ test.skip('it saves in progress responses when interrupted by a page reload', as
 
 test('it saves in progress responses when interrupted by changing threads', async ({ page }) => {
 	const newMessage = faker.lorem.words(3);
-	await loadPage(page);
+	await loadChatPage(page);
 	const messages = page.getByTestId('message');
 	await sendMessage(page, newMessage);
 	await expect(page.getByLabel('cancel')).toHaveCount(0); // wait for response to finish
