@@ -5,10 +5,9 @@ import dotenv from 'dotenv';
 dotenv.config();
 
 const config: PlaywrightTestConfig = {
-
 	projects: [
 		{ name: 'setup', testMatch: /.*\.setup\.ts/ },
-		{ name: "clear_db", testMatch: /.*\clear_db\.ts/ },
+		{ name: 'clear_db', testMatch: /.*\clear_db\.ts/ },
 		{
 			name: 'chromium',
 			use: {
@@ -44,7 +43,8 @@ const config: PlaywrightTestConfig = {
 	],
 	webServer: {
 		command: 'npm run build && npm run preview',
-		port: 4173
+		port: 4173,
+		stderr: 'pipe',
 	},
 	testDir: 'tests',
 	testMatch: /(.+\.)?(test|spec)\.[jt]s/

@@ -56,14 +56,17 @@ Stop Supabase:
 
 First install Playwright: `npm init playwright@latest`
 
-To run the E2E tests, have the app running then:  
+To run the E2E tests:  
 `npm run test:integration:ui`
 Click the play button in the Playwright UI.
+Playwright will run it's own production build and server the app at `http://localhost:4173`. If you make server side changes,
+restart playwright for them to take effect.
 
 Notes:
+
 1. Running the script above will reset the locally running Supabase instance and re-seed the database. You will
-lose existing data.
-2. if you run the tests in headless mode (```npm run test:integration```) you do not need the app running, it will build the app and run on port 4173.
+   lose existing data.
+2. if you run the tests in headless mode (`npm run test:integration`) you do not need the app running, it will build the app and run on port 4173.
 
 # Supabase and Keycloak Integration
 

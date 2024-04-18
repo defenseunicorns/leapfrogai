@@ -99,12 +99,12 @@ describe('The Chat Page', () => {
 			await user.type(input, question);
 			await user.click(submitBtn);
 
-			expect(screen.getByLabelText('cancel')).toBeInTheDocument();
+			expect(screen.getByLabelText('cancel message')).toBeInTheDocument();
 
 			await delay(delayTime);
 
 			await user.type(input, 'new question');
-			expect(screen.queryByLabelText('cancel')).not.toBeInTheDocument();
+			expect(screen.queryByLabelText('cancel message')).not.toBeInTheDocument();
 		});
 
 		it('displays a toast error notification when there is an error with the AI response', async () => {
@@ -245,7 +245,7 @@ describe('The Chat Page', () => {
 				await user.type(input, question);
 				await user.click(submitBtn);
 				await delay(delayTime / 2);
-				const cancelBtn = screen.getByLabelText('cancel');
+				const cancelBtn = screen.getByLabelText('cancel message');
 				await user.click(cancelBtn);
 
 				await screen.findAllByText('Response Canceled');

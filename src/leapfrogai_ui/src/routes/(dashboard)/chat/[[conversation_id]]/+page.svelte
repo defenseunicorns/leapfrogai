@@ -80,6 +80,7 @@
 				title: 'Response Canceled',
 				subtitle: 'Response generation canceled.'
 			});
+
 			if (activeConversation?.id) {
 				await conversationsStore.newMessage({
 					conversation_id: activeConversation?.id,
@@ -141,7 +142,6 @@
 						<Button
 							kind="secondary"
 							icon={ArrowRight}
-							iconDescription="Send"
 							size="field"
 							type="submit"
 							aria-label="send"
@@ -151,10 +151,9 @@
 						<Button
 							kind="secondary"
 							size="field"
-							aria-label="cancel"
 							type="submit"
 							icon={StopFilledAlt}
-							iconDescription="Cancel"
+							aria-label="cancel message"
 							on:click={stopThenSave}
 						/>
 					{/if}
