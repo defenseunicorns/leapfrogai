@@ -99,7 +99,7 @@ jwt:
   autoGenerate:
     ## @param jwt.autoGenerate.forceRun Force the run of the JWT generation job
     ##
-    forceRun: true
+    forceRun: false
     ## Bitnami JWT CLI image
     ## ref: https://hub.docker.com/r/bitnami/jwt-cli/tags/
     ## @param jwt.autoGenerate.image.registry [default: REGISTRY_NAME] JWT CLI image registry

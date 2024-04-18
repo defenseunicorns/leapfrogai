@@ -2,7 +2,7 @@ apiVersion: uds.dev/v1alpha1
 kind: Package
 metadata:
   name: supabase-studio
-  namespace: {{ .Release.Namespace }}
+  namespace: leapfrogai
 spec:
   network:
     expose:
@@ -24,14 +24,11 @@ spec:
         host: supabase-kong
         gateway: tenant
         port: 8000
-
     allow:
       - direction: Ingress
         remoteGenerated: Anywhere
-
       - direction: Egress
         remoteGenerated: Anywhere
-
       - direction: Egress
         podLabels:
           app.kubernetes.io/instance: supabase
