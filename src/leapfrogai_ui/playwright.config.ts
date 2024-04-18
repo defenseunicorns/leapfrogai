@@ -5,7 +5,7 @@ import dotenv from 'dotenv';
 dotenv.config();
 
 const config: PlaywrightTestConfig = {
-	workers: 1,
+
 	projects: [
 		{ name: 'setup', testMatch: /.*\.setup\.ts/ },
 		{ name: "clear_db", testMatch: /.*\clear_db\.ts/ },

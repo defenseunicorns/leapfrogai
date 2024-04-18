@@ -44,6 +44,7 @@ test('it saves in progress responses when interrupted by changing threads', asyn
 	await loadPage(page);
 	const messages = page.getByTestId('message');
 	await sendMessage(page, newMessage);
+	await expect(page.getByLabel('cancel')).toHaveCount(0); // wait for response to finish
 	await expect(messages).toHaveCount(2);
 
 	await page.getByText('New Chat').click();

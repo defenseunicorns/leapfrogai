@@ -47,8 +47,6 @@ test('can edit conversation labels', async ({ page }) => {
 	const conversationId = page.url().split('/chat/')[1];
 
 	expect(page.getByTestId(`conversation-label-${conversationId}`).getByText(newLabel));
-
-
 });
 
 // TODO - this is now broken (related to type="submit" on cancel button?
@@ -61,15 +59,17 @@ test('Can switch conversation threads', async ({ page }) => {
 
 	const messages = page.getByTestId('message');
 	await expect(messages).toHaveCount(2); // wait for AI response
+	await expect(page.getByLabel('cancel')).toHaveCount(0); // wait for response to finish
 	await sendMessage(page, newMessage2);
 	await expect(messages).toHaveCount(4);
+	await expect(page.getByLabel('cancel')).toHaveCount(0); // wait for response to finish
 
 	await page.getByText('New Chat').click();
 	await sendMessage(page, newMessage3);
 	await expect(messages).toHaveCount(2);
+	await expect(page.getByLabel('cancel')).toHaveCount(0); // wait for response to finish
 
 	await page.getByText(newMessage1).click(); // switch conversations by clicking conversation label
 
 	await expect(messages).toHaveCount(4);
-
 });
