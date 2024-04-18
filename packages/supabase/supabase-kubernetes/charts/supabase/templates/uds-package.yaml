@@ -2,7 +2,6 @@ apiVersion: uds.dev/v1alpha1
 kind: Package
 metadata:
   name: supabase-studio
-  namespace: leapfrogai
 spec:
   network:
     expose:
