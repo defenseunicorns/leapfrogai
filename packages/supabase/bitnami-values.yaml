@@ -589,7 +589,8 @@ auth:
   ## @param auth.podLabels Extra labels for Supabase auth pods
   ## ref: https://kubernetes.io/docs/concepts/overview/working-with-objects/labels/
   ##
-  podLabels: {}
+  podLabels:
+    proxy.istio.io/config: '{ "holdApplicationUntilProxyStarts": true }'
   ## @param auth.podAnnotations Annotations for Supabase auth pods
   ## ref: https://kubernetes.io/docs/concepts/overview/working-with-objects/annotations/
   ##
