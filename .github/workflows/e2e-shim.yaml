@@ -22,6 +22,10 @@ on:
       # Catch pytests
       - "tests/pytest/**"
 
+      # Catch LFAI-UI things
+      - "src/leapfrogai_ui/**"
+      - "packages/ui/**"
+
 
 permissions:
   contents: read

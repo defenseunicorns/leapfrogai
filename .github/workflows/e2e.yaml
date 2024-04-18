@@ -26,6 +26,10 @@ on:
       # Ignore non e2e tests
       - "!tests/pytest/**"
 
+      # Ignore LFAI-UI things (for now?)
+      - "!src/leapfrogai_ui/**"
+      - "!packages/ui/**"
+
 
 concurrency:
   group: e2e-${{ github.ref }}
