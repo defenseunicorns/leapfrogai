@@ -11,7 +11,7 @@ from typing import Any, Generator, Dict
 
 from confz import EnvSource
 from dotenv import load_dotenv
-from leapfrogai_sdk.types import (
+from leapfrogai_sdk import (
     BackendConfig,
     ChatCompletionChoice,
     ChatCompletionRequest,
@@ -24,7 +24,7 @@ from leapfrogai_sdk.types import (
     GrpcContext,
     serve,
 )
-from leapfrogai_sdk.types.llm import GenerationConfig
+from leapfrogai_sdk.llm import GenerationConfig
 from vllm import SamplingParams
 from vllm.engine.arg_utils import AsyncEngineArgs
 from vllm.engine.async_llm_engine import AsyncLLMEngine

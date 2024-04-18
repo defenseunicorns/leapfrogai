@@ -35,13 +35,9 @@ You can optionally specify different models or quantization types using the foll
 
 From the root leapfrogai project:
 ```bash
-## Download the wheels for the optional 'vllm' dependencies
-pip wheel ".[vllm]" -w build
-
-## Copy the deps to the package directory
-rm packages/vllm/build/*.whl
-mkdir packages/vllm/build
-cp build/*.whl packages/vllm/build/
+python -m pip install src/leapfrogai_sdk
+cd packages/vllm
+python -m pip install .
 ```
 
 From this directory:
