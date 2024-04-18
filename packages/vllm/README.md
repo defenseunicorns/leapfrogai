@@ -33,21 +33,14 @@ You can optionally specify different models or quantization types using the foll
 
 ### Run Locally
 
-From the root leapfrogai project:
-```bash
-python -m pip install src/leapfrogai_sdk
-cd packages/vllm
-python -m pip install .
-```
-
 From this directory:
 ```bash
 # Setup Virtual Environment
 python -m venv .venv
 source .venv/bin/activate
 
-cp build/leapfrogai_api*.whl leapfrogai_api-100.100.100-py3-none-any.whl
-pip install "leapfrogai_api-100.100.100-py3-none-any.whl[vllm]" --no-index --find-links=build/
+python -m pip install ../../src/leapfrogai_sdk
+python -m pip install .
 ```
 
 ```bash
