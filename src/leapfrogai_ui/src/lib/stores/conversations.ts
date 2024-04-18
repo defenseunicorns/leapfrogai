@@ -202,7 +202,7 @@ const createConversationsStore = () => {
 						});
 						createdConversation.messages.push(createdMessage);
 					}
-					newConversations.push({ ...conversation });
+					newConversations.push({ ...createdConversation });
 				} catch (e) {
 					toastStore.addToast({
 						kind: 'error',
@@ -211,6 +211,7 @@ const createConversationsStore = () => {
 					});
 				}
 			}
+			console.log(newConversations)
 			update((old) => {
 				return {
 					...old,

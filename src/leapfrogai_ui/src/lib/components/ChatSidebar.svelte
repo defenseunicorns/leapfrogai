@@ -127,7 +127,7 @@
 			{#if category.conversations.length > 0}
 						<SideNavMenu text={category.label} expanded data-testid="side-nav-menu">
 
-								{#each category.conversations as conversation}
+								{#each category.conversations as conversation (conversation.id)}
 									<SideNavMenuItem
 										data-testid="side-nav-menu-item-{conversation.label}"
 										id="side-nav-menu-item-{conversation.id}"
@@ -191,6 +191,7 @@
 											{/if}
 										</div>
 									</SideNavMenuItem>
+
 								{/each}
 							</SideNavMenu>
 						{/if}
@@ -198,7 +199,7 @@
 				</div>
 				<div>
 					<SideNavDivider />
-                    <ImportExport  />
+					<ImportExport />
 				</div>
 			</div>
 		</SideNavItems>
