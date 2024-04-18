@@ -2,7 +2,9 @@ import { test as setup } from '@playwright/test';
 const authFile = 'playwright/.auth/user.json';
 import * as OTPAuth from 'otpauth';
 
+
 setup('authenticate', async ({ page }) => {
+
 	// Perform authentication steps. Replace these actions with your own.
 	await page.goto('http://localhost:4173');
 	await page.getByRole('button', { name: 'Log In' }).click();
@@ -42,4 +44,6 @@ setup('authenticate', async ({ page }) => {
 	// End of authentication steps.
 
 	await page.context().storageState({ path: authFile });
+
+
 });
