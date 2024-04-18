@@ -24,7 +24,7 @@ jobs:
         run: docker run -p 50051:50051 -d --name=repeater ghcr.io/defenseunicorns/leapfrogai/repeater:0.3.3
 
       - name: Install Python Deps
-        run: pip install ".[dev]"
+        run: pip install "." "src/leapfrogai_api" "src/leapfrogai_sdk"
 
       - name: Run Pytest
         run: python -m pytest tests/pytest -v

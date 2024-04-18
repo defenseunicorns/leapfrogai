@@ -1,7 +1,7 @@
 from typing import BinaryIO, Iterator, Union
 
 import grpc
-import leapfrogai_api.types as lfai_types
+import leapfrogai_sdk as lfai
 from leapfrogai_api.backends.openai.types import (
     ChatCompletionResponse,
     ChatDelta,
@@ -13,9 +13,7 @@ from leapfrogai_api.backends.openai.types import (
 
 
 async def recv_completion(
-    stream: grpc.aio.UnaryStreamCall[
-        lfai_types.CompletionRequest, lfai_types.CompletionResponse
-    ],
+    stream: grpc.aio.UnaryStreamCall[lfai.CompletionRequest, lfai.CompletionResponse],
 ):
     async for c in stream:
         yield (
@@ -43,7 +41,7 @@ async def recv_completion(
 
 async def recv_chat(
     stream: grpc.aio.UnaryStreamCall[
-        lfai_types.ChatCompletionRequest, lfai_types.ChatCompletionResponse
+        lfai.ChatCompletionRequest, lfai.ChatCompletionResponse
     ],
 ):
     async for c in stream:
@@ -71,24 +69,24 @@ async def recv_chat(
     yield "data: [DONE]\n\n"
 
 
-def grpc_chat_role(role: str) -> Union[lfai_types.ChatRole, None]:
+def grpc_chat_role(role: str) -> Union[lfai.ChatRole, None]:
     match role:
         case "user":
-            return lfai_types.ChatRole.USER  # type: ignore
+            return lfai.ChatRole.USER  # type: ignore
         case "system":
-            return lfai_types.ChatRole.SYSTEM  # type: ignore
+            return lfai.ChatRole.SYSTEM  # type: ignore
         case "function":
-            return lfai_types.ChatRole.FUNCTION  # type: ignore
+            return lfai.ChatRole.FUNCTION  # type: ignore
         case "assistant":
-            return lfai_types.ChatRole.ASSISTANT  # type: ignore
+            return lfai.ChatRole.ASSISTANT  # type: ignore
         case _:
             return None
 
 
 # read_chunks is a helper method that chunks the bytes of a file (audio file) into a iterator of AudioRequests
-def read_chunks(file: BinaryIO, chunk_size: int) -> Iterator[lfai_types.AudioRequest]:
+def read_chunks(file: BinaryIO, chunk_size: int) -> Iterator[lfai.AudioRequest]:
     while True:
         chunk = file.read(chunk_size)
         if not chunk:
             break
-        yield lfai_types.AudioRequest(chunk_data=chunk)
+        yield lfai.AudioRequest(chunk_data=chunk)

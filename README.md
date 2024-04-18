@@ -43,9 +43,10 @@ The LeapfrogAI repository follows a monorepo structure based around an [API](#ap
 ```
 leapfrogai/
 ├── src/
-│   └── leapfrogai_api/
-│       ├── main.py
-│       └── ...
+│   ├── leapfrogai_api/
+│   │   ├── main.py
+│   │   └── ...
+│   └── leapfrogai_sdk/
 ├── packages/
 │   ├── api/
 │   ├── llama-cpp-python/
@@ -94,7 +95,7 @@ LeapfrogAI leverages Chainguard's [apko](https://github.com/chainguard-dev/apko)
 
 ### SDK
 
-The LeapfrogAI SDK provides a standard set of protobuff and python utilities for implementing backends and gRPC.
+The LeapfrogAI [SDK](src/leapfrogai_sdk/) provides a standard set of protobuff and python utilities for implementing backends and gRPC.
 
 ### User Interface
 
@@ -122,22 +123,24 @@ python -m venv .venv
 source .venv/bin/activate
 ```
 
-Each component is built into its own Zarf package. This can be done easily using the provided `Make` targets:
+Each component is built into its own Zarf package. You can build all of the packages you need at once with the following `Make` targets:
+
+```
+make build-cpu    # api, llama-cpp-python, text-embeddings, whisper
+make build-gpu    # api, vllm, text-embeddings, whisper
+make build-all    # all of the backends
+```
+
+**OR**
+
+You can build components individually using teh following `Make` targets:
+
 ```
 make build-api
 make build-vllm                 # if you have GPUs
 make build-llama-cpp-python     # if you have CPU only
 make build-text-embeddings
 make build-whisper
-```
-**OR**
-
-You can build all of the packages you need at once with the following make targets:
-
-```
-make build-cpu    # api, llama-cpp-python, text-embeddings, whisper
-make build-gpu    # api, vllm, text-embeddings, whisper
-make build-all    # all of the backends
 ```
 
 Once the packages are created, you can deploy either a CPU or GPU-enabled deployment via one of the UDS bundles:
@@ -174,8 +177,9 @@ source .venv/bin/activate
 To run the LeapfrogAI API locally (starting from the root directory of the repository):
 
 ```
-python -m pip install ".[dev]"
-cd src
+python -m pip install src/leapfrogai_sdk
+cd src/leapfrogai_api
+python -m pip install .
 uvicorn leapfrogai_api.main:app --port 3000 --reload
 ```
 
@@ -184,19 +188,21 @@ uvicorn leapfrogai_api.main:app --port 3000 --reload
 To run the llama-cpp-python backend locally (starting from the root directory of the repository):
 
 ```
-python -m pip install ".[llama-cpp-python,dev]"
+python -m pip install src/leapfrogai_sdk
 cd packages/llama-cpp-python
+python -m pip install .
 python scripts/model_download.py
 mv .model/*.gguf .model/model.gguf
-python -m leapfrogai_api.types.cli --app-dir=. main:Model
+lfai-cli --app-dir=. main:Model
 ```
 
 #### Backend: text-embeddings
 To run the text-embeddings backend locally (starting from the root directory of the repository):
 
 ```
-python -m pip install ".[text-embeddings,dev]"
+python -m pip install src/leapfrogai_sdk
 cd packages/text-embeddings
+python -m pip install .
 python scripts/model_download.py
 python -u main.py
 ```
@@ -205,19 +211,21 @@ python -u main.py
 To run the vllm backend locally (starting from the root directory of the repository):
 
 ```
-python -m pip install ".[vllm,dev]"
+python -m pip install src/leapfrogai_sdk
 cd packages/vllm
+python -m pip install .
 python scripts/model_download.py
 export QUANTIZATION=awq
-python -m leapfrogai_api.types.cli --app-dir=. main:Model
+lfai-cli --app-dir=. main:Model
 ```
 
 #### Backend: whisper
 To run the vllm backend locally (starting from the root directory of the repository):
 
 ```
-python -m pip install ".[whisper,dev]"
+python -m pip install src/leapfrogai_sdk
 cd packages/whisper
+python -m pip install ".[dev]"
 ct2-transformers-converter --model openai/whisper-base --output_dir .model --copy_files tokenizer.json --quantization float32
 python -u main.py
 ```
