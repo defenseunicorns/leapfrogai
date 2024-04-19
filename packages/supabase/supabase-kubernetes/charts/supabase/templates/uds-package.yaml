@@ -10,19 +10,19 @@ spec:
           app.kubernetes.io/name: supabase-studio
         host: supabase-studio
         gateway: tenant
-        port: 3000
+        port: 80
       - service: supabase-rest
         podLabels:
           app.kubernetes.io/name: supabase-storage
         host: supabase-rest
         gateway: tenant
-        port: 3000
+        port: 80
       - service: supabase-kong
         podLabels:
           app.kubernetes.io/name: supabase-kong
         host: supabase-kong
         gateway: tenant
-        port: 8000
+        port: 80
     allow:
       - direction: Ingress
         remoteGenerated: Anywhere
