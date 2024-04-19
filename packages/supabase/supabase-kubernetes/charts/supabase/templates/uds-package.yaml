@@ -19,5 +19,6 @@ spec:
         remoteGenerated: Anywhere
       - direction: Egress
         podLabels:
-          app.kubernetes.io/instance: supabase
+          app.kubernetes.io/name: supabase
+          app.kubernetes.io/component: studio
         remoteGenerated: Anywhere
