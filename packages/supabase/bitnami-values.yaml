@@ -589,13 +589,12 @@ auth:
   ## @param auth.podLabels Extra labels for Supabase auth pods
   ## ref: https://kubernetes.io/docs/concepts/overview/working-with-objects/labels/
   ##
-  podLabels: {}
+  podLabels:
+    sidecar.istio.io/inject: "false"
   ## @param auth.podAnnotations Annotations for Supabase auth pods
   ## ref: https://kubernetes.io/docs/concepts/overview/working-with-objects/annotations/
   ##
-  podAnnotations:
-    proxy.istio.io/config: |
-      holdApplicationUntilProxyStarts: true
+  podAnnotations: {}
   ## @param auth.podAffinityPreset Pod affinity preset. Ignored if `auth.affinity` is set. Allowed values: `soft` or `hard`
   ## ref: https://kubernetes.io/docs/concepts/scheduling-eviction/assign-pod-node/#inter-pod-affinity-and-anti-affinity
   ##
@@ -993,12 +992,12 @@ meta:
   ## @param meta.podLabels Extra labels for Supabase Postgres Meta pods
   ## ref: https://kubernetes.io/docs/concepts/overview/working-with-objects/labels/
   ##
-  podLabels: {}
+  podLabels:
+    sidecar.istio.io/inject: "false"
   ## @param meta.podAnnotations Annotations for Supabase Postgres Meta pods
   ## ref: https://kubernetes.io/docs/concepts/overview/working-with-objects/annotations/
   ##
-  podAnnotations:
-    proxy.istio.io/config: '{ "holdApplicationUntilProxyStarts": true }'
+  podAnnotations: {}
   ## @param meta.podAffinityPreset Pod affinity preset. Ignored if `meta.affinity` is set. Allowed values: `soft` or `hard`
   ## ref: https://kubernetes.io/docs/concepts/scheduling-eviction/assign-pod-node/#inter-pod-affinity-and-anti-affinity
   ##
@@ -1412,12 +1411,12 @@ realtime:
   ## @param realtime.podLabels Extra labels for Supabase realtime pods
   ## ref: https://kubernetes.io/docs/concepts/overview/working-with-objects/labels/
   ##
-  podLabels: {}
+  podLabels:
+    sidecar.istio.io/inject: "false"
   ## @param realtime.podAnnotations Annotations for Supabase realtime pods
   ## ref: https://kubernetes.io/docs/concepts/overview/working-with-objects/annotations/
   ##
-  podAnnotations:
-    proxy.istio.io/config: '{ "holdApplicationUntilProxyStarts": true }'
+  podAnnotations: {}
   ## @param realtime.podAffinityPreset Pod affinity preset. Ignored if `realtime.affinity` is set. Allowed values: `soft` or `hard`
   ## ref: https://kubernetes.io/docs/concepts/scheduling-eviction/assign-pod-node/#inter-pod-affinity-and-anti-affinity
   ##
@@ -1813,12 +1812,12 @@ rest:
   ## @param rest.podLabels Extra labels for Supabase rest pods
   ## ref: https://kubernetes.io/docs/concepts/overview/working-with-objects/labels/
   ##
-  podLabels: {}
+  podLabels:
+    sidecar.istio.io/inject: "false"
   ## @param rest.podAnnotations Annotations for Supabase rest pods
   ## ref: https://kubernetes.io/docs/concepts/overview/working-with-objects/annotations/
   ##
-  podAnnotations:
-    proxy.istio.io/config: '{ "holdApplicationUntilProxyStarts": true }'
+  podAnnotations: {}
   ## @param rest.podAffinityPreset Pod affinity preset. Ignored if `rest.affinity` is set. Allowed values: `soft` or `hard`
   ## ref: https://kubernetes.io/docs/concepts/scheduling-eviction/assign-pod-node/#inter-pod-affinity-and-anti-affinity
   ##
@@ -2220,12 +2219,12 @@ storage:
   ## @param storage.podLabels Extra labels for Supabase storage pods
   ## ref: https://kubernetes.io/docs/concepts/overview/working-with-objects/labels/
   ##
-  podLabels: {}
+  podLabels:
+    sidecar.istio.io/inject: "false"
   ## @param storage.podAnnotations Annotations for Supabase storage pods
   ## ref: https://kubernetes.io/docs/concepts/overview/working-with-objects/annotations/
   ##
-  podAnnotations:
-    proxy.istio.io/config: '{ "holdApplicationUntilProxyStarts": true }'
+  podAnnotations: {}
   ## @param storage.podAffinityPreset Pod affinity preset. Ignored if `storage.affinity` is set. Allowed values: `soft` or `hard`
   ## ref: https://kubernetes.io/docs/concepts/scheduling-eviction/assign-pod-node/#inter-pod-affinity-and-anti-affinity
   ##
@@ -2672,13 +2671,12 @@ studio:
   ## @param studio.podLabels Extra labels for Supabase studio pods
   ## ref: https://kubernetes.io/docs/concepts/overview/working-with-objects/labels/
   ##
-  podLabels: {}
+  podLabels:
+    sidecar.istio.io/inject: "false"
   ## @param studio.podAnnotations Annotations for Supabase studio pods
   ## ref: https://kubernetes.io/docs/concepts/overview/working-with-objects/annotations/
   ##
-  podAnnotations:
-    proxy.istio.io/config: |
-      holdApplicationUntilProxyStarts: true
+  podAnnotations: {}
   ## @param studio.podAffinityPreset Pod affinity preset. Ignored if `studio.affinity` is set. Allowed values: `soft` or `hard`
   ## ref: https://kubernetes.io/docs/concepts/scheduling-eviction/assign-pod-node/#inter-pod-affinity-and-anti-affinity
   ##
