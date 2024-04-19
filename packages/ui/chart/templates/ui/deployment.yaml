@@ -35,7 +35,7 @@ spec:
               value: '###ZARF_VAR_SUPABASE_URL###'
             - name: PUBLIC_SUPABASE_ANON_KEY
               value: '###ZARF_VAR_SUPABASE_ANON_KEY###'
-{{/*              Use this instead once we have Supabase hosted*/}}
+{{/*              TODO - Use this instead once we have Supabase hosted*/}}
 {{/*            - name: PUBLIC_SUPABASE_ANON_KEY*/}}
 {{/*              valueFrom:*/}}
 {{/*                secretKeyRef:*/}}

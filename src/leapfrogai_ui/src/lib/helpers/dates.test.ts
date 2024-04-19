@@ -90,7 +90,6 @@ describe('date helpers', () => {
 
 		it('returns "This Month" when the date is in the same month as the current date', () => {
 			const today = new Date();
-			const currentDate = new Date(today.getFullYear(), today.getMonth(), 10);
 			const sameMonthDate = new Date(today.getFullYear(), today.getMonth(), 20);
 			const expectedCategory = 'This Month';
 
