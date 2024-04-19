@@ -76,7 +76,7 @@ extraDeploy: []
 diagnosticMode:
   ## @param diagnosticMode.enabled Enable diagnostic mode (all probes will be disabled and the command will be overridden)
   ##
-  enabled: true
+  enabled: false
   ## @param diagnosticMode.command Command to override all containers in the deployment
   ##
   command:
