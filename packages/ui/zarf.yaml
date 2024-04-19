@@ -44,12 +44,11 @@ variables:
     sensitive: false
   - name: SUPABASE_URL
     description: URL for supabase
-    default: 'http://supabase.leapfrogai.svc.cluster.local:8080' # TODO - update with correct endpoint once Supabase deployed
     prompt: true
+    default: supabase-kong.leapfrogai.svc.cluster.local:8080
     sensitive: false
   - name: SUPABASE_ANON_KEY
     description: Public key for Supabase
-    default: ''
     prompt: true
     sensitive: false
   - name: DISABLE_KEYCLOAK

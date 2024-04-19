@@ -32,15 +32,16 @@ spec:
             - name: LEAPFROGAI_API_KEY
               value: '###ZARF_VAR_LEAPFROGAI_API_KEY###'
             - name: PUBLIC_SUPABASE_URL
-              value: '###ZARF_VAR_SUPABASE_URL###'
+              value: {{ .Values.package.supabase_url }}
             - name: PUBLIC_SUPABASE_ANON_KEY
-              value: '###ZARF_VAR_SUPABASE_ANON_KEY###'
-{{/*              TODO - Use this instead once we have Supabase hosted*/}}
-{{/*            - name: PUBLIC_SUPABASE_ANON_KEY*/}}
-{{/*              valueFrom:*/}}
-{{/*                secretKeyRef:*/}}
-{{/*                  name: demo-supabase-jwt*/}}
-{{/*                  key: anonKey*/}}
+              {{ if .Values.package.supabase_anon_key  }}
+              value: {{ .Values.package.supabase_anon_key }}
+              {{ else }}
+              valueFrom:
+                secretKeyRef:
+                  name: supabase-jwt
+                  key: anonKey
+              {{ end }}
             - name: PUBLIC_DISABLE_KEYCLOAK
               value: '###ZARF_VAR_DISABLE_KEYCLOAK###'
           resources:
