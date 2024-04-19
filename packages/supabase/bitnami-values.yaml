@@ -3153,6 +3153,8 @@ kong:
   ##
   ingressController:
     enabled: false
+  podLabels:
+    sidecar.istio.io/inject: "false"
   ## @param kong.kong.extraVolumeMounts [array] Additional volumeMounts to the Kong container
   ## @param kong.kong.extraEnvVars [array] Additional environment variables to set
   ##
@@ -3192,8 +3194,6 @@ kong:
     ##
     readinessProbe:
       timeoutSeconds: 20
-    podLabels:
-      sidecar.istio.io/inject: "false"
   ## @param kong.extraVolumes [array] Additional volumes to the Kong pods
   ##
   extraVolumes:
