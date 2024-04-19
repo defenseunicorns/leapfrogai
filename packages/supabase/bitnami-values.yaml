@@ -3192,6 +3192,8 @@ kong:
     ##
     readinessProbe:
       timeoutSeconds: 20
+    podLabels:
+      sidecar.istio.io/inject: "false"
   ## @param kong.extraVolumes [array] Additional volumes to the Kong pods
   ##
   extraVolumes:
