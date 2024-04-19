@@ -3,7 +3,6 @@ from typing import Annotated
 
 from fastapi import Depends, HTTPException
 import leapfrogai_sdk as lfai
-from leapfrogai_api.backends.openai import router
 from leapfrogai_api.backends.openai.grpc_client import (
     chat_completion,
     completion,
@@ -25,6 +24,9 @@ from leapfrogai_api.backends.openai.types import (
 )
 from leapfrogai_api.utils import get_model_config
 from leapfrogai_api.utils.config import Config
+from fastapi import APIRouter
+
+router = APIRouter(prefix="/openai/v1", tags=["openai"])
 
 
 @router.post("/completions")

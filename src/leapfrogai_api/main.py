@@ -5,8 +5,8 @@ from contextlib import asynccontextmanager
 from fastapi import FastAPI
 
 # We need to import all the functions in these files so the router decorator gets processed
-from leapfrogai_api.backends.openai import router as openai_router
-from leapfrogai_api.backends.openai.routes import *  # noqa: F403 - We need to import all the functions in these files so the router decorator gets processed
+from leapfrogai_api.backends.openai.routes import router as openai_router
+import leapfrogai_api.routers.assistants as assistants
 from leapfrogai_api.utils import get_model_config
 
 
@@ -37,3 +37,4 @@ async def models():
 
 
 app.include_router(openai_router)
+app.include_router(assistants.router)
