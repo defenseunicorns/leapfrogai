@@ -7,7 +7,8 @@ spec:
     expose:
       - service: supabase-studio
         podLabels:
-          app.kubernetes.io/name: studio
+          app.kubernetes.io/name: supabase
+          app.kubernetes.io/component: studio
         host: supabase-studio
         gateway: tenant
         port: 80
