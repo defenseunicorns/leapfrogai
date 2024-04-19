@@ -1,0 +1,61 @@
+syntax = "proto3";
+
+package audio;
+
+option go_package = "github.com/defenseunicorns/leapfrogai/pkg/client/audio";
+
+enum AudioTask {
+    TRANSCRIBE = 0;
+    TRANSLATE = 1;
+}
+
+message AudioMetadata {
+    enum AudioFormat {
+        JSON = 0;
+        TEXT = 1;
+        SRT = 2;
+        VERBOSE_JSON = 3;
+        VTT = 4;
+    }
+    string prompt = 1;
+    float temperature = 2;
+    string inputlanguage = 3;
+    AudioFormat format = 4;
+}
+
+
+message AudioRequest {
+    oneof request {
+        AudioMetadata metadata = 1;
+        bytes chunk_data = 2;
+    }
+}
+
+message AudioResponse {
+    AudioTask task = 1;
+    string language = 2;
+    double duration = 3;
+    repeated Segment segments = 4;
+    string text = 5;
+
+    message Segment {
+        int32 id = 1;
+        int32 seek = 2;
+        double start = 3;
+        double end = 4;
+        string text = 5;
+        repeated int32 tokens = 6;
+        double temperature = 7;
+        double avg_logprob = 8;
+        double compression_ratio = 9;
+        double no_speech_prob = 10;
+        bool transient = 11;
+    }
+}
+
+
+
+service Audio {
+    rpc Translate(stream AudioRequest) returns (AudioResponse);
+    rpc Transcribe(stream AudioRequest) returns (AudioResponse);
+}

@@ -9,6 +9,7 @@ on:
 
       # Catch docs and website things
       - "**.md"
+      - "adr/**"
       - "docs/**"
       - "website/**"
       - "netlify.toml"
@@ -17,10 +18,14 @@ on:
       - "CODEOWNERS"
       - ".gitignore"
       - "LICENSE"
-      - "pre-comimt-config.yaml"
+      - "pre-commit-config.yaml"
 
       # Catch pytests
       - "tests/pytest/**"
+
+      # Catch LFAI-UI things
+      - "src/leapfrogai_ui/**"
+      - "packages/ui/**"
 
 
 permissions:
