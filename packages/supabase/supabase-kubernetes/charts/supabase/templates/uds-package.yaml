@@ -7,10 +7,10 @@ spec:
     expose:
       - service: supabase-studio
         podLabels:
-          app.kubernetes.io/name: supabase-studio
+          app.kubernetes.io/name: studio
         host: supabase-studio
         gateway: tenant
-        port: 3000
+        port: 80
     allow:
       - direction: Ingress
         remoteGenerated: Anywhere
