@@ -5,19 +5,19 @@ metadata:
 spec:
   network:
     expose:
-      - service: supabase-supabase-studio
+      - service: supabase-studio
         podLabels:
           app.kubernetes.io/name: supabase-studio
         host: supabase-studio
         gateway: tenant
         port: 3000
-      - service: supabase-supabase-rest
+      - service: supabase-rest
         podLabels:
           app.kubernetes.io/name: supabase-storage
         host: supabase-rest
         gateway: tenant
         port: 3000
-      - service: supabase-supabase-kong
+      - service: supabase-kong
         podLabels:
           app.kubernetes.io/name: supabase-kong
         host: supabase-kong
