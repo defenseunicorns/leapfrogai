@@ -2495,7 +2495,7 @@ studio:
   enabled: true
   ## @param studio.publicURL Supabase studio public URL
   ##
-  publicURL: ""
+  publicURL: "https://supabase-studio.uds.dev/"
   ## @param studio.replicaCount Number of Supabase studio replicas to deploy
   ##
   replicaCount: 1
