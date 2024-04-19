@@ -1,4 +1,0 @@
-package:
-  create:
-    set:
-      istioctl_version: 1.21.1
