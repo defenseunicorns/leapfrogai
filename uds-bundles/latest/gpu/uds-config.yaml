@@ -21,3 +21,7 @@ variables:
     overlap_size: 128
     embedding_model_name: text-embeddings
     top_k: 20
+
+  leapfrogai-ui:
+    domain: https://lfaiui.uds.dev
+    model: vllm
