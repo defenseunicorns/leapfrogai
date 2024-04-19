@@ -60,7 +60,8 @@ fullnameOverride: ""
 namespaceOverride: ""
 ## @param commonLabels Labels to add to all deployed objects
 ##
-commonLabels: {}
+commonLabels:
+  sidecar.istio.io/inject: "false"
 ## @param commonAnnotations Annotations to add to all deployed objects
 ##
 commonAnnotations: {}
@@ -2671,7 +2672,8 @@ studio:
   ## @param studio.podLabels Extra labels for Supabase studio pods
   ## ref: https://kubernetes.io/docs/concepts/overview/working-with-objects/labels/
   ##
-  podLabels: {}
+  podLabels:
+    sidecar.istio.io/inject: "false"
   ## @param studio.podAnnotations Annotations for Supabase studio pods
   ## ref: https://kubernetes.io/docs/concepts/overview/working-with-objects/annotations/
   ##
@@ -3299,6 +3301,8 @@ postgresql:
     ##     memory: 1024Mi
     ##
     resources: {}
+    labels:
+      sidecar.istio.io/inject: "false"
 
 ## External PostgreSQL configuration
 ## All of these values are only used when postgresql.enabled is set to false
