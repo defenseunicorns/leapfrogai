@@ -589,13 +589,13 @@ auth:
   ## @param auth.podLabels Extra labels for Supabase auth pods
   ## ref: https://kubernetes.io/docs/concepts/overview/working-with-objects/labels/
   ##
-  podLabels:
-    kubectl.kubernetes.io/default-container: istio-init
+  podLabels: {}
   ## @param auth.podAnnotations Annotations for Supabase auth pods
   ## ref: https://kubernetes.io/docs/concepts/overview/working-with-objects/annotations/
   ##
   podAnnotations:
-    proxy.istio.io/config: '{ "holdApplicationUntilProxyStarts": true }'
+    proxy.istio.io/config: |
+      holdApplicationUntilProxyStarts: true
   ## @param auth.podAffinityPreset Pod affinity preset. Ignored if `auth.affinity` is set. Allowed values: `soft` or `hard`
   ## ref: https://kubernetes.io/docs/concepts/scheduling-eviction/assign-pod-node/#inter-pod-affinity-and-anti-affinity
   ##
@@ -2677,7 +2677,8 @@ studio:
   ## ref: https://kubernetes.io/docs/concepts/overview/working-with-objects/annotations/
   ##
   podAnnotations:
-    proxy.istio.io/config: '{ "holdApplicationUntilProxyStarts": true }'
+    proxy.istio.io/config: |
+      holdApplicationUntilProxyStarts: true
   ## @param studio.podAffinityPreset Pod affinity preset. Ignored if `studio.affinity` is set. Allowed values: `soft` or `hard`
   ## ref: https://kubernetes.io/docs/concepts/scheduling-eviction/assign-pod-node/#inter-pod-affinity-and-anti-affinity
   ##
