@@ -33,4 +33,4 @@ components:
       - name: uds-manifests
         namespace: leapfrogai
         files:
-          - "supabase-kubernetes/charts/supabase/templates/uds-package.yaml"
+          - "uds-package.yaml"

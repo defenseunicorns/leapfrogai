@@ -1,9 +1,0 @@
-apiVersion: v1
-data:
-  password: ZXhhbXBsZTEyMzQ1Ng==
-  username: eW91ci1tYWlsQGV4YW1wbGUuY29t
-kind: Secret
-metadata:
-  name: demo-supabase-smtp
-  namespace: leapfrogai
-type: Opaque

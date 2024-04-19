@@ -1,9 +1,0 @@
-apiVersion: v1
-data:
-  password: ZXhhbXBsZTEyMzQ1Ng==
-  username: cG9zdGdyZXM=
-kind: Secret
-metadata:
-  name: demo-supabase-db
-  namespace: leapfrogai
-type: Opaque
