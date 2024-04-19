@@ -2841,7 +2841,7 @@ studio:
   networkPolicy:
     ## @param studio.networkPolicy.enabled Specifies whether a NetworkPolicy should be created
     ##
-    enabled: false
+    enabled: true
     ## @param studio.networkPolicy.allowExternal Don't require client label for connections
     ## The Policy model to apply. When set to false, only pods with the correct
     ## client label will have network access to the ports the application is listening
