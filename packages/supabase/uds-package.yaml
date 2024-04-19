@@ -12,6 +12,13 @@ spec:
         host: supabase-studio
         gateway: tenant
         port: 80
+      - service: supabase-kong
+        podLabels:
+          app.kubernetes.io/name: supabase
+          app.kubernetes.io/component: kong
+        host: supabase-kong
+        gateway: tenant
+        port: 80
     allow:
       - direction: Ingress
         remoteGenerated: Anywhere
