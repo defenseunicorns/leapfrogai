@@ -3301,7 +3301,7 @@ postgresql:
     ##     memory: 1024Mi
     ##
     resources: {}
-    labels:
+    podLabels:
       sidecar.istio.io/inject: "false"
 
 ## External PostgreSQL configuration
