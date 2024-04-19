@@ -589,7 +589,8 @@ auth:
   ## @param auth.podLabels Extra labels for Supabase auth pods
   ## ref: https://kubernetes.io/docs/concepts/overview/working-with-objects/labels/
   ##
-  podLabels: {}
+  podLabels:
+    kubectl.kubernetes.io/default-container: istio-init
   ## @param auth.podAnnotations Annotations for Supabase auth pods
   ## ref: https://kubernetes.io/docs/concepts/overview/working-with-objects/annotations/
   ##
