@@ -76,7 +76,7 @@ extraDeploy: []
 diagnosticMode:
   ## @param diagnosticMode.enabled Enable diagnostic mode (all probes will be disabled and the command will be overridden)
   ##
-  enabled: false
+  enabled: true
   ## @param diagnosticMode.command Command to override all containers in the deployment
   ##
   command:
@@ -2672,8 +2672,7 @@ studio:
   ## @param studio.podLabels Extra labels for Supabase studio pods
   ## ref: https://kubernetes.io/docs/concepts/overview/working-with-objects/labels/
   ##
-  podLabels:
-    sidecar.istio.io/inject: "false"
+  podLabels: {}
   ## @param studio.podAnnotations Annotations for Supabase studio pods
   ## ref: https://kubernetes.io/docs/concepts/overview/working-with-objects/annotations/
   ##
