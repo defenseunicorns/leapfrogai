@@ -346,7 +346,7 @@ jwt:
     ## @param jwt.autoGenerate.resourcesPreset Set container resources according to one common preset (allowed values: none, nano, micro, small, medium, large, xlarge, 2xlarge). This is ignored if jwt.autoGenerate.resources is set (jwt.autoGenerate.resources is recommended for production).
     ## More information: https://github.com/bitnami/charts/blob/main/bitnami/common/templates/_resources.tpl#L15
     ##
-    resourcesPreset: "nano"
+    resourcesPreset: "medium"
     ## @param jwt.autoGenerate.resources Set container requests and limits for different resources like CPU or memory (essential for production workloads)
     ## Example:
     ## resources:
@@ -522,7 +522,7 @@ auth:
   ## @param auth.resourcesPreset Set container resources according to one common preset (allowed values: none, nano, micro, small, medium, large, xlarge, 2xlarge). This is ignored if auth.resources is set (auth.resources is recommended for production).
   ## More information: https://github.com/bitnami/charts/blob/main/bitnami/common/templates/_resources.tpl#L15
   ##
-  resourcesPreset: "micro"
+  resourcesPreset: "medium"
   ## @param auth.resources Set container requests and limits for different resources like CPU or memory (essential for production workloads)
   ## Example:
   ## resources:
@@ -925,7 +925,7 @@ meta:
   ## @param meta.resourcesPreset Set container resources according to one common preset (allowed values: none, nano, micro, small, medium, large, xlarge, 2xlarge). This is ignored if meta.resources is set (meta.resources is recommended for production).
   ## More information: https://github.com/bitnami/charts/blob/main/bitnami/common/templates/_resources.tpl#L15
   ##
-  resourcesPreset: "micro"
+  resourcesPreset: "medium"
   ## @param meta.resources Set container requests and limits for different resources like CPU or memory (essential for production workloads)
   ## Example:
   ## resources:
@@ -1745,7 +1745,7 @@ rest:
   ## @param rest.resourcesPreset Set container resources according to one common preset (allowed values: none, nano, micro, small, medium, large, xlarge, 2xlarge). This is ignored if rest.resources is set (rest.resources is recommended for production).
   ## More information: https://github.com/bitnami/charts/blob/main/bitnami/common/templates/_resources.tpl#L15
   ##
-  resourcesPreset: "micro"
+  resourcesPreset: "medium"
   ## @param rest.resources Set container requests and limits for different resources like CPU or memory (essential for production workloads)
   ## Example:
   ## resources:
@@ -2604,7 +2604,7 @@ studio:
   ## @param studio.resourcesPreset Set container resources according to one common preset (allowed values: none, nano, micro, small, medium, large, xlarge, 2xlarge). This is ignored if studio.resources is set (studio.resources is recommended for production).
   ## More information: https://github.com/bitnami/charts/blob/main/bitnami/common/templates/_resources.tpl#L15
   ##
-  resourcesPreset: "micro"
+  resourcesPreset: "medium"
   ## @param studio.resources Set container requests and limits for different resources like CPU or memory (essential for production workloads)
   ## Example:
   ## resources:
@@ -3027,7 +3027,7 @@ volumePermissions:
   ## @param volumePermissions.resourcesPreset Set container resources according to one common preset (allowed values: none, nano, micro, small, medium, large, xlarge, 2xlarge). This is ignored if volumePermissions.resources is set (volumePermissions.resources is recommended for production).
   ## More information: https://github.com/bitnami/charts/blob/main/bitnami/common/templates/_resources.tpl#L15
   ##
-  resourcesPreset: "micro"
+  resourcesPreset: "medium"
   ## @param volumePermissions.resources Set container requests and limits for different resources like CPU or memory (essential for production workloads)
   ## Example:
   ## resources:
@@ -3291,7 +3291,7 @@ postgresql:
     ## @param postgresql.primary.resourcesPreset Set container resources according to one common preset (allowed values: none, nano, small, medium, large, xlarge, 2xlarge). This is ignored if primary.resources is set (primary.resources is recommended for production).
     ## More information: https://github.com/bitnami/charts/blob/main/bitnami/common/templates/_resources.tpl#L15
     ##
-    resourcesPreset: "nano"
+    resourcesPreset: "medium"
     ## @param postgresql.primary.resources Set container requests and limits for different resources like CPU or memory (essential for production workloads)
     ## Example:
     ## resources:
