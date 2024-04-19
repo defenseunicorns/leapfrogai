@@ -709,7 +709,7 @@ auth:
     ## @param auth.service.ports.http Supabase auth service HTTP port
     ##
     ports:
-      http: 80
+      http: 3000
     ## Node ports to expose
     ## @param auth.service.nodePorts.http Node port for HTTP
     ## NOTE: choose port between <30000-32767>
