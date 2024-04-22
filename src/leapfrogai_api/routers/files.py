@@ -1,4 +1,5 @@
-""" OpenAI Compliant Files API Router. """
+"""OpenAI Compliant Files API Router."""
+
 import time
 from uuid import uuid4 as uuid
 

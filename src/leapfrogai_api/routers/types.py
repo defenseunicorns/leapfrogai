@@ -1,4 +1,5 @@
-""" Typing definitions for assistants API. """
+"""Typing definitions for assistants API."""
+
 from __future__ import annotations
 
 from typing import Optional, Literal
@@ -40,9 +41,9 @@ class CreateAssistantRequest(BaseModel):
     metadata: Optional[object] | None = {}
     temperature: Optional[float] = 1.0
     top_p: Optional[float] = 1.0
-    response_format: Optional[
-        Literal["auto"]
-    ] | None = "auto"  # This is all we support right now
+    response_format: Optional[Literal["auto"]] | None = (
+        "auto"  # This is all we support right now
+    )
 
 
 class ModifyAssistantRequest(CreateAssistantRequest):

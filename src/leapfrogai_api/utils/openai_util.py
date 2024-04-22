@@ -1,4 +1,5 @@
-""" This module contains utility functions for interacting with OpenAI API. """
+"""This module contains utility functions for interacting with OpenAI API."""
+
 import logging
 from typing import Dict, List, Union
 from openai.types.beta import (

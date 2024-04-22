@@ -1,4 +1,5 @@
-""" OpenAI Compliant Assistants API Router."""
+"""OpenAI Compliant Assistants API Router."""
+
 import time
 from typing import List
 from uuid import uuid4

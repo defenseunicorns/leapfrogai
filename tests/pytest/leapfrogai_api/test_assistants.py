@@ -1,4 +1,5 @@
-""" Test the API endpoints for assistants. """
+"""Test the API endpoints for assistants."""
+
 from fastapi.testclient import TestClient
 from openai.types.beta import Assistant
 

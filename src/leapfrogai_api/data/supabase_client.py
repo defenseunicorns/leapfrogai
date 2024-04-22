@@ -1,4 +1,5 @@
-""" Wrapper class for interacting with the Supabase database. """
+"""Wrapper class for interacting with the Supabase database."""
+
 import logging
 import os
 from typing import List
