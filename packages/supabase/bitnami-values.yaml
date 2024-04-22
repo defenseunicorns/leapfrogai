@@ -90,13 +90,13 @@ diagnosticMode:
 jwt:
   ## @param jwt.secret The secret string used to sign JWT tokens
   ##
-  secret: ""
+  secret: "my-default-jwt-secret"
   ## @param jwt.anonKey JWT string for annonymous users
   ##
-  anonKey: ""
+  anonKey: "my-default-anon-key"
   ## @param jwt.serviceKey JWT string for service users
   ##
-  serviceKey: ""
+  serviceKey: "my-default-service-key"
   autoGenerate:
     ## @param jwt.autoGenerate.forceRun Force the run of the JWT generation job
     ##
