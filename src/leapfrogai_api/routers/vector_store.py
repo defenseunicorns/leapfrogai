@@ -2,8 +2,7 @@
 
 from typing import List
 from fastapi import HTTPException, APIRouter
-from openai.types.beta import VectorStore
-
+from openai.types.beta import VectorStore, VectorStoreFile, VectorStoreDeleted
 
 router = APIRouter(prefix="/openai/v1/vector_store", tags=["openai/vector_store"])
 
@@ -39,5 +38,26 @@ def modify_vector_store(vector_store_id: str) -> VectorStore:
 @router.delete("/{vector_store_id}")
 def delete_vector_store(vector_store_id: str) -> VectorStore:
     """Delete a vector store."""
+    # TODO: Implement this function
+    raise HTTPException(status_code=501, detail="Not implemented")
+
+
+@router.post("/{vector_store_id}/files")
+def create_vector_store_file(vector_store_id: str) -> VectorStoreFile:
+    """Create a file in a vector store."""
+    # TODO: Implement this function
+    raise HTTPException(status_code=501, detail="Not implemented")
+
+
+@router.get("/{vector_store_id}/files")
+def list_vector_store_files(vector_store_id: str) -> List[VectorStoreFile]:
+    """List all the files in a vector store."""
+    # TODO: Implement this function
+    raise HTTPException(status_code=501, detail="Not implemented")
+
+
+@router.delete("/{vector_store_id}/files/{file_id}")
+def delete_vector_store_file(vector_store_id: str, file_id: str) -> VectorStoreDeleted:
+    """Delete a file in a vector store."""
     # TODO: Implement this function
     raise HTTPException(status_code=501, detail="Not implemented")
