@@ -1,16 +1,11 @@
 import { faker } from '@faker-js/faker';
-import { expect, test, type Page } from '@playwright/test';
-import { sendMessage } from './helpers';
+import { expect, test} from '@playwright/test';
+import { loadChatPage, sendMessage } from './helpers';
 import { deleteConversation } from './helpers';
-
-const loadPage = async (page: Page) => {
-	await page.goto('/chat');
-	await expect(page).toHaveTitle('LeapfrogAI - Chat');
-};
 
 test('it can delete conversations', async ({ page }) => {
 	const newMessage = faker.lorem.words(3);
-	await loadPage(page);
+	await loadChatPage(page);
 
 	const conversationLocator = page.getByText(newMessage);
 
@@ -23,7 +18,7 @@ test('can edit conversation labels', async ({ page }) => {
 	const newMessage = faker.lorem.words(3);
 	const newLabel = faker.lorem.words(3);
 
-	await loadPage(page);
+	await loadChatPage(page);
 
 	const messages = page.getByTestId('message');
 	await sendMessage(page, newMessage);
@@ -52,7 +47,7 @@ test('Can switch conversation threads', async ({ page }) => {
 	const newMessage1 = faker.lorem.words(3);
 	const newMessage2 = faker.lorem.words(3);
 	const newMessage3 = faker.lorem.words(3);
-	await loadPage(page);
+	await loadChatPage(page);
 	await sendMessage(page, newMessage1);
 
 	const messages = page.getByTestId('message');

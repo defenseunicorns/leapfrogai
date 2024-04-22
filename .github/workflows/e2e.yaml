@@ -12,6 +12,7 @@ on:
       # Ignore docs and website things
       - "!**.md"
       - "!docs/**"
+      - "!adr/**"
       - "!website/**"
       - "!netlify.toml"
 

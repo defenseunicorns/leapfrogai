@@ -2,6 +2,6 @@ package:
   create:
     set:
       image_repository: 'ghcr.io/defenseunicorns/leapfrogai/leapfrogai-ui'
-      image_version: 0.1.7
+      image_version: dev
       name: leapfrogai-ui
     max_package_size: '1000000000'
