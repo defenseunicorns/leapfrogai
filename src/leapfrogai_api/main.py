@@ -1,4 +1,4 @@
-""" Main FastAPI application for the LeapfrogAI API. """
+"""Main FastAPI application for the LeapfrogAI API."""
 
 import asyncio
 import logging
