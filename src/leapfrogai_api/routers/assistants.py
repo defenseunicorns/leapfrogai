@@ -20,10 +20,6 @@ router = APIRouter(prefix="/openai/v1/assistants", tags=["openai/assistants"])
 async def create_assistant(request: CreateAssistantRequest) -> Assistant:
     """Create an assistant."""
 
-    print(request)
-    print(validate_tools_typed_dict(request.tools))
-    print(ToolResources.model_validate(request.tool_resources))
-
     try:
         created_at = int(time.time())
         assistant_id = str(uuid4())

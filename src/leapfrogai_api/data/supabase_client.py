@@ -55,8 +55,8 @@ def test_connection(
 class SupabaseWrapper:
     """Wrapper class for interacting with the Supabase database."""
 
-    def __init__(self):
-        pass
+    def __init__(self, client: Client = None):
+        self.client = client if client else get_connection()
 
     ### File Methods ###
 
@@ -64,12 +64,11 @@ class SupabaseWrapper:
         self,
         file: UploadFile,
         file_object: FileObject,
-        client: Client = get_connection(),
     ) -> FileObject:
         """Upsert the documents and their embeddings in the database."""
 
         try:
-            client.table("file_objects").upsert(
+            self.client.table("file_objects").upsert(
                 [
                     {
                         "id": file_object.id,
@@ -84,21 +83,19 @@ class SupabaseWrapper:
                 ]
             ).execute()
 
-            client.storage.from_("file_bucket").upload(
+            self.client.storage.from_("file_bucket").upload(
                 file=file.file.read(), path=f"{file_object.id}"
             )
             return file_object
         except Exception as exc:
             raise FileNotFoundError("Unable to store file") from exc
 
-    def list_files(
-        self, purpose: str = "assistants", client: Client = get_connection()
-    ) -> List[FileObject]:
+    def list_files(self, purpose: str = "assistants") -> List[FileObject]:
         """List all the files in the database."""
 
         try:
             response = (
-                client.table("file_objects")
+                self.client.table("file_objects")
                 .select("*")
                 .eq("purpose", purpose)
                 .execute()
@@ -120,12 +117,15 @@ class SupabaseWrapper:
         except Exception as exc:
             raise FileNotFoundError("No file objects found in the database") from exc
 
-    def get_file_object(self, file_id, client: Client = get_connection()) -> FileObject:
+    def get_file_object(self, file_id) -> FileObject:
         """Get the file object from the database."""
 
         try:
             response = (
-                client.table("file_objects").select("*").eq("id", file_id).execute()
+                self.client.table("file_objects")
+                .select("*")
+                .eq("id", file_id)
+                .execute()
             )
         except Exception as exc:
             raise FileNotFoundError(
@@ -151,13 +151,13 @@ class SupabaseWrapper:
         )
         return file_object
 
-    def delete_file(self, file_id, client: Client = get_connection()) -> FileDeleted:
+    def delete_file(self, file_id) -> FileDeleted:
         """Delete the file and its vectors from the database."""
 
         try:
             # Delete the file object
             file_path = (
-                client.table("file_objects")
+                self.client.table("file_objects")
                 .select("filename")
                 .eq("id", file_id)
                 .execute()
@@ -169,7 +169,7 @@ class SupabaseWrapper:
                     f"Delete FileObject: No file found with id: {file_id}"
                 )
 
-            client.table("file_objects").delete().eq("id", file_id).execute()
+            self.client.table("file_objects").delete().eq("id", file_id).execute()
         except Exception as exc:
             raise FileNotFoundError(
                 f"Delete FileObject: No file found with id: {file_id}"
@@ -177,7 +177,7 @@ class SupabaseWrapper:
 
         try:
             # Delete the file from bucket
-            client.storage.from_("file_bucket").remove(f"{file_id}")
+            self.client.storage.from_("file_bucket").remove(f"{file_id}")
         except Exception as exc:
             raise FileNotFoundError(
                 f"Delete File: No file found with id: {file_id}"
@@ -185,12 +185,12 @@ class SupabaseWrapper:
 
         return FileDeleted(id=file_id, object="file", deleted=True)
 
-    def get_file_content(self, file_id, client: Client = get_connection()):
+    def get_file_content(self, file_id):
         """Get the file content from the bucket."""
 
         try:
             file_path = (
-                client.table("file_objects")
+                self.client.table("file_objects")
                 .select("filename")
                 .eq("id", file_id)
                 .execute()
@@ -198,7 +198,7 @@ class SupabaseWrapper:
             )
 
             file_path = file_path[0]["filename"]
-            return client.storage.from_("file_bucket").download(f"{file_id}")
+            return self.client.storage.from_("file_bucket").download(f"{file_id}")
         except Exception as exc:
             raise FileNotFoundError(
                 f"Get FileContent: No file found with id: {file_id}"
@@ -206,13 +206,11 @@ class SupabaseWrapper:
 
     ### Assistant Methods ###
 
-    def upsert_assistant(
-        self, assistant: Assistant, client: Client = get_connection()
-    ) -> Assistant:
+    def upsert_assistant(self, assistant: Assistant) -> Assistant:
         """Create an assistant in the database."""
 
         try:
-            client.table("assistant_objects").upsert(
+            self.client.table("assistant_objects").upsert(
                 [
                     {
                         "id": assistant.id,
@@ -238,11 +236,11 @@ class SupabaseWrapper:
         except Exception as exc:
             raise ValueError("Unable to create the assistant") from exc
 
-    def list_assistants(self, client: Client = get_connection()) -> List[Assistant]:
+    def list_assistants(self) -> List[Assistant]:
         """List all the assistants in the database."""
 
         try:
-            response = client.table("assistant_objects").select("*").execute()
+            response = self.client.table("assistant_objects").select("*").execute()
             assistants = [
                 Assistant(
                     id=data["id"],
@@ -269,14 +267,12 @@ class SupabaseWrapper:
                 "No assistant objects found in the database"
             ) from exc
 
-    def retrieve_assistant(
-        self, assistant_id, client: Client = get_connection()
-    ) -> Assistant:
+    def retrieve_assistant(self, assistant_id) -> Assistant:
         """Retrieve the assistant from the database."""
 
         try:
             response = (
-                client.table("assistant_objects")
+                self.client.table("assistant_objects")
                 .select("*")
                 .eq("id", assistant_id)
                 .execute()
@@ -305,13 +301,13 @@ class SupabaseWrapper:
                 f"No assistant found with id: {assistant_id}"
             ) from exc
 
-    def delete_assistant(
-        self, assistant_id, client: Client = get_connection()
-    ) -> AssistantDeleted:
+    def delete_assistant(self, assistant_id) -> AssistantDeleted:
         """Delete the assistant from the database."""
 
         try:
-            client.table("assistant_objects").delete().eq("id", assistant_id).execute()
+            self.client.table("assistant_objects").delete().eq(
+                "id", assistant_id
+            ).execute()
             return AssistantDeleted(
                 id=assistant_id, deleted=True, object="assistant.deleted"
             )
