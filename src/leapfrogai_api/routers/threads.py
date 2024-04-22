@@ -2,7 +2,8 @@
 
 from typing import List
 from fastapi import HTTPException, APIRouter
-from openai.types.beta import Thread, ThreadDeleted, Message
+from openai.types.beta import Thread, ThreadDeleted
+from openai.types.beta.threads import Message
 
 
 router = APIRouter(prefix="/openai/v1/threads", tags=["openai/threads"])
