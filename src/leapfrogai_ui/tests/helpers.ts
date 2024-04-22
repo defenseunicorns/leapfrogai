@@ -26,8 +26,7 @@ export const deleteConversationsByLabel = async (labels: string[]) => {
 };
 
 export const waitForResponseToComplete = async (page: Page) => {
-	// For some reason it finds two of the labels on these buttons
-	await expect(page.getByLabel('cancel message')).toHaveCount(2, { timeout: 15000 });
+	await expect(page.getByLabel('cancel message')).toHaveCount(1, { timeout: 15000 });
 	await expect(page.getByLabel('cancel message')).toHaveCount(0, { timeout: 15000 });
-	await expect(page.getByLabel('send')).toHaveCount(2, { timeout: 15000 });
+	await expect(page.getByLabel('send')).toHaveCount(1, { timeout: 15000 });
 };

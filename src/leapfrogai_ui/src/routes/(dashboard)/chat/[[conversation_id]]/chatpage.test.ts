@@ -12,6 +12,8 @@ import userEvent from '@testing-library/user-event';
 import stores from '$app/stores';
 import { beforeAll, vi } from 'vitest';
 
+import * as navigation from '$app/navigation';
+
 import {
 	mockChatCompletion,
 	mockChatCompletionError,
@@ -26,6 +28,7 @@ import { delay } from 'msw';
 const { getStores } = await vi.hoisted(() => import('$lib/mocks/svelte'));
 
 describe('The Chat Page', () => {
+
 	it('it renders all the messages', async () => {
 		conversationsStore.set({
 			conversations: fakeConversations
@@ -33,7 +36,6 @@ describe('The Chat Page', () => {
 
 		render(ChatPage);
 
-		// The test does show that the conversation_id and activeConversation are being set correctly
 		for (let i = 0; i < fakeConversations[0].messages.length; i++) {
 			await screen.findByText(fakeConversations[0].messages[0].content);
 		}

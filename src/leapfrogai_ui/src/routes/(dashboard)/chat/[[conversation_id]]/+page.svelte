@@ -19,7 +19,7 @@
 
 	$: $page.params.conversation_id, setMessages(activeConversation?.messages || []);
 
-	const { input, handleSubmit, messages, setMessages, isLoading, stop, error, append } = useChat({
+	const { input, handleSubmit, messages, setMessages, isLoading, stop } = useChat({
 		initialMessages: $conversationsStore.conversations
 			.find((conversation) => conversation.id === $page.params.conversation_id)
 			?.messages.map((message) => ({
@@ -27,31 +27,16 @@
 				content: message.content,
 				role: message.role
 			})),
-		onResponse: async (res: Response) => {
-			console.log('onResponse', await res.json())
+		onFinish: async (message: AIMessage) => {
 			if (activeConversation?.id) {
-				const aiResponse = await res.json();
 				await conversationsStore.newMessage({
 					conversation_id: activeConversation?.id,
-					content: aiResponse.message.content,
+					content: message.content,
 					role: 'system'
 				});
 			}
 		},
-		onFinish: async (message: AIMessage) => {
-			console.log('onFinish', message);
-			// if (!error) {
-			// 	if (activeConversation?.id) {
-			// 		await conversationsStore.newMessage({
-			// 			conversation_id: activeConversation?.id,
-			// 			content: message.content,
-			// 			role: 'system'
-			// 		});
-			// 	}
-			// }
-		},
-		onError: async (e) => {
-			console.log('onError', console.log(e))
+		onError: (error) => {
 			toastStore.addToast({
 				kind: 'error',
 				title: 'Error',
@@ -76,7 +61,6 @@
 			}
 		} else {
 			// store user input
-
 			await conversationsStore.newMessage({
 				conversation_id: activeConversation?.id,
 				content: $input,
@@ -89,26 +73,22 @@
 
 	const stopThenSave = async () => {
 		if ($isLoading) {
-			console.log('messages before stop', $messages)
 			stop();
-			console.log('messages after stop', $messages)
 			toastStore.addToast({
 				kind: 'info',
 				title: 'Response Canceled',
 				subtitle: 'Response generation canceled.'
 			});
-			// Save partial response to DB
-			if (activeConversation?.id && $messages[$messages.length - 1].role == 'system') {
+			const lastMessage = $messages[$messages.length - 1];
+			if (activeConversation?.id && lastMessage.role === 'system') {
 				await conversationsStore.newMessage({
 					conversation_id: activeConversation?.id,
-					content: $messages[$messages.length - 1].content,
+					content: lastMessage.content, // save last message
 					role: 'system'
 				});
 			}
 		}
 	};
-
-	$: $messages, console.log('messages reactive', $messages)
 
 	onMount(() => {
 		conversationsStore.setConversations(data.conversations);
