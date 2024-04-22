@@ -1,6 +1,6 @@
 <script lang="ts">
-	import { ChatSidebar, PoweredByDU } from '$components';
-	import { Button, Content, TextInput, Tile } from 'carbon-components-svelte';
+	import { PoweredByDU } from '$components';
+	import { Button, TextInput, Tile } from 'carbon-components-svelte';
 	import { afterUpdate, onMount, tick } from 'svelte';
 	import { conversationsStore, toastStore } from '$stores';
 	import { ArrowRight, Attachment, UserAvatar } from 'carbon-icons-svelte';
@@ -29,7 +29,11 @@
 			})),
 		onFinish: async (message: AIMessage) => {
 			if (activeConversation?.id) {
-				await conversationsStore.newMessage(activeConversation?.id, message.content, 'system');
+				await conversationsStore.newMessage({
+					conversation_id: activeConversation?.id,
+					content: message.content,
+					role: 'system'
+				});
 			}
 		}
 	});
@@ -45,14 +49,23 @@
 		e.preventDefault();
 		if (!activeConversation?.id) {
 			// new conversation thread
+			// TODO - error handle
 			await conversationsStore.newConversation($input);
 			await tick(); // allow store to update
 			if (activeConversation?.id) {
-				await conversationsStore.newMessage(activeConversation?.id, $input, 'user');
+				await conversationsStore.newMessage({
+					conversation_id: activeConversation?.id,
+					content: $input,
+					role: 'user'
+				});
 			}
 		} else {
 			// store user input
-			await conversationsStore.newMessage(activeConversation?.id, $input, 'user');
+			await conversationsStore.newMessage({
+				conversation_id: activeConversation?.id,
+				content: $input,
+				role: 'user'
+			});
 		}
 
 		handleSubmit(e); // submit to AI (/api/chat)
@@ -62,11 +75,11 @@
 		if ($isLoading) {
 			stop();
 			if (activeConversation?.id) {
-				await conversationsStore.newMessage(
-					activeConversation?.id,
-					$messages[$messages.length - 1].content, // save last message
-					'system'
-				);
+				await conversationsStore.newMessage({
+					conversation_id: activeConversation?.id,
+					content: $messages[$messages.length - 1].content, // save last message
+					role: 'system'
+				});
 			}
 		}
 	};
@@ -88,57 +101,52 @@
 </script>
 
 <!--Note - the messages are streamed live from the useChat messages, saving them in the db and store happens behind the scenes -->
-<div>
-	<ChatSidebar />
-	<Content>
-		<div class="inner-content">
-			<div class="messages" bind:this={messageThreadDiv} bind:offsetHeight={messageThreadDivHeight}>
-				{#each $messages as message (message.id)}
-					<div
-						data-testid="message"
-						class="message"
-						class:transparent={message.role === 'user'}
-						class:centered-vertically={message.role === 'user'}
-					>
-						{#if message.role === 'user'}
-							<div class="icon">
-								<UserAvatar style="width: 24px; height: 24px;" />
-							</div>
-						{:else}
-							<img alt="LeapfrogAI" src={frog} class="icon" />
-						{/if}
-						<Tile class="centered-vertically" style="line-height: 20px;">{message.content}</Tile>
+<div class="inner-content">
+	<div class="messages" bind:this={messageThreadDiv} bind:offsetHeight={messageThreadDivHeight}>
+		{#each $messages as message (message.id)}
+			<div
+				data-testid="message"
+				class="message"
+				class:transparent={message.role === 'user'}
+				class:centered-vertically={message.role === 'user'}
+			>
+				{#if message.role === 'user'}
+					<div class="icon">
+						<UserAvatar style="width: 24px; height: 24px;" />
 					</div>
-				{/each}
+				{:else}
+					<img alt="LeapfrogAI" src={frog} class="icon" />
+				{/if}
+				<Tile class="centered-vertically" style="line-height: 20px;">{message.content}</Tile>
 			</div>
+		{/each}
+	</div>
 
-			<form on:submit={onSubmit}>
-				<div class="chat-form-container">
-					<Button icon={Attachment} kind="ghost" size="small" iconDescription="Attach File" />
-					<TextInput
-						bind:value={$input}
-						name="messageInput"
-						placeholder="Type your message here..."
-						aria-label="message input"
-					/>
+	<form on:submit={onSubmit}>
+		<div class="chat-form-container">
+			<Button icon={Attachment} kind="ghost" size="small" iconDescription="Attach File" />
+			<TextInput
+				bind:value={$input}
+				name="messageInput"
+				placeholder="Type your message here..."
+				aria-label="message input"
+			/>
 
-					<Button
-						kind="secondary"
-						icon={ArrowRight}
-						iconDescription="Send"
-						size="field"
-						type="submit"
-						aria-label="send"
-						disabled={$isLoading || !$input}
-					/>
-				</div>
-			</form>
-
-			<div class="branding">
-				<PoweredByDU />
-			</div>
+			<Button
+				kind="secondary"
+				icon={ArrowRight}
+				iconDescription="Send"
+				size="field"
+				type="submit"
+				aria-label="send"
+				disabled={$isLoading || !$input}
+			/>
 		</div>
-	</Content>
+	</form>
+
+	<div class="branding">
+		<PoweredByDU />
+	</div>
 </div>
 
 <style lang="scss">
@@ -146,6 +154,13 @@
 	:global(.centered-vertically.bx--tile) {
 		display: flex;
 		align-items: center;
+	}
+
+	.inner-content {
+		display: flex;
+		flex-direction: column;
+		justify-content: flex-end;
+		height: 100%;
 	}
 
 	.message {
@@ -178,22 +193,6 @@
 		justify-content: space-around;
 		align-items: center;
 		gap: 0.5rem;
-	}
-
-	.inner-content {
-		flex: 1;
-		display: flex;
-		flex-direction: column;
-		justify-content: flex-end;
-	}
-
-	:global(.bx--content) {
-		display: flex;
-		flex: 1;
-		margin-top: var(--header-height);
-		padding-bottom: 0;
-		// A few pixels are being added somewhere, so -0.5rem required to prevent scrollbar, not sure where it is coming from
-		height: calc(100vh - var(--header-height) - 0.5rem);
 	}
 
 	.branding {

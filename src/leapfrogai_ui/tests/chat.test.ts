@@ -1,18 +1,13 @@
 import { faker } from '@faker-js/faker';
-import { expect, type Page, test } from '@playwright/test';
-import { deleteConversation, sendMessage } from './helpers';
-
-const loadPage = async (page: Page) => {
-	await page.goto('/chat');
-	await expect(page).toHaveTitle('LeapfrogAI - Chat');
-};
+import { expect, test } from '@playwright/test';
+import {deleteConversation, loadChatPage, sendMessage} from './helpers';
 
 test('it can start a new conversation and receive a response', async ({ page }) => {
 	const newMessage = faker.lorem.words(3);
 	let messages = await page.getByTestId('message');
 	await expect(messages).toHaveCount(0);
 
-	await loadPage(page);
+	await loadChatPage(page);
 	await sendMessage(page, newMessage);
 
 	messages = await page.getByTestId('message');
@@ -28,7 +23,7 @@ test.skip('it saves in progress responses when interrupted by a page reload', as
 	test.use({ defaultBrowserType: 'chromium' }); // This sets the browser to Firefox for this test
 
 	const newMessage = faker.lorem.words(20);
-	await loadPage(page);
+	await loadChatPage(page);
 	const messages = page.getByTestId('message');
 	await sendMessage(page, newMessage);
 	await expect(messages).toHaveCount(2);
@@ -41,7 +36,7 @@ test.skip('it saves in progress responses when interrupted by a page reload', as
 
 test('it save in progress responses when interrupted by changing threads', async ({ page }) => {
 	const newMessage = faker.lorem.words(3);
-	await loadPage(page);
+	await loadChatPage(page);
 	const messages = page.getByTestId('message');
 	await sendMessage(page, newMessage);
 	await expect(messages).toHaveCount(2);
