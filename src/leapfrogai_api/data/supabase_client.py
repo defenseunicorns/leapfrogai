@@ -16,23 +16,29 @@ def get_connection(
 ) -> Client:
     """Get the connection to the Supabase database."""
 
+    if not supabase_url or not supabase_key:
+        raise ConnectionError("Invalid Supabase URL or Key provided.")
+
     try:
         supabase: Client = create_client(
             supabase_url=supabase_url, supabase_key=supabase_key
         )
         return supabase
     except Exception as exc:
-        logging.error(
-            "Unable to connect to the Supabase database at %s",
-            os.getenv("SUPABASE_URL"),
-        )
-        raise ConnectionError("Unable to connect to the Supabase database") from exc
+        logging.error("Unable to connect to Supabase database at %s", supabase_url)
+        raise ConnectionError(
+            f"Unable to connect to Supabase database at {supabase_url}"
+        ) from exc
 
 
 def test_connection(
     supabase_url=os.getenv("SUPABASE_URL"), supabase_key=os.getenv("SUPABASE_KEY")
 ) -> bool:
     """Test the connection to the Supabase database."""
+
+    if not supabase_url or not supabase_key:
+        logging.error("Invalid Supabase URL or Key provided.")
+        return False
 
     try:
         supabase = get_connection(supabase_url=supabase_url, supabase_key=supabase_key)
