@@ -90,13 +90,13 @@ diagnosticMode:
 jwt:
   ## @param jwt.secret The secret string used to sign JWT tokens
   ##
-  secret: "my-default-jwt-secret"
+  secret: ""
   ## @param jwt.anonKey JWT string for annonymous users
   ##
-  anonKey: "my-default-anon-key"
+  anonKey: ""
   ## @param jwt.serviceKey JWT string for service users
   ##
-  serviceKey: "my-default-service-key"
+  serviceKey: ""
   autoGenerate:
     ## @param jwt.autoGenerate.forceRun Force the run of the JWT generation job
     ##
@@ -3189,11 +3189,11 @@ kong:
     ## @param jwt.autoGenerate.livenessProbe.timeoutSeconds Timeout seconds for livenessProbe
     ##
     livenessProbe:
-      timeoutSeconds: 20
+      timeoutSeconds: 30
     ## @param jwt.autoGenerate.readinessProbe.successThreshold Success threshold for readinessProbe
     ##
     readinessProbe:
-      timeoutSeconds: 20
+      timeoutSeconds: 30
   ## @param kong.extraVolumes [array] Additional volumes to the Kong pods
   ##
   extraVolumes:
