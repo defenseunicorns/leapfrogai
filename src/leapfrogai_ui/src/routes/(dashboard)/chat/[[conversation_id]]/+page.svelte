@@ -19,7 +19,7 @@
 
 	$: $page.params.conversation_id, setMessages(activeConversation?.messages || []);
 
-	const { input, handleSubmit, messages, setMessages, isLoading, stop, error } = useChat({
+	const { input, handleSubmit, messages, setMessages, isLoading, stop, error, append } = useChat({
 		initialMessages: $conversationsStore.conversations
 			.find((conversation) => conversation.id === $page.params.conversation_id)
 			?.messages.map((message) => ({
@@ -27,30 +27,44 @@
 				content: message.content,
 				role: message.role
 			})),
-		onFinish: async (message: AIMessage) => {
+		onResponse: async (res: Response) => {
+			console.log('onResponse', await res.json())
 			if (activeConversation?.id) {
+				const aiResponse = await res.json();
 				await conversationsStore.newMessage({
 					conversation_id: activeConversation?.id,
-					content: message.content,
+					content: aiResponse.message.content,
 					role: 'system'
 				});
 			}
+		},
+		onFinish: async (message: AIMessage) => {
+			console.log('onFinish', message);
+			// if (!error) {
+			// 	if (activeConversation?.id) {
+			// 		await conversationsStore.newMessage({
+			// 			conversation_id: activeConversation?.id,
+			// 			content: message.content,
+			// 			role: 'system'
+			// 		});
+			// 	}
+			// }
+		},
+		onError: async (e) => {
+			console.log('onError', console.log(e))
+			toastStore.addToast({
+				kind: 'error',
+				title: 'Error',
+				subtitle: 'Error getting AI Response'
+			});
 		}
 	});
-
-	$: if ($error)
-		toastStore.addToast({
-			kind: 'error',
-			title: 'Error',
-			subtitle: 'Error getting AI Response'
-		});
 
 	const onSubmit = async (e: SubmitEvent) => {
 		e.preventDefault();
 
 		if (!activeConversation?.id) {
 			// new conversation thread
-			// TODO - error handle
 			await conversationsStore.newConversation($input);
 			await tick(); // allow store to update
 			if (activeConversation?.id) {
@@ -62,6 +76,7 @@
 			}
 		} else {
 			// store user input
+
 			await conversationsStore.newMessage({
 				conversation_id: activeConversation?.id,
 				content: $input,
@@ -74,22 +89,26 @@
 
 	const stopThenSave = async () => {
 		if ($isLoading) {
+			console.log('messages before stop', $messages)
 			stop();
+			console.log('messages after stop', $messages)
 			toastStore.addToast({
 				kind: 'info',
 				title: 'Response Canceled',
 				subtitle: 'Response generation canceled.'
 			});
-
-			if (activeConversation?.id) {
+			// Save partial response to DB
+			if (activeConversation?.id && $messages[$messages.length - 1].role == 'system') {
 				await conversationsStore.newMessage({
 					conversation_id: activeConversation?.id,
-					content: $messages[$messages.length - 1].content, // save last message
+					content: $messages[$messages.length - 1].content,
 					role: 'system'
 				});
 			}
 		}
 	};
+
+	$: $messages, console.log('messages reactive', $messages)
 
 	onMount(() => {
 		conversationsStore.setConversations(data.conversations);
@@ -129,34 +148,34 @@
 		{/each}
 	</div>
 
-			<form on:submit={onSubmit}>
-				<div class="chat-form-container">
-					<Button icon={Attachment} kind="ghost" size="small" iconDescription="Attach File" />
-					<TextInput
-						bind:value={$input}
-						name="messageInput"
-						placeholder="Type your message here..."
-						aria-label="message input"
-					/>
-					{#if !$isLoading}
-						<Button
-							kind="secondary"
-							icon={ArrowRight}
-							size="field"
-							type="submit"
-							aria-label="send"
-							disabled={$isLoading || !$input}
-						/>
-					{:else}
-						<Button
-							kind="secondary"
-							size="field"
-							type="submit"
-							icon={StopFilledAlt}
-							aria-label="cancel message"
-							on:click={stopThenSave}
-						/>
-					{/if}
+	<form on:submit={onSubmit}>
+		<div class="chat-form-container">
+			<Button icon={Attachment} kind="ghost" size="small" iconDescription="Attach File" />
+			<TextInput
+				bind:value={$input}
+				name="messageInput"
+				placeholder="Type your message here..."
+				aria-label="message input"
+			/>
+			{#if !$isLoading}
+				<Button
+					kind="secondary"
+					icon={ArrowRight}
+					size="field"
+					type="submit"
+					aria-label="send"
+					disabled={$isLoading || !$input}
+				/>
+			{:else}
+				<Button
+					kind="secondary"
+					size="field"
+					type="submit"
+					icon={StopFilledAlt}
+					aria-label="cancel message"
+					on:click={stopThenSave}
+				/>
+			{/if}
 		</div>
 	</form>
 

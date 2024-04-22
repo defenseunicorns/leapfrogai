@@ -115,7 +115,6 @@ const createConversationsStore = () => {
 		newMessage: async (message: NewMessageInput) => {
 			try {
 				const newMessage = await createMessage(message);
-
 				if (newMessage) {
 					update((old) => {
 						const updatedConversations = [...old.conversations];
@@ -128,6 +127,7 @@ const createConversationsStore = () => {
 							...oldConversation,
 							messages: [...oldConversation.messages, newMessage]
 						};
+
 						return {
 							...old,
 							conversations: updatedConversations
@@ -211,7 +211,7 @@ const createConversationsStore = () => {
 					});
 				}
 			}
-			console.log(newConversations)
+
 			update((old) => {
 				return {
 					...old,
