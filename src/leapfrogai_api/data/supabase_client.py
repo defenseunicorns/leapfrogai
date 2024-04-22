@@ -3,7 +3,6 @@
 import logging
 import os
 from typing import List
-from dotenv import load_dotenv
 from fastapi import UploadFile
 from openai.types import FileObject, FileDeleted
 from openai.types.beta import Assistant, AssistantDeleted
@@ -12,13 +11,12 @@ from supabase.client import Client, create_client
 from leapfrogai_api.utils.openai_util import strings_to_tools, tools_to_strings
 
 
-def get_connection() -> Client:
+def get_connection(
+    supabase_url=os.getenv("SUPABASE_URL"), supabase_key=os.getenv("SUPABASE_KEY")
+) -> Client:
     """Get the connection to the Supabase database."""
 
     try:
-        load_dotenv()
-        supabase_url = os.getenv("SUPABASE_URL")
-        supabase_key = os.getenv("SUPABASE_KEY")
         supabase: Client = create_client(
             supabase_url=supabase_url, supabase_key=supabase_key
         )
@@ -29,6 +27,23 @@ def get_connection() -> Client:
             os.getenv("SUPABASE_URL"),
         )
         raise ConnectionError("Unable to connect to the Supabase database") from exc
+
+
+def test_connection(
+    supabase_url=os.getenv("SUPABASE_URL"), supabase_key=os.getenv("SUPABASE_KEY")
+) -> bool:
+    """Test the connection to the Supabase database."""
+
+    try:
+        supabase = get_connection(supabase_url=supabase_url, supabase_key=supabase_key)
+        supabase.storage.from_("file_bucket").list()
+        return True
+    except Exception:
+        logging.error(
+            "Unable to connect to the Supabase database at %s",
+            os.getenv("SUPABASE_URL"),
+        )
+        return False
 
 
 class SupabaseWrapper:

@@ -3,9 +3,10 @@ import os
 import shutil
 import time
 
-import leapfrogai_api.backends.openai.types as lfai_types
 import pytest
 from fastapi.testclient import TestClient
+
+import leapfrogai_api.backends.openai.types as lfai_types
 from leapfrogai_api.main import app
 
 # Set environment variables that the TestClient will use
