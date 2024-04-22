@@ -2,7 +2,7 @@ kind: UDSBundle
 metadata:
   name: leapfrogai
   description: A UDS bundle for deploying LeapfrogAI
-  version: 0.2.1
+  version: 0.6.1
 
 packages:
   # OpenAI-like API
@@ -33,4 +33,4 @@ packages:
   # UI
   - name: leapfrogai-ui
     path: ghcr.io/defenseunicorns/leapfrogai/leapfrogai-ui
-    ref: 0.1.8
+    ref: 0.3.5

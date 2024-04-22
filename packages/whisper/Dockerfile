@@ -2,20 +2,21 @@ FROM --platform=$BUILDPLATFORM ghcr.io/defenseunicorns/leapfrogai/python:3.11-de
 
 WORKDIR /leapfrogai
 
+COPY build/*.whl build/
+
 # create virtual environment for light-weight portability and minimal libraries
 RUN python3.11 -m venv .venv
 ENV PATH="/leapfrogai/.venv/bin:$PATH"
 
 # download and covnert OpenAI's whisper base
 ARG MODEL_NAME=openai/whisper-base
-RUN pip install transformers[torch]
-RUN pip install ctranslate2
+RUN pip install ctranslate2 transformers[torch] --no-index --find-links=build/
 RUN ct2-transformers-converter --model ${MODEL_NAME} --output_dir .model --copy_files tokenizer.json --quantization float32
+RUN pip uninstall -y ctranslate2 transformers[torch]
 
-COPY build/*.whl build/
-COPY build/leapfrogai_api*.whl leapfrogai_api-100.100.100-py3-none-any.whl
+COPY build/lfai_whisper*.whl .
 
-RUN pip install leapfrogai_api-100.100.100-py3-none-any.whl[whisper] --no-index --find-links=build/
+RUN pip install lfai_whisper*.whl --no-index --find-links=build/
 
 # Use hardened ffmpeg image to get compiled binaries
 FROM cgr.dev/chainguard/ffmpeg:latest as ffmpeg

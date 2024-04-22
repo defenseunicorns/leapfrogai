@@ -10,11 +10,11 @@ RUN python3.11 -m venv .venv
 ENV PATH="/leapfrogai/.venv/bin:$PATH"
 
 # copy and install all python dependencies
-# NOTE: We are copying the leapfrog whl to this filename because installing 'optional extras' from 
+# NOTE: We are copying the leapfrog whl to this filename because installing 'optional extras' from
 #       a wheel requires the absolute path to the wheel file (instead of a wildcard whl)
 COPY build/*.whl build/
-COPY build/leapfrogai_api*.whl leapfrogai_api-100.100.100-py3-none-any.whl
-RUN pip install "leapfrogai_api-100.100.100-py3-none-any.whl[text-embeddings]" --no-index --find-links=build/
+COPY build/lfai_text_embeddings*.whl .
+RUN pip install lfai_text_embeddings*.whl --no-index --find-links=build/
 
 
 # download model

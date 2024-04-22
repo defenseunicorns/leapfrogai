@@ -14,7 +14,7 @@
 	import { AddComment } from 'carbon-icons-svelte';
 	import { dates } from '$helpers';
 	import { MAX_LABEL_SIZE } from '$lib/constants';
-	import { conversationsStore } from '$stores';
+	import { conversationsStore, toastStore } from '$stores';
 	import { page } from '$app/stores';
 	import { browser } from '$app/environment';
 	import ImportExport from '$components/ImportExport.svelte';
@@ -33,9 +33,9 @@
 	let scrollOffset = 0;
 	let activeConversationRef: HTMLElement | null;
 	let scrollBoxRef: HTMLElement;
-	let searchText = '';
-	let searchResults: FuseResult<Conversation>[];
-	let filteredConversations: Conversation[] = [];
+    let searchText = '';
+    let searchResults: FuseResult<Conversation>[];
+    let filteredConversations: Conversation[] = [];
 
 	$: activeConversation = $conversationsStore.conversations.find(
 		(conversation) => conversation.id === $page.params.conversation_id
@@ -45,18 +45,6 @@
 
 	$: organizedConversations = dates.organizeConversationsByDate(
 		searchText !== '' ? filteredConversations : $conversationsStore.conversations
-	);
-
-	$: dateCategories = Array.from(
-		new Set([
-			'Today',
-			'Yesterday',
-			'This Month',
-			...dates.sortMonthsReverse(
-				Object.keys(organizedConversations).filter((item) => item !== 'Old')
-			),
-			'Old'
-		])
 	);
 
 	const resetEditMode = () => {
@@ -99,36 +87,44 @@
 		deleteModalOpen = false;
 	};
 
-	const handleActiveConversationChange = (id: string) => {
-		conversationsStore.changeConversation(id);
-		activeConversationRef = document.getElementById(`side-nav-menu-item-${id}`);
-	};
+    const handleActiveConversationChange = (id: string) => {
+        conversationsStore.changeConversation(id);
+        activeConversationRef = document.getElementById(`side-nav-menu-item-${id}`);
+    };
+    const handleActiveConversationChange = (id: string) => {
+        conversationsStore.changeConversation(id);
+        activeConversationRef = document.getElementById(`side-nav-menu-item-${id}`);
+    };
 
-	// To properly display the overflow menu items for each conversation, we have to calculate the height they
-	// should be displayed at due to the carbon override for allowing overflow
-	$: if (browser && activeConversationRef) {
-		menuOffset = activeConversationRef?.offsetTop;
-		scrollOffset = scrollBoxRef?.scrollTop;
-	} else {
-		if (!activeConversationRef) {
-			menuOffset = 0;
-			scrollOffset = 0;
-		}
-	}
+    // To properly display the overflow menu items for each conversation, we have to calculate the height they
+    // should be displayed at due to the carbon override for allowing overflow
+    $: if (browser && activeConversationRef) {
+        menuOffset = activeConversationRef?.offsetTop;
+        scrollOffset = scrollBoxRef?.scrollTop;
+    } else {
+        if (!activeConversationRef) {
+            menuOffset = 0;
+            scrollOffset = 0;
+        }
+    }
 
-	const options = {
-		keys: ['label', 'messages.content']
-	};
+    const options = {
+        keys: ['label', 'messages.content']
+    };
 
-	$: if (searchText) {
-		const fuse = new Fuse($conversationsStore.conversations, options);
-		searchResults = fuse.search(searchText);
-		filteredConversations = searchResults.map((result) => result.item);
-	}
+    $: if (searchText) {
+        const fuse = new Fuse($conversationsStore.conversations, options);
+        searchResults = fuse.search(searchText);
+        filteredConversations = searchResults.map((result) => result.item);
+    }
+
 </script>
 
 <SideNav bind:isOpen={isSideNavOpen} aria-label="side navigation" style="background-color: g90;">
 	<div style="height: 100%">
+		<SideNavItems>
+			<div class="side-nav-items-container">
+				<div style="height: 100%">
 		<SideNavItems>
 			<div class="side-nav-items-container">
 				<div class="new-chat-container">
@@ -157,10 +153,11 @@
 					class="conversations"
 					data-testid="conversations"
 				>
-					{#each dateCategories as category}
-						<SideNavMenu text={category} expanded data-testid="side-nav-menu">
-							{#if organizedConversations[category]}
-								{#each organizedConversations[category] as conversation}
+					{#each organizedConversations as category}
+			{#if category.conversations.length > 0}
+						<SideNavMenu text={category.label} expanded data-testid="side-nav-menu">
+
+								{#each category.conversations as conversation (conversation.id)}
 									<SideNavMenuItem
 										data-testid="side-nav-menu-item-{conversation.label}"
 										id="side-nav-menu-item-{conversation.id}"
@@ -224,9 +221,10 @@
 											{/if}
 										</div>
 									</SideNavMenuItem>
+
 								{/each}
-							{/if}
-						</SideNavMenu>
+							</SideNavMenu>
+						{/if}
 					{/each}
 				</div>
 				<div>

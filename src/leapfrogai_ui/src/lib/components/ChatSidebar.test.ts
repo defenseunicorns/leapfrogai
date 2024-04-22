@@ -11,6 +11,7 @@ import userEvent from '@testing-library/user-event';
 import { fakeConversations, getFakeConversation } from '../../testUtils/fakeData';
 import { vi } from 'vitest';
 import stores from '$app/stores';
+import { monthNames } from '$helpers/dates';
 import * as navigation from '$app/navigation';
 
 const { getStores } = await vi.hoisted(() => import('../../lib/mocks/svelte'));
@@ -78,6 +79,36 @@ describe('ChatSidebar', () => {
 		fakeConversations.forEach((conversation) => {
 			expect(within(conversationsSection).getByText(conversation.label)).toBeInTheDocument();
 		});
+	});
+
+	it('does not render date categories that have no conversations', async () => {
+		const today = new Date();
+		const fakeTodayConversation = getFakeConversation();
+		const fakeYesterdayConversation = getFakeConversation({
+			insertedAt: new Date(
+				today.getFullYear(),
+				today.getMonth(),
+				today.getDate() - 1
+			).toDateString()
+		});
+
+		conversationsStore.set({
+			conversations: [fakeTodayConversation, fakeYesterdayConversation] // uses date override starting in March
+		});
+
+		render(ChatSidebar);
+		const conversationsSection = screen.getByTestId('conversations');
+
+		expect(within(conversationsSection).getByText(fakeTodayConversation.label)).toBeInTheDocument();
+		expect(
+			within(conversationsSection).getByText(fakeYesterdayConversation.label)
+		).toBeInTheDocument();
+
+		expect(screen.getByText('Today')).toBeInTheDocument();
+		expect(screen.getByText('Yesterday')).toBeInTheDocument();
+
+		expect(screen.queryByText(monthNames[today.getMonth()])).not.toBeInTheDocument();
+		expect(screen.queryByText(monthNames[today.getMonth() - 1])).not.toBeInTheDocument();
 	});
 
 	it('deletes conversations', async () => {
@@ -284,68 +315,66 @@ describe('ChatSidebar', () => {
 		const editInput = screen.queryByText('edit conversation');
 		expect(editInput).not.toBeInTheDocument();
 	});
+    it('changes the active chat thread', async () => {
+        const goToSpy = vi.spyOn(navigation, 'goto');
 
-	it('changes the active chat thread', async () => {
-		const goToSpy = vi.spyOn(navigation, 'goto');
+        const fakeConversation = getFakeConversation({ numMessages: 6 });
 
-		const fakeConversation = getFakeConversation({ numMessages: 6 });
+        conversationsStore.set({
+            conversations: [fakeConversation]
+        });
 
-		conversationsStore.set({
-			conversations: [fakeConversation]
-		});
+        render(ChatSidebar, { isSideNavOpen: true });
 
-		render(ChatSidebar, { isSideNavOpen: true });
+        expect(screen.queryByText(fakeConversation.messages[0].content)).not.toBeInTheDocument();
 
-		expect(screen.queryByText(fakeConversation.messages[0].content)).not.toBeInTheDocument();
+        await userEvent.click(screen.getByText(fakeConversation.label));
 
-		await userEvent.click(screen.getByText(fakeConversation.label));
+        expect(goToSpy).toHaveBeenCalledTimes(1);expect(goToSpy).toHaveBeenCalledWith(`/chat/${fakeConversation.id}`);
+    });
+    it("search finds conversations by label", async () => {
+        const fakeConversation1 = getFakeConversation({ numMessages: 2 });
+        const fakeConversation2 = getFakeConversation({ numMessages: 2 });
+        const fakeConversation3 = getFakeConversation({ numMessages: 2 });
 
-		expect(goToSpy).toHaveBeenCalledTimes(1);expect(goToSpy).toHaveBeenCalledWith(`/chat/${fakeConversation.id}`);
-	});
+        conversationsStore.set({
+            conversations: [fakeConversation1, fakeConversation2, fakeConversation3]
+        });
 
-	it("search finds conversations by label", async () => {
-		const fakeConversation1 = getFakeConversation({ numMessages: 2 });
-		const fakeConversation2 = getFakeConversation({ numMessages: 2 });
-		const fakeConversation3 = getFakeConversation({ numMessages: 2 });
+        render(ChatSidebar, { isSideNavOpen: true });
 
-		conversationsStore.set({
-			conversations: [fakeConversation1, fakeConversation2, fakeConversation3]
-		});
+        expect(screen.queryByText(fakeConversation1.label)).toBeInTheDocument();
+        expect(screen.queryByText(fakeConversation2.label)).toBeInTheDocument();
+        expect(screen.queryByText(fakeConversation3.label)).toBeInTheDocument();
 
-		render(ChatSidebar, { isSideNavOpen: true });
+        const searchBox = screen.getByPlaceholderText('Search...');
+        await userEvent.type(searchBox, `${fakeConversation1.label} ${fakeConversation2.label}`);
 
-		expect(screen.queryByText(fakeConversation1.label)).toBeInTheDocument();
-		expect(screen.queryByText(fakeConversation2.label)).toBeInTheDocument();
-		expect(screen.queryByText(fakeConversation3.label)).toBeInTheDocument();
+        expect(screen.queryByText(fakeConversation1.label)).toBeInTheDocument();
+        expect(screen.queryByText(fakeConversation2.label)).toBeInTheDocument();
+        expect(screen.queryByText(fakeConversation3.label)).not.toBeInTheDocument();
+    })
 
-		const searchBox = screen.getByPlaceholderText('Search...');
-		await userEvent.type(searchBox, `${fakeConversation1.label} ${fakeConversation2.label}`);
+    it("search finds conversations by messages", async () => {
+        const fakeConversation1 = getFakeConversation({ numMessages: 2 });
+        const fakeConversation2 = getFakeConversation({ numMessages: 2 });
+        const fakeConversation3 = getFakeConversation({ numMessages: 2 });
 
-		expect(screen.queryByText(fakeConversation1.label)).toBeInTheDocument();
-		expect(screen.queryByText(fakeConversation2.label)).toBeInTheDocument();
-		expect(screen.queryByText(fakeConversation3.label)).not.toBeInTheDocument();
-	})
+        conversationsStore.set({
+            conversations: [fakeConversation1, fakeConversation2, fakeConversation3]
+        });
 
-	it("search finds conversations by messages", async () => {
-		const fakeConversation1 = getFakeConversation({ numMessages: 2 });
-		const fakeConversation2 = getFakeConversation({ numMessages: 2 });
-		const fakeConversation3 = getFakeConversation({ numMessages: 2 });
+        render(ChatSidebar, { isSideNavOpen: true });
 
-		conversationsStore.set({
-			conversations: [fakeConversation1, fakeConversation2, fakeConversation3]
-		});
+        expect(screen.queryByText(fakeConversation1.label)).toBeInTheDocument();
+        expect(screen.queryByText(fakeConversation2.label)).toBeInTheDocument();
+        expect(screen.queryByText(fakeConversation3.label)).toBeInTheDocument();
 
-		render(ChatSidebar, { isSideNavOpen: true });
+        const searchBox = screen.getByPlaceholderText('Search...');
+        await userEvent.type(searchBox, fakeConversation1.messages[0].content);
 
-		expect(screen.queryByText(fakeConversation1.label)).toBeInTheDocument();
-		expect(screen.queryByText(fakeConversation2.label)).toBeInTheDocument();
-		expect(screen.queryByText(fakeConversation3.label)).toBeInTheDocument();
-
-		const searchBox = screen.getByPlaceholderText('Search...');
-		await userEvent.type(searchBox, fakeConversation1.messages[0].content);
-
-		expect(screen.queryByText(fakeConversation1.label)).toBeInTheDocument();
-		expect(screen.queryByText(fakeConversation2.label)).not.toBeInTheDocument();
-		expect(screen.queryByText(fakeConversation3.label)).not.toBeInTheDocument();
-	})
+        expect(screen.queryByText(fakeConversation1.label)).toBeInTheDocument();
+        expect(screen.queryByText(fakeConversation2.label)).not.toBeInTheDocument();
+        expect(screen.queryByText(fakeConversation3.label)).not.toBeInTheDocument();
+    })
 });

@@ -1,7 +1,7 @@
 from typing import Iterator
 
 import grpc
-import leapfrogai_api.types as lfai_types
+import leapfrogai_sdk as lfai
 from fastapi.responses import StreamingResponse
 from leapfrogai_api.backends.openai.helpers import recv_chat, recv_completion
 from leapfrogai_api.backends.openai.types import (
@@ -18,9 +18,9 @@ from leapfrogai_api.backends.openai.types import (
 from leapfrogai_api.utils.config import Model
 
 
-async def stream_completion(model: Model, request: lfai_types.CompletionRequest):
+async def stream_completion(model: Model, request: lfai.CompletionRequest):
     async with grpc.aio.insecure_channel(model.backend) as channel:
-        stub = lfai_types.CompletionStreamServiceStub(channel)
+        stub = lfai.CompletionStreamServiceStub(channel)
         stream = stub.CompleteStream(request)
 
         await stream.wait_for_connection()
@@ -30,10 +30,10 @@ async def stream_completion(model: Model, request: lfai_types.CompletionRequest)
 
 
 # TODO: Clean up completion() and stream_completion() to reduce code duplication
-async def completion(model: Model, request: lfai_types.CompletionRequest):
+async def completion(model: Model, request: lfai.CompletionRequest):
     async with grpc.aio.insecure_channel(model.backend) as channel:
-        stub = lfai_types.CompletionServiceStub(channel)
-        response: lfai_types.CompletionResponse = await stub.Complete(request)
+        stub = lfai.CompletionServiceStub(channel)
+        response: lfai.CompletionResponse = await stub.Complete(request)
 
         return CompletionResponse(
             model=model.name,
@@ -49,11 +49,9 @@ async def completion(model: Model, request: lfai_types.CompletionRequest):
         )
 
 
-async def stream_chat_completion(
-    model: Model, request: lfai_types.ChatCompletionRequest
-):
+async def stream_chat_completion(model: Model, request: lfai.ChatCompletionRequest):
     async with grpc.aio.insecure_channel(model.backend) as channel:
-        stub = lfai_types.ChatCompletionStreamServiceStub(channel)
+        stub = lfai.ChatCompletionStreamServiceStub(channel)
         stream = stub.ChatCompleteStream(request)
 
         await stream.wait_for_connection()
@@ -61,17 +59,17 @@ async def stream_chat_completion(
 
 
 # TODO: Clean up completion() and stream_completion() to reduce code duplication
-async def chat_completion(model: Model, request: lfai_types.ChatCompletionRequest):
+async def chat_completion(model: Model, request: lfai.ChatCompletionRequest):
     async with grpc.aio.insecure_channel(model.backend) as channel:
-        stub = lfai_types.ChatCompletionServiceStub(channel)
-        response: lfai_types.ChatCompletionResponse = await stub.ChatComplete(request)
+        stub = lfai.ChatCompletionServiceStub(channel)
+        response: lfai.ChatCompletionResponse = await stub.ChatComplete(request)
         return ChatCompletionResponse(
             model=model.name,
             choices=[
                 ChatChoice(
                     index=0,
                     message=ChatMessage(
-                        role=lfai_types.ChatRole.Name(
+                        role=lfai.ChatRole.Name(
                             response.choices[0].chat_item.role
                         ).lower(),
                         content=response.choices[0].chat_item.content,
@@ -83,10 +81,10 @@ async def chat_completion(model: Model, request: lfai_types.ChatCompletionReques
         )
 
 
-async def create_embeddings(model: Model, request: lfai_types.EmbeddingRequest):
+async def create_embeddings(model: Model, request: lfai.EmbeddingRequest):
     async with grpc.aio.insecure_channel(model.backend) as channel:
-        stub = lfai_types.EmbeddingsServiceStub(channel)
-        e: lfai_types.EmbeddingResponse = await stub.CreateEmbedding(request)
+        stub = lfai.EmbeddingsServiceStub(channel)
+        e: lfai.EmbeddingResponse = await stub.CreateEmbedding(request)
         return CreateEmbeddingResponse(
             data=[
                 EmbeddingResponseData(
@@ -99,11 +97,9 @@ async def create_embeddings(model: Model, request: lfai_types.EmbeddingRequest):
         )
 
 
-async def create_transcription(
-    model: Model, request: Iterator[lfai_types.AudioRequest]
-):
+async def create_transcription(model: Model, request: Iterator[lfai.AudioRequest]):
     async with grpc.aio.insecure_channel(model.backend) as channel:
-        stub = lfai_types.AudioStub(channel)
-        response: lfai_types.AudioResponse = await stub.Transcribe(request)
+        stub = lfai.AudioStub(channel)
+        response: lfai.AudioResponse = await stub.Transcribe(request)
 
         return CreateTranscriptionResponse(text=response.text)

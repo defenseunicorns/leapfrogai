@@ -64,7 +64,6 @@
 	};
 </script>
 
-<!--TODO - can we change system upload modal button to say import?-->
 <div class="import-export-btns-container">
 	<LFFileUploader
 		accept={['application/json']}

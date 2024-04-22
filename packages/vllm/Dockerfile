@@ -32,8 +32,8 @@ ENV PATH="/home/leapfrogai/.venv/bin:$PATH"
 # # create virtual environment for light-weight portability and minimal libraries
 # # NOTE: We are copying to this filename because installing 'optional extras' from a wheel requires the absolute path to the wheel file (instead of a wildcard whl)
 COPY build/*.whl build/
-COPY build/leapfrogai_api*.whl leapfrogai_api-100.100.100-py3-none-any.whl
-RUN pip install "leapfrogai_api-100.100.100-py3-none-any.whl[vllm]" --no-index --find-links=build/
+COPY build/lfai_vllm*.whl .
+RUN pip install lfai_vllm*.whl --no-index --find-links=build/
 
 # download model
 ARG REPO_ID=TheBloke/Synthia-7B-v2.0-GPTQ
@@ -50,4 +50,4 @@ COPY config.yaml .
 
 EXPOSE 50051:50051
 
-ENTRYPOINT ["python3.11", "-m", "leapfrogai_api.types.cli", "--app-dir=.", "main:Model"]
+ENTRYPOINT ["python3.11", "-m", "leapfrogai_sdk.cli", "--app-dir=.", "main:Model"]
