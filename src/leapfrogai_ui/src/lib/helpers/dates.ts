@@ -184,10 +184,12 @@ export const organizeConversationsByDate = (
 		result[index].conversations.push(conversation);
 	}
 
-	// Sort conversations in the old category by date
-	const oldConversationsIndex = dateCategories.indexOf('Old');
-	result[oldConversationsIndex].conversations = result[oldConversationsIndex].conversations.sort(
-		(a, b) => new Date(b.inserted_at).getTime() - new Date(a.inserted_at).getTime()
-	);
+	// Sort each category by date
+	for(const category of dateCategories){
+		const categoryIndex = dateCategories.indexOf(category);
+		result[categoryIndex].conversations = result[categoryIndex].conversations.sort(
+			(a, b) => new Date(b.inserted_at).getTime() - new Date(a.inserted_at).getTime()
+		);
+	}
 	return result;
 };

@@ -348,9 +348,9 @@ describe('ChatSidebar', () => {
         expect(screen.queryByText(fakeConversation3.label)).toBeInTheDocument();
 
         const searchBox = screen.getByPlaceholderText('Search...');
-        await userEvent.type(searchBox, `${fakeConversation1.label} ${fakeConversation2.label}`);
+        await userEvent.type(searchBox, fakeConversation2.label);
 
-        expect(screen.queryByText(fakeConversation1.label)).toBeInTheDocument();
+        expect(screen.queryByText(fakeConversation1.label)).not.toBeInTheDocument();
         expect(screen.queryByText(fakeConversation2.label)).toBeInTheDocument();
         expect(screen.queryByText(fakeConversation3.label)).not.toBeInTheDocument();
     })

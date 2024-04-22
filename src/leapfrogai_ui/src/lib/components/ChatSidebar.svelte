@@ -18,7 +18,7 @@
 	import { page } from '$app/stores';
 	import { browser } from '$app/environment';
 	import ImportExport from '$components/ImportExport.svelte';
-	import Fuse, { type FuseResult } from 'fuse.js';
+	import Fuse, { type FuseResult, type IFuseOptions } from 'fuse.js';
 
 	export let isSideNavOpen: boolean;
 
@@ -104,8 +104,13 @@
 		}
 	}
 
-	const options = {
-		keys: ['label', 'messages.content']
+	const options: IFuseOptions<unknown> = {
+		keys: ['label', 'messages.content'],
+		minMatchCharLength: 3,
+		shouldSort: false,
+		findAllMatches: true,
+		threshold: 0, // perfect matches only
+		ignoreLocation: true
 	};
 
 	$: if (searchText) {
