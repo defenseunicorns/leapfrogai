@@ -54,8 +54,8 @@ async def list_files():
 @router.get("/{file_id}")
 async def retrieve_file(file_id: str) -> FileObject:
     """Retrieve a file."""
-    supabase_wrapper = SupabaseWrapper()
     try:
+        supabase_wrapper = SupabaseWrapper()
         return supabase_wrapper.get_file_object(file_id=file_id)
     except FileNotFoundError as exc:
         raise HTTPException(status_code=404, detail="File not found") from exc
@@ -68,9 +68,9 @@ async def retrieve_file(file_id: str) -> FileObject:
 @router.delete("/{file_id}")
 async def delete_file(file_id: str) -> FileDeleted:
     """Delete a file."""
-    supabase_wrapper = SupabaseWrapper()
     try:
-        return supabase_wrapper.delete_file(file_id)
+        supabase_wrapper = SupabaseWrapper()
+        return supabase_wrapper.delete_file(file_id=file_id)
     except FileNotFoundError as exc:
         raise HTTPException(status_code=404, detail="File not found") from exc
 
@@ -78,8 +78,8 @@ async def delete_file(file_id: str) -> FileDeleted:
 @router.get("/{file_id}/content")
 async def retrieve_file_content(file_id: str):
     """Retrieve the content of a file."""
-    supabase_wrapper = SupabaseWrapper()
     try:
-        return supabase_wrapper.get_file_content(file_id)
+        supabase_wrapper = SupabaseWrapper()
+        return supabase_wrapper.get_file_content(file_id=file_id)
     except FileNotFoundError as exc:
         raise HTTPException(status_code=404, detail="File not found") from exc
