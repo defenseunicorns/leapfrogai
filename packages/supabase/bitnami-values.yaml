@@ -382,7 +382,7 @@ jwt:
     podAnnotations: {}
 ## @param publicURL Supabase API public URL
 ##
-publicURL: ""
+publicURL: "https://supabase-kong.uds.dev"
 ## @param dbSSL Supabase API database connection mode for SSL. Applied to all components. Allowed values: verify-ca, verify-full, disable, allow, prefer, require
 ## https://www.postgresql.org/docs/current/libpq-ssl.html
 ##
