@@ -6,7 +6,7 @@ from typing import List
 from dotenv import load_dotenv
 from fastapi import UploadFile
 from openai.types import FileObject, FileDeleted
-from openai.types.beta import Assistant
+from openai.types.beta import Assistant, AssistantDeleted
 from openai.types.beta.assistant import ToolResources
 from supabase.client import Client, create_client
 from leapfrogai_api.utils.openai_util import strings_to_tools, tools_to_strings
@@ -24,7 +24,10 @@ def get_connection() -> Client:
         )
         return supabase
     except Exception as exc:
-        logging.error("Unable to connect to the Supabase database.")
+        logging.error(
+            "Unable to connect to the Supabase database at %s",
+            os.getenv("SUPABASE_URL"),
+        )
         raise ConnectionError("Unable to connect to the Supabase database") from exc
 
 
@@ -69,7 +72,7 @@ class SupabaseWrapper:
 
     def list_files(
         self, purpose: str = "assistants", client: Client = get_connection()
-    ) -> list[FileObject]:
+    ) -> List[FileObject]:
         """List all the files in the database."""
 
         try:
@@ -281,11 +284,16 @@ class SupabaseWrapper:
                 f"No assistant found with id: {assistant_id}"
             ) from exc
 
-    def delete_assistant(self, assistant_id, client: Client = get_connection()):
+    def delete_assistant(
+        self, assistant_id, client: Client = get_connection()
+    ) -> AssistantDeleted:
         """Delete the assistant from the database."""
 
         try:
             client.table("assistant_objects").delete().eq("id", assistant_id).execute()
+            return AssistantDeleted(
+                id=assistant_id, deleted=True, object="assistant.deleted"
+            )
         except Exception as exc:
             raise FileNotFoundError(
                 f"No assistant found with id: {assistant_id}"

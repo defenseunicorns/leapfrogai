@@ -113,9 +113,6 @@ async def delete_assistant(assistant_id: str) -> AssistantDeleted:
     """Delete an assistant."""
     try:
         supabase_wrapper = SupabaseWrapper()
-        supabase_wrapper.delete_assistant(assistant_id)
-        return AssistantDeleted(
-            id=assistant_id, deleted=True, object="assistant.deleted"
-        )
+        return supabase_wrapper.delete_assistant(assistant_id)
     except FileNotFoundError as exc:
         raise HTTPException(status_code=404, detail="Assistant not found") from exc
