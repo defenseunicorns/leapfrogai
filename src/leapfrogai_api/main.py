@@ -9,6 +9,7 @@ from leapfrogai_api.backends.openai.routes import router as openai_router
 from leapfrogai_api.routers import (
     assistants,
     files,
+    threads,
     vector_store,
 )
 from leapfrogai_api.utils import get_model_config
@@ -43,4 +44,5 @@ async def models():
 app.include_router(openai_router)
 app.include_router(assistants.router)
 app.include_router(files.router)
+app.include_router(threads.router)
 app.include_router(vector_store.router)
