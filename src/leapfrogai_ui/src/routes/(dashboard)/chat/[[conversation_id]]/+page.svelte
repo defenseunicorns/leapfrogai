@@ -32,7 +32,7 @@
 				await conversationsStore.newMessage({
 					conversation_id: activeConversation?.id,
 					content: message.content,
-					role: 'system'
+					role: message.role
 				});
 			}
 		},
@@ -80,11 +80,12 @@
 				subtitle: 'Response generation canceled.'
 			});
 			const lastMessage = $messages[$messages.length - 1];
-			if (activeConversation?.id && lastMessage.role === 'system') {
+
+			if (activeConversation?.id && lastMessage.role !== 'user') {
 				await conversationsStore.newMessage({
 					conversation_id: activeConversation?.id,
 					content: lastMessage.content, // save last message
-					role: 'system'
+					role: lastMessage.role
 				});
 			}
 		}

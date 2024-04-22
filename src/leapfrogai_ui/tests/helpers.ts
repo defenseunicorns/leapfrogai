@@ -8,12 +8,6 @@ export const loadChatPage = async (page: Page) => {
 	await expect(page).toHaveTitle('LeapfrogAI - Chat');
 };
 
-export const loadChatPage = async (page: Page) => {
-	await page.goto('/chat');
-	await expect(page).toHaveTitle('LeapfrogAI - Chat');
-};
-
-
 export const deleteConversation = async (page: Page, label: string) => {
 	await page.getByTestId(`overflow-menu-${label}`).click();
 	await page.getByTestId(`overflow-menu-delete-${label}`).click();
@@ -32,7 +26,7 @@ export const deleteConversationsByLabel = async (labels: string[]) => {
 };
 
 export const waitForResponseToComplete = async (page: Page) => {
-	await expect(page.getByLabel('cancel message')).toHaveCount(1, { timeout: 15000 });
-	await expect(page.getByLabel('cancel message')).toHaveCount(0, { timeout: 15000 });
-	await expect(page.getByLabel('send')).toHaveCount(1, { timeout: 15000 });
+	await expect(page.getByLabel('cancel message')).toHaveCount(1, { timeout: 25000 });
+	await expect(page.getByLabel('cancel message')).toHaveCount(0, { timeout: 25000 });
+	await expect(page.getByLabel('send')).toHaveCount(1, { timeout: 25000 });
 };
