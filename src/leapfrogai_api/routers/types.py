@@ -3,6 +3,27 @@ from __future__ import annotations
 
 from typing import Optional, Literal
 from pydantic import BaseModel
+from fastapi import UploadFile, Form, File
+
+
+### Files Types ###
+class UploadFileRequest(BaseModel):
+    """Request object for uploading a file."""
+
+    file: UploadFile
+    purpose: Literal["assistants"] | None = "assistants"
+
+    @classmethod
+    def as_form(
+        cls,
+        file: UploadFile = File(...),
+        purpose: Optional[str] = Form("assistants"),
+    ) -> UploadFileRequest:
+        """Create an instance of the class from form data."""
+        return cls(file=file, purpose=purpose)
+
+
+### Assistants Types ###
 
 
 class CreateAssistantRequest(BaseModel):

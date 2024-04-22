@@ -5,7 +5,7 @@ from uuid import uuid4
 from fastapi import HTTPException, APIRouter
 from openai.types.beta import Assistant, AssistantDeleted
 from openai.types.beta.assistant import ToolResources
-from leapfrogai_api.routers.assistants_types import (
+from leapfrogai_api.routers.types import (
     CreateAssistantRequest,
     ModifyAssistantRequest,
 )
@@ -80,10 +80,6 @@ async def modify_assistant(
     assistant_id: str, request: ModifyAssistantRequest
 ) -> Assistant:
     """Modify an assistant."""
-
-    print(request)
-    print(validate_tools_typed_dict(request.tools))
-    print(ToolResources.model_validate(request.tool_resources))
 
     try:
         supabase_wrapper = SupabaseWrapper()

@@ -20,6 +20,7 @@ build/
 .model/
 *.gguf
 .env
+.ruff_cache/
 
 # local model and tokenizer files
 *.bin

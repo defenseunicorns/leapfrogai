@@ -3,7 +3,7 @@ from fastapi.testclient import TestClient
 from openai.types.beta import Assistant
 
 from leapfrogai_api.main import app
-from leapfrogai_api.routers.assistants_types import (
+from leapfrogai_api.routers.types import (
     CreateAssistantRequest,
     ModifyAssistantRequest,
 )
