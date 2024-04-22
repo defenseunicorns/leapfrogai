@@ -6,8 +6,11 @@ from fastapi import FastAPI
 
 # We need to import all the functions in these files so the router decorator gets processed
 from leapfrogai_api.backends.openai.routes import router as openai_router
-from leapfrogai_api.routers import assistants
-from leapfrogai_api.routers import files
+from leapfrogai_api.routers import (
+    assistants,
+    files,
+    vector_store,
+)
 from leapfrogai_api.utils import get_model_config
 
 
@@ -40,3 +43,4 @@ async def models():
 app.include_router(openai_router)
 app.include_router(assistants.router)
 app.include_router(files.router)
+app.include_router(vector_store.router)
