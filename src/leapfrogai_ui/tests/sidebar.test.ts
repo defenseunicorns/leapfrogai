@@ -1,11 +1,9 @@
 import { faker } from '@faker-js/faker';
-import { expect, test } from './fixtures';
-import {
-	deleteConversation,
-	deleteConversationsByLabel,
-	loadChatPage,
-	sendMessage, waitForResponseToComplete
-} from './helpers';
+import { expect, test} from '@playwright/test';
+import { 	deleteConversation,
+    deleteConversationsByLabel,
+    loadChatPage,
+    sendMessage, waitForResponseToComplete } from './helpers';
 
 test('it can delete conversations', async ({ page }) => {
 	const newMessage = faker.lorem.words(3);
