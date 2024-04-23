@@ -41,7 +41,7 @@ export const getFakeConversation = (options: FakeConversationOptions = {}): Conv
 		for (let i = 0; i < numMessages; i++) {
 			messages.push(
 				getFakeMessage({
-					role: i % 2 === 0 ? 'user' : 'system',
+					role: i % 2 === 0 ? 'user' : 'assistant',
 					conversation_id: conversationId,
 					user_id: userId
 				})

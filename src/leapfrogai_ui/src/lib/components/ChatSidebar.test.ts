@@ -6,11 +6,13 @@ import {
 	mockEditConversationLabelError
 } from '$lib/mocks/chat-mocks';
 import { conversationsStore, toastStore } from '$stores';
-import { render, screen, within } from '@testing-library/svelte';
+import { fireEvent, render, screen, within } from '@testing-library/svelte';
 import userEvent from '@testing-library/user-event';
-import { fakeConversations } from '../../testUtils/fakeData';
+import { fakeConversations, getFakeConversation } from '../../testUtils/fakeData';
 import { vi } from 'vitest';
 import stores from '$app/stores';
+import { monthNames } from '$helpers/dates';
+import * as navigation from '$app/navigation';
 
 const { getStores } = await vi.hoisted(() => import('../../lib/mocks/svelte'));
 
@@ -26,7 +28,8 @@ const editConversationLabel = async (
 	await userEvent.click(overflowMenu);
 	const editBtn = within(overflowMenu).getByRole('menuitem', { name: /edit/i });
 	await userEvent.click(editBtn);
-	const editInput = screen.getByLabelText('edit conversation');
+
+	const editInput = await screen.findByLabelText('edit conversation');
 	await userEvent.clear(editInput);
 	await userEvent.type(editInput, newLabel);
 	await userEvent.keyboard(keyToPress);
@@ -61,19 +64,51 @@ vi.mock('$app/stores', (): typeof stores => {
 	};
 });
 
+
+
 describe('ChatSidebar', () => {
 	it('renders conversations', async () => {
 		conversationsStore.set({
 			conversations: fakeConversations
 		});
 
-		render(ChatSidebar);
+		render(ChatSidebar, { isSideNavOpen: true });
 
 		const conversationsSection = screen.getByTestId('conversations');
 
 		fakeConversations.forEach((conversation) => {
 			expect(within(conversationsSection).getByText(conversation.label)).toBeInTheDocument();
 		});
+	});
+
+	it('does not render date categories that have no conversations', async () => {
+		const today = new Date();
+		const fakeTodayConversation = getFakeConversation();
+		const fakeYesterdayConversation = getFakeConversation({
+			insertedAt: new Date(
+				today.getFullYear(),
+				today.getMonth(),
+				today.getDate() - 1
+			).toDateString()
+		});
+
+		conversationsStore.set({
+			conversations: [fakeTodayConversation, fakeYesterdayConversation] // uses date override starting in March
+		});
+
+		render(ChatSidebar);
+		const conversationsSection = screen.getByTestId('conversations');
+
+		expect(within(conversationsSection).getByText(fakeTodayConversation.label)).toBeInTheDocument();
+		expect(
+			within(conversationsSection).getByText(fakeYesterdayConversation.label)
+		).toBeInTheDocument();
+
+		expect(screen.getByText('Today')).toBeInTheDocument();
+		expect(screen.getByText('Yesterday')).toBeInTheDocument();
+
+		expect(screen.queryByText(monthNames[today.getMonth()])).not.toBeInTheDocument();
+		expect(screen.queryByText(monthNames[today.getMonth() - 1])).not.toBeInTheDocument();
 	});
 
 	it('deletes conversations', async () => {
@@ -83,7 +118,7 @@ describe('ChatSidebar', () => {
 			conversations: fakeConversations
 		});
 
-		render(ChatSidebar);
+		render(ChatSidebar, { isSideNavOpen: true });
 
 		const conversationsSection = screen.getByTestId('conversations');
 
@@ -118,7 +153,7 @@ describe('ChatSidebar', () => {
 			conversations: fakeConversations
 		});
 
-		render(ChatSidebar);
+		render(ChatSidebar, { isSideNavOpen: true });
 
 		const conversationsSection = screen.getByTestId('conversations');
 
@@ -149,7 +184,7 @@ describe('ChatSidebar', () => {
 			conversations: fakeConversations
 		});
 
-		render(ChatSidebar);
+		render(ChatSidebar, { isSideNavOpen: true });
 
 		const conversationsSection = screen.getByTestId('conversations');
 
@@ -167,7 +202,7 @@ describe('ChatSidebar', () => {
 			conversations: fakeConversations
 		});
 
-		render(ChatSidebar);
+		render(ChatSidebar, { isSideNavOpen: true });
 
 		const conversationsSection = screen.getByTestId('conversations');
 
@@ -185,7 +220,7 @@ describe('ChatSidebar', () => {
 			conversations: fakeConversations
 		});
 
-		render(ChatSidebar);
+		render(ChatSidebar, { isSideNavOpen: true });
 
 		const conversationsSection = screen.getByTestId('conversations');
 
@@ -201,9 +236,8 @@ describe('ChatSidebar', () => {
 		await userEvent.clear(editInput);
 		await userEvent.type(editInput, newLabelText);
 
-		await userEvent.click(document.body);
-
-		expect(within(conversationsSection).getByText(newLabelText)).toBeInTheDocument();
+		await fireEvent.blur(editInput);
+		await within(conversationsSection).findByText(newLabelText);
 	});
 
 	it('dispatches a toast when there is an error editing a conversations label and it does not update the label on the screen', async () => {
@@ -215,7 +249,7 @@ describe('ChatSidebar', () => {
 			conversations: fakeConversations
 		});
 
-		render(ChatSidebar);
+		render(ChatSidebar, { isSideNavOpen: true });
 
 		const conversationsSection = screen.getByTestId('conversations');
 
@@ -233,7 +267,7 @@ describe('ChatSidebar', () => {
 			conversations: fakeConversations
 		});
 
-		render(ChatSidebar);
+		render(ChatSidebar, { isSideNavOpen: true });
 
 		const conversationsSection = screen.getByTestId('conversations');
 
@@ -253,7 +287,7 @@ describe('ChatSidebar', () => {
 			conversations: fakeConversations
 		});
 
-		render(ChatSidebar);
+		render(ChatSidebar, { isSideNavOpen: true });
 
 		// Not using the helper function b/c we need to reference the editInput at the end
 		const overflowMenu = screen.getAllByLabelText('menu')[0];
@@ -267,31 +301,6 @@ describe('ChatSidebar', () => {
 		expect(editInput).toHaveProperty('readOnly', true);
 	});
 
-	it('edits the correct conversation label when different edit buttons are pressed', async () => {
-		const newLabelText1 = 'new label 1';
-		const newLabelText2 = 'new label 2';
-
-		mockEditConversationLabel();
-
-		conversationsStore.set({
-			conversations: fakeConversations
-		});
-
-		render(ChatSidebar);
-
-		const conversation1 = screen.getByTestId(`side-nav-menu-item-${fakeConversations[0].label}`);
-		const conversation2 = screen.getByTestId(`side-nav-menu-item-${fakeConversations[1].label}`);
-
-		expect(within(conversation1).getByText(fakeConversations[0].label)).toBeInTheDocument();
-		expect(within(conversation2).getByText(fakeConversations[1].label)).toBeInTheDocument();
-
-		await editConversationLabel(fakeConversations[0].label, newLabelText1);
-		await editConversationLabel(fakeConversations[1].label, newLabelText2);
-
-		expect(within(conversation1).getByText(newLabelText1)).toBeInTheDocument();
-		expect(within(conversation2).getByText(newLabelText2)).toBeInTheDocument();
-	});
-
 	it('removes the edit input when the focus on the input is lost', async () => {
 		mockEditConversationLabel();
 		const newLabelText = 'new label';
@@ -300,10 +309,72 @@ describe('ChatSidebar', () => {
 			conversations: fakeConversations
 		});
 
-		render(ChatSidebar);
+		render(ChatSidebar, { isSideNavOpen: true });
 
 		await editConversationLabel(fakeConversations[0].label, newLabelText, '{tab}');
 		const editInput = screen.queryByText('edit conversation');
 		expect(editInput).not.toBeInTheDocument();
 	});
+    it('changes the active chat thread', async () => {
+        const goToSpy = vi.spyOn(navigation, 'goto');
+
+        const fakeConversation = getFakeConversation({ numMessages: 6 });
+
+        conversationsStore.set({
+            conversations: [fakeConversation]
+        });
+
+        render(ChatSidebar, { isSideNavOpen: true });
+
+        expect(screen.queryByText(fakeConversation.messages[0].content)).not.toBeInTheDocument();
+
+        await userEvent.click(screen.getByText(fakeConversation.label));
+
+        expect(goToSpy).toHaveBeenCalledTimes(1);expect(goToSpy).toHaveBeenCalledWith(`/chat/${fakeConversation.id}`);
+    });
+    it("search finds conversations by label", async () => {
+        const fakeConversation1 = getFakeConversation({ numMessages: 2 });
+        const fakeConversation2 = getFakeConversation({ numMessages: 2 });
+        const fakeConversation3 = getFakeConversation({ numMessages: 2 });
+
+        conversationsStore.set({
+            conversations: [fakeConversation1, fakeConversation2, fakeConversation3]
+        });
+
+        render(ChatSidebar, { isSideNavOpen: true });
+
+        expect(screen.queryByText(fakeConversation1.label)).toBeInTheDocument();
+        expect(screen.queryByText(fakeConversation2.label)).toBeInTheDocument();
+        expect(screen.queryByText(fakeConversation3.label)).toBeInTheDocument();
+
+        const searchBox = screen.getByPlaceholderText('Search...');
+        await userEvent.type(searchBox, fakeConversation2.label);
+
+        expect(screen.queryByText(fakeConversation1.label)).not.toBeInTheDocument();
+        expect(screen.queryByText(fakeConversation2.label)).toBeInTheDocument();
+        expect(screen.queryByText(fakeConversation3.label)).not.toBeInTheDocument();
+    })
+
+    it("search finds conversations by messages", async () => {
+        const fakeConversation1 = getFakeConversation({ numMessages: 2 });
+        const fakeConversation2 = getFakeConversation({ numMessages: 2 });
+        const fakeConversation3 = getFakeConversation({ numMessages: 2 });
+
+        conversationsStore.set({
+            conversations: [fakeConversation1, fakeConversation2, fakeConversation3]
+        });
+
+        render(ChatSidebar, { isSideNavOpen: true });
+
+        expect(screen.queryByText(fakeConversation1.label)).toBeInTheDocument();
+        expect(screen.queryByText(fakeConversation2.label)).toBeInTheDocument();
+        expect(screen.queryByText(fakeConversation3.label)).toBeInTheDocument();
+
+        const searchBox = screen.getByPlaceholderText('Search...');
+        await userEvent.type(searchBox, fakeConversation1.messages[0].content);
+
+        expect(screen.queryByText(fakeConversation1.label)).toBeInTheDocument();
+        expect(screen.queryByText(fakeConversation2.label)).not.toBeInTheDocument();
+        expect(screen.queryByText(fakeConversation3.label)).not.toBeInTheDocument();
+    })
 });

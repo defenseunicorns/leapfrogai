@@ -1,5 +1,5 @@
 import { error, json, redirect } from '@sveltejs/kit';
-import { newConversationSchema } from '../../../../schemas/chat';
+import { newConversationInputSchema } from '../../../../schemas/chat';
 
 export async function POST({ request, locals: { supabase, getSession } }) {
 
@@ -9,18 +9,18 @@ export async function POST({ request, locals: { supabase, getSession } }) {
 	}
 
 	// Validate request body
-	let requestData: { label: string };
+	let requestData: Omit<Conversation, 'user_id' | 'messages'>;
 	try {
 		requestData = await request.json();
-		const isValid = await newConversationSchema.isValid(requestData);
+		const isValid = await newConversationInputSchema.isValid(requestData);
 		if (!isValid) error(400, 'Bad Request');
 	} catch {
 		error(400, 'Bad Request');
 	}
 
-	const conversation: Omit<Conversation, 'id' | 'inserted_at' | 'messages'> = {
-		label: requestData.label,
-		user_id: session.user.id
+	const conversation: Omit<Conversation, 'messages'> = {
+		...requestData,
+		user_id: session.user.id,
 	};
 
 	// TODO if there is an error, the chats continue to stream, but they are not saved
