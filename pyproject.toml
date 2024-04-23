@@ -1,82 +1,28 @@
 [project]
-name = "leapfrogai-api"
-version = "0.6.0"
-dependencies = [
-    "fastapi >= 0.109.1",
-    "uvicorn >= 0.23.2",
-    "pydantic",
-    "python-multipart >= 0.0.7", #indirect dep of FastAPI to receive form data for file uploads
-    "watchfiles >= 0.21.0",
-    "grpcio >= 1.56.0",
-    "grpcio-tools >= 1.62.1",
-    "protobuf >= 4.23.3",
-    "grpcio-reflection >=1.58.0",
-    "grpcio-health-checking >=1.58.0",
-    "confz >= 2.0.1",
-    "click >= 8.1.7",
-]
-requires-python = "~=3.11"
+name = "leapfrogai"
+version = "0.6.1"
+description = "ChatGPT type capabilities for secure, local, air-gapped systems."
+authors = [{ name = "LeapfrogAI Team", email = "ai@defenseunicorns.com" }]
 readme = "README.md"
+license = {file = "LICENSE"}
 
-[project.optional-dependencies]
-
-dev = [
+dependencies = [  # Dev dependencies needed for all of lfai
+    "openai",
     "pip-tools == 7.3.0",
     "pytest",
     "httpx",
     "ruff",
 ]
-
-llama-cpp-python = [
-    "llama-cpp-python == 0.2.56",
-]
-
-vllm = [
-    "pydantic >= 2.3.0",
-    "vllm==0.3.2",
-    "python-dotenv>=1.0.1",
-    "aiostream>=0.5.2",
-]
-
-text-embeddings = [
-    "InstructorEmbedding >= 1.0.1",
-    "torch == 2.1.2",
-    "numpy == 1.26.3",
-    "tqdm == 4.66.1",
-    "sentence-transformers == 2.2.2",
-    "transformers == 4.36.0",
-]
-
-whisper = [
-    "faster-whisper == 0.10.0",
-    "ctranslate2 >= 4.1.0"
-]
-
-e2e-test = [
-    "openai"
-]
+requires-python = "~=3.11"
 
 [tool.pip-tools]
 generate-hashes = true
 
-[tool.setuptools.packages.find]
-where = ["src"]
-exclude = ["chart"]
+[tool.ruff]
+target-version = "py311"
 
 [tool.pytest.ini_options]
 addopts = ["--import-mode=importlib"]
-
-[tool.ruff]
-target-version = "py311"
-# exclude generated grpc code
-exclude = [
-    "src/leapfrogai_api/types/audio",
-    "src/leapfrogai_api/types/chat",
-    "src/leapfrogai_api/types/completion",
-    "src/leapfrogai_api/types/embeddings",
-    "src/leapfrogai_api/types/name",
-]
-
 
 [build-system]
 requires = ["setuptools"]

@@ -1,0 +1,4 @@
+package:
+  host: lfaiui
+  supabase_url: '###ZARF_VAR_SUPABASE_URL###'
+  supabase_anon_key: '###ZARF_VAR_SUPABASE_ANON_KEY###'

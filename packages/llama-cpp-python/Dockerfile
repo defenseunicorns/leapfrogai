@@ -25,8 +25,8 @@ ENV PATH="/leapfrogai/.venv/bin:$PATH"
 # copy the llama-cpp-python build dependencies over
 # NOTE: We are copying to this filename because installing 'optional extras' from a wheel requires the absolute path to the wheel file (instead of a wildcard whl)
 COPY build/*.whl build/
-COPY build/leapfrogai_api*.whl leapfrogai_api-100.100.100-py3-none-any.whl
-RUN pip install leapfrogai_api-100.100.100-py3-none-any.whl[llama-cpp-python] --no-index --find-links=build/
+COPY build/lfai_llama_cpp_python*.whl .
+RUN pip install lfai_llama_cpp_python*.whl --no-index --find-links=build/
 
 # hardened and slim python image
 FROM --platform=$BUILDPLATFORM ghcr.io/defenseunicorns/leapfrogai/python:3.11
@@ -43,4 +43,4 @@ COPY config.yaml .
 
 EXPOSE 50051:50051
 
-ENTRYPOINT ["python", "-m", "leapfrogai_api.types.cli", "--app-dir=.", "main:Model"]
+ENTRYPOINT ["python", "-m", "leapfrogai_sdk.cli", "--app-dir=.", "main:Model"]

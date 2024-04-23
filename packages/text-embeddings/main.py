@@ -2,7 +2,7 @@ import asyncio
 import logging
 
 from InstructorEmbedding import INSTRUCTOR
-from leapfrogai_api.types import (
+from leapfrogai_sdk import (
     Embedding,
     EmbeddingRequest,
     EmbeddingResponse,
