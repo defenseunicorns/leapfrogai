@@ -1,5 +1,27 @@
 name: pytest
-on: [pull_request]
+on:
+  pull_request:
+    paths:
+      # Ignore updates to the .github directory, unless it's this current file
+      - "!.github/**"
+      - ".github/workflows/pytest.yaml"
+
+      # Ignore docs and website things
+      - "!**.md"
+      - "!docs/**"
+      - "!adr/**"
+      - "!website/**"
+      - "!netlify.toml"
+
+      # Ignore updates to generic github metadata files
+      - "!CODEOWNERS"
+      - "!CONTRIBUTING.md"
+      - "!.gitignore"
+      - "!LICENSE"
+
+      # Ignore LFAI-UI things (for now?)
+      - "!src/leapfrogai_ui/**"
+      - "!packages/ui/**"
 
 # Declare default permissions as read only.
 permissions: read-all
