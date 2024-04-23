@@ -9,6 +9,7 @@ dependencies = [
     "python-dotenv>=1.0.1",
     "aiostream>=0.5.2",
     "leapfrogai-sdk",
+    "confz>=2.0.1"
 ]
 requires-python = "~=3.11"
 readme = "README.md"
