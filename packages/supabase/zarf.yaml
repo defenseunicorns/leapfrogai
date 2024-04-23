@@ -7,16 +7,6 @@ metadata:
     supabase instance and all of its dependencies
 
 components:
-  - name: create-supabase-jwt-namespace
-    required: true
-    charts:
-      - name: jwt-creator
-        namespace: leapfrogai
-        localPath: chart
-        releaseName: jwt-creator
-        version: 0.0.1
-        valuesFiles:
-          - "bitnami-values.yaml"
   - name: supabase
     required: true
     charts:
@@ -44,3 +34,4 @@ components:
         namespace: leapfrogai
         files:
           - "uds-package.yaml"
+          - "create-service-account.yaml"
