@@ -5,6 +5,11 @@ metadata:
   version: dev
 
 packages:
+  # Legacy UI - not currently in this repo so it builds from ghcr
+  - name: leapfrogai-ui
+    repository: ghcr.io/defenseunicorns/packages/leapfrogai/leapfrogai-ui
+    ref: 0.3.5
+
   # API
   - name: leapfrogai-api
     path: ../../../packages/api/
@@ -31,7 +36,7 @@ packages:
     ref: dev
 
   # UI
-  - name: leapfrogai-ui
+  - name: lfaiui
     path: ../../../packages/ui/
     ref: dev
 
