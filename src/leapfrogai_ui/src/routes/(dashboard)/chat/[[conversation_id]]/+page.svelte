@@ -1,6 +1,6 @@
 <script lang="ts">
 	import { PoweredByDU } from '$components';
-	import { Button, TextInput, Tile } from 'carbon-components-svelte';
+	import { Button, Tile } from 'carbon-components-svelte';
 	import { afterUpdate, onMount, tick } from 'svelte';
 	import { conversationsStore, toastStore } from '$stores';
 	import { ArrowRight, Attachment, StopFilledAlt, UserAvatar } from 'carbon-icons-svelte';
@@ -12,6 +12,8 @@
 	export let data;
 	let messageThreadDiv: HTMLDivElement;
 	let messageThreadDivHeight: number;
+
+	let textAreaRef: HTMLTextAreaElement;
 
 	$: activeConversation = $conversationsStore.conversations.find(
 		(conversation) => conversation.id === $page.params.conversation_id
@@ -91,7 +93,13 @@
 		}
 	};
 
+	function resizeTextArea() {
+		textAreaRef.style.height = '1px';
+		textAreaRef.style.height = textAreaRef.scrollHeight - 2 + 'px';
+	}
+
 	onMount(() => {
+		resizeTextArea();
 		conversationsStore.setConversations(data.conversations);
 	});
 
@@ -132,8 +140,11 @@
 	<form on:submit={onSubmit}>
 		<div class="chat-form-container">
 			<Button icon={Attachment} kind="ghost" size="small" iconDescription="Attach File" />
-			<TextInput
+			<textarea
+				bind:this={textAreaRef}
 				bind:value={$input}
+				on:input={resizeTextArea}
+				class:bx--text-area={true}
 				name="messageInput"
 				placeholder="Type your message here..."
 				aria-label="message input"
@@ -213,5 +224,14 @@
 
 	.branding {
 		margin: layout.$spacing-05 0 layout.$spacing-05 0;
+	}
+
+	:global(.bx--text-area) {
+		overflow-y: scroll;
+		height: 2.5rem;
+		min-height: 2.7rem; // default is 2.5, but this prevents scrollbar from appearing when empty
+		max-height: 220px; // equal to 10 rows
+		scrollbar-color: themes.$layer-03 themes.$layer-01;
+		resize: none;
 	}
 </style>
