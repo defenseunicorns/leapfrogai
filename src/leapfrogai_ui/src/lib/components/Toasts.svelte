@@ -13,7 +13,7 @@
 					kind={toast.kind}
 					title={toast.title}
 					subtitle={toast.subtitle}
-					caption={new Date().toLocaleString()}
+					caption={`Time stamp [${new Date().toLocaleTimeString()}]`}
 					on:click={() => toastStore.dismissToast(toast.id)}
 				/>
 			</div>
