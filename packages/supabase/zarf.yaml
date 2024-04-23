@@ -34,4 +34,3 @@ components:
         namespace: leapfrogai
         files:
           - "uds-package.yaml"
-          - "jwt-secret-job.yaml"
