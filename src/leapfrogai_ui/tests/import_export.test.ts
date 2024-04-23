@@ -33,6 +33,7 @@ test('it can import and exports conversations', async ({ page }) => {
 
 	const parsedDownload = JSON.parse(dataStr);
 	expect(parsedDownload.length).toBeGreaterThan(0);
-	const importedConversation = parsedDownload.find((c: Conversation) => c.id === conversation.id);
-	expect(importedConversation).toEqual(conversation);
+	const importedConversation = parsedDownload.find((c: Conversation) => c.label === conversation.label);
+	// We can't test full equality because the ids and insertedAt dates will be different
+	expect(importedConversation).toBeDefined();
 });

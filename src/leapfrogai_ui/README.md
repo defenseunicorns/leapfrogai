@@ -56,14 +56,17 @@ Stop Supabase:
 
 First install Playwright: `npm init playwright@latest`
 
-To run the E2E tests, have the app running then:  
+To run the E2E tests:  
 `npm run test:integration:ui`
 Click the play button in the Playwright UI.
+Playwright will run it's own production build and server the app at `http://localhost:4173`. If you make server side changes,
+restart playwright for them to take effect.
 
 Notes:
+
 1. Running the script above will reset the locally running Supabase instance and re-seed the database. You will
-lose existing data.
-2. if you run the tests in headless mode (```npm run test:integration```) you do not need the app running, it will build the app and run on port 4173.
+   lose existing data.
+2. if you run the tests in headless mode (`npm run test:integration`) you do not need the app running, it will build the app and run on port 4173.
 
 # Supabase and Keycloak Integration
 
@@ -120,7 +123,8 @@ don't work if you are using the Supabase CLI and not running a pure [docker vers
 In order to fix this, we have to edit the /etc/hosts file in the running Supabase Auth container (we can't add this through a docker compose file
 because we are using the Supabase CLI to start it up, migrate the db, and seed it).
 
-`npm run supabase:start` will start Supabase and modify the /etc/hosts to properly direct requests to the Keycloak server.
+`npm run supabase:start` will start Supabase and modify the /etc/hosts to properly direct requests to the Keycloak server. **You must ensure the IP address used
+in this command is the correct IP for where you have Keycloak hosted.**
 If you need to use a different Keycloak server for local development, you will need to modify this command.
 
 If your Keycloak server is not at a hosted domain, you will also need to modify the /etc/hosts on your machine:
@@ -129,7 +133,7 @@ If your Keycloak server is not at a hosted domain, you will also need to modify 
 Example:
 sudo nano /etc/hosts
 *add this line (edit as required)*
-100.104.70.77  keycloak.admin.uds.dev
+xxx.xxx.xx.xx  keycloak.admin.uds.dev
 ```
 
 Ensure the
@@ -173,5 +177,11 @@ ex:
 
 If you do not use this component and need to login with a Supabase auth command directly, ensure you provide
 the "openid" scope with the options parameter.
+
+The E2E tests use a fake Keycloak user. You must create this user in Keycloak, and add the username, password, and MFA secret
+to the .env file in order for the tests to pass. PUBLIC_DISABLE_KEYCLOAK must also be set to false to run the E2E tests.
+
+To get the MFA secret, create your new Keycloak user with the normal Keycloak login flow (not manually through the Keycloak UI).
+When scanning the QR code, use an app that lets you see the url of the QR code. The secret is contained in that URL.
 
 Login flow was adapted from [this reference](https://supabase.com/docs/guides/getting-started/tutorials/with-sveltekit?database-method=sql)

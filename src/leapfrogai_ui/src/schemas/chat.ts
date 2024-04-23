@@ -6,7 +6,7 @@ export const messageSchema: ObjectSchema<Message> = object({
 	user_id: string().uuid().required(),
 	conversation_id: string().uuid().required(),
 	content: string().required(),
-	role: string<'user' | 'system'>().required(),
+	role: string<Roles>().required(),
 	inserted_at: string().required()
 })
 	.noUnknown(true)
@@ -24,9 +24,9 @@ export const conversationSchema: ObjectSchema<Conversation> = object({
 
 export const conversationsSchema = array().of(conversationSchema);
 
-export const messageInputSchema: ObjectSchema<AIMessage> = object({
+export const messageInputSchema = object({
 	content: string().required(),
-	role: string<'user' | 'system'>().required()
+	role: string<Roles>().required()
 })
 	.noUnknown(true)
 	.strict();
