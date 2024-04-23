@@ -30,7 +30,7 @@ packages:
     repository: ghcr.io/defenseunicorns/packages/leapfrogai/whisper
     ref: 0.6.1
 
-  # UI
+  # Legacy: AI chat, transcription, and summarization frontend
   - name: leapfrogai-ui
-    path: ghcr.io/defenseunicorns/leapfrogai/leapfrogai-ui
+    repository: ghcr.io/defenseunicorns/packages/leapfrogai/leapfrogai-ui
     ref: 0.3.5
