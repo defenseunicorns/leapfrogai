@@ -422,6 +422,13 @@ storage:
   ## @param storage.enabled Enable Supabase storage
   ##
   enabled: false
+## Enable persistence using Persistent Volume Claims
+## ref: https://kubernetes.io/docs/concepts/storage/persistent-volumes/
+##
+persistence:
+  ## @param storage.persistence.enabled Enable persistence using Persistent Volume Claims
+  ##
+  enabled: false
 ## @section Supabase Studio Parameters
 ##
 ##
