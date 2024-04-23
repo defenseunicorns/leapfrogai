@@ -214,9 +214,9 @@ To run the vllm backend locally (starting from the root directory of the reposit
 python -m pip install src/leapfrogai_sdk
 cd packages/vllm
 python -m pip install .
-python scripts/model_download.py
-export QUANTIZATION=awq
-lfai-cli --app-dir=. main:Model
+python packages/vllm/src/model_download.py
+export QUANTIZATION=gptq
+python -u src/main.py
 ```
 
 #### Backend: whisper
