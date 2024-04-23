@@ -3190,11 +3190,11 @@ kong:
     ## @param jwt.autoGenerate.livenessProbe.timeoutSeconds Timeout seconds for livenessProbe
     ##
     livenessProbe:
-      timeoutSeconds: 30
+      timeoutSeconds: 40
     ## @param jwt.autoGenerate.readinessProbe.successThreshold Success threshold for readinessProbe
     ##
     readinessProbe:
-      timeoutSeconds: 30
+      timeoutSeconds: 40
   ## @param kong.extraVolumes [array] Additional volumes to the Kong pods
   ##
   extraVolumes:
