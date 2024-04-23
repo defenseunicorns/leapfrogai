@@ -14,7 +14,7 @@ constants:
 variables:
   - name: LEAPFROGAI_API_BASE_URL #LEAPFROGAI_API_BASE_URL
     description: The base URL for the LeapfrogAI API
-    default: api.leapfrogai.svc.cluster.local:8080/openai/v1
+    default: http://api.leapfrogai.svc.cluster.local:8080/openai/v1
     prompt: true
     sensitive: true
   - name: LEAPFROGAI_API_KEY
