@@ -9,11 +9,14 @@ metadata:
 components:
   - name: create-supabase-jwt-namespace
     required: true
-    manifests:
-      - name: jwt-namespace
+    charts:
+      - name: jwt-creator
         namespace: leapfrogai
-        files:
-          - "create-service-account.yaml"
+        localPath: chart
+        releaseName: jwt-creator
+        version: 0.0.1
+        valuesFiles:
+          - "bitnami-values.yaml"
   - name: supabase
     required: true
     charts:
