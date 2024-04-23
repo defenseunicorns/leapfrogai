@@ -16,8 +16,6 @@ on:
 
       # Catch generic github metadata files
       - "CODEOWNERS"
-      - "README.md"
-      - "CONTRIBUTING.md"
       - ".gitignore"
       - "LICENSE"
       - "pre-commit-config.yaml"
