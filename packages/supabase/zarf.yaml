@@ -6,6 +6,35 @@ metadata:
   description: >
     supabase instance and all of its dependencies
 
+variables:
+  - name: ENABLE_AUTH
+    description: 'Should the auth component be enabled'
+    default: "true"
+  - name: ENABLE_META
+    description: 'Should the auth component be enabled'
+    default: "true"
+  - name: ENABLE_REALTIME
+    description: 'Should the auth component be enabled'
+    default: "true"
+  - name: ENABLE_REST
+    description: 'Should the auth component be enabled'
+    default: "true"  
+  - name: ENABLE_STORAGE
+    description: 'Should the auth component be enabled'
+    default: "true"  
+  - name: ENABLE_STUDIO
+    description: 'Should the auth component be enabled'
+    default: "true"
+  - name: ENABLE_VOLUME_PERMISSIONS
+    description: 'Should the auth component be enabled'
+    default: "true"
+  - name: ENABLE_KONG
+    description: 'Should the auth component be enabled'
+    default: "true"
+  - name: ENABLE_POSTGRES
+    description: 'Should the auth component be enabled'
+    default: "true"
+
 components:
   - name: supabase-bootstrap
     description: pre-emptively creates the JWT token ServiceAccount and Job, this prevents hanging from occurring due to the Zarf lifecycle
