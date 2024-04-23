@@ -18,7 +18,7 @@ on:
       - "!.gitignore"
       - "!LICENSE"
 
-      # Ignore LFAI-UI things (for now?)
+      # Ignore LFAI-UI things (no Python)
       - "!src/leapfrogai_ui/**"
       - "!packages/ui/**"
 
