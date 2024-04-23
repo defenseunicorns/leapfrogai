@@ -8,6 +8,7 @@ metadata:
 
 components:
   - name: supabase-minimal
+    description: used to create the jwt token job due to issues with the order of operations in the upstream chart when deploying via Zarf
     required: true
     charts:
       - name: supabase-minimal
