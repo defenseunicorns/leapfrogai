@@ -1,6 +1,10 @@
 name: e2e
 on:
   pull_request:
+    types:
+      - ready_for_review
+      - review_requested
+      - synchronize
     paths:
       # Catch-all
       - "**"
