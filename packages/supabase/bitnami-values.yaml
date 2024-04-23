@@ -375,7 +375,8 @@ jwt:
     ## @param jwt.autoGenerate.podLabels Additional pod labels
     ## Ref: https://kubernetes.io/docs/concepts/overview/working-with-objects/labels/
     ##
-    podLabels: {}
+    podLabels:
+      sidecar.istio.io/inject: "false"
     ## @param jwt.autoGenerate.podAnnotations Additional pod annotations
     ## ref: https://kubernetes.io/docs/concepts/overview/working-with-objects/annotations/
     ##
