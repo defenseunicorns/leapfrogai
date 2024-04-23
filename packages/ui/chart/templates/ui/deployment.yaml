@@ -40,7 +40,7 @@ spec:
               valueFrom:
                 secretKeyRef:
                   name: supabase-jwt
-                  key: anonKey
+                  key: anon-key
               {{ end }}
             - name: PUBLIC_DISABLE_KEYCLOAK
               value: '###ZARF_VAR_DISABLE_KEYCLOAK###'
