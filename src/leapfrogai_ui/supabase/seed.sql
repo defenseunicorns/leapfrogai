@@ -93,7 +93,7 @@ VALUES (
 ), (
     (SELECT user_id FROM user1),
     (SELECT id FROM conversation1),
-    'system',
+    'assistant',
     'AI is the simulation of human intelligence processes by machines, especially computer systems.'
 );
 
@@ -111,6 +111,6 @@ VALUES (
 ), (
     (SELECT user_id FROM user1),
     (SELECT id FROM conversation2),
-    'system',
+    'assistant',
     'Retrieval-augmented generation (RAG) is a technique for enhancing the accuracy and reliability of generative AI models with facts fetched from external sources.'
 );

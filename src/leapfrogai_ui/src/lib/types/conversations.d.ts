@@ -11,19 +11,15 @@ type Conversation = NewConversationInput & {
 	inserted_at: string;
 };
 
+type Roles = 'system' | 'user' | 'assistant' | 'function' | 'data' | 'tool';
 type NewMessageInput = {
 	conversation_id: string;
 	content: string;
-	role: 'system' | 'user';
+	role: Roles;
 	inserted_at? : string;
 };
 type Message = NewMessageInput & {
 	id: string;
 	user_id: string;
 	inserted_at: string;
-};
-
-type AIMessage = {
-	role: 'user' | 'system';
-	content: string;
 };
