@@ -58,10 +58,10 @@ variables:
     sensitive: false
 
 components:
-  - name: leapfrogai-ui
+  - name: lfaiui
     required: true
     charts:
-      - name: leapfrogai-ui
+      - name: lfaiui
         namespace: leapfrogai
         localPath: chart
         version: '###ZARF_PKG_TMPL_IMAGE_VERSION###'
@@ -73,6 +73,6 @@ components:
           - wait:
               cluster:
                 kind: Deployment
-                name: leapfrogai-ui
+                name: lfaiui
                 namespace: leapfrogai
                 condition: Available
