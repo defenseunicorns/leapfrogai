@@ -66,6 +66,8 @@ components:
         namespace: leapfrogai
         localPath: chart
         version: '###ZARF_PKG_TMPL_IMAGE_VERSION###'
+        valuesFiles:
+          - "chart/values.yaml"
     images:
       - '###ZARF_PKG_TMPL_IMAGE_REPOSITORY###:###ZARF_PKG_TMPL_IMAGE_VERSION###'
     actions:
