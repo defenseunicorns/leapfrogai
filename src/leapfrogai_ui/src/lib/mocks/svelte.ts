@@ -7,6 +7,7 @@ type GetStoresOverrides = {
 	url: string;
 	params: Record<string, string>;
 };
+
 export const getStores = (
 	options: GetStoresOverrides = { url: 'http://localhost', params: {} }
 ) => {
