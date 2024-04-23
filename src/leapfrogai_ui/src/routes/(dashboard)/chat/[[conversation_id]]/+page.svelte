@@ -49,7 +49,6 @@
 		e.preventDefault();
 		if (!activeConversation?.id) {
 			// new conversation thread
-			// TODO - error handle
 			await conversationsStore.newConversation($input);
 			await tick(); // allow store to update
 			if (activeConversation?.id) {
