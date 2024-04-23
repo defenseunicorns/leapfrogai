@@ -22,6 +22,7 @@ on:
 
       # Ignore updates to generic github metadata files
       - "!CODEOWNERS"
+      - "!README.md"
       - "!CONTRIBUTING.md"
       - "!.gitignore"
       - "!LICENSE"
