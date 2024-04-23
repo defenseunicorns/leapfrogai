@@ -7,6 +7,13 @@ metadata:
     supabase instance and all of its dependencies
 
 components:
+  - name: create-supabase-jwt-namespace
+    required: true
+    manifests:
+      - name: jwt-namespace
+        namespace: leapfrogai
+        files:
+          - "create-service-account.yaml"
   - name: supabase
     required: true
     charts:
