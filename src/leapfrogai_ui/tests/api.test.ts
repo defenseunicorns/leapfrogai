@@ -1,4 +1,4 @@
-import { test, expect } from '@playwright/test';
+import { expect, test } from './fixtures';
 
 test('/api/chat returns a 400 when messages are incorrectly formatted', async ({ request }) => {
 	const messages = {

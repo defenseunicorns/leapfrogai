@@ -3,7 +3,7 @@
 	import { Button, TextInput, Tile } from 'carbon-components-svelte';
 	import { afterUpdate, onMount, tick } from 'svelte';
 	import { conversationsStore, toastStore } from '$stores';
-	import { ArrowRight, Attachment, UserAvatar } from 'carbon-icons-svelte';
+	import { ArrowRight, Attachment, StopFilledAlt, UserAvatar } from 'carbon-icons-svelte';
 	import { type Message as AIMessage, useChat } from 'ai/svelte';
 	import frog from '$assets/frog.png';
 	import { page } from '$app/stores';
@@ -19,7 +19,7 @@
 
 	$: $page.params.conversation_id, setMessages(activeConversation?.messages || []);
 
-	const { input, handleSubmit, messages, setMessages, isLoading, stop, error } = useChat({
+	const { input, handleSubmit, messages, setMessages, isLoading, stop } = useChat({
 		initialMessages: $conversationsStore.conversations
 			.find((conversation) => conversation.id === $page.params.conversation_id)
 			?.messages.map((message) => ({
@@ -32,24 +32,24 @@
 				await conversationsStore.newMessage({
 					conversation_id: activeConversation?.id,
 					content: message.content,
-					role: 'system'
+					role: message.role
 				});
 			}
+		},
+		onError: (error) => {
+			toastStore.addToast({
+				kind: 'error',
+				title: 'Error',
+				subtitle: 'Error getting AI Response'
+			});
 		}
 	});
 
-	$: if ($error)
-		toastStore.addToast({
-			kind: 'error',
-			title: 'Error',
-			subtitle: 'Error getting AI Response'
-		});
-
 	const onSubmit = async (e: SubmitEvent) => {
 		e.preventDefault();
+
 		if (!activeConversation?.id) {
 			// new conversation thread
-			// TODO - error handle
 			await conversationsStore.newConversation($input);
 			await tick(); // allow store to update
 			if (activeConversation?.id) {
@@ -74,11 +74,18 @@
 	const stopThenSave = async () => {
 		if ($isLoading) {
 			stop();
-			if (activeConversation?.id) {
+			toastStore.addToast({
+				kind: 'info',
+				title: 'Response Canceled',
+				subtitle: 'Response generation canceled.'
+			});
+			const lastMessage = $messages[$messages.length - 1];
+
+			if (activeConversation?.id && lastMessage.role !== 'user') {
 				await conversationsStore.newMessage({
 					conversation_id: activeConversation?.id,
-					content: $messages[$messages.length - 1].content, // save last message
-					role: 'system'
+					content: lastMessage.content, // save last message
+					role: lastMessage.role
 				});
 			}
 		}
@@ -131,16 +138,25 @@
 				placeholder="Type your message here..."
 				aria-label="message input"
 			/>
-
-			<Button
-				kind="secondary"
-				icon={ArrowRight}
-				iconDescription="Send"
-				size="field"
-				type="submit"
-				aria-label="send"
-				disabled={$isLoading || !$input}
-			/>
+			{#if !$isLoading}
+				<Button
+					kind="secondary"
+					icon={ArrowRight}
+					size="field"
+					type="submit"
+					aria-label="send"
+					disabled={$isLoading || !$input}
+				/>
+			{:else}
+				<Button
+					kind="secondary"
+					size="field"
+					type="submit"
+					icon={StopFilledAlt}
+					aria-label="cancel message"
+					on:click={stopThenSave}
+				/>
+			{/if}
 		</div>
 	</form>
 
