@@ -37,7 +37,6 @@ variables:
 
 components:
   - name: supabase-bootstrap
-    description: "pre-emptively creates the JWT token ServiceAccount and Job, this prevents hanging from occurring due to the Zarf lifecycle"
     required: true
     charts:
       - name: supabase-bootstrap
