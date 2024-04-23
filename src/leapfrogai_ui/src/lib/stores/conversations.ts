@@ -211,7 +211,7 @@ const createConversationsStore = () => {
 					});
 				}
 			}
-			console.log(newConversations)
+
 			update((old) => {
 				return {
 					...old,
