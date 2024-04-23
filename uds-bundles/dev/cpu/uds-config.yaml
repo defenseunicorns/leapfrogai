@@ -20,5 +20,5 @@ variables:
   lfaiui:
     domain: https://lfaiui.uds.dev
     model: vllm
-    supabase_url: http://supabase.leapfrogai.svc.cluster.local:8080
+    supabase_url: http://supabase-kong.leapfrogai.svc.cluster.local:8080
     supabase_anon_key: ''
