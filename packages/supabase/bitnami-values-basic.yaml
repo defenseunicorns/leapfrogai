@@ -2448,7 +2448,7 @@ storage:
   persistence:
     ## @param storage.persistence.enabled Enable persistence using Persistent Volume Claims
     ##
-    enabled: true
+    enabled: false
     ## @param storage.persistence.mountPath Path to mount the volume at.
     ##
     mountPath: /bitnami/supabase-storage
