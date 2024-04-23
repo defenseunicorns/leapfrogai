@@ -56,18 +56,24 @@ describe('date helpers', () => {
 
 	describe('getDateCategory', () => {
 		it('returns "Old" when the date is more than the default set for numMonthsAgo', () => {
+			const NUM_MONTHS_TO_DISPLAY = 6;
 			const currentDate = new Date();
-			const pastDate = new Date(currentDate.getFullYear(), currentDate.getMonth() - 5);
+			const pastDate = new Date(
+				currentDate.getFullYear(),
+				currentDate.getMonth() - NUM_MONTHS_TO_DISPLAY - 1
+			);
 			const expectedCategory = 'Old';
 
-			expect(dates.getDateCategory(pastDate)).toBe(expectedCategory);
+			expect(
+				dates.getDateCategory({ date: pastDate, numMonthsToDisplay: NUM_MONTHS_TO_DISPLAY })
+			).toBe(expectedCategory);
 		});
 
 		it('returns "Today" when the date is the same as the current date', () => {
 			const currentDate = new Date();
 			const expectedCategory = 'Today';
 
-			expect(dates.getDateCategory(currentDate)).toBe(expectedCategory);
+			expect(dates.getDateCategory({ date: currentDate })).toBe(expectedCategory);
 		});
 
 		it('returns "Yesterday" when the date is one day before the current date', () => {
@@ -79,45 +85,24 @@ describe('date helpers', () => {
 			);
 			const expectedCategory = 'Yesterday';
 
-			expect(dates.getDateCategory(yesterday)).toBe(expectedCategory);
+			expect(dates.getDateCategory({ date: yesterday })).toBe(expectedCategory);
 		});
 
 		it('returns "This Month" when the date is in the same month as the current date', () => {
-			const currentDate = new Date();
-			const sameMonthDate = new Date(currentDate.getFullYear(), currentDate.getMonth(), 10);
-			const expectedCategory = 'This Month';
+            const today = new Date();
+            const sameMonthDate = new Date(today.getFullYear(), today.getMonth(), 20);
+            const expectedCategory = 'This Month';
 
-			expect(dates.getDateCategory(sameMonthDate)).toBe(expectedCategory);
-		});
-
-		it('returns the formatted month and year when the date is in a different year', () => {
-			// Date to compare against needs to be within numMonthsToDisplay months but still
-			// within previous year in order to see the monthname - year
-			// we are setting the numMonthsToDisplay to 1200 to make sure it does not put the month in 'Old' category
-
-			// The system timezone here is behind UTC so you need to specify T00:00 to make sure it reflects the local
-			// day properly and doesn't show October when it should be November 1
-			const date = new Date('2023-11-01T00:00');
-			const expectedCategory = 'November - 2023';
-
-			expect(dates.getDateCategory(date, 1200)).toBe(expectedCategory);
-		});
-
-		it('returns the formatted month when the date is in the current year', () => {
-			// We can't use actual today because if this test is run in January, the previous month
-			// will get the year with its category (e.g December - 2023) and the test will fail
-			const todayOverride = new Date('2024-03-01T00:00');
-			const date = new Date('2024-02-01T00:00');
-			const expectedCategory = 'February';
-
-			expect(dates.getDateCategory(date, 4, todayOverride)).toBe(expectedCategory);
+			expect(dates.getDateCategory({ date: sameMonthDate })).toBe(expectedCategory);
 		});
 	});
 
 	describe('organizeConversationsByDate', () => {
+		// Overriding to test with months that overlap years
 		const todayOverride = new Date('2024-03-20T00:00');
 
 		it('organizes conversations by date category', () => {
+			const numMonthsToDisplay = 6;
 			const conversations = [
 				// today
 				getFakeConversation({ insertedAt: todayOverride.toDateString() }),
@@ -155,23 +140,35 @@ describe('date helpers', () => {
 				// Old
 				getFakeConversation({
 					insertedAt: new Date(
+						todayOverride.getFullYear() - 2,
+						todayOverride.getMonth()
+					).toDateString()
+				}),
+				getFakeConversation({
+					insertedAt: new Date(
 						todayOverride.getFullYear(),
-						todayOverride.getMonth() - 5
+						todayOverride.getMonth() - numMonthsToDisplay - 1
 					).toDateString()
 				})
 			];
-			console.log(conversations.map((c) => c.inserted_at));
 
-			const expectedOrganizedConversations = {
-				Today: [conversations[0]],
-				Yesterday: [conversations[1], conversations[2]],
-				'This Month': [conversations[3]],
-				February: [conversations[4]],
-				'December - 2023': [conversations[5]],
-				Old: [conversations[6]]
-			};
-
-			const result = dates.organizeConversationsByDate(conversations, todayOverride);
+			const expectedOrganizedConversations = [
+				{ label: 'Today', conversations: [conversations[0]] },
+				{ label: 'Yesterday', conversations: [conversations[1], conversations[2]] },
+				{ label: 'This Month', conversations: [conversations[3]] },
+				{ label: 'February', conversations: [conversations[4]] },
+				{ label: 'January', conversations: [] },
+				{ label: 'December', conversations: [conversations[5]] },
+				{ label: 'November', conversations: [] },
+				{ label: 'October', conversations: [] },
+				{ label: 'September', conversations: [] },
+				{ label: 'Old', conversations: [conversations[7], conversations[6]] } // tests ordering of old dates too
+			];
+			const result = dates.organizeConversationsByDate(
+				conversations,
+				todayOverride,
+				numMonthsToDisplay
+			);
 			expect(result).toEqual(expectedOrganizedConversations);
 		});
 	});

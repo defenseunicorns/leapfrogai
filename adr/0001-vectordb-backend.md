@@ -4,7 +4,7 @@
 
 - [VectorDB](#vectordb)
   - [Table of Contents](#table-of-contents)
-  - [Summary](#summary)
+  - [Status](#status)
     - [Issue](#issue)
     - [Decision](#decision)
     - [Rationale](#rationale)
@@ -35,7 +35,7 @@ We decided on ChromaDB due to it's simple implementation, performance, and Apach
 
 ### Status
 
-Provisional
+SUPERSEDED by [0003-database](0003-database.md)
 
 ## Context
 
