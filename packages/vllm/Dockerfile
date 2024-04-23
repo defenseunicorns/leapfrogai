@@ -1,6 +1,20 @@
-ARG ARCH=amd64
-
 FROM nvidia/cuda:12.2.2-devel-ubuntu22.04 as builder
+
+# Set the config file defaults
+ARG PYTHON_VERSION=3.11.6
+ARG HF_HUB_ENABLE_HF_TRANSFER="1"
+ARG REPO_ID="TheBloke/Synthia-7B-v2.0-GPTQ"
+ARG REVISION="gptq-4bit-32g-actorder_True"
+ARG QUANTIZATION="gptq"
+ARG MODEL_SOURCE=".model/"
+ARG MAX_CONTEXT_LENGTH=32768
+ARG STOP_TOKENS='["</s>","<|endoftext|>","<|im_end|>"]'
+ARG PROMPT_FORMAT_CHAT_SYSTEM="SYSTEM: {}\n"
+ARG PROMPT_FORMAT_CHAT_ASSISTANT="ASSISTANT: {}\n"
+ARG PROMPT_FORMAT_CHAT_USER="USER: {}\n"
+ARG PROMPT_FORMAT_DEFAULTS_TOP_P=1.0
+ARG PROMPT_FORMAT_DEFAULTS_TOP_K=0
+ARG TENSOR_PARALLEL_SIZE=1
 
 ENV DEBIAN_FRONTEND=noninteractive
 
@@ -13,19 +27,25 @@ RUN groupadd -g 65532 vglusers && \
 WORKDIR /home/leapfrogai
 
 # grab necesary python dependencies
+# TODO @JPERRY: Get context as to why we are doing this for this Dockerfile but not our other ones
 RUN apt-get -y update \
-    && apt-get -y install software-properties-common \
+    && apt-get install -y software-properties-common \
     && add-apt-repository universe \
-    && add-apt-repository ppa:deadsnakes/ppa \
+    && add-apt-repository ppa:deadsnakes/ppa  \
     && apt-get -y update
 
+# get deps for vllm compilation, model download, and pyenv
+RUN apt-get -y install git python3-venv make build-essential libssl-dev zlib1g-dev libbz2-dev libreadline-dev libsqlite3-dev wget curl llvm libncurses5-dev libncursesw5-dev tk-dev libffi-dev
 
-RUN apt-get -y install python3.11-full
-
-# get deps for vllm compilation and model download
 RUN chown -R nonroot /home/leapfrogai/
 USER nonroot
-RUN python3.11 -m venv .venv
+
+RUN git clone --depth=1 https://github.com/pyenv/pyenv.git .pyenv
+ENV PYENV_ROOT="/home/leapfrogai/.pyenv"
+ENV PATH="$PYENV_ROOT/shims:$PYENV_ROOT/bin:$PATH"
+RUN pyenv install ${PYTHON_VERSION}
+RUN pyenv global ${PYTHON_VERSION}
+RUN python3 -m venv .venv
 ENV PATH="/home/leapfrogai/.venv/bin:$PATH"
 
 
@@ -36,18 +56,27 @@ COPY build/lfai_vllm*.whl .
 RUN pip install lfai_vllm*.whl --no-index --find-links=build/
 
 # download model
-ARG REPO_ID=TheBloke/Synthia-7B-v2.0-GPTQ
-ARG REVISION=gptq-4bit-32g-actorder_True
 ENV HF_HOME=/home/leapfrogai/.cache/huggingface
-COPY scripts/model_download.py scripts/model_download.py
+COPY src/ src/
 
-RUN REPO_ID=${REPO_ID} FILENAME=${FILENAME} REVISION=${REVISION} python3.11 scripts/model_download.py
+# Load ARG values into env variables for pickup by confz
+ENV LAI_HF_HUB_ENABLE_HF_TRANSFER=${HF_HUB_ENABLE_HF_TRANSFER}
+ENV LAI_REPO_ID=${REPO_ID}
+ENV LAI_REVISION=${REVISION}
+ENV LAI_QUANTIZATION=${QUANTIZATION}
+ENV LAI_TENSOR_PARALLEL_SIZE=${TENSOR_PARALLEL_SIZE}
+ENV LAI_MODEL_SOURCE=${MODEL_SOURCE}
+ENV LAI_MAX_CONTEXT_LENGTH=${MAX_CONTEXT_LENGTH}
+ENV LAI_STOP_TOKENS=${STOP_TOKENS}
+ENV LAI_PROMPT_FORMAT_CHAT_SYSTEM=${PROMPT_FORMAT_CHAT_SYSTEM}
+ENV LAI_PROMPT_FORMAT_CHAT_ASSISTANT=${PROMPT_FORMAT_CHAT_ASSISTANT}
+ENV LAI_PROMPT_FORMAT_CHAT_USER=${PROMPT_FORMAT_CHAT_USER}
+ENV LAI_PROMPT_FORMAT_DEFAULTS_TOP_P=${PROMPT_FORMAT_DEFAULTS_TOP_P}
+ENV LAI_PROMPT_FORMAT_DEFAULTS_TOP_K=${PROMPT_FORMAT_DEFAULTS_TOP_K}
 
-ENV QUANTIZATION=gptq
-
-COPY main.py .
-COPY config.yaml .
+RUN pip install -U huggingface_hub[cli,hf_transfer]
+RUN python3 src/model_download.py
 
 EXPOSE 50051:50051
 
-ENTRYPOINT ["python3.11", "-m", "leapfrogai_sdk.cli", "--app-dir=.", "main:Model"]
+ENTRYPOINT ["python", "-u", "src/main.py"]

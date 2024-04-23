@@ -1,4 +1,5 @@
 import asyncio
+import json
 import logging
 import os
 import queue
@@ -6,16 +7,31 @@ import random
 import sys
 import threading
 import time
-from typing import Any, Dict, Generator
+from typing import Any, Generator, Dict
 
+from confz import EnvSource
 from dotenv import load_dotenv
-from leapfrogai_sdk import BackendConfig
-from leapfrogai_sdk.llm import LLM, GenerationConfig
+from leapfrogai_sdk import (
+    BackendConfig,
+    ChatCompletionChoice,
+    ChatCompletionRequest,
+    ChatCompletionResponse,
+    ChatItem,
+    ChatRole,
+    CompletionChoice,
+    CompletionRequest,
+    CompletionResponse,
+    GrpcContext,
+    serve,
+)
+from leapfrogai_sdk.llm import GenerationConfig
 from vllm import SamplingParams
 from vllm.engine.arg_utils import AsyncEngineArgs
 from vllm.engine.async_llm_engine import AsyncLLMEngine
 from vllm.outputs import RequestOutput
 from vllm.utils import random_uuid
+
+from config import AppConfig
 
 load_dotenv()
 
@@ -67,7 +83,66 @@ class RandomAsyncIterator:
             pass  # If the iterable is not found, ignore the error
 
 
-@LLM
+def get_backend_configs():
+    # Manually load env var as ConfZ does not handle complex types (list)
+    stop_tokens: str | None = os.getenv("LAI_STOP_TOKENS")
+    if stop_tokens:
+        processed_stop_tokens = json.loads(stop_tokens)
+    else:
+        processed_stop_tokens = []
+    del os.environ["LAI_STOP_TOKENS"]
+
+    BackendConfig.CONFIG_SOURCES = EnvSource(
+        allow_all=True,
+        prefix="LAI_",
+        remap={
+            "model_source": "model.source",
+            "max_context_length": "max_context_length",
+            "stop_tokens": "stop_tokens",
+            "prompt_format_chat_system": "prompt_format.chat.system",
+            "prompt_format_chat_assistant": "prompt_format.chat.assistant",
+            "prompt_format_chat_user": "prompt_format.chat.user",
+            "prompt_format_defaults_top_p": "prompt_format.defaults.top_p",
+            "prompt_format_defaults_top_k": "prompt_format.defaults.top_k",
+        },
+    )
+    # Initialize an immutable config from env variables without stop_tokens list
+    backend_configs: BackendConfig = BackendConfig()
+
+    # Create a new config from env variables + stop_tokens
+    BackendConfig.CONFIG_SOURCES = None
+    backend_configs = BackendConfig(
+        name=backend_configs.name,
+        model=backend_configs.model,
+        max_context_length=backend_configs.max_context_length,
+        stop_tokens=processed_stop_tokens,
+        prompt_format=backend_configs.prompt_format,
+        default=backend_configs.defaults,
+    )
+    return backend_configs
+
+
+def get_config_from_request(request: ChatCompletionRequest | CompletionRequest):
+    return GenerationConfig(
+        max_new_tokens=request.max_new_tokens,
+        temperature=request.temperature,
+        top_k=request.top_k,
+        top_p=request.top_p,
+        do_sample=request.do_sample,
+        n=request.n,
+        stop=list(request.stop),
+        repetition_penalty=request.repetition_penalty,
+        presence_penalty=request.presence_penalty,
+        best_of=str(request.best_of),
+        logit_bias=request.logit_bias,
+        return_full_text=request.return_full_text,
+        truncate=request.truncate,
+        typical_p=request.typical_p,
+        watermark=request.watermark,
+        seed=request.seed,
+    )
+
+
 class Model:
     """Implements an LLM model with concurrent output generation and management."""
 
@@ -83,20 +158,21 @@ class Model:
         _thread = threading.Thread(target=asyncio.run, args=(self.iterate_outputs(),))
         _thread.start()
 
-        # Configuration setup for the backend and model
-        self.backend_config = BackendConfig()
+        self.backend_config = get_backend_configs()
         self.model = self.backend_config.model.source
         self.engine_args = AsyncEngineArgs(
             engine_use_ray=True,
             model=self.model,
             trust_remote_code=False,
-            quantization=os.environ["QUANTIZATION"] or None,
+            quantization=AppConfig().backend_options.quantization,
             max_context_len_to_capture=self.backend_config.max_context_length,
-            worker_use_ray=True,
             max_model_len=self.backend_config.max_context_length,
             dtype="auto",
+            worker_use_ray=True,
             gpu_memory_utilization=0.90,
+            tensor_parallel_size=AppConfig().backend_options.tensor_parallel_size,
         )
+        print(self.engine_args)
         self.engine = AsyncLLMEngine.from_engine_args(self.engine_args)
 
     async def iterate_outputs(self):
@@ -188,9 +264,7 @@ class Model:
         cur_request_queue = self.delta_queue_by_id.get(request_id)
         return cur_request_queue is None or cur_request_queue.empty()
 
-    def generate(
-        self, prompt: str, config: GenerationConfig
-    ) -> Generator[str, Any, Any]:
+    def stream_request(self, config: GenerationConfig, prompt: str):
         """Initiate and manage the generation process for a given prompt, yielding generated text segments."""
 
         request_id = random_uuid()
@@ -214,3 +288,127 @@ class Model:
             yield result
 
         logging.info(f"Finished request {request_id}")
+
+    def complete_stream(self, request: CompletionRequest) -> Generator[str, Any, Any]:
+        """Wrapper around stream_request to transform prompt and config variables from a CompletionRequest"""
+
+        prompt = request.prompt
+        config = get_config_from_request(request)
+
+        return self.stream_request(config, prompt)
+
+    def chat_stream(self, request: ChatCompletionRequest) -> Generator[str, Any, Any]:
+        """Wrapper around stream_request to transform prompt and config variables from a ChatCompletionRequest"""
+
+        prompt = self.backend_config.apply_chat_template(request.chat_items)
+        config = get_config_from_request(request)
+
+        return self.stream_request(config, prompt)
+
+    async def Complete(
+        self, request: CompletionRequest, context: GrpcContext
+    ) -> CompletionResponse:
+        """
+        Handles a completion request and returns the complete response.
+
+        Args:
+            request (CompletionRequest): The completion request object containing the prompt and other parameters.
+            context (GrpcContext): The gRPC context object.
+
+        Returns:
+            CompletionResponse: The completion response object containing the generated text.
+        """
+
+        logging.info("Complete:\n---")
+        chat_stream = self.complete_stream(request)
+
+        content = ""
+        for text_chunk in chat_stream:
+            content += text_chunk
+
+        completion = CompletionChoice(index=0, text=content)
+        logging.info("Complete END:\n---")
+        return CompletionResponse(choices=[completion])
+
+    async def CompleteStream(
+        self, request: CompletionRequest, context: GrpcContext
+    ) -> Generator[CompletionResponse, Any, Any]:
+        """
+        Handles a streaming completion request and yields the response in chunks.
+
+        Args:
+            request (CompletionRequest): The completion request object containing the prompt and other parameters.
+            context (GrpcContext): The gRPC context object.
+
+        Returns:
+            CompletionResponse: Yields the completion response object containing a chunk of the generated text.
+        """
+
+        logging.info("CompleteStream:\n---")
+        chat_stream = self.complete_stream(request)
+
+        for text_chunk in chat_stream:
+            choice = CompletionChoice(index=0, text=text_chunk)
+            yield CompletionResponse(choices=[choice])
+
+        logging.info("CompleteStream END")
+
+    async def ChatComplete(
+        self, request: ChatCompletionRequest, context: GrpcContext
+    ) -> ChatCompletionResponse:
+        """
+        Handles a chat completion request and returns the complete response.
+
+        Args:
+            request (ChatCompletionRequest): The chat completion request object containing the chat items and other parameters.
+            context (GrpcContext): The gRPC context object.
+
+        Returns:
+            ChatCompletionResponse: The chat completion response object containing the generated text.
+        """
+
+        logging.info("ChatComplete:\n---")
+        chat_stream = self.chat_stream(request)
+
+        content = ""
+        for text_chunk in chat_stream:
+            content += text_chunk
+
+        item = ChatItem(role=ChatRole.ASSISTANT, content=content)
+        choice = ChatCompletionChoice(index=0, chat_item=item)
+        logging.info("ChatCompleteStream END:\n---")
+        return ChatCompletionResponse(choices=[choice])
+
+    async def ChatCompleteStream(
+        self, request: ChatCompletionRequest, context: GrpcContext
+    ) -> Generator[ChatCompletionResponse, Any, Any]:
+        """
+        Handles a streaming chat completion request and yields the response in chunks.
+
+        Args:
+            request (ChatCompletionRequest): The chat completion request object containing the chat items and other parameters.
+            context (GrpcContext): The gRPC context object.
+
+        Returns:
+            ChatCompletionResponse: Yields the chat completion response object containing a chunk of the generated text.
+        """
+
+        logging.info("ChatCompleteStream:\n---")
+        chat_stream = self.chat_stream(request)
+
+        for text_chunk in chat_stream:
+            item = ChatItem(role=ChatRole.ASSISTANT, content=text_chunk)
+            choice = ChatCompletionChoice(index=0, chat_item=item)
+
+            yield ChatCompletionResponse(choices=[choice])
+
+        logging.info("ChatCompleteStream END:\n---")
+
+
+async def main():
+    logging.basicConfig(level=logging.INFO)
+    await serve(Model())
+
+
+if __name__ == "__main__":
+    asyncio.run(main())
