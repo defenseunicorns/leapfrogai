@@ -48,6 +48,7 @@ variables:
     default: supabase-kong.leapfrogai.svc.cluster.local:8080
     sensitive: false
   - name: SUPABASE_ANON_KEY
+    default: ''
     description: Public key for Supabase
     prompt: true
     sensitive: false
