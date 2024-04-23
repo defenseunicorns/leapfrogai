@@ -12,8 +12,6 @@ import userEvent from '@testing-library/user-event';
 import stores from '$app/stores';
 import { beforeAll, vi } from 'vitest';
 
-import * as navigation from '$app/navigation';
-
 import {
 	mockChatCompletion,
 	mockChatCompletionError,

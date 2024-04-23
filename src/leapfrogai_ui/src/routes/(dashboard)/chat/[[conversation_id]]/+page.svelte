@@ -47,30 +47,34 @@
 		}
 	});
 
-	const onSubmit = async (e: SubmitEvent) => {
+	const onSubmit = async (e: SubmitEvent | KeyboardEvent) => {
 		e.preventDefault();
-
-		if (!activeConversation?.id) {
-			// new conversation thread
-			await conversationsStore.newConversation($input);
-			await tick(); // allow store to update
-			if (activeConversation?.id) {
+		textAreaRef.style.height = '2.7rem'; // reset input size if there were multiple lines
+		if ($isLoading) {
+			await stopThenSave();
+		} else {
+			if (!activeConversation?.id) {
+				// new conversation thread
+				await conversationsStore.newConversation($input);
+				await tick(); // allow store to update
+				if (activeConversation?.id) {
+					await conversationsStore.newMessage({
+						conversation_id: activeConversation?.id,
+						content: $input,
+						role: 'user'
+					});
+				}
+			} else {
+				// store user input
 				await conversationsStore.newMessage({
 					conversation_id: activeConversation?.id,
 					content: $input,
 					role: 'user'
 				});
 			}
-		} else {
-			// store user input
-			await conversationsStore.newMessage({
-				conversation_id: activeConversation?.id,
-				content: $input,
-				role: 'user'
-			});
-		}
 
-		handleSubmit(e); // submit to AI (/api/chat)
+			handleSubmit(e); // submit to AI (/api/chat)
+		}
 	};
 
 	const stopThenSave = async () => {
@@ -144,6 +148,11 @@
 				bind:this={textAreaRef}
 				bind:value={$input}
 				on:input={resizeTextArea}
+				on:keydown={(e) => {
+					if (e.key === 'Enter' && !e.shiftKey) {
+						onSubmit(e);
+					}
+				}}
 				class:bx--text-area={true}
 				name="messageInput"
 				placeholder="Type your message here..."
@@ -165,7 +174,6 @@
 					type="submit"
 					icon={StopFilledAlt}
 					aria-label="cancel message"
-					on:click={stopThenSave}
 				/>
 			{/if}
 		</div>
@@ -218,7 +226,7 @@
 	.chat-form-container {
 		display: flex;
 		justify-content: space-around;
-		align-items: center;
+		align-items: flex-end;
 		gap: 0.5rem;
 	}
 
@@ -232,6 +240,6 @@
 		min-height: 2.7rem; // default is 2.5, but this prevents scrollbar from appearing when empty
 		max-height: 220px; // equal to 10 rows
 		scrollbar-color: themes.$layer-03 themes.$layer-01;
-		resize: none;
+		resize: none !important; // when running locally, sometimes the resize: none doesn't take, !important makes it work consistently
 	}
 </style>
