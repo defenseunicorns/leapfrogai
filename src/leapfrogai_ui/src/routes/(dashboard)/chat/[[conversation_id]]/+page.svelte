@@ -1,19 +1,17 @@
 <script lang="ts">
-	import { PoweredByDU } from '$components';
-	import { Button, Tile } from 'carbon-components-svelte';
+	import { LFTextArea, PoweredByDU } from '$components';
+	import { Button } from 'carbon-components-svelte';
 	import { afterUpdate, onMount, tick } from 'svelte';
 	import { conversationsStore, toastStore } from '$stores';
-	import { ArrowRight, Attachment, StopFilledAlt, UserAvatar } from 'carbon-icons-svelte';
+	import { ArrowRight, Attachment, StopFilledAlt } from 'carbon-icons-svelte';
 	import { type Message as AIMessage, useChat } from 'ai/svelte';
-	import frog from '$assets/frog.png';
 	import { page } from '$app/stores';
 	import { beforeNavigate } from '$app/navigation';
+	import Message from '$components/Message.svelte';
 
 	export let data;
 	let messageThreadDiv: HTMLDivElement;
 	let messageThreadDivHeight: number;
-
-	let textAreaRef: HTMLTextAreaElement;
 
 	$: activeConversation = $conversationsStore.conversations.find(
 		(conversation) => conversation.id === $page.params.conversation_id
@@ -21,7 +19,7 @@
 
 	$: $page.params.conversation_id, setMessages(activeConversation?.messages || []);
 
-	const { input, handleSubmit, messages, setMessages, isLoading, stop } = useChat({
+	const { input, handleSubmit, messages, setMessages, isLoading, stop, append } = useChat({
 		initialMessages: $conversationsStore.conversations
 			.find((conversation) => conversation.id === $page.params.conversation_id)
 			?.messages.map((message) => ({
@@ -49,7 +47,7 @@
 
 	const onSubmit = async (e: SubmitEvent | KeyboardEvent) => {
 		e.preventDefault();
-		textAreaRef.style.height = '2.7rem'; // reset input size if there were multiple lines
+
 		if ($isLoading) {
 			await stopThenSave();
 		} else {
@@ -97,13 +95,36 @@
 		}
 	};
 
-	function resizeTextArea() {
-		textAreaRef.style.height = '1px';
-		textAreaRef.style.height = textAreaRef.scrollHeight - 2 + 'px';
-	}
+	const handleMessageEdit = async (e: any, message: AIMessage) => {
+		e.preventDefault();
+
+		const messageIndex = $messages.findIndex((m) => m.id === message.id);
+		// Ensure the message after the user's message exists and is a response from the AI
+		const numToSplice =
+			$messages[messageIndex + 1] && $messages[messageIndex + 1].role !== 'user' ? 2 : 1;
+
+		if (activeConversation?.id) {
+			// delete old message from DB
+			await conversationsStore.deleteMessage(message.id, activeConversation.id);
+			if(numToSplice === 2){
+				// also delete that message's response
+				await conversationsStore.deleteMessage($messages[messageIndex + 1].id, activeConversation.id);
+			}
+
+			// save new message
+			await conversationsStore.newMessage({
+				conversation_id: activeConversation.id,
+				content: message.content,
+				role: 'user'
+			});
+		}
+		setMessages($messages.toSpliced(messageIndex, numToSplice)); // remove original message and response
+
+		// send to /api/chat
+		await append(message);
+	};
 
 	onMount(() => {
-		resizeTextArea();
 		conversationsStore.setConversations(data.conversations);
 	});
 
@@ -123,41 +144,15 @@
 <div class="inner-content">
 	<div class="messages" bind:this={messageThreadDiv} bind:offsetHeight={messageThreadDivHeight}>
 		{#each $messages as message (message.id)}
-			<div
-				data-testid="message"
-				class="message"
-				class:transparent={message.role === 'user'}
-				class:centered-vertically={message.role === 'user'}
-			>
-				{#if message.role === 'user'}
-					<div class="icon">
-						<UserAvatar style="width: 24px; height: 24px;" />
-					</div>
-				{:else}
-					<img alt="LeapfrogAI" src={frog} class="icon" />
-				{/if}
-				<Tile class="centered-vertically" style="line-height: 20px;">{message.content}</Tile>
-			</div>
+			<Message {message} {handleMessageEdit} />
 		{/each}
 	</div>
 
 	<form on:submit={onSubmit}>
 		<div class="chat-form-container">
 			<Button icon={Attachment} kind="ghost" size="small" iconDescription="Attach File" />
-			<textarea
-				bind:this={textAreaRef}
-				bind:value={$input}
-				on:input={resizeTextArea}
-				on:keydown={(e) => {
-					if (e.key === 'Enter' && !e.shiftKey) {
-						onSubmit(e);
-					}
-				}}
-				class:bx--text-area={true}
-				name="messageInput"
-				placeholder="Type your message here..."
-				aria-label="message input"
-			/>
+			<LFTextArea value={input} {onSubmit} />
+
 			{#if !$isLoading}
 				<Button
 					data-testid="send message"
@@ -187,33 +182,11 @@
 </div>
 
 <style lang="scss">
-	.centered-vertically,
-	:global(.centered-vertically.bx--tile) {
-		display: flex;
-		align-items: center;
-	}
-
 	.inner-content {
 		display: flex;
 		flex-direction: column;
 		justify-content: flex-end;
 		height: 100%;
-	}
-
-	.message {
-		display: flex;
-	}
-
-	.transparent {
-		:global(.bx--tile) {
-			background-color: transparent;
-		}
-	}
-
-	.icon {
-		width: 32px;
-		height: 52px;
-		padding: 14px layout.$spacing-02;
 	}
 
 	.messages {
@@ -234,14 +207,5 @@
 
 	.branding {
 		margin: layout.$spacing-05 0 layout.$spacing-05 0;
-	}
-
-	:global(.bx--text-area) {
-		overflow-y: scroll;
-		height: 2.5rem;
-		min-height: 2.7rem; // default is 2.5, but this prevents scrollbar from appearing when empty
-		max-height: 220px; // equal to 10 rows
-		scrollbar-color: themes.$layer-03 themes.$layer-01;
-		resize: none !important; // when running locally, sometimes the resize: none doesn't take, !important makes it work consistently
 	}
 </style>
