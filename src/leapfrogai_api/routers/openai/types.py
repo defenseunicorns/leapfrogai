@@ -13,6 +13,8 @@ from openai.types import CompletionUsage as Usage
 
 
 class ModelResponseModel(BaseModel):
+    """Model object for model response."""
+
     id: str
     object: str = "model"
     created: int = 0
@@ -20,8 +22,45 @@ class ModelResponseModel(BaseModel):
 
 
 class ModelResponse(BaseModel):
+    """Response object for models."""
+
     object: str = "list"
     data: list[ModelResponseModel] = []
+
+
+############
+# COMPLETION
+############
+
+
+class CompletionRequest(BaseModel):
+    """Request object for completion."""
+
+    model: str
+    prompt: str | list[int]
+    stream: bool | None = False
+    max_tokens: int | None = 16
+    temperature: float | None = 1.0
+
+
+class CompletionChoice(BaseModel):
+    """Choice object for completion."""
+
+    index: int
+    text: str
+    logprobs: object = None
+    finish_reason: str = ""
+
+
+class CompletionResponse(BaseModel):
+    """Response object for completion."""
+
+    id: str = ""
+    object: str = "completion"
+    created: int = 0
+    model: str = ""
+    choices: list[CompletionChoice]
+    usage: Usage | None = None
 
 
 ##########

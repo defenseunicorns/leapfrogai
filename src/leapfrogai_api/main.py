@@ -9,6 +9,7 @@ from fastapi import FastAPI
 from leapfrogai_api.routers.base import router as base_router
 from leapfrogai_api.routers.openai import (
     audio,
+    completions,
     chat,
     embeddings,
     models,
@@ -36,6 +37,7 @@ async def lifespan(app: FastAPI):
 app = FastAPI(lifespan=lifespan)
 app.include_router(base_router)
 app.include_router(models.router)
+app.include_router(completions.router)
 app.include_router(chat.router)
 app.include_router(audio.router)
 app.include_router(embeddings.router)

@@ -9,7 +9,36 @@ from leapfrogai_api.routers.openai.types import (
     ChatCompletionResponse,
     ChatDelta,
     ChatStreamChoice,
+    CompletionChoice,
+    CompletionResponse,
 )
+
+
+async def recv_completion(
+    stream: grpc.aio.UnaryStreamCall[lfai.CompletionRequest, lfai.CompletionResponse],
+):
+    async for c in stream:
+        yield (
+            "data: "
+            + CompletionResponse(
+                id="foo",
+                object="completion.chunk",
+                created=55,
+                model="mpt-7b-8k-chat",
+                choices=[
+                    CompletionChoice(
+                        index=0,
+                        text=c.choices[0].text,
+                        logprobs=None,
+                        finish_reason="stop",
+                    )
+                ],
+                usage=Usage(prompt_tokens=0, completion_tokens=0, total_tokens=0),
+            ).model_dump_json()
+        )
+        yield "\n\n"
+
+    yield "data: [DONE]"
 
 
 async def recv_chat(
