@@ -2,12 +2,167 @@
 
 from __future__ import annotations
 
-from typing import Optional, Literal
+from typing import Dict, Optional, Literal
 from pydantic import BaseModel
 from fastapi import UploadFile, Form, File
+from openai.types import CompletionUsage as Usage
+
+##########
+# MODELS
+##########
 
 
-### Files Types ###
+class ModelResponseModel(BaseModel):
+    id: str
+    object: str = "model"
+    created: int = 0
+    owned_by: str = "leapfrogai"
+
+
+class ModelResponse(BaseModel):
+    object: str = "list"
+    data: list[ModelResponseModel] = []
+
+
+##########
+# CHAT
+##########
+
+
+class ChatFunction(BaseModel):
+    """Function object for chat completion."""
+
+    name: str
+    parameters: Dict[str, object]
+    description: str
+
+
+class ChatMessage(BaseModel):
+    """Message object for chat completion."""
+
+    role: str
+    content: str
+
+
+class ChatDelta(BaseModel):
+    """Delta object for chat completion."""
+
+    role: str
+    content: str | None = ""
+
+
+class ChatCompletionRequest(BaseModel):
+    """Request object for chat completion."""
+
+    model: str
+    messages: list[ChatMessage]
+    functions: list | None = None
+    temperature: float | None = 1.0
+    top_p: float | None = 1
+    stream: bool | None = False
+    stop: str | None = None
+    max_tokens: int | None = 128
+
+
+class ChatChoice(BaseModel):
+    """Choice object for chat completion."""
+
+    index: int
+    message: ChatMessage
+    finish_reason: str | None = ""
+
+
+class ChatStreamChoice(BaseModel):
+    """Stream choice object for chat completion."""
+
+    index: int
+    delta: ChatDelta
+    finish_reason: str | None = ""
+
+
+class ChatCompletionResponse(BaseModel):
+    """Response object for chat completion."""
+
+    id: str = ""
+    object: str = "chat.completion"
+    created: int = 0
+    model: str = ""
+    choices: list[ChatChoice] | list[ChatStreamChoice]
+    usage: Usage | None = None
+
+
+#############
+# EMBEDDINGS
+#############
+
+
+class CreateEmbeddingRequest(BaseModel):
+    """Request object for creating embeddings."""
+
+    model: str
+    input: str | list[str] | list[int] | list[list[int]]
+    user: str | None = None
+
+
+class EmbeddingResponseData(BaseModel):
+    """Response object for embeddings."""
+
+    embedding: list[float]
+    index: int
+    object: str = "embedding"
+
+
+class CreateEmbeddingResponse(BaseModel):
+    """Response object for embeddings."""
+
+    data: list[EmbeddingResponseData]
+    model: str
+    object: str = "list"
+    usage: Usage | None = None
+
+
+##########
+# AUDIO
+##########
+
+
+class CreateTranscriptionRequest(BaseModel):
+    file: UploadFile
+    model: str
+    language: str = ""
+    prompt: str = ""
+    response_format: str = ""
+    temperature: float = 1
+
+    @classmethod
+    def as_form(
+        cls,
+        file: UploadFile = File(...),
+        model: str = Form(...),
+        language: Optional[str] = Form(""),
+        prompt: Optional[str] = Form(""),
+        response_format: Optional[str] = Form(""),
+        temperature: Optional[float] = Form(1),
+    ) -> CreateTranscriptionRequest:
+        return cls(
+            file=file,
+            model=model,
+            language=language,
+            prompt=prompt,
+            response_format=response_format,
+            temperature=temperature,
+        )
+
+
+class CreateTranscriptionResponse(BaseModel):
+    text: str
+
+
+#############
+# FILES
+#############
+
+
 class UploadFileRequest(BaseModel):
     """Request object for uploading a file."""
 
@@ -24,7 +179,9 @@ class UploadFileRequest(BaseModel):
         return cls(file=file, purpose=purpose)
 
 
-### Assistants Types ###
+#############
+# ASSISTANTS
+#############
 
 
 class CreateAssistantRequest(BaseModel):
@@ -41,9 +198,9 @@ class CreateAssistantRequest(BaseModel):
     metadata: Optional[object] | None = {}
     temperature: Optional[float] = 1.0
     top_p: Optional[float] = 1.0
-    response_format: Optional[Literal["auto"]] | None = (
-        "auto"  # This is all we support right now
-    )
+    response_format: Optional[
+        Literal["auto"]
+    ] | None = "auto"  # This is all we support right now
 
 
 class ModifyAssistantRequest(CreateAssistantRequest):

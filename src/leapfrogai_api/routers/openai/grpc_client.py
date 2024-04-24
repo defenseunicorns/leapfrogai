@@ -1,52 +1,20 @@
 from typing import Iterator
 
 import grpc
-import leapfrogai_sdk as lfai
 from fastapi.responses import StreamingResponse
-from leapfrogai_api.backends.openai.helpers import recv_chat, recv_completion
-from leapfrogai_api.backends.openai.types import (
+from openai.types import CompletionUsage as Usage
+
+import leapfrogai_sdk as lfai
+from leapfrogai_api.routers.openai.helpers import recv_chat
+from leapfrogai_api.routers.openai.types import (
     ChatChoice,
-    ChatCompletionResponse,
     ChatMessage,
-    CompletionChoice,
-    CompletionResponse,
+    ChatCompletionResponse,
+    EmbeddingResponseData,
     CreateEmbeddingResponse,
     CreateTranscriptionResponse,
-    EmbeddingResponseData,
-    Usage,
 )
 from leapfrogai_api.utils.config import Model
-
-
-async def stream_completion(model: Model, request: lfai.CompletionRequest):
-    async with grpc.aio.insecure_channel(model.backend) as channel:
-        stub = lfai.CompletionStreamServiceStub(channel)
-        stream = stub.CompleteStream(request)
-
-        await stream.wait_for_connection()
-        return StreamingResponse(
-            recv_completion(stream), media_type="text/event-stream"
-        )
-
-
-# TODO: Clean up completion() and stream_completion() to reduce code duplication
-async def completion(model: Model, request: lfai.CompletionRequest):
-    async with grpc.aio.insecure_channel(model.backend) as channel:
-        stub = lfai.CompletionServiceStub(channel)
-        response: lfai.CompletionResponse = await stub.Complete(request)
-
-        return CompletionResponse(
-            model=model.name,
-            choices=[
-                CompletionChoice(
-                    index=0,
-                    text=response.choices[0].text,
-                    finish_reason=str(response.choices[0].finish_reason),
-                    logprobs=None,
-                )
-            ],
-            usage=Usage(total_tokens=0, prompt_tokens=0),
-        )
 
 
 async def stream_chat_completion(model: Model, request: lfai.ChatCompletionRequest):

@@ -11,14 +11,14 @@ from leapfrogai_api.routers.openai.types import (
 router = APIRouter(prefix="/openai/v1/assistants", tags=["openai/assistants"])
 
 
-@router.post("/")
+@router.post("")
 async def create_assistant(request: CreateAssistantRequest) -> Assistant:
     """Create an assistant."""
     # TODO: Implement this function
     raise HTTPException(status_code=501, detail="Not implemented")
 
 
-@router.get("/")
+@router.get("")
 async def list_assistants() -> List[Assistant]:
     """List all the assistants."""
     # TODO: Implement this function

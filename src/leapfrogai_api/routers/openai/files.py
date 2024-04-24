@@ -8,7 +8,7 @@ from leapfrogai_api.routers.openai.types import UploadFileRequest
 router = APIRouter(prefix="/openai/v1/files", tags=["openai/files"])
 
 
-@router.post("/")
+@router.post("")
 async def upload_file(
     request: UploadFileRequest = Depends(UploadFileRequest.as_form),
 ) -> FileObject:
@@ -17,7 +17,7 @@ async def upload_file(
     raise HTTPException(status_code=501, detail="Not implemented")
 
 
-@router.get("/")
+@router.get("")
 async def list_files():
     """List all files."""
     # TODO: Implement this function

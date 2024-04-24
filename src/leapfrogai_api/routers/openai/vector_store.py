@@ -8,14 +8,14 @@ from openai.types.beta.vector_stores import VectorStoreFile, VectorStoreFileDele
 router = APIRouter(prefix="/openai/v1/vector_store", tags=["openai/vector_store"])
 
 
-@router.post("/")
+@router.post("")
 async def create_vector_store() -> VectorStore:
     """Create a vector store."""
     # TODO: Implement this function
     raise HTTPException(status_code=501, detail="Not implemented")
 
 
-@router.get("/")
+@router.get("")
 async def list_vector_stores() -> List[VectorStore]:
     """List all the vector stores."""
     # TODO: Implement this function

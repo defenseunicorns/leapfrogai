@@ -11,7 +11,7 @@ from openai.types.beta.threads.runs import RunStep
 router = APIRouter(prefix="/openai/v1/threads", tags=["openai/threads"])
 
 
-@router.post("/")
+@router.post("")
 async def create_thread() -> Thread:
     """Create a thread."""
     # TODO: Implement this function
