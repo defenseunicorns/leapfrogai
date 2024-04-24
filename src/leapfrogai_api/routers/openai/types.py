@@ -4,12 +4,19 @@ from __future__ import annotations
 from typing import Dict, Optional, Literal
 from pydantic import BaseModel
 from fastapi import UploadFile, Form, File
-from openai.types import CompletionUsage as Usage
+
+##########
+# GENERIC
+##########
+
+class Usage(BaseModel):
+    prompt_tokens: int
+    completion_tokens: int | None = None
+    total_tokens: int
 
 ##########
 # MODELS
 ##########
-
 
 class ModelResponseModel(BaseModel):
     """Model object for model response."""
@@ -59,7 +66,7 @@ class CompletionResponse(BaseModel):
     created: int = 0
     model: str = ""
     choices: list[CompletionChoice]
-    usage: Usage | None = None
+    usage: Usage
 
 
 ##########

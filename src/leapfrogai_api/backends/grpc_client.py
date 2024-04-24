@@ -3,7 +3,6 @@
 from typing import Iterator
 import grpc
 from fastapi.responses import StreamingResponse
-from openai.types import CompletionUsage as Usage
 import leapfrogai_sdk as lfai
 from leapfrogai_api.backends.helpers import recv_chat, recv_completion
 from leapfrogai_api.routers.openai.types import (
@@ -15,6 +14,7 @@ from leapfrogai_api.routers.openai.types import (
     CreateEmbeddingResponse,
     CreateTranscriptionResponse,
     EmbeddingResponseData,
+    Usage,
 )
 from leapfrogai_api.utils.config import Model
 

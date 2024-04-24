@@ -2,7 +2,6 @@
 
 from typing import BinaryIO, Iterator, Union
 import grpc
-from openai.types import CompletionUsage as Usage
 import leapfrogai_sdk as lfai
 from leapfrogai_api.routers.openai.types import (
     ChatCompletionResponse,
@@ -10,6 +9,7 @@ from leapfrogai_api.routers.openai.types import (
     ChatStreamChoice,
     CompletionChoice,
     CompletionResponse,
+    Usage,
 )
 
 
