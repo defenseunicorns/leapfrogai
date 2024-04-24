@@ -1,5 +1,5 @@
 import { error, json } from '@sveltejs/kit';
-import { supabaseMessagesSchema } from '../../../../schemas/chat';
+import { supabaseMessagesInputSchema } from '../../../../schemas/chat';
 
 export async function POST({ request, locals: { supabase, getSession } }) {
 	const session = await getSession();
@@ -7,18 +7,18 @@ export async function POST({ request, locals: { supabase, getSession } }) {
 		error(401, 'Unauthorized');
 	}
 
-	let requestData: Omit<Message, 'id' | 'inserted_at' | 'user_id'>;
+	let requestData: Omit<Message, 'user_id'>;
 
 	// Validate request body
 	try {
 		requestData = await request.json();
-		const isValid = await supabaseMessagesSchema.isValid(requestData);
+		const isValid = await supabaseMessagesInputSchema.isValid(requestData);
 		if (!isValid) error(400, 'Bad Request');
 	} catch {
 		error(400, 'Bad Request');
 	}
 
-	const message: Omit<Message, 'id' | 'inserted_at'> = { ...requestData, user_id: session.user.id };
+	const message: Message = { ...requestData, user_id: session.user.id };
 
 	const { error: responseError, data: createdMessage } = await supabase
 		.from('messages')

@@ -1,16 +1,13 @@
 import { faker } from '@faker-js/faker';
-import { expect, test, type Page } from '@playwright/test';
-import { sendMessage } from './helpers';
-import { deleteConversation } from './helpers';
-
-const loadPage = async (page: Page) => {
-	await page.goto('/chat');
-	await expect(page).toHaveTitle('LeapfrogAI - Chat');
-};
+import { expect, test} from '@playwright/test';
+import { 	deleteConversation,
+    deleteConversationsByLabel,
+    loadChatPage,
+    sendMessage, waitForResponseToComplete } from './helpers';
 
 test('it can delete conversations', async ({ page }) => {
 	const newMessage = faker.lorem.words(3);
-	await loadPage(page);
+	await loadChatPage(page);
 
 	const conversationLocator = page.getByText(newMessage);
 
@@ -23,7 +20,7 @@ test('can edit conversation labels', async ({ page }) => {
 	const newMessage = faker.lorem.words(3);
 	const newLabel = faker.lorem.words(3);
 
-	await loadPage(page);
+	await loadChatPage(page);
 
 	const messages = page.getByTestId('message');
 	await sendMessage(page, newMessage);
@@ -44,30 +41,32 @@ test('can edit conversation labels', async ({ page }) => {
 
 	expect(page.getByTestId(`conversation-label-${conversationId}`).getByText(newLabel));
 
-	// Cleanup
-	await deleteConversation(page, newLabel);
+	await deleteConversationsByLabel([newMessage]);
 });
 
 test('Can switch conversation threads', async ({ page }) => {
+
 	const newMessage1 = faker.lorem.words(3);
 	const newMessage2 = faker.lorem.words(3);
 	const newMessage3 = faker.lorem.words(3);
-	await loadPage(page);
-	await sendMessage(page, newMessage1);
 
+	await loadChatPage(page);
+	await sendMessage(page, newMessage1);
+	await waitForResponseToComplete(page);
 	const messages = page.getByTestId('message');
-	await expect(messages).toHaveCount(2); // wait for AI response
+	await expect(messages).toHaveCount(2);
+
 	await sendMessage(page, newMessage2);
+	await waitForResponseToComplete(page);
 	await expect(messages).toHaveCount(4);
 
 	await page.getByText('New Chat').click();
 	await sendMessage(page, newMessage3);
+	await waitForResponseToComplete(page);
 	await expect(messages).toHaveCount(2);
 
 	await page.getByText(newMessage1).click(); // switch conversations by clicking conversation label
 
 	await expect(messages).toHaveCount(4);
-
-	await deleteConversation(page, newMessage1);
-	await deleteConversation(page, newMessage3);
+	await deleteConversationsByLabel([newMessage1, newMessage2, newMessage3]);
 });

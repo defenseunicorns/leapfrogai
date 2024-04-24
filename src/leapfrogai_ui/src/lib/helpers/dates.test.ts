@@ -89,9 +89,9 @@ describe('date helpers', () => {
 		});
 
 		it('returns "This Month" when the date is in the same month as the current date', () => {
-			const currentDate = new Date();
-			const sameMonthDate = new Date(currentDate.getFullYear(), currentDate.getMonth(), 10);
-			const expectedCategory = 'This Month';
+            const today = new Date();
+            const sameMonthDate = new Date(today.getFullYear(), today.getMonth(), 20);
+            const expectedCategory = 'This Month';
 
 			expect(dates.getDateCategory({ date: sameMonthDate })).toBe(expectedCategory);
 		});

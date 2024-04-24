@@ -1,4 +1,4 @@
-![LeapfrogAI Logo](https://github.com/defenseunicorns/leapfrogai/raw/main/docs/imgs/leapfrogai.png)
+![LeapfrogAI](https://github.com/defenseunicorns/leapfrogai/raw/main/docs/imgs/leapfrogai.png)
 
 [![OpenSSF Scorecard](https://api.securityscorecards.dev/projects/github.com/defenseunicorns/leapfrogai/badge)](https://api.securityscorecards.dev/projects/github.com/defenseunicorns/leapfrogai)
 
@@ -17,7 +17,14 @@
 - [Usage](#usage)
   - [UDS (Latest)](#uds-latest)
   - [UDS (Dev)](#uds-dev)
+    - [CPU](#cpu)
+    - [GPU](#gpu)
   - [Local Dev](#local-dev)
+    - [API](#api-1)
+    - [Backend: llama-cpp-python](#backend-llama-cpp-python)
+    - [Backend: text-embeddings](#backend-text-embeddings)
+    - [Backend: vllm](#backend-vllm)
+    - [Backend: whisper](#backend-whisper)
 - [Community](#community)
 
 ## Overview
@@ -99,11 +106,11 @@ The LeapfrogAI [SDK](src/leapfrogai_sdk/) provides a standard set of protobuff a
 
 ### User Interface
 
-> GitHub Repo:
->
-> - [leapfrog-ui](https://github.com/defenseunicorns/leapfrog-ui)
+LeapfrogAI provides a [User Interface](src/leapfrogai_ui/) with support for common use-cases such as chat, summarization, and transcription.
 
-LeapfrogAI provides some options of UI to get started with common use-cases such as chat, summarization, and transcription.
+### Repeater
+
+The [repeater](packages/repeater/) "model" is a basic "backend" that parrots all inputs it receives back to the user. It is built out the same way all the actual backends are and it primarily used for testing the API.
 
 ## Usage
 
@@ -118,14 +125,15 @@ If you want to make some changes to LeapfrogAI before deploying via UDS (for exa
 Make sure your system has the [required dependencies](https://docs.leapfrog.ai/docs/local-deploy-guide/quick_start/#prerequisites).
 
 For ease, it's best to create a virtual environment:
-```
+
+``` shell
 python -m venv .venv
 source .venv/bin/activate
 ```
 
 Each component is built into its own Zarf package. You can build all of the packages you need at once with the following `Make` targets:
 
-```
+``` shell
 make build-cpu    # api, llama-cpp-python, text-embeddings, whisper
 make build-gpu    # api, vllm, text-embeddings, whisper
 make build-all    # all of the backends
@@ -133,9 +141,9 @@ make build-all    # all of the backends
 
 **OR**
 
-You can build components individually using teh following `Make` targets:
+You can build components individually using the following `Make` targets:
 
-```
+``` shell
 make build-api
 make build-vllm                 # if you have GPUs
 make build-llama-cpp-python     # if you have CPU only
@@ -146,7 +154,8 @@ make build-whisper
 Once the packages are created, you can deploy either a CPU or GPU-enabled deployment via one of the UDS bundles:
 
 #### CPU
-```
+
+``` shell
 cd uds-bundles/dev/cpu
 uds create .
 uds deploy k3d-core-slim-dev:0.18.0
@@ -154,7 +163,8 @@ uds deploy uds-bundle-leapfrogai*.tar.zst
 ```
 
 #### GPU
-```
+
+``` shell
 cd uds-bundles/dev/gpu
 uds create .
 uds deploy k3d-core-slim-dev:0.18.0 --set K3D_EXTRA_ARGS="--gpus=all --image=ghcr.io/justinthelaw/k3d-gpu-support:v1.27.4-k3s1-cuda"     # be sure to check if a newer version exists
@@ -167,7 +177,7 @@ The following instructions are for running each of the LFAI components for local
 
 It is highly recommended to make a virtual environment to keep the development environment clean:
 
-```
+``` shell
 python -m venv .venv
 source .venv/bin/activate
 ```
@@ -183,11 +193,15 @@ python -m pip install .
 uvicorn leapfrogai_api.main:app --port 3000 --reload
 ```
 
+#### Repeater
+
+The instructions for running the basic repeater model (used for testing the API) can be found in the package [README](packages/repeater/README.md).
+
 #### Backend: llama-cpp-python
 
 To run the llama-cpp-python backend locally (starting from the root directory of the repository):
 
-```
+``` shell
 python -m pip install src/leapfrogai_sdk
 cd packages/llama-cpp-python
 python -m pip install .
@@ -199,7 +213,7 @@ lfai-cli --app-dir=. main:Model
 #### Backend: text-embeddings
 To run the text-embeddings backend locally (starting from the root directory of the repository):
 
-```
+``` shell
 python -m pip install src/leapfrogai_sdk
 cd packages/text-embeddings
 python -m pip install .
@@ -210,19 +224,19 @@ python -u main.py
 #### Backend: vllm
 To run the vllm backend locally (starting from the root directory of the repository):
 
-```
+``` shell
 python -m pip install src/leapfrogai_sdk
 cd packages/vllm
 python -m pip install .
-python scripts/model_download.py
-export QUANTIZATION=awq
-lfai-cli --app-dir=. main:Model
+python packages/vllm/src/model_download.py
+export QUANTIZATION=gptq
+python -u src/main.py
 ```
 
 #### Backend: whisper
 To run the vllm backend locally (starting from the root directory of the repository):
 
-```
+``` shell
 python -m pip install src/leapfrogai_sdk
 cd packages/whisper
 python -m pip install ".[dev]"

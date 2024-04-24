@@ -1,6 +1,10 @@
 name: e2e
 on:
   pull_request:
+    types:
+      - ready_for_review
+      - review_requested
+      - synchronize
     paths:
       # Catch-all
       - "**"
@@ -31,6 +35,9 @@ on:
       - "!src/leapfrogai_ui/**"
       - "!packages/ui/**"
 
+      # Ignore changes to the repeater model
+      - "!packages/repeater/**"
+
 
 concurrency:
   group: e2e-${{ github.ref }}
@@ -39,6 +46,7 @@ concurrency:
 jobs:
   e2e:
     runs-on: ai-ubuntu-big-boy-8-core
+    if: ${{ !github.event.pull_request.draft }}
 
     steps:
         - name: Checkout Repo

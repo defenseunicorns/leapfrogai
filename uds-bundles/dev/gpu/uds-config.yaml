@@ -1,13 +1,5 @@
 # see individual zarf packaging configuration for more variables and variable descriptions
 variables:
-  leapfrogai-ui:
-    domain: https://ai.uds.dev
-    model: vllm
-    concurrent_requests: "true"
-    ai4ns_branding: "false"
-    leapfrogai_rag_url: http://rag.leapfrogai.svc.cluster.local:8000
-    max_tokens: 16384
-
   text-embeddings:
     gpu_limit: 1
 
@@ -29,3 +21,9 @@ variables:
     overlap_size: 128
     embedding_model_name: text-embeddings
     top_k: 20
+
+  lfaiui:
+    domain: https://lfaiui.uds.dev
+    model: vllm
+    supabase_url: https://supabase-kong.uds.dev
+    supabase_anon_key: ''
