@@ -99,11 +99,11 @@ The LeapfrogAI [SDK](src/leapfrogai_sdk/) provides a standard set of protobuff a
 
 ### User Interface
 
-> GitHub Repo:
->
-> - [leapfrog-ui](https://github.com/defenseunicorns/leapfrog-ui)
+LeapfrogAI provides a [User Interface](src/leapfrogai_ui/) with support for common use-cases such as chat, summarization, and transcription.
 
-LeapfrogAI provides some options of UI to get started with common use-cases such as chat, summarization, and transcription.
+### Repeater
+
+The [repeater](packages/repeater/) "model" is a basic "backend" that parrots all inputs it receives back to the user. It is built out the same way all the actual backends are and it primarily used for testing the API.
 
 ## Usage
 
@@ -133,7 +133,7 @@ make build-all    # all of the backends
 
 **OR**
 
-You can build components individually using teh following `Make` targets:
+You can build components individually using the following `Make` targets:
 
 ```
 make build-api
@@ -182,6 +182,10 @@ cd src/leapfrogai_api
 python -m pip install .
 uvicorn leapfrogai_api.main:app --port 3000 --reload
 ```
+
+#### Repeater
+
+The instructions for running the basic repeater model (used for testing the API) can be found in the package [README](packages/repeater/README.md).
 
 #### Backend: llama-cpp-python
 
