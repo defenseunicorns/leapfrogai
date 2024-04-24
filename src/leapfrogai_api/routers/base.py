@@ -1,4 +1,5 @@
-""" Base router for the API. """
+"""Base router for the API."""
+
 from fastapi import APIRouter
 from leapfrogai_api.utils import get_model_config
 
