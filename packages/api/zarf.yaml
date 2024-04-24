@@ -14,13 +14,6 @@ constants:
   - name: KIWIGRID_VERSION
     value: "1.23.3"
 
-variables:
-  - name: SUPABASE_URL
-    description: URL for supabase
-    prompt: true
-    default: supabase-kong.leapfrogai.svc.cluster.local:8080
-    sensitive: false
-
 components:
   - name: leapfrogai
     required: true
