@@ -1,4 +1,5 @@
 """OpenAI models router."""
+
 from typing import Annotated
 from fastapi import APIRouter, Depends
 from leapfrogai_api.routers.openai.types import (

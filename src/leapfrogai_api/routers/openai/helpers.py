@@ -1,4 +1,5 @@
 """Helper functions for the OpenAI backend."""
+
 from typing import BinaryIO, Iterator, Union
 
 import grpc
