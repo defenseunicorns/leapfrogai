@@ -11,29 +11,41 @@ variables:
     description: 'Should the auth component be enabled'
     default: "true"
   - name: ENABLE_META
-    description: 'Should the auth component be enabled'
+    description: 'Should the meta component be enabled'
     default: "true"
   - name: ENABLE_REALTIME
-    description: 'Should the auth component be enabled'
+    description: 'Should the realtime component be enabled'
     default: "true"
   - name: ENABLE_REST
-    description: 'Should the auth component be enabled'
+    description: 'Should the rest component be enabled'
     default: "true"  
   - name: ENABLE_STORAGE
-    description: 'Should the auth component be enabled'
+    description: 'Should the storage component be enabled'
     default: "true"  
   - name: ENABLE_STUDIO
-    description: 'Should the auth component be enabled'
+    description: 'Should the studio component be enabled'
     default: "true"
   - name: ENABLE_VOLUME_PERMISSIONS
-    description: 'Should the auth component be enabled'
+    description: 'Should the volume permissions component be enabled'
     default: "true"
   - name: ENABLE_KONG
-    description: 'Should the auth component be enabled'
+    description: 'Should the kong component be enabled'
     default: "true"
   - name: ENABLE_POSTGRES
-    description: 'Should the auth component be enabled'
+    description: 'Should the postgres component be enabled'
     default: "true"
+  - name: EXTERNAL_KEYCLOAK_CLIENT_ID
+    description: 'External keycloak client value'
+    default: "lfaiui"
+  - name: ENABLE_EXTERNAL_KEYCLOAK
+    description: 'Should the external keycloak be enabled'
+    default: "true"
+  - name: EXTERNAL_KEYCLOAK_REDIRECT_URL
+    description: 'Keycloaks redirect url'
+    default: "http://supabase-kong.leapfrogai.svc.cluster.local:80/auth/v1/callback"
+  - name: EXTERNAL_KEYCLOAK_URL
+    description: 'External keycloak url'
+    default: "https://keycloak.admin.uds.dev/realms/uds"
 
 components:
   - name: supabase-bootstrap
@@ -77,3 +89,15 @@ components:
         namespace: leapfrogai
         files:
           - "uds-package.yaml"
+  - name: external-secrets
+    required: true
+    charts:
+      - name: external-secrets
+        namespace: leapfrogai
+        url: https://charts.external-secrets.io
+        releaseName: external-secrets
+        version: 0.9.16
+        valuesFiles:
+          - "external-secrets-values.yaml"
+    images:
+      - ghcr.io/external-secrets/external-secrets:v0.9.16

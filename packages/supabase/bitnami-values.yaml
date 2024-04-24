@@ -425,11 +425,10 @@ auth:
     GOTRUE_MAILER_URLPATHS_CONFIRMATION: "{{ include "supabase.studio.publicURL" . }}/auth/v1/verify"
     GOTRUE_MAILER_URLPATHS_RECOVERY: "{{ include "supabase.studio.publicURL" . }}/auth/v1/verify"
     GOTRUE_MAILER_URLPATHS_EMAIL_CHANGE: "{{ include "supabase.studio.publicURL" . }}/auth/v1/verify"
-    GOTRUE_EXTERNAL_KEYCLOAK_ENABLED: "true"
-    GOTRUE_EXTERNAL_KEYCLOAK_CLIENT_ID: "lfaiui"
-    GOTRUE_EXTERNAL_KEYCLOAK_SECRET: "rlBr4pxrApk1Wn3zyUrlC1Nwxyavwhk4"
-    GOTRUE_EXTERNAL_KEYCLOAK_REDIRECT_URI: "http://supabase-kong.leapfrogai.svc.cluster.local:80/auth/v1/callback"
-    GOTRUE_EXTERNAL_KEYCLOAK_URL: "https://keycloak.admin.uds.dev/realms/uds"
+    GOTRUE_EXTERNAL_KEYCLOAK_ENABLED: "###ENABLE_EXTERNAL_KEYCLOAK###"
+    GOTRUE_EXTERNAL_KEYCLOAK_CLIENT_ID: "###ZARF_VAR_EXTERNAL_KEYCLOAK_CLIENT_ID###"
+    GOTRUE_EXTERNAL_KEYCLOAK_REDIRECT_URI: "###ZARF_VAR_EXTERNAL_KEYCLOAK_REDIRECT_URL###"
+    GOTRUE_EXTERNAL_KEYCLOAK_URL: "###ZARF_VAR_EXTERNAL_KEYCLOAK_URL###"
   ## @param auth.extraConfig Supabase auth extra configuration
   ##
   extraConfig: {}
