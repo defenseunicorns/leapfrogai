@@ -3,9 +3,10 @@ name: pytest Skip Shim
 on:
   pull_request:
     paths:
-      # Catch updates to the .github directory, unless it is the e2e.yaml files
+      # Catch updates to the .github directory, unless it is the pytest related files
       - ".github/**"
       - "!.github/workflows/pytest.yaml"
+      - "!.github/workflows/pytest-shim.yaml"
 
       # Catch docs and website things
       - "**.md"

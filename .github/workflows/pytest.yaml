@@ -4,9 +4,10 @@ on:
     paths:
       - "**"
 
-      # Ignore updates to the .github directory, unless it's this current file
+      # Ignore updates to the .github directory unless it is the pytest related files
       - "!.github/**"
       - ".github/workflows/pytest.yaml"
+      - ".github/workflows/pytest-shim.yaml"
 
       # Ignore docs and website things
       - "!**.md"
