@@ -26,7 +26,6 @@ import { delay } from 'msw';
 const { getStores } = await vi.hoisted(() => import('$lib/mocks/svelte'));
 
 describe('The Chat Page', () => {
-
 	it('it renders all the messages', async () => {
 		conversationsStore.set({
 			conversations: fakeConversations
@@ -250,6 +249,14 @@ describe('The Chat Page', () => {
 
 				await screen.findAllByText('Response Canceled');
 			});
+		});
+
+		// TODO - E2Es for these as well
+		describe('editing a conversation', () => {
+			it('deletes the old message and response', () => {});
+			it("doesn't delete the response after the user's old message if it wasn't an AI response (ex. user's request had failed)", () => {});
+			it('saves the new question and response', () => {});
+			it('sends a new request to the API', () => {});
 		});
 	});
 });

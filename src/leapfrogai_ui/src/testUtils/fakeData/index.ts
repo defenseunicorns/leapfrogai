@@ -4,21 +4,32 @@ const todayOverride = new Date('2024-03-20T00:00');
 
 const userId = faker.string.uuid();
 
-export const getFakeMessage = ({
-	id = faker.string.uuid(),
-	role = 'user',
-	conversation_id = faker.string.uuid(),
-	user_id = faker.string.uuid(),
-	content = faker.lorem.lines(1),
-	inserted_at = new Date().toISOString()
-}: Partial<Message>): Message => ({
-	id,
-	role,
-	user_id,
-	conversation_id,
-	content,
-	inserted_at
-});
+type FakeMessageOptions = {
+	id?: string;
+	role?: Roles;
+	conversation_id?: string;
+	user_id?: string;
+	content?: string;
+	inserted_at?: string;
+};
+export const getFakeMessage = (options: FakeMessageOptions = {}): Message => {
+	const {
+		id = faker.string.uuid(),
+		role = 'user',
+		user_id = faker.string.uuid(),
+		conversation_id = faker.lorem.lines(1),
+		content = faker.lorem.lines(1),
+		inserted_at = new Date().toISOString()
+	} = options;
+	return {
+		id,
+		role,
+		user_id,
+		conversation_id,
+		content,
+		inserted_at
+	};
+};
 
 type FakeConversationOptions = {
 	label?: string;

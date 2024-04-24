@@ -42,7 +42,7 @@
 		<div style="width: 100%">
 			{#if editMode}
 				<div class="edit-prompt">
-					<LFTextArea {value} {onSubmit} />
+					<LFTextArea {value} {onSubmit} ariaLabel="edit message input"/>
 					<div class="cancel-save">
 						<Button size="small" kind="secondary" on:click={handleCancel}>Cancel</Button>
 						<Button size="small" on:click={onSubmit}>Submit</Button>
@@ -53,7 +53,7 @@
 			{/if}
 
 			{#if message.role === 'user' && !editMode}
-				<div class="edit-prompt-icon" class:hide={!messageIsHovered}>
+				<div data-testid="edit prompt btn" class="edit-prompt-icon" class:hide={!messageIsHovered}>
 					<span on:click={() => (editMode = true)}><Edit aria-label="edit prompt" /></span>
 				</div>
 			{/if}

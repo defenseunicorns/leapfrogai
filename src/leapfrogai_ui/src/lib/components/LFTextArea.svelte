@@ -11,6 +11,7 @@ The enter button calls onSubmit, but a user can still enter multiple lines of te
 	export let onSubmit: (e: SubmitEvent | KeyboardEvent) => Promise<void>;
 	export let maxRows = 10;
 	export let placeholder = 'Type your message here...';
+	export let ariaLabel = 'message input';
 
 	let inputHeight = '';
 	let textAreaRef: HTMLTextAreaElement;
@@ -42,7 +43,7 @@ The enter button calls onSubmit, but a user can still enter multiple lines of te
 	style="--maxRows:{maxRows};"
 	name="messageInput"
 	{placeholder}
-	aria-label="message input"
+	aria-label={ariaLabel}
 	{...$$restProps}
 />
 
