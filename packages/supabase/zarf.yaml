@@ -89,20 +89,3 @@ components:
         namespace: leapfrogai
         files:
           - "uds-package.yaml"
-  - name: external-secrets
-    required: true
-    charts:
-      - name: external-secrets
-        namespace: leapfrogai
-        url: https://charts.external-secrets.io
-        releaseName: external-secrets
-        version: 0.9.16
-        valuesFiles:
-          - "external-secrets-values.yaml"
-    images:
-      - ghcr.io/external-secrets/external-secrets:v0.9.16
-    manifests:
-      - name: keycloak-configs
-        namespace: leapfrogai
-        files:
-          - "manifests/keycloak-external-secrets.yaml"
