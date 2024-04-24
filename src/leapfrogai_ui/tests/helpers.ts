@@ -26,7 +26,7 @@ export const deleteConversationsByLabel = async (labels: string[]) => {
 };
 
 export const waitForResponseToComplete = async (page: Page) => {
-	await expect(page.getByLabel('cancel message')).toHaveCount(1, { timeout: 25000 });
-	await expect(page.getByLabel('cancel message')).toHaveCount(0, { timeout: 25000 });
-	await expect(page.getByLabel('send message')).toHaveCount(1, { timeout: 25000 });
+	await expect(page.getByTestId('cancel message')).toHaveCount(1, { timeout: 25000 });
+	await expect(page.getByTestId('cancel message')).toHaveCount(0, { timeout: 25000 });
+	await expect(page.getByTestId('send message')).toHaveCount(1, { timeout: 25000 });
 };
