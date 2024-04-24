@@ -7,7 +7,6 @@ from openai.types.beta.threads import Message
 from openai.types.beta.threads import Run
 from openai.types.beta.threads.runs import RunStep
 
-
 router = APIRouter(prefix="/openai/v1/threads", tags=["openai/threads"])
 
 

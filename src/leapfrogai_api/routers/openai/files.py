@@ -1,8 +1,7 @@
-"""OpenAI Compliant Files API Router."""
+"""OpenAI compliant Files API Router."""
 
 from fastapi import Depends, APIRouter, HTTPException
 from openai.types import FileObject, FileDeleted
-
 from leapfrogai_api.routers.openai.types import UploadFileRequest
 
 router = APIRouter(prefix="/openai/v1/files", tags=["openai/files"])

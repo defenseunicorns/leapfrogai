@@ -3,8 +3,8 @@
 from itertools import chain
 from typing import Annotated
 from fastapi import APIRouter, Depends, HTTPException
-from leapfrogai_api.routers.openai.grpc_client import create_transcription
-from leapfrogai_api.routers.openai.helpers import read_chunks
+from leapfrogai_api.backends.grpc_client import create_transcription
+from leapfrogai_api.backends.helpers import read_chunks
 from leapfrogai_api.routers.openai.types import (
     CreateTranscriptionRequest,
     CreateTranscriptionResponse,

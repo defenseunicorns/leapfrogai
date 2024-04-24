@@ -1,11 +1,12 @@
+"""OpenAI Chat API router."""
+
 from typing import Annotated
 from fastapi import APIRouter, Depends, HTTPException
-
-from leapfrogai_api.routers.openai.grpc_client import (
+from leapfrogai_api.backends.grpc_client import (
     chat_completion,
     stream_chat_completion,
 )
-from leapfrogai_api.routers.openai.helpers import grpc_chat_role
+from leapfrogai_api.backends.helpers import grpc_chat_role
 from leapfrogai_api.utils import get_model_config
 from leapfrogai_api.utils.config import Config
 from leapfrogai_api.routers.openai.types import ChatCompletionRequest

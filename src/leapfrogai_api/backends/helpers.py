@@ -1,7 +1,6 @@
 """Helper functions for the OpenAI backend."""
 
 from typing import BinaryIO, Iterator, Union
-
 import grpc
 from openai.types import CompletionUsage as Usage
 import leapfrogai_sdk as lfai

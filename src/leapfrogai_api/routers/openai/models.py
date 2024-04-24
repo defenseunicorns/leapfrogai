@@ -1,4 +1,4 @@
-"""OpenAI models router."""
+"""OpenAI compliant models router."""
 
 from typing import Annotated
 from fastapi import APIRouter, Depends

@@ -1,7 +1,6 @@
 """Typing definitions for assistants API."""
 
 from __future__ import annotations
-
 from typing import Dict, Optional, Literal
 from pydantic import BaseModel
 from fastapi import UploadFile, Form, File

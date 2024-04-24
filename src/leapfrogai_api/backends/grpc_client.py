@@ -1,25 +1,26 @@
-from typing import Iterator
+"""gRPC client for OpenAI models."""
 
+from typing import Iterator
 import grpc
 from fastapi.responses import StreamingResponse
 from openai.types import CompletionUsage as Usage
-
 import leapfrogai_sdk as lfai
-from leapfrogai_api.routers.openai.helpers import recv_chat, recv_completion
+from leapfrogai_api.backends.helpers import recv_chat, recv_completion
 from leapfrogai_api.routers.openai.types import (
     ChatChoice,
-    ChatMessage,
     ChatCompletionResponse,
-    EmbeddingResponseData,
-    CreateEmbeddingResponse,
-    CreateTranscriptionResponse,
+    ChatMessage,
     CompletionChoice,
     CompletionResponse,
+    CreateEmbeddingResponse,
+    CreateTranscriptionResponse,
+    EmbeddingResponseData,
 )
 from leapfrogai_api.utils.config import Model
 
 
 async def stream_completion(model: Model, request: lfai.CompletionRequest):
+    """Stream completion using the specified model."""
     async with grpc.aio.insecure_channel(model.backend) as channel:
         stub = lfai.CompletionStreamServiceStub(channel)
         stream = stub.CompleteStream(request)
@@ -32,6 +33,7 @@ async def stream_completion(model: Model, request: lfai.CompletionRequest):
 
 # TODO: Clean up completion() and stream_completion() to reduce code duplication
 async def completion(model: Model, request: lfai.CompletionRequest):
+    """Complete using the specified model."""
     async with grpc.aio.insecure_channel(model.backend) as channel:
         stub = lfai.CompletionServiceStub(channel)
         response: lfai.CompletionResponse = await stub.Complete(request)
