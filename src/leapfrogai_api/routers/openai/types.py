@@ -9,14 +9,17 @@ from fastapi import UploadFile, Form, File
 # GENERIC
 ##########
 
+
 class Usage(BaseModel):
     prompt_tokens: int
     completion_tokens: int | None = None
     total_tokens: int
 
+
 ##########
 # MODELS
 ##########
+
 
 class ModelResponseModel(BaseModel):
     """Model object for model response."""
