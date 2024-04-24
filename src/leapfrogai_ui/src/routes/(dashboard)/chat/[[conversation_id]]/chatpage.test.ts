@@ -51,7 +51,7 @@ describe('The Chat Page', () => {
 
 		test('the send button is disabled when there is no text in the input', () => {
 			render(ChatPage);
-			const submitBtn = screen.getByLabelText('send');
+			const submitBtn = screen.getByLabelText('send message');
 			expect(submitBtn).toHaveProperty('disabled', true);
 		});
 

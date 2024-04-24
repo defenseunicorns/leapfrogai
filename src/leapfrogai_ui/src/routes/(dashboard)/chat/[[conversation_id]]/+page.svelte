@@ -164,7 +164,8 @@
 					icon={ArrowRight}
 					size="field"
 					type="submit"
-					aria-label="send"
+					aria-label="send message"
+					iconDescription="send"
 					disabled={$isLoading || !$input}
 				/>
 			{:else}
@@ -174,6 +175,7 @@
 					type="submit"
 					icon={StopFilledAlt}
 					aria-label="cancel message"
+					iconDescription="cancel"
 				/>
 			{/if}
 		</div>
