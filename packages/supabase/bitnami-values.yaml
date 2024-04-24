@@ -671,18 +671,18 @@ auth:
   ##   - name: FOO
   ##     value: "bar"
   ##
-  extraEnvVars: []
-  ## @param auth.extraEnvVarsCM Name of existing ConfigMap containing extra env vars for Supabase auth nodes
-  ##
-  extraEnvVarsCM: ""
-  ## @param auth.extraEnvVarsSecret Name of existing Secret containing extra env vars for Supabase auth nodes
-  ##
-  extraEnvVarsSecret:
+  extraEnvVars:
     - name: GOTRUE_EXTERNAL_KEYCLOAK_SECRET
       valueFrom:
         secretKeyRef:
           name: supabase-keycloak-secret
           key: secret
+  ## @param auth.extraEnvVarsCM Name of existing ConfigMap containing extra env vars for Supabase auth nodes
+  ##
+  extraEnvVarsCM: ""
+  ## @param auth.extraEnvVarsSecret Name of existing Secret containing extra env vars for Supabase auth nodes
+  ##
+  extraEnvVarsSecret: ""
   ## @param auth.extraVolumes Optionally specify extra list of additional volumes for the Supabase auth pod(s)
   ##
   extraVolumes: []
