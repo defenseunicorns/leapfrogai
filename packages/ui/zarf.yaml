@@ -14,7 +14,7 @@ constants:
 variables:
   - name: LEAPFROGAI_API_BASE_URL #LEAPFROGAI_API_BASE_URL
     description: The base URL for the LeapfrogAI API
-    default: api.leapfrogai.svc.cluster.local:8080/openai/v1
+    default: http://api.leapfrogai.svc.cluster.local:8080/openai/v1
     prompt: true
     sensitive: true
   - name: LEAPFROGAI_API_KEY
@@ -45,9 +45,10 @@ variables:
   - name: SUPABASE_URL
     description: URL for supabase
     prompt: true
-    default: supabase-kong.leapfrogai.svc.cluster.local:8080
+    default: https://supabase-kong.uds.dev
     sensitive: false
   - name: SUPABASE_ANON_KEY
+    default: ''
     description: Public key for Supabase
     prompt: true
     sensitive: false
@@ -58,13 +59,15 @@ variables:
     sensitive: false
 
 components:
-  - name: leapfrogai-ui
+  - name: lfaiui
     required: true
     charts:
-      - name: leapfrogai-ui
+      - name: lfaiui
         namespace: leapfrogai
         localPath: chart
         version: '###ZARF_PKG_TMPL_IMAGE_VERSION###'
+        valuesFiles:
+          - "chart/values.yaml"
     images:
       - '###ZARF_PKG_TMPL_IMAGE_REPOSITORY###:###ZARF_PKG_TMPL_IMAGE_VERSION###'
     actions:
@@ -73,6 +76,6 @@ components:
           - wait:
               cluster:
                 kind: Deployment
-                name: leapfrogai-ui
+                name: lfaiui
                 namespace: leapfrogai
                 condition: Available
