@@ -101,3 +101,8 @@ components:
           - "external-secrets-values.yaml"
     images:
       - ghcr.io/external-secrets/external-secrets:v0.9.16
+    manifests:
+      - name: keycloak-configs
+        namespace: leapfrogai
+        files:
+          - "manifests/keycloak-external-secrets.yaml"
