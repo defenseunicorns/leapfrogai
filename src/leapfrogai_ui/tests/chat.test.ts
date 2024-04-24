@@ -65,7 +65,7 @@ test('it cancels responses', async ({ page }) => {
 	await sendMessage(page, newMessage);
 	await expect(messages).toHaveCount(2); // ensure new response is being received
 	await page.waitForTimeout(300); // let it partially complete
-	await page.getByLabel('cancel message').click();
+	await page.getByTestId('cancel message').click();
 	await page.waitForTimeout(200); // wait to ensure new question was not sent
 	await expect(messages).toHaveCount(2);
 	const allMessages = await messages.all();
