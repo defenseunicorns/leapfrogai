@@ -677,7 +677,12 @@ auth:
   extraEnvVarsCM: ""
   ## @param auth.extraEnvVarsSecret Name of existing Secret containing extra env vars for Supabase auth nodes
   ##
-  extraEnvVarsSecret: ""
+  extraEnvVarsSecret:
+    - name: GOTRUE_EXTERNAL_KEYCLOAK_SECRET
+      valueFrom:
+        secretKeyRef:
+          name: supabase-keycloak-secret
+          key: secret
   ## @param auth.extraVolumes Optionally specify extra list of additional volumes for the Supabase auth pod(s)
   ##
   extraVolumes: []
