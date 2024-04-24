@@ -103,6 +103,8 @@
 
 	.edit-prompt :global(.lf-text-area.bx--text-area) {
 		background: themes.$background;
-		border: 1px solid themes.$layer-02;
+		outline: 1px solid themes.$layer-02;
+		border-bottom: 0;
+		margin-top: 7px; // prevents edit box from jumping up on editMode
 	}
 </style>
