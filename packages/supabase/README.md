@@ -3,3 +3,5 @@ Create a secret called 'supabase-keycloak-secret' that contains the key 'secret'
 ``` bash
 kubectl create secret generic supabase-keycloak-secret --from-literal=secret='my-saved-keycloak-secret' -n leapfrogai
 ```
+
+If it is the first time the package is being deployed to the cluster, set the Zarf var 'EXISTING_POSTGRES_SECRET' to "". If not, then leave it as the default.
