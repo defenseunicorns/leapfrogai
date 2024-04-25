@@ -154,13 +154,19 @@
 						>
 							{#each organizedConversations as category}
 								{#if category.conversations.length > 0}
-									<SideNavMenu text={category.label} expanded data-testid="side-nav-menu">
+									<SideNavMenu
+										text={category.label}
+										expanded
+										data-testid="side-nav-menu"
+									>
 										{#each category.conversations as conversation (conversation.id)}
 											<SideNavMenuItem
 												data-testid="side-nav-menu-item-{conversation.label}"
 												id="side-nav-menu-item-{conversation.id}"
-												isSelected={activeConversation?.id === conversation.id}
-												on:click={() => handleActiveConversationChange(conversation.id)}
+												isSelected={activeConversation?.id ===
+													conversation.id}
+												on:click={() =>
+													handleActiveConversationChange(conversation.id)}
 											>
 												<div class="menu-content">
 													{#if editMode && activeConversation?.id === conversation.id}
@@ -194,20 +200,25 @@
 																on:click={(e) => {
 																	e.stopPropagation();
 																	overflowMenuOpen = true;
-																	handleActiveConversationChange(conversation.id);
+																	handleActiveConversationChange(
+																		conversation.id
+																	);
 																	disableScroll = true;
 																}}
 																data-testid="overflow-menu-{conversation.label}"
 																style={overflowMenuOpen &&
-																activeConversation?.id === conversation.id
+																activeConversation?.id ===
+																	conversation.id
 																	? `position: fixed; top: 0; left: 0; transform: translate(224px, ${menuOffset - scrollOffset + 48}px)`
 																	: ''}
 															>
 																<OverflowMenuItem
 																	text="Edit"
 																	on:click={() => {
-																		editConversationId = conversation.id;
-																		editLabelText = conversation.label;
+																		editConversationId =
+																			conversation.id;
+																		editLabelText =
+																			conversation.label;
 																	}}
 																/>
 

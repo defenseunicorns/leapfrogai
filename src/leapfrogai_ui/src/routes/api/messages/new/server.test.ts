@@ -99,7 +99,10 @@ describe('/api/messages/new', () => {
 		});
 
 		await expect(
-			POST({ request, locals: { supabase: supabaseInsertErrorMock(), getSession: sessionMock } })
+			POST({
+				request,
+				locals: { supabase: supabaseInsertErrorMock(), getSession: sessionMock }
+			})
 		).rejects.toMatchObject({
 			status: 500
 		});

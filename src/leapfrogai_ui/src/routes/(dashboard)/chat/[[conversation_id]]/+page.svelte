@@ -38,7 +38,7 @@
 				});
 			}
 		},
-		onError: (error) => {
+		onError: () => {
 			toastStore.addToast({
 				kind: 'error',
 				title: 'Error',
@@ -136,7 +136,8 @@
 				{:else}
 					<img alt="LeapfrogAI" src={frog} class="icon" />
 				{/if}
-				<Tile class="centered-vertically" style="line-height: 20px;">{message.content}</Tile>
+				<Tile class="centered-vertically" style="line-height: 20px;">{message.content}</Tile
+				>
 			</div>
 		{/each}
 	</div>

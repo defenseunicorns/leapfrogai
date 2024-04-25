@@ -73,6 +73,10 @@ export const fakeConversations: Conversation[] = [
 	// This Month
 	getFakeConversation({
 		numMessages: 2,
-		insertedAt: new Date(todayOverride.getFullYear(), todayOverride.getMonth(), 10).toDateString()
+		insertedAt: new Date(
+			todayOverride.getFullYear(),
+			todayOverride.getMonth(),
+			10
+		).toDateString()
 	})
 ];

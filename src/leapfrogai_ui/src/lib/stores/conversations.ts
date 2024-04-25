@@ -45,7 +45,7 @@ const createMessage = async (input: NewMessageInput) => {
 	return error(500, 'Error saving message');
 };
 
-const deleteConversation = async (id: String) => {
+const deleteConversation = async (id: string) => {
 	// A constraint on messages table will cascade delete all messages when the conversation is deleted
 	const res = await fetch('/api/conversations/delete', {
 		method: 'DELETE',
@@ -74,7 +74,6 @@ const updateConversationLabel = async (editConversationId: string, editLabelText
 	}
 	return error(500, 'Error updating conversation label');
 };
-
 
 const createConversationsStore = () => {
 	const { subscribe, set, update } = writable<ConversationsStore>({ ...defaultValues });
@@ -162,7 +161,9 @@ const createConversationsStore = () => {
 			try {
 				await updateConversationLabel(id, newLabel);
 				return update((old) => {
-					const updatedConversationIndex = old.conversations.findIndex((c) => c.id === id);
+					const updatedConversationIndex = old.conversations.findIndex(
+						(c) => c.id === id
+					);
 					const updatedConversation = { ...old.conversations[updatedConversationIndex] };
 					updatedConversation.label = newLabel;
 

@@ -1,9 +1,12 @@
 import { faker } from '@faker-js/faker';
-import { expect, test} from '@playwright/test';
-import { 	deleteConversation,
-    deleteConversationsByLabel,
-    loadChatPage,
-    sendMessage, waitForResponseToComplete } from './helpers';
+import { expect, test } from '@playwright/test';
+import {
+	deleteConversation,
+	deleteConversationsByLabel,
+	loadChatPage,
+	sendMessage,
+	waitForResponseToComplete
+} from './helpers';
 
 test('it can delete conversations', async ({ page }) => {
 	const newMessage = faker.lorem.words(3);
@@ -45,7 +48,6 @@ test('can edit conversation labels', async ({ page }) => {
 });
 
 test('Can switch conversation threads', async ({ page }) => {
-
 	const newMessage1 = faker.lorem.words(3);
 	const newMessage2 = faker.lorem.words(3);
 	const newMessage3 = faker.lorem.words(3);

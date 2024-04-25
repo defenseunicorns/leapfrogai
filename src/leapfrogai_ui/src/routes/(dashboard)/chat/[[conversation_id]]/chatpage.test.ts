@@ -26,7 +26,6 @@ import { delay } from 'msw';
 const { getStores } = await vi.hoisted(() => import('$lib/mocks/svelte'));
 
 describe('The Chat Page', () => {
-
 	it('it renders all the messages', async () => {
 		conversationsStore.set({
 			conversations: fakeConversations
