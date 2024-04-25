@@ -14,6 +14,7 @@
   - [Image Hardening](#image-hardening)
   - [SDK](#sdk)
   - [User Interface](#user-interface)
+  - [Repeater](#repeater)
 - [Usage](#usage)
   - [UDS (Latest)](#uds-latest)
   - [UDS (Dev)](#uds-dev)
@@ -21,6 +22,7 @@
     - [GPU](#gpu)
   - [Local Dev](#local-dev)
     - [API](#api-1)
+    - [Repeater](#repeater-1)
     - [Backend: llama-cpp-python](#backend-llama-cpp-python)
     - [Backend: text-embeddings](#backend-text-embeddings)
     - [Backend: vllm](#backend-vllm)
@@ -204,9 +206,10 @@ To run the llama-cpp-python backend locally (starting from the root directory of
 ``` shell
 python -m pip install src/leapfrogai_sdk
 cd packages/llama-cpp-python
-python -m pip install .
+python -m pip install .[dev]
 python scripts/model_download.py
 mv .model/*.gguf .model/model.gguf
+cp config.example.yaml config.yaml # Make any necessary updates
 lfai-cli --app-dir=. main:Model
 ```
 
