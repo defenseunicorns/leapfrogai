@@ -101,4 +101,4 @@ components:
     files:
       - source: scripts/postgres-persistence.sh
         target: postgres-persistence.sh
-        shasum: ee425a6b75b5d5da5918d47b2f357175bf8a401c0a6c9dfa6321b8a2b4d7cc2a
+        shasum: 6c0854c5d08e4ba673e7dd4bde7f636ae1b2d54d313d4ad0bc4032ffa780f1d4
