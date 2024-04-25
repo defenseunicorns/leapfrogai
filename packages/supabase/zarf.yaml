@@ -86,7 +86,7 @@ components:
                           sed "s/name: supabase-postgresql/name: supabase-postgresql-backup/" | \
                           kubectl apply --namespace="leapfrogai" -f -
                   else
-                      exit 1
+                      exit 0
                   fi
               fi
     images:
