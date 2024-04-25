@@ -4,8 +4,8 @@ from typing import Iterator
 import grpc
 from fastapi.responses import StreamingResponse
 import leapfrogai_sdk as lfai
-from leapfrogai_api.backends.helpers import recv_chat, recv_completion
-from leapfrogai_api.routers.openai.types import (
+from leapfrogai_api.backend.helpers import recv_chat, recv_completion
+from leapfrogai_api.backend.types import (
     ChatChoice,
     ChatCompletionResponse,
     ChatMessage,

@@ -3,7 +3,7 @@
 from typing import BinaryIO, Iterator, Union
 import grpc
 import leapfrogai_sdk as lfai
-from leapfrogai_api.routers.openai.types import (
+from leapfrogai_api.backend.types import (
     ChatCompletionResponse,
     ChatDelta,
     ChatStreamChoice,

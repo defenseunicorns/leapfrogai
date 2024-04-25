@@ -6,7 +6,7 @@ import time
 import pytest
 from fastapi.testclient import TestClient
 
-import leapfrogai_api.routers.openai.types as lfai_types
+import leapfrogai_api.backend.types as lfai_types
 from leapfrogai_api.main import app
 
 # Set environment variables that the TestClient will use

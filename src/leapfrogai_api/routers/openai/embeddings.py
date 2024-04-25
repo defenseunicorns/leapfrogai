@@ -2,8 +2,8 @@
 
 from typing import Annotated
 from fastapi import APIRouter, Depends, HTTPException
-from leapfrogai_api.backends.grpc_client import create_embeddings
-from leapfrogai_api.routers.openai.types import (
+from leapfrogai_api.backend.grpc_client import create_embeddings
+from leapfrogai_api.backend.types import (
     CreateEmbeddingRequest,
     CreateEmbeddingResponse,
 )

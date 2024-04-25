@@ -2,7 +2,7 @@
 
 from typing import Annotated
 from fastapi import APIRouter, Depends
-from leapfrogai_api.routers.openai.types import (
+from leapfrogai_api.backend.types import (
     ModelResponse,
     ModelResponseModel,
 )

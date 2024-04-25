@@ -3,7 +3,7 @@
 from typing import List
 from fastapi import HTTPException, APIRouter
 from openai.types.beta import Assistant, AssistantDeleted
-from leapfrogai_api.routers.openai.types import (
+from leapfrogai_api.backend.types import (
     CreateAssistantRequest,
     ModifyAssistantRequest,
 )
