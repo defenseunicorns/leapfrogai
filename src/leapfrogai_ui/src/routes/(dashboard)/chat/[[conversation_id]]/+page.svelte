@@ -160,20 +160,22 @@
 			/>
 			{#if !$isLoading}
 				<Button
+					data-testid="send message"
 					kind="secondary"
 					icon={ArrowRight}
 					size="field"
 					type="submit"
-					aria-label="send"
+					iconDescription="send"
 					disabled={$isLoading || !$input}
 				/>
 			{:else}
 				<Button
+					data-testid="cancel message"
 					kind="secondary"
 					size="field"
 					type="submit"
 					icon={StopFilledAlt}
-					aria-label="cancel message"
+					iconDescription="cancel"
 				/>
 			{/if}
 		</div>
