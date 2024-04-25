@@ -3286,7 +3286,7 @@ postgresql:
   ##
   auth:
     postgresPassword: ""
-    existingSecret: ""
+    existingSecret: ###ZARF_VAR_EXISTING_POSTGRES_SECRET###
   ## @param postgresql.architecture PostgreSQL architecture (`standalone` or `replication`)
   ##
   architecture: standalone
