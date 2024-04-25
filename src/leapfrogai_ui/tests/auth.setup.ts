@@ -5,8 +5,9 @@ import * as OTPAuth from 'otpauth';
 setup('authenticate', async ({ page, clearAllConversations }) => {
 	await clearAllConversations();
 	await page.goto('http://localhost:4173');
-
-	if (process.env.PUBLIC_DISABLE_KEYCLOAK) {
+	console.log(process.env.PUBLIC_DISABLE_KEYCLOAK)
+	if (process.env.PUBLIC_DISABLE_KEYCLOAK === "true") {
+		console.log("here")
 		// uses local supabase test users, logs in directly with Supabase, no Keycloak
 		await page.getByText("Already have an account? Sign In").click();
 		await page.getByPlaceholder('Your email address').click();
