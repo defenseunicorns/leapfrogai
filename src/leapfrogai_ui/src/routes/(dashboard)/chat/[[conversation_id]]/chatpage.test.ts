@@ -10,7 +10,7 @@ import ChatPage from './+page.svelte';
 import ChatPageWithToast from './ChatPageWithToast.test.svelte';
 import userEvent from '@testing-library/user-event';
 import stores from '$app/stores';
-import { beforeAll, vi } from 'vitest';
+import {beforeAll, vi} from 'vitest';
 
 import {
 	mockChatCompletion,
@@ -251,12 +251,8 @@ describe('The Chat Page', () => {
 			});
 		});
 
-		// TODO - E2Es for these as well
-		describe('editing a conversation', () => {
-			it('deletes the old message and response', () => {});
-			it("doesn't delete the response after the user's old message if it wasn't an AI response (ex. user's request had failed)", () => {});
-			it('saves the new question and response', () => {});
-			it('sends a new request to the API', () => {});
-		});
+		// Note - Testing message editing requires an excessive amount of mocking and was deemed more practical and
+		// maintainable to test with a Playwright E2E test
+
 	});
 });

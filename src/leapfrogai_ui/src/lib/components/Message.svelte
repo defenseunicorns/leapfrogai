@@ -45,7 +45,7 @@
 					<LFTextArea {value} {onSubmit} ariaLabel="edit message input"/>
 					<div class="cancel-save">
 						<Button size="small" kind="secondary" on:click={handleCancel}>Cancel</Button>
-						<Button size="small" on:click={onSubmit}>Submit</Button>
+						<Button size="small" on:click={onSubmit} aria-label="submit edited message">Submit</Button>
 					</div>
 				</div>
 			{:else}

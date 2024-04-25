@@ -17,7 +17,7 @@ export const getFakeMessage = (options: FakeMessageOptions = {}): Message => {
 		id = faker.string.uuid(),
 		role = 'user',
 		user_id = faker.string.uuid(),
-		conversation_id = faker.lorem.lines(1),
+		conversation_id = faker.string.uuid(),
 		content = faker.lorem.lines(1),
 		inserted_at = new Date().toISOString()
 	} = options;
