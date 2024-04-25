@@ -80,13 +80,7 @@ components:
       onDeploy:
         after:
           - cmd: |
-              if ! kubectl get secret "supabase-postgresql-backup" -n "leapfrogai" &>/dev/null; then
-                  if kubectl get secret "supabase-postgresql" -n "leapfrogai" &>/dev/null; then
-                      kubectl get secret "supabase-postgresql" -n "leapfrogai" -o yaml | sed "s/name: supabase-postgresql/name: supabase-postgresql-backup/" | kubectl apply --namespace="leapfrogai" -f -
-                  else
-                      exit 0
-                  fi
-              fi
+              if ! kubectl get secret "supabase-postgresql-backup" -n "leapfrogai" &>/dev/null; then kubectl get secret "supabase-postgresql" -n "leapfrogai" -o yaml | sed "s/name: supabase-postgresql/name: supabase-postgresql-backup/" | kubectl apply --namespace="leapfrogai" -f -; fi
     images:
       - docker.io/bitnami/gotrue:2.149.0-debian-12-r0
       - docker.io/bitnami/jwt-cli:6.0.0-debian-12-r19
