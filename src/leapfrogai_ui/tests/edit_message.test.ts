@@ -88,3 +88,21 @@ test('editing a message when an AI response is missing', async ({ page }) => {
     const textContent = await editedMessage.textContent();
     expect(textContent?.trim()).toEqual('edited message');
 });
+
+test("regenerating responses", async ({page}) => {
+	const newMessage1 = faker.lorem.words(3);
+
+	await loadChatPage(page);
+
+
+	await sendMessage(page, newMessage1);
+	await waitForResponseToComplete(page);
+
+	const messages = page.getByTestId('message');
+	await expect(messages).toHaveCount(2);
+
+	await page.getByLabel('regenerate message').click();
+	await expect(messages).toHaveCount(1);
+	await waitForResponseToComplete(page);
+	await expect(messages).toHaveCount(2);
+})

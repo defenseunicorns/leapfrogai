@@ -19,7 +19,7 @@
 
 	$: $page.params.conversation_id, setMessages(activeConversation?.messages || []);
 
-	const { input, handleSubmit, messages, setMessages, isLoading, stop, append } = useChat({
+	const { input, handleSubmit, messages, setMessages, isLoading, stop, append, reload } = useChat({
 		initialMessages: $conversationsStore.conversations
 			.find((conversation) => conversation.id === $page.params.conversation_id)
 			?.messages.map((message) => ({
@@ -106,9 +106,12 @@
 		if (activeConversation?.id) {
 			// delete old message from DB
 			await conversationsStore.deleteMessage(message.id, activeConversation.id);
-			if(numToSplice === 2){
+			if (numToSplice === 2) {
 				// also delete that message's response
-				await conversationsStore.deleteMessage($messages[messageIndex + 1].id, activeConversation.id);
+				await conversationsStore.deleteMessage(
+					$messages[messageIndex + 1].id,
+					activeConversation.id
+				);
 			}
 
 			// save new message
@@ -122,6 +125,15 @@
 
 		// send to /api/chat
 		await append(message);
+	};
+
+	const handleRegenerate = async () => {
+		const messageIndex = $messages.length - 1;
+		if (activeConversation?.id) {
+			await conversationsStore.deleteMessage($messages[messageIndex].id, activeConversation.id);
+		}
+		setMessages($messages.toSpliced(messageIndex, 1))
+		await reload();
 	};
 
 	onMount(() => {
@@ -143,8 +155,14 @@
 <!--Note - the messages are streamed live from the useChat messages, saving them in the db and store happens behind the scenes -->
 <div class="inner-content">
 	<div class="messages" bind:this={messageThreadDiv} bind:offsetHeight={messageThreadDivHeight}>
-		{#each $messages as message (message.id)}
-			<Message {message} {handleMessageEdit} />
+		{#each $messages as message, index (message.id)}
+			<Message
+				{message}
+				{handleMessageEdit}
+				{handleRegenerate}
+				isLastMessage={index === $messages.length - 1}
+				isLoading={$isLoading || false}
+			/>
 		{/each}
 	</div>
 
