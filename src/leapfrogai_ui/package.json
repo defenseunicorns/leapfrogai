@@ -26,7 +26,7 @@
 		"@commitlint/config-conventional": "^19.1.0",
 		"@faker-js/faker": "^8.4.1",
 		"@playwright/test": "^1.28.1",
-		"@sveltejs/adapter-auto": "^3.0.0",
+		"@sveltejs/adapter-auto": "^3.2.0",
 		"@sveltejs/adapter-node": "^5.0.1",
 		"@sveltejs/kit": "^2.0.0",
 		"@testing-library/jest-dom": "^6.4.2",
