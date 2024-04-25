@@ -21,3 +21,14 @@ jobs:
         with:
           version: 0.3.4
           args: format --check
+
+      # Javascript & Typescript Linting
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 18
+
+      - name: Install UI Dependencies
+        run: npm --prefix src/leapfrogai_ui install
+
+      - name: Run UI Linter
+        run: npm --prefix src/leapfrogai_ui run lint
