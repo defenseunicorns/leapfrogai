@@ -79,8 +79,7 @@ components:
     actions:
       onDeploy:
         after:
-          - cmd: |
-              if ! kubectl get secret "supabase-postgresql-backup" -n "leapfrogai" &>/dev/null; then kubectl get secret "supabase-postgresql" -n "leapfrogai" -o yaml | sed "s/name: supabase-postgresql/name: supabase-postgresql-backup/" | kubectl apply --namespace="leapfrogai" -f -; fi
+          - cmd: ./postgres-persistence.sh
     images:
       - docker.io/bitnami/gotrue:2.149.0-debian-12-r0
       - docker.io/bitnami/jwt-cli:6.0.0-debian-12-r19
@@ -98,3 +97,7 @@ components:
         namespace: leapfrogai
         files:
           - "uds-package.yaml"
+    files:
+      - source: scripts/postgres-persistence.sh
+        target: postgres-persistence.sh
+        shasum: ee425a6b75b5d5da5918d47b2f357175bf8a401c0a6c9dfa6321b8a2b4d7cc2a
