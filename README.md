@@ -219,7 +219,7 @@ To run the text-embeddings backend locally (starting from the root directory of 
 ``` shell
 python -m pip install src/leapfrogai_sdk
 cd packages/text-embeddings
-python -m pip install .
+python -m pip install .[dev]
 python scripts/model_download.py
 python -u main.py
 ```
@@ -230,7 +230,7 @@ To run the vllm backend locally (starting from the root directory of the reposit
 ``` shell
 python -m pip install src/leapfrogai_sdk
 cd packages/vllm
-python -m pip install .
+python -m pip install .[dev]
 python packages/vllm/src/model_download.py
 export QUANTIZATION=gptq
 python -u src/main.py
