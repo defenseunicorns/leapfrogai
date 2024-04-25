@@ -21,3 +21,11 @@ repos:
     hooks:
       - id: ruff # Run the linter.
       - id: ruff-format # Run the formatter.
+
+  # ESlint
+  - repo: https://github.com/pre-commit/mirrors-eslint
+    rev: v8.56.0
+    hooks:
+    -   id: eslint
+        files: \.[jt]sx?$  # *.js, *.jsx, *.ts and *.tsx
+        types: [file]
