@@ -46,6 +46,9 @@ variables:
   - name: EXTERNAL_KEYCLOAK_URL
     description: 'External keycloak url'
     default: "https://keycloak.admin.uds.dev/realms/uds"
+  - name: EXISTING_POSTGRES_SECRET
+    description: 'The name of the existing Postgres secret, if empty the Postgres chart will create a new secret'
+    default: "supabase-postgresql"
 
 components:
   - name: supabase-bootstrap
