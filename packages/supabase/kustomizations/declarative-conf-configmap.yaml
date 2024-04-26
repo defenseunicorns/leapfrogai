@@ -163,7 +163,6 @@ metadata:
   labels:
     app.kubernetes.io/component: kong
     app.kubernetes.io/instance: supabase
-    app.kubernetes.io/managed-by: Helm
     app.kubernetes.io/name: supabase
     app.kubernetes.io/part-of: supabase
     sidecar.istio.io/inject: "false"
