@@ -121,7 +121,7 @@ components:
     required: true
     actions:
       onDeploy:
-        after:
+        before:
           - cmd: kubectl delete cm supabase-kong-declarative-config -n leapfrogai 
     manifests:
       - name: supabase-manifests
