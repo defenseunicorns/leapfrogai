@@ -3177,7 +3177,7 @@ kong:
       - name: KONG_DNS_ORDER
         value: LAST,A,CNAME
       - name: KONG_PLUGINS
-        value: request-transformer,cors,key-auth,acl
+        value: request-transformer,cors,key-auth,acl,basic-auth
     ## Container resource requests and limits
     ## ref: https://kubernetes.io/docs/concepts/configuration/manage-compute-resources-container/
     ## @param kong.kong.resourcesPreset Set container resources according to one common preset (allowed values: none, nano, small, medium, large, xlarge, 2xlarge). This is ignored if kong.resources is set (kong.resources is recommended for production).

@@ -123,6 +123,8 @@ components:
       onDeploy:
         before:
           - cmd: kubectl delete cm supabase-kong-declarative-config -n leapfrogai 
+        after:
+          - cmd: kubectl rollout restart deployment supabase-kong -n leapfrogai
     manifests:
       - name: supabase-manifests
         namespace: leapfrogai
