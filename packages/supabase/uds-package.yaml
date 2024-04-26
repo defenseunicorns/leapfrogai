@@ -20,5 +20,5 @@ spec:
       - direction: Egress
         podLabels:
           app.kubernetes.io/name: supabase
-          app.kubernetes.io/component: kong
+          app.kubernetes.io/component: studio
         remoteGenerated: Anywhere
