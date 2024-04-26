@@ -120,6 +120,7 @@
 	}
 	.message {
 		display: flex;
+		white-space: pre-line;
 	}
 
 	.transparent {
