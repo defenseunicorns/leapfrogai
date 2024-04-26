@@ -77,6 +77,11 @@ components:
         version: 4.0.1
         valuesFiles:
           - "bitnami-values-basic.yaml"
+    manifests:
+      - name: supabase-manifests
+        namespace: leapfrogai
+        files:
+          - "manifests/declarative-conf-configmap.yaml"
     images:
       - docker.io/bitnami/jwt-cli:6.0.0-debian-12-r19
       - docker.io/bitnami/kubectl:1.29.3-debian-12-r4
@@ -112,10 +117,6 @@ components:
         namespace: leapfrogai
         files:
           - "uds-package.yaml"
-      - name: supabase-manifests
-        namespace: leapfrogai
-        kustomizations:
-          - "kustomizations/"
     files:
       - source: scripts/postgres-persistence.sh
         target: postgres-persistence.sh
