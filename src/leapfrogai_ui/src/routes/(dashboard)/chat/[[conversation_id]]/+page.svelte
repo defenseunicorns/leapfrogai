@@ -1,5 +1,6 @@
 <script lang="ts">
 	import { env } from '$env/dynamic/public';
+	import { array, object, ObjectSchema, string } from 'yup';
 	import { LFTextAreaV2, PoweredByDU } from '$components';
 	import { Button } from 'carbon-components-svelte';
 	import { afterUpdate, onMount, tick } from 'svelte';
@@ -13,6 +14,11 @@
 	export let data;
 	let messageThreadDiv: HTMLDivElement;
 	let messageThreadDivHeight: number;
+
+	const inputSchema = string().max(Number(env.PUBLIC_MESSAGE_LENGTH_LIMIT));
+
+	let inputValid = true;
+	$: inputSchema.isValid($input).then((isValid) => (inputValid = isValid));
 
 	$: activeConversation = $conversationsStore.conversations.find(
 		(conversation) => conversation.id === $page.params.conversation_id
@@ -170,7 +176,10 @@
 	<form on:submit={onSubmit}>
 		<div class="chat-form-container">
 			<Button icon={Attachment} kind="ghost" size="small" iconDescription="Attach File" />
-			<LFTextAreaV2 value={input} {onSubmit} />
+			<LFTextAreaV2
+				value={input}
+				{onSubmit}
+			/>
 
 			{#if !$isLoading}
 				<Button
@@ -180,9 +189,7 @@
 					size="field"
 					type="submit"
 					iconDescription="send"
-					disabled={$isLoading ||
-						!$input ||
-						$input.length > Number(env.PUBLIC_MESSAGE_LENGTH_LIMIT)}
+					disabled={$isLoading || !$input || !inputValid}
 				/>
 			{:else}
 				<Button

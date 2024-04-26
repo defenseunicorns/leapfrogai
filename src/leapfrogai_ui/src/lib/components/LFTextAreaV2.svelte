@@ -2,7 +2,8 @@
 It keeps all the Carbon Components Svelte functionality, but instead grows as multiple lines are added until it
 hits the limit specified by maxRows.
 It also defaults maxCount to the environment variable PUBLIC_MESSAGE_LENGTH_LIMIT
-and shows an error when the text is longer than maxCount.
+and shows an error when the user attempts to type past the maxCount limitation.
+The invalid prop can still be passed to this component to validate for other conditions.
 -->
 
 <script lang="ts">
@@ -77,9 +78,9 @@ and shows an error when the text is longer than maxCount.
 	$: errorId = `error-${id}`;
 
 	/* Start LF modifications */
-	let lengthInvalid: boolean;
+	let showLengthError = false;
 	let lengthInvalidText = 'Character limit reached';
-	$: lengthInvalid = $value.length > maxCount;
+	$: limitReached = $value.length === Number(env.PUBLIC_MESSAGE_LENGTH_LIMIT);
 
 	let inputHeight = '';
 	function resizeTextArea() {
@@ -121,15 +122,15 @@ and shows an error when the text is longer than maxCount.
 			{/if}
 		</div>
 	{/if}
-	<div class:bx--text-area__wrapper={true} data-invalid={invalid || lengthInvalid || undefined}>
-		{#if invalid || lengthInvalid}
+	<div class:bx--text-area__wrapper={true} data-invalid={invalid || showLengthError || undefined}>
+		{#if invalid || showLengthError}
 			<WarningFilled class="bx--text-area__invalid-icon" />
 		{/if}
 		<textarea
 			bind:this={ref}
 			bind:value={$value}
-			aria-invalid={invalid || lengthInvalid || undefined}
-			aria-describedby={invalid || lengthInvalid ? errorId : undefined}
+			aria-invalid={invalid || showLengthError || undefined}
+			aria-describedby={invalid || showLengthError ? errorId : undefined}
 			{disabled}
 			{id}
 			{name}
@@ -140,20 +141,28 @@ and shows an error when the text is longer than maxCount.
 			class="lf-text-area"
 			class:bx--text-area={true}
 			class:bx--text-area--light={light}
-			class:bx--text-area--invalid={invalid || lengthInvalid}
+			class:bx--text-area--invalid={invalid || showLengthError}
 			style="--maxRows:{maxRows};"
 			maxlength={maxCount + 1 ?? undefined}
 			{...$$restProps}
 			on:change
 			on:input={resizeTextArea}
 			on:keydown={(e) => {
-				// Block further input if user is past PUBLIC_MESSAGE_LENGTH_LIMIT
-				// but allow deleting characters and movement in the textarea
-				if (
-					$value.length > Number(env.PUBLIC_MESSAGE_LENGTH_LIMIT) &&
+				// Allow user to type up to maxCount, but only show error once trying to add more
+				// characters after hitting this limit
+
+				// If limit reached and trying to delete characters
+				if (limitReached && ['Backspace', 'Delete'].includes(e.key)) {
+					showLengthError = false; // remove error
+				}
+
+				// Limit has previously been reached and still trying to type
+				else if (
+					limitReached &&
 					!['Backspace', 'Delete', 'ArrowLeft', 'ArrowRight'].includes(e.key)
 				) {
-					e.preventDefault();
+					e.preventDefault(); // disallow adding character
+					showLengthError = true; // throw error
 				} else {
 					if (e.key === 'Enter' && !e.shiftKey && ref) {
 						ref.style.height = inputHeight; // reset input size if there were multiple lines
@@ -167,14 +176,14 @@ and shows an error when the text is longer than maxCount.
 			on:paste
 		></textarea>
 	</div>
-	{#if !invalid && !lengthInvalid && helperText}
+	{#if !invalid && !showLengthError && helperText}
 		<div class:bx--form__helper-text={true} class:bx--form__helper-text--disabled={disabled}>
 			{helperText}
 		</div>
 	{/if}
-	{#if invalid || lengthInvalid}
+	{#if invalid || showLengthError}
 		<div id={errorId} class:bx--form-requirement={true}>
-			{lengthInvalid ? lengthInvalidText : invalidText}
+			{showLengthError ? lengthInvalidText : invalidText}
 		</div>
 	{/if}
 </div>
