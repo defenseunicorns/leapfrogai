@@ -1,5 +1,6 @@
 <script lang="ts">
-	import { LFTextArea, PoweredByDU } from '$components';
+	import { env } from '$env/dynamic/public';
+	import { LFTextAreaV2, PoweredByDU } from '$components';
 	import { Button } from 'carbon-components-svelte';
 	import { afterUpdate, onMount, tick } from 'svelte';
 	import { conversationsStore, toastStore } from '$stores';
@@ -132,7 +133,7 @@
 		if (activeConversation?.id) {
 			await conversationsStore.deleteMessage($messages[messageIndex].id, activeConversation.id);
 		}
-		setMessages($messages.toSpliced(messageIndex, 1))
+		setMessages($messages.toSpliced(messageIndex, 1));
 		await reload();
 	};
 
@@ -169,7 +170,7 @@
 	<form on:submit={onSubmit}>
 		<div class="chat-form-container">
 			<Button icon={Attachment} kind="ghost" size="small" iconDescription="Attach File" />
-			<LFTextArea value={input} {onSubmit} />
+			<LFTextAreaV2 value={input} {onSubmit} />
 
 			{#if !$isLoading}
 				<Button
@@ -179,7 +180,9 @@
 					size="field"
 					type="submit"
 					iconDescription="send"
-					disabled={$isLoading || !$input}
+					disabled={$isLoading ||
+						!$input ||
+						$input.length > Number(env.PUBLIC_MESSAGE_LENGTH_LIMIT)}
 				/>
 			{:else}
 				<Button

@@ -16,10 +16,9 @@ The enter button calls onSubmit, but a user can still enter multiple lines of te
 
 	export let invalid = false;
 	export let invalidText = '';
-	export let helperText = "";
+	export let helperText = '';
 	export let disabled = false;
 	export let id = 'ccs-' + Math.random().toString(36);
-
 
 	let inputHeight = '';
 	let textAreaRef: HTMLTextAreaElement;
@@ -47,7 +46,7 @@ The enter button calls onSubmit, but a user can still enter multiple lines of te
 <textarea
 	aria-invalid={invalid || undefined}
 	aria-describedby={invalid ? errorId : undefined}
-	disabled="{disabled}"
+	{disabled}
 	bind:this={textAreaRef}
 	bind:value={$value}
 	on:input={resizeTextArea}
@@ -69,16 +68,13 @@ The enter button calls onSubmit, but a user can still enter multiple lines of te
 />
 
 {#if !invalid && helperText}
-	<div
-			class:bx--form__helper-text="{true}"
-			class:bx--form__helper-text--disabled="{disabled}"
-	>
+	<div class:bx--form__helper-text={true} class:bx--form__helper-text--disabled={disabled}>
 		{helperText}
 	</div>
 {/if}
 
 {#if invalid}
-	<div id="{errorId}" class:bx--form-requirement="{true}">{invalidText}</div>
+	<div id={errorId} class:bx--form-requirement={true}>{invalidText}</div>
 {/if}
 
 <style lang="scss">

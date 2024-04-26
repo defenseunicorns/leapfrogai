@@ -2,7 +2,7 @@
 	import { Button, Tile } from 'carbon-components-svelte';
 	import { Copy, Edit, Reset, UserAvatar } from 'carbon-icons-svelte';
 	import { type Message as AIMessage } from 'ai/svelte';
-	import { LFTextArea } from '$components';
+	import { LFTextAreaV2 } from '$components';
 	import frog from '$assets/frog.png';
 	import { writable } from 'svelte/store';
 	import { toastStore } from '$stores';
@@ -64,7 +64,7 @@
 		<div class="message-and-utils">
 			{#if editMode}
 				<div class="edit-prompt">
-					<LFTextArea {value} {onSubmit} ariaLabel="edit message input" />
+					<LFTextAreaV2 {value} {onSubmit} ariaLabel="edit message input" />
 					<div class="cancel-save">
 						<Button size="small" kind="secondary" on:click={handleCancel}>Cancel</Button>
 						<Button
