@@ -80,7 +80,7 @@ components:
         namespace: leapfrogai
         localPath: chart/
         releaseName: supabase-secrets-generator
-        version: 4.0.1
+        version: 0.0.1
       - name: supabase
         namespace: leapfrogai
         url: oci://registry-1.docker.io/bitnamicharts/supabase
