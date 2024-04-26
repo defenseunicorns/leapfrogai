@@ -9,13 +9,13 @@ import {
 
 test('it can start a new conversation and receive a response', async ({ page }) => {
 	const newMessage = faker.lorem.words(3);
-	let messages = await page.getByTestId('message');
+	let messages = page.getByTestId('message');
 	await expect(messages).toHaveCount(0);
 
 	await loadChatPage(page);
 	await sendMessage(page, newMessage);
+	await waitForResponseToComplete(page);
 
-	messages = await page.getByTestId('message');
 	await expect(messages).toHaveCount(2);
 
 	await expect(page.getByText('Internal Server Error')).toHaveCount(0);
@@ -65,7 +65,7 @@ test('it cancels responses', async ({ page }) => {
 	await sendMessage(page, newMessage);
 	await expect(messages).toHaveCount(2); // ensure new response is being received
 	await page.waitForTimeout(300); // let it partially complete
-	await page.getByLabel('cancel message').click();
+	await page.getByTestId('cancel message').click();
 	await page.waitForTimeout(200); // wait to ensure new question was not sent
 	await expect(messages).toHaveCount(2);
 	const allMessages = await messages.all();
