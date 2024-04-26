@@ -169,8 +169,6 @@ metadata:
     app.kubernetes.io/managed-by: Helm
     app.kubernetes.io/name: supabase
     app.kubernetes.io/part-of: supabase
-    app.kubernetes.io/version: 0.24.3
-    helm.sh/chart: supabase-4.0.1
     sidecar.istio.io/inject: "false"
   name: supabase-kong-declarative-config
   namespace: leapfrogai
