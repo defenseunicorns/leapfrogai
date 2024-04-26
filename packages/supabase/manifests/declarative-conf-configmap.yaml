@@ -166,5 +166,5 @@ metadata:
     app.kubernetes.io/name: supabase
     app.kubernetes.io/part-of: supabase
     sidecar.istio.io/inject: "false"
-  name: supabase-kong-declarative-config-dashboard
+  name: supabase-kong-declarative-config
   namespace: leapfrogai
