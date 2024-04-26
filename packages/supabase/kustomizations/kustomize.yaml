@@ -4,6 +4,5 @@ metadata:
   name: random-secret
 generate:
   - name: supabase-dashboard-secret
-    behavior: merge
     literals:
       - password=$(openssl rand -base64 32)
