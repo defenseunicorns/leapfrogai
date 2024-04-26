@@ -1,3 +1,6 @@
+generatorOptions:
+ disableNameSuffixHash: true
+
 secretGenerator:
 - name: supabase-dashboard-secret
   literals:
