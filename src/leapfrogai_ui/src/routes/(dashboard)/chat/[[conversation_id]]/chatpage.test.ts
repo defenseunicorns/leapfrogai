@@ -10,7 +10,7 @@ import ChatPage from './+page.svelte';
 import ChatPageWithToast from './ChatPageWithToast.test.svelte';
 import userEvent from '@testing-library/user-event';
 import stores from '$app/stores';
-import { beforeAll, vi } from 'vitest';
+import {beforeAll, vi} from 'vitest';
 
 import {
 	mockChatCompletion,
@@ -26,7 +26,6 @@ import { delay } from 'msw';
 const { getStores } = await vi.hoisted(() => import('$lib/mocks/svelte'));
 
 describe('The Chat Page', () => {
-
 	it('it renders all the messages', async () => {
 		conversationsStore.set({
 			conversations: fakeConversations
@@ -251,5 +250,10 @@ describe('The Chat Page', () => {
 				await screen.findAllByText('Response Canceled');
 			});
 		});
+
+
+		// Note - Testing message editing requires an excessive amount of mocking and was deemed more practical and
+		// maintainable to test with a Playwright E2E test
+
 	});
 });
