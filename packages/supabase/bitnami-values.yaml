@@ -24,7 +24,7 @@ global:
   jwt:
     ## @param global.jwt.existingSecret The name of the existing secret containing the JWT secret
     ##
-    existingSecret: ""
+    existingSecret: "jwt-secret"
     ## @param global.jwt.existingSecretKey The key in the existing secret containing the JWT secret
     ##
     existingSecretKey: "secret"
