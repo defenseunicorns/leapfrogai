@@ -66,8 +66,7 @@ variables:
     default: "true"
 
 components:
-  - name: supabase-jwt-generator
-    description: "pre-emptively creates the JWT token ServiceAccount and Job, this prevents hanging from occurring due to the Zarf lifecycle"
+  - name: supabase
     required: true
     charts:
       - name: supabase-bootstrap
@@ -77,21 +76,11 @@ components:
         version: 4.0.1
         valuesFiles:
           - "bitnami-values-basic.yaml"
-    images:
-      - docker.io/bitnami/jwt-cli:6.0.0-debian-12-r19
-      - docker.io/bitnami/kubectl:1.29.3-debian-12-r4
-  - name: supabase-secrets-generator
-    description: "pre-emptively creates necessary secrets"
-    required: true
-    charts:
       - name: supabase-secrets-generator
         namespace: leapfrogai
         localPath: chart/
         releaseName: supabase
         version: 4.0.1
-  - name: supabase
-    required: true
-    charts:
       - name: supabase
         namespace: leapfrogai
         url: oci://registry-1.docker.io/bitnamicharts/supabase
