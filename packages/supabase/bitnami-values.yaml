@@ -1226,7 +1226,7 @@ meta:
 realtime:
   ## @param realtime.enabled Enable Supabase realtime
   ##
-  enabled: false
+  enabled: true
   ## @param realtime.replicaCount Number of Supabase realtime replicas to deploy
   ##
   replicaCount: 1

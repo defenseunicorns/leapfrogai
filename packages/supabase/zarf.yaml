@@ -72,14 +72,14 @@ components:
       - name: supabase-bootstrap
         namespace: leapfrogai
         url: oci://registry-1.docker.io/bitnamicharts/supabase
-        releaseName: supabase
+        releaseName: supabase-bootstrap
         version: 4.0.1
         valuesFiles:
           - "bitnami-values-basic.yaml"
       - name: supabase-secrets-generator
         namespace: leapfrogai
         localPath: chart/
-        releaseName: supabase
+        releaseName: supabase-secrets-generator
         version: 4.0.1
       - name: supabase
         namespace: leapfrogai
