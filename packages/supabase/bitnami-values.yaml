@@ -3149,6 +3149,8 @@ kong:
       {{- end }}
       env:
         - name: SUPABASE_ANON_KEY
+          value: thatonetestvalue
+        - name: SUPABASE_ANON_KEY
           valueFrom:
             secretKeyRef:
               name: '{{ include "supabase.jwt.secretName" . }}'
@@ -3178,8 +3180,6 @@ kong:
         value: LAST,A,CNAME
       - name: KONG_PLUGINS
         value: request-transformer,cors,key-auth,acl,basic-auth
-      - name: SUPABASE_DASHBOARD_PASSWORD
-        value: thatonetestvalue
     ## Container resource requests and limits
     ## ref: https://kubernetes.io/docs/concepts/configuration/manage-compute-resources-container/
     ## @param kong.kong.resourcesPreset Set container resources according to one common preset (allowed values: none, nano, small, medium, large, xlarge, 2xlarge). This is ignored if kong.resources is set (kong.resources is recommended for production).
