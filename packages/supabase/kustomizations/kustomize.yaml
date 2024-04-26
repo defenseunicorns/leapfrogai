@@ -1,9 +1,8 @@
 apiVersion: builtin
 kind: SecretGenerator
 metadata:
-  name: random-secret
-generate:
-  - name: supabase-dashboard-secret
-    behavior: merge
-    literals:
+  name: supabase-dashboard-secret
+  namespace: leapfrogai
+behavior: merge
+literals:
       - password=$(openssl rand -base64 32)
