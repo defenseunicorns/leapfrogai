@@ -115,7 +115,7 @@ components:
       - name: supabase-manifests
         namespace: leapfrogai
         kustomizations:
-          - "manifests/declarative-conf-configmap.yaml"
+          - "kustomizations/"
     files:
       - source: scripts/postgres-persistence.sh
         target: postgres-persistence.sh
