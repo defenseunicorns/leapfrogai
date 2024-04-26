@@ -1,0 +1,4 @@
+secretGenerator:
+- name: supabase-dashboard-secret
+  literals:
+  - password=dummy

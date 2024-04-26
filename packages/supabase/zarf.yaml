@@ -80,8 +80,8 @@ components:
     manifests:
       - name: secret-generator-manifests
         namespace: leapfrogai
-        files:
-          - "manifests/dashboard-secret.yaml"
+        kustomizations:
+          - "kustomizations/"
     images:
       - docker.io/bitnami/jwt-cli:6.0.0-debian-12-r19
       - docker.io/bitnami/kubectl:1.29.3-debian-12-r4
