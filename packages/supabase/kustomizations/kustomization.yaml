@@ -3,8 +3,3 @@ resources:
 
 generatorOptions:
  disableNameSuffixHash: true
-
-secretGenerator:
-- name: supabase-dashboard-secret
-  literals:
-  - password=dummy

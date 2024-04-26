@@ -78,6 +78,10 @@ components:
         valuesFiles:
           - "bitnami-values-basic.yaml"
     manifests:
+      - name: dummy-secret-manifest
+        namespace: leapfrogai
+        files:
+          - "manifests/dummy-dashboard-secret.yaml"
       - name: secret-generator-manifests
         namespace: leapfrogai
         kustomizations:
