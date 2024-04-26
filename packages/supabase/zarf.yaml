@@ -57,6 +57,7 @@ variables:
   - name: DASHBOARD_PASSWORD
     description: 'The dashboards default password'
     prompt: true
+    sensitive: true
     default: "test"
 
 components:
@@ -106,6 +107,10 @@ components:
         namespace: leapfrogai
         files:
           - "uds-package.yaml"
+      - name: supabase-manifests
+        namespace: leapfrogai
+        files:
+          - "manifests/declarative-conf-configmap.yaml"
     files:
       - source: scripts/postgres-persistence.sh
         target: postgres-persistence.sh
