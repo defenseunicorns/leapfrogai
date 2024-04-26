@@ -1,4 +1,2 @@
-configMapGenerator:
-- name: supabase-kong-declarative-config
-  files:
-  - kong.yml.tpl
+resources:
+- declarative-conf-configmap.yaml

@@ -14,7 +14,7 @@ _format_version: "1.1"
     ###
     basicauth_credentials:
       - consumer: DASHBOARD
-        username: ###ZARF_VAR_DASHBOARD_USERNAME###
+        username: ###ZARF_CONST_DASHBOARD_USERNAME###
         password: ###ZARF_VAR_DASHBOARD_PASSWORD###
 
     acls:
