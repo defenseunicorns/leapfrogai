@@ -160,9 +160,6 @@ data:
               hide_credentials: false
 kind: ConfigMap
 metadata:
-  annotations:
-    meta.helm.sh/release-name: supabase
-    meta.helm.sh/release-namespace: leapfrogai
   labels:
     app.kubernetes.io/component: kong
     app.kubernetes.io/instance: supabase
