@@ -114,7 +114,7 @@ components:
           - "uds-package.yaml"
       - name: supabase-manifests
         namespace: leapfrogai
-        files:
+        kustomizations:
           - "manifests/declarative-conf-configmap.yaml"
     files:
       - source: scripts/postgres-persistence.sh
