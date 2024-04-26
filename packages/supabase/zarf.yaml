@@ -77,11 +77,11 @@ components:
         version: 4.0.1
         valuesFiles:
           - "bitnami-values-basic.yaml"
-    manifests:
-      - name: secret-generator-manifests
+      - name: supabase-secrets-generator
         namespace: leapfrogai
-        kustomizations:
-          - "kustomizations/"
+        localPath: chart/
+        releaseName: supabase
+        version: 4.0.1
     images:
       - docker.io/bitnami/jwt-cli:6.0.0-debian-12-r19
       - docker.io/bitnami/kubectl:1.29.3-debian-12-r4

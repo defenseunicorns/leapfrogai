@@ -1,8 +1,0 @@
-generatorOptions:
- disableNameSuffixHash: true
-
-secretGenerator:
-- name: supabase-dashboard-secret
-  literals:
-    - password=$(openssl rand -base64 32)
-  type: "Opaque"
