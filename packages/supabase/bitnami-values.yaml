@@ -3148,8 +3148,11 @@ kong:
       securityContext: {{- omit .Values.containerSecurityContext "enabled" | toYaml | nindent 6 }}
       {{- end }}
       env:
-        - name: SUPABASE_ANON_KEY
-          value: thatonetestvalue
+        - name: SUPABASE_DASHBOARD_PASSWORD
+          valueFrom:
+            secretKeyRef:
+              name: supabase-dashboard-secret
+              key: password
         - name: SUPABASE_ANON_KEY
           valueFrom:
             secretKeyRef:
