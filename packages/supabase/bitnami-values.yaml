@@ -405,7 +405,6 @@ auth:
     GOTRUE_API_PORT: {{ .Values.auth.containerPorts.http | quote }}
     API_EXTERNAL_URL: "http://{{ include "supabase.auth.fullname" . }}:{{ .Values.auth.service.ports.http }}"
     GOTRUE_SITE_URL: {{ include "supabase.studio.publicURL" . | quote }}
-    GOTRUE_URI_ALLOW_LIST: "*"
     GOTRUE_DISABLE_SIGNUP: "false"
     GOTRUE_DB_DRIVER: "postgres"
     GOTRUE_DB_MIGRATIONS_PATH: "/opt/bitnami/gotrue/"
@@ -2505,7 +2504,7 @@ studio:
   enabled: true
   ## @param studio.publicURL Supabase studio public URL
   ##
-  publicURL: "https://supabase-studio.uds.dev/"
+  publicURL: "https://lfaiui.uds.dev"
   ## @param studio.replicaCount Number of Supabase studio replicas to deploy
   ##
   replicaCount: 1
@@ -2516,6 +2515,8 @@ studio:
     STUDIO_PG_META_URL: "http://{{ include "supabase.kong.fullname" . }}.{{ include "common.names.namespace" . }}.svc.{{ .Values.clusterDomain }}:{{ .Values.kong.service.ports.proxyHttp }}/pg"
     SUPABASE_PUBLIC_URL: {{ include "supabase.api.publicURL" . | quote }}
     PORT: {{ .Values.studio.containerPorts.http | quote }}
+    DASHBOARD_USERNAME=###ZARF_VAR_DASHBOARD_USERNAME###
+    DASHBOARD_PASSWORD=###ZARF_VAR_DASHBOARD_PASSWORD###
   ## @param studio.extraConfig Supabase studio extra configuration
   ##
   extraConfig: {}
