@@ -6,17 +6,30 @@ The enter button calls onSubmit, but a user can still enter multiple lines of te
 <script lang="ts">
 	import { onMount } from 'svelte';
 	import type { Writable } from 'svelte/store';
-
+	import { env } from '$env/dynamic/public';
+	import { WarningFilled } from 'carbon-icons-svelte';
 	export let value: Writable<string>;
 	export let onSubmit: (e: SubmitEvent | KeyboardEvent) => Promise<void>;
 	export let maxRows = 10;
 	export let placeholder = 'Type your message here...';
 	export let ariaLabel = 'message input';
 
+	export let invalid = false;
+	export let invalidText = '';
+	export let helperText = "";
+	export let disabled = false;
+	export let id = 'ccs-' + Math.random().toString(36);
+
+
 	let inputHeight = '';
 	let textAreaRef: HTMLTextAreaElement;
 
+	$: errorId = `error-${id}`;
+
 	function resizeTextArea() {
+		if ($value.length === Number(env.PUBLIC_MESSAGE_LENGTH_LIMIT)) {
+			console.log('too long');
+		}
 		textAreaRef.style.height = '1px';
 		textAreaRef.style.height = textAreaRef.scrollHeight - 2 + 'px';
 	}
@@ -28,7 +41,13 @@ The enter button calls onSubmit, but a user can still enter multiple lines of te
 	});
 </script>
 
+{#if invalid}
+	<WarningFilled class="bx--text-area__invalid-icon" />
+{/if}
 <textarea
+	aria-invalid={invalid || undefined}
+	aria-describedby={invalid ? errorId : undefined}
+	disabled="{disabled}"
 	bind:this={textAreaRef}
 	bind:value={$value}
 	on:input={resizeTextArea}
@@ -40,14 +59,33 @@ The enter button calls onSubmit, but a user can still enter multiple lines of te
 	}}
 	class="lf-text-area"
 	class:bx--text-area={true}
+	class:error={invalid}
 	style="--maxRows:{maxRows};"
 	name="messageInput"
 	{placeholder}
+	maxlength={Number(env.PUBLIC_MESSAGE_LENGTH_LIMIT) + 1}
 	aria-label={ariaLabel}
 	{...$$restProps}
 />
 
+{#if !invalid && helperText}
+	<div
+			class:bx--form__helper-text="{true}"
+			class:bx--form__helper-text--disabled="{disabled}"
+	>
+		{helperText}
+	</div>
+{/if}
+
+{#if invalid}
+	<div id="{errorId}" class:bx--form-requirement="{true}">{invalidText}</div>
+{/if}
+
 <style lang="scss">
+	.error {
+		border: 1px solid red;
+	}
+
 	.lf-text-area,
 	:global(.bx--text-area) {
 		overflow-y: scroll;

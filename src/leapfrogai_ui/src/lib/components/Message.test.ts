@@ -1,5 +1,5 @@
 import { render, screen } from '@testing-library/svelte';
-import { afterAll, afterEach, vi } from 'vitest';
+import {afterAll, afterEach, type MockInstance, vi} from 'vitest';
 import { Message } from '$components/index';
 import userEvent from '@testing-library/user-event';
 import { getFakeMessage } from '../../testUtils/fakeData';
@@ -66,7 +66,7 @@ describe('Message component', () => {
 	});
 
 	describe('util functions', () => {
-		let clipboardSpy;
+		let clipboardSpy: MockInstance;
 
 		afterAll(() => {
 			clipboardSpy.mockRestore();
