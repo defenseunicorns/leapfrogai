@@ -28,7 +28,7 @@ jobs:
           node-version: 18
 
       - name: Install UI Dependencies
-        run: npm --prefix src/leapfrogai_ui install
+        run: npm --prefix src/leapfrogai_ui ci
 
       - name: Run UI Linter
         run: npm --prefix src/leapfrogai_ui run lint
