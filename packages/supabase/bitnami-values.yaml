@@ -3118,7 +3118,7 @@ serviceAccount:
 kong:
   ## @param kong.enabled Enable Kong
   ##
-  enabled: ###ZAR_VAR_ENABLE_KONG###
+  enabled: ###ZARF_VAR_ENABLE_KONG###
   ## @param kong.database Database to use
   # We will use declarative configuration so we don't need the database
   database: "off"
