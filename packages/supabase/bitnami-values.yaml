@@ -2501,7 +2501,7 @@ storage:
 studio:
   ## @param studio.enabled Enable Supabase studio
   ##
-  enabled: ###ZAR_VAR_ENABLE_STUDIO###
+  enabled: ###ZARF_VAR_ENABLE_STUDIO###
   ## @param studio.publicURL Supabase studio public URL
   ##
   publicURL: "https://lfaiui.uds.dev"
@@ -3009,7 +3009,7 @@ studio:
 volumePermissions:
   ## @param volumePermissions.enabled Enable init container that changes the owner/group of the PV mount point to `runAsUser:fsGroup`
   ##
-  enabled: ###ZAR_VAR_ENABLE_VOLUME_PERMISSIONS###
+  enabled: ###ZARF_VAR_ENABLE_VOLUME_PERMISSIONS###
   ## OS Shell + Utility image
   ## ref: https://hub.docker.com/r/bitnami/os-shell/tags/
   ## @param volumePermissions.image.registry [default: REGISTRY_NAME] OS Shell + Utility image registry
@@ -3248,7 +3248,7 @@ kong:
 ## @param postgresql.service.ports.postgresql PostgreSQL service port
 ##
 postgresql:
-  enabled: ###ZAR_VAR_ENABLE_POSTGRES###
+  enabled: ###ZARF_VAR_ENABLE_POSTGRES###
   ## Bitnami PostgreSQL image version
   ## ref: https://hub.docker.com/r/bitnami/supabase-postgres/tags/
   ## @param postgresql.image.registry [default: REGISTRY_NAME] PostgreSQL image registry
