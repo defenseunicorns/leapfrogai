@@ -34,3 +34,7 @@ packages:
   - name: lfaiui
     path: ../../../packages/ui/
     ref: dev
+  
+  - name: supabase
+    path: ../../../packages/supabase/
+    ref: dev

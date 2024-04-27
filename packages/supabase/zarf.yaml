@@ -2,11 +2,13 @@
 kind: ZarfPackageConfig
 metadata:
   name: supabase
-  version: 0.1.3
+  version: '###ZARF_PKG_TMPL_IMAGE_VERSION###'
   description: >
     supabase instance and all of its dependencies
 
 constants:
+  - name: IMAGE_VERSION
+    value: '###ZARF_PKG_TMPL_IMAGE_VERSION###'
   - name: DASHBOARD_USERNAME
     description: The dashboard's (Supabase studio) default username
     value: supabase-admin
