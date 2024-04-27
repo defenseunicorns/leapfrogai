@@ -94,13 +94,15 @@ components:
         namespace: leapfrogai
         files:
           - "uds-package.yaml"
+    actions:
+      onDeploy:
+        after:
+          - cmd: kubectl delete cm supabase-kong-declarative-config -n leapfrogai 
   - name: supabase-post-process
     description: "Perform necessary post processing here"
     required: true
     actions:
       onDeploy:
-        before:
-          - cmd: kubectl delete cm supabase-kong-declarative-config -n leapfrogai 
         after:
           - cmd: kubectl rollout restart deployment supabase-kong -n leapfrogai
     manifests:
