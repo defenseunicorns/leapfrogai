@@ -1,13 +1,30 @@
-Create a client for your application in keycloak
-Create a secret called 'supabase-keycloak-secret' that contains the key 'secret' which has a value equal to the Keycloak client secret tied to the applications's client in keycloak
-``` bash
-kubectl create secret generic supabase-keycloak-secret --from-literal=secret='my-saved-keycloak-secret' -n leapfrogai
+# Setting Up Keycloak for Your Application
+
+Setup keycloak for the frontend so that you can use auth
+
+## Step 1: Create a Client in Keycloak
+
+In the Keycloak management console, navigate to the "Clients" section and create a new client for the frontend (lfaiui). Make sure to note down the client ID and client secret, as you'll need them later.
+
+## Step 2: Create a Kubernetes Secret
+
+Create a Kubernetes secret named `supabase-keycloak-secret` that contains the client secret from the previous step. Use the following command:
+
+```bash
+kubectl create secret generic supabase-keycloak-secret --from-literal=secret='YOUR_KEYCLOAK_CLIENT_SECRET' -n leapfrogai
 ```
 
-If it is the first time the package is being deployed to the cluster, set the Zarf var 'EXISTING_POSTGRES_SECRET' to "". If not, then leave it as the default.
+Replace `YOUR_KEYCLOAK_CLIENT_SECRET` with the actual client secret from Keycloak.
 
-The keycloak client that is configured needs to have these urls in both the valid redirect urls and web origins
-http://supabase-kong.uds.dev/auth/v1/callback
-https://lfaiui.uds.dev/
+## Step 3: Configure Keycloak Client URLs
 
-If you get an error about the client id or secret, 401 unauthorized that may be an indication that the secret supabase-keycloak-secret needs to be updated. So check your current value for client-id and client-secret in Supabase.
+In the Keycloak client settings, ensure that the following URLs are added to both the "Valid Redirect URIs" and "Web Origins" sections:
+
+- `http://supabase-kong.uds.dev/auth/v1/callback`
+- `https://lfaiui.uds.dev/`
+
+## Step 4: Troubleshooting
+
+If you encounter a 401 Unauthorized error, it might indicate that the `supabase-keycloak-secret` secret needs to be updated with the correct client ID and client secret. Double-check the values in Supabase and update the secret accordingly.
+
+By following these steps, you'll have successfully set up Keycloak for your application, allowing secure authentication and authorization for your users.
