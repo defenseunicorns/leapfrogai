@@ -8,7 +8,7 @@ export async function DELETE({ request, locals: { supabase, getSession } }) {
 		error(401, 'Unauthorized');
 	}
 
-	let requestData: { conversationId: string };
+	let requestData: { id: string };
 
 	// Validate request body
 	try {
@@ -22,7 +22,7 @@ export async function DELETE({ request, locals: { supabase, getSession } }) {
 	const { error: responseError } = await supabase
 		.from('conversations')
 		.delete()
-		.eq('id', requestData.conversationId);
+		.eq('id', requestData.id);
 
 	if (responseError) {
 		console.log(

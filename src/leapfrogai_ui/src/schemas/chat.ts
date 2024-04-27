@@ -45,7 +45,7 @@ export const supabaseMessagesInputSchema = messageInputSchema
 	.strict();
 
 export const uuidSchema = object({
-	conversationId: string().uuid().required()
+	id: string().uuid().required()
 })
 	.noUnknown(true)
 	.strict();

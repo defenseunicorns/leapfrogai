@@ -11,7 +11,7 @@ describe('/api/conversations/delete', () => {
 	it('returns a 204 when the request completes', async () => {
 		const request = new Request('http://localhost:5173/api/conversations/delete', {
 			method: 'DELETE',
-			body: JSON.stringify({ conversationId: faker.string.uuid() })
+			body: JSON.stringify({ id: faker.string.uuid() })
 		});
 
 		const res = await DELETE({
@@ -23,7 +23,7 @@ describe('/api/conversations/delete', () => {
 	it('returns a 401 when there is no session', async () => {
 		const request = new Request('http://localhost:5173/api/conversations/delete', {
 			method: 'DELETE',
-			body: JSON.stringify({ conversationId: faker.string.uuid() })
+			body: JSON.stringify({ id: faker.string.uuid() })
 		});
 
 		await expect(
@@ -36,10 +36,10 @@ describe('/api/conversations/delete', () => {
 		});
 	});
 
-	it('returns a 400 when conversationId is not a uuid', async () => {
+	it('returns a 400 when conversationI ID is not a uuid', async () => {
 		const request = new Request('http://localhost:5173/api/conversations/delete', {
 			method: 'DELETE',
-			body: JSON.stringify({ conversationId: '123' })
+			body: JSON.stringify({ id: '123' })
 		});
 
 		await expect(
@@ -48,7 +48,7 @@ describe('/api/conversations/delete', () => {
 			status: 400
 		});
 	});
-	it('returns a 400 when conversationId is missing', async () => {
+	it('returns a 400 when conversation ID is missing', async () => {
 		const request = new Request('http://localhost:5173/api/conversations/delete', {
 			method: 'DELETE'
 		});
@@ -62,7 +62,7 @@ describe('/api/conversations/delete', () => {
 	it('returns a 400 when extra body arguments are passed', async () => {
 		const request = new Request('http://localhost:5173/api/conversations/delete', {
 			method: 'DELETE',
-			body: JSON.stringify({ conversationId: faker.string.uuid(), wrong: 'key' })
+			body: JSON.stringify({ id: faker.string.uuid(), wrong: 'key' })
 		});
 
 		await expect(
@@ -75,7 +75,7 @@ describe('/api/conversations/delete', () => {
 	it('returns a 500 when there is a supabase error', async () => {
 		const request = new Request('http://localhost:5173/api/conversations/delete', {
 			method: 'DELETE',
-			body: JSON.stringify({ conversationId: faker.string.uuid() })
+			body: JSON.stringify({ id: faker.string.uuid() })
 		});
 
 		await expect(
