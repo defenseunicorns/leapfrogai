@@ -394,7 +394,7 @@ dbSSL: "disable"
 auth:
   ## @param auth.enabled Enable Supabase auth
   ##
-  enabled: true
+  enabled: ###ZARF_VAR_ENABLE_AUTH###
   ## @param auth.replicaCount Number of Supabase auth replicas to deploy
   ##
   replicaCount: 1
@@ -823,7 +823,7 @@ auth:
 meta:
   ## @param meta.enabled Enable Supabase Postgres Meta
   ##
-  enabled: true
+  enabled: ###ZARF_VAR_ENABLE_META###
   ## @param meta.replicaCount Number of Supabase Postgres Meta replicas to deploy
   ##
   replicaCount: 1
@@ -1226,7 +1226,7 @@ meta:
 realtime:
   ## @param realtime.enabled Enable Supabase realtime
   ##
-  enabled: true
+  enabled: ###ZARF_VAR_ENABLE_REALTIME###
   ## @param realtime.replicaCount Number of Supabase realtime replicas to deploy
   ##
   replicaCount: 1
@@ -1645,7 +1645,7 @@ realtime:
 rest:
   ## @param rest.enabled Enable Supabase rest
   ##
-  enabled: true
+  enabled: ###ZARF_VAR_ENABLE_REST###
   ## @param rest.replicaCount Number of Supabase rest replicas to deploy
   ##
   replicaCount: 1
@@ -2046,7 +2046,7 @@ rest:
 storage:
   ## @param storage.enabled Enable Supabase storage
   ##
-  enabled: true
+  enabled: ###ZARF_VAR_ENABLE_STORAGE###
   ## @param storage.replicaCount Number of Supabase storage replicas to deploy
   ##
   replicaCount: 1
@@ -2501,7 +2501,7 @@ storage:
 studio:
   ## @param studio.enabled Enable Supabase studio
   ##
-  enabled: true
+  enabled: ###ZAR_VAR_ENABLE_STUDIO###
   ## @param studio.publicURL Supabase studio public URL
   ##
   publicURL: "https://lfaiui.uds.dev"
@@ -3009,7 +3009,7 @@ studio:
 volumePermissions:
   ## @param volumePermissions.enabled Enable init container that changes the owner/group of the PV mount point to `runAsUser:fsGroup`
   ##
-  enabled: false
+  enabled: ###ZAR_VAR_ENABLE_VOLUME_PERMISSIONS###
   ## OS Shell + Utility image
   ## ref: https://hub.docker.com/r/bitnami/os-shell/tags/
   ## @param volumePermissions.image.registry [default: REGISTRY_NAME] OS Shell + Utility image registry
@@ -3118,7 +3118,7 @@ serviceAccount:
 kong:
   ## @param kong.enabled Enable Kong
   ##
-  enabled: true
+  enabled: ###ZAR_VAR_ENABLE_KONG###
   ## @param kong.database Database to use
   # We will use declarative configuration so we don't need the database
   database: "off"
@@ -3248,7 +3248,7 @@ kong:
 ## @param postgresql.service.ports.postgresql PostgreSQL service port
 ##
 postgresql:
-  enabled: true
+  enabled: ###ZAR_VAR_ENABLE_POSTGRES###
   ## Bitnami PostgreSQL image version
   ## ref: https://hub.docker.com/r/bitnami/supabase-postgres/tags/
   ## @param postgresql.image.registry [default: REGISTRY_NAME] PostgreSQL image registry

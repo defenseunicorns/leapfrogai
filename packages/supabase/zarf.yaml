@@ -32,7 +32,7 @@ variables:
     default: "true"
   - name: ENABLE_VOLUME_PERMISSIONS
     description: 'Should the volume permissions component be enabled'
-    default: "true"
+    default: "false"
   - name: ENABLE_KONG
     description: 'Should the kong component be enabled'
     default: "true"
