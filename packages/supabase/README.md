@@ -28,3 +28,7 @@ In the Keycloak client settings, ensure that the following URLs are added to bot
 If you encounter a 401 Unauthorized error, it might indicate that the `supabase-keycloak-secret` secret needs to be updated with the correct client ID and client secret. Double-check the values in Supabase and update the secret accordingly.
 
 By following these steps, you'll have successfully set up Keycloak for your application, allowing secure authentication and authorization for your users.
+
+# Accessing Supabase
+
+To access Supabase studio go to `https://supabase-kong.uds.dev`. The login is `supabase-admin` the password is randomly generated in a cluster secret named `supabase-dashboard-secret`
