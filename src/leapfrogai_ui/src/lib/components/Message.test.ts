@@ -1,5 +1,5 @@
 import { render, screen } from '@testing-library/svelte';
-import { afterAll, afterEach, vi } from 'vitest';
+import {afterAll, afterEach, type MockInstance, vi} from 'vitest';
 import { Message } from '$components/index';
 import userEvent from '@testing-library/user-event';
 import { getFakeMessage } from '../../testUtils/fakeData';
@@ -29,14 +29,14 @@ describe('Message component', () => {
 	it('displays edit text area when edit btn is clicked', async () => {
 		render(Message, { ...defaultMessageProps });
 		expect(screen.queryByText('edit message input')).not.toBeInTheDocument();
-		const editPromptBtn = screen.getByRole('img', { name: /edit prompt/i });
+		const editPromptBtn = screen.getByLabelText('edit prompt');
 		await userEvent.click(editPromptBtn);
 		await screen.findByLabelText('edit message input');
 	});
 	it('removes the edit textarea and restores original text on close', async () => {
 		const fakeMessage = getFakeMessage();
 		render(Message, { ...defaultMessageProps, message: fakeMessage });
-		const editPromptBtn = screen.getByRole('img', { name: /edit prompt/i });
+		const editPromptBtn = screen.getByLabelText('edit prompt');
 		expect(screen.queryByText('edit message input')).not.toBeInTheDocument();
 		expect(screen.getByText(fakeMessage.content)).toBeInTheDocument();
 		await userEvent.click(editPromptBtn);
@@ -51,7 +51,7 @@ describe('Message component', () => {
 	it('submits message edit when submit is clicked', async () => {
 		const fakeMessage = getFakeMessage();
 		render(Message, { ...defaultMessageProps, message: fakeMessage });
-		const editPromptBtn = screen.getByRole('img', { name: /edit prompt/i });
+		const editPromptBtn = screen.getByLabelText('edit prompt');
 		expect(screen.queryByText('edit message input')).not.toBeInTheDocument();
 		expect(screen.getByText(fakeMessage.content)).toBeInTheDocument();
 		await userEvent.click(editPromptBtn);
@@ -66,7 +66,7 @@ describe('Message component', () => {
 	});
 
 	describe('util functions', () => {
-		let clipboardSpy;
+		let clipboardSpy: MockInstance;
 
 		afterAll(() => {
 			clipboardSpy.mockRestore();
@@ -113,7 +113,7 @@ describe('Message component', () => {
 				isLoading: true
 			});
 
-			const editPromptBtn = screen.getByRole('img', { name: /edit prompt/i });
+			const editPromptBtn = screen.getByLabelText('edit prompt');
 			await userEvent.click(editPromptBtn);
 
 			const submitBtn = screen.getByRole('button', { name: /submit/i });

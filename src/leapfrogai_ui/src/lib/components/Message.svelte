@@ -48,9 +48,12 @@
 <div
 	data-testid="message"
 	class="message"
+	role="toolbar"
 	class:transparent={message.role === 'user'}
 	on:mouseover={() => (messageIsHovered = true)}
 	on:mouseleave={() => (messageIsHovered = false)}
+	on:focus={() => (messageIsHovered = true)}
+	tabindex="0"
 >
 	<div class="message-and-avatar">
 		{#if message.role === 'user'}
@@ -82,35 +85,34 @@
 
 			<div class="utils">
 				{#if message.role === 'user' && !editMode}
-					<div
+					<button
 						data-testid="edit prompt btn"
 						class="highlight-icon"
 						class:hide={!messageIsHovered}
+						on:click={() => (editMode = true)}
+						aria-label="edit prompt"
+						tabindex="0"><Edit /></button
 					>
-						<span on:click={() => (editMode = true)}
-							><Edit aria-label="edit prompt" /></span
-						>
-					</div>
 				{/if}
 				{#if message.role !== 'user' && !isLoading}
-					<div
+					<button
 						data-testid="copy btn"
 						class="highlight-icon"
 						class:hide={!messageIsHovered}
+						on:click={handleCopy}
+						tabindex="0"
+						aria-label="copy message"><Copy /></button
 					>
-						<span on:click={handleCopy}><Copy aria-label="copy message" /></span>
-					</div>
 				{/if}
 				{#if message.role !== 'user' && isLastMessage && !isLoading}
-					<div
+					<button
 						data-testid="regenerate btn"
 						class="highlight-icon"
 						class:hide={!messageIsHovered}
+						on:click={handleRegenerate}
+						aria-label="regenerate message"
+						tabindex="0"><Reset /></button
 					>
-						<span on:click={handleRegenerate}
-							><Reset aria-label="regenerate message" /></span
-						>
-					</div>
 				{/if}
 			</div>
 		</div>
@@ -161,6 +163,17 @@
 		display: flex;
 		gap: layout.$spacing-03;
 		padding-left: layout.$spacing-05;
+	}
+
+	.highlight-icon {
+		// remove default button styling
+		background: none;
+		color: inherit;
+		border: none;
+		padding: 0;
+		font: inherit;
+		cursor: pointer;
+		outline: inherit;
 	}
 
 	.highlight-icon :global(svg) {

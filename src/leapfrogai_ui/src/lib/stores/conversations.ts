@@ -180,16 +180,11 @@ const createConversationsStore = () => {
 						(c) => c.id === conversationId
 					);
 					const conversation = { ...old.conversations[conversationIndex] };
-					console.log('original messages', conversation.messages);
 					conversation.messages = conversation.messages.filter(
 						(message) => message.id !== messageId
 					);
 					const updatedConversations = [...old.conversations];
 					updatedConversations[conversationIndex] = conversation;
-					console.log(
-						'updated messages',
-						updatedConversations[conversationIndex].messages
-					);
 					return {
 						...old,
 						conversations: updatedConversations
