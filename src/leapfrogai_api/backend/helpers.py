@@ -1,6 +1,6 @@
 """Helper functions for the OpenAI backend."""
 
-from typing import BinaryIO, Iterator, Union
+from typing import BinaryIO, Iterator
 import grpc
 import leapfrogai_sdk as lfai
 from leapfrogai_api.backend.types import (
@@ -71,7 +71,7 @@ async def recv_chat(
     yield "data: [DONE]\n\n"
 
 
-def grpc_chat_role(role: str) -> Union[lfai.ChatRole, None]:
+def grpc_chat_role(role: str) -> lfai.ChatRole | None:
     """Converts a string to a ChatRole."""
     match role:
         case "user":
