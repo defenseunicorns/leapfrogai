@@ -1,7 +1,7 @@
 <script lang="ts">
 	import { env } from '$env/dynamic/public';
-	import { array, object, ObjectSchema, string } from 'yup';
-	import { LFTextAreaV2, PoweredByDU } from '$components';
+	import { string } from 'yup';
+	import { LFTextArea, PoweredByDU } from '$components';
 	import { Button } from 'carbon-components-svelte';
 	import { afterUpdate, onMount, tick } from 'svelte';
 	import { conversationsStore, toastStore } from '$stores';
@@ -176,9 +176,10 @@
 	<form on:submit={onSubmit}>
 		<div class="chat-form-container">
 			<Button icon={Attachment} kind="ghost" size="small" iconDescription="Attach File" />
-			<LFTextAreaV2
+			<LFTextArea
 				value={input}
 				{onSubmit}
+				ariaLabel="message input"
 			/>
 
 			{#if !$isLoading}
