@@ -30,16 +30,3 @@ repos:
       language: system
       entry: sh -c 'npm --prefix src/leapfrogai_ui/ run lint'
       files: \.(js|jsx|ts|tsx|svelte|cjs|mjs)$ # *.js, *.jsx, *.ts, *.tsx, *.svelte, *.cjs, *.mjs
-
-  # ESlint
-  # - repo: https://github.com/pre-commit/mirrors-eslint
-  #   rev: v8.56.0
-  #   hooks:
-  #     - id: eslint
-  #       name: ESLint and Prettier
-  #       files: \.(js|jsx|ts|tsx|svelte|cjs|mjs)$ # *.js, *.jsx, *.ts, *.tsx, *.svelte, *.cjs, *.mjs
-  #       types: [file]
-  #       additional_dependencies:
-  #           - eslint@8.56.0
-  #           - eslint-plugin-prettier@5.0.0
-  #           - eslint-plugin-svelte@2.35.1
