@@ -71,7 +71,7 @@ async def recv_chat(
     yield "data: [DONE]\n\n"
 
 
-def grpc_chat_role(role: str) -> lfai.ChatRole | None:
+def grpc_chat_role(role: str) -> lfai.ChatRole:
     """Converts a string to a ChatRole."""
     match role:
         case "user":
