@@ -59,6 +59,19 @@ jobs:
           docker image prune -af
           rm zarf-package-leapfrogai-api-*.tar.zst
 
+      - name: Build and Publish UI
+        run: |
+          docker buildx build --platform amd64,arm64 -t ghcr.io/defenseunicorns/leapfrogai/leapfrogai-ui:${{ steps.get_version.outputs.version-without-v }} --push packages/ui
+
+          zarf package create packages/ui --set=LEAPFROGAI_IMAGE_VERSION=${{ steps.get_version.outputs.version-without-v }} --architecture amd64 --confirm
+          zarf package create packages/ui --set=LEAPFROGAI_IMAGE_VERSION=${{ steps.get_version.outputs.version-without-v }} --architecture arm64 --confirm
+
+          zarf package publish zarf-package-leapfrogai-ui-amd64-${{ steps.get_version.outputs.version-without-v }}.tar.zst oci://ghcr.io/defenseunicorns/packages/leapfrogai
+          zarf package publish zarf-package-leapfrogai-ui-arm64-${{ steps.get_version.outputs.version-without-v }}.tar.zst oci://ghcr.io/defenseunicorns/packages/leapfrogai
+
+          docker image prune -af
+          rm zarf-package-leapfrogai-ui-*.tar.zst
+
       - name: Build and Publish repeater
         run: |
           docker buildx build --platform amd64,arm64 -t ghcr.io/defenseunicorns/leapfrogai/repeater:${{ steps.get_version.outputs.version-without-v }} --push packages/repeater
