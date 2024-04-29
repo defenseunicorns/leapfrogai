@@ -79,10 +79,7 @@ describe('/api/conversations/delete', () => {
 		});
 
 		await expect(
-			DELETE({
-				request,
-				locals: { supabase: supabaseDeleteErrorMock(), getSession: sessionMock }
-			})
+			DELETE({ request, locals: { supabase: supabaseDeleteErrorMock(), getSession: sessionMock } })
 		).rejects.toMatchObject({
 			status: 500
 		});

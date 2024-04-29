@@ -43,7 +43,7 @@ test('editing a message when an AI response is missing', async ({ page }) => {
 	await page.route('*/**/api/chat', async (route) => {
 		if (isFirstRequest) {
 			isFirstRequest = false;
-			await route.abort('failed');
+            await route.abort('failed');
 		} else {
 			await route.continue();
 		}
@@ -61,9 +61,9 @@ test('editing a message when an AI response is missing', async ({ page }) => {
 	await page.reload();
 
 	const messages = page.getByTestId('message');
-	await expect(messages).toHaveCount(1);
+    await expect(messages).toHaveCount(1);
 
-	// Send a second message that gets a successful response
+    // Send a second message that gets a successful response
 	await sendMessage(page, newMessage2);
 	await waitForResponseToComplete(page);
 
@@ -75,24 +75,25 @@ test('editing a message when an AI response is missing', async ({ page }) => {
 	await page.getByLabel('submit edited message').click();
 	await delay(3000);
 
-	// Expect 4 messages now with successful response
-	await expect(messages).toHaveCount(4);
+    // Expect 4 messages now with successful response
+    await expect(messages).toHaveCount(4);
 
-	// Ensure original first message was deleted and is now the second message
-	const firstMessage = page.getByTestId('message').nth(0);
-	const firstMessageTextContent = await firstMessage.textContent();
-	expect(firstMessageTextContent?.trim()).toEqual(newMessage2);
+    // Ensure original first message was deleted and is now the second message
+    const firstMessage = page.getByTestId('message').nth(0);
+    const firstMessageTextContent = await firstMessage.textContent();
+    expect(firstMessageTextContent?.trim()).toEqual(newMessage2);
 
-	// Check the third message is now the edited message
-	const editedMessage = page.getByTestId('message').nth(2);
-	const textContent = await editedMessage.textContent();
-	expect(textContent?.trim()).toEqual('edited message');
+    // Check the third message is now the edited message
+    const editedMessage = page.getByTestId('message').nth(2);
+    const textContent = await editedMessage.textContent();
+    expect(textContent?.trim()).toEqual('edited message');
 });
 
-test('regenerating responses', async ({ page }) => {
+test("regenerating responses", async ({page}) => {
 	const newMessage1 = faker.lorem.words(3);
 
 	await loadChatPage(page);
+
 
 	await sendMessage(page, newMessage1);
 	await waitForResponseToComplete(page);
@@ -104,4 +105,4 @@ test('regenerating responses', async ({ page }) => {
 	await expect(messages).toHaveCount(1);
 	await waitForResponseToComplete(page);
 	await expect(messages).toHaveCount(2);
-});
+})

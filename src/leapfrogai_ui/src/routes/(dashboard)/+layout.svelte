@@ -1,11 +1,5 @@
 <script lang="ts">
-	import {
-		Content,
-		Header,
-		HeaderAction,
-		HeaderUtilities,
-		Theme
-	} from 'carbon-components-svelte';
+	import { Content, Header, HeaderAction, HeaderUtilities, Theme } from 'carbon-components-svelte';
 	import UserAvatar from 'carbon-icons-svelte/lib/UserAvatar.svelte';
 	import { page } from '$app/stores';
 	import logo from '$assets/LeapfrogAI.png';
@@ -37,6 +31,7 @@
 		// to prevent that
 		isSideNavOpen = true;
 	});
+
 </script>
 
 <svelte:head>
@@ -53,11 +48,8 @@
 		<HeaderAction aria-label="User" title="User" icon={UserAvatar}>
 			<div class="link-container">
 				<form bind:this={signOutForm} method="post" action="/auth?/signout">
-					<button
-						class="logout-btn"
-						aria-label="Log Out"
-						disabled={loading}
-						on:click={handleLogOut}>Log Out</button
+					<button class="logout-btn" aria-label="Log Out" disabled={loading} on:click={handleLogOut}
+						>Log Out</button
 					>
 				</form>
 			</div>

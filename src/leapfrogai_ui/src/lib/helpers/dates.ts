@@ -185,7 +185,7 @@ export const organizeConversationsByDate = (
 	}
 
 	// Sort each category by date
-	for (const category of dateCategories) {
+	for(const category of dateCategories){
 		const categoryIndex = dateCategories.indexOf(category);
 		result[categoryIndex].conversations = result[categoryIndex].conversations.sort(
 			(a, b) => new Date(b.inserted_at).getTime() - new Date(a.inserted_at).getTime()

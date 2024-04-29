@@ -5,7 +5,7 @@ type MyFixtures = {
 	clearAllConversations: () => Promise<void>;
 };
 export const test = base.extend<MyFixtures>({
-	clearAllConversations: async ({}, use) => {
+	clearAllConversations: async ( {}, use) => {
 		const clearAllConversations = async () => {
 			const supabase = createClient(
 				process.env.PUBLIC_SUPABASE_URL!,

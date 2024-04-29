@@ -109,10 +109,7 @@ describe('/api/conversations/update', () => {
 		});
 
 		await expect(
-			PUT({
-				request,
-				locals: { supabase: supabaseUpdateErrorMock(), getSession: sessionMock }
-			})
+			PUT({ request, locals: { supabase: supabaseUpdateErrorMock(), getSession: sessionMock } })
 		).rejects.toMatchObject({
 			status: 500
 		});

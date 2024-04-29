@@ -5,7 +5,7 @@
 	import { conversationsStore, toastStore } from '$stores';
 	import { conversationsSchema } from '../../schemas/chat';
 
-	const readFileAsJson = <T,>(file: File): Promise<T> => {
+	const readFileAsJson = (file: File): Promise<any> => {
 		return new Promise((resolve, reject) => {
 			const reader = new FileReader();
 
