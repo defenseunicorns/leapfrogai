@@ -97,7 +97,7 @@
 		}
 	};
 
-	const handleMessageEdit = async (e: any, message: AIMessage) => {
+	const handleMessageEdit = async (e: SubmitEvent, message: AIMessage) => {
 		e.preventDefault();
 
 		const messageIndex = $messages.findIndex((m) => m.id === message.id);

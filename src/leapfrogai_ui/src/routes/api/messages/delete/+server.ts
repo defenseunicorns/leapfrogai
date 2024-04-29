@@ -1,4 +1,4 @@
-import { error, redirect } from '@sveltejs/kit';
+import { error } from '@sveltejs/kit';
 import { uuidSchema } from '../../../../schemas/chat';
 
 export async function DELETE({ request, locals: { supabase, getSession } }) {
