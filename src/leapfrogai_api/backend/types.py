@@ -11,6 +11,8 @@ from fastapi import UploadFile, Form, File
 
 
 class Usage(BaseModel):
+    """Usage object."""
+
     prompt_tokens: int
     completion_tokens: int | None = None
     total_tokens: int
@@ -22,7 +24,7 @@ class Usage(BaseModel):
 
 
 class ModelResponseModel(BaseModel):
-    """Model object for model response."""
+    """Response object for models."""
 
     id: str
     object: str = "model"
@@ -69,7 +71,7 @@ class CompletionResponse(BaseModel):
     created: int = 0
     model: str = ""
     choices: list[CompletionChoice]
-    usage: Usage
+    usage: Usage | None = None
 
 
 ##########
