@@ -9,13 +9,13 @@ import {
 
 test('it can start a new conversation and receive a response', async ({ page }) => {
 	const newMessage = faker.lorem.words(3);
-	let messages = await page.getByTestId('message');
+	const messages = page.getByTestId('message');
 	await expect(messages).toHaveCount(0);
 
 	await loadChatPage(page);
 	await sendMessage(page, newMessage);
+	await waitForResponseToComplete(page);
 
-	messages = await page.getByTestId('message');
 	await expect(messages).toHaveCount(2);
 
 	await expect(page.getByText('Internal Server Error')).toHaveCount(0);

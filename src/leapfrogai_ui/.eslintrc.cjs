@@ -5,10 +5,10 @@ module.exports = {
 		'eslint:recommended',
 		'plugin:@typescript-eslint/recommended',
 		'plugin:svelte/recommended',
-		'plugin:prettier/recommended'
+		'prettier'
 	],
 	parser: '@typescript-eslint/parser',
-	plugins: ['@typescript-eslint', 'prettier', 'svelte'],
+	plugins: ['@typescript-eslint'],
 	parserOptions: {
 		sourceType: 'module',
 		ecmaVersion: 2020,
@@ -29,7 +29,6 @@ module.exports = {
 		}
 	],
 	rules: {
-		'no-undef': 'off',
-		'prettier/prettier': 'error'
+		'no-undef': 'off'
 	}
 };

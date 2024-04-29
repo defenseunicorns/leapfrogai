@@ -1,5 +1,5 @@
 import { faker } from '@faker-js/faker';
-import { DELETE } from './+server';
+import { DELETE } from '../../conversations/delete/+server';
 import {
 	sessionMock,
 	sessionNullMock,
@@ -9,11 +9,10 @@ import {
 
 describe('/api/conversations/delete', () => {
 	it('returns a 204 when the request completes', async () => {
-		const request = new Request('http://localhost:5173/api/conversations/delete', {
+		const request = new Request('http://localhost:5173/api/messages/delete', {
 			method: 'DELETE',
 			body: JSON.stringify({ id: faker.string.uuid() })
 		});
-
 		const res = await DELETE({
 			request,
 			locals: { supabase: supabaseDeleteMock(), getSession: sessionMock }
@@ -21,7 +20,7 @@ describe('/api/conversations/delete', () => {
 		expect(res.status).toEqual(204);
 	});
 	it('returns a 401 when there is no session', async () => {
-		const request = new Request('http://localhost:5173/api/conversations/delete', {
+		const request = new Request('http://localhost:5173/api/messages/delete', {
 			method: 'DELETE',
 			body: JSON.stringify({ id: faker.string.uuid() })
 		});
@@ -35,9 +34,8 @@ describe('/api/conversations/delete', () => {
 			status: 401
 		});
 	});
-
-	it('returns a 400 when conversationI ID is not a uuid', async () => {
-		const request = new Request('http://localhost:5173/api/conversations/delete', {
+	it('returns a 400 when message ID is not a uuid', async () => {
+		const request = new Request('http://localhost:5173/api/messages/delete', {
 			method: 'DELETE',
 			body: JSON.stringify({ id: '123' })
 		});
@@ -48,8 +46,8 @@ describe('/api/conversations/delete', () => {
 			status: 400
 		});
 	});
-	it('returns a 400 when conversation ID is missing', async () => {
-		const request = new Request('http://localhost:5173/api/conversations/delete', {
+	it('returns a 400 when message ID is missing', async () => {
+		const request = new Request('http://localhost:5173/api/messages/delete', {
 			method: 'DELETE'
 		});
 
@@ -59,8 +57,9 @@ describe('/api/conversations/delete', () => {
 			status: 400
 		});
 	});
+
 	it('returns a 400 when extra body arguments are passed', async () => {
-		const request = new Request('http://localhost:5173/api/conversations/delete', {
+		const request = new Request('http://localhost:5173/api/messages/delete', {
 			method: 'DELETE',
 			body: JSON.stringify({ id: faker.string.uuid(), wrong: 'key' })
 		});
@@ -71,9 +70,8 @@ describe('/api/conversations/delete', () => {
 			status: 400
 		});
 	});
-
 	it('returns a 500 when there is a supabase error', async () => {
-		const request = new Request('http://localhost:5173/api/conversations/delete', {
+		const request = new Request('http://localhost:5173/api/messages/delete', {
 			method: 'DELETE',
 			body: JSON.stringify({ id: faker.string.uuid() })
 		});

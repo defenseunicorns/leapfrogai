@@ -250,5 +250,8 @@ describe('The Chat Page', () => {
 				await screen.findAllByText('Response Canceled');
 			});
 		});
+
+		// Note - Testing message editing requires an excessive amount of mocking and was deemed more practical and
+		// maintainable to test with a Playwright E2E test
 	});
 });

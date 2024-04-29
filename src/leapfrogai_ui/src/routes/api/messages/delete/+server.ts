@@ -1,4 +1,4 @@
-import { error } from '@sveltejs/kit';
+import { error, redirect } from '@sveltejs/kit';
 import { uuidSchema } from '../../../../schemas/chat';
 
 export async function DELETE({ request, locals: { supabase, getSession } }) {
@@ -19,15 +19,15 @@ export async function DELETE({ request, locals: { supabase, getSession } }) {
 	}
 
 	const { error: responseError } = await supabase
-		.from('conversations')
+		.from('messages')
 		.delete()
 		.eq('id', requestData.id);
 
 	if (responseError) {
 		console.log(
-			`error deleting conversation, error status: ${responseError?.code}: ${responseError?.message}`
+			`error deleting message, error status: ${responseError?.code}: ${responseError?.message}`
 		);
-		error(500, 'Error deleting conversation');
+		error(500, 'Error deleting message');
 	}
 
 	return new Response(undefined, { status: 204 });

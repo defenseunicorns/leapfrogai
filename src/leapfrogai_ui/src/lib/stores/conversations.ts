@@ -49,7 +49,7 @@ const deleteConversation = async (id: string) => {
 	// A constraint on messages table will cascade delete all messages when the conversation is deleted
 	const res = await fetch('/api/conversations/delete', {
 		method: 'DELETE',
-		body: JSON.stringify({ conversationId: id }),
+		body: JSON.stringify({ id: id }),
 		headers: {
 			'Content-Type': 'application/json'
 		}
@@ -58,6 +58,20 @@ const deleteConversation = async (id: string) => {
 	if (res.ok) return;
 
 	return error(500, 'Error deleting conversation');
+};
+
+const deleteMessage = async (id: string) => {
+	const res = await fetch('/api/messages/delete', {
+		method: 'DELETE',
+		body: JSON.stringify({ id }),
+		headers: {
+			'Content-Type': 'application/json'
+		}
+	});
+
+	if (res.ok) return;
+
+	return error(500, 'Error deleting message');
 };
 
 const updateConversationLabel = async (editConversationId: string, editLabelText: string) => {
@@ -154,6 +168,38 @@ const createConversationsStore = () => {
 					kind: 'error',
 					title: 'Error',
 					subtitle: `Error deleting conversation.`
+				});
+			}
+		},
+		deleteMessage: async (messageId: string, conversationId: string) => {
+			try {
+				await deleteMessage(messageId);
+
+				update((old) => {
+					const conversationIndex = old.conversations.findIndex(
+						(c) => c.id === conversationId
+					);
+					const conversation = { ...old.conversations[conversationIndex] };
+					console.log('original messages', conversation.messages);
+					conversation.messages = conversation.messages.filter(
+						(message) => message.id !== messageId
+					);
+					const updatedConversations = [...old.conversations];
+					updatedConversations[conversationIndex] = conversation;
+					console.log(
+						'updated messages',
+						updatedConversations[conversationIndex].messages
+					);
+					return {
+						...old,
+						conversations: updatedConversations
+					};
+				});
+			} catch {
+				toastStore.addToast({
+					kind: 'error',
+					title: 'Error',
+					subtitle: `Error deleting message.`
 				});
 			}
 		},
