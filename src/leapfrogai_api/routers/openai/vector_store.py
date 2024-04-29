@@ -1,6 +1,5 @@
 """OpenAI Compliant Vector Store API Router."""
 
-from typing import List
 from fastapi import HTTPException, APIRouter
 from openai.types.beta import VectorStore, VectorStoreDeleted
 from openai.types.beta.vector_stores import VectorStoreFile, VectorStoreFileDeleted
@@ -16,7 +15,7 @@ async def create_vector_store() -> VectorStore:
 
 
 @router.get("")
-async def list_vector_stores() -> List[VectorStore]:
+async def list_vector_stores() -> list[VectorStore]:
     """List all the vector stores."""
     # TODO: Implement this function
     raise HTTPException(status_code=501, detail="Not implemented")
@@ -51,7 +50,7 @@ async def create_vector_store_file(vector_store_id: str) -> VectorStoreFile:
 
 
 @router.get("/{vector_store_id}/files")
-async def list_vector_store_files(vector_store_id: str) -> List[VectorStoreFile]:
+async def list_vector_store_files(vector_store_id: str) -> list[VectorStoreFile]:
     """List all the files in a vector store."""
     # TODO: Implement this function
     raise HTTPException(status_code=501, detail="Not implemented")

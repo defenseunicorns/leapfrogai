@@ -1,6 +1,5 @@
 """OpenAI Compliant Threads API Router."""
 
-from typing import List
 from fastapi import HTTPException, APIRouter
 from openai.types.beta import Thread, ThreadDeleted
 from openai.types.beta.threads import Message
@@ -46,7 +45,7 @@ async def create_message(thread_id: str) -> Message:
 
 
 @router.get("/{thread_id}/messages")
-async def list_messages(thread_id: str) -> List[Message]:
+async def list_messages(thread_id: str) -> list[Message]:
     """List all the messages in a thread."""
     # TODO: Implement this function
     raise HTTPException(status_code=501, detail="Not implemented")
@@ -81,7 +80,7 @@ async def create_thread_and_run(assistant_id: str) -> Run:
 
 
 @router.get("/{thread_id}/runs")
-async def list_runs(thread_id: str) -> List[Run]:
+async def list_runs(thread_id: str) -> list[Run]:
     """List all the runs in a thread."""
     # TODO: Implement this function
     raise HTTPException(status_code=501, detail="Not implemented")
@@ -116,7 +115,7 @@ async def cancel_run(thread_id: str, run_id: str) -> Run:
 
 
 @router.get("/{thread_id}/runs/{run_id}/steps")
-async def list_run_steps(thread_id: str, run_id: str) -> List[RunStep]:
+async def list_run_steps(thread_id: str, run_id: str) -> list[RunStep]:
     """List all the steps in a run."""
     # TODO: Implement this function
     raise HTTPException(status_code=501, detail="Not implemented")

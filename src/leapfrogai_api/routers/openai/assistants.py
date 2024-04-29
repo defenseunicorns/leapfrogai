@@ -1,6 +1,5 @@
 """OpenAI Compliant Assistants API Router."""
 
-from typing import List
 from fastapi import HTTPException, APIRouter
 from openai.types.beta import Assistant, AssistantDeleted
 from leapfrogai_api.backend.types import (
@@ -19,7 +18,7 @@ async def create_assistant(request: CreateAssistantRequest) -> Assistant:
 
 
 @router.get("")
-async def list_assistants() -> List[Assistant]:
+async def list_assistants() -> list[Assistant]:
     """List all the assistants."""
     # TODO: Implement this function
     raise HTTPException(status_code=501, detail="Not implemented")
