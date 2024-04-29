@@ -1,6 +1,9 @@
 {
 	"name": "leapfrogai-ui",
 	"version": "0.0.1",
+	"engines": {
+		"node": ">=18.1.0"
+	},
 	"private": true,
 	"scripts": {
 		"dev": "npm run supabase:start && vite dev",
