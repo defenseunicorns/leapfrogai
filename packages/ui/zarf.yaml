@@ -57,7 +57,11 @@ variables:
     default: 'true'
     prompt: true
     sensitive: false
-
+  - name: MESSAGE_LENGTH_LIMIT
+    description: The maximum length of a message to allow from the user to the backend
+    default: '10000'
+    prompt: true
+    sensitive: false
 components:
   - name: lfaiui
     required: true
