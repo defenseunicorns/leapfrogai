@@ -10,7 +10,7 @@ import ChatPage from './+page.svelte';
 import ChatPageWithToast from './ChatPageWithToast.test.svelte';
 import userEvent from '@testing-library/user-event';
 import stores from '$app/stores';
-import { beforeAll, vi } from 'vitest';
+import {beforeAll, vi} from 'vitest';
 
 import {
 	mockChatCompletion,
@@ -26,7 +26,6 @@ import { delay } from 'msw';
 const { getStores } = await vi.hoisted(() => import('$lib/mocks/svelte'));
 
 describe('The Chat Page', () => {
-
 	it('it renders all the messages', async () => {
 		conversationsStore.set({
 			conversations: fakeConversations
@@ -51,7 +50,7 @@ describe('The Chat Page', () => {
 
 		test('the send button is disabled when there is no text in the input', () => {
 			render(ChatPage);
-			const submitBtn = screen.getByLabelText('send');
+			const submitBtn = screen.getByTestId('send message');
 			expect(submitBtn).toHaveProperty('disabled', true);
 		});
 
@@ -99,12 +98,12 @@ describe('The Chat Page', () => {
 			await user.type(input, question);
 			await user.click(submitBtn);
 
-			expect(screen.getByLabelText('cancel message')).toBeInTheDocument();
+			expect(screen.getByTestId('cancel message')).toBeInTheDocument();
 
 			await delay(delayTime);
 
 			await user.type(input, 'new question');
-			expect(screen.queryByLabelText('cancel message')).not.toBeInTheDocument();
+			expect(screen.queryByTestId('cancel message')).not.toBeInTheDocument();
 		});
 
 		it('displays a toast error notification when there is an error with the AI response', async () => {
@@ -245,11 +244,16 @@ describe('The Chat Page', () => {
 				await user.type(input, question);
 				await user.click(submitBtn);
 				await delay(delayTime / 2);
-				const cancelBtn = screen.getByLabelText('cancel message');
+				const cancelBtn = screen.getByTestId('cancel message');
 				await user.click(cancelBtn);
 
 				await screen.findAllByText('Response Canceled');
 			});
 		});
+
+
+		// Note - Testing message editing requires an excessive amount of mocking and was deemed more practical and
+		// maintainable to test with a Playwright E2E test
+
 	});
 });
