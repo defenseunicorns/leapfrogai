@@ -15,6 +15,11 @@ dependencies = [
 requires-python = "~=3.11"
 readme = "README.md"
 
+[project.optional-dependencies]
+dev = [
+    "huggingface_hub",
+]
+
 [tool.pip-tools]
 generate-hashes = true
 
