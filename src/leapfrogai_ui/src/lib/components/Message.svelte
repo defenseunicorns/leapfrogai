@@ -85,7 +85,7 @@
 						<span on:click={() => (editMode = true)}><Edit aria-label="edit prompt" /></span>
 					</div>
 				{/if}
-				{#if message.role !== 'user' && !isLoading}
+				{#if message.role !== 'user' && (isLastMessage ? !isLoading : true)}
 					<div data-testid="copy btn" class="highlight-icon" class:hide={!messageIsHovered}>
 						<span on:click={handleCopy}><Copy aria-label="copy message" /></span>
 					</div>
@@ -120,6 +120,7 @@
 	}
 	.message {
 		display: flex;
+		white-space: pre-line;
 	}
 
 	.transparent {
