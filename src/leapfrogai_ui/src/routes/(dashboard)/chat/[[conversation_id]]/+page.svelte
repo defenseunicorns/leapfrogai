@@ -15,10 +15,7 @@
 	let messageThreadDiv: HTMLDivElement;
 	let messageThreadDivHeight: number;
 
-	const inputSchema = string().max(Number(env.PUBLIC_MESSAGE_LENGTH_LIMIT));
-
-	let inputValid = true;
-	$: inputSchema.isValid($input).then((isValid) => (inputValid = isValid));
+	let lengthInvalid: boolean; // bound to child LFTextArea
 
 	$: activeConversation = $conversationsStore.conversations.find(
 		(conversation) => conversation.id === $page.params.conversation_id
@@ -26,31 +23,33 @@
 
 	$: $page.params.conversation_id, setMessages(activeConversation?.messages || []);
 
-	const { input, handleSubmit, messages, setMessages, isLoading, stop, append, reload } = useChat({
-		initialMessages: $conversationsStore.conversations
-			.find((conversation) => conversation.id === $page.params.conversation_id)
-			?.messages.map((message) => ({
-				id: message.id,
-				content: message.content,
-				role: message.role
-			})),
-		onFinish: async (message: AIMessage) => {
-			if (activeConversation?.id) {
-				await conversationsStore.newMessage({
-					conversation_id: activeConversation?.id,
+	const { input, handleSubmit, messages, setMessages, isLoading, stop, append, reload } = useChat(
+		{
+			initialMessages: $conversationsStore.conversations
+				.find((conversation) => conversation.id === $page.params.conversation_id)
+				?.messages.map((message) => ({
+					id: message.id,
 					content: message.content,
 					role: message.role
+				})),
+			onFinish: async (message: AIMessage) => {
+				if (activeConversation?.id) {
+					await conversationsStore.newMessage({
+						conversation_id: activeConversation?.id,
+						content: message.content,
+						role: message.role
+					});
+				}
+			},
+			onError: (error) => {
+				toastStore.addToast({
+					kind: 'error',
+					title: 'Error',
+					subtitle: 'Error getting AI Response'
 				});
 			}
-		},
-		onError: (error) => {
-			toastStore.addToast({
-				kind: 'error',
-				title: 'Error',
-				subtitle: 'Error getting AI Response'
-			});
 		}
-	});
+	);
 
 	const onSubmit = async (e: SubmitEvent | KeyboardEvent) => {
 		e.preventDefault();
@@ -137,7 +136,10 @@
 	const handleRegenerate = async () => {
 		const messageIndex = $messages.length - 1;
 		if (activeConversation?.id) {
-			await conversationsStore.deleteMessage($messages[messageIndex].id, activeConversation.id);
+			await conversationsStore.deleteMessage(
+				$messages[messageIndex].id,
+				activeConversation.id
+			);
 		}
 		setMessages($messages.toSpliced(messageIndex, 1));
 		await reload();
@@ -180,6 +182,7 @@
 				value={input}
 				{onSubmit}
 				ariaLabel="message input"
+				bind:showLengthError={lengthInvalid}
 			/>
 
 			{#if !$isLoading}
@@ -190,7 +193,7 @@
 					size="field"
 					type="submit"
 					iconDescription="send"
-					disabled={$isLoading || !$input || !inputValid}
+					disabled={$isLoading || !$input || lengthInvalid}
 				/>
 			{:else}
 				<Button

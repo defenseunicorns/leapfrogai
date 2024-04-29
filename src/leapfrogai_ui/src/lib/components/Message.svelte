@@ -66,7 +66,8 @@
 				<div class="edit-prompt">
 					<LFTextArea {value} {onSubmit} ariaLabel="edit message input" />
 					<div class="cancel-save">
-						<Button size="small" kind="secondary" on:click={handleCancel}>Cancel</Button>
+						<Button size="small" kind="secondary" on:click={handleCancel}>Cancel</Button
+						>
 						<Button
 							size="small"
 							disabled={isLoading}
@@ -81,18 +82,34 @@
 
 			<div class="utils">
 				{#if message.role === 'user' && !editMode}
-					<div data-testid="edit prompt btn" class="highlight-icon" class:hide={!messageIsHovered}>
-						<span on:click={() => (editMode = true)}><Edit aria-label="edit prompt" /></span>
+					<div
+						data-testid="edit prompt btn"
+						class="highlight-icon"
+						class:hide={!messageIsHovered}
+					>
+						<span on:click={() => (editMode = true)}
+							><Edit aria-label="edit prompt" /></span
+						>
 					</div>
 				{/if}
 				{#if message.role !== 'user' && !isLoading}
-					<div data-testid="copy btn" class="highlight-icon" class:hide={!messageIsHovered}>
+					<div
+						data-testid="copy btn"
+						class="highlight-icon"
+						class:hide={!messageIsHovered}
+					>
 						<span on:click={handleCopy}><Copy aria-label="copy message" /></span>
 					</div>
 				{/if}
 				{#if message.role !== 'user' && isLastMessage && !isLoading}
-					<div data-testid="regenerate btn" class="highlight-icon" class:hide={!messageIsHovered}>
-						<span on:click={handleRegenerate}><Reset aria-label="regenerate message" /></span>
+					<div
+						data-testid="regenerate btn"
+						class="highlight-icon"
+						class:hide={!messageIsHovered}
+					>
+						<span on:click={handleRegenerate}
+							><Reset aria-label="regenerate message" /></span
+						>
 					</div>
 				{/if}
 			</div>

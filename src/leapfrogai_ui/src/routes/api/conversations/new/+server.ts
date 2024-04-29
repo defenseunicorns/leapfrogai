@@ -2,7 +2,6 @@ import { error, json, redirect } from '@sveltejs/kit';
 import { newConversationInputSchema } from '../../../../schemas/chat';
 
 export async function POST({ request, locals: { supabase, getSession } }) {
-
 	const session = await getSession();
 	if (!session) {
 		error(401, 'Unauthorized');
@@ -20,7 +19,7 @@ export async function POST({ request, locals: { supabase, getSession } }) {
 
 	const conversation: Omit<Conversation, 'messages'> = {
 		...requestData,
-		user_id: session.user.id,
+		user_id: session.user.id
 	};
 
 	// TODO if there is an error, the chats continue to stream, but they are not saved

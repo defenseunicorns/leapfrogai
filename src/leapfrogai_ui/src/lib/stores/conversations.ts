@@ -176,19 +176,25 @@ const createConversationsStore = () => {
 				await deleteMessage(messageId);
 
 				update((old) => {
-					const conversationIndex = old.conversations.findIndex((c) => c.id === conversationId)
-					const conversation = {...old.conversations[conversationIndex]};
-					console.log('original messages', conversation.messages)
-					conversation.messages = conversation.messages.filter((message) => message.id !== messageId);
+					const conversationIndex = old.conversations.findIndex(
+						(c) => c.id === conversationId
+					);
+					const conversation = { ...old.conversations[conversationIndex] };
+					console.log('original messages', conversation.messages);
+					conversation.messages = conversation.messages.filter(
+						(message) => message.id !== messageId
+					);
 					const updatedConversations = [...old.conversations];
 					updatedConversations[conversationIndex] = conversation;
-					console.log('updated messages', updatedConversations[conversationIndex].messages)
+					console.log(
+						'updated messages',
+						updatedConversations[conversationIndex].messages
+					);
 					return {
 						...old,
 						conversations: updatedConversations
 					};
 				});
-
 			} catch {
 				toastStore.addToast({
 					kind: 'error',
@@ -201,7 +207,9 @@ const createConversationsStore = () => {
 			try {
 				await updateConversationLabel(id, newLabel);
 				return update((old) => {
-					const updatedConversationIndex = old.conversations.findIndex((c) => c.id === id);
+					const updatedConversationIndex = old.conversations.findIndex(
+						(c) => c.id === id
+					);
 					const updatedConversation = { ...old.conversations[updatedConversationIndex] };
 					updatedConversation.label = newLabel;
 

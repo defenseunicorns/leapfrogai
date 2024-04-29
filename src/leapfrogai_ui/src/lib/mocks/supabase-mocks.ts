@@ -55,6 +55,8 @@ export const supabaseDeleteMock = () => ({
 
 export const supabaseDeleteErrorMock = () => ({
 	from: vi.fn(() => ({
-		delete: vi.fn(() => ({ eq: vi.fn(() => Promise.resolve({ error: internalPostgresError })) }))
+		delete: vi.fn(() => ({
+			eq: vi.fn(() => Promise.resolve({ error: internalPostgresError }))
+		}))
 	}))
 });

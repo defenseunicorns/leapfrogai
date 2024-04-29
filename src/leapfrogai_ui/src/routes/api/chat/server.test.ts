@@ -1,4 +1,5 @@
 import { afterAll } from 'vitest';
+import type { ChatCompletionMessageParam } from 'ai/prompts';
 import { POST } from './+server';
 import { sessionMock, sessionNullMock } from '$lib/mocks/supabase-mocks';
 
@@ -48,7 +49,7 @@ describe('/api/chat', () => {
 		});
 	});
 	it('returns a 400 when extra body parameters are passed', async () => {
-		const validMessage: AIMessage = { content: 'test', role: 'user' };
+		const validMessage: ChatCompletionMessageParam = { content: 'test', role: 'user' };
 		const request = new Request('http://localhost:5173/api/chat', {
 			method: 'POST',
 			body: JSON.stringify({ messages: [validMessage], wrong: 'key' })

@@ -19,7 +19,6 @@ The invalid prop can still be passed to this component to validate for other con
 	/** Specify the maxRows value */
 	export let maxRows = 10;
 
-
 	/** Specify the placeholder text */
 	export let placeholder = '';
 
@@ -74,10 +73,13 @@ The invalid prop can still be passed to this component to validate for other con
 	 */
 	export let ariaLabel: string | undefined = undefined;
 
+	/**
+	 * Obtain a reference to the error state of the input text length.
+	 */
+	export let showLengthError = false;
+
 	$: errorId = `error-${id}`;
 
-
-	let showLengthError = false;
 	let lengthInvalidText = 'Character limit reached';
 	$: limitReached = $value.length === Number(env.PUBLIC_MESSAGE_LENGTH_LIMIT);
 
@@ -94,7 +96,6 @@ The invalid prop can still be passed to this component to validate for other con
 		inputHeight = style.getPropertyValue('--message-input-height').trim();
 		resizeTextArea();
 	});
-
 </script>
 
 <!-- svelte-ignore a11y-mouse-events-have-key-events -->
@@ -150,6 +151,10 @@ The invalid prop can still be passed to this component to validate for other con
 				// Allow user to type up to maxCount, but only show error once trying to add more
 				// characters after hitting this limit
 
+				// Allow Command+A / Ctrl+A for select all even when max length is reached
+				if (e.key === 'a' && (e.metaKey || e.ctrlKey)) {
+					return; // Do not prevent the default action for Command+A/Ctrl+A
+				}
 				// If limit reached and trying to delete characters
 				if (limitReached && ['Backspace', 'Delete'].includes(e.key)) {
 					showLengthError = false; // remove error

@@ -2,7 +2,6 @@ import { error, redirect } from '@sveltejs/kit';
 import { uuidSchema } from '../../../../schemas/chat';
 
 export async function DELETE({ request, locals: { supabase, getSession } }) {
-
 	const session = await getSession();
 	if (!session) {
 		error(401, 'Unauthorized');

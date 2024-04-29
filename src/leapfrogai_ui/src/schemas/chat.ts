@@ -1,5 +1,5 @@
 import { array, object, ObjectSchema, string } from 'yup';
-import { MAX_LABEL_SIZE} from '$lib/constants';
+import { MAX_LABEL_SIZE } from '$lib/constants';
 import { env } from '$env/dynamic/public';
 
 const contentInputSchema = string().max(Number(env.PUBLIC_MESSAGE_LENGTH_LIMIT)).required();
