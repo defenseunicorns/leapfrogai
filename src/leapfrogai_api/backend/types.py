@@ -1,7 +1,7 @@
 """Typing definitions for assistants API."""
 
 from __future__ import annotations
-from typing import Dict, Optional, Literal
+from typing import Literal
 from pydantic import BaseModel
 from fastapi import UploadFile, Form, File
 
@@ -81,7 +81,7 @@ class ChatFunction(BaseModel):
     """Function object for chat completion."""
 
     name: str
-    parameters: Dict[str, object]
+    parameters: dict[str, object]
     description: str
 
 
@@ -180,17 +180,17 @@ class CreateTranscriptionRequest(BaseModel):
     language: str = ""
     prompt: str = ""
     response_format: str = ""
-    temperature: float = 1
+    temperature: float = 1.0
 
     @classmethod
     def as_form(
         cls,
         file: UploadFile = File(...),
         model: str = Form(...),
-        language: Optional[str] = Form(""),
-        prompt: Optional[str] = Form(""),
-        response_format: Optional[str] = Form(""),
-        temperature: Optional[float] = Form(1),
+        language: str | None = Form(""),
+        prompt: str | None = Form(""),
+        response_format: str | None = Form(""),
+        temperature: float | None = Form(1.0),
     ) -> CreateTranscriptionRequest:
         return cls(
             file=file,
@@ -221,7 +221,7 @@ class UploadFileRequest(BaseModel):
     def as_form(
         cls,
         file: UploadFile = File(...),
-        purpose: Optional[str] = Form("assistants"),
+        purpose: str | None = Form("assistants"),
     ) -> UploadFileRequest:
         """Create an instance of the class from form data."""
         return cls(file=file, purpose=purpose)
@@ -236,19 +236,17 @@ class CreateAssistantRequest(BaseModel):
     """Request object for creating an assistant."""
 
     model: str = "mistral"
-    name: Optional[str] = "Froggy Assistant"
-    description: Optional[str] = "A helpful assistant."
-    instructions: Optional[str] = "You are a helpful assistant."
-    tools: Optional[list[dict[Literal["type"], Literal["file_search"]]]] | None = [
+    name: str | None = "Froggy Assistant"
+    description: str | None = "A helpful assistant."
+    instructions: str | None = "You are a helpful assistant."
+    tools: list[dict[Literal["type"], Literal["file_search"]]] | None = [
         {"type": "file_search"}
     ]  # This is all we support right now
-    tool_resources: Optional[object] | None = {}
-    metadata: Optional[object] | None = {}
-    temperature: Optional[float] = 1.0
-    top_p: Optional[float] = 1.0
-    response_format: Optional[Literal["auto"]] | None = (
-        "auto"  # This is all we support right now
-    )
+    tool_resources: object | None = {}
+    metadata: object | None = {}
+    temperature: float | None = 1.0
+    top_p: float | None = 1.0
+    response_format: Literal["auto"] | None = "auto"  # This is all we support right now
 
 
 class ModifyAssistantRequest(CreateAssistantRequest):
