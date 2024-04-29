@@ -24,9 +24,9 @@ jobs:
       - name: Checkout Repo
         uses: actions/checkout@b4ffde65f46336ab88eb53be808477a3936bae11 # v4.1.1
 
-      - uses: actions/setup-node@v4
+      - uses: actions/setup-node@60edb5dd545a775178f52524783378180af0d1f8 # v4.0.2
         with:
-          node-version: 18
+          node-version-file: 'src/leapfrogai_ui/package.json'
 
       - name: Install Dependencies
         run: npm --prefix src/leapfrogai_ui ci
