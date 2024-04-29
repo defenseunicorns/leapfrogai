@@ -10,6 +10,14 @@ import * as navigation from '$app/navigation';
 import * as stores from '$app/stores';
 import { fakeConversations } from './src/testUtils/fakeData';
 
+vi.mock('$env/dynamic/public', () => {
+	return {
+		env: {
+			PUBLIC_MESSAGE_LENGTH_LIMIT: '10000'
+		}
+	};
+});
+
 // Mock SvelteKit runtime module $app/environment
 vi.mock('$app/environment', (): typeof environment => ({
 	browser: false,
