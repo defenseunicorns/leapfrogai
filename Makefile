@@ -37,7 +37,7 @@ sdk-wheel: ## build wheels for the leapfrogai_sdk package as a dependency for ot
 	-rm ${SDK_DEST}/*.whl
 	python -m pip wheel src/leapfrogai_sdk -w ${SDK_DEST}
 
-build-supabase:
+build-supabase: local-registry
 	## Pull down images and push them to the local registry (Zarf is super slow if the image is only in the local daemon)
 	./packages/supabase/scripts/initial-push.sh
 
