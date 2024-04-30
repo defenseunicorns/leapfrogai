@@ -7,7 +7,7 @@
 	import { writable } from 'svelte/store';
 	import { toastStore } from '$stores';
 
-	export let handleMessageEdit: (event: any, message: AIMessage) => Promise<void>;
+	export let handleMessageEdit: (event: SubmitEvent, message: AIMessage) => Promise<void>;
 	export let handleRegenerate: () => Promise<void>;
 	export let message: AIMessage;
 	export let isLastMessage: boolean;
@@ -48,9 +48,12 @@
 <div
 	data-testid="message"
 	class="message"
+	role="toolbar"
 	class:transparent={message.role === 'user'}
 	on:mouseover={() => (messageIsHovered = true)}
 	on:mouseleave={() => (messageIsHovered = false)}
+	on:focus={() => (messageIsHovered = true)}
+	tabindex="0"
 >
 	<div class="message-and-avatar">
 		{#if message.role === 'user'}
@@ -66,7 +69,8 @@
 				<div class="edit-prompt">
 					<LFTextArea {value} {onSubmit} ariaLabel="edit message input" />
 					<div class="cancel-save">
-						<Button size="small" kind="secondary" on:click={handleCancel}>Cancel</Button>
+						<Button size="small" kind="secondary" on:click={handleCancel}>Cancel</Button
+						>
 						<Button
 							size="small"
 							disabled={isLoading}
@@ -81,19 +85,34 @@
 
 			<div class="utils">
 				{#if message.role === 'user' && !editMode}
-					<div data-testid="edit prompt btn" class="highlight-icon" class:hide={!messageIsHovered}>
-						<span on:click={() => (editMode = true)}><Edit aria-label="edit prompt" /></span>
-					</div>
+					<button
+						data-testid="edit prompt btn"
+						class="highlight-icon"
+						class:hide={!messageIsHovered}
+						on:click={() => (editMode = true)}
+						aria-label="edit prompt"
+						tabindex="0"><Edit /></button
+					>
 				{/if}
 				{#if message.role !== 'user' && (isLastMessage ? !isLoading : true)}
-					<div data-testid="copy btn" class="highlight-icon" class:hide={!messageIsHovered}>
-						<span on:click={handleCopy}><Copy aria-label="copy message" /></span>
-					</div>
+					<button
+						data-testid="copy btn"
+						class="highlight-icon"
+						class:hide={!messageIsHovered}
+						on:click={handleCopy}
+						tabindex="0"
+						aria-label="copy message"><Copy /></button
+					>
 				{/if}
 				{#if message.role !== 'user' && isLastMessage && !isLoading}
-					<div data-testid="regenerate btn" class="highlight-icon" class:hide={!messageIsHovered}>
-						<span on:click={handleRegenerate}><Reset aria-label="regenerate message" /></span>
-					</div>
+					<button
+						data-testid="regenerate btn"
+						class="highlight-icon"
+						class:hide={!messageIsHovered}
+						on:click={handleRegenerate}
+						aria-label="regenerate message"
+						tabindex="0"><Reset /></button
+					>
 				{/if}
 			</div>
 		</div>
@@ -145,6 +164,17 @@
 		display: flex;
 		gap: layout.$spacing-03;
 		padding-left: layout.$spacing-05;
+	}
+
+	.highlight-icon {
+		// remove default button styling
+		background: none;
+		color: inherit;
+		border: none;
+		padding: 0;
+		font: inherit;
+		cursor: pointer;
+		outline: inherit;
 	}
 
 	.highlight-icon :global(svg) {

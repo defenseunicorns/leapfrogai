@@ -1,34 +1,15 @@
-# Catch all the things we ignore in the e2e workflow
-name: e2e Skip Shim
+# Catch all the things we ignore in the ui-test workflow
+name: ui-test-shim
 on:
   pull_request:
     paths:
-      # Catch updates to the .github directory, unless it is the e2e.yaml files
-      - ".github/**"
-      - "!.github/workflows/e2e.yaml"
+      # catch all workflows except the ui-test
+      - ".github/workflows/**"
+      - "!.github/workflows/ui-test.yaml"
 
-      # Catch docs and website things
-      - "**.md"
-      - "adr/**"
-      - "docs/**"
-      - "website/**"
-      - "netlify.toml"
-
-      # Catch generic github metadata files
-      - "CODEOWNERS"
-      - ".gitignore"
-      - "LICENSE"
-      - ".pre-commit-config.yaml"
-
-      # Catch pytests
-      - "tests/pytest/**"
-
-      # Catch LFAI-UI things
-      - "src/leapfrogai_ui/**"
-      - "packages/ui/**"
-
-      # Catch changes to the repeater model
-      - "packages/repeater/**"
+      # ignore LFAI-UI things
+      - "!src/leapfrogai_ui/**"
+      - "!packages/ui/**"
 
 
 permissions:
@@ -46,12 +27,12 @@ permissions:
 
 # Abort prior jobs in the same workflow / PR
 concurrency:
-  group: e2e-skip-${{ github.ref }}
+  group: ui-test-skip-${{ github.ref }}
   cancel-in-progress: true
 
 
 jobs:
-  e2e:
+  ui-test:
     runs-on: ubuntu-latest
     steps:
       - name: Skipped

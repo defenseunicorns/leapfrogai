@@ -26,7 +26,7 @@ on:
       - "!LICENSE"
 
       # Ignore local development files
-      - "!pre-commit-config.yaml"
+      - "!.pre-commit-config.yaml"
 
       # Ignore non e2e tests
       - "!tests/pytest/**"

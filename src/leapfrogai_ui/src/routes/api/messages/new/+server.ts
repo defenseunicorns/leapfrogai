@@ -27,7 +27,9 @@ export async function POST({ request, locals: { supabase, getSession } }) {
 		.returns<Message[]>();
 
 	if (responseError) {
-		console.log(`error creating message,  error status: ${responseError.code}: ${responseError.message}`);
+		console.log(
+			`error creating message,  error status: ${responseError.code}: ${responseError.message}`
+		);
 		error(500, { message: 'Internal Server Error' });
 	}
 

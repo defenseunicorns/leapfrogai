@@ -38,7 +38,10 @@ describe('/api/conversations/new', () => {
 		await expect(
 			POST({
 				request,
-				locals: { supabase: supabaseInsertMock([conversation]), getSession: sessionNullMock }
+				locals: {
+					supabase: supabaseInsertMock([conversation]),
+					getSession: sessionNullMock
+				}
 			})
 		).rejects.toMatchObject({
 			status: 401
@@ -96,7 +99,10 @@ describe('/api/conversations/new', () => {
 		});
 
 		await expect(
-			POST({ request, locals: { supabase: supabaseInsertErrorMock(), getSession: sessionMock } })
+			POST({
+				request,
+				locals: { supabase: supabaseInsertErrorMock(), getSession: sessionMock }
+			})
 		).rejects.toMatchObject({
 			status: 500
 		});

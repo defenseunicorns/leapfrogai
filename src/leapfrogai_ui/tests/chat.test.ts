@@ -9,7 +9,7 @@ import {
 
 test('it can start a new conversation and receive a response', async ({ page }) => {
 	const newMessage = faker.lorem.words(3);
-	let messages = page.getByTestId('message');
+	const messages = page.getByTestId('message');
 	await expect(messages).toHaveCount(0);
 
 	await loadChatPage(page);
