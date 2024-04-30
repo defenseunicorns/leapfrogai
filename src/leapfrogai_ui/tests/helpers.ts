@@ -5,6 +5,7 @@ const supabase = createClient(process.env.PUBLIC_SUPABASE_URL!, process.env.SERV
 
 export const loadChatPage = async (page: Page) => {
 	await page.goto('/chat');
+	await page.waitForURL('/chat');
 	await expect(page).toHaveTitle('LeapfrogAI - Chat');
 };
 
