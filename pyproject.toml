@@ -7,7 +7,7 @@ readme = "README.md"
 license = {file = "LICENSE"}
 
 dependencies = [  # Dev dependencies needed for all of lfai
-    "openai >= 1.21.1",
+    "openai",
     "pip-tools == 7.3.0",
     "pytest",
     "httpx",
