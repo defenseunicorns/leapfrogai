@@ -7,21 +7,28 @@ from fastapi import UploadFile
 from openai.types import FileObject, FileDeleted
 from openai.types.beta import Assistant, AssistantDeleted
 from openai.types.beta.assistant import ToolResources
-from supabase.client import Client, create_client
+from supabase_py_async import create_client, AsyncClient
+from supabase_py_async.lib.client_options import ClientOptions
+
+# from supabase.client import Client, create_client
 from leapfrogai_api.utils.openai_util import strings_to_tools, tools_to_strings
 
 
-def get_connection(
+async def get_connection(
     supabase_url=os.getenv("SUPABASE_URL"), supabase_key=os.getenv("SUPABASE_KEY")
-) -> Client:
+) -> AsyncClient:
     """Get the connection to the Supabase database."""
 
     if not supabase_url or not supabase_key:
         raise ConnectionError("Invalid Supabase URL or Key provided.")
 
     try:
-        supabase: Client = create_client(
-            supabase_url=supabase_url, supabase_key=supabase_key
+        supabase: AsyncClient = await create_client(
+            supabase_url=supabase_url,
+            supabase_key=supabase_key,
+            options=ClientOptions(
+                postgrest_client_timeout=10, storage_client_timeout=10
+            ),
         )
         return supabase
     except Exception as exc:
@@ -31,58 +38,38 @@ def get_connection(
         ) from exc
 
 
-def test_connection(
-    supabase_url=os.getenv("SUPABASE_URL"), supabase_key=os.getenv("SUPABASE_KEY")
-) -> bool:
-    """Test the connection to the Supabase database."""
-
-    if not supabase_url or not supabase_key:
-        logging.error("Invalid Supabase URL or Key provided.")
-        return False
-
-    try:
-        supabase = get_connection(supabase_url=supabase_url, supabase_key=supabase_key)
-        supabase.storage.from_("file_bucket").list()
-        return True
-    except Exception:
-        logging.error(
-            "Unable to connect to the Supabase database at %s",
-            os.getenv("SUPABASE_URL"),
-        )
-        return False
-
-
 class SupabaseWrapper:
     """Wrapper class for interacting with the Supabase database."""
 
-    def __init__(self, client: Client = None):
-        pass
-
     ### File Methods ###
 
-    def upsert_file(
+    async def upsert_file(
         self,
         file: UploadFile,
         file_object: FileObject,
-        client: Client = None,
+        client: AsyncClient = None,
     ) -> FileObject:
         """Upsert the documents and their embeddings in the database."""
 
         try:
-            client = client if client else get_connection()
-            client.table("file_objects").upsert(
-                [
-                    {
-                        "id": file_object.id,
-                        "bytes": file_object.bytes,
-                        "created_at": file_object.created_at,
-                        "filename": file_object.filename,
-                        "purpose": file_object.purpose,
-                        "status": file_object.status,
-                        "status_details": file_object.status_details,
-                    }
-                ]
-            ).execute()
+            client = client if client else await get_connection()
+            await (
+                client.table("file_objects")
+                .upsert(
+                    [
+                        {
+                            "id": file_object.id,
+                            "bytes": file_object.bytes,
+                            "created_at": file_object.created_at,
+                            "filename": file_object.filename,
+                            "purpose": file_object.purpose,
+                            "status": file_object.status,
+                            "status_details": file_object.status_details,
+                        }
+                    ]
+                )
+                .execute()
+            )
 
             client.storage.from_("file_bucket").upload(
                 file=file.file.read(), path=f"{file_object.id}"
@@ -91,15 +78,15 @@ class SupabaseWrapper:
         except Exception as exc:
             raise FileNotFoundError("Unable to store file") from exc
 
-    def list_files(
-        self, purpose: str = "assistants", client: Client = None
+    async def list_files(
+        self, purpose: str = "assistants", client: AsyncClient = None
     ) -> List[FileObject]:
         """List all the files in the database."""
 
         try:
-            client = client if client else get_connection()
+            client = client if client else await get_connection()
             response = (
-                client.table("file_objects")
+                await client.table("file_objects")
                 .select("*")
                 .eq("purpose", purpose)
                 .execute()
@@ -121,13 +108,18 @@ class SupabaseWrapper:
         except Exception as exc:
             raise FileNotFoundError("No file objects found in the database") from exc
 
-    def get_file_object(self, file_id: str, client: Client = None) -> FileObject:
+    async def get_file_object(
+        self, file_id: str, client: AsyncClient = None
+    ) -> FileObject:
         """Get the file object from the database."""
 
         try:
-            client = client if client else get_connection()
+            client = client if client else await get_connection()
             response = (
-                client.table("file_objects").select("*").eq("id", file_id).execute()
+                await client.table("file_objects")
+                .select("*")
+                .eq("id", file_id)
+                .execute()
             )
         except Exception as exc:
             raise FileNotFoundError(
@@ -153,14 +145,16 @@ class SupabaseWrapper:
         )
         return file_object
 
-    def delete_file(self, file_id: str, client: Client = None) -> FileDeleted:
+    async def delete_file(
+        self, file_id: str, client: AsyncClient = None
+    ) -> FileDeleted:
         """Delete the file and its vectors from the database."""
 
         try:
-            client = client if client else get_connection()
+            client = client if client else await get_connection()
             # Delete the file object
             file_path = (
-                client.table("file_objects")
+                await client.table("file_objects")
                 .select("filename")
                 .eq("id", file_id)
                 .execute()
@@ -172,7 +166,7 @@ class SupabaseWrapper:
                     f"Delete FileObject: No file found with id: {file_id}"
                 )
 
-            client.table("file_objects").delete().eq("id", file_id).execute()
+            await client.table("file_objects").delete().eq("id", file_id).execute()
         except Exception as exc:
             raise FileNotFoundError(
                 f"Delete FileObject: No file found with id: {file_id}"
@@ -188,13 +182,13 @@ class SupabaseWrapper:
 
         return FileDeleted(id=file_id, object="file", deleted=True)
 
-    def get_file_content(self, file_id: str, client: Client = None):
+    async def get_file_content(self, file_id: str, client: AsyncClient = None):
         """Get the file content from the bucket."""
 
         try:
-            client = client if client else get_connection()
+            client = client if client else await get_connection()
             file_path = (
-                client.table("file_objects")
+                await client.table("file_objects")
                 .select("filename")
                 .eq("id", file_id)
                 .execute()
@@ -210,44 +204,48 @@ class SupabaseWrapper:
 
     ### Assistant Methods ###
 
-    def upsert_assistant(
-        self, assistant: Assistant, client: Client = None
+    async def upsert_assistant(
+        self, assistant: Assistant, client: AsyncClient = None
     ) -> Assistant:
         """Create an assistant in the database."""
 
         try:
-            client = client if client else get_connection()
-            client.table("assistant_objects").upsert(
-                [
-                    {
-                        "id": assistant.id,
-                        "created_at": assistant.created_at,
-                        "name": assistant.name,
-                        "description": assistant.description,
-                        "model": assistant.model,
-                        "instructions": assistant.instructions,
-                        "tools": tools_to_strings(assistant.tools),
-                        "tool_resources": ToolResources.model_dump_json(
-                            assistant.tool_resources
-                        ),
-                        "metadata": assistant.metadata,
-                        "top_p": assistant.top_p,
-                        "temperature": assistant.temperature,
-                        "response_format": assistant.response_format,
-                    }
-                ]
-            ).execute()
+            client = client if client else await get_connection()
+            await (
+                client.table("assistant_objects")
+                .upsert(
+                    [
+                        {
+                            "id": assistant.id,
+                            "created_at": assistant.created_at,
+                            "name": assistant.name,
+                            "description": assistant.description,
+                            "model": assistant.model,
+                            "instructions": assistant.instructions,
+                            "tools": tools_to_strings(assistant.tools),
+                            "tool_resources": ToolResources.model_dump_json(
+                                assistant.tool_resources
+                            ),
+                            "metadata": assistant.metadata,
+                            "top_p": assistant.top_p,
+                            "temperature": assistant.temperature,
+                            "response_format": assistant.response_format,
+                        }
+                    ]
+                )
+                .execute()
+            )
             return assistant
 
         except Exception as exc:
             raise ValueError("Unable to create the assistant") from exc
 
-    def list_assistants(self, client: Client = None) -> List[Assistant]:
+    async def list_assistants(self, client: AsyncClient = None) -> List[Assistant]:
         """List all the assistants in the database."""
 
         try:
-            client = client if client else get_connection()
-            response = client.table("assistant_objects").select("*").execute()
+            client = client if client else await get_connection()
+            response = await client.table("assistant_objects").select("*").execute()
             assistants = [
                 Assistant(
                     id=data["id"],
@@ -274,13 +272,15 @@ class SupabaseWrapper:
                 "No assistant objects found in the database"
             ) from exc
 
-    def retrieve_assistant(self, assistant_id: str, client: Client = None) -> Assistant:
+    async def retrieve_assistant(
+        self, assistant_id: str, client: AsyncClient = None
+    ) -> Assistant:
         """Retrieve the assistant from the database."""
 
         try:
-            client = client if client else get_connection()
+            client = client if client else await get_connection()
             response = (
-                client.table("assistant_objects")
+                await client.table("assistant_objects")
                 .select("*")
                 .eq("id", assistant_id)
                 .execute()
@@ -309,14 +309,19 @@ class SupabaseWrapper:
                 f"No assistant found with id: {assistant_id}"
             ) from exc
 
-    def delete_assistant(
-        self, assistant_id: str, client: Client = None
+    async def delete_assistant(
+        self, assistant_id: str, client: AsyncClient = None
     ) -> AssistantDeleted:
         """Delete the assistant from the database."""
 
         try:
-            client = client if client else get_connection()
-            client.table("assistant_objects").delete().eq("id", assistant_id).execute()
+            client = client if client else await get_connection()
+            await (
+                client.table("assistant_objects")
+                .delete()
+                .eq("id", assistant_id)
+                .execute()
+            )
             return AssistantDeleted(
                 id=assistant_id, deleted=True, object="assistant.deleted"
             )

@@ -41,7 +41,7 @@ async def create_assistant(request: CreateAssistantRequest) -> Assistant:
         )
 
         supabase_wrapper = SupabaseWrapper()
-        supabase_wrapper.upsert_assistant(assistant)
+        await supabase_wrapper.upsert_assistant(assistant)
         return assistant
 
     except Exception as exc:
@@ -55,7 +55,7 @@ async def list_assistants() -> List[Assistant]:
     """List all the assistants."""
     try:
         supabase_wrapper = SupabaseWrapper()
-        assistants: List[Assistant] = supabase_wrapper.list_assistants()
+        assistants: List[Assistant] = await supabase_wrapper.list_assistants()
         return assistants
     except FileNotFoundError as exc:
         raise HTTPException(status_code=404, detail="No assistants found") from exc
@@ -66,7 +66,7 @@ async def retrieve_assistant(assistant_id: str) -> Assistant:
     """Retrieve an assistant."""
     try:
         supabase_wrapper = SupabaseWrapper()
-        assistant: Assistant = supabase_wrapper.retrieve_assistant(assistant_id)
+        assistant: Assistant = await supabase_wrapper.retrieve_assistant(assistant_id)
         return assistant
     except FileNotFoundError as exc:
         raise HTTPException(status_code=404, detail="Assistant not found") from exc
@@ -80,7 +80,7 @@ async def modify_assistant(
 
     try:
         supabase_wrapper = SupabaseWrapper()
-        assistant: Assistant = supabase_wrapper.retrieve_assistant(assistant_id)
+        assistant: Assistant = await supabase_wrapper.retrieve_assistant(assistant_id)
 
         assistant.model = request.model or assistant.model
         assistant.name = request.name or assistant.name
@@ -98,7 +98,7 @@ async def modify_assistant(
         assistant.temperature = request.temperature or assistant.temperature
         assistant.top_p = request.top_p or assistant.top_p
         assistant.response_format = request.response_format or assistant.response_format
-        supabase_wrapper.upsert_assistant(assistant)
+        await supabase_wrapper.upsert_assistant(assistant)
         return assistant
     except FileNotFoundError as exc:
         raise HTTPException(status_code=404, detail="Assistant not found") from exc
@@ -109,6 +109,6 @@ async def delete_assistant(assistant_id: str) -> AssistantDeleted:
     """Delete an assistant."""
     try:
         supabase_wrapper = SupabaseWrapper()
-        return supabase_wrapper.delete_assistant(assistant_id)
+        return await supabase_wrapper.delete_assistant(assistant_id)
     except FileNotFoundError as exc:
         raise HTTPException(status_code=404, detail="Assistant not found") from exc

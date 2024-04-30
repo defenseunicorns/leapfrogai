@@ -35,7 +35,7 @@ async def upload_file(
 
     try:
         supabase_wrapper = SupabaseWrapper()
-        return supabase_wrapper.upsert_file(request.file, file_object)
+        return await supabase_wrapper.upsert_file(request.file, file_object)
     except Exception as exc:
         raise HTTPException(status_code=500, detail="Failed to store file") from exc
 
@@ -45,7 +45,7 @@ async def list_files():
     """List all files."""
     try:
         supabase_wrapper = SupabaseWrapper()
-        response = supabase_wrapper.list_files(purpose="assistants")
+        response = await supabase_wrapper.list_files(purpose="assistants")
         return {"data": response, "object": "list"}
     except FileNotFoundError as exc:
         raise HTTPException(status_code=404, detail="No file objects found") from exc
@@ -56,7 +56,7 @@ async def retrieve_file(file_id: str) -> FileObject:
     """Retrieve a file."""
     try:
         supabase_wrapper = SupabaseWrapper()
-        return supabase_wrapper.get_file_object(file_id=file_id)
+        return await supabase_wrapper.get_file_object(file_id=file_id)
     except FileNotFoundError as exc:
         raise HTTPException(status_code=404, detail="File not found") from exc
     except ValueError as exc:
@@ -70,7 +70,7 @@ async def delete_file(file_id: str) -> FileDeleted:
     """Delete a file."""
     try:
         supabase_wrapper = SupabaseWrapper()
-        return supabase_wrapper.delete_file(file_id=file_id)
+        return await supabase_wrapper.delete_file(file_id=file_id)
     except FileNotFoundError as exc:
         raise HTTPException(status_code=404, detail="File not found") from exc
 
@@ -80,6 +80,6 @@ async def retrieve_file_content(file_id: str):
     """Retrieve the content of a file."""
     try:
         supabase_wrapper = SupabaseWrapper()
-        return supabase_wrapper.get_file_content(file_id=file_id)
+        return await supabase_wrapper.get_file_content(file_id=file_id)
     except FileNotFoundError as exc:
         raise HTTPException(status_code=404, detail="File not found") from exc

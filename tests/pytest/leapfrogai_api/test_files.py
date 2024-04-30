@@ -3,9 +3,10 @@
 from unittest.mock import patch
 from fastapi.testclient import TestClient
 from openai.types import FileObject, FileDeleted
-from leapfrogai_api.routers.files import router
+from leapfrogai_api.routers.openai.files import router
 
 client = TestClient(router)
+
 test_file_object = FileObject(
     id="1",
     filename="test.jpg",
@@ -29,7 +30,7 @@ test_file_list = [
 ]
 
 
-@patch("leapfrogai_api.routers.files.SupabaseWrapper.list_files")
+@patch("leapfrogai_api.routers.openai.files.SupabaseWrapper.list_files")
 def test_list_files(mock_list_files):
     """Test list_files endpoint"""
     mock_list_files.return_value = test_file_list
@@ -43,7 +44,7 @@ def test_list_files(mock_list_files):
     mock_list_files.assert_called_once()
 
 
-@patch("leapfrogai_api.routers.files.SupabaseWrapper.get_file_object")
+@patch("leapfrogai_api.routers.openai.files.SupabaseWrapper.get_file_object")
 def test_retrieve_file(mock_get_file_object):
     """Test retrieve_file endpoint"""
 
@@ -55,7 +56,7 @@ def test_retrieve_file(mock_get_file_object):
     mock_get_file_object.assert_called_once_with(file_id="1")
 
 
-@patch("leapfrogai_api.routers.files.SupabaseWrapper.delete_file")
+@patch("leapfrogai_api.routers.openai.files.SupabaseWrapper.delete_file")
 def test_delete_file(mock_delete_file):
     """Test delete_file endpoint"""
     mock_delete_file.return_value = test_file_deleted
@@ -66,7 +67,7 @@ def test_delete_file(mock_delete_file):
     mock_delete_file.assert_called_once_with(file_id="1")
 
 
-@patch("leapfrogai_api.routers.files.SupabaseWrapper.get_file_content")
+@patch("leapfrogai_api.routers.openai.files.SupabaseWrapper.get_file_content")
 def test_get_file_content(mock_get_file_content):
     """Test get_file_content endpoint"""
     mock_get_file_content.return_value = b"test"

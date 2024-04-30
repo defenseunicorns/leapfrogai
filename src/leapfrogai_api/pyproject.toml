@@ -12,6 +12,7 @@ dependencies = [
     "watchfiles >= 0.21.0",
     "leapfrogai_sdk",
     "supabase",
+    "supabase-py-async",
 ]
 requires-python = "~=3.11"
 
