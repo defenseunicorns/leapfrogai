@@ -77,7 +77,6 @@ class SupabaseWrapper:
                         "bytes": file_object.bytes,
                         "created_at": file_object.created_at,
                         "filename": file_object.filename,
-                        "object": file_object.object,
                         "purpose": file_object.purpose,
                         "status": file_object.status,
                         "status_details": file_object.status_details,
@@ -111,7 +110,7 @@ class SupabaseWrapper:
                     bytes=data["bytes"],
                     created_at=data["created_at"],
                     filename=data["filename"],
-                    object=data["object"],
+                    object="file",
                     purpose=data["purpose"],
                     status=data["status"],
                     status_details=data["status_details"],
@@ -147,7 +146,7 @@ class SupabaseWrapper:
             bytes=data["bytes"],
             created_at=data["created_at"],
             filename=data["filename"],
-            object=data["object"],
+            object="file",
             purpose=data["purpose"],
             status=data["status"],
             status_details=data["status_details"],
@@ -222,7 +221,6 @@ class SupabaseWrapper:
                 [
                     {
                         "id": assistant.id,
-                        "object": assistant.object,
                         "created_at": assistant.created_at,
                         "name": assistant.name,
                         "description": assistant.description,
@@ -253,7 +251,7 @@ class SupabaseWrapper:
             assistants = [
                 Assistant(
                     id=data["id"],
-                    object=data["object"],
+                    object="assistant",
                     created_at=data["created_at"],
                     name=data["name"],
                     description=data["description"],
@@ -290,7 +288,7 @@ class SupabaseWrapper:
             data = response.data[0]
             assistant = Assistant(
                 id=data["id"],
-                object=data["object"],
+                object="assistant",
                 created_at=data["created_at"],
                 name=data["name"],
                 description=data["description"],

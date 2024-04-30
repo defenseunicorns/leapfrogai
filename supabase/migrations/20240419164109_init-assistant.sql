@@ -2,7 +2,6 @@
 create table
   assistant_objects (
     id uuid primary key,
-    object text,
     created_at bigint,
     name text,
     description text,
