@@ -74,6 +74,8 @@ components:
         localPath: chart/
         releaseName: supabase-secrets-generator
         version: 0.0.1
+        valuesFiles:
+          - "bitnami-values.yaml"
       - name: supabase
         namespace: leapfrogai
         url: oci://registry-1.docker.io/bitnamicharts/supabase
