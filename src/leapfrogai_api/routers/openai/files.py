@@ -13,7 +13,7 @@ from leapfrogai_api.routers.supabase_session import Session
 router = APIRouter(prefix="/openai/v1/files", tags=["openai/files"])
 
 
-@router.post("/")
+@router.post("")
 async def upload_file(
     client: Session,
     request: UploadFileRequest = Depends(UploadFileRequest.as_form),
@@ -43,7 +43,7 @@ async def upload_file(
     return file_object
 
 
-@router.get("/")
+@router.get("")
 async def list_files(session: Session):
     """List all files."""
     try:

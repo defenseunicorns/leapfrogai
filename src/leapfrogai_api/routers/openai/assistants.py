@@ -17,7 +17,7 @@ from leapfrogai_api.data.crud_assistant_object import CRUDAssistant
 router = APIRouter(prefix="/openai/v1/assistants", tags=["openai/assistants"])
 
 
-@router.post("/")
+@router.post("")
 async def create_assistant(
     session: Session, request: CreateAssistantRequest
 ) -> Assistant:
@@ -52,7 +52,7 @@ async def create_assistant(
         ) from exc
 
 
-@router.get("/")
+@router.get("")
 async def list_assistants(session: Session) -> List[Assistant] | None:
     """List all the assistants."""
     try:
