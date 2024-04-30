@@ -6,7 +6,7 @@ from uuid import uuid4 as uuid
 from fastapi import Depends, APIRouter, HTTPException
 from openai.types import FileObject, FileDeleted
 
-from leapfrogai_api.routers.types import UploadFileRequest
+from leapfrogai_api.backend.types import UploadFileRequest
 from leapfrogai_api.data.supabase_client import SupabaseWrapper
 
 router = APIRouter(prefix="/openai/v1/files", tags=["openai/files"])

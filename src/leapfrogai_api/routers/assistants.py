@@ -6,7 +6,7 @@ from uuid import uuid4
 from fastapi import HTTPException, APIRouter
 from openai.types.beta import Assistant, AssistantDeleted
 from openai.types.beta.assistant import ToolResources
-from leapfrogai_api.routers.types import (
+from leapfrogai_api.backend.types import (
     CreateAssistantRequest,
     ModifyAssistantRequest,
 )

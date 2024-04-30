@@ -19,7 +19,6 @@ from leapfrogai_api.routers.openai import (
     vector_store,
 )
 from leapfrogai_api.utils import get_model_config
-from leapfrogai_api.data.supabase_client import test_connection
 
 
 # handle startup & shutdown tasks
