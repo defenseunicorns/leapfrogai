@@ -1,4 +1,6 @@
 <script lang="ts">
+	import { env } from '$env/dynamic/public';
+	import { string } from 'yup';
 	import { LFTextArea, PoweredByDU } from '$components';
 	import { Button } from 'carbon-components-svelte';
 	import { afterUpdate, onMount, tick } from 'svelte';
@@ -13,37 +15,41 @@
 	let messageThreadDiv: HTMLDivElement;
 	let messageThreadDivHeight: number;
 
+	let lengthInvalid: boolean; // bound to child LFTextArea
+
 	$: activeConversation = $conversationsStore.conversations.find(
 		(conversation) => conversation.id === $page.params.conversation_id
 	);
 
 	$: $page.params.conversation_id, setMessages(activeConversation?.messages || []);
 
-	const { input, handleSubmit, messages, setMessages, isLoading, stop, append, reload } = useChat({
-		initialMessages: $conversationsStore.conversations
-			.find((conversation) => conversation.id === $page.params.conversation_id)
-			?.messages.map((message) => ({
-				id: message.id,
-				content: message.content,
-				role: message.role
-			})),
-		onFinish: async (message: AIMessage) => {
-			if (activeConversation?.id) {
-				await conversationsStore.newMessage({
-					conversation_id: activeConversation?.id,
+	const { input, handleSubmit, messages, setMessages, isLoading, stop, append, reload } = useChat(
+		{
+			initialMessages: $conversationsStore.conversations
+				.find((conversation) => conversation.id === $page.params.conversation_id)
+				?.messages.map((message) => ({
+					id: message.id,
 					content: message.content,
 					role: message.role
+				})),
+			onFinish: async (message: AIMessage) => {
+				if (activeConversation?.id) {
+					await conversationsStore.newMessage({
+						conversation_id: activeConversation?.id,
+						content: message.content,
+						role: message.role
+					});
+				}
+			},
+			onError: (error) => {
+				toastStore.addToast({
+					kind: 'error',
+					title: 'Error',
+					subtitle: 'Error getting AI Response'
 				});
 			}
-		},
-		onError: (error) => {
-			toastStore.addToast({
-				kind: 'error',
-				title: 'Error',
-				subtitle: 'Error getting AI Response'
-			});
 		}
-	});
+	);
 
 	const onSubmit = async (e: SubmitEvent | KeyboardEvent) => {
 		e.preventDefault();
@@ -130,9 +136,12 @@
 	const handleRegenerate = async () => {
 		const messageIndex = $messages.length - 1;
 		if (activeConversation?.id) {
-			await conversationsStore.deleteMessage($messages[messageIndex].id, activeConversation.id);
+			await conversationsStore.deleteMessage(
+				$messages[messageIndex].id,
+				activeConversation.id
+			);
 		}
-		setMessages($messages.toSpliced(messageIndex, 1))
+		setMessages($messages.toSpliced(messageIndex, 1));
 		await reload();
 	};
 
@@ -169,7 +178,12 @@
 	<form on:submit={onSubmit}>
 		<div class="chat-form-container">
 			<Button icon={Attachment} kind="ghost" size="small" iconDescription="Attach File" />
-			<LFTextArea value={input} {onSubmit} />
+			<LFTextArea
+				value={input}
+				{onSubmit}
+				ariaLabel="message input"
+				bind:showLengthError={lengthInvalid}
+			/>
 
 			{#if !$isLoading}
 				<Button
@@ -179,7 +193,7 @@
 					size="field"
 					type="submit"
 					iconDescription="send"
-					disabled={$isLoading || !$input}
+					disabled={$isLoading || !$input || lengthInvalid}
 				/>
 			{:else}
 				<Button

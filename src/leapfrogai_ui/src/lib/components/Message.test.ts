@@ -1,5 +1,5 @@
 import { render, screen } from '@testing-library/svelte';
-import { afterAll, afterEach, vi } from 'vitest';
+import { afterAll, afterEach, type MockInstance, vi } from 'vitest';
 import { Message } from '$components/index';
 import userEvent from '@testing-library/user-event';
 import { getFakeMessage } from '../../testUtils/fakeData';
@@ -66,7 +66,7 @@ describe('Message component', () => {
 	});
 
 	describe('util functions', () => {
-		let clipboardSpy;
+		let clipboardSpy: MockInstance;
 
 		afterAll(() => {
 			clipboardSpy.mockRestore();
@@ -164,6 +164,26 @@ describe('Message component', () => {
 			});
 			expect(screen.queryByLabelText('copy message')).not.toBeInTheDocument();
 			expect(screen.queryByLabelText('regenerate message')).not.toBeInTheDocument();
+		});
+		it('leaves the copy button for messages when it is loading if not the latest message', () => {
+			render(MessageWithToast, {
+				...defaultMessageProps,
+				message: getFakeMessage({ role: 'assistant' }),
+				isLastMessage: false,
+				isLoading: true
+			});
+			expect(screen.getByLabelText('copy message')).toBeInTheDocument();
+
+		});
+		it('leaves the edit button for messages when it is loading if not the latest message', () => {
+			render(MessageWithToast, {
+				...defaultMessageProps,
+				message: getFakeMessage({ role: 'user' }),
+				isLastMessage: false,
+				isLoading: true
+			});
+			expect(screen.getByRole('img', { name: /edit prompt/i })).toBeInTheDocument();
+
 		});
 	});
 });

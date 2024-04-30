@@ -5,9 +5,8 @@ import * as OTPAuth from 'otpauth';
 setup('authenticate', async ({ page, clearAllConversations }) => {
 	await clearAllConversations();
 	await page.goto('http://localhost:4173');
-	console.log(process.env.PUBLIC_DISABLE_KEYCLOAK)
-	if (process.env.PUBLIC_DISABLE_KEYCLOAK === "true") {
-		console.log("here")
+
+	if (process.env.PUBLIC_DISABLE_KEYCLOAK === 'true') {
 		// uses local supabase test users, logs in directly with Supabase, no Keycloak
 		await page.getByText("Already have an account? Sign In").click();
 		await page.getByPlaceholder('Your email address').click();
@@ -17,6 +16,7 @@ setup('authenticate', async ({ page, clearAllConversations }) => {
 		await page.getByRole('button', { name: 'Sign In' }).click();
 
 	} else {
+		// With Keycloak
 		await page.getByRole('button', { name: 'Log In' }).click();
 		await page.getByLabel('Username or email').fill(process.env.USERNAME!);
 		await page.getByLabel('Password').click();
@@ -37,7 +37,7 @@ setup('authenticate', async ({ page, clearAllConversations }) => {
 		// Chrome gets stuck here for an unknown reason, does not happen in real life
 		// This hack allows the test to continue
 		// ref: https://github.com/microsoft/playwright/issues/16160
-		// I suspect it is an issue with the Suabase callback, but the output in the Playwright UI does not show the error page
+		// I suspect it is an issue with the Supabase callback, but the output in the Playwright UI does not show the error page
 		// I was able to see the error when using a VSCode Playwright plugin that records your actions
 		await page.waitForLoadState('domcontentloaded');
 		await page.reload();

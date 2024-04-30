@@ -44,6 +44,11 @@ python -m pip install .
 ```
 
 ```bash
+# To support Huggingface Hub model downloads
+python -m pip install .[dev]
+```
+
+```bash
 # Copy the environment variable file, change this if different params are needed
 cp .env.example .env
 
