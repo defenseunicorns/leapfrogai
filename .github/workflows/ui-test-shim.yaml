@@ -1,0 +1,40 @@
+# Catch all the things we ignore in the ui-test workflow
+name: ui-test-shim
+on:
+  pull_request:
+    paths:
+      # catch all workflows except the ui-test
+      - ".github/workflows/**"
+      - "!.github/workflows/ui-test.yaml"
+
+      # ignore LFAI-UI things
+      - "!src/leapfrogai_ui/**"
+      - "!packages/ui/**"
+
+
+permissions:
+  contents: read
+
+# This is here to act as a shim for branch protection rules to work correctly.
+# This is ugly but this seems to be the best way to do this since:
+#  - Job names in a workflow must be unique
+#  - When paths are ignored not all jobs are reported to the branch protection rules
+#  - Multiple jobs of the same name are still required by branch protection rules
+
+# For more info see below:
+# https://github.com/orgs/community/discussions/54877
+# https://docs.github.com/en/pull-requests/collaborating-with-pull-requests/collaborating-on-repositories-with-code-quality-features/troubleshooting-required-status-checks#handling-skipped-but-required-checks
+
+# Abort prior jobs in the same workflow / PR
+concurrency:
+  group: ui-test-skip-${{ github.ref }}
+  cancel-in-progress: true
+
+
+jobs:
+  ui-test:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Skipped
+        run: |
+          echo skipped
