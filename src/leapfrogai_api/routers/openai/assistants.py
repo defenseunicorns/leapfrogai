@@ -10,14 +10,17 @@ from leapfrogai_api.backend.types import (
     CreateAssistantRequest,
     ModifyAssistantRequest,
 )
-from leapfrogai_api.data.supabase_client import SupabaseWrapper
+from leapfrogai_api.routers.supabase_session import Session
 from leapfrogai_api.utils.openai_util import validate_tools_typed_dict
+from leapfrogai_api.data.crud_assistant_object import CRUDAssistant
 
 router = APIRouter(prefix="/openai/v1/assistants", tags=["openai/assistants"])
 
 
 @router.post("/")
-async def create_assistant(request: CreateAssistantRequest) -> Assistant:
+async def create_assistant(
+    session: Session, request: CreateAssistantRequest
+) -> Assistant:
     """Create an assistant."""
 
     try:
@@ -40,9 +43,8 @@ async def create_assistant(request: CreateAssistantRequest) -> Assistant:
             response_format=request.response_format,
         )
 
-        supabase_wrapper = SupabaseWrapper()
-        await supabase_wrapper.upsert_assistant(assistant)
-        return assistant
+        crud_assistant = CRUDAssistant(model=Assistant)
+        return await crud_assistant.create(assistant=assistant, client=session)
 
     except Exception as exc:
         raise HTTPException(
@@ -51,64 +53,39 @@ async def create_assistant(request: CreateAssistantRequest) -> Assistant:
 
 
 @router.get("/")
-async def list_assistants() -> List[Assistant]:
+async def list_assistants(session: Session) -> List[Assistant] | None:
     """List all the assistants."""
     try:
-        supabase_wrapper = SupabaseWrapper()
-        assistants: List[Assistant] = await supabase_wrapper.list_assistants()
-        return assistants
+        crud_assistant = CRUDAssistant(model=Assistant)
+        return await crud_assistant.list(client=session)
     except FileNotFoundError as exc:
         raise HTTPException(status_code=404, detail="No assistants found") from exc
 
 
 @router.get("/{assistant_id}")
-async def retrieve_assistant(assistant_id: str) -> Assistant:
+async def retrieve_assistant(session: Session, assistant_id: str) -> Assistant:
     """Retrieve an assistant."""
     try:
-        supabase_wrapper = SupabaseWrapper()
-        assistant: Assistant = await supabase_wrapper.retrieve_assistant(assistant_id)
-        return assistant
+        crud_assistant = CRUDAssistant(model=Assistant)
+        return await crud_assistant.get(assistant_id=assistant_id, client=session)
     except FileNotFoundError as exc:
         raise HTTPException(status_code=404, detail="Assistant not found") from exc
 
 
 @router.post("/{assistant_id}")
 async def modify_assistant(
-    assistant_id: str, request: ModifyAssistantRequest
+    session: Session, assistant_id: str, request: ModifyAssistantRequest
 ) -> Assistant:
     """Modify an assistant."""
-
-    try:
-        supabase_wrapper = SupabaseWrapper()
-        assistant: Assistant = await supabase_wrapper.retrieve_assistant(assistant_id)
-
-        assistant.model = request.model or assistant.model
-        assistant.name = request.name or assistant.name
-        assistant.description = request.description or assistant.description
-        assistant.instructions = request.instructions or assistant.instructions
-        if request.tools:
-            assistant.tools = validate_tools_typed_dict(request.tools)
-
-        if request.tool_resources:
-            assistant.tool_resources = ToolResources.model_validate_json(
-                request.tool_resources
-            )
-
-        assistant.metadata = request.metadata or assistant.metadata
-        assistant.temperature = request.temperature or assistant.temperature
-        assistant.top_p = request.top_p or assistant.top_p
-        assistant.response_format = request.response_format or assistant.response_format
-        await supabase_wrapper.upsert_assistant(assistant)
-        return assistant
-    except FileNotFoundError as exc:
-        raise HTTPException(status_code=404, detail="Assistant not found") from exc
+    # TODO: Implement this function
+    raise HTTPException(status_code=405, detail="Not Implemented")
 
 
 @router.delete("/{assistant_id}")
-async def delete_assistant(assistant_id: str) -> AssistantDeleted:
+async def delete_assistant(session: Session, assistant_id: str) -> AssistantDeleted:
     """Delete an assistant."""
     try:
-        supabase_wrapper = SupabaseWrapper()
-        return await supabase_wrapper.delete_assistant(assistant_id)
+        crud_assistant = CRUDAssistant(model=Assistant)
+        return await crud_assistant.delete(assistant_id=assistant_id, client=session)
     except FileNotFoundError as exc:
         raise HTTPException(status_code=404, detail="Assistant not found") from exc

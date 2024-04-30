@@ -5,6 +5,7 @@ create table
     bytes int,
     created_at bigint,
     filename text,
+    object text,
     purpose text,
     status text,
     status_details text
