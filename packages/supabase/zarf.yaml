@@ -10,6 +10,15 @@ constants:
   - name: DASHBOARD_USERNAME
     description: The dashboard's (Supabase studio) default username
     value: supabase-admin
+  - name: EXTERNAL_KEYCLOAK_CLIENT_ID
+    description: 'External keycloak client value'
+    value: "leapfrogai"
+  - name: EXTERNAL_KEYCLOAK_REDIRECT_URL
+    description: 'Keycloaks redirect url'
+    value: "https://supabase-kong.uds.dev/auth/v1/callback"
+  - name: EXTERNAL_KEYCLOAK_URL
+    description: 'External keycloak url'
+    value: "https://keycloak.admin.uds.dev/realms/uds"
 
 variables:
   - name: ENABLE_AUTH
@@ -39,18 +48,9 @@ variables:
   - name: ENABLE_POSTGRES
     description: 'Should the postgres component be enabled'
     default: "true"
-  - name: EXTERNAL_KEYCLOAK_CLIENT_ID
-    description: 'External keycloak client value'
-    default: "leapfrogai"
   - name: ENABLE_EXTERNAL_KEYCLOAK
     description: 'Should the external keycloak be enabled'
     default: "true"
-  - name: EXTERNAL_KEYCLOAK_REDIRECT_URL
-    description: 'Keycloaks redirect url'
-    default: "https://supabase-kong.uds.dev/auth/v1/callback"
-  - name: EXTERNAL_KEYCLOAK_URL
-    description: 'External keycloak url'
-    default: "https://keycloak.admin.uds.dev/realms/uds"
 
 components:
   - name: supabase
