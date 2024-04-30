@@ -17,7 +17,7 @@ data:
     ###
     basicauth_credentials:
       - consumer: DASHBOARD
-        username: ###ZARF_CONST_DASHBOARD_USERNAME###
+        username: {{SUPABASE_DASHBOARD_USERNAME}}
         password: {{SUPABASE_DASHBOARD_PASSWORD}}
 
     acls:
