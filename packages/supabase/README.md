@@ -46,6 +46,7 @@ Replace `YOUR_KEYCLOAK_CLIENT_SECRET` with the actual client secret from Keycloa
 In the Keycloak client settings, ensure that the following URLs are added to both the "Valid Redirect URIs" and "Web Origins" sections:
 
 - `http://supabase-kong.uds.dev/auth/v1/callback`
+- `http://you-application-here/`
 
 # Troubleshooting
 
