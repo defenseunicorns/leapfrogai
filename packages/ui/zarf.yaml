@@ -1,15 +1,14 @@
 kind: ZarfPackageConfig
 metadata:
-  name: '###ZARF_PKG_TMPL_NAME###'
-  version: '###ZARF_PKG_TMPL_IMAGE_VERSION###'
+  name: leapfrogai-ui
+  version: "###ZARF_PKG_TMPL_IMAGE_VERSION###"
+  architecture: amd64
   description: >
     A UI for LeapfrogAI
 
 constants:
-  - name: IMAGE_VERSION
-    value: '###ZARF_PKG_TMPL_IMAGE_VERSION###'
-  - name: NAME
-    value: '###ZARF_PKG_TMPL_NAME###'
+  - name: LEAPFROGAI_UI_VERSION
+    value: "###ZARF_PKG_TMPL_IMAGE_VERSION###"
 
 variables:
   - name: LEAPFROGAI_API_BASE_URL #LEAPFROGAI_API_BASE_URL
@@ -62,6 +61,7 @@ variables:
     default: '10000'
     prompt: true
     sensitive: false
+
 components:
   - name: lfaiui
     required: true
@@ -69,11 +69,11 @@ components:
       - name: lfaiui
         namespace: leapfrogai
         localPath: chart
-        version: '###ZARF_PKG_TMPL_IMAGE_VERSION###'
+        version: 0.6.1
         valuesFiles:
-          - "chart/values.yaml"
+          - "chart/ui-values.yaml"
     images:
-      - '###ZARF_PKG_TMPL_IMAGE_REPOSITORY###:###ZARF_PKG_TMPL_IMAGE_VERSION###'
+      - ghcr.io/defenseunicorns/leapfrogai/leapfrogai-ui:###ZARF_PKG_TMPL_IMAGE_VERSION###
     actions:
       onDeploy:
         after:
