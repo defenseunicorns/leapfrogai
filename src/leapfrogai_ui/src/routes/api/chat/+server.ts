@@ -1,6 +1,7 @@
 import OpenAI from 'openai';
 import { env } from '$env/dynamic/private';
 import { OpenAIStream, StreamingTextResponse } from 'ai';
+import type { ChatCompletionMessageParam } from 'ai/prompts';
 import { messagesInputSchema } from '../../../schemas/chat';
 import { error } from '@sveltejs/kit';
 
@@ -16,7 +17,7 @@ export async function POST({ request, locals: { getSession } }) {
 		error(401, 'Unauthorized');
 	}
 
-	let requestData: { messages: AIMessage[] };
+	let requestData: { messages: ChatCompletionMessageParam[] };
 
 	// Validate request body
 	try {
@@ -37,6 +38,7 @@ export async function POST({ request, locals: { getSession } }) {
 		requestData.messages.unshift({ content: env.DEFAULT_SYSTEM_PROMPT!, role: 'system' });
 	}
 
+	console.log(env.DEFAULT_TEMPERATURE);
 	const response = await openai.chat.completions.create({
 		model: env.DEFAULT_MODEL!,
 		temperature: Number(env.DEFAULT_TEMPERATURE!),
