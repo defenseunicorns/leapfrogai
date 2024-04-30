@@ -1,15 +1,16 @@
 apiVersion: uds.dev/v1alpha1
 kind: Package
 metadata:
-  name: supabase-studio
+  name: {{ .Values.leapfrogai.package.name }}
+  namespace: {{ .Release.Namespace }}
 spec:
   network:
     expose:
       - service: supabase-kong
         podLabels:
-          app.kubernetes.io/name: supabase
-          app.kubernetes.io/component: kong
-        host: supabase-kong
+          app.kubernetes.io/name: {{ .Values.leapfrogai.package.name }}
+          app.kubernetes.io/component: {{ .Values.leapfrogai.package.component }}
+        host: {{ .Values.leapfrogai.package.host }}
         gateway: tenant
         port: 80
     allow:
@@ -19,6 +20,6 @@ spec:
         remoteGenerated: Anywhere
       - direction: Egress
         podLabels:
-          app.kubernetes.io/name: supabase
-          app.kubernetes.io/component: kong
+          app.kubernetes.io/name: {{ .Values.leapfrogai.package.name }}
+          app.kubernetes.io/component: {{ .Values.leapfrogai.package.component }}
         remoteGenerated: Anywhere

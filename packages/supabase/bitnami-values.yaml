@@ -1,6 +1,14 @@
 # Copyright VMware, Inc.
 # SPDX-License-Identifier: APACHE-2.0
 
+## @section Leapfrog parameters
+## Parameters not defined in the upstream chart that are related to LeapfrogAI's specific configuration
+leapfrogai:
+  package:
+    host: supabase-kong
+    name: supabase
+    component: kong
+
 ## @section Global parameters
 ## Global Docker image parameters
 ## Please, note that this will override the image parameters, including dependencies, configured to use the global value
@@ -43,6 +51,7 @@ global:
       ## @param global.compatibility.openshift.adaptSecurityContext Adapt the securityContext sections of the deployment to make them compatible with Openshift restricted-v2 SCC: remove runAsUser, runAsGroup and fsGroup and let the platform use their allowed default IDs. Possible values: auto (apply if the detected running cluster is Openshift), force (perform the adaptation always), disabled (do not perform adaptation)
       ##
       adaptSecurityContext: auto
+      
 ## @section Common parameters
 ##
 
