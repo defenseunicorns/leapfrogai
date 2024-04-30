@@ -1,5 +1,5 @@
 import { error, redirect } from '@sveltejs/kit';
-import type { PageServerLoad } from '../../../../../.svelte-kit/types/src/routes';
+import type {PageServerLoad} from "../../../../../.svelte-kit/types/src/routes/$types";
 export const load: PageServerLoad = async ({ locals: { supabase, getSession } }) => {
 	const session = await getSession();
 
