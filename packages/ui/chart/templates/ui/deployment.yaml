@@ -44,6 +44,8 @@ spec:
               {{ end }}
             - name: PUBLIC_DISABLE_KEYCLOAK
               value: '###ZARF_VAR_DISABLE_KEYCLOAK###'
+            - name: PUBLIC_MESSAGE_LENGTH_LIMIT
+              value: '###ZARF_VAR_MESSAGE_LENGTH_LIMIT###'
           resources:
             requests:
               memory: '0'

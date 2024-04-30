@@ -1,5 +1,8 @@
 import { array, object, ObjectSchema, string } from 'yup';
 import { MAX_LABEL_SIZE } from '$lib/constants';
+import { env } from '$env/dynamic/public';
+
+const contentInputSchema = string().max(Number(env.PUBLIC_MESSAGE_LENGTH_LIMIT)).required();
 
 export const messageSchema: ObjectSchema<Message> = object({
 	id: string().uuid().required(),
@@ -25,7 +28,7 @@ export const conversationSchema: ObjectSchema<Conversation> = object({
 export const conversationsSchema = array().of(conversationSchema);
 
 export const messageInputSchema = object({
-	content: string().required(),
+	content: contentInputSchema,
 	role: string<Roles>().required()
 })
 	.noUnknown(true)
@@ -45,7 +48,7 @@ export const supabaseMessagesInputSchema = messageInputSchema
 	.strict();
 
 export const uuidSchema = object({
-	conversationId: string().uuid().required()
+	id: string().uuid().required()
 })
 	.noUnknown(true)
 	.strict();

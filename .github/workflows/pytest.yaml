@@ -2,9 +2,10 @@ name: pytest
 on:
   pull_request:
     paths:
-      # Ignore updates to the .github directory, unless it's this current file
+      - "**"
       - "!.github/**"
       - ".github/workflows/pytest.yaml"
+      - ".github/workflows/pytest-shim.yaml"
 
       # Ignore docs and website things
       - "!**.md"
