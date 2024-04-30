@@ -22,8 +22,8 @@ variables:
     embedding_model_name: text-embeddings
     top_k: 20
 
-  leapfrogai-ui:
+  lfaiui:
     domain: https://lfaiui.uds.dev
     model: vllm
-    supabase_url: http://supabase.leapfrogai.svc.cluster.local:8080
+    supabase_url: https://supabase-kong.uds.dev
     supabase_anon_key: ''

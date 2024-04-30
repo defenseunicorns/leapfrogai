@@ -1,5 +1,5 @@
 apiVersion: v2
-name: leapfrogai-ui
+name: lfaiui
 description: UI to interact with LFAI tools
 
 # A chart can be either an 'application' or a 'library' chart.

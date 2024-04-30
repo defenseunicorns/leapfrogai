@@ -1,0 +1,27 @@
+[project]
+name = "lfai-repeater"
+version = "0.6.1"
+description = "A LeapfrogAI API-compatible pseudo-model for testing the API."
+
+dependencies = [
+    "leapfrogai-sdk",
+]
+requires-python = "~=3.11"
+readme = "README.md"
+
+[tool.pip-tools]
+generate-hashes = true
+
+[tool.setuptools]
+packages = ["leapfrogai_sdk"]
+package-dir = {"" = "../../src"}
+
+[tool.pytest.ini_options]
+addopts = ["--import-mode=importlib"]
+
+[tool.ruff]
+target-version = "py311"
+
+[build-system]
+requires = ["setuptools"]
+build-backend = "setuptools.build_meta"

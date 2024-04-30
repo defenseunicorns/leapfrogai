@@ -1,0 +1,12 @@
+# This is an example configuration file for the API service
+# If deploying onto kubernetes, the helm chart will automatically generate the configuration based on config-maps in the cluster
+# The code that reads this file exists in `src/leapfrogai_api/utils/config.py`
+models:
+- name: llama-cpp-python
+  backend: localhost:50051
+- name: vllm
+  backend: localhost:50051
+- name: whisper
+  backend: localhost:50051
+- name: text-embeddings
+  backend: localhost:50051

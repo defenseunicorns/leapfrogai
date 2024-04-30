@@ -10,9 +10,7 @@ import ChatPage from './+page.svelte';
 import ChatPageWithToast from './ChatPageWithToast.test.svelte';
 import userEvent from '@testing-library/user-event';
 import stores from '$app/stores';
-import { beforeAll, vi } from 'vitest';
-
-import * as navigation from '$app/navigation';
+import { afterAll, beforeAll, vi } from 'vitest';
 
 import {
 	mockChatCompletion,
@@ -23,11 +21,25 @@ import {
 	mockNewMessageError
 } from '$lib/mocks/chat-mocks';
 import { delay } from 'msw';
+import { faker } from '@faker-js/faker';
 
 //Calls to vi.mock are hoisted to the top of the file, so you don't have access to variables declared in the global file scope unless they are defined with vi.hoisted before the call.
 const { getStores } = await vi.hoisted(() => import('$lib/mocks/svelte'));
 
 describe('The Chat Page', () => {
+	beforeAll(() => {
+		vi.mock('$env/dynamic/public', () => {
+			return {
+				env: {
+					PUBLIC_MESSAGE_LENGTH_LIMIT: '100'
+				}
+			};
+		});
+	});
+
+	afterAll(() => {
+		vi.restoreAllMocks();
+	});
 
 	it('it renders all the messages', async () => {
 		conversationsStore.set({
@@ -53,7 +65,7 @@ describe('The Chat Page', () => {
 
 		test('the send button is disabled when there is no text in the input', () => {
 			render(ChatPage);
-			const submitBtn = screen.getByLabelText('send');
+			const submitBtn = screen.getByTestId('send message');
 			expect(submitBtn).toHaveProperty('disabled', true);
 		});
 
@@ -101,12 +113,23 @@ describe('The Chat Page', () => {
 			await user.type(input, question);
 			await user.click(submitBtn);
 
-			expect(screen.getByLabelText('cancel message')).toBeInTheDocument();
+			expect(screen.getByTestId('cancel message')).toBeInTheDocument();
 
 			await delay(delayTime);
 
 			await user.type(input, 'new question');
-			expect(screen.queryByLabelText('cancel message')).not.toBeInTheDocument();
+			expect(screen.queryByTestId('cancel message')).not.toBeInTheDocument();
+		});
+
+		it('disables the send button if the message length is too long', async () => {
+			const { getByLabelText, getByRole } = render(ChatPage);
+			const input = getByLabelText('message input') as HTMLInputElement;
+			const submitBtn = getByRole('button', { name: /send/i });
+			const limitText = faker.string.alpha({ length: 101 });
+			await userEvent.type(input, limitText);
+			screen.getByDisplayValue(limitText.slice(0, -1)); // does not allow extra character
+			expect(screen.getByText('Character limit reached')).toBeInTheDocument();
+			expect(submitBtn).toHaveProperty('disabled', true);
 		});
 
 		it('displays a toast error notification when there is an error with the AI response', async () => {
@@ -247,11 +270,14 @@ describe('The Chat Page', () => {
 				await user.type(input, question);
 				await user.click(submitBtn);
 				await delay(delayTime / 2);
-				const cancelBtn = screen.getByLabelText('cancel message');
+				const cancelBtn = screen.getByTestId('cancel message');
 				await user.click(cancelBtn);
 
 				await screen.findAllByText('Response Canceled');
 			});
 		});
+
+		// Note - Testing message editing requires an excessive amount of mocking and was deemed more practical and
+		// maintainable to test with a Playwright E2E test
 	});
 });

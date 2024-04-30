@@ -9,11 +9,16 @@ dependencies = [
     "numpy == 1.26.3",
     "tqdm == 4.66.1",
     "sentence-transformers == 2.2.2",
-    "transformers == 4.36.0",
+    "transformers == 4.38.0",
     "leapfrogai-sdk",
 ]
 requires-python = "~=3.11"
 readme = "README.md"
+
+[project.optional-dependencies]
+dev = [
+    "huggingface_hub",
+]
 
 [tool.pip-tools]
 generate-hashes = true
