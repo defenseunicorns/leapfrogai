@@ -5,7 +5,8 @@ type MyFixtures = {
 	clearAllConversations: () => Promise<void>;
 };
 export const test = base.extend<MyFixtures>({
-	clearAllConversations: async ( {}, use) => {
+	// eslint-disable-next-line  no-empty-pattern
+	clearAllConversations: async ({}, use) => {
 		const clearAllConversations = async () => {
 			const supabase = createClient(
 				process.env.PUBLIC_SUPABASE_URL!,

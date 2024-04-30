@@ -11,6 +11,8 @@ const internalPostgresError: PostgrestError = {
 export const sessionMock = vi.fn(() => Promise.resolve({ user: { id: faker.string.uuid() } }));
 export const sessionNullMock = vi.fn(() => Promise.resolve(null));
 
+// We want to allow any for this test mock
+// eslint-disable-next-line  @typescript-eslint/no-explicit-any
 export const supabaseInsertMock = (itemToReturn: any) => ({
 	from: vi.fn(() => ({
 		insert: vi.fn(() => ({
@@ -55,6 +57,8 @@ export const supabaseDeleteMock = () => ({
 
 export const supabaseDeleteErrorMock = () => ({
 	from: vi.fn(() => ({
-		delete: vi.fn(() => ({ eq: vi.fn(() => Promise.resolve({ error: internalPostgresError })) }))
+		delete: vi.fn(() => ({
+			eq: vi.fn(() => Promise.resolve({ error: internalPostgresError }))
+		}))
 	}))
 });

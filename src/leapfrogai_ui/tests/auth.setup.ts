@@ -5,16 +5,14 @@ import * as OTPAuth from 'otpauth';
 setup('authenticate', async ({ page, clearAllConversations }) => {
 	await clearAllConversations();
 	await page.goto('http://localhost:4173');
-
 	if (process.env.PUBLIC_DISABLE_KEYCLOAK === 'true') {
 		// uses local supabase test users, logs in directly with Supabase, no Keycloak
-		await page.getByText("Already have an account? Sign In").click();
+		await page.getByText('Already have an account? Sign In').click();
 		await page.getByPlaceholder('Your email address').click();
 		await page.getByPlaceholder('Your email address').fill('user1@test.com');
 		await page.getByPlaceholder('Your password').click();
 		await page.getByPlaceholder('Your password').fill('password123');
 		await page.getByRole('button', { name: 'Sign In' }).click();
-
 	} else {
 		// With Keycloak
 		await page.getByRole('button', { name: 'Log In' }).click();
@@ -42,7 +40,6 @@ setup('authenticate', async ({ page, clearAllConversations }) => {
 		await page.waitForLoadState('domcontentloaded');
 		await page.reload();
 	}
-
 
 	// Wait until the page receives the cookies.
 	//

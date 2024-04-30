@@ -29,14 +29,14 @@ describe('Message component', () => {
 	it('displays edit text area when edit btn is clicked', async () => {
 		render(Message, { ...defaultMessageProps });
 		expect(screen.queryByText('edit message input')).not.toBeInTheDocument();
-		const editPromptBtn = screen.getByRole('img', { name: /edit prompt/i });
+		const editPromptBtn = screen.getByLabelText('edit prompt');
 		await userEvent.click(editPromptBtn);
 		await screen.findByLabelText('edit message input');
 	});
 	it('removes the edit textarea and restores original text on close', async () => {
 		const fakeMessage = getFakeMessage();
 		render(Message, { ...defaultMessageProps, message: fakeMessage });
-		const editPromptBtn = screen.getByRole('img', { name: /edit prompt/i });
+		const editPromptBtn = screen.getByLabelText('edit prompt');
 		expect(screen.queryByText('edit message input')).not.toBeInTheDocument();
 		expect(screen.getByText(fakeMessage.content)).toBeInTheDocument();
 		await userEvent.click(editPromptBtn);
@@ -51,7 +51,7 @@ describe('Message component', () => {
 	it('submits message edit when submit is clicked', async () => {
 		const fakeMessage = getFakeMessage();
 		render(Message, { ...defaultMessageProps, message: fakeMessage });
-		const editPromptBtn = screen.getByRole('img', { name: /edit prompt/i });
+		const editPromptBtn = screen.getByLabelText('edit prompt');
 		expect(screen.queryByText('edit message input')).not.toBeInTheDocument();
 		expect(screen.getByText(fakeMessage.content)).toBeInTheDocument();
 		await userEvent.click(editPromptBtn);
@@ -62,7 +62,7 @@ describe('Message component', () => {
 	it('does not allow editing non user messages', () => {
 		const fakeAssistantMessage = getFakeMessage({ role: 'assistant' });
 		render(Message, { ...defaultMessageProps, message: fakeAssistantMessage });
-		expect(screen.queryByRole('img', { name: /edit prompt/i })).not.toBeInTheDocument();
+		expect(screen.queryByLabelText('edit prompt')).not.toBeInTheDocument();
 	});
 
 	describe('util functions', () => {
@@ -113,7 +113,7 @@ describe('Message component', () => {
 				isLoading: true
 			});
 
-			const editPromptBtn = screen.getByRole('img', { name: /edit prompt/i });
+			const editPromptBtn = screen.getByLabelText('edit prompt');
 			await userEvent.click(editPromptBtn);
 
 			const submitBtn = screen.getByRole('button', { name: /submit/i });
@@ -173,7 +173,6 @@ describe('Message component', () => {
 				isLoading: true
 			});
 			expect(screen.getByLabelText('copy message')).toBeInTheDocument();
-
 		});
 		it('leaves the edit button for messages when it is loading if not the latest message', () => {
 			render(MessageWithToast, {
@@ -182,8 +181,7 @@ describe('Message component', () => {
 				isLastMessage: false,
 				isLoading: true
 			});
-			expect(screen.getByRole('img', { name: /edit prompt/i })).toBeInTheDocument();
-
+			screen.getByLabelText('edit prompt');
 		});
 	});
 });
