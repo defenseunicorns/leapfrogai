@@ -38,6 +38,9 @@ sdk-wheel: ## build wheels for the leapfrogai_sdk package as a dependency for ot
 	python -m pip wheel src/leapfrogai_sdk -w ${SDK_DEST}
 
 build-supabase:
+	## Pull down images and push them to the local registry (Zarf is super slow if the image is only in the local daemon)
+	./packages/supabase/scripts/initial-push.sh
+
 	## Build the Zarf package
 	uds zarf package create packages/supabase -o packages/supabase --registry-override=ghcr.io=localhost:5000 --insecure --set IMAGE_VERSION=${LOCAL_VERSION} --confirm
 

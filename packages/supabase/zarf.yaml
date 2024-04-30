@@ -7,8 +7,6 @@ metadata:
     supabase instance and all of its dependencies
 
 constants:
-  - name: IMAGE_VERSION
-    value: '###ZARF_PKG_TMPL_IMAGE_VERSION###'
   - name: DASHBOARD_USERNAME
     description: The dashboard's (Supabase studio) default username
     value: supabase-admin
@@ -58,6 +56,11 @@ components:
   - name: supabase
     required: true
     charts:
+      # This exists because the jwt token job fails to run in the main helm chart at the proper time due to its reliance on `helm.sh/hook: post-install`.
+      # This annotation causes it to run at the end of the Supabase Zarf component.
+      # Because of this the job never starts. As parts of Supabase rely on this token being created before moving on.
+      # When attempts are made to move it earlier in the process within the same component the job does not complete due to pre-requisites that the job has.
+      # So all of this has been moved into the bootstrap values file and component.
       - name: supabase-bootstrap
         namespace: leapfrogai
         url: oci://registry-1.docker.io/bitnamicharts/supabase
