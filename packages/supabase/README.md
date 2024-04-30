@@ -6,12 +6,20 @@ Setup keycloak for the frontend so that you can use auth
 
 From `leapfrogai/packages/supabase` run `zarf package create`
 
-## Step 2: Deploy the Zarf package
+## Step 2: Create the uds bundle
 
-From `leapfrogai/packages/supabase` run `zarf package deploy zarf-package-*`
+From `leapfrogai/uds-bundles/dev/<cpu|gpu>/` run `uds create`
 
 
-## Step 3: Accessing Supabase
+## Step 3: Deploy the UDS bundle or deploy the Zarf package
+
+To deploy only Supabase for UDS bundle run the following from `leapfrogai/uds-bundles/dev/<cpu|gpu>/`:
+* `uds deploy -p supabase uds-bundle-leapfrogai-*.tar.zst`
+
+To deploy the Zarf package run the following from `leapfrogai/packages/supabase`:
+* `uds zarf package deploy zarf-package-supabase-*.tar.zst`
+
+## Step 4: Accessing Supabase
 
 Go to `https://supabase-kong.uds.dev`. The login is `supabase-admin` the password is randomly generated in a cluster secret named `supabase-dashboard-secret`
 
