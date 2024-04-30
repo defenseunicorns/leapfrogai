@@ -1,8 +1,9 @@
-from typing import BinaryIO, Iterator, Union
+"""Helper functions for the OpenAI backend."""
 
+from typing import BinaryIO, Iterator
 import grpc
 import leapfrogai_sdk as lfai
-from leapfrogai_api.backends.openai.types import (
+from leapfrogai_api.backend.types import (
     ChatCompletionResponse,
     ChatDelta,
     ChatStreamChoice,
@@ -44,6 +45,7 @@ async def recv_chat(
         lfai.ChatCompletionRequest, lfai.ChatCompletionResponse
     ],
 ):
+    """Generator that yields chat completion responses as Server-Sent Events."""
     async for c in stream:
         yield (
             "data: "
@@ -69,7 +71,8 @@ async def recv_chat(
     yield "data: [DONE]\n\n"
 
 
-def grpc_chat_role(role: str) -> Union[lfai.ChatRole, None]:
+def grpc_chat_role(role: str) -> lfai.ChatRole:
+    """Converts a string to a ChatRole."""
     match role:
         case "user":
             return lfai.ChatRole.USER  # type: ignore
@@ -85,6 +88,7 @@ def grpc_chat_role(role: str) -> Union[lfai.ChatRole, None]:
 
 # read_chunks is a helper method that chunks the bytes of a file (audio file) into a iterator of AudioRequests
 def read_chunks(file: BinaryIO, chunk_size: int) -> Iterator[lfai.AudioRequest]:
+    """Reads a file in chunks and yields AudioRequests."""
     while True:
         chunk = file.read(chunk_size)
         if not chunk:

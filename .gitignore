@@ -14,6 +14,7 @@ zarf-sbom/
 /values.yaml
 .pytest_cache
 *egg-info
+egg-info/
 build/
 *.whl
 .model/

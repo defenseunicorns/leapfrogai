@@ -62,7 +62,7 @@ describe('Message component', () => {
 	it('does not allow editing non user messages', () => {
 		const fakeAssistantMessage = getFakeMessage({ role: 'assistant' });
 		render(Message, { ...defaultMessageProps, message: fakeAssistantMessage });
-		expect(screen.queryByRole('img', { name: /edit prompt/i })).not.toBeInTheDocument();
+		expect(screen.queryByLabelText('edit prompt')).not.toBeInTheDocument();
 	});
 
 	describe('util functions', () => {
@@ -164,6 +164,24 @@ describe('Message component', () => {
 			});
 			expect(screen.queryByLabelText('copy message')).not.toBeInTheDocument();
 			expect(screen.queryByLabelText('regenerate message')).not.toBeInTheDocument();
+		});
+		it('leaves the copy button for messages when it is loading if not the latest message', () => {
+			render(MessageWithToast, {
+				...defaultMessageProps,
+				message: getFakeMessage({ role: 'assistant' }),
+				isLastMessage: false,
+				isLoading: true
+			});
+			expect(screen.getByLabelText('copy message')).toBeInTheDocument();
+		});
+		it('leaves the edit button for messages when it is loading if not the latest message', () => {
+			render(MessageWithToast, {
+				...defaultMessageProps,
+				message: getFakeMessage({ role: 'user' }),
+				isLastMessage: false,
+				isLoading: true
+			});
+			screen.getByLabelText('edit prompt');
 		});
 	});
 });

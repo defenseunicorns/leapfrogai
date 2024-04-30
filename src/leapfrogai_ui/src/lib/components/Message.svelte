@@ -94,7 +94,7 @@
 						tabindex="0"><Edit /></button
 					>
 				{/if}
-				{#if message.role !== 'user' && !isLoading}
+				{#if message.role !== 'user' && (isLastMessage ? !isLoading : true)}
 					<button
 						data-testid="copy btn"
 						class="highlight-icon"
@@ -139,6 +139,7 @@
 	}
 	.message {
 		display: flex;
+		white-space: pre-line;
 	}
 
 	.transparent {

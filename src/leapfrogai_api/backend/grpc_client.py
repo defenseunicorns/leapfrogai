@@ -1,10 +1,11 @@
-from typing import Iterator
+"""gRPC client for OpenAI models."""
 
+from typing import Iterator
 import grpc
-import leapfrogai_sdk as lfai
 from fastapi.responses import StreamingResponse
-from leapfrogai_api.backends.openai.helpers import recv_chat, recv_completion
-from leapfrogai_api.backends.openai.types import (
+import leapfrogai_sdk as lfai
+from leapfrogai_api.backend.helpers import recv_chat, recv_completion
+from leapfrogai_api.backend.types import (
     ChatChoice,
     ChatCompletionResponse,
     ChatMessage,
@@ -19,6 +20,7 @@ from leapfrogai_api.utils.config import Model
 
 
 async def stream_completion(model: Model, request: lfai.CompletionRequest):
+    """Stream completion using the specified model."""
     async with grpc.aio.insecure_channel(model.backend) as channel:
         stub = lfai.CompletionStreamServiceStub(channel)
         stream = stub.CompleteStream(request)
@@ -31,6 +33,7 @@ async def stream_completion(model: Model, request: lfai.CompletionRequest):
 
 # TODO: Clean up completion() and stream_completion() to reduce code duplication
 async def completion(model: Model, request: lfai.CompletionRequest):
+    """Complete using the specified model."""
     async with grpc.aio.insecure_channel(model.backend) as channel:
         stub = lfai.CompletionServiceStub(channel)
         response: lfai.CompletionResponse = await stub.Complete(request)
@@ -50,6 +53,7 @@ async def completion(model: Model, request: lfai.CompletionRequest):
 
 
 async def stream_chat_completion(model: Model, request: lfai.ChatCompletionRequest):
+    """Stream chat completion using the specified model."""
     async with grpc.aio.insecure_channel(model.backend) as channel:
         stub = lfai.ChatCompletionStreamServiceStub(channel)
         stream = stub.ChatCompleteStream(request)
@@ -60,6 +64,7 @@ async def stream_chat_completion(model: Model, request: lfai.ChatCompletionReque
 
 # TODO: Clean up completion() and stream_completion() to reduce code duplication
 async def chat_completion(model: Model, request: lfai.ChatCompletionRequest):
+    """Complete chat using the specified model."""
     async with grpc.aio.insecure_channel(model.backend) as channel:
         stub = lfai.ChatCompletionServiceStub(channel)
         response: lfai.ChatCompletionResponse = await stub.ChatComplete(request)
@@ -82,6 +87,7 @@ async def chat_completion(model: Model, request: lfai.ChatCompletionRequest):
 
 
 async def create_embeddings(model: Model, request: lfai.EmbeddingRequest):
+    """Create embeddings using the specified model."""
     async with grpc.aio.insecure_channel(model.backend) as channel:
         stub = lfai.EmbeddingsServiceStub(channel)
         e: lfai.EmbeddingResponse = await stub.CreateEmbedding(request)
@@ -98,6 +104,7 @@ async def create_embeddings(model: Model, request: lfai.EmbeddingRequest):
 
 
 async def create_transcription(model: Model, request: Iterator[lfai.AudioRequest]):
+    """Transcribe audio using the specified model."""
     async with grpc.aio.insecure_channel(model.backend) as channel:
         stub = lfai.AudioStub(channel)
         response: lfai.AudioResponse = await stub.Transcribe(request)

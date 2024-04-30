@@ -13,6 +13,8 @@
 	let messageThreadDiv: HTMLDivElement;
 	let messageThreadDivHeight: number;
 
+	let lengthInvalid: boolean; // bound to child LFTextArea
+
 	$: activeConversation = $conversationsStore.conversations.find(
 		(conversation) => conversation.id === $page.params.conversation_id
 	);
@@ -174,7 +176,12 @@
 	<form on:submit={onSubmit}>
 		<div class="chat-form-container">
 			<Button icon={Attachment} kind="ghost" size="small" iconDescription="Attach File" />
-			<LFTextArea value={input} {onSubmit} />
+			<LFTextArea
+				value={input}
+				{onSubmit}
+				ariaLabel="message input"
+				bind:showLengthError={lengthInvalid}
+			/>
 
 			{#if !$isLoading}
 				<Button
@@ -184,7 +191,7 @@
 					size="field"
 					type="submit"
 					iconDescription="send"
-					disabled={$isLoading || !$input}
+					disabled={$isLoading || !$input || lengthInvalid}
 				/>
 			{:else}
 				<Button

@@ -3,8 +3,6 @@ on:
   pull_request:
     paths:
       - "**"
-
-      # Ignore updates to the .github directory unless it is the pytest related files
       - "!.github/**"
       - ".github/workflows/pytest.yaml"
       - ".github/workflows/pytest-shim.yaml"
