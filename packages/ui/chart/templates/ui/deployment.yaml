@@ -39,7 +39,7 @@ spec:
               {{ else }}
               valueFrom:
                 secretKeyRef:
-                  name: supabase-jwt
+                  name: supabase-bootstrap-jwt
                   key: anon-key
               {{ end }}
             - name: PUBLIC_DISABLE_KEYCLOAK
