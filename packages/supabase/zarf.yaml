@@ -41,7 +41,7 @@ variables:
     default: "true"
   - name: EXTERNAL_KEYCLOAK_CLIENT_ID
     description: 'External keycloak client value'
-    default: "lfaiui"
+    default: "leapfrogai"
   - name: ENABLE_EXTERNAL_KEYCLOAK
     description: 'Should the external keycloak be enabled'
     default: "true"
