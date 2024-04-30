@@ -100,9 +100,9 @@ Under a realm in Keycloak that is not the master realm (if using UDS, its "uds")
 1. Create a new client (the client ID you use will be used in the env variables below)
 2. Turn on "Client Authentication"
 3. For "Valid redirect URLs", you need to put:
-   1. `http://localhost:5173/auth/callback` (or the URL for the frontend app callback)
-   2. `http://127.0.0.1:54321/auth/v1/callback` (or the URL for the Supabase callback, for locally running Supabase, DO NOT USE LOCALHOST, use 127.0.0.1)
-   3. Put the same two URLs in for "Web Origins"
+    1. `http://localhost:5173/auth/callback` (or the URL for the frontend app callback)
+    2. `http://127.0.0.1:54321/auth/v1/callback` (or the URL for the Supabase callback, for locally running Supabase, DO NOT USE LOCALHOST, use 127.0.0.1)
+    3. Put the same two URLs in for "Web Origins"
 4. Copy the Client Secret under the Clients -> Credentials tab and use in the env variables below
 5. You can create users under the "Users" tab and either have them verify their email (if you setup SMTP), or manually mark them as verified.
 

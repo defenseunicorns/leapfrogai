@@ -1,6 +1,4 @@
 <script lang="ts">
-	import { env } from '$env/dynamic/public';
-	import { string } from 'yup';
 	import { LFTextArea, PoweredByDU } from '$components';
 	import { Button } from 'carbon-components-svelte';
 	import { afterUpdate, onMount, tick } from 'svelte';
@@ -41,7 +39,7 @@
 					});
 				}
 			},
-			onError: (error) => {
+			onError: () => {
 				toastStore.addToast({
 					kind: 'error',
 					title: 'Error',
@@ -101,7 +99,7 @@
 		}
 	};
 
-	const handleMessageEdit = async (e: any, message: AIMessage) => {
+	const handleMessageEdit = async (e: SubmitEvent, message: AIMessage) => {
 		e.preventDefault();
 
 		const messageIndex = $messages.findIndex((m) => m.id === message.id);

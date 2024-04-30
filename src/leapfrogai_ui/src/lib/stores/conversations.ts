@@ -45,7 +45,7 @@ const createMessage = async (input: NewMessageInput) => {
 	return error(500, 'Error saving message');
 };
 
-const deleteConversation = async (id: String) => {
+const deleteConversation = async (id: string) => {
 	// A constraint on messages table will cascade delete all messages when the conversation is deleted
 	const res = await fetch('/api/conversations/delete', {
 		method: 'DELETE',
@@ -60,7 +60,7 @@ const deleteConversation = async (id: String) => {
 	return error(500, 'Error deleting conversation');
 };
 
-const deleteMessage = async (id: String) => {
+const deleteMessage = async (id: string) => {
 	const res = await fetch('/api/messages/delete', {
 		method: 'DELETE',
 		body: JSON.stringify({ id }),
@@ -171,14 +171,18 @@ const createConversationsStore = () => {
 				});
 			}
 		},
-		deleteMessage: async (messageId: string, conversationId: String) => {
+		deleteMessage: async (messageId: string, conversationId: string) => {
 			try {
 				await deleteMessage(messageId);
 
 				update((old) => {
-					const conversationIndex = old.conversations.findIndex((c) => c.id === conversationId)
-					const conversation = {...old.conversations[conversationIndex]};
-					conversation.messages = conversation.messages.filter((message) => message.id !== messageId);
+					const conversationIndex = old.conversations.findIndex(
+						(c) => c.id === conversationId
+					);
+					const conversation = { ...old.conversations[conversationIndex] };
+					conversation.messages = conversation.messages.filter(
+						(message) => message.id !== messageId
+					);
 					const updatedConversations = [...old.conversations];
 					updatedConversations[conversationIndex] = conversation;
 					return {
@@ -186,7 +190,6 @@ const createConversationsStore = () => {
 						conversations: updatedConversations
 					};
 				});
-
 			} catch {
 				toastStore.addToast({
 					kind: 'error',
@@ -199,7 +202,9 @@ const createConversationsStore = () => {
 			try {
 				await updateConversationLabel(id, newLabel);
 				return update((old) => {
-					const updatedConversationIndex = old.conversations.findIndex((c) => c.id === id);
+					const updatedConversationIndex = old.conversations.findIndex(
+						(c) => c.id === id
+					);
 					const updatedConversation = { ...old.conversations[updatedConversationIndex] };
 					updatedConversation.label = newLabel;
 

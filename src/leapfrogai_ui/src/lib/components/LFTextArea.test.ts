@@ -20,7 +20,7 @@ describe('LF Text Area', () => {
 		vi.restoreAllMocks();
 	});
 	it('limits text input and displays an error message', async () => {
-		let value = writable('');
+		const value = writable('');
 		render(LFTextArea, { value, onSubmit: vi.fn(), maxRows: 2, ariaLabel: 'test input' });
 		const input = screen.getByLabelText('test input');
 		const limitText = faker.string.alpha({ length: 10 });
