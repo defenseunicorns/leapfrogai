@@ -5,7 +5,6 @@ from typing import List
 from fastapi import HTTPException, APIRouter
 from openai.types.beta import Assistant, AssistantDeleted
 from openai.types.beta.assistant import ToolResources
-from pydantic import UUID4
 from leapfrogai_api.backend.types import (
     CreateAssistantRequest,
     ModifyAssistantRequest,
@@ -64,7 +63,7 @@ async def list_assistants(session: Session) -> List[Assistant] | None:
 
 
 @router.get("/{assistant_id}")
-async def retrieve_assistant(session: Session, assistant_id: UUID4) -> Assistant | None:
+async def retrieve_assistant(session: Session, assistant_id: str) -> Assistant | None:
     """Retrieve an assistant."""
     try:
         crud_assistant = CRUDAssistant(model=Assistant)
@@ -75,7 +74,7 @@ async def retrieve_assistant(session: Session, assistant_id: UUID4) -> Assistant
 
 @router.post("/{assistant_id}")
 async def modify_assistant(
-    session: Session, assistant_id: UUID4, request: ModifyAssistantRequest
+    session: Session, assistant_id: str, request: ModifyAssistantRequest
 ) -> Assistant:
     """Modify an assistant."""
     try:
@@ -109,7 +108,7 @@ async def modify_assistant(
 
 
 @router.delete("/{assistant_id}")
-async def delete_assistant(session: Session, assistant_id: UUID4) -> AssistantDeleted:
+async def delete_assistant(session: Session, assistant_id: str) -> AssistantDeleted:
     """Delete an assistant."""
     try:
         crud_assistant = CRUDAssistant(model=Assistant)
