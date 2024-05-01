@@ -98,6 +98,9 @@ components:
   - name: supabase-post-process
     description: "Perform necessary post processing here"
     required: true
+    files:
+      - source: scripts/wait-for-network.sh
+        target: scripts/wait-for-network.sh
     actions:
       onDeploy:
         before:
