@@ -14,10 +14,11 @@ class CRUDFileObject:
         self, client: AsyncClient, file_object: FileObject
     ) -> FileObject | None:
         """Create a new file object."""
+        file_object_dict = file_object.model_dump()
+        if file_object_dict.get("id") == "":
+            del file_object_dict["id"]
         data, _count = (
-            await client.table("file_objects")
-            .insert(file_object.model_dump())
-            .execute()
+            await client.table("file_objects").insert(file_object_dict).execute()
         )
 
         _, response = data
