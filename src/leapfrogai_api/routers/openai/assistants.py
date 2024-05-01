@@ -38,10 +38,14 @@ async def create_assistant(
             metadata=request.metadata,
             response_format=request.response_format,
         )
+    except Exception as exc:
+        raise HTTPException(
+            status_code=405, detail="Unable to parse assistant request"
+        ) from exc
 
+    try:
         crud_assistant = CRUDAssistant(model=Assistant)
         return await crud_assistant.create(assistant=assistant, client=session)
-
     except Exception as exc:
         raise HTTPException(
             status_code=405, detail="Unable to create assistant"
@@ -59,7 +63,7 @@ async def list_assistants(session: Session) -> List[Assistant] | None:
 
 
 @router.get("/{assistant_id}")
-async def retrieve_assistant(session: Session, assistant_id: str) -> Assistant:
+async def retrieve_assistant(session: Session, assistant_id: str) -> Assistant | None:
     """Retrieve an assistant."""
     try:
         crud_assistant = CRUDAssistant(model=Assistant)
@@ -73,8 +77,34 @@ async def modify_assistant(
     session: Session, assistant_id: str, request: ModifyAssistantRequest
 ) -> Assistant:
     """Modify an assistant."""
-    # TODO: Implement this function
-    raise HTTPException(status_code=405, detail="Not Implemented")
+    try:
+        assistant = Assistant(
+            id=assistant_id,
+            created_at=int(time.time()),
+            name=request.name,
+            description=request.description,
+            instructions=request.instructions,
+            model=request.model,
+            object="assistant",
+            tools=validate_tools_typed_dict(request.tools),
+            tool_resources=ToolResources.model_validate(request.tool_resources),
+            temperature=request.temperature,
+            top_p=request.top_p,
+            metadata=request.metadata,
+            response_format=request.response_format,
+        )
+    except Exception as exc:
+        raise HTTPException(
+            status_code=405, detail="Unable to parse assistant request"
+        ) from exc
+
+    try:
+        crud_assistant = CRUDAssistant(model=Assistant)
+        return await crud_assistant.update(
+            assistant_id=assistant_id, assistant=assistant, client=session
+        )
+    except FileNotFoundError as exc:
+        raise HTTPException(status_code=404, detail="Assistant not found") from exc
 
 
 @router.delete("/{assistant_id}")

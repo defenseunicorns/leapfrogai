@@ -14,9 +14,12 @@ class CRUDAssistant:
         self, client: AsyncClient, assistant: Assistant
     ) -> Assistant | None:
         """Create a new assistant."""
+        assistant_object_dict = assistant.model_dump()
+        if assistant_object_dict.get("id") == "":
+            del assistant_object_dict["id"]
         data, _count = (
             await client.table("assistant_objects")
-            .insert(assistant.model_dump())
+            .insert(assistant_object_dict)
             .execute()
         )
 
@@ -37,7 +40,7 @@ class CRUDAssistant:
 
         _, response = data
 
-        if data:
+        if response:
             return self.model(**response[0])
         return None
 
