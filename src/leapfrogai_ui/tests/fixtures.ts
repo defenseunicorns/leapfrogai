@@ -2,22 +2,22 @@ import { test as base } from '@playwright/test';
 import { createClient } from '@supabase/supabase-js';
 
 type MyFixtures = {
-	clearAllConversations: () => Promise<void>;
+  clearAllConversations: () => Promise<void>;
 };
 export const test = base.extend<MyFixtures>({
-	// eslint-disable-next-line  no-empty-pattern
-	clearAllConversations: async ({}, use) => {
-		const clearAllConversations = async () => {
-			const supabase = createClient(
-				process.env.PUBLIC_SUPABASE_URL!,
-				process.env.SERVICE_ROLE_KEY!
-			);
+  // eslint-disable-next-line  no-empty-pattern
+  clearAllConversations: async ({}, use) => {
+    const clearAllConversations = async () => {
+      const supabase = createClient(
+        process.env.PUBLIC_SUPABASE_URL!,
+        process.env.SERVICE_ROLE_KEY!
+      );
 
-			await supabase.from('conversations').delete().neq('label', 'delete_all');
-		};
+      await supabase.from('conversations').delete().neq('label', 'delete_all');
+    };
 
-		await use(clearAllConversations);
-	}
+    await use(clearAllConversations);
+  }
 });
 
 export { expect, type Page } from '@playwright/test';

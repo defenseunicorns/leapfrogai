@@ -1,25 +1,25 @@
 import { writable } from 'svelte/store';
 
 type UIStore = {
-	isSideNavOpen: boolean;
+  isSideNavOpen: boolean;
 };
 
 const defaultValues: UIStore = {
-	isSideNavOpen: true
+  isSideNavOpen: true
 };
 
 const createUIStore = () => {
-	const { subscribe, set, update } = writable<UIStore>({ ...defaultValues });
+  const { subscribe, set, update } = writable<UIStore>({ ...defaultValues });
 
-	return {
-		subscribe,
-		set,
-		update,
-		reset: () => set({ ...defaultValues }),
-		setIsSideNavOpen: (isOpen: boolean) => {
-			update((old) => ({ ...old, isSideNavOpen: isOpen }));
-		}
-	};
+  return {
+    subscribe,
+    set,
+    update,
+    reset: () => set({ ...defaultValues }),
+    setIsSideNavOpen: (isOpen: boolean) => {
+      update((old) => ({ ...old, isSideNavOpen: isOpen }));
+    }
+  };
 };
 
 export default createUIStore();
