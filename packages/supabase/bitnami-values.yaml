@@ -8,6 +8,7 @@ leapfrogai:
     host: supabase-kong
     name: supabase
     component: kong
+  testing: ###ZARF_VAR_TESTING###
 
 ## @section Global parameters
 ## Global Docker image parameters

@@ -42,7 +42,7 @@ build-supabase: local-registry
 	./packages/supabase/scripts/initial-push.sh
 
 	## Build the Zarf package
-	uds zarf package create packages/supabase -o packages/supabase --registry-override=ghcr.io=localhost:5000 --insecure --set IMAGE_VERSION=${LOCAL_VERSION} --confirm
+	uds zarf package create packages/supabase -o packages/supabase --registry-override=ghcr.io=localhost:5000 --insecure --set TESTING=${TESTING:"false"} --confirm
 
 setup-api-deps: sdk-wheel ## Download the wheels for the leapfrogai_api dependencies
 	-rm packages/api/build/*.whl

@@ -51,6 +51,9 @@ variables:
   - name: ENABLE_EXTERNAL_KEYCLOAK
     description: 'Should the external keycloak be enabled'
     default: "true"
+  - name: TESTING
+    description: 'Enables test configs'
+    default: "false"
 
 components:
   - name: supabase

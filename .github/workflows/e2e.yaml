@@ -75,11 +75,16 @@ jobs:
           ##########
         - name: Deploy Supabase
           run: |
-            make build-supabase LOCAL_VERSION=e2e-test
+            make build-supabase TESTING="true"
             docker image prune -af
             uds zarf tools kubectl create namespace leapfrogai
             uds zarf package deploy packages/supabase/zarf-package-supabase-amd64-e2e-test.tar.zst --confirm
             rm packages/supabase/zarf-package-supabase-amd64-e2e-test.tar.zst
+
+        - name: Test Supabase
+          run: |
+            python -m pip install requests
+            python -m pytest ./tests/e2e/test_supabase.py -v
 
         # This cleanup may need to be moved/removed when other packages depend on Supabase
         - name: Cleanup Supabase
