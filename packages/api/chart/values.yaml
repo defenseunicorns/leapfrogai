@@ -8,4 +8,3 @@ api:
 
 package:
   host: leapfrogai-api
-  supabase_url: '###ZARF_VAR_SUPABASE_URL###'

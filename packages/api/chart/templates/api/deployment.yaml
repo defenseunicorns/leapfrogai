@@ -45,13 +45,6 @@ spec:
             value: "*.toml"
           - name: PORT
             value: "{{ .Values.api.port }}"
-          - name: SUPABASE_URL
-            value: "{{ .Values.package.supabase_url }}"
-          # - name: SUPABASE_KEY
-          #   valueFrom:
-          #     secretKeyRef:
-          #       name: supabase-jwt
-          #       key: anon-key
           ports:
             - containerPort: 8080
           livenessProbe:
