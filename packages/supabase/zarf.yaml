@@ -98,17 +98,13 @@ components:
   - name: supabase-post-process
     description: "Perform necessary post processing here"
     required: true
-    files:
-      - source: scripts/wait-for-network.sh
-        target: scripts/wait-for-network.sh
     actions:
       onDeploy:
         before:
           - cmd: kubectl delete cm supabase-kong-declarative-config -n leapfrogai 
         after:
           - cmd: kubectl rollout restart deployment supabase-kong -n leapfrogai
-          - cmd: chmod +x scripts/wait-for-network.sh
-          - cmd: ./scripts/wait-for-network.sh
+          - cmd: kubectl rollout status deployment supabase-kong -n leapfrogai
     manifests:
       - name: supabase-manifests
         namespace: leapfrogai
