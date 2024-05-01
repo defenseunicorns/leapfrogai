@@ -24,7 +24,7 @@ async def create_assistant(
 
     try:
         assistant = Assistant(
-            id="",
+            id="", # Leave blank to have Postgres generate a UUID
             created_at=int(time.time()),
             name=request.name,
             description=request.description,
