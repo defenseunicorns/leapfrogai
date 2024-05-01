@@ -2,7 +2,6 @@
 
 import time
 from typing import List
-from uuid import uuid4
 from fastapi import HTTPException, APIRouter
 from openai.types.beta import Assistant, AssistantDeleted
 from openai.types.beta.assistant import ToolResources
@@ -24,12 +23,9 @@ async def create_assistant(
     """Create an assistant."""
 
     try:
-        created_at = int(time.time())
-        assistant_id = str(uuid4())
-
         assistant = Assistant(
-            id=assistant_id,
-            created_at=created_at,
+            id="",
+            created_at=int(time.time()),
             name=request.name,
             description=request.description,
             instructions=request.instructions,
