@@ -104,6 +104,7 @@ components:
           - cmd: kubectl delete cm supabase-kong-declarative-config -n leapfrogai 
         after:
           - cmd: kubectl rollout restart deployment supabase-kong -n leapfrogai
+          - cmd: ./scripts/wait-for-network.sh
     manifests:
       - name: supabase-manifests
         namespace: leapfrogai
