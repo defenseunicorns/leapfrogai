@@ -30,10 +30,3 @@ variables:
     model: vllm
     supabase_url: https://supabase-kong.uds.dev
     supabase_anon_key: ''
-
-  supabase:
-    leapfrogai:
-      package:
-        host: supabase-kong
-        name: supabase
-        component: kong
