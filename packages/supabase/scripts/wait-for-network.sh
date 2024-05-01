@@ -2,11 +2,12 @@
 
 RESOURCE_NAME="supabase-studio"
 RESOURCE_TYPE="packages.uds.dev"
+NAMESPACE="leapfrogai"
 DESIRED_PHASE="Ready"
 
 # Function to check the resource status
 check_resource_status() {
-    RESOURCE_STATUS=$(kubectl get $RESOURCE_TYPE $RESOURCE_NAME -o jsonpath='{.status.phase}')
+    RESOURCE_STATUS=$(kubectl get $RESOURCE_TYPE $RESOURCE_NAME -o jsonpath='{.status.phase}' -n $NAMESPACE)
 
     # Check if the resource is in the desired phase
     if [ "$RESOURCE_STATUS" == "$DESIRED_PHASE" ]; then
