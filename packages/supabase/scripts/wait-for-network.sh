@@ -1,31 +1,32 @@
 #!/bin/bash
 
-RESOURCE_NAME="supabase"
-RESOURCE_TYPE="packages.uds.dev"
+DEPLOYMENT_NAME="kong"
 NAMESPACE="leapfrogai"
-DESIRED_PHASE="Ready"
+DESIRED_PHASE="Running"
 
-# Function to check the resource status
-check_resource_status() {
-    RESOURCE_STATUS=$(kubectl get $RESOURCE_TYPE $RESOURCE_NAME -o jsonpath='{.status.phase}' -n $NAMESPACE)
+get_pod_status() {
+    POD_STATUSES=$(kubectl get pods -l app.kubernetes.io/name=$DEPLOYMENT_NAME -n $NAMESPACE -o jsonpath='{range .items[*]}{.status.phase}{" "}{end}')
+}
 
-    # Check if the resource is in the desired phase
-    if [ "$RESOURCE_STATUS" == "$DESIRED_PHASE" ]; then
-        echo "Resource $RESOURCE_NAME is in the $DESIRED_PHASE phase."
-        return 0  # Return success
+check_deployment_status() {
+    get_pod_status
+    # Check if all pods are in the desired phase
+    if [[ "$POD_STATUSES" == *"$DESIRED_PHASE"* ]] && ! [[ "$POD_STATUSES" == *"Pending"* ]]; then
+        echo "All pods of deployment $DEPLOYMENT_NAME are in the $DESIRED_PHASE phase."
+        return 0 # Return success
     else
-        echo "Resource $RESOURCE_NAME is not in the $DESIRED_PHASE phase. Current status: $RESOURCE_STATUS"
-        return 1  # Return failure
+        echo "Not all pods of deployment $DEPLOYMENT_NAME are in the $DESIRED_PHASE phase. Current status: $POD_STATUSES"
+        return 1 # Return failure
     fi
 }
 
-# Keep checking the resource status until it's in the desired phase
+# Keep checking the deployment status until all pods are in the desired phase
 while true; do
-    check_resource_status
+    check_deployment_status
     if [ $? -eq 0 ]; then
-        break  # Exit the loop if the resource is in the desired phase
+        break # Exit the loop if all pods are in the desired phase
     fi
-    sleep 5  # Wait for 5 seconds before checking again
+    sleep 5 # Wait for 5 seconds before checking again
 done
 
 echo "Script completed successfully."
