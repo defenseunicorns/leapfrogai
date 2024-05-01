@@ -75,7 +75,7 @@ jobs:
           ##########
         - name: Deploy Supabase
           run: |
-            make build-supabase TESTING="true"
+            make build-supabase LOCAL_VERSION=e2e-test
             docker image prune -af
             uds zarf tools kubectl create namespace leapfrogai
             uds zarf package deploy packages/supabase/zarf-package-supabase-amd64-e2e-test.tar.zst --confirm
