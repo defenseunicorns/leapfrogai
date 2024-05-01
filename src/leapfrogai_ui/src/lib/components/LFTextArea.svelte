@@ -125,60 +125,61 @@ The invalid prop can still be passed to this component to validate for other con
     {#if invalid || showLengthError}
       <WarningFilled class="bx--text-area__invalid-icon" />
     {/if}
-    <textarea
-      bind:this={ref}
-      bind:value={$value}
-      aria-invalid={invalid || showLengthError || undefined}
-      aria-describedby={invalid || showLengthError ? errorId : undefined}
-      aria-label={ariaLabel}
-      {disabled}
-      {id}
-      {name}
-      {cols}
-      {rows}
-      {placeholder}
-      {readonly}
-      class="lf-text-area"
-      class:bx--text-area={true}
-      class:bx--text-area--light={light}
-      class:bx--text-area--invalid={invalid || showLengthError}
-      style="--maxRows:{maxRows};"
-      maxlength={maxCount + 1 ?? undefined}
-      {...$$restProps}
-      on:change
-      on:input={resizeTextArea}
-      on:keydown={(e) => {
-        // Allow user to type up to maxCount, but only show error once trying to add more
-        // characters after hitting this limit
+    <span class="lf-text-area">
+      <textarea
+        bind:this={ref}
+        bind:value={$value}
+        aria-invalid={invalid || showLengthError || undefined}
+        aria-describedby={invalid || showLengthError ? errorId : undefined}
+        aria-label={ariaLabel}
+        {disabled}
+        {id}
+        {name}
+        {cols}
+        {rows}
+        {placeholder}
+        {readonly}
+        class:bx--text-area={true}
+        class:bx--text-area--light={light}
+        class:bx--text-area--invalid={invalid || showLengthError}
+        style="--maxRows:{maxRows};"
+        maxlength={maxCount + 1 ?? undefined}
+        {...$$restProps}
+        on:change
+        on:input={resizeTextArea}
+        on:keydown={(e) => {
+          // Allow user to type up to maxCount, but only show error once trying to add more
+          // characters after hitting this limit
 
-        // Allow Command+A / Ctrl+A for select all even when max length is reached
-        if (e.key === 'a' && (e.metaKey || e.ctrlKey)) {
-          return; // Do not prevent the default action for Command+A/Ctrl+A
-        }
-        // If limit reached and trying to delete characters
-        if (limitReached && ['Backspace', 'Delete'].includes(e.key)) {
-          showLengthError = false; // remove error
-        }
-
-        // Limit has previously been reached and still trying to type
-        else if (
-          limitReached &&
-          !['Backspace', 'Delete', 'ArrowLeft', 'ArrowRight'].includes(e.key)
-        ) {
-          e.preventDefault(); // disallow adding character
-          showLengthError = true; // throw error
-        } else {
-          if (e.key === 'Enter' && !e.shiftKey && ref) {
-            ref.style.height = inputHeight; // reset input size if there were multiple lines
-            onSubmit(e);
+          // Allow Command+A / Ctrl+A for select all even when max length is reached
+          if (e.key === 'a' && (e.metaKey || e.ctrlKey)) {
+            return; // Do not prevent the default action for Command+A/Ctrl+A
           }
-        }
-      }}
-      on:keyup
-      on:focus
-      on:blur
-      on:paste
-    ></textarea>
+          // If limit reached and trying to delete characters
+          if (limitReached && ['Backspace', 'Delete'].includes(e.key)) {
+            showLengthError = false; // remove error
+          }
+
+          // Limit has previously been reached and still trying to type
+          else if (
+            limitReached &&
+            !['Backspace', 'Delete', 'ArrowLeft', 'ArrowRight'].includes(e.key)
+          ) {
+            e.preventDefault(); // disallow adding character
+            showLengthError = true; // throw error
+          } else {
+            if (e.key === 'Enter' && !e.shiftKey && ref) {
+              ref.style.height = inputHeight; // reset input size if there were multiple lines
+              onSubmit(e);
+            }
+          }
+        }}
+        on:keyup
+        on:focus
+        on:blur
+        on:paste
+      />
+    </span>
   </div>
   {#if !invalid && !showLengthError && helperText}
     <div class:bx--form__helper-text={true} class:bx--form__helper-text--disabled={disabled}>
@@ -193,13 +194,16 @@ The invalid prop can still be passed to this component to validate for other con
 </div>
 
 <style lang="scss">
-  .lf-text-area,
-  :global(.bx--text-area) {
-    overflow-y: scroll;
-    min-height: var(--message-input-height);
-    max-height: calc(var(--maxRows) * 22px); // each row is 22px
-    scrollbar-color: themes.$layer-03 themes.$layer-01;
-    padding: 0.6rem 1rem; // need to slightly reduce padding to avoid having scroll bar initially
-    resize: none;
+  .lf-text-area {
+    display: flex;
+    flex: 1;
+    :global(.bx--text-area) {
+      overflow-y: scroll;
+      min-height: var(--message-input-height);
+      max-height: calc(var(--maxRows) * 22px); // each row is 22px
+      scrollbar-color: themes.$layer-03 themes.$layer-01;
+      padding: 0.6rem 1rem; // need to slightly reduce padding to avoid having scroll bar initially
+      resize: none;
+    }
   }
 </style>
