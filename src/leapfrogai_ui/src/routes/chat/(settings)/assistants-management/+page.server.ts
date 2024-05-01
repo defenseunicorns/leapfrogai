@@ -1,4 +1,4 @@
-import type { PageServerLoad } from '../../../../../.svelte-kit/types/src/routes/$types';
+import type { PageServerLoad } from './$types';
 
 export const load: PageServerLoad = async () => {
   return { title: 'LeapfrogAI - Assistants' };

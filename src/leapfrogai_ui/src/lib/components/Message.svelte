@@ -86,7 +86,7 @@
         {#if message.role === 'user' && !editMode}
           <button
             data-testid="edit prompt btn"
-            class="highlight-icon"
+            class="highlight-icon remove-btn-style"
             class:hide={!messageIsHovered}
             on:click={() => (editMode = true)}
             aria-label="edit prompt"
@@ -96,7 +96,7 @@
         {#if message.role !== 'user' && (isLastMessage ? !isLoading : true)}
           <button
             data-testid="copy btn"
-            class="highlight-icon"
+            class="highlight-icon remove-btn-style"
             class:hide={!messageIsHovered}
             on:click={handleCopy}
             tabindex="0"
@@ -106,7 +106,7 @@
         {#if message.role !== 'user' && isLastMessage && !isLoading}
           <button
             data-testid="regenerate btn"
-            class="highlight-icon"
+            class="highlight-icon remove-btn-style"
             class:hide={!messageIsHovered}
             on:click={handleRegenerate}
             aria-label="regenerate message"
@@ -165,20 +165,10 @@
     padding-left: layout.$spacing-05;
   }
 
-  .highlight-icon {
-    // remove default button styling
-    background: none;
-    color: inherit;
-    border: none;
-    padding: 0;
-    font: inherit;
-    cursor: pointer;
-    outline: inherit;
-  }
-
   .highlight-icon :global(svg) {
     cursor: pointer;
     fill: themes.$icon-secondary;
+    transition: fill 70ms ease;
     &:hover {
       fill: themes.$icon-primary;
     }

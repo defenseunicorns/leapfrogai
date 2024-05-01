@@ -9,6 +9,8 @@ Slots:
 <script lang="ts">
   import { TextInput, Tooltip } from 'carbon-components-svelte';
 
+  export let name: string = "";
+  export let value: string = '';
   export let labelText: string;
   export let tooltipText: string;
   export let placeholder: string = 'Type here';
@@ -17,13 +19,13 @@ Slots:
 
 <div>
   <div class="label-and-tooltip">
-    <label class="bx--label" style="margin-bottom: 0">{labelText}</label>
+    <label for={name} class="bx--label" style="margin-bottom: 0">{labelText}</label>
     <Tooltip {direction}>
       <p>{tooltipText}</p>
     </Tooltip>
   </div>
   <slot name="input">
-    <TextInput {placeholder} hideLabel />
+    <TextInput {name} {placeholder} hideLabel bind:value />
   </slot>
 </div>
 
