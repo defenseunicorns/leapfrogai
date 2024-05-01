@@ -1,5 +1,5 @@
 type ToastStore = {
-	toasts: ToastNotificationProps[];
+  toasts: ToastNotificationProps[];
 };
 
 type RequiredToastFields = Pick<ToastNotificationProps, 'title' | 'subtitle'>;
