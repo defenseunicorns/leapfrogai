@@ -16,7 +16,7 @@ type NewMessageInput = {
 	conversation_id: string;
 	content: string;
 	role: Roles;
-	inserted_at? : string;
+	inserted_at?: string;
 };
 type Message = NewMessageInput & {
 	id: string;

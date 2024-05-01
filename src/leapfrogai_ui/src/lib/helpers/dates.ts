@@ -86,12 +86,12 @@ export const getDateCategories = ({
 	today = new Date(),
 	numMonthsToDisplay = NUM_MONTHS_TO_DISPLAY
 }: GetDateCategoriesParams = {}): string[] => {
-	let currentMonth = today.getMonth();
+	const currentMonth = today.getMonth();
 
-	let months = [];
+	const months = [];
 	for (let i = 1; i <= numMonthsToDisplay; i++) {
 		// Subtract one month at a time and wrap around using modulo operator
-		let monthIndex = (currentMonth - i + 12) % 12;
+		const monthIndex = (currentMonth - i + 12) % 12;
 		months.push(monthNames[monthIndex]);
 	}
 
@@ -185,7 +185,7 @@ export const organizeConversationsByDate = (
 	}
 
 	// Sort each category by date
-	for(const category of dateCategories){
+	for (const category of dateCategories) {
 		const categoryIndex = dateCategories.indexOf(category);
 		result[categoryIndex].conversations = result[categoryIndex].conversations.sort(
 			(a, b) => new Date(b.inserted_at).getTime() - new Date(a.inserted_at).getTime()
