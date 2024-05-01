@@ -4,6 +4,7 @@ url = "https://supabase-kong.uds.dev/"
 username = "supabase-admin"
 password = "testing"
 
+
 def test_studio():
     try:
         response = requests.get(url, auth=(username, password))
