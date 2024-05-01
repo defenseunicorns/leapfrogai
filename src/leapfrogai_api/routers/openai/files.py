@@ -4,6 +4,7 @@ import time
 
 from fastapi import APIRouter, Depends, HTTPException, UploadFile
 from openai.types import FileDeleted, FileObject
+from pydantic import UUID4
 
 from leapfrogai_api.backend.types import UploadFileRequest
 from leapfrogai_api.data.crud_file_object import CRUDFileObject
@@ -65,7 +66,7 @@ async def list_files(session: Session) -> list[FileObject] | None:
 
 
 @router.get("/{file_id}")
-async def retrieve_file(client: Session, file_id: str) -> FileObject | None:
+async def retrieve_file(client: Session, file_id: UUID4) -> FileObject | None:
     """Retrieve a file."""
     try:
         crud_file = CRUDFileObject(model=FileObject)
@@ -79,7 +80,7 @@ async def retrieve_file(client: Session, file_id: str) -> FileObject | None:
 
 
 @router.delete("/{file_id}")
-async def delete_file(session: Session, file_id: str) -> FileDeleted:
+async def delete_file(session: Session, file_id: UUID4) -> FileDeleted:
     """Delete a file."""
     try:
         crud_file_object = CRUDFileObject(model=FileObject)
@@ -94,7 +95,7 @@ async def delete_file(session: Session, file_id: str) -> FileDeleted:
 
 
 @router.get("/{file_id}/content")
-async def retrieve_file_content(session: Session, file_id: str):
+async def retrieve_file_content(session: Session, file_id: UUID4):
     """Retrieve the content of a file."""
     try:
         crud_file_bucket = CRUDFileBucket(model=UploadFile)
