@@ -36,6 +36,9 @@ In the Keycloak management console, navigate to the "Clients" section and create
 Create a Kubernetes secret named `supabase-keycloak-secret` that contains the client secret from the previous step. Use the following command:
 
 ```bash
+# Delete the old, dummy secret
+kubectl delete secret supabase-keycloak-secret -n leapfrogai
+# Add the new secret
 kubectl create secret generic supabase-keycloak-secret --from-literal=secret='YOUR_KEYCLOAK_CLIENT_SECRET' -n leapfrogai
 ```
 
