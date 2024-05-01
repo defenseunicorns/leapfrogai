@@ -81,10 +81,16 @@ jobs:
             uds zarf package deploy packages/supabase/zarf-package-supabase-amd64-e2e-test.tar.zst --confirm
             rm packages/supabase/zarf-package-supabase-amd64-e2e-test.tar.zst
 
-        - name: Test Supabase
+        - name: Set environment variable
+          id: set-env-var
           run: |
-            dashboard_password=$(uds zarf tools kubectl get secret supabase-dashboard-secret -n leapfrogai -o jsonpath='{.data.password}' | base64 -d)
-            echo "DASHBOARD_PASSWORD=$dashboard_password" >> $GITHUB_ENV
+            DASHBOARD_PASSWORD=$(uds zarf tools kubectl get secret supabase-dashboard-secret -n leapfrogai -o jsonpath='{.data.password}' | base64 -d)
+            echo "::set-output name=dashboard_var::$DASHBOARD_PASSWORD"
+
+        - name: Test Supabase
+          env:
+            DASHBOARD_PASSWORD: ${{ steps.set-env-var.outputs.dashboard_var }}
+          run: |
             python -m pip install requests
             python -m pytest ./tests/e2e/test_supabase.py -v
 
