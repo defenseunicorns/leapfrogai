@@ -1,10 +1,10 @@
 <script lang="ts">
   import { enhance } from '$app/forms';
+  import type { ActionData } from './$types';
   import { page } from '$app/stores';
   import { Add, User } from 'carbon-icons-svelte';
   import { Button, Slider, TextArea, TextInput, Tooltip } from 'carbon-components-svelte';
   import TooltipTextInput from '$components/TooltipTextInput.svelte';
-  import type { ActionData } from './$types';
 
   export let form: ActionData;
 
@@ -25,8 +25,8 @@
         </button>
       </div>
       <TextInput name="name" labelText="Name" placeholder="Assistant name" bind:value={name} />
-      {#if form?.errors.name}
-        <small class="error">{form?.errors.name}</small>
+      {#if form?.errors?.name}
+        <small class="error">{form.errors.name}</small>
       {/if}
 
       <TooltipTextInput
@@ -36,8 +36,8 @@
         placeholder="Here to help..."
         value={tagline}
       />
-      {#if form?.errors.tagline}
-        <small class="error">{form?.errors.tagline}</small>
+      {#if form?.errors?.tagline}
+        <small class="error">{form.errors.tagline}</small>
       {/if}
 
       <TooltipTextInput
@@ -55,8 +55,8 @@
           hideLabel
         />
       </TooltipTextInput>
-      {#if form?.errors.instructions}
-        <small class="error">{form?.errors.instructions}</small>
+      {#if form?.errors?.instructions}
+        <small class="error">{form.errors.instructions}</small>
       {/if}
 
       <TooltipTextInput
@@ -77,8 +77,8 @@
           maxLabel="Max"
         />
       </TooltipTextInput>
-      {#if form?.errors.temperature}
-        <small class="error">{form?.errors.temperature}</small>
+      {#if form?.errors?.temperature}
+        <small class="error">{form.errors.temperature}</small>
       {/if}
 
       <TooltipTextInput
