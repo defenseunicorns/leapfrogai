@@ -3,11 +3,12 @@
 import time
 from uuid import uuid4 as uuid
 
-from fastapi import APIRouter, Depends, HTTPException
+from fastapi import APIRouter, Depends, HTTPException, UploadFile
 from openai.types import FileDeleted, FileObject
 
 from leapfrogai_api.backend.types import UploadFileRequest
 from leapfrogai_api.data.crud_file_object import CRUDFileObject
+from leapfrogai_api.data.crud_file_bucket import CRUDFileBucket
 from leapfrogai_api.routers.supabase_session import Session
 
 router = APIRouter(prefix="/openai/v1/files", tags=["openai/files"])
@@ -19,7 +20,7 @@ async def upload_file(
     request: UploadFileRequest = Depends(UploadFileRequest.as_form),
 ) -> FileObject:
     """Upload a file."""
-    # TODO: Store file in Supabase Storage
+
     try:
         file_object = FileObject(
             id=str(uuid()),
@@ -35,8 +36,14 @@ async def upload_file(
         raise HTTPException(status_code=500, detail="Failed to parse file") from exc
 
     try:
-        crud_file = CRUDFileObject(model=FileObject)
-        await crud_file.create(file_object=file_object, client=client)
+        crud_file_object = CRUDFileObject(model=FileObject)
+        await crud_file_object.create(file_object=file_object, client=client)
+
+        crud_file_bucket = CRUDFileBucket(model=UploadFile)
+        await crud_file_bucket.upload(
+            client=client, file=request.file, id_=file_object.id
+        )
+
     except Exception as exc:
         raise HTTPException(status_code=500, detail="Failed to store file") from exc
 
@@ -44,7 +51,7 @@ async def upload_file(
 
 
 @router.get("")
-async def list_files(session: Session):
+async def list_files(session: Session) -> list[FileObject] | None:
     """List all files."""
     try:
         crud_file = CRUDFileObject(model=FileObject)
@@ -71,8 +78,13 @@ async def retrieve_file(client: Session, file_id: str) -> FileObject:
 async def delete_file(session: Session, file_id: str) -> FileDeleted:
     """Delete a file."""
     try:
-        crud_file = CRUDFileObject(model=FileObject)
-        return await crud_file.delete(file_id=file_id, client=session)
+        crud_file_object = CRUDFileObject(model=FileObject)
+        file_deleted = await crud_file_object.delete(file_id=file_id, client=session)
+
+        crud_file_bucket = CRUDFileBucket(model=UploadFile)
+        await crud_file_bucket.delete(client=session, id_=file_id)
+
+        return file_deleted
     except FileNotFoundError as exc:
         raise HTTPException(status_code=404, detail="File not found") from exc
 
@@ -80,5 +92,12 @@ async def delete_file(session: Session, file_id: str) -> FileDeleted:
 @router.get("/{file_id}/content")
 async def retrieve_file_content(session: Session, file_id: str):
     """Retrieve the content of a file."""
-    # TODO: Retrieve file content from Supabase Storage
-    raise HTTPException(status_code=501, detail="Not implemented")
+    try:
+        crud_file_bucket = CRUDFileBucket(model=UploadFile)
+        return await crud_file_bucket.download(client=session, id_=file_id)
+    except FileNotFoundError as exc:
+        raise HTTPException(status_code=404, detail="File not found") from exc
+    except ValueError as exc:
+        raise HTTPException(
+            status_code=500, detail="Multiple files found with same id"
+        ) from exc
