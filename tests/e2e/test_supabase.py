@@ -3,7 +3,7 @@ import os
 
 url = "https://supabase-kong.uds.dev/"
 username = "supabase-admin"
-password = os.environ['DASHBOARD_PASSWORD']
+password = os.environ["DASHBOARD_PASSWORD"]
 
 
 def test_studio():
