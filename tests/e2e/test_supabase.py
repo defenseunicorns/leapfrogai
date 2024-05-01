@@ -1,8 +1,9 @@
 import requests
+import os
 
 url = "https://supabase-kong.uds.dev/"
 username = "supabase-admin"
-password = "testing"
+password = os.environ['DASHBOARD_PASSWORD']
 
 
 def test_studio():

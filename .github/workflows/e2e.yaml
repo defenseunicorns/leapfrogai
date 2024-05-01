@@ -83,6 +83,7 @@ jobs:
 
         - name: Test Supabase
           run: |
+            DASHBOARD_PASSWORD=$(uds zarf tools kubectl get secret supabase-dashboard-secret -n leapfrogai -o jsonpath='{.data.password}' | base64 -d)
             python -m pip install requests
             python -m pytest ./tests/e2e/test_supabase.py -v
 
