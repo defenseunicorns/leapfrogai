@@ -4,12 +4,10 @@ NAMESPACE="leapfrogai"
 DESIRED_PHASE="Running"
 DESIRED_READY_STATUS="True"
 
-# Function to get the pod status and ready status
 get_pod_status() {
     POD_STATUSES=$(kubectl get pods -l app.kubernetes.io/name=$DEPLOYMENT_NAME -n $NAMESPACE -o jsonpath='{range .items[*]}{.status.phase}{" "}{.status.containerStatuses[*].ready}{" "}{end}')
 }
 
-# Function to check the deployment status
 check_deployment_status() {
     get_pod_status
     # Check if all pods are in the desired phase and ready status
@@ -21,6 +19,12 @@ check_deployment_status() {
         return 1 # Return failure
     fi
 }
+
+check_deployment_status
+if [ $? -eq 0 ]; then
+    echo "Script completed successfully."
+    exit 0
+fi
 
 # Keep checking the deployment status until all pods are in the desired phase and ready
 while true; do
