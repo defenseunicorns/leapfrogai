@@ -1,12 +1,12 @@
 #!/bin/bash
 
-RESOURCE_NAME="packages.uds.dev"
+RESOURCE_NAME="supabase-studio"
+RESOURCE_TYPE="packages.uds.dev"
 DESIRED_PHASE="Ready"
 
 # Function to check the resource status
 check_resource_status() {
-    # Get the resource status (replace 'kubectl get <resource_type>' with the appropriate command)
-    RESOURCE_STATUS=$(kubectl get <resource_type> $RESOURCE_NAME -o jsonpath='{.status.phase}')
+    RESOURCE_STATUS=$(kubectl get $RESOURCE_TYPE $RESOURCE_NAME -o jsonpath='{.status.phase}')
 
     # Check if the resource is in the desired phase
     if [ "$RESOURCE_STATUS" == "$DESIRED_PHASE" ]; then
