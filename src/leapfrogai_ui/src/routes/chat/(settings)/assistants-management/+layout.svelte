@@ -1,6 +1,7 @@
 <script lang="ts">
   import { Breadcrumb, BreadcrumbItem } from 'carbon-components-svelte';
   import { page } from '$app/stores';
+  import LFContent from '$components/LFContent.svelte';
 
   const paths = [
     {
@@ -20,13 +21,15 @@
   // TODO - test the breadcrumbs
 </script>
 
-<Breadcrumb noTrailingSlash>
-  {#each paths as { path, name } (path)}
-    {#if $page.url.pathname.includes(path)}
-      <BreadcrumbItem href={path} isCurrentPage={$page.url.pathname === path}>{name}</BreadcrumbItem
-      >
-    {/if}
-  {/each}
-</Breadcrumb>
-
-<slot />
+<LFContent>
+  <Breadcrumb noTrailingSlash>
+    {#each paths as { path, name } (path)}
+      {#if $page.url.pathname.includes(path)}
+        <BreadcrumbItem href={path} isCurrentPage={$page.url.pathname === path}
+          >{name}</BreadcrumbItem
+        >
+      {/if}
+    {/each}
+  </Breadcrumb>
+  <slot />
+</LFContent>

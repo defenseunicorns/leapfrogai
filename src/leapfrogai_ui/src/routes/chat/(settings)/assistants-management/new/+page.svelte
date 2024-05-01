@@ -1,16 +1,16 @@
 <script lang="ts">
-  import { User } from 'carbon-icons-svelte';
-  import { TextArea, TextInput, Tooltip } from 'carbon-components-svelte';
+  import { Add, User } from 'carbon-icons-svelte';
+  import { Button, Slider, TextArea, TextInput, Tooltip } from 'carbon-components-svelte';
   import TooltipTextInput from '$components/TooltipTextInput.svelte';
 </script>
 
 <div class="container">
   <div class="inner-container">
-    <div class="centered-flexbox">
+    <div class="top-row">
       <div class="title">New Assistant</div>
-      <div class="user-icon">
+      <button class="user-icon remove-btn-style" tabindex="0">
         <User />
-      </div>
+      </button>
     </div>
     <TextInput labelText="Name" placeholder="Assistant name" />
 
@@ -25,8 +25,45 @@
       tooltipText="Detailed instructions to guide your assistant's responses and behavior"
       placeholder="You'll act as..."
     >
-      <TextArea slot="input" rows={6} placeholder="You'll act as..."/>
+      <TextArea
+        labelText="instructions"
+        slot="input"
+        rows={6}
+        placeholder="You'll act as..."
+        hideLabel
+      />
     </TooltipTextInput>
+
+    <TooltipTextInput
+      labelText="Temperature"
+      tooltipText="Adjust the slider to set the creativity level of your assistant's responses"
+    >
+      <Slider
+        slot="input"
+        labelText="temperature"
+        hideLabel
+        hideTextInput
+        fullWidth
+        value={1}
+        min={0}
+        max={2}
+        step={0.1}
+        minLabel="Min"
+        maxLabel="Max"
+      />
+    </TooltipTextInput>
+
+    <TooltipTextInput
+      labelText="Data Sources"
+      tooltipText="Specific files your assistant can search and reference"
+    >
+      <Button slot="input" icon={Add} kind="secondary" size="small">Add</Button>
+    </TooltipTextInput>
+
+    <div>
+      <Button kind="secondary" size="small">Cancel</Button>
+      <Button kind="primary" size="small">Save</Button>
+    </div>
   </div>
 </div>
 
@@ -38,10 +75,15 @@
   .inner-container {
     display: flex;
     flex-direction: column;
-    gap: 1rem;
+    gap: 1.5rem;
     width: 50%;
     padding-top: 0.5rem;
     padding-bottom: 0.5rem;
+  }
+  .top-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
   }
 
   .title {

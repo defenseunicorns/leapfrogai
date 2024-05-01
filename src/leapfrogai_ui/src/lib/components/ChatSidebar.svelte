@@ -269,6 +269,10 @@ properties had to be manually overridden.
 https://github.com/carbon-design-system/carbon-components-svelte/issues/892
 -->
 <style lang="scss">
+  :global(.bx--side-nav__item) {
+    list-style-type: none;
+  }
+
   .noScroll {
     overflow-y: hidden !important;
   }

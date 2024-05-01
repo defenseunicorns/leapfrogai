@@ -1,9 +1,9 @@
 <script lang="ts">
   import { page } from '$app/stores';
   import { conversationsStore } from '$stores';
-  import { Content } from 'carbon-components-svelte';
   import '../../../styles/main.scss';
   import { ChatSidebar } from '$components';
+  import LFContent from '$components/LFContent.svelte';
 
   $: innerWidth = 0;
 
@@ -20,12 +20,4 @@
 
 <ChatSidebar />
 
-<Content>
-  <slot />
-</Content>
-
-<style lang="scss">
-  :global(.bx--side-nav__item) {
-    list-style-type: none;
-  }
-</style>
+<LFContent><slot /></LFContent>
