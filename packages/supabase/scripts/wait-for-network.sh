@@ -1,6 +1,6 @@
 #!/bin/bash
 
-RESOURCE_NAME="supabase-studio"
+RESOURCE_NAME="supabase"
 RESOURCE_TYPE="packages.uds.dev"
 NAMESPACE="leapfrogai"
 DESIRED_PHASE="Ready"
