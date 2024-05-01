@@ -1,7 +1,6 @@
 """OpenAI Compliant Files API Router."""
 
 import time
-from uuid import uuid4 as uuid
 
 from fastapi import APIRouter, Depends, HTTPException, UploadFile
 from openai.types import FileDeleted, FileObject
@@ -23,7 +22,7 @@ async def upload_file(
 
     try:
         file_object = FileObject(
-            id=str(uuid()),
+            id="",  # This is set by the database to prevent conflicts
             bytes=request.file.size,
             created_at=int(time.time()),
             filename=request.file.filename,
@@ -37,7 +36,12 @@ async def upload_file(
 
     try:
         crud_file_object = CRUDFileObject(model=FileObject)
-        await crud_file_object.create(file_object=file_object, client=client)
+        file_object = await crud_file_object.create(
+            file_object=file_object, client=client
+        )
+
+        if not file_object:
+            raise HTTPException(status_code=500, detail="Failed to create file object")
 
         crud_file_bucket = CRUDFileBucket(model=UploadFile)
         await crud_file_bucket.upload(
@@ -61,7 +65,7 @@ async def list_files(session: Session) -> list[FileObject] | None:
 
 
 @router.get("/{file_id}")
-async def retrieve_file(client: Session, file_id: str) -> FileObject:
+async def retrieve_file(client: Session, file_id: str) -> FileObject | None:
     """Retrieve a file."""
     try:
         crud_file = CRUDFileObject(model=FileObject)
