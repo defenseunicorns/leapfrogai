@@ -1,87 +1,85 @@
 import userEvent from '@testing-library/user-event';
 import { render, screen, waitFor } from '@testing-library/svelte';
 import ImportExport from '$components/ImportExport.svelte';
-import { vi } from 'vitest';
+import { afterEach, vi } from 'vitest';
 import { toastStore } from '$stores';
 import { getFakeConversation } from '../../testUtils/fakeData';
 import { mockNewConversationError } from '$lib/mocks/chat-mocks';
 
 const uploadJSONFile = async (obj: object) => {
-	const dataStr = JSON.stringify(obj);
+  const dataStr = JSON.stringify(obj);
 
-	const blob = new Blob([dataStr]);
-	const file = new File([blob], 'badData.json', { type: 'application/JSON' });
-	File.prototype.text = vi.fn().mockResolvedValueOnce(dataStr);
-	const uploadBtn = screen.getByLabelText(/import data/i);
+  const blob = new Blob([dataStr]);
+  const file = new File([blob], 'badData.json', { type: 'application/JSON' });
+  File.prototype.text = vi.fn().mockResolvedValueOnce(dataStr);
+  const uploadBtn = screen.getByTestId('import data input');
 
-	await userEvent.upload(uploadBtn, file);
+  await userEvent.upload(uploadBtn, file);
 };
 
 describe('Import and Export data', () => {
-	// Note - actual exporting and importing of data tested with E2E test
+  // Note - actual exporting and importing of data tested with E2E test
 
-	it('displays a toast error if the imported data is in an invalid format', async () => {
-		const toastSpy = vi.spyOn(toastStore, 'addToast');
-		render(ImportExport);
+  afterEach(() => {
+    vi.restoreAllMocks;
+  });
 
-		const badData = { improper: 'format' };
+  it('displays a toast error if the imported data is in an invalid format', async () => {
+    const toastSpy = vi.spyOn(toastStore, 'addToast');
+    render(ImportExport);
 
-		await uploadJSONFile(badData);
+    const badData = { improper: 'format' };
 
-		await waitFor(() => expect(toastSpy).toHaveBeenCalledTimes(1));
-		expect(toastSpy).toHaveBeenCalledWith({
-			kind: 'error',
-			title: 'Error',
-			subtitle: `Conversations are incorrectly formatted.`
-		});
-	});
+    await uploadJSONFile(badData);
 
-	it('displays a toast error if their is an error while storing the imported data', async () => {
-		mockNewConversationError();
+    await waitFor(() => expect(toastSpy).toHaveBeenCalledTimes(1));
+    expect(toastSpy).toHaveBeenCalledWith({
+      kind: 'error',
+      title: 'Error',
+      subtitle: `Conversations are incorrectly formatted.`
+    });
+  });
 
-		const toastSpy = vi.spyOn(toastStore, 'addToast');
-		render(ImportExport);
+  it('displays a toast error if their is an error while storing the imported data', async () => {
+    mockNewConversationError();
 
-		const data = getFakeConversation();
+    const toastSpy = vi.spyOn(toastStore, 'addToast');
+    render(ImportExport);
 
-		await uploadJSONFile([data]);
+    const data = getFakeConversation();
 
-		await waitFor(() => expect(toastSpy).toHaveBeenCalledTimes(1));
-		expect(toastSpy).toHaveBeenCalledWith({
-			kind: 'error',
-			title: 'Error',
-			subtitle: `Error importing conversation: ${data.label}`
-		});
-	});
+    await uploadJSONFile([data]);
 
-	it('displays a toast error if there is an error exporting data', async () => {
-		const toastSpy = vi.spyOn(toastStore, 'addToast');
+    await waitFor(() => expect(toastSpy).toHaveBeenCalledTimes(1));
+    expect(toastSpy).toHaveBeenCalledWith({
+      kind: 'error',
+      title: 'Error',
+      subtitle: `Error importing conversation: ${data.label}`
+    });
+  });
 
-		const originalEncode = encodeURIComponent;
+  it('displays a toast error if there is an error exporting data', async () => {
+    const toastSpy = vi.spyOn(toastStore, 'addToast');
 
-		// @ts-ignore
-		encodeURIComponent = vi.fn(() => {
-			throw new Error('error');
-		});
-		render(ImportExport);
+    vi.spyOn(window, 'encodeURIComponent').mockImplementation(() => {
+      throw new Error('error');
+    });
 
-		await userEvent.click(screen.getByText('Export data'));
-		expect(toastSpy).toHaveBeenCalledTimes(1);
-		expect(toastSpy).toHaveBeenCalledWith({
-			kind: 'error',
-			title: 'Error',
-			subtitle: `Error exporting conversations.`
-		});
+    render(ImportExport);
 
-		// Restore
-		// @ts-ignore
-		encodeURIComponent = originalEncode;
-	});
+    await userEvent.click(screen.getByText('Export data'));
+    expect(toastSpy).toHaveBeenCalledTimes(1);
+    expect(toastSpy).toHaveBeenCalledWith({
+      kind: 'error',
+      title: 'Error',
+      subtitle: `Error exporting conversations.`
+    });
+  });
 
-	it("only allows uploading of JSON files", async () => {
-		render(ImportExport);
-		const uploadBtn = screen.getByLabelText(/import data/i);
+  it('only allows uploading of JSON files', async () => {
+    render(ImportExport);
+    const uploadBtn = screen.getByTestId('import data input');
 
-		expect(uploadBtn).toHaveAttribute('accept', 'application/json')
-	})
+    expect(uploadBtn).toHaveAttribute('accept', 'application/json');
+  });
 });

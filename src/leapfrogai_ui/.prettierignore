@@ -4,3 +4,5 @@ package-lock.json
 yarn.lock
 
 ../../packages/ui/chart/
+
+supabase

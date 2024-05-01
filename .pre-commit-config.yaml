@@ -21,3 +21,12 @@ repos:
     hooks:
       - id: ruff # Run the linter.
       - id: ruff-format # Run the formatter.
+
+  # Local Eslint w/ Prettier
+  - repo: local
+    hooks:
+    - id: eslint
+      name: eslint
+      language: system
+      entry: sh -c 'npm --prefix src/leapfrogai_ui/ run lint'
+      files: \.(js|jsx|ts|tsx|svelte|cjs|mjs)$ # *.js, *.jsx, *.ts, *.tsx, *.svelte, *.cjs, *.mjs
