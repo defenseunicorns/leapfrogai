@@ -9,7 +9,9 @@ Slots:
 <script lang="ts">
   import { TextInput, Tooltip } from 'carbon-components-svelte';
 
-  export let name: string = "";
+  // TODO - tests
+
+  export let name: string = '';
   export let value: string = '';
   export let labelText: string;
   export let tooltipText: string;
@@ -25,7 +27,7 @@ Slots:
     </Tooltip>
   </div>
   <slot name="input">
-    <TextInput {name} {placeholder} hideLabel bind:value />
+    <TextInput {name} {placeholder} hideLabel bind:value on:keyup on:keydown on:blur />
   </slot>
 </div>
 

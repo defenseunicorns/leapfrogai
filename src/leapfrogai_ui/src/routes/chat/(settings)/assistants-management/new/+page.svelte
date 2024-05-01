@@ -1,32 +1,56 @@
 <script lang="ts">
-  import { enhance } from '$app/forms';
-  import type { ActionData } from './$types';
-  import { page } from '$app/stores';
+  import { createForm } from 'svelte-forms-lib';
   import { Add, User } from 'carbon-icons-svelte';
-  import { Button, Slider, TextArea, TextInput, Tooltip } from 'carbon-components-svelte';
+  import { Button, Slider, TextArea, TextInput } from 'carbon-components-svelte';
   import TooltipTextInput from '$components/TooltipTextInput.svelte';
+  import * as yup from 'yup';
 
-  export let form: ActionData;
+  // TODO - cancel modal
+  // TODO - tests
 
-  let name: string = '';
-  let tagline: string = '';
-  let instructions: string = '';
-  let temperature: number = 0.5;
+  const NewAssistantSchema = yup.object({
+    name: yup.string().required('Required'),
+    tagline: yup.string().required('Required'),
+    instructions: yup.string().required('Required'),
+    temperature: yup.number().required('Required'),
+    dataSources: yup.array().of(yup.string())
+  });
 
+  const { form, errors, handleChange, handleSubmit } = createForm({
+    initialValues: {
+      name: '',
+      tagline: '',
+      instructions: '',
+      temperature: 0.5
+    },
+    validationSchema: NewAssistantSchema,
+    onSubmit: async (values) => {
+      console.log(JSON.stringify(values));
+      // TODO save to db
+    }
+  });
 </script>
 
-<form method="POST" action="?/newAssistant" use:enhance>
+<form on:submit={handleSubmit}>
   <div class="container">
     <div class="inner-container">
       <div class="top-row">
         <div class="title">New Assistant</div>
-        <button class="user-icon remove-btn-style" tabindex="0">
+        <!--Note - Avatar is a placeholder and will be completed in a future story-->
+        <button class="user-icon remove-btn-style" tabindex="0" on:click|preventDefault>
           <User />
         </button>
       </div>
-      <TextInput name="name" labelText="Name" placeholder="Assistant name" bind:value={name} />
-      {#if form?.errors?.name}
-        <small class="error">{form.errors.name}</small>
+      <TextInput
+        name="name"
+        labelText="Name"
+        placeholder="Assistant name"
+        on:keyup={handleChange}
+        on:blur={handleChange}
+        bind:value={$form.name}
+      />
+      {#if $errors.name}
+        <small class="error">{$errors.name}</small>
       {/if}
 
       <TooltipTextInput
@@ -34,10 +58,12 @@
         labelText="Tagline"
         tooltipText="Taglines display on assistant tiles"
         placeholder="Here to help..."
-        value={tagline}
+        on:keyup={handleChange}
+        on:blur={handleChange}
+        bind:value={$form.tagline}
       />
-      {#if form?.errors?.tagline}
-        <small class="error">{form.errors.tagline}</small>
+      {#if $errors.tagline}
+        <small class="error">{$errors.tagline}</small>
       {/if}
 
       <TooltipTextInput
@@ -49,14 +75,16 @@
           name="instructions"
           labelText="instructions"
           slot="input"
-          bind:value={instructions}
+          on:keyup={handleChange}
+          on:blur={handleChange}
+          bind:value={$form.instructions}
           rows={6}
           placeholder="You'll act as..."
           hideLabel
         />
       </TooltipTextInput>
-      {#if form?.errors?.instructions}
-        <small class="error">{form.errors.instructions}</small>
+      {#if $errors.instructions}
+        <small class="error">{$errors.instructions}</small>
       {/if}
 
       <TooltipTextInput
@@ -66,7 +94,8 @@
         <Slider
           name="temperature"
           slot="input"
-          bind:value={temperature}
+          on:click={handleChange}
+          bind:value={$form.temperature}
           hideLabel
           hideTextInput
           fullWidth
@@ -77,10 +106,11 @@
           maxLabel="Max"
         />
       </TooltipTextInput>
-      {#if form?.errors?.temperature}
-        <small class="error">{form.errors.temperature}</small>
+      {#if $errors.temperature}
+        <small class="error">{$errors.temperature}</small>
       {/if}
 
+      <!--Note - Data Sources is a placeholder and will be completed in a future story-->
       <TooltipTextInput
         labelText="Data Sources"
         tooltipText="Specific files your assistant can search and reference"
