@@ -73,6 +73,7 @@ def test_routes():
         "/openai/v1/chat/completions": ["POST"],
         "/openai/v1/embeddings": ["POST"],
         "/openai/v1/audio/transcriptions": ["POST"],
+        "/openai/v1/files": ["POST"],
     }
 
     actual_routes = app.routes
@@ -127,6 +128,7 @@ def test_embedding():
     reason="LFAI_RUN_REPEATER_TESTS envvar was not set to true",
 )
 def test_chat_completion():
+    """Test the chat completion endpoint."""
     with TestClient(app) as client:
         input_content = "this is the chat completion input."
         chat_completion_request = lfai_types.ChatCompletionRequest(
@@ -159,6 +161,7 @@ def test_chat_completion():
     reason="LFAI_RUN_REPEATER_TESTS envvar was not set to true",
 )
 def test_stream_chat_completion():
+    """Test the stream chat completion endpoint."""
     with TestClient(app) as client:
         input_content = "this is the stream chat completion input."
 

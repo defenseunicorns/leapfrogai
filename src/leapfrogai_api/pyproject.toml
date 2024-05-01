@@ -5,12 +5,13 @@ description = "An API for LeapfrogAI that allows LeapfrogAI backends to connect 
 
 dependencies = [
     "fastapi >= 0.109.1",
-    "openai >= 1.21.1",
+    "openai == 1.21.1",
     "uvicorn >= 0.23.2",
     "pydantic >= 2.0.0",
     "python-multipart >= 0.0.7", #indirect dep of FastAPI to receive form data for file uploads
     "watchfiles >= 0.21.0",
     "leapfrogai_sdk",
+    "supabase-py-async",
 ]
 requires-python = "~=3.11"
 
