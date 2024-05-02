@@ -1,7 +1,10 @@
 [project]
 name = "lfai-text-embeddings"
-version = "0.6.1"
 description = "A LeapfrogAI API-compatible embeddings library wrapper for text-based embedding generation."
+
+# x-release-please-start-version
+version = "0.6.1"
+# x-release-please-end
 
 dependencies = [
     "InstructorEmbedding >= 1.0.1",
