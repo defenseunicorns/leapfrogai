@@ -3,6 +3,8 @@
 from fastapi import HTTPException, APIRouter
 from openai.types.beta import VectorStore, VectorStoreDeleted
 from openai.types.beta.vector_stores import VectorStoreFile, VectorStoreFileDeleted
+from leapfrogai_api.data.crud_vector_store import CRUDVectorStore
+from leapfrogai_api.routers.supabase_session import Session
 
 router = APIRouter(prefix="/openai/v1/vector_store", tags=["openai/vector_store"])
 
@@ -15,17 +17,31 @@ async def create_vector_store() -> VectorStore:
 
 
 @router.get("")
-async def list_vector_stores() -> list[VectorStore]:
+async def list_vector_stores(client: Session) -> list[VectorStore] | None:
     """List all the vector stores."""
-    # TODO: Implement this function
-    raise HTTPException(status_code=501, detail="Not implemented")
+    try:
+        crud_vector_store = CRUDVectorStore(model=VectorStore)
+        return await crud_vector_store.list(client=client)
+    except Exception as exc:
+        raise HTTPException(
+            status_code=500, detail="Failed to list vector stores"
+        ) from exc
 
 
 @router.get("/{vector_store_id}")
-async def retrieve_vector_store(vector_store_id: str) -> VectorStore:
+async def retrieve_vector_store(
+    session: Session, vector_store_id: str
+) -> VectorStore | None:
     """Retrieve a vector store."""
-    # TODO: Implement this function
-    raise HTTPException(status_code=501, detail="Not implemented")
+    try:
+        crud_vector_store = CRUDVectorStore(model=VectorStore)
+        return await crud_vector_store.get(
+            client=session, vector_store_id=vector_store_id
+        )
+    except Exception as exc:
+        raise HTTPException(
+            status_code=500, detail="Failed to retrieve vector store"
+        ) from exc
 
 
 @router.post("/{vector_store_id}")

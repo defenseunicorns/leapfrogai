@@ -33,7 +33,8 @@ create table
 create table
   vector_store (
     id uuid primary key DEFAULT uuid_generate_v4(),
-    file_id uuid references vector_store_file_objects (id),
+    vector_store_id uuid references vector_store_objects (id) on delete cascade,
+    file_id uuid references vector_store_file_objects (id) on delete cascade,
     content text, -- corresponds to Document.pageContent
     metadata jsonb, -- corresponds to Document.metadata
     embedding vector (768) -- Instructor-XL produces 768-dimensional embeddings
@@ -45,6 +46,7 @@ create function match_vectors (
   filter jsonb default '{}'
 ) returns table (
   id uuid,
+  vector_store_id uuid,
   file_id uuid,
   content text,
   metadata jsonb,
@@ -55,6 +57,7 @@ begin
   return query
   select
     id,
+    vector_store_id,
     content,
     metadata,
     1 - (documents.embedding <=> query_embedding) as similarity
