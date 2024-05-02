@@ -4,6 +4,7 @@ from __future__ import annotations
 from typing import Literal
 from pydantic import BaseModel
 from fastapi import UploadFile, Form, File
+from openai.types.beta.vector_store import ExpiresAfter
 
 ##########
 # GENERIC
@@ -253,3 +254,21 @@ class CreateAssistantRequest(BaseModel):
 
 class ModifyAssistantRequest(CreateAssistantRequest):
     """Request object for modifying an assistant."""
+
+
+################
+# VECTOR STORES
+################
+
+
+class CreateVectorStoreRequest(BaseModel):
+    """Request object for creating a vector store."""
+
+    file_ids: list[str] | None = []
+    name: str | None = None
+    expires_after: ExpiresAfter | None = None
+    metadata: dict | None = None
+
+
+class ModifyVectorStoreRequest(CreateVectorStoreRequest):
+    """Request object for modifying a vector store."""
