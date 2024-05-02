@@ -1,3 +1,9 @@
+image:
+  repository: "ghcr.io/defenseunicorns/leapfrogai/leapfrogai-ui"
+  pullPolicy: Always
+  # Overrides the image tag whose default is the chart appVersion.
+  tag: '###ZARF_CONST_IMAGE_VERSION###'
+
 package:
   name: lfaiui
   host: lfaiui
