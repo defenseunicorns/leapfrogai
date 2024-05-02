@@ -63,8 +63,8 @@ jobs:
         run: |
           docker buildx build --platform amd64,arm64 -t ghcr.io/defenseunicorns/leapfrogai/leapfrogai-ui:${{ steps.get_version.outputs.version-without-v }} --push src/leapfrogai_ui
 
-          zarf package create packages/ui --set=LEAPFROGAI_IMAGE_VERSION=${{ steps.get_version.outputs.version-without-v }} --architecture amd64 --confirm
-          zarf package create packages/ui --set=LEAPFROGAI_IMAGE_VERSION=${{ steps.get_version.outputs.version-without-v }} --architecture arm64 --confirm
+          zarf package create packages/ui --set=IMAGE_VERSION=${{ steps.get_version.outputs.version-without-v }} --architecture amd64 --confirm
+          zarf package create packages/ui --set=IMAGE_VERSION=${{ steps.get_version.outputs.version-without-v }} --architecture arm64 --confirm
 
           zarf package publish zarf-package-leapfrogai-ui-amd64-${{ steps.get_version.outputs.version-without-v }}.tar.zst oci://ghcr.io/defenseunicorns/packages/leapfrogai
           zarf package publish zarf-package-leapfrogai-ui-arm64-${{ steps.get_version.outputs.version-without-v }}.tar.zst oci://ghcr.io/defenseunicorns/packages/leapfrogai
@@ -76,8 +76,8 @@ jobs:
         run: |
           docker buildx build --platform amd64,arm64 -t ghcr.io/defenseunicorns/leapfrogai/repeater:${{ steps.get_version.outputs.version-without-v }} --push packages/repeater
 
-          zarf package create packages/repeater --set=LEAPFROGAI_IMAGE_VERSION=${{ steps.get_version.outputs.version-without-v }} --architecture amd64 --confirm
-          zarf package create packages/repeater --set=LEAPFROGAI_IMAGE_VERSION=${{ steps.get_version.outputs.version-without-v }} --architecture arm64 --confirm
+          zarf package create packages/repeater --set=IMAGE_VERSION=${{ steps.get_version.outputs.version-without-v }} --architecture amd64 --confirm
+          zarf package create packages/repeater --set=IMAGE_VERSION=${{ steps.get_version.outputs.version-without-v }} --architecture arm64 --confirm
 
           zarf package publish zarf-package-repeater-amd64-${{ steps.get_version.outputs.version-without-v }}.tar.zst oci://ghcr.io/defenseunicorns/packages/leapfrogai
           zarf package publish zarf-package-repeater-arm64-${{ steps.get_version.outputs.version-without-v }}.tar.zst oci://ghcr.io/defenseunicorns/packages/leapfrogai
