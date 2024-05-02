@@ -43,13 +43,21 @@ async def upload_file(
         if not file_object:
             raise HTTPException(status_code=500, detail="Failed to create file object")
 
+    except Exception as exc:
+        raise HTTPException(
+            status_code=500, detail="Failed to store file object"
+        ) from exc
+
+    try:
         crud_file_bucket = CRUDFileBucket(model=UploadFile)
         await crud_file_bucket.upload(
             client=client, file=request.file, id_=file_object.id
         )
-
     except Exception as exc:
-        raise HTTPException(status_code=500, detail="Failed to store file") from exc
+        crud_file_object.delete(file_id=file_object.id, client=client)
+        raise HTTPException(
+            status_code=500, detail="Failed to store file in bucket"
+        ) from exc
 
     return file_object
 

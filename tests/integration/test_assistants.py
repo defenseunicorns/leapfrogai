@@ -1,4 +1,5 @@
-""" Test the API endpoints for assistants. """
+"""Test the API endpoints for assistants."""
+
 from fastapi.testclient import TestClient
 from openai.types.beta import Assistant
 
@@ -10,10 +11,9 @@ from leapfrogai_api.backend.types import (
 
 client = TestClient(router)
 
-# TODO: Mock Supabase session
 
 def test_assistants():
-    """Test creating an assistant."""
+    """Test creating an assistant. Requires a running Supabase instance."""
     request = CreateAssistantRequest(
         model="test",
         name="test",
