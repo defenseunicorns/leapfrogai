@@ -39,7 +39,7 @@ def test_vector_store():
         get_response.json()
     ), "Should return a VectorStore."
 
-    request = CreateVectorStoreRequest(
+    request = ModifyVectorStoreRequest(
         file_ids=[],
         name="test1",
         expires_after=ExpiresAfter(anchor="last_active_at", days=0),
