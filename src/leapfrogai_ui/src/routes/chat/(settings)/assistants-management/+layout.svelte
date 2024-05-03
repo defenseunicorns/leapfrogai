@@ -21,16 +21,16 @@
 
 <Content>
   <div class="lf-content-container">
-    <Breadcrumb noTrailingSlash>
-      {#each paths as { path, name } (path)}
-        {#if $page.url.pathname.includes(path)}
-          <BreadcrumbItem href={path} isCurrentPage={$page.url.pathname === path}
-            >{name}</BreadcrumbItem
-          >
-        {/if}
-      {/each}
-    </Breadcrumb>
     <div class="slot-wrapper">
+      <Breadcrumb noTrailingSlash>
+        {#each paths as { path, name } (path)}
+          {#if $page.url.pathname.includes(path)}
+            <BreadcrumbItem href={path} isCurrentPage={$page.url.pathname === path}
+              >{name}</BreadcrumbItem
+            >
+          {/if}
+        {/each}
+      </Breadcrumb>
       <slot />
     </div>
     <div>

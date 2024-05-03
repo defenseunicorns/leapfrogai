@@ -86,7 +86,7 @@
     gap: 1rem;
     padding-top: 0.5rem;
     padding-bottom: 0.5rem;
-    width: 943px;
+    width: 943px; // 3 tiles, plus gap, plus scrollbar
   }
 
   .utils {
