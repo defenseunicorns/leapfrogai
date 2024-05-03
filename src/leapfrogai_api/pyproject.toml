@@ -12,6 +12,10 @@ dependencies = [
     "watchfiles >= 0.21.0",
     "leapfrogai_sdk",
     "supabase-py-async",
+    "langchain",
+    "langchain-community",
+    "unstructured[all-docs]",
+    "pymupdf",
 ]
 requires-python = "~=3.11"
 

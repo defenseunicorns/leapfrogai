@@ -5,6 +5,7 @@ A mostly OpenAI compliant API surface.
 ## Requirements
 
 - Supabase
+- Libreoffice ([Unstructured dependency via LangChain](https://python.langchain.com/docs/integrations/providers/unstructured/) for docx parsing)
 
 ## Local Development
 
