@@ -92,7 +92,11 @@
         <small class="error">{$errors.description}</small>
       {/if}
 
-      <InputTooltip name="instructions" labelText="Instructions" tooltipText="You'll act as..." />
+      <InputTooltip
+        name="instructions"
+        labelText="Instructions"
+        tooltipText="Detailed instructions to guide your assistant's responses and behavior"
+      />
 
       <TextArea
         name="instructions"
