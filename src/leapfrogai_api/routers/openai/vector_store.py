@@ -35,7 +35,8 @@ async def create_vector_store(
                 name=request.name,
                 object="vector_store",
                 status="completed",
-                expires_after=ExpiresAfter.model_validate(request.expires_after),
+                expires_after=ExpiresAfter.model_validate(request.expires_after)
+                or None,
                 expires_at=None,
             )
         else:
@@ -91,8 +92,38 @@ async def modify_vector_store(
     session: Session, vector_store_id: str, request: ModifyVectorStoreRequest
 ) -> VectorStore:
     """Modify a vector store."""
-    # TODO: Implement this function
-    raise HTTPException(status_code=501, detail="Not implemented")
+    try:
+        vector_store_object = VectorStore(
+            id=vector_store_id,  # Leave blank to have Postgres generate a UUID
+            bytes=0,
+            created_at=int(time.time()),
+            file_counts=FileCounts(
+                cancelled=0, completed=0, failed=0, in_progress=0, total=0
+            ),
+            last_active_at=None,
+            metadata=request.metadata,
+            name=request.name,
+            object="vector_store",
+            status="completed",
+            expires_after=ExpiresAfter.model_validate(request.expires_after) or None,
+            expires_at=None,
+        )
+    except Exception as exc:
+        raise HTTPException(
+            status_code=405, detail="Unable to parse vector store request"
+        ) from exc
+
+    try:
+        crud_vector_store = CRUDVectorStore(model=VectorStore)
+        return await crud_vector_store.update(
+            vector_store_id=vector_store_id,
+            vector_store=vector_store_object,
+            client=session,
+        )
+    except Exception as exc:
+        raise HTTPException(
+            status_code=405, detail="Unable to update vector store"
+        ) from exc
 
 
 @router.delete("/{vector_store_id}")

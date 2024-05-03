@@ -266,8 +266,8 @@ class CreateVectorStoreRequest(BaseModel):
 
     file_ids: list[str] | None = []
     name: str | None = None
-    expires_after: ExpiresAfter | None = None
-    metadata: dict | None = None
+    expires_after: ExpiresAfter | None = ExpiresAfter(anchor="last_active_at", days=0)
+    metadata: dict | None = {}
 
 
 class ModifyVectorStoreRequest(CreateVectorStoreRequest):
