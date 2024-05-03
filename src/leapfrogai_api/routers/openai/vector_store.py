@@ -23,7 +23,7 @@ async def create_vector_store(
 
     try:
         if request.file_ids == []:
-            vector_store = VectorStore(
+            vector_store_object = VectorStore(
                 id="",  # Leave blank to have Postgres generate a UUID
                 bytes=0,
                 created_at=int(time.time()),
@@ -49,7 +49,9 @@ async def create_vector_store(
 
     try:
         crud_vector_store = CRUDVectorStore(model=VectorStore)
-        return await crud_vector_store.create(vector_store=vector_store, client=session)
+        return await crud_vector_store.create(
+            vector_store=vector_store_object, client=session
+        )
     except Exception as exc:
         raise HTTPException(
             status_code=405, detail="Unable to create vector store"

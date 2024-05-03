@@ -14,7 +14,7 @@ create table
     name text,
     object text,
     status text,
-    expires_after bigint,
+    expires_after jsonb,
     expires_at bigint
   );
 

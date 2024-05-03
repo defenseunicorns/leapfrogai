@@ -85,6 +85,8 @@ class CRUDVectorStore:
 
         _, response = data
 
-        if response:
-            return VectorStoreDeleted(**response[0])
-        return None
+        return VectorStoreDeleted(
+            id=vector_store_id,
+            deleted=bool(response),
+            object="vector_store.deleted",
+        )
