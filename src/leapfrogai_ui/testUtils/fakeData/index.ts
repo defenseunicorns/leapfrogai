@@ -1,6 +1,5 @@
 import { faker } from '@faker-js/faker';
-import {assistantDefaults, DEFAULT_ASSISTANT_TEMP} from '$lib/constants';
-
+import { assistantDefaults, DEFAULT_ASSISTANT_TEMP } from '../../src/lib/constants';
 
 const todayOverride = new Date('2024-03-20T00:00');
 

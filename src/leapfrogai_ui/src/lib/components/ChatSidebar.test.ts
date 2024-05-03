@@ -8,7 +8,7 @@ import {
 import { conversationsStore, toastStore } from '$stores';
 import { fireEvent, render, screen, within } from '@testing-library/svelte';
 import userEvent from '@testing-library/user-event';
-import { fakeConversations, getFakeConversation } from '../../testUtils/fakeData';
+import { fakeConversations, getFakeConversation } from '../../../testUtils/fakeData';
 import { vi } from 'vitest';
 import stores from '$app/stores';
 import { monthNames } from '$helpers/dates';

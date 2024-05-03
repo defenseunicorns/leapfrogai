@@ -1,34 +1,17 @@
-<!--
-This component turns off the Carbon Component Svelte TextInput's label and uses our own label
-that includes a tooltip icon.
-
-Slots:
-- input: you can override this with your own component if desired
--->
-
 <script lang="ts">
-  import { TextInput, Tooltip } from 'carbon-components-svelte';
-
-  // TODO - tests
+  import { Tooltip } from 'carbon-components-svelte';
 
   export let name: string = '';
-  export let value: string = '';
   export let labelText: string;
   export let tooltipText: string;
-  export let placeholder: string = 'Type here';
   export let direction: 'top' | 'bottom' | 'left' | 'right' = 'right';
 </script>
 
-<div>
-  <div class="label-and-tooltip">
-    <label for={name} class="bx--label" style="margin-bottom: 0">{labelText}</label>
-    <Tooltip {direction}>
-      <p>{tooltipText}</p>
-    </Tooltip>
-  </div>
-  <slot name="input">
-    <TextInput {name} {placeholder} hideLabel bind:value on:keyup on:keydown on:blur />
-  </slot>
+<div class="label-and-tooltip">
+  <label for={name} class="bx--label" style="margin-bottom: 0">{labelText}</label>
+  <Tooltip {direction}>
+    <p>{tooltipText}</p>
+  </Tooltip>
 </div>
 
 <style lang="scss">
@@ -36,6 +19,5 @@ Slots:
     display: flex;
     justify-content: flex-start;
     align-items: center;
-    margin-bottom: 0.5rem;
   }
 </style>

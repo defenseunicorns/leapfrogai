@@ -1,7 +1,7 @@
 <script lang="ts">
-  import { Breadcrumb, BreadcrumbItem } from 'carbon-components-svelte';
+  import { Breadcrumb, BreadcrumbItem, Content } from 'carbon-components-svelte';
   import { page } from '$app/stores';
-  import LFContent from '$components/LFContent.svelte';
+  import { PoweredByDU } from '$components';
 
   const paths = [
     {
@@ -17,19 +17,36 @@
       name: 'New Assistant'
     }
   ];
-
-  // TODO - test the breadcrumbs
 </script>
 
-<LFContent>
-  <Breadcrumb noTrailingSlash>
-    {#each paths as { path, name } (path)}
-      {#if $page.url.pathname.includes(path)}
-        <BreadcrumbItem href={path} isCurrentPage={$page.url.pathname === path}
-          >{name}</BreadcrumbItem
-        >
-      {/if}
-    {/each}
-  </Breadcrumb>
-  <slot />
-</LFContent>
+<Content>
+  <div class="lf-content-container">
+    <Breadcrumb noTrailingSlash>
+      {#each paths as { path, name } (path)}
+        {#if $page.url.pathname.includes(path)}
+          <BreadcrumbItem href={path} isCurrentPage={$page.url.pathname === path}
+            >{name}</BreadcrumbItem
+          >
+        {/if}
+      {/each}
+    </Breadcrumb>
+    <div class="slot-wrapper">
+      <slot />
+    </div>
+    <div>
+      <PoweredByDU />
+    </div>
+  </div>
+</Content>
+
+<style lang="scss">
+  .slot-wrapper {
+    height: 100%;
+  }
+  .lf-content-container {
+    display: flex;
+    height: 100%;
+    flex-direction: column;
+    justify-content: space-between;
+  }
+</style>

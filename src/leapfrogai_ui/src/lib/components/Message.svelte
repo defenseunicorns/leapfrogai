@@ -179,6 +179,5 @@
     outline: 1px solid themes.$layer-02;
     border-bottom: 0;
     margin-top: 7px; // prevents edit box from jumping up on editMode
-    scrollbar-color: themes.$layer-03 themes.$background;
   }
 </style>

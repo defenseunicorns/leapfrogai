@@ -2,7 +2,7 @@ import { writable } from 'svelte/store';
 import { MAX_LABEL_SIZE } from '$lib/constants';
 import { goto } from '$app/navigation';
 import { error } from '@sveltejs/kit';
-import { toastStore } from '$stores/index';
+import { toastStore } from '$stores';
 
 type ConversationsStore = {
   conversations: Conversation[];

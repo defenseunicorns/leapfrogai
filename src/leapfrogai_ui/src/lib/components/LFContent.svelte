@@ -8,7 +8,7 @@
     <div class="slot-wrapper">
       <slot />
     </div>
-    <div class="branding">
+    <div>
       <PoweredByDU />
     </div>
   </div>
@@ -23,9 +23,5 @@
     height: 100%;
     flex-direction: column;
     justify-content: space-between;
-  }
-
-  .branding {
-    margin-top: layout.$spacing-05;
   }
 </style>

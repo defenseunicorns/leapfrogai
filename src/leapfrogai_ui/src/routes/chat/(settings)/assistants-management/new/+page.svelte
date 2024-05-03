@@ -1,34 +1,51 @@
 <script lang="ts">
   import { createForm } from 'svelte-forms-lib';
   import { Add, User } from 'carbon-icons-svelte';
-  import { Button, Slider, TextArea, TextInput } from 'carbon-components-svelte';
-  import TooltipTextInput from '$components/TooltipTextInput.svelte';
-  import * as yup from 'yup';
+  import { Button, Modal, Slider, TextArea, TextInput } from 'carbon-components-svelte';
+  import { assistantsStore, toastStore } from '$stores';
+  import { goto } from '$app/navigation';
+  import InputTooltip from '$components/InputTooltip.svelte';
+  import { ASSISTANTS_INSTRUCTIONS_MAX_LENGTH, DEFAULT_ASSISTANT_TEMP } from '$lib/constants';
+  import { supabaseAssistantInputSchema } from '../../../../../schemas/assistants';
+  import {
+    ASSISTANTS_DESCRIPTION_MAX_LENGTH,
+    ASSISTANTS_NAME_MAX_LENGTH
+  } from '$lib/constants/index.js';
 
-  // TODO - cancel modal
-  // TODO - tests
+  let cancelModalOpen = false;
 
-  const NewAssistantSchema = yup.object({
-    name: yup.string().required('Required'),
-    tagline: yup.string().required('Required'),
-    instructions: yup.string().required('Required'),
-    temperature: yup.number().required('Required'),
-    dataSources: yup.array().of(yup.string())
-  });
-
-  const { form, errors, handleChange, handleSubmit } = createForm({
+  const { form, errors, state, handleChange, handleSubmit, updateField } = createForm({
     initialValues: {
       name: '',
-      tagline: '',
+      description: '',
       instructions: '',
-      temperature: 0.5
+      temperature: DEFAULT_ASSISTANT_TEMP,
+      metadata: {
+        data_sources: []
+      }
     },
-    validationSchema: NewAssistantSchema,
+    validationSchema: supabaseAssistantInputSchema,
     onSubmit: async (values) => {
-      console.log(JSON.stringify(values));
-      // TODO save to db
+      try {
+        await assistantsStore.createAssistant(values);
+        await goto('/chat/assistants-management');
+      } catch {
+        toastStore.addToast({
+          kind: 'error',
+          title: 'Error',
+          subtitle: `Error creating assistant.`
+        });
+      }
     }
   });
+
+  const handleSliderChange = () => {
+    /* We can't use svelte-forms-lib handleChange here because if the user clicks on the slider track instead
+       of clicking and dragging the handle, svelte-forms-lib is adding an extra key called "undefined" to the form 
+       values which prevents submission 
+     */
+    updateField('temperature', $form.temperature);
+  };
 </script>
 
 <form on:submit={handleSubmit}>
@@ -48,84 +65,106 @@
         on:keyup={handleChange}
         on:blur={handleChange}
         bind:value={$form.name}
+        maxlength={ASSISTANTS_NAME_MAX_LENGTH}
       />
       {#if $errors.name}
         <small class="error">{$errors.name}</small>
       {/if}
 
-      <TooltipTextInput
-        name="tagline"
+      <InputTooltip
+        name="description"
         labelText="Tagline"
         tooltipText="Taglines display on assistant tiles"
+      />
+
+      <TextInput
+        name="description"
         placeholder="Here to help..."
+        labelText="Description"
+        hideLabel
         on:keyup={handleChange}
         on:blur={handleChange}
-        bind:value={$form.tagline}
+        bind:value={$form.description}
+        maxlength={ASSISTANTS_DESCRIPTION_MAX_LENGTH}
       />
-      {#if $errors.tagline}
-        <small class="error">{$errors.tagline}</small>
+
+      {#if $errors.description}
+        <small class="error">{$errors.description}</small>
       {/if}
 
-      <TooltipTextInput
+      <InputTooltip name="instructions" labelText="Instructions" tooltipText="You'll act as..." />
+
+      <TextArea
+        name="instructions"
         labelText="Instructions"
-        tooltipText="Detailed instructions to guide your assistant's responses and behavior"
+        on:keyup={handleChange}
+        on:blur={handleChange}
+        bind:value={$form.instructions}
+        rows={6}
         placeholder="You'll act as..."
-      >
-        <TextArea
-          name="instructions"
-          labelText="instructions"
-          slot="input"
-          on:keyup={handleChange}
-          on:blur={handleChange}
-          bind:value={$form.instructions}
-          rows={6}
-          placeholder="You'll act as..."
-          hideLabel
-        />
-      </TooltipTextInput>
+        hideLabel
+        maxlength={ASSISTANTS_INSTRUCTIONS_MAX_LENGTH}
+      />
+
       {#if $errors.instructions}
         <small class="error">{$errors.instructions}</small>
       {/if}
 
-      <TooltipTextInput
+      <InputTooltip
+        name="temperature"
         labelText="Temperature"
         tooltipText="Adjust the slider to set the creativity level of your assistant's responses"
-      >
-        <Slider
-          name="temperature"
-          slot="input"
-          on:click={handleChange}
-          bind:value={$form.temperature}
-          hideLabel
-          hideTextInput
-          fullWidth
-          min={0}
-          max={1}
-          step={0.1}
-          minLabel="Min"
-          maxLabel="Max"
-        />
-      </TooltipTextInput>
+      />
+      <Slider
+        name="temperature"
+        on:click={handleSliderChange}
+        bind:value={$form.temperature}
+        hideLabel
+        hideTextInput
+        fullWidth
+        min={0}
+        max={1}
+        step={0.1}
+        minLabel="Min"
+        maxLabel="Max"
+      />
+
       {#if $errors.temperature}
         <small class="error">{$errors.temperature}</small>
       {/if}
 
       <!--Note - Data Sources is a placeholder and will be completed in a future story-->
-      <TooltipTextInput
+      <InputTooltip
+        name="metadata.data_sources"
         labelText="Data Sources"
         tooltipText="Specific files your assistant can search and reference"
-      >
-        <Button name="dataSources" slot="input" icon={Add} kind="secondary" size="small">Add</Button
-        >
-      </TooltipTextInput>
+      />
+      <div>
+        <Button name="metadata.data_sources" icon={Add} kind="secondary" size="small">Add</Button>
+      </div>
 
       <div>
-        <Button kind="secondary" size="small">Cancel</Button>
-        <Button kind="primary" size="small" type="submit">Save</Button>
+        <Button kind="secondary" size="small" on:click={() => (cancelModalOpen = true)}
+          >Cancel</Button
+        >
+        <Button kind="primary" size="small" type="submit" disabled={!$state.isValid}>Save</Button>
       </div>
     </div>
   </div>
 </form>
+<div class="cancel-modal">
+  <Modal
+    bind:open={cancelModalOpen}
+    modalHeading="Unsaved Changes"
+    primaryButtonText="Leave this page"
+    secondaryButtonText="Stay on page"
+    on:click:button--secondary={() => (cancelModalOpen = false)}
+    on:submit={() => goto('/chat/assistants-management')}
+    ><p>
+      You have unsaved changes. Do you want to leave this page? Unsaved changes will be deleted.
+    </p></Modal
+  >
+</div>
 
 <style lang="scss">
   .container {
@@ -164,5 +203,12 @@
 
   .error {
     color: themes.$text-error;
+  }
+
+  .cancel-modal {
+    :global(.bx--modal-container) {
+      position: absolute;
+      top: 25%;
+    }
   }
 </style>

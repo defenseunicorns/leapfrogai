@@ -3,7 +3,7 @@ import { render, screen, waitFor } from '@testing-library/svelte';
 import ImportExport from '$components/ImportExport.svelte';
 import { afterEach, vi } from 'vitest';
 import { toastStore } from '$stores';
-import { getFakeConversation } from '../../testUtils/fakeData';
+import { getFakeConversation } from '../../../testUtils/fakeData';
 import { mockNewConversationError } from '$lib/mocks/chat-mocks';
 
 const uploadJSONFile = async (obj: object) => {

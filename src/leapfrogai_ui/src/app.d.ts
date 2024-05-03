@@ -15,6 +15,7 @@ declare global {
       // TODO - add profile type
       // profile?: any;
       conversations?: Conversation[];
+      assistants?: Assistant[];
     }
     // interface PageState {}
     // interface Platform {}
