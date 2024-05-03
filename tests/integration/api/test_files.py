@@ -1,14 +1,16 @@
-"""Test the API endpoints for assistants."""
+"""Test the API endpoints for files."""
 
+from fastapi import HTTPException
 from fastapi.testclient import TestClient
 from openai.types import FileObject, FileDeleted
+import pytest
 from leapfrogai_api.routers.openai.files import router
 
 client = TestClient(router)
 
 
 def test_files():
-    """Test creating an assistant. Requires a running Supabase instance."""
+    """Test uploading a file. Requires a running Supabase instance."""
 
     with open("tests/data/test.txt", "rb") as testfile:
         testfile_content = testfile.read()
@@ -58,7 +60,19 @@ def test_files():
         delete_response.json()["deleted"] is False
     ), "Should not be able to delete twice."
 
-    # Make sure the assistant is not still present
+    # Make sure the file is not still present
     get_response = client.get(f"/openai/v1/files/{create_response.json()['id']}")
     assert get_response.status_code == 200
     assert get_response.json() is None
+
+
+def test_invalid_file_type():
+    """Test creating uploading an invalid file type."""
+
+    with pytest.raises(HTTPException):
+        with open("tests/data/0min12sec.wav", "rb") as testfile:
+            _ = client.post(
+                "/openai/v1/files",
+                files={"file": ("0min12sec.wav", testfile, "audio/wav")},
+                data={"purpose": "assistants"},
+            )

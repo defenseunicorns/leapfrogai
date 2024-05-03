@@ -8,8 +8,16 @@ from langchain_core.document_loaders import Blob
 from langchain_core.documents import Document
 
 
+def check_parser_registry(filename: str) -> bool:
+    """Check if the file extension is supported by the parser."""
+    return filename.endswith((".pdf", ".docx", ".doc", ".txt", ".md"))
+
+
 def parse_file_bytes(file_bytes: bytes, filename: str) -> Iterator[Document]:
     """Parse a file into a document line by line."""
+
+    if not check_parser_registry(filename):
+        raise ValueError(f"Unsupported file extension: {filename}")
 
     if filename.endswith(".pdf"):
         blob = Blob.from_data(
