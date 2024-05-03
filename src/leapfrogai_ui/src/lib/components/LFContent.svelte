@@ -8,9 +8,8 @@
     <div class="slot-wrapper">
       <slot />
     </div>
-    <div>
-      <PoweredByDU />
-    </div>
+
+    <PoweredByDU />
   </div>
 </Content>
 

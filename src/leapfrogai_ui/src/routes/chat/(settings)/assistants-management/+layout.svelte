@@ -33,9 +33,8 @@
       </Breadcrumb>
       <slot />
     </div>
-    <div>
-      <PoweredByDU />
-    </div>
+
+    <PoweredByDU />
   </div>
 </Content>
 

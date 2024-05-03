@@ -15,6 +15,7 @@
     justify-content: center;
     align-items: center;
     gap: layout.$spacing-02;
+    margin-top: 1rem;
   }
   .legal {
     @include type.type-style('legal-01');
