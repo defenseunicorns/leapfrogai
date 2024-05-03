@@ -1,4 +1,4 @@
-"""Test the API endpoints for assistants."""
+"""Test the API endpoints for files."""
 
 from fastapi.testclient import TestClient
 from openai.types import FileObject, FileDeleted
@@ -8,7 +8,7 @@ client = TestClient(router)
 
 
 def test_files():
-    """Test creating an assistant. Requires a running Supabase instance."""
+    """Test creating a file. Requires a running Supabase instance."""
 
     with open("tests/data/test.txt", "rb") as testfile:
         testfile_content = testfile.read()
@@ -58,7 +58,7 @@ def test_files():
         delete_response.json()["deleted"] is False
     ), "Should not be able to delete twice."
 
-    # Make sure the assistant is not still present
+    # Make sure the file is not still present
     get_response = client.get(f"/openai/v1/files/{create_response.json()['id']}")
     assert get_response.status_code == 200
     assert get_response.json() is None

@@ -97,8 +97,6 @@ def test_assistants():
     ), "Should not be able to delete twice."
 
     # Make sure the assistant is not still present
-    retrieve_assistant_response = client.get(
-        f"/openai/v1/assistants/{create_response.json()['id']}"
-    )
-    assert retrieve_assistant_response.status_code == 200
-    assert retrieve_assistant_response.json() is None
+    get_response = client.get(f"/openai/v1/assistants/{create_response.json()['id']}")
+    assert get_response.status_code == 200
+    assert get_response.json() is None
