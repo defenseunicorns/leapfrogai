@@ -83,7 +83,6 @@ The invalid prop can still be passed to this component to validate for other con
   let lengthInvalidText = 'Character limit reached';
   $: limitReached = $value.length === Number(env.PUBLIC_MESSAGE_LENGTH_LIMIT);
 
-  let inputHeight = '';
   function resizeTextArea() {
     if (ref) {
       ref.style.height = '1px';
@@ -92,8 +91,6 @@ The invalid prop can still be passed to this component to validate for other con
   }
 
   onMount(() => {
-    const style = getComputedStyle(document.documentElement);
-    inputHeight = style.getPropertyValue('--message-input-height').trim();
     resizeTextArea();
   });
 </script>
@@ -147,6 +144,7 @@ The invalid prop can still be passed to this component to validate for other con
       {...$$restProps}
       on:keyup={resizeTextArea}
       on:keydown={(e) => {
+        resizeTextArea();
         // Allow user to type up to maxCount, but only show error once trying to add more
         // characters after hitting this limit
 
