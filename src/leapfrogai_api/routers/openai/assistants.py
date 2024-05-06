@@ -6,6 +6,7 @@ from openai.types.beta import Assistant, AssistantDeleted
 from openai.types.beta.assistant import ToolResources
 from leapfrogai_api.backend.types import (
     CreateAssistantRequest,
+    ListAssistantsResponse,
     ModifyAssistantRequest,
 )
 from leapfrogai_api.routers.supabase_session import Session
@@ -52,18 +53,18 @@ async def create_assistant(
 
 
 @router.get("")
-async def list_assistants(session: Session):
+async def list_assistants(session: Session) -> ListAssistantsResponse | None:
     """List all the assistants."""
-    try:
-        crud_assistant = CRUDAssistant(model=Assistant)
-        crud_response = await crud_assistant.list(client=session)
-        response = {
-            "object": "list",
-            "data": crud_response,
-        }
-        return response
-    except FileNotFoundError as exc:
-        raise HTTPException(status_code=404, detail="No assistants found") from exc
+    crud_assistant = CRUDAssistant(model=Assistant)
+    crud_response = await crud_assistant.list(client=session)
+
+    if not crud_response:
+        return None
+
+    return {
+        "object": "list",
+        "data": crud_response,
+    }
 
 
 @router.get("/{assistant_id}")
@@ -81,21 +82,27 @@ async def modify_assistant(
     session: Session, assistant_id: str, request: ModifyAssistantRequest
 ) -> Assistant:
     """Modify an assistant."""
+
+    old_assistant = await retrieve_assistant(session, assistant_id)
+    if old_assistant is None:
+        raise HTTPException(status_code=404, detail="Assistant not found")
+
     try:
         assistant = Assistant(
             id=assistant_id,
-            created_at=int(time.time()),
-            name=request.name,
-            description=request.description,
-            instructions=request.instructions,
-            model=request.model,
+            created_at=old_assistant.created_at,
+            name=request.name or old_assistant.name,
+            description=request.description or old_assistant.description,
+            instructions=request.instructions or old_assistant.instructions,
+            model=request.model or old_assistant.model,
             object="assistant",
-            tools=validate_tools_typed_dict(request.tools),
-            tool_resources=ToolResources.model_validate(request.tool_resources),
-            temperature=request.temperature,
-            top_p=request.top_p,
-            metadata=request.metadata,
-            response_format=request.response_format,
+            tools=validate_tools_typed_dict(request.tools) or old_assistant.tools,
+            tool_resources=ToolResources.model_validate(request.tool_resources)
+            or old_assistant.tool_resources,
+            temperature=request.temperature or old_assistant.temperature,
+            top_p=request.top_p or old_assistant.top_p,
+            metadata=request.metadata or old_assistant.metadata,
+            response_format=request.response_format or old_assistant.response_format,
         )
     except Exception as exc:
         raise HTTPException(

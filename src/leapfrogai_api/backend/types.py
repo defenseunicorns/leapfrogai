@@ -5,6 +5,8 @@ from typing import Literal
 from pydantic import BaseModel
 from fastapi import UploadFile, Form, File
 from openai.types.beta.vector_store import ExpiresAfter
+from openai.types import FileObject
+from openai.types.beta import Assistant
 
 ##########
 # GENERIC
@@ -230,6 +232,13 @@ class UploadFileRequest(BaseModel):
         return cls(file=file, purpose=purpose)
 
 
+class ListFilesResponse(BaseModel):
+    """Response object for listing files."""
+
+    object: str = "list"
+    data: list[FileObject] = []
+
+
 #############
 # ASSISTANTS
 #############
@@ -272,3 +281,9 @@ class CreateVectorStoreRequest(BaseModel):
 
 class ModifyVectorStoreRequest(CreateVectorStoreRequest):
     """Request object for modifying a vector store."""
+
+class ListAssistantsResponse(BaseModel):
+    """Response object for listing files."""
+
+    object: str = "list"
+    data: list[Assistant] = []
