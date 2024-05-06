@@ -282,6 +282,7 @@ class CreateVectorStoreRequest(BaseModel):
 class ModifyVectorStoreRequest(CreateVectorStoreRequest):
     """Request object for modifying a vector store."""
 
+
 class ListAssistantsResponse(BaseModel):
     """Response object for listing files."""
 
