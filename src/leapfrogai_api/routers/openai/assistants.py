@@ -1,7 +1,6 @@
 """OpenAI Compliant Assistants API Router."""
 
 import time
-from typing import List
 from fastapi import HTTPException, APIRouter
 from openai.types.beta import Assistant, AssistantDeleted
 from openai.types.beta.assistant import ToolResources
