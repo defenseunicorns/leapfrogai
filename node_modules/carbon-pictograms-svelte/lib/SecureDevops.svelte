@@ -1,0 +1,27 @@
+<script>
+  /**
+   * Specify the pictogram title.
+   * @type {string}
+   */
+  export let title = undefined;
+
+  $: labelled =  $$props["aria-label"] || $$props["aria-labelledby"] || $$props["title"];
+  $: attributes = {
+    "aria-hidden": labelled ? undefined : true,
+    role: labelled ? "img" : undefined,
+    focusable: Number($$props["tabindex"]) === 0  ? true : undefined,
+  };
+</script>
+
+<svg
+  preserveAspectRatio="xMidYMid meet"
+  xmlns="http://www.w3.org/2000/svg"
+  viewBox="0 0 32 32"
+  width="64"
+  height="64"
+  fill="currentColor"
+  {title}
+  {...attributes}
+  {...$$restProps}>
+  <path d="M16,31.36C8.082,31.36,1.64,24.918,1.64,17V1	c0-0.199,0.161-0.36,0.36-0.36h28c0.199,0,0.36,0.161,0.36,0.36v16C30.36,24.918,23.918,31.36,16,31.36z M2.36,1.36V17	c0,7.521,6.119,13.64,13.64,13.64S29.64,24.522,29.64,17V1.36H2.36z M21.5,21.36c-3.231,0-5.86-2.629-5.86-5.86	c0-2.834-2.306-5.14-5.14-5.14s-5.14,2.306-5.14,5.14s2.306,5.14,5.14,5.14c1.373,0,2.664-0.534,3.635-1.506l0.509,0.51	c-1.106,1.106-2.578,1.717-4.144,1.717c-3.231,0-5.86-2.629-5.86-5.86s2.628-5.86,5.86-5.86s5.86,2.628,5.86,5.86	c0,2.834,2.306,5.14,5.14,5.14s5.14-2.306,5.14-5.14s-2.306-5.14-5.14-5.14c-1.373,0-2.663,0.535-3.634,1.505l-0.51-0.509	C18.464,10.25,19.935,9.64,21.5,9.64c3.231,0,5.86,2.628,5.86,5.86S24.731,21.36,21.5,21.36z"></path>
+</svg>

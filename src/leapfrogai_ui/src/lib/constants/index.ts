@@ -6,6 +6,7 @@ export const ASSISTANTS_NAME_MAX_LENGTH = 256;
 export const ASSISTANTS_DESCRIPTION_MAX_LENGTH = 512;
 export const ASSISTANTS_INSTRUCTIONS_MAX_LENGTH = 256000;
 
+
 // TODO - once using API to save, these defaults should be returned by the POST call and would not need to be supplied
 // We only need to default the model and tools
 export const assistantDefaults: Omit<Assistant, 'id' | 'created_at'> = {

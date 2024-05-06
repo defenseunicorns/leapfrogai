@@ -5,6 +5,7 @@ type NewAssistantInput = {
   temperature: number;
   metadata: {
     data_sources?: string[];
+    avatar?: string;
   };
 };
 
@@ -27,6 +28,7 @@ type Assistant = {
   metadata: {
     created_by: string | null; //user id
     data_sources?: string[]; // vector store ids
+    avatar?: string;
     [key: string]: unknown;
   };
   temperature: number | null;

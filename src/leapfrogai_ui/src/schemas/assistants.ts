@@ -7,7 +7,8 @@ export const supabaseAssistantInputSchema: ObjectSchema<NewAssistantInput> = obj
   instructions: string().max(ASSISTANTS_INSTRUCTIONS_MAX_LENGTH).required('Required'),
   temperature: number().required('Required'),
   metadata: object({
-    data_sources: array().of(string().required('Required'))
+    data_sources: array().of(string().required('Required')),
+    avatar: string()
   })
 })
   .noUnknown(true)

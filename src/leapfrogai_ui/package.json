@@ -70,6 +70,7 @@
     "@sveltejs/vite-plugin-svelte": "^3.1.0",
     "@testing-library/user-event": "^14.5.2",
     "ai": "^3.0.13",
+    "carbon-pictograms-svelte": "^12.10.0",
     "concurrently": "^8.2.2",
     "fuse.js": "^7.0.0",
     "msw": "^2.2.14",

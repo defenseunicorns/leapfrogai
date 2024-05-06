@@ -1,7 +1,7 @@
 <script lang="ts">
   import { goto } from '$app/navigation';
   import { fade } from 'svelte/transition';
-  import { Button, Search, Tile } from 'carbon-components-svelte';
+  import { Button, ClickableTile, Search } from 'carbon-components-svelte';
   import { Add, User } from 'carbon-icons-svelte';
   import { onMount } from 'svelte';
   import { assistantsStore } from '$stores';
@@ -58,7 +58,7 @@
     <div data-testid="assistants grid" class="assistants-grid">
       {#each assistantsToDisplay as assistant (assistant.id)}
         <div class="assistant-card" transition:fade={{ duration: 70 }}>
-          <Tile>
+          <ClickableTile>
             <User width="40px" height="40px" />
             <div class="name">{assistant.name}</div>
             <!--There isn't a simple solution for multi line text ellipses, so doing it manually at specific character length instead-->
@@ -67,7 +67,7 @@
                 ? `${assistant.description?.slice(0, 73)}...`
                 : assistant.description}
             </div>
-          </Tile>
+          </ClickableTile>
         </div>
       {/each}
     </div>
@@ -122,11 +122,6 @@
       width: 288px;
       height: 172px;
       overflow: hidden;
-      transition: background-color 70ms ease;
-      cursor: pointer;
-      &:hover {
-        background-color: themes.$layer-02;
-      }
     }
   }
 </style>

@@ -1,6 +1,6 @@
 <script lang="ts">
   import { createForm } from 'svelte-forms-lib';
-  import { Add, User } from 'carbon-icons-svelte';
+  import { Add } from 'carbon-icons-svelte';
   import { Button, Modal, Slider, TextArea, TextInput } from 'carbon-components-svelte';
   import { assistantsStore, toastStore } from '$stores';
   import { goto } from '$app/navigation';
@@ -14,6 +14,7 @@
   import AssistantAvatar from '$components/AssistantAvatar.svelte';
 
   let cancelModalOpen = false;
+  let files: File[];
 
   const { form, errors, state, handleChange, handleSubmit, updateField } = createForm({
     initialValues: {
@@ -22,12 +23,16 @@
       instructions: '',
       temperature: DEFAULT_ASSISTANT_TEMP,
       metadata: {
-        data_sources: []
+        data_sources: [],
+        avatar: ''
       }
     },
     validationSchema: supabaseAssistantInputSchema,
     onSubmit: async (values) => {
       try {
+        console.log('file', files[0]); // TODO - save this, ref: https://supabase.com/docs/guides/getting-started/tutorials/with-sveltekit?database-method=sql#create-an-upload-widget
+        // TODO - save pictorgram if not user image upload
+        // TODO - error status for image upload - ask Greg, how is this required?
         await assistantsStore.createAssistant(values);
         await goto('/chat/assistants-management');
       } catch {
@@ -54,7 +59,7 @@
     <div class="inner-container">
       <div class="top-row">
         <div class="title">New Assistant</div>
-        <AssistantAvatar />
+        <AssistantAvatar bind:files />
       </div>
       <TextInput
         name="name"
