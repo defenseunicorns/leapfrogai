@@ -108,4 +108,6 @@ def test_assistants():
     # Make sure the assistant is not still present
     get_response = client.get(f"/openai/v1/assistants/{assistant_id}")
     assert get_response.status_code is status.HTTP_200_OK
-    assert get_response.json() is None
+    assert (
+        get_response.json() is None
+    ), f"Get should not return deleted Assistant {assistant_id}."
