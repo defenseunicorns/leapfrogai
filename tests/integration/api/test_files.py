@@ -74,13 +74,14 @@ def test_files():
         get_response.json() is None
     ), f"Get should not return deleted FileObject {file_id}."
 
-  def test_invalid_file_type():
-      """Test creating uploading an invalid file type."""
 
-      with pytest.raises(HTTPException):
-          with open("tests/data/0min12sec.wav", "rb") as testfile:
-              _ = client.post(
-                  "/openai/v1/files",
-                  files={"file": ("0min12sec.wav", testfile, "audio/wav")},
-                  data={"purpose": "assistants"},
-              )
+def test_invalid_file_type():
+    """Test creating uploading an invalid file type."""
+
+    with pytest.raises(HTTPException):
+        with open("tests/data/0min12sec.wav", "rb") as testfile:
+            _ = client.post(
+                "/openai/v1/files",
+                files={"file": ("0min12sec.wav", testfile, "audio/wav")},
+                data={"purpose": "assistants"},
+            )
