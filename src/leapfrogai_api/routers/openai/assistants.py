@@ -53,11 +53,16 @@ async def create_assistant(
 
 
 @router.get("")
-async def list_assistants(session: Session) -> List[Assistant] | None:
+async def list_assistants(session: Session):
     """List all the assistants."""
     try:
         crud_assistant = CRUDAssistant(model=Assistant)
-        return await crud_assistant.list(client=session)
+        crud_response = await crud_assistant.list(client=session)
+        response = {
+            "object": "list",
+            "data": crud_response,
+        }
+        return response
     except FileNotFoundError as exc:
         raise HTTPException(status_code=404, detail="No assistants found") from exc
 
