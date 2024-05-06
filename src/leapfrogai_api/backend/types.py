@@ -4,6 +4,8 @@ from __future__ import annotations
 from typing import Literal
 from pydantic import BaseModel
 from fastapi import UploadFile, Form, File
+from openai.types import FileObject
+from openai.types.beta import Assistant
 
 ##########
 # GENERIC
@@ -229,6 +231,13 @@ class UploadFileRequest(BaseModel):
         return cls(file=file, purpose=purpose)
 
 
+class ListFilesResponse(BaseModel):
+    """Response object for listing files."""
+
+    object: str = "list"
+    data: list[FileObject] = []
+
+
 #############
 # ASSISTANTS
 #############
@@ -253,3 +262,10 @@ class CreateAssistantRequest(BaseModel):
 
 class ModifyAssistantRequest(CreateAssistantRequest):
     """Request object for modifying an assistant."""
+
+
+class ListAssistantsResponse(BaseModel):
+    """Response object for listing files."""
+
+    object: str = "list"
+    data: list[Assistant] = []

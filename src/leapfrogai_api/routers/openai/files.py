@@ -3,7 +3,7 @@
 import time
 from fastapi import APIRouter, Depends, HTTPException, UploadFile
 from openai.types import FileDeleted, FileObject
-from leapfrogai_api.backend.types import UploadFileRequest
+from leapfrogai_api.backend.types import ListFilesResponse, UploadFileRequest
 from leapfrogai_api.data.crud_file_object import CRUDFileObject
 from leapfrogai_api.data.crud_file_bucket import CRUDFileBucket
 from leapfrogai_api.routers.supabase_session import Session
@@ -61,7 +61,7 @@ async def upload_file(
 
 
 @router.get("")
-async def list_files(session: Session):
+async def list_files(session: Session) -> ListFilesResponse | None:
     """List all files."""
     try:
         crud_file = CRUDFileObject(model=FileObject)
