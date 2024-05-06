@@ -63,16 +63,16 @@ async def upload_file(
 @router.get("")
 async def list_files(session: Session) -> ListFilesResponse | None:
     """List all files."""
-    try:
-        crud_file = CRUDFileObject(model=FileObject)
-        crud_response = await crud_file.list(client=session)
-        response = {
-            "object": "list",
-            "data": crud_response,
-        }
-        return response
-    except FileNotFoundError as exc:
-        raise HTTPException(status_code=404, detail="No file objects found") from exc
+    crud_file = CRUDFileObject(model=FileObject)
+    crud_response = await crud_file.list(client=session)
+
+    if crud_response is None:
+        return None
+
+    return {
+        "object": "list",
+        "data": crud_response,
+    }
 
 
 @router.get("/{file_id}")
