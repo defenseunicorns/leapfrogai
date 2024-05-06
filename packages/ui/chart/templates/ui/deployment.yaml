@@ -15,7 +15,8 @@ spec:
     spec:
       containers:
         - name: {{ .Values.package.name }}
-          image: 'ghcr.io/defenseunicorns/leapfrogai/leapfrogai-ui:###ZARF_CONST_IMAGE_VERSION###'
+          image: "{{ .Values.image.repository }}:{{ .Values.image.tag | default .Chart.AppVersion }}"
+          imagePullPolicy: {{ .Values.image.pullPolicy }}
           ports:
             - containerPort: 3000
           env:
@@ -41,6 +42,7 @@ spec:
                 secretKeyRef:
                   name: supabase-bootstrap-jwt
                   key: anon-key
+                  optional: true
               {{ end }}
             - name: PUBLIC_DISABLE_KEYCLOAK
               value: '###ZARF_VAR_DISABLE_KEYCLOAK###'
