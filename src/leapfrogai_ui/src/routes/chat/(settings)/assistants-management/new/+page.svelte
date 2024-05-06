@@ -11,6 +11,7 @@
     ASSISTANTS_DESCRIPTION_MAX_LENGTH,
     ASSISTANTS_NAME_MAX_LENGTH
   } from '$lib/constants/index.js';
+  import AssistantAvatar from '$components/AssistantAvatar.svelte';
 
   let cancelModalOpen = false;
 
@@ -53,10 +54,7 @@
     <div class="inner-container">
       <div class="top-row">
         <div class="title">New Assistant</div>
-        <!--Note - Avatar is a placeholder and will be completed in a future story-->
-        <button class="user-icon remove-btn-style" tabindex="0" on:click|preventDefault>
-          <User />
-        </button>
+        <AssistantAvatar />
       </div>
       <TextInput
         name="name"
@@ -191,18 +189,6 @@
 
   .title {
     @include type.type-style('heading-05');
-  }
-
-  .user-icon :global(svg) {
-    width: 3rem;
-    height: 3rem;
-    padding: layout.$spacing-03;
-    border-radius: 50%;
-    background-color: themes.$layer-01;
-    transition: background-color 70ms ease;
-    &:hover {
-      background-color: themes.$layer-02;
-    }
   }
 
   .error {
