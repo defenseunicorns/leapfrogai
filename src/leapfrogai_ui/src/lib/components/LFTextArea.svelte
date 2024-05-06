@@ -145,8 +145,7 @@ The invalid prop can still be passed to this component to validate for other con
       style="--maxRows:{maxRows};"
       maxlength={maxCount + 1 ?? undefined}
       {...$$restProps}
-      on:change
-      on:input={resizeTextArea}
+      on:keyup={resizeTextArea}
       on:keydown={(e) => {
         // Allow user to type up to maxCount, but only show error once trying to add more
         // characters after hitting this limit
@@ -169,12 +168,11 @@ The invalid prop can still be passed to this component to validate for other con
           showLengthError = true; // throw error
         } else {
           if (e.key === 'Enter' && !e.shiftKey && ref) {
-            ref.style.height = inputHeight; // reset input size if there were multiple lines
+            resizeTextArea();
             onSubmit(e);
           }
         }
       }}
-      on:keyup
       on:focus
       on:blur
       on:paste
