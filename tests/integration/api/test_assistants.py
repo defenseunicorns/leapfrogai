@@ -33,7 +33,7 @@ def test_assistants():
 
     list_response = client.get("/openai/v1/assistants")
     assert list_response.status_code == 200
-    for assistant_object in list_response.json():
+    for assistant_object in list_response.json()["data"]:
         assert Assistant.model_validate(
             assistant_object
         ), "Should return a list of Assistants."

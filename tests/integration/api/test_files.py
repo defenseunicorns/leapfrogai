@@ -23,7 +23,7 @@ def test_files():
 
     list_response = client.get("/openai/v1/files")
     assert list_response.status_code == 200
-    for file_object in list_response.json():
+    for file_object in list_response.json()["data"]:
         assert FileObject.model_validate(
             file_object
         ), "Should return a list of FileObjects."
