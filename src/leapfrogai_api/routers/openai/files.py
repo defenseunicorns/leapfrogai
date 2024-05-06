@@ -1,10 +1,8 @@
 """OpenAI Compliant Files API Router."""
 
 import time
-
 from fastapi import APIRouter, Depends, HTTPException, UploadFile
 from openai.types import FileDeleted, FileObject
-
 from leapfrogai_api.backend.types import UploadFileRequest
 from leapfrogai_api.data.crud_file_object import CRUDFileObject
 from leapfrogai_api.data.crud_file_bucket import CRUDFileBucket
@@ -63,11 +61,16 @@ async def upload_file(
 
 
 @router.get("")
-async def list_files(session: Session) -> list[FileObject] | None:
+async def list_files(session: Session):
     """List all files."""
     try:
         crud_file = CRUDFileObject(model=FileObject)
-        return await crud_file.list(client=session)
+        crud_response = await crud_file.list(client=session)
+        response = {
+            "object": "list",
+            "data": crud_response,
+        }
+        return response
     except FileNotFoundError as exc:
         raise HTTPException(status_code=404, detail="No file objects found") from exc
 
