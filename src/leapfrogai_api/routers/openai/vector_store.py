@@ -9,7 +9,7 @@ from leapfrogai_api.backend.types import (
     CreateVectorStoreRequest,
     ModifyVectorStoreRequest,
 )
-from leapfrogai_api.data.crud_vector_store import CRUDVectorStore
+from leapfrogai_api.data.crud_vector_store_object import CRUDVectorStore
 from leapfrogai_api.routers.supabase_session import Session
 
 router = APIRouter(prefix="/openai/v1/vector_store", tags=["openai/vector_store"])
