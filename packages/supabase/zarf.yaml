@@ -9,7 +9,7 @@ metadata:
 constants:
   - name: EXTERNAL_KEYCLOAK_CLIENT_ID
     description: 'External keycloak client value'
-    value: "leapfrogai"
+    value: "uds-supabase"
   - name: EXTERNAL_KEYCLOAK_REDIRECT_URL
     description: 'Keycloaks redirect url'
     value: "https://supabase-kong.uds.dev/auth/v1/callback"

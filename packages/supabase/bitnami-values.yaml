@@ -63,7 +63,7 @@ auth:
     - name: GOTRUE_EXTERNAL_KEYCLOAK_SECRET
       valueFrom:
         secretKeyRef:
-          name: supabase-keycloak-secret
+          name: sso-client-uds-supabase
           key: secret
 meta:
   enabled: ###ZARF_VAR_ENABLE_META###
