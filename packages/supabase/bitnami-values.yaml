@@ -141,13 +141,6 @@ kong:
       securityContext: {{- omit .Values.containerSecurityContext "enabled" | toYaml | nindent 6 }}
       {{- end }}
       env:
-        - name: SUPABASE_DASHBOARD_USERNAME
-          value: '###ZARF_CONST_DASHBOARD_USERNAME###'
-        - name: SUPABASE_DASHBOARD_PASSWORD
-          valueFrom:
-            secretKeyRef:
-              name: supabase-dashboard-secret
-              key: password
         - name: SUPABASE_ANON_KEY
           valueFrom:
             secretKeyRef:

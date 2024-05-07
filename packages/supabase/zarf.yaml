@@ -7,9 +7,6 @@ metadata:
     supabase instance and all of its dependencies
 
 constants:
-  - name: DASHBOARD_USERNAME
-    description: The dashboard's (Supabase studio) default username
-    value: supabase-admin
   - name: EXTERNAL_KEYCLOAK_CLIENT_ID
     description: 'External keycloak client value'
     value: "leapfrogai"
