@@ -50,9 +50,7 @@ async def create_vector_store(
 
     try:
         crud_vector_store = CRUDVectorStore(model=VectorStore)
-        return await crud_vector_store.create(
-            vector_store=vector_store_object, client=session
-        )
+        return await crud_vector_store.create(object_=vector_store_object, db=session)
     except Exception as exc:
         raise HTTPException(
             status_code=405, detail="Unable to create vector store"
@@ -64,7 +62,7 @@ async def list_vector_stores(session: Session) -> list[VectorStore] | None:
     """List all the vector stores."""
     try:
         crud_vector_store = CRUDVectorStore(model=VectorStore)
-        return await crud_vector_store.list(client=session)
+        return await crud_vector_store.list(db=session)
     except Exception as exc:
         raise HTTPException(
             status_code=500, detail="Failed to list vector stores"
@@ -78,9 +76,7 @@ async def retrieve_vector_store(
     """Retrieve a vector store."""
     try:
         crud_vector_store = CRUDVectorStore(model=VectorStore)
-        return await crud_vector_store.get(
-            client=session, vector_store_id=vector_store_id
-        )
+        return await crud_vector_store.get(db=session, id_=vector_store_id)
     except Exception as exc:
         raise HTTPException(
             status_code=500, detail="Failed to retrieve vector store"
@@ -116,9 +112,9 @@ async def modify_vector_store(
     try:
         crud_vector_store = CRUDVectorStore(model=VectorStore)
         return await crud_vector_store.update(
-            vector_store_id=vector_store_id,
-            vector_store=vector_store_object,
-            client=session,
+            id_=vector_store_id,
+            object_=vector_store_object,
+            db=session,
         )
     except Exception as exc:
         raise HTTPException(
@@ -133,8 +129,13 @@ async def delete_vector_store(
     """Delete a vector store."""
     try:
         crud_vector_store = CRUDVectorStore(model=VectorStore)
-        return await crud_vector_store.delete(
-            client=session, vector_store_id=vector_store_id
+        vector_store_deleted = await crud_vector_store.delete(
+            db=session, id_=vector_store_id
+        )
+        return VectorStoreDeleted(
+            id=vector_store_id,
+            object="vector_store.deleted",
+            deleted=vector_store_deleted,
         )
     except Exception as exc:
         raise HTTPException(
