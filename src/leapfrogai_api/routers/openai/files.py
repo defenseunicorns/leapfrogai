@@ -7,7 +7,7 @@ from leapfrogai_api.backend.types import ListFilesResponse, UploadFileRequest
 from leapfrogai_api.data.crud_file_object import CRUDFileObject
 from leapfrogai_api.data.crud_file_bucket import CRUDFileBucket
 from leapfrogai_api.routers.supabase_session import Session
-from leapfrogai_api.backend.file_parser import check_parser_registry
+from leapfrogai_api.backend.document_loader import supported_mime_type
 
 router = APIRouter(prefix="/openai/v1/files", tags=["openai/files"])
 
@@ -19,11 +19,8 @@ async def upload_file(
 ) -> FileObject:
     """Upload a file."""
 
-    if not check_parser_registry(request.file.filename):
-        raise HTTPException(
-            status_code=400,
-            detail="Unsupported file extension: {request.file.filename}",
-        )
+    if not await supported_mime_type(request.file.content_type):
+        raise HTTPException(status_code=405, detail="Unsupported file type")
 
     try:
         file_object = FileObject(

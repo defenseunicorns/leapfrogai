@@ -58,6 +58,12 @@ class CRUDAssistant:
         self, client: AsyncClient, assistant_id: str, assistant: Assistant
     ) -> Assistant | None:
         """Update an assistant by its ID."""
+
+        get_response = await self.get(client, assistant_id)
+
+        if not get_response:
+            raise ValueError(f"Assistant with ID {assistant_id} not found.")
+
         data, _count = (
             await client.table("assistant_objects")
             .update(assistant.model_dump())
