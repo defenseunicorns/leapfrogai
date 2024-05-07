@@ -21,7 +21,9 @@ components:
     - name: leapfrogai
       namespace: leapfrogai
       localPath: chart
+      # x-release-please-start-version
       version: 0.6.1
+      # x-release-please-end
       valuesFiles:
         - "lfai-values.yaml"
     images:
