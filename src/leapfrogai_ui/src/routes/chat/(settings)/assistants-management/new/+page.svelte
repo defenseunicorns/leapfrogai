@@ -16,6 +16,7 @@
 
   let cancelModalOpen = false;
   let files: File[];
+  let selectedPictogramName: string;
 
   const { form, errors, state, handleChange, updateField } = createForm({
     initialValues: {
@@ -24,13 +25,13 @@
       instructions: '',
       temperature: DEFAULT_ASSISTANT_TEMP,
       data_sources: '',
-      avatar: null
+      avatar: null,
+      pictogram: null
     },
     validationSchema: supabaseAssistantInputSchema,
     onSubmit: () => {}
   });
 
-  // TODO - save this, ref: https://supabase.com/docs/guides/getting-started/tutorials/with-sveltekit?database-method=sql#create-an-upload-widget
   // TODO - save pictorgram if not user image upload
   // TODO - error status for image upload - ask Greg, how is this required?
 
@@ -47,6 +48,7 @@
   method="POST"
   enctype="multipart/form-data"
   use:enhance={() => {
+
     return async ({ result }) => {
       if (result.type === 'redirect') {
         toastStore.addToast({
@@ -58,7 +60,7 @@
       } else if (result.type === 'failure') {
         toastStore.addToast({
           kind: 'error',
-          title: 'Error Creating Assistant',
+          title: `Error Creating Assistant: ${result.data?.message}`,
           subtitle: ''
         });
       }
@@ -69,7 +71,7 @@
     <div class="inner-container">
       <div class="top-row">
         <div class="title">New Assistant</div>
-        <AssistantAvatar bind:files />
+        <AssistantAvatar bind:files bind:selectedPictogramName />
       </div>
       <TextInput
         name="name"
@@ -161,6 +163,7 @@
           >Add <input name="data_sources" type="hidden" /></Button
         >
       </div>
+
 
       <div>
         <Button kind="secondary" size="small" on:click={() => (cancelModalOpen = true)}

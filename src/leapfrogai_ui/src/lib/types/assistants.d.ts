@@ -5,6 +5,7 @@ type NewAssistantInput = {
   temperature: number;
   data_sources?: string;
   avatar?: File;
+  pictogram?: string;
 };
 
 type ToolResources = {
@@ -27,6 +28,7 @@ type Assistant = {
     created_by: string | null; //user id
     data_sources?: string; // vector store ids, array as string
     avatar?: string;
+    pictogram?: string;
     [key: string]: unknown;
   };
   temperature: number | null;

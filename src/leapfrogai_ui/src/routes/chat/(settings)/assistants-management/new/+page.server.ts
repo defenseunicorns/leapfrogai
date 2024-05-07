@@ -7,7 +7,13 @@ import { v4 as uuidv4 } from 'uuid';
 import { assistantsStore } from '$stores';
 import { ValidationError } from 'yup';
 
-export const load: PageServerLoad = async () => {
+export const load: PageServerLoad = async ({ locals: { getSession } }) => {
+  const session = await getSession();
+
+  if (!session) {
+    throw redirect(303, '/');
+  }
+
   return { title: 'LeapfrogAI - New Assistant' };
 };
 
@@ -16,23 +22,28 @@ export const actions = {
     // Validate session
     const session = await getSession();
     if (!session) {
+      console.log('Form submission: create assistant. Invalid session');
       return fail(401, { message: 'Unauthorized' });
     }
+
     // Build Assistant Input object
     const formData = await request.formData();
+
     const name = formData.get('name') as string;
     const description = formData.get('description') as string;
     const instructions = formData.get('instructions') as string;
     const temperature = formData.get('temperature') as string;
     const data_sources = formData.get('data_sources') as string | undefined;
     const avatarFile = formData.get('avatar') as File | undefined;
+    const pictogram = formData.get('pictogram') as string | undefined;
 
     const assistantInput: NewAssistantInput = {
       name,
       description,
       instructions,
       temperature: Number(temperature),
-      data_sources
+      data_sources,
+      pictogram
     };
     let avatarFilePath: string = '';
 
@@ -41,15 +52,14 @@ export const actions = {
       await supabaseAssistantInputSchema.validate(assistantInput);
     } catch (e) {
       if (e instanceof ValidationError) {
-        console.log(e.errors);
-        return fail(400, { errors: e.errors });
+        console.error(`Form submission: create assistant validation errors: ${e.errors}`);
+        return fail(400, { message: 'Bad Request' });
       }
-      return fail(500);
+      return fail(500, { message: 'Internal Server Error' });
     }
 
     // Upload Avatar
     if (avatarFile?.size !== 0) {
-
       if (!(avatarFile instanceof File)) {
         return fail(400, { message: 'Invalid avatar' });
       }
@@ -65,7 +75,7 @@ export const actions = {
       const filePath = `${session.user.id}/assistant_avatars/${uuidv4()}/${avatarFile.name}`;
 
       const { data: supabaseData, error } = await supabase.storage
-        .from('file_uploads')
+        .from('assistant_avatars')
         .upload(filePath, avatarFile);
 
       if (error) {
@@ -90,6 +100,7 @@ export const actions = {
         ...assistantDefaults.metadata,
         data_sources: assistantInput.data_sources || '',
         avatar: avatarFilePath,
+        pictogram: assistantInput.pictogram,
         created_by: session.user.id
       }
     };
@@ -109,6 +120,7 @@ export const actions = {
     }
 
     assistantsStore.addAssistant(createdAssistant[0]);
+
     return redirect(303, '/chat/assistants-management');
   }
 };

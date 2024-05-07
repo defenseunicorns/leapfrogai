@@ -6,6 +6,8 @@
   import { onMount } from 'svelte';
   import { assistantsStore } from '$stores';
   import Fuse, { type FuseResult, type IFuseOptions } from 'fuse.js';
+  import { env } from '$env/dynamic/public';
+  import PictogramIcon from '$components/PictogramIcon.svelte';
 
   export let data;
 
@@ -59,7 +61,18 @@
       {#each assistantsToDisplay as assistant (assistant.id)}
         <div class="assistant-card" transition:fade={{ duration: 70 }}>
           <ClickableTile>
-            <User width="40px" height="40px" />
+            {#if assistant.metadata.avatar}
+              <img
+                src={`${env.PUBLIC_SUPABASE_URL}/storage/v1/object/public/assistant_avatars/${assistant.metadata.avatar}`}
+                alt="avatar"
+                width="40px"
+                height="40px"
+              />
+            {:else if assistant.metadata.pictogram}
+              <PictogramIcon iconName={assistant.metadata.pictogram} />
+            {:else}
+              <User width="40px" height="40px" />
+            {/if}
             <div class="name">{assistant.name}</div>
             <!--There isn't a simple solution for multi line text ellipses, so doing it manually at specific character length instead-->
             <div class="description">

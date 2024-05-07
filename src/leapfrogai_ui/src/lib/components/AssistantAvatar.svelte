@@ -10,27 +10,35 @@
   } from 'carbon-components-svelte';
   import Pictograms from '$components/Pictograms.svelte';
 
-  let imagePreviewUrl: string;
+  export let files: File[];
+  export let selectedPictogramName: string;
+
+  let tempFiles: File[] = [];
   let modalOpen = false;
   let fileUploaderRef: HTMLInputElement;
-  export let files: File[];
-  let hideUploader = false;
   let selectedTab: number;
 
-  let shouldRunOnClose = true;
+  $: hideUploader = tempFiles.length > 0;
 
-  const clearInputFile = () => {
-    files = [];
-    imagePreviewUrl = '';
-  };
   const handleRemove = () => {
-    clearInputFile();
-    hideUploader = false;
+    tempFiles = [];
   };
 
   const handleChangeAvatar = () => {
     fileUploaderRef.click(); // re-open upload dialog
   };
+
+  const handleCancel = () => {
+    modalOpen = false;
+    if (files?.length > 0) {
+      tempFiles = [...files]; // reset to original file
+    } else {
+      tempFiles = [];
+    }
+  };
+
+  $: tempImagePreviewUrl = tempFiles?.length > 0 ? URL.createObjectURL(tempFiles[0]) : '';
+  $: savedImagePreviewUrl = files?.length > 0 ? URL.createObjectURL(files[0]) : '';
 </script>
 
 <div class="container">
@@ -39,13 +47,8 @@
     tabindex="0"
     on:click|preventDefault={() => (modalOpen = true)}
   >
-    {#if imagePreviewUrl}
-      <img
-        src={imagePreviewUrl}
-        class="mini-avatar"
-        alt="avatar"
-        style={`background-image: url(${imagePreviewUrl});`}
-      />
+    {#if savedImagePreviewUrl}
+      <div class="mini-avatar" style={`background-image: url(${savedImagePreviewUrl});`} />
     {:else}
       <User />
     {/if}
@@ -57,19 +60,13 @@
     primaryButtonText="Save"
     secondaryButtonText="Cancel"
     on:close={() => {
-      if (shouldRunOnClose) {
-        modalOpen = false;
-        handleRemove();
-      }
+      handleCancel();
     }}
     on:click:button--secondary={() => {
-      modalOpen = false;
-      handleRemove();
+      handleCancel();
     }}
     on:submit={() => {
-      //on:close is also called when submit button clicked, override to not run that code, otherwise we would
-      // lose the file
-      shouldRunOnClose = false;
+      files = [...tempFiles];
       modalOpen = false;
     }}
     style="--modal-height:{selectedTab === 0 ? '100%' : 'auto'};"
@@ -78,16 +75,11 @@
       <Tab label="Pictogram" />
       <Tab label="Upload" />
       <svelte:fragment slot="content">
-        <TabContent><Pictograms /></TabContent>
+        <TabContent><Pictograms bind:selectedPictogramName /></TabContent>
         <TabContent>
           <div class="avatar-upload-container">
-            {#if imagePreviewUrl}
-              <img
-                src={imagePreviewUrl}
-                class="avatar"
-                alt="avatar"
-                style={`background-image: url(${imagePreviewUrl});`}
-              />
+            {#if tempImagePreviewUrl}
+              <div class="avatar" style={`background-image: url(${tempImagePreviewUrl});`} />
             {/if}
 
             <div class="image-uploader" style={hideUploader ? 'display: none' : 'display: block'}>
@@ -95,15 +87,11 @@
               <div class:bx--label-description={true}>Supported file types are .jpg and .png.</div>
               <FileUploaderButton
                 bind:ref={fileUploaderRef}
-                bind:files
+                bind:files={tempFiles}
                 name="avatar"
                 kind="tertiary"
                 labelText="Upload from computer"
                 accept={['.jpg', '.jpeg', '.png']}
-                on:change={(e) => {
-                  hideUploader = true;
-                  imagePreviewUrl = URL.createObjectURL(e.detail[0]);
-                }}
               />
             </div>
 
@@ -150,16 +138,18 @@
     width: 12rem;
     height: 12rem;
     border-radius: 50%;
-    object-fit: cover;
+    background-size: cover;
     background-position: center;
+    background-repeat: no-repeat;
   }
 
   .mini-avatar {
     width: 3rem;
     height: 3rem;
     border-radius: 50%;
-    object-fit: cover;
+    background-size: cover;
     background-position: center;
+    background-repeat: no-repeat;
   }
 
   .avatar-upload-container {
