@@ -1,3 +1,5 @@
+-- conversations, messages, and profiles tables and RLS policies
+
 alter table conversations enable row level security;
 
 alter table messages enable row level security;
@@ -46,12 +48,3 @@ create policy "Anyone can update their own avatar." on storage.objects
   for update using (auth.uid() = owner) with check (bucket_id = 'avatars');
 
 
--- Policies for assistants
-CREATE POLICY "Individuals can view their own assistants." ON assistants
-FOR SELECT USING ((metadata ->> 'created_by') = auth.uid()::text);
-create policy "Individuals can create assistants." on assistants for
-    insert with check ((metadata ->> 'created_by') = auth.uid()::text);
-create policy "Individuals can update their own assistants." on assistants for
-update using ((metadata ->> 'created_by') = auth.uid()::text);
-create policy "Individuals can delete their own assistants." on assistants for
-    delete using ((metadata ->> 'created_by') = auth.uid()::text);

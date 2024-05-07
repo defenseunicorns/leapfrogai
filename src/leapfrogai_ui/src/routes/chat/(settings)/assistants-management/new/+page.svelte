@@ -1,8 +1,9 @@
 <script lang="ts">
   import { createForm } from 'svelte-forms-lib';
+  import { enhance } from '$app/forms';
   import { Add } from 'carbon-icons-svelte';
   import { Button, Modal, Slider, TextArea, TextInput } from 'carbon-components-svelte';
-  import { assistantsStore, toastStore } from '$stores';
+  import { toastStore } from '$stores';
   import { goto } from '$app/navigation';
   import InputTooltip from '$components/InputTooltip.svelte';
   import { ASSISTANTS_INSTRUCTIONS_MAX_LENGTH, DEFAULT_ASSISTANT_TEMP } from '$lib/constants';
@@ -16,34 +17,22 @@
   let cancelModalOpen = false;
   let files: File[];
 
-  const { form, errors, state, handleChange, handleSubmit, updateField } = createForm({
+  const { form, errors, state, handleChange, updateField } = createForm({
     initialValues: {
       name: '',
       description: '',
       instructions: '',
       temperature: DEFAULT_ASSISTANT_TEMP,
-      metadata: {
-        data_sources: [],
-        avatar: ''
-      }
+      data_sources: '',
+      avatar: null
     },
     validationSchema: supabaseAssistantInputSchema,
-    onSubmit: async (values) => {
-      try {
-        console.log('file', files[0]); // TODO - save this, ref: https://supabase.com/docs/guides/getting-started/tutorials/with-sveltekit?database-method=sql#create-an-upload-widget
-        // TODO - save pictorgram if not user image upload
-        // TODO - error status for image upload - ask Greg, how is this required?
-        await assistantsStore.createAssistant(values);
-        await goto('/chat/assistants-management');
-      } catch {
-        toastStore.addToast({
-          kind: 'error',
-          title: 'Error',
-          subtitle: `Error creating assistant.`
-        });
-      }
-    }
+    onSubmit: () => {}
   });
+
+  // TODO - save this, ref: https://supabase.com/docs/guides/getting-started/tutorials/with-sveltekit?database-method=sql#create-an-upload-widget
+  // TODO - save pictorgram if not user image upload
+  // TODO - error status for image upload - ask Greg, how is this required?
 
   const handleSliderChange = () => {
     /* We can't use svelte-forms-lib handleChange here because if the user clicks on the slider track instead
@@ -54,7 +43,28 @@
   };
 </script>
 
-<form on:submit={handleSubmit}>
+<form
+  method="POST"
+  enctype="multipart/form-data"
+  use:enhance={() => {
+    return async ({ result }) => {
+      if (result.type === 'redirect') {
+        toastStore.addToast({
+          kind: 'success',
+          title: 'Assistant Created.',
+          subtitle: ''
+        });
+        await goto(result.location);
+      } else if (result.type === 'failure') {
+        toastStore.addToast({
+          kind: 'error',
+          title: 'Error Creating Assistant',
+          subtitle: ''
+        });
+      }
+    };
+  }}
+>
   <div class="container">
     <div class="inner-container">
       <div class="top-row">
@@ -142,12 +152,14 @@
 
       <!--Note - Data Sources is a placeholder and will be completed in a future story-->
       <InputTooltip
-        name="metadata.data_sources"
+        name="data_sources"
         labelText="Data Sources"
         tooltipText="Specific files your assistant can search and reference"
       />
       <div>
-        <Button name="metadata.data_sources" icon={Add} kind="secondary" size="small">Add</Button>
+        <Button icon={Add} kind="secondary" size="small"
+          >Add <input name="data_sources" type="hidden" /></Button
+        >
       </div>
 
       <div>
