@@ -84,11 +84,12 @@ jobs:
         - name: Set environment variable
           id: set-env-var
           run: |
-            echo "DASHBOARD_PASSWORD=$(uds zarf tools kubectl get secret supabase-dashboard-secret -n leapfrogai -o jsonpath='{.data.password}' | base64 -d)" >> "$GITHUB_ENV"
+            echo "API_KEY=$(uds zarf tools kubectl get secret supabase-bootstrap-jwt -n leapfrogai -o jsonpath='{.data.password}' | base64 -d)" >> "$GITHUB_ENV"
 
         - name: Test Supabase
           run: |
             python -m pip install requests
+            kubectl port-forward deployment/supabase-kong -n leapfrogai 8000:8000
             python -m pytest ./tests/e2e/test_supabase.py -v
 
         # This cleanup may need to be moved/removed when other packages depend on Supabase
