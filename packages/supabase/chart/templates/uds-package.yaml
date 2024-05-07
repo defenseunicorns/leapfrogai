@@ -9,6 +9,31 @@ spec:
       clientId: uds-supabase
       protocol: openid-connect
       redirectUris:
+        - "https://supabase-kong.uds.dev/auth/v1/callback"
         - "https://lfaiui.uds.dev/"
       webOrigins:
+        - "https://supabase-kong.uds.dev/"
         - "https://lfaiui.uds.dev/"
+  network:
+    expose:
+      - service: supabase-kong
+        podLabels:
+          app.kubernetes.io/name: {{ .Values.leapfrogai.package.name }}
+          app.kubernetes.io/component: {{ .Values.leapfrogai.package.component }}
+        host: {{ .Values.leapfrogai.package.host }}
+        gateway: tenant
+        port: 80
+        match:
+          - name: auth-redirect
+            uri:
+              regex: /auth/*
+    allow:
+      - direction: Ingress
+        remoteGenerated: Anywhere
+      - direction: Egress
+        remoteGenerated: Anywhere
+      - direction: Egress
+        podLabels:
+          app.kubernetes.io/name: {{ .Values.leapfrogai.package.name }}
+          app.kubernetes.io/component: {{ .Values.leapfrogai.package.component }}
+        remoteGenerated: Anywhere
