@@ -1,93 +1,34 @@
 """CRUD Operations for Assistant."""
 
+from openai.types.beta import Assistant
 from supabase_py_async import AsyncClient
-from openai.types.beta import Assistant, AssistantDeleted
+from leapfrogai_api.data.crud_base import CRUDBase
 
 
-class CRUDAssistant:
+class CRUDAssistant(CRUDBase[Assistant]):
     """CRUD Operations for Assistant"""
 
-    def __init__(self, model: type[Assistant]):
-        self.model = model
+    def __init__(self, model: type[Assistant], table_name: str = "assistant_objects"):
+        super().__init__(model=model, table_name=table_name)
 
-    async def create(
-        self, client: AsyncClient, assistant: Assistant
-    ) -> Assistant | None:
+    async def create(self, db: AsyncClient, object_: Assistant) -> Assistant | None:
         """Create a new assistant."""
-        assistant_object_dict = assistant.model_dump()
-        if assistant_object_dict.get("id") == "":
-            del assistant_object_dict["id"]
-        data, _count = (
-            await client.table("assistant_objects")
-            .insert(assistant_object_dict)
-            .execute()
-        )
+        return await super().create(db=db, object_=object_)
 
-        _, response = data
-
-        if response:
-            return self.model(**response[0])
-        return None
-
-    async def get(self, client: AsyncClient, assistant_id: str) -> Assistant | None:
+    async def get(self, id_: str, db: AsyncClient) -> Assistant | None:
         """Get an assistant by its ID."""
-        data, _count = (
-            await client.table("assistant_objects")
-            .select("*")
-            .eq("id", assistant_id)
-            .execute()
-        )
+        return await super().get(db=db, id_=id_)
 
-        _, response = data
-
-        if response:
-            return self.model(**response[0])
-        return None
-
-    async def list(self, client: AsyncClient) -> list[Assistant] | None:
+    async def list(self, db: AsyncClient) -> list[Assistant] | None:
         """List all assistants."""
-        data, _count = await client.table("assistant_objects").select("*").execute()
-
-        _, response = data
-
-        if response:
-            return [self.model(**item) for item in response]
-        return None
+        return await super().list(db=db)
 
     async def update(
-        self, client: AsyncClient, assistant_id: str, assistant: Assistant
+        self, id_: str, db: AsyncClient, object_: Assistant
     ) -> Assistant | None:
         """Update an assistant by its ID."""
+        return await super().update(id_=id_, db=db, object_=object_)
 
-        get_response = await self.get(client, assistant_id)
-
-        if not get_response:
-            raise ValueError(f"Assistant with ID {assistant_id} not found.")
-
-        data, _count = (
-            await client.table("assistant_objects")
-            .update(assistant.model_dump())
-            .eq("id", assistant_id)
-            .execute()
-        )
-
-        _, response = data
-
-        if response:
-            return self.model(**response[0])
-        return None
-
-    async def delete(self, client: AsyncClient, assistant_id: str) -> AssistantDeleted:
+    async def delete(self, id_: str, db: AsyncClient) -> bool:
         """Delete an assistant by its ID."""
-        data, _count = (
-            await client.table("assistant_objects")
-            .delete()
-            .eq("id", assistant_id)
-            .execute()
-        )
-
-        _, response = data
-
-        return AssistantDeleted(
-            id=assistant_id, deleted=bool(response), object="assistant.deleted"
-        )
+        return await super().delete(id_=id_, db=db)

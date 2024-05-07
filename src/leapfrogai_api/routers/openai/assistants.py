@@ -45,7 +45,7 @@ async def create_assistant(
 
     try:
         crud_assistant = CRUDAssistant(model=Assistant)
-        return await crud_assistant.create(assistant=assistant, client=session)
+        return await crud_assistant.create(object_=assistant, db=session)
     except Exception as exc:
         raise HTTPException(
             status_code=405, detail="Unable to create assistant"
@@ -56,7 +56,7 @@ async def create_assistant(
 async def list_assistants(session: Session) -> ListAssistantsResponse | None:
     """List all the assistants."""
     crud_assistant = CRUDAssistant(model=Assistant)
-    crud_response = await crud_assistant.list(client=session)
+    crud_response = await crud_assistant.list(db=session)
 
     if not crud_response:
         return None
@@ -72,7 +72,7 @@ async def retrieve_assistant(session: Session, assistant_id: str) -> Assistant |
     """Retrieve an assistant."""
     try:
         crud_assistant = CRUDAssistant(model=Assistant)
-        return await crud_assistant.get(assistant_id=assistant_id, client=session)
+        return await crud_assistant.get(id_=assistant_id, db=session)
     except FileNotFoundError as exc:
         raise HTTPException(status_code=404, detail="Assistant not found") from exc
 
@@ -112,7 +112,7 @@ async def modify_assistant(
     try:
         crud_assistant = CRUDAssistant(model=Assistant)
         return await crud_assistant.update(
-            assistant_id=assistant_id, assistant=assistant, client=session
+            id_=assistant_id, object_=assistant, db=session
         )
     except FileNotFoundError as exc:
         raise HTTPException(status_code=404, detail="Assistant not found") from exc
@@ -123,6 +123,11 @@ async def delete_assistant(session: Session, assistant_id: str) -> AssistantDele
     """Delete an assistant."""
     try:
         crud_assistant = CRUDAssistant(model=Assistant)
-        return await crud_assistant.delete(assistant_id=assistant_id, client=session)
+        assistant_deleted = await crud_assistant.delete(id_=assistant_id, db=session)
+        return AssistantDeleted(
+            object="assistant.deleted",
+            id=assistant_id,
+            deleted=assistant_deleted,
+        )
     except FileNotFoundError as exc:
         raise HTTPException(status_code=404, detail="Assistant not found") from exc
