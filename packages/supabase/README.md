@@ -25,6 +25,6 @@ Go to `https://supabase-kong.uds.dev`. The login is `supabase-admin` the passwor
 
 * If you cannot reach `https://supabase-kong.uds.dev`, check if the `Packages` CRDs and `VirtualServices` contain `supabase-kong.uds.dev`. If they do not, try restarting the `pepr-uds-core-watcher` pod.
 * If logging in to the UI through keycloak returns a `500`, check and see if the `sql` migrations have been run in Supabase.
-  * You can find those in `leapfrogai/supabase/migrations`. They can be run in the studios SQL Editor.
+  * You can find those in `leapfrogai/src/leapfrogai_ui/supabase/migrations`. They can be run in the studios SQL Editor.
 
 By following these steps, you'll have successfully set up Keycloak for your application, allowing secure authentication and authorization for your users.

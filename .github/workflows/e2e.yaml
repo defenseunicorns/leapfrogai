@@ -84,7 +84,7 @@ jobs:
         - name: Set environment variable
           id: set-env-var
           run: |
-            echo "API_KEY=$(uds zarf tools kubectl get secret supabase-bootstrap-jwt -n leapfrogai -o jsonpath='{.data.password}' | base64 -d)" >> "$GITHUB_ENV"
+            echo "API_KEY=$(uds zarf tools kubectl get secret supabase-bootstrap-jwt -n leapfrogai -o jsonpath='{.data.anon-key}' | base64 -d)" >> "$GITHUB_ENV"
 
         - name: Test Supabase
           run: |
