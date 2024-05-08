@@ -9,6 +9,7 @@
     Tabs
   } from 'carbon-components-svelte';
   import Pictograms from '$components/Pictograms.svelte';
+  import DynamicPictogram from '$components/DynamicPictogram.svelte';
 
   export let files: File[];
   export let selectedPictogramName: string;
@@ -49,6 +50,8 @@
   >
     {#if savedImagePreviewUrl}
       <div class="mini-avatar" style={`background-image: url(${savedImagePreviewUrl});`} />
+    {:else if selectedPictogramName}
+      <DynamicPictogram iconName={selectedPictogramName} />
     {:else}
       <User />
     {/if}
