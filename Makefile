@@ -69,7 +69,7 @@ setup-llama-cpp-python-deps: sdk-wheel ## Download the wheels for the optional '
 	-rm packages/llama-cpp-python/build/*.whl
 
 	## The external link is needed to pull a pre-compiled cpu wheel for llama-cpp-python
-	python -m pip wheel packages/llama-cpp-python -w packages/llama-cpp-python/build --find-links=${SDK_DEST} ----extra-index-url https://abetlen.github.io/llama-cpp-python/whl/cpu
+	python -m pip wheel packages/llama-cpp-python -w packages/llama-cpp-python/build --find-links=${SDK_DEST} --extra-index-url https://abetlen.github.io/llama-cpp-python/whl/cpu
 
 build-llama-cpp-python: local-registry setup-llama-cpp-python-deps ## Build the llama-cpp-python (cpu) container and Zarf package
 	## Build the image (and tag it for the local registry)
