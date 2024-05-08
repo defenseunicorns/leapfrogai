@@ -48,7 +48,6 @@
   method="POST"
   enctype="multipart/form-data"
   use:enhance={() => {
-
     return async ({ result }) => {
       if (result.type === 'redirect') {
         toastStore.addToast({
@@ -163,7 +162,6 @@
           >Add <input name="data_sources" type="hidden" /></Button
         >
       </div>
-
 
       <div>
         <Button kind="secondary" size="small" on:click={() => (cancelModalOpen = true)}

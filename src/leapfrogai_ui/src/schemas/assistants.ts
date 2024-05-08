@@ -1,4 +1,4 @@
-import { array, number, object, ObjectSchema, string, mixed } from 'yup';
+import { mixed, number, object, ObjectSchema, string } from 'yup';
 import { ASSISTANTS_INSTRUCTIONS_MAX_LENGTH, ASSISTANTS_NAME_MAX_LENGTH } from '$lib/constants';
 
 export const supabaseAssistantInputSchema: ObjectSchema<NewAssistantInput> = object({

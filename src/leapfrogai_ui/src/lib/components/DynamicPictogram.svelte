@@ -13,4 +13,4 @@
   }
 </script>
 
-<svelte:component this={Pictogram} width="40px" height="40px"/>
+<svelte:component this={Pictogram} width="40px" height="40px" />
