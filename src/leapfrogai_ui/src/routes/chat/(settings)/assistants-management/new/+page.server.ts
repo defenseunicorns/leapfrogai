@@ -49,11 +49,20 @@ export const actions = {
 
     // Validate Assistant Input Object
     try {
-      await supabaseAssistantInputSchema.validate(assistantInput);
+      await supabaseAssistantInputSchema.validate(assistantInput, { abortEarly: false });
     } catch (e) {
       if (e instanceof ValidationError) {
-        console.error(`Form submission: create assistant validation errors: ${e.errors}`);
-        return fail(400, { message: 'Bad Request' });
+        const errors: { [key: string]: string } = {};
+        e.inner.forEach((innerVal) => {
+          if (innerVal.path) {
+            errors[innerVal.path] = innerVal.errors[0];
+          }
+        });
+
+        console.error(
+            `Form submission: create assistant validation errors: ${JSON.stringify(errors)}`
+        );
+        return fail(400, { message: 'Bad Request', errors });
       }
       return fail(500, { message: 'Internal Server Error' });
     }

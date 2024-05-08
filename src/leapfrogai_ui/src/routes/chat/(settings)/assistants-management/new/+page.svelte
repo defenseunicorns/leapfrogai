@@ -18,7 +18,7 @@
   let files: File[] = [];
   let selectedPictogramName = 'User';
 
-  const { form, errors, state, handleChange, updateField } = createForm({
+  const { form, errors, state, handleChange, updateField, validateField, isValid } = createForm({
     initialValues: {
       name: '',
       description: '',
@@ -39,14 +39,20 @@
      */
     updateField('temperature', $form.temperature);
   };
-
-
 </script>
 
 <form
   method="POST"
   enctype="multipart/form-data"
-  use:enhance={() => {
+  use:enhance={async ({ cancel }) => {
+    // Validate specific fields before submitting
+    await validateField('name');
+    await validateField('description');
+    await validateField('instructions');
+    await validateField('temperature');
+
+    if (!$isValid) cancel();
+
     return async ({ result }) => {
       if (result.type === 'redirect') {
         toastStore.addToast({
