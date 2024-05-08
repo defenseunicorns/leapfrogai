@@ -30,12 +30,12 @@ packages:
     path: ../../../packages/whisper/
     ref: dev
 
-  # UI
-  - name: lfaiui
-    path: ../../../packages/ui/
-    ref: dev
-
   # Supabase backend for the UI and API to interface with Postgresql
   - name: supabase
     path: ../../../packages/supabase/
+    ref: dev
+
+  # UI
+  - name: lfaiui
+    path: ../../../packages/ui/
     ref: dev
