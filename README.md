@@ -206,7 +206,7 @@ To run the llama-cpp-python backend locally (starting from the root directory of
 ``` shell
 python -m pip install src/leapfrogai_sdk
 cd packages/llama-cpp-python
-python -m pip install .[dev]
+python -m pip install .[dev] --extra-index-url https://abetlen.github.io/llama-cpp-python/whl/cpu
 python scripts/model_download.py
 mv .model/*.gguf .model/model.gguf
 cp config.example.yaml config.yaml # Make any necessary updates
