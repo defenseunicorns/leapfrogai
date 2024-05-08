@@ -11,6 +11,7 @@ from leapfrogai_api.backend.types import (
 )
 from leapfrogai_api.data.crud_vector_store_object import CRUDVectorStore
 from leapfrogai_api.routers.supabase_session import Session
+from leapfrogai_api.backend.rag.indexing import IndexingService
 
 router = APIRouter(prefix="/openai/v1/vector_store", tags=["openai/vector_store"])
 
@@ -145,11 +146,17 @@ async def delete_vector_store(
 
 @router.post("/{vector_store_id}/files")
 async def create_vector_store_file(
-    session: Session, vector_store_id: str
-) -> VectorStoreFile:
+    session: Session, vector_store_id: str, file_id: str
+):# -> VectorStoreFile:
     """Create a file in a vector store."""
-    # TODO: Implement this function
-    raise HTTPException(status_code=501, detail="Not implemented")
+
+    try:
+        indexing_service = IndexingService(session=session)
+        await indexing_service.index_file(vector_store_id=vector_store_id, file_id=file_id)
+    except Exception as exc:
+        raise HTTPException(
+            status_code=500, detail="Failed to create vector store file"
+        ) from exc
 
 
 @router.get("/{vector_store_id}/files")

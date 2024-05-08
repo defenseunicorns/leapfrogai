@@ -11,6 +11,9 @@ from langchain_community.document_loaders import (
 )
 from langchain_core.documents import Document
 from langchain_text_splitters import RecursiveCharacterTextSplitter
+import leapfrogai_sdk as lfai
+from leapfrogai_api.utils import get_model_config
+from leapfrogai_api.backend.grpc_client import create_embeddings
 
 
 HANDLERS = {
@@ -49,9 +52,9 @@ async def split(docs: list[Document]) -> list[Document]:
         ".",
         ",",
         "\u200b",  # Zero-width space
-        "\uff0c",  # Fullwidth comma
+        "\uff0c",  # Full width comma
         "\u3001",  # Ideographic comma
-        "\uff0e",  # Fullwidth full stop
+        "\uff0e",  # Full width full stop
         "\u3002",  # Ideographic full stop
         "",
     ]
@@ -66,3 +69,25 @@ async def split(docs: list[Document]) -> list[Document]:
     )
 
     return await text_splitter.atransform_documents(docs)
+
+async def embed_chunks(chunks: list[Document]) -> list[list[float]]:
+    """Embed chunks into a document."""
+
+    # TODO: Eliminate hardcoded model name.
+    model = get_model_config().get_model_backend("text-embeddings")
+
+    if model is None:
+        raise ValueError("Model not found.")
+
+    chunk_texts = [chunk.page_content for chunk in chunks]
+
+    if not chunk_texts:
+        raise ValueError("No chunks found.")
+
+    request = lfai.EmbeddingRequest(inputs=chunk_texts)
+
+    response = await create_embeddings(model=model, request=request)
+
+    list_of_embeddings = [embedding.embedding for embedding in response.data]
+
+    return list_of_embeddings
