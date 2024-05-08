@@ -23,10 +23,6 @@ spec:
         host: {{ .Values.leapfrogai.package.host }}
         gateway: tenant
         port: 80
-        match:
-          - name: auth-redirect
-            uri:
-              regex: /auth/*
     allow:
       - direction: Ingress
         remoteGenerated: Anywhere
