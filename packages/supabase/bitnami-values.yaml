@@ -154,9 +154,6 @@ kong:
   podLabels:
     sidecar.istio.io/inject: "false"
   kong:
-    extraVolumeMounts:
-      - name: rendered-declarative-conf
-        mountPath: /bitnami/kong/declarative-conf/
     extraEnvVars:
       - name: KONG_DECLARATIVE_CONFIG
         value: "/bitnami/kong/declarative-conf/kong.yml"
