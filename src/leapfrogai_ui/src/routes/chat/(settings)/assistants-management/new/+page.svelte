@@ -13,10 +13,9 @@
     ASSISTANTS_NAME_MAX_LENGTH
   } from '$lib/constants/index.js';
   import AssistantAvatar from '$components/AssistantAvatar.svelte';
-  import { iconMap } from '$lib/constants/iconMap';
 
   let cancelModalOpen = false;
-  let files: File[];
+  let files: File[] = [];
   let selectedPictogramName = 'User';
 
   const { form, errors, state, handleChange, updateField } = createForm({
@@ -33,9 +32,6 @@
     onSubmit: () => {}
   });
 
-  $: console.log('state', $state);
-  $: console.log('form', $form);
-
   const handleSliderChange = () => {
     /* We can't use svelte-forms-lib handleChange here because if the user clicks on the slider track instead
        of clicking and dragging the handle, svelte-forms-lib is adding an extra key called "undefined" to the form 
@@ -43,6 +39,8 @@
      */
     updateField('temperature', $form.temperature);
   };
+
+
 </script>
 
 <form

@@ -40,6 +40,9 @@
 
 <div class="container">
   <div class="inner-container">
+    <div class="preview-banner">
+      Assistants Management is a preview only. It is not yet fully functional.
+    </div>
     <div class="title">Assistants Management</div>
 
     <div class="utils">
@@ -97,5 +100,10 @@
 
   .title {
     @include type.type-style('heading-05');
+  }
+
+  .preview-banner {
+    text-align: center;
+    color: $red-30
   }
 </style>

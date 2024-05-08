@@ -17,17 +17,18 @@
   let modalOpen = false;
   let fileUploaderRef: HTMLInputElement;
   let selectedRadioButton: 'upload' | 'pictogram' = 'pictogram';
+  let shouldValidate = false;
+  $: fileNotUploaded = selectedRadioButton === 'upload' && !tempFiles[0]; // if on upload tab, you must upload a file to click save
+  $: fileTooBig = tempFiles[0]?.size > 5000000;
+  let errorMsg = '';
 
-  let hasClickedSave = false;
-  $: invalid = selectedRadioButton === 'upload' && !tempFiles[0]; // if on upload tab, you must upload a file to click save
-  let errorSubject = 'Please upload an image or select a pictogram';
-  // TODO - file size validation
 
   $: hideUploader = tempFiles.length > 0;
 
   const handleRemove = () => {
     tempFiles = [];
     selectedPictogramName = '';
+    shouldValidate = false;
   };
 
   const handleChangeAvatar = () => {
@@ -35,12 +36,36 @@
   };
 
   const handleCancel = () => {
-    hasClickedSave = false;
+    shouldValidate = false;
     modalOpen = false;
     if (files?.length > 0) {
       tempFiles = [...files]; // reset to original file
     } else {
       tempFiles = [];
+    }
+  };
+
+  const handleSubmit = () => {
+    shouldValidate = true;
+
+    if (fileNotUploaded && selectedRadioButton === 'upload') {
+      errorMsg = 'Please upload an image or select a pictogram';
+      return;
+    }
+    if (!fileNotUploaded) {
+      if (selectedRadioButton === 'pictogram') {
+        // If they had an image uploaded, but then went back to the pictogram tab
+        // remove the uploaded image and don't save it
+        tempFiles = [];
+      } else {
+        if (fileTooBig) {
+          errorMsg = 'Files must be less than 5Mb';
+          return;
+        }
+      }
+      files = [...tempFiles];
+      modalOpen = false;
+      shouldValidate = false;
     }
   };
 
@@ -73,15 +98,8 @@
     on:click:button--secondary={() => {
       handleCancel();
     }}
-    on:submit={() => {
-      hasClickedSave = true;
-      if (!invalid) {
-        files = [...tempFiles];
-        modalOpen = false;
-        hasClickedSave = false;
-      }
-    }}
-    style="--modal-height:{selectedRadioButton === 'pictogram' ? '100%' : 'auto'};"
+    on:submit={handleSubmit}
+    style="--modal-height:{selectedPictogramName === 'pictogram' ? '100%' : 'auto'};"
     class="avatar-modal"
   >
     <div class="avatar-modal">
@@ -89,51 +107,56 @@
         <RadioButton labelText="Pictogram" value="pictogram" />
         <RadioButton labelText="Upload" value="upload" />
       </RadioButtonGroup>
-      {#if selectedRadioButton === 'pictogram'}
+      <span class:hidden={selectedRadioButton === 'upload'} style="  height: 100%;">
         <Pictograms bind:selectedPictogramName />
-      {:else}
-        <div class="avatar-upload-container">
-          {#if tempImagePreviewUrl}
-            <div class="avatar-container">
-              <div class="avatar-image" style={`background-image: url(${tempImagePreviewUrl});`} />
-            </div>
-          {/if}
+      </span>
 
-          <div class="image-uploader" style={hideUploader ? 'display: none' : 'display: block'}>
-            <div class:bx--file--label={true}>Upload image</div>
-            <div class:bx--label-description={true}>Supported file types are .jpg and .png.</div>
-            <FileUploaderButton
-              bind:ref={fileUploaderRef}
-              bind:files={tempFiles}
-              name="avatar"
-              kind="tertiary"
-              labelText="Upload from computer"
-              accept={['.jpg', '.jpeg', '.png']}
-            />
-            {#if hasClickedSave && invalid && errorSubject}
-              <div class="error-box">
-                <div>{errorSubject}</div>
-              </div>
-            {/if}
+      <div class="avatar-upload-container" class:hidden={selectedRadioButton === 'pictogram'}>
+        {#if tempImagePreviewUrl}
+          <div class="avatar-container">
+            <div class="avatar-image" style={`background-image: url(${tempImagePreviewUrl});`} />
           </div>
+        {/if}
 
-          {#if hideUploader}
-            <div class="edit-btns">
-              <Button size="small" kind="tertiary" icon={Edit} on:click={handleChangeAvatar}
-                >Change</Button
-              >
-              <Button size="small" kind="tertiary" icon={TrashCan} on:click={handleRemove}
-                >Remove</Button
-              >
-            </div>
-          {/if}
+        <div class="image-uploader" style={hideUploader ? 'display: none' : 'display: block'}>
+          <div class:bx--file--label={true}>Upload image</div>
+          <div class:bx--label-description={true}>Supported file types are .jpg and .png.</div>
+          <FileUploaderButton
+            bind:ref={fileUploaderRef}
+            bind:files={tempFiles}
+            name="avatar"
+            kind="tertiary"
+            labelText="Upload from computer"
+            accept={['.jpg', '.jpeg', '.png']}
+          />
         </div>
-      {/if}
-    </div>
-  </Modal>
+
+        {#if hideUploader}
+          <div class="edit-btns">
+            <Button size="small" kind="tertiary" icon={Edit} on:click={handleChangeAvatar}
+              >Change</Button
+            >
+            <Button size="small" kind="tertiary" icon={TrashCan} on:click={handleRemove}
+              >Remove</Button
+            >
+          </div>
+        {/if}
+
+        {#if shouldValidate && (fileNotUploaded || fileTooBig)}
+          <div class="error-box">
+            <div>{errorMsg}</div>
+          </div>
+        {/if}
+      </div>
+    </div></Modal
+  >
 </div>
 
 <style lang="scss">
+  .hidden {
+    display: none !important;
+  }
+
   .container {
     :global(.bx--modal-container) {
       height: var(

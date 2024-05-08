@@ -7,7 +7,7 @@ export const supabaseAssistantInputSchema: ObjectSchema<NewAssistantInput> = obj
   instructions: string().max(ASSISTANTS_INSTRUCTIONS_MAX_LENGTH).required('Required'),
   temperature: number().required('Required'),
   data_sources: string(),
-  avatar: mixed(),
+  avatar: mixed(), // actual validation for avatar and pictogram is handled in Modal component
   pictogram: string()
 })
   .noUnknown(true)

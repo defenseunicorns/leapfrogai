@@ -2,7 +2,6 @@
   import { env } from '$env/dynamic/public';
   import { fade } from 'svelte/transition';
   import DynamicPictogram from '$components/DynamicPictogram.svelte';
-  import { User } from 'carbon-icons-svelte';
   import { ClickableTile } from 'carbon-components-svelte';
 
   export let assistant: Assistant;
@@ -11,17 +10,14 @@
 <div class="assistant-tile" transition:fade={{ duration: 70 }}>
   <ClickableTile>
     {#if assistant.metadata.avatar}
-      <img
-        src={`${env.PUBLIC_SUPABASE_URL}/storage/v1/object/public/assistant_avatars/${assistant.metadata.avatar}`}
-        alt="avatar"
-        width="40px"
-        height="40px"
-        style="border-radius: 50%;"
-      />
-    {:else if assistant.metadata.pictogram}
-      <DynamicPictogram iconName={assistant.metadata.pictogram} />
+      <div class="mini-avatar-container">
+        <div
+          class="mini-avatar-image"
+          style={`background-image: url(${env.PUBLIC_SUPABASE_URL}/storage/v1/object/public/assistant_avatars/${assistant.metadata.avatar}`}
+        />
+      </div>
     {:else}
-      <User width="40px" height="40px" />
+      <DynamicPictogram iconName={assistant.metadata.pictogram || 'User'} />
     {/if}
     <div class="name">{assistant.name}</div>
     <!--There isn't a simple solution for multi line text ellipses, so doing it manually at specific character length instead-->
@@ -53,6 +49,25 @@
       width: 288px;
       height: 172px;
       overflow: hidden;
+    }
+  }
+
+  .mini-avatar-container {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    width: 3rem;
+    height: 3rem;
+    border-radius: 50%;
+    background-color: themes.$layer-active-03;
+
+    .mini-avatar-image {
+      width: 100%;
+      height: 100%;
+      border-radius: 50%;
+      background-size: cover;
+      background-position: center;
+      background-repeat: no-repeat;
     }
   }
 </style>
