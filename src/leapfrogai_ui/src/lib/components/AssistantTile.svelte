@@ -34,10 +34,6 @@
 </div>
 
 <style lang="scss">
-  .title {
-    @include type.type-style('heading-05');
-  }
-
   .name {
     @include type.type-style('heading-03');
   }
@@ -50,6 +46,7 @@
       display: flex;
       flex-direction: column;
       align-items: center;
+      justify-content: space-around;
       text-align: center;
       gap: layout.$spacing-05;
       padding: 1rem;

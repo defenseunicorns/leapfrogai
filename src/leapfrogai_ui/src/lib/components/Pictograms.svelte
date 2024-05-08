@@ -1,5 +1,5 @@
 <script lang="ts">
-  import { ClickableTile, Search } from 'carbon-components-svelte';
+  import { Search } from 'carbon-components-svelte';
   import Fuse, { type FuseResult, type IFuseOptions } from 'fuse.js';
   import { iconMap } from '$lib/constants/iconMap';
   import DynamicPictogram from '$components/DynamicPictogram.svelte';
@@ -33,18 +33,31 @@
     clickedIndex = index;
     selectedPictogramName = name;
   };
+
+  const resetSearch = () => {
+    searchText = '';
+    filteredPictograms = [];
+  };
 </script>
 
 <div class="pictogram-container">
   <div style="width:22rem" class="search">
-    <Search placeholder="Search" expanded size="sm" bind:value={searchText} />
+    <Search
+      placeholder="Search"
+      expanded
+      size="sm"
+      bind:value={searchText}
+      on:clear={resetSearch}
+    />
   </div>
-  <div class="gallery" style="height: 100%">
+  <div class="gallery">
     {#each filteredPictograms.length > 0 ? filteredPictograms : pictogramNames as pictogram, index}
-      <div class="pictogram" class:clicked={index === clickedIndex}>
-        <ClickableTile on:click={(e) => handlePictogramClick(e, index, pictogram)}>
-          <DynamicPictogram iconName={pictogram} />
-        </ClickableTile>
+      <div
+        class="pictogram"
+        class:clicked={index === clickedIndex}
+        on:click={(e) => handlePictogramClick(e, index, pictogram)}
+      >
+        <DynamicPictogram iconName={pictogram} width="64px" height="64px" />
       </div>
     {/each}
   </div>
@@ -56,6 +69,7 @@
     display: flex;
     flex-direction: column;
     gap: layout.$spacing-05;
+    height: 100%;
   }
   .search {
     :global(.bx--search-input) {
@@ -65,14 +79,22 @@
   .gallery {
     display: flex;
     flex-wrap: wrap;
-    justify-content: space-around;
+    overflow-y: scroll;
+    scrollbar-width: none;
   }
 
   .pictogram {
-    box-sizing: border-box; // width and height must be specified for border-box
-    width: 132px;
-    height: 104px;
-    text-align: center;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    width: 112px;
+    height: 112px;
+    padding: 16px;
+    cursor: pointer;
+    transition: fill 70ms ease;
+    &:hover {
+      background-color: themes.$layer-hover-01;
+    }
   }
   .clicked {
     border: 2px solid white;

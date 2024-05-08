@@ -28,6 +28,10 @@
     searchResults = fuse.search(searchText);
     filteredAssistants = searchResults.map((result) => result.item);
   }
+  const resetSearch = () => {
+    searchText = '';
+    filteredAssistants = [];
+  };
 
   onMount(() => {
     assistantsStore.setAssistants(data.assistants);
@@ -46,6 +50,7 @@
           size="sm"
           style="width: 20.5rem"
           bind:value={searchText}
+          on:clear={resetSearch}
         />
       </div>
       <Button
@@ -88,5 +93,9 @@
     grid-template-columns: repeat(3, 1fr);
     gap: layout.$spacing-07;
     overflow-y: auto;
+  }
+
+  .title {
+    @include type.type-style('heading-05');
   }
 </style>

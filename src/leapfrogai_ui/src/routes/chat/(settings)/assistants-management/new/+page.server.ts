@@ -72,6 +72,8 @@ export const actions = {
         });
       }
 
+      // TODO - validate file size
+
       const filePath = `${session.user.id}/assistant_avatars/${uuidv4()}/${avatarFile.name}`;
 
       const { data: supabaseData, error } = await supabase.storage

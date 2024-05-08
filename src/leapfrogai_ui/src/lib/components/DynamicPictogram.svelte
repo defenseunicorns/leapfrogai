@@ -2,6 +2,8 @@
   import { iconMap } from '$lib/constants/iconMap';
 
   export let iconName: string;
+  export let width = "40px";
+  export let height = "40px";
 
   let Pictogram = iconMap.default;
 
@@ -13,4 +15,4 @@
   }
 </script>
 
-<svelte:component this={Pictogram} width="40px" height="40px" />
+<svelte:component this={Pictogram} {width} {height} />
