@@ -2,8 +2,8 @@
   import { iconMap } from '$lib/constants/iconMap';
 
   export let iconName: string;
-  export let width = "40px";
-  export let height = "40px";
+  export let width = '40px';
+  export let height = '40px';
 
   let Pictogram = iconMap.default;
 

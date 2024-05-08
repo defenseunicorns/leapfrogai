@@ -13,10 +13,11 @@
     ASSISTANTS_NAME_MAX_LENGTH
   } from '$lib/constants/index.js';
   import AssistantAvatar from '$components/AssistantAvatar.svelte';
+  import { iconMap } from '$lib/constants/iconMap';
 
   let cancelModalOpen = false;
   let files: File[];
-  let selectedPictogramName: string;
+  let selectedPictogramName = 'User';
 
   const { form, errors, state, handleChange, updateField } = createForm({
     initialValues: {
@@ -32,8 +33,8 @@
     onSubmit: () => {}
   });
 
-  // TODO - save pictorgram if not user image upload
-  // TODO - error status for image upload - ask Greg, how is this required?
+  $: console.log('state', $state);
+  $: console.log('form', $form);
 
   const handleSliderChange = () => {
     /* We can't use svelte-forms-lib handleChange here because if the user clicks on the slider track instead

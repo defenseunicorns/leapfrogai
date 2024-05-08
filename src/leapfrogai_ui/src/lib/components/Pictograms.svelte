@@ -9,7 +9,6 @@
   let filteredPictograms: (keyof typeof iconMap)[] = [];
   let searchText = '';
   let searchResults: FuseResult<(keyof typeof iconMap)[]>[];
-  let clickedIndex: number;
 
   const pictogramNames = Object.keys(iconMap);
 
@@ -29,15 +28,23 @@
     ) as unknown as (keyof typeof iconMap)[];
   }
 
-  const handlePictogramClick = (e: MouseEvent, index: number, name: string) => {
-    clickedIndex = index;
-    selectedPictogramName = name;
-  };
-
   const resetSearch = () => {
     searchText = '';
     filteredPictograms = [];
   };
+
+  function scrollToElement(node: HTMLElement, params: { active: boolean }) {
+    if (params.active) {
+      node.scrollIntoView({ behavior: 'auto', block: 'nearest' });
+    }
+    return {
+      update(newParams: { active: boolean }) {
+        if (newParams.active) {
+          node.scrollIntoView({ behavior: 'auto', block: 'nearest' });
+        }
+      }
+    };
+  }
 </script>
 
 <div class="pictogram-container">
@@ -54,8 +61,9 @@
     {#each filteredPictograms.length > 0 ? filteredPictograms : pictogramNames as pictogram, index}
       <div
         class="pictogram"
-        class:clicked={index === clickedIndex}
-        on:click={(e) => handlePictogramClick(e, index, pictogram)}
+        class:clicked={pictogram === selectedPictogramName}
+        on:click={() => (selectedPictogramName = pictogram)}
+        use:scrollToElement={{ active: pictogram === selectedPictogramName }}
       >
         <DynamicPictogram iconName={pictogram} width="64px" height="64px" />
       </div>
