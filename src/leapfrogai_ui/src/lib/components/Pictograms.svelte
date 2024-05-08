@@ -1,24 +1,19 @@
 <script lang="ts">
-  import { onMount, type SvelteComponent } from 'svelte';
   import { ClickableTile, Search } from 'carbon-components-svelte';
   import Fuse, { type FuseResult, type IFuseOptions } from 'fuse.js';
-
-  type Pictogram = {
-    name: string;
-    Component: typeof SvelteComponent;
-  };
+  import { iconMap } from '$lib/constants/iconMap';
+  import DynamicPictogram from '$components/DynamicPictogram.svelte';
 
   export let selectedPictogramName: string;
 
-  let pictograms: Pictogram[] = [];
-  let filteredPictograms: Pictogram[] = [];
+  let filteredPictograms: (keyof typeof iconMap)[] = [];
   let searchText = '';
-  let searchResults: FuseResult<Pictogram>[];
-
+  let searchResults: FuseResult<(keyof typeof iconMap)[]>[];
   let clickedIndex: number;
 
+  const pictogramNames = Object.keys(iconMap);
+
   const options: IFuseOptions<unknown> = {
-    keys: ['name'],
     minMatchCharLength: 3,
     shouldSort: false,
     findAllMatches: true,
@@ -27,24 +22,17 @@
   };
 
   $: if (searchText) {
-    const fuse = new Fuse(pictograms, options);
+    const fuse = new Fuse(pictogramNames, options);
     searchResults = fuse.search(searchText);
-    filteredPictograms = searchResults.map((result) => result.item);
+    filteredPictograms = searchResults.map(
+      (result) => result.item
+    ) as unknown as (keyof typeof iconMap)[];
   }
 
   const handlePictogramClick = (e: MouseEvent, index: number, name: string) => {
     clickedIndex = index;
     selectedPictogramName = name;
   };
-
-  // Dynamically importing pictograms for performance
-  onMount(async () => {
-    const module = await import('carbon-pictograms-svelte');
-    pictograms = Object.entries(module).map(([name, component]) => ({
-      name,
-      Component: component as typeof SvelteComponent
-    }));
-  });
 </script>
 
 <div class="pictogram-container">
@@ -52,11 +40,11 @@
     <Search placeholder="Search" expanded size="sm" bind:value={searchText} />
   </div>
   <div class="gallery" style="height: 100%">
-    {#each filteredPictograms.length > 0 ? filteredPictograms : pictograms as { Component }, index}
+    {#each filteredPictograms.length > 0 ? filteredPictograms : pictogramNames as pictogram, index}
       <div class="pictogram" class:clicked={index === clickedIndex}>
-        <ClickableTile on:click={(e) => handlePictogramClick(e, index, Component.name)}>
-          <svelte:component this={Component} /></ClickableTile
-        >
+        <ClickableTile on:click={(e) => handlePictogramClick(e, index, pictogram)}>
+          <DynamicPictogram iconName={pictogram} />
+        </ClickableTile>
       </div>
     {/each}
   </div>
