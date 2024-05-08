@@ -10,9 +10,7 @@ spec:
       protocol: openid-connect
       redirectUris:
         - "https://supabase-kong.uds.dev/auth/v1/callback"
-        - "https://lfaiui.uds.dev/"
       webOrigins:
-        - "https://supabase-kong.uds.dev/"
         - "https://lfaiui.uds.dev/"
   network:
     expose:
