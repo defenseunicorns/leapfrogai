@@ -23,37 +23,10 @@ To deploy the Zarf package run the following from `leapfrogai/packages/supabase`
 
 Go to `https://supabase-kong.uds.dev`. The login is `supabase-admin` the password is randomly generated in a cluster secret named `supabase-dashboard-secret`
 
-# Setting Up Keycloak integration for Your Application
-
-Setup keycloak for the frontend so that you can use auth
-
-## Step 1: Create a Client in Keycloak
-
-In the Keycloak management console, navigate to the "Clients" section and create a new client with a client ID of `leapfrogai`. Make sure to note down the client secret, as you'll need them later.
-
-## Step 2: Create a Kubernetes Secret
-
-Create a Kubernetes secret named `supabase-keycloak-secret` that contains the client secret from the previous step. Use the following command:
-
-```bash
-# Delete the old, dummy secret
-kubectl delete secret supabase-keycloak-secret -n leapfrogai
-# Add the new secret
-kubectl create secret generic supabase-keycloak-secret --from-literal=secret='YOUR_KEYCLOAK_CLIENT_SECRET' -n leapfrogai
-```
-
-Replace `YOUR_KEYCLOAK_CLIENT_SECRET` with the actual client secret from Keycloak.
-
-## Step 3: Configure Keycloak Client URLs
-
-In the Keycloak client settings, ensure that the following URLs are added to both the "Valid Redirect URIs" and "Web Origins" sections:
-
-- `http://supabase-kong.uds.dev/auth/v1/callback`
-- `http://you-application-here/`
-
 # Troubleshooting
 
-* If you encounter a 401 Unauthorized error, it might indicate that the `supabase-keycloak-secret` secret needs to be updated with the correct client ID and client secret. Double-check the values in Supabase and update the secret accordingly.
 * If you cannot reach `https://supabase-kong.uds.dev`, check if the `Packages` CRDs and `VirtualServices` contain `supabase-kong.uds.dev`. If they do not, try restarting the `pepr-uds-core-watcher` pod.
+* If logging in to the UI through keycloak returns a `500`, check and see if the `sql` migrations have been run in Supabase.
+  * You can find those in `leapfrogai/supabase/migrations`. They can be run in the studios SQL Editor.
 
 By following these steps, you'll have successfully set up Keycloak for your application, allowing secure authentication and authorization for your users.
