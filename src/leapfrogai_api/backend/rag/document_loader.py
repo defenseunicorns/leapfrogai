@@ -1,5 +1,6 @@
 """Load a file and split it into chunks."""
 
+import os
 import magic
 from langchain_community.document_loaders import (
     CSVLoader,
@@ -75,10 +76,10 @@ async def embed_chunks(chunks: list[Document]) -> list[list[float]]:
     """Embed chunks into a document."""
 
     # TODO: Eliminate hardcoded model name.
-    model = get_model_config().get_model_backend("text-embeddings")
+    model = get_model_config().get_model_backend(os.getenv("DEFAULT_EMBEDDINGS_MODEL"))
 
     if model is None:
-        raise ValueError("Model not found.")
+        raise ValueError("Embeddings model not found.")
 
     chunk_texts = [chunk.page_content for chunk in chunks]
 

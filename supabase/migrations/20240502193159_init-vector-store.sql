@@ -21,24 +21,25 @@ create table
 -- Create a table to store the OpenAI Vector Store File Objects
 create table
   vector_store_file_objects (
-    id uuid primary key DEFAULT uuid_generate_v4(),
+    id uuid references file_objects (id) on delete cascade,
     created_at bigint,
     last_error jsonb,
     object text,
     status text,
-    vector_store_object_id uuid references vector_store_objects (id) on delete cascade
+    vector_store_id uuid references vector_store_objects (id) on delete cascade,
+    primary key (vector_store_id, id)
   );
 
 -- Create a table to store your documents
-create table
-  vector_store (
-    id uuid primary key DEFAULT uuid_generate_v4(),
-    vector_store_id uuid references vector_store_objects (id) on delete cascade,
-    file_id uuid references vector_store_file_objects (id) on delete cascade,
-    content text, -- corresponds to Document.pageContent
-    metadata jsonb, -- corresponds to Document.metadata
-    embedding vector (768) -- Instructor-XL produces 768-dimensional embeddings
-  );
+-- create table
+--   vector_store (
+--     id uuid primary key DEFAULT uuid_generate_v4(),
+--     vector_store_id uuid references vector_store_objects (id) on delete cascade,
+--     file_id uuid references vector_store_file_objects (id) on delete cascade,
+--     content text, -- corresponds to Document.pageContent
+--     metadata jsonb, -- corresponds to Document.metadata
+--     embedding vector (768) -- Instructor-XL produces 768-dimensional embeddings
+--   );
 
 -- Create a function to search for documents
 create function match_vectors (

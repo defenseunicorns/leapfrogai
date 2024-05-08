@@ -147,12 +147,15 @@ async def delete_vector_store(
 @router.post("/{vector_store_id}/files")
 async def create_vector_store_file(
     session: Session, vector_store_id: str, file_id: str
-):# -> VectorStoreFile:
+) -> VectorStoreFile:
     """Create a file in a vector store."""
 
     try:
         indexing_service = IndexingService(session=session)
-        await indexing_service.index_file(vector_store_id=vector_store_id, file_id=file_id)
+        vector_store_file = await indexing_service.index_file(
+            vector_store_id=vector_store_id, file_id=file_id
+        )
+        return vector_store_file
     except Exception as exc:
         raise HTTPException(
             status_code=500, detail="Failed to create vector store file"
