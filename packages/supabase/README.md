@@ -21,12 +21,7 @@ To deploy the Zarf package run the following from `leapfrogai/packages/supabase`
 
 ## Step 4: Accessing Supabase
 
-To access the dashboard, perform the following steps
-* Port forward Supabase kong
-```
-kubectl port-forward deployment/supabase-kong -n leapfrogai 8000:8000
-```
-* Navigate to `http://localhost:8000` in your browser
+Go to `https://supabase-kong.uds.dev`. The login is `supabase-admin` the password is randomly generated in a cluster secret named `supabase-dashboard-secret`
 
 # Setting Up Keycloak integration for Your Application
 
