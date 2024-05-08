@@ -154,13 +154,16 @@ kong:
   podLabels:
     sidecar.istio.io/inject: "false"
   kong:
+    extraVolumeMounts:
+      - name: rendered-declarative-conf
+        mountPath: /bitnami/kong/declarative-conf/
     extraEnvVars:
       - name: KONG_DECLARATIVE_CONFIG
         value: "/bitnami/kong/declarative-conf/kong.yml"
       - name: KONG_DNS_ORDER
         value: LAST,A,CNAME
       - name: KONG_PLUGINS
-        value: request-transformer,cors,key-auth,acl,basic-auth
+        value: request-transformer,cors,key-auth,acl
     resourcesPreset: "none"
     livenessProbe:
       timeoutSeconds: 40
