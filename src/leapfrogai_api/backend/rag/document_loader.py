@@ -70,6 +70,7 @@ async def split(docs: list[Document]) -> list[Document]:
 
     return await text_splitter.atransform_documents(docs)
 
+
 async def embed_chunks(chunks: list[Document]) -> list[list[float]]:
     """Embed chunks into a document."""
 

@@ -54,7 +54,7 @@ async def upload_file(
             client=session, file=request.file, id_=file_object.id
         )
     except Exception as exc:
-        crud_file_object.delete(db=session, id_=file_object.id)
+        await crud_file_object.delete(db=session, id_=file_object.id)
         raise HTTPException(
             status_code=500, detail="Failed to store file in bucket"
         ) from exc
