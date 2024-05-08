@@ -1,7 +1,5 @@
 # Setting up Supabase locally
 
-Setup keycloak for the frontend so that you can use auth
-
 ## Step 1: Create a Zarf package
 
 From `leapfrogai/packages/supabase` run `zarf package create`
