@@ -31,19 +31,19 @@ create table
   );
 
 -- Create a table to store your documents
--- create table
---   vector_store (
---     id uuid primary key DEFAULT uuid_generate_v4(),
---     vector_store_id uuid references vector_store_objects (id) on delete cascade,
---     file_id uuid references vector_store_file_objects (id) on delete cascade,
---     content text, -- corresponds to Document.pageContent
---     metadata jsonb, -- corresponds to Document.metadata
---     embedding vector (768) -- Instructor-XL produces 768-dimensional embeddings
---   );
+create table
+  vector_store (
+    id uuid primary key DEFAULT uuid_generate_v4(),
+    vector_store_id uuid references vector_store_objects (id) on delete cascade,
+    file_id uuid references file_objects (id) on delete cascade,
+    content text, -- corresponds to Document.pageContent
+    metadata jsonb, -- corresponds to Document.metadata
+    embedding vector (768) -- Instructor-XL produces 768-length embeddings
+  );
 
 -- Create a function to search for documents
 create function match_vectors (
-  query_embedding vector (768), -- Instructor-XL produces 4096-dimensional embeddings
+  query_embedding vector (768), -- Instructor-XL produces 768-length embeddings
   filter jsonb default '{}'
 ) returns table (
   id uuid,
@@ -59,6 +59,7 @@ begin
   select
     id,
     vector_store_id,
+    file_id,
     content,
     metadata,
     1 - (documents.embedding <=> query_embedding) as similarity
