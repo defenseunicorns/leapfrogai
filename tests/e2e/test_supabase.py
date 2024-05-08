@@ -2,9 +2,9 @@ import requests
 import os
 
 health_urls = {
-    "auth_health_url": "http://localhost:8000/auth/v1/health",
-    "rest_health_url": "http://localhost:8000/rest/v1/",
-    "storage_health_url": "http://localhost:8000/storage/v1/status",
+    "auth_health_url": "http://supabase-kong.uds.dev/auth/v1/health",
+    "rest_health_url": "http://supabase-kong.uds.dev/rest/v1/",
+    "storage_health_url": "http://supabase-kong.uds.dev/storage/v1/status",
 }
 anon_api_key = os.environ["API_KEY"]
 

@@ -89,7 +89,6 @@ jobs:
         - name: Test Supabase
           run: |
             python -m pip install requests
-            kubectl port-forward deployment/supabase-kong -n leapfrogai 8000:8000
             python -m pytest ./tests/e2e/test_supabase.py -v
 
         # This cleanup may need to be moved/removed when other packages depend on Supabase
