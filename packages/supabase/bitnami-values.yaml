@@ -5,7 +5,8 @@ leapfrogai:
     host: supabase-kong
     name: supabase
     component: kong
-  testing: ###ZARF_VAR_TESTING###
+  sso:
+    clientId: ###ZARF_CONST_EXTERNAL_KEYCLOAK_CLIENT_ID###
 
 global:
   jwt:
@@ -51,7 +52,7 @@ auth:
     GOTRUE_MAILER_URLPATHS_RECOVERY: "{{ include "supabase.studio.publicURL" . }}/auth/v1/verify"
     GOTRUE_MAILER_URLPATHS_EMAIL_CHANGE: "{{ include "supabase.studio.publicURL" . }}/auth/v1/verify"
     GOTRUE_EXTERNAL_KEYCLOAK_ENABLED: "###ZARF_VAR_ENABLE_EXTERNAL_KEYCLOAK###"
-    GOTRUE_EXTERNAL_KEYCLOAK_CLIENT_ID: "###ZARF_CONST_EXTERNAL_KEYCLOAK_CLIENT_ID###"
+    GOTRUE_EXTERNAL_KEYCLOAK_CLIENT_ID: "{{ .Values.leapfrogai.sso.clientId }}"
     GOTRUE_EXTERNAL_KEYCLOAK_REDIRECT_URI: "###ZARF_CONST_EXTERNAL_KEYCLOAK_REDIRECT_URL###"
     GOTRUE_EXTERNAL_KEYCLOAK_URL: "###ZARF_CONST_EXTERNAL_KEYCLOAK_URL###"
   image:

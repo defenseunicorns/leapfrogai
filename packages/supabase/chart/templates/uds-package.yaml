@@ -6,7 +6,7 @@ spec:
   sso:
     - name: Supabase
       description: Client for logging into Supabase
-      clientId: uds-supabase
+      clientId: {{ .Values.leapfrogai.sso.clientId }}
       redirectUris:
         - "https://supabase-kong.uds.dev/auth/v1/callback"
       webOrigins:
