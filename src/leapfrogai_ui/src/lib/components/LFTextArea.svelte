@@ -143,7 +143,8 @@ The invalid prop can still be passed to this component to validate for other con
         maxlength={maxCount + 1 ?? undefined}
         {...$$restProps}
         on:keyup={resizeTextArea}
-        on:keydown={(e) => {resizeTextArea();
+        on:keydown={(e) => {
+          resizeTextArea();
           // Allow user to type up to maxCount, but only show error once trying to add more
           // characters after hitting this limit
 
@@ -170,7 +171,6 @@ The invalid prop can still be passed to this component to validate for other con
             }
           }
         }}
-
         on:focus
         on:blur
         on:paste
