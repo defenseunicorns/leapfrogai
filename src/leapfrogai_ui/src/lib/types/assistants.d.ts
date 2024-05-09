@@ -4,7 +4,7 @@ type NewAssistantInput = {
   instructions: string;
   temperature: number;
   data_sources?: string;
-  avatar?: File;
+  avatar?: File | null;
   pictogram?: string;
 };
 

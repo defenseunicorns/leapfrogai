@@ -1,7 +1,7 @@
 import type { PageServerLoad } from './$types';
 import { fail, redirect } from '@sveltejs/kit';
 import { supabaseAssistantInputSchema } from '../../../../../schemas/assistants';
-import { assistantDefaults } from '$lib/constants';
+import { assistantDefaults, MAX_AVATAR_SIZE } from '$lib/constants';
 import { env } from '$env/dynamic/private';
 import { v4 as uuidv4 } from 'uuid';
 import { assistantsStore } from '$stores';
@@ -19,6 +19,7 @@ export const load: PageServerLoad = async ({ locals: { getSession } }) => {
 
 export const actions = {
   default: async ({ request, locals: { supabase, getSession } }) => {
+
     // Validate session
     const session = await getSession();
     if (!session) {
@@ -60,7 +61,7 @@ export const actions = {
         });
 
         console.error(
-            `Form submission: create assistant validation errors: ${JSON.stringify(errors)}`
+          `Form submission: create assistant validation errors: ${JSON.stringify(errors)}`
         );
         return fail(400, { message: 'Bad Request', errors });
       }
@@ -81,7 +82,8 @@ export const actions = {
         });
       }
 
-      // TODO - validate file size
+      if (avatarFile.size > MAX_AVATAR_SIZE)
+        return fail(400, { message: `File must be less than ${MAX_AVATAR_SIZE / 1000000} MB` });
 
       const filePath = `${session.user.id}/assistant_avatars/${uuidv4()}/${avatarFile.name}`;
 

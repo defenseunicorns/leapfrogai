@@ -1,59 +1,31 @@
 <script lang="ts">
-  import { createForm } from 'svelte-forms-lib';
-  import { enhance } from '$app/forms';
+  import { applyAction, enhance } from '$app/forms';
   import { Add } from 'carbon-icons-svelte';
   import { Button, Modal, Slider, TextArea, TextInput } from 'carbon-components-svelte';
   import { toastStore } from '$stores';
   import { goto } from '$app/navigation';
   import InputTooltip from '$components/InputTooltip.svelte';
   import { ASSISTANTS_INSTRUCTIONS_MAX_LENGTH, DEFAULT_ASSISTANT_TEMP } from '$lib/constants';
-  import { supabaseAssistantInputSchema } from '../../../../../schemas/assistants';
   import {
     ASSISTANTS_DESCRIPTION_MAX_LENGTH,
     ASSISTANTS_NAME_MAX_LENGTH
   } from '$lib/constants/index.js';
   import AssistantAvatar from '$components/AssistantAvatar.svelte';
 
+  export let form;
   let cancelModalOpen = false;
   let files: File[] = [];
   let selectedPictogramName = 'User';
 
-  const { form, errors, state, handleChange, updateField, validateField, isValid } = createForm({
-    initialValues: {
-      name: '',
-      description: '',
-      instructions: '',
-      temperature: DEFAULT_ASSISTANT_TEMP,
-      data_sources: '',
-      avatar: null,
-      pictogram: null
-    },
-    validationSchema: supabaseAssistantInputSchema,
-    onSubmit: () => {}
-  });
-
-  const handleSliderChange = () => {
-    /* We can't use svelte-forms-lib handleChange here because if the user clicks on the slider track instead
-       of clicking and dragging the handle, svelte-forms-lib is adding an extra key called "undefined" to the form 
-       values which prevents submission 
-     */
-    updateField('temperature', $form.temperature);
-  };
+  $: sliderValue = Number(form?.temperature) || DEFAULT_ASSISTANT_TEMP;
 </script>
 
 <form
   method="POST"
   enctype="multipart/form-data"
-  use:enhance={async ({ cancel }) => {
-    // Validate specific fields before submitting
-    await validateField('name');
-    await validateField('description');
-    await validateField('instructions');
-    await validateField('temperature');
-
-    if (!$isValid) cancel();
-
+  use:enhance={async () => {
     return async ({ result }) => {
+      await applyAction(result);
       if (result.type === 'redirect') {
         toastStore.addToast({
           kind: 'success',
@@ -81,13 +53,12 @@
         name="name"
         labelText="Name"
         placeholder="Assistant name"
-        on:keyup={handleChange}
-        on:blur={handleChange}
-        bind:value={$form.name}
+        value={form?.name}
         maxlength={ASSISTANTS_NAME_MAX_LENGTH}
       />
-      {#if $errors.name}
-        <small class="error">{$errors.name}</small>
+
+      {#if form?.errors?.name}
+        <small class="error">{form?.errors?.name}</small>
       {/if}
 
       <InputTooltip
@@ -101,14 +72,12 @@
         placeholder="Here to help..."
         labelText="Description"
         hideLabel
-        on:keyup={handleChange}
-        on:blur={handleChange}
-        bind:value={$form.description}
+        value={form?.description}
         maxlength={ASSISTANTS_DESCRIPTION_MAX_LENGTH}
       />
 
-      {#if $errors.description}
-        <small class="error">{$errors.description}</small>
+      {#if form?.errors?.description}
+        <small class="error">{form?.errors?.description}</small>
       {/if}
 
       <InputTooltip
@@ -120,17 +89,15 @@
       <TextArea
         name="instructions"
         labelText="Instructions"
-        on:keyup={handleChange}
-        on:blur={handleChange}
-        bind:value={$form.instructions}
+        value={form?.instructions}
         rows={6}
         placeholder="You'll act as..."
         hideLabel
         maxlength={ASSISTANTS_INSTRUCTIONS_MAX_LENGTH}
       />
 
-      {#if $errors.instructions}
-        <small class="error">{$errors.instructions}</small>
+      {#if form?.errors?.instructions}
+        <small class="error">{form?.errors?.instructions}</small>
       {/if}
 
       <InputTooltip
@@ -140,8 +107,7 @@
       />
       <Slider
         name="temperature"
-        on:click={handleSliderChange}
-        bind:value={$form.temperature}
+        value={sliderValue}
         hideLabel
         hideTextInput
         fullWidth
@@ -152,8 +118,8 @@
         maxLabel="Max"
       />
 
-      {#if $errors.temperature}
-        <small class="error">{$errors.temperature}</small>
+      {#if form?.errors?.temperature}
+        <small class="error">{form?.errors?.temperature}</small>
       {/if}
 
       <!--Note - Data Sources is a placeholder and will be completed in a future story-->
@@ -172,7 +138,7 @@
         <Button kind="secondary" size="small" on:click={() => (cancelModalOpen = true)}
           >Cancel</Button
         >
-        <Button kind="primary" size="small" type="submit" disabled={!$state.isValid}>Save</Button>
+        <Button kind="primary" size="small" type="submit">Save</Button>
       </div>
     </div>
   </div>
