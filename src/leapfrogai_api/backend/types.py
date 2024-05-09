@@ -234,7 +234,7 @@ class UploadFileRequest(BaseModel):
 class ListFilesResponse(BaseModel):
     """Response object for listing files."""
 
-    object: str = "list"
+    object: str = Literal["list"]
     data: list[FileObject] = []
 
 

@@ -69,10 +69,10 @@ async def list_files(session: Session) -> ListFilesResponse | None:
     if crud_response is None:
         return None
 
-    return {
-        "object": "list",
-        "data": crud_response,
-    }
+    return ListFilesResponse(
+        object="list",
+        data=crud_response,
+    )
 
 
 @router.get("/{file_id}")
