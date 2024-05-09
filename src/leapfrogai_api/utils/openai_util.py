@@ -21,8 +21,8 @@ def validate_tools_typed_dict(data: list[dict]) -> list[AssistantTool]:
 
     if len(data) > max_supported_tools:
         raise ValueError("Too many tools specified.")
-    if len(data) == 0:
-        raise ValueError("No tools specified.")
+
+    tool_instance = []
 
     for tool_data in data:
         if "type" not in tool_data:
@@ -33,9 +33,6 @@ def validate_tools_typed_dict(data: list[dict]) -> list[AssistantTool]:
             raise ValueError(f"Unknown tool type: {tool_type}")
 
         tool_class = tool_mapping[tool_type]
-        tool_instance = tool_class(**tool_data)
+        tool_instance.append(tool_class(**tool_data))
 
-    if isinstance(tool_instance, list):
-        return tool_instance
-
-    return [tool_instance]
+    return tool_instance
