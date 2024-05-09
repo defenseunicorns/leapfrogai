@@ -24,20 +24,20 @@ async def recv_completion(
             yield "\n\n"
 
         last_message = CompletionResponse(
-                id="foo",
-                object="completion.chunk",
-                created=55,
-                model="mpt-7b-8k-chat",
-                choices=[
-                    CompletionChoice(
-                        index=0,
-                        text=c.choices[0].text,
-                        logprobs=None,
-                        finish_reason=None,
-                    )
-                ],
-                usage=Usage(prompt_tokens=0, completion_tokens=0, total_tokens=0),
-            )
+            id="foo",
+            object="completion.chunk",
+            created=55,
+            model="mpt-7b-8k-chat",
+            choices=[
+                CompletionChoice(
+                    index=0,
+                    text=c.choices[0].text,
+                    logprobs=None,
+                    finish_reason=None,
+                )
+            ],
+            usage=Usage(prompt_tokens=0, completion_tokens=0, total_tokens=0),
+        )
 
     if last_message:
         last_message.choices[0].finish_reason = "stop"
@@ -61,21 +61,21 @@ async def recv_chat(
             yield "\n\n"
 
         last_message = ChatCompletionResponse(
-                id="foo",
-                object="chat.completion.chunk",
-                created=55,
-                model="mpt-7b-8k-chat",
-                choices=[
-                    ChatStreamChoice(
-                        index=0,
-                        delta=ChatDelta(
-                            role="assistant", content=c.choices[0].chat_item.content
-                        ),
-                        finish_reason=None,
-                    )
-                ],
-                usage=Usage(prompt_tokens=0, completion_tokens=0, total_tokens=0),
-            )
+            id="foo",
+            object="chat.completion.chunk",
+            created=55,
+            model="mpt-7b-8k-chat",
+            choices=[
+                ChatStreamChoice(
+                    index=0,
+                    delta=ChatDelta(
+                        role="assistant", content=c.choices[0].chat_item.content
+                    ),
+                    finish_reason=None,
+                )
+            ],
+            usage=Usage(prompt_tokens=0, completion_tokens=0, total_tokens=0),
+        )
 
     if last_message:
         last_message.choices[0].finish_reason = "stop"
