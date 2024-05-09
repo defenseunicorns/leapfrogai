@@ -175,6 +175,7 @@
         value={input}
         {onSubmit}
         ariaLabel="message input"
+        placeholder="Type your message here..."
         bind:showLengthError={lengthInvalid}
       />
 
