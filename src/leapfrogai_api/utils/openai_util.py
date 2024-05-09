@@ -1,6 +1,5 @@
 """This module contains utility functions for interacting with OpenAI API."""
 
-from typing import Dict, List
 from openai.types.beta import (
     CodeInterpreterTool,
     FileSearchTool,
@@ -15,8 +14,16 @@ tool_mapping = {
 }
 
 
-def validate_tools_typed_dict(data: List[Dict]) -> List[AssistantTool]:
+def validate_tools_typed_dict(data: list[dict]) -> list[AssistantTool]:
     """Validate a tool typed dict."""
+
+    max_supported_tools = 128  # OpenAI sets this to 128
+
+    if len(data) > max_supported_tools:
+        raise ValueError("Too many tools specified.")
+    if len(data) == 0:
+        raise ValueError("No tools specified.")
+
     for tool_data in data:
         if "type" not in tool_data:
             raise ValueError("Tool type not specified.")
@@ -27,12 +34,6 @@ def validate_tools_typed_dict(data: List[Dict]) -> List[AssistantTool]:
 
         tool_class = tool_mapping[tool_type]
         tool_instance = tool_class(**tool_data)
-
-    if tool_instance is None:
-        raise ValueError("No tools specified.")
-
-    if len(data) > 128:
-        raise ValueError("Too many tools specified.")
 
     if isinstance(tool_instance, list):
         return tool_instance
