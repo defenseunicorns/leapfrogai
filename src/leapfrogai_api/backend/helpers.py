@@ -60,7 +60,7 @@ async def recv_chat(
                         delta=ChatDelta(
                             role="assistant", content=c.choices[0].chat_item.content
                         ),
-                        finish_reason=None,
+                        finish_reason="stop",
                     )
                 ],
                 usage=Usage(prompt_tokens=0, completion_tokens=0, total_tokens=0),
