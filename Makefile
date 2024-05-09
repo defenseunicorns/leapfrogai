@@ -53,6 +53,18 @@ build-api: local-registry setup-api-deps ## Build the leapfrogai_api container a
 	uds zarf package create packages/api -o packages/api --registry-override=ghcr.io=localhost:5000 --insecure --set LEAPFROGAI_IMAGE_VERSION=${LOCAL_VERSION} --confirm
 
 
+build-ui: ## Build the leapfrogai_ui container and Zarf package
+	## Build the image (and tag it for the local registry)
+	docker build -t ghcr.io/defenseunicorns/leapfrogai/leapfrogai-ui:${LOCAL_VERSION} src/leapfrogai_ui
+	docker tag ghcr.io/defenseunicorns/leapfrogai/leapfrogai-ui:${LOCAL_VERSION} localhost:5000/defenseunicorns/leapfrogai/leapfrogai-ui:${LOCAL_VERSION}
+
+	## Push the image to the local registry (Zarf is super slow if the image is only in the local daemon)
+	docker push localhost:5000/defenseunicorns/leapfrogai/leapfrogai-ui:${LOCAL_VERSION}
+
+	## Build the Zarf package
+	uds zarf package create packages/ui -o packages/ui --registry-override=ghcr.io=localhost:5000 --insecure --set IMAGE_VERSION=${LOCAL_VERSION} --confirm
+
+
 setup-llama-cpp-python-deps: sdk-wheel ## Download the wheels for the optional 'llama-cpp-python' dependencies
 	-rm packages/llama-cpp-python/build/*.whl
 	python -m pip wheel packages/llama-cpp-python -w packages/llama-cpp-python/build --find-links=${SDK_DEST}
