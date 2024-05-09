@@ -22,7 +22,7 @@ requires-python = "~=3.11"
 generate-hashes = true
 
 [tool.setuptools.packages.find]
-where = ["../"]
+where = ["."]
 include = ["leapfrogai_api*"]
 namespaces = false
 

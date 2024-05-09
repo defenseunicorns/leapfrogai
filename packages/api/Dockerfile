@@ -1,14 +1,24 @@
 ARG ARCH=amd64
+ARG SDK_SRC=src/leapfrogai_sdk
 
 FROM ghcr.io/defenseunicorns/leapfrogai/python:3.11-dev-${ARCH} as builder
 
 WORKDIR /leapfrogai
 
-# copy the api dependencies over
-# NOTE: We are copying to this filename because installing 'optional extras' from a wheel requires the absolute path to the wheel file (instead of a wildcard whl)
-COPY build/*.whl build/
-COPY build/leapfrogai_api*.whl .
-RUN pip install leapfrogai_api*.whl --no-index --find-links=build/
+# copy source
+USER root
+COPY src ./src
+RUN chown -R nonroot:nonroot ./src
+USER nonroot
+
+# build sdk
+RUN python -m pip wheel ./src/leapfrogai_sdk -w build
+
+# build api
+RUN python -m pip wheel ./src/leapfrogai_api -w build --find-links=build/
+
+# install
+RUN pip install build/leapfrogai_api-*.whl --no-index --find-links=build/
 
 FROM ghcr.io/defenseunicorns/leapfrogai/python:3.11-${ARCH}
 
