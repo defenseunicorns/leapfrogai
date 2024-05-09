@@ -59,7 +59,6 @@
     width: 3rem;
     height: 3rem;
     border-radius: 50%;
-    background-color: themes.$layer-active-03;
 
     .mini-avatar-image {
       width: 100%;
