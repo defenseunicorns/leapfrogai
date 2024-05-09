@@ -66,6 +66,7 @@ async def list_assistants(session: Session) -> ListAssistantsResponse | None:
         data=crud_response,
     )
 
+
 @router.get("/{assistant_id}")
 async def retrieve_assistant(session: Session, assistant_id: str) -> Assistant | None:
     """Retrieve an assistant."""
