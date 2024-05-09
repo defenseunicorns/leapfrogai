@@ -29,7 +29,7 @@ async def recv_completion(
                         index=0,
                         text=c.choices[0].text,
                         logprobs=None,
-                        finish_reason=c.choices[0].finish_reason,
+                        finish_reason="stop",
                     )
                 ],
                 usage=Usage(prompt_tokens=0, completion_tokens=0, total_tokens=0),
@@ -60,7 +60,7 @@ async def recv_chat(
                         delta=ChatDelta(
                             role="assistant", content=c.choices[0].chat_item.content
                         ),
-                        finish_reason=c.choices[0].finish_reason,
+                        finish_reason=("stop" if stream.done() else None),
                     )
                 ],
                 usage=Usage(prompt_tokens=0, completion_tokens=0, total_tokens=0),
