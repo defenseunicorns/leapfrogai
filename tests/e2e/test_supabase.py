@@ -6,6 +6,8 @@ health_urls = {
     "rest_health_url": "http://supabase-kong.uds.dev/rest/v1/",
     "storage_health_url": "http://supabase-kong.uds.dev/storage/v1/status",
 }
+
+# This is the Supabase anon key, it provides access to the health endpoints that would otherwise be inaccessible
 anon_api_key = os.environ["API_KEY"]
 
 
