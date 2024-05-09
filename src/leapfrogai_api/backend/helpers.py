@@ -16,10 +16,14 @@ from leapfrogai_api.backend.types import (
 async def recv_completion(
     stream: grpc.aio.UnaryStreamCall[lfai.CompletionRequest, lfai.CompletionResponse],
 ):
+    last_message: CompletionResponse = None
+
     async for c in stream:
-        yield (
-            "data: "
-            + CompletionResponse(
+        if last_message:
+            yield "data: " + last_message.model_dump_json()
+            yield "\n\n"
+
+        last_message = CompletionResponse(
                 id="foo",
                 object="completion.chunk",
                 created=55,
@@ -29,12 +33,15 @@ async def recv_completion(
                         index=0,
                         text=c.choices[0].text,
                         logprobs=None,
-                        finish_reason="stop",
+                        finish_reason=None,
                     )
                 ],
                 usage=Usage(prompt_tokens=0, completion_tokens=0, total_tokens=0),
-            ).model_dump_json()
-        )
+            )
+
+    if last_message:
+        last_message.choices[0].finish_reason = "stop"
+        yield "data: " + last_message.model_dump_json()
         yield "\n\n"
 
     yield "data: [DONE]"
