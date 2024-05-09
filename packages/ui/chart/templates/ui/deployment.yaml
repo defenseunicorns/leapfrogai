@@ -40,7 +40,7 @@ spec:
               {{ else }}
               valueFrom:
                 secretKeyRef:
-                  name: {{ include "supabase.jwt.secretName" . }}
+                  name: supabase-bootstrap-jwt
                   key: anon-key
                   optional: true
               {{ end }}
