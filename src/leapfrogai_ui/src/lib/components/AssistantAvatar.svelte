@@ -9,12 +9,13 @@
   } from 'carbon-components-svelte';
   import Pictograms from '$components/Pictograms.svelte';
   import DynamicPictogram from '$components/DynamicPictogram.svelte';
-  import {MAX_AVATAR_SIZE} from "$lib/constants";
+  import {AVATAR_FILE_SIZE_ERROR_TEXT, MAX_AVATAR_SIZE, NO_FILE_ERROR_TEXT} from '$lib/constants';
 
   export let files: File[];
   export let selectedPictogramName: string;
 
   let tempFiles: File[] = [];
+  let tempPictogram = '';
   let modalOpen = false;
   let fileUploaderRef: HTMLInputElement;
   let selectedRadioButton: 'upload' | 'pictogram' = 'pictogram';
@@ -24,11 +25,12 @@
   let errorMsg = '';
 
 
+
   $: hideUploader = tempFiles.length > 0;
 
   const handleRemove = () => {
     tempFiles = [];
-    selectedPictogramName = '';
+    tempPictogram = '';
     shouldValidate = false;
   };
 
@@ -39,6 +41,7 @@
   const handleCancel = () => {
     shouldValidate = false;
     modalOpen = false;
+    tempPictogram = selectedPictogramName; // reset to original pictogram
     if (files?.length > 0) {
       tempFiles = [...files]; // reset to original file
     } else {
@@ -50,7 +53,7 @@
     shouldValidate = true;
 
     if (fileNotUploaded && selectedRadioButton === 'upload') {
-      errorMsg = 'Please upload an image or select a pictogram';
+      errorMsg = NO_FILE_ERROR_TEXT;
       return;
     }
     if (!fileNotUploaded) {
@@ -60,11 +63,12 @@
         tempFiles = [];
       } else {
         if (fileTooBig) {
-          errorMsg = `File must be less than ${MAX_AVATAR_SIZE / 1000000} MB`;
+          errorMsg = AVATAR_FILE_SIZE_ERROR_TEXT;
           return;
         }
       }
       files = [...tempFiles];
+      if(selectedRadioButton === 'pictogram') selectedPictogramName = tempPictogram;
       modalOpen = false;
       shouldValidate = false;
     }
@@ -79,11 +83,12 @@
     class="mini-avatar-container remove-btn-style"
     tabindex="0"
     on:click|preventDefault={() => (modalOpen = true)}
+    data-testid="mini-avatar-container"
   >
     {#if savedImagePreviewUrl}
       <div class="mini-avatar-image" style={`background-image: url(${savedImagePreviewUrl});`} />
     {:else}
-      <DynamicPictogram iconName={selectedPictogramName} width="32px" height="32px" />
+      <DynamicPictogram iconName={tempPictogram} width="32px" height="32px" />
     {/if}
   </button>
 
@@ -100,7 +105,7 @@
       handleCancel();
     }}
     on:submit={handleSubmit}
-    style="--modal-height:{selectedPictogramName === 'pictogram' ? '100%' : 'auto'};"
+    style="--modal-height:{tempPictogram === 'pictogram' ? '100%' : 'auto'};"
     class="avatar-modal"
   >
     <div class="avatar-modal">
@@ -109,13 +114,17 @@
         <RadioButton labelText="Upload" value="upload" />
       </RadioButtonGroup>
       <span class:hidden={selectedRadioButton === 'upload'} style="  height: 100%;">
-        <Pictograms bind:selectedPictogramName />
+        <Pictograms bind:selectedPictogramName={tempPictogram} />
       </span>
 
       <div class="avatar-upload-container" class:hidden={selectedRadioButton === 'pictogram'}>
         {#if tempImagePreviewUrl}
           <div class="avatar-container">
-            <div class="avatar-image" style={`background-image: url(${tempImagePreviewUrl});`} />
+            <div
+              data-testid="image-upload-avatar"
+              class="avatar-image"
+              style={`background-image: url(${tempImagePreviewUrl});`}
+            />
           </div>
         {/if}
 

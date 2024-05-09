@@ -15,4 +15,4 @@
   }
 </script>
 
-<svelte:component this={Pictogram} {width} {height} />
+<svelte:component this={Pictogram} {width} {height} data-testid={`pictogram-${iconName || 'default'}`} />

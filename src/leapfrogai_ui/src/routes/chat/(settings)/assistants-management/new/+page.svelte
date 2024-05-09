@@ -15,7 +15,7 @@
   export let form;
   let cancelModalOpen = false;
   let files: File[] = [];
-  let selectedPictogramName = 'User';
+  let selectedPictogramName = 'default';
 
   $: sliderValue = Number(form?.temperature) || DEFAULT_ASSISTANT_TEMP;
 </script>
@@ -45,7 +45,7 @@
 >
   <div class="container">
     <div class="inner-container">
-      <div class="top-row">
+      <div class="top-row" >
         <div class="title">New Assistant</div>
         <AssistantAvatar bind:files bind:selectedPictogramName />
       </div>

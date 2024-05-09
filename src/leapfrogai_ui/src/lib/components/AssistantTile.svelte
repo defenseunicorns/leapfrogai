@@ -10,14 +10,14 @@
 <div class="assistant-tile" transition:fade={{ duration: 70 }}>
   <ClickableTile>
     {#if assistant.metadata.avatar}
-      <div class="mini-avatar-container">
+      <div class="mini-avatar-container" data-testid="mini-avatar-container">
         <div
           class="mini-avatar-image"
           style={`background-image: url(${env.PUBLIC_SUPABASE_URL}/storage/v1/object/public/assistant_avatars/${assistant.metadata.avatar}`}
         />
       </div>
     {:else}
-      <DynamicPictogram iconName={assistant.metadata.pictogram || 'User'} />
+      <DynamicPictogram iconName={assistant.metadata.pictogram || 'default'} />
     {/if}
     <div class="name">{assistant.name}</div>
     <!--There isn't a simple solution for multi line text ellipses, so doing it manually at specific character length instead-->

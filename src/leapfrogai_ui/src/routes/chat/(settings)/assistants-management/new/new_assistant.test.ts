@@ -5,7 +5,7 @@ import { getFakeNewAssistantInput } from '../../../../../../testUtils/fakeData';
 import NewAssistantPageWithToast from './NewAssistantPageWithToast.test.svelte';
 import { afterAll, beforeAll, type MockInstance, vi } from 'vitest';
 import * as navigation from '$app/navigation';
-import { ASSISTANTS_NAME_MAX_LENGTH, ASSISTANTS_DESCRIPTION_MAX_LENGTH } from '$lib/constants';
+import { ASSISTANTS_DESCRIPTION_MAX_LENGTH, ASSISTANTS_NAME_MAX_LENGTH } from '$lib/constants';
 
 describe('New Assistant page', () => {
   let goToSpy: MockInstance;

@@ -1,7 +1,7 @@
 import type { PageServerLoad } from './$types';
 import { fail, redirect } from '@sveltejs/kit';
 import { supabaseAssistantInputSchema } from '../../../../../schemas/assistants';
-import { assistantDefaults, MAX_AVATAR_SIZE } from '$lib/constants';
+import {assistantDefaults, AVATAR_FILE_SIZE_ERROR_TEXT, MAX_AVATAR_SIZE} from '$lib/constants';
 import { env } from '$env/dynamic/private';
 import { v4 as uuidv4 } from 'uuid';
 import { assistantsStore } from '$stores';
@@ -83,7 +83,7 @@ export const actions = {
       }
 
       if (avatarFile.size > MAX_AVATAR_SIZE)
-        return fail(400, { message: `File must be less than ${MAX_AVATAR_SIZE / 1000000} MB` });
+        return fail(400, { message: AVATAR_FILE_SIZE_ERROR_TEXT });
 
       const filePath = `${session.user.id}/assistant_avatars/${uuidv4()}/${avatarFile.name}`;
 

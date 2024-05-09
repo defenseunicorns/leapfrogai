@@ -58,12 +58,13 @@
     />
   </div>
   <div class="gallery">
-    {#each filteredPictograms.length > 0 ? filteredPictograms : pictogramNames as pictogram, index}
+    {#each filteredPictograms.length > 0 ? filteredPictograms : pictogramNames.slice(0,3) as pictogram, index}
       <div
         class="pictogram"
         class:clicked={pictogram === selectedPictogramName}
         on:click={() => (selectedPictogramName = pictogram)}
         use:scrollToElement={{ active: pictogram === selectedPictogramName }}
+
       >
         <DynamicPictogram iconName={pictogram} width="64px" height="64px" />
       </div>

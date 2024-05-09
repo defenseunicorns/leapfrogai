@@ -100,7 +100,7 @@ export const getFakeAssistant = (): Assistant => {
     metadata: {
       created_by: faker.string.uuid(),
       data_sources: '',
-      pictogram: 'User',
+      pictogram: 'default',
       avatar: undefined
     },
     created_at: Date.now()
@@ -114,7 +114,7 @@ export const getFakeNewAssistantInput = (): NewAssistantInput => {
     instructions: faker.lorem.paragraph(),
     temperature: DEFAULT_ASSISTANT_TEMP,
     data_sources: '',
-    pictogram: 'User',
+    pictogram: 'default',
     avatar: null
   };
 };
