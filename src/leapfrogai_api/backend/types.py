@@ -267,5 +267,5 @@ class ModifyAssistantRequest(CreateAssistantRequest):
 class ListAssistantsResponse(BaseModel):
     """Response object for listing files."""
 
-    object: str = "list"
+    object: str = Literal["list"]
     data: list[Assistant] = []
