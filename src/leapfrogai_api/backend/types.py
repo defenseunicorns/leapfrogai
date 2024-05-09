@@ -235,7 +235,7 @@ class UploadFileRequest(BaseModel):
 class ListFilesResponse(BaseModel):
     """Response object for listing files."""
 
-    object: str = "list"
+    object: str = Literal["list"]
     data: list[FileObject] = []
 
 
@@ -286,5 +286,5 @@ class ModifyVectorStoreRequest(CreateVectorStoreRequest):
 class ListAssistantsResponse(BaseModel):
     """Response object for listing files."""
 
-    object: str = "list"
+    object: str = Literal["list"]
     data: list[Assistant] = []

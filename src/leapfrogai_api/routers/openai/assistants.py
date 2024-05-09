@@ -61,10 +61,10 @@ async def list_assistants(session: Session) -> ListAssistantsResponse | None:
     if not crud_response:
         return None
 
-    return {
-        "object": "list",
-        "data": crud_response,
-    }
+    return ListAssistantsResponse(
+        object="list",
+        data=crud_response,
+    )
 
 
 @router.get("/{assistant_id}")

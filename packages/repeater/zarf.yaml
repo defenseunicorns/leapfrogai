@@ -17,7 +17,9 @@ components:
         namespace: leapfrogai
         localPath: chart
         releaseName: repeater
+        # x-release-please-start-version
         version: 0.6.1
+        # x-release-please-end
         valuesFiles:
           - "repeater-values.yaml"
     images:

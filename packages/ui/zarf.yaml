@@ -52,7 +52,7 @@ variables:
     prompt: true
     sensitive: false
   - name: DISABLE_KEYCLOAK
-    description:  Disable keycloak true or false
+    description: Disable keycloak true or false
     default: 'true'
     prompt: true
     sensitive: false
@@ -69,9 +69,11 @@ components:
       - name: lfaiui
         namespace: leapfrogai
         localPath: chart
-        version: 0.6.1
         valuesFiles:
           - 'chart/ui-values.yaml'
+        # x-release-please-start-version
+        version: 0.6.1
+        # x-release-please-end
     images:
       - ghcr.io/defenseunicorns/leapfrogai/leapfrogai-ui:###ZARF_PKG_TMPL_IMAGE_VERSION###
     actions:
