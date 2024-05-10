@@ -40,6 +40,9 @@ def LLM(_cls):
     if not hasattr(_cls, "generate"):
         raise ValueError("LLM class requires a generate method")
 
+    if not hasattr(_cls, "count_tokens"):
+        raise ValueError("LLM class requires a count_tokens method")
+
     class NewClass(_cls):
         config: BackendConfig
 
@@ -83,6 +86,12 @@ def LLM(_cls):
 
             item = ChatItem(role=ChatRole.ASSISTANT, content=content)
             choice = ChatCompletionChoice(index=0, chat_item=item)
+
+            if self.count_tokens(choice.chat_item.content) < request.max_new_tokens:
+                choice.finish_reason = "stop"
+            else:
+                choice.finish_reason = "length"
+
             return ChatCompletionResponse(choices=[choice])
 
         async def ChatCompleteStream(
@@ -92,11 +101,29 @@ def LLM(_cls):
                 self.config.apply_chat_template(request.chat_items), request
             )
 
+            last_response: ChatCompletionResponse | None = None
+            response_str: str = ""
+
             for text_chunk in gen_stream:
+                if last_response:
+                    last_response.choices[0].finish_reason = None
+                    response_str += last_response.choices[0].chat_item.content
+                    yield last_response
+
                 item = ChatItem(role=ChatRole.ASSISTANT, content=text_chunk)
                 choice = ChatCompletionChoice(index=0, chat_item=item)
 
-                yield ChatCompletionResponse(choices=[choice])
+                last_response = ChatCompletionResponse(choices=[choice])
+
+            if last_response:
+                response_str += last_response.choices[0].chat_item.content
+
+                if self.count_tokens(response_str) < request.max_new_tokens:
+                    last_response.choices[0].finish_reason = "stop"
+                else:
+                    last_response.choices[0].finish_reason = "length"
+
+                yield last_response
 
         async def Complete(
             self, request: CompletionRequest, context: GrpcContext
@@ -108,16 +135,39 @@ def LLM(_cls):
                 content += text_chunk
 
             choice = CompletionChoice(index=0, text=content)
+
+            if self.count_tokens(choice.text) < request.max_new_tokens:
+                choice.finish_reason = "stop"
+            else:
+                choice.finish_reason = "length"
+
             return CompletionResponse(choices=[choice])
 
         async def CompleteStream(
             self, request: CompletionRequest, context: GrpcContext
         ) -> Generator[CompletionResponse, Any, Any]:
             gen_stream = self._build_gen_stream(request.prompt, request)
+            last_response: CompletionResponse | None = None
+            response_str: str = ""
+
             for text_chunk in gen_stream:
+                if last_response:
+                    response_str += last_response.choices[0].text
+                    yield last_response
+
                 print(text_chunk)
                 choice = CompletionChoice(index=0, text=text_chunk)
-                yield CompletionResponse(choices=[choice])
+                last_response = CompletionResponse(choices=[choice])
+
+            if last_response:
+                response_str += last_response.choices[0].text
+
+                if self.count_tokens(response_str) < request.max_new_tokens:
+                    last_response.choices[0].finish_reason = "stop"
+                else:
+                    last_response.choices[0].finish_reason = "length"
+
+                yield last_response
 
     NewClass.__name__ = _cls.__name__
     return NewClass
