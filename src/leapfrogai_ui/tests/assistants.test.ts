@@ -43,7 +43,6 @@ test('displays an error toast when there is an error creating an assistant and r
       const result: ActionResult = {
         type: 'failure',
         status: 500
-        // data: { message: 'Error creating assistant.' }
       };
 
       await route.fulfill({ json: result });
