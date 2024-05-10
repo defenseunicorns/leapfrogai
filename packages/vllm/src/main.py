@@ -32,6 +32,7 @@ from vllm.outputs import RequestOutput
 from vllm.utils import random_uuid
 
 from config import AppConfig
+from src.leapfrogai_sdk.llm import LLM
 
 load_dotenv()
 
@@ -174,6 +175,7 @@ class Model:
         )
         print(self.engine_args)
         self.engine = AsyncLLMEngine.from_engine_args(self.engine_args)
+        self.llm = LLM(None)
 
     async def iterate_outputs(self):
         """Continuously processes outputs from the random iterator and manages state by request IDs."""
@@ -326,9 +328,16 @@ class Model:
         for text_chunk in chat_stream:
             content += text_chunk
 
-        completion = CompletionChoice(index=0, text=content)
-        logging.info("Complete END:\n---")
-        return CompletionResponse(choices=[completion])
+        choice = CompletionChoice(index=0, text=content)
+
+        token_count = await self.count_tokens(choice.text)
+
+        if token_count < request.max_new_tokens:
+            choice.finish_reason = "stop"
+        else:
+            choice.finish_reason = "length"
+
+        return CompletionResponse(choices=[choice])
 
     async def CompleteStream(
         self, request: CompletionRequest, context: GrpcContext
@@ -347,9 +356,29 @@ class Model:
         logging.info("CompleteStream:\n---")
         chat_stream = self.complete_stream(request)
 
+        last_response: CompletionResponse | None = None
+        response_str: str = ""
+
         for text_chunk in chat_stream:
+            if last_response:
+                response_str += last_response.choices[0].text
+                yield last_response
+
+            print(text_chunk)
             choice = CompletionChoice(index=0, text=text_chunk)
-            yield CompletionResponse(choices=[choice])
+            last_response = CompletionResponse(choices=[choice])
+
+        if last_response:
+            response_str += last_response.choices[0].text
+
+            token_count = await self.count_tokens(response_str)
+
+            if token_count < request.max_new_tokens:
+                last_response.choices[0].finish_reason = "stop"
+            else:
+                last_response.choices[0].finish_reason = "length"
+
+            yield last_response
 
         logging.info("CompleteStream END")
 
@@ -376,7 +405,14 @@ class Model:
 
         item = ChatItem(role=ChatRole.ASSISTANT, content=content)
         choice = ChatCompletionChoice(index=0, chat_item=item)
-        logging.info("ChatCompleteStream END:\n---")
+
+        token_count = await self.count_tokens(choice.chat_item.content)
+
+        if token_count < request.max_new_tokens:
+            choice.finish_reason = "stop"
+        else:
+            choice.finish_reason = "length"
+
         return ChatCompletionResponse(choices=[choice])
 
     async def ChatCompleteStream(
@@ -396,14 +432,37 @@ class Model:
         logging.info("ChatCompleteStream:\n---")
         chat_stream = self.chat_stream(request)
 
+        last_response: ChatCompletionResponse | None = None
+        response_str: str = ""
+
         for text_chunk in chat_stream:
+            if last_response:
+                last_response.choices[0].finish_reason = None
+                response_str += last_response.choices[0].chat_item.content
+                yield last_response
+
             item = ChatItem(role=ChatRole.ASSISTANT, content=text_chunk)
             choice = ChatCompletionChoice(index=0, chat_item=item)
 
-            yield ChatCompletionResponse(choices=[choice])
+            last_response = ChatCompletionResponse(choices=[choice])
+
+        if last_response:
+            response_str += last_response.choices[0].chat_item.content
+
+            token_count = await self.count_tokens(response_str)
+
+            if token_count < request.max_new_tokens:
+                last_response.choices[0].finish_reason = "stop"
+            else:
+                last_response.choices[0].finish_reason = "length"
+
+            yield last_response
 
         logging.info("ChatCompleteStream END:\n---")
 
+    async def count_tokens(self, raw_text: str):
+        tokens: list[int] | list[str] = (await self.engine.get_tokenizer()).tokenize(raw_text)
+        return len(tokens)
 
 async def main():
     logging.basicConfig(level=logging.INFO)
