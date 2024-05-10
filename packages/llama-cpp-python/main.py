@@ -33,3 +33,8 @@ class Model:
             stop=self.backend_config.stop_tokens,
         ):
             yield res["choices"][0]["text"]  # type: ignore
+
+    def count_tokens(self, raw_text: str):
+        string_bytes: bytes = bytes(raw_text, 'utf-8')
+        tokens: list[int] = self.llm.tokenize(string_bytes)
+        return len(tokens)
