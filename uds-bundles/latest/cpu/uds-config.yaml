@@ -18,7 +18,7 @@ variables:
     top_k: 20
 
   leapfrogai-ui:
-    domain: https://lfaiui.uds.dev
+    domain: https://ai.uds.dev
     model: vllm
     supabase_url: https://supabase-kong.uds.dev
     disable_keycloak: false # If this package is deployed as a bundle, keycloak is assumed default

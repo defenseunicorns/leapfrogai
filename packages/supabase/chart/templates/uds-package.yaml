@@ -10,7 +10,7 @@ spec:
       redirectUris:
         - "https://supabase-kong.uds.dev/auth/v1/callback"
       webOrigins:
-        - "https://lfaiui.uds.dev/"
+        - "https://ai.uds.dev/"
   network:
     expose:
       - service: supabase-kong

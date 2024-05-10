@@ -100,7 +100,7 @@ storage:
 
 studio:
   enabled: ###ZARF_VAR_ENABLE_STUDIO###
-  publicURL: "https://lfaiui.uds.dev"
+  publicURL: "https://ai.uds.dev"
   image:
     tag: 0.24.3-debian-12-r0
   resourcesPreset: "none"

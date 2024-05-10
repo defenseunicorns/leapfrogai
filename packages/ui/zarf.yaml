@@ -23,7 +23,7 @@ variables:
     sensitive: true
   - name: DOMAIN
     description: The domain to use for the application, Istio-ingress configuration
-    default: https://lfaiui.uds.dev
+    default: https://ai.uds.dev
     prompt: true
     sensitive: true
   - name: MODEL
