@@ -1,7 +1,7 @@
 import { faker } from '@faker-js/faker';
 import { POST } from './+server';
 import { MAX_LABEL_SIZE } from '$lib/constants';
-import { getFakeConversation } from '../../../../testUtils/fakeData';
+import { getFakeConversation } from '../../../../../testUtils/fakeData';
 import {
   sessionMock,
   sessionNullMock,

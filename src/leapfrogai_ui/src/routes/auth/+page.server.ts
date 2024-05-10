@@ -1,4 +1,4 @@
-import type { Actions } from '../../../.svelte-kit/types/src/routes/$types';
+import type { Actions } from './$types';
 import { redirect } from '@sveltejs/kit';
 
 export const actions: Actions = {

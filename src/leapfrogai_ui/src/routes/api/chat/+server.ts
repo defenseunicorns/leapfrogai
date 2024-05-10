@@ -38,7 +38,6 @@ export async function POST({ request, locals: { getSession } }) {
     requestData.messages.unshift({ content: env.DEFAULT_SYSTEM_PROMPT!, role: 'system' });
   }
 
-  console.log(env.DEFAULT_TEMPERATURE);
   const response = await openai.chat.completions.create({
     model: env.DEFAULT_MODEL!,
     temperature: Number(env.DEFAULT_TEMPERATURE!),

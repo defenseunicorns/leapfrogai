@@ -14,13 +14,12 @@
   import { AddComment } from 'carbon-icons-svelte';
   import { dates } from '$helpers';
   import { MAX_LABEL_SIZE } from '$lib/constants';
-  import { conversationsStore } from '$stores';
+  import { conversationsStore, uiStore } from '$stores';
   import { page } from '$app/stores';
   import { browser } from '$app/environment';
   import ImportExport from '$components/ImportExport.svelte';
   import Fuse, { type FuseResult, type IFuseOptions } from 'fuse.js';
-
-  export let isSideNavOpen: boolean;
+  import { onMount } from 'svelte';
 
   let deleteModalOpen = false;
   let editMode = false;
@@ -118,9 +117,20 @@
     searchResults = fuse.search(searchText);
     filteredConversations = searchResults.map((result) => result.item);
   }
+
+  onMount(() => {
+    // When trying to set the isSideNavOpen to true when initialized as a variable
+    // Header component overrides it to false so menu closes, setting to true here
+    // to prevent that
+    uiStore.setIsSideNavOpen(true);
+  });
 </script>
 
-<SideNav bind:isOpen={isSideNavOpen} aria-label="side navigation" style="background-color: g90;">
+<SideNav
+  bind:isOpen={$uiStore.isSideNavOpen}
+  aria-label="side navigation"
+  style="background-color: g90;"
+>
   <div style="height: 100%">
     <SideNavItems>
       <div class="side-nav-items-container">
@@ -259,6 +269,10 @@ properties had to be manually overridden.
 https://github.com/carbon-design-system/carbon-components-svelte/issues/892
 -->
 <style lang="scss">
+  :global(.bx--side-nav__item) {
+    list-style-type: none;
+  }
+
   .noScroll {
     overflow-y: hidden !important;
   }
