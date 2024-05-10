@@ -5,7 +5,7 @@ metadata:
   version: dev
 
 packages:
-  # OpenAI-like API 
+  # OpenAI-like API
   - name: leapfrogai-api
     path: ../../../packages/api
     ref: dev
@@ -36,6 +36,6 @@ packages:
     ref: dev
 
   # UI
-  - name: lfaiui
+  - name: leapfrogai-ui
     path: ../../../packages/ui/
     ref: dev
