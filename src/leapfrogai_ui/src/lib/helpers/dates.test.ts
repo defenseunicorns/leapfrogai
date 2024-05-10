@@ -1,5 +1,5 @@
 import { dates } from '$helpers';
-import { getFakeConversation } from '../../testUtils/fakeData';
+import { getFakeConversation } from '../../../testUtils/fakeData';
 
 describe('date helpers', () => {
   describe('isToday', () => {

@@ -1,5 +1,5 @@
 <script lang="ts">
-  import { LFTextArea, PoweredByDU } from '$components';
+  import { LFTextArea } from '$components';
   import { Button } from 'carbon-components-svelte';
   import { afterUpdate, onMount, tick } from 'svelte';
   import { conversationsStore, toastStore } from '$stores';
@@ -155,7 +155,7 @@
 </script>
 
 <!--Note - the messages are streamed live from the useChat messages, saving them in the db and store happens behind the scenes -->
-<div class="inner-content">
+<div class="chat-inner-content">
   <div class="messages" bind:this={messageThreadDiv} bind:offsetHeight={messageThreadDivHeight}>
     {#each $messages as message, index (message.id)}
       <Message
@@ -201,14 +201,10 @@
       {/if}
     </div>
   </form>
-
-  <div class="branding">
-    <PoweredByDU />
-  </div>
 </div>
 
 <style lang="scss">
-  .inner-content {
+  .chat-inner-content {
     display: flex;
     flex-direction: column;
     justify-content: flex-end;
@@ -229,9 +225,5 @@
     justify-content: space-around;
     align-items: flex-end;
     gap: 0.5rem;
-  }
-
-  .branding {
-    margin: layout.$spacing-05 0 layout.$spacing-05 0;
   }
 </style>

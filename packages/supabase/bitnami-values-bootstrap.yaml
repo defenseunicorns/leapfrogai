@@ -1,0 +1,113 @@
+# Copyright VMware, Inc.
+# SPDX-License-Identifier: APACHE-2.0
+
+## @section Global parameters
+## Global Docker image parameters
+## Please, note that this will override the image parameters, including dependencies, configured to use the global value
+## Current available global Docker image parameters: imageRegistry, imagePullSecrets and storageClass
+##
+
+## @param global.imageRegistry Global Docker image registry
+## @param global.imagePullSecrets Global Docker registry secret names as an array
+## @param global.storageClass Global StorageClass for Persistent Volume(s)
+##
+global:
+  ## We need to add the existing secret in global in order to make it accessible to the Kong subchart
+  ##
+  jwt:
+    ## @param global.jwt.existingSecret The name of the existing secret containing the JWT secret
+    ##
+    existingSecret: ""
+
+## @section Supabase Common parameters
+##
+jwt:
+  autoGenerate:
+    ## @param jwt.autoGenerate.forceRun Force the run of the JWT generation job
+    ##
+    forceRun: true
+    ## @param jwt.autoGenerate.annotations [object] Add annotations to the job
+    ##
+    annotations:
+      helm.sh/hook: null
+      helm.sh/hook-delete-policy: before-hook-creation,hook-succeeded
+      # This should be executed after the minio provisioning job
+      helm.sh/hook-weight: "10"
+## @section Supabase Auth Parameters
+##
+##
+auth:
+  ## @param auth.enabled Enable Supabase auth
+  ##
+  enabled: false
+## @section Supabase Meta Parameters
+##
+##
+meta:
+  ## @param meta.enabled Enable Supabase Postgres Meta
+  ##
+  enabled: false
+## @section Supabase Realtime Parameters
+##
+##
+realtime:
+  ## @param realtime.enabled Enable Supabase realtime
+  ##
+  enabled: false
+## @section Supabase Rest Parameters
+##
+##
+rest:
+  ## @param rest.enabled Enable Supabase rest
+  ##
+  enabled: false
+## @section Supabase Storage Parameters
+##
+##
+storage:
+  ## @param storage.enabled Enable Supabase storage
+  ##
+  enabled: false
+  ## Enable persistence using Persistent Volume Claims
+  ## ref: https://kubernetes.io/docs/concepts/storage/persistent-volumes/
+  ##
+  persistence:
+    ## @param storage.persistence.enabled Enable persistence using Persistent Volume Claims
+    ##
+    enabled: false
+## @section Supabase Studio Parameters
+##
+##
+studio:
+  ## @param studio.enabled Enable Supabase studio
+  ##
+  enabled: false
+## @section Init Container Parameters
+##
+
+## 'volumePermissions' init container parameters
+## Changes the owner and group of the persistent volume mount point to runAsUser:fsGroup values
+##   based on the *podSecurityContext/*containerSecurityContext parameters
+##
+volumePermissions:
+  ## @param volumePermissions.enabled Enable init container that changes the owner/group of the PV mount point to `runAsUser:fsGroup`
+  ##
+  enabled: false
+## @section Kong sub-chart parameters
+##
+kong:
+  ## @param kong.enabled Enable Kong
+  ##
+  enabled: false
+## @section PostgreSQL sub-chart parameters
+##
+
+## PostgreSQL chart configuration
+## ref: https://github.com/bitnami/charts/blob/main/bitnami/postgresql/values.yaml
+## @param postgresql.enabled Switch to enable or disable the PostgreSQL helm chart
+## @param postgresql.auth.existingSecret Name of existing secret to use for PostgreSQL credentials
+## @param postgresql.architecture PostgreSQL architecture (`standalone` or `replication`)
+## @param postgresql.service.ports.postgresql PostgreSQL service port
+##
+postgresql:
+  enabled: false

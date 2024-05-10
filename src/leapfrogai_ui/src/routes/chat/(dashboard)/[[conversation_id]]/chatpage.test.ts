@@ -5,7 +5,7 @@ import {
   fakeConversations,
   getFakeConversation,
   getFakeMessage
-} from '../../../../testUtils/fakeData';
+} from '../../../../../testUtils/fakeData';
 import ChatPage from './+page.svelte';
 import ChatPageWithToast from './ChatPageWithToast.test.svelte';
 import userEvent from '@testing-library/user-event';

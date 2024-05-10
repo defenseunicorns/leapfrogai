@@ -37,6 +37,10 @@ sdk-wheel: ## build wheels for the leapfrogai_sdk package as a dependency for ot
 	-rm ${SDK_DEST}/*.whl
 	python -m pip wheel src/leapfrogai_sdk -w ${SDK_DEST}
 
+build-supabase:
+	## Build the Zarf package
+	uds zarf package create packages/supabase -o packages/supabase --set IMAGE_VERSION=${LOCAL_VERSION} --confirm
+
 setup-api-deps: sdk-wheel ## Download the wheels for the leapfrogai_api dependencies
 	-rm packages/api/build/*.whl
 	python -m pip wheel src/leapfrogai_api -w packages/api/build --find-links=${SDK_DEST}
@@ -67,6 +71,8 @@ build-ui: ## Build the leapfrogai_ui container and Zarf package
 
 setup-llama-cpp-python-deps: sdk-wheel ## Download the wheels for the optional 'llama-cpp-python' dependencies
 	-rm packages/llama-cpp-python/build/*.whl
+
+	## The external link is needed to pull a pre-compiled cpu wheel for llama-cpp-python
 	python -m pip wheel packages/llama-cpp-python -w packages/llama-cpp-python/build --find-links=${SDK_DEST}
 
 build-llama-cpp-python: local-registry setup-llama-cpp-python-deps ## Build the llama-cpp-python (cpu) container and Zarf package
