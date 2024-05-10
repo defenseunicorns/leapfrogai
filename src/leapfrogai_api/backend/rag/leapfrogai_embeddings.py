@@ -10,33 +10,36 @@ from leapfrogai_api.backend.grpc_client import create_embeddings
 class LeapfrogAIEmbeddings(Embeddings):
     """LeapfrogAI Embeddings via Langchain Embeddings Interface."""
 
-    async def _get_embeddings(
-        self,
-        text: str,
-        model_name: str = os.getenv("DEFAULT_EMBEDDINGS_MODEL"),
-    ) -> list[float]:
-        """Get embeddings from a model."""
+    def embed_documents(self, texts: list[str]) -> list[list[float]]:
+        pass
 
+    def embed_query(self, text: str) -> list[float]:
+        pass
+
+    async def _get_model(self, model_name: str = os.getenv("DEFAULT_EMBEDDINGS_MODEL")):
         model = get_model_config().get_model_backend(model=model_name)
         if model is None:
             raise ValueError("Embeddings model not found.")
 
-        request = lfai.EmbeddingRequest(inputs=text)
-
-        response = await create_embeddings(model=model, request=request)
-
-        return response.data[0].embedding
+        return model
 
     async def aembed_documents(self, texts: list[str]) -> list[list[float]]:
         """Asynchronous Embed search docs."""
 
+        model = await self._get_model()
         list_of_embeddings = []
-        for text in texts:
-            embedding = await self._get_embeddings(text)
-            list_of_embeddings.append(embedding)
+        request = lfai.EmbeddingRequest(inputs=texts)
+        response = await create_embeddings(model=model, request=request)
+
+        list_of_embeddings = [data.embedding for data in response.data]
 
         return list_of_embeddings
 
     async def aembed_query(self, text: str) -> list[float]:
         """Asynchronous Embed query text."""
-        return await self._get_embeddings(text)
+        model = await self._get_model()
+
+        request = lfai.EmbeddingRequest(inputs=text)
+        response = await create_embeddings(model=model, request=request)
+
+        return response.data[0].embedding

@@ -9,7 +9,9 @@ from leapfrogai_api.data.crud_file_bucket import CRUDFileBucket
 from leapfrogai_api.data.crud_file_object import CRUDFileObject
 from leapfrogai_api.data.crud_vector_store_file import CRUDVectorStoreFile
 from leapfrogai_api.routers.supabase_session import Session
-from leapfrogai_api.backend.rag.document_loader import load_file, split, embed_chunks
+from leapfrogai_api.backend.rag.document_loader import load_file, split
+from leapfrogai_api.backend.rag.supabase_vector_store import AsyncSupabaseVectorStore
+from leapfrogai_api.backend.rag.leapfrogai_embeddings import LeapfrogAIEmbeddings
 
 
 class IndexingService:
@@ -45,9 +47,6 @@ class IndexingService:
         vector_store_file = await self._get_vector_store_file(vector_store_id, file_id)
 
         if vector_store_file:
-            print(
-                f"ERROR: Duplicating index file {file_id} into vector store {vector_store_id}!"
-            )
             raise ValueError("File already indexed")
 
         file_object = await self._get_file_object(file_id)
@@ -58,11 +57,6 @@ class IndexingService:
             temp_file.seek(0)
             documents = await load_file(temp_file.name)
             chunks = await split(documents)
-            embeddings = await embed_chunks(chunks)
-
-            print(f"Chunks: {len(chunks)}")
-            print(f"Embeddings: {len(embeddings)}")
-            print(f"Embeddings size: {len(embeddings[0])}")
 
             vector_store_file = VectorStoreFile(
                 id=file_id,
@@ -76,6 +70,17 @@ class IndexingService:
             crud_vector_store_file = CRUDVectorStoreFile(model=VectorStoreFile)
             vector_store_file = await crud_vector_store_file.create(
                 db=self.session, object_=vector_store_file
+            )
+
+            embeddings_function = LeapfrogAIEmbeddings()
+            vector_store_client = AsyncSupabaseVectorStore(
+                client=self.session, embedding=embeddings_function
+            )
+
+            await vector_store_client.aadd_documents(
+                documents=chunks,
+                vector_store_id=vector_store_id,
+                file_id=file_id,
             )
 
             return await self._get_vector_store_file(vector_store_id, file_id)

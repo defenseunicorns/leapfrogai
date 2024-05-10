@@ -30,6 +30,8 @@ async def embeddings(
 
     if isinstance(req.input, str):
         request = lfai.EmbeddingRequest(inputs=[req.input])
+    elif isinstance(req.input, list):
+        request = lfai.EmbeddingRequest(inputs=req.input)
     else:
         raise HTTPException(
             status_code=405,

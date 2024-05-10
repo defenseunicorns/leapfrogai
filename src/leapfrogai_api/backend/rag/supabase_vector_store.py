@@ -1,0 +1,99 @@
+"""This module contains the AsyncSupabaseVectorStore class."""
+
+from langchain_core.documents import Document
+from langchain_core.embeddings import Embeddings
+from supabase_py_async import AsyncClient
+
+
+class AsyncSupabaseVectorStore:
+    """An async vector store that uses Supabase as the backend."""
+
+    def __init__(
+        self,
+        client: AsyncClient,
+        embedding: Embeddings,
+        table_name: str = "vector_store",
+        chunk_size: int = 500,
+        query_name: str = "match_vectors",
+    ) -> None:
+        """Initializes the AsyncSupabaseVectorStore."""
+        self.client = client
+        self.embedding: Embeddings = embedding
+        self.table_name = table_name
+        self.chunk_size = chunk_size
+        self.query_name = query_name
+
+    async def aadd_documents(
+        self,
+        documents: list[Document],
+        vector_store_id: str,
+        file_id: str,
+    ) -> list[str]:
+        """Adds documents to the vector store.
+
+        Args:
+            documents (list[Document]): A list of Langchain Document objects to be added.
+            vector_store_id (str): The ID of the vector store where the documents will be added.
+            file_id (str): The ID of the file associated with the documents.
+
+        Returns:
+            List[str]: A list of IDs assigned to the added documents.
+
+        Raises:
+            Any exceptions that may occur during the execution of the method.
+
+        """
+        ids = []  # Initialize the ids list
+        embeddings = await self.embedding.aembed_documents(
+            texts=[document.page_content for document in documents]
+        )
+
+        for document, embedding in zip(documents, embeddings):
+            response = await self._aadd_vector(
+                vector_store_id=vector_store_id,
+                file_id=file_id,
+                content=document.page_content,
+                metadata=document.metadata,
+                embedding=embedding,
+            )
+            ids.append(response.data[0]["id"])
+
+        return ids
+
+    async def _aadd_vector(
+        self,
+        vector_store_id: str,
+        file_id: str,
+        content: str,
+        metadata: str,
+        embedding: list[float],
+    ) -> dict:
+        """Add a vector to the vector store.
+
+        Args:
+            vector_store_id (str): The ID of the vector store.
+            file_id (str): The ID of the file associated with the vector.
+            content (str): The content of the vector.
+            metadata (str): The metadata associated with the vector.
+            embedding (list[float]): The embedding of the vector.
+
+        Returns:
+            dict: The response from the database after inserting the vector.
+
+        """
+        row: dict[str, any] = {
+            "vector_store_id": vector_store_id,
+            "file_id": file_id,
+            "content": content,
+            "metadata": metadata,
+            "embedding": embedding,
+        }
+        response = await self.client.from_(self.table_name).insert(row).execute()
+        return response
+
+    async def asimilarity_search(self, query: str, k: int = 4) -> list[Document]:
+        """Searches for similar documents."""
+        # TODO: RPC something like this:
+        # self.client.rpc("match_vectors", {"query": query, "k": k})
+
+        raise NotImplementedError("similarity_search is not implemented.")
