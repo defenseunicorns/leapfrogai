@@ -37,6 +37,10 @@ sdk-wheel: ## build wheels for the leapfrogai_sdk package as a dependency for ot
 	-rm ${SDK_DEST}/*.whl
 	python -m pip wheel src/leapfrogai_sdk -w ${SDK_DEST}
 
+build-supabase:
+	## Build the Zarf package
+	uds zarf package create packages/supabase -o packages/supabase --set IMAGE_VERSION=${LOCAL_VERSION} --confirm
+
 setup-api-deps: sdk-wheel ## Download the wheels for the leapfrogai_api dependencies
 	-rm packages/api/build/*.whl
 	python -m pip wheel src/leapfrogai_api -w packages/api/build --find-links=${SDK_DEST}
