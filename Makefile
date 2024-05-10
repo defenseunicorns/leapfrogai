@@ -63,7 +63,7 @@ build-ui: ## Build the leapfrogai_ui container and Zarf package
 	docker tag ghcr.io/defenseunicorns/leapfrogai/lfaiui:${LOCAL_VERSION} localhost:5000/defenseunicorns/leapfrogai/lfaiu:${LOCAL_VERSION}
 
 	## Push the image to the local registry (Zarf is super slow if the image is only in the local daemon)
-	docker push localhost:5000/defenseunicorns/leapfrogai/leapfrogai-ui:${LOCAL_VERSION}
+	docker push localhost:5000/defenseunicorns/leapfrogai/lfaiui:${LOCAL_VERSION}
 
 	## Build the Zarf package
 	uds zarf package create packages/ui -o packages/ui --registry-override=ghcr.io=localhost:5000 --insecure --set IMAGE_VERSION=${LOCAL_VERSION} --confirm
