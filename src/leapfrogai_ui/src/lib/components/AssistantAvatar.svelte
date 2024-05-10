@@ -9,7 +9,7 @@
   } from 'carbon-components-svelte';
   import Pictograms from '$components/Pictograms.svelte';
   import DynamicPictogram from '$components/DynamicPictogram.svelte';
-  import {AVATAR_FILE_SIZE_ERROR_TEXT, MAX_AVATAR_SIZE, NO_FILE_ERROR_TEXT} from '$lib/constants';
+  import { AVATAR_FILE_SIZE_ERROR_TEXT, MAX_AVATAR_SIZE, NO_FILE_ERROR_TEXT } from '$lib/constants';
 
   export let files: File[];
   export let selectedPictogramName: string;
@@ -23,8 +23,6 @@
   $: fileNotUploaded = selectedRadioButton === 'upload' && !tempFiles[0]; // if on upload tab, you must upload a file to click save
   $: fileTooBig = tempFiles[0]?.size > MAX_AVATAR_SIZE;
   let errorMsg = '';
-
-
 
   $: hideUploader = tempFiles.length > 0;
 
@@ -68,7 +66,7 @@
         }
       }
       files = [...tempFiles];
-      if(selectedRadioButton === 'pictogram') selectedPictogramName = tempPictogram;
+      if (selectedRadioButton === 'pictogram') selectedPictogramName = tempPictogram;
       modalOpen = false;
       shouldValidate = false;
     }

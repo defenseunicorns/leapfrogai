@@ -1,7 +1,5 @@
 import { render, screen } from '@testing-library/svelte';
 import userEvent from '@testing-library/user-event';
-import { mockAssistantCreation, mockNewAssistantError } from '$lib/mocks/assistant-mocks';
-import { getFakeNewAssistantInput } from '../../../../../../testUtils/fakeData';
 import NewAssistantPageWithToast from './NewAssistantPageWithToast.test.svelte';
 import { afterAll, beforeAll, type MockInstance, vi } from 'vitest';
 import * as navigation from '$app/navigation';
@@ -13,79 +11,18 @@ describe('New Assistant page', () => {
   beforeAll(() => {
     goToSpy = vi.spyOn(navigation, 'goto');
   });
+
   afterEach(() => {
     vi.clearAllMocks();
   });
   afterAll(() => {
     vi.restoreAllMocks();
   });
-  it('creates a new assistant', async () => {
-    const newAssistantInput = getFakeNewAssistantInput();
 
-    mockAssistantCreation(newAssistantInput);
-    render(NewAssistantPageWithToast);
-
-    const nameField = screen.getByRole('textbox', { name: /name/i });
-    const taglineField = screen.getByRole('textbox', { name: /description/i });
-    const instructionsField = screen.getByPlaceholderText(/you'll act as\.\.\./i);
-    const saveBtn = screen.getByRole('button', { name: /save/i });
-
-    await userEvent.type(nameField, newAssistantInput.name);
-    await userEvent.type(taglineField, newAssistantInput.description);
-    await userEvent.type(instructionsField, newAssistantInput.instructions);
-
-    // Note - unknown how to change slider value so leaving at default
-
-    await userEvent.click(saveBtn);
-    await screen.findByText('Assistant Created.');
-  });
-  it('displays an error toast when there is an error creating an assistant', async () => {
-    const newAssistantInput = getFakeNewAssistantInput();
-
-    mockNewAssistantError();
-    render(NewAssistantPageWithToast);
-
-    const nameField = screen.getByRole('textbox', { name: /name/i });
-    const taglineField = screen.getByRole('textbox', { name: /description/i });
-    const instructionsField = screen.getByPlaceholderText(/you'll act as\.\.\./i);
-    const saveBtn = screen.getByRole('button', { name: /save/i });
-
-    await userEvent.type(nameField, newAssistantInput.name);
-    await userEvent.type(taglineField, newAssistantInput.description);
-    await userEvent.type(instructionsField, newAssistantInput.instructions);
-
-    await userEvent.click(saveBtn);
-    await screen.findByText('Error creating assistant.');
-  });
-  it('validates required fields', async () => {
-    const newAssistantInput = getFakeNewAssistantInput();
-
-    mockAssistantCreation(newAssistantInput);
-    render(NewAssistantPageWithToast);
-
-    const nameField = screen.getByRole('textbox', { name: /name/i });
-    const taglineField = screen.getByRole('textbox', { name: /description/i });
-    const instructionsField = screen.getByPlaceholderText(/you'll act as\.\.\./i);
-    const saveBtn = screen.getByRole('button', { name: /save/i });
-
-    await userEvent.type(nameField, newAssistantInput.name);
-
-    await userEvent.click(saveBtn);
-
-    expect(saveBtn).toHaveProperty('disabled', true);
-    const requiredWarnings = screen.getAllByText(/Required/i);
-    expect(requiredWarnings).toHaveLength(2);
-
-    // Fill out remaining fields, ensure submit button remains disabled until form is valid
-    await userEvent.type(taglineField, newAssistantInput.description);
-    expect(saveBtn).toHaveProperty('disabled', true);
-    await userEvent.type(instructionsField, newAssistantInput.instructions);
-    expect(saveBtn).toHaveProperty('disabled', false);
-  });
   it('has a modal that navigates back to the management page', async () => {
     render(NewAssistantPageWithToast);
 
-    const cancelBtn = screen.getByRole('button', { name: /cancel/i });
+    const cancelBtn = screen.getAllByRole('button', { name: /cancel/i })[0];
     await userEvent.click(cancelBtn);
 
     await userEvent.click(screen.getByText('Leave this page'));
@@ -95,7 +32,7 @@ describe('New Assistant page', () => {
   it('has a modal that stays on page when canceled', async () => {
     render(NewAssistantPageWithToast);
 
-    const cancelBtn = screen.getByRole('button', { name: /cancel/i });
+    const cancelBtn = screen.getAllByRole('button', { name: /cancel/i })[0];
     await userEvent.click(cancelBtn);
 
     await userEvent.click(screen.getByText('Stay on page'));

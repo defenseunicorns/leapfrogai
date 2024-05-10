@@ -10,6 +10,9 @@ import * as navigation from '$app/navigation';
 import * as stores from '$app/stores';
 import { fakeConversations } from './testUtils/fakeData';
 
+// Fixes error: node.scrollIntoView is not a function
+window.HTMLElement.prototype.scrollIntoView = function () {};
+
 vi.mock('$env/dynamic/public', () => {
   return {
     env: {

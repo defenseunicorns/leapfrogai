@@ -1,7 +1,7 @@
 import type { PageServerLoad } from './$types';
 import { fail, redirect } from '@sveltejs/kit';
 import { supabaseAssistantInputSchema } from '../../../../../schemas/assistants';
-import {assistantDefaults, AVATAR_FILE_SIZE_ERROR_TEXT, MAX_AVATAR_SIZE} from '$lib/constants';
+import { assistantDefaults, AVATAR_FILE_SIZE_ERROR_TEXT, MAX_AVATAR_SIZE } from '$lib/constants';
 import { env } from '$env/dynamic/private';
 import { v4 as uuidv4 } from 'uuid';
 import { assistantsStore } from '$stores';
@@ -19,7 +19,6 @@ export const load: PageServerLoad = async ({ locals: { getSession } }) => {
 
 export const actions = {
   default: async ({ request, locals: { supabase, getSession } }) => {
-
     // Validate session
     const session = await getSession();
     if (!session) {

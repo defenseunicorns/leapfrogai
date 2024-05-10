@@ -58,16 +58,15 @@
     />
   </div>
   <div class="gallery">
-    {#each filteredPictograms.length > 0 ? filteredPictograms : pictogramNames.slice(0,3) as pictogram, index}
-      <div
-        class="pictogram"
+    {#each filteredPictograms.length > 0 ? filteredPictograms : pictogramNames as pictogram}
+      <button
+        class="pictogram remove-btn-style"
         class:clicked={pictogram === selectedPictogramName}
-        on:click={() => (selectedPictogramName = pictogram)}
+        on:click|preventDefault={() => (selectedPictogramName = pictogram)}
         use:scrollToElement={{ active: pictogram === selectedPictogramName }}
-
       >
         <DynamicPictogram iconName={pictogram} width="64px" height="64px" />
-      </div>
+      </button>
     {/each}
   </div>
   <input type="hidden" name="pictogram" value={selectedPictogramName} />

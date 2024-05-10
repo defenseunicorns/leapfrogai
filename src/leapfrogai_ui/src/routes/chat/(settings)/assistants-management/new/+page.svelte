@@ -45,7 +45,7 @@
 >
   <div class="container">
     <div class="inner-container">
-      <div class="top-row" >
+      <div class="top-row">
         <div class="title">New Assistant</div>
         <AssistantAvatar bind:files bind:selectedPictogramName />
       </div>

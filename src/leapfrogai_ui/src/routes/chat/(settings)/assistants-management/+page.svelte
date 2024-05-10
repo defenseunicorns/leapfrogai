@@ -104,6 +104,6 @@
 
   .preview-banner {
     text-align: center;
-    color: $red-30
+    color: $red-30;
   }
 </style>

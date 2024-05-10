@@ -51,12 +51,12 @@ export const deleteAssistantByName = async (name: string) => {
   await supabase.from('conversations').delete().eq('name', name);
 };
 
-export const attachAvatarImage = async  (page: Page, imageName) => {
+export const attachAvatarImage = async (page: Page, imageName) => {
   const fileChooserPromise = page.waitForEvent('filechooser');
   await page.locator('label').filter({ hasText: 'Upload from computer' }).click();
   const fileChooser = await fileChooserPromise;
   await fileChooser.setFiles(`./tests/fixtures/${imageName}.png`);
-}
+};
 
 export const uploadAvatar = async (page: Page, imageName = 'Doug') => {
   await page.getByText('Upload', { exact: true }).click();
@@ -69,5 +69,3 @@ export const uploadAvatar = async (page: Page, imageName = 'Doug') => {
   });
   expect(hasImage).toBeDefined();
 };
-
-

@@ -1,6 +1,6 @@
 import { expect, test } from './fixtures';
 import { getFakeNewAssistantInput } from '../testUtils/fakeData';
-import { attachAvatarImage, deleteAssistantByName, uploadAvatar } from './helpers';
+import { deleteAssistantByName, uploadAvatar } from './helpers';
 import { NO_FILE_ERROR_TEXT } from '../src/lib/constants/index';
 
 test('it can search for and choose a pictogram as an avatar', async ({ page }) => {
@@ -60,8 +60,6 @@ test('it can upload an image as an avatar', async ({ page }) => {
 });
 
 test('it can change an image uploaded as an avatar', async ({ page }) => {
-  const assistantInput = getFakeNewAssistantInput();
-
   await page.goto('/chat/assistants-management/new');
 
   await page.locator('.mini-avatar-container').click();
