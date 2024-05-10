@@ -36,6 +36,6 @@ packages:
     ref: dev
 
   # UI
-  - name: lfaiui
+  - name: leapfrogai-ui
     path: ../../../packages/ui/
     ref: dev

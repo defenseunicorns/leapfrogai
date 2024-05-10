@@ -63,10 +63,10 @@ variables:
     sensitive: false
 
 components:
-  - name: lfaiui
+  - name: leapfrogai-ui
     required: true
     charts:
-      - name: lfaiui
+      - name: leapfrogai-ui
         namespace: leapfrogai
         localPath: chart
         valuesFiles:
@@ -82,6 +82,6 @@ components:
           - wait:
               cluster:
                 kind: Deployment
-                name: lfaiui
+                name: leapfrogai-ui
                 namespace: leapfrogai
                 condition: Available

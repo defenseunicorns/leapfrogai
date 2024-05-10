@@ -22,8 +22,9 @@ variables:
     embedding_model_name: text-embeddings
     top_k: 20
 
-  lfaiui:
+  leapfrogai-ui:
     domain: https://lfaiui.uds.dev
     model: vllm
     supabase_url: https://supabase-kong.uds.dev
+    disable_keycloak: false # If this package is deployed as a bundle, keycloak is assumed default
     supabase_anon_key: ''
