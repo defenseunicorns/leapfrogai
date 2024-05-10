@@ -23,7 +23,7 @@ spec:
             - name: LEAPFROGAI_API_BASE_URL
               value: '###ZARF_VAR_LEAPFROGAI_API_BASE_URL###'
             - name: ORIGIN
-              value: '###ZARF_VAR_DOMAIN###'
+              value: "https://{{ .Values.package.subdomain }}.{{ .Values.package.domain }}"
             - name: DEFAULT_MODEL
               value: '###ZARF_VAR_MODEL###'
             - name: DEFAULT_SYSTEM_PROMPT
