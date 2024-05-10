@@ -87,7 +87,9 @@ def LLM(_cls):
             item = ChatItem(role=ChatRole.ASSISTANT, content=content)
             choice = ChatCompletionChoice(index=0, chat_item=item)
 
-            if self.count_tokens(choice.chat_item.content) < request.max_new_tokens:
+            token_count = await self.count_tokens(choice.chat_item.content)
+
+            if token_count < request.max_new_tokens:
                 choice.finish_reason = "stop"
             else:
                 choice.finish_reason = "length"
@@ -118,7 +120,9 @@ def LLM(_cls):
             if last_response:
                 response_str += last_response.choices[0].chat_item.content
 
-                if self.count_tokens(response_str) < request.max_new_tokens:
+                token_count = await self.count_tokens(response_str)
+
+                if token_count < request.max_new_tokens:
                     last_response.choices[0].finish_reason = "stop"
                 else:
                     last_response.choices[0].finish_reason = "length"
@@ -135,8 +139,9 @@ def LLM(_cls):
                 content += text_chunk
 
             choice = CompletionChoice(index=0, text=content)
+            token_count = await self.count_tokens(choice.text)
 
-            if self.count_tokens(choice.text) < request.max_new_tokens:
+            if token_count < request.max_new_tokens:
                 choice.finish_reason = "stop"
             else:
                 choice.finish_reason = "length"
@@ -162,7 +167,9 @@ def LLM(_cls):
             if last_response:
                 response_str += last_response.choices[0].text
 
-                if self.count_tokens(response_str) < request.max_new_tokens:
+                token_count = await self.count_tokens(response_str)
+
+                if token_count < request.max_new_tokens:
                     last_response.choices[0].finish_reason = "stop"
                 else:
                     last_response.choices[0].finish_reason = "length"
