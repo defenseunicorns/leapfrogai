@@ -18,6 +18,8 @@
   let files: File[] = [];
   let selectedPictogramName = 'default';
 
+  let isSubmitting = false;
+
   $: sliderValue = Number(form?.temperature) || DEFAULT_ASSISTANT_TEMP;
 </script>
 
@@ -25,7 +27,9 @@
   method="POST"
   enctype="multipart/form-data"
   use:enhance={async () => {
+    isSubmitting = true;
     return async ({ result }) => {
+      isSubmitting = false;
       await applyAction(result);
       if (result.type === 'redirect') {
         toastStore.addToast({
@@ -139,7 +143,7 @@
         <Button kind="secondary" size="small" on:click={() => (cancelModalOpen = true)}
           >Cancel</Button
         >
-        <Button kind="primary" size="small" type="submit">Save</Button>
+        <Button kind="primary" size="small" type="submit" disabled={isSubmitting}>Save</Button>
       </div>
     </div>
   </div>
