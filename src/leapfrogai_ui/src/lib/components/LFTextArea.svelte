@@ -91,8 +91,6 @@ The invalid prop can still be passed to this component to validate for other con
   }
 
   onMount(() => {
-    const style = getComputedStyle(document.documentElement);
-    inputHeight = style.getPropertyValue('--message-input-height').trim();
     resizeTextArea();
   });
 </script>
