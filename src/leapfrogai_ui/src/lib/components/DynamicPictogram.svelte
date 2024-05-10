@@ -1,7 +1,7 @@
 <script lang="ts">
   import { iconMap } from '$lib/constants/iconMap';
 
-  export let iconName: string;
+  export let iconName = 'default';
   export let width = '40px';
   export let height = '40px';
 
@@ -15,9 +15,4 @@
   }
 </script>
 
-<svelte:component
-  this={Pictogram}
-  {width}
-  {height}
-  data-testid={`pictogram-${iconName || 'default'}`}
-/>
+<svelte:component this={Pictogram} {width} {height} data-testid={`pictogram-${iconName}`} />

@@ -17,23 +17,19 @@
   let tempFiles: File[] = [];
   let tempPictogram = '';
   let modalOpen = false;
-  let fileUploaderRef: HTMLInputElement;
   let selectedRadioButton: 'upload' | 'pictogram' = 'pictogram';
   let shouldValidate = false;
-  $: fileNotUploaded = selectedRadioButton === 'upload' && !tempFiles[0]; // if on upload tab, you must upload a file to click save
-  $: fileTooBig = tempFiles[0]?.size > MAX_AVATAR_SIZE;
+  let fileUploaderRef: HTMLInputElement;
   let errorMsg = '';
 
+  $: fileNotUploaded = !tempFiles[0]; // if on upload tab, you must upload a file to enable save
+  $: fileTooBig = tempFiles[0]?.size > MAX_AVATAR_SIZE;
   $: hideUploader = tempFiles.length > 0;
 
   const handleRemove = () => {
     tempFiles = [];
     tempPictogram = '';
     shouldValidate = false;
-  };
-
-  const handleChangeAvatar = () => {
-    fileUploaderRef.click(); // re-open upload dialog
   };
 
   const handleCancel = () => {
@@ -47,6 +43,10 @@
     }
   };
 
+  const handleChangeAvatar = () => {
+    fileUploaderRef.click(); // re-open upload dialog
+  };
+
   const handleSubmit = () => {
     shouldValidate = true;
 
@@ -56,8 +56,8 @@
     }
     if (!fileNotUploaded) {
       if (selectedRadioButton === 'pictogram') {
-        // If they had an image uploaded, but then went back to the pictogram tab
-        // remove the uploaded image and don't save it
+        // If image uploaded, but navigate back to pictogram tab
+        // remove uploaded image and don't save it
         tempFiles = [];
       } else {
         if (fileTooBig) {
@@ -65,8 +65,11 @@
           return;
         }
       }
+
+      // move from temp variables to form variables for saving
       files = [...tempFiles];
       if (selectedRadioButton === 'pictogram') selectedPictogramName = tempPictogram;
+
       modalOpen = false;
       shouldValidate = false;
     }
@@ -96,12 +99,8 @@
     shouldSubmitOnEnter={false}
     primaryButtonText="Save"
     secondaryButtonText="Cancel"
-    on:close={() => {
-      handleCancel();
-    }}
-    on:click:button--secondary={() => {
-      handleCancel();
-    }}
+    on:close={handleCancel}
+    on:click:button--secondary={handleCancel}
     on:submit={handleSubmit}
     style="--modal-height:{tempPictogram === 'pictogram' ? '100%' : 'auto'};"
     class="avatar-modal"
@@ -111,7 +110,7 @@
         <RadioButton labelText="Pictogram" value="pictogram" />
         <RadioButton labelText="Upload" value="upload" />
       </RadioButtonGroup>
-      <span class:hidden={selectedRadioButton === 'upload'} style="  height: 100%;">
+      <span class:hidden={selectedRadioButton === 'upload'} style="height: 100%;">
         <Pictograms bind:selectedPictogramName={tempPictogram} />
       </span>
 

@@ -22,7 +22,6 @@ export const actions = {
     // Validate session
     const session = await getSession();
     if (!session) {
-      console.log('Form submission: create assistant. Invalid session');
       return fail(401, { message: 'Unauthorized' });
     }
 
@@ -96,8 +95,6 @@ export const actions = {
       }
 
       avatarFilePath = supabaseData.path;
-
-      console.log('File uploaded to Supabase:', supabaseData);
     }
 
     // Create Assistant Object

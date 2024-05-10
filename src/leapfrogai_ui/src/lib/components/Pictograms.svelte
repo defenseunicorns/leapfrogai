@@ -33,7 +33,7 @@
     filteredPictograms = [];
   };
 
-  function scrollToElement(node: HTMLElement, params: { active: boolean }) {
+  function scrollToPictogram(node: HTMLElement, params: { active: boolean }) {
     if (params.active) {
       node.scrollIntoView({ behavior: 'auto', block: 'nearest' });
     }
@@ -63,7 +63,7 @@
         class="pictogram remove-btn-style"
         class:clicked={pictogram === selectedPictogramName}
         on:click|preventDefault={() => (selectedPictogramName = pictogram)}
-        use:scrollToElement={{ active: pictogram === selectedPictogramName }}
+        use:scrollToPictogram={{ active: pictogram === selectedPictogramName }}
       >
         <DynamicPictogram iconName={pictogram} width="64px" height="64px" />
       </button>
