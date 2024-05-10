@@ -23,11 +23,11 @@ constants:
 variables:
   - name: UI_SQL_SCHEMA
     type: file
-    default: "migrations/ui_sql_schema.sql"
+    default: "migrations/20240322174521_ui_sql_schema.sql"
     autoIndent: true
   - name: API_SQL_SCHEMA
     type: file
-    default: "migrations/api_sql_schema.sql"
+    default: "migrations/20240322174520_api_sql_schema.sql"
     autoIndent: true
   - name: MIGRATION_SCRIPT
     type: file
@@ -111,11 +111,10 @@ components:
     files:
       - source: migrations/migrate.sh
         target: migrations/migrate.sh
-      - source: migrations/ui_sql_schema.sql
-        target: migrations/ui_sql_schema.sql
-      - source: migrations/api_sql_schema.sql
-        target: migrations/api_sql_schema.sql
-  - name: supabase-post-process
+      - source: migrations/20240322174521_ui_sql_schema.sql
+        target: migrations/20240322174521_ui_sql_schema.sql
+      - source: migrations/20240322174520_api_sql_schema.sql
+        target: migrations/20240322174520_api_sql_schema.sql
     description: "Perform necessary post processing here"
     required: true
     actions:
