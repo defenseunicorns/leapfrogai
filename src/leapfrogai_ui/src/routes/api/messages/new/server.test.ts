@@ -4,7 +4,7 @@ import {
   supabaseInsertErrorMock,
   supabaseInsertMock
 } from '$lib/mocks/supabase-mocks';
-import { getFakeMessage } from '../../../../testUtils/fakeData';
+import { getFakeMessage } from '../../../../../testUtils/fakeData';
 import { POST } from './+server';
 
 const message = getFakeMessage({});

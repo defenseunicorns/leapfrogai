@@ -1,6 +1,6 @@
 import { expect, test } from '@playwright/test';
 import { loadChatPage } from './helpers';
-import { getFakeConversation } from '../src/testUtils/fakeData';
+import { getFakeConversation } from '../testUtils/fakeData';
 
 test('it can import and exports conversations', async ({ page }) => {
   const conversation = getFakeConversation();

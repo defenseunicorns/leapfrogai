@@ -75,6 +75,7 @@
     "msw": "^2.2.14",
     "openai": "^4.41.1",
     "playwright": "^1.42.1",
+    "svelte-forms-lib": "^2.0.1",
     "uuid": "^9.0.1",
     "yup": "^1.4.0"
   }

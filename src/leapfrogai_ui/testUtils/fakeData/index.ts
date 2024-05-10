@@ -1,4 +1,5 @@
 import { faker } from '@faker-js/faker';
+import { assistantDefaults, DEFAULT_ASSISTANT_TEMP } from '../../src/lib/constants';
 
 const todayOverride = new Date('2024-03-20T00:00');
 
@@ -87,3 +88,31 @@ export const fakeConversations: Conversation[] = [
     insertedAt: new Date(todayOverride.getFullYear(), todayOverride.getMonth(), 10).toDateString()
   })
 ];
+
+export const getFakeAssistant = (): Assistant => {
+  return {
+    id: faker.string.uuid(),
+    ...assistantDefaults,
+    name: faker.person.fullName(),
+    description: faker.lorem.sentence(),
+    instructions: faker.lorem.paragraph(),
+    temperature: DEFAULT_ASSISTANT_TEMP,
+    metadata: {
+      created_by: faker.string.uuid(),
+      data_sources: []
+    },
+    created_at: Date.now()
+  };
+};
+
+export const getFakeNewAssistantInput = (): NewAssistantInput => {
+  return {
+    name: faker.person.fullName(),
+    description: faker.lorem.sentence(),
+    instructions: faker.lorem.paragraph(),
+    temperature: DEFAULT_ASSISTANT_TEMP,
+    metadata: {
+      data_sources: []
+    }
+  };
+};
