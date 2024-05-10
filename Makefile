@@ -71,6 +71,8 @@ build-ui: ## Build the leapfrogai_ui container and Zarf package
 
 setup-llama-cpp-python-deps: sdk-wheel ## Download the wheels for the optional 'llama-cpp-python' dependencies
 	-rm packages/llama-cpp-python/build/*.whl
+
+	## The external link is needed to pull a pre-compiled cpu wheel for llama-cpp-python
 	python -m pip wheel packages/llama-cpp-python -w packages/llama-cpp-python/build --find-links=${SDK_DEST}
 
 build-llama-cpp-python: local-registry setup-llama-cpp-python-deps ## Build the llama-cpp-python (cpu) container and Zarf package
