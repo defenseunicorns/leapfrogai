@@ -178,10 +178,23 @@ postgresql:
   enabled: ###ZARF_VAR_ENABLE_POSTGRES###
   image:
     tag: 15.1.1-debian-12-r24
+    debug: true
   primary:
     resourcesPreset: "none"
     podLabels:
       sidecar.istio.io/inject: "false"
+    initdb:
+      scripts:
+        0000000000000000_migrate.sh: |
+          ###ZARF_VAR_MIGRATION_SCRIPT###
+
+        20240322174520_api_sql_schema.sql: |
+          ###ZARF_VAR_API_SQL_SCHEMA###
+
+        20240322174521_ui_sql_schema.sql: |
+          ###ZARF_VAR_UI_SQL_SCHEMA###
+
+
   commonAnnotations:
     helm.sh/resource-policy: keep
   ## @param postgresql.postgresqlSharedPreloadLibraries Set the shared_preload_libraries parameter in postgresql.conf
