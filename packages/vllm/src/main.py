@@ -461,8 +461,11 @@ class Model:
         logging.info("ChatCompleteStream END:\n---")
 
     async def count_tokens(self, raw_text: str):
-        tokens: list[int] | list[str] = (await self.engine.get_tokenizer()).tokenize(raw_text)
+        tokens: list[int] | list[str] = (await self.engine.get_tokenizer()).tokenize(
+            raw_text
+        )
         return len(tokens)
+
 
 async def main():
     logging.basicConfig(level=logging.INFO)
