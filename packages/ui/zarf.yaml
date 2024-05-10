@@ -21,9 +21,12 @@ variables:
     default: my-test-key
     prompt: true
     sensitive: true
+  - name: SUBDOMAIN
+    description: The subdomain for the application, Istio-ingress configuration
+    default: "ai"
   - name: DOMAIN
     description: The domain to use for the application, Istio-ingress configuration
-    default: https://ai.uds.dev
+    default: "uds.dev"
     prompt: true
     sensitive: true
   - name: MODEL
