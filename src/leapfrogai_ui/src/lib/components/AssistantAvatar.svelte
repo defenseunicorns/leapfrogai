@@ -28,7 +28,7 @@
 
   const handleRemove = () => {
     tempFiles = [];
-    tempPictogram = '';
+    tempPictogram = 'default';
     shouldValidate = false;
   };
 
@@ -50,26 +50,23 @@
   const handleSubmit = () => {
     shouldValidate = true;
 
-    if (fileNotUploaded && selectedRadioButton === 'upload') {
-      errorMsg = NO_FILE_ERROR_TEXT;
-      return;
-    }
-    if (!fileNotUploaded) {
-      if (selectedRadioButton === 'pictogram') {
-        // If image uploaded, but navigate back to pictogram tab
-        // remove uploaded image and don't save it
-        tempFiles = [];
-      } else {
-        if (fileTooBig) {
-          errorMsg = AVATAR_FILE_SIZE_ERROR_TEXT;
-          return;
-        }
+    if (selectedRadioButton === 'upload') {
+      if (fileNotUploaded) {
+        errorMsg = NO_FILE_ERROR_TEXT;
+        return;
+      }
+      if (fileTooBig) {
+        errorMsg = AVATAR_FILE_SIZE_ERROR_TEXT;
+        return;
       }
 
-      // move from temp variables to form variables for saving
       files = [...tempFiles];
-      if (selectedRadioButton === 'pictogram') selectedPictogramName = tempPictogram;
-
+      modalOpen = false;
+      shouldValidate = false;
+    } else {
+      // pictogram tab
+      selectedPictogramName = tempPictogram;
+      files = []; // remove saved avatar
       modalOpen = false;
       shouldValidate = false;
     }

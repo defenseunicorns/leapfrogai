@@ -6,7 +6,7 @@ import { NO_FILE_ERROR_TEXT } from '../src/lib/constants/index';
 test('it can search for and choose a pictogram as an avatar', async ({ page }) => {
   const assistantInput = getFakeNewAssistantInput();
 
-  const pictogramName = 'AiPrivacy';
+  const pictogramName = 'Analytics';
 
   await page.goto('/chat/assistants-management/new');
 
@@ -146,7 +146,7 @@ test('it keeps the original pictogram on cancel after uploading an image but not
 test('it keeps the original pictogram on cancel after changing the pictogram but not saving it', async ({
   page
 }) => {
-  const pictogramName = 'AiPrivacy';
+  const pictogramName = 'Analytics';
   await page.goto('/chat/assistants-management/new');
   await page.locator('.mini-avatar-container').click();
 
@@ -166,7 +166,7 @@ test('it keeps the original pictogram on cancel after changing the pictogram but
 test('it keeps the original pictogram on close (not cancel) after changing the pictogram but not saving it', async ({
   page
 }) => {
-  const pictogramName = 'AiPrivacy';
+  const pictogramName = 'Analytics';
   await page.goto('/chat/assistants-management/new');
   await page.locator('.mini-avatar-container').click();
 
@@ -185,7 +185,7 @@ test('it keeps the original pictogram on close (not cancel) after changing the p
 test('it saves the pictogram if the save button is clicked on the pictogram tab even if an image was uploaded', async ({
   page
 }) => {
-  const pictogramName = 'AiPrivacy';
+  const pictogramName = 'Analytics';
 
   await page.goto('/chat/assistants-management/new');
   await page.locator('.mini-avatar-container').click();

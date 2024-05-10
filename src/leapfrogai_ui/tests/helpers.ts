@@ -51,7 +51,7 @@ export const deleteAssistantByName = async (name: string) => {
   await supabase.from('conversations').delete().eq('name', name);
 };
 
-export const attachAvatarImage = async (page: Page, imageName) => {
+export const attachAvatarImage = async (page: Page, imageName: string) => {
   const fileChooserPromise = page.waitForEvent('filechooser');
   await page.locator('label').filter({ hasText: 'Upload from computer' }).click();
   const fileChooser = await fileChooserPromise;

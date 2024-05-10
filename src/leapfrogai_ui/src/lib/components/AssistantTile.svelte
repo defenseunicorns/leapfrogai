@@ -22,8 +22,8 @@
     <div class="name">{assistant.name}</div>
     <!--There isn't a simple solution for multi line text ellipses, so doing it manually at specific character length instead-->
     <div class="description">
-      {assistant.description && assistant.description.length > 73
-        ? `${assistant.description?.slice(0, 73)}...`
+      {assistant.description && assistant.description.length > 62
+        ? `${assistant.description?.slice(0, 62)}...`
         : assistant.description}
     </div>
   </ClickableTile>
@@ -35,6 +35,9 @@
   }
   .description {
     @include type.type-style('body-01');
+    line-height: 1em;
+    height: 2em;
+    overflow: hidden;
   }
 
   .assistant-tile {
