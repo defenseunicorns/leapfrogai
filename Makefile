@@ -1,6 +1,6 @@
 ARCH ?= amd64
 KEY ?= ""
-REG_PORT ?= ${REG_PORT}
+REG_PORT ?= 5000
 
 VERSION ?= $(shell git describe --abbrev=0 --tags)
 LOCAL_VERSION ?= $(shell git rev-parse --short HEAD)
@@ -102,7 +102,6 @@ build-vllm: local-registry setup-vllm-deps ## Build the vllm container and Zarf 
 	## Build the Zarf package
 	uds zarf package create packages/vllm -o packages/vllm --registry-override=ghcr.io=localhost:${REG_PORT} --insecure --set IMAGE_VERSION=${LOCAL_VERSION} --confirm
 
-setup-text-embeddings-deps: sdk-wheel ## Download the wheels for the optional 'text-embeddings' dependencies
 build-text-embeddings: PKG_DEST = packages/text-embeddings
 build-text-embeddings: local-registry setup-package ## Build the text-embeddings container and Zarf package
 	## Build the image (and tag it for the local registry)
