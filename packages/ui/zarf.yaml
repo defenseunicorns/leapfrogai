@@ -1,6 +1,6 @@
 kind: ZarfPackageConfig
 metadata:
-  name: lfaiui
+  name: leapfrogai-ui
   version: '###ZARF_PKG_TMPL_IMAGE_VERSION###'
   architecture: amd64
   description: >
@@ -78,7 +78,7 @@ components:
         version: 0.6.1
         # x-release-please-end
     images:
-      - ghcr.io/defenseunicorns/leapfrogai/lfaiui:###ZARF_PKG_TMPL_IMAGE_VERSION###
+      - ghcr.io/defenseunicorns/leapfrogai/leapfrogai-ui:###ZARF_PKG_TMPL_IMAGE_VERSION###
     actions:
       onDeploy:
         after:
