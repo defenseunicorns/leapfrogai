@@ -115,6 +115,7 @@ components:
         target: migrations/20240322174521_ui_sql_schema.sql
       - source: migrations/20240322174520_api_sql_schema.sql
         target: migrations/20240322174520_api_sql_schema.sql
+  - name: supabase-post-process
     description: "Perform necessary post processing here"
     required: true
     actions:
