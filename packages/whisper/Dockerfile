@@ -8,15 +8,29 @@ COPY build/*.whl build/
 RUN python3.11 -m venv .venv
 ENV PATH="/leapfrogai/.venv/bin:$PATH"
 
+#COPY build/lfai_whisper*.whl .
+# copy source
+USER root
+COPY src ./src
+COPY . ./package
+RUN chown -R nonroot:nonroot ./src
+RUN chown -R nonroot:nonroot ./package
+USER nonroot
+
+# build sdk
+RUN python -m pip wheel ./src/leapfrogai_sdk -w build
+
+# build package
+RUN python -m pip wheel ./package[dev] -w build --find-links=build/
+
 # download and covnert OpenAI's whisper base
 ARG MODEL_NAME=openai/whisper-base
 RUN pip install ctranslate2 transformers[torch] --no-index --find-links=build/
 RUN ct2-transformers-converter --model ${MODEL_NAME} --output_dir .model --copy_files tokenizer.json --quantization float32
 RUN pip uninstall -y ctranslate2 transformers[torch]
 
-COPY build/lfai_whisper*.whl .
-
-RUN pip install lfai_whisper*.whl --no-index --find-links=build/
+# install
+RUN pip install build/lfai_whisper*.whl --no-index --find-links=build/
 
 # Use hardened ffmpeg image to get compiled binaries
 FROM cgr.dev/chainguard/ffmpeg:latest as ffmpeg

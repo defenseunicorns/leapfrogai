@@ -25,7 +25,7 @@ generate-hashes = true
 
 [tool.setuptools]
 packages = ["leapfrogai_sdk"]
-package-dir = {"" = "../../src"}
+package-dir = {"" = "src"}
 
 [tool.pytest.ini_options]
 addopts = ["--import-mode=importlib"]

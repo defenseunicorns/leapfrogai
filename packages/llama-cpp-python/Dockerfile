@@ -38,7 +38,7 @@ USER nonroot
 # build sdk
 RUN python -m pip wheel ./src/leapfrogai_sdk -w build
 
-# build llama_cpp
+# build package
 RUN python -m pip wheel ./package -w build --find-links=build/
 
 # install
