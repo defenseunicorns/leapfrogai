@@ -79,7 +79,7 @@ async def chat_completion(model: Model, request: lfai.ChatCompletionRequest):
                         ).lower(),
                         content=response.choices[0].chat_item.content,
                     ),
-                    finish_reason="stop",
+                    finish_reason=response.choices[0].finish_reason,
                 )
             ],
             usage=Usage(total_tokens=0, prompt_tokens=0),

@@ -16,32 +16,25 @@ from leapfrogai_api.backend.types import (
 async def recv_completion(
     stream: grpc.aio.UnaryStreamCall[lfai.CompletionRequest, lfai.CompletionResponse],
 ):
-    last_message: CompletionResponse = None
-
     async for c in stream:
-        if last_message:
-            yield "data: " + last_message.model_dump_json()
-            yield "\n\n"
-
-        last_message = CompletionResponse(
-            id="foo",
-            object="completion.chunk",
-            created=55,
-            model="mpt-7b-8k-chat",
-            choices=[
-                CompletionChoice(
-                    index=0,
-                    text=c.choices[0].text,
-                    logprobs=None,
-                    finish_reason=None,
-                )
-            ],
-            usage=Usage(prompt_tokens=0, completion_tokens=0, total_tokens=0),
+        yield (
+            "data: "
+            + CompletionResponse(
+                id="foo",
+                object="completion.chunk",
+                created=55,
+                model="mpt-7b-8k-chat",
+                choices=[
+                    CompletionChoice(
+                        index=0,
+                        text=c.choices[0].text,
+                        logprobs=None,
+                        finish_reason=c.choices[0].finish_reason,
+                    )
+                ],
+                usage=Usage(prompt_tokens=0, completion_tokens=0, total_tokens=0),
+            ).model_dump_json()
         )
-
-    if last_message:
-        last_message.choices[0].finish_reason = "stop"
-        yield "data: " + last_message.model_dump_json()
         yield "\n\n"
 
     yield "data: [DONE]"
@@ -53,33 +46,26 @@ async def recv_chat(
     ],
 ):
     """Generator that yields chat completion responses as Server-Sent Events."""
-    last_message: ChatCompletionResponse = None
-
     async for c in stream:
-        if last_message:
-            yield "data: " + last_message.model_dump_json()
-            yield "\n\n"
-
-        last_message = ChatCompletionResponse(
-            id="foo",
-            object="chat.completion.chunk",
-            created=55,
-            model="mpt-7b-8k-chat",
-            choices=[
-                ChatStreamChoice(
-                    index=0,
-                    delta=ChatDelta(
-                        role="assistant", content=c.choices[0].chat_item.content
-                    ),
-                    finish_reason=None,
-                )
-            ],
-            usage=Usage(prompt_tokens=0, completion_tokens=0, total_tokens=0),
+        yield (
+            "data: "
+            + ChatCompletionResponse(
+                id="foo",
+                object="chat.completion.chunk",
+                created=55,
+                model="mpt-7b-8k-chat",
+                choices=[
+                    ChatStreamChoice(
+                        index=0,
+                        delta=ChatDelta(
+                            role="assistant", content=c.choices[0].chat_item.content
+                        ),
+                        finish_reason=c.choices[0].finish_reason,
+                    )
+                ],
+                usage=Usage(prompt_tokens=0, completion_tokens=0, total_tokens=0),
+            ).model_dump_json()
         )
-
-    if last_message:
-        last_message.choices[0].finish_reason = "stop"
-        yield "data: " + last_message.model_dump_json()
         yield "\n\n"
 
     yield "data: [DONE]\n\n"
