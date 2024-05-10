@@ -6,6 +6,7 @@
   import { goto } from '$app/navigation';
   import InputTooltip from '$components/InputTooltip.svelte';
   import { ASSISTANTS_INSTRUCTIONS_MAX_LENGTH, DEFAULT_ASSISTANT_TEMP } from '$lib/constants';
+  import { supabaseAssistantInputSchema } from '../../../../../schemas/assistants';
   import {
     ASSISTANTS_DESCRIPTION_MAX_LENGTH,
     ASSISTANTS_NAME_MAX_LENGTH
