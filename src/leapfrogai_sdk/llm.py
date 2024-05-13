@@ -112,6 +112,7 @@ def LLM(_cls):
                 print(f"Now processing text chunk {text_chunk}")
 
                 if last_response:
+                    print("Starting to process the last response")
                     last_response.choices[0].finish_reason = None
                     response_str += last_response.choices[0].chat_item.content
                     print("Completed yield")
