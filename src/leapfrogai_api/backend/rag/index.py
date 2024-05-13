@@ -25,7 +25,7 @@ class IndexingService:
     ) -> VectorStoreFile | None:
         crud_vector_store = CRUDVectorStoreFile(model=VectorStoreFile)
         return await crud_vector_store.get(
-            db=self.session, vector_store_id_=vector_store_id, file_id=file_id
+            db=self.session, vector_store_id=vector_store_id, file_id=file_id
         )
 
     async def _get_file_object(self, file_id: str):

@@ -10,6 +10,7 @@ from leapfrogai_api.backend.types import (
     ModifyVectorStoreRequest,
 )
 from leapfrogai_api.data.crud_vector_store_object import CRUDVectorStore
+from leapfrogai_api.data.crud_vector_store_file import CRUDVectorStoreFile
 from leapfrogai_api.routers.supabase_session import Session
 from leapfrogai_api.backend.rag.index import IndexingService
 
@@ -167,8 +168,19 @@ async def list_vector_store_files(
     session: Session, vector_store_id: str
 ) -> list[VectorStoreFile]:
     """List all the files in a vector store."""
-    # TODO: Implement this function
-    raise HTTPException(status_code=501, detail="Not implemented")
+
+    try:
+        crud_vector_store_file = CRUDVectorStoreFile(model=VectorStoreFile)
+        vector_store_files = await crud_vector_store_file.list(
+            db=session, vector_store_id=vector_store_id
+        )
+
+        print(vector_store_files)
+        return vector_store_files
+    except Exception as exc:
+        raise HTTPException(
+            status_code=500, detail="Failed to list vector store files"
+        ) from exc
 
 
 @router.delete("/{vector_store_id}/files/{file_id}")
