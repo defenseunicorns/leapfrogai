@@ -32,7 +32,7 @@ from vllm.outputs import RequestOutput
 from vllm.utils import random_uuid
 
 from config import AppConfig
-from src.leapfrogai_sdk.llm import LLM
+from leapfrogai_sdk.llm import LLM
 
 load_dotenv()
 
