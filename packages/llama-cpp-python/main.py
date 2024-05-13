@@ -35,8 +35,6 @@ class Model:
             yield res["choices"][0]["text"]  # type: ignore
 
     async def count_tokens(self, raw_text: str):
-        print("llamacpp starting token counting")
         string_bytes: bytes = bytes(raw_text, "utf-8")
         tokens: list[int] = self.llm.tokenize(string_bytes)
-        print("llamacpp stopping token counting")
         return len(tokens)
