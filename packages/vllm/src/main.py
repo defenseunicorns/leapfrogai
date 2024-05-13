@@ -296,12 +296,3 @@ class Model:
             raw_text
         )
         return len(tokens)
-
-
-async def main():
-    logging.basicConfig(level=logging.INFO)
-    await serve(Model())
-
-
-if __name__ == "__main__":
-    asyncio.run(main())
