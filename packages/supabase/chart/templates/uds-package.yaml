@@ -4,7 +4,7 @@ metadata:
   name: {{ .Values.leapfrogai.package.name }}
 spec:
   sso:
-    - name: Supabase
+    - name: Leapfrog AI
       description: Client for logging into Supabase
       clientId: {{ .Values.leapfrogai.sso.clientId }}
       redirectUris:

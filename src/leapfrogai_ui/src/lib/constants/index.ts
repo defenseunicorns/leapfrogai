@@ -1,5 +1,6 @@
 export const MAX_LABEL_SIZE = 100;
 export const DEFAULT_ASSISTANT_TEMP = 0.2;
+export const MAX_AVATAR_SIZE = 5000000;
 
 // PER OPENAI SPEC
 export const ASSISTANTS_NAME_MAX_LENGTH = 256;
@@ -27,3 +28,6 @@ export const assistantDefaults: Omit<Assistant, 'id' | 'created_at'> = {
   temperature: 0.2,
   response_format: 'auto'
 };
+
+export const NO_FILE_ERROR_TEXT = 'Please upload an image or select a pictogram';
+export const AVATAR_FILE_SIZE_ERROR_TEXT = `File must be less than ${MAX_AVATAR_SIZE / 1000000} MB`;

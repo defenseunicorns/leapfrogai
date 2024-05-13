@@ -3,9 +3,9 @@ type NewAssistantInput = {
   description: string;
   instructions: string;
   temperature: number;
-  metadata: {
-    data_sources?: string[];
-  };
+  data_sources?: string;
+  avatar?: File | null;
+  pictogram?: string;
 };
 
 type ToolResources = {
@@ -26,7 +26,9 @@ type Assistant = {
   tool_resources: ToolResources | null;
   metadata: {
     created_by: string | null; //user id
-    data_sources?: string[]; // vector store ids
+    data_sources?: string; // vector store ids, array as string
+    avatar?: string;
+    pictogram?: string;
     [key: string]: unknown;
   };
   temperature: number | null;
