@@ -288,3 +288,25 @@ class ListAssistantsResponse(BaseModel):
 
     object: str = Literal["list"]
     data: list[Assistant] = []
+
+
+################
+# LEAPFROGAI RAG
+################
+
+
+class RAGItem(BaseModel):
+    """Object for RAG."""
+
+    id: str
+    vector_store_id: str
+    file_id: str
+    content: str
+    metadata: dict
+    similarity: float
+
+
+class RAGResponse(BaseModel):
+    """Response object for RAG."""
+
+    data: list[RAGItem] = []

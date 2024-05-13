@@ -6,7 +6,16 @@ from supabase_py_async import AsyncClient
 
 
 class AsyncSupabaseVectorStore:
-    """An async vector store that uses Supabase as the backend."""
+    """An async vector store that uses Supabase as the backend.
+
+    Args:
+        client (AsyncClient): The Supabase async client.
+        embedding (Embeddings): The embedding model.
+        table_name (str, optional): The name of the table in the database. Defaults to "vector_store".
+        chunk_size (int, optional): The chunk size for batch operations. Defaults to 500.
+        query_name (str, optional): The name of the query to be executed. Defaults to "match_vectors".
+
+    """
 
     def __init__(
         self,
@@ -60,6 +69,32 @@ class AsyncSupabaseVectorStore:
 
         return ids
 
+    async def asimilarity_search(self, query: str, vector_store_id: str, k: int = 4):
+        """Searches for similar documents.
+
+        Args:
+            query (str): The query string.
+            vector_store_id (str): The ID of the vector store to search in.
+            k (int, optional): The number of similar documents to retrieve. Defaults to 4.
+
+        Returns:
+            The response from the database after executing the similarity search.
+
+        """
+        vector = await self.embedding.aembed_query(query)
+
+        params = {
+            "query_embedding": vector,
+            "match_limit": k,
+            "vs_id": vector_store_id,
+        }
+
+        query_builder = self.client.rpc(self.query_name, params=params)
+
+        response = await query_builder.execute()
+
+        return response
+
     async def _aadd_vector(
         self,
         vector_store_id: str,
@@ -90,25 +125,3 @@ class AsyncSupabaseVectorStore:
         }
         response = await self.client.from_(self.table_name).insert(row).execute()
         return response
-
-    async def asimilarity_search(
-        self, query: str, vector_store_id: str, k: int = 4
-    ) -> list[Document]:
-        """Searches for similar documents."""
-
-        query_name = "match_vectors"
-
-        vector = await self.embedding.aembed_query(query)
-
-        params = {
-            "query_embedding": vector,
-            "match_limit": k,
-            "vs_id": vector_store_id,
-            "filter": {},
-        }
-
-        query_builder = self.client.rpc(query_name, params=params)
-
-        response = await query_builder.execute()
-
-        return response.data
