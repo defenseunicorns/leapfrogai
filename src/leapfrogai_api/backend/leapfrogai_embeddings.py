@@ -14,25 +14,13 @@ class LeapfrogAIEmbeddings(Embeddings):
     """
 
     def embed_documents(self, texts: list[str]) -> list[list[float]]:
-        """Embeds a list of documents.
-
-        Args:
-            texts (list[str]): The list of documents to be embedded.
-
-        Returns:
-            list[list[float]]: The list of embedding vectors for each document.
-        """
+        """Not implemented yet."""
+        # TODO: Implement this to meet Langchain Embeddings Interface.
         raise NotImplementedError("embed_documents has not been implemented yet.")
 
     def embed_query(self, text: str) -> list[float]:
-        """Embeds a query text.
-
-        Args:
-            text (str): The query text to be embedded.
-
-        Returns:
-            list[float]: The embedding vector for the query text.
-        """
+        """Not implemented yet."""
+        # TODO: Implement this to meet Langchain Embeddings Interface.
         raise NotImplementedError("embed_query has not been implemented yet.")
 
     async def aembed_documents(self, texts: list[str]) -> list[list[float]]:
