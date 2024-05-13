@@ -103,6 +103,8 @@ def LLM(_cls):
                 self.config.apply_chat_template(request.chat_items), request
             )
 
+            print("Attempting to chat stream")
+
             last_response: ChatCompletionResponse | None = None
             response_str: str = ""
 
@@ -154,6 +156,8 @@ def LLM(_cls):
             gen_stream = self._build_gen_stream(request.prompt, request)
             last_response: CompletionResponse | None = None
             response_str: str = ""
+
+            print("Attempting to stream")
 
             for text_chunk in gen_stream:
                 if last_response:
