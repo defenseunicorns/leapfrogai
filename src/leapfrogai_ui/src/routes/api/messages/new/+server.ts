@@ -3,6 +3,7 @@ import { supabaseMessagesInputSchema } from '../../../../schemas/chat';
 
 export async function POST({ request, locals: { supabase, getSession } }) {
   const session = await getSession();
+  console.log(JSON.stringify(session));
   if (!session) {
     error(401, 'Unauthorized');
   }

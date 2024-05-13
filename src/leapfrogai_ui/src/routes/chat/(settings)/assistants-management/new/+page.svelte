@@ -1,7 +1,8 @@
 <script lang="ts">
-  import SuperDebug, { superForm } from 'sveltekit-superforms';
+  import { superForm } from 'sveltekit-superforms';
   import { Add } from 'carbon-icons-svelte';
   import { Button, Modal, Slider, TextArea, TextInput } from 'carbon-components-svelte';
+  import { yup } from 'sveltekit-superforms/adapters';
   import { goto } from '$app/navigation';
   import InputTooltip from '$components/InputTooltip.svelte';
   import { ASSISTANTS_INSTRUCTIONS_MAX_LENGTH } from '$lib/constants';
@@ -10,17 +11,45 @@
     ASSISTANTS_NAME_MAX_LENGTH
   } from '$lib/constants/index.js';
   import AssistantAvatar from '$components/AssistantAvatar.svelte';
+  import { toastStore } from '$stores';
+  import { supabaseAssistantInputSchema } from '../../../../../schemas/assistants';
 
   export let data;
 
-  const { form, errors, enhance, submitting } = superForm(data.form);
+  const { form, errors, enhance, submitting } = superForm(data.form, {
+    validators: yup(supabaseAssistantInputSchema),
+    applyAction: false,
+    onResult({ result }) {
+      if (result.type === 'redirect') {
+        toastStore.addToast({
+          kind: 'success',
+          title: 'Assistant Created.',
+          subtitle: ''
+        });
+        goto(result.location);
+      } else if (result.type === 'failure') {
+        // 400 errors will show errors for the respective fields, do not show toast
+        if (result.status !== 400) {
+          toastStore.addToast({
+            kind: 'error',
+            title: 'Error Creating Assistant',
+            subtitle: result.data?.message || 'An unknown error occurred.'
+          });
+        }
+      } else if (result.type === 'error') {
+        toastStore.addToast({
+          kind: 'error',
+          title: 'Error Creating Assistant',
+          subtitle: result.error?.message || 'An unknown error occurred.'
+        });
+      }
+    }
+  });
 
   let cancelModalOpen = false;
   let files: File[] = [];
   let selectedPictogramName = 'default';
 </script>
-
-<SuperDebug data={$form} />
 
 <form method="POST" enctype="multipart/form-data" use:enhance>
   <div class="container">
@@ -35,11 +64,9 @@
         placeholder="Assistant name"
         bind:value={$form.name}
         maxlength={ASSISTANTS_NAME_MAX_LENGTH}
+        invalid={!!$errors.name}
+        invalidText={$errors.name}
       />
-
-      {#if $errors.name}
-        <small class="error">{$errors.name}</small>
-      {/if}
 
       <InputTooltip
         name="description"
@@ -54,11 +81,9 @@
         hideLabel
         bind:value={$form.description}
         maxlength={ASSISTANTS_DESCRIPTION_MAX_LENGTH}
+        invalid={!!$errors.description}
+        invalidText={$errors.description}
       />
-
-      {#if $errors.description}
-        <small class="error">{$errors.description}</small>
-      {/if}
 
       <InputTooltip
         name="instructions"
@@ -73,12 +98,10 @@
         rows={6}
         placeholder="You'll act as..."
         hideLabel
+        invalid={!!$errors.instructions}
+        invalidText={$errors.instructions}
         maxlength={ASSISTANTS_INSTRUCTIONS_MAX_LENGTH}
       />
-
-      {#if $errors.instructions}
-        <small class="error">{$errors.instructions}</small>
-      {/if}
 
       <InputTooltip
         name="temperature"
@@ -96,11 +119,9 @@
         step={0.1}
         minLabel="Min"
         maxLabel="Max"
+        invalid={!!$errors.temperature}
+        invalidText={$errors.temperature}
       />
-
-      {#if $errors.temperature}
-        <small class="error">{$errors.temperature}</small>
-      {/if}
 
       <!--Note - Data Sources is a placeholder and will be completed in a future story-->
       <InputTooltip
@@ -158,10 +179,6 @@
 
   .title {
     @include type.type-style('heading-05');
-  }
-
-  .error {
-    color: themes.$text-error;
   }
 
   .cancel-modal {

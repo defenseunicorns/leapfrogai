@@ -1,12 +1,12 @@
-import { setError, superValidate } from 'sveltekit-superforms';
+import { superValidate } from 'sveltekit-superforms';
 import { fail, redirect } from '@sveltejs/kit';
 import { v4 as uuidv4 } from 'uuid';
 import { yup } from 'sveltekit-superforms/adapters';
-import { assistantsStore, toastStore } from '$stores';
-import type { PageServerLoad } from './$types';
-import { supabaseAssistantInputSchema } from '../../../../../schemas/assistants';
 import { assistantDefaults, DEFAULT_ASSISTANT_TEMP } from '$lib/constants';
 import { env } from '$env/dynamic/private';
+import { assistantsStore } from '$stores';
+import type { PageServerLoad } from './$types';
+import { supabaseAssistantInputSchema } from '../../../../../schemas/assistants';
 
 export const load: PageServerLoad = async ({ locals: { getSession } }) => {
   const session = await getSession();
@@ -17,7 +17,8 @@ export const load: PageServerLoad = async ({ locals: { getSession } }) => {
 
   const form = await superValidate(
     { temperature: DEFAULT_ASSISTANT_TEMP },
-    yup(supabaseAssistantInputSchema)
+    yup(supabaseAssistantInputSchema),
+    { errors: false } // turn off errors for new assistant b/c providing default data turns them on
   );
 
   return { title: 'LeapfrogAI - New Assistant', form };
@@ -31,7 +32,7 @@ export const actions = {
       return fail(401, { message: 'Unauthorized' });
     }
 
-    let avatarFilePath: string = '';
+    let savedAvatarFilePath: string = '';
 
     const form = await superValidate(request, yup(supabaseAssistantInputSchema));
 
@@ -49,11 +50,10 @@ export const actions = {
 
       if (error) {
         console.error('Error saving assistant avatar:', error);
-        //Important: Because file objects cannot be serialized, you must return the form using fail, message or setError imported from Superforms
-        return setError(form, 'avatar', 'Error saving assistant avatar.');
+        return fail(500, { message: 'Error saving assistant avatar.' });
       }
 
-      avatarFilePath = supabaseData.path;
+      savedAvatarFilePath = supabaseData.path;
     }
 
     // Create assistant object
@@ -66,7 +66,7 @@ export const actions = {
       metadata: {
         ...assistantDefaults.metadata,
         data_sources: form.data.data_sources || '',
-        avatar: avatarFilePath,
+        avatar: savedAvatarFilePath,
         pictogram: form.data.pictogram,
         created_by: session.user.id
       }
@@ -79,15 +79,9 @@ export const actions = {
       .select()
       .returns<Assistant[]>();
 
-    toastStore.addToast({
-      kind: 'success',
-      title: 'Assistant Created.',
-      subtitle: ''
-    });
-
     if (responseError) {
       console.error('Error saving assistant:', responseError);
-      throw new Error('Error saving assistant');
+      return fail(500, { message: 'Error saving assistant.' });
     }
 
     assistantsStore.addAssistant(createdAssistant[0]);

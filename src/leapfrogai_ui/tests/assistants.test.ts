@@ -27,7 +27,6 @@ test('it creates an assistant and navigates back to the management page', async 
 
   await page.waitForURL('/chat/assistants-management');
   await expect(page.getByText(assistantInput.name)).toBeVisible();
-  page.getByText(assistantInput.name);
 
   // cleanup
   await deleteAssistantByName(assistantInput.name);
@@ -106,7 +105,13 @@ test('it validates input', async ({ page }) => {
 
   await saveButton.click();
 
-  await expect(page.getByText('Required')).toHaveCount(2);
+  await expect(page.getByText('This field is required. Please enter a tagline.')).toHaveCount(1);
+  await expect(page.getByText('This field is required. Please enter instructions.')).toHaveCount(1);
 
-  await expect(page.getByText('Error creating assistant: Bad Request')).toBeVisible();
+  // Test client side validation - errors disappear live without have to click save
+  await page.getByLabel('description').fill('my description');
+
+  await page.getByPlaceholder("You'll act as...").fill('my instructions');
+  await expect(page.getByText('This field is required. Please enter a tagline.')).toHaveCount(0);
+  await expect(page.getByText('This field is required. Please enter instructions.')).toHaveCount(0);
 });

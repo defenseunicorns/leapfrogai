@@ -55,6 +55,9 @@ test('it can upload an image as an avatar', async ({ page }) => {
 
   await saveButtons.click();
 
+  await page.waitForURL('/chat/assistants-management');
+  await expect(page.getByText(assistantInput.name)).toBeVisible();
+
   // cleanup
   await deleteAssistantByName(assistantInput.name);
 });
