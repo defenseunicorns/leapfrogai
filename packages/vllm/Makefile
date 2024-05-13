@@ -4,4 +4,4 @@ install:
 
 dev:
 	make install
-	python -m uvicorn main:app --port 3000 --reload
+	python -m build/leapfrog_sdk.cli --app-dir=src/ main:Model
