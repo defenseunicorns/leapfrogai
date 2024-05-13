@@ -4,4 +4,4 @@ install:
 
 dev:
 	make install
-	python -m leapfrog_sdk.cli --app-dir=src/ main:Model
+	python -m leapfrogai_sdk.cli --app-dir=src/ main:Model
