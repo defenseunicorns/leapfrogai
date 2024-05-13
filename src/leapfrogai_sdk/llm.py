@@ -114,7 +114,6 @@ def LLM(_cls):
                 if last_response:
                     print("Starting to process the last response")
                     print(last_response)
-                    last_response.choices[0].finish_reason = None
                     response_str += last_response.choices[0].chat_item.content
                     print("Completed yield")
                     yield last_response
