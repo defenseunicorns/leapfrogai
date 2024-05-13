@@ -122,6 +122,8 @@ def LLM(_cls):
                 last_response = ChatCompletionResponse(choices=[choice])
 
             if last_response:
+                print(f"Finishing with {response_str}")
+
                 response_str += last_response.choices[0].chat_item.content
 
                 token_count = await self.count_tokens(response_str)
