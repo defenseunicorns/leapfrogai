@@ -91,9 +91,24 @@ class AsyncSupabaseVectorStore:
         response = await self.client.from_(self.table_name).insert(row).execute()
         return response
 
-    async def asimilarity_search(self, query: str, k: int = 4) -> list[Document]:
+    async def asimilarity_search(
+        self, query: str, vector_store_id: str, k: int = 4
+    ) -> list[Document]:
         """Searches for similar documents."""
-        # TODO: RPC something like this:
-        # self.client.rpc("match_vectors", {"query": query, "k": k})
 
-        raise NotImplementedError("similarity_search is not implemented.")
+        query_name = "match_vectors"
+
+        vector = await self.embedding.aembed_query(query)
+
+        params = {
+            "query_embedding": vector,
+            "match_limit": k,
+            "vs_id": vector_store_id,
+            "filter": {},
+        }
+
+        query_builder = self.client.rpc(query_name, params=params)
+
+        response = await query_builder.execute()
+
+        return response.data

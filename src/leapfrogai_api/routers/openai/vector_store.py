@@ -11,7 +11,7 @@ from leapfrogai_api.backend.types import (
 )
 from leapfrogai_api.data.crud_vector_store_object import CRUDVectorStore
 from leapfrogai_api.routers.supabase_session import Session
-from leapfrogai_api.backend.rag.indexing import IndexingService
+from leapfrogai_api.backend.rag.index import IndexingService
 
 router = APIRouter(prefix="/openai/v1/vector_store", tags=["openai/vector_store"])
 

@@ -44,6 +44,8 @@ create table
 -- Create a function to search for documents
 create function match_vectors (
   query_embedding vector (768), -- Instructor-XL produces 768-length embeddings
+  vs_id uuid,
+  match_limit int,
   filter jsonb default '{}'
 ) returns table (
   id uuid,
@@ -62,9 +64,11 @@ begin
     file_id,
     content,
     metadata,
-    1 - (documents.embedding <=> query_embedding) as similarity
-  from documents
-  where metadata @> filter
-  order by documents.embedding <=> query_embedding;
+    1 - (vector_store.embedding <=> query_embedding) as similarity
+  from vector_store
+  where vector_store_id = vs_id
+    and metadata @> filter
+  order by vector_store.embedding <=> query_embedding
+  limit match_limit;
 end;
 $$;

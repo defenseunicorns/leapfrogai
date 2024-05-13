@@ -24,6 +24,7 @@ Setup environment variables:
 ``` bash
 export SUPABASE_URL="http://localhost:54321" # or whatever you configured it as in your Supabase config.toml
 export SUPABASE_SERVICE_KEY="<YOUR_KEY>" # supabase status will show you the keys
+export DEFAULT_EMBEDDINGS_MODEL="text-embeddings" # also needs to be setup via the config.yaml
 ```
 
 ## Integration Tests

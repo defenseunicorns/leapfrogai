@@ -7,6 +7,7 @@ from contextlib import asynccontextmanager
 from fastapi import FastAPI
 
 from leapfrogai_api.routers.base import router as base_router
+from leapfrogai_api.routers.leapfrogai import rag
 from leapfrogai_api.routers.openai import (
     audio,
     completions,
@@ -45,3 +46,4 @@ app.include_router(assistants.router)
 app.include_router(files.router)
 app.include_router(threads.router)
 app.include_router(vector_store.router)
+app.include_router(rag.router)
