@@ -1,6 +1,7 @@
 import { expect, test } from './fixtures';
 import { createAssistant, deleteAssistantByName, loadChatPage } from './helpers';
 import { getFakeNewAssistantInput } from '../testUtils/fakeData';
+import type { ActionResult } from '@sveltejs/kit';
 
 test('it navigates to the assistants page', async ({ page }) => {
   await loadChatPage(page);
@@ -30,6 +31,30 @@ test('it creates an assistant and navigates back to the management page', async 
 
   // cleanup
   await deleteAssistantByName(assistantInput.name);
+});
+
+test('displays an error toast when there is an error creating an assistant and remains on the assistant page', async ({
+  page
+}) => {
+  const assistantInput = getFakeNewAssistantInput();
+
+  await page.route('*/**/chat/assistants-management/new', async (route) => {
+    if (route.request().method() === 'POST') {
+      const result: ActionResult = {
+        type: 'failure',
+        status: 500
+      };
+
+      await route.fulfill({ json: result });
+    } else {
+      const response = await route.fetch();
+      await route.fulfill({ response });
+    }
+  });
+
+  await createAssistant(page, assistantInput);
+
+  await expect(page.getByText('Error creating assistant')).toBeVisible();
 });
 
 test('it can search for assistants', async ({ page }) => {
@@ -72,4 +97,16 @@ test('it can navigate with breadcrumbs', async ({ page }) => {
   await page.waitForURL('/chat/assistants-management');
   await page.getByRole('link', { name: 'Chat' }).click();
   await page.waitForURL('/chat');
+});
+
+test('it validates input', async ({ page }) => {
+  await page.goto('/chat/assistants-management/new');
+  await page.getByLabel('name').fill('my assistant');
+  const saveButton = page.getByRole('button', { name: 'Save' });
+
+  await saveButton.click();
+
+  await expect(page.getByText('Required')).toHaveCount(2);
+
+  await expect(page.getByText('Error creating assistant: Bad Request')).toBeVisible();
 });
