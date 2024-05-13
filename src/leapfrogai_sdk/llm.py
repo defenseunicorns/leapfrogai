@@ -131,6 +131,8 @@ def LLM(_cls):
 
                 yield last_response
 
+            print(f"Finish chat stream {response_str}")
+
         async def Complete(
             self, request: CompletionRequest, context: GrpcContext
         ) -> CompletionResponse:
