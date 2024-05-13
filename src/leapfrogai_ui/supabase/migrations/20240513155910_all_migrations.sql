@@ -110,6 +110,10 @@ create policy "Anyone can update their own avatar." on storage.objects
   for update using (auth.uid() = owner) with check (bucket_id = 'avatars');
 
 
+create policy "Anyone can upload an assistant avatar." on storage.objects
+  for insert with check (bucket_id = 'assistant_avatars');
+
+
 -- This trigger automatically creates a profile entry when a new user signs up via Supabase Auth.
 -- See https://supabase.com/docs/guides/auth/managing-user-data#using-triggers for more details.
 create function public.handle_new_user()

@@ -1,5 +1,10 @@
-import { mixed, number, object, ObjectSchema, string } from 'yup';
-import { ASSISTANTS_INSTRUCTIONS_MAX_LENGTH, ASSISTANTS_NAME_MAX_LENGTH } from '$lib/constants';
+import { mixed, number, object, ObjectSchema, string, ValidationError } from 'yup';
+import {
+  ASSISTANTS_INSTRUCTIONS_MAX_LENGTH,
+  ASSISTANTS_NAME_MAX_LENGTH,
+  AVATAR_FILE_SIZE_ERROR_TEXT,
+  MAX_AVATAR_SIZE
+} from '$lib/constants';
 
 export const supabaseAssistantInputSchema: ObjectSchema<NewAssistantInput> = object({
   name: string().max(ASSISTANTS_NAME_MAX_LENGTH).required('Required'),
@@ -7,7 +12,24 @@ export const supabaseAssistantInputSchema: ObjectSchema<NewAssistantInput> = obj
   instructions: string().max(ASSISTANTS_INSTRUCTIONS_MAX_LENGTH).required('Required'),
   temperature: number().required('Required'),
   data_sources: string(),
-  avatar: mixed<File>().nullable(), // additional validation for avatar and pictogram is handled in Modal component
+  avatar: mixed<File>()
+    .nullable()
+    .test('fileType', 'Please upload an image.', (value) => value instanceof File)
+    .test('fileSize', AVATAR_FILE_SIZE_ERROR_TEXT, (value) => {
+      if (!value || value.size > MAX_AVATAR_SIZE) {
+        return new ValidationError(AVATAR_FILE_SIZE_ERROR_TEXT);
+      }
+      return true;
+    })
+    .test('type', 'Invalid file type, accepted types are: jpeg and png', (value) => {
+      if (
+        !value ||
+        (value.type !== 'image/jpeg' && value.type !== 'image/jpg' && value.type !== 'image/png')
+      ) {
+        return new ValidationError('Invalid file type, accepted types are: jpeg and png');
+      }
+      return true;
+    }), // additional validation for avatar and pictogram is handled in Modal component
   pictogram: string()
 })
   .noUnknown(true)

@@ -78,6 +78,7 @@
     "openai": "^4.41.1",
     "playwright": "^1.42.1",
     "svelte-forms-lib": "^2.0.1",
+    "sveltekit-superforms": "^2.13.1",
     "uuid": "^9.0.1",
     "yup": "^1.4.0"
   }

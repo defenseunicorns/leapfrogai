@@ -1,53 +1,28 @@
 <script lang="ts">
-  import { applyAction, enhance } from '$app/forms';
+  import SuperDebug, { superForm } from 'sveltekit-superforms';
   import { Add } from 'carbon-icons-svelte';
   import { Button, Modal, Slider, TextArea, TextInput } from 'carbon-components-svelte';
-  import { toastStore } from '$stores';
   import { goto } from '$app/navigation';
   import InputTooltip from '$components/InputTooltip.svelte';
-  import { ASSISTANTS_INSTRUCTIONS_MAX_LENGTH, DEFAULT_ASSISTANT_TEMP } from '$lib/constants';
+  import { ASSISTANTS_INSTRUCTIONS_MAX_LENGTH } from '$lib/constants';
   import {
     ASSISTANTS_DESCRIPTION_MAX_LENGTH,
     ASSISTANTS_NAME_MAX_LENGTH
   } from '$lib/constants/index.js';
   import AssistantAvatar from '$components/AssistantAvatar.svelte';
 
-  export let form;
+  export let data;
+
+  const { form, errors, enhance, submitting } = superForm(data.form);
 
   let cancelModalOpen = false;
   let files: File[] = [];
   let selectedPictogramName = 'default';
-
-  let isSubmitting = false;
-
-  $: sliderValue = Number(form?.temperature) || DEFAULT_ASSISTANT_TEMP;
 </script>
 
-<form
-  method="POST"
-  enctype="multipart/form-data"
-  use:enhance={async () => {
-    isSubmitting = true;
-    return async ({ result }) => {
-      isSubmitting = false;
-      await applyAction(result);
-      if (result.type === 'redirect') {
-        toastStore.addToast({
-          kind: 'success',
-          title: 'Assistant Created.',
-          subtitle: ''
-        });
-        await goto(result.location);
-      } else if (result.type === 'failure') {
-        toastStore.addToast({
-          kind: 'error',
-          title: `Error Creating Assistant: ${result.data?.message}`,
-          subtitle: ''
-        });
-      }
-    };
-  }}
->
+<SuperDebug data={$form} />
+
+<form method="POST" enctype="multipart/form-data" use:enhance>
   <div class="container">
     <div class="inner-container">
       <div class="top-row">
@@ -58,12 +33,12 @@
         name="name"
         labelText="Name"
         placeholder="Assistant name"
-        value={form?.name}
+        bind:value={$form.name}
         maxlength={ASSISTANTS_NAME_MAX_LENGTH}
       />
 
-      {#if form?.errors?.name}
-        <small class="error">{form?.errors?.name}</small>
+      {#if $errors.name}
+        <small class="error">{$errors.name}</small>
       {/if}
 
       <InputTooltip
@@ -77,12 +52,12 @@
         placeholder="Here to help..."
         labelText="Description"
         hideLabel
-        value={form?.description}
+        bind:value={$form.description}
         maxlength={ASSISTANTS_DESCRIPTION_MAX_LENGTH}
       />
 
-      {#if form?.errors?.description}
-        <small class="error">{form?.errors?.description}</small>
+      {#if $errors.description}
+        <small class="error">{$errors.description}</small>
       {/if}
 
       <InputTooltip
@@ -94,15 +69,15 @@
       <TextArea
         name="instructions"
         labelText="Instructions"
-        value={form?.instructions}
+        bind:value={$form.instructions}
         rows={6}
         placeholder="You'll act as..."
         hideLabel
         maxlength={ASSISTANTS_INSTRUCTIONS_MAX_LENGTH}
       />
 
-      {#if form?.errors?.instructions}
-        <small class="error">{form?.errors?.instructions}</small>
+      {#if $errors.instructions}
+        <small class="error">{$errors.instructions}</small>
       {/if}
 
       <InputTooltip
@@ -112,7 +87,7 @@
       />
       <Slider
         name="temperature"
-        value={sliderValue}
+        bind:value={$form.temperature}
         hideLabel
         hideTextInput
         fullWidth
@@ -123,8 +98,8 @@
         maxLabel="Max"
       />
 
-      {#if form?.errors?.temperature}
-        <small class="error">{form?.errors?.temperature}</small>
+      {#if $errors.temperature}
+        <small class="error">{$errors.temperature}</small>
       {/if}
 
       <!--Note - Data Sources is a placeholder and will be completed in a future story-->
@@ -143,7 +118,7 @@
         <Button kind="secondary" size="small" on:click={() => (cancelModalOpen = true)}
           >Cancel</Button
         >
-        <Button kind="primary" size="small" type="submit" disabled={isSubmitting}>Save</Button>
+        <Button kind="primary" size="small" type="submit" disabled={$submitting}>Save</Button>
       </div>
     </div>
   </div>

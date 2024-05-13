@@ -1,11 +1,12 @@
-import type { PageServerLoad } from './$types';
+import { setError, superValidate } from 'sveltekit-superforms';
 import { fail, redirect } from '@sveltejs/kit';
-import { supabaseAssistantInputSchema } from '../../../../../schemas/assistants';
-import { assistantDefaults, AVATAR_FILE_SIZE_ERROR_TEXT, MAX_AVATAR_SIZE } from '$lib/constants';
-import { env } from '$env/dynamic/private';
 import { v4 as uuidv4 } from 'uuid';
-import { assistantsStore } from '$stores';
-import { ValidationError } from 'yup';
+import { yup } from 'sveltekit-superforms/adapters';
+import { assistantsStore, toastStore } from '$stores';
+import type { PageServerLoad } from './$types';
+import { supabaseAssistantInputSchema } from '../../../../../schemas/assistants';
+import { assistantDefaults, DEFAULT_ASSISTANT_TEMP } from '$lib/constants';
+import { env } from '$env/dynamic/private';
 
 export const load: PageServerLoad = async ({ locals: { getSession } }) => {
   const session = await getSession();
@@ -14,7 +15,12 @@ export const load: PageServerLoad = async ({ locals: { getSession } }) => {
     throw redirect(303, '/');
   }
 
-  return { title: 'LeapfrogAI - New Assistant' };
+  const form = await superValidate(
+    { temperature: DEFAULT_ASSISTANT_TEMP },
+    yup(supabaseAssistantInputSchema)
+  );
+
+  return { title: 'LeapfrogAI - New Assistant', form };
 };
 
 export const actions = {
@@ -25,107 +31,63 @@ export const actions = {
       return fail(401, { message: 'Unauthorized' });
     }
 
-    // Build Assistant Input object
-    const formData = await request.formData();
-
-    const name = formData.get('name') as string;
-    const description = formData.get('description') as string;
-    const instructions = formData.get('instructions') as string;
-    const temperature = formData.get('temperature') as string;
-    const data_sources = formData.get('data_sources') as string | undefined;
-    const avatarFile = formData.get('avatar') as File | undefined;
-    const pictogram = formData.get('pictogram') as string | undefined;
-
-    const assistantInput: NewAssistantInput = {
-      name,
-      description,
-      instructions,
-      temperature: Number(temperature),
-      data_sources,
-      pictogram
-    };
     let avatarFilePath: string = '';
 
-    // Validate Assistant Input Object
-    try {
-      await supabaseAssistantInputSchema.validate(assistantInput, { abortEarly: false });
-    } catch (e) {
-      if (e instanceof ValidationError) {
-        const errors: { [key: string]: string } = {};
-        e.inner.forEach((innerVal) => {
-          if (innerVal.path) {
-            errors[innerVal.path] = innerVal.errors[0];
-          }
-        });
+    const form = await superValidate(request, yup(supabaseAssistantInputSchema));
 
-        console.error(
-          `Form submission: create assistant validation errors: ${JSON.stringify(errors)}`
-        );
-        return fail(400, { message: 'Bad Request', errors });
-      }
-      return fail(500, { message: 'Internal Server Error' });
+    if (!form.valid) {
+      return fail(400, { form });
     }
 
-    // Upload Avatar
-    if (avatarFile?.size !== 0) {
-      if (!(avatarFile instanceof File)) {
-        return fail(400, { message: 'Invalid avatar' });
-      }
-      // Validate file type
-      const validExtensions = ['.jpeg', '.jpg', '.png'];
-      const fileExtension = avatarFile.name.match(/\.[0-9a-z]+$/i);
-      if (!fileExtension || !validExtensions.includes(fileExtension[0].toLowerCase())) {
-        return fail(400, {
-          message: 'Invalid file type, accepted types are: ' + validExtensions.join(', ')
-        });
-      }
-
-      if (avatarFile.size > MAX_AVATAR_SIZE)
-        return fail(400, { message: AVATAR_FILE_SIZE_ERROR_TEXT });
-
-      const filePath = `${session.user.id}/assistant_avatars/${uuidv4()}/${avatarFile.name}`;
+    if (form.data.avatar) {
+      // save avatar
+      const filePath = `${session.user.id}/assistant_avatars/${uuidv4()}/${form.data.avatar.name}`;
 
       const { data: supabaseData, error } = await supabase.storage
         .from('assistant_avatars')
-        .upload(filePath, avatarFile);
+        .upload(filePath, form.data.avatar);
 
       if (error) {
-        console.error('Error uploading to Supabase:', error);
-        return fail(500, { message: 'Error uploading file' });
+        console.error('Error saving assistant avatar:', error);
+        //Important: Because file objects cannot be serialized, you must return the form using fail, message or setError imported from Superforms
+        return setError(form, 'avatar', 'Error saving assistant avatar.');
       }
 
       avatarFilePath = supabaseData.path;
     }
 
-    // Create Assistant Object
-    const assistant: Omit<Assistant, 'id' | 'created_at'> = {
-      ...assistantDefaults,
-      name: assistantInput.name,
-      description: assistantInput.description,
-      instructions: assistantInput.instructions,
-      temperature: assistantInput.temperature,
+    // Create assistant object
+    const assistant: Partial<Assistant> = {
+      name: form.data.name,
+      description: form.data.description,
+      instructions: form.data.instructions,
+      temperature: form.data.temperature,
       model: env.DEFAULT_MODEL,
       metadata: {
         ...assistantDefaults.metadata,
-        data_sources: assistantInput.data_sources || '',
+        data_sources: form.data.data_sources || '',
         avatar: avatarFilePath,
-        pictogram: assistantInput.pictogram,
+        pictogram: form.data.pictogram,
         created_by: session.user.id
       }
     };
 
-    // Save Assistant
+    // Save assistant
     const { error: responseError, data: createdAssistant } = await supabase
       .from('assistants')
       .insert(assistant)
       .select()
       .returns<Assistant[]>();
 
+    toastStore.addToast({
+      kind: 'success',
+      title: 'Assistant Created.',
+      subtitle: ''
+    });
+
     if (responseError) {
-      console.log(
-        `error creating assistant,  error status: ${responseError.code}: ${responseError.message}`
-      );
-      return fail(500, { message: 'Internal Server Error' });
+      console.error('Error saving assistant:', responseError);
+      throw new Error('Error saving assistant');
     }
 
     assistantsStore.addAssistant(createdAssistant[0]);
