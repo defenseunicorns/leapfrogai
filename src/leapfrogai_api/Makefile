@@ -1,5 +1,5 @@
 install:
-	python -m pip install leapfrogai_api*.whl --no-index --find-links=build/
+	python -m pip install build/leapfrogai_api*.whl --no-index --find-links=build/
 	python -m pip install -e .
 
 dev:
