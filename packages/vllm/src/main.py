@@ -150,10 +150,6 @@ class Model:
     def __init__(self):
         logging.getLogger().setLevel(logging.DEBUG)
 
-        # Background thread for managing output iteration
-        _thread = threading.Thread(target=asyncio.run, args=(self.iterate_outputs(),))
-        _thread.start()
-
         self.backend_config = get_backend_configs()
         self.model = self.backend_config.model.source
         self.engine_args = AsyncEngineArgs(
@@ -170,6 +166,10 @@ class Model:
         )
         print(self.engine_args)
         self.engine = AsyncLLMEngine.from_engine_args(self.engine_args)
+
+        # Background thread for managing output iteration
+        _thread = threading.Thread(target=asyncio.run, args=(self.iterate_outputs(),))
+        _thread.start()
 
     async def iterate_outputs(self):
         """Continuously processes outputs from the random iterator and manages state by request IDs."""
