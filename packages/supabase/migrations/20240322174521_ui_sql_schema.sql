@@ -1,47 +1,46 @@
 -- Create tables
 create table conversations (
-   id uuid primary key DEFAULT uuid_generate_v4(),
-   user_id uuid references auth.users not null,
-   label text,
-   inserted_at timestamp with time zone default timezone('utc'::text, now()) not null
+                               id uuid primary key DEFAULT uuid_generate_v4(),
+                               user_id uuid references auth.users not null,
+                               label text,
+                               inserted_at timestamp with time zone default timezone('utc'::text, now()) not null
 );
 
 create table messages (
-  id uuid primary key DEFAULT uuid_generate_v4(),
-  user_id uuid references auth.users not null,
-  conversation_id uuid references conversations on delete cascade not null,
-  role text check (role in ('system', 'user', 'assistant', 'function', 'data', 'tool')),
-  content text,
-  inserted_at timestamp with time zone default timezone('utc'::text, now()) not null
+                          id uuid primary key DEFAULT uuid_generate_v4(),
+                          user_id uuid references auth.users not null,
+                          conversation_id uuid references conversations on delete cascade not null,
+                          role text check (role in ('system', 'user', 'assistant', 'function', 'data', 'tool')),
+                          content text,
+                          inserted_at timestamp with time zone default timezone('utc'::text, now()) not null
 );
 
-create table profiles (
-  id uuid references auth.users not null primary key,
-  updated_at timestamp with time zone,
-  username text unique,
-  full_name text,
-  avatar_url text,
-  website text,
 
-  constraint username_length check (char_length(username) >= 3)
+create table profiles (
+                          id uuid references auth.users not null primary key,
+                          updated_at timestamp with time zone,
+                          username text unique,
+                          full_name text,
+                          avatar_url text,
+                          website text,
+                          constraint username_length check (char_length(username) >= 3)
 );
 
 create table assistants (
-    id uuid primary key DEFAULT uuid_generate_v4(),
-    object text check (object in ('assistant')),
-    name varchar(255),
-    description varchar(512),
-    model varchar(255) not null,
-    instructions TEXT,
-    tools jsonb,
-    tool_resources jsonb,
-    metadata jsonb,
-    temperature float,
-    top_p float,
-    response_format jsonb,
-    created_at timestamp with time zone default timezone('utc'::text, now()) not null
+                            id uuid primary key DEFAULT uuid_generate_v4(),
+                            object text check (object in ('assistant')),
+                            name varchar(255),
+                            description varchar(512),
+                            model varchar(255) not null,
+                            instructions TEXT,
+                            tools jsonb,
+                            tool_resources jsonb,
+                            metadata jsonb,
+                            temperature float,
+                            top_p float,
+                            response_format jsonb,
+                            created_at timestamp with time zone default timezone('utc'::text, now()) not null
 );
-
 
 -- Set up Storage!
 insert into storage.buckets
@@ -53,9 +52,7 @@ values
 insert into storage.buckets (id, name)
 values ('avatars', 'avatars');
 
-
 -- RLS policies
-
 alter table conversations enable row level security;
 alter table messages enable row level security;
 alter table profiles enable row level security;
@@ -99,7 +96,6 @@ update using ((metadata ->> 'created_by') = auth.uid()::text);
 create policy "Individuals can delete their own assistants." on assistants for
     delete using ((metadata ->> 'created_by') = auth.uid()::text);
 
-
 -- Policies for storage.
 create policy "Avatar images are publicly accessible." on storage.objects
   for select using (bucket_id = 'avatars');
@@ -108,6 +104,8 @@ create policy "Anyone can upload an avatar." on storage.objects
 create policy "Anyone can update their own avatar." on storage.objects
   for update using (auth.uid() = owner) with check (bucket_id = 'avatars');
 
+create policy "Anyone can upload an assistant avatar." on storage.objects
+  for insert with check (bucket_id = 'assistant_avatars');
 
 -- This trigger automatically creates a profile entry when a new user signs up via Supabase Auth.
 -- See https://supabase.com/docs/guides/auth/managing-user-data#using-triggers for more details.
