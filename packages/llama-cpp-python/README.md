@@ -53,5 +53,5 @@ python scripts/model_download.py
 mv .model/*.gguf .model/model.gguf
 
 # Start Model Backend
-python -u main.py
+python -m leapfrogai_sdk.cli --app-dir=. main:Model
 ```
