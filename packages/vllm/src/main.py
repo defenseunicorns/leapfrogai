@@ -87,7 +87,7 @@ def get_backend_configs():
         processed_stop_tokens = []
     del os.environ["LAI_STOP_TOKENS"]
 
-    BackendConfig.CONFIG_SOURCES = EnvSource(
+    env_source = EnvSource(
         allow_all=True,
         prefix="LAI_",
         remap={
@@ -101,6 +101,8 @@ def get_backend_configs():
             "prompt_format_defaults_top_k": "prompt_format.defaults.top_k",
         },
     )
+
+    BackendConfig.CONFIG_SOURCES = env_source
     # Initialize an immutable config from env variables without stop_tokens list
     backend_configs: BackendConfig = BackendConfig()
 
@@ -115,20 +117,7 @@ def get_backend_configs():
         default=backend_configs.defaults,
     )
     # Return them so that "llm.py" can load them later
-    BackendConfig.CONFIG_SOURCES = EnvSource(
-        allow_all=True,
-        prefix="LAI_",
-        remap={
-            "model_source": "model.source",
-            "max_context_length": "max_context_length",
-            "stop_tokens": "stop_tokens",
-            "prompt_format_chat_system": "prompt_format.chat.system",
-            "prompt_format_chat_assistant": "prompt_format.chat.assistant",
-            "prompt_format_chat_user": "prompt_format.chat.user",
-            "prompt_format_defaults_top_p": "prompt_format.defaults.top_p",
-            "prompt_format_defaults_top_k": "prompt_format.defaults.top_k",
-        },
-    )
+    BackendConfig.CONFIG_SOURCES = env_source
 
     return backend_configs
 
