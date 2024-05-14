@@ -110,9 +110,10 @@ def LLM(_cls):
             for text_chunk in gen_stream:
                 if last_response:
                     last_response.choices[0].finish_reason = ""
+                    delta: str = last_response.choices[0].chat_item.content
                     print(last_response)
                     print(last_response.choices[0].chat_item.content)
-                    response_str += last_response.choices[0].chat_item.content
+                    response_str += delta
                     print(response_str)
                     yield last_response
 
