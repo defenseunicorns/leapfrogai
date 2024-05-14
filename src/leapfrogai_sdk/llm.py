@@ -1,3 +1,4 @@
+import copy
 import os
 from typing import Any, Generator, List
 
@@ -110,17 +111,16 @@ def LLM(_cls):
             for text_chunk in gen_stream:
                 if last_response:
                     last_response.choices[0].finish_reason = ""
-                    delta: str = last_response.choices[0].chat_item.content
                     print(last_response)
                     print(last_response.choices[0].chat_item.content)
-                    response_str += delta
+                    response_str += last_response.choices[0].chat_item.content
                     print(response_str)
                     yield last_response
 
                 item = ChatItem(role=ChatRole.ASSISTANT, content=text_chunk)
                 choice = ChatCompletionChoice(index=0, chat_item=item)
 
-                last_response = ChatCompletionResponse(choices=[choice])
+                last_response = copy.deepcopy(ChatCompletionResponse(choices=[choice]))
 
             if last_response:
                 response_str += last_response.choices[0].chat_item.content
