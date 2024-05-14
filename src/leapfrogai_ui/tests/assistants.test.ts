@@ -115,3 +115,93 @@ test('it validates input', async ({ page }) => {
   await expect(page.getByText('This field is required. Please enter a tagline.')).toHaveCount(0);
   await expect(page.getByText('This field is required. Please enter instructions.')).toHaveCount(0);
 });
+
+test('it confirms you want to navigate away if you have changes', async ({ page }) => {
+  await page.goto('/chat/assistants-management/new');
+  await page.getByLabel('name').fill('my assistant');
+
+  await page.getByRole('link', { name: 'Assistants Management' }).click();
+
+  await expect(
+    page.getByText(
+      'You have unsaved changes. Do you want to leave this page? Unsaved changes will be deleted.'
+    )
+  ).toBeVisible();
+  expect(page.url()).toContain('/chat/assistants-management/new');
+});
+
+test('it DOES NOT confirm you want to navigate away if you DONT have changes', async ({ page }) => {
+  await page.goto('/chat/assistants-management/new');
+
+  await page.getByRole('link', { name: 'Assistants Management' }).click();
+
+  await page.waitForURL('/chat/assistants-management');
+});
+
+test('it DOES NOT confirm you want to navigate away if you click the cancel button', async ({
+  page
+}) => {
+  await page.goto('/chat/assistants-management/new');
+
+  await page.getByRole('button', { name: 'Cancel' }).click();
+
+  await page.waitForURL('/chat/assistants-management');
+});
+
+test('it allows you to edit an assistant', async ({ page }) => {
+  const pictogramName = 'Analytics';
+  const assistantInput1 = getFakeAssistantInput();
+  const assistantInput2 = getFakeAssistantInput();
+
+  await createAssistant(page, assistantInput1);
+
+  await page.waitForURL('/chat/assistants-management');
+
+  await page
+    .getByTestId(`assistant-tile-${assistantInput1.name}`)
+    .getByTestId('overflow-menu')
+    .click();
+  await page.getByRole('menuitem', { name: 'Edit' }).click();
+
+  await page.getByLabel('name').fill(assistantInput2.name);
+  await page.getByLabel('description').fill(assistantInput2.description);
+  await page.getByPlaceholder("You'll act as...").fill(assistantInput2.instructions);
+
+  await page.locator('.mini-avatar-container').click();
+  await page.getByTestId(`pictogram-${pictogramName}`).click();
+  await page.getByRole('dialog').getByRole('button', { name: 'Save' }).click();
+
+  // Wait for modal save button to disappear if avatar modal was open
+  const saveButtons = page.getByRole('button', { name: 'Save' });
+  await expect(saveButtons).toHaveCount(1);
+
+  await page.getByRole('button', { name: 'Save' }).click();
+
+  await expect(page.getByText('Assistant Updated')).toBeVisible();
+  await expect(page.getByTestId(`assistant-tile-${assistantInput2.name}`)).toBeVisible();
+
+  // cleanup
+  await deleteAssistantByName(assistantInput2.name);
+});
+
+test('it can delete assistants', async ({ page }) => {
+  const assistantInput = getFakeAssistantInput();
+
+  await createAssistant(page, assistantInput);
+
+  await page.waitForURL('/chat/assistants-management');
+
+  await page
+    .getByTestId(`assistant-tile-${assistantInput.name}`)
+    .getByTestId('overflow-menu')
+    .click();
+
+  // click overflow menu delete btn
+  await page.getByRole('menuitem', { name: 'Delete' }).click();
+
+  // click modal actual delete btn
+  await page.getByRole('button', { name: 'Delete' }).click();
+
+  await expect(page.getByText(`${assistantInput.name} Assistant deleted.`)).toBeVisible();
+  await expect(page.getByText(assistantInput.name)).not.toBeVisible();
+});

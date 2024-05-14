@@ -14,6 +14,7 @@ import {
 import { getFakeAssistant } from '../../../../../../testUtils/fakeData';
 import type { PageServerLoad } from './$types';
 
+
 describe('New Assistant page', () => {
   let goToSpy: MockInstance;
 
@@ -34,22 +35,10 @@ describe('New Assistant page', () => {
   it('has a modal that navigates back to the management page', async () => {
     render(NewAssistantPage, { data });
 
-    const cancelBtn = screen.getAllByRole('button', { name: /cancel/i })[0];
+    const cancelBtn = screen.getAllByRole('button', { name: /cancel/i })[1];
     await userEvent.click(cancelBtn);
-
-    await userEvent.click(screen.getByText('Leave this page'));
 
     expect(goToSpy).toHaveBeenCalledWith('/chat/assistants-management');
-  });
-  it('has a modal that stays on page when canceled', async () => {
-    render(NewAssistantPage, { data });
-
-    const cancelBtn = screen.getAllByRole('button', { name: /cancel/i })[0];
-    await userEvent.click(cancelBtn);
-
-    await userEvent.click(screen.getByText('Stay on page'));
-
-    expect(goToSpy).toHaveBeenCalledTimes(0);
   });
 
   it('limits the name input length', async () => {

@@ -45,13 +45,22 @@ export const sessionMock = vi.fn(() => {
 });
 export const sessionNullMock = vi.fn(() => Promise.resolve(null));
 
-// We want to allow any for this test mock
-// eslint-disable-next-line  @typescript-eslint/no-explicit-any
-export const supabaseInsertMock = (itemToReturn: any) => ({
+export const supabaseInsertMock = <T>(itemToReturn: T) => ({
   from: vi.fn(() => ({
     insert: vi.fn(() => ({
       select: vi.fn(() => ({
         returns: vi.fn(() => Promise.resolve({ error: null, data: itemToReturn }))
+      }))
+    }))
+  }))
+});
+export const supabaseInsertSingleMock = <T>(itemToReturn: T) => ({
+  from: vi.fn(() => ({
+    insert: vi.fn(() => ({
+      select: vi.fn(() => ({
+        returns: vi.fn(() => ({
+          single: vi.fn(() => Promise.resolve({ error: null, data: itemToReturn }))
+        }))
       }))
     }))
   }))
@@ -67,10 +76,64 @@ export const supabaseInsertErrorMock = () => ({
   }))
 });
 
+export const supabaseInsertSingleErrorMock = () => ({
+  from: vi.fn(() => ({
+    insert: vi.fn(() => ({
+      select: vi.fn(() => ({
+        returns: vi.fn(() => ({
+          single: vi.fn(() => Promise.resolve({ error: internalPostgresError, data: {} }))
+        }))
+      }))
+    }))
+  }))
+});
+
+export const supabaseSelectSingleByIdMock = <T>(itemToReturn: T) => ({
+  from: vi.fn(() => ({
+    select: vi.fn(() => ({
+      eq: vi.fn(() => ({
+        returns: vi.fn(() => ({
+          single: vi.fn(() => Promise.resolve({ error: null, data: itemToReturn }))
+        }))
+      }))
+    }))
+  }))
+});
+
 export const supabaseUpdateMock = () => ({
   from: vi.fn(() => ({
     update: vi.fn(() => ({
       eq: vi.fn(() => Promise.resolve({ error: null }))
+    }))
+  }))
+});
+
+export const editAssistantSupabaseMock = <T>(itemToReturn: T) => ({
+  from: vi.fn(() => ({
+    select: vi.fn(() => ({
+      eq: vi.fn(() => ({
+        returns: vi.fn(() => ({
+          single: vi.fn(() => Promise.resolve({ error: null, data: itemToReturn }))
+        }))
+      }))
+    })),
+    update: vi.fn(() => ({
+      eq: vi.fn(() => Promise.resolve({ error: null }))
+    }))
+  })),
+  storage: vi.fn(() => ({
+    from: vi.fn(() => ({
+      remove: vi.fn(() => Promise.resolve({ error: null }))
+    }))
+  }))
+});
+
+export const supabaseUpdateSingleMock = () => ({
+  from: vi.fn(() => ({
+    update: vi.fn(() => ({
+      eq: vi.fn(() => ({
+        single: vi.fn(() => Promise.resolve({ error: null }))
+      }))
     }))
   }))
 });

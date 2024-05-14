@@ -15,12 +15,15 @@
   import { toastStore } from '$stores';
   import InputTooltip from '$components/InputTooltip.svelte';
   import { env } from '$env/dynamic/public';
-  import { supabaseAssistantInputSchema, editAssistantInputSchema } from '../../schemas/assistants';
+  import { editAssistantInputSchema, supabaseAssistantInputSchema } from '../../schemas/assistants';
   import type { NavigationTarget } from '@sveltejs/kit';
+
+
 
   export let data;
 
   let isEditMode = $page.url.pathname.includes('edit');
+  let bypassCancelWarning = false;
 
   const { form, errors, enhance, submitting, isTainted } = superForm(data.form, {
     validators: yup(isEditMode ? editAssistantInputSchema : supabaseAssistantInputSchema),
@@ -28,9 +31,10 @@
       if (result.type === 'redirect') {
         toastStore.addToast({
           kind: 'success',
-          title: 'Assistant Updated.',
+          title: `Assistant ${isEditMode ? 'Updated' : 'Created'}.`,
           subtitle: ''
         });
+        bypassCancelWarning = true;
         goto(result.location);
       } else if (result.type === 'failure') {
         // 400 errors will show errors for the respective fields, do not show toast
@@ -69,7 +73,7 @@
     if (to) {
       navigateTo = to;
     }
-    if (!leavePageConfirmed && isTainted()) {
+    if (!leavePageConfirmed && isTainted() && !bypassCancelWarning) {
       cancel();
       leavePageConfirmed = false; // reset
       if (type !== 'leave') {

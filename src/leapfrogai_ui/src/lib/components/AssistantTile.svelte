@@ -25,7 +25,7 @@
       await invalidateAll();
       toastStore.addToast({
         kind: 'info',
-        title: 'Assistant Deleted',
+        title: 'Assistant Deleted.',
         subtitle: `${assistant.name} Assistant deleted.`
       });
       return;
@@ -39,10 +39,10 @@
   };
 </script>
 
-<div class="assistant-tile" transition:fade={{ duration: 70 }}>
+<div class="assistant-tile" transition:fade={{ duration: 70 }} data-testid={`assistant-tile-${assistant.name}`}>
   <Tile>
     <div class="overflow-menu-container">
-      <OverflowMenu flipped size="sm">
+      <OverflowMenu flipped size="sm" data-testid="overflow-menu">
         <OverflowMenuItem
           text="Edit"
           on:click={() => goto(`/chat/assistants-management/edit/${assistant.id}`)}
