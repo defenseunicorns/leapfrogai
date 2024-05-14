@@ -105,19 +105,7 @@ def get_backend_configs():
     BackendConfig.CONFIG_SOURCES = env_source
     # Initialize an immutable config from env variables without stop_tokens list
     backend_configs: BackendConfig = BackendConfig()
-
-    # Create a new config from env variables + stop_tokens
-    BackendConfig.CONFIG_SOURCES = None
-    backend_configs = BackendConfig(
-        name=backend_configs.name,
-        model=backend_configs.model,
-        max_context_length=backend_configs.max_context_length,
-        stop_tokens=processed_stop_tokens,
-        prompt_format=backend_configs.prompt_format,
-        default=backend_configs.defaults,
-    )
-    # Return them so that "llm.py" can load them later
-    BackendConfig.CONFIG_SOURCES = env_source
+    backend_configs.stop_tokens = processed_stop_tokens
 
     return backend_configs
 
