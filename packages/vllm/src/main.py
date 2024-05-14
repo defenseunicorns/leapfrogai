@@ -146,8 +146,8 @@ class Model:
     delta_queue_by_id: Dict[str, queue.Queue] = {}
     result_by_id: Dict[str, RequestOutput] = {}
 
-    def __init__(self, *args, **kwargs):
-        logging.getLogger().setLevel(logging.DEBUG)
+    # def __init__(self, *args, **kwargs):
+    #     logging.getLogger().setLevel(logging.DEBUG)
 
         # Background thread for managing output iteration
         # _thread = threading.Thread(target=asyncio.run, args=(self.iterate_outputs(),))
