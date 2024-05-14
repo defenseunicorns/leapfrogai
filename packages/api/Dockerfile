@@ -18,7 +18,8 @@ RUN python -m pip wheel ./src/leapfrogai_sdk -w build
 RUN python -m pip wheel ./src/leapfrogai_api -w build --find-links=build/
 
 # install
-RUN pip install build/leapfrogai_api-*.whl --no-index --find-links=build/
+RUN cp build/leapfrogai_api-*.whl .
+RUN pip install leapfrogai_api-*.whl --no-index --find-links=build/
 
 FROM ghcr.io/defenseunicorns/leapfrogai/python:3.11-${ARCH}
 

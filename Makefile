@@ -66,6 +66,7 @@ build-api: local-registry setup-api-deps ## Build the leapfrogai_api container a
 
 build-ui: local-registry ## Build the leapfrogai_ui container and Zarf package
 	## Build the image (and tag it for the local registry)
+	-rm packages/ui/*.tar.zst
 	docker build --platform=linux/${ARCH} -t ghcr.io/defenseunicorns/leapfrogai/leapfrogai-ui:${LOCAL_VERSION} src/leapfrogai_ui --build-arg ARCH=${ARCH}
 	docker tag ghcr.io/defenseunicorns/leapfrogai/leapfrogai-ui:${LOCAL_VERSION} localhost:${REG_PORT}/defenseunicorns/leapfrogai/leapfrogai-ui:${LOCAL_VERSION}
 

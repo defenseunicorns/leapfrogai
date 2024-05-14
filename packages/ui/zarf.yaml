@@ -2,7 +2,6 @@ kind: ZarfPackageConfig
 metadata:
   name: leapfrogai-ui
   version: '###ZARF_PKG_TMPL_IMAGE_VERSION###'
-  architecture: amd64
   description: >
     A UI for LeapfrogAI
 
@@ -66,7 +65,7 @@ components:
   - name: lfaiui
     required: true
     charts:
-      - name: lfaiui
+      - name: leapfrogai-ui
         namespace: leapfrogai
         localPath: chart
         valuesFiles:
@@ -82,6 +81,6 @@ components:
           - wait:
               cluster:
                 kind: Deployment
-                name: lfaiui
+                name: leapfrogai-ui
                 namespace: leapfrogai
                 condition: Available
