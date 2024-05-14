@@ -1,6 +1,6 @@
 image:
   # x-release-please-start-version
-  lfaiAPITag: 0.6.1
+  lfaiAPITag: 0.7.0
   # x-release-please-end
   kiwigridTag: 1.23.3
 
