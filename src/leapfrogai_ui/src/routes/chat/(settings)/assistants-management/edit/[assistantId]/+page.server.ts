@@ -1,4 +1,4 @@
-import { fail, redirect } from '@sveltejs/kit';
+import { error, fail, redirect } from '@sveltejs/kit';
 import { superValidate } from 'sveltekit-superforms';
 import type { PageServerLoad } from './$types';
 import { yup } from 'sveltekit-superforms/adapters';
@@ -13,12 +13,15 @@ export const load: PageServerLoad = async ({ params, locals: { getSession, supab
     throw redirect(303, '/');
   }
 
-  // TODO - handle error in load function but use error page?
   const { data: assistant, error: assistantError } = await supabase
     .from('assistants')
     .select()
     .eq('id', params.assistantId)
     .single();
+
+  if (assistantError) {
+    error(404, { message: 'Assistant not found.' });
+  }
 
   const assistantFormData: EditAssistantInput = {
     id: assistant.id,
