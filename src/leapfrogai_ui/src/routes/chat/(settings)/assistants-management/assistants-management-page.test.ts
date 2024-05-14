@@ -11,7 +11,6 @@ describe('Assistants management page', () => {
 
     screen.getByTestId(`assistant-tile-${assistant1.name!}`);
     screen.getByTestId(`assistant-tile-${assistant2.name!}`);
-
   });
   // Assistant search tested with e2e
 });

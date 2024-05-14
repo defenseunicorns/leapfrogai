@@ -4,7 +4,7 @@ import type { PageServerLoad } from './$types';
 import { yup } from 'sveltekit-superforms/adapters';
 import { editAssistantInputSchema } from '../../../../../../schemas/assistants';
 import { env } from '$env/dynamic/private';
-import { assistantDefaults } from '$lib/constants';
+import { assistantDefaults, DEFAULT_ASSISTANT_TEMP } from '$lib/constants';
 
 export const load: PageServerLoad = async ({ params, locals: { getSession, supabase } }) => {
   const session = await getSession();
@@ -16,7 +16,7 @@ export const load: PageServerLoad = async ({ params, locals: { getSession, supab
     .from('assistants')
     .select()
     .eq('id', params.assistantId)
-    .returns<Assistant>()
+    .returns<Assistant[]>()
     .single();
 
   if (assistantError) {
@@ -25,10 +25,10 @@ export const load: PageServerLoad = async ({ params, locals: { getSession, supab
 
   const assistantFormData: EditAssistantInput = {
     id: assistant.id,
-    name: assistant.name,
-    description: assistant.description,
-    instructions: assistant.instructions,
-    temperature: assistant.temperature,
+    name: assistant.name || '',
+    description: assistant.description || '',
+    instructions: assistant.instructions || '',
+    temperature: assistant.temperature || DEFAULT_ASSISTANT_TEMP,
     data_sources: assistant.metadata.data_sources,
     pictogram: assistant.metadata.pictogram
   };
@@ -58,7 +58,7 @@ export const actions = {
       .from('assistants')
       .select()
       .eq('id', form.data.id)
-      .returns<Assistant>()
+      .returns<Assistant[]>()
       .single();
 
     if (getAssistantError) return fail(404, { message: 'Assistant not found.' });
@@ -106,7 +106,7 @@ export const actions = {
       .from('assistants')
       .update(assistant)
       .eq('id', form.data.id)
-      .returns<Assistant>()
+      .returns<Assistant[]>()
       .single();
 
     if (responseError) {

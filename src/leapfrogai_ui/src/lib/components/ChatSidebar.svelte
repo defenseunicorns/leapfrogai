@@ -281,7 +281,6 @@ https://github.com/carbon-design-system/carbon-components-svelte/issues/892
     :global(.bx--overflow-menu-options) {
       left: 20px !important;
     }
-
   }
 
   :global(.bx--side-nav__item) {
@@ -330,7 +329,6 @@ https://github.com/carbon-design-system/carbon-components-svelte/issues/892
       text-overflow: ellipsis;
       color: themes.$text-secondary;
     }
-
   }
 
   // The following overflow: visible !important overrides allow the OverflowMenu component
@@ -342,7 +340,6 @@ https://github.com/carbon-design-system/carbon-components-svelte/issues/892
     scrollbar-width: none;
     overflow-y: auto;
   }
-
 
   :global(.bx--side-nav__navigation) {
     overflow: visible !important;

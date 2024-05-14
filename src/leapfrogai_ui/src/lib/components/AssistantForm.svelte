@@ -18,8 +18,6 @@
   import { editAssistantInputSchema, supabaseAssistantInputSchema } from '../../schemas/assistants';
   import type { NavigationTarget } from '@sveltejs/kit';
 
-
-
   export let data;
 
   let isEditMode = $page.url.pathname.includes('edit');
@@ -99,7 +97,7 @@
         bind:value={$form.name}
         maxlength={ASSISTANTS_NAME_MAX_LENGTH}
         invalid={!!$errors.name}
-        invalidText={$errors.name}
+        invalidText={$errors.name?.toString()}
       />
 
       <InputTooltip
@@ -116,7 +114,7 @@
         bind:value={$form.description}
         maxlength={ASSISTANTS_DESCRIPTION_MAX_LENGTH}
         invalid={!!$errors.description}
-        invalidText={$errors.description}
+        invalidText={$errors.description?.toString()}
       />
 
       <InputTooltip
@@ -133,7 +131,7 @@
         placeholder="You'll act as..."
         hideLabel
         invalid={!!$errors.instructions}
-        invalidText={$errors.instructions}
+        invalidText={$errors.instructions?.toString()}
         maxlength={ASSISTANTS_INSTRUCTIONS_MAX_LENGTH}
       />
 
@@ -154,7 +152,6 @@
         minLabel="Min"
         maxLabel="Max"
         invalid={!!$errors.temperature}
-        invalidText={$errors.temperature}
       />
 
       <!--Note - Data Sources is a placeholder and will be completed in a future story-->

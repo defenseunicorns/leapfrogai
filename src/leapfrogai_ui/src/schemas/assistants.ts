@@ -45,4 +45,5 @@ export const supabaseAssistantInputSchema: ObjectSchema<AssistantInput> = object
   .noUnknown(true)
   .strict();
 
-export const editAssistantInputSchema: ObjectSchema<EditAssistantInput> = supabaseAssistantInputSchema.concat(uuidSchema);
+export const editAssistantInputSchema: ObjectSchema<EditAssistantInput> =
+  supabaseAssistantInputSchema.concat(uuidSchema);

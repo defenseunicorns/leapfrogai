@@ -94,7 +94,6 @@ export const selectErrorMock = () => ({
   }))
 });
 
-
 /* ----- end re-usable mock components */
 
 /* --- Standalone mocks ----- */

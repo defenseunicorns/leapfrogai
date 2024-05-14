@@ -5,6 +5,7 @@
   import DynamicPictogram from '$components/DynamicPictogram.svelte';
   import { Tile, Modal, OverflowMenu, OverflowMenuItem } from 'carbon-components-svelte';
   import { toastStore } from '$stores';
+  import { Edit, TrashCan } from 'carbon-icons-svelte';
 
   export let assistant: Assistant;
 
@@ -39,15 +40,24 @@
   };
 </script>
 
-<div class="assistant-tile" transition:fade={{ duration: 70 }} data-testid={`assistant-tile-${assistant.name}`}>
+<div
+  class="assistant-tile"
+  transition:fade={{ duration: 70 }}
+  data-testid={`assistant-tile-${assistant.name}`}
+>
   <Tile>
     <div class="overflow-menu-container">
       <OverflowMenu flipped size="sm" data-testid="overflow-menu">
-        <OverflowMenuItem
-          text="Edit"
-          on:click={() => goto(`/chat/assistants-management/edit/${assistant.id}`)}
-        />
-        <OverflowMenuItem text="Delete" on:click={() => (deleteModalOpen = true)} />
+        <OverflowMenuItem on:click={() => goto(`/chat/assistants-management/edit/${assistant.id}`)}>
+          <div class="overflow-menu-item">
+            Edit <Edit />
+          </div>
+        </OverflowMenuItem>
+        <OverflowMenuItem on:click={() => (deleteModalOpen = true)}>
+          <div class="overflow-menu-item">
+            Delete <TrashCan />
+          </div></OverflowMenuItem
+        >
       </OverflowMenu>
     </div>
     {#if assistant.metadata.avatar}
@@ -115,6 +125,13 @@
       position: absolute;
       top: 0.5rem;
       right: 0.5rem;
+
+      .overflow-menu-item {
+        width: 100%;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+      }
     }
   }
 
