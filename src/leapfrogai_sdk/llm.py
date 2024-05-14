@@ -104,20 +104,13 @@ def LLM(_cls):
                 self.config.apply_chat_template(request.chat_items), request
             )
 
-            print("Attempting to chat stream")
-
             last_response: ChatCompletionResponse | None = None
             response_str: str = ""
 
             for text_chunk in gen_stream:
-                print(f"Now processing text chunk {text_chunk}")
-
                 if last_response:
                     last_response.choices[0].finish_reason = ""
-                    print("Starting to process the last response")
-                    print(last_response)
                     response_str += last_response.choices[0].chat_item.content
-                    print("Completed yield")
                     yield last_response
 
                 item = ChatItem(role=ChatRole.ASSISTANT, content=text_chunk)
@@ -126,8 +119,6 @@ def LLM(_cls):
                 last_response = ChatCompletionResponse(choices=[choice])
 
             if last_response:
-                print(f"Finishing with {response_str}")
-
                 response_str += last_response.choices[0].chat_item.content
 
                 token_count = await self.count_tokens(response_str)
@@ -138,8 +129,6 @@ def LLM(_cls):
                     last_response.choices[0].finish_reason = "length"
 
                 yield last_response
-
-            print(f"Finish chat stream {response_str}")
 
         async def Complete(
             self, request: CompletionRequest, context: GrpcContext
@@ -166,8 +155,6 @@ def LLM(_cls):
             gen_stream = self._build_gen_stream(request.prompt, request)
             last_response: CompletionResponse | None = None
             response_str: str = ""
-
-            print("Attempting to stream")
 
             for text_chunk in gen_stream:
                 if last_response:
