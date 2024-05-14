@@ -1,16 +1,14 @@
 <script lang="ts">
-  import { onMount } from 'svelte';
   import {
     ASSISTANTS_DESCRIPTION_MAX_LENGTH,
     ASSISTANTS_INSTRUCTIONS_MAX_LENGTH,
     ASSISTANTS_NAME_MAX_LENGTH
   } from '$lib/constants';
-  import SuperDebug from 'sveltekit-superforms';
+  import { superForm } from 'sveltekit-superforms';
   import { Add } from 'carbon-icons-svelte';
-  import { goto, invalidate } from '$app/navigation';
+  import { goto } from '$app/navigation';
   import { Button, Modal, Slider, TextArea, TextInput } from 'carbon-components-svelte';
   import AssistantAvatar from '$components/AssistantAvatar.svelte';
-  import { superForm } from 'sveltekit-superforms';
   import { yup } from 'sveltekit-superforms/adapters';
   import { supabaseAssistantInputSchema } from '../../../../../../schemas/assistants';
   import { toastStore } from '$stores';
@@ -58,7 +56,6 @@
     : '';
 </script>
 
-<SuperDebug data={$form} />
 <form method="POST" enctype="multipart/form-data" use:enhance class="assistant-form">
   <div class="container">
     <div class="inner-container">
