@@ -63,7 +63,9 @@ async def create_vector_store(
 
 
 @router.get("")
-async def list_vector_stores(session: Session) -> list[VectorStore] | None:
+async def list_vector_stores(
+    session: Session,
+) -> list[VectorStore] | None:  # TODO: Fix return type to match OpenAI
     """List all the vector stores."""
     try:
         crud_vector_store = CRUDVectorStore(model=VectorStore)
