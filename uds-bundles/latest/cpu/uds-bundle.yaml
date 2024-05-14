@@ -42,14 +42,14 @@ packages:
 
   # Supabase backend for the UI and API to interface with Postgresql
   - name: supabase
-    path: ghcr.io/defenseunicorns/packages/leapfrogai/supabase
+    repository: ghcr.io/defenseunicorns/packages/leapfrogai/supabase
     # x-release-please-start-version
     ref: 0.7.0
     # x-release-please-end
 
   # UI - new UI TODO - point to ghcr image after Sprint 0.7.0
   - name: leapfrogai-ui
-    path: ghcr.io/defenseunicorns/packages/leapfrogai/leapfrogai-ui
+    repository: ghcr.io/defenseunicorns/packages/leapfrogai/leapfrogai-ui
     # x-release-please-start-version
     ref: 0.7.0
     # x-release-please-end
