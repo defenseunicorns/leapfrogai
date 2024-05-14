@@ -12,7 +12,7 @@ dependencies = [
     "wheel==0.43.0",
     "packaging>=2.5.8",
     "ninja>=1.11.1.1",
-    "flash-attn>=2.5.8",
+    "flash-attn>=2.4.2", # This version is detected properly by vllm - https://github.com/vllm-project/vllm/issues/3912
     "python-dotenv>=1.0.1",
     "aiostream>=0.5.2",
     "leapfrogai-sdk",
