@@ -109,13 +109,12 @@ def LLM(_cls):
 
             for text_chunk in gen_stream:
                 if last_response:
-                    current_response: ChatCompletionResponse = last_response
-                    current_response.choices[0].finish_reason = ""
-                    response_str += current_response.choices[0].chat_item.content
+                    last_response.choices[0].finish_reason = ""
+                    print(last_response)
+                    print(last_response.choices[0].chat_item.content)
+                    response_str += last_response.choices[0].chat_item.content
                     print(response_str)
-                    print(current_response)
-                    print(current_response.choices[0].chat_item.content)
-                    yield current_response
+                    yield last_response
 
                 item = ChatItem(role=ChatRole.ASSISTANT, content=text_chunk)
                 choice = ChatCompletionChoice(index=0, chat_item=item)
