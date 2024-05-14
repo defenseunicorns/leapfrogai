@@ -51,7 +51,7 @@ def LLM(_cls):
         choice: ChatCompletionChoice = ChatCompletionChoice(index=0, chat_item=item)
 
         usage: Optional[Usage] = None
-        if prompt_tokens != -1 and completion_tokens != -1:
+        if prompt_tokens > -1 and completion_tokens > -1:
             usage = Usage(
                 prompt_tokens=prompt_tokens,
                 completion_tokens=completion_tokens,
@@ -71,7 +71,7 @@ def LLM(_cls):
         choice: CompletionChoice = CompletionChoice(index=0, text=text)
 
         usage: Optional[CompletionUsage] = None
-        if prompt_tokens != -1 and completion_tokens != -1:
+        if prompt_tokens > -1 and completion_tokens > -1:
             usage = CompletionUsage(
                 prompt_tokens=prompt_tokens,
                 completion_tokens=completion_tokens,
