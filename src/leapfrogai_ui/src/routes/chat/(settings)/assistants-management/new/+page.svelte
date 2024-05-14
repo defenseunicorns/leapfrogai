@@ -1,74 +1,69 @@
 <script lang="ts">
-  import { createForm } from 'svelte-forms-lib';
-  import { Add, User } from 'carbon-icons-svelte';
+  import { applyAction, enhance } from '$app/forms';
+  import { Add } from 'carbon-icons-svelte';
   import { Button, Modal, Slider, TextArea, TextInput } from 'carbon-components-svelte';
-  import { assistantsStore, toastStore } from '$stores';
+  import { toastStore } from '$stores';
   import { goto } from '$app/navigation';
   import InputTooltip from '$components/InputTooltip.svelte';
   import { ASSISTANTS_INSTRUCTIONS_MAX_LENGTH, DEFAULT_ASSISTANT_TEMP } from '$lib/constants';
-  import { supabaseAssistantInputSchema } from '../../../../../schemas/assistants';
   import {
     ASSISTANTS_DESCRIPTION_MAX_LENGTH,
     ASSISTANTS_NAME_MAX_LENGTH
   } from '$lib/constants/index.js';
+  import AssistantAvatar from '$components/AssistantAvatar.svelte';
+
+  export let form;
 
   let cancelModalOpen = false;
+  let files: File[] = [];
+  let selectedPictogramName = 'default';
 
-  const { form, errors, state, handleChange, handleSubmit, updateField } = createForm({
-    initialValues: {
-      name: '',
-      description: '',
-      instructions: '',
-      temperature: DEFAULT_ASSISTANT_TEMP,
-      metadata: {
-        data_sources: []
-      }
-    },
-    validationSchema: supabaseAssistantInputSchema,
-    onSubmit: async (values) => {
-      try {
-        await assistantsStore.createAssistant(values);
-        await goto('/chat/assistants-management');
-      } catch {
-        toastStore.addToast({
-          kind: 'error',
-          title: 'Error',
-          subtitle: `Error creating assistant.`
-        });
-      }
-    }
-  });
+  let isSubmitting = false;
 
-  const handleSliderChange = () => {
-    /* We can't use svelte-forms-lib handleChange here because if the user clicks on the slider track instead
-       of clicking and dragging the handle, svelte-forms-lib is adding an extra key called "undefined" to the form 
-       values which prevents submission 
-     */
-    updateField('temperature', $form.temperature);
-  };
+  $: sliderValue = Number(form?.temperature) || DEFAULT_ASSISTANT_TEMP;
 </script>
 
-<form on:submit={handleSubmit}>
+<form
+  method="POST"
+  enctype="multipart/form-data"
+  use:enhance={async () => {
+    isSubmitting = true;
+    return async ({ result }) => {
+      isSubmitting = false;
+      await applyAction(result);
+      if (result.type === 'redirect') {
+        toastStore.addToast({
+          kind: 'success',
+          title: 'Assistant Created.',
+          subtitle: ''
+        });
+        await goto(result.location);
+      } else if (result.type === 'failure') {
+        toastStore.addToast({
+          kind: 'error',
+          title: `Error Creating Assistant: ${result.data?.message}`,
+          subtitle: ''
+        });
+      }
+    };
+  }}
+>
   <div class="container">
     <div class="inner-container">
       <div class="top-row">
         <div class="title">New Assistant</div>
-        <!--Note - Avatar is a placeholder and will be completed in a future story-->
-        <button class="user-icon remove-btn-style" tabindex="0" on:click|preventDefault>
-          <User />
-        </button>
+        <AssistantAvatar bind:files bind:selectedPictogramName />
       </div>
       <TextInput
         name="name"
         labelText="Name"
         placeholder="Assistant name"
-        on:keyup={handleChange}
-        on:blur={handleChange}
-        bind:value={$form.name}
+        value={form?.name}
         maxlength={ASSISTANTS_NAME_MAX_LENGTH}
       />
-      {#if $errors.name}
-        <small class="error">{$errors.name}</small>
+
+      {#if form?.errors?.name}
+        <small class="error">{form?.errors?.name}</small>
       {/if}
 
       <InputTooltip
@@ -82,14 +77,12 @@
         placeholder="Here to help..."
         labelText="Description"
         hideLabel
-        on:keyup={handleChange}
-        on:blur={handleChange}
-        bind:value={$form.description}
+        value={form?.description}
         maxlength={ASSISTANTS_DESCRIPTION_MAX_LENGTH}
       />
 
-      {#if $errors.description}
-        <small class="error">{$errors.description}</small>
+      {#if form?.errors?.description}
+        <small class="error">{form?.errors?.description}</small>
       {/if}
 
       <InputTooltip
@@ -101,17 +94,15 @@
       <TextArea
         name="instructions"
         labelText="Instructions"
-        on:keyup={handleChange}
-        on:blur={handleChange}
-        bind:value={$form.instructions}
+        value={form?.instructions}
         rows={6}
         placeholder="You'll act as..."
         hideLabel
         maxlength={ASSISTANTS_INSTRUCTIONS_MAX_LENGTH}
       />
 
-      {#if $errors.instructions}
-        <small class="error">{$errors.instructions}</small>
+      {#if form?.errors?.instructions}
+        <small class="error">{form?.errors?.instructions}</small>
       {/if}
 
       <InputTooltip
@@ -121,8 +112,7 @@
       />
       <Slider
         name="temperature"
-        on:click={handleSliderChange}
-        bind:value={$form.temperature}
+        value={sliderValue}
         hideLabel
         hideTextInput
         fullWidth
@@ -133,25 +123,27 @@
         maxLabel="Max"
       />
 
-      {#if $errors.temperature}
-        <small class="error">{$errors.temperature}</small>
+      {#if form?.errors?.temperature}
+        <small class="error">{form?.errors?.temperature}</small>
       {/if}
 
       <!--Note - Data Sources is a placeholder and will be completed in a future story-->
       <InputTooltip
-        name="metadata.data_sources"
+        name="data_sources"
         labelText="Data Sources"
         tooltipText="Specific files your assistant can search and reference"
       />
       <div>
-        <Button name="metadata.data_sources" icon={Add} kind="secondary" size="small">Add</Button>
+        <Button icon={Add} kind="secondary" size="small"
+          >Add <input name="data_sources" type="hidden" /></Button
+        >
       </div>
 
       <div>
         <Button kind="secondary" size="small" on:click={() => (cancelModalOpen = true)}
           >Cancel</Button
         >
-        <Button kind="primary" size="small" type="submit" disabled={!$state.isValid}>Save</Button>
+        <Button kind="primary" size="small" type="submit" disabled={isSubmitting}>Save</Button>
       </div>
     </div>
   </div>
@@ -191,18 +183,6 @@
 
   .title {
     @include type.type-style('heading-05');
-  }
-
-  .user-icon :global(svg) {
-    width: 3rem;
-    height: 3rem;
-    padding: layout.$spacing-03;
-    border-radius: 50%;
-    background-color: themes.$layer-01;
-    transition: background-color 70ms ease;
-    &:hover {
-      background-color: themes.$layer-02;
-    }
   }
 
   .error {

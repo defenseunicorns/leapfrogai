@@ -20,7 +20,7 @@ components:
         localPath: chart
         releaseName: llama-cpp-python-model
         # x-release-please-start-version
-        version: 0.6.1
+        version: 0.7.0
         # x-release-please-end
         valuesFiles:
           - "llama-cpp-python-values.yaml"
