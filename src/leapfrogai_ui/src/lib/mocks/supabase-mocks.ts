@@ -8,6 +8,13 @@ const internalPostgresError: PostgrestError = {
   hint: ''
 };
 
+const notFoundPostgresError: PostgrestError = {
+  code: '404',
+  message: 'Not Found',
+  details: '',
+  hint: ''
+};
+
 export const sessionMock = vi.fn(() => {
   const id = faker.string.uuid();
   const email = faker.internet.email();
@@ -44,6 +51,59 @@ export const sessionMock = vi.fn(() => {
   });
 });
 export const sessionNullMock = vi.fn(() => Promise.resolve(null));
+
+/* ----- Re-usable mock components ----- */
+
+export const selectSingleReturnsMock = <T>(itemToReturn: T) => ({
+  select: vi.fn(() => ({
+    eq: vi.fn(() => ({
+      returns: vi.fn(() => ({
+        single: vi.fn(() => Promise.resolve({ error: null, data: itemToReturn }))
+      }))
+    }))
+  }))
+});
+
+export const updateSingleReturnsMock = () => ({
+  update: vi.fn(() => ({
+    eq: vi.fn(() => ({
+      returns: vi.fn(() => ({
+        single: vi.fn(() => Promise.resolve({ error: null }))
+      }))
+    }))
+  }))
+});
+
+export const updateSingleErrorMock = () => ({
+  update: vi.fn(() => ({
+    eq: vi.fn(() => ({
+      returns: vi.fn(() => ({
+        single: vi.fn(() => Promise.resolve({ error: internalPostgresError, data: null }))
+      }))
+    }))
+  }))
+});
+
+export const selectErrorMock = () => ({
+  select: vi.fn(() => ({
+    eq: vi.fn(() => ({
+      returns: vi.fn(() => ({
+        single: vi.fn(() => Promise.resolve({ error: notFoundPostgresError, data: {} }))
+      }))
+    }))
+  }))
+});
+
+
+/* ----- end re-usable mock components */
+
+/* --- Standalone mocks ----- */
+
+export const supabaseFromMockWrapper = (mock: object) => ({
+  from: vi.fn(() => ({
+    ...mock
+  }))
+});
 
 export const supabaseInsertMock = <T>(itemToReturn: T) => ({
   from: vi.fn(() => ({
@@ -108,26 +168,6 @@ export const supabaseUpdateMock = () => ({
   }))
 });
 
-export const editAssistantSupabaseMock = <T>(itemToReturn: T) => ({
-  from: vi.fn(() => ({
-    select: vi.fn(() => ({
-      eq: vi.fn(() => ({
-        returns: vi.fn(() => ({
-          single: vi.fn(() => Promise.resolve({ error: null, data: itemToReturn }))
-        }))
-      }))
-    })),
-    update: vi.fn(() => ({
-      eq: vi.fn(() => Promise.resolve({ error: null }))
-    }))
-  })),
-  storage: vi.fn(() => ({
-    from: vi.fn(() => ({
-      remove: vi.fn(() => Promise.resolve({ error: null }))
-    }))
-  }))
-});
-
 export const supabaseUpdateSingleMock = () => ({
   from: vi.fn(() => ({
     update: vi.fn(() => ({
@@ -159,3 +199,29 @@ export const supabaseDeleteErrorMock = () => ({
     }))
   }))
 });
+
+/* ----- end standalone mocks ----- */
+
+/* ----- Test specific mocks ----- */
+
+export const editAssistantSupabaseMock = <T>(itemToReturn: T) => ({
+  ...supabaseFromMockWrapper({
+    ...selectSingleReturnsMock(itemToReturn),
+    ...updateSingleReturnsMock()
+  }),
+  storage: {
+    ...supabaseFromMockWrapper({ remove: vi.fn(() => Promise.resolve({ error: null })) })
+  }
+});
+
+export const editAssistantSupabaseInsertErrorMock = <T>(itemToReturn: T) => ({
+  ...supabaseFromMockWrapper({
+    ...selectSingleReturnsMock(itemToReturn),
+    ...updateSingleErrorMock()
+  }),
+  storage: {
+    ...supabaseFromMockWrapper({ remove: vi.fn(() => Promise.resolve({ error: null })) })
+  }
+});
+
+/* ----- end test specific mocks */

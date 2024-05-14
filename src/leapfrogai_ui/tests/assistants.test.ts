@@ -26,7 +26,8 @@ test('it creates an assistant and navigates back to the management page', async 
   await createAssistant(page, assistantInput);
 
   await page.waitForURL('/chat/assistants-management');
-  await expect(page.getByText(assistantInput.name)).toBeVisible();
+  await expect(page.getByText('Assistant Created')).toBeVisible();
+  await expect(page.getByTestId(`assistant-tile-${assistantInput.name}`)).toBeVisible();
 
   // cleanup
   await deleteAssistantByName(assistantInput.name);
@@ -53,7 +54,54 @@ test('displays an error toast when there is an error creating an assistant and r
 
   await createAssistant(page, assistantInput);
 
-  await expect(page.getByText('Error creating assistant')).toBeVisible();
+  await expect(page.getByText('Error Creating Assistant')).toBeVisible();
+});
+test('displays an error toast when there is an error editing an assistant and remains on the assistant page', async ({
+  page
+}) => {
+  const assistantInput1 = getFakeAssistantInput();
+  const assistantInput2 = getFakeAssistantInput();
+
+  await createAssistant(page, assistantInput1);
+
+  await page
+    .getByTestId(`assistant-tile-${assistantInput1.name}`)
+    .getByTestId('overflow-menu')
+    .click();
+  await page.getByRole('menuitem', { name: 'Edit' }).click();
+
+  await page.waitForURL('/chat/assistants-management/edit/**/*');
+
+  const assistantId = page.url().substring(page.url().lastIndexOf('/') + 1);
+
+  await page.route(`*/**/chat/assistants-management/edit/${assistantId}`, async (route) => {
+    if (route.request().method() === 'POST') {
+      const result: ActionResult = {
+        type: 'failure',
+        status: 500
+      };
+
+      await route.fulfill({ json: result });
+    } else {
+      const response = await route.fetch();
+      await route.fulfill({ response });
+    }
+  });
+
+  await page.getByLabel('name').fill(assistantInput2.name);
+
+  // Wait for modal save button to disappear if avatar modal was open
+  const saveButtons = page.getByRole('button', { name: 'Save' });
+  await expect(saveButtons).toHaveCount(1);
+
+  await page.getByRole('button', { name: 'Save' }).click();
+
+  await expect(page.getByText('Error Editing Assistant')).toBeVisible();
+
+  await page.waitForURL(`/chat/assistants-management/edit/${assistantId}`);
+
+  // cleanup
+  await deleteAssistantByName(assistantInput1.name);
 });
 
 test('it can search for assistants', async ({ page }) => {
@@ -67,21 +115,21 @@ test('it can search for assistants', async ({ page }) => {
   await page.waitForURL('/chat/assistants-management');
   await page.getByRole('searchbox').fill(assistantInput1.name);
 
-  await expect(page.getByText(assistantInput2.name)).not.toBeVisible();
-  await expect(page.getByText(assistantInput1.name)).toBeVisible();
+  await expect(page.getByTestId(`assistant-tile-${assistantInput2.name}`)).not.toBeVisible();
+  await expect(page.getByTestId(`assistant-tile-${assistantInput1.name}`)).toBeVisible();
 
   // search by description
   await page.getByRole('searchbox').clear();
   await page.getByRole('searchbox').fill(assistantInput2.description);
 
-  await expect(page.getByText(assistantInput2.name)).toBeVisible();
-  await expect(page.getByText(assistantInput1.name)).not.toBeVisible();
+  await expect(page.getByTestId(`assistant-tile-${assistantInput2.name}`)).toBeVisible();
+  await expect(page.getByTestId(`assistant-tile-${assistantInput1.name}`)).not.toBeVisible();
 
   // Search by instructions
   await page.getByRole('searchbox').fill(assistantInput1.instructions);
 
-  await expect(page.getByText(assistantInput2.name)).not.toBeVisible();
-  await expect(page.getByText(assistantInput1.name)).toBeVisible();
+  await expect(page.getByTestId(`assistant-tile-${assistantInput2.name}`)).not.toBeVisible();
+  await expect(page.getByTestId(`assistant-tile-${assistantInput1.name}`)).toBeVisible();
 
   // cleanup
   await deleteAssistantByName(assistantInput1.name);

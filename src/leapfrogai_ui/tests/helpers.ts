@@ -35,7 +35,6 @@ export const createAssistant = async (page: Page, assistantInput: AssistantInput
   await expect(saveButtons).toHaveCount(1);
 
   await saveButtons.click();
-  await expect(page.getByText('Assistant Created')).toBeVisible();
 };
 
 export const deleteConversationsByLabel = async (labels: string[]) => {

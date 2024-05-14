@@ -29,4 +29,5 @@ test('test', async ({ page }) => {
   await page.getByRole('menuitem', { name: 'Delete' }).click();
   await page.getByRole('button', { name: 'Delete' }).click();
 
-  await page.goto('http://localhost:5173/chat/assistants-management');}
+  await page.goto('http://localhost:5173/chat/assistants-management');
+  await page.goto('http://localhost:5173/');}

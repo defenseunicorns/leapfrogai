@@ -3,23 +3,22 @@ import userEvent from '@testing-library/user-event';
 import { afterAll, beforeAll, type MockInstance, vi } from 'vitest';
 import * as navigation from '$app/navigation';
 import { ASSISTANTS_DESCRIPTION_MAX_LENGTH, ASSISTANTS_NAME_MAX_LENGTH } from '$lib/constants';
-import { actions as editActions, load as editLoad } from './edit/[assistantId]/+page.server';
+import { actions as editActions } from './edit/[assistantId]/+page.server';
 import { actions as newActions, load as newLoad } from './new/+page.server';
 import {
+  editAssistantSupabaseInsertErrorMock,
   editAssistantSupabaseMock,
+  selectErrorMock,
   sessionMock,
   sessionNullMock,
-  supabaseInsertErrorMock,
-  supabaseInsertMock,
+  supabaseFromMockWrapper,
   supabaseInsertSingleErrorMock,
-  supabaseInsertSingleMock, supabaseSelectSingleByIdAndUpdateMock,
-  supabaseSelectSingleByIdMock,
-  supabaseUpdateMock,
-  supabaseUpdateSingleMock
+  supabaseInsertSingleMock
 } from '$lib/mocks/supabase-mocks';
 import { getFakeAssistant, getFakeAssistantInput } from '../../../../../testUtils/fakeData';
 import type { PageServerLoad } from './$types';
 import AssistantForm from '$components/AssistantForm.svelte';
+import { faker } from '@faker-js/faker';
 
 describe('Assistant Form', () => {
   let goToSpy: MockInstance;
@@ -166,7 +165,6 @@ describe('Assistant Form', () => {
 
       // Redirect from sveltekit throws
       try {
-
         await editActions.default({
           request,
           locals: {
@@ -180,51 +178,97 @@ describe('Assistant Form', () => {
       }
     });
 
+    it('returns a 404 if there is an error finding an assistant', async () => {
+      const assistant = getFakeAssistant();
+
+      const formData = new FormData();
+      formData.append('id', faker.string.uuid());
+      formData.append('name', assistant.name!);
+      formData.append('description', assistant.description!);
+      formData.append('instructions', assistant.instructions!);
+      formData.append('data_sources', '');
+      formData.append('pictogram', 'User');
+
+      const request = new Request(
+        `http://localhost:5173/chat/assistants-management/edit/${assistant.id}`,
+        {
+          method: 'POST',
+          body: formData
+        }
+      );
+
+      const res = await editActions.default({
+        request,
+        locals: {
+          supabase: supabaseFromMockWrapper(selectErrorMock()),
+          getSession: sessionMock
+        }
+      });
+
+      expect(res.status).toEqual(404);
+    });
+
     it('returns a 401 if the request is unauthenticated', async () => {
-      const request = new Request('http://localhost:5173/chat/assistants-management/new', {
+      const request = new Request(`http://localhost:5173/chat/assistants-management/edit/123`, {
         method: 'POST'
       });
-      const res = await newActions.default({
+      const res = await editActions.default({
         request,
         locals: { supabase: {}, getSession: sessionNullMock }
       });
 
       expect(res.status).toEqual(401);
     });
-  });
-  it('returns a 400 if the form data is invalid', async () => {
-    const formData = new FormData();
-    formData.append('name', 'My Assistant');
+    it('returns a 400 if the form data is invalid', async () => {
+      const assistant = getFakeAssistant();
 
-    const request = new Request('http://localhost:5173/chat/assistants-management/new', {
-      method: 'POST',
-      body: formData
-    });
-    const res = await newActions.default({
-      request,
-      locals: { supabase: {}, getSession: sessionMock }
-    });
+      const formData = new FormData();
+      formData.append('id', assistant.id!);
+      formData.append('name', assistant.name!);
 
-    expect(res.status).toEqual(400);
-  });
+      const request = new Request(
+        `http://localhost:5173/chat/assistants-management/edit/${assistant.id}`,
+        {
+          method: 'POST',
+          body: formData
+        }
+      );
 
-  it('returns a 500 when there is a supabase error saving the assistant', async () => {
-    const formData = new FormData();
-    formData.append('name', 'My Assistant');
-    formData.append('description', 'This is an assistant');
-    formData.append('instructions', 'Be a helpful assistant');
-    formData.append('data_sources', '');
-    formData.append('pictogram', 'User');
+      const res = await editActions.default({
+        request,
+        locals: { supabase: {}, getSession: sessionMock }
+      });
 
-    const request = new Request('http://localhost:5173/chat/assistants-management/new', {
-      method: 'POST',
-      body: formData
-    });
-    const res = await newActions.default({
-      request,
-      locals: { supabase: supabaseInsertSingleErrorMock(), getSession: sessionMock }
+      expect(res.status).toEqual(400);
     });
 
-    expect(res.status).toEqual(500);
+    it('returns a 500 when there is a supabase error saving the assistant', async () => {
+      const assistant = getFakeAssistant();
+
+      const formData = new FormData();
+      formData.append('id', assistant.id!);
+      formData.append('name', 'My Assistant');
+      formData.append('description', 'This is an assistant');
+      formData.append('instructions', 'Be a helpful assistant');
+      formData.append('data_sources', '');
+      formData.append('pictogram', 'User');
+
+      const request = new Request(
+        `http://localhost:5173/chat/assistants-management/edit/${assistant.id}`,
+        {
+          method: 'POST',
+          body: formData
+        }
+      );
+      const res = await editActions.default({
+        request,
+        locals: {
+          supabase: editAssistantSupabaseInsertErrorMock(assistant),
+          getSession: sessionMock
+        }
+      });
+
+      expect(res.status).toEqual(500);
+    });
   });
 });

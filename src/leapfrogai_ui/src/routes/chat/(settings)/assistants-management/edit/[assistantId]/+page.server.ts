@@ -16,6 +16,7 @@ export const load: PageServerLoad = async ({ params, locals: { getSession, supab
     .from('assistants')
     .select()
     .eq('id', params.assistantId)
+    .returns<Assistant>()
     .single();
 
   if (assistantError) {
@@ -53,14 +54,14 @@ export const actions = {
       return fail(400, { form });
     }
 
-    const { data: originalAssistant, error: getAssistantError } = await supabase
+    const { error: getAssistantError } = await supabase
       .from('assistants')
       .select()
       .eq('id', form.data.id)
       .returns<Assistant>()
       .single();
 
-    if (!originalAssistant) return fail(404, { message: 'Assistant not found.' });
+    if (getAssistantError) return fail(404, { message: 'Assistant not found.' });
 
     // Update avatar
     if (form.data.avatar) {
@@ -105,7 +106,7 @@ export const actions = {
       .from('assistants')
       .update(assistant)
       .eq('id', form.data.id)
-      .returns<Assistant[]>()
+      .returns<Assistant>()
       .single();
 
     if (responseError) {
