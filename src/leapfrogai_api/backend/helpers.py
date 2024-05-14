@@ -32,7 +32,7 @@ async def recv_completion(
                         finish_reason=c.choices[0].finish_reason,
                     )
                 ],
-                usage=Usage(prompt_tokens=0, completion_tokens=0, total_tokens=0),
+                usage=c.usage,
             ).model_dump_json()
         )
         yield "\n\n"
@@ -63,7 +63,7 @@ async def recv_chat(
                         finish_reason=c.choices[0].finish_reason,
                     )
                 ],
-                usage=Usage(prompt_tokens=0, completion_tokens=0, total_tokens=0),
+                usage=c.usage,
             ).model_dump_json()
         )
         yield "\n\n"
