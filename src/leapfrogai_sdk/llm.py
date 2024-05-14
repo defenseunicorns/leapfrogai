@@ -50,6 +50,9 @@ def LLM(_cls):
             super().__init__(*args, **kwargs)
             self.config = BackendConfig()
 
+            if self.config.CONFIG_SOURCES.file is None:
+                raise FileNotFoundError("config.yaml must exist so that the backend can start")
+
         def _build_gen_stream(
             self, prompt: str, request: ChatCompletionRequest | CompletionRequest
         ) -> Generator[str, Any, Any]:

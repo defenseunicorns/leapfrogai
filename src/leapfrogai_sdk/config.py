@@ -42,7 +42,7 @@ class BackendConfig(BaseConfig):
     defaults: LLMDefaults = LLMDefaults()
 
     CONFIG_SOURCES = FileSource(
-        file=os.getenv("LEAPFROGAI_CONFIG_FILE", "config.yaml"), optional=False
+        file=os.getenv("LEAPFROGAI_CONFIG_FILE", "config.yaml"), optional=True
     )
 
     def apply_chat_template(
