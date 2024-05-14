@@ -113,6 +113,7 @@ def LLM(_cls):
                     response_str += last_response.choices[0].chat_item.content
                     print(response_str)
                     print(last_response)
+                    print(last_response.choices[0].chat_item.content)
                     yield last_response
 
                 item = ChatItem(role=ChatRole.ASSISTANT, content=text_chunk)
