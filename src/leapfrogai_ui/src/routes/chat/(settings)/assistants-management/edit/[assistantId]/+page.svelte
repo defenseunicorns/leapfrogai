@@ -45,6 +45,7 @@
       }
     }
   });
+
   let cancelModalOpen = false;
   let files: File[] = [];
   let selectedPictogramName = data.assistant.metadata.pictogram || 'default';

@@ -16,7 +16,7 @@
   export let selectedPictogramName: string;
 
   let tempFiles: File[] = [];
-  let tempPictogram = '';
+  let tempPictogram = selectedPictogramName || 'default';
   let modalOpen = false;
   let selectedRadioButton: 'upload' | 'pictogram' = 'pictogram';
   let shouldValidate = false;
@@ -26,6 +26,7 @@
   $: fileNotUploaded = !tempFiles[0]; // if on upload tab, you must upload a file to enable save
   $: fileTooBig = tempFiles[0]?.size > MAX_AVATAR_SIZE;
   $: hideUploader = avatarUrl ? true : tempFiles.length > 0;
+
 
   const handleRemove = () => {
     tempFiles = [];
@@ -77,6 +78,8 @@
   $: tempImagePreviewUrl = tempFiles?.length > 0 ? URL.createObjectURL(tempFiles[0]) : '';
   $: savedImagePreviewUrl =
     files?.length > 0 ? URL.createObjectURL(files[0]) : avatarUrl ? avatarUrl : '';
+
+  $: console.log(tempPictogram)
 </script>
 
 <div class="container">

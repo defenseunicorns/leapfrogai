@@ -126,275 +126,289 @@
   });
 </script>
 
-<SideNav
-  bind:isOpen={$uiStore.isSideNavOpen}
-  aria-label="side navigation"
-  style="background-color: g90;"
->
-  <div style="height: 100%">
-    <SideNavItems>
-      <div class="side-nav-items-container">
-        <div style="height: 100%">
-          <div class="side-nav-items-container">
-            <div class="new-chat-container">
-              <Button
-                kind="secondary"
-                size="small"
-                icon={AddComment}
-                class="new-chat-btn"
-                id="new-chat-btn"
-                aria-label="new conversation"
-                on:click={() => handleActiveConversationChange('')}>New Chat</Button
+<div class="sidenav-container">
+  <SideNav
+    bind:isOpen={$uiStore.isSideNavOpen}
+    aria-label="side navigation"
+    style="background-color: g90;"
+  >
+    <div style="height: 100%">
+      <SideNavItems>
+        <div class="side-nav-items-container">
+          <div style="height: 100%">
+            <div class="side-nav-items-container">
+              <div class="new-chat-container">
+                <Button
+                  kind="secondary"
+                  size="small"
+                  icon={AddComment}
+                  class="new-chat-btn"
+                  id="new-chat-btn"
+                  aria-label="new conversation"
+                  on:click={() => handleActiveConversationChange('')}>New Chat</Button
+                >
+                <TextInput
+                  light
+                  size="sm"
+                  placeholder="Search..."
+                  bind:value={searchText}
+                  maxlength={25}
+                />
+                <SideNavDivider />
+              </div>
+
+              <div
+                class:noScroll={disableScroll || editMode}
+                bind:this={scrollBoxRef}
+                class="conversations"
+                data-testid="conversations"
               >
-              <TextInput
-                light
-                size="sm"
-                placeholder="Search..."
-                bind:value={searchText}
-                maxlength={25}
-              />
-              <SideNavDivider />
-            </div>
-
-            <div
-              class:noScroll={disableScroll || editMode}
-              bind:this={scrollBoxRef}
-              class="conversations"
-              data-testid="conversations"
-            >
-              {#each organizedConversations as category}
-                {#if category.conversations.length > 0}
-                  <SideNavMenu text={category.label} expanded data-testid="side-nav-menu">
-                    {#each category.conversations as conversation (conversation.id)}
-                      <SideNavMenuItem
-                        data-testid="side-nav-menu-item-{conversation.label}"
-                        id="side-nav-menu-item-{conversation.id}"
-                        isSelected={activeConversation?.id === conversation.id}
-                        on:click={() => handleActiveConversationChange(conversation.id)}
-                      >
-                        <div class="menu-content">
-                          {#if editMode && activeConversation?.id === conversation.id}
-                            <TextInput
-                              bind:value={editLabelText}
-                              size="sm"
-                              class="edit-conversation"
-                              on:keydown={(e) => handleEdit(e)}
-                              on:blur={(e) => {
-                                handleEdit(e);
-                              }}
-                              autofocus
-                              maxlength={MAX_LABEL_SIZE}
-                              readonly={editLabelInputDisabled}
-                              aria-label="edit conversation"
-                            />
-                          {:else}
-                            <div
-                              data-testid="conversation-label-{conversation.id}"
-                              class="menu-text"
-                            >
-                              {conversation.label}
-                            </div>
-                            <div>
-                              <OverflowMenu
-                                id={`overflow-menu-${conversation.id}`}
-                                on:close={() => {
-                                  overflowMenuOpen = false;
-                                  disableScroll = false;
+                {#each organizedConversations as category}
+                  {#if category.conversations.length > 0}
+                    <SideNavMenu text={category.label} expanded data-testid="side-nav-menu">
+                      {#each category.conversations as conversation (conversation.id)}
+                        <SideNavMenuItem
+                          data-testid="side-nav-menu-item-{conversation.label}"
+                          id="side-nav-menu-item-{conversation.id}"
+                          isSelected={activeConversation?.id === conversation.id}
+                          on:click={() => handleActiveConversationChange(conversation.id)}
+                        >
+                          <div class="menu-content">
+                            {#if editMode && activeConversation?.id === conversation.id}
+                              <TextInput
+                                bind:value={editLabelText}
+                                size="sm"
+                                class="edit-conversation"
+                                on:keydown={(e) => handleEdit(e)}
+                                on:blur={(e) => {
+                                  handleEdit(e);
                                 }}
-                                on:click={(e) => {
-                                  e.stopPropagation();
-                                  overflowMenuOpen = true;
-                                  handleActiveConversationChange(conversation.id);
-                                  disableScroll = true;
-                                }}
-                                data-testid="overflow-menu-{conversation.label}"
-                                style={overflowMenuOpen &&
-                                activeConversation?.id === conversation.id
-                                  ? `position: fixed; top: 0; left: 0; transform: translate(224px, ${menuOffset - scrollOffset + 48}px)`
-                                  : ''}
+                                autofocus
+                                maxlength={MAX_LABEL_SIZE}
+                                readonly={editLabelInputDisabled}
+                                aria-label="edit conversation"
+                              />
+                            {:else}
+                              <div
+                                data-testid="conversation-label-{conversation.id}"
+                                class="menu-text"
                               >
-                                <OverflowMenuItem
-                                  text="Edit"
-                                  on:click={() => {
-                                    editConversationId = conversation.id;
-                                    editLabelText = conversation.label;
+                                {conversation.label}
+                              </div>
+                              <div>
+                                <OverflowMenu
+                                  id={`overflow-menu-${conversation.id}`}
+                                  on:close={() => {
+                                    overflowMenuOpen = false;
+                                    disableScroll = false;
                                   }}
-                                />
+                                  on:click={(e) => {
+                                    e.stopPropagation();
+                                    overflowMenuOpen = true;
+                                    handleActiveConversationChange(conversation.id);
+                                    disableScroll = true;
+                                  }}
+                                  data-testid="overflow-menu-{conversation.label}"
+                                  style={overflowMenuOpen &&
+                                  activeConversation?.id === conversation.id
+                                    ? `position: fixed; top: 0; left: 0; transform: translate(224px, ${menuOffset - scrollOffset + 48}px)`
+                                    : ''}
+                                >
+                                  <OverflowMenuItem
+                                    text="Edit"
+                                    on:click={() => {
+                                      editConversationId = conversation.id;
+                                      editLabelText = conversation.label;
+                                    }}
+                                  />
 
-                                <OverflowMenuItem
-                                  data-testid="overflow-menu-delete-{conversation.label}"
-                                  text="Delete"
-                                  on:click={() => {
-                                    deleteModalOpen = true;
-                                  }}
-                                />
-                              </OverflowMenu>
-                            </div>
-                          {/if}
-                        </div>
-                      </SideNavMenuItem>
-                    {/each}
-                  </SideNavMenu>
-                {/if}
-              {/each}
-            </div>
-            <div>
-              <SideNavDivider />
-              <ImportExport />
+                                  <OverflowMenuItem
+                                    data-testid="overflow-menu-delete-{conversation.label}"
+                                    text="Delete"
+                                    on:click={() => {
+                                      deleteModalOpen = true;
+                                    }}
+                                  />
+                                </OverflowMenu>
+                              </div>
+                            {/if}
+                          </div>
+                        </SideNavMenuItem>
+                      {/each}
+                    </SideNavMenu>
+                  {/if}
+                {/each}
+              </div>
+              <div>
+                <SideNavDivider />
+                <ImportExport />
+              </div>
             </div>
           </div>
-        </div>
-      </div></SideNavItems
-    >
+        </div></SideNavItems
+      >
 
-    <Modal
-      danger
-      bind:open={deleteModalOpen}
-      modalHeading="Delete Chat"
-      primaryButtonText="Delete"
-      secondaryButtonText="Cancel"
-      on:click:button--secondary={() => (deleteModalOpen = false)}
-      on:open
-      on:close
-      on:submit={handleDelete}
-      >Are you sure you want to delete your <strong
-        >{activeConversation?.label.substring(0, MAX_LABEL_SIZE)}</strong
-      > chat?</Modal
-    >
-  </div></SideNav
->
+      <Modal
+        danger
+        bind:open={deleteModalOpen}
+        modalHeading="Delete Chat"
+        primaryButtonText="Delete"
+        secondaryButtonText="Cancel"
+        on:click:button--secondary={() => (deleteModalOpen = false)}
+        on:open
+        on:close
+        on:submit={handleDelete}
+        >Are you sure you want to delete your <strong
+          >{activeConversation?.label.substring(0, MAX_LABEL_SIZE)}</strong
+        > chat?</Modal
+      >
+    </div></SideNav
+  >
+</div>
 
 <!-- NOTE - Carbon Components Svelte does not yet support theming of the UI Shell components so several
 properties had to be manually overridden.
 https://github.com/carbon-design-system/carbon-components-svelte/issues/892
 -->
 <style lang="scss">
-  :global(.bx--side-nav__item) {
-    list-style-type: none;
-  }
-
-  .noScroll {
-    overflow-y: hidden !important;
-  }
-  .side-nav-items-container {
-    height: 100%;
-    display: flex;
-    flex-direction: column;
-    justify-content: space-between;
-    padding: 0 0 layout.$spacing-05 0;
-    :global(.bx--side-nav__divider) {
-      margin: layout.$spacing-03 0 0 0;
-      background-color: themes.$border-subtle-01;
-    }
-  }
-
-  .new-chat-container {
-    display: flex;
-    flex-direction: column;
-    gap: layout.$spacing-03;
-    padding: layout.$spacing-05;
-    :global(button.new-chat-btn) {
-      width: 100%;
-    }
-  }
-
-  .menu-content {
-    width: 100% !important;
-    position: relative;
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    width: 208px;
-    .menu-text {
-      width: 192px;
-      overflow: hidden;
-      text-overflow: ellipsis;
-      color: themes.$text-secondary;
-    }
-
-    :global(.bx--overflow-menu) {
-      width: 16px;
-      height: 32px;
-      z-index: 1;
-    }
-  }
-
-  // The following overflow: visible !important overrides allow the OverflowMenu component
-  // to display correctly. There may be a better way to do this, but just realize you have
-  // to override things at several levels to get results.
-  // The !important is necessary for the changes to work in production builds.
-  .conversations {
-    flex-grow: 1;
-    scrollbar-width: none;
-    overflow-y: auto;
-  }
-
-  :global(.bx--overflow-menu-options) {
-    left: 20px !important;
-  }
-
-  :global(.bx--side-nav__navigation) {
-    overflow: visible !important;
+  .sidenav-container {
     :global(.bx--side-nav__item) {
+      list-style-type: none;
+    }
+
+    .noScroll {
+      overflow-y: hidden !important;
+    }
+
+    .side-nav-items-container {
+      height: 100%;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      padding: 0 0 layout.$spacing-05 0;
+
+      :global(.bx--side-nav__divider) {
+        margin: layout.$spacing-03 0 0 0;
+        background-color: themes.$border-subtle-01;
+      }
+    }
+
+    .new-chat-container {
+      display: flex;
+      flex-direction: column;
+      gap: layout.$spacing-03;
+      padding: layout.$spacing-05;
+
+      :global(button.new-chat-btn) {
+        width: 100%;
+      }
+    }
+
+    .menu-content {
+      width: 100% !important;
+      position: relative;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      width: 208px;
+
+      .menu-text {
+        width: 192px;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        color: themes.$text-secondary;
+      }
+
+      :global(.bx--overflow-menu) {
+        width: 16px;
+        height: 32px;
+        z-index: 1;
+      }
+    }
+
+    // The following overflow: visible !important overrides allow the OverflowMenu component
+    // to display correctly. There may be a better way to do this, but just realize you have
+    // to override things at several levels to get results.
+    // The !important is necessary for the changes to work in production builds.
+    .conversations {
+      flex-grow: 1;
+      scrollbar-width: none;
+      overflow-y: auto;
+    }
+
+    :global(.bx--overflow-menu-options) {
+      left: 20px !important;
+    }
+
+    :global(.bx--side-nav__navigation) {
       overflow: visible !important;
+
+      :global(.bx--side-nav__item) {
+        overflow: visible !important;
+      }
     }
-  }
 
-  :global(.bx--side-nav__link) {
-    &:hover {
-      background-color: #4d4d4d !important;
-    }
-  }
-
-  :global(.bx--side-nav__link[aria-current='page']) {
-    background-color: #4d4d4d !important;
-  }
-
-  :global(.bx--side-nav__link-text) {
-    position: relative;
-    display: flex;
-    flex-grow: 1;
-    justify-content: space-between;
-    text-align: left;
-    overflow: visible !important;
-    color: themes.$text-secondary !important;
-  }
-
-  :global(.bx--side-nav__navigation) {
-    background-color: themes.$layer-01 !important;
-    list-style: none;
-    height: calc(100vh - var(--header-height)) !important;
-    color: themes.$text-secondary !important;
-  }
-
-  :global(.bx--side-nav__items) {
-    text-align: center;
-    overflow: visible !important;
-    height: 100%;
-  }
-
-  :global(.bx--side-nav__submenu) {
-    color: themes.$text-secondary !important;
-    :global(svg) {
-      stroke: themes.$text-secondary;
-    }
-    &:hover {
-      background-color: #4d4d4d !important;
-    }
-  }
-
-  .label-edit-mode {
     :global(.bx--side-nav__link) {
-      padding: 0 layout.$spacing-05 0 layout.$spacing-07;
+      &:hover {
+        background-color: #4d4d4d !important;
+      }
     }
+
     :global(.bx--side-nav__link[aria-current='page']) {
+      background-color: #4d4d4d !important;
+    }
+
+    :global(.bx--side-nav__link-text) {
+      position: relative;
+      display: flex;
+      flex-grow: 1;
+      justify-content: space-between;
+      text-align: left;
+      overflow: visible !important;
+      color: themes.$text-secondary !important;
+    }
+
+    :global(.bx--side-nav__navigation) {
       background-color: themes.$layer-01 !important;
+      list-style: none;
+      height: calc(100vh - var(--header-height)) !important;
+      color: themes.$text-secondary !important;
     }
-    :global(input) {
-      height: 1.5rem;
+
+    :global(.bx--side-nav__items) {
+      text-align: center;
+      overflow: visible !important;
+      height: 100%;
     }
-    :global(.bx--text-input) {
-      border-bottom: none;
+
+    :global(.bx--side-nav__submenu) {
+      color: themes.$text-secondary !important;
+
+      :global(svg) {
+        stroke: themes.$text-secondary;
+      }
+
+      &:hover {
+        background-color: #4d4d4d !important;
+      }
+    }
+
+    .label-edit-mode {
+      :global(.bx--side-nav__link) {
+        padding: 0 layout.$spacing-05 0 layout.$spacing-07;
+      }
+
+      :global(.bx--side-nav__link[aria-current='page']) {
+        background-color: themes.$layer-01 !important;
+      }
+
+      :global(input) {
+        height: 1.5rem;
+      }
+
+      :global(.bx--text-input) {
+        border-bottom: none;
+      }
     }
   }
 </style>

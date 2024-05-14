@@ -1,14 +1,55 @@
 <script lang="ts">
+  import { goto, invalidateAll } from '$app/navigation';
   import { env } from '$env/dynamic/public';
   import { fade } from 'svelte/transition';
   import DynamicPictogram from '$components/DynamicPictogram.svelte';
-  import { ClickableTile } from 'carbon-components-svelte';
+  import { ClickableTile, Modal, OverflowMenu, OverflowMenuItem } from 'carbon-components-svelte';
+  import { toastStore } from '$stores';
 
   export let assistant: Assistant;
+
+  let deleteModalOpen = false;
+
+  const handleDelete = async () => {
+    const res = await fetch('/api/assistants/delete', {
+      method: 'DELETE',
+      body: JSON.stringify({ id: assistant.id }),
+      headers: {
+        'Content-Type': 'application/json'
+      }
+    });
+
+    deleteModalOpen = false;
+
+    if (res.ok) {
+      await invalidateAll();
+      toastStore.addToast({
+        kind: 'info',
+        title: 'Assistant Deleted',
+        subtitle: `${assistant.name} Assistant deleted.`
+      });
+      return;
+    }
+
+    toastStore.addToast({
+      kind: 'error',
+      title: 'Error',
+      subtitle: 'Error deleting Assistant.'
+    });
+  };
 </script>
 
 <div class="assistant-tile" transition:fade={{ duration: 70 }}>
   <ClickableTile>
+    <div class="overflow-menu-container">
+      <OverflowMenu flipped size="sm">
+        <OverflowMenuItem
+          text="Edit"
+          on:click={() => goto(`/chat/assistants-management/edit/${assistant.id}`)}
+        />
+        <OverflowMenuItem text="Delete" on:click={() => (deleteModalOpen = true)} />
+      </OverflowMenu>
+    </div>
     {#if assistant.metadata.avatar}
       <div class="mini-avatar-container" data-testid="mini-avatar-container">
         <div
@@ -27,6 +68,21 @@
         : assistant.description}
     </div>
   </ClickableTile>
+  <Modal
+    danger
+    bind:open={deleteModalOpen}
+    modalHeading="Delete Assistant"
+    primaryButtonText="Delete"
+    secondaryButtonText="Cancel"
+    on:click:button--secondary={() => (deleteModalOpen = false)}
+    on:submit={() => handleDelete()}
+  >
+    <p>
+      Are you sure you want to delete your
+      <span style="font-weight: bold">{assistant.name}</span>
+      assistant?
+    </p>
+  </Modal>
 </div>
 
 <style lang="scss">
@@ -41,6 +97,7 @@
   }
 
   .assistant-tile {
+    position: relative;
     :global(.bx--tile) {
       display: flex;
       flex-direction: column;
@@ -52,6 +109,12 @@
       width: 288px;
       height: 172px;
       overflow: hidden;
+    }
+
+    .overflow-menu-container {
+      position: absolute;
+      top: 0.5rem;
+      right: 0.5rem;
     }
   }
 
