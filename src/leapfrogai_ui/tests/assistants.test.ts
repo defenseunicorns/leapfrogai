@@ -193,6 +193,7 @@ test('it DOES NOT confirm you want to navigate away if you click the cancel butt
   page
 }) => {
   await page.goto('/chat/assistants-management/new');
+  await page.getByLabel('name').fill('my assistant');
 
   await page.getByRole('button', { name: 'Cancel' }).click();
 

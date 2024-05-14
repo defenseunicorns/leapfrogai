@@ -167,8 +167,13 @@
       </div>
 
       <div>
-        <Button kind="secondary" size="small" on:click={() => goto('/chat/assistants-management')}
-          >Cancel</Button
+        <Button
+          kind="secondary"
+          size="small"
+          on:click={() => {
+            bypassCancelWarning = true;
+            goto('/chat/assistants-management');
+          }}>Cancel</Button
         >
         <Button kind="primary" size="small" type="submit" disabled={$submitting}>Save</Button>
       </div>
