@@ -150,25 +150,25 @@ class Model:
         logging.getLogger().setLevel(logging.DEBUG)
 
         # Background thread for managing output iteration
-        _thread = threading.Thread(target=asyncio.run, args=(self.iterate_outputs(),))
-        _thread.start()
-
-        self.backend_config = get_backend_configs()
-        self.model = self.backend_config.model.source
-        self.engine_args = AsyncEngineArgs(
-            engine_use_ray=True,
-            model=self.model,
-            trust_remote_code=False,
-            quantization=AppConfig().backend_options.quantization,
-            max_context_len_to_capture=self.backend_config.max_context_length,
-            max_model_len=self.backend_config.max_context_length,
-            dtype="auto",
-            worker_use_ray=True,
-            gpu_memory_utilization=0.90,
-            tensor_parallel_size=AppConfig().backend_options.tensor_parallel_size,
-        )
-        self.engine = AsyncLLMEngine.from_engine_args(self.engine_args)
-        print(self.engine_args)
+        # _thread = threading.Thread(target=asyncio.run, args=(self.iterate_outputs(),))
+        # _thread.start()
+        #
+        # self.backend_config = get_backend_configs()
+        # self.model = self.backend_config.model.source
+        # self.engine_args = AsyncEngineArgs(
+        #     engine_use_ray=True,
+        #     model=self.model,
+        #     trust_remote_code=False,
+        #     quantization=AppConfig().backend_options.quantization,
+        #     max_context_len_to_capture=self.backend_config.max_context_length,
+        #     max_model_len=self.backend_config.max_context_length,
+        #     dtype="auto",
+        #     worker_use_ray=True,
+        #     gpu_memory_utilization=0.90,
+        #     tensor_parallel_size=AppConfig().backend_options.tensor_parallel_size,
+        # )
+        # self.engine = AsyncLLMEngine.from_engine_args(self.engine_args)
+        # print(self.engine_args)
 
     async def iterate_outputs(self):
         """Continuously processes outputs from the random iterator and manages state by request IDs."""
