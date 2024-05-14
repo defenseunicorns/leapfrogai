@@ -7,6 +7,7 @@ image:
 api:
   replicas: 1
   port: 8080
+  exposeOpenAPISchema: false
 
 package:
   host: leapfrogai-api
