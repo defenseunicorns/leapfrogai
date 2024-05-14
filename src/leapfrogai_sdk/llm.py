@@ -114,15 +114,15 @@ def LLM(_cls):
             for text_chunk in gen_stream:
                 content += text_chunk
 
-            completion_token_count = await self.count_tokens(content)
+            completion_token_count: int = await self.count_tokens(content)
 
             if completion_token_count < request.max_new_tokens:
                 finish_reason = "stop"
             else:
                 finish_reason = "length"
 
-            prompt_token_count = await self.count_tokens(prompt)
-            total_token_count = prompt_token_count + completion_token_count
+            prompt_token_count: int = await self.count_tokens(prompt)
+            total_token_count: int = prompt_token_count + completion_token_count
 
             response = create_chat_completion_response(
                 content,
@@ -156,15 +156,15 @@ def LLM(_cls):
             if last_delta:
                 response_str += last_delta
 
-                completion_token_count = await self.count_tokens(response_str)
+                completion_token_count: int = await self.count_tokens(response_str)
 
                 if completion_token_count < request.max_new_tokens:
                     finish_reason = "stop"
                 else:
                     finish_reason = "length"
 
-                prompt_token_count = await self.count_tokens(prompt)
-                total_token_count = prompt_token_count + completion_token_count
+                prompt_token_count: int = await self.count_tokens(prompt)
+                total_token_count: int = prompt_token_count + completion_token_count
 
                 last_response = create_chat_completion_response(
                     last_delta,
@@ -183,15 +183,15 @@ def LLM(_cls):
             for text_chunk in gen_stream:
                 content += text_chunk
 
-            completion_token_count = await self.count_tokens(content)
+            completion_token_count: int = await self.count_tokens(content)
 
             if completion_token_count < request.max_new_tokens:
                 finish_reason = "stop"
             else:
                 finish_reason = "length"
 
-            prompt_token_count = await self.count_tokens(request.prompt)
-            total_token_count = prompt_token_count + completion_token_count
+            prompt_token_count: int = await self.count_tokens(request.prompt)
+            total_token_count: int = prompt_token_count + completion_token_count
 
             return create_completion_response(
                 content,
@@ -218,15 +218,15 @@ def LLM(_cls):
             if last_delta:
                 response_str += last_delta
 
-                completion_token_count = await self.count_tokens(response_str)
+                completion_token_count: int = await self.count_tokens(response_str)
 
                 if completion_token_count < request.max_new_tokens:
                     finish_reason = "stop"
                 else:
                     finish_reason = "length"
 
-                prompt_token_count = await self.count_tokens(request.prompt)
-                total_token_count = prompt_token_count + completion_token_count
+                prompt_token_count: int = await self.count_tokens(request.prompt)
+                total_token_count: int = prompt_token_count + completion_token_count
 
                 last_response = create_completion_response(
                     last_delta,

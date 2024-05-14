@@ -279,7 +279,7 @@ class Model:
 
         logging.info(f"Finished request {request_id}")
 
-    async def count_tokens(self, raw_text: str):
+    async def count_tokens(self, raw_text: str) -> int:
         tokens: list[int] | list[str] = (await self.engine.get_tokenizer()).tokenize(
             raw_text
         )
