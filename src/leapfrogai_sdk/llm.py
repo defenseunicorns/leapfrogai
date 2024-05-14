@@ -45,6 +45,16 @@ def LLM(_cls):
     if not hasattr(_cls, "count_tokens"):
         raise ValueError("LLM class requires a count_tokens method")
 
+    def create_chat_completion_response(text: str, finish_reason: str = None) -> ChatCompletionResponse:
+        item: ChatItem = ChatItem(role=ChatRole.ASSISTANT, content=text)
+        choice: ChatCompletionChoice = ChatCompletionChoice(index=0, chat_item=item)
+        response: ChatCompletionResponse = ChatCompletionResponse(choices=[choice])
+
+        if finish_reason:
+            response.choices[0].finish_reason = finish_reason
+
+        return response
+
     class NewClass(_cls):
         config: BackendConfig
 
@@ -86,17 +96,16 @@ def LLM(_cls):
             for text_chunk in gen_stream:
                 content += text_chunk
 
-            item = ChatItem(role=ChatRole.ASSISTANT, content=content)
-            choice = ChatCompletionChoice(index=0, chat_item=item)
-
-            token_count = await self.count_tokens(choice.chat_item.content)
+            token_count = await self.count_tokens(content)
 
             if token_count < request.max_new_tokens:
-                choice.finish_reason = "stop"
+                finish_reason = "stop"
             else:
-                choice.finish_reason = "length"
+                finish_reason = "length"
 
-            return ChatCompletionResponse(choices=[choice])
+            response = create_chat_completion_response(content, finish_reason)
+
+            return response
 
         async def ChatCompleteStream(
             self, request: ChatCompletionRequest, context: GrpcContext
@@ -110,29 +119,24 @@ def LLM(_cls):
 
             for text_chunk in gen_stream:
                 if last_delta:
-                    item = ChatItem(role=ChatRole.ASSISTANT, content=last_delta)
-                    choice = ChatCompletionChoice(index=0, chat_item=item)
+                    last_response = create_chat_completion_response(last_delta, "")
+                    response_str += last_delta
 
-                    last_response = ChatCompletionResponse(choices=[choice])
-
-                    last_response.choices[0].finish_reason = ""
-                    print(last_response)
-                    print(last_response.choices[0].chat_item.content)
-                    response_str += last_response.choices[0].chat_item.content
-                    print(response_str)
                     yield last_response
 
                 last_delta = text_chunk
 
-            if last_response:
-                response_str += last_response.choices[0].chat_item.content
+            if last_delta:
+                response_str += last_delta
 
                 token_count = await self.count_tokens(response_str)
 
                 if token_count < request.max_new_tokens:
-                    last_response.choices[0].finish_reason = "stop"
+                    finish_reason = "stop"
                 else:
-                    last_response.choices[0].finish_reason = "length"
+                    finish_reason = "length"
+
+                last_response = create_chat_completion_response(last_delta, finish_reason)
 
                 yield last_response
 
