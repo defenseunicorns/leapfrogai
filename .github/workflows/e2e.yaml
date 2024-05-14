@@ -5,6 +5,7 @@ on:
       - ready_for_review
       - review_requested
       - synchronize
+      - milestoned
     paths:
       # Catch-all
       - "**"
