@@ -275,7 +275,6 @@ class Model:
             result = ""
             if not self.is_queue_empty(request_id):
                 result = self.delta_queue_by_id.get(request_id).get()
-                print(f"Generating the result {result}")
             yield result
 
         logging.info(f"Finished request {request_id}")
