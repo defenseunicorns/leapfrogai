@@ -21,3 +21,34 @@
   cursor: pointer;
   outline: inherit;
 }
+
+.assistant-form {
+  .container {
+    display: flex;
+    justify-content: center;
+  }
+  .inner-container {
+    display: flex;
+    flex-direction: column;
+    gap: 1.5rem;
+    width: 50%;
+    padding-top: 0.5rem;
+    padding-bottom: 0.5rem;
+  }
+  .top-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+  }
+
+  .title {
+    @include type.type-style('heading-05');
+  }
+
+  .cancel-modal {
+    :global(.bx--modal-container) {
+      position: absolute;
+      top: 25%;
+    }
+  }
+}

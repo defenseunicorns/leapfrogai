@@ -7,6 +7,7 @@ import {
 } from '$lib/constants';
 
 export const supabaseAssistantInputSchema: ObjectSchema<NewAssistantInput> = object({
+  id: string().uuid(),
   name: string()
     .max(ASSISTANTS_NAME_MAX_LENGTH)
     .required('This field is required. Please enter a name.'),

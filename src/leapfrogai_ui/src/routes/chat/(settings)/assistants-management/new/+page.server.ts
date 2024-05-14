@@ -1,10 +1,8 @@
 import { superValidate } from 'sveltekit-superforms';
 import { fail, redirect } from '@sveltejs/kit';
-import { v4 as uuidv4 } from 'uuid';
 import { yup } from 'sveltekit-superforms/adapters';
 import { assistantDefaults, DEFAULT_ASSISTANT_TEMP } from '$lib/constants';
 import { env } from '$env/dynamic/private';
-import { assistantsStore } from '$stores';
 import type { PageServerLoad } from './$types';
 import { supabaseAssistantInputSchema } from '../../../../../schemas/assistants';
 
@@ -40,9 +38,38 @@ export const actions = {
       return fail(400, { form });
     }
 
+    // Create assistant object
+    const assistant: Partial<Assistant> = {
+      name: form.data.name,
+      description: form.data.description,
+      instructions: form.data.instructions,
+      temperature: form.data.temperature,
+      model: env.DEFAULT_MODEL,
+      metadata: {
+        ...assistantDefaults.metadata,
+        data_sources: form.data.data_sources || '',
+        pictogram: form.data.pictogram,
+        created_by: session.user.id
+        // avatar is added in later with an update call
+      }
+    };
+
+    // Create assistant
+    const { error: responseError, data: createdAssistant } = await supabase
+      .from('assistants')
+      .insert(assistant)
+      .select()
+      .returns<Assistant[]>()
+      .single();
+
+    if (responseError) {
+      console.error('Error saving assistant:', responseError);
+      return fail(500, { message: 'Error saving assistant.' });
+    }
+
     if (form.data.avatar) {
       // save avatar
-      const filePath = `${session.user.id}/assistant_avatars/${uuidv4()}/${form.data.avatar.name}`;
+      const filePath = createdAssistant.id;
 
       const { data: supabaseData, error } = await supabase.storage
         .from('assistant_avatars')
@@ -56,35 +83,15 @@ export const actions = {
       savedAvatarFilePath = supabaseData.path;
     }
 
-    // Create assistant object
-    const assistant: Partial<Assistant> = {
-      name: form.data.name,
-      description: form.data.description,
-      instructions: form.data.instructions,
-      temperature: form.data.temperature,
-      model: env.DEFAULT_MODEL,
-      metadata: {
-        ...assistantDefaults.metadata,
-        data_sources: form.data.data_sources || '',
-        avatar: savedAvatarFilePath,
-        pictogram: form.data.pictogram,
-        created_by: session.user.id
-      }
-    };
+    if (form.data.avatar) {
+      const { error: updateAssistantError } = await supabase
+        .from('assistants')
+        .update({ metadata: { ...createdAssistant.metadata, avatar: savedAvatarFilePath } })
+        .eq('id', createdAssistant.id);
 
-    // Save assistant
-    const { error: responseError, data: createdAssistant } = await supabase
-      .from('assistants')
-      .insert(assistant)
-      .select()
-      .returns<Assistant[]>();
-
-    if (responseError) {
-      console.error('Error saving assistant:', responseError);
-      return fail(500, { message: 'Error saving assistant.' });
+      if (updateAssistantError) return fail(500, { message: 'Error adding avatar to assistant.' });
     }
 
-    assistantsStore.addAssistant(createdAssistant[0]);
 
     return redirect(303, '/chat/assistants-management');
   }

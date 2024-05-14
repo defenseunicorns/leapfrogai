@@ -1,29 +1,31 @@
 <script lang="ts">
-  import { superForm } from 'sveltekit-superforms';
-  import { Add } from 'carbon-icons-svelte';
-  import { Button, Modal, Slider, TextArea, TextInput } from 'carbon-components-svelte';
-  import { yup } from 'sveltekit-superforms/adapters';
-  import { goto } from '$app/navigation';
-  import InputTooltip from '$components/InputTooltip.svelte';
-  import { ASSISTANTS_INSTRUCTIONS_MAX_LENGTH } from '$lib/constants';
+  import { onMount } from 'svelte';
   import {
     ASSISTANTS_DESCRIPTION_MAX_LENGTH,
+    ASSISTANTS_INSTRUCTIONS_MAX_LENGTH,
     ASSISTANTS_NAME_MAX_LENGTH
-  } from '$lib/constants/index.js';
+  } from '$lib/constants';
+  import SuperDebug from 'sveltekit-superforms';
+  import { Add } from 'carbon-icons-svelte';
+  import { goto, invalidate } from '$app/navigation';
+  import { Button, Modal, Slider, TextArea, TextInput } from 'carbon-components-svelte';
   import AssistantAvatar from '$components/AssistantAvatar.svelte';
+  import { superForm } from 'sveltekit-superforms';
+  import { yup } from 'sveltekit-superforms/adapters';
+  import { supabaseAssistantInputSchema } from '../../../../../../schemas/assistants';
   import { toastStore } from '$stores';
-  import { supabaseAssistantInputSchema } from '../../../../../schemas/assistants';
+  import InputTooltip from '$components/InputTooltip.svelte';
+  import { env } from '$env/dynamic/public';
 
   export let data;
 
   const { form, errors, enhance, submitting } = superForm(data.form, {
     validators: yup(supabaseAssistantInputSchema),
-    applyAction: false,
     onResult({ result }) {
       if (result.type === 'redirect') {
         toastStore.addToast({
           kind: 'success',
-          title: 'Assistant Created.',
+          title: 'Assistant Updated.',
           subtitle: ''
         });
         goto(result.location);
@@ -32,32 +34,39 @@
         if (result.status !== 400) {
           toastStore.addToast({
             kind: 'error',
-            title: 'Error Creating Assistant',
+            title: 'Error Editing Assistant',
             subtitle: result.data?.message || 'An unknown error occurred.'
           });
         }
       } else if (result.type === 'error') {
         toastStore.addToast({
           kind: 'error',
-          title: 'Error Creating Assistant',
+          title: 'Error Editing Assistant',
           subtitle: result.error?.message || 'An unknown error occurred.'
         });
       }
     }
   });
-
   let cancelModalOpen = false;
   let files: File[] = [];
-  let selectedPictogramName = 'default';
+  let selectedPictogramName = data.assistant.metadata.pictogram || 'default';
+  let avatarPath = data.assistant.metadata.avatar;
+
+  // Get image url for Avatar if the assistant has an avatar
+  $: avatarUrl = avatarPath
+    ? `${env.PUBLIC_SUPABASE_URL}/storage/v1/object/public/assistant_avatars/${avatarPath}`
+    : '';
 </script>
 
+<SuperDebug data={$form} />
 <form method="POST" enctype="multipart/form-data" use:enhance class="assistant-form">
   <div class="container">
     <div class="inner-container">
       <div class="top-row">
-        <div class="title">New Assistant</div>
-        <AssistantAvatar bind:files bind:selectedPictogramName />
+        <div class="title">Edit Assistant</div>
+        <AssistantAvatar bind:files bind:selectedPictogramName {avatarUrl} />
       </div>
+      <input type="hidden" name="id" value={$form.id} />
       <TextInput
         name="name"
         labelText="Name"
@@ -144,6 +153,7 @@
     </div>
   </div>
 </form>
+
 <div class="cancel-modal">
   <Modal
     bind:open={cancelModalOpen}
