@@ -26,6 +26,7 @@ async def create_vector_store(
 
     try:
         if request.file_ids == []:
+            # TODO: Handle file counts, expires_after, expires_at, and last_active_at
             vector_store_object = VectorStore(
                 id="",  # Leave blank to have Postgres generate a UUID
                 bytes=0,
@@ -43,6 +44,7 @@ async def create_vector_store(
                 expires_at=None,
             )
         else:
+            # TODO: Create a vector store from file ids
             raise HTTPException(
                 status_code=405, detail="Unable to parse vector store request"
             )
@@ -91,6 +93,7 @@ async def modify_vector_store(
     session: Session, vector_store_id: str, request: ModifyVectorStoreRequest
 ) -> VectorStore:
     """Modify a vector store."""
+    # TODO: This needs work
     try:
         vector_store_object = VectorStore(
             id=vector_store_id,  # Leave blank to have Postgres generate a UUID
