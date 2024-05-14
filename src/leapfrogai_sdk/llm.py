@@ -1,6 +1,6 @@
 import copy
 import os
-from typing import Any, Generator, List
+from typing import Any, Generator, List, Optional
 
 from pydantic import BaseModel
 
@@ -49,33 +49,37 @@ def LLM(_cls):
     def create_chat_completion_response(text: str, finish_reason: str = None, prompt_tokens: int = -1, completion_tokens: int = -1) -> ChatCompletionResponse:
         item: ChatItem = ChatItem(role=ChatRole.ASSISTANT, content=text)
         choice: ChatCompletionChoice = ChatCompletionChoice(index=0, chat_item=item)
-        response: ChatCompletionResponse = ChatCompletionResponse(choices=[choice])
 
-        if finish_reason:
-            response.choices[0].finish_reason = finish_reason
-
+        usage: Optional[Usage] = None
         if prompt_tokens != -1 and completion_tokens != -1:
-            response.usage = Usage(
+            usage = Usage(
                 prompt_tokens=prompt_tokens,
                 completion_tokens=completion_tokens,
                 total_tokens=prompt_tokens + completion_tokens
             )
+
+        response: ChatCompletionResponse = ChatCompletionResponse(choices=[choice], usage=usage)
+
+        if finish_reason:
+            response.choices[0].finish_reason = finish_reason
 
         return response
 
     def create_completion_response(text: str, finish_reason: str = None, prompt_tokens: int = -1, completion_tokens: int = -1) -> CompletionResponse:
         choice: CompletionChoice = CompletionChoice(index=0, text=text)
-        response: CompletionResponse = CompletionResponse(choices=[choice])
 
-        if finish_reason:
-            response.choices[0].finish_reason = finish_reason
-
+        usage: Optional[CompletionUsage] = None
         if prompt_tokens != -1 and completion_tokens != -1:
-            response.usage = CompletionUsage(
+            usage = CompletionUsage(
                 prompt_tokens=prompt_tokens,
                 completion_tokens=completion_tokens,
                 total_tokens=prompt_tokens + completion_tokens
             )
+
+        response: CompletionResponse = CompletionResponse(choices=[choice], usage=usage)
+
+        if finish_reason:
+            response.choices[0].finish_reason = finish_reason
 
         return response
 
