@@ -61,6 +61,8 @@ def LLM(_cls):
         response: ChatCompletionResponse = ChatCompletionResponse(choices=[choice], usage=usage)
 
         print(usage)
+        print(prompt_tokens)
+        print(completion_tokens)
 
         if finish_reason:
             response.choices[0].finish_reason = finish_reason
