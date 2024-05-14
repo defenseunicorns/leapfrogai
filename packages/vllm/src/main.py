@@ -145,6 +145,7 @@ class Model:
     done_by_id: Dict[str, bool] = {}
     delta_queue_by_id: Dict[str, queue.Queue] = {}
     result_by_id: Dict[str, RequestOutput] = {}
+    random_iterator: RandomAsyncIterator = RandomAsyncIterator([])
 
     def __init__(self):
         logging.getLogger().setLevel(logging.DEBUG)
@@ -176,12 +177,11 @@ class Model:
         t0_by_id: dict[str, float] = {}
         index_by_id: dict[str, int] = {}
         num_tokens_by_id: dict[str, int] = {}
-        random_iterator: RandomAsyncIterator = RandomAsyncIterator([])
 
         while True:
-            if not random_iterator.is_empty():
+            if not self.random_iterator.is_empty():
                 request_output: RequestOutput
-                async for request_output in random_iterator:
+                async for request_output in self.random_iterator:
                     request_id = request_output.request_id
 
                     if request_output.finished:
