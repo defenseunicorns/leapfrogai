@@ -105,11 +105,16 @@ def LLM(_cls):
                 self.config.apply_chat_template(request.chat_items), request
             )
 
-            last_response: ChatCompletionResponse | None = None
+            last_delta: str | None = None
             response_str: str = ""
 
             for text_chunk in gen_stream:
-                if last_response:
+                if last_delta:
+                    item = ChatItem(role=ChatRole.ASSISTANT, content=last_delta)
+                    choice = ChatCompletionChoice(index=0, chat_item=item)
+
+                    last_response = ChatCompletionResponse(choices=[choice])
+
                     last_response.choices[0].finish_reason = ""
                     print(last_response)
                     print(last_response.choices[0].chat_item.content)
@@ -117,10 +122,7 @@ def LLM(_cls):
                     print(response_str)
                     yield last_response
 
-                item = ChatItem(role=ChatRole.ASSISTANT, content=text_chunk)
-                choice = ChatCompletionChoice(index=0, chat_item=item)
-
-                last_response = copy.deepcopy(ChatCompletionResponse(choices=[choice]))
+                last_delta = text_chunk
 
             if last_response:
                 response_str += last_response.choices[0].chat_item.content
