@@ -46,7 +46,7 @@ def LLM(_cls):
     if not hasattr(_cls, "count_tokens"):
         raise ValueError("LLM class requires a count_tokens method")
 
-    def create_chat_completion_response(text: str, finish_reason: str = None, usage: Usage = None) -> ChatCompletionResponse:
+    def create_chat_completion_response(text: str, finish_reason: str = None, prompt_tokens: int = -1, completion_tokens: int = -1) -> ChatCompletionResponse:
         item: ChatItem = ChatItem(role=ChatRole.ASSISTANT, content=text)
         choice: ChatCompletionChoice = ChatCompletionChoice(index=0, chat_item=item)
         response: ChatCompletionResponse = ChatCompletionResponse(choices=[choice])
@@ -54,20 +54,28 @@ def LLM(_cls):
         if finish_reason:
             response.choices[0].finish_reason = finish_reason
 
-        if usage:
-            response.usage = usage
+        if prompt_tokens != -1 and completion_tokens != -1:
+            response.usage = Usage(
+                prompt_tokens=prompt_tokens,
+                completion_tokens=completion_tokens,
+                total_tokens=prompt_tokens + completion_tokens
+            )
 
         return response
 
-    def create_completion_response(text: str, finish_reason: str = None, usage: CompletionUsage = None) -> CompletionResponse:
+    def create_completion_response(text: str, finish_reason: str = None, prompt_tokens: int = -1, completion_tokens: int = -1) -> CompletionResponse:
         choice: CompletionChoice = CompletionChoice(index=0, text=text)
         response: CompletionResponse = CompletionResponse(choices=[choice])
 
         if finish_reason:
             response.choices[0].finish_reason = finish_reason
 
-        if usage:
-            response.usage = usage
+        if prompt_tokens != -1 and completion_tokens != -1:
+            response.usage = CompletionUsage(
+                prompt_tokens=prompt_tokens,
+                completion_tokens=completion_tokens,
+                total_tokens=prompt_tokens + completion_tokens
+            )
 
         return response
 
@@ -122,12 +130,12 @@ def LLM(_cls):
                 finish_reason = "length"
 
             prompt_token_count: int = await self.count_tokens(prompt)
-            total_token_count: int = prompt_token_count + completion_token_count
 
             response = create_chat_completion_response(
                 content,
                 finish_reason,
-                Usage(prompt_token_count, completion_token_count, total_token_count)
+                prompt_token_count,
+                completion_token_count
             )
 
             return response
@@ -164,12 +172,12 @@ def LLM(_cls):
                     finish_reason = "length"
 
                 prompt_token_count: int = await self.count_tokens(prompt)
-                total_token_count: int = prompt_token_count + completion_token_count
 
                 last_response: ChatCompletionResponse = create_chat_completion_response(
                     last_delta,
                     finish_reason,
-                    Usage(prompt_token_count, completion_token_count, total_token_count)
+                    prompt_token_count,
+                    completion_token_count
                 )
 
                 yield last_response
@@ -191,12 +199,12 @@ def LLM(_cls):
                 finish_reason = "length"
 
             prompt_token_count: int = await self.count_tokens(request.prompt)
-            total_token_count: int = prompt_token_count + completion_token_count
 
             return create_completion_response(
                 content,
                 finish_reason,
-                CompletionUsage(prompt_token_count, completion_token_count, total_token_count)
+                prompt_token_count,
+                completion_token_count
             )
 
         async def CompleteStream(
@@ -226,12 +234,12 @@ def LLM(_cls):
                     finish_reason = "length"
 
                 prompt_token_count: int = await self.count_tokens(request.prompt)
-                total_token_count: int = prompt_token_count + completion_token_count
 
                 last_response = create_completion_response(
                     last_delta,
                     finish_reason,
-                    CompletionUsage(prompt_token_count, completion_token_count, total_token_count)
+                    prompt_token_count,
+                    completion_token_count
                 )
 
                 yield last_response
