@@ -166,7 +166,7 @@ class Model:
             model=self.model,
             trust_remote_code=False,
             quantization=AppConfig().backend_options.quantization,
-            max_context_len_to_capture=self.backend_config.max_context_length,
+            max_seq_len_to_capture=self.backend_config.max_context_length,
             max_model_len=self.backend_config.max_context_length,
             dtype="auto",
             worker_use_ray=True,
