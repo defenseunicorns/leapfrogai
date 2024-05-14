@@ -172,6 +172,7 @@ def LLM(_cls):
                 last_delta = text_chunk
 
             if last_delta:
+                print("Last chance")
                 response_str += last_delta
 
                 completion_token_count: int = await self.count_tokens(response_str)
