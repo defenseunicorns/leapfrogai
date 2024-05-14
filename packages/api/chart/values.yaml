@@ -1,12 +1,13 @@
 image:
   # x-release-please-start-version
-  lfaiAPITag: 0.6.1
+  lfaiAPITag: 0.7.0
   # x-release-please-end
   kiwigridTag: 1.23.3
 
 api:
   replicas: 1
   port: 8080
+  exposeOpenAPISchema: false
 
 package:
   host: leapfrogai-api

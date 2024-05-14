@@ -5,7 +5,7 @@ metadata:
   version: dev
 
 packages:
-  # OpenAI-like API 
+  # OpenAI-like API
   - name: leapfrogai-api
     path: ../../../packages/api
     ref: dev
@@ -30,7 +30,12 @@ packages:
     path: ../../../packages/whisper
     ref: dev
 
+  # Supabase backend for the UI and API to interface with Postgresql
+  - name: supabase
+    path: ../../../packages/supabase/
+    ref: dev
+
   # UI
-  - name: lfaiui
+  - name: leapfrogai-ui
     path: ../../../packages/ui/
     ref: dev

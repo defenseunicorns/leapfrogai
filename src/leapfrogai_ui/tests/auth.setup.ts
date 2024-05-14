@@ -2,8 +2,9 @@ import { test as setup } from './fixtures';
 const authFile = 'playwright/.auth/user.json';
 import * as OTPAuth from 'otpauth';
 
-setup('authenticate', async ({ page, clearAllConversations }) => {
-  await clearAllConversations();
+setup('authenticate', async ({ page, clearDbData }) => {
+  await clearDbData();
+
   await page.goto('http://localhost:4173');
   if (process.env.PUBLIC_DISABLE_KEYCLOAK === 'true') {
     // uses local supabase test users, logs in directly with Supabase, no Keycloak

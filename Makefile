@@ -40,6 +40,10 @@ sdk-wheel: ## build wheels for the leapfrogai_sdk package as a dependency for ot
 	-rm -rf ${PKG_DEST}/${SDK_SRC}
 	cp -r ${SDK_SRC} ${PKG_DEST}/${SDK_SRC}
 
+build-supabase:
+	## Build the Zarf package
+	uds zarf package create packages/supabase -o packages/supabase --set IMAGE_VERSION=${LOCAL_VERSION} --confirm
+
 setup-package: sdk-wheel
 	-mkdir -p ${PKG_DEST}/src
 
@@ -50,8 +54,6 @@ setup-api-deps: PKG_DEST = packages/api
 setup-api-deps: setup-package ## Download the wheels for the leapfrogai_api dependencies
 	-rm -rf ${PKG_DEST}/src/leapfrogai_api
 	cp -r "src/leapfrogai_api" "${PKG_DEST}/src/leapfrogai_api"
-
-	-rm ${PKG_DEST}/build/*.whl
 
 build-api: local-registry setup-api-deps ## Build the leapfrogai_api container and Zarf package
 	## Build the image (and tag it for the local registry)

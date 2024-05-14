@@ -9,7 +9,7 @@ spec:
       - service: {{ .Values.package.name }}
         podLabels:
           app: {{ .Values.package.name }}
-        host: {{ .Values.package.host }}
+        host: {{ .Values.package.subdomain }}
         gateway: tenant
         port: 3000
 

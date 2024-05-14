@@ -8,7 +8,10 @@ import { afterAll, afterEach, beforeAll, vi } from 'vitest';
 import * as environment from '$app/environment';
 import * as navigation from '$app/navigation';
 import * as stores from '$app/stores';
-import { fakeConversations } from './src/testUtils/fakeData';
+import { fakeConversations } from './testUtils/fakeData';
+
+// Fixes error: node.scrollIntoView is not a function
+window.HTMLElement.prototype.scrollIntoView = function () {};
 
 vi.mock('$env/dynamic/public', () => {
   return {
