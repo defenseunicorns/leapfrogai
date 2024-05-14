@@ -146,7 +146,7 @@ def LLM(_cls):
 
             for text_chunk in gen_stream:
                 if last_delta:
-                    last_response = create_chat_completion_response(last_delta, "")
+                    last_response: ChatCompletionResponse = create_chat_completion_response(last_delta, "")
                     response_str += last_delta
 
                     yield last_response
@@ -166,7 +166,7 @@ def LLM(_cls):
                 prompt_token_count: int = await self.count_tokens(prompt)
                 total_token_count: int = prompt_token_count + completion_token_count
 
-                last_response = create_chat_completion_response(
+                last_response: ChatCompletionResponse = create_chat_completion_response(
                     last_delta,
                     finish_reason,
                     Usage(prompt_token_count, completion_token_count, total_token_count)
