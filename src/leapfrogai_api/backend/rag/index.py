@@ -47,6 +47,7 @@ class IndexingService:
         vector_store_file = await self._get_vector_store_file(vector_store_id, file_id)
 
         if vector_store_file:
+            # TODO: Return a VectorStoreFile with the appropriate status
             raise ValueError("File already indexed")
 
         file_object = await self._get_file_object(file_id)

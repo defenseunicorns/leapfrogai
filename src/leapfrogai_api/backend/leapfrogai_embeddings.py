@@ -52,7 +52,7 @@ class LeapfrogAIEmbeddings(Embeddings):
         """
         model = await self._get_model()
 
-        request = lfai.EmbeddingRequest(inputs=text)
+        request = lfai.EmbeddingRequest(inputs=[text])
         response = await create_embeddings(model=model, request=request)
 
         return response.data[0].embedding
