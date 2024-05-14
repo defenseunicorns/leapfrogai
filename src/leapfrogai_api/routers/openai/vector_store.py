@@ -13,6 +13,7 @@ from leapfrogai_api.data.crud_vector_store_object import CRUDVectorStore
 from leapfrogai_api.data.crud_vector_store_file import CRUDVectorStoreFile
 from leapfrogai_api.routers.supabase_session import Session
 from leapfrogai_api.backend.rag.index import IndexingService
+from leapfrogai_api.data.supabase_vector_store import AsyncSupabaseVectorStore
 
 router = APIRouter(prefix="/openai/v1/vector_store", tags=["openai/vector_store"])
 
@@ -188,5 +189,22 @@ async def delete_vector_store_file(
     session: Session, vector_store_id: str, file_id: str
 ) -> VectorStoreFileDeleted:
     """Delete a file in a vector store."""
-    # TODO: Implement this function
-    raise HTTPException(status_code=501, detail="Not implemented")
+
+    vector_store = AsyncSupabaseVectorStore(client=session)
+    vectors_deleted = await vector_store.adelete_file(
+        vector_store_id=vector_store_id, file_id=file_id
+    )
+
+    crud_vector_store_file = CRUDVectorStoreFile(model=VectorStoreFile)
+
+    vector_store_file_deleted = await crud_vector_store_file.delete(
+        db=session, vector_store_id=vector_store_id, file_id=file_id
+    )
+
+    deleted = vectors_deleted and vector_store_file_deleted
+
+    return VectorStoreFileDeleted(
+        id=file_id,
+        object="vector_store.file.deleted",
+        deleted=deleted,
+    )

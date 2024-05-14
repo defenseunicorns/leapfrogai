@@ -20,7 +20,7 @@ class AsyncSupabaseVectorStore:
     def __init__(
         self,
         client: AsyncClient,
-        embedding: Embeddings,
+        embedding: Embeddings | None = None,
         table_name: str = "vector_store",
         chunk_size: int = 500,
         query_name: str = "match_vectors",
@@ -31,6 +31,29 @@ class AsyncSupabaseVectorStore:
         self.table_name = table_name
         self.chunk_size = chunk_size
         self.query_name = query_name
+
+    async def adelete_file(self, vector_store_id: str, file_id: str) -> bool:
+        """Delete a file from the vector store.
+
+        Args:
+            vector_store_id (str): The ID of the vector store.
+            file_id (str): The ID of the file to be deleted.
+
+        Returns:
+            dict: The response from the database after deleting the file.
+
+        """
+        data, _count = (
+            await self.client.from_(self.table_name)
+            .delete()
+            .eq("vector_store_id", vector_store_id)
+            .eq("file_id", file_id)
+            .execute()
+        )
+
+        _, response = data
+
+        return bool(response)
 
     async def aadd_documents(
         self,
@@ -93,6 +116,30 @@ class AsyncSupabaseVectorStore:
 
         response = await query_builder.execute()
 
+        return response
+
+    async def _adelete_vector(
+        self,
+        vector_store_id: str,
+        file_id: str,
+    ) -> dict:
+        """Delete a vector from the vector store.
+
+        Args:
+            vector_store_id (str): The ID of the vector store.
+            file_id (str): The ID of the file associated with the vector.
+
+        Returns:
+            dict: The response from the database after deleting the vector.
+
+        """
+        response = (
+            await self.client.from_(self.table_name)
+            .delete()
+            .eq("vector_store_id", vector_store_id)
+            .eq("file_id", file_id)
+            .execute()
+        )
         return response
 
     async def _aadd_vector(

@@ -62,6 +62,17 @@ class CRUDVectorStoreFile(CRUDBase[VectorStoreFile]):
         """Update a vector store file by its ID."""
         return await super().update(id_=id_, db=db, object_=object_)
 
-    async def delete(self, id_: str, db: AsyncClient) -> bool:
+    async def delete(self, vector_store_id: str, file_id: str, db: AsyncClient) -> bool:
         """Delete a vector store file by its ID."""
-        return await super().delete(id_=id_, db=db)
+
+        data, _count = (
+            await db.table(self.table_name)
+            .delete()
+            .eq("vector_store_id", vector_store_id)
+            .eq("id", file_id)
+            .execute()
+        )
+
+        _, response = data
+
+        return bool(response)
