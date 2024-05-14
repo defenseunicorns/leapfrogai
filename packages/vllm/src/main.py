@@ -105,7 +105,8 @@ def get_backend_configs():
     BackendConfig.CONFIG_SOURCES = env_source
     # Initialize an immutable config from env variables without stop_tokens list
     backend_configs: BackendConfig = BackendConfig()
-    backend_configs.stop_tokens = processed_stop_tokens
+    # Updates "processed_stop_tokens" without triggering Pydantic validation errors
+    backend_configs.model_copy(update={"stop_tokens": processed_stop_tokens})
 
     return backend_configs
 
