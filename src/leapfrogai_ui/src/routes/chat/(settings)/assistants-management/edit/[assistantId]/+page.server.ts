@@ -31,6 +31,7 @@ export const load: PageServerLoad = async ({ params, locals: { getSession, supab
     temperature: assistant.temperature || DEFAULT_ASSISTANT_TEMP,
     data_sources: assistant.metadata.data_sources,
     pictogram: assistant.metadata.pictogram
+    // note - the avatar is a string location of the file, not a file type, it is handled by the component instead
   };
 
   const form = await superValidate(assistantFormData, yup(editAssistantInputSchema));

@@ -64,7 +64,7 @@
       <div class="mini-avatar-container" data-testid="mini-avatar-container">
         <div
           class="mini-avatar-image"
-          style={`background-image: url(${env.PUBLIC_SUPABASE_URL}/storage/v1/object/public/assistant_avatars/${assistant.metadata.avatar}`}
+          style={`background-image: url(${env.PUBLIC_SUPABASE_URL}/storage/v1/object/public/assistant_avatars/${assistant.metadata.avatar}?v=${new Date().getTime()}`}
         />
       </div>
     {:else}
