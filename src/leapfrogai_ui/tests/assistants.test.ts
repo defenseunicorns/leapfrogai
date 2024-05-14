@@ -1,6 +1,6 @@
 import { expect, test } from './fixtures';
 import { createAssistant, deleteAssistantByName, loadChatPage } from './helpers';
-import { getFakeNewAssistantInput } from '../testUtils/fakeData';
+import { getFakeAssistantInput } from '../testUtils/fakeData';
 import type { ActionResult } from '@sveltejs/kit';
 
 test('it navigates to the assistants page', async ({ page }) => {
@@ -21,7 +21,7 @@ test('it has a button that navigates to the new assistant page', async ({ page }
 });
 
 test('it creates an assistant and navigates back to the management page', async ({ page }) => {
-  const assistantInput = getFakeNewAssistantInput();
+  const assistantInput = getFakeAssistantInput();
 
   await createAssistant(page, assistantInput);
 
@@ -35,7 +35,7 @@ test('it creates an assistant and navigates back to the management page', async 
 test('displays an error toast when there is an error creating an assistant and remains on the assistant page', async ({
   page
 }) => {
-  const assistantInput = getFakeNewAssistantInput();
+  const assistantInput = getFakeAssistantInput();
 
   await page.route('*/**/chat/assistants-management/new', async (route) => {
     if (route.request().method() === 'POST') {
@@ -57,8 +57,8 @@ test('displays an error toast when there is an error creating an assistant and r
 });
 
 test('it can search for assistants', async ({ page }) => {
-  const assistantInput1 = getFakeNewAssistantInput();
-  const assistantInput2 = getFakeNewAssistantInput();
+  const assistantInput1 = getFakeAssistantInput();
+  const assistantInput2 = getFakeAssistantInput();
 
   await createAssistant(page, assistantInput1);
   await createAssistant(page, assistantInput2);

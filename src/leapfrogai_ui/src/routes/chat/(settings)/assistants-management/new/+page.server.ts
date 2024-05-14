@@ -92,7 +92,6 @@ export const actions = {
       if (updateAssistantError) return fail(500, { message: 'Error adding avatar to assistant.' });
     }
 
-
     return redirect(303, '/chat/assistants-management');
   }
 };

@@ -1,10 +1,10 @@
 import { expect, test } from './fixtures';
-import { getFakeNewAssistantInput } from '../testUtils/fakeData';
+import { getFakeAssistantInput } from '../testUtils/fakeData';
 import { deleteAssistantByName, uploadAvatar } from './helpers';
 import { NO_FILE_ERROR_TEXT } from '../src/lib/constants/index';
 
 test('it can search for and choose a pictogram as an avatar', async ({ page }) => {
-  const assistantInput = getFakeNewAssistantInput();
+  const assistantInput = getFakeAssistantInput();
 
   const pictogramName = 'Analytics';
 
@@ -36,7 +36,7 @@ test('it can search for and choose a pictogram as an avatar', async ({ page }) =
 
 // Note - once photo is uploaded, playwright is changing the url for the file so we cannot test the name of the image
 test('it can upload an image as an avatar', async ({ page }) => {
-  const assistantInput = getFakeNewAssistantInput();
+  const assistantInput = getFakeAssistantInput();
 
   await page.goto('/chat/assistants-management/new');
 
@@ -92,7 +92,7 @@ test('it can change an image uploaded as an avatar', async ({ page }) => {
 test('it shows an error when clicking save on the upload tab if no image is uploaded', async ({
   page
 }) => {
-  const assistantInput = getFakeNewAssistantInput();
+  const assistantInput = getFakeAssistantInput();
 
   await page.goto('/chat/assistants-management/new');
 

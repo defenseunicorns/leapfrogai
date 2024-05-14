@@ -3,7 +3,7 @@
   import { env } from '$env/dynamic/public';
   import { fade } from 'svelte/transition';
   import DynamicPictogram from '$components/DynamicPictogram.svelte';
-  import { ClickableTile, Modal, OverflowMenu, OverflowMenuItem } from 'carbon-components-svelte';
+  import { Tile, Modal, OverflowMenu, OverflowMenuItem } from 'carbon-components-svelte';
   import { toastStore } from '$stores';
 
   export let assistant: Assistant;
@@ -40,7 +40,7 @@
 </script>
 
 <div class="assistant-tile" transition:fade={{ duration: 70 }}>
-  <ClickableTile>
+  <Tile>
     <div class="overflow-menu-container">
       <OverflowMenu flipped size="sm">
         <OverflowMenuItem
@@ -67,7 +67,7 @@
         ? `${assistant.description?.slice(0, 62)}...`
         : assistant.description}
     </div>
-  </ClickableTile>
+  </Tile>
   <Modal
     danger
     bind:open={deleteModalOpen}

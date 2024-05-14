@@ -2,7 +2,7 @@ import { fail, redirect } from '@sveltejs/kit';
 import { superValidate } from 'sveltekit-superforms';
 import type { PageServerLoad } from './$types';
 import { yup } from 'sveltekit-superforms/adapters';
-import { supabaseAssistantInputSchema } from '../../../../../../schemas/assistants';
+import { editAssistantInputSchema } from '../../../../../../schemas/assistants';
 import { env } from '$env/dynamic/private';
 import { assistantDefaults } from '$lib/constants';
 
@@ -13,13 +13,14 @@ export const load: PageServerLoad = async ({ params, locals: { getSession, supab
     throw redirect(303, '/');
   }
 
+  // TODO - handle error in load function but use error page?
   const { data: assistant, error: assistantError } = await supabase
     .from('assistants')
     .select()
     .eq('id', params.assistantId)
     .single();
 
-  const assistantFormData: NewAssistantInput = {
+  const assistantFormData: EditAssistantInput = {
     id: assistant.id,
     name: assistant.name,
     description: assistant.description,
@@ -29,7 +30,7 @@ export const load: PageServerLoad = async ({ params, locals: { getSession, supab
     pictogram: assistant.metadata.pictogram
   };
 
-  const form = await superValidate(assistantFormData, yup(supabaseAssistantInputSchema));
+  const form = await superValidate(assistantFormData, yup(editAssistantInputSchema));
 
   return { title: 'LeapfrogAI - Edit Assistant', form, assistant };
 };
@@ -44,7 +45,7 @@ export const actions = {
 
     let savedAvatarFilePath: string = '';
 
-    const form = await superValidate(request, yup(supabaseAssistantInputSchema));
+    const form = await superValidate(request, yup(editAssistantInputSchema));
 
     if (!form.valid) {
       return fail(400, { form });

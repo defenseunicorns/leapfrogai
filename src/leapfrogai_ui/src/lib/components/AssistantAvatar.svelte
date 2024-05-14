@@ -27,7 +27,6 @@
   $: fileTooBig = tempFiles[0]?.size > MAX_AVATAR_SIZE;
   $: hideUploader = avatarUrl ? true : tempFiles.length > 0;
 
-
   const handleRemove = () => {
     tempFiles = [];
     tempPictogram = 'default';
@@ -70,6 +69,8 @@
       // pictogram tab
       selectedPictogramName = tempPictogram;
       files = []; // remove saved avatar
+      tempFiles = [];
+      avatarUrl = '';
       modalOpen = false;
       shouldValidate = false;
     }
@@ -78,8 +79,6 @@
   $: tempImagePreviewUrl = tempFiles?.length > 0 ? URL.createObjectURL(tempFiles[0]) : '';
   $: savedImagePreviewUrl =
     files?.length > 0 ? URL.createObjectURL(files[0]) : avatarUrl ? avatarUrl : '';
-
-  $: console.log(tempPictogram)
 </script>
 
 <div class="container">

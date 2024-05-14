@@ -5,9 +5,9 @@ import {
   AVATAR_FILE_SIZE_ERROR_TEXT,
   MAX_AVATAR_SIZE
 } from '$lib/constants';
+import { uuidSchema } from './chat';
 
-export const supabaseAssistantInputSchema: ObjectSchema<NewAssistantInput> = object({
-  id: string().uuid(),
+export const supabaseAssistantInputSchema: ObjectSchema<AssistantInput> = object({
   name: string()
     .max(ASSISTANTS_NAME_MAX_LENGTH)
     .required('This field is required. Please enter a name.'),
@@ -44,3 +44,5 @@ export const supabaseAssistantInputSchema: ObjectSchema<NewAssistantInput> = obj
 })
   .noUnknown(true)
   .strict();
+
+export const editAssistantInputSchema: ObjectSchema<EditAssistantInput> = supabaseAssistantInputSchema.concat(uuidSchema);
