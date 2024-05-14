@@ -111,6 +111,8 @@ def LLM(_cls):
                 if last_response:
                     last_response.choices[0].finish_reason = ""
                     response_str += last_response.choices[0].chat_item.content
+                    print(response_str)
+                    print(last_response)
                     yield last_response
 
                 item = ChatItem(role=ChatRole.ASSISTANT, content=text_chunk)
