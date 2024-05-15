@@ -5,8 +5,9 @@ image:
   tag: '###ZARF_CONST_IMAGE_VERSION###'
 
 package:
-  name: lfaiui
-  host: lfaiui
+  name: leapfrogai-ui
+  subdomain: '###ZARF_VAR_SUBDOMAIN###'
+  domain: '###ZARF_VAR_DOMAIN###'
   supabase_url: '###ZARF_VAR_SUPABASE_URL###'
   supabase_anon_key: '###ZARF_VAR_SUPABASE_ANON_KEY###'
   message_length_limit: '###ZARF_VAR_MESSAGE_LENGTH_LIMIT###'

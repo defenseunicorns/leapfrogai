@@ -1,13 +1,16 @@
 <script lang="ts">
   import { invalidate } from '$app/navigation';
   import { onMount } from 'svelte';
-  // Gray 90 theme
   import { page } from '$app/stores';
   import 'carbon-components-svelte/css/g90.css';
   import '../styles/main.scss';
   import { Toasts } from '$components';
+  import { Theme } from 'carbon-components-svelte';
+  import type { CarbonTheme } from 'carbon-components-svelte/src/Theme/Theme.svelte';
 
   export let data;
+
+  let theme: CarbonTheme | undefined = 'g90';
 
   let { supabase, session } = data;
   $: ({ supabase, session } = data);
@@ -24,8 +27,17 @@
 </script>
 
 <svelte:head>
-  <title>LeapfrogAI{$page.data.title ? ` - ${$page.data.title}` : ''}</title>
+  <title>{$page.data.title || ''}</title>
 </svelte:head>
 
+<Theme bind:theme />
+
 <Toasts />
+
 <slot />
+
+<style lang="scss">
+  :global(.bx--content) {
+    height: calc(100vh - var(--header-height));
+  }
+</style>

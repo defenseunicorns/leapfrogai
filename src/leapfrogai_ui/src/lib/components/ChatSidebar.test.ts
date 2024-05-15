@@ -8,7 +8,7 @@ import {
 import { conversationsStore, toastStore } from '$stores';
 import { fireEvent, render, screen, within } from '@testing-library/svelte';
 import userEvent from '@testing-library/user-event';
-import { fakeConversations, getFakeConversation } from '../../testUtils/fakeData';
+import { fakeConversations, getFakeConversation } from '../../../testUtils/fakeData';
 import { vi } from 'vitest';
 import stores from '$app/stores';
 import { monthNames } from '$helpers/dates';
@@ -70,7 +70,7 @@ describe('ChatSidebar', () => {
       conversations: fakeConversations
     });
 
-    render(ChatSidebar, { isSideNavOpen: true });
+    render(ChatSidebar);
 
     const conversationsSection = screen.getByTestId('conversations');
 
@@ -116,7 +116,7 @@ describe('ChatSidebar', () => {
       conversations: fakeConversations
     });
 
-    render(ChatSidebar, { isSideNavOpen: true });
+    render(ChatSidebar);
 
     const conversationsSection = screen.getByTestId('conversations');
 
@@ -151,7 +151,7 @@ describe('ChatSidebar', () => {
       conversations: fakeConversations
     });
 
-    render(ChatSidebar, { isSideNavOpen: true });
+    render(ChatSidebar);
 
     const conversationsSection = screen.getByTestId('conversations');
 
@@ -182,7 +182,7 @@ describe('ChatSidebar', () => {
       conversations: fakeConversations
     });
 
-    render(ChatSidebar, { isSideNavOpen: true });
+    render(ChatSidebar);
 
     const conversationsSection = screen.getByTestId('conversations');
 
@@ -200,7 +200,7 @@ describe('ChatSidebar', () => {
       conversations: fakeConversations
     });
 
-    render(ChatSidebar, { isSideNavOpen: true });
+    render(ChatSidebar);
 
     const conversationsSection = screen.getByTestId('conversations');
 
@@ -218,7 +218,7 @@ describe('ChatSidebar', () => {
       conversations: fakeConversations
     });
 
-    render(ChatSidebar, { isSideNavOpen: true });
+    render(ChatSidebar);
 
     const conversationsSection = screen.getByTestId('conversations');
 
@@ -247,7 +247,7 @@ describe('ChatSidebar', () => {
       conversations: fakeConversations
     });
 
-    render(ChatSidebar, { isSideNavOpen: true });
+    render(ChatSidebar);
 
     const conversationsSection = screen.getByTestId('conversations');
 
@@ -265,7 +265,7 @@ describe('ChatSidebar', () => {
       conversations: fakeConversations
     });
 
-    render(ChatSidebar, { isSideNavOpen: true });
+    render(ChatSidebar);
 
     const conversationsSection = screen.getByTestId('conversations');
 
@@ -285,7 +285,7 @@ describe('ChatSidebar', () => {
       conversations: fakeConversations
     });
 
-    render(ChatSidebar, { isSideNavOpen: true });
+    render(ChatSidebar);
 
     // Not using the helper function b/c we need to reference the editInput at the end
     const overflowMenu = screen.getAllByLabelText('menu')[0];
@@ -307,7 +307,7 @@ describe('ChatSidebar', () => {
       conversations: fakeConversations
     });
 
-    render(ChatSidebar, { isSideNavOpen: true });
+    render(ChatSidebar);
 
     await editConversationLabel(fakeConversations[0].label, newLabelText, '{tab}');
     const editInput = screen.queryByText('edit conversation');
@@ -322,7 +322,7 @@ describe('ChatSidebar', () => {
       conversations: [fakeConversation]
     });
 
-    render(ChatSidebar, { isSideNavOpen: true });
+    render(ChatSidebar);
 
     expect(screen.queryByText(fakeConversation.messages[0].content)).not.toBeInTheDocument();
 
@@ -340,7 +340,7 @@ describe('ChatSidebar', () => {
       conversations: [fakeConversation1, fakeConversation2, fakeConversation3]
     });
 
-    render(ChatSidebar, { isSideNavOpen: true });
+    render(ChatSidebar);
 
     expect(screen.queryByText(fakeConversation1.label)).toBeInTheDocument();
     expect(screen.queryByText(fakeConversation2.label)).toBeInTheDocument();
@@ -363,7 +363,7 @@ describe('ChatSidebar', () => {
       conversations: [fakeConversation1, fakeConversation2, fakeConversation3]
     });
 
-    render(ChatSidebar, { isSideNavOpen: true });
+    render(ChatSidebar);
 
     expect(screen.queryByText(fakeConversation1.label)).toBeInTheDocument();
     expect(screen.queryByText(fakeConversation2.label)).toBeInTheDocument();

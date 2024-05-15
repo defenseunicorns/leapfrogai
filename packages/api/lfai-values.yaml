@@ -1,3 +1,6 @@
 image:
   lfaiAPITag: ###ZARF_CONST_LEAPFROGAI_API_VERSION###
   kiwigridTag: ###ZARF_CONST_KIWIGRID_VERSION###
+
+api:
+  exposeOpenAPISchema: ###ZARF_VAR_EXPOSE_OPENAPI_SCHEMA###

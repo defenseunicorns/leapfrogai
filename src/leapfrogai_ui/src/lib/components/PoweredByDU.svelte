@@ -15,12 +15,13 @@
     justify-content: center;
     align-items: center;
     gap: layout.$spacing-02;
+    margin-top: 1rem;
   }
   .legal {
     @include type.type-style('legal-01');
   }
   .icon {
-    height: 24px;
+    height: var(--footer-height);
   }
   .wordmark {
     width: 6.75rem;
