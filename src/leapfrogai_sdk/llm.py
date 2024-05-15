@@ -14,7 +14,8 @@ from leapfrogai_sdk import (
     CompletionChoice,
     CompletionRequest,
     CompletionResponse,
-    GrpcContext, CompletionUsage,
+    GrpcContext,
+    CompletionUsage,
 )
 from leapfrogai_sdk.chat.chat_pb2 import Usage
 
@@ -46,7 +47,12 @@ def LLM(_cls):
     if not hasattr(_cls, "count_tokens"):
         raise ValueError("LLM class requires a count_tokens method")
 
-    def create_chat_completion_response(text: str, finish_reason: str = None, prompt_tokens: int = -1, completion_tokens: int = -1) -> ChatCompletionResponse:
+    def create_chat_completion_response(
+        text: str,
+        finish_reason: str = None,
+        prompt_tokens: int = -1,
+        completion_tokens: int = -1,
+    ) -> ChatCompletionResponse:
         item: ChatItem = ChatItem(role=ChatRole.ASSISTANT, content=text)
         choice: ChatCompletionChoice = ChatCompletionChoice(index=0, chat_item=item)
 
@@ -55,17 +61,24 @@ def LLM(_cls):
             usage = Usage(
                 prompt_tokens=prompt_tokens,
                 completion_tokens=completion_tokens,
-                total_tokens=prompt_tokens + completion_tokens
+                total_tokens=prompt_tokens + completion_tokens,
             )
 
-        response: ChatCompletionResponse = ChatCompletionResponse(choices=[choice], usage=usage)
+        response: ChatCompletionResponse = ChatCompletionResponse(
+            choices=[choice], usage=usage
+        )
 
         if finish_reason:
             response.choices[0].finish_reason = finish_reason
 
         return response
 
-    def create_completion_response(text: str, finish_reason: str = None, prompt_tokens: int = -1, completion_tokens: int = -1) -> CompletionResponse:
+    def create_completion_response(
+        text: str,
+        finish_reason: str = None,
+        prompt_tokens: int = -1,
+        completion_tokens: int = -1,
+    ) -> CompletionResponse:
         choice: CompletionChoice = CompletionChoice(index=0, text=text)
 
         usage: Optional[CompletionUsage] = None
@@ -73,7 +86,7 @@ def LLM(_cls):
             usage = CompletionUsage(
                 prompt_tokens=prompt_tokens,
                 completion_tokens=completion_tokens,
-                total_tokens=prompt_tokens + completion_tokens
+                total_tokens=prompt_tokens + completion_tokens,
             )
 
         response: CompletionResponse = CompletionResponse(choices=[choice], usage=usage)
@@ -118,9 +131,7 @@ def LLM(_cls):
         ) -> ChatCompletionResponse:
             prompt = self.config.apply_chat_template(request.chat_items)
 
-            gen_stream = self._build_gen_stream(
-                prompt, request
-            )
+            gen_stream = self._build_gen_stream(prompt, request)
 
             content = ""
             for text_chunk in gen_stream:
@@ -136,10 +147,7 @@ def LLM(_cls):
             prompt_token_count: int = await self.count_tokens(prompt)
 
             response = create_chat_completion_response(
-                content,
-                finish_reason,
-                prompt_token_count,
-                completion_token_count
+                content, finish_reason, prompt_token_count, completion_token_count
             )
 
             return response
@@ -149,16 +157,16 @@ def LLM(_cls):
         ) -> Generator[ChatCompletionResponse, Any, Any]:
             prompt = self.config.apply_chat_template(request.chat_items)
 
-            gen_stream = self._build_gen_stream(
-                prompt, request
-            )
+            gen_stream = self._build_gen_stream(prompt, request)
 
             last_delta: str | None = None
             response_str: str = ""
 
             for text_chunk in gen_stream:
                 if last_delta:
-                    last_response: ChatCompletionResponse = create_chat_completion_response(last_delta, "")
+                    last_response: ChatCompletionResponse = (
+                        create_chat_completion_response(last_delta, "")
+                    )
                     response_str += last_delta
 
                     yield last_response
@@ -178,10 +186,7 @@ def LLM(_cls):
             prompt_token_count: int = await self.count_tokens(prompt)
 
             last_response: ChatCompletionResponse = create_chat_completion_response(
-                last_delta,
-                finish_reason,
-                prompt_token_count,
-                completion_token_count
+                last_delta, finish_reason, prompt_token_count, completion_token_count
             )
 
             yield last_response
@@ -205,10 +210,7 @@ def LLM(_cls):
             prompt_token_count: int = await self.count_tokens(request.prompt)
 
             return create_completion_response(
-                content,
-                finish_reason,
-                prompt_token_count,
-                completion_token_count
+                content, finish_reason, prompt_token_count, completion_token_count
             )
 
         async def CompleteStream(
@@ -220,7 +222,9 @@ def LLM(_cls):
 
             for text_chunk in gen_stream:
                 if last_delta:
-                    last_response = create_completion_response(text=last_delta, finish_reason="")
+                    last_response = create_completion_response(
+                        text=last_delta, finish_reason=""
+                    )
                     response_str += last_delta
 
                     yield last_response
@@ -240,10 +244,7 @@ def LLM(_cls):
             prompt_token_count: int = await self.count_tokens(request.prompt)
 
             last_response = create_completion_response(
-                last_delta,
-                finish_reason,
-                prompt_token_count,
-                completion_token_count
+                last_delta, finish_reason, prompt_token_count, completion_token_count
             )
 
             yield last_response
