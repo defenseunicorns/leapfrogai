@@ -15,6 +15,7 @@
   export let avatarUrl = '';
   export let selectedPictogramName: string;
 
+  let tempAvatarUrl = avatarUrl;
   let tempFiles: File[] = [];
   let tempPictogram = selectedPictogramName || 'default';
   let modalOpen = false;
@@ -25,10 +26,11 @@
 
   $: fileNotUploaded = !tempFiles[0]; // if on upload tab, you must upload a file to enable save
   $: fileTooBig = tempFiles[0]?.size > MAX_AVATAR_SIZE;
-  $: hideUploader = avatarUrl ? true : tempFiles.length > 0;
+  $: hideUploader = tempAvatarUrl ? true : tempFiles.length > 0;
 
   const handleRemove = () => {
     tempFiles = [];
+    tempAvatarUrl = '';
     tempPictogram = 'default';
     shouldValidate = false;
   };
@@ -76,7 +78,7 @@
 
   $: tempImagePreviewUrl = tempFiles?.length > 0 ? URL.createObjectURL(tempFiles[0]) : '';
   $: savedImagePreviewUrl =
-    files?.length > 0 ? URL.createObjectURL(files[0]) : avatarUrl ? avatarUrl : '';
+    files?.length > 0 ? URL.createObjectURL(files[0]) : tempAvatarUrl ? tempAvatarUrl : '';
 </script>
 
 <div class="container">
@@ -115,12 +117,12 @@
       </span>
 
       <div class="avatar-upload-container" class:hidden={selectedRadioButton === 'pictogram'}>
-        {#if tempImagePreviewUrl || savedImagePreviewUrl}
+        {#if tempImagePreviewUrl}
           <div class="avatar-container">
             <div
               data-testid="image-upload-avatar"
               class="avatar-image"
-              style={`background-image: url(${tempImagePreviewUrl || savedImagePreviewUrl});`}
+              style={`background-image: url(${tempImagePreviewUrl});`}
             />
           </div>
         {/if}

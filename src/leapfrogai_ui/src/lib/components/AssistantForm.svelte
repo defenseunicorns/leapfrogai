@@ -15,7 +15,7 @@
   import { toastStore } from '$stores';
   import InputTooltip from '$components/InputTooltip.svelte';
   import { env } from '$env/dynamic/public';
-  import { editAssistantInputSchema, supabaseAssistantInputSchema } from '../../schemas/assistants';
+  import { editAssistantInputSchema, supabaseAssistantInputSchema } from '$lib/schemas/assistants';
   import type { NavigationTarget } from '@sveltejs/kit';
 
   export let data;
@@ -92,6 +92,7 @@
       <input type="hidden" name="id" value={$form.id} />
       <TextInput
         name="name"
+        autocomplete="off"
         labelText="Name"
         placeholder="Assistant name"
         bind:value={$form.name}
@@ -108,6 +109,7 @@
 
       <TextInput
         name="description"
+        autocomplete="off"
         placeholder="Here to help..."
         labelText="Description"
         hideLabel
@@ -125,6 +127,7 @@
 
       <TextArea
         name="instructions"
+        autocomplete="off"
         labelText="Instructions"
         bind:value={$form.instructions}
         rows={6}

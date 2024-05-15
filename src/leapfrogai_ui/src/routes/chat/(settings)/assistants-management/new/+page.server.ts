@@ -4,7 +4,7 @@ import { yup } from 'sveltekit-superforms/adapters';
 import { assistantDefaults, DEFAULT_ASSISTANT_TEMP } from '$lib/constants';
 import { env } from '$env/dynamic/private';
 import type { PageServerLoad } from './$types';
-import { supabaseAssistantInputSchema } from '../../../../../schemas/assistants';
+import { supabaseAssistantInputSchema } from '$lib/schemas/assistants';
 
 export const load: PageServerLoad = async ({ locals: { getSession } }) => {
   const session = await getSession();
