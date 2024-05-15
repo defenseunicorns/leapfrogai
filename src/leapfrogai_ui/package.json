@@ -22,7 +22,7 @@
     "supabase:start": "supabase start && docker exec -u 0 supabase_auth_supabase /bin/sh -c \"echo '100.115.154.78 keycloak.admin.uds.dev' >> /etc/hosts\"",
     "supabase:stop": "supabase stop",
     "supabase:reset": "supabase db reset",
-    "supbase:migrate": "supbase migration up"
+    "supbase:migrate": "supabase migration up"
   },
   "devDependencies": {
     "@commitlint/cli": "^19.1.0",
