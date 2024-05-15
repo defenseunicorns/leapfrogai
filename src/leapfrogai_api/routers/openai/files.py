@@ -63,13 +63,16 @@ async def upload_file(
 
 
 @router.get("")
-async def list_files(session: Session) -> ListFilesResponse | None:
+async def list_files(session: Session) -> ListFilesResponse:
     """List all files."""
     crud_file = CRUDFileObject(model=FileObject)
     crud_response = await crud_file.list(db=session)
 
     if crud_response is None:
-        return None
+        return ListFilesResponse(
+            object="list",
+            data=[],
+        )
 
     return ListFilesResponse(
         object="list",

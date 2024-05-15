@@ -1,5 +1,18 @@
 # Changelog
 
+## [0.7.1](https://github.com/defenseunicorns/leapfrogai/compare/v0.7.0...v0.7.1) (2024-05-15)
+
+
+### Bug Fixes
+
+* allow release-please to update pyrpoject.toml files ([#509](https://github.com/defenseunicorns/leapfrogai/issues/509)) ([3e1f0a6](https://github.com/defenseunicorns/leapfrogai/commit/3e1f0a6c3a749e868caabf31035ddbbe6831bb1c))
+* update 'latest' bundles to reference ui and supabase via reposistory instead of path ([#508](https://github.com/defenseunicorns/leapfrogai/issues/508)) ([818f55a](https://github.com/defenseunicorns/leapfrogai/commit/818f55ab8c0d173355345f58f46e36dca7f9e51b))
+
+
+### Miscellaneous
+
+* Turn supabase domain into a templated value ([#512](https://github.com/defenseunicorns/leapfrogai/issues/512)) ([312d587](https://github.com/defenseunicorns/leapfrogai/commit/312d5874e7c8fd28f2c50b1b91082e5f25356c08))
+
 ## [0.7.0](https://github.com/defenseunicorns/leapfrogai/compare/v0.6.1...v0.7.0) (2024-05-14)
 
 
