@@ -162,7 +162,9 @@ def LLM(_cls):
 
             for text_chunk in gen_stream:
                 if last_delta:
-                    last_response: ChatCompletionResponse = create_chat_completion_response(last_delta, "")
+                    last_response: ChatCompletionResponse = (
+                        create_chat_completion_response(last_delta, "")
+                    )
                     response_str += last_delta
 
                     yield last_response
