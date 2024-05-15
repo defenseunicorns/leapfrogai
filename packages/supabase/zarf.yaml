@@ -118,12 +118,12 @@ components:
       onDeploy:
         before:
           # Deletes the initial kong config created by the upstream chart
-          - cmd: kubectl delete cm supabase-kong-declarative-config -n leapfrogai
+          - cmd: ./zarf tools kubectl delete cm supabase-kong-declarative-config -n leapfrogai
         after:
           # Restarts supabase-kong after the new kong config has been applied
           # so that it can be loaded into the kong container
-          - cmd: kubectl rollout restart deployment supabase-kong -n leapfrogai
-          - cmd: kubectl rollout status deployment supabase-kong -n leapfrogai
+          - cmd: ./zarf tools kubectl rollout restart deployment supabase-kong -n leapfrogai
+          - cmd: ./zarf tools kubectl rollout status deployment supabase-kong -n leapfrogai
     manifests:
       # Applies an update kong config that includes basic auth, this gets applied
       # after the kong pods have started so the original config needs to be deleted and pod restarted
