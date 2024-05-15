@@ -30,7 +30,6 @@
   const handleRemove = () => {
     tempFiles = [];
     tempPictogram = 'default';
-    avatarUrl = '';
     shouldValidate = false;
   };
 
@@ -70,7 +69,6 @@
       selectedPictogramName = tempPictogram;
       files = []; // remove saved avatar
       tempFiles = [];
-      avatarUrl = '';
       modalOpen = false;
       shouldValidate = false;
     }

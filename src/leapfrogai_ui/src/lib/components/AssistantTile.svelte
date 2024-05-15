@@ -101,6 +101,7 @@
   }
   .description {
     @include type.type-style('body-01');
+    overflow: hidden;
   }
 
   .assistant-tile {
