@@ -8,9 +8,13 @@ spec:
       description: Client for logging into Supabase
       clientId: {{ .Values.leapfrogai.sso.clientId }}
       redirectUris:
-        - "https://supabase-kong.uds.dev/auth/v1/callback"
+        {{- range $.Values.leapfrogai.sso.redirectUris }}
+        - {{ tpl . $ }}
+        {{- end }}
       webOrigins:
-        - "https://ai.uds.dev/"
+        {{- range $.Values.leapfrogai.sso.webOrigins }}
+        - {{ tpl . $ }}
+        {{- end }}
   network:
     expose:
       - service: supabase-kong

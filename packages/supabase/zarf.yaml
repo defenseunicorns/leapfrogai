@@ -13,14 +13,10 @@ constants:
   - name: EXTERNAL_KEYCLOAK_CLIENT_ID
     description: 'External keycloak client value'
     value: "uds-supabase"
-  - name: EXTERNAL_KEYCLOAK_REDIRECT_URL
-    description: 'Keycloaks redirect url'
-    value: "https://supabase-kong.uds.dev/auth/v1/callback"
-  - name: EXTERNAL_KEYCLOAK_URL
-    description: 'External keycloak url'
-    value: "https://keycloak.admin.uds.dev/realms/uds"
 
 variables:
+  - name: HOSTED_DOMAIN
+    default: "uds.dev"
   - name: UI_SQL_SCHEMA
     type: file
     default: "migrations/20240322174521_ui_sql_schema.sql"

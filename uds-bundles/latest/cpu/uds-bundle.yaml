@@ -1,3 +1,5 @@
+# yaml-language-server: $schema=https://raw.githubusercontent.com/defenseunicorns/uds-cli/main/uds.schema.json
+
 kind: UDSBundle
 metadata:
   name: leapfrogai
@@ -46,6 +48,18 @@ packages:
     # x-release-please-start-version
     ref: 0.7.0
     # x-release-please-end
+    overrides:
+      supabase:
+        supabase-secrets-generator:
+          variables:
+            - path: "leapfrogai.sso.redirectUris"
+              name: "KEYCLOAK_REDIRECT_URIS"
+              default:
+                - "https://supabase-kong.uds.dev/auth/v1/callback"
+            - path: "leapfrogai.sso.webOrigins"
+              name: KEYCLOAK_WEB_ORIGINS
+              default:
+                - "https://ai.uds.dev"
 
   # UI - new UI TODO - point to ghcr image after Sprint 0.7.0
   - name: leapfrogai-ui
