@@ -196,15 +196,15 @@ class Model:
                             num_tokens_by_id[request_id] = 0
 
                     if (
-                            request_output.outputs[0].text
-                            and "\ufffd" == request_output.outputs[0].text[-1]
+                        request_output.outputs[0].text
+                        and "\ufffd" == request_output.outputs[0].text[-1]
                     ):
                         continue
 
                     # Update tracking information
                     text_delta = request_output.outputs[0].text[
-                                 index_by_id[request_id]:
-                                 ]
+                        index_by_id[request_id] :
+                    ]
                     index_by_id[request_id] = len(request_output.outputs[0].text)
                     num_tokens_by_id[request_id] = len(
                         request_output.outputs[0].token_ids
@@ -215,7 +215,7 @@ class Model:
             time.sleep(0)
 
     async def create_response(
-            self, request_id: str, prompt: str, config: GenerationConfig
+        self, request_id: str, prompt: str, config: GenerationConfig
     ):
         """Initiate a response generation for the given prompt and configuration, adding the result to the iterator
         pool."""
@@ -239,7 +239,7 @@ class Model:
         self.random_iterator.add_iterator(gen_iter)
 
     async def generate_session(
-            self, session: str, prompt: str, config: GenerationConfig
+        self, session: str, prompt: str, config: GenerationConfig
     ):
         """Manage a session's lifecycle for generating output, including setting up necessary state and iterators."""
 
@@ -254,7 +254,9 @@ class Model:
         cur_request_queue = self.delta_queue_by_id.get(request_id)
         return cur_request_queue is None or cur_request_queue.empty()
 
-    def generate(self, prompt: str, config: GenerationConfig) -> Generator[str, Any, Any]:
+    def generate(
+        self, prompt: str, config: GenerationConfig
+    ) -> Generator[str, Any, Any]:
         """Initiate and manage the generation process for a given prompt, yielding generated text segments."""
 
         request_id = random_uuid()
@@ -270,7 +272,7 @@ class Model:
         logging.info(f"Begin reading the output for request {request_id}")
 
         while not self.done_by_id.get(request_id) or not self.is_queue_empty(
-                request_id
+            request_id
         ):
             result = ""
             if not self.is_queue_empty(request_id):

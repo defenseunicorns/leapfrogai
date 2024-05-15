@@ -35,7 +35,7 @@ async def recv_completion(
                 usage=Usage(
                     prompt_tokens=c.usage.prompt_tokens,
                     completion_tokens=c.usage.completion_tokens,
-                    total_tokens=c.usage.total_tokens
+                    total_tokens=c.usage.total_tokens,
                 ),
             ).model_dump_json()
         )
@@ -70,7 +70,7 @@ async def recv_chat(
                 usage=Usage(
                     prompt_tokens=c.usage.prompt_tokens,
                     completion_tokens=c.usage.completion_tokens,
-                    total_tokens=c.usage.total_tokens
+                    total_tokens=c.usage.total_tokens,
                 ),
             ).model_dump_json()
         )
