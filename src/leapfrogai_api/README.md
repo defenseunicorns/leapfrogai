@@ -34,7 +34,7 @@ The integration tests serve to identify any mismatches between components:
 - DB CRUD operations
 - Schema mismatches
 
-Integration tests require a Supbase instance and environment variables configured (see [Local Development](#local-development)).
+Integration tests require a Supabase instance and environment variables configured (see [Local Development](#local-development)).
 
 From this directory run:
 
