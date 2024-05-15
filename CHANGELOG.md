@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.7.2](https://github.com/defenseunicorns/leapfrogai/compare/v0.7.1...v0.7.2) (2024-05-15)
+
+
+### Bug Fixes
+
+* use zarf vendored kubectl during supabase deployment ([#517](https://github.com/defenseunicorns/leapfrogai/issues/517)) ([c236d39](https://github.com/defenseunicorns/leapfrogai/commit/c236d39a62694d7750ebe562b2f55dcafc238d34))
+
 ## [0.7.1](https://github.com/defenseunicorns/leapfrogai/compare/v0.7.0...v0.7.1) (2024-05-15)
 
 
