@@ -8,7 +8,7 @@ type AssistantInput = {
   pictogram?: string;
 };
 
-type EditAssistantInput = AssistantInput & { id: number }
+type EditAssistantInput = AssistantInput & { id: number };
 
 type ToolResources = {
   code_interpreter: string[];
