@@ -165,28 +165,26 @@ def LLM(_cls):
 
                 last_delta = text_chunk
 
-            print(f"{last_delta} is our result")
             if last_delta:
-                print("LAST DELTA FOUND")
                 response_str += last_delta
 
-                completion_token_count: int = await self.count_tokens(response_str)
+            completion_token_count: int = await self.count_tokens(response_str)
 
-                if completion_token_count < request.max_new_tokens:
-                    finish_reason = "stop"
-                else:
-                    finish_reason = "length"
+            if completion_token_count < request.max_new_tokens:
+                finish_reason = "stop"
+            else:
+                finish_reason = "length"
 
-                prompt_token_count: int = await self.count_tokens(prompt)
+            prompt_token_count: int = await self.count_tokens(prompt)
 
-                last_response: ChatCompletionResponse = create_chat_completion_response(
-                    last_delta,
-                    finish_reason,
-                    prompt_token_count,
-                    completion_token_count
-                )
+            last_response: ChatCompletionResponse = create_chat_completion_response(
+                last_delta,
+                finish_reason,
+                prompt_token_count,
+                completion_token_count
+            )
 
-                yield last_response
+            yield last_response
 
         async def Complete(
             self, request: CompletionRequest, context: GrpcContext
@@ -232,23 +230,23 @@ def LLM(_cls):
             if last_delta:
                 response_str += last_delta
 
-                completion_token_count: int = await self.count_tokens(response_str)
+            completion_token_count: int = await self.count_tokens(response_str)
 
-                if completion_token_count < request.max_new_tokens:
-                    finish_reason = "stop"
-                else:
-                    finish_reason = "length"
+            if completion_token_count < request.max_new_tokens:
+                finish_reason = "stop"
+            else:
+                finish_reason = "length"
 
-                prompt_token_count: int = await self.count_tokens(request.prompt)
+            prompt_token_count: int = await self.count_tokens(request.prompt)
 
-                last_response = create_completion_response(
-                    last_delta,
-                    finish_reason,
-                    prompt_token_count,
-                    completion_token_count
-                )
+            last_response = create_completion_response(
+                last_delta,
+                finish_reason,
+                prompt_token_count,
+                completion_token_count
+            )
 
-                yield last_response
+            yield last_response
 
     NewClass.__name__ = _cls.__name__
     return NewClass
