@@ -108,6 +108,8 @@
 
   .assistant-tile {
     position: relative;
+    width: 288px;
+    height: 172px;
     :global(.bx--tile) {
       display: flex;
       flex-direction: column;
@@ -116,8 +118,6 @@
       text-align: center;
       gap: layout.$spacing-05;
       padding: 1rem;
-      width: 288px !important; // !important required or these values don't work in production
-      height: 172px !important;
       overflow: hidden;
     }
 
