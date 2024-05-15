@@ -119,6 +119,8 @@
       gap: layout.$spacing-05;
       padding: 1rem;
       overflow: hidden;
+      width: 100%;
+      height: 100%;
     }
 
     .overflow-menu-container {
