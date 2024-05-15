@@ -1,6 +1,7 @@
 """Test the API endpoints for assistants."""
 
-from fastapi import status
+import pytest
+from fastapi import Response, status
 from fastapi.testclient import TestClient
 from openai.types.beta import Assistant, AssistantDeleted
 
@@ -10,11 +11,15 @@ from leapfrogai_api.backend.types import (
     ModifyAssistantRequest,
 )
 
-client = TestClient(router)
+assistant_response: Response
 
 
-def test_assistants():
+@pytest.fixture(scope="session", autouse=True)
+def create_assistant(client: TestClient = TestClient(router)):
     """Test creating an assistant. Requires a running Supabase instance."""
+
+    global assistant_response  # pylint: disable=global-statement
+
     request = CreateAssistantRequest(
         model="test",
         name="test",
@@ -28,20 +33,45 @@ def test_assistants():
         response_format="auto",
     )
 
-    create_response = client.post("/openai/v1/assistants", json=request.model_dump())
-    assert create_response.status_code is status.HTTP_200_OK
+    assistant_response = client.post("/openai/v1/assistants", json=request.model_dump())
+
+
+def test_create():
+    """Test creating an assistant. Requires a running Supabase instance."""
+    assert assistant_response.status_code is status.HTTP_200_OK
     assert Assistant.model_validate(
-        create_response.json()
+        assistant_response.json()
     ), "Create should create an Assistant."
 
-    assistant_id = create_response.json()["id"]
 
+def test_get():
+    """Test getting an assistant. Requires a running Supabase instance."""
+    assistant_id = assistant_response.json()["id"]
+
+    client = TestClient(router)
+    get_response = client.get(f"/openai/v1/assistants/{assistant_id}")
+    assert get_response.status_code is status.HTTP_200_OK
+    assert Assistant.model_validate(
+        get_response.json()
+    ), f"Get should return Assistant {assistant_id}."
+
+
+def test_list():
+    """Test listing assistants. Requires a running Supabase instance."""
+    client = TestClient(router)
     list_response = client.get("/openai/v1/assistants")
     assert list_response.status_code is status.HTTP_200_OK
     for assistant_object in list_response.json()["data"]:
         assert Assistant.model_validate(
             assistant_object
         ), "List should return a list of Assistants."
+
+
+def test_modify():
+    """Test modifying an assistant. Requires a running Supabase instance."""
+    assistant_id = assistant_response.json()["id"]
+
+    client = TestClient(router)
 
     get_response = client.get(f"/openai/v1/assistants/{assistant_id}")
     assert get_response.status_code is status.HTTP_200_OK
@@ -85,6 +115,12 @@ def test_assistants():
         get_modified_response.json()["model"] == "test1"
     ), f"Get endpoint should return modified Assistant {assistant_id}."
 
+
+def test_delete():
+    """Test deleting an assistant. Requires a running Supabase instance."""
+    assistant_id = assistant_response.json()["id"]
+
+    client = TestClient(router)
     delete_response = client.delete(f"/openai/v1/assistants/{assistant_id}")
     assert delete_response.status_code is status.HTTP_200_OK
     assert AssistantDeleted.model_validate(
@@ -94,10 +130,14 @@ def test_assistants():
         delete_response.json()["deleted"] is True
     ), f"Assistant {assistant_id} should be deleted."
 
+
+def test_delete_twice():
+    """Test deleting an assistant twice. Requires a running Supabase instance."""
+    assistant_id = assistant_response.json()["id"]
+
+    client = TestClient(router)
     delete_response = client.delete(f"/openai/v1/assistants/{assistant_id}")
-    assert (
-        delete_response.status_code is status.HTTP_200_OK
-    ), "Should return 200 even if the assistant is not found."
+    assert delete_response.status_code is status.HTTP_200_OK
     assert AssistantDeleted.model_validate(
         delete_response.json()
     ), "Should return a AssistantDeleted object."
@@ -105,7 +145,12 @@ def test_assistants():
         delete_response.json()["deleted"] is False
     ), f"Assistant {assistant_id} should not be able to delete twice."
 
-    # Make sure the assistant is not still present
+
+def test_delete_nonexistent():
+    """Test deleting a nonexistent assistant. Requires a running Supabase instance."""
+    assistant_id = assistant_response.json()["id"]
+
+    client = TestClient(router)
     get_response = client.get(f"/openai/v1/assistants/{assistant_id}")
     assert get_response.status_code is status.HTTP_200_OK
     assert (
