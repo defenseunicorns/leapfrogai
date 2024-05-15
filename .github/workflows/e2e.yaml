@@ -5,6 +5,7 @@ on:
       - ready_for_review
       - review_requested
       - synchronize
+      - milestoned
     paths:
       # Catch-all
       - "**"
@@ -70,11 +71,40 @@ jobs:
           run: |
             uds deploy k3d-core-slim-dev:0.18.0 --confirm
 
+          ##########
+          # Supabase
+          ##########
+        - name: Deploy Supabase
+          run: |
+            make build-supabase LOCAL_VERSION=e2e-test
+            docker image prune -af
+            uds zarf tools kubectl create namespace leapfrogai
+            uds zarf package deploy packages/supabase/zarf-package-supabase-amd64-e2e-test.tar.zst --confirm
+            rm packages/supabase/zarf-package-supabase-amd64-e2e-test.tar.zst
+
+        - name: Set environment variable
+          id: set-env-var
+          run: |
+            echo "API_KEY=$(uds zarf tools kubectl get secret supabase-bootstrap-jwt -n leapfrogai -o jsonpath='{.data.anon-key}' | base64 -d)" >> "$GITHUB_ENV"
+
+        - name: Test Supabase
+          run: |
+            python -m pip install requests
+            python -m pytest ./tests/e2e/test_supabase.py -v
+
+        # This cleanup may need to be moved/removed when other packages depend on Supabase
+        - name: Cleanup Supabase
+          run: |
+            uds zarf package remove supabase -l=trace --confirm
+
+        ##########
+        # API
+        ##########
         - name: Deploy LFAI-API
           run: |
             make build-api LOCAL_VERSION=e2e-test
             docker image prune -af
-            uds zarf package deploy packages/api/zarf-package-leapfrogai-api-amd64-e2e-test.tar.zst --confirm
+            uds zarf package deploy packages/api/zarf-package-leapfrogai-api-amd64-e2e-test.tar.zst --set=EXPOSE_OPENAPI_SCHEMA=true --confirm
             rm packages/api/zarf-package-leapfrogai-api-amd64-e2e-test.tar.zst
 
         ##########

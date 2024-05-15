@@ -13,7 +13,7 @@ export default defineConfig(() => ({
     preprocessorOptions: {
       scss: {
         additionalData:
-          '@use "@carbon/themes/scss/themes" as *; @use "@carbon/themes" with ($theme: $g90); @use "@carbon/layout"; @use "@carbon/type";'
+          '@use "@carbon/themes/scss/themes" as *; @use "@carbon/themes" with ($theme: $g90); @use "@carbon/layout"; @use "@carbon/type"; @use "@carbon/colors" as *;'
       }
     }
   }

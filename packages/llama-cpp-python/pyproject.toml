@@ -3,11 +3,11 @@ name = "lfai-llama-cpp-python"
 description = "A LeapfrogAI API-compatible llama-cpp-python wrapper for quantized and un-quantized model inferencing on CPU infrastructures."
 
 # x-release-please-start-version
-version = "0.6.1"
+version = "0.7.0"
 # x-release-please-end
 
 dependencies = [
-    "llama-cpp-python == 0.2.28",
+    "llama-cpp-python == 0.2.70",
     "leapfrogai-sdk",
 ]
 requires-python = "~=3.11"

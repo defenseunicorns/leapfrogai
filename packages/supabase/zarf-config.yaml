@@ -1,0 +1,5 @@
+package:
+  create:
+    set:
+      image_version: dev
+    max_package_size: '1000000000'
