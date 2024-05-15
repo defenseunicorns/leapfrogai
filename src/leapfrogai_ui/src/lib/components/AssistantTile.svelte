@@ -3,7 +3,7 @@
   import { env } from '$env/dynamic/public';
   import { fade } from 'svelte/transition';
   import DynamicPictogram from '$components/DynamicPictogram.svelte';
-  import { Tile, Modal, OverflowMenu, OverflowMenuItem } from 'carbon-components-svelte';
+  import { Modal, OverflowMenu, OverflowMenuItem, Tile } from 'carbon-components-svelte';
   import { toastStore } from '$stores';
   import { Edit, TrashCan } from 'carbon-icons-svelte';
 
@@ -101,9 +101,6 @@
   }
   .description {
     @include type.type-style('body-01');
-    line-height: 1em;
-    height: 2em;
-    overflow: hidden;
   }
 
   .assistant-tile {
