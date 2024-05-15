@@ -165,6 +165,7 @@ def LLM(_cls):
 
                 last_delta = text_chunk
 
+            print(f"{last_delta} is our result")
             if last_delta:
                 print("LAST DELTA FOUND")
                 response_str += last_delta
