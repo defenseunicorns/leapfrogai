@@ -9,11 +9,6 @@ See [instructions](#instructions) to get the backend up and running. Then, use t
 
 ## Instructions
 
-Ensure that your cuda version is `>= 11.6` as flash attention requires it.
-```bash
-nvcc -V
-```
-
 The instructions in this section assume the following:
 
 1. Properly installed and configured Python 3.11.x, to include its development tools
