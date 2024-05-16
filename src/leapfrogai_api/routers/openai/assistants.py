@@ -1,7 +1,7 @@
 """OpenAI Compliant Assistants API Router."""
 
 import time
-from fastapi import HTTPException, APIRouter
+from fastapi import HTTPException, APIRouter, status
 from openai.types.beta import Assistant, AssistantDeleted
 from openai.types.beta.assistant import ToolResources
 from leapfrogai_api.backend.types import (
@@ -40,7 +40,8 @@ async def create_assistant(
         )
     except Exception as exc:
         raise HTTPException(
-            status_code=405, detail="Unable to parse assistant request"
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="Unable to parse assistant request",
         ) from exc
 
     try:
@@ -48,33 +49,29 @@ async def create_assistant(
         return await crud_assistant.create(assistant=assistant, client=session)
     except Exception as exc:
         raise HTTPException(
-            status_code=405, detail="Unable to create assistant"
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail="Unable to create assistant",
         ) from exc
 
 
 @router.get("")
-async def list_assistants(session: Session) -> ListAssistantsResponse | None:
+async def list_assistants(session: Session) -> ListAssistantsResponse:
     """List all the assistants."""
     crud_assistant = CRUDAssistant(model=Assistant)
     crud_response = await crud_assistant.list(client=session)
 
-    if not crud_response:
-        return None
-
     return ListAssistantsResponse(
         object="list",
-        data=crud_response,
+        data=crud_response or [],
     )
 
 
 @router.get("/{assistant_id}")
 async def retrieve_assistant(session: Session, assistant_id: str) -> Assistant | None:
     """Retrieve an assistant."""
-    try:
-        crud_assistant = CRUDAssistant(model=Assistant)
-        return await crud_assistant.get(assistant_id=assistant_id, client=session)
-    except FileNotFoundError as exc:
-        raise HTTPException(status_code=404, detail="Assistant not found") from exc
+
+    crud_assistant = CRUDAssistant(model=Assistant)
+    return await crud_assistant.get(assistant_id=assistant_id, client=session)
 
 
 @router.post("/{assistant_id}")
@@ -85,7 +82,9 @@ async def modify_assistant(
 
     old_assistant = await retrieve_assistant(session, assistant_id)
     if old_assistant is None:
-        raise HTTPException(status_code=404, detail="Assistant not found")
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST, detail="Assistant not found"
+        )
 
     try:
         assistant = Assistant(
@@ -106,7 +105,8 @@ async def modify_assistant(
         )
     except Exception as exc:
         raise HTTPException(
-            status_code=405, detail="Unable to parse assistant request"
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="Unable to parse assistant request",
         ) from exc
 
     try:
@@ -115,14 +115,13 @@ async def modify_assistant(
             assistant_id=assistant_id, assistant=assistant, client=session
         )
     except FileNotFoundError as exc:
-        raise HTTPException(status_code=404, detail="Assistant not found") from exc
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST, detail="Assistant not found"
+        ) from exc
 
 
 @router.delete("/{assistant_id}")
 async def delete_assistant(session: Session, assistant_id: str) -> AssistantDeleted:
     """Delete an assistant."""
-    try:
-        crud_assistant = CRUDAssistant(model=Assistant)
-        return await crud_assistant.delete(assistant_id=assistant_id, client=session)
-    except FileNotFoundError as exc:
-        raise HTTPException(status_code=404, detail="Assistant not found") from exc
+    crud_assistant = CRUDAssistant(model=Assistant)
+    return await crud_assistant.delete(assistant_id=assistant_id, client=session)
