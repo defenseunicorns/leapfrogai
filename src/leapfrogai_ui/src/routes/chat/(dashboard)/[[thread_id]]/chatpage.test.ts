@@ -1,5 +1,5 @@
 import { render, screen } from '@testing-library/svelte';
-import { conversationsStore } from '$stores';
+import { threadsStore } from '$stores';
 
 import {
   fakeConversations,
@@ -42,7 +42,7 @@ describe('The Chat Page', () => {
   });
 
   it('it renders all the messages', async () => {
-    conversationsStore.set({
+    threadsStore.set({
       conversations: fakeConversations
     });
 
@@ -74,7 +74,7 @@ describe('The Chat Page', () => {
       mockChatCompletion();
       mockNewMessage(fakeMessage);
 
-      conversationsStore.set({
+      threadsStore.set({
         conversations: []
       });
 
@@ -99,7 +99,7 @@ describe('The Chat Page', () => {
       mockChatCompletion({ withDelay: true, delayTime: delayTime });
       mockNewMessage(fakeMessage);
 
-      conversationsStore.set({
+      threadsStore.set({
         conversations: []
       });
 
@@ -149,7 +149,7 @@ describe('The Chat Page', () => {
     });
 
     it('displays an error message when there is an error saving the new conversation', async () => {
-      conversationsStore.set({
+      threadsStore.set({
         conversations: []
       });
 
@@ -199,7 +199,7 @@ describe('The Chat Page', () => {
       });
 
       it('displays an error message when there is an error saving the response', async () => {
-        conversationsStore.set({
+        threadsStore.set({
           conversations: fakeConversations
         });
 
@@ -257,7 +257,7 @@ describe('The Chat Page', () => {
         });
         mockNewMessage(fakeMessage);
 
-        conversationsStore.set({
+        threadsStore.set({
           conversations: [fakeConversations[0]]
         });
         const user = userEvent.setup();

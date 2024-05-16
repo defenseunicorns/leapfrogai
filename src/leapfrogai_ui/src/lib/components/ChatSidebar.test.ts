@@ -5,7 +5,7 @@ import {
   mockEditConversationLabel,
   mockEditConversationLabelError
 } from '$lib/mocks/chat-mocks';
-import { conversationsStore, toastStore } from '$stores';
+import { threadsStore, toastStore } from '$stores';
 import { fireEvent, render, screen, within } from '@testing-library/svelte';
 import userEvent from '@testing-library/user-event';
 import { fakeConversations, getFakeConversation } from '../../../testUtils/fakeData';
@@ -66,7 +66,7 @@ vi.mock('$app/stores', (): typeof stores => {
 
 describe('ChatSidebar', () => {
   it('renders conversations', async () => {
-    conversationsStore.set({
+    threadsStore.set({
       conversations: fakeConversations
     });
 
@@ -90,7 +90,7 @@ describe('ChatSidebar', () => {
       ).toDateString()
     });
 
-    conversationsStore.set({
+    threadsStore.set({
       conversations: [fakeTodayConversation, fakeYesterdayConversation] // uses date override starting in March
     });
 
@@ -112,7 +112,7 @@ describe('ChatSidebar', () => {
   it('deletes conversations', async () => {
     mockDeleteConversation();
 
-    conversationsStore.set({
+    threadsStore.set({
       conversations: fakeConversations
     });
 
@@ -147,7 +147,7 @@ describe('ChatSidebar', () => {
 
     const toastSpy = vi.spyOn(toastStore, 'addToast');
 
-    conversationsStore.set({
+    threadsStore.set({
       conversations: fakeConversations
     });
 
@@ -178,7 +178,7 @@ describe('ChatSidebar', () => {
     const newLabelText = 'new label';
     mockEditConversationLabel();
 
-    conversationsStore.set({
+    threadsStore.set({
       conversations: fakeConversations
     });
 
@@ -196,7 +196,7 @@ describe('ChatSidebar', () => {
     const newLabelText = 'new label';
     mockEditConversationLabel();
 
-    conversationsStore.set({
+    threadsStore.set({
       conversations: fakeConversations
     });
 
@@ -214,7 +214,7 @@ describe('ChatSidebar', () => {
     const newLabelText = 'new label';
     mockEditConversationLabel();
 
-    conversationsStore.set({
+    threadsStore.set({
       conversations: fakeConversations
     });
 
@@ -243,7 +243,7 @@ describe('ChatSidebar', () => {
     const toastSpy = vi.spyOn(toastStore, 'addToast');
 
     const newLabelText = 'new label';
-    conversationsStore.set({
+    threadsStore.set({
       conversations: fakeConversations
     });
 
@@ -261,7 +261,7 @@ describe('ChatSidebar', () => {
 
   it('does not update the conversation label when the user presses escape and it removes the text input', async () => {
     const newLabelText = 'new label';
-    conversationsStore.set({
+    threadsStore.set({
       conversations: fakeConversations
     });
 
@@ -281,7 +281,7 @@ describe('ChatSidebar', () => {
     const newLabelText = 'new label';
     mockEditConversationLabel();
 
-    conversationsStore.set({
+    threadsStore.set({
       conversations: fakeConversations
     });
 
@@ -303,7 +303,7 @@ describe('ChatSidebar', () => {
     mockEditConversationLabel();
     const newLabelText = 'new label';
 
-    conversationsStore.set({
+    threadsStore.set({
       conversations: fakeConversations
     });
 
@@ -318,7 +318,7 @@ describe('ChatSidebar', () => {
 
     const fakeConversation = getFakeConversation({ numMessages: 6 });
 
-    conversationsStore.set({
+    threadsStore.set({
       conversations: [fakeConversation]
     });
 
@@ -336,7 +336,7 @@ describe('ChatSidebar', () => {
     const fakeConversation2 = getFakeConversation({ numMessages: 2 });
     const fakeConversation3 = getFakeConversation({ numMessages: 2 });
 
-    conversationsStore.set({
+    threadsStore.set({
       conversations: [fakeConversation1, fakeConversation2, fakeConversation3]
     });
 
@@ -359,7 +359,7 @@ describe('ChatSidebar', () => {
     const fakeConversation2 = getFakeConversation({ numMessages: 2 });
     const fakeConversation3 = getFakeConversation({ numMessages: 2 });
 
-    conversationsStore.set({
+    threadsStore.set({
       conversations: [fakeConversation1, fakeConversation2, fakeConversation3]
     });
 

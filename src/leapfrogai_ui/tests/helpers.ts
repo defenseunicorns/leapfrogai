@@ -1,5 +1,6 @@
 import { expect, type Page } from '@playwright/test';
 import { createClient } from '@supabase/supabase-js';
+import type { AssistantInput } from '$lib/types/assistants';
 
 const supabase = createClient(process.env.PUBLIC_SUPABASE_URL!, process.env.SERVICE_ROLE_KEY!);
 

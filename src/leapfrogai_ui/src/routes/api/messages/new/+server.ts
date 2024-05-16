@@ -1,38 +1,35 @@
 import { error, json } from '@sveltejs/kit';
-import { supabaseMessagesInputSchema } from '$lib/schemas/chat';
+import {messageInputSchema} from '$lib/schemas/chat';
+import OpenAI from 'openai';
+import { env } from '$env/dynamic/private';
+import type { NewMessageInput } from '$lib/types/messages';
 
-export async function POST({ request, locals: { supabase, getSession } }) {
+const openai = new OpenAI({
+  apiKey: env.LEAPFROGAI_API_KEY ?? '',
+  baseURL: env.LEAPFROGAI_API_BASE_URL
+});
+
+export async function POST({ request, locals: { getSession } }) {
   const session = await getSession();
-
   if (!session) {
     error(401, 'Unauthorized');
   }
 
-  let requestData: Omit<Message, 'user_id'>;
+  let requestData: NewMessageInput;
 
   // Validate request body
   try {
     requestData = await request.json();
-    const isValid = await supabaseMessagesInputSchema.isValid(requestData);
+    const isValid = await messageInputSchema.isValid(requestData);
     if (!isValid) error(400, 'Bad Request');
   } catch {
     error(400, 'Bad Request');
   }
 
-  const message: Message = { ...requestData, user_id: session.user.id };
+  const threadMessages = await openai.beta.threads.messages.create(requestData.thread_id, {
+    role: requestData.role,
+    content: requestData.content
+  });
 
-  const { error: responseError, data: createdMessage } = await supabase
-    .from('messages')
-    .insert(message)
-    .select()
-    .returns<Message[]>();
-
-  if (responseError) {
-    console.log(
-      `error creating message,  error status: ${responseError.code}: ${responseError.message}`
-    );
-    error(500, { message: 'Internal Server Error' });
-  }
-
-  return json(createdMessage[0]);
+  return json(threadMessages);
 }

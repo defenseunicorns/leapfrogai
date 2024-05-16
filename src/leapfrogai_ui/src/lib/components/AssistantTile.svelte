@@ -6,8 +6,9 @@
   import { Modal, OverflowMenu, OverflowMenuItem, Tile } from 'carbon-components-svelte';
   import { toastStore } from '$stores';
   import { Edit, TrashCan } from 'carbon-icons-svelte';
+  import type {LFAssistant} from "$lib/types/assistants";
 
-  export let assistant: Assistant;
+  export let assistant: LFAssistant;
 
   let deleteModalOpen = false;
 

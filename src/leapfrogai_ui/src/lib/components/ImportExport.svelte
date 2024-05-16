@@ -2,7 +2,7 @@
   import { Download, Export } from 'carbon-icons-svelte';
   import { Button } from 'carbon-components-svelte';
   import LFFileUploader from '$components/LFFileUploader.svelte';
-  import { conversationsStore, toastStore } from '$stores';
+  import { threadsStore, toastStore } from '$stores';
   import { conversationsSchema } from '$lib/schemas/chat';
 
   const readFileAsJson = <T,>(file: File): Promise<T> => {
@@ -39,14 +39,14 @@
       });
       return;
     }
-    await conversationsStore.importConversations(conversations);
+    await threadsStore.importConversations(conversations);
   };
 
   const onExport = () => {
     try {
       const dataStr =
         'data:text/json; charset=utf-8,' +
-        encodeURIComponent(JSON.stringify($conversationsStore.conversations));
+        encodeURIComponent(JSON.stringify($threadsStore.conversations));
       const downloadAnchorNode = document.createElement('a');
 
       downloadAnchorNode.setAttribute('href', dataStr);

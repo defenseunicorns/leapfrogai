@@ -1,21 +1,25 @@
 <script lang="ts">
+  import { fade } from 'svelte/transition';
   import { Button, Tile } from 'carbon-components-svelte';
   import { Copy, Edit, Reset, UserAvatar } from 'carbon-icons-svelte';
-  import { type Message as AIMessage } from 'ai/svelte';
   import { LFTextArea } from '$components';
   import frog from '$assets/frog.png';
   import { writable } from 'svelte/store';
   import { toastStore } from '$stores';
+  import type {LFMessage} from "$lib/types/messages";
+  import {getMessageText} from "$helpers/threads";
 
-  export let handleMessageEdit: (event: SubmitEvent, message: AIMessage) => Promise<void>;
+
+
+  export let handleMessageEdit: (event: SubmitEvent | KeyboardEvent | MouseEvent, message: LFMessage) => Promise<void>;
   export let handleRegenerate: () => Promise<void>;
-  export let message: AIMessage;
+  export let message: LFMessage;
   export let isLastMessage: boolean;
   export let isLoading: boolean;
 
   let messageIsHovered = false;
   let editMode = false;
-  let value = writable(message.content);
+  let value = writable(getMessageText(message));
 
   const onSubmit = async (e: SubmitEvent | KeyboardEvent | MouseEvent) => {
     editMode = false;
@@ -24,7 +28,7 @@
 
   const handleCancel = () => {
     editMode = false;
-    value.set(message.content); // restore original value
+    value.set(getMessageText(message)); // restore original value
   };
 
   const handleCopy = async () => {
@@ -53,6 +57,7 @@
   on:mouseover={() => (messageIsHovered = true)}
   on:mouseleave={() => (messageIsHovered = false)}
   on:focus={() => (messageIsHovered = true)}
+  transition:fade={{ duration: 70 }}
   tabindex="0"
 >
   <div class="message-and-avatar">
@@ -79,7 +84,7 @@
           </div>
         </div>
       {:else}
-        <Tile style="line-height: 20px;">{message.content}</Tile>
+        <Tile style="line-height: 20px;">{getMessageText(message)}</Tile>
       {/if}
 
       <div class="utils">

@@ -1,3 +1,5 @@
+import type {LFThread} from "$lib/types/threads";
+
 const NUM_MONTHS_TO_DISPLAY = 6;
 export const monthNames = [
   'January',
@@ -148,46 +150,46 @@ export const getDateCategory = ({
 };
 
 /**
- * Organizes an array of conversations by date category and sorts the 'Old' category by date.
+ * Organizes an array of threads by date category and sorts the 'Old' category by date.
  *
- * @param {Conversation[]} conversations - The array of conversations to be organized.
+ * @param {LFThread[]} threads - The array of threads to be organized.
  * @param {Date} [today=new Date()] - The current date. Defaults to the current date. Can override for testing purposes.
- * @param {number} [numMonthsToDisplay=NUM_MONTHS_TO_DISPLAY] - The number of months to display before putting in the 'Old' category. * @returns An object with date categories as keys and arrays of conversations as values.
+ * @param {number} [numMonthsToDisplay=NUM_MONTHS_TO_DISPLAY] - The number of months to display before putting in the 'Old' category. * @returns An object with date categories as keys and arrays of threads as values.
  *
  * This function first gets the date categories and initializes the result object.
- * Then, for each conversation, it finds its date category and adds it to the corresponding array in the result.
- * Finally, it sorts the conversations in the 'Old' category by date.
+ * Then, for each thread, it finds its date category and adds it to the corresponding array in the result.
+ * Finally, it sorts the threads in the 'Old' category by date.
  */
-export const organizeConversationsByDate = (
-  conversations: Conversation[],
+export const organizeThreadsByDate = (
+  threads: LFThread[],
   today: Date = new Date(),
   numMonthsToDisplay: number = NUM_MONTHS_TO_DISPLAY
 ) => {
   const dateCategories = getDateCategories({ today, numMonthsToDisplay });
 
-  const result: { label: string; conversations: Conversation[] }[] = [];
+  const result: { label: string; threads: LFThread[] }[] = [];
 
   // Initialize result object with empty arrays for each date category and the proper labels
   for (const category of dateCategories) {
-    result.push({ label: category, conversations: [] });
+    result.push({ label: category, threads: [] });
   }
 
-  // Add conversations to the corresponding date category
-  for (const conversation of conversations) {
+  // Add threads to the corresponding date category
+  for (const thread of threads) {
     const dateCategory = getDateCategory({
-      date: new Date(conversation.inserted_at),
+      date: new Date(thread.inserted_at),
       numMonthsToDisplay,
       today
     });
     const index = dateCategories.indexOf(dateCategory);
 
-    result[index].conversations.push(conversation);
+    result[index].threads.push(thread);
   }
 
   // Sort each category by date
   for (const category of dateCategories) {
     const categoryIndex = dateCategories.indexOf(category);
-    result[categoryIndex].conversations = result[categoryIndex].conversations.sort(
+    result[categoryIndex].threads = result[categoryIndex].threads.sort(
       (a, b) => new Date(b.inserted_at).getTime() - new Date(a.inserted_at).getTime()
     );
   }

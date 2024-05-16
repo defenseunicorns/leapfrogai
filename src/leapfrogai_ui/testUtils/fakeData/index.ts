@@ -1,5 +1,6 @@
 import { faker } from '@faker-js/faker';
 import { assistantDefaults, DEFAULT_ASSISTANT_TEMP } from '../../src/lib/constants';
+import type {AssistantInput, LFAssistant} from "$lib/types/assistants";
 
 const todayOverride = new Date('2024-03-20T00:00');
 
@@ -89,7 +90,7 @@ export const fakeConversations: Conversation[] = [
   })
 ];
 
-export const getFakeAssistant = (): Assistant => {
+export const getFakeAssistant = (): LFAssistant => {
   return {
     id: faker.string.uuid(),
     ...assistantDefaults,

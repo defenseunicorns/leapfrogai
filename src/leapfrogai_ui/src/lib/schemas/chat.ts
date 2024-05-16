@@ -1,6 +1,8 @@
 import { array, object, ObjectSchema, string } from 'yup';
 import { MAX_LABEL_SIZE } from '$lib/constants';
 import { env } from '$env/dynamic/public';
+import type {NewMessageInput} from "$lib/types/messages";
+import type {Roles} from "$lib/types/threads";
 
 const contentInputSchema = string().max(Number(env.PUBLIC_MESSAGE_LENGTH_LIMIT)).required();
 
@@ -27,25 +29,15 @@ export const conversationSchema: ObjectSchema<Conversation> = object({
 
 export const conversationsSchema = array().of(conversationSchema);
 
-export const messageInputSchema = object({
+export const messageInputSchema: ObjectSchema<NewMessageInput> = object({
+  thread_id: string().required(),
   content: contentInputSchema,
-  role: string<Roles>().required()
+  role: string<'user' | 'assistant'>().required(),
+  assistantId: string().uuid().optional()
 })
   .noUnknown(true)
   .strict();
 
-export const messagesInputSchema = object({ messages: array().of(messageInputSchema).strict() })
-  .noUnknown(true)
-  .strict();
-
-export const supabaseMessagesInputSchema = messageInputSchema
-  .shape({
-    id: string().uuid().optional(),
-    conversation_id: string().uuid().required(),
-    inserted_at: string().optional()
-  })
-  .noUnknown(true)
-  .strict();
 
 export const uuidSchema = object({
   id: string().uuid().required()
@@ -53,17 +45,21 @@ export const uuidSchema = object({
   .noUnknown(true)
   .strict();
 
+export const deleteMessageSchema = object({
+  thread_id: string().required(),
+  message_id: string().required()
+});
+
 const labelSchema = string().min(1).max(MAX_LABEL_SIZE).required();
 
-export const newConversationInputSchema = object({
+export const newThreadInputSchema = object({
   label: labelSchema,
-  inserted_at: string().optional()
 })
   .noUnknown(true)
   .strict();
 
-export const updateConversationSchema = object({
-  id: string().uuid().required(),
+export const updateThreadLabelSchema = object({
+  id: string().required(),
   label: labelSchema
 })
   .noUnknown(true)

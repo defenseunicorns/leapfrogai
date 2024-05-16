@@ -1,5 +1,5 @@
 import { faker } from '@faker-js/faker';
-import { DELETE } from '../../conversations/delete/+server';
+import { DELETE } from '../../threads/delete/+server';
 import {
   sessionMock,
   sessionNullMock,
