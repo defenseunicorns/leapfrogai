@@ -13,10 +13,12 @@ from leapfrogai_api.backend.types import (
 
 assistant_response: Response
 
+client = TestClient(router)
+
 
 @pytest.fixture(scope="session", autouse=True)
-def create_assistant(client: TestClient = TestClient(router)):
-    """Test creating an assistant. Requires a running Supabase instance."""
+def create_assistant():
+    """Create an assistant for testing. Requires a running Supabase instance."""
 
     global assistant_response  # pylint: disable=global-statement
 
@@ -47,8 +49,6 @@ def test_create():
 def test_get():
     """Test getting an assistant. Requires a running Supabase instance."""
     assistant_id = assistant_response.json()["id"]
-
-    client = TestClient(router)
     get_response = client.get(f"/openai/v1/assistants/{assistant_id}")
     assert get_response.status_code is status.HTTP_200_OK
     assert Assistant.model_validate(
@@ -58,7 +58,6 @@ def test_get():
 
 def test_list():
     """Test listing assistants. Requires a running Supabase instance."""
-    client = TestClient(router)
     list_response = client.get("/openai/v1/assistants")
     assert list_response.status_code is status.HTTP_200_OK
     for assistant_object in list_response.json()["data"]:
@@ -70,9 +69,6 @@ def test_list():
 def test_modify():
     """Test modifying an assistant. Requires a running Supabase instance."""
     assistant_id = assistant_response.json()["id"]
-
-    client = TestClient(router)
-
     get_response = client.get(f"/openai/v1/assistants/{assistant_id}")
     assert get_response.status_code is status.HTTP_200_OK
     assert Assistant.model_validate(
@@ -120,7 +116,6 @@ def test_delete():
     """Test deleting an assistant. Requires a running Supabase instance."""
     assistant_id = assistant_response.json()["id"]
 
-    client = TestClient(router)
     delete_response = client.delete(f"/openai/v1/assistants/{assistant_id}")
     assert delete_response.status_code is status.HTTP_200_OK
     assert AssistantDeleted.model_validate(
@@ -134,8 +129,6 @@ def test_delete():
 def test_delete_twice():
     """Test deleting an assistant twice. Requires a running Supabase instance."""
     assistant_id = assistant_response.json()["id"]
-
-    client = TestClient(router)
     delete_response = client.delete(f"/openai/v1/assistants/{assistant_id}")
     assert delete_response.status_code is status.HTTP_200_OK
     assert AssistantDeleted.model_validate(
@@ -146,11 +139,10 @@ def test_delete_twice():
     ), f"Assistant {assistant_id} should not be able to delete twice."
 
 
-def test_delete_nonexistent():
-    """Test deleting a nonexistent assistant. Requires a running Supabase instance."""
+def test_get_nonexistent():
+    """Test getting a nonexistent assistant. Requires a running Supabase instance."""
     assistant_id = assistant_response.json()["id"]
 
-    client = TestClient(router)
     get_response = client.get(f"/openai/v1/assistants/{assistant_id}")
     assert get_response.status_code is status.HTTP_200_OK
     assert (

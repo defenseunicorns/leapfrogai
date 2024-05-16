@@ -1,31 +1,69 @@
 """Test the API endpoints for files."""
 
-from fastapi import status
+import pytest
+from fastapi import Response, status
 from fastapi.testclient import TestClient
 from openai.types import FileObject, FileDeleted
+
 from leapfrogai_api.routers.openai.files import router
+
+file_response: Response
+testfile_content: bytes
 
 client = TestClient(router)
 
 
-def test_files():
-    """Test creating a file. Requires a running Supabase instance."""
-
+@pytest.fixture(scope="session", autouse=True)
+def read_testfile():
+    """Read the test file content."""
+    global testfile_content  # pylint: disable=global-statement
     with open("tests/data/test.txt", "rb") as testfile:
         testfile_content = testfile.read()
-        create_response = client.post(
-            "/openai/v1/files",
-            files={"file": ("test.txt", testfile, "text/plain")},
-            data={"purpose": "assistants"},
-        )
 
-    assert create_response.status_code is status.HTTP_200_OK
+
+@pytest.fixture(scope="session", autouse=True)
+def create_file(read_testfile):  # pylint: disable=redefined-outer-name, unused-argument
+    """Create a file for testing. Requires a running Supabase instance."""
+
+    global file_response  # pylint: disable=global-statement
+
+    file_response = client.post(
+        "/openai/v1/files",
+        files={"file": ("test.txt", testfile_content, "text/plain")},
+        data={"purpose": "assistants"},
+    )
+
+
+def test_create():
+    """Test creating a file. Requires a running Supabase instance."""
+    assert file_response.status_code is status.HTTP_200_OK
     assert FileObject.model_validate(
-        create_response.json()
+        file_response.json()
     ), "Create should create a FileObject."
 
-    file_id = create_response.json()["id"]
 
+def test_get():
+    """Test getting a file. Requires a running Supabase instance."""
+    file_id = file_response.json()["id"]
+    get_response = client.get(f"/openai/v1/files/{file_id}")
+    assert get_response.status_code is status.HTTP_200_OK
+    assert FileObject.model_validate(
+        get_response.json()
+    ), f"Get should return FileObject {file_id}."
+
+
+def test_get_content():
+    """Test getting file content. Requires a running Supabase instance."""
+    file_id = file_response.json()["id"]
+    get_content_response = client.get(f"/openai/v1/files/{file_id}/content")
+    assert get_content_response.status_code is status.HTTP_200_OK
+    assert (
+        testfile_content.decode() in get_content_response.text
+    ), f"get_content should return the content for File {file_id}."
+
+
+def test_list():
+    """Test listing files. Requires a running Supabase instance."""
     list_response = client.get("/openai/v1/files")
     assert list_response.status_code is status.HTTP_200_OK
     for file_object in list_response.json()["data"]:
@@ -33,17 +71,10 @@ def test_files():
             file_object
         ), "List should return a list of FileObjects."
 
-    get_response = client.get(f"/openai/v1/files/{file_id}")
-    assert get_response.status_code is status.HTTP_200_OK
-    assert FileObject.model_validate(
-        get_response.json()
-    ), f"Get should return FileObject {file_id}."
 
-    get_content_response = client.get(f"/openai/v1/files/{file_id}/content")
-    assert get_content_response.status_code is status.HTTP_200_OK
-    assert (
-        testfile_content.decode() in get_content_response.text
-    ), f"get_content should return the content for File {file_id}."
+def test_delete():
+    """Test deleting a file. Requires a running Supabase instance."""
+    file_id = file_response.json()["id"]
 
     delete_response = client.delete(f"/openai/v1/files/{file_id}")
     assert delete_response.status_code is status.HTTP_200_OK
@@ -54,10 +85,12 @@ def test_files():
         delete_response.json()["deleted"] is True
     ), f"Delete should be able to delete File {file_id}."
 
+
+def test_delete_twice():
+    """Test deleting a file twice. Requires a running Supabase instance."""
+    file_id = file_response.json()["id"]
     delete_response = client.delete(f"/openai/v1/files/{file_id}")
-    assert (
-        delete_response.status_code is status.HTTP_200_OK
-    ), "Should return 200 even if the file is not found."
+    assert delete_response.status_code is status.HTTP_200_OK
     assert FileDeleted.model_validate(
         delete_response.json()
     ), "Should return a FileDeleted object."
@@ -65,7 +98,11 @@ def test_files():
         delete_response.json()["deleted"] is False
     ), f"Delete should not be able to delete File {file_id} twice."
 
-    # Make sure the file is not still present
+
+def test_get_nonexistent():
+    """Test getting a nonexistent file. Requires a running Supabase instance."""
+    file_id = file_response.json()["id"]
+
     get_response = client.get(f"/openai/v1/files/{file_id}")
     assert get_response.status_code is status.HTTP_200_OK
     assert (
