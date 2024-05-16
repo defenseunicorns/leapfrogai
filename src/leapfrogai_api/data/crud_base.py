@@ -17,8 +17,8 @@ class CRUDBase(Generic[ModelType]):
     async def create(self, db: AsyncClient, object_: ModelType) -> ModelType | None:
         """Create new row."""
         dict_ = object_.model_dump()
-        if dict_.get("id") == "":
-            del dict_["id"]
+        del dict_["id"]  # Ensure this is created by the database
+        del dict_["created_at"]  # Ensure this is created by the database
         data, _count = await db.table(self.table_name).insert(dict_).execute()
 
         _, response = data
