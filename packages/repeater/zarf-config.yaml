@@ -3,7 +3,7 @@ package:
     set:
       image_repository: "ghcr.io/defenseunicorns/leapfrogai/repeater"
       # x-release-please-start-version
-      image_version: 0.7.2
+      image_version: 0.7.3
       # x-release-please-end
       name: repeater
     max_package_size: "1000000000"
