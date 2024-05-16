@@ -21,7 +21,7 @@ async def upload_file(
         file_object = FileObject(
             id="",  # This is set by the database to prevent conflicts
             bytes=request.file.size,
-            created_at=0,  # This is set by the database to prevent conflicts
+            created_at=123,  # This is set by the database to prevent conflicts
             filename=request.file.filename,
             object="file",  # Per OpenAI Spec this should always be file
             purpose="assistants",  # we only support assistants for now
@@ -33,16 +33,20 @@ async def upload_file(
             status_code=status.HTTP_400_BAD_REQUEST, detail="Failed to parse file"
         ) from exc
 
+    crud_file_object = CRUDFileObject(model=FileObject)
+
     try:
+        file_object = await crud_file_object.create(db=session, object_=file_object)
+
         crud_file_bucket = CRUDFileBucket(model=UploadFile)
         await crud_file_bucket.upload(
             client=session, file=request.file, id_=file_object.id
         )
 
-        crud_file_object = CRUDFileObject(model=FileObject)
-        return await crud_file_object.create(db=session, object_=file_object)
+        return file_object
 
     except Exception as exc:
+        crud_file_object.delete(db=session, id_=file_object.id)
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail="Failed to store file",
