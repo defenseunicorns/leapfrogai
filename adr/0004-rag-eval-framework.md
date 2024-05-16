@@ -24,6 +24,24 @@ LeapfrogAI uses RAG to provide context-aware responses to users who have specifi
 
 Handle RAG evaluation test cases using DeepEval.
 
+With this framework in mind, the following steps can be taken to incorporate evals into LeapfrogAI:
+
+- Determine what types of tasks will help improve RAG
+  - What kinds of heuristics should be evaluated on?
+  - What do mission heroes care about?
+- Build a representative dataset
+  - What documents can be used as the basis for an eval dataset?
+  - Use those documents to generate questions/ground truth statements using DeepEval tools
+  - Refine those question/ground truth pairs
+- Begin regularly using Evals
+  - Which tests serve what purpose?
+    - e2e testing (e.g deployments are only allowed on passing evals)
+    - Baseline for performance (tracking how tests perform over time)
+    - Showing to mission heroes (what performance factors do they care about/need to see?)
+  - How are evals tracked/delivered?
+    - How are eval results conveyed?
+    - What internal tools are used to track evals over time?
+
 ## Rationale
 The major RAG evaluation frameworks all revolve around LLM-enabled evaluations. While these are fast to get running and offer a lot of flexibility, our use case will likely demand custom evaluation metrics, likely consisting of heuristics testing that do not leverage LLMs for evaluation. Among the frameworks reviewed (see [Alernatives](#alternatives)), DeepEval was found to have the most flexibility in terms of custom evaluation metrics (llm-based and non-llm), as well as what models we want to use for evaluations. DeepEval also offers a toolset for generating evaluation datasets from documentation, which will assist in setting up the datasets used for evaluations. Lastly, DeepEval's test-focused approach will integrate well with the testing workflows in LeapfrogAI.
 
