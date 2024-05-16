@@ -75,7 +75,7 @@ components:
         valuesFiles:
           - 'chart/ui-values.yaml'
         # x-release-please-start-version
-        version: 0.7.1
+        version: 0.7.2
         # x-release-please-end
     images:
       - ghcr.io/defenseunicorns/leapfrogai/leapfrogai-ui:###ZARF_PKG_TMPL_IMAGE_VERSION###
