@@ -77,7 +77,33 @@ async def retrieve_assistant(session: Session, assistant_id: str) -> Assistant |
 async def modify_assistant(
     session: Session, assistant_id: str, request: ModifyAssistantRequest
 ) -> Assistant:
-    """Modify an assistant."""
+    """
+    Modify an assistant.
+
+    Args:
+        session (Session): The database session.
+        assistant_id (str): The ID of the assistant to modify.
+        request (ModifyAssistantRequest): The request object containing the updated assistant information.
+
+    Returns:
+        Assistant: The modified assistant.
+
+    Raises:
+        HTTPException: If the assistant is not found or if there is an error parsing the request.
+
+    Note:
+        The following attributes of the assistant can be updated:
+        - name
+        - description
+        - instructions
+        - model
+        - tools
+        - tool_resources
+        - temperature
+        - top_p
+        - metadata
+        - response_format
+    """
     crud_assistant = CRUDAssistant(model=Assistant)
 
     old_assistant = await crud_assistant.get(db=session, id_=assistant_id)
