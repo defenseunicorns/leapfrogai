@@ -46,7 +46,7 @@ async def create_assistant(
 
     try:
         crud_assistant = CRUDAssistant(model=Assistant)
-        return await crud_assistant.create(assistant=assistant, client=session)
+        return await crud_assistant.create(db=session, object_=assistant)
     except Exception as exc:
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
@@ -58,7 +58,7 @@ async def create_assistant(
 async def list_assistants(session: Session) -> ListAssistantsResponse:
     """List all the assistants."""
     crud_assistant = CRUDAssistant(model=Assistant)
-    crud_response = await crud_assistant.list(client=session)
+    crud_response = await crud_assistant.list(db=session)
 
     return ListAssistantsResponse(
         object="list",
@@ -71,7 +71,7 @@ async def retrieve_assistant(session: Session, assistant_id: str) -> Assistant |
     """Retrieve an assistant."""
 
     crud_assistant = CRUDAssistant(model=Assistant)
-    return await crud_assistant.get(assistant_id=assistant_id, client=session)
+    return await crud_assistant.get(db=session, id_=assistant_id)
 
 
 @router.post("/{assistant_id}")
@@ -79,15 +79,16 @@ async def modify_assistant(
     session: Session, assistant_id: str, request: ModifyAssistantRequest
 ) -> Assistant:
     """Modify an assistant."""
+    crud_assistant = CRUDAssistant(model=Assistant)
 
-    old_assistant = await retrieve_assistant(session, assistant_id)
+    old_assistant = await crud_assistant.get(db=session, id_=assistant_id)
     if old_assistant is None:
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST, detail="Assistant not found"
         )
 
     try:
-        assistant = Assistant(
+        new_assistant = Assistant(
             id=assistant_id,
             created_at=old_assistant.created_at,
             name=request.name or old_assistant.name,
@@ -110,9 +111,8 @@ async def modify_assistant(
         ) from exc
 
     try:
-        crud_assistant = CRUDAssistant(model=Assistant)
         return await crud_assistant.update(
-            assistant_id=assistant_id, assistant=assistant, client=session
+            db=session, object_=new_assistant, id_=assistant_id
         )
     except FileNotFoundError as exc:
         raise HTTPException(
@@ -124,4 +124,9 @@ async def modify_assistant(
 async def delete_assistant(session: Session, assistant_id: str) -> AssistantDeleted:
     """Delete an assistant."""
     crud_assistant = CRUDAssistant(model=Assistant)
-    return await crud_assistant.delete(assistant_id=assistant_id, client=session)
+    assistant_deleted = await crud_assistant.delete(db=session, id_=assistant_id)
+    return AssistantDeleted(
+        id=assistant_id,
+        deleted=bool(assistant_deleted),
+        object="assistant.deleted",
+    )

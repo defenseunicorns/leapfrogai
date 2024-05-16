@@ -2,7 +2,7 @@
 create table
   assistant_objects (
     id uuid primary key DEFAULT uuid_generate_v4(),
-    created_at bigint,
+    created_at bigint default extract(epoch from now()),
     description text,
     instructions text,
     metadata jsonb,

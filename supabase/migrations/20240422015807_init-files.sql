@@ -3,7 +3,7 @@ create table
   file_objects (
     id uuid primary key DEFAULT uuid_generate_v4(),
     bytes int,
-    created_at bigint,
+    created_at bigint default extract(epoch from now()),
     filename text,
     object text,
     purpose text,

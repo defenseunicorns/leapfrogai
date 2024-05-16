@@ -13,7 +13,7 @@ router = APIRouter(prefix="/openai/v1/files", tags=["openai/files"])
 
 @router.post("")
 async def upload_file(
-    client: Session,
+    session: Session,
     request: UploadFileRequest = Depends(UploadFileRequest.as_form),
 ) -> FileObject:
     """Upload a file."""
@@ -36,9 +36,7 @@ async def upload_file(
 
     try:
         crud_file_object = CRUDFileObject(model=FileObject)
-        file_object = await crud_file_object.create(
-            file_object=file_object, client=client
-        )
+        file_object = await crud_file_object.create(db=session, object_=file_object)
 
         if not file_object:
             raise HTTPException(status_code=500, detail="Failed to create file object")
@@ -52,11 +50,11 @@ async def upload_file(
     try:
         crud_file_bucket = CRUDFileBucket(model=UploadFile)
         await crud_file_bucket.upload(
-            client=client, file=request.file, id_=file_object.id
+            client=session, file=request.file, id_=file_object.id
         )
     except Exception as exc:
         crud_file_object.delete(
-            file_id=file_object.id, client=client
+            db=session, id_=file_object.id
         )  # If we fail to upload the file, delete the file object
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
@@ -70,7 +68,7 @@ async def upload_file(
 async def list_files(session: Session) -> ListFilesResponse:
     """List all files."""
     crud_file = CRUDFileObject(model=FileObject)
-    crud_response = await crud_file.list(client=session)
+    crud_response = await crud_file.list(db=session)
 
     return ListFilesResponse(
         object="list",
@@ -79,22 +77,26 @@ async def list_files(session: Session) -> ListFilesResponse:
 
 
 @router.get("/{file_id}")
-async def retrieve_file(client: Session, file_id: str) -> FileObject | None:
+async def retrieve_file(session: Session, file_id: str) -> FileObject | None:
     """Retrieve a file."""
     crud_file = CRUDFileObject(model=FileObject)
-    return await crud_file.get(file_id=file_id, client=client)
+    return await crud_file.get(db=session, id_=file_id)
 
 
 @router.delete("/{file_id}")
 async def delete_file(session: Session, file_id: str) -> FileDeleted:
     """Delete a file."""
     crud_file_object = CRUDFileObject(model=FileObject)
-    file_deleted = await crud_file_object.delete(file_id=file_id, client=session)
+    file_deleted = await crud_file_object.delete(db=session, id_=file_id)
 
     crud_file_bucket = CRUDFileBucket(model=UploadFile)
     await crud_file_bucket.delete(client=session, id_=file_id)
 
-    return file_deleted
+    return FileDeleted(
+        id=file_id,
+        object="file",
+        deleted=bool(file_deleted),
+    )
 
 
 @router.get("/{file_id}/content")
