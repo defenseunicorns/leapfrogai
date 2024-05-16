@@ -7,12 +7,12 @@ create table
   vector_store_objects (
     id uuid primary key DEFAULT uuid_generate_v4(),
     bytes bigint,
-    created_at bigint,
+    created_at bigint default extract(epoch from now()) not null,
     file_counts jsonb,
     last_active_at bigint,
     metadata jsonb,
     name text,
-    object text,
+    object text check (object in ('vector_store')),
     status text,
     expires_after jsonb,
     expires_at bigint

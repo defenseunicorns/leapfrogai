@@ -1,12 +1,13 @@
 """OpenAI Compliant Vector Store API Router."""
 
 import time
-from fastapi import HTTPException, APIRouter
+from fastapi import HTTPException, APIRouter, status
 from openai.types.beta import VectorStore, VectorStoreDeleted
 from openai.types.beta.vector_stores import VectorStoreFile, VectorStoreFileDeleted
 from openai.types.beta.vector_store import ExpiresAfter, FileCounts
 from leapfrogai_api.backend.types import (
     CreateVectorStoreRequest,
+    ListVectorStoresResponse,
     ModifyVectorStoreRequest,
 )
 from leapfrogai_api.data.crud_vector_store_object import CRUDVectorStore
@@ -23,6 +24,8 @@ async def create_vector_store(
     session: Session, request: CreateVectorStoreRequest
 ) -> VectorStore:
     """Create a vector store."""
+
+    crud_vector_store = CRUDVectorStore(model=VectorStore)
 
     try:
         if request.file_ids == []:
@@ -43,37 +46,35 @@ async def create_vector_store(
                 or None,
                 expires_at=None,
             )
+            return await crud_vector_store.create(
+                object_=vector_store_object, db=session
+            )
         else:
             # TODO: Create a vector store from file ids
             raise HTTPException(
-                status_code=405, detail="Unable to parse vector store request"
+                status_code=405,
+                detail="Not Implemented: Cannot create vector store from list of file ids",
             )
     except Exception as exc:
         raise HTTPException(
-            status_code=405, detail="Unable to parse vector store request"
-        ) from exc
-
-    try:
-        crud_vector_store = CRUDVectorStore(model=VectorStore)
-        return await crud_vector_store.create(object_=vector_store_object, db=session)
-    except Exception as exc:
-        raise HTTPException(
-            status_code=405, detail="Unable to create vector store"
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail="Unable to create vector store",
         ) from exc
 
 
 @router.get("")
 async def list_vector_stores(
     session: Session,
-) -> list[VectorStore] | None:  # TODO: Fix return type to match OpenAI
+) -> ListVectorStoresResponse:
     """List all the vector stores."""
-    try:
-        crud_vector_store = CRUDVectorStore(model=VectorStore)
-        return await crud_vector_store.list(db=session)
-    except Exception as exc:
-        raise HTTPException(
-            status_code=500, detail="Failed to list vector stores"
-        ) from exc
+
+    crud_vector_store = CRUDVectorStore(model=VectorStore)
+    crud_response = await crud_vector_store.list(db=session)
+
+    return ListVectorStoresResponse(
+        object="list",
+        data=crud_response or [],
+    )
 
 
 @router.get("/{vector_store_id}")
@@ -81,13 +82,9 @@ async def retrieve_vector_store(
     session: Session, vector_store_id: str
 ) -> VectorStore | None:
     """Retrieve a vector store."""
-    try:
-        crud_vector_store = CRUDVectorStore(model=VectorStore)
-        return await crud_vector_store.get(db=session, id_=vector_store_id)
-    except Exception as exc:
-        raise HTTPException(
-            status_code=500, detail="Failed to retrieve vector store"
-        ) from exc
+
+    crud_vector_store = CRUDVectorStore(model=VectorStore)
+    return await crud_vector_store.get(db=session, id_=vector_store_id)
 
 
 @router.post("/{vector_store_id}")
@@ -135,20 +132,17 @@ async def delete_vector_store(
     session: Session, vector_store_id: str
 ) -> VectorStoreDeleted:
     """Delete a vector store."""
-    try:
-        crud_vector_store = CRUDVectorStore(model=VectorStore)
-        vector_store_deleted = await crud_vector_store.delete(
-            db=session, id_=vector_store_id
-        )
-        return VectorStoreDeleted(
-            id=vector_store_id,
-            object="vector_store.deleted",
-            deleted=vector_store_deleted,
-        )
-    except Exception as exc:
-        raise HTTPException(
-            status_code=500, detail="Failed to delete vector store"
-        ) from exc
+
+    crud_vector_store = CRUDVectorStore(model=VectorStore)
+
+    vector_store_deleted = await crud_vector_store.delete(
+        db=session, id_=vector_store_id
+    )
+    return VectorStoreDeleted(
+        id=vector_store_id,
+        object="vector_store.deleted",
+        deleted=bool(vector_store_deleted),
+    )
 
 
 @router.post("/{vector_store_id}/files")

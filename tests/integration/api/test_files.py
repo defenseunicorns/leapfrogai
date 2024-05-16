@@ -1,10 +1,9 @@
 """Test the API endpoints for files."""
 
-from fastapi import HTTPException
 import pytest
-from fastapi import Response, status
+from fastapi import HTTPException, Response, status
 from fastapi.testclient import TestClient
-from openai.types import FileObject, FileDeleted
+from openai.types import FileDeleted, FileObject
 from leapfrogai_api.routers.openai.files import router
 
 file_response: Response

@@ -7,6 +7,7 @@ from fastapi import UploadFile, Form, File
 from openai.types.beta.vector_store import ExpiresAfter
 from openai.types import FileObject
 from openai.types.beta import Assistant
+from openai.types.beta import VectorStore
 
 ##########
 # GENERIC
@@ -265,6 +266,13 @@ class ModifyAssistantRequest(CreateAssistantRequest):
     """Request object for modifying an assistant."""
 
 
+class ListAssistantsResponse(BaseModel):
+    """Response object for listing files."""
+
+    object: str = Literal["list"]
+    data: list[Assistant] = []
+
+
 ################
 # VECTOR STORES
 ################
@@ -283,11 +291,11 @@ class ModifyVectorStoreRequest(CreateVectorStoreRequest):
     """Request object for modifying a vector store."""
 
 
-class ListAssistantsResponse(BaseModel):
+class ListVectorStoresResponse(BaseModel):
     """Response object for listing files."""
 
     object: str = Literal["list"]
-    data: list[Assistant] = []
+    data: list[VectorStore] = []
 
 
 ################
