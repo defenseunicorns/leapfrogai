@@ -1,6 +1,5 @@
 """OpenAI Compliant Files API Router."""
 
-import time
 from fastapi import APIRouter, Depends, HTTPException, UploadFile, status
 from openai.types import FileDeleted, FileObject
 from leapfrogai_api.backend.types import ListFilesResponse, UploadFileRequest
@@ -22,7 +21,7 @@ async def upload_file(
         file_object = FileObject(
             id="",  # This is set by the database to prevent conflicts
             bytes=request.file.size,
-            created_at=int(time.time()),
+            created_at=0,  # This is set by the database to prevent conflicts
             filename=request.file.filename,
             object="file",  # Per OpenAI Spec this should always be file
             purpose="assistants",  # we only support assistants for now
@@ -35,33 +34,19 @@ async def upload_file(
         ) from exc
 
     try:
-        crud_file_object = CRUDFileObject(model=FileObject)
-        file_object = await crud_file_object.create(db=session, object_=file_object)
-
-        if not file_object:
-            raise HTTPException(status_code=500, detail="Failed to create file object")
-
-    except Exception as exc:
-        raise HTTPException(
-            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            detail="Failed to store file object",
-        ) from exc
-
-    try:
         crud_file_bucket = CRUDFileBucket(model=UploadFile)
         await crud_file_bucket.upload(
             client=session, file=request.file, id_=file_object.id
         )
+
+        crud_file_object = CRUDFileObject(model=FileObject)
+        return await crud_file_object.create(db=session, object_=file_object)
+
     except Exception as exc:
-        crud_file_object.delete(
-            db=session, id_=file_object.id
-        )  # If we fail to upload the file, delete the file object
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            detail="Failed to store file in bucket",
+            detail="Failed to store file",
         ) from exc
-
-    return file_object
 
 
 @router.get("")

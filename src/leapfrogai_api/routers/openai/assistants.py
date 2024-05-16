@@ -1,6 +1,5 @@
 """OpenAI Compliant Assistants API Router."""
 
-import time
 from fastapi import HTTPException, APIRouter, status
 from openai.types.beta import Assistant, AssistantDeleted
 from openai.types.beta.assistant import ToolResources
@@ -24,8 +23,8 @@ async def create_assistant(
 
     try:
         assistant = Assistant(
-            id="",  # Leave blank to have Postgres generate a UUID
-            created_at=int(time.time()),
+            id="",  # This is set by the database to prevent conflicts
+            created_at=0,  # This is set by the database
             name=request.name,
             description=request.description,
             instructions=request.instructions,
