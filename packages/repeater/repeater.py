@@ -3,6 +3,9 @@ import logging
 import leapfrogai_sdk
 import asyncio
 
+from leapfrogai_sdk import CompletionUsage
+from leapfrogai_sdk.chat.chat_pb2 import Usage
+
 
 class Repeater(
     leapfrogai_sdk.CompletionServiceServicer,
@@ -18,8 +21,11 @@ class Repeater(
     ) -> leapfrogai_sdk.CompletionResponse:
         result = request.prompt  # just returns what's provided
         print(f"Repeater.Complete:  { request }")
-        completion = leapfrogai_sdk.CompletionChoice(text=result, index=0)
-        return leapfrogai_sdk.CompletionResponse(choices=[completion])
+        completion = leapfrogai_sdk.CompletionChoice(text=result, index=0, finish_reason="stop")
+        return leapfrogai_sdk.CompletionResponse(
+            choices=[completion],
+            usage=CompletionUsage(prompt_tokens=1, completion_tokens=2, total_tokens=3)
+        )
 
     async def CompleteStream(
         self,
@@ -27,8 +33,11 @@ class Repeater(
         context: leapfrogai_sdk.GrpcContext,
     ) -> leapfrogai_sdk.CompletionResponse:
         for _ in range(5):
-            completion = leapfrogai_sdk.CompletionChoice(text=request.prompt, index=0)
-            yield leapfrogai_sdk.CompletionResponse(choices=[completion])
+            completion = leapfrogai_sdk.CompletionChoice(text=request.prompt, index=0, finish_reason="stop")
+            yield leapfrogai_sdk.CompletionResponse(
+                choices=[completion],
+                usage=CompletionUsage(prompt_tokens=1, completion_tokens=2, total_tokens=3)
+            )
 
     async def CreateEmbedding(
         self,
@@ -45,9 +54,13 @@ class Repeater(
         context: leapfrogai_sdk.GrpcContext,
     ) -> leapfrogai_sdk.ChatCompletionResponse:
         completion = leapfrogai_sdk.ChatCompletionChoice(
-            chat_item=request.chat_items[0]
+            chat_item=request.chat_items[0],
+            finish_reason="stop"
         )
-        return leapfrogai_sdk.ChatCompletionResponse(choices=[completion])
+        return leapfrogai_sdk.ChatCompletionResponse(
+            choices=[completion],
+            usage=Usage(prompt_tokens=1, completion_tokens=2, total_tokens=3)
+        )
 
     async def ChatCompleteStream(
         self,
@@ -56,9 +69,13 @@ class Repeater(
     ) -> leapfrogai_sdk.ChatCompletionResponse:
         for _ in range(5):
             completion = leapfrogai_sdk.ChatCompletionChoice(
-                chat_item=request.chat_items[0]
+                chat_item=request.chat_items[0],
+                finish_reason="stop"
             )
-            yield leapfrogai_sdk.ChatCompletionResponse(choices=[completion])
+            yield leapfrogai_sdk.ChatCompletionResponse(
+                choices=[completion],
+                usage=Usage(prompt_tokens=1, completion_tokens=2, total_tokens=3)
+            )
 
     async def Transcribe(
         self, request: leapfrogai_sdk.AudioRequest, context: leapfrogai_sdk.GrpcContext
