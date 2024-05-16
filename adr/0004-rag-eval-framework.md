@@ -5,7 +5,7 @@
 - [LeapfrogAI RAG Evaluations](#leapfrogai-rag-evaluations)
   - [Table of Contents](#table-of-contents)
   - [Status](#status)
-  - [Background](#background)
+  - [Context](#context)
   - [Decision](#decision)
   - [Rationale](#rationale)
   - [Alternatives](#alternatives)
