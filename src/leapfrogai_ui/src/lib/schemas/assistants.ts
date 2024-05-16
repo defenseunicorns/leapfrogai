@@ -1,4 +1,5 @@
 import { mixed, number, object, ObjectSchema, string, ValidationError } from 'yup';
+import type {AssistantInput, EditAssistantInput} from "$lib/types/assistants";
 import {
   ASSISTANTS_INSTRUCTIONS_MAX_LENGTH,
   ASSISTANTS_NAME_MAX_LENGTH,
