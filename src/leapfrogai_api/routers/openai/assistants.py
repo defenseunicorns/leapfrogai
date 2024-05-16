@@ -1,6 +1,6 @@
 """OpenAI Compliant Assistants API Router."""
 
-from fastapi import HTTPException, APIRouter, status
+from fastapi import HTTPException, APIRouter, status, Header
 from openai.types.beta import Assistant, AssistantDeleted
 from openai.types.beta.assistant import ToolResources
 from leapfrogai_api.backend.types import (
@@ -8,7 +8,7 @@ from leapfrogai_api.backend.types import (
     ListAssistantsResponse,
     ModifyAssistantRequest,
 )
-from leapfrogai_api.routers.supabase_session import Session
+from leapfrogai_api.routers.supabase_session import Session, get_user
 from leapfrogai_api.utils.openai_util import validate_tools_typed_dict
 from leapfrogai_api.data.crud_assistant_object import CRUDAssistant
 
@@ -17,7 +17,7 @@ router = APIRouter(prefix="/openai/v1/assistants", tags=["openai/assistants"])
 
 @router.post("")
 async def create_assistant(
-    session: Session, request: CreateAssistantRequest
+    session: Session, request: CreateAssistantRequest, authorization: str | None = Header(default=None)
 ) -> Assistant:
     """Create an assistant."""
 
@@ -45,7 +45,7 @@ async def create_assistant(
 
     try:
         crud_assistant = CRUDAssistant(model=Assistant)
-        return await crud_assistant.create(db=session, object_=assistant)
+        return await crud_assistant.create(db=get_user(session, authorization), object_=assistant)
     except Exception as exc:
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
