@@ -80,7 +80,7 @@ def verify_request(urls: dict[str, str], request_type: str, jwt_token: str, legi
             if not legitimate and response.status_code != 403:
                 raise Exception("An illegitimate request has been allowed")
 
-        except requests.exceptions.RequestException as e:
+        except requests.exceptions.RequestException:
             pytest.fail(f"Request failed with status code {response.status_code}", True)
 
 
