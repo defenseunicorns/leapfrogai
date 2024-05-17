@@ -8,8 +8,7 @@ from leapfrogai_api.backend.types import (
     ListAssistantsResponse,
     ModifyAssistantRequest,
 )
-from leapfrogai_api.routers.supabase_session import Session, get_user_session
-from leapfrogai_api.utils.openai_util import validate_tools_typed_dict
+from leapfrogai_api.routers.supabase_session import get_user_session
 from leapfrogai_api.data.crud_assistant_object import CRUDAssistant
 from leapfrogai_api.routers.supabase_session import Session
 
