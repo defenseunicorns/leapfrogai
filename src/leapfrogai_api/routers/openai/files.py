@@ -21,7 +21,7 @@ async def upload_file(
         file_object = FileObject(
             id="",  # This is set by the database to prevent conflicts
             bytes=request.file.size,
-            created_at=123,  # This is set by the database to prevent conflicts
+            created_at=0,  # This is set by the database to prevent conflicts
             filename=request.file.filename,
             object="file",  # Per OpenAI Spec this should always be file
             purpose="assistants",  # we only support assistants for now
