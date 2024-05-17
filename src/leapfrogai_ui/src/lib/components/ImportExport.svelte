@@ -3,7 +3,9 @@
   import { Button } from 'carbon-components-svelte';
   import LFFileUploader from '$components/LFFileUploader.svelte';
   import { threadsStore, toastStore } from '$stores';
-  import { conversationsSchema } from '$lib/schemas/chat';
+  import {threadsSchema} from "$schemas/threadSchema";
+  import type {LFThread} from "$lib/types/threads";
+
 
   const readFileAsJson = <T,>(file: File): Promise<T> => {
     return new Promise((resolve, reject) => {
@@ -27,26 +29,26 @@
   };
 
   const onUpload = async (files: FileList) => {
-    let conversations: Conversation[] = [];
+    let threads: LFThread[] = [];
     try {
-      conversations = await readFileAsJson(files[0]);
-      await conversationsSchema.validate(conversations);
+      threads = await readFileAsJson(files[0]);
+      await threadsSchema.validate(threads);
     } catch {
       toastStore.addToast({
         kind: 'error',
         title: 'Error',
-        subtitle: `Conversations are incorrectly formatted.`
+        subtitle: `Threads are incorrectly formatted.`
       });
       return;
     }
-    await threadsStore.importConversations(conversations);
+    await threadsStore.importThreads(threads);
   };
 
   const onExport = () => {
     try {
       const dataStr =
         'data:text/json; charset=utf-8,' +
-        encodeURIComponent(JSON.stringify($threadsStore.conversations));
+        encodeURIComponent(JSON.stringify($threadsStore.threads));
       const downloadAnchorNode = document.createElement('a');
 
       downloadAnchorNode.setAttribute('href', dataStr);
@@ -58,7 +60,7 @@
       toastStore.addToast({
         kind: 'error',
         title: 'Error',
-        subtitle: `Error exporting conversations.`
+        subtitle: `Error exporting threads.`
       });
     }
   };

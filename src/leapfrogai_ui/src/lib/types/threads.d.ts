@@ -11,6 +11,7 @@ export type LFThread = Thread & {
   messages?: Message[]
   metadata: {
     user_id: string;
+    label: string;
     [key: string]: unknown;
   };
 };

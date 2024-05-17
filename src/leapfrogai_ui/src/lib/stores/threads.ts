@@ -5,6 +5,7 @@ import { error } from '@sveltejs/kit';
 import { toastStore } from '$stores';
 import type { LFThread, NewThreadInput } from '$lib/types/threads';
 import type { NewMessageInput } from '$lib/types/messages';
+import { getMessageText } from '$helpers/threads';
 
 type ThreadsStore = {
   threads: LFThread[];
@@ -37,6 +38,7 @@ const createMessage = async (input: NewMessageInput) => {
       'Content-Type': 'application/json'
     }
   });
+
   if (res.ok) return res.json();
 
   return error(500, 'Error saving message');
@@ -223,16 +225,20 @@ const createThreadsStore = () => {
           createdThread.messages = [];
 
           const { messages } = thread;
+
           for (const message of messages) {
+            // todo - breaking here
             const createdMessage = await createMessage({
               role: message.role,
-              content: message.content,
+              content: getMessageText(message.content),
               thread_id: createdThread.id
             });
             createdThread.messages.push(createdMessage);
           }
+
           newThreads.push({ ...createdThread });
         } catch (e) {
+          console.log(e);
           toastStore.addToast({
             kind: 'error',
             title: 'Error',
