@@ -124,7 +124,9 @@ async def modify_assistant(
     """
     crud_assistant = CRUDAssistant(model=Assistant)
 
-    old_assistant = await crud_assistant.get(db=await get_user_session(session, authorization), id_=assistant_id)
+    old_assistant = await crud_assistant.get(
+        db=await get_user_session(session, authorization), id_=assistant_id
+    )
     if old_assistant is None:
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST, detail="Assistant not found"
