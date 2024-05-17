@@ -4,6 +4,7 @@ import os
 from typing import Annotated
 from fastapi import Depends, status, HTTPException
 from supabase_py_async import AsyncClient, create_client
+from httpx import HTTPStatusError
 
 
 async def init_supabase_client() -> AsyncClient:
@@ -34,9 +35,12 @@ async def get_user_session(session: Session, authorization: str) -> AsyncClient:
     if authorization is None:
         authorized = False
 
-    user: None = await session.auth.get_user(authorization)
+    try:
+        user: None = await session.auth.get_user(authorization)
 
-    if user is None:
+        if user is None:
+            authorized = False
+    except HTTPStatusError:
         authorized = False
 
     if not authorized:

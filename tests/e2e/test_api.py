@@ -63,15 +63,15 @@ def verify_request(urls: dict[str, str], request_type: str, jwt_token: str, legi
         try:
             if request_type == "get":
                 response = requests.get(
-                    url, headers=headers
+                    urls[url], headers=headers
                 )
             elif request_type == "post":
                 response = requests.post(
-                    url, headers=headers
+                    urls[url], headers=headers
                 )
             elif request_type == "delete":
                 response = requests.delete(
-                    url, headers=headers
+                    urls[url], headers=headers
                 )
 
             if legitimate and response.status_code == 403:
