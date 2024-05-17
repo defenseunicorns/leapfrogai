@@ -19,37 +19,21 @@ class IndexingService:
     def __init__(self, session: Session):
         self.session = session
 
-    async def _get_vector_store_file(
-        self, vector_store_id: str, file_id: str
-    ) -> VectorStoreFile | None:
-        crud_vector_store = CRUDVectorStoreFile(model=VectorStoreFile)
-        return await crud_vector_store.get(
-            db=self.session, vector_store_id=vector_store_id, file_id=file_id
-        )
-
-    async def _get_file_object(self, file_id: str):
-        crud_file_object = CRUDFileObject(model=FileObject)
-        file_object = await crud_file_object.get(db=self.session, id_=file_id)
-        if not file_object:
-            raise ValueError("File object not found")
-        return file_object
-
-    async def _get_file_bytes(self, file_id: str):
-        crud_file_bucket = CRUDFileBucket(model=UploadFile)
-        file_bytes = await crud_file_bucket.download(client=self.session, id_=file_id)
-        if not file_bytes:
-            raise ValueError("File bucket not found")
-        return file_bytes
-
     async def index_file(self, vector_store_id: str, file_id: str) -> VectorStoreFile:
         """Index a file into a vector store."""
-        vector_store_file = await self._get_vector_store_file(vector_store_id, file_id)
+        crud_vector_store = CRUDVectorStoreFile(model=VectorStoreFile)
+        vector_store_file = await crud_vector_store.get(
+            db=self.session, vector_store_id=vector_store_id, file_id=file_id
+        )
 
         if vector_store_file:
             raise ValueError("File already indexed")
 
-        file_object = await self._get_file_object(file_id)
-        file_bytes = await self._get_file_bytes(file_id)
+        crud_file_object = CRUDFileObject(model=FileObject)
+        crud_file_bucket = CRUDFileBucket(model=UploadFile)
+
+        file_object = await crud_file_object.get(db=self.session, id_=file_id)
+        file_bytes = await crud_file_bucket.download(client=self.session, id_=file_id)
 
         with tempfile.NamedTemporaryFile(suffix=file_object.filename) as temp_file:
             temp_file.write(file_bytes)
@@ -98,4 +82,6 @@ class IndexingService:
                 )
                 raise
 
-            return await self._get_vector_store_file(vector_store_id, file_id)
+            return await crud_vector_store.get(
+                db=self.session, vector_store_id=vector_store_id, file_id=file_id
+            )
