@@ -1,7 +1,6 @@
 """Indexing service for RAG files."""
 
 import tempfile
-import time
 from fastapi import UploadFile
 from openai.types import FileObject
 from openai.types.beta.vector_stores import VectorStoreFile
@@ -47,7 +46,6 @@ class IndexingService:
         vector_store_file = await self._get_vector_store_file(vector_store_id, file_id)
 
         if vector_store_file:
-            # TODO: Return a VectorStoreFile with the appropriate status
             raise ValueError("File already indexed")
 
         file_object = await self._get_file_object(file_id)
@@ -61,7 +59,7 @@ class IndexingService:
 
             vector_store_file = VectorStoreFile(
                 id=file_id,
-                created_at=int(time.time()),
+                created_at=0,
                 last_error=None,
                 object="vector_store.file",
                 status="in_progress",
@@ -73,15 +71,31 @@ class IndexingService:
                 db=self.session, object_=vector_store_file
             )
 
-            embeddings_function = LeapfrogAIEmbeddings()
-            vector_store_client = AsyncSupabaseVectorStore(
-                client=self.session, embedding=embeddings_function
-            )
+            try:
+                embeddings_function = LeapfrogAIEmbeddings()
+                vector_store_client = AsyncSupabaseVectorStore(
+                    client=self.session, embedding=embeddings_function
+                )
 
-            await vector_store_client.aadd_documents(
-                documents=chunks,
-                vector_store_id=vector_store_id,
-                file_id=file_id,
-            )
+                ids = await vector_store_client.aadd_documents(
+                    documents=chunks,
+                    vector_store_id=vector_store_id,
+                    file_id=file_id,
+                )
+
+                if len(ids) == 0:
+                    vector_store_file.status = "failed"
+                else:
+                    vector_store_file.status = "completed"
+
+                await crud_vector_store_file.update(
+                    db=self.session, id_=vector_store_file.id, object_=vector_store_file
+                )
+            except:
+                vector_store_file.status = "failed"
+                await crud_vector_store_file.update(
+                    db=self.session, id_=vector_store_file.id, object_=vector_store_file
+                )
+                raise
 
             return await self._get_vector_store_file(vector_store_id, file_id)

@@ -22,9 +22,9 @@ create table
 create table
   vector_store_file_objects (
     id uuid references file_objects (id) on delete cascade,
-    created_at bigint,
+    created_at bigint default extract(epoch from now()) not null,
     last_error jsonb,
-    object text,
+    object text check (object in ('vector_store.file')),
     status text,
     vector_store_id uuid references vector_store_objects (id) on delete cascade,
     primary key (vector_store_id, id)

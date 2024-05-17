@@ -24,37 +24,54 @@ async def create_vector_store(
     session: Session, request: CreateVectorStoreRequest
 ) -> VectorStore:
     """Create a vector store."""
-
     crud_vector_store = CRUDVectorStore(model=VectorStore)
+
+    vector_store_object = VectorStore(
+        id="",  # Leave blank to have Postgres generate a UUID
+        bytes=0,
+        created_at=0,  # Leave blank to have Postgres generate a timestamp
+        file_counts=FileCounts(
+            cancelled=0, completed=0, failed=0, in_progress=0, total=0
+        ),
+        last_active_at=None,
+        metadata=request.metadata,
+        name=request.name,
+        object="vector_store",
+        status="completed",
+        expires_after=ExpiresAfter.model_validate(request.expires_after) or None,
+        expires_at=None,
+    )
 
     try:
         if request.file_ids == []:
-            # TODO: Handle file counts, expires_after, expires_at, and last_active_at
-            vector_store_object = VectorStore(
-                id="",  # Leave blank to have Postgres generate a UUID
-                bytes=0,
-                created_at=int(time.time()),
-                file_counts=FileCounts(
-                    cancelled=0, completed=0, failed=0, in_progress=0, total=0
-                ),
-                last_active_at=None,
-                metadata=request.metadata,
-                name=request.name,
-                object="vector_store",
-                status="completed",
-                expires_after=ExpiresAfter.model_validate(request.expires_after)
-                or None,
-                expires_at=None,
-            )
+            # TODO: Handle expires_after, expires_at, and last_active_at
             return await crud_vector_store.create(
                 object_=vector_store_object, db=session
             )
         else:
-            # TODO: Create a vector store from file ids
-            raise HTTPException(
-                status_code=405,
-                detail="Not Implemented: Cannot create vector store from list of file ids",
+            vector_store = await crud_vector_store.create(
+                object_=vector_store_object, db=session
             )
+            indexing_service = IndexingService(session=session)
+            for file_id in request.file_ids:
+                response = await indexing_service.index_file(
+                    vector_store_id=vector_store.id, file_id=file_id
+                )
+
+                if response.status == "completed":
+                    vector_store.file_counts.completed += 1
+                elif response.status == "failed":
+                    vector_store.file_counts.failed += 1
+                elif response.status == "in_progress":
+                    vector_store.file_counts.in_progress += 1
+                elif response.status == "cancelled":
+                    vector_store.file_counts.cancelled += 1
+                vector_store.file_counts.total += 1
+
+            return await crud_vector_store.update(
+                id_=vector_store.id, object_=vector_store, db=session
+            )
+
     except Exception as exc:
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
