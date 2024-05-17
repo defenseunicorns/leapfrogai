@@ -1,9 +1,11 @@
+# yaml-language-server: $schema=https://raw.githubusercontent.com/defenseunicorns/uds-cli/main/uds.schema.json
+
 kind: UDSBundle
 metadata:
   name: leapfrogai
   description: A UDS bundle for deploying LeapfrogAI
   # x-release-please-start-version
-  version: 0.7.0
+  version: 0.7.2
   # x-release-please-end
 
 packages:
@@ -11,21 +13,21 @@ packages:
   - name: leapfrogai-api
     repository: ghcr.io/defenseunicorns/packages/leapfrogai/leapfrogai-api
     # x-release-please-start-version
-    ref: 0.7.0
+    ref: 0.7.2
     # x-release-please-end
 
   # Chat Model
   - name: llama-cpp-python
     repository: ghcr.io/defenseunicorns/packages/leapfrogai/llama-cpp-python
     # x-release-please-start-version
-    ref: 0.7.0
+    ref: 0.7.2
     # x-release-please-end
 
   # Text Embeddings Model
   - name: text-embeddings
     repository: ghcr.io/defenseunicorns/packages/leapfrogai/text-embeddings
     # x-release-please-start-version
-    ref: 0.7.0
+    ref: 0.7.2
     # x-release-please-end
 
   # Legacy: Backend capability for RAG and VectorDB
@@ -37,19 +39,31 @@ packages:
   - name: whisper
     repository: ghcr.io/defenseunicorns/packages/leapfrogai/whisper
     # x-release-please-start-version
-    ref: 0.7.0
+    ref: 0.7.2
     # x-release-please-end
 
   # Supabase backend for the UI and API to interface with Postgresql
   - name: supabase
-    path: ghcr.io/defenseunicorns/packages/leapfrogai/supabase
+    repository: ghcr.io/defenseunicorns/packages/leapfrogai/supabase
     # x-release-please-start-version
-    ref: 0.7.0
+    ref: 0.7.2
     # x-release-please-end
+    overrides:
+      supabase:
+        supabase-secrets-generator:
+          variables:
+            - path: "leapfrogai.sso.redirectUris"
+              name: "KEYCLOAK_REDIRECT_URIS"
+              default:
+                - "https://supabase-kong.uds.dev/auth/v1/callback"
+            - path: "leapfrogai.sso.webOrigins"
+              name: KEYCLOAK_WEB_ORIGINS
+              default:
+                - "https://ai.uds.dev"
 
   # UI - new UI TODO - point to ghcr image after Sprint 0.7.0
   - name: leapfrogai-ui
-    path: ghcr.io/defenseunicorns/packages/leapfrogai/leapfrogai-ui
+    repository: ghcr.io/defenseunicorns/packages/leapfrogai/leapfrogai-ui
     # x-release-please-start-version
-    ref: 0.7.0
+    ref: 0.7.2
     # x-release-please-end
