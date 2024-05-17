@@ -18,9 +18,9 @@ get_urls = {
 }
 
 post_urls = {
-    "assistants_url": "http://leapfrogai-api.uds.dev/openai/v1/assistants",
-    "assistants_id_url": f"http://leapfrogai-api.uds.dev/openai/v1/assistants/{test_id}",
-    "files_url": "http://leapfrogai-api.uds.dev/openai/v1/files",
+    "assistants_url": "https://leapfrogai-api.uds.dev/openai/v1/assistants",
+    "assistants_id_url": f"https://leapfrogai-api.uds.dev/openai/v1/assistants/{test_id}",
+    "files_url": "https://leapfrogai-api.uds.dev/openai/v1/files",
 }
 
 delete_urls = {
@@ -30,6 +30,44 @@ delete_urls = {
 
 # This is the anon_key for supabase, it provides access to the endpoints that would otherwise be inaccessible
 anon_key = os.environ["ANON_KEY"]
+service_key = os.environ["SERVICE_KEY"]
+
+test_email: str = "fakeuser@test.com"
+test_password: str = "password"
+
+mock_assistant_body = {
+    "name": "Test Assistant",
+    "description": "A test assistant",
+    "instructions": "Follow my instructions carefully.",
+    "model": "test-model",
+    "tools": [
+        {
+            "type": "file_search"
+        }
+    ],
+    "tool_resources": None,
+    "temperature": 0.7,
+    "top_p": 1.0,
+    "metadata": {},
+    "response_format": "auto"
+}
+
+
+def create_test_user():
+    headers = {
+        "apikey": f"{service_key}",
+        "Authorization": f"Bearer {service_key}",
+        "Content-Type": "application/json"
+    }
+    requests.post(
+        url="https://supabase-kong.uds.dev/auth/v1/signup",
+        headers=headers,
+        json={
+            "email": test_email,
+            "password": test_password,
+            "confirmPassword": test_password
+        }
+    )
 
 
 def get_jwt_token(api_key: str):
@@ -39,8 +77,8 @@ def get_jwt_token(api_key: str):
         "Content-Type": "application/json"
     }
     data = {
-        "email": "tester@test.com",
-        "password": "password"
+        "email": test_email,
+        "password": test_password
     }
 
     response = requests.post(url, headers=headers, json=data)
@@ -66,9 +104,22 @@ def verify_request(urls: dict[str, str], request_type: str, jwt_token: str, legi
                     urls[url], headers=headers
                 )
             elif request_type == "post":
-                response = requests.post(
-                    urls[url], headers=headers
-                )
+                if url == "assistants_url":
+                    response = requests.post(
+                        urls[url], headers=headers, json=mock_assistant_body
+                    )
+                elif url == "files_url":
+                    with open("test.txt", "rb") as f:
+                        files = {
+                            "file": (f"test.txt", f, "text/plain")
+                        }
+                        response = requests.post(
+                            urls[url], headers=headers, files=files
+                        )
+                elif url == "assistants_id_url":
+                    response = requests.post(
+                        urls[url], headers=headers, json=mock_assistant_body
+                    )
             elif request_type == "delete":
                 response = requests.delete(
                     urls[url], headers=headers
@@ -85,6 +136,7 @@ def verify_request(urls: dict[str, str], request_type: str, jwt_token: str, legi
 
 
 def test_api_row_level_security():
+    create_test_user()
     jwt_token = get_jwt_token(anon_key)
 
     # Confirm that legitimate requests are allowed
