@@ -3,9 +3,10 @@
   import { Button } from 'carbon-components-svelte';
   import LFFileUploader from '$components/LFFileUploader.svelte';
   import { threadsStore, toastStore } from '$stores';
-  import {threadsSchema} from "$schemas/threadSchema";
-  import type {LFThread} from "$lib/types/threads";
+  import { threadsSchema } from '$schemas/threadSchema';
+  import type { LFThread } from '$lib/types/threads';
 
+  let importing = false;
 
   const readFileAsJson = <T,>(file: File): Promise<T> => {
     return new Promise((resolve, reject) => {
@@ -29,6 +30,12 @@
   };
 
   const onUpload = async (files: FileList) => {
+    importing = true;
+    toastStore.addToast({
+      kind: 'info',
+      title: 'Info',
+      subtitle: `Importing conversations. Conversations will populate shortly...`
+    });
     let threads: LFThread[] = [];
     try {
       threads = await readFileAsJson(files[0]);
@@ -42,6 +49,7 @@
       return;
     }
     await threadsStore.importThreads(threads);
+    importing = false;
   };
 
   const onExport = () => {
@@ -71,6 +79,7 @@
     accept={['application/json']}
     icon={Download}
     labelText="Import data"
+    {importing}
     {onUpload}
   />
   <Button

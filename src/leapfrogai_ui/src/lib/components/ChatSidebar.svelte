@@ -22,6 +22,7 @@
   import { onMount } from 'svelte';
   import type { LFThread } from '$lib/types/threads';
   import { getMessageText } from '$helpers/threads';
+  import { goto } from '$app/navigation';
 
   let deleteModalOpen = false;
   let editMode = false;
@@ -79,11 +80,11 @@
   };
 
   const handleDelete = async () => {
+    deleteModalOpen = false;
     if (activeThread?.id) {
       await threadsStore.deleteThread(activeThread.id);
     }
-
-    deleteModalOpen = false;
+    await goto('/chat');
   };
 
   const handleActiveThreadChange = (id: string) => {

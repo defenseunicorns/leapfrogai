@@ -2,6 +2,12 @@ import * as yup from 'yup';
 import { array, object, string } from 'yup';
 import messageSchema from '$schemas/messageSchema';
 
+export const threadImportSchema = array().of(
+  object({
+    label: string()
+  })
+);
+
 const threadToolResourcesSchema = yup.object().shape({
   code_interpreter: yup.object().shape({
     file_ids: yup.array().of(yup.string())

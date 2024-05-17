@@ -28,9 +28,6 @@ export const load: PageServerLoad = async ({ locals: { supabase, getSession } })
     console.log(
       `error getting user profile for user_id: ${session.user.id}. ${JSON.stringify(profileError)}`
     );
-    if (session) {
-      await supabase.auth.signOut();
-    }
     throw redirect(303, '/');
   }
 

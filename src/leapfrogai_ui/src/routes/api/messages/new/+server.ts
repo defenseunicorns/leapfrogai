@@ -1,5 +1,5 @@
 import { error, json } from '@sveltejs/kit';
-import {messageInputSchema} from '$lib/schemas/chat';
+import { messageInputSchema } from '$lib/schemas/chat';
 import OpenAI from 'openai';
 import { env } from '$env/dynamic/private';
 import type { NewMessageInput } from '$lib/types/messages';
@@ -20,7 +20,6 @@ export async function POST({ request, locals: { getSession } }) {
   // Validate request body
   try {
     requestData = await request.json();
-    console.log(requestData)
     const isValid = await messageInputSchema.isValid(requestData);
     if (!isValid) error(400, 'Bad Request');
   } catch {

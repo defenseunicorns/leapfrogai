@@ -42,9 +42,9 @@ export async function DELETE({ request, locals: { supabase, getSession } }) {
     .single();
   if (profileError) {
     console.log(
-      `Error getting user profile while creating thread: ${JSON.stringify(profileError)}`
+      `Error getting user profile while deleting thread: ${JSON.stringify(profileError)}`
     );
-    error(500, 'Error creating thread');
+    error(500, 'Error deleting thread');
   }
 
   const updatedThreadIds = profile?.thread_ids.filter((id) => id !== requestData.id);

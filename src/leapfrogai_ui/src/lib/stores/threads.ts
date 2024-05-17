@@ -1,10 +1,10 @@
 import { writable } from 'svelte/store';
 import { MAX_LABEL_SIZE } from '$lib/constants';
-import { goto } from '$app/navigation';
+import { goto, invalidateAll } from '$app/navigation';
 import { error } from '@sveltejs/kit';
 import { toastStore } from '$stores';
 import type { LFThread, NewThreadInput } from '$lib/types/threads';
-import type { NewMessageInput } from '$lib/types/messages';
+import type { LFMessage, NewMessageInput } from '$lib/types/messages';
 import { getMessageText } from '$helpers/threads';
 
 type ThreadsStore = {
@@ -82,9 +82,8 @@ const updateThreadLabel = async (editThreadId: string, editLabelText: string) =>
     }
   });
 
-  if (res.ok) {
-    return;
-  }
+  if (res.ok) return;
+
   return error(500, 'Error updating thread label');
 };
 
@@ -159,7 +158,6 @@ const createThreadsStore = () => {
           ...old,
           threads: old.threads.filter((c) => c.id !== id)
         }));
-        await goto('/chat');
       } catch {
         toastStore.addToast({
           kind: 'error',
@@ -175,7 +173,9 @@ const createThreadsStore = () => {
         update((old) => {
           const threadIndex = old.threads.findIndex((c) => c.id === threadId);
           const thread = { ...old.threads[threadIndex] };
-          thread.messages = thread.messages.filter((message) => message.id !== messageId);
+          thread.messages = thread.messages.filter(
+            (message: LFMessage) => message.id !== messageId
+          );
           const updatedThreads = [...old.threads];
           updatedThreads[threadIndex] = thread;
           return {
@@ -216,7 +216,6 @@ const createThreadsStore = () => {
       }
     },
     importThreads: async (data: LFThread[]) => {
-      const newThreads: LFThread[] = [];
       for (const thread of data) {
         try {
           const createdThread = await createThread({
@@ -227,18 +226,23 @@ const createThreadsStore = () => {
           const { messages } = thread;
 
           for (const message of messages) {
-            // todo - breaking here
-            const createdMessage = await createMessage({
-              role: message.role,
-              content: getMessageText(message.content),
-              thread_id: createdThread.id
-            });
-            createdThread.messages.push(createdMessage);
+            if (message.role === 'user' || message.role === 'assistant') {
+              const createdMessage = await createMessage({
+                role: message.role,
+                content: getMessageText(message),
+                thread_id: createdThread.id
+              });
+              createdThread.messages.push(createdMessage);
+            }
           }
 
-          newThreads.push({ ...createdThread });
-        } catch (e) {
-          console.log(e);
+          update((old) => {
+            return {
+              ...old,
+              threads: [...old.threads, { ...createdThread }]
+            };
+          });
+        } catch {
           toastStore.addToast({
             kind: 'error',
             title: 'Error',
@@ -246,13 +250,6 @@ const createThreadsStore = () => {
           });
         }
       }
-
-      update((old) => {
-        return {
-          ...old,
-          threads: [...old.threads, ...newThreads]
-        };
-      });
     }
   };
 };
