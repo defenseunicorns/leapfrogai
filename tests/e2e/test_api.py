@@ -88,7 +88,7 @@ def verify_request(
     headers = (
         {"Authorization": f"Bearer {jwt_token}"}
         if legitimate
-        else {"Authorization": f"Bearer faketoken"}
+        else {"Authorization": "Bearer faketoken"}
     )
 
     # Verify that legitimate requests are not forbidden
@@ -107,7 +107,7 @@ def verify_request(
                     )
                 elif url == "files_url":
                     with open("test.txt", "rb") as f:
-                        files = {"file": (f"test.txt", f, "text/plain")}
+                        files = {"file": ("test.txt", f, "text/plain")}
                         response = requests.post(
                             urls[url], headers=headers, files=files
                         )
