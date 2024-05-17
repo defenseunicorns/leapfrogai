@@ -17,7 +17,10 @@ async def init_supabase_client() -> AsyncClient:
 Session = Annotated[AsyncClient, Depends(init_supabase_client)]
 
 
-async def get_user_session(authorization: str) -> AsyncClient:
+async def get_user_session(session: Session, authorization: str) -> AsyncClient:
+    if authorization is None:
+        return session
+
     api_key: str = authorization.replace("Bearer ", "")
     return await create_client(
         supabase_key=os.getenv("SUPABASE_ANON_KEY"),
