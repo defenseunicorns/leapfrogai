@@ -1,6 +1,5 @@
 import logging
 import uuid
-import random
 
 import pytest as pytest
 import requests
@@ -53,10 +52,8 @@ def get_jwt_token(api_key: str):
 
 
 def verify_request(urls: dict[str, str], request_type: str, jwt_token: str, legitimate: True):
-    fake_jwt_token: str = jwt_token[-8] + "fakefake"
-
     headers = {"Authorization": f"Bearer {jwt_token}"} if legitimate else {
-        "Authorization": f"Bearer {fake_jwt_token}"
+        "Authorization": f"Bearer faketoken"
     }
 
     # Verify that legitimate requests are not forbidden

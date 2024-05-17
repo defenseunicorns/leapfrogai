@@ -36,8 +36,10 @@ async def get_user_session(session: Session, authorization: str) -> AsyncClient:
     if authorization is None:
         authorized = False
 
+    api_key: str = authorization.replace("Bearer ", "")
+
     try:
-        user: None = await session.auth.get_user(authorization)
+        user: None = await session.auth.get_user(api_key)
 
         if user is None:
             authorized = False
@@ -49,7 +51,6 @@ async def get_user_session(session: Session, authorization: str) -> AsyncClient:
     if not authorized:
         raise HTTPException(status_code=status.HTTP_403_FORBIDDEN)
 
-    api_key: str = authorization.replace("Bearer ", "")
     return await create_client(
         supabase_key=os.getenv("SUPABASE_ANON_KEY"),
         supabase_url=os.getenv("SUPABASE_URL"),
