@@ -101,9 +101,9 @@ def verify_request(
             elif request_type == "post":
                 if url == "assistants_url":
                     response = requests.post(
-                        urls[url], headers=headers, json={
-                            "request": mock_assistant_body
-                        }
+                        urls[url],
+                        headers=headers,
+                        json={"request": mock_assistant_body},
                     )
                 elif url == "files_url":
                     with open("test.txt", "rb") as f:
