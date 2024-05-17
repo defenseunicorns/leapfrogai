@@ -161,9 +161,9 @@ def test_chat_completion():
         prompt_tokens = response_usage.get("prompt_tokens")
         completion_tokens = response_usage.get("completion_tokens")
         total_tokens = response_usage.get("total_tokens")
-        assert prompt_tokens == 1
-        assert completion_tokens == 2
-        assert total_tokens == 3
+        assert prompt_tokens == len(input_content)
+        assert completion_tokens == len(input_content)
+        assert total_tokens == len(input_content) * 2
 
         # validate that the repeater repeated
         assert response_choices[0].get("message").get("content") == input_content
@@ -218,9 +218,9 @@ def test_stream_chat_completion():
                     prompt_tokens = response_usage.get("prompt_tokens")
                     completion_tokens = response_usage.get("completion_tokens")
                     total_tokens = response_usage.get("total_tokens")
-                    assert prompt_tokens == 1
-                    assert completion_tokens == 2
-                    assert total_tokens == 3
+                    assert prompt_tokens == len(input_content)
+                    assert completion_tokens == len(input_content)
+                    assert total_tokens == len(input_content) * 2
 
         # The repeater only response with 5 messages
         assert iter_length == 5

@@ -26,7 +26,8 @@ class Repeater(
         )
         return leapfrogai_sdk.CompletionResponse(
             choices=[completion],
-            usage=CompletionUsage(prompt_tokens=1, completion_tokens=2, total_tokens=3),
+            usage=CompletionUsage(prompt_tokens=len(request.prompt), completion_tokens=len(request.prompt),
+                                  total_tokens=len(request.prompt) * 2),
         )
 
     async def CompleteStream(
@@ -41,7 +42,8 @@ class Repeater(
             yield leapfrogai_sdk.CompletionResponse(
                 choices=[completion],
                 usage=CompletionUsage(
-                    prompt_tokens=1, completion_tokens=2, total_tokens=3
+                    prompt_tokens=len(request.prompt), completion_tokens=len(request.prompt),
+                    total_tokens=len(request.prompt) * 2
                 ),
             )
 
@@ -64,13 +66,15 @@ class Repeater(
         )
         return leapfrogai_sdk.ChatCompletionResponse(
             choices=[completion],
-            usage=Usage(prompt_tokens=1, completion_tokens=2, total_tokens=3),
+            usage=Usage(prompt_tokens=len(request.chat_items[0].content),
+                        completion_tokens=len(request.chat_items[0].content),
+                        total_tokens=len(request.chat_items[0].content) * 2),
         )
 
     async def ChatCompleteStream(
-        self,
-        request: leapfrogai_sdk.ChatCompletionRequest,
-        context: leapfrogai_sdk.GrpcContext,
+            self,
+            request: leapfrogai_sdk.ChatCompletionRequest,
+            context: leapfrogai_sdk.GrpcContext,
     ) -> leapfrogai_sdk.ChatCompletionResponse:
         for _ in range(5):
             completion = leapfrogai_sdk.ChatCompletionChoice(
@@ -78,7 +82,9 @@ class Repeater(
             )
             yield leapfrogai_sdk.ChatCompletionResponse(
                 choices=[completion],
-                usage=Usage(prompt_tokens=1, completion_tokens=2, total_tokens=3),
+                usage=Usage(prompt_tokens=len(request.chat_items[0].content),
+                            completion_tokens=len(request.chat_items[0].content),
+                            total_tokens=len(request.chat_items[0].content) * 2),
             )
 
     async def Transcribe(
