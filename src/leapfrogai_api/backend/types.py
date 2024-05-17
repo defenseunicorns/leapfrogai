@@ -5,7 +5,8 @@ from typing import Literal
 from pydantic import BaseModel
 from fastapi import UploadFile, Form, File
 from openai.types import FileObject
-from openai.types.beta import Assistant
+from openai.types.beta import Assistant, AssistantTool
+from openai.types.beta.assistant import ToolResources
 
 ##########
 # GENERIC
@@ -250,10 +251,8 @@ class CreateAssistantRequest(BaseModel):
     name: str | None = "Froggy Assistant"
     description: str | None = "A helpful assistant."
     instructions: str | None = "You are a helpful assistant."
-    tools: list[dict[Literal["type"], Literal["file_search"]]] | None = [
-        {"type": "file_search"}
-    ]  # This is all we support right now
-    tool_resources: object | None = {}
+    tools: list[AssistantTool] | None = []  # This is all we support right now
+    tool_resources: ToolResources | None = ToolResources()
     metadata: object | None = {}
     temperature: float | None = 1.0
     top_p: float | None = 1.0
