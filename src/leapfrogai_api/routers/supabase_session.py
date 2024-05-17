@@ -40,13 +40,11 @@ async def get_user_session(session: Session, authorization: str) -> AsyncClient:
         authorized = False
 
     if not authorized:
-        raise HTTPException(
-            status_code=status.HTTP_403_FORBIDDEN
-        )
+        raise HTTPException(status_code=status.HTTP_403_FORBIDDEN)
 
     api_key: str = authorization.replace("Bearer ", "")
     return await create_client(
         supabase_key=os.getenv("SUPABASE_ANON_KEY"),
         supabase_url=os.getenv("SUPABASE_URL"),
-        access_token=api_key
+        access_token=api_key,
     )

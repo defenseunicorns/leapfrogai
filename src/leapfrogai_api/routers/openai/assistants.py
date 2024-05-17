@@ -17,7 +17,9 @@ router = APIRouter(prefix="/openai/v1/assistants", tags=["openai/assistants"])
 
 @router.post("")
 async def create_assistant(
-    session: Session, request: CreateAssistantRequest, authorization: str | None = Header(default=None)
+    session: Session,
+    request: CreateAssistantRequest,
+    authorization: str | None = Header(default=None),
 ) -> Assistant:
     """Create an assistant."""
 
@@ -45,7 +47,9 @@ async def create_assistant(
 
     try:
         crud_assistant = CRUDAssistant(model=Assistant)
-        return await crud_assistant.create(db=await get_user_session(session, authorization), object_=assistant)
+        return await crud_assistant.create(
+            db=await get_user_session(session, authorization), object_=assistant
+        )
     except Exception as exc:
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
@@ -54,10 +58,14 @@ async def create_assistant(
 
 
 @router.get("")
-async def list_assistants(session: Session, authorization: str | None = Header(default=None)) -> ListAssistantsResponse:
+async def list_assistants(
+    session: Session, authorization: str | None = Header(default=None)
+) -> ListAssistantsResponse:
     """List all the assistants."""
     crud_assistant = CRUDAssistant(model=Assistant)
-    crud_response = await crud_assistant.list(db=await get_user_session(session, authorization))
+    crud_response = await crud_assistant.list(
+        db=await get_user_session(session, authorization)
+    )
 
     return ListAssistantsResponse(
         object="list",
@@ -66,18 +74,25 @@ async def list_assistants(session: Session, authorization: str | None = Header(d
 
 
 @router.get("/{assistant_id}")
-async def retrieve_assistant(session: Session, assistant_id: str,  authorization: str | None = Header(default=None)) -> Assistant | None:
+async def retrieve_assistant(
+    session: Session,
+    assistant_id: str,
+    authorization: str | None = Header(default=None),
+) -> Assistant | None:
     """Retrieve an assistant."""
 
     crud_assistant = CRUDAssistant(model=Assistant)
-    return await crud_assistant.get(db=await get_user_session(session, authorization), id_=assistant_id)
+    return await crud_assistant.get(
+        db=await get_user_session(session, authorization), id_=assistant_id
+    )
 
 
 @router.post("/{assistant_id}")
 async def modify_assistant(
-        session: Session, assistant_id: str,
-        request: ModifyAssistantRequest,
-        authorization: str | None = Header(default=None)
+    session: Session,
+    assistant_id: str,
+    request: ModifyAssistantRequest,
+    authorization: str | None = Header(default=None),
 ) -> Assistant:
     """
     Modify an assistant.
@@ -140,7 +155,9 @@ async def modify_assistant(
 
     try:
         return await crud_assistant.update(
-            db=await get_user_session(session, authorization), object_=new_assistant, id_=assistant_id
+            db=await get_user_session(session, authorization),
+            object_=new_assistant,
+            id_=assistant_id,
         )
     except FileNotFoundError as exc:
         raise HTTPException(
@@ -150,13 +167,15 @@ async def modify_assistant(
 
 @router.delete("/{assistant_id}")
 async def delete_assistant(
-        session: Session,
-        assistant_id: str,
-        authorization: str | None = Header(default=None)
+    session: Session,
+    assistant_id: str,
+    authorization: str | None = Header(default=None),
 ) -> AssistantDeleted:
     """Delete an assistant."""
     crud_assistant = CRUDAssistant(model=Assistant)
-    assistant_deleted = await crud_assistant.delete(db=await get_user_session(session, authorization), id_=assistant_id)
+    assistant_deleted = await crud_assistant.delete(
+        db=await get_user_session(session, authorization), id_=assistant_id
+    )
     return AssistantDeleted(
         id=assistant_id,
         deleted=bool(assistant_deleted),
