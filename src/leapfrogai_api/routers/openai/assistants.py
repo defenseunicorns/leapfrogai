@@ -54,10 +54,10 @@ async def create_assistant(
 
 
 @router.get("")
-async def list_assistants(session: Session) -> ListAssistantsResponse:
+async def list_assistants(session: Session, authorization: str | None = Header(default=None)) -> ListAssistantsResponse:
     """List all the assistants."""
     crud_assistant = CRUDAssistant(model=Assistant)
-    crud_response = await crud_assistant.list(db=session)
+    crud_response = await crud_assistant.list(db=get_user(session, authorization))
 
     return ListAssistantsResponse(
         object="list",
