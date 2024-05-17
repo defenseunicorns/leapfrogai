@@ -8,7 +8,7 @@ from leapfrogai_api.backend.types import (
     ListAssistantsResponse,
     ModifyAssistantRequest,
 )
-from leapfrogai_api.routers.supabase_session import Session, get_user
+from leapfrogai_api.routers.supabase_session import Session, get_user_session
 from leapfrogai_api.utils.openai_util import validate_tools_typed_dict
 from leapfrogai_api.data.crud_assistant_object import CRUDAssistant
 
@@ -45,7 +45,7 @@ async def create_assistant(
 
     try:
         crud_assistant = CRUDAssistant(model=Assistant)
-        return await crud_assistant.create(db=get_user(session, authorization), object_=assistant)
+        return await crud_assistant.create(db=await get_user_session(authorization), object_=assistant)
     except Exception as exc:
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
@@ -57,7 +57,7 @@ async def create_assistant(
 async def list_assistants(session: Session, authorization: str | None = Header(default=None)) -> ListAssistantsResponse:
     """List all the assistants."""
     crud_assistant = CRUDAssistant(model=Assistant)
-    crud_response = await crud_assistant.list(db=get_user(session, authorization))
+    crud_response = await crud_assistant.list(db=await get_user_session(authorization))
 
     return ListAssistantsResponse(
         object="list",
