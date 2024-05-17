@@ -50,6 +50,8 @@ async def create_assistant(
         return await crud_assistant.create(
             db=await get_user_session(session, authorization), object_=assistant
         )
+    except HTTPException as exc:
+        raise exc
     except Exception as exc:
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
