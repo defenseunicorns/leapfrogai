@@ -40,16 +40,12 @@ mock_assistant_body = {
     "description": "A test assistant",
     "instructions": "Follow my instructions carefully.",
     "model": "test-model",
-    "tools": [
-        {
-            "type": "file_search"
-        }
-    ],
+    "tools": [{"type": "file_search"}],
     "tool_resources": None,
     "temperature": 0.7,
     "top_p": 1.0,
     "metadata": {},
-    "response_format": "auto"
+    "response_format": "auto",
 }
 
 
@@ -57,7 +53,7 @@ def create_test_user():
     headers = {
         "apikey": f"{service_key}",
         "Authorization": f"Bearer {service_key}",
-        "Content-Type": "application/json"
+        "Content-Type": "application/json",
     }
     requests.post(
         url="https://supabase-kong.uds.dev/auth/v1/signup",
@@ -65,34 +61,35 @@ def create_test_user():
         json={
             "email": test_email,
             "password": test_password,
-            "confirmPassword": test_password
-        }
+            "confirmPassword": test_password,
+        },
     )
 
 
 def get_jwt_token(api_key: str):
     url = "https://supabase-kong.uds.dev/auth/v1/token?grant_type=password"
-    headers = {
-        "apikey": f"{api_key}",
-        "Content-Type": "application/json"
-    }
-    data = {
-        "email": test_email,
-        "password": test_password
-    }
+    headers = {"apikey": f"{api_key}", "Content-Type": "application/json"}
+    data = {"email": test_email, "password": test_password}
 
     response = requests.post(url, headers=headers, json=data)
 
     if response.status_code != 200:
-        pytest.fail(f"Request for the JWT token failed with status code {response.status_code} expected 200", False)
+        pytest.fail(
+            f"Request for the JWT token failed with status code {response.status_code} expected 200",
+            False,
+        )
 
     return json.loads(response.content)["access_token"]
 
 
-def verify_request(urls: dict[str, str], request_type: str, jwt_token: str, legitimate: True):
-    headers = {"Authorization": f"Bearer {jwt_token}"} if legitimate else {
-        "Authorization": f"Bearer faketoken"
-    }
+def verify_request(
+    urls: dict[str, str], request_type: str, jwt_token: str, legitimate: True
+):
+    headers = (
+        {"Authorization": f"Bearer {jwt_token}"}
+        if legitimate
+        else {"Authorization": f"Bearer faketoken"}
+    )
 
     # Verify that legitimate requests are not forbidden
     for url in urls:
@@ -100,9 +97,7 @@ def verify_request(urls: dict[str, str], request_type: str, jwt_token: str, legi
 
         try:
             if request_type == "get":
-                response = requests.get(
-                    urls[url], headers=headers
-                )
+                response = requests.get(urls[url], headers=headers)
             elif request_type == "post":
                 if url == "assistants_url":
                     response = requests.post(
@@ -110,9 +105,7 @@ def verify_request(urls: dict[str, str], request_type: str, jwt_token: str, legi
                     )
                 elif url == "files_url":
                     with open("test.txt", "rb") as f:
-                        files = {
-                            "file": (f"test.txt", f, "text/plain")
-                        }
+                        files = {"file": (f"test.txt", f, "text/plain")}
                         response = requests.post(
                             urls[url], headers=headers, files=files
                         )
@@ -121,9 +114,7 @@ def verify_request(urls: dict[str, str], request_type: str, jwt_token: str, legi
                         urls[url], headers=headers, json=mock_assistant_body
                     )
             elif request_type == "delete":
-                response = requests.delete(
-                    urls[url], headers=headers
-                )
+                response = requests.delete(urls[url], headers=headers)
 
             if legitimate and response.status_code == 403:
                 response.raise_for_status()
