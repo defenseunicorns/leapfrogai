@@ -1,16 +1,15 @@
 """OpenAI Compliant Assistants API Router."""
 
-from fastapi import HTTPException, APIRouter, status
+from fastapi import APIRouter, HTTPException, status
 from openai.types.beta import Assistant, AssistantDeleted
-from openai.types.beta.assistant import ToolResources
+from openai.types.beta.assistant import ToolResources, ToolResourcesCodeInterpreter
 from leapfrogai_api.backend.types import (
     CreateAssistantRequest,
     ListAssistantsResponse,
     ModifyAssistantRequest,
 )
-from leapfrogai_api.routers.supabase_session import Session
-from leapfrogai_api.utils.openai_util import validate_tools_typed_dict
 from leapfrogai_api.data.crud_assistant_object import CRUDAssistant
+from leapfrogai_api.routers.supabase_session import Session
 
 router = APIRouter(prefix="/openai/v1/assistants", tags=["openai/assistants"])
 
@@ -21,6 +20,23 @@ async def create_assistant(
 ) -> Assistant:
     """Create an assistant."""
 
+    if request.tools is not None:
+        for tool in request.tools:
+            if tool.type not in ["file_search"]:
+                raise HTTPException(
+                    status_code=status.HTTP_400_BAD_REQUEST,
+                    detail=f"Unsupported tool type: {tool.type}",
+                )
+
+    if request.tool_resources is not None:
+        for tool_resource in request.tool_resources:
+            if tool_resource is ToolResourcesCodeInterpreter:
+                if tool_resource["file_ids"] is not None:
+                    raise HTTPException(
+                        status_code=status.HTTP_400_BAD_REQUEST,
+                        detail="Code interpreter tool is not supported",
+                    )
+
     try:
         assistant = Assistant(
             id="",  # This is set by the database to prevent conflicts
@@ -30,8 +46,8 @@ async def create_assistant(
             instructions=request.instructions,
             model=request.model,
             object="assistant",
-            tools=validate_tools_typed_dict(request.tools),
-            tool_resources=ToolResources.model_validate(request.tool_resources),
+            tools=request.tools,
+            tool_resources=request.tool_resources,
             temperature=request.temperature,
             top_p=request.top_p,
             metadata=request.metadata,
@@ -104,6 +120,24 @@ async def modify_assistant(
         - metadata
         - response_format
     """
+
+    if request.tools is not None:
+        for tool in request.tools:
+            if tool.type not in ["file_search"]:
+                raise HTTPException(
+                    status_code=status.HTTP_400_BAD_REQUEST,
+                    detail=f"Unsupported tool type: {tool.type}",
+                )
+
+    if request.tool_resources is not None:
+        for tool_resource in request.tool_resources:
+            if tool_resource is ToolResourcesCodeInterpreter:
+                if tool_resource["file_ids"] is not None:
+                    raise HTTPException(
+                        status_code=status.HTTP_400_BAD_REQUEST,
+                        detail="Code interpreter tool is not supported",
+                    )
+
     crud_assistant = CRUDAssistant(model=Assistant)
 
     old_assistant = await crud_assistant.get(db=session, id_=assistant_id)
@@ -121,10 +155,12 @@ async def modify_assistant(
             instructions=request.instructions or old_assistant.instructions,
             model=request.model or old_assistant.model,
             object="assistant",
-            tools=validate_tools_typed_dict(request.tools) or old_assistant.tools,
+            tools=request.tools or old_assistant.tools,
             tool_resources=ToolResources.model_validate(request.tool_resources)
             or old_assistant.tool_resources,
-            temperature=request.temperature or old_assistant.temperature,
+            temperature=float(request.temperature)
+            if request.temperature is not None
+            else old_assistant.temperature,
             top_p=request.top_p or old_assistant.top_p,
             metadata=request.metadata or old_assistant.metadata,
             response_format=request.response_format or old_assistant.response_format,
@@ -141,7 +177,8 @@ async def modify_assistant(
         )
     except FileNotFoundError as exc:
         raise HTTPException(
-            status_code=status.HTTP_400_BAD_REQUEST, detail="Assistant not found"
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail="Failed to update assistant",
         ) from exc
 
 
