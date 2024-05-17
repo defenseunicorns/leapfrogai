@@ -33,6 +33,10 @@ class IndexingService:
         crud_file_bucket = CRUDFileBucket(model=UploadFile)
 
         file_object = await crud_file_object.get(db=self.session, id_=file_id)
+
+        if not file_object:
+            raise ValueError("File not found")
+
         file_bytes = await crud_file_bucket.download(client=self.session, id_=file_id)
 
         with tempfile.NamedTemporaryFile(suffix=file_object.filename) as temp_file:
