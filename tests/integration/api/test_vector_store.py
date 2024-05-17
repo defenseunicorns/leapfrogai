@@ -1,7 +1,7 @@
 """Test the API endpoints for assistants."""
 
 import pytest
-from fastapi import Response
+from fastapi import Response, status
 from fastapi.testclient import TestClient
 from openai.types.beta import VectorStore, VectorStoreDeleted
 from openai.types.beta.vector_store import ExpiresAfter
@@ -36,7 +36,7 @@ def create_vector_store():
 
 def test_create():
     """Test creating a vector store. Requires a running Supabase instance."""
-    assert vector_store_response.status_code == 200
+    assert vector_store_response.status_code == status.HTTP_200_OK
     assert VectorStore.model_validate(
         vector_store_response.json()
     ), "Create should create a VectorStore."
@@ -46,7 +46,7 @@ def test_get():
     """Test getting a vector store. Requires a running Supabase instance."""
     vector_store_id = vector_store_response.json()["id"]
     get_response = client.get(f"/openai/v1/vector_store/{vector_store_id}")
-    assert get_response.status_code == 200
+    assert get_response.status_code == status.HTTP_200_OK
     assert VectorStore.model_validate(
         get_response.json()
     ), f"Get should return VectorStore {vector_store_id}."
@@ -55,7 +55,7 @@ def test_get():
 def test_list():
     """Test listing vector stores. Requires a running Supabase instance."""
     list_response = client.get("/openai/v1/vector_store")
-    assert list_response.status_code == 200
+    assert list_response.status_code == status.HTTP_200_OK
     for vector_store_object in list_response.json()["data"]:
         assert VectorStore.model_validate(
             vector_store_object
@@ -76,7 +76,7 @@ def test_modify():
         f"/openai/v1/vector_store/{vector_store_id}",
         json=request.model_dump(),
     )
-    assert modify_response.status_code == 200
+    assert modify_response.status_code == status.HTTP_200_OK
     assert VectorStore.model_validate(
         modify_response.json()
     ), "Should return a VectorStore."
@@ -87,7 +87,7 @@ def test_get_modified():
     """Test getting a modified vector store. Requires a running Supabase instance."""
     vector_store_id = vector_store_response.json()["id"]
     get_modified_response = client.get(f"/openai/v1/vector_store/{vector_store_id}")
-    assert get_modified_response.status_code == 200
+    assert get_modified_response.status_code == status.HTTP_200_OK
     assert VectorStore.model_validate(
         get_modified_response.json()
     ), f"Get should return modified VectorStore {vector_store_id}."
@@ -98,7 +98,7 @@ def test_delete():
     """Test deleting a vector store. Requires a running Supabase instance."""
     vector_store_id = vector_store_response.json()["id"]
     delete_response = client.delete(f"/openai/v1/vector_store/{vector_store_id}")
-    assert delete_response.status_code == 200
+    assert delete_response.status_code == status.HTTP_200_OK
     assert VectorStoreDeleted.model_validate(
         delete_response.json()
     ), "Should return a VectorStoreDeleted object."
@@ -109,7 +109,7 @@ def test_delete_twice():
     """Test deleting a vector store twice. Requires a running Supabase instance."""
     vector_store_id = vector_store_response.json()["id"]
     delete_response = client.delete(f"/openai/v1/vector_store/{vector_store_id}")
-    assert delete_response.status_code == 200
+    assert delete_response.status_code == status.HTTP_200_OK
     assert VectorStoreDeleted.model_validate(
         delete_response.json()
     ), "Should return a VectorStoreDeleted object."
@@ -122,7 +122,7 @@ def test_get_nonexistent():
     """Test getting a nonexistent vector store. Requires a running Supabase instance."""
     vector_store_id = vector_store_response.json()["id"]
     get_response = client.get(f"/openai/v1/vector_store/{vector_store_id}")
-    assert get_response.status_code == 200
+    assert get_response.status_code == status.HTTP_200_OK
     assert (
         get_response.json() is None
     ), f"Get should not return deleted VectorStore {vector_store_id}."
