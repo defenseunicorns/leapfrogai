@@ -22,7 +22,7 @@ Setup environment variables:
 
 ``` bash
 export SUPABASE_URL="http://localhost:54321" # or whatever you configured it as in your Supabase config.toml
-export SUPABASE_SERVICE_KEY="<YOUR_KEY>" # supabase status will show you the keys
+export SUPABASE_ANON_KEY="<YOUR_KEY>" # supabase status will show you the keys
 ```
 
 ## Integration Tests
@@ -41,3 +41,7 @@ From this directory run:
 ``` bash
 make test-integration
 ```
+
+## Notes
+
+* All API calls to `assistants` or `files` endpoints must be authenticated via a Supabase JWT token in the message's `Authorization` header.
