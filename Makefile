@@ -53,7 +53,7 @@ setup-package: sdk-wheel
 setup-api-deps: PKG_DEST = packages/api
 setup-api-deps: setup-package ## Download the wheels for the leapfrogai_api dependencies
 	-rm -rf ${PKG_DEST}/src/leapfrogai_api
-	cp -r "src/leapfrogai_api" "${PKG_DEST}/src/leapfrogai_api"
+	cp -r src/leapfrogai_api ${PKG_DEST}/src/leapfrogai_api
 
 build-api: local-registry setup-api-deps ## Build the leapfrogai_api container and Zarf package
 	## Build the image (and tag it for the local registry)

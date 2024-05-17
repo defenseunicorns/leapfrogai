@@ -7,15 +7,15 @@ WORKDIR /leapfrogai
 
 # copy source
 USER root
-COPY src ./src
-RUN chown -R nonroot:nonroot ./src
+COPY src src
+RUN chown -R nonroot:nonroot src
 USER nonroot
 
 # build sdk
-RUN python -m pip wheel ./src/leapfrogai_sdk -w build
+RUN python -m pip wheel src/leapfrogai_sdk -w build
 
 # build api
-RUN python -m pip wheel ./src/leapfrogai_api -w build --find-links=build/
+RUN python -m pip wheel src/leapfrogai_api -w build --find-links=build/
 
 # install
 RUN cp build/leapfrogai_api-*.whl .
