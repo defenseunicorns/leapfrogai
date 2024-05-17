@@ -75,7 +75,6 @@ async def split(docs: list[Document]) -> list[Document]:
 async def embed_chunks(chunks: list[Document]) -> list[list[float]]:
     """Embed chunks into a document."""
 
-    # TODO: Eliminate hardcoded model name.
     model = get_model_config().get_model_backend(os.getenv("DEFAULT_EMBEDDINGS_MODEL"))
 
     if model is None:
