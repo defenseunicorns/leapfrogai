@@ -18,6 +18,8 @@ variables:
   - name: EXPOSE_OPENAPI_SCHEMA
     default: "false"
     description: "Flag to expose the OpenAPI schema for debugging."
+  - name: HOSTED_DOMAIN
+    default: "uds.dev"
 
 components:
   - name: leapfrogai
