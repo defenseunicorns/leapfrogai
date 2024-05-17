@@ -1,5 +1,4 @@
 ARG ARCH=amd64
-ARG SDK_SRC=src/leapfrogai_sdk
 
 FROM ghcr.io/defenseunicorns/leapfrogai/python:3.11-dev-${ARCH} as builder
 

@@ -5,8 +5,7 @@ REG_PORT ?= 5000
 VERSION ?= $(shell git describe --abbrev=0 --tags)
 LOCAL_VERSION ?= $(shell git rev-parse --short HEAD)
 
-SDK_SRC = src/leapfrogai_sdk
-SDK_DEST = src/leapfrogai_sdk/build
+SDK_DEST ?= src/leapfrogai_sdk/build
 
 ######################################################################################
 
@@ -35,7 +34,12 @@ gen-python: ## Generate the protobufs for the OpenAI typing within the leapfroga
 local-registry: ## Start up a local container registry. Errors in this target are ignored.
 	-docker run -d -p ${REG_PORT}:5000 --restart=always --name registry registry:2
 
-sdk-wheel: ## build wheels for the leapfrogai_sdk package as a dependency for other lfai components
+sdk-wheel: ## build the wheels for the leapfrogai_sdk locally
+	-rm ${SDK_DEST}/*.whl
+	python -m pip wheel src/leapfrogai_sdk -w ${SDK_DEST}
+	
+sdk-wheel-pack: SDK_SRC = src/leapfrogai_sdk
+sdk-wheel-pack: ## build wheels for the leapfrogai_sdk package as a dependency for other lfai components
 	-mkdir -p ${PKG_DEST}/${SDK_SRC}
 	-rm -rf ${PKG_DEST}/${SDK_SRC}
 	cp -r ${SDK_SRC} ${PKG_DEST}/${SDK_SRC}
@@ -44,7 +48,7 @@ build-supabase:
 	## Build the Zarf package
 	uds zarf package create packages/supabase -o packages/supabase --set IMAGE_VERSION=${LOCAL_VERSION} --confirm
 
-setup-package: sdk-wheel
+setup-package: sdk-wheel-pack
 	-mkdir -p ${PKG_DEST}/src
 
 	-rm ${PKG_DEST}/build/*.whl
@@ -57,7 +61,7 @@ setup-api-deps: setup-package ## Download the wheels for the leapfrogai_api depe
 
 build-api: local-registry setup-api-deps ## Build the leapfrogai_api container and Zarf package
 	## Build the image (and tag it for the local registry)
-	docker build --platform=linux/${ARCH} -t ghcr.io/defenseunicorns/leapfrogai/leapfrogai-api:${LOCAL_VERSION} packages/api --build-arg ARCH=${ARCH} --build-arg SDK_SRC=${SDK_SRC}
+	docker build --platform=linux/${ARCH} -t ghcr.io/defenseunicorns/leapfrogai/leapfrogai-api:${LOCAL_VERSION} packages/api --build-arg ARCH=${ARCH}
 	docker tag ghcr.io/defenseunicorns/leapfrogai/leapfrogai-api:${LOCAL_VERSION} localhost:${REG_PORT}/defenseunicorns/leapfrogai/leapfrogai-api:${LOCAL_VERSION}
 
 	## Push the image to the local registry (Zarf is super slow if the image is only in the local daemon)
@@ -90,7 +94,7 @@ build-llama-cpp-python: local-registry setup-package ## Build the llama-cpp-pyth
 	## Build the Zarf package
 	uds zarf package create packages/llama-cpp-python -o packages/llama-cpp-python --registry-override=ghcr.io=localhost:${REG_PORT} --insecure --set IMAGE_VERSION=${LOCAL_VERSION} --confirm
 
-setup-vllm-deps: sdk-wheel ## Download the wheels for the optional 'vllm' dependencies
+setup-vllm-deps: sdk-wheel-pack ## Download the wheels for the optional 'vllm' dependencies
 	-rm packages/vllm/build/*.whl
 	python -m pip wheel packages/vllm -w packages/vllm/build --find-links=${SDK_DEST}
 

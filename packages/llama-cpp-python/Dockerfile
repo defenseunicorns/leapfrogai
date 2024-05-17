@@ -24,8 +24,6 @@ ENV PATH="/leapfrogai/.venv/bin:$PATH"
 
 # copy the llama-cpp-python build dependencies over
 # NOTE: We are copying to this filename because installing 'optional extras' from a wheel requires the absolute path to the wheel file (instead of a wildcard whl)
-#COPY build/*.whl build/
-#COPY build/lfai_llama_cpp_python*.whl .
 
 # copy source
 USER root
