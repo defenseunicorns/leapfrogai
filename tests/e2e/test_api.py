@@ -7,27 +7,25 @@ import os
 import json
 
 logger = logging.getLogger(__name__)
-test_file_id = str(uuid.uuid4())
+test_id = str(uuid.uuid4())
 
 get_urls = {
     "assistants_url": "http://leapfrogai-api.uds.dev/openai/v1/assistants",
+    "assistants_id_url": f"http://leapfrogai-api.uds.dev/openai/v1/assistants/{test_id}",
     "files_url": "http://leapfrogai-api.uds.dev/openai/v1/files",
-    "files_specific_url": f"http://leapfrogai-api.uds.dev/openai/v1/files/{test_file_id}",
-    "files_specific_content_url": f"http://leapfrogai-api.uds.dev/openai/v1/files/{test_file_id}/content",
+    "files_specific_url": f"http://leapfrogai-api.uds.dev/openai/v1/files/{test_id}",
+    "files_specific_content_url": f"http://leapfrogai-api.uds.dev/openai/v1/files/{test_id}/content",
 }
 
 post_urls = {
     "assistants_url": "http://leapfrogai-api.uds.dev/openai/v1/assistants",
+    "assistants_id_url": f"http://leapfrogai-api.uds.dev/openai/v1/assistants/{test_id}",
     "files_url": "http://leapfrogai-api.uds.dev/openai/v1/files",
-    "files_specific_url": f"http://leapfrogai-api.uds.dev/openai/v1/files/{test_file_id}",
-    "files_specific_content_url": f"http://leapfrogai-api.uds.dev/openai/v1/files/{test_file_id}/content",
 }
 
 delete_urls = {
-    "assistants_url": "http://leapfrogai-api.uds.dev/openai/v1/assistants",
-    "files_url": "http://leapfrogai-api.uds.dev/openai/v1/files",
-    "files_specific_url": f"http://leapfrogai-api.uds.dev/openai/v1/files/{test_file_id}",
-    "files_specific_content_url": f"http://leapfrogai-api.uds.dev/openai/v1/files/{test_file_id}/content",
+    "assistants_id_url": f"http://leapfrogai-api.uds.dev/openai/v1/assistants/{test_id}",
+    "files_specific_url": f"http://leapfrogai-api.uds.dev/openai/v1/files/{test_id}",
 }
 
 # This is the anon_key for supabase, it provides access to the endpoints that would otherwise be inaccessible
@@ -53,14 +51,48 @@ def get_jwt_token(api_key: str):
     return json.loads(response.content)["access_token"]
 
 
-def test_api():
+def verify_request(urls: dict[str, str], request_type: str, jwt_token: str, legitimate: True):
+    headers = {"Authorization": "Bearer " + jwt_token} if legitimate else {
+        "Authorization": "Bearer " + str(uuid.uuid4())
+    }
+
+    # Verify that legitimate requests are not forbidden
+    for url in urls:
+        response: requests.Response | None = None
+
+        try:
+            if request_type == "get":
+                response = requests.get(
+                    url, headers=headers
+                )
+            elif request_type == "post":
+                response = requests.post(
+                    url, headers=headers
+                )
+            elif request_type == "delete":
+                response = requests.delete(
+                    url, headers=headers
+                )
+
+            if legitimate and response.status_code == 403:
+                response.raise_for_status()
+
+            if not legitimate and response.status_code != 403:
+                raise Exception("An illegitimate request has been allowed")
+
+        except requests.exceptions.RequestException as e:
+            pytest.fail(f"Request failed with status code {response.status_code}", True)
+
+
+def test_api_row_level_security():
     jwt_token = get_jwt_token(anon_key)
 
-    try:
-        for url_name in get_urls:
-            response = requests.get(
-                get_urls[url_name], headers={"Authorization": "Bearer " + jwt_token}
-            )
-            response.raise_for_status()
-    except requests.exceptions.RequestException as e:
-        pytest.fail(f"Request failed with status code {response.status_code}", True)
+    # Confirm that legitimate requests are allowed
+    verify_request(get_urls, "get", jwt_token, True)
+    verify_request(post_urls, "post", jwt_token, True)
+    verify_request(delete_urls, "delete", jwt_token, True)
+
+    # Confirm that illegitimate requests are not
+    verify_request(get_urls, "get", jwt_token, False)
+    verify_request(post_urls, "post", jwt_token, False)
+    verify_request(delete_urls, "delete", jwt_token, False)

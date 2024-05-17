@@ -34,14 +34,14 @@ async def get_user_session(session: Session, authorization: str) -> AsyncClient:
     if authorization is None:
         authorized = False
 
-    user: None = session.auth.get_user(authorization)
+    user: None = await session.auth.get_user(authorization)
 
     if user is None:
         authorized = False
 
     if not authorized:
         raise HTTPException(
-            status_code=status.HTTP_401_UNAUTHORIZED, detail="Invalid JWT token"
+            status_code=status.HTTP_403_FORBIDDEN
         )
 
     api_key: str = authorization.replace("Bearer ", "")
