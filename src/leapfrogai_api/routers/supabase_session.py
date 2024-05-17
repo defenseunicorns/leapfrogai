@@ -2,7 +2,7 @@
 
 import os
 from typing import Annotated
-from fastapi import Depends
+from fastapi import Depends, status, HTTPException
 from supabase_py_async import AsyncClient, create_client
 
 
@@ -29,8 +29,20 @@ async def get_user_session(session: Session, authorization: str) -> AsyncClient:
         user_client (AsyncClient): a client instantiated with a session associated with the JWT token
     """
 
+    authorized = True
+
     if authorization is None:
-        return session
+        authorized = False
+
+    user: None = session.auth.get_user(authorization)
+
+    if user is None:
+        authorized = False
+
+    if not authorized:
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED, detail="Invalid JWT token"
+        )
 
     api_key: str = authorization.replace("Bearer ", "")
     return await create_client(
