@@ -1,4 +1,4 @@
-from typing import Any, Generator, List, Optional
+from typing import Any, Generator, List, Optional, AsyncGenerator
 
 from pydantic import BaseModel
 
@@ -108,7 +108,7 @@ def LLM(_cls):
 
         def _build_gen_stream(
             self, prompt: str, request: ChatCompletionRequest | CompletionRequest
-        ) -> Generator[str, Any, Any]:
+        ) -> AsyncGenerator[str, Any, Any]:
             config = GenerationConfig(
                 max_new_tokens=request.max_new_tokens,
                 temperature=request.temperature,
@@ -137,7 +137,7 @@ def LLM(_cls):
             gen_stream = self._build_gen_stream(prompt, request)
 
             content = ""
-            for text_chunk in gen_stream:
+            async for text_chunk in gen_stream:
                 content += text_chunk
 
             completion_token_count: int = await self.count_tokens(content)
@@ -157,7 +157,7 @@ def LLM(_cls):
 
         async def ChatCompleteStream(
             self, request: ChatCompletionRequest, context: GrpcContext
-        ) -> Generator[ChatCompletionResponse, Any, Any]:
+        ) -> AsyncGenerator[ChatCompletionResponse, Any, Any]:
             prompt = self.config.apply_chat_template(request.chat_items)
 
             gen_stream = self._build_gen_stream(prompt, request)
@@ -165,7 +165,7 @@ def LLM(_cls):
             last_delta: str | None = None
             response_str: str = ""
 
-            for text_chunk in gen_stream:
+            async for text_chunk in gen_stream:
                 if last_delta:
                     last_response: ChatCompletionResponse = (
                         create_chat_completion_response(last_delta, FinishReason.NONE)
@@ -200,7 +200,7 @@ def LLM(_cls):
             gen_stream = self._build_gen_stream(request.prompt, request)
 
             content = ""
-            for text_chunk in gen_stream:
+            async for text_chunk in gen_stream:
                 content += text_chunk
 
             completion_token_count: int = await self.count_tokens(content)
@@ -218,12 +218,12 @@ def LLM(_cls):
 
         async def CompleteStream(
             self, request: CompletionRequest, context: GrpcContext
-        ) -> Generator[CompletionResponse, Any, Any]:
+        ) -> AsyncGenerator[CompletionResponse, Any, Any]:
             gen_stream = self._build_gen_stream(request.prompt, request)
             last_delta: str | None = None
             response_str: str = ""
 
-            for text_chunk in gen_stream:
+            async for text_chunk in gen_stream:
                 if last_delta:
                     last_response = create_completion_response(
                         text=last_delta, finish_reason=FinishReason.NONE

@@ -7,7 +7,7 @@ import random
 import sys
 import threading
 import time
-from typing import Any, Generator, Dict
+from typing import Any, Generator, Dict, AsyncGenerator
 
 from confz import EnvSource
 from dotenv import load_dotenv
@@ -256,7 +256,7 @@ class Model:
 
     def generate(
         self, prompt: str, config: GenerationConfig
-    ) -> Generator[str, Any, Any]:
+    ) -> AsyncGenerator[str, Any, Any]:
         """Initiate and manage the generation process for a given prompt, yielding generated text segments."""
 
         request_id = random_uuid()

@@ -1,9 +1,10 @@
 import os
-from typing import Any, Generator
+from typing import Any, AsyncGenerator
+
+from llama_cpp import Llama
 
 from leapfrogai_sdk import BackendConfig
 from leapfrogai_sdk.llm import LLM, GenerationConfig
-from llama_cpp import Llama
 
 GPU_ENABLED = (
     False if os.environ.get("GPU_ENABLED", "False").lower() != "true" else True
@@ -22,7 +23,7 @@ class Model:
 
     def generate(
         self, prompt: str, config: GenerationConfig
-    ) -> Generator[str, Any, Any]:
+    ) -> AsyncGenerator[str, Any, Any]:
         for res in self.llm(
             prompt,
             stream=True,
