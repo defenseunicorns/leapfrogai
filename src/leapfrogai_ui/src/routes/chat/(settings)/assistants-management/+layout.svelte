@@ -15,6 +15,10 @@
     {
       path: '/chat/assistants-management/new',
       name: 'New Assistant'
+    },
+    {
+      path: '/chat/assistants-management/edit',
+      name: 'Edit Assistant'
     }
   ];
 </script>
