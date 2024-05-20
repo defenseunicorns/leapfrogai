@@ -226,6 +226,7 @@ async def list_vector_store_files(
             status_code=500, detail="Failed to list vector store files"
         ) from exc
 
+
 @router.get("/{vector_store_id}/files/{file_id}")
 async def retrieve_vector_store_file(
     session: Session, vector_store_id: str, file_id: str
