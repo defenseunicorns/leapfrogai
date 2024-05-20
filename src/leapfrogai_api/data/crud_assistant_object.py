@@ -1,4 +1,5 @@
 """CRUD Operations for Assistant."""
+import logging
 
 from pydantic import Field
 
@@ -22,6 +23,7 @@ class CRUDAssistant(CRUDBase[AuthAssistant]):
         auth_assistant: AuthAssistant = AuthAssistant(
             user_id=(await db.auth.get_user()).user.id, **object_.dict()
         )
+        logging.getLogger().info((await db.auth.get_user()).user.id)
         return await super().create(db=db, object_=auth_assistant)
 
     async def get(self, id_: str, db: AsyncClient) -> AuthAssistant | None:
