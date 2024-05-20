@@ -3,6 +3,7 @@
 import asyncio
 import logging
 from contextlib import asynccontextmanager
+from http.client import HTTPException
 
 from fastapi import FastAPI, Request
 
@@ -50,7 +51,12 @@ async def verify_supabase_auth(request: Request, call_next):
     else:
         anon_session = await init_supabase_client()
         authorization_header = request.headers.get("authorization")
-        await validate_user_authorization(anon_session, authorization_header)
+
+        try:
+            await validate_user_authorization(anon_session, authorization_header)
+        except HTTPException as e:
+            return e
+
         return await call_next(request)
 
 
