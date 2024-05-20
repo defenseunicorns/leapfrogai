@@ -1,5 +1,5 @@
 import { error } from '@sveltejs/kit';
-import { updateConversationSchema } from '../../../../../schemas/chat';
+import { updateConversationSchema } from '$lib/schemas/chat';
 
 export async function PUT({ request, locals: { supabase, getSession } }) {
   const session = await getSession();
