@@ -22,12 +22,12 @@ LFAI_CONFIG_FILEPATH = os.path.join(LFAI_CONFIG_PATH, LFAI_CONFIG_FILENAME)
 
 
 @pytest.fixture
-def remove_supabase_middleware():
+def remove_auth_middleware():
     app.user_middleware.clear()
     app.middleware_stack = app.build_middleware_stack()
 
 
-def test_config_load(remove_supabase_middleware):
+def test_config_load(remove_auth_middleware):
     """Test that the config is loaded correctly."""
     with TestClient(app) as client:
         response = client.get("/models")
@@ -39,7 +39,7 @@ def test_config_load(remove_supabase_middleware):
         }
 
 
-def test_config_delete(tmp_path, remove_supabase_middleware):
+def test_config_delete(tmp_path, remove_auth_middleware):
     """Test that the config is deleted correctly."""
     # move repeater-test-config.yaml to temp dir so that we can remove it at a later step
     tmp_config_filepath = shutil.copyfile(
@@ -125,7 +125,7 @@ def test_healthz():
     os.environ.get("LFAI_RUN_REPEATER_TESTS") != "true",
     reason="LFAI_RUN_REPEATER_TESTS envvar was not set to true",
 )
-def test_embedding(remove_supabase_middleware):
+def test_embedding(remove_auth_middleware):
     """Test the embedding endpoint."""
     expected_embedding = [0.0 for _ in range(10)]
 
@@ -155,7 +155,7 @@ def test_embedding(remove_supabase_middleware):
     os.environ.get("LFAI_RUN_REPEATER_TESTS") != "true",
     reason="LFAI_RUN_REPEATER_TESTS envvar was not set to true",
 )
-def test_chat_completion(remove_supabase_middleware):
+def test_chat_completion(remove_auth_middleware):
     """Test the chat completion endpoint."""
     with TestClient(app) as client:
         input_content = "this is the chat completion input."
@@ -188,7 +188,7 @@ def test_chat_completion(remove_supabase_middleware):
     os.environ.get("LFAI_RUN_REPEATER_TESTS") != "true",
     reason="LFAI_RUN_REPEATER_TESTS envvar was not set to true",
 )
-def test_stream_chat_completion(remove_supabase_middleware):
+def test_stream_chat_completion(remove_auth_middleware):
     """Test the stream chat completion endpoint."""
     with TestClient(app) as client:
         input_content = "this is the stream chat completion input."
