@@ -16,6 +16,13 @@ from leapfrogai_sdk import (
     CompletionUsage,
 )
 from leapfrogai_sdk.chat.chat_pb2 import Usage
+from enum import Enum
+
+
+class FinishReason(Enum):
+    NONE = ""
+    STOP = "stop"
+    LENGTH = "length"
 
 
 class GenerationConfig(BaseModel):
@@ -47,7 +54,7 @@ def LLM(_cls):
 
     def create_chat_completion_response(
         text: str,
-        finish_reason: str = "",
+        finish_reason: FinishReason = FinishReason.NONE,
         prompt_tokens: int = -1,
         completion_tokens: int = -1,
     ) -> ChatCompletionResponse:
@@ -66,13 +73,13 @@ def LLM(_cls):
             choices=[choice], usage=usage
         )
 
-        response.choices[0].finish_reason = finish_reason
+        response.choices[0].finish_reason = str(finish_reason)
 
         return response
 
     def create_completion_response(
         text: str,
-        finish_reason: str = "",
+        finish_reason: FinishReason = FinishReason.NONE,
         prompt_tokens: int = -1,
         completion_tokens: int = -1,
     ) -> CompletionResponse:
@@ -88,7 +95,7 @@ def LLM(_cls):
 
         response: CompletionResponse = CompletionResponse(choices=[choice], usage=usage)
 
-        response.choices[0].finish_reason = finish_reason
+        response.choices[0].finish_reason = str(finish_reason)
 
         return response
 
@@ -136,9 +143,9 @@ def LLM(_cls):
             completion_token_count: int = await self.count_tokens(content)
 
             if completion_token_count < request.max_new_tokens:
-                finish_reason = "stop"
+                finish_reason: FinishReason = FinishReason.STOP
             else:
-                finish_reason = "length"
+                finish_reason: FinishReason = FinishReason.LENGTH
 
             prompt_token_count: int = await self.count_tokens(prompt)
 
@@ -161,7 +168,7 @@ def LLM(_cls):
             for text_chunk in gen_stream:
                 if last_delta:
                     last_response: ChatCompletionResponse = (
-                        create_chat_completion_response(last_delta, "")
+                        create_chat_completion_response(last_delta, FinishReason.NONE)
                     )
                     response_str += last_delta
 
@@ -175,9 +182,9 @@ def LLM(_cls):
             completion_token_count: int = await self.count_tokens(response_str)
 
             if completion_token_count < request.max_new_tokens:
-                finish_reason = "stop"
+                finish_reason: FinishReason = FinishReason.STOP
             else:
-                finish_reason = "length"
+                finish_reason: FinishReason = FinishReason.LENGTH
 
             prompt_token_count: int = await self.count_tokens(prompt)
 
@@ -199,9 +206,9 @@ def LLM(_cls):
             completion_token_count: int = await self.count_tokens(content)
 
             if completion_token_count < request.max_new_tokens:
-                finish_reason = "stop"
+                finish_reason: FinishReason = FinishReason.STOP
             else:
-                finish_reason = "length"
+                finish_reason: FinishReason = FinishReason.LENGTH
 
             prompt_token_count: int = await self.count_tokens(request.prompt)
 
@@ -219,7 +226,7 @@ def LLM(_cls):
             for text_chunk in gen_stream:
                 if last_delta:
                     last_response = create_completion_response(
-                        text=last_delta, finish_reason=""
+                        text=last_delta, finish_reason=FinishReason.NONE
                     )
                     response_str += last_delta
 
@@ -233,9 +240,9 @@ def LLM(_cls):
             completion_token_count: int = await self.count_tokens(response_str)
 
             if completion_token_count < request.max_new_tokens:
-                finish_reason = "stop"
+                finish_reason: FinishReason = FinishReason.STOP
             else:
-                finish_reason = "length"
+                finish_reason: FinishReason = FinishReason.LENGTH
 
             prompt_token_count: int = await self.count_tokens(request.prompt)
 
