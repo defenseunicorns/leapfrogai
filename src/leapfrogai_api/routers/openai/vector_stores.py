@@ -110,10 +110,12 @@ async def modify_vector_store(
     """Modify a vector store."""
     crud_vector_store = CRUDVectorStore(model=VectorStore)
 
-    old_vector_store = await retrieve_vector_store(session, vector_store_id)
-    if not old_vector_store:
+    if not (
+        old_vector_store := await crud_vector_store.get(db=session, id_=vector_store_id)
+    ):
         raise HTTPException(
-            status_code=status.HTTP_400_BAD_REQUEST, detail="Vector store not found"
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="Vector store not found",
         )
 
     try:
@@ -123,8 +125,8 @@ async def modify_vector_store(
             created_at=old_vector_store.created_at,
             file_counts=old_vector_store.file_counts,
             last_active_at=old_vector_store.last_active_at,  # Update after indexing files
-            metadata=request.metadata or old_vector_store.metadata,
-            name=request.name or old_vector_store.name,
+            metadata=getattr(request, "metadata", old_vector_store.metadata),
+            name=getattr(request, "name", old_vector_store.name),
             object="vector_store",
             status="in_progress",
             expires_after=None,  # TODO: Handle expires_after
@@ -226,7 +228,6 @@ async def list_vector_store_files(
             db=session, vector_store_id=vector_store_id
         )
 
-        print(vector_store_files)
         return vector_store_files
     except Exception as exc:
         raise HTTPException(
