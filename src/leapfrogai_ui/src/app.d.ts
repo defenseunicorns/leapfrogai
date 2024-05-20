@@ -16,6 +16,7 @@ declare global {
       // profile?: any;
       conversations?: Conversation[];
       assistants?: Assistant[];
+      assistant?: Assistant;
     }
     // interface PageState {}
     // interface Platform {}

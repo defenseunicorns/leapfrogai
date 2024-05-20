@@ -131,7 +131,7 @@
   aria-label="side navigation"
   style="background-color: g90;"
 >
-  <div style="height: 100%">
+  <div class="inner-side-nav-container">
     <SideNavItems>
       <div class="side-nav-items-container">
         <div style="height: 100%">
@@ -269,6 +269,20 @@ properties had to be manually overridden.
 https://github.com/carbon-design-system/carbon-components-svelte/issues/892
 -->
 <style lang="scss">
+  .inner-side-nav-container {
+    height: 100%;
+
+    :global(.bx--overflow-menu) {
+      width: 16px;
+      height: 32px;
+      z-index: 1;
+    }
+
+    :global(.bx--overflow-menu-options) {
+      left: 20px !important;
+    }
+  }
+
   :global(.bx--side-nav__item) {
     list-style-type: none;
   }
@@ -276,12 +290,14 @@ https://github.com/carbon-design-system/carbon-components-svelte/issues/892
   .noScroll {
     overflow-y: hidden !important;
   }
+
   .side-nav-items-container {
     height: 100%;
     display: flex;
     flex-direction: column;
     justify-content: space-between;
     padding: 0 0 layout.$spacing-05 0;
+
     :global(.bx--side-nav__divider) {
       margin: layout.$spacing-03 0 0 0;
       background-color: themes.$border-subtle-01;
@@ -293,6 +309,7 @@ https://github.com/carbon-design-system/carbon-components-svelte/issues/892
     flex-direction: column;
     gap: layout.$spacing-03;
     padding: layout.$spacing-05;
+
     :global(button.new-chat-btn) {
       width: 100%;
     }
@@ -305,17 +322,12 @@ https://github.com/carbon-design-system/carbon-components-svelte/issues/892
     align-items: center;
     justify-content: space-between;
     width: 208px;
+
     .menu-text {
       width: 192px;
       overflow: hidden;
       text-overflow: ellipsis;
       color: themes.$text-secondary;
-    }
-
-    :global(.bx--overflow-menu) {
-      width: 16px;
-      height: 32px;
-      z-index: 1;
     }
   }
 
@@ -329,12 +341,9 @@ https://github.com/carbon-design-system/carbon-components-svelte/issues/892
     overflow-y: auto;
   }
 
-  :global(.bx--overflow-menu-options) {
-    left: 20px !important;
-  }
-
   :global(.bx--side-nav__navigation) {
     overflow: visible !important;
+
     :global(.bx--side-nav__item) {
       overflow: visible !important;
     }
@@ -375,9 +384,11 @@ https://github.com/carbon-design-system/carbon-components-svelte/issues/892
 
   :global(.bx--side-nav__submenu) {
     color: themes.$text-secondary !important;
+
     :global(svg) {
       stroke: themes.$text-secondary;
     }
+
     &:hover {
       background-color: #4d4d4d !important;
     }
@@ -387,12 +398,15 @@ https://github.com/carbon-design-system/carbon-components-svelte/issues/892
     :global(.bx--side-nav__link) {
       padding: 0 layout.$spacing-05 0 layout.$spacing-07;
     }
+
     :global(.bx--side-nav__link[aria-current='page']) {
       background-color: themes.$layer-01 !important;
     }
+
     :global(input) {
       height: 1.5rem;
     }
+
     :global(.bx--text-input) {
       border-bottom: none;
     }

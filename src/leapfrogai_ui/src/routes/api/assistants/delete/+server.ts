@@ -19,15 +19,15 @@ export async function DELETE({ request, locals: { supabase, getSession } }) {
   }
 
   const { error: responseError } = await supabase
-    .from('messages')
+    .from('assistants')
     .delete()
     .eq('id', requestData.id);
 
   if (responseError) {
     console.log(
-      `error deleting message, error status: ${responseError?.code}: ${responseError?.message}`
+      `error deleting assistant, error status: ${responseError?.code}: ${responseError?.message}`
     );
-    error(500, 'Error deleting message');
+    error(500, 'Error deleting assistant');
   }
 
   return new Response(undefined, { status: 204 });
