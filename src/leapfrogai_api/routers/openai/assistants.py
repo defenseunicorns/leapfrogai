@@ -13,7 +13,6 @@ from leapfrogai_api.backend.types import (
 )
 from leapfrogai_api.routers.supabase_session import get_user_session
 from leapfrogai_api.data.crud_assistant_object import CRUDAssistant
-from leapfrogai_api.routers.supabase_session import Session
 
 router = APIRouter(prefix="/openai/v1/assistants", tags=["openai/assistants"])
 security = HTTPBearer()
@@ -21,7 +20,6 @@ security = HTTPBearer()
 
 @router.post("")
 async def create_assistant(
-    session: Session,
     request: CreateAssistantRequest,
     auth_creds: Annotated[HTTPAuthorizationCredentials, Depends(security)],
 ) -> Assistant:
@@ -67,7 +65,7 @@ async def create_assistant(
         ) from exc
 
     try:
-        crud_assistant = CRUDAssistant(model=Assistant)
+        crud_assistant = CRUDAssistant()
         return await crud_assistant.create(
             db=await get_user_session(auth_creds.credentials), object_=assistant
         )
@@ -82,11 +80,10 @@ async def create_assistant(
 
 @router.get("")
 async def list_assistants(
-    session: Session,
     auth_creds: Annotated[HTTPAuthorizationCredentials, Depends(security)],
 ) -> ListAssistantsResponse:
     """List all the assistants."""
-    crud_assistant = CRUDAssistant(model=Assistant)
+    crud_assistant = CRUDAssistant()
     crud_response = await crud_assistant.list(
         db=await get_user_session(auth_creds.credentials)
     )
@@ -99,13 +96,12 @@ async def list_assistants(
 
 @router.get("/{assistant_id}")
 async def retrieve_assistant(
-    session: Session,
     assistant_id: str,
     auth_creds: Annotated[HTTPAuthorizationCredentials, Depends(security)],
 ) -> Assistant | None:
     """Retrieve an assistant."""
 
-    crud_assistant = CRUDAssistant(model=Assistant)
+    crud_assistant = CRUDAssistant()
     return await crud_assistant.get(
         db=await get_user_session(auth_creds.credentials), id_=assistant_id
     )
@@ -113,7 +109,6 @@ async def retrieve_assistant(
 
 @router.post("/{assistant_id}")
 async def modify_assistant(
-    session: Session,
     assistant_id: str,
     request: ModifyAssistantRequest,
     auth_creds: Annotated[HTTPAuthorizationCredentials, Depends(security)],
@@ -164,7 +159,7 @@ async def modify_assistant(
                         detail="Code interpreter tool is not supported",
                     )
 
-    crud_assistant = CRUDAssistant(model=Assistant)
+    crud_assistant = CRUDAssistant()
     user_session = await get_user_session(auth_creds.credentials)
 
     old_assistant = await crud_assistant.get(db=user_session, id_=assistant_id)
@@ -213,12 +208,11 @@ async def modify_assistant(
 
 @router.delete("/{assistant_id}")
 async def delete_assistant(
-    session: Session,
     assistant_id: str,
     auth_creds: Annotated[HTTPAuthorizationCredentials, Depends(security)],
 ) -> AssistantDeleted:
     """Delete an assistant."""
-    crud_assistant = CRUDAssistant(model=Assistant)
+    crud_assistant = CRUDAssistant()
     assistant_deleted = await crud_assistant.delete(
         db=await get_user_session(auth_creds.credentials), id_=assistant_id
     )

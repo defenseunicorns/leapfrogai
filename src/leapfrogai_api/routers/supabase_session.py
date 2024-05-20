@@ -54,7 +54,6 @@ async def get_user_session(authorization: str) -> AsyncClient:
     Returns a client authenticated using the provided user's JWT token
 
     Parameters:
-        session (Session): the default anonymous session
         authorization (str): the JWT token for the user
 
     Returns:
