@@ -6,10 +6,10 @@ type AssistantInput = {
   instructions: string;
   temperature: number;
   data_sources?: string;
-  avatar?: File | string | null;
+  avatar?: string;
+  avatarFile?: File | null;
   pictogram?: string;
 };
-
 
 export type LFAssistantCreateParams = AssistantCreateParams & {
   user_id: string;

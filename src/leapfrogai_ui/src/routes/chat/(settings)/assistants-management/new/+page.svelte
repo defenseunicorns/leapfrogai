@@ -4,4 +4,4 @@
   export let data;
 </script>
 
-<AssistantForm {data} />
+<AssistantForm data={data} />

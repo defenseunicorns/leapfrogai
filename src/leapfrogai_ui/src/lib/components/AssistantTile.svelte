@@ -1,12 +1,12 @@
 <script lang="ts">
   import { goto, invalidateAll } from '$app/navigation';
-  import { env } from '$env/dynamic/public';
   import { fade } from 'svelte/transition';
   import DynamicPictogram from '$components/DynamicPictogram.svelte';
   import { Modal, OverflowMenu, OverflowMenuItem } from 'carbon-components-svelte';
   import { toastStore } from '$stores';
   import { Edit, TrashCan } from 'carbon-icons-svelte';
   import type { LFAssistant } from '$lib/types/assistants';
+  import {getAssistantAvatarUrl} from "$helpers/assistants";
 
   export let assistant: LFAssistant;
 
@@ -65,7 +65,7 @@
     <div class="mini-avatar-container" data-testid="mini-avatar-container">
       <div
         class="mini-avatar-image"
-        style={`background-image: url(${env.PUBLIC_SUPABASE_URL}/storage/v1/object/public/assistant_avatars/${assistant.metadata.avatar}?v=${new Date().getTime()}`}
+        style={`background-image: url(${assistant.metadata.avatar}?v=${new Date().getTime()}`}
       />
     </div>
   {:else}

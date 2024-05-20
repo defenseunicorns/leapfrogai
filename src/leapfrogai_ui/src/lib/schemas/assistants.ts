@@ -20,15 +20,12 @@ export const supabaseAssistantInputSchema: ObjectSchema<AssistantInput> = object
     .required('This field is required. Please enter instructions.'),
   temperature: number().required('Required'),
   data_sources: string(),
-  avatar: mixed<File | string>()
+  avatar: string(),
+  avatarFile: mixed<File>()
     .nullable()
-    .test(
-      'fileTypeOrString',
-      'Please upload an image or provide a URL.',
-      (value) => value == null || typeof value === 'string' || value instanceof File
-    )
+    .test('fileType', 'Please upload an image.', (value) => value == null || value instanceof File)
     .test('fileSize', AVATAR_FILE_SIZE_ERROR_TEXT, (value) => {
-      if (value == null || typeof value === 'string') {
+      if (value == null) {
         return true;
       }
       if (value.size > MAX_AVATAR_SIZE) {
@@ -40,7 +37,7 @@ export const supabaseAssistantInputSchema: ObjectSchema<AssistantInput> = object
       if (value == null) {
         return true;
       }
-      if (value instanceof File && (value.type !== 'image/jpeg' && value.type !== 'image/jpg' && value.type !== 'image/png')) {
+      if (value.type !== 'image/jpeg' && value.type !== 'image/jpg' && value.type !== 'image/png') {
         return new ValidationError('Invalid file type, accepted types are: jpeg and png');
       }
       return true;

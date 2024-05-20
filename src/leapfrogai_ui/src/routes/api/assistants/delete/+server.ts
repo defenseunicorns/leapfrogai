@@ -19,7 +19,20 @@ export async function DELETE({ request, locals: { supabase, getSession } }) {
     error(400, 'Bad Request');
   }
 
-  const response = await openai.beta.assistants.del(requestData.id);
+  try {
+    const response = await openai.beta.assistants.del(requestData.id);
 
-  return json(response);
+    const { error } = await supabase.storage.from('assistant_avatars').remove([requestData.id]);
+    if (error) {
+      // fail silently
+      console.log(
+        `Error deleting assistant avatar. AssistantId: ${requestData.id}, error: ${error}`
+      );
+    }
+
+    return json(response);
+  } catch (e) {
+    console.log(`Error deleting assistant: ${e}`);
+    error(500, 'Error deleting assistant');
+  }
 }

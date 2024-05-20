@@ -11,10 +11,8 @@
   import { Button, Modal, Slider, TextArea, TextInput } from 'carbon-components-svelte';
   import AssistantAvatar from '$components/AssistantAvatar.svelte';
   import { yup } from 'sveltekit-superforms/adapters';
-
   import { toastStore } from '$stores';
   import InputTooltip from '$components/InputTooltip.svelte';
-  import { env } from '$env/dynamic/public';
   import { editAssistantInputSchema, supabaseAssistantInputSchema } from '$lib/schemas/assistants';
   import type { NavigationTarget } from '@sveltejs/kit';
   import { onMount } from 'svelte';
@@ -56,16 +54,13 @@
 
   let cancelModalOpen = false;
   let files: File[] = [];
-  let selectedPictogramName = isEditMode ? data.assistant.metadata.pictogram : 'default';
-  let avatarPath = isEditMode ? data.assistant.metadata.avatar : '';
+  let selectedPictogramName = isEditMode ? $form.pictogram : 'default';
 
   let navigateTo: NavigationTarget;
   let leavePageConfirmed = false;
 
-  // Get image url for Avatar if the assistant has an avatar
-  $: avatarUrl = avatarPath
-    ? `${env.PUBLIC_SUPABASE_URL}/storage/v1/object/public/assistant_avatars/${avatarPath}`
-    : '';
+  $: avatarUrl = $form.avatar;
+
 
   // Show cancel modal if form is tainted and user attempts to navigate away
   beforeNavigate(({ cancel, to, type }) => {
@@ -99,7 +94,7 @@
     <div class="inner-container">
       <div class="top-row">
         <div class="title">{`${isEditMode ? 'Edit' : 'New'} Assistant`}</div>
-        <AssistantAvatar bind:files bind:selectedPictogramName {avatarUrl} />
+        <AssistantAvatar bind:files bind:selectedPictogramName {form} />
       </div>
       <input type="hidden" name="id" value={$form.id} />
       <TextInput

@@ -2,11 +2,13 @@ import { superValidate } from 'sveltekit-superforms';
 import { fail, redirect } from '@sveltejs/kit';
 import { yup } from 'sveltekit-superforms/adapters';
 import { assistantDefaults, DEFAULT_ASSISTANT_TEMP } from '$lib/constants';
-import { env } from '$env/dynamic/private';
+import { env as envPublic } from '$env/dynamic/public';
+import { env as envPrivate } from '$env/dynamic/private';
 import type { PageServerLoad } from './$types';
 import { supabaseAssistantInputSchema } from '$lib/schemas/assistants';
 import { openai } from '$lib/server/constants';
 import type { LFAssistant, LFAssistantCreateParams } from '$lib/types/assistants';
+import { getAssistantAvatarUrl } from '$helpers/assistants';
 
 export const load: PageServerLoad = async ({ locals: { getSession } }) => {
   const session = await getSession();
@@ -33,8 +35,6 @@ export const actions = {
       return fail(401, { message: 'Unauthorized' });
     }
 
-    let savedAvatarFilePath: string = '';
-
     const form = await superValidate(request, yup(supabaseAssistantInputSchema));
 
     if (!form.valid) {
@@ -48,7 +48,7 @@ export const actions = {
       description: form.data.description,
       instructions: form.data.instructions,
       temperature: form.data.temperature,
-      model: env.DEFAULT_MODEL,
+      model: envPrivate.DEFAULT_MODEL,
       metadata: {
         ...assistantDefaults.metadata,
         data_sources: form.data.data_sources || '',
@@ -68,28 +68,24 @@ export const actions = {
     }
 
     // save avatar
-    if (form.data.avatar) {
+    if (form.data.avatarFile) {
       const filePath = createdAssistant.id;
 
-      const { data: supabaseData, error } = await supabase.storage
+      const { error } = await supabase.storage
         .from('assistant_avatars')
-        .upload(filePath, form.data.avatar);
+        .upload(filePath, form.data.avatarFile);
 
       if (error) {
         console.error('Error saving assistant avatar:', error);
         return fail(500, { message: 'Error saving assistant avatar.' });
       }
 
-      savedAvatarFilePath = supabaseData.path;
-    }
-
-    // update assistant with avatar path
-    if (form.data.avatar) {
+      // update assistant with saved avatar path
       try {
         await openai.beta.assistants.update(createdAssistant.id, {
           metadata: {
             ...(createdAssistant.metadata ? createdAssistant.metadata : undefined),
-            avatar: savedAvatarFilePath
+            avatar: getAssistantAvatarUrl(filePath)
           }
         });
       } catch (e) {

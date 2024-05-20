@@ -7,6 +7,7 @@ import { env } from '$env/dynamic/private';
 import { assistantDefaults, DEFAULT_ASSISTANT_TEMP } from '$lib/constants';
 import { openai } from '$lib/server/constants';
 import type { EditAssistantInput, LFAssistant } from '$lib/types/assistants';
+import { getAssistantAvatarUrl } from '$helpers/assistants';
 
 export const load: PageServerLoad = async ({ params, locals: { getSession, supabase } }) => {
   const session = await getSession();
@@ -29,7 +30,8 @@ export const load: PageServerLoad = async ({ params, locals: { getSession, supab
     temperature: assistant.temperature || DEFAULT_ASSISTANT_TEMP,
     data_sources: assistant.metadata.data_sources,
     pictogram: assistant.metadata.pictogram,
-    avatar: assistant.metadata.avatar
+    avatar: assistant.metadata.avatar,
+    avatarFile: null
   };
 
   const form = await superValidate(assistantFormData, yup(editAssistantInputSchema));
@@ -45,28 +47,25 @@ export const actions = {
       return fail(401, { message: 'Unauthorized' });
     }
 
-    let savedAvatarFilePath: string = '';
-
     const form = await superValidate(request, yup(editAssistantInputSchema));
 
     if (!form.valid) {
       return fail(400, { form });
     }
 
-    // Update avatar if new file uploaded
-    if (typeof form.data.avatar === 'object') {
-      const filePath = form.data.id;
+    let deleteAvatar = !form.data.avatar && !form.data.avatarFile;
+    let filePath = form.data.id;
 
+    // Update avatar if new file uploaded
+    if (form.data.avatarFile) {
       const { data: supabaseData, error } = await supabase.storage
         .from('assistant_avatars')
-        .upload(filePath, form.data.avatar, { upsert: true });
+        .upload(filePath, form.data.avatarFile, { upsert: true });
 
       if (error) {
         console.error('Error updating assistant avatar:', error);
         return fail(500, { message: 'Error updating assistant avatar.' });
       }
-
-      savedAvatarFilePath = supabaseData.path;
     } else {
       if (!form.data.avatar) {
         // Delete avatar
@@ -87,7 +86,7 @@ export const actions = {
       metadata: {
         ...assistantDefaults.metadata,
         data_sources: form.data.data_sources || '',
-        avatar: savedAvatarFilePath,
+        avatar: deleteAvatar ? '' : getAssistantAvatarUrl(filePath),
         pictogram: form.data.pictogram,
         user_id: session.user.id
       }
