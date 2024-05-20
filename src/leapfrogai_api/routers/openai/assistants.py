@@ -13,6 +13,8 @@ from leapfrogai_api.routers.supabase_session import Session
 
 router = APIRouter(prefix="/openai/v1/assistants", tags=["openai/assistants"])
 
+supported_tools = ["file_search"]
+
 
 @router.post("")
 async def create_assistant(
@@ -20,22 +22,25 @@ async def create_assistant(
 ) -> Assistant:
     """Create an assistant."""
 
-    if request.tools is not None:
-        for tool in request.tools:
-            if tool.type not in ["file_search"]:
-                raise HTTPException(
-                    status_code=status.HTTP_400_BAD_REQUEST,
-                    detail=f"Unsupported tool type: {tool.type}",
-                )
+    if request.tools and (
+        unsupported_tool := next(
+            (tool for tool in request.tools if tool.type not in supported_tools), None
+        )
+    ):
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail=f"Unsupported tool type: {unsupported_tool.type}",
+        )
 
-    if request.tool_resources is not None:
-        for tool_resource in request.tool_resources:
-            if tool_resource is ToolResourcesCodeInterpreter:
-                if tool_resource["file_ids"] is not None:
-                    raise HTTPException(
-                        status_code=status.HTTP_400_BAD_REQUEST,
-                        detail="Code interpreter tool is not supported",
-                    )
+    if request.tool_resources and any(
+        isinstance(tool_resource, ToolResourcesCodeInterpreter)
+        and tool_resource.get("file_ids")
+        for tool_resource in request.tool_resources
+    ):
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="Code interpreter tool is not supported",
+        )
 
     try:
         assistant = Assistant(
@@ -121,27 +126,29 @@ async def modify_assistant(
         - response_format
     """
 
-    if request.tools is not None:
-        for tool in request.tools:
-            if tool.type not in ["file_search"]:
-                raise HTTPException(
-                    status_code=status.HTTP_400_BAD_REQUEST,
-                    detail=f"Unsupported tool type: {tool.type}",
-                )
+    if request.tools and (
+        unsupported_tool := next(
+            (tool for tool in request.tools if tool.type not in supported_tools), None
+        )
+    ):
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail=f"Unsupported tool type: {unsupported_tool.type}",
+        )
 
-    if request.tool_resources is not None:
-        for tool_resource in request.tool_resources:
-            if tool_resource is ToolResourcesCodeInterpreter:
-                if tool_resource["file_ids"] is not None:
-                    raise HTTPException(
-                        status_code=status.HTTP_400_BAD_REQUEST,
-                        detail="Code interpreter tool is not supported",
-                    )
+    if request.tool_resources and any(
+        isinstance(tool_resource, ToolResourcesCodeInterpreter)
+        and tool_resource.get("file_ids")
+        for tool_resource in request.tool_resources
+    ):
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="Code interpreter tool is not supported",
+        )
 
     crud_assistant = CRUDAssistant(model=Assistant)
 
-    old_assistant = await crud_assistant.get(db=session, id_=assistant_id)
-    if old_assistant is None:
+    if not (old_assistant := await crud_assistant.get(db=session, id_=assistant_id)):
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST, detail="Assistant not found"
         )
@@ -150,20 +157,24 @@ async def modify_assistant(
         new_assistant = Assistant(
             id=assistant_id,
             created_at=old_assistant.created_at,
-            name=request.name or old_assistant.name,
-            description=request.description or old_assistant.description,
-            instructions=request.instructions or old_assistant.instructions,
-            model=request.model or old_assistant.model,
+            name=getattr(request, "name", old_assistant.name),
+            description=getattr(request, "description", old_assistant.description),
+            instructions=getattr(request, "instructions", old_assistant.instructions),
+            model=getattr(request, "model", old_assistant.model),
             object="assistant",
-            tools=request.tools or old_assistant.tools,
-            tool_resources=ToolResources.model_validate(request.tool_resources)
+            tools=getattr(request, "tools", old_assistant.tools),
+            tool_resources=ToolResources.model_validate(
+                getattr(request, "tool_resources", None)
+            )
             or old_assistant.tool_resources,
-            temperature=float(request.temperature)
-            if request.temperature is not None
-            else old_assistant.temperature,
-            top_p=request.top_p or old_assistant.top_p,
-            metadata=request.metadata or old_assistant.metadata,
-            response_format=request.response_format or old_assistant.response_format,
+            temperature=float(
+                getattr(request, "temperature", old_assistant.temperature)
+            ),
+            top_p=getattr(request, "top_p", old_assistant.top_p),
+            metadata=getattr(request, "metadata", old_assistant.metadata),
+            response_format=getattr(
+                request, "response_format", old_assistant.response_format
+            ),
         )
     except Exception as exc:
         raise HTTPException(

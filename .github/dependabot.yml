@@ -9,3 +9,8 @@ updates:
     directory: '/src/leapfrogai_ui' # Location of package manifests
     schedule:
       interval: 'weekly'
+    groups:
+      non-major-dev-updates:
+        update-types:
+          - "minor"
+          - "patch"
