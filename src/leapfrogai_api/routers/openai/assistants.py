@@ -69,7 +69,7 @@ async def create_assistant(
     try:
         crud_assistant = CRUDAssistant(model=Assistant)
         return await crud_assistant.create(
-            db=get_user_session(session, auth_creds.credentials), object_=assistant
+            db=await get_user_session(auth_creds.credentials), object_=assistant
         )
     except HTTPException as exc:
         raise exc
@@ -88,7 +88,7 @@ async def list_assistants(
     """List all the assistants."""
     crud_assistant = CRUDAssistant(model=Assistant)
     crud_response = await crud_assistant.list(
-        db=get_user_session(session, auth_creds.credentials)
+        db=await get_user_session(auth_creds.credentials)
     )
 
     return ListAssistantsResponse(
@@ -107,7 +107,7 @@ async def retrieve_assistant(
 
     crud_assistant = CRUDAssistant(model=Assistant)
     return await crud_assistant.get(
-        db=get_user_session(session, auth_creds.credentials), id_=assistant_id
+        db=await get_user_session(auth_creds.credentials), id_=assistant_id
     )
 
 
@@ -165,7 +165,7 @@ async def modify_assistant(
                     )
 
     crud_assistant = CRUDAssistant(model=Assistant)
-    user_session = get_user_session(session, auth_creds.credentials)
+    user_session = await get_user_session(auth_creds.credentials)
 
     old_assistant = await crud_assistant.get(db=user_session, id_=assistant_id)
     if old_assistant is None:
@@ -220,7 +220,7 @@ async def delete_assistant(
     """Delete an assistant."""
     crud_assistant = CRUDAssistant(model=Assistant)
     assistant_deleted = await crud_assistant.delete(
-        db=get_user_session(session, auth_creds.credentials), id_=assistant_id
+        db=await get_user_session(auth_creds.credentials), id_=assistant_id
     )
     return AssistantDeleted(
         id=assistant_id,

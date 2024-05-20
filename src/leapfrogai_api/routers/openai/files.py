@@ -40,7 +40,7 @@ async def upload_file(
 
     crud_file_object = CRUDFileObject(model=FileObject)
 
-    user_session = get_user_session(session, auth_creds.credentials)
+    user_session = await get_user_session(auth_creds.credentials)
 
     try:
         file_object = await crud_file_object.create(
@@ -70,7 +70,7 @@ async def list_files(
     """List all files."""
     crud_file = CRUDFileObject(model=FileObject)
     crud_response = await crud_file.list(
-        db=get_user_session(session, auth_creds.credentials)
+        db=await get_user_session(auth_creds.credentials)
     )
 
     return ListFilesResponse(
@@ -88,7 +88,7 @@ async def retrieve_file(
     """Retrieve a file."""
     crud_file = CRUDFileObject(model=FileObject)
     return await crud_file.get(
-        db=get_user_session(session, auth_creds.credentials), id_=file_id
+        db=await get_user_session(auth_creds.credentials), id_=file_id
     )
 
 
@@ -99,7 +99,7 @@ async def delete_file(
     auth_creds: Annotated[HTTPAuthorizationCredentials, Depends(security)],
 ) -> FileDeleted:
     """Delete a file."""
-    user_session = get_user_session(session, auth_creds.credentials)
+    user_session = await get_user_session(auth_creds.credentials)
 
     crud_file_object = CRUDFileObject(model=FileObject)
     file_deleted = await crud_file_object.delete(db=user_session, id_=file_id)
@@ -124,7 +124,7 @@ async def retrieve_file_content(
     try:
         crud_file_bucket = CRUDFileBucket(model=UploadFile)
         return await crud_file_bucket.download(
-            client=get_user_session(session, auth_creds.credentials), id_=file_id
+            client=await get_user_session(auth_creds.credentials), id_=file_id
         )
     except FileNotFoundError as exc:
         raise HTTPException(

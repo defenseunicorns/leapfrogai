@@ -49,7 +49,7 @@ async def validate_user_authorization(session: Session, authorization: str):
         raise HTTPException(status_code=status.HTTP_403_FORBIDDEN)
 
 
-def get_user_session(session: Session, authorization: str) -> AsyncClient:
+async def get_user_session(authorization: str) -> AsyncClient:
     """
     Returns a client authenticated using the provided user's JWT token
 
@@ -61,6 +61,8 @@ def get_user_session(session: Session, authorization: str) -> AsyncClient:
         user_client (AsyncClient): a client instantiated with a session associated with the JWT token
     """
 
-    session._auth_token = f"Bearer {authorization}"
-
-    return session
+    return await create_client(
+        supabase_key=os.getenv("SUPABASE_ANON_KEY"),
+        supabase_url=os.getenv("SUPABASE_URL"),
+        access_token=authorization
+    )
