@@ -14,7 +14,7 @@ class CRUDVectorStore(CRUDBase[VectorStore]):
         super().__init__(model=model, table_name=table_name)
 
     async def create(self, db: AsyncClient, object_: VectorStore) -> VectorStore | None:
-        """Create a new vector store."""
+        """Create new vector store."""
         return await super().create(db=db, object_=object_)
 
     async def get(self, id_: str, db: AsyncClient) -> VectorStore | None:
@@ -29,7 +29,19 @@ class CRUDVectorStore(CRUDBase[VectorStore]):
         self, id_: str, db: AsyncClient, object_: VectorStore
     ) -> VectorStore | None:
         """Update a vector store by its ID."""
-        return await super().update(id_=id_, db=db, object_=object_)
+
+        dict_ = object_.model_dump()
+        del dict_["bytes"]  # Automatically calculated by DB
+
+        data, _count = (
+            await db.table(self.table_name).update(dict_).eq("id", id_).execute()
+        )
+
+        _, response = data
+
+        if response:
+            return self.model(**response[0])
+        return None
 
     async def delete(self, id_: str, db: AsyncClient) -> bool:
         """Delete a vector store by its ID."""

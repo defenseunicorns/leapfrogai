@@ -21,8 +21,8 @@ class IndexingService:
 
     async def index_file(self, vector_store_id: str, file_id: str) -> VectorStoreFile:
         """Index a file into a vector store."""
-        crud_vector_store = CRUDVectorStoreFile(model=VectorStoreFile)
-        vector_store_file = await crud_vector_store.get(
+        crud_vector_store_file = CRUDVectorStoreFile(model=VectorStoreFile)
+        vector_store_file = await crud_vector_store_file.get(
             db=self.session, vector_store_id=vector_store_id, file_id=file_id
         )
 
@@ -54,7 +54,6 @@ class IndexingService:
                 vector_store_id=vector_store_id,
             )
 
-            crud_vector_store_file = CRUDVectorStoreFile(model=VectorStoreFile)
             vector_store_file = await crud_vector_store_file.create(
                 db=self.session, object_=vector_store_file
             )
@@ -86,6 +85,6 @@ class IndexingService:
                 )
                 raise
 
-            return await crud_vector_store.get(
+            return await crud_vector_store_file.get(
                 db=self.session, vector_store_id=vector_store_id, file_id=file_id
             )

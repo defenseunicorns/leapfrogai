@@ -53,7 +53,7 @@ class CRUDBase(Generic[ModelType]):
     async def update(
         self, id_: str, db: AsyncClient, object_: ModelType
     ) -> ModelType | None:
-        """Update a vector store by its ID."""
+        """Update a row by its ID."""
         data, _count = (
             await db.table(self.table_name)
             .update(object_.model_dump())
@@ -68,7 +68,7 @@ class CRUDBase(Generic[ModelType]):
         return None
 
     async def delete(self, id_: str, db: AsyncClient) -> bool:
-        """Delete a vector store by its ID."""
+        """Delete a row by its ID."""
         data, _count = await db.table(self.table_name).delete().eq("id", id_).execute()
 
         _, response = data

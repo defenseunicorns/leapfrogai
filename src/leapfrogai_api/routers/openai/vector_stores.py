@@ -28,7 +28,7 @@ async def create_vector_store(
 
     vector_store_object = VectorStore(
         id="",  # Leave blank to have Postgres generate a UUID
-        bytes=0,  # TODO: Handle bytes
+        bytes=0,  # Automatically calculated by DB
         created_at=0,  # Leave blank to have Postgres generate a timestamp
         file_counts=FileCounts(
             cancelled=0, completed=0, failed=0, in_progress=0, total=0
@@ -43,32 +43,32 @@ async def create_vector_store(
     )
 
     try:
-        if request.file_ids == []:
-            return await crud_vector_store.create(
-                object_=vector_store_object, db=session
-            )
-        else:
-            vector_store = await crud_vector_store.create(
-                object_=vector_store_object, db=session
-            )
+        new_vector_store = await crud_vector_store.create(
+            object_=vector_store_object, db=session
+        )
+        if request.file_ids != []:
             indexing_service = IndexingService(session=session)
             for file_id in request.file_ids:
                 response = await indexing_service.index_file(
-                    vector_store_id=vector_store.id, file_id=file_id
+                    vector_store_id=new_vector_store.id, file_id=file_id
                 )
 
                 if response.status == "completed":
-                    vector_store.file_counts.completed += 1
+                    new_vector_store.file_counts.completed += 1
                 elif response.status == "failed":
-                    vector_store.file_counts.failed += 1
+                    new_vector_store.file_counts.failed += 1
                 elif response.status == "in_progress":
-                    vector_store.file_counts.in_progress += 1
+                    new_vector_store.file_counts.in_progress += 1
                 elif response.status == "cancelled":
-                    vector_store.file_counts.cancelled += 1
-                vector_store.file_counts.total += 1
+                    new_vector_store.file_counts.cancelled += 1
+                new_vector_store.file_counts.total += 1
+
+            new_vector_store.status = "completed"
 
             return await crud_vector_store.update(
-                id_=vector_store.id, object_=vector_store, db=session
+                id_=new_vector_store.id,
+                object_=new_vector_store,
+                db=session,
             )
 
     except Exception as exc:
@@ -108,7 +108,7 @@ async def modify_vector_store(
     session: Session, vector_store_id: str, request: ModifyVectorStoreRequest
 ) -> VectorStore:
     """Modify a vector store."""
-    # TODO: This needs work
+    crud_vector_store = CRUDVectorStore(model=VectorStore)
 
     old_vector_store = await retrieve_vector_store(session, vector_store_id)
     if not old_vector_store:
@@ -126,10 +126,16 @@ async def modify_vector_store(
             metadata=request.metadata or old_vector_store.metadata,
             name=request.name or old_vector_store.name,
             object="vector_store",
-            status="completed",
+            status="in_progress",
             expires_after=None,  # TODO: Handle expires_after
             expires_at=None,  # TODO: Handle expires_at
         )
+
+        await crud_vector_store.update(
+            id_=vector_store_id,
+            object_=new_vector_store,
+            db=session,
+        )  # Sets status to in_progress for the duration of this function
     except Exception as exc:
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
@@ -154,11 +160,12 @@ async def modify_vector_store(
                     new_vector_store.file_counts.cancelled += 1
                 new_vector_store.file_counts.total += 1
 
+        new_vector_store.status = "completed"
+
         new_vector_store.last_active_at = int(
             time.time()
         )  # Update after indexing files
 
-        crud_vector_store = CRUDVectorStore(model=VectorStore)
         return await crud_vector_store.update(
             id_=vector_store_id,
             object_=new_vector_store,
