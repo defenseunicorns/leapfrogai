@@ -256,7 +256,7 @@ class Model:
 
     def generate(
         self, prompt: str, config: GenerationConfig
-    ) -> AsyncGenerator[str, Any, Any]:
+    ) -> AsyncGenerator[str, Any]:
         """Initiate and manage the generation process for a given prompt, yielding generated text segments."""
 
         request_id = random_uuid()

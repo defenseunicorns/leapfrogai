@@ -23,7 +23,7 @@ class Model:
 
     def generate(
         self, prompt: str, config: GenerationConfig
-    ) -> AsyncGenerator[str, Any, Any]:
+    ) -> AsyncGenerator[str, Any]:
         for res in self.llm(
             prompt,
             stream=True,
