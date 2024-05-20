@@ -157,7 +157,7 @@ def LLM(_cls):
 
         async def ChatCompleteStream(
             self, request: ChatCompletionRequest, context: GrpcContext
-        ) -> AsyncGenerator[ChatCompletionResponse, Any, Any]:
+        ) -> AsyncGenerator[ChatCompletionResponse, Any]:
             prompt = self.config.apply_chat_template(request.chat_items)
 
             gen_stream = self._build_gen_stream(prompt, request)
@@ -218,7 +218,7 @@ def LLM(_cls):
 
         async def CompleteStream(
             self, request: CompletionRequest, context: GrpcContext
-        ) -> AsyncGenerator[CompletionResponse, Any, Any]:
+        ) -> AsyncGenerator[CompletionResponse, Any]:
             gen_stream = self._build_gen_stream(request.prompt, request)
             last_delta: str | None = None
             response_str: str = ""
