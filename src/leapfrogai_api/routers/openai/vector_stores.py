@@ -45,7 +45,7 @@ async def create_vector_store(
     try:
         new_vector_store = await crud_vector_store.create(
             object_=vector_store_object, db=session
-        )
+        )  # Creates vector store with status in_progress for the duration of this function
         if request.file_ids != []:
             indexing_service = IndexingService(session=session)
             for file_id in request.file_ids:
@@ -118,8 +118,8 @@ async def modify_vector_store(
 
     try:
         new_vector_store = VectorStore(
-            id=vector_store_id,  # Leave blank to have Postgres generate a UUID
-            bytes=old_vector_store.bytes,  # TODO: Handle bytes
+            id=vector_store_id,
+            bytes=old_vector_store.bytes,  # Automatically calculated by DB
             created_at=old_vector_store.created_at,
             file_counts=old_vector_store.file_counts,
             last_active_at=old_vector_store.last_active_at,  # Update after indexing files
