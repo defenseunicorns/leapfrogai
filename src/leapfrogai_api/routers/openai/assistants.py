@@ -65,7 +65,7 @@ async def create_assistant(
     try:
         crud_assistant = CRUDAssistant(model=Assistant)
         return await crud_assistant.create(
-            db=await get_user_session(session, authorization), object_=assistant
+            db=get_user_session(session, authorization), object_=assistant
         )
     except HTTPException as exc:
         raise exc
@@ -83,7 +83,7 @@ async def list_assistants(
     """List all the assistants."""
     crud_assistant = CRUDAssistant(model=Assistant)
     crud_response = await crud_assistant.list(
-        db=await get_user_session(session, authorization)
+        db=get_user_session(session, authorization)
     )
 
     return ListAssistantsResponse(
@@ -102,7 +102,7 @@ async def retrieve_assistant(
 
     crud_assistant = CRUDAssistant(model=Assistant)
     return await crud_assistant.get(
-        db=await get_user_session(session, authorization), id_=assistant_id
+        db=get_user_session(session, authorization), id_=assistant_id
     )
 
 
@@ -162,7 +162,7 @@ async def modify_assistant(
     crud_assistant = CRUDAssistant(model=Assistant)
 
     old_assistant = await crud_assistant.get(
-        db=await get_user_session(session, authorization), id_=assistant_id
+        db=get_user_session(session, authorization), id_=assistant_id
     )
     if old_assistant is None:
         raise HTTPException(
@@ -196,7 +196,7 @@ async def modify_assistant(
 
     try:
         return await crud_assistant.update(
-            db=await get_user_session(session, authorization),
+            db=get_user_session(session, authorization),
             object_=new_assistant,
             id_=assistant_id,
         )
@@ -216,7 +216,7 @@ async def delete_assistant(
     """Delete an assistant."""
     crud_assistant = CRUDAssistant(model=Assistant)
     assistant_deleted = await crud_assistant.delete(
-        db=await get_user_session(session, authorization), id_=assistant_id
+        db=get_user_session(session, authorization), id_=assistant_id
     )
     return AssistantDeleted(
         id=assistant_id,

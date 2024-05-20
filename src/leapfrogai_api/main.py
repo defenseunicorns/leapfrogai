@@ -4,7 +4,7 @@ import asyncio
 import logging
 from contextlib import asynccontextmanager
 
-from fastapi import FastAPI
+from fastapi import FastAPI, Request
 
 from leapfrogai_api.routers.base import router as base_router
 from leapfrogai_api.routers.openai import (
@@ -18,6 +18,7 @@ from leapfrogai_api.routers.openai import (
     threads,
     vector_store,
 )
+from leapfrogai_api.routers.supabase_session import validate_user_authorization, init_supabase_client
 from leapfrogai_api.utils import get_model_config
 
 
@@ -35,6 +36,16 @@ async def lifespan(app: FastAPI):
 
 
 app = FastAPI(lifespan=lifespan)
+
+
+@app.middleware("http")
+async def verify_supabase_auth(request: Request, call_next):
+    anon_session = await init_supabase_client()
+    authorization_header = request.headers.get("authorization")
+    await validate_user_authorization(anon_session, authorization_header)
+    return await call_next(request)
+
+
 app.include_router(base_router)
 app.include_router(models.router)
 app.include_router(completions.router)

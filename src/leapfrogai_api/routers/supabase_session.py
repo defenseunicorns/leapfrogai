@@ -19,16 +19,13 @@ async def init_supabase_client() -> AsyncClient:
 Session = Annotated[AsyncClient, Depends(init_supabase_client)]
 
 
-async def get_user_session(session: Session, authorization: str) -> AsyncClient:
+async def validate_user_authorization(session: Session, authorization: str):
     """
-    Returns a client authenticated using the provided user's JWT token
+    Check if the provided user's JWT token is valid, raises a 403 if not
 
     Parameters:
         session (Session): the default anonymous session
         authorization (str): the JWT token for the user
-
-    Returns:
-        user_client (AsyncClient): a client instantiated with a session associated with the JWT token
     """
 
     authorized = True
@@ -51,8 +48,19 @@ async def get_user_session(session: Session, authorization: str) -> AsyncClient:
     if not authorized:
         raise HTTPException(status_code=status.HTTP_403_FORBIDDEN)
 
-    return await create_client(
-        supabase_key=os.getenv("SUPABASE_ANON_KEY"),
-        supabase_url=os.getenv("SUPABASE_URL"),
-        access_token=api_key,
-    )
+
+def get_user_session(session: Session, authorization: str) -> AsyncClient:
+    """
+    Returns a client authenticated using the provided user's JWT token
+
+    Parameters:
+        session (Session): the default anonymous session
+        authorization (str): the JWT token for the user
+
+    Returns:
+        user_client (AsyncClient): a client instantiated with a session associated with the JWT token
+    """
+
+    session._auth_token = authorization
+
+    return session
