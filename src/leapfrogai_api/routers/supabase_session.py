@@ -61,6 +61,6 @@ def get_user_session(session: Session, authorization: str) -> AsyncClient:
         user_client (AsyncClient): a client instantiated with a session associated with the JWT token
     """
 
-    session._auth_token = authorization
+    session._auth_token = f"Bearer {authorization}"
 
     return session

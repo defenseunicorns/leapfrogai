@@ -1,6 +1,8 @@
 """OpenAI Compliant Files API Router."""
+from typing import Annotated
 
-from fastapi import APIRouter, Depends, HTTPException, UploadFile, status, Header
+from fastapi import APIRouter, Depends, HTTPException, UploadFile, status
+from fastapi.security import HTTPAuthorizationCredentials, HTTPBearer
 from openai.types import FileDeleted, FileObject
 from leapfrogai_api.backend.types import ListFilesResponse, UploadFileRequest
 from leapfrogai_api.data.crud_file_object import CRUDFileObject
@@ -8,13 +10,14 @@ from leapfrogai_api.data.crud_file_bucket import CRUDFileBucket
 from leapfrogai_api.routers.supabase_session import Session, get_user_session
 
 router = APIRouter(prefix="/openai/v1/files", tags=["openai/files"])
+security = HTTPBearer()
 
 
 @router.post("")
 async def upload_file(
     session: Session,
+    auth_creds: Annotated[HTTPAuthorizationCredentials, Depends(security)],
     request: UploadFileRequest = Depends(UploadFileRequest.as_form),
-    authorization: str | None = Header(default=None),
 ) -> FileObject:
     """Upload a file."""
 
@@ -36,7 +39,7 @@ async def upload_file(
 
     crud_file_object = CRUDFileObject(model=FileObject)
 
-    user_session = get_user_session(session, authorization)
+    user_session = get_user_session(session, auth_creds.credentials)
 
     try:
         file_object = await crud_file_object.create(
@@ -60,11 +63,11 @@ async def upload_file(
 
 @router.get("")
 async def list_files(
-    session: Session, authorization: str | None = Header(default=None)
+    session: Session, auth_creds: Annotated[HTTPAuthorizationCredentials, Depends(security)],
 ) -> ListFilesResponse:
     """List all files."""
     crud_file = CRUDFileObject(model=FileObject)
-    crud_response = await crud_file.list(db=get_user_session(session, authorization))
+    crud_response = await crud_file.list(db=get_user_session(session, auth_creds.credentials))
 
     return ListFilesResponse(
         object="list",
@@ -74,19 +77,19 @@ async def list_files(
 
 @router.get("/{file_id}")
 async def retrieve_file(
-    session: Session, file_id: str, authorization: str | None = Header(default=None)
+    session: Session, file_id: str, auth_creds: Annotated[HTTPAuthorizationCredentials, Depends(security)],
 ) -> FileObject | None:
     """Retrieve a file."""
     crud_file = CRUDFileObject(model=FileObject)
-    return await crud_file.get(db=get_user_session(session, authorization), id_=file_id)
+    return await crud_file.get(db=get_user_session(session, auth_creds.credentials), id_=file_id)
 
 
 @router.delete("/{file_id}")
 async def delete_file(
-    session: Session, file_id: str, authorization: str | None = Header(default=None)
+    session: Session, file_id: str, auth_creds: Annotated[HTTPAuthorizationCredentials, Depends(security)],
 ) -> FileDeleted:
     """Delete a file."""
-    user_session = get_user_session(session, authorization)
+    user_session = get_user_session(session, auth_creds.credentials)
 
     crud_file_object = CRUDFileObject(model=FileObject)
     file_deleted = await crud_file_object.delete(db=user_session, id_=file_id)
@@ -103,13 +106,13 @@ async def delete_file(
 
 @router.get("/{file_id}/content")
 async def retrieve_file_content(
-    session: Session, file_id: str, authorization: str | None = Header(default=None)
+    session: Session, file_id: str, auth_creds: Annotated[HTTPAuthorizationCredentials, Depends(security)],
 ):
     """Retrieve the content of a file."""
     try:
         crud_file_bucket = CRUDFileBucket(model=UploadFile)
         return await crud_file_bucket.download(
-            client=get_user_session(session, authorization), id_=file_id
+            client=get_user_session(session, auth_creds.credentials), id_=file_id
         )
     except FileNotFoundError as exc:
         raise HTTPException(
