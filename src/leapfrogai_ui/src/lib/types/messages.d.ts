@@ -1,4 +1,4 @@
-import type { Message } from 'openai/resources/beta';
+import type { Message } from 'openai/resources/beta/threads/messages';
 
 export type NewMessageInput = {
   thread_id: string;
@@ -13,4 +13,3 @@ export type LFMessage = Message & {
     [key: string]: unknown;
   };
 };
-

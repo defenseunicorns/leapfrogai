@@ -1,6 +1,9 @@
 import { faker } from '@faker-js/faker';
-import { assistantDefaults, DEFAULT_ASSISTANT_TEMP } from '../../src/lib/constants';
-import type {AssistantInput, LFAssistant} from "$lib/types/assistants";
+import { assistantDefaults, DEFAULT_ASSISTANT_TEMP } from '$constants';
+import type { AssistantInput, LFAssistant } from '$lib/types/assistants';
+import type { LFMessage } from '$lib/types/messages';
+import type { LFThread, Roles } from '$lib/types/threads';
+import type { MessageContent } from 'openai/resources/beta/threads/messages';
 
 const todayOverride = new Date('2024-03-20T00:00');
 
@@ -8,54 +11,66 @@ const userId = faker.string.uuid();
 
 type FakeMessageOptions = {
   id?: string;
-  role?: Roles;
-  conversation_id?: string;
+  role?: 'user' | 'assistant';
+  thread_id?: string;
   user_id?: string;
   content?: string;
-  inserted_at?: string;
+  created_at?: number;
 };
-export const getFakeMessage = (options: FakeMessageOptions = {}): Message => {
+export const getFakeMessage = (options: FakeMessageOptions = {}): LFMessage => {
+  const messageContent: MessageContent[] = [
+    { type: 'text', text: { value: options.content || faker.lorem.lines(1), annotations: [] } }
+  ];
+
   const {
-    id = faker.string.uuid(),
+    id = `message_${faker.string.uuid()}`,
     role = 'user',
     user_id = faker.string.uuid(),
-    conversation_id = faker.string.uuid(),
-    content = faker.lorem.lines(1),
-    inserted_at = new Date().toISOString()
+    thread_id = faker.string.uuid(),
+    created_at = new Date().getSeconds()
   } = options;
+
   return {
     id,
+    assistant_id: null,
+    attachments: null,
+    completed_at: created_at,
+    content: messageContent,
+    created_at,
+    incomplete_at: null,
+    incomplete_details: null,
+    metadata: { user_id },
+    object: 'thread.message',
     role,
-    user_id,
-    conversation_id,
-    content,
-    inserted_at
+    run_id: null,
+    status: 'completed',
+    thread_id
   };
 };
 
-type FakeConversationOptions = {
+type FakeThreadOptions = {
   label?: string;
   numMessages?: number;
-  messages?: Message[];
-  insertedAt?: string;
+  messages?: LFMessage[];
+  created_at?: number;
 };
 
-export const getFakeConversation = (options: FakeConversationOptions = {}): Conversation => {
+export const getFakeThread = (options: FakeThreadOptions = {}): LFThread => {
   const {
     label = faker.lorem.sentence(4),
     messages = [],
-    insertedAt = new Date().toISOString(),
+    created_at = new Date().getSeconds(),
     numMessages = 0
   } = options;
 
-  const conversationId = faker.string.uuid();
+  const thread_id = faker.string.uuid();
 
   if (messages.length === 0 && numMessages > 0) {
     for (let i = 0; i < numMessages; i++) {
       messages.push(
         getFakeMessage({
           role: i % 2 === 0 ? 'user' : 'assistant',
-          conversation_id: conversationId,
+          thread_id,
           user_id: userId
         })
       );
@@ -63,30 +78,34 @@ export const getFakeConversation = (options: FakeConversationOptions = {}): Conv
   }
 
   return {
-    id: conversationId,
-    label,
-    user_id: userId,
-    inserted_at: insertedAt,
-    messages: messages
+    id: thread_id,
+    created_at,
+    metadata: {
+      label,
+      user_id: userId
+    },
+    object: 'thread',
+    tool_resources: null,
+    messages
   };
 };
 
-export const fakeConversations: Conversation[] = [
+export const fakeConversations: LFThread[] = [
   // today
-  getFakeConversation({ numMessages: 2, insertedAt: todayOverride.toDateString() }),
+  getFakeThread({ numMessages: 2, created_at: todayOverride.getSeconds() }),
   // yesterday
-  getFakeConversation({
+  getFakeThread({
     numMessages: 2,
-    insertedAt: new Date(
+    created_at: new Date(
       todayOverride.getFullYear(),
       todayOverride.getMonth(),
       todayOverride.getDate() - 1
-    ).toDateString()
+    ).getSeconds()
   }),
   // This Month
-  getFakeConversation({
+  getFakeThread({
     numMessages: 2,
-    insertedAt: new Date(todayOverride.getFullYear(), todayOverride.getMonth(), 10).toDateString()
+    created_at: new Date(todayOverride.getFullYear(), todayOverride.getMonth(), 10).getSeconds()
   })
 ];
 
@@ -116,6 +135,6 @@ export const getFakeAssistantInput = (): AssistantInput => {
     temperature: DEFAULT_ASSISTANT_TEMP,
     data_sources: '',
     pictogram: 'default',
-    avatar: null
+    avatar: ''
   };
 };

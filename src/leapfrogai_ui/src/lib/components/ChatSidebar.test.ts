@@ -8,7 +8,7 @@ import {
 import { threadsStore, toastStore } from '$stores';
 import { fireEvent, render, screen, within } from '@testing-library/svelte';
 import userEvent from '@testing-library/user-event';
-import { fakeConversations, getFakeConversation } from '../../../testUtils/fakeData';
+import { fakeConversations, getFakeThread } from '../../../testUtils/fakeData';
 import { vi } from 'vitest';
 import stores from '$app/stores';
 import { monthNames } from '$helpers/dates';
@@ -81,8 +81,8 @@ describe('ChatSidebar', () => {
 
   it('does not render date categories that have no conversations', async () => {
     const today = new Date();
-    const fakeTodayConversation = getFakeConversation();
-    const fakeYesterdayConversation = getFakeConversation({
+    const fakeTodayConversation = getFakeThread();
+    const fakeYesterdayConversation = getFakeThread({
       insertedAt: new Date(
         today.getFullYear(),
         today.getMonth(),
@@ -316,7 +316,7 @@ describe('ChatSidebar', () => {
   it('changes the active chat thread', async () => {
     const goToSpy = vi.spyOn(navigation, 'goto');
 
-    const fakeConversation = getFakeConversation({ numMessages: 6 });
+    const fakeConversation = getFakeThread({ numMessages: 6 });
 
     threadsStore.set({
       conversations: [fakeConversation]
@@ -332,9 +332,9 @@ describe('ChatSidebar', () => {
     expect(goToSpy).toHaveBeenCalledWith(`/chat/${fakeConversation.id}`);
   });
   it('search finds conversations by label', async () => {
-    const fakeConversation1 = getFakeConversation({ numMessages: 2 });
-    const fakeConversation2 = getFakeConversation({ numMessages: 2 });
-    const fakeConversation3 = getFakeConversation({ numMessages: 2 });
+    const fakeConversation1 = getFakeThread({ numMessages: 2 });
+    const fakeConversation2 = getFakeThread({ numMessages: 2 });
+    const fakeConversation3 = getFakeThread({ numMessages: 2 });
 
     threadsStore.set({
       conversations: [fakeConversation1, fakeConversation2, fakeConversation3]
@@ -355,9 +355,9 @@ describe('ChatSidebar', () => {
   });
 
   it('search finds conversations by messages', async () => {
-    const fakeConversation1 = getFakeConversation({ numMessages: 2 });
-    const fakeConversation2 = getFakeConversation({ numMessages: 2 });
-    const fakeConversation3 = getFakeConversation({ numMessages: 2 });
+    const fakeConversation1 = getFakeThread({ numMessages: 2 });
+    const fakeConversation2 = getFakeThread({ numMessages: 2 });
+    const fakeConversation3 = getFakeThread({ numMessages: 2 });
 
     threadsStore.set({
       conversations: [fakeConversation1, fakeConversation2, fakeConversation3]

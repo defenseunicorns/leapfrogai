@@ -1,9 +1,9 @@
 import { expect, test } from '@playwright/test';
 import { loadChatPage } from './helpers';
-import { getFakeConversation } from '../testUtils/fakeData';
+import { getFakeThread } from '../testUtils/fakeData';
 
 test('it can import and exports conversations', async ({ page }) => {
-  const conversation = getFakeConversation();
+  const conversation = getFakeThread();
   const conversationStr = JSON.stringify([conversation]);
 
   await loadChatPage(page);

@@ -1,7 +1,7 @@
 import { faker } from '@faker-js/faker';
 import { POST } from './+server';
 import { MAX_LABEL_SIZE } from '$lib/constants';
-import { getFakeConversation } from '../../../../../testUtils/fakeData';
+import { getFakeThread } from '../../../../../testUtils/fakeData';
 import {
   sessionMock,
   sessionNullMock,
@@ -9,7 +9,7 @@ import {
   supabaseInsertMock
 } from '$lib/mocks/supabase-mocks';
 
-const conversation = getFakeConversation();
+const conversation = getFakeThread();
 const validLabel = faker.string.alpha({ length: MAX_LABEL_SIZE - 1 });
 const invalidLongLabel = faker.string.alpha({ length: MAX_LABEL_SIZE + 1 });
 

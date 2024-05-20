@@ -6,12 +6,13 @@
   import frog from '$assets/frog.png';
   import { writable } from 'svelte/store';
   import { toastStore } from '$stores';
-  import type {LFMessage} from "$lib/types/messages";
-  import {getMessageText} from "$helpers/threads";
+  import type { LFMessage } from '$lib/types/messages';
+  import { getMessageText } from '$helpers/threads';
 
-
-
-  export let handleMessageEdit: (event: SubmitEvent | KeyboardEvent | MouseEvent, message: LFMessage) => Promise<void>;
+  export let handleMessageEdit: (
+    event: SubmitEvent | KeyboardEvent | MouseEvent,
+    message: LFMessage
+  ) => Promise<void>;
   export let handleRegenerate: () => Promise<void>;
   export let message: LFMessage;
   export let isLastMessage: boolean;
@@ -57,7 +58,6 @@
   on:mouseover={() => (messageIsHovered = true)}
   on:mouseleave={() => (messageIsHovered = false)}
   on:focus={() => (messageIsHovered = true)}
-  transition:fade={{ duration: 70 }}
   tabindex="0"
 >
   <div class="message-and-avatar">

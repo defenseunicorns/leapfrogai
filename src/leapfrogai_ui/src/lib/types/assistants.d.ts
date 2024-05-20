@@ -1,4 +1,4 @@
-import type { Assistant, AssistantCreateParams } from 'openai/resources/beta';
+import type { Assistant, AssistantCreateParams } from 'openai/resources/beta/assistants';
 
 type AssistantInput = {
   name: string;

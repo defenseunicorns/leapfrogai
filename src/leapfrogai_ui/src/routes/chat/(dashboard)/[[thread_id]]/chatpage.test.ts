@@ -3,7 +3,7 @@ import { threadsStore } from '$stores';
 
 import {
   fakeConversations,
-  getFakeConversation,
+  getFakeThread,
   getFakeMessage
 } from '../../../../../testUtils/fakeData';
 import ChatPage from './+page.svelte';
@@ -55,7 +55,7 @@ describe('The Chat Page', () => {
 
   describe('chat form', () => {
     const question = 'What is AI?';
-    const fakeConversation = getFakeConversation();
+    const fakeConversation = getFakeThread();
     const fakeMessage = getFakeMessage({
       role: 'user',
       conversation_id: fakeConversation.id,

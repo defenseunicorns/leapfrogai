@@ -47,7 +47,7 @@ export const mockNewConversation = () => {
         id: faker.string.uuid(),
         user_id: faker.string.uuid(),
         label: faker.lorem.words(5),
-        inserted_at: new Date().toLocaleString()
+        created_at: new Date()
       });
     })
   );

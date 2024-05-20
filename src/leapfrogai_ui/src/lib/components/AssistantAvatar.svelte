@@ -56,7 +56,7 @@
     fileUploaderRef.click(); // re-open upload dialog
   };
 
-  // TODO - update logic to handle removing an avatar
+
   const handleSubmit = () => {
     skipCloseActions = true;
     shouldValidate = true;

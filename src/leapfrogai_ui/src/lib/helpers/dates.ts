@@ -1,4 +1,4 @@
-import type {LFThread} from "$lib/types/threads";
+import type { LFThread } from '$lib/types/threads';
 
 const NUM_MONTHS_TO_DISPLAY = 6;
 export const monthNames = [
@@ -19,12 +19,12 @@ export const monthNames = [
 /**
  * Calculates the number of months between a past date and the current date.
  * @param pastDate The past date to compare against the current date.
+ * @param today  The current date. Defaults to the current date. Can be overridden for testing purposes.
  * @returns The number of months between the past date and the current date.
  */
-export const getNumMonthsAgo = (pastDate: Date) => {
-  const currentDate = new Date();
-  const currentYear = currentDate.getFullYear();
-  const currentMonth = currentDate.getMonth();
+export const getNumMonthsAgo = (pastDate: Date, today = new Date()) => {
+  const currentYear = today.getFullYear();
+  const currentMonth = today.getMonth();
 
   const pastYear = pastDate.getFullYear();
   const pastMonth = pastDate.getMonth();
@@ -128,7 +128,8 @@ export const getDateCategory = ({
   const dateCategories = getDateCategories({ today, numMonthsToDisplay });
   const dateToCheck = new Date(date);
   const yearsDiff = Math.abs(dateToCheck.getFullYear() - today.getFullYear());
-  const monthsDiff = getNumMonthsAgo(dateToCheck);
+  const monthsDiff = getNumMonthsAgo(dateToCheck, today);
+
 
   if (monthsDiff > numMonthsToDisplay) return 'Old';
 
@@ -177,7 +178,7 @@ export const organizeThreadsByDate = (
   // Add threads to the corresponding date category
   for (const thread of threads) {
     const dateCategory = getDateCategory({
-      date: new Date(thread.inserted_at),
+      date: new Date(thread.created_at * 1000),
       numMonthsToDisplay,
       today
     });
@@ -190,7 +191,7 @@ export const organizeThreadsByDate = (
   for (const category of dateCategories) {
     const categoryIndex = dateCategories.indexOf(category);
     result[categoryIndex].threads = result[categoryIndex].threads.sort(
-      (a, b) => new Date(b.inserted_at).getTime() - new Date(a.inserted_at).getTime()
+      (a, b) => new Date(b.created_at * 1000).getTime() - new Date(a.created_at * 1000).getTime()
     );
   }
   return result;

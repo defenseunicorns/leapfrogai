@@ -1,15 +1,15 @@
-import { createOpenAI } from '@ai-sdk/openai';
 import { StreamingTextResponse, streamText } from 'ai';
-import type { Message as AIMessage } from 'ai';
+import { createOpenAI } from '@ai-sdk/openai';
 import type { RequestHandler } from './$types';
-
 import { env } from '$env/dynamic/private';
 import { error } from '@sveltejs/kit';
 import { getMessageText } from '$helpers/threads';
 import type { LFMessage } from '$lib/types/messages';
-import {openai} from "$lib/server/constants";
 
-
+const openai = createOpenAI({
+  apiKey: env.LEAPFROGAI_API_KEY ?? '',
+  baseURL: env.LEAPFROGAI_API_BASE_URL
+});
 
 export const POST = (async ({ request, locals: { getSession } }) => {
   const session = await getSession();
