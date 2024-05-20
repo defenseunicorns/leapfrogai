@@ -3,9 +3,8 @@
 import asyncio
 import logging
 from contextlib import asynccontextmanager
-from http.client import HTTPException
 
-from fastapi import FastAPI, Request
+from fastapi import FastAPI, Request, HTTPException
 
 from leapfrogai_api.routers.base import router as base_router
 from leapfrogai_api.routers.openai import (
