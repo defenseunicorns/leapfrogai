@@ -40,7 +40,10 @@ async def lifespan(app: FastAPI):
 
 app = FastAPI(lifespan=lifespan)
 
-skip_endpoint_auth = ["/healthz"]
+skip_endpoint_auth = [
+    "/healthz",
+    "/docs"
+]
 
 
 @app.middleware("http")

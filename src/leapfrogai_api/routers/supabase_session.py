@@ -30,19 +30,19 @@ async def validate_user_authorization(session: Session, authorization: str):
 
     authorized = True
 
-    if authorization is None:
-        authorized = False
+    if authorization:
+        api_key: str = authorization.replace("Bearer ", "")
 
-    api_key: str = authorization.replace("Bearer ", "")
+        try:
+            user: None = await session.auth.get_user(api_key)
 
-    try:
-        user: None = await session.auth.get_user(api_key)
-
-        if user is None:
+            if user is None:
+                authorized = False
+        except HTTPStatusError:
             authorized = False
-    except HTTPStatusError:
-        authorized = False
-    except errors.AuthApiError:
+        except errors.AuthApiError:
+            authorized = False
+    else:
         authorized = False
 
     if not authorized:
