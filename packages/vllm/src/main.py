@@ -7,7 +7,7 @@ import random
 import sys
 import threading
 import time
-from typing import Any, Generator, Dict, AsyncGenerator
+from typing import Any, Dict, AsyncGenerator
 
 from confz import EnvSource
 from dotenv import load_dotenv

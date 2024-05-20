@@ -1,4 +1,4 @@
-from typing import Any, Generator, List, Optional, AsyncGenerator
+from typing import Any, List, Optional, AsyncGenerator
 
 from pydantic import BaseModel
 
