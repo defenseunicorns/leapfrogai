@@ -1,4 +1,5 @@
 """OpenAI Compliant Files API Router."""
+
 from typing import Annotated
 
 from fastapi import APIRouter, Depends, HTTPException, UploadFile, status
@@ -63,11 +64,14 @@ async def upload_file(
 
 @router.get("")
 async def list_files(
-    session: Session, auth_creds: Annotated[HTTPAuthorizationCredentials, Depends(security)],
+    session: Session,
+    auth_creds: Annotated[HTTPAuthorizationCredentials, Depends(security)],
 ) -> ListFilesResponse:
     """List all files."""
     crud_file = CRUDFileObject(model=FileObject)
-    crud_response = await crud_file.list(db=get_user_session(session, auth_creds.credentials))
+    crud_response = await crud_file.list(
+        db=get_user_session(session, auth_creds.credentials)
+    )
 
     return ListFilesResponse(
         object="list",
@@ -77,16 +81,22 @@ async def list_files(
 
 @router.get("/{file_id}")
 async def retrieve_file(
-    session: Session, file_id: str, auth_creds: Annotated[HTTPAuthorizationCredentials, Depends(security)],
+    session: Session,
+    file_id: str,
+    auth_creds: Annotated[HTTPAuthorizationCredentials, Depends(security)],
 ) -> FileObject | None:
     """Retrieve a file."""
     crud_file = CRUDFileObject(model=FileObject)
-    return await crud_file.get(db=get_user_session(session, auth_creds.credentials), id_=file_id)
+    return await crud_file.get(
+        db=get_user_session(session, auth_creds.credentials), id_=file_id
+    )
 
 
 @router.delete("/{file_id}")
 async def delete_file(
-    session: Session, file_id: str, auth_creds: Annotated[HTTPAuthorizationCredentials, Depends(security)],
+    session: Session,
+    file_id: str,
+    auth_creds: Annotated[HTTPAuthorizationCredentials, Depends(security)],
 ) -> FileDeleted:
     """Delete a file."""
     user_session = get_user_session(session, auth_creds.credentials)
@@ -106,7 +116,9 @@ async def delete_file(
 
 @router.get("/{file_id}/content")
 async def retrieve_file_content(
-    session: Session, file_id: str, auth_creds: Annotated[HTTPAuthorizationCredentials, Depends(security)],
+    session: Session,
+    file_id: str,
+    auth_creds: Annotated[HTTPAuthorizationCredentials, Depends(security)],
 ):
     """Retrieve the content of a file."""
     try:

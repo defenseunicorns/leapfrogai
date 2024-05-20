@@ -1,4 +1,5 @@
 """OpenAI Compliant Assistants API Router."""
+
 from typing import Annotated
 
 from fastapi import HTTPException, APIRouter, status, Depends
@@ -81,7 +82,8 @@ async def create_assistant(
 
 @router.get("")
 async def list_assistants(
-    session: Session, auth_creds: Annotated[HTTPAuthorizationCredentials, Depends(security)],
+    session: Session,
+    auth_creds: Annotated[HTTPAuthorizationCredentials, Depends(security)],
 ) -> ListAssistantsResponse:
     """List all the assistants."""
     crud_assistant = CRUDAssistant(model=Assistant)
@@ -165,9 +167,7 @@ async def modify_assistant(
     crud_assistant = CRUDAssistant(model=Assistant)
     user_session = get_user_session(session, auth_creds.credentials)
 
-    old_assistant = await crud_assistant.get(
-        db=user_session, id_=assistant_id
-    )
+    old_assistant = await crud_assistant.get(db=user_session, id_=assistant_id)
     if old_assistant is None:
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST, detail="Assistant not found"
