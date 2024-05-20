@@ -22,6 +22,7 @@ class CRUDAssistant(CRUDBase[AuthAssistant]):
         auth_assistant: AuthAssistant = AuthAssistant(
             user_id=db.auth.get_user().user.id, **object_.dict()
         )
+        print("********* userid" + db.auth.get_user().user.id)
         return await super().create(db=db, object_=auth_assistant)
 
     async def get(self, id_: str, db: AsyncClient) -> AuthAssistant | None:
