@@ -2,7 +2,7 @@ import { render, screen } from '@testing-library/svelte';
 import { threadsStore } from '$stores';
 
 import {
-  fakeConversations,
+  fakeThreads,
   getFakeThread,
   getFakeMessage
 } from '../../../../../testUtils/fakeData';
@@ -15,8 +15,8 @@ import { afterAll, beforeAll, vi } from 'vitest';
 import {
   mockChatCompletion,
   mockChatCompletionError,
-  mockNewConversation,
-  mockNewConversationError,
+  mockNewThread,
+  mockNewThreadError,
   mockNewMessage,
   mockNewMessageError
 } from '$lib/mocks/chat-mocks';
@@ -43,13 +43,13 @@ describe('The Chat Page', () => {
 
   it('it renders all the messages', async () => {
     threadsStore.set({
-      conversations: fakeConversations
+      conversations: fakeThreads
     });
 
     render(ChatPage);
 
-    for (let i = 0; i < fakeConversations[0].messages.length; i++) {
-      await screen.findByText(fakeConversations[0].messages[0].content);
+    for (let i = 0; i < fakeThreads[0].messages.length; i++) {
+      await screen.findByText(fakeThreads[0].messages[0].content);
     }
   });
 
@@ -70,7 +70,7 @@ describe('The Chat Page', () => {
     });
 
     it('submits the form then clears the input without throwing errors', async () => {
-      mockNewConversation();
+      mockNewThread();
       mockChatCompletion();
       mockNewMessage(fakeMessage);
 
@@ -95,7 +95,7 @@ describe('The Chat Page', () => {
 
     it('replaces submit with a cancel button while response is being processed', async () => {
       const delayTime = 500;
-      mockNewConversation();
+      mockNewThread();
       mockChatCompletion({ withDelay: true, delayTime: delayTime });
       mockNewMessage(fakeMessage);
 
@@ -134,7 +134,7 @@ describe('The Chat Page', () => {
 
     it('displays a toast error notification when there is an error with the AI response', async () => {
       mockChatCompletionError();
-      mockNewConversation();
+      mockNewThread();
 
       const user = userEvent.setup();
       const { getByLabelText } = render(ChatPageWithToast);
@@ -154,7 +154,7 @@ describe('The Chat Page', () => {
       });
 
       mockChatCompletion();
-      mockNewConversationError();
+      mockNewThreadError();
 
       const { getByLabelText } = render(ChatPageWithToast);
 
@@ -172,8 +172,8 @@ describe('The Chat Page', () => {
           const page: typeof stores.page = {
             subscribe(fn) {
               return getStores({
-                url: `http://localhost/chat/${fakeConversations[0].id}`,
-                params: { conversation_id: fakeConversations[0].id }
+                url: `http://localhost/chat/${fakeThreads[0].id}`,
+                params: { conversation_id: fakeThreads[0].id }
               }).page.subscribe(fn);
             }
           };
@@ -200,7 +200,7 @@ describe('The Chat Page', () => {
 
       it('displays an error message when there is an error saving the response', async () => {
         threadsStore.set({
-          conversations: fakeConversations
+          conversations: fakeThreads
         });
 
         mockChatCompletion();
@@ -223,8 +223,8 @@ describe('The Chat Page', () => {
           const page: typeof stores.page = {
             subscribe(fn) {
               return getStores({
-                url: `http://localhost/chat/${fakeConversations[0].id}`,
-                params: { conversation_id: fakeConversations[0].id }
+                url: `http://localhost/chat/${fakeThreads[0].id}`,
+                params: { conversation_id: fakeThreads[0].id }
               }).page.subscribe(fn);
             }
           };
@@ -249,7 +249,7 @@ describe('The Chat Page', () => {
         });
 
         const delayTime = 500;
-        mockNewConversation();
+        mockNewThread();
         mockChatCompletion({
           withDelay: true,
           delayTime: delayTime,
@@ -258,7 +258,7 @@ describe('The Chat Page', () => {
         mockNewMessage(fakeMessage);
 
         threadsStore.set({
-          conversations: [fakeConversations[0]]
+          conversations: [fakeThreads[0]]
         });
         const user = userEvent.setup();
 

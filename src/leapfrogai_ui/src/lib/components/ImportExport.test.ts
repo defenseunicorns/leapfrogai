@@ -4,7 +4,7 @@ import ImportExport from '$components/ImportExport.svelte';
 import { afterEach, vi } from 'vitest';
 import { toastStore } from '$stores';
 import { getFakeThread } from '../../../testUtils/fakeData';
-import { mockNewConversationError } from '$lib/mocks/chat-mocks';
+import { mockNewThreadError } from '$lib/mocks/chat-mocks';
 
 const uploadJSONFile = async (obj: object) => {
   const dataStr = JSON.stringify(obj);
@@ -41,7 +41,7 @@ describe('Import and Export data', () => {
   });
 
   it('displays a toast error if their is an error while storing the imported data', async () => {
-    mockNewConversationError();
+    mockNewThreadError();
 
     const toastSpy = vi.spyOn(toastStore, 'addToast');
     render(ImportExport);

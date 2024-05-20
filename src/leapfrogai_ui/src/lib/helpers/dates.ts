@@ -130,7 +130,6 @@ export const getDateCategory = ({
   const yearsDiff = Math.abs(dateToCheck.getFullYear() - today.getFullYear());
   const monthsDiff = getNumMonthsAgo(dateToCheck, today);
 
-
   if (monthsDiff > numMonthsToDisplay) return 'Old';
 
   if (isToday(dateToCheck, today)) {
@@ -196,3 +195,5 @@ export const organizeThreadsByDate = (
   }
   return result;
 };
+
+export const getUnixSeconds = (date: Date) => date.getTime() / 1000;

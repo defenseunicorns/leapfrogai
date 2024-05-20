@@ -1,11 +1,10 @@
 <script lang="ts">
-  import {Download, Export} from 'carbon-icons-svelte';
-  import {Button} from 'carbon-components-svelte';
+  import { Download, Export } from 'carbon-icons-svelte';
+  import { Button } from 'carbon-components-svelte';
   import LFFileUploader from '$components/LFFileUploader.svelte';
-  import {threadsStore, toastStore} from '$stores';
-  import {threadsSchema} from '$schemas/threadSchema';
-  import type {LFThread} from "$lib/types/threads";
-
+  import { threadsStore, toastStore } from '$stores';
+  import { threadsSchema } from '$schemas/threadSchema';
+  import type { LFThread } from '$lib/types/threads';
 
   let importing = false;
 
@@ -76,13 +75,7 @@
 </script>
 
 <div class="import-export-btns-container">
-  <LFFileUploader
-    accept={['application/json']}
-    icon={Download}
-    labelText="Import data"
-    {importing}
-    {onUpload}
-  />
+  <LFFileUploader accept={['application/json']} {importing} {onUpload} />
   <Button
     id="export-btn"
     kind="ghost"

@@ -8,7 +8,7 @@ import { afterAll, afterEach, beforeAll, vi } from 'vitest';
 import * as environment from '$app/environment';
 import * as navigation from '$app/navigation';
 import * as stores from '$app/stores';
-import { fakeConversations } from './testUtils/fakeData';
+import { fakeThreads } from './testUtils/fakeData';
 
 // Fixes error: node.scrollIntoView is not a function
 window.HTMLElement.prototype.scrollIntoView = function () {};
@@ -56,7 +56,7 @@ vi.mock('$app/stores', (): typeof stores => {
       error: null,
       // TODO - the profile and session types are incompletely mocked out
       data: {
-        conversations: fakeConversations,
+        conversations: fakeThreads,
         profile: {},
         session: { user: { id: faker.string.uuid() } }
       },

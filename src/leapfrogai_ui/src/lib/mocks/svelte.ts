@@ -1,6 +1,6 @@
 import { type Readable, readable } from 'svelte/store';
 import type { Navigation, Page } from '@sveltejs/kit';
-import { fakeConversations } from '../../../testUtils/fakeData';
+import { fakeThreads } from '../../../testUtils/fakeData';
 import { faker } from '@faker-js/faker';
 
 type GetStoresOverrides = {
@@ -20,7 +20,7 @@ export const getStores = (
     error: null,
     // TODO - the profile and session types are incompletely mocked out
     data: {
-      conversations: fakeConversations,
+      conversations: fakeThreads,
       profile: {},
       session: { user: { id: faker.string.uuid() } }
     },

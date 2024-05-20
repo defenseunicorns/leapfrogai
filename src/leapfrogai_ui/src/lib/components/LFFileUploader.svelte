@@ -2,7 +2,7 @@
 
 <script lang="ts">
   import { Download } from 'carbon-icons-svelte';
-  import { Button, Loading } from 'carbon-components-svelte';
+  import { Button } from 'carbon-components-svelte';
 
   export let importing: boolean;
 

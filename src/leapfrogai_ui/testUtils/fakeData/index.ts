@@ -4,6 +4,7 @@ import type { AssistantInput, LFAssistant } from '$lib/types/assistants';
 import type { LFMessage } from '$lib/types/messages';
 import type { LFThread, Roles } from '$lib/types/threads';
 import type { MessageContent } from 'openai/resources/beta/threads/messages';
+import { getUnixSeconds } from '$helpers/dates';
 
 const todayOverride = new Date('2024-03-20T00:00');
 
@@ -27,7 +28,7 @@ export const getFakeMessage = (options: FakeMessageOptions = {}): LFMessage => {
     role = 'user',
     user_id = faker.string.uuid(),
     thread_id = faker.string.uuid(),
-    created_at = new Date().getSeconds()
+    created_at = getUnixSeconds(new Date())
   } = options;
 
   return {
@@ -59,7 +60,7 @@ export const getFakeThread = (options: FakeThreadOptions = {}): LFThread => {
   const {
     label = faker.lorem.sentence(4),
     messages = [],
-    created_at = new Date().getSeconds(),
+    created_at = getUnixSeconds(new Date()),
     numMessages = 0
   } = options;
 
@@ -90,22 +91,20 @@ export const getFakeThread = (options: FakeThreadOptions = {}): LFThread => {
   };
 };
 
-export const fakeConversations: LFThread[] = [
+export const fakeThreads: LFThread[] = [
   // today
-  getFakeThread({ numMessages: 2, created_at: todayOverride.getSeconds() }),
+  getFakeThread({ numMessages: 2, created_at: getUnixSeconds(todayOverride) }),
   // yesterday
   getFakeThread({
     numMessages: 2,
-    created_at: new Date(
-      todayOverride.getFullYear(),
-      todayOverride.getMonth(),
-      todayOverride.getDate() - 1
-    ).getSeconds()
+    created_at: getUnixSeconds(
+      new Date(todayOverride.getFullYear(), todayOverride.getMonth(), todayOverride.getDate() - 1)
+    )
   }),
   // This Month
   getFakeThread({
     numMessages: 2,
-    created_at: new Date(todayOverride.getFullYear(), todayOverride.getMonth(), 10).getSeconds()
+    created_at: getUnixSeconds(new Date(todayOverride.getFullYear(), todayOverride.getMonth(), 10))
   })
 ];
 

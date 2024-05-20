@@ -92,7 +92,7 @@
     activeThreadRef = document.getElementById(`side-nav-menu-item-${id}`);
   };
 
-  // To properly display the overflow menu items for each conversation, we have to calculate the height they
+  // To properly display the overflow menu items for each thread, we have to calculate the height they
   // should be displayed at due to the carbon override for allowing overflow
   $: if (browser && activeThreadRef) {
     menuOffset = activeThreadRef?.offsetTop;
@@ -105,7 +105,7 @@
   }
 
   const options: IFuseOptions<unknown> = {
-    keys: ['label', 'messages.content'],
+    keys: ['metadata.label', 'messages.content'],
     minMatchCharLength: 3,
     shouldSort: false,
     findAllMatches: true,
@@ -117,8 +117,12 @@
     // Remap the message content to be a string instead of string | nested object
     const threadsWithTextMessages = $threadsStore.threads.map((thread) => ({
       ...thread,
-      messages: thread.messages.map((message) => ({ ...message, content: getMessageText(message) }))
+      messages: thread.messages?.map((message) => ({
+        ...message,
+        content: getMessageText(message)
+      }))
     }));
+
     const fuse = new Fuse(threadsWithTextMessages, options);
     searchResults = fuse.search(searchText);
     filteredThreads = searchResults.map((result) => result.item);
@@ -149,7 +153,7 @@
                 icon={AddComment}
                 class="new-chat-btn"
                 id="new-chat-btn"
-                aria-label="new conversation"
+                aria-label="new thread"
                 on:click={() => handleActiveThreadChange('')}>New Chat</Button
               >
               <TextInput
@@ -183,7 +187,7 @@
                             <TextInput
                               bind:value={editLabelText}
                               size="sm"
-                              class="edit-conversation"
+                              class="edit-thread"
                               on:keydown={(e) => handleEdit(e)}
                               on:blur={(e) => {
                                 handleEdit(e);
@@ -191,10 +195,10 @@
                               autofocus
                               maxlength={MAX_LABEL_SIZE}
                               readonly={editLabelInputDisabled}
-                              aria-label="edit conversation"
+                              aria-label="edit thread"
                             />
                           {:else}
-                            <div data-testid="conversation-label-{thread.id}" class="menu-text">
+                            <div data-testid="thread-label-{thread.id}" class="menu-text">
                               {thread.metadata.label}
                             </div>
                             <div>
