@@ -5,6 +5,7 @@ import logging
 from contextlib import asynccontextmanager
 
 from fastapi import FastAPI, Request, HTTPException
+from fastapi.responses import JSONResponse
 
 from leapfrogai_api.routers.base import router as base_router
 from leapfrogai_api.routers.openai import (
@@ -54,7 +55,7 @@ async def verify_supabase_auth(request: Request, call_next):
         try:
             await validate_user_authorization(anon_session, authorization_header)
         except HTTPException as e:
-            return e
+            return JSONResponse(status_code=e.status_code, content={})
 
         return await call_next(request)
 
