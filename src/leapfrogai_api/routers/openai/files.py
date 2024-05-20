@@ -64,9 +64,7 @@ async def list_files(
 ) -> ListFilesResponse:
     """List all files."""
     crud_file = CRUDFileObject(model=FileObject)
-    crud_response = await crud_file.list(
-        db=get_user_session(session, authorization)
-    )
+    crud_response = await crud_file.list(db=get_user_session(session, authorization))
 
     return ListFilesResponse(
         object="list",
@@ -80,9 +78,7 @@ async def retrieve_file(
 ) -> FileObject | None:
     """Retrieve a file."""
     crud_file = CRUDFileObject(model=FileObject)
-    return await crud_file.get(
-        db=get_user_session(session, authorization), id_=file_id
-    )
+    return await crud_file.get(db=get_user_session(session, authorization), id_=file_id)
 
 
 @router.delete("/{file_id}")

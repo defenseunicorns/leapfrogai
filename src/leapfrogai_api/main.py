@@ -18,7 +18,10 @@ from leapfrogai_api.routers.openai import (
     threads,
     vector_store,
 )
-from leapfrogai_api.routers.supabase_session import validate_user_authorization, init_supabase_client
+from leapfrogai_api.routers.supabase_session import (
+    validate_user_authorization,
+    init_supabase_client,
+)
 from leapfrogai_api.utils import get_model_config
 
 

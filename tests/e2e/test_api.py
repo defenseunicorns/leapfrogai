@@ -109,9 +109,7 @@ def verify_request(
                 elif url == "files_url":
                     f = io.StringIO("test text data")
                     files = {"file": ("test.txt", f, "text/plain")}
-                    response = requests.post(
-                        urls[url], headers=headers, files=files
-                    )
+                    response = requests.post(urls[url], headers=headers, files=files)
                 elif url == "assistants_id_url":
                     response = requests.post(
                         urls[url], headers=headers, json=mock_assistant_body
