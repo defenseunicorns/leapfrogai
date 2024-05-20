@@ -2,8 +2,6 @@
   import { goto } from '$app/navigation';
   import { Button, Search } from 'carbon-components-svelte';
   import { Add } from 'carbon-icons-svelte';
-  import { onMount } from 'svelte';
-  import { assistantsStore } from '$stores';
   import Fuse, { type FuseResult, type IFuseOptions } from 'fuse.js';
   import AssistantTile from '$components/AssistantTile.svelte';
 
@@ -12,7 +10,7 @@
   let searchText = '';
   let searchResults: FuseResult<Assistant>[];
   let filteredAssistants: Assistant[] = [];
-  $: assistantsToDisplay = searchText ? filteredAssistants : $assistantsStore.assistants;
+  $: assistantsToDisplay = searchText ? filteredAssistants : data.assistants;
 
   const options: IFuseOptions<unknown> = {
     keys: ['name', 'description', 'instructions'],
@@ -24,7 +22,7 @@
   };
 
   $: if (searchText) {
-    const fuse = new Fuse($assistantsStore.assistants, options);
+    const fuse = new Fuse(data.assistants, options);
     searchResults = fuse.search(searchText);
     filteredAssistants = searchResults.map((result) => result.item);
   }
@@ -32,10 +30,6 @@
     searchText = '';
     filteredAssistants = [];
   };
-
-  onMount(() => {
-    assistantsStore.setAssistants(data.assistants);
-  });
 </script>
 
 <div class="container">

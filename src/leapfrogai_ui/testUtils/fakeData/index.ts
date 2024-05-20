@@ -107,7 +107,7 @@ export const getFakeAssistant = (): Assistant => {
   };
 };
 
-export const getFakeNewAssistantInput = (): NewAssistantInput => {
+export const getFakeAssistantInput = (): AssistantInput => {
   return {
     name: faker.person.fullName(),
     description: faker.lorem.sentence(),

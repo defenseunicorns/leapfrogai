@@ -1,5 +1,5 @@
 import { error, json } from '@sveltejs/kit';
-import { newConversationInputSchema } from '../../../../schemas/chat';
+import { newConversationInputSchema } from '$lib/schemas/chat';
 
 export async function POST({ request, locals: { supabase, getSession } }) {
   const session = await getSession();

@@ -2,7 +2,7 @@ import OpenAI from 'openai';
 import { env } from '$env/dynamic/private';
 import { OpenAIStream, StreamingTextResponse } from 'ai';
 import type { ChatCompletionMessageParam } from 'ai/prompts';
-import { messagesInputSchema } from '../../../schemas/chat';
+import { messagesInputSchema } from '$lib/schemas/chat';
 import { error } from '@sveltejs/kit';
 
 // Set the runtime to edge for best performance

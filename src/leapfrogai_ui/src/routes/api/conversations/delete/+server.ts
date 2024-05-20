@@ -1,5 +1,5 @@
 import { error } from '@sveltejs/kit';
-import { uuidSchema } from '../../../../schemas/chat';
+import { uuidSchema } from '$lib/schemas/chat';
 
 export async function DELETE({ request, locals: { supabase, getSession } }) {
   const session = await getSession();
