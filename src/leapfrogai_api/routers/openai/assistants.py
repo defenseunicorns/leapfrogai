@@ -153,7 +153,6 @@ async def modify_assistant(
             status_code=status.HTTP_400_BAD_REQUEST, detail="Assistant not found"
         )
 
-
     try:
         new_assistant = Assistant(
             id=assistant_id,
