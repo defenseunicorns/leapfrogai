@@ -20,8 +20,13 @@ LFAI_CONFIG_FILEPATH = os.path.join(LFAI_CONFIG_PATH, LFAI_CONFIG_FILENAME)
 #########################
 #########################
 
+@pytest.fixture
+def remove_supabase_middleware():
+    app.user_middleware.clear()
+    app.middleware_stack = app.build_middleware_stack()
 
-def test_config_load():
+
+def test_config_load(remove_supabase_middleware):
     """Test that the config is loaded correctly."""
     with TestClient(app) as client:
         response = client.get("/models")
@@ -33,7 +38,7 @@ def test_config_load():
         }
 
 
-def test_config_delete(tmp_path):
+def test_config_delete(tmp_path, remove_supabase_middleware):
     """Test that the config is deleted correctly."""
     # move repeater-test-config.yaml to temp dir so that we can remove it at a later step
     tmp_config_filepath = shutil.copyfile(
@@ -95,9 +100,9 @@ def test_routes():
         found = False
         for actual_route in actual_routes:
             if (
-                hasattr(actual_route, "path")
-                and actual_route.path == route
-                and actual_route.name == name
+                    hasattr(actual_route, "path")
+                    and actual_route.path == route
+                    and actual_route.name == name
             ):
                 assert actual_route.methods == set(methods)
                 found = True
@@ -119,7 +124,7 @@ def test_healthz():
     os.environ.get("LFAI_RUN_REPEATER_TESTS") != "true",
     reason="LFAI_RUN_REPEATER_TESTS envvar was not set to true",
 )
-def test_embedding():
+def test_embedding(remove_supabase_middleware):
     """Test the embedding endpoint."""
     expected_embedding = [0.0 for _ in range(10)]
 
@@ -149,7 +154,7 @@ def test_embedding():
     os.environ.get("LFAI_RUN_REPEATER_TESTS") != "true",
     reason="LFAI_RUN_REPEATER_TESTS envvar was not set to true",
 )
-def test_chat_completion():
+def test_chat_completion(remove_supabase_middleware):
     """Test the chat completion endpoint."""
     with TestClient(app) as client:
         input_content = "this is the chat completion input."
@@ -182,7 +187,7 @@ def test_chat_completion():
     os.environ.get("LFAI_RUN_REPEATER_TESTS") != "true",
     reason="LFAI_RUN_REPEATER_TESTS envvar was not set to true",
 )
-def test_stream_chat_completion():
+def test_stream_chat_completion(remove_supabase_middleware):
     """Test the stream chat completion endpoint."""
     with TestClient(app) as client:
         input_content = "this is the stream chat completion input."
@@ -198,7 +203,7 @@ def test_stream_chat_completion():
         )
         assert response.status_code == 200
         assert (
-            response.headers.get("content-type") == "text/event-stream; charset=utf-8"
+                response.headers.get("content-type") == "text/event-stream; charset=utf-8"
         )
 
         # parse through the streamed response

@@ -40,13 +40,20 @@ async def lifespan(app: FastAPI):
 
 app = FastAPI(lifespan=lifespan)
 
+skip_endpoint_auth = [
+    "/healthz"
+]
+
 
 @app.middleware("http")
 async def verify_supabase_auth(request: Request, call_next):
-    anon_session = await init_supabase_client()
-    authorization_header = request.headers.get("authorization")
-    await validate_user_authorization(anon_session, authorization_header)
-    return await call_next(request)
+    if request.url.path in skip_endpoint_auth:
+        return await call_next(request)
+    else:
+        anon_session = await init_supabase_client()
+        authorization_header = request.headers.get("authorization")
+        await validate_user_authorization(anon_session, authorization_header)
+        return await call_next(request)
 
 
 app.include_router(base_router)
