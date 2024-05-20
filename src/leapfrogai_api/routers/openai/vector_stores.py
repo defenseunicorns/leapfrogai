@@ -16,7 +16,7 @@ from leapfrogai_api.routers.supabase_session import Session
 from leapfrogai_api.backend.rag.index import IndexingService
 from leapfrogai_api.data.supabase_vector_store import AsyncSupabaseVectorStore
 
-router = APIRouter(prefix="/openai/v1/vector_store", tags=["openai/vector_store"])
+router = APIRouter(prefix="/openai/v1/vector_stores", tags=["openai/vector_stores"])
 
 
 @router.post("")
@@ -225,6 +225,17 @@ async def list_vector_store_files(
         raise HTTPException(
             status_code=500, detail="Failed to list vector store files"
         ) from exc
+
+@router.get("/{vector_store_id}/files/{file_id}")
+async def retrieve_vector_store_file(
+    session: Session, vector_store_id: str, file_id: str
+) -> VectorStoreFile:
+    """Retrieve a file in a vector store."""
+
+    crud_vector_store_file = CRUDVectorStoreFile(model=VectorStoreFile)
+    return await crud_vector_store_file.get(
+        db=session, vector_store_id=vector_store_id, file_id=file_id
+    )
 
 
 @router.delete("/{vector_store_id}/files/{file_id}")
