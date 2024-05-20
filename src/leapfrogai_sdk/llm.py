@@ -108,7 +108,7 @@ def LLM(_cls):
 
         def _build_gen_stream(
             self, prompt: str, request: ChatCompletionRequest | CompletionRequest
-        ) -> AsyncGenerator[str, Any, Any]:
+        ) -> AsyncGenerator[str, Any]:
             config = GenerationConfig(
                 max_new_tokens=request.max_new_tokens,
                 temperature=request.temperature,
