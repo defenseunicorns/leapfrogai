@@ -50,6 +50,8 @@ The major RAG evaluation frameworks all revolve around LLM-enabled evaluations. 
 
 **Arize Phoenix**: [Phoenix](https://phoenix.arize.com/) is another framework focused on both evaluation and observability. Phoenix has a lot to offer in terms of visualizations and LLM tracing, but it's included evaluation tools were a little more limited in comparison to the other frameworks. Considering that the source of your evaluations in Phoenix do not necessarily need to come from Phoenix, if llm tracing is a desired feature for developers or mission heroes, any source of evals can be integrated with this toolset.
 
+**LangChain/LangSmith**: [LangChain](https://python.langchain.com/v0.1/docs/get_started/introduction/) is a framework for the development of LLM applications. LangChain provides tools for each stage of the development process, including development, productionization, and deployment. [LangSmith](https://python.langchain.com/v0.1/docs/langsmith/) is an observability tool using LangChain that assists with tracing and evaluating LLM applications. LangSmith provides built-in evaluators and flexibility for custom evaluators. However, it is heavily reliant on the LangChain ecosystem. Getting the most out of this approach would require sizeable refactoring of the LFAI codebase. Since LangChain/LangSmith are able to incorporate each of above frameworks directly (the other alternatives and the chosen framework), we should be able to pivot to using LangChain/LangSmith for better model traceability in the future without having to pivot away from using DeepEval.
+
 ## Related ADRs
 This ADR will eventually influence the ADR for overall LLM evaluations.
 
