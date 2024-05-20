@@ -12,10 +12,12 @@
   import { AVATAR_FILE_SIZE_ERROR_TEXT, MAX_AVATAR_SIZE, NO_FILE_ERROR_TEXT } from '$lib/constants';
 
   export let files: File[];
+  export let avatarUrl = '';
   export let selectedPictogramName: string;
 
+  let tempAvatarUrl = avatarUrl;
   let tempFiles: File[] = [];
-  let tempPictogram = '';
+  let tempPictogram = selectedPictogramName || 'default';
   let modalOpen = false;
   let selectedRadioButton: 'upload' | 'pictogram' = 'pictogram';
   let shouldValidate = false;
@@ -24,10 +26,11 @@
 
   $: fileNotUploaded = !tempFiles[0]; // if on upload tab, you must upload a file to enable save
   $: fileTooBig = tempFiles[0]?.size > MAX_AVATAR_SIZE;
-  $: hideUploader = tempFiles.length > 0;
+  $: hideUploader = tempAvatarUrl ? true : tempFiles.length > 0;
 
   const handleRemove = () => {
     tempFiles = [];
+    tempAvatarUrl = '';
     tempPictogram = 'default';
     shouldValidate = false;
   };
@@ -67,13 +70,15 @@
       // pictogram tab
       selectedPictogramName = tempPictogram;
       files = []; // remove saved avatar
+      tempFiles = [];
       modalOpen = false;
       shouldValidate = false;
     }
   };
 
   $: tempImagePreviewUrl = tempFiles?.length > 0 ? URL.createObjectURL(tempFiles[0]) : '';
-  $: savedImagePreviewUrl = files?.length > 0 ? URL.createObjectURL(files[0]) : '';
+  $: savedImagePreviewUrl =
+    files?.length > 0 ? URL.createObjectURL(files[0]) : tempAvatarUrl ? tempAvatarUrl : '';
 </script>
 
 <div class="container">

@@ -23,7 +23,7 @@ export const sendMessage = async (page: Page, message = 'Who are Defense Unicorn
 };
 
 // Note - this will not apply the temperature slider value provided, it only clicks on the 0.5 increment
-export const createAssistant = async (page: Page, assistantInput: NewAssistantInput) => {
+export const createAssistant = async (page: Page, assistantInput: AssistantInput) => {
   await page.goto('/chat/assistants-management/new');
   await page.getByLabel('name').fill(assistantInput.name);
   await page.getByLabel('description').fill(assistantInput.description);
