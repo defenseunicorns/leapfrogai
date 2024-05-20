@@ -28,7 +28,7 @@ jwt:
     resourcesPreset: "none"
     podLabels:
       sidecar.istio.io/inject: "false"
-publicURL: "https://{{ .Values.leapfrogai.package.host }}.###ZARF_VAR_HOSTED_DOMAIN###"
+publicURL: "https://supabase-kong.###ZARF_VAR_HOSTED_DOMAIN###"
 auth:
   enabled: ###ZARF_VAR_ENABLE_AUTH###
   defaultConfig: |
