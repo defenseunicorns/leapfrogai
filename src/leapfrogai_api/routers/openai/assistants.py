@@ -17,6 +17,8 @@ from leapfrogai_api.data.crud_assistant_object import CRUDAssistant
 router = APIRouter(prefix="/openai/v1/assistants", tags=["openai/assistants"])
 security = HTTPBearer()
 
+supported_tools = ["file_search"]
+
 
 @router.post("")
 async def create_assistant(
@@ -25,22 +27,25 @@ async def create_assistant(
 ) -> Assistant:
     """Create an assistant."""
 
-    if request.tools is not None:
-        for tool in request.tools:
-            if tool.type not in ["file_search"]:
-                raise HTTPException(
-                    status_code=status.HTTP_400_BAD_REQUEST,
-                    detail=f"Unsupported tool type: {tool.type}",
-                )
+    if request.tools and (
+        unsupported_tool := next(
+            (tool for tool in request.tools if tool.type not in supported_tools), None
+        )
+    ):
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail=f"Unsupported tool type: {unsupported_tool.type}",
+        )
 
-    if request.tool_resources is not None:
-        for tool_resource in request.tool_resources:
-            if tool_resource is ToolResourcesCodeInterpreter:
-                if tool_resource["file_ids"] is not None:
-                    raise HTTPException(
-                        status_code=status.HTTP_400_BAD_REQUEST,
-                        detail="Code interpreter tool is not supported",
-                    )
+    if request.tool_resources and any(
+        isinstance(tool_resource, ToolResourcesCodeInterpreter)
+        and tool_resource.get("file_ids")
+        for tool_resource in request.tool_resources
+    ):
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="Code interpreter tool is not supported",
+        )
 
     try:
         assistant = Assistant(
@@ -142,22 +147,25 @@ async def modify_assistant(
         - response_format
     """
 
-    if request.tools is not None:
-        for tool in request.tools:
-            if tool.type not in ["file_search"]:
-                raise HTTPException(
-                    status_code=status.HTTP_400_BAD_REQUEST,
-                    detail=f"Unsupported tool type: {tool.type}",
-                )
+    if request.tools and (
+        unsupported_tool := next(
+            (tool for tool in request.tools if tool.type not in supported_tools), None
+        )
+    ):
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail=f"Unsupported tool type: {unsupported_tool.type}",
+        )
 
-    if request.tool_resources is not None:
-        for tool_resource in request.tool_resources:
-            if tool_resource is ToolResourcesCodeInterpreter:
-                if tool_resource["file_ids"] is not None:
-                    raise HTTPException(
-                        status_code=status.HTTP_400_BAD_REQUEST,
-                        detail="Code interpreter tool is not supported",
-                    )
+    if request.tool_resources and any(
+        isinstance(tool_resource, ToolResourcesCodeInterpreter)
+        and tool_resource.get("file_ids")
+        for tool_resource in request.tool_resources
+    ):
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="Code interpreter tool is not supported",
+        )
 
     crud_assistant = CRUDAssistant()
     user_session = await get_user_session(auth_creds.credentials)
