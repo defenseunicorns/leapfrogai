@@ -3,7 +3,7 @@
   import { Button } from 'carbon-components-svelte';
   import LFFileUploader from '$components/LFFileUploader.svelte';
   import { conversationsStore, toastStore } from '$stores';
-  import { conversationsSchema } from '../../schemas/chat';
+  import { conversationsSchema } from '$lib/schemas/chat';
 
   const readFileAsJson = <T,>(file: File): Promise<T> => {
     return new Promise((resolve, reject) => {
