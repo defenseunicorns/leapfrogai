@@ -4,7 +4,7 @@ import time
 from fastapi import HTTPException, APIRouter, status
 from openai.types.beta import VectorStore, VectorStoreDeleted
 from openai.types.beta.vector_stores import VectorStoreFile, VectorStoreFileDeleted
-from openai.types.beta.vector_store import ExpiresAfter, FileCounts
+from openai.types.beta.vector_store import FileCounts
 from leapfrogai_api.backend.types import (
     CreateVectorStoreRequest,
     ListVectorStoresResponse,
@@ -28,23 +28,22 @@ async def create_vector_store(
 
     vector_store_object = VectorStore(
         id="",  # Leave blank to have Postgres generate a UUID
-        bytes=0,
+        bytes=0,  # TODO: Handle bytes
         created_at=0,  # Leave blank to have Postgres generate a timestamp
         file_counts=FileCounts(
             cancelled=0, completed=0, failed=0, in_progress=0, total=0
         ),
-        last_active_at=None,
+        last_active_at=int(time.time()),  # Set to current time
         metadata=request.metadata,
         name=request.name,
         object="vector_store",
-        status="completed",
-        expires_after=ExpiresAfter.model_validate(request.expires_after) or None,
-        expires_at=None,
+        status="in_progress",
+        expires_after=None,  # TODO: Handle expires_after
+        expires_at=None,  # TODO: Handle expires_at
     )
 
     try:
         if request.file_ids == []:
-            # TODO: Handle expires_after, expires_at, and last_active_at
             return await crud_vector_store.create(
                 object_=vector_store_object, db=session
             )
@@ -110,37 +109,65 @@ async def modify_vector_store(
 ) -> VectorStore:
     """Modify a vector store."""
     # TODO: This needs work
+
+    old_vector_store = await retrieve_vector_store(session, vector_store_id)
+    if not old_vector_store:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST, detail="Vector store not found"
+        )
+
     try:
-        vector_store_object = VectorStore(
+        new_vector_store = VectorStore(
             id=vector_store_id,  # Leave blank to have Postgres generate a UUID
-            bytes=0,
-            created_at=int(time.time()),
-            file_counts=FileCounts(
-                cancelled=0, completed=0, failed=0, in_progress=0, total=0
-            ),
-            last_active_at=None,
-            metadata=request.metadata,
-            name=request.name,
+            bytes=old_vector_store.bytes,  # TODO: Handle bytes
+            created_at=old_vector_store.created_at,
+            file_counts=old_vector_store.file_counts,
+            last_active_at=old_vector_store.last_active_at,  # Update after indexing files
+            metadata=request.metadata or old_vector_store.metadata,
+            name=request.name or old_vector_store.name,
             object="vector_store",
             status="completed",
-            expires_after=ExpiresAfter.model_validate(request.expires_after) or None,
-            expires_at=None,
+            expires_after=None,  # TODO: Handle expires_after
+            expires_at=None,  # TODO: Handle expires_at
         )
     except Exception as exc:
         raise HTTPException(
-            status_code=405, detail="Unable to parse vector store request"
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="Unable to parse vector store request",
         ) from exc
 
     try:
+        if request.file_ids != []:
+            indexing_service = IndexingService(session=session)
+            for file_id in request.file_ids:
+                response = await indexing_service.index_file(
+                    vector_store_id=vector_store_id, file_id=file_id
+                )
+
+                if response.status == "completed":
+                    new_vector_store.file_counts.completed += 1
+                elif response.status == "failed":
+                    new_vector_store.file_counts.failed += 1
+                elif response.status == "in_progress":
+                    new_vector_store.file_counts.in_progress += 1
+                elif response.status == "cancelled":
+                    new_vector_store.file_counts.cancelled += 1
+                new_vector_store.file_counts.total += 1
+
+        new_vector_store.last_active_at = int(
+            time.time()
+        )  # Update after indexing files
+
         crud_vector_store = CRUDVectorStore(model=VectorStore)
         return await crud_vector_store.update(
             id_=vector_store_id,
-            object_=vector_store_object,
+            object_=new_vector_store,
             db=session,
         )
     except Exception as exc:
         raise HTTPException(
-            status_code=405, detail="Unable to update vector store"
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail="Unable to update vector store",
         ) from exc
 
 
