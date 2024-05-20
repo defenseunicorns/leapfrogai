@@ -170,8 +170,7 @@ async def modify_assistant(
     crud_assistant = CRUDAssistant()
     user_session = await get_user_session(auth_creds.credentials)
 
-    old_assistant = await crud_assistant.get(db=user_session, id_=assistant_id)
-    if old_assistant is None:
+    if not (old_assistant := await crud_assistant.get(db=user_session, id_=assistant_id)):
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST, detail="Assistant not found"
         )
@@ -180,20 +179,24 @@ async def modify_assistant(
         new_assistant = Assistant(
             id=assistant_id,
             created_at=old_assistant.created_at,
-            name=request.name or old_assistant.name,
-            description=request.description or old_assistant.description,
-            instructions=request.instructions or old_assistant.instructions,
-            model=request.model or old_assistant.model,
+            name=getattr(request, "name", old_assistant.name),
+            description=getattr(request, "description", old_assistant.description),
+            instructions=getattr(request, "instructions", old_assistant.instructions),
+            model=getattr(request, "model", old_assistant.model),
             object="assistant",
-            tools=request.tools or old_assistant.tools,
-            tool_resources=ToolResources.model_validate(request.tool_resources)
+            tools=getattr(request, "tools", old_assistant.tools),
+            tool_resources=ToolResources.model_validate(
+                getattr(request, "tool_resources", None)
+            )
             or old_assistant.tool_resources,
-            temperature=float(request.temperature)
-            if request.temperature is not None
-            else old_assistant.temperature,
-            top_p=request.top_p or old_assistant.top_p,
-            metadata=request.metadata or old_assistant.metadata,
-            response_format=request.response_format or old_assistant.response_format,
+            temperature=float(
+                getattr(request, "temperature", old_assistant.temperature)
+            ),
+            top_p=getattr(request, "top_p", old_assistant.top_p),
+            metadata=getattr(request, "metadata", old_assistant.metadata),
+            response_format=getattr(
+                request, "response_format", old_assistant.response_format
+            ),
         )
     except Exception as exc:
         raise HTTPException(
