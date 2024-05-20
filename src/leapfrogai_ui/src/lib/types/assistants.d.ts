@@ -1,4 +1,4 @@
-import type {Assistant} from "openai/resources/beta";
+import type { Assistant, AssistantCreateParams } from 'openai/resources/beta';
 
 type AssistantInput = {
   name: string;
@@ -6,20 +6,25 @@ type AssistantInput = {
   instructions: string;
   temperature: number;
   data_sources?: string;
-  avatar?: File | null;
+  avatar?: File | string | null;
+  pictogram?: string;
+};
+
+
+export type LFAssistantCreateParams = AssistantCreateParams & {
+  user_id: string;
+  data_sources?: string;
   pictogram?: string;
 };
 
 type EditAssistantInput = AssistantInput & { id: string };
 
-
-type LFAssistant = Assistant & {
+export type LFAssistant = Assistant & {
   metadata: {
-    created_by: string | null; //user id
+    user_id: string;
     data_sources?: string; // vector store ids, array as string
     avatar?: string;
     pictogram?: string;
     [key: string]: unknown;
   };
 };
-

@@ -1,12 +1,6 @@
 import { error, json } from '@sveltejs/kit';
 import { updateThreadLabelSchema } from '$lib/schemas/chat';
-import OpenAI from 'openai';
-import { env } from '$env/dynamic/private';
-
-const openai = new OpenAI({
-  apiKey: env.LEAPFROGAI_API_KEY ?? '',
-  baseURL: env.LEAPFROGAI_API_BASE_URL
-});
+import { openai } from '$lib/server/constants';
 
 export async function PUT({ request, locals: { supabase, getSession } }) {
   const session = await getSession();

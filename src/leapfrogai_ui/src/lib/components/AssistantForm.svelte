@@ -17,6 +17,7 @@
   import { env } from '$env/dynamic/public';
   import { editAssistantInputSchema, supabaseAssistantInputSchema } from '$lib/schemas/assistants';
   import type { NavigationTarget } from '@sveltejs/kit';
+  import { onMount } from 'svelte';
 
   export let data;
 
@@ -78,6 +79,17 @@
         // if leaving app, don't show cancel modal (ex. refresh page), triggers the native browser unload confirmation dialog.
         cancelModalOpen = true;
       }
+    }
+  });
+
+  onMount(() => {
+    if (isEditMode && Object.keys($errors).length > 0) {
+      toastStore.addToast({
+        kind: 'error',
+        title: 'Error importing assistant',
+        subtitle: ''
+      });
+      goto('/chat/assistants-management');
     }
   });
 </script>

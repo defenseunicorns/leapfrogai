@@ -1,11 +1,9 @@
 import { error, json } from '@sveltejs/kit';
 import OpenAI from 'openai';
 import { env } from '$env/dynamic/private';
+import {openai} from "$lib/server/constants";
 
-const openai = new OpenAI({
-  apiKey: env.LEAPFROGAI_API_KEY ?? '',
-  baseURL: env.LEAPFROGAI_API_BASE_URL
-});
+
 
 export async function GET({ request, params, locals: { getSession } }) {
   const session = await getSession();

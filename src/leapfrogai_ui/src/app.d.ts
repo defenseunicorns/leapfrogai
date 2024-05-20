@@ -14,9 +14,9 @@ declare global {
     }
     interface PageData {
       title?: string | null;
-      session: Session | null;
-      profile: Profile;
-      threads: LFThread[];
+      session?: Session | null;
+      profile?: Profile;
+      threads?: LFThread[];
       assistants?: LFAssistant[];
       assistant?: LFAssistant;
     }

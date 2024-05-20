@@ -5,6 +5,8 @@ import { yup } from 'sveltekit-superforms/adapters';
 import { editAssistantInputSchema } from '$lib/schemas/assistants';
 import { env } from '$env/dynamic/private';
 import { assistantDefaults, DEFAULT_ASSISTANT_TEMP } from '$lib/constants';
+import { openai } from '$lib/server/constants';
+import type { EditAssistantInput, LFAssistant } from '$lib/types/assistants';
 
 export const load: PageServerLoad = async ({ params, locals: { getSession, supabase } }) => {
   const session = await getSession();
@@ -12,14 +14,10 @@ export const load: PageServerLoad = async ({ params, locals: { getSession, supab
   if (!session) {
     throw redirect(303, '/');
   }
-  const { data: assistant, error: assistantError } = await supabase
-    .from('assistants')
-    .select()
-    .eq('id', params.assistantId)
-    .returns<Assistant[]>()
-    .single();
 
-  if (assistantError) {
+  const assistant = (await openai.beta.assistants.retrieve(params.assistantId)) as LFAssistant;
+
+  if (!assistant) {
     error(404, { message: 'Assistant not found.' });
   }
 
@@ -30,8 +28,8 @@ export const load: PageServerLoad = async ({ params, locals: { getSession, supab
     instructions: assistant.instructions || '',
     temperature: assistant.temperature || DEFAULT_ASSISTANT_TEMP,
     data_sources: assistant.metadata.data_sources,
-    pictogram: assistant.metadata.pictogram
-    // note - the avatar is a string location of the file, not a file type, it is handled by the component instead
+    pictogram: assistant.metadata.pictogram,
+    avatar: assistant.metadata.avatar
   };
 
   const form = await superValidate(assistantFormData, yup(editAssistantInputSchema));
@@ -55,17 +53,8 @@ export const actions = {
       return fail(400, { form });
     }
 
-    const { error: getAssistantError } = await supabase
-      .from('assistants')
-      .select()
-      .eq('id', form.data.id)
-      .returns<Assistant[]>()
-      .single();
-
-    if (getAssistantError) return fail(404, { message: 'Assistant not found.' });
-
-    // Update avatar
-    if (form.data.avatar) {
+    // Update avatar if new file uploaded
+    if (typeof form.data.avatar === 'object') {
       const filePath = form.data.id;
 
       const { data: supabaseData, error } = await supabase.storage
@@ -79,15 +68,17 @@ export const actions = {
 
       savedAvatarFilePath = supabaseData.path;
     } else {
-      // Delete avatar
-      const { error: deleteAvatarError } = await supabase.storage
-        .from('avatars')
-        .remove(['folder/avatar1.png']);
-      if (deleteAvatarError) return fail(500, { message: 'error deleting avatar' });
+      if (!form.data.avatar) {
+        // Delete avatar
+        const { error: deleteAvatarError } = await supabase.storage
+          .from('avatars')
+          .remove(['folder/avatar1.png']);
+        if (deleteAvatarError) return fail(500, { message: 'error deleting avatar' });
+      }
     }
 
     // Create assistant object
-    const assistant: Partial<Assistant> = {
+    const assistant: Partial<LFAssistant> = {
       name: form.data.name,
       description: form.data.description,
       instructions: form.data.instructions,
@@ -98,20 +89,15 @@ export const actions = {
         data_sources: form.data.data_sources || '',
         avatar: savedAvatarFilePath,
         pictogram: form.data.pictogram,
-        created_by: session.user.id
+        user_id: session.user.id
       }
     };
 
-    // Save assistant
-    const { error: responseError } = await supabase
-      .from('assistants')
-      .update(assistant)
-      .eq('id', form.data.id)
-      .returns<Assistant[]>()
-      .single();
-
-    if (responseError) {
-      console.error('Error updating assistant:', responseError);
+    // Update assistant
+    try {
+      await openai.beta.assistants.update(form.data.id, assistant);
+    } catch (e) {
+      console.log(`Error updating assistant: ${e}`);
       return fail(500, { message: 'Error updating assistant.' });
     }
 

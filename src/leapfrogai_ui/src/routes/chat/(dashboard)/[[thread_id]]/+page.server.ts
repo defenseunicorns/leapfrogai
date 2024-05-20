@@ -2,13 +2,7 @@ import { redirect } from '@sveltejs/kit';
 import type { PageServerLoad } from './$types';
 import type { Profile } from '$lib/types/profile';
 import type { LFThread } from '$lib/types/threads';
-import OpenAI from 'openai';
-import { env } from '$env/dynamic/private';
-
-const openai = new OpenAI({
-  apiKey: env.LEAPFROGAI_API_KEY ?? '',
-  baseURL: env.LEAPFROGAI_API_BASE_URL
-});
+import {openai} from "$lib/server/constants";
 
 export const load: PageServerLoad = async ({ locals: { supabase, getSession } }) => {
   const session = await getSession();

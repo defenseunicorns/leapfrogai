@@ -1,30 +1,34 @@
 import { mixed, number, object, ObjectSchema, string, ValidationError } from 'yup';
-import type {AssistantInput, EditAssistantInput} from "$lib/types/assistants";
+import type { AssistantInput, EditAssistantInput } from '$lib/types/assistants';
 import {
+  ASSISTANTS_DESCRIPTION_MAX_LENGTH,
   ASSISTANTS_INSTRUCTIONS_MAX_LENGTH,
   ASSISTANTS_NAME_MAX_LENGTH,
   AVATAR_FILE_SIZE_ERROR_TEXT,
   MAX_AVATAR_SIZE
 } from '$lib/constants';
-import { uuidSchema } from './chat';
 
 export const supabaseAssistantInputSchema: ObjectSchema<AssistantInput> = object({
   name: string()
     .max(ASSISTANTS_NAME_MAX_LENGTH)
     .required('This field is required. Please enter a name.'),
   description: string()
-    .max(ASSISTANTS_NAME_MAX_LENGTH)
+    .max(ASSISTANTS_DESCRIPTION_MAX_LENGTH)
     .required('This field is required. Please enter a tagline.'),
   instructions: string()
     .max(ASSISTANTS_INSTRUCTIONS_MAX_LENGTH)
     .required('This field is required. Please enter instructions.'),
   temperature: number().required('Required'),
   data_sources: string(),
-  avatar: mixed<File>()
+  avatar: mixed<File | string>()
     .nullable()
-    .test('fileType', 'Please upload an image.', (value) => value == null || value instanceof File)
+    .test(
+      'fileTypeOrString',
+      'Please upload an image or provide a URL.',
+      (value) => value == null || typeof value === 'string' || value instanceof File
+    )
     .test('fileSize', AVATAR_FILE_SIZE_ERROR_TEXT, (value) => {
-      if (value == null) {
+      if (value == null || typeof value === 'string') {
         return true;
       }
       if (value.size > MAX_AVATAR_SIZE) {
@@ -36,7 +40,7 @@ export const supabaseAssistantInputSchema: ObjectSchema<AssistantInput> = object
       if (value == null) {
         return true;
       }
-      if (value.type !== 'image/jpeg' && value.type !== 'image/jpg' && value.type !== 'image/png') {
+      if (value instanceof File && (value.type !== 'image/jpeg' && value.type !== 'image/jpg' && value.type !== 'image/png')) {
         return new ValidationError('Invalid file type, accepted types are: jpeg and png');
       }
       return true;
@@ -47,4 +51,4 @@ export const supabaseAssistantInputSchema: ObjectSchema<AssistantInput> = object
   .strict();
 
 export const editAssistantInputSchema: ObjectSchema<EditAssistantInput> =
-  supabaseAssistantInputSchema.concat(uuidSchema);
+  supabaseAssistantInputSchema.concat(object({ id: string().required() }));

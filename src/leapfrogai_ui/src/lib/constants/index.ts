@@ -22,7 +22,7 @@ export const assistantDefaults: Omit<Assistant, 'id' | 'created_at'> = {
   ],
   tool_resources: null,
   metadata: {
-    created_by: null
+    user_id: null
   },
   top_p: 1.0,
   temperature: 0.2,

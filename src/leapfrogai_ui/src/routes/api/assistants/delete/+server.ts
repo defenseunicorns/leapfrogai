@@ -1,5 +1,6 @@
-import { error } from '@sveltejs/kit';
-import { uuidSchema } from '$lib/schemas/chat';
+import { error, json } from '@sveltejs/kit';
+import { object, string } from 'yup';
+import { openai } from '$lib/server/constants';
 
 export async function DELETE({ request, locals: { supabase, getSession } }) {
   const session = await getSession();
@@ -12,23 +13,13 @@ export async function DELETE({ request, locals: { supabase, getSession } }) {
   // Validate request body
   try {
     requestData = await request.json();
-    const isValid = await uuidSchema.isValid(requestData);
+    const isValid = await object({ id: string().required() }).isValid(requestData);
     if (!isValid) error(400, 'Bad Request');
   } catch {
     error(400, 'Bad Request');
   }
 
-  const { error: responseError } = await supabase
-    .from('assistants')
-    .delete()
-    .eq('id', requestData.id);
+  const response = await openai.beta.assistants.del(requestData.id);
 
-  if (responseError) {
-    console.log(
-      `error deleting assistant, error status: ${responseError?.code}: ${responseError?.message}`
-    );
-    error(500, 'Error deleting assistant');
-  }
-
-  return new Response(undefined, { status: 204 });
+  return json(response);
 }

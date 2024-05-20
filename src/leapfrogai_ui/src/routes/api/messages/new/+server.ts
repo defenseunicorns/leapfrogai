@@ -1,13 +1,7 @@
 import { error, json } from '@sveltejs/kit';
 import { messageInputSchema } from '$lib/schemas/chat';
-import OpenAI from 'openai';
-import { env } from '$env/dynamic/private';
 import type { NewMessageInput } from '$lib/types/messages';
-
-const openai = new OpenAI({
-  apiKey: env.LEAPFROGAI_API_KEY ?? '',
-  baseURL: env.LEAPFROGAI_API_BASE_URL
-});
+import { openai } from '$lib/server/constants';
 
 export async function POST({ request, locals: { getSession } }) {
   const session = await getSession();
