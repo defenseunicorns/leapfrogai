@@ -64,5 +64,5 @@ async def get_user_session(authorization: str) -> AsyncClient:
     return await create_client(
         supabase_key=os.getenv("SUPABASE_ANON_KEY"),
         supabase_url=os.getenv("SUPABASE_URL"),
-        access_token=authorization
+        access_token=authorization,
     )
