@@ -37,7 +37,7 @@ class CRUDAssistant(CRUDBase[AuthAssistant]):
     ) -> AuthAssistant | None:
         """Update an assistant by its ID."""
         auth_assistant: AuthAssistant = AuthAssistant(
-            user_id=db.auth.get_user().user.id, **object_.dict()
+            user_id=(await db.auth.get_user()).user.id, **object_.dict()
         )
         return await super().update(id_=id_, db=db, object_=auth_assistant)
 
