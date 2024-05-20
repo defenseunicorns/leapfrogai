@@ -1,3 +1,4 @@
+import io
 import logging
 import uuid
 
@@ -106,11 +107,11 @@ def verify_request(
                         json={"request": mock_assistant_body},
                     )
                 elif url == "files_url":
-                    with open("test.txt", "rb") as f:
-                        files = {"file": ("test.txt", f, "text/plain")}
-                        response = requests.post(
-                            urls[url], headers=headers, files=files
-                        )
+                    f = io.StringIO("test text data")
+                    files = {"file": ("test.txt", f, "text/plain")}
+                    response = requests.post(
+                        urls[url], headers=headers, files=files
+                    )
                 elif url == "assistants_id_url":
                     response = requests.post(
                         urls[url], headers=headers, json=mock_assistant_body
