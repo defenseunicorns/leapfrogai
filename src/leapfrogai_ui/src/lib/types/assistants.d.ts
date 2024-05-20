@@ -1,4 +1,4 @@
-type NewAssistantInput = {
+type AssistantInput = {
   name: string;
   description: string;
   instructions: string;
@@ -7,6 +7,8 @@ type NewAssistantInput = {
   avatar?: File | null;
   pictogram?: string;
 };
+
+type EditAssistantInput = AssistantInput & { id: string };
 
 type ToolResources = {
   code_interpreter: string[];
