@@ -22,7 +22,7 @@ class CRUDFileObject(CRUDBase[AuthFileObject]):
     ) -> AuthFileObject | None:
         """Create a new file object."""
         auth_file_object: AuthFileObject = AuthFileObject(
-            user_id=db.auth.get_user().user.id, **object_.dict()
+            user_id=(await db.auth.get_user()).user.id, **object_.dict()
         )
         return await super().create(db=db, object_=auth_file_object)
 
