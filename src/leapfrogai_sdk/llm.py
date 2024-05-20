@@ -47,7 +47,7 @@ def LLM(_cls):
 
     def create_chat_completion_response(
         text: str,
-        finish_reason: str = None,
+        finish_reason: str = "",
         prompt_tokens: int = -1,
         completion_tokens: int = -1,
     ) -> ChatCompletionResponse:
@@ -66,14 +66,13 @@ def LLM(_cls):
             choices=[choice], usage=usage
         )
 
-        if finish_reason:
-            response.choices[0].finish_reason = finish_reason
+        response.choices[0].finish_reason = finish_reason
 
         return response
 
     def create_completion_response(
         text: str,
-        finish_reason: str = None,
+        finish_reason: str = "",
         prompt_tokens: int = -1,
         completion_tokens: int = -1,
     ) -> CompletionResponse:
@@ -89,8 +88,7 @@ def LLM(_cls):
 
         response: CompletionResponse = CompletionResponse(choices=[choice], usage=usage)
 
-        if finish_reason:
-            response.choices[0].finish_reason = finish_reason
+        response.choices[0].finish_reason = finish_reason
 
         return response
 
