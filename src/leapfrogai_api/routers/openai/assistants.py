@@ -70,14 +70,15 @@ async def create_assistant(
         ) from exc
 
     try:
-        crud_assistant = CRUDAssistant()
+        session = await get_user_session(auth_creds.credentials)
+        crud_assistant = CRUDAssistant(session, auth_creds.credentials)
         return await crud_assistant.create(
-            db=await get_user_session(auth_creds.credentials), object_=assistant
+            db=session, object_=assistant
         )
     except HTTPException as exc:
         raise exc
     except Exception as exc:
-        logging.info(exc)
+        logging.debug(exc)
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail="Unable to create assistant",

@@ -15,18 +15,20 @@ class AuthAssistant(Assistant):
 class CRUDAssistant(CRUDBase[AuthAssistant]):
     """CRUD Operations for Assistant"""
 
-    def __init__(self, table_name: str = "assistant_objects"):
+    def __init__(self, db: AsyncClient, jwt: str, table_name: str = "assistant_objects"):
         super().__init__(model=AuthAssistant, table_name=table_name)
+        self.db = db
+        self.jwt = jwt
 
     async def create(self, db: AsyncClient, object_: Assistant) -> Assistant | None:
         """Create a new assistant."""
         logging.getLogger().info("Attempting to create new assistant")
-        userId: str = (await db.auth.get_session()).user.id
+        userId: str = (await db.auth.get_user(self.jwt)).user.id
         logging.getLogger().info(userId)
         auth_assistant: AuthAssistant = AuthAssistant(
-            user_id=(await db.auth.get_session()).user.id, **object_.dict()
+            user_id=(await db.auth.get_user(self.jwt)).user.id, **object_.dict()
         )
-        logging.getLogger().info((await db.auth.get_session()).user.id)
+        logging.getLogger().info((await db.auth.get_user(self.jwt)).user.id)
         logging.getLogger().info(str(auth_assistant))
         return await super().create(db=db, object_=auth_assistant)
 
