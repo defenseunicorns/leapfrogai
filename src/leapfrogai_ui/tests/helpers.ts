@@ -1,8 +1,14 @@
 import { expect, type Page } from '@playwright/test';
 import { createClient } from '@supabase/supabase-js';
 import type { AssistantInput } from '$lib/types/assistants';
+import OpenAI from 'openai';
 
 const supabase = createClient(process.env.PUBLIC_SUPABASE_URL!, process.env.SERVICE_ROLE_KEY!);
+
+export const openai = new OpenAI({
+  apiKey: process.env.LEAPFROGAI_API_KEY ?? '',
+  baseURL: process.env.LEAPFROGAI_API_BASE_URL
+});
 
 export const loadChatPage = async (page: Page) => {
   await page.goto('/chat');
@@ -38,8 +44,16 @@ export const createAssistant = async (page: Page, assistantInput: AssistantInput
   await saveButtons.click();
 };
 
-export const deleteConversationsByLabel = async (labels: string[]) => {
-  await supabase.from('conversations').delete().in('label', labels);
+export const deleteActiveThread = async (page: Page) => {
+  const urlParts = new URL(page.url()).pathname.split('/');
+  const threadId = urlParts[urlParts.length - 1];
+  if (threadId) {
+    await deleteThread(threadId);
+  }
+};
+export const deleteThread = async (id: string) => {
+  const res = await openai.beta.threads.del(id);
+  console.log(res)
 };
 
 export const waitForResponseToComplete = async (page: Page) => {

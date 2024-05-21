@@ -1,13 +1,13 @@
 import { faker } from '@faker-js/faker';
 import { expect, test } from './fixtures';
 import {
-  deleteConversationsByLabel,
+  deleteActiveThread,
   loadChatPage,
   sendMessage,
   waitForResponseToComplete
 } from './helpers';
 
-test('it can start a new conversation and receive a response', async ({ page }) => {
+test('it can start a new thread and receive a response', async ({ page }) => {
   const newMessage = faker.lorem.words(3);
   const messages = page.getByTestId('message');
   await expect(messages).toHaveCount(0);
@@ -19,7 +19,8 @@ test('it can start a new conversation and receive a response', async ({ page }) 
   await expect(messages).toHaveCount(2);
 
   await expect(page.getByText('Internal Server Error')).toHaveCount(0);
-  await deleteConversationsByLabel([newMessage]);
+
+  await deleteActiveThread(page);
 });
 
 // Flaky test - works manually. More likely to pass in Chrome than Firefox.
@@ -35,7 +36,7 @@ test.skip('it saves in progress responses when interrupted by a page reload', as
 
   await page.reload();
   await expect(page.getByTestId('message')).toHaveCount(2);
-  await deleteConversationsByLabel([newMessage]);
+  await deleteActiveThread(page);
 });
 
 test('it saves in progress responses when interrupted by changing threads', async ({ page }) => {
@@ -51,7 +52,7 @@ test('it saves in progress responses when interrupted by changing threads', asyn
   await page.getByText(newMessage).click(); // switch back to original thread
   await expect(page.getByTestId('message')).toHaveCount(2);
 
-  await deleteConversationsByLabel([newMessage]);
+  await deleteActiveThread(page);
 });
 
 function countWords(str: string) {
@@ -73,7 +74,7 @@ test('it cancels responses', async ({ page }) => {
   const responseText = await response.textContent();
   expect(countWords(responseText!)).toBeLessThan(50);
 
-  await deleteConversationsByLabel([newMessage]);
+  await deleteActiveThread(page);
 });
 
 test('it cancels responses when clicking enter instead of pause button and does not send next message', async ({
@@ -98,6 +99,6 @@ test('it cancels responses when clicking enter instead of pause button and does 
     const responseText = await response.textContent();
     expect(countWords(responseText!)).toBeLessThan(50);
 
-    await deleteConversationsByLabel([newMessage]);
+    await deleteActiveThread(page);
   }
 });

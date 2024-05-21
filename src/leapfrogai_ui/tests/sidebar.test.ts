@@ -2,7 +2,7 @@ import { faker } from '@faker-js/faker';
 import { expect, test } from '@playwright/test';
 import {
   deleteConversation,
-  deleteConversationsByLabel,
+  deleteThread,
   loadChatPage,
   sendMessage,
   waitForResponseToComplete
@@ -44,7 +44,7 @@ test('can edit conversation labels', async ({ page }) => {
 
   expect(page.getByTestId(`conversation-label-${conversationId}`).getByText(newLabel));
 
-  await deleteConversationsByLabel([newMessage]);
+  await deleteThread([newMessage]);
 });
 
 test('Can switch conversation threads', async ({ page }) => {
@@ -70,5 +70,5 @@ test('Can switch conversation threads', async ({ page }) => {
   await page.getByText(newMessage1).click(); // switch conversations by clicking conversation label
 
   await expect(messages).toHaveCount(4);
-  await deleteConversationsByLabel([newMessage1, newMessage2, newMessage3]);
+  await deleteThread([newMessage1, newMessage2, newMessage3]);
 });

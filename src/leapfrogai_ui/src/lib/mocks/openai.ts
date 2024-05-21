@@ -68,8 +68,7 @@ class OpenAI {
     threads: {
       create: vi.fn().mockImplementation((providedThread: LFThread) => {
         if (this.errors.createThread) this.throwError('createThread');
-        const thread = getFakeThread({ label: providedThread.metadata.label });
-        return Promise.resolve(thread);
+        return Promise.resolve(this.thread);
       }),
       update: vi.fn().mockImplementation((id, body) => {
         if (this.errors.updateThread) this.throwError('updateThread');

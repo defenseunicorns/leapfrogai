@@ -3,6 +3,7 @@ import type { PageServerLoad } from './$types';
 import type { Profile } from '$lib/types/profile';
 import type { LFThread } from '$lib/types/threads';
 import {openai} from "$lib/server/constants";
+import type {LFMessage} from "$lib/types/messages";
 
 export const load: PageServerLoad = async ({ locals: { supabase, getSession } }) => {
   const session = await getSession();
@@ -29,7 +30,7 @@ export const load: PageServerLoad = async ({ locals: { supabase, getSession } })
   for (const thread_id of profile.thread_ids) {
     const thread = await openai.beta.threads.retrieve(thread_id);
     const messagesPage = await openai.beta.threads.messages.list(thread.id);
-    const messages = messagesPage.data;
+    const messages = messagesPage.data as LFMessage[];
     messages.sort((a, b) => a.created_at - b.created_at);
     threads.push({ ...thread, messages: messages });
   }

@@ -68,62 +68,68 @@ const textContentBlockSchema = yup.object().shape({
   type: yup.mixed().oneOf(['text']).required()
 });
 
-const messageSchema = yup.object().shape({
-  id: yup.string().required(),
-  assistant_id: yup.string().nullable(),
-  attachments: yup
-    .array()
-    .of(
-      yup.object().shape({
-        file_id: yup.string(),
-        tools: yup.array().of(yup.mixed().oneOf(['code_interpreter', 'file_search']))
+const messageSchema = yup
+  .object()
+  .shape({
+    id: yup.string().required(),
+    assistant_id: yup.string().nullable(),
+    attachments: yup
+      .array()
+      .of(
+        yup.object().shape({
+          file_id: yup.string(),
+          tools: yup.array().of(yup.mixed().oneOf(['code_interpreter', 'file_search']))
+        })
+      )
+      .nullable(),
+    completed_at: yup.number().nullable(),
+    content: yup
+      .array()
+      .of(
+        yup.lazy((value) => {
+          if (value.type === 'text') {
+            return textContentBlockSchema;
+          }
+          if (value.type === 'image_file') {
+            return imageFileContentBlockSchema;
+          }
+          if (value.type === 'image_url') {
+            return imageUrlContentBlockSchema;
+          }
+          return yup.mixed().oneOf(['text', 'image_file', 'image_url']).required();
+        })
+      )
+      .required(),
+    created_at: yup.number().required(),
+    incomplete_at: yup.number().nullable(),
+    incomplete_details: yup
+      .object()
+      .shape({
+        reason: yup
+          .mixed()
+          .oneOf(['content_filter', 'max_tokens', 'run_cancelled', 'run_expired', 'run_failed'])
       })
-    )
-    .nullable(),
-  completed_at: yup.number().nullable(),
-  content: yup
-    .array()
-    .of(
-      yup.lazy((value) => {
-        if (value.type === 'text') {
-          return textContentBlockSchema;
-        }
-        if (value.type === 'image_file') {
-          return imageFileContentBlockSchema;
-        }
-        if (value.type === 'image_url') {
-          return imageUrlContentBlockSchema;
-        }
-        return yup.mixed().oneOf(['text', 'image_file', 'image_url']).required();
-      })
-    )
-    .required(),
-  created_at: yup.number().required(),
-  incomplete_at: yup.number().nullable(),
-  incomplete_details: yup
-    .object()
-    .shape({
-      reason: yup
-        .mixed()
-        .oneOf(['content_filter', 'max_tokens', 'run_cancelled', 'run_expired', 'run_failed'])
-    })
-    .nullable(),
-  metadata: object({ user_id: string() }).test(
-    'max fields',
-    'metadata is limited to 16 fields',
-    (value) => Object.keys(value).length <= 16
-  ),
-  object: yup.mixed().oneOf(['thread.message']).required(),
-  role: yup.mixed().oneOf(['user', 'assistant']).required(),
-  run_id: yup.string().nullable(),
-  status: yup.mixed().oneOf(['in_progress', 'incomplete', 'completed']), // openai type has this as required, but it's not being returned on message creation
-  thread_id: yup.string().required()
-}).noUnknown(true).strict();
+      .nullable(),
+    metadata: object({ user_id: string() }).test(
+      'max fields',
+      'metadata is limited to 16 fields',
+      (value) => Object.keys(value).length <= 16
+    ),
+    object: yup.mixed().oneOf(['thread.message']).required(),
+    role: yup.mixed().oneOf(['user', 'assistant']).required(),
+    run_id: yup.string().nullable(),
+    status: yup.mixed().oneOf(['in_progress', 'incomplete', 'completed']), // openai type has this as required, but it's not being returned on message creation
+    thread_id: yup.string().required()
+  })
+  .noUnknown(true)
+  .strict();
 
 export const AIMessagesInputSchema = yup
   .object({
     messages: array().of(
       object({ role: string<'user' | 'assistant'>().required(), content: string().required() })
+        .noUnknown(true)
+        .strict()
     )
   })
   .noUnknown(true)

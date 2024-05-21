@@ -43,7 +43,7 @@ describe('/api/threads/new', () => {
 
     const resData = await res.json();
     expect(res.status).toEqual(200);
-    expect(resData.metadata.label).toEqual(thread.metadata.label);
+    expect(resData).toEqual(thread);
 
     const updateCallArgs = updateMock.update.mock.calls[0];
     expect(updateCallArgs[0]!.thread_ids).toHaveLength(2);
