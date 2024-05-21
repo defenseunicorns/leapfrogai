@@ -22,6 +22,7 @@ LFAI_CONFIG_FILEPATH = os.path.join(LFAI_CONFIG_PATH, LFAI_CONFIG_FILENAME)
 #########################
 #########################
 
+
 async def pack_dummy_bearer_token(request: Request, call_next):
     request.add_header("Authorization", "Bearer dummy")
     return await call_next(request)
@@ -108,9 +109,9 @@ def test_routes():
         found = False
         for actual_route in actual_routes:
             if (
-                    hasattr(actual_route, "path")
-                    and actual_route.path == route
-                    and actual_route.name == name
+                hasattr(actual_route, "path")
+                and actual_route.path == route
+                and actual_route.name == name
             ):
                 assert actual_route.methods == set(methods)
                 found = True
@@ -211,7 +212,7 @@ def test_stream_chat_completion(remove_auth_middleware):
         )
         assert response.status_code == 200
         assert (
-                response.headers.get("content-type") == "text/event-stream; charset=utf-8"
+            response.headers.get("content-type") == "text/event-stream; charset=utf-8"
         )
 
         # parse through the streamed response
