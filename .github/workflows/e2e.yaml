@@ -69,7 +69,7 @@ jobs:
         - name: Install UI/Playwright Dependencies
           run: |
             npm --prefix src/leapfrogai_ui ci
-            npx playwright install
+            npx --prefix src/leapfrogai_ui playwright install
 
         - name: Setup UDS Environment
           uses: defenseunicorns/uds-common/.github/actions/setup@05f42bb3117b66ebef8c72ae050b34bce19385f5
