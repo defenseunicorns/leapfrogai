@@ -74,13 +74,35 @@ def test_routes():
         "/openai/v1/embeddings": ["POST"],
         "/openai/v1/audio/transcriptions": ["POST"],
         "/openai/v1/files": ["POST"],
+        "/openai/v1/assistants": ["POST"],
     }
+
+    assistants_routes = [
+        ("/openai/v1/assistants", "create_assistant", ["POST"]),
+        ("/openai/v1/assistants", "list_assistants", ["GET"]),
+        ("/openai/v1/assistants/{assistant_id}", "retrieve_assistant", ["GET"]),
+        ("/openai/v1/assistants/{assistant_id}", "modify_assistant", ["POST"]),
+        ("/openai/v1/assistants/{assistant_id}", "delete_assistant", ["DELETE"]),
+    ]
 
     actual_routes = app.routes
     for route in actual_routes:
         if hasattr(route, "path") and route.path in expected_routes:
             assert route.methods == set(expected_routes[route.path])
             del expected_routes[route.path]
+
+    for route, name, methods in assistants_routes:
+        found = False
+        for actual_route in actual_routes:
+            if (
+                hasattr(actual_route, "path")
+                and actual_route.path == route
+                and actual_route.name == name
+            ):
+                assert actual_route.methods == set(methods)
+                found = True
+                break
+        assert found, f"Missing route: {route}, {name}, {methods}"
 
     assert len(expected_routes) == 0
 
