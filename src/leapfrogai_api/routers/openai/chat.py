@@ -1,7 +1,8 @@
 """OpenAI Chat API router."""
 
 from typing import Annotated
-from fastapi import APIRouter, Depends, HTTPException
+from fastapi import HTTPException, APIRouter, status, Depends
+from fastapi.security import HTTPAuthorizationCredentials, HTTPBearer
 from leapfrogai_api.backend.grpc_client import (
     chat_completion,
     stream_chat_completion,
@@ -12,14 +13,15 @@ from leapfrogai_api.utils.config import Config
 from leapfrogai_api.backend.types import ChatCompletionRequest
 import leapfrogai_sdk as lfai
 
-
 router = APIRouter(prefix="/openai/v1/chat", tags=["openai/chat"])
+security = HTTPBearer()
 
 
 @router.post("/completions")
 async def chat_complete(
-    req: ChatCompletionRequest,
-    model_config: Annotated[Config, Depends(get_model_config)],
+        req: ChatCompletionRequest,
+        model_config: Annotated[Config, Depends(get_model_config)],
+        auth_creds: Annotated[HTTPAuthorizationCredentials, Depends(security)],
 ):
     """Complete a chat conversation with the given model."""
 
