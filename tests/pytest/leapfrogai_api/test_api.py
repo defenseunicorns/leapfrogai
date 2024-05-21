@@ -2,13 +2,11 @@ import json
 import os
 import shutil
 import time
-from typing import Annotated, Optional
 from urllib.request import Request
-
-from fastapi.security import HTTPAuthorizationCredentials, HTTPBearer
 
 import pytest
 from fastapi.testclient import TestClient
+from fastapi.applications import BaseHTTPMiddleware
 
 import leapfrogai_api.backend.types as lfai_types
 from leapfrogai_api.main import app
@@ -19,46 +17,21 @@ LFAI_CONFIG_PATH = os.environ["LFAI_CONFIG_PATH"] = os.path.join(
     os.path.dirname(__file__), "fixtures"
 )
 LFAI_CONFIG_FILEPATH = os.path.join(LFAI_CONFIG_PATH, LFAI_CONFIG_FILENAME)
-security = HTTPBearer()
 
 
 #########################
 #########################
 
-
-class HTTPBearerModel:
-    def __init__(
-        self, bearerFormat: Optional[str] = None, description: Optional[str] = None
-    ):
-        self.bearerFormat = bearerFormat
-        self.description = description
-
-
-class HTTPBearerMock:
-    def __init__(
-        self,
-        *,
-        bearerFormat: Annotated[Optional[str], ...] = None,
-        scheme_name: Annotated[Optional[str], ...] = None,
-        description: Annotated[Optional[str], ...] = None,
-        auto_error: Annotated[bool, ...] = True,
-    ):
-        self.model = HTTPBearerModel(bearerFormat=bearerFormat, description=description)
-        self.scheme_name = scheme_name or self.__class__.__name__
-        self.auto_error = auto_error
-
-    async def __call__(
-        self, request: Request
-    ) -> Optional[HTTPAuthorizationCredentials]:
-        # Allow all requests, do nothing
-        return HTTPAuthorizationCredentials(scheme="Bearer", credentials="dummy")
+async def pack_dummy_bearer_token(request: Request, call_next):
+    request.add_header("Authorization", "Bearer dummy")
+    return await call_next(request)
 
 
 @pytest.fixture
 def remove_auth_middleware():
     app.user_middleware.clear()
+    app.add_middleware(BaseHTTPMiddleware, dispatch=pack_dummy_bearer_token)
     app.middleware_stack = app.build_middleware_stack()
-    app.dependency_overrides[security] = HTTPBearerMock()
 
 
 def test_config_load(remove_auth_middleware):
@@ -135,9 +108,9 @@ def test_routes():
         found = False
         for actual_route in actual_routes:
             if (
-                hasattr(actual_route, "path")
-                and actual_route.path == route
-                and actual_route.name == name
+                    hasattr(actual_route, "path")
+                    and actual_route.path == route
+                    and actual_route.name == name
             ):
                 assert actual_route.methods == set(methods)
                 found = True
@@ -238,7 +211,7 @@ def test_stream_chat_completion(remove_auth_middleware):
         )
         assert response.status_code == 200
         assert (
-            response.headers.get("content-type") == "text/event-stream; charset=utf-8"
+                response.headers.get("content-type") == "text/event-stream; charset=utf-8"
         )
 
         # parse through the streamed response
