@@ -24,6 +24,7 @@ from leapfrogai_api.routers.supabase_session import (
     init_supabase_client,
 )
 from leapfrogai_api.utils import get_model_config
+from fastapi.middleware.cors import CORSMiddleware
 
 
 # handle startup & shutdown tasks
@@ -41,8 +42,20 @@ async def lifespan(app: FastAPI):
 
 app = FastAPI(lifespan=lifespan)
 
-skip_endpoint_auth = ["/healthz", "/docs", "/openapi.json"]
+origins = [
+    "http://leapfrogai-api.uds.dev",
+    "https://leapfrogai-api.uds.dev"
+]
 
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=origins,
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
+
+skip_endpoint_auth = ["/healthz", "/docs", "/openapi.json"]
 
 @app.middleware("http")
 async def verify_supabase_auth(request: Request, call_next):
