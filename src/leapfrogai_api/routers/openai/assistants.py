@@ -19,8 +19,6 @@ security = HTTPBearer()
 
 supported_tools = ["file_search"]
 
-supported_tools = ["file_search"]
-
 
 @router.post("")
 async def create_assistant(

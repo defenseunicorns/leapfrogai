@@ -1,15 +1,16 @@
 """Supabase session dependency."""
-
+import logging
 import os
 from typing import Annotated
 from fastapi import Depends, status, HTTPException
 from supabase_py_async import AsyncClient, create_client
 from httpx import HTTPStatusError
-from gotrue import errors
+from gotrue import errors, types
 
 
 async def init_supabase_client() -> AsyncClient:
     """Initialize a Supabase client."""
+    logging.info(f"The anon key is {os.getenv('SUPABASE_ANON_KEY')} the url is {os.getenv('SUPABASE_URL')}")
     return await create_client(
         supabase_key=os.getenv("SUPABASE_ANON_KEY"),
         supabase_url=os.getenv("SUPABASE_URL"),
@@ -33,10 +34,13 @@ async def validate_user_authorization(session: Session, authorization: str):
     if authorization:
         api_key: str = authorization.replace("Bearer ", "")
 
-        try:
-            user: None = await session.auth.get_user(api_key)
+        logging.info(f"The api key is {api_key}")
 
-            if user is None:
+        try:
+            user_response: types.UserResponse = await session.auth.get_user(api_key)
+            logging.info(f"The user id is {user_response.user.id}")
+
+            if user_response is None:
                 authorized = False
         except HTTPStatusError:
             authorized = False
