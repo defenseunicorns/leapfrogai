@@ -21,6 +21,8 @@ class CRUDAssistant(CRUDBase[AuthAssistant]):
     async def create(self, db: AsyncClient, object_: Assistant) -> Assistant | None:
         """Create a new assistant."""
         logging.getLogger().info("Attempting to create new assistant")
+        userId: str = (await db.auth.get_user()).user.id
+        logging.getLogger().info(userId)
         auth_assistant: AuthAssistant = AuthAssistant(
             user_id=(await db.auth.get_user()).user.id, **object_.dict()
         )
