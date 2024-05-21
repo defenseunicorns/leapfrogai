@@ -58,7 +58,7 @@ const devConfig: PlaywrightTestConfig = {
 };
 
 // when e2e testing, use the deployed instance
-const e2eConfig: PlaywrightTestConfig = {
+const CI_Config: PlaywrightTestConfig = {
   use: {
     baseURL: 'http://ai.uds.dev'
   }
@@ -70,7 +70,7 @@ const environment = process.env.TEST_ENV || 'dev';
 // config object with default configuration and environment specific configuration
 const config: PlaywrightTestConfig = {
   ...defaultConfig,
-  ...(environment === 'e2e' ? e2eConfig : devConfig)
+  ...(environment === 'CI' ? CI_Config : devConfig)
 };
 
 export default config;

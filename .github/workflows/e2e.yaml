@@ -92,10 +92,11 @@ jobs:
             uds zarf package deploy packages/supabase/zarf-package-supabase-amd64-e2e-test.tar.zst --confirm
             rm packages/supabase/zarf-package-supabase-amd64-e2e-test.tar.zst
 
-        - name: Set environment variable
+        - name: Set environment variables
           id: set-env-var
           run: |
             echo "API_KEY=$(uds zarf tools kubectl get secret supabase-bootstrap-jwt -n leapfrogai -o jsonpath='{.data.anon-key}' | base64 -d)" >> "$GITHUB_ENV"
+            echo "SUPABASE_PASSWORD=$(uds zarf tools kubectl get secret supabase-dashboard-secret -n leapfrogai -o jsonpath='{.data.password}') >> "$GITHUB_ENV"
 
         - name: Test Supabase
           run: |
@@ -116,7 +117,7 @@ jobs:
         - name: UI and Supabase test
           run: |
             cp src/leapfrogai_ui/.env.example src/leapfrogai_ui/.env
-            TEST_ENV=e2e PUBLIC_SUPABASE_URL=http://supabase-kong.uds.dev PUBLIC_SUPABASE_ANON_KEY=$API_KEY npm --prefix src/leapfrogai_ui run test:integration
+            TEST_ENV=e2e PUBLIC_DISABLE_KEYCLOAK=true PUBLIC_SUPABASE_URL=http://supabase-kong.uds.dev USERNAME=supabase-admin PASSWORD=$SUPABASE_PASSWORD PUBLIC_SUPABASE_ANON_KEY=$API_KEY npm --prefix src/leapfrogai_ui run test:integration
 
         - name: Cleanup UI
           run: |
