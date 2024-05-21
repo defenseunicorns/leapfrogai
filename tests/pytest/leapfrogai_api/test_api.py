@@ -2,7 +2,6 @@ import json
 import os
 import shutil
 import time
-from fastapi.applications import Request
 from starlette.middleware.base import _CachedRequest
 
 import pytest
@@ -10,6 +9,7 @@ from fastapi.testclient import TestClient
 from fastapi.applications import BaseHTTPMiddleware
 
 import leapfrogai_api.backend.types as lfai_types
+from leapfrogai_api import main
 from leapfrogai_api.main import app
 
 # Set environment variables that the TestClient will use
@@ -28,7 +28,7 @@ async def pack_dummy_bearer_token(request: _CachedRequest, call_next):
     request.headers.__dict__["_list"].append(
         (
             "authorization".encode(),
-            f"Bearer dummy".encode(),
+            "Bearer dummy".encode(),
         )
     )
     return await call_next(request)
@@ -37,6 +37,7 @@ async def pack_dummy_bearer_token(request: _CachedRequest, call_next):
 @pytest.fixture
 def remove_auth_middleware():
     app.user_middleware.clear()
+    app.middleware_stack = None
     app.add_middleware(BaseHTTPMiddleware, dispatch=pack_dummy_bearer_token)
     app.middleware_stack = app.build_middleware_stack()
 
