@@ -61,6 +61,14 @@ jobs:
         - name: Install Python Deps
           run: python -m pip install "."
 
+        - name: Setup Node
+          uses: actions/setup-node@60edb5dd545a775178f52524783378180af0d1f8 # v4.0.2
+          with:
+            node-version-file: 'src/leapfrogai_ui/package.json'
+
+        - name: Install UI Dependencies
+          run: npm --prefix src/leapfrogai_ui ci
+
         - name: Setup UDS Environment
           uses: defenseunicorns/uds-common/.github/actions/setup@05f42bb3117b66ebef8c72ae050b34bce19385f5
           with:
@@ -92,7 +100,26 @@ jobs:
             python -m pip install requests
             python -m pytest ./tests/e2e/test_supabase.py -v
 
-        # This cleanup may need to be moved/removed when other packages depend on Supabase
+        ##########
+        # UI
+        ##########
+        - name: Deploy LFAI-UI
+          run: |
+            make build-ui LOCAL_VERSION=e2e-test
+            docker image prune -af
+            uds zarf package deploy packages/ui/zarf-package-leapfrogai-ui-amd64-e2e-test.tar.zst --confirm
+            rm packages/api/zarf-package-leapfrogai-api-amd64-e2e-test.tar.zst
+
+        # Run the playwright UI tests using the deployed Supabase endpoint
+        - name: UI and Supabase test
+          run: |
+            TEST_ENV=e2e PUBLIC_SUPABASE_URL=http://supabase-kong.uds.dev PUBLIC_SUPABASE_ANON_KEY=$API_KEY npm --prefix src/leapfrogai_ui run test:integration
+
+        - name: Cleanup UI
+          run: |
+            uds zarf package remove leapfrogai-ui --confirm
+
+        # Supabase can now be removed since we're done testing it
         - name: Cleanup Supabase
           run: |
             uds zarf package remove supabase -l=trace --confirm

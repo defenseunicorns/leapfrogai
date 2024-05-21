@@ -5,7 +5,7 @@ import * as OTPAuth from 'otpauth';
 setup('authenticate', async ({ page, clearDbData }) => {
   await clearDbData();
 
-  await page.goto('http://localhost:4173');
+  await page.goto('/'); // go to the home page
   if (process.env.PUBLIC_DISABLE_KEYCLOAK === 'true') {
     // uses local supabase test users, logs in directly with Supabase, no Keycloak
     await page.getByText('Already have an account? Sign In').click();
@@ -46,7 +46,7 @@ setup('authenticate', async ({ page, clearDbData }) => {
   //
   // Login flow sets cookies in the process of several redirects.
   // Wait for the final URL to ensure that the cookies are actually set.
-  await page.waitForURL('http://localhost:4173/chat');
+  await page.waitForURL('/chat');
 
   // Alternatively, you can wait until the page reaches a state where all cookies are set.
   //   await expect(page.getByRole('button', { name: 'View profile and more' })).toBeVisible();
