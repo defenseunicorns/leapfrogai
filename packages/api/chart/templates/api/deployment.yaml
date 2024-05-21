@@ -45,6 +45,14 @@ spec:
             value: "*.toml"
           - name: PORT
             value: "{{ .Values.api.port }}"
+          - name: SUPABASE_URL
+            value: "{{ .Values.supabase.url }}"
+          - name: SUPABASE_SERVICE_KEY
+            valueFrom:
+              secretKeyRef:
+                name: supabase-bootstrap-jwt
+                key: service-key
+                optional: true
           ports:
             - containerPort: 8080
           livenessProbe:
