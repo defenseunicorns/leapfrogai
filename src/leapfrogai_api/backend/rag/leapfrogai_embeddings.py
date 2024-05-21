@@ -1,27 +1,17 @@
 """LeapfrogAI Embeddings via Langchain Embeddings Interface."""
 
 import os
-from langchain_core.embeddings import Embeddings
 import leapfrogai_sdk as lfai
 from leapfrogai_api.utils import get_model_config
 from leapfrogai_api.backend.grpc_client import create_embeddings
 
 
-class LeapfrogAIEmbeddings(Embeddings):
+# Partially implements the Langchain Core Embeddings interface
+class LeapfrogAIEmbeddings:
     """LeapfrogAI Embeddings via Langchain Embeddings Interface.
 
     This class provides methods to embed documents and query text using LeapfrogAI embeddings.
     """
-
-    def embed_documents(self, texts: list[str]) -> list[list[float]]:
-        """Not implemented yet."""
-        # TODO: Implement this to meet Langchain Embeddings Interface.
-        raise NotImplementedError("embed_documents has not been implemented yet.")
-
-    def embed_query(self, text: str) -> list[float]:
-        """Not implemented yet."""
-        # TODO: Implement this to meet Langchain Embeddings Interface.
-        raise NotImplementedError("embed_query has not been implemented yet.")
 
     async def aembed_documents(self, texts: list[str]) -> list[list[float]]:
         """Asynchronously embeds a list of documents.

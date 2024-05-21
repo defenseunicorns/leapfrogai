@@ -1,6 +1,6 @@
 from leapfrogai_api.routers.supabase_session import Session
 from leapfrogai_api.data.supabase_vector_store import AsyncSupabaseVectorStore
-from leapfrogai_api.backend.leapfrogai_embeddings import LeapfrogAIEmbeddings
+from leapfrogai_api.backend.rag.leapfrogai_embeddings import LeapfrogAIEmbeddings
 
 
 class QueryService:
