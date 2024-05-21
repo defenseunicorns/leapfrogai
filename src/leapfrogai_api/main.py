@@ -42,19 +42,6 @@ async def lifespan(app: FastAPI):
 
 app = FastAPI(lifespan=lifespan)
 
-origins = [
-    "http://leapfrogai-api.uds.dev",
-    "https://leapfrogai-api.uds.dev"
-]
-
-app.add_middleware(
-    CORSMiddleware,
-    allow_origins=origins,
-    allow_credentials=True,
-    allow_methods=["*"],
-    allow_headers=["*"],
-)
-
 skip_endpoint_auth = ["/healthz", "/docs", "/openapi.json"]
 
 @app.middleware("http")
