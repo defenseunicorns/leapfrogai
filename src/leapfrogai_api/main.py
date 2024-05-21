@@ -24,7 +24,6 @@ from leapfrogai_api.routers.supabase_session import (
     init_supabase_client,
 )
 from leapfrogai_api.utils import get_model_config
-from fastapi.middleware.cors import CORSMiddleware
 
 
 # handle startup & shutdown tasks
