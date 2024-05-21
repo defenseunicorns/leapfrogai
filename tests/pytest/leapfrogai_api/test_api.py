@@ -9,7 +9,6 @@ from fastapi.testclient import TestClient
 from fastapi.applications import BaseHTTPMiddleware
 
 import leapfrogai_api.backend.types as lfai_types
-from leapfrogai_api import main
 from leapfrogai_api.main import app
 
 # Set environment variables that the TestClient will use
