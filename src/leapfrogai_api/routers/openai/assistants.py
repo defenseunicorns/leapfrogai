@@ -1,5 +1,5 @@
 """OpenAI Compliant Assistants API Router."""
-
+import logging
 from typing import Annotated
 
 from fastapi import HTTPException, APIRouter, status, Depends
@@ -77,6 +77,7 @@ async def create_assistant(
     except HTTPException as exc:
         raise exc
     except Exception as exc:
+        logging.info(exc)
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail="Unable to create assistant",
