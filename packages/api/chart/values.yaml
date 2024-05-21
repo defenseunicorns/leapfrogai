@@ -4,6 +4,9 @@ image:
   # x-release-please-end
   kiwigridTag: 1.23.3
 
+supabase:
+  url: "https://supabase-kong.###ZARF_VAR_HOSTED_DOMAIN###"
+
 api:
   replicas: 1
   port: 8080
