@@ -212,7 +212,8 @@ async def create_vector_store_file(
         return vector_store_file
     except Exception as exc:
         raise HTTPException(
-            status_code=500, detail="Failed to create vector store file"
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail="Failed to create vector store file",
         ) from exc
 
 
@@ -231,7 +232,8 @@ async def list_vector_store_files(
         return vector_store_files
     except Exception as exc:
         raise HTTPException(
-            status_code=500, detail="Failed to list vector store files"
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail="Failed to list vector store files",
         ) from exc
 
 

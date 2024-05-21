@@ -59,8 +59,8 @@ class LeapfrogAIEmbeddings:
         Raises:
             ValueError: If the embeddings model is not found.
         """
-        model = get_model_config().get_model_backend(model=model_name)
-        if model is None:
+
+        if not (model := get_model_config().get_model_backend(model=model_name)):
             raise ValueError("Embeddings model not found.")
 
         return model
