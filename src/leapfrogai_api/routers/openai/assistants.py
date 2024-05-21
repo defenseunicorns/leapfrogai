@@ -19,6 +19,8 @@ security = HTTPBearer()
 
 supported_tools = ["file_search"]
 
+supported_tools = ["file_search"]
+
 
 @router.post("")
 async def create_assistant(
@@ -122,7 +124,6 @@ async def modify_assistant(
     Modify an assistant.
 
     Args:
-        session (Session): The database session.
         assistant_id (str): The ID of the assistant to modify.
         request (ModifyAssistantRequest): The request object containing the updated assistant information.
         auth_creds (HTTPAuthorizationCredentials): The authorization header that contains the user's API key.

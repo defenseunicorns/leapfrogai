@@ -2,11 +2,9 @@
 import logging
 
 from pydantic import Field
-
 from openai.types.beta import Assistant
 from supabase_py_async import AsyncClient
 from leapfrogai_api.data.crud_base import CRUDBase
-
 
 class AuthAssistant(Assistant):
     user_id: str = Field(default="")

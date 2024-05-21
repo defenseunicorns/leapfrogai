@@ -36,7 +36,7 @@ async def upload_file(
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST, detail="Failed to parse file"
         ) from exc
-
+        
     crud_file_object = CRUDFileObject()
 
     user_session = await get_user_session(auth_creds.credentials)
