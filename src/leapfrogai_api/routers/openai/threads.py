@@ -2,7 +2,7 @@
 
 from typing import Annotated
 
-from fastapi import HTTPException, APIRouter, status, Depends
+from fastapi import HTTPException, APIRouter, Depends
 from fastapi.security import HTTPAuthorizationCredentials, HTTPBearer
 from openai.types.beta import Thread, ThreadDeleted
 from openai.types.beta.threads import Message
