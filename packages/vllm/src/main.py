@@ -254,7 +254,7 @@ class Model:
         cur_request_queue = self.delta_queue_by_id.get(request_id)
         return cur_request_queue is None or cur_request_queue.empty()
 
-    def generate(
+    async def generate(
         self, prompt: str, config: GenerationConfig
     ) -> AsyncGenerator[str, Any]:
         """Initiate and manage the generation process for a given prompt, yielding generated text segments."""

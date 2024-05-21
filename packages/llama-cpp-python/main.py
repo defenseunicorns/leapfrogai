@@ -21,7 +21,7 @@ class Model:
         n_gpu_layers=-1 if GPU_ENABLED is True else 0,
     )
 
-    def generate(
+    async def generate(
         self, prompt: str, config: GenerationConfig
     ) -> AsyncGenerator[str, Any]:
         for res in self.llm(
