@@ -65,11 +65,11 @@ async def create_vector_store(
 
             new_vector_store.status = "completed"
 
-            return await crud_vector_store.update(
-                id_=new_vector_store.id,
-                object_=new_vector_store,
-                db=session,
-            )
+        return await crud_vector_store.update(
+            id_=new_vector_store.id,
+            object_=new_vector_store,
+            db=session,
+        )
 
     except Exception as exc:
         raise HTTPException(
