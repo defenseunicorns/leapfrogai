@@ -74,6 +74,7 @@ def test_routes():
         "/openai/v1/embeddings": ["POST"],
         "/openai/v1/audio/transcriptions": ["POST"],
         "/openai/v1/files": ["POST"],
+        "/openai/v1/assistants": ["POST"],
     }
 
     openai_routes = [
