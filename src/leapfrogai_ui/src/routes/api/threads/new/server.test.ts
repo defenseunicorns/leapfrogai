@@ -3,34 +3,54 @@ import { POST } from './+server';
 import { MAX_LABEL_SIZE } from '$lib/constants';
 import { getFakeThread } from '../../../../../testUtils/fakeData';
 import {
+  selectSingleReturnsMockError,
   sessionMock,
   sessionNullMock,
-  supabaseInsertErrorMock,
-  supabaseInsertMock
+  supabaseFromMockWrapper,
+  supabaseInsertMock,
+  supabaseSelectSingleByIdMock,
+  supabaseUpdateErrorMock,
+  updateSingleReturnsMock
 } from '$lib/mocks/supabase-mocks';
+import { mockOpenAI } from '../../../../../vitest-setup';
 
-const conversation = getFakeThread();
+const thread = getFakeThread();
 const validLabel = faker.string.alpha({ length: MAX_LABEL_SIZE - 1 });
 const invalidLongLabel = faker.string.alpha({ length: MAX_LABEL_SIZE + 1 });
+const fakeProfile = { thread_ids: ['thread_1'] };
 
-describe('/api/conversations/new', () => {
-  it('returns a 200 when successful', async () => {
-    const request = new Request('http://localhost:5173/api/conversations/new', {
+describe('/api/threads/new', () => {
+  it('returns a 200 when successful and updates the users profile with the new thread id', async () => {
+    const request = new Request('http://thisurlhasnoeffect', {
       method: 'POST',
-      body: JSON.stringify({ label: conversation.label })
+      body: JSON.stringify({ label: thread.metadata.label })
     });
+
+    mockOpenAI.setThread(thread);
+
+    const updateMock = updateSingleReturnsMock();
+
     const res = await POST({
       request,
-      locals: { getSession: sessionMock, supabase: supabaseInsertMock([conversation]) }
+      locals: {
+        getSession: sessionMock,
+        supabase: supabaseFromMockWrapper({
+          ...supabaseSelectSingleByIdMock(fakeProfile),
+          ...updateMock
+        })
+      }
     });
 
     const resData = await res.json();
     expect(res.status).toEqual(200);
-    expect(resData).toEqual(conversation);
+    expect(resData.metadata.label).toEqual(thread.metadata.label);
+
+    const updateCallArgs = updateMock.update.mock.calls[0];
+    expect(updateCallArgs[0]!.thread_ids).toHaveLength(2);
   });
 
   it('returns a 401 when there is no session', async () => {
-    const request = new Request('http://localhost:5173/api/conversations/new', {
+    const request = new Request('http://thisurlhasnoeffect', {
       method: 'POST',
       body: JSON.stringify({ label: validLabel })
     });
@@ -39,7 +59,7 @@ describe('/api/conversations/new', () => {
       POST({
         request,
         locals: {
-          supabase: supabaseInsertMock([conversation]),
+          supabase: supabaseInsertMock([thread]),
           getSession: sessionNullMock
         }
       })
@@ -49,7 +69,7 @@ describe('/api/conversations/new', () => {
   });
 
   it('returns a 400 when label is too long', async () => {
-    const request = new Request('http://localhost:5173/api/conversations/new', {
+    const request = new Request('http://thisurlhasnoeffect', {
       method: 'POST',
       body: JSON.stringify({ label: invalidLongLabel })
     });
@@ -57,28 +77,28 @@ describe('/api/conversations/new', () => {
     await expect(
       POST({
         request,
-        locals: { supabase: supabaseInsertMock([conversation]), getSession: sessionMock }
+        locals: { supabase: supabaseInsertMock([thread]), getSession: sessionMock }
       })
     ).rejects.toMatchObject({
       status: 400
     });
   });
   it('returns a 400 when label is missing', async () => {
-    const request = new Request('http://localhost:5173/api/conversations/new', {
+    const request = new Request('http://thisurlhasnoeffect', {
       method: 'POST'
     });
 
     await expect(
       POST({
         request,
-        locals: { supabase: supabaseInsertMock([conversation]), getSession: sessionMock }
+        locals: { supabase: supabaseInsertMock([thread]), getSession: sessionMock }
       })
     ).rejects.toMatchObject({
       status: 400
     });
   });
   it('returns a 400 when extra body arguments are passed', async () => {
-    const request = new Request('http://localhost:5173/api/conversations/new', {
+    const request = new Request('http://thisurlhasnoeffect', {
       method: 'POST',
       body: JSON.stringify({ label: validLabel, wrong: 'key' })
     });
@@ -86,22 +106,71 @@ describe('/api/conversations/new', () => {
     await expect(
       POST({
         request,
-        locals: { supabase: supabaseInsertMock([conversation]), getSession: sessionMock }
+        locals: { supabase: supabaseInsertMock([thread]), getSession: sessionMock }
       })
     ).rejects.toMatchObject({
       status: 400
     });
   });
-  it('returns a 500 when there is a supabase error', async () => {
-    const request = new Request('http://localhost:5173/api/conversations/new', {
+
+  it('returns a 500 when there is a supabase error updating the users profile', async () => {
+    const request = new Request('http://thisurlhasnoeffect', {
       method: 'POST',
-      body: JSON.stringify({ label: conversation.label })
+      body: JSON.stringify({ label: thread.metadata.label })
     });
 
     await expect(
       POST({
         request,
-        locals: { supabase: supabaseInsertErrorMock(), getSession: sessionMock }
+        locals: {
+          supabase: supabaseFromMockWrapper({
+            ...supabaseSelectSingleByIdMock(fakeProfile),
+            ...supabaseUpdateErrorMock()
+          }),
+          getSession: sessionMock
+        }
+      })
+    ).rejects.toMatchObject({
+      status: 500
+    });
+  });
+  it('returns a 500 when there is a supabase error getting the users profile', async () => {
+    const request = new Request('http://thisurlhasnoeffect', {
+      method: 'POST',
+      body: JSON.stringify({ label: thread.metadata.label })
+    });
+
+    await expect(
+      POST({
+        request,
+        locals: {
+          supabase: supabaseFromMockWrapper({
+            ...supabaseSelectSingleByIdMock(fakeProfile),
+            ...selectSingleReturnsMockError()
+          }),
+          getSession: sessionMock
+        }
+      })
+    ).rejects.toMatchObject({
+      status: 500
+    });
+  });
+  it('returns a 500 when there is an openai error', async () => {
+    mockOpenAI.setError('createThread');
+    const request = new Request('http://thisurlhasnoeffect', {
+      method: 'POST',
+      body: JSON.stringify({ label: thread.metadata.label })
+    });
+    await expect(
+      POST({
+        request,
+        locals: {
+          supabase: supabaseFromMockWrapper({
+            ...supabaseSelectSingleByIdMock(fakeProfile),
+            ...updateSingleReturnsMock()
+          }),
+          getSession: sessionMock
+        }
       })
     ).rejects.toMatchObject({
       status: 500

@@ -2,7 +2,7 @@ import { error, json } from '@sveltejs/kit';
 import { updateThreadLabelSchema } from '$lib/schemas/chat';
 import { openai } from '$lib/server/constants';
 
-export async function PUT({ request, locals: { supabase, getSession } }) {
+export async function PUT({ request, locals: { getSession } }) {
   const session = await getSession();
   if (!session) {
     error(401, 'Unauthorized');
@@ -18,13 +18,13 @@ export async function PUT({ request, locals: { supabase, getSession } }) {
     error(400, 'Bad Request');
   }
 
-  const updatedThread = await openai.beta.threads.update(requestData.id, {
-    metadata: { label: requestData.label }
-  });
-
-  if (updatedThread.id !== requestData.id) {
-    console.log(`Error updating thread label: ${updatedThread}`);
+  try {
+    const updatedThread = await openai.beta.threads.update(requestData.id, {
+      metadata: { label: requestData.label }
+    });
+    return json(updatedThread);
+  } catch (e) {
+    console.error(`Error updating thread label: ${e}`);
     error(500, 'Error updating thread label');
   }
-  return json(updatedThread);
 }

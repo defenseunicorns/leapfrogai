@@ -1,20 +1,19 @@
 <script lang="ts">
-  import { fade } from 'svelte/transition';
   import { Button, Tile } from 'carbon-components-svelte';
   import { Copy, Edit, Reset, UserAvatar } from 'carbon-icons-svelte';
+  import { type Message as AIMessage } from 'ai/svelte';
   import { LFTextArea } from '$components';
   import frog from '$assets/frog.png';
   import { writable } from 'svelte/store';
   import { toastStore } from '$stores';
-  import type { LFMessage } from '$lib/types/messages';
   import { getMessageText } from '$helpers/threads';
 
   export let handleMessageEdit: (
     event: SubmitEvent | KeyboardEvent | MouseEvent,
-    message: LFMessage
+    message: AIMessage
   ) => Promise<void>;
   export let handleRegenerate: () => Promise<void>;
-  export let message: LFMessage;
+  export let message: AIMessage;
   export let isLastMessage: boolean;
   export let isLoading: boolean;
 

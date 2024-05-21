@@ -1,6 +1,6 @@
 import { error } from '@sveltejs/kit';
 import { deleteMessageSchema } from '$lib/schemas/chat';
-import {openai} from "$lib/server/constants";
+import { openai } from '$lib/server/constants';
 
 export async function DELETE({ request, locals: { getSession } }) {
   const session = await getSession();
@@ -19,13 +19,13 @@ export async function DELETE({ request, locals: { getSession } }) {
     error(400, 'Bad Request');
   }
 
-  const response = await openai.beta.threads.messages.del(
+  const messageDeleted = await openai.beta.threads.messages.del(
     requestData.thread_id,
     requestData.message_id
   );
 
-  if (!response.deleted) {
-    console.log(`error deleting message: ${response}`);
+  if (!messageDeleted.deleted) {
+    console.log(`error deleting message: ${JSON.stringify(messageDeleted)}`);
     error(500, 'Error deleting message');
   }
 

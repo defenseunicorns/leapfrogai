@@ -2,6 +2,8 @@ import { error, json } from '@sveltejs/kit';
 import { newThreadInputSchema } from '$lib/schemas/chat';
 import type { Profile } from '$lib/types/profile';
 import { openai } from '$lib/server/constants';
+import type { LFThread } from '$lib/types/threads';
+import type { Thread } from 'openai/resources/beta/threads/threads';
 
 export async function POST({ request, locals: { supabase, getSession } }) {
   const session = await getSession();
@@ -19,9 +21,15 @@ export async function POST({ request, locals: { supabase, getSession } }) {
     error(400, 'Bad Request');
   }
 
-  const newThread = await openai.beta.threads.create({
-    metadata: { user_id: session.user.id, label: requestData.label }
-  });
+  let newThread: Thread;
+  try {
+    newThread = await openai.beta.threads.create({
+      metadata: { user_id: session.user.id, label: requestData.label }
+    });
+  } catch (e) {
+    console.error(`Error creating thread: ${e}`);
+    error(500, 'Error creating thread');
+  }
 
   const { data: profile, error: profileError } = await supabase
     .from('profiles')
@@ -31,7 +39,7 @@ export async function POST({ request, locals: { supabase, getSession } }) {
     .single();
 
   if (profileError) {
-    console.log(
+    console.error(
       `Error getting user profile while creating thread: ${JSON.stringify(profileError)}`
     );
     error(500, 'Error creating thread');
@@ -43,7 +51,7 @@ export async function POST({ request, locals: { supabase, getSession } }) {
     .eq('id', session.user.id);
 
   if (supabaseError) {
-    console.log(`Error creating thread in supabase: ${JSON.stringify(supabaseError)}`);
+    console.error(`Error creating thread in supabase: ${JSON.stringify(supabaseError)}`);
     error(500, 'Error creating thread');
   }
 

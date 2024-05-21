@@ -1,5 +1,6 @@
 import { dates } from '$helpers';
 import { getFakeThread } from '../../../testUtils/fakeData';
+import { getUnixSeconds } from '$helpers/dates';
 
 describe('date helpers', () => {
   describe('isToday', () => {
@@ -107,50 +108,50 @@ describe('date helpers', () => {
       const numMonthsToDisplay = 6;
       const threads = [
         // today
-        getFakeThread({ created_at: todayOverride.toDateString() }),
+        getFakeThread({ created_at: getUnixSeconds(todayOverride) }),
         // Yesterday
         getFakeThread({
-          created_at: new Date(
-            todayOverride.getFullYear(),
-            todayOverride.getMonth(),
-            todayOverride.getDate() - 1
-          ).toDateString()
+          created_at: getUnixSeconds(
+            new Date(
+              todayOverride.getFullYear(),
+              todayOverride.getMonth(),
+              todayOverride.getDate() - 1
+            )
+          )
         }),
         getFakeThread({
-          created_at: new Date(
-            todayOverride.getFullYear(),
-            todayOverride.getMonth(),
-            todayOverride.getDate() - 1
-          ).toDateString()
+          created_at: getUnixSeconds(
+            new Date(
+              todayOverride.getFullYear(),
+              todayOverride.getMonth(),
+              todayOverride.getDate() - 1
+            )
+          )
         }),
         // This Month
         getFakeThread({
-          created_at: new Date(
-            todayOverride.getFullYear(),
-            todayOverride.getMonth(),
-            10
-          ).toDateString()
+          created_at: getUnixSeconds(
+            new Date(todayOverride.getFullYear(), todayOverride.getMonth(), 10)
+          )
         }),
         // February
         getFakeThread({
-          created_at: new Date(new Date('2024-02-01T00:00')).toDateString()
+          created_at: getUnixSeconds(new Date(new Date('2024-02-01T00:00')))
         }),
         // December - 2023
         getFakeThread({
-          created_at: new Date(new Date('2023-12-01T00:00')).toDateString()
+          created_at: getUnixSeconds(new Date(new Date('2023-12-01T00:00')))
         }),
         // Old
         getFakeThread({
-          created_at: new Date(
-            todayOverride.getFullYear() - 2,
-            todayOverride.getMonth()
-          ).toDateString()
+          created_at: getUnixSeconds(
+            new Date(todayOverride.getFullYear() - 2, todayOverride.getMonth())
+          )
         }),
         getFakeThread({
-          created_at: new Date(
-            todayOverride.getFullYear(),
-            todayOverride.getMonth() - numMonthsToDisplay - 1
-          ).toDateString()
+          created_at: getUnixSeconds(
+            new Date(todayOverride.getFullYear(), todayOverride.getMonth() - numMonthsToDisplay - 1)
+          )
         })
       ];
 

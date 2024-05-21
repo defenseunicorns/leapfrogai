@@ -3,6 +3,12 @@ import { MAX_LABEL_SIZE } from '$lib/constants';
 import { env } from '$env/dynamic/public';
 import type { NewMessageInput } from '$lib/types/messages';
 
+export const stringIdSchema = object({
+  id: string().required()
+})
+  .noUnknown(true)
+  .strict();
+
 const contentInputSchema = string().max(Number(env.PUBLIC_MESSAGE_LENGTH_LIMIT)).required();
 
 export const messageInputSchema: ObjectSchema<NewMessageInput> = object({
@@ -23,7 +29,9 @@ export const uuidSchema = object({
 export const deleteMessageSchema = object({
   thread_id: string().required(),
   message_id: string().required()
-});
+})
+  .noUnknown(true)
+  .strict();
 
 const labelSchema = string().min(1).max(MAX_LABEL_SIZE).required();
 

@@ -32,11 +32,11 @@ describe('Import and Export data', () => {
 
     await uploadJSONFile(badData);
 
-    await waitFor(() => expect(toastSpy).toHaveBeenCalledTimes(1));
-    expect(toastSpy).toHaveBeenCalledWith({
+    await waitFor(() => expect(toastSpy).toHaveBeenCalledTimes(2)); // first call is importing notification
+    expect(toastSpy).toHaveBeenNthCalledWith(2, {
       kind: 'error',
       title: 'Error',
-      subtitle: `Conversations are incorrectly formatted.`
+      subtitle: `Threads are incorrectly formatted.`
     });
   });
 
@@ -50,11 +50,11 @@ describe('Import and Export data', () => {
 
     await uploadJSONFile([data]);
 
-    await waitFor(() => expect(toastSpy).toHaveBeenCalledTimes(1));
-    expect(toastSpy).toHaveBeenCalledWith({
+    await waitFor(() => expect(toastSpy).toHaveBeenCalledTimes(2));
+    expect(toastSpy).toHaveBeenNthCalledWith(2, {
       kind: 'error',
       title: 'Error',
-      subtitle: `Error importing conversation: ${data.label}`
+      subtitle: `Error importing thread: ${data.metadata.label}`
     });
   });
 
@@ -72,7 +72,7 @@ describe('Import and Export data', () => {
     expect(toastSpy).toHaveBeenCalledWith({
       kind: 'error',
       title: 'Error',
-      subtitle: `Error exporting conversations.`
+      subtitle: `Error exporting threads.`
     });
   });
 

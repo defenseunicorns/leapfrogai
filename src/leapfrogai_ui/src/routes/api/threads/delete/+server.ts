@@ -1,7 +1,7 @@
 import { error } from '@sveltejs/kit';
-import { string } from 'yup';
 import type { Profile } from '$lib/types/profile';
 import { openai } from '$lib/server/constants';
+import { stringIdSchema } from '$schemas/chat';
 
 export async function DELETE({ request, locals: { supabase, getSession } }) {
   const session = await getSession();
@@ -14,18 +14,17 @@ export async function DELETE({ request, locals: { supabase, getSession } }) {
   // Validate request body
   try {
     requestData = await request.json();
-    const isValid = await string().required().isValid(requestData.id);
-
+    const isValid = await stringIdSchema.isValid(requestData);
     if (!isValid) error(400, 'Bad Request');
   } catch {
     error(400, 'Bad Request');
   }
 
-  const response = await openai.beta.threads.del(requestData.id);
+  const threadDeleted = await openai.beta.threads.del(requestData.id);
 
-  if (!response.deleted) {
-    console.log(`error deleting thread: ${response}`);
-    error(500, 'Error deleting thread');
+  if (!threadDeleted.deleted) {
+    console.error(`Unable to delete thread: ${JSON.stringify(threadDeleted)}`);
+    error(500, 'Unable to delete thread');
   }
 
   const { data: profile, error: profileError } = await supabase
@@ -35,7 +34,7 @@ export async function DELETE({ request, locals: { supabase, getSession } }) {
     .returns<Profile[]>()
     .single();
   if (profileError) {
-    console.log(
+    console.error(
       `Error getting user profile while deleting thread: ${JSON.stringify(profileError)}`
     );
     error(500, 'Error deleting thread');
@@ -49,7 +48,7 @@ export async function DELETE({ request, locals: { supabase, getSession } }) {
     .eq('id', session.user.id);
 
   if (supabaseError) {
-    console.log(`Error deleting thread in supabase: ${JSON.stringify(supabaseError)}`);
+    console.error(`Error deleting thread in supabase: ${JSON.stringify(supabaseError)}`);
     error(500, 'Error deleting thread');
   }
   return new Response(undefined, { status: 204 });

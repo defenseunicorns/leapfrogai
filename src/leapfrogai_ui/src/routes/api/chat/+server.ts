@@ -5,6 +5,7 @@ import { env } from '$env/dynamic/private';
 import { error } from '@sveltejs/kit';
 import { getMessageText } from '$helpers/threads';
 import type { LFMessage } from '$lib/types/messages';
+import { AIMessagesInputSchema } from '$schemas/messageSchema';
 
 const openai = createOpenAI({
   apiKey: env.LEAPFROGAI_API_KEY ?? '',
@@ -18,7 +19,16 @@ export const POST = (async ({ request, locals: { getSession } }) => {
     error(401, 'Unauthorized');
   }
 
-  const { messages } = await request.json();
+  let messages;
+  // Validate request body
+  try {
+    const requestBody = await request.json();
+    const isValid = await AIMessagesInputSchema.isValid(requestBody);
+    if (!isValid) error(400, 'Bad Request');
+    messages = requestBody.messages;
+  } catch {
+    error(400, 'Bad Request');
+  }
 
   // Add the default system prompt to the beginning of the messages
   if (messages[0].content !== env.DEFAULT_SYSTEM_PROMPT) {

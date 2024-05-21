@@ -1,6 +1,6 @@
 import { error, json } from '@sveltejs/kit';
-import { object, string } from 'yup';
 import { openai } from '$lib/server/constants';
+import { stringIdSchema } from '$schemas/chat';
 
 export async function DELETE({ request, locals: { supabase, getSession } }) {
   const session = await getSession();
@@ -13,26 +13,25 @@ export async function DELETE({ request, locals: { supabase, getSession } }) {
   // Validate request body
   try {
     requestData = await request.json();
-    const isValid = await object({ id: string().required() }).isValid(requestData);
+    const isValid = await stringIdSchema.isValid(requestData);
     if (!isValid) error(400, 'Bad Request');
   } catch {
     error(400, 'Bad Request');
   }
 
-  try {
-    const response = await openai.beta.assistants.del(requestData.id);
-
-    const { error } = await supabase.storage.from('assistant_avatars').remove([requestData.id]);
-    if (error) {
-      // fail silently
-      console.log(
-        `Error deleting assistant avatar. AssistantId: ${requestData.id}, error: ${error}`
-      );
-    }
-
-    return json(response);
-  } catch (e) {
-    console.log(`Error deleting assistant: ${e}`);
+  const assistantDeleted = await openai.beta.assistants.del(requestData.id);
+  if (!assistantDeleted.deleted) {
+    console.log(`error deleting assistant: ${JSON.stringify(assistantDeleted)}`);
     error(500, 'Error deleting assistant');
   }
+
+  const { error: supabaseError } = await supabase.storage
+    .from('assistant_avatars')
+    .remove([requestData.id]);
+  if (supabaseError) {
+    // fail silently
+    console.log(`Error deleting assistant avatar. AssistantId: ${requestData.id}, error: ${error}`);
+  }
+
+  return new Response(undefined, { status: 204 });
 }

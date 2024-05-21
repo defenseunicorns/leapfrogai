@@ -17,7 +17,7 @@ export const load: PageServerLoad = async ({ params, locals: { getSession, supab
   }
 
   const assistant = (await openai.beta.assistants.retrieve(params.assistantId)) as LFAssistant;
-
+  console.log('assistant: ', assistant);
   if (!assistant) {
     error(404, { message: 'Assistant not found.' });
   }
@@ -58,10 +58,10 @@ export const actions = {
 
     // Update avatar if new file uploaded
     if (form.data.avatarFile) {
-      const { data: supabaseData, error } = await supabase.storage
+      const { error } = await supabase.storage
         .from('assistant_avatars')
         .upload(filePath, form.data.avatarFile, { upsert: true });
-
+      console.log('error', error);
       if (error) {
         console.error('Error updating assistant avatar:', error);
         return fail(500, { message: 'Error updating assistant avatar.' });
@@ -72,6 +72,7 @@ export const actions = {
         const { error: deleteAvatarError } = await supabase.storage
           .from('avatars')
           .remove(['folder/avatar1.png']);
+
         if (deleteAvatarError) return fail(500, { message: 'error deleting avatar' });
       }
     }

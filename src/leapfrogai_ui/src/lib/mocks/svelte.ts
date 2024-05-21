@@ -2,6 +2,7 @@ import { type Readable, readable } from 'svelte/store';
 import type { Navigation, Page } from '@sveltejs/kit';
 import { fakeThreads } from '../../../testUtils/fakeData';
 import { faker } from '@faker-js/faker';
+import { getUnixSeconds } from '$helpers/dates';
 
 type GetStoresOverrides = {
   url: string;
@@ -22,7 +23,15 @@ export const getStores = (
     data: {
       conversations: fakeThreads,
       profile: {},
-      session: { user: { id: faker.string.uuid() } }
+      session: {
+        user: {
+          id: faker.string.uuid(),
+          app_metadata: {},
+          user_metadata: {},
+          aud: '',
+          created_at: new Date().toISOString()
+        }
+      }
     },
     state: {},
     form: null

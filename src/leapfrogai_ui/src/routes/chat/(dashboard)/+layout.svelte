@@ -8,7 +8,7 @@
   $: innerWidth = 0;
 
   $: threadLabel = $threadsStore.threads.find(
-    (thread) => thread.id === $page.params.conversation_id
+    (thread) => thread.id === $page.params.thread_id
   )?.metadata.label;
 </script>
 

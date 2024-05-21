@@ -1,5 +1,5 @@
 import * as yup from 'yup';
-import { object, string } from 'yup';
+import { array, object, string } from 'yup';
 
 const fileCitationAnnotationSchema = yup.object().shape({
   end_index: yup.number().required(),
@@ -118,6 +118,15 @@ const messageSchema = yup.object().shape({
   run_id: yup.string().nullable(),
   status: yup.mixed().oneOf(['in_progress', 'incomplete', 'completed']), // openai type has this as required, but it's not being returned on message creation
   thread_id: yup.string().required()
-});
+}).noUnknown(true).strict();
+
+export const AIMessagesInputSchema = yup
+  .object({
+    messages: array().of(
+      object({ role: string<'user' | 'assistant'>().required(), content: string().required() })
+    )
+  })
+  .noUnknown(true)
+  .strict();
 
 export default messageSchema;

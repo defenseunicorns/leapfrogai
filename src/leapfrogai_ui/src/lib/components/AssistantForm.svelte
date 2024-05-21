@@ -59,8 +59,6 @@
   let navigateTo: NavigationTarget;
   let leavePageConfirmed = false;
 
-  $: avatarUrl = $form.avatar;
-
 
   // Show cancel modal if form is tainted and user attempts to navigate away
   beforeNavigate(({ cancel, to, type }) => {

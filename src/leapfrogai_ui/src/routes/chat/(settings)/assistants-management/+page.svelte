@@ -9,7 +9,7 @@
   export let data;
 
   let searchText = '';
-  let searchResults: FuseResult<Assistant>[];
+  let searchResults: FuseResult<LFAssistant>[];
   let filteredAssistants: LFAssistant[] = [];
   $: assistantsToDisplay = searchText ? filteredAssistants : data.assistants;
 

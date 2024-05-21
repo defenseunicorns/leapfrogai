@@ -24,7 +24,7 @@ export const assistantDefaults: Omit<LFAssistant, 'id' | 'created_at'> = {
   ],
   tool_resources: null,
   metadata: {
-    user_id: null
+    user_id: ''
   },
   top_p: 1.0,
   temperature: 0.2,

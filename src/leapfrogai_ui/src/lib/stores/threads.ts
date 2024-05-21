@@ -135,7 +135,7 @@ const createThreadsStore = () => {
 
             updatedThreads[threadIndex] = {
               ...oldThread,
-              messages: [...oldThread.messages, newMessage]
+              messages: [...(oldThread.messages || []), newMessage]
             };
             return {
               ...old,
@@ -173,7 +173,7 @@ const createThreadsStore = () => {
         update((old) => {
           const threadIndex = old.threads.findIndex((c) => c.id === threadId);
           const thread = { ...old.threads[threadIndex] };
-          thread.messages = thread.messages.filter(
+          thread.messages = thread.messages?.filter(
             (message: LFMessage) => message.id !== messageId
           );
           const updatedThreads = [...old.threads];
@@ -223,7 +223,7 @@ const createThreadsStore = () => {
           });
           createdThread.messages = [];
 
-          const { messages } = thread;
+          const messages = thread.messages || [];
 
           for (const message of messages) {
             if (message.role === 'user' || message.role === 'assistant') {

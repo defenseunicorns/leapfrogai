@@ -4,12 +4,12 @@
   import { afterUpdate, onMount, tick } from 'svelte';
   import { threadsStore, toastStore } from '$stores';
   import { ArrowRight, Attachment, StopFilledAlt } from 'carbon-icons-svelte';
-  import { useChat } from 'ai/svelte';
+  import { type Message as AIMessage, useChat } from 'ai/svelte';
   import { page } from '$app/stores';
   import { beforeNavigate } from '$app/navigation';
   import Message from '$components/Message.svelte';
   import type { LFMessage } from '$lib/types/messages';
-  import { getMessageText } from '$helpers/threads';
+  import { convertMessageToAiMessage, getMessageText } from '$helpers/threads';
 
   export let data;
 
@@ -20,21 +20,23 @@
 
   $: activeThread = $threadsStore.threads.find((thread) => thread.id === $page.params.thread_id);
 
-  $: $page.params.thread_id, setMessages(activeThread?.messages || []);
+  $: $page.params.thread_id,
+    setMessages(activeThread?.messages?.map((m) => convertMessageToAiMessage(m)) || []);
+
 
   const { input, handleSubmit, messages, setMessages, isLoading, stop, append, reload } = useChat({
     initialMessages: $threadsStore.threads
       .find((thread) => thread.id === $page.params.thread_id)
-      ?.messages.map((message: LFMessage) => ({
+      ?.messages?.map((message: LFMessage) => ({
         id: message.id,
         content: getMessageText(message),
         role: message.role
       })),
-    onFinish: async (message: LFMessage) => {
+    onFinish: async (message: AIMessage) => {
       if (activeThread?.id) {
         await threadsStore.newMessage({
           thread_id: activeThread?.id,
-          content: getMessageText(message),
+          content: message.content,
           role: message.role
         });
       }
@@ -98,8 +100,11 @@
     }
   };
 
-  const handleMessageEdit = async (e: SubmitEvent, message: LFMessage) => {
-    e.preventDefault();
+  const handleMessageEdit = async (
+    event: SubmitEvent | KeyboardEvent | MouseEvent,
+    message: AIMessage
+  ) => {
+    event.preventDefault();
 
     const messageIndex = $messages.findIndex((m) => m.id === message.id);
     // Ensure the message after the user's message exists and is a response from the AI

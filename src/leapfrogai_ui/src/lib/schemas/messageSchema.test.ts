@@ -33,7 +33,9 @@ describe('Message Schema', () => {
       created_at: 1625077335,
       incomplete_at: null,
       incomplete_details: null,
-      metadata: {},
+      metadata: {
+        user_id: 'user_123'
+      },
       object: 'thread.message',
       role: 'user',
       run_id: null,

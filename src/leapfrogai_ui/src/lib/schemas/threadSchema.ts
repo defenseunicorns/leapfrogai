@@ -28,18 +28,22 @@ const threadToolResourcesSchema = yup.object().shape({
   })
 });
 
-const threadSchema = yup.object().shape({
-  id: yup.string().required(),
-  created_at: yup.number().required(),
-  messages: yup.array().of(messageSchema),
-  metadata: object({ label: string(), user_id: string() }).test(
-    'max fields',
-    'metadata is limited to 16 fields',
-    (value) => Object.keys(value).length <= 16
-  ),
-  object: yup.mixed().oneOf(['thread']).required(),
-  tool_resources: threadToolResourcesSchema.nullable()
-});
+const threadSchema = yup
+  .object()
+  .shape({
+    id: yup.string().required(),
+    created_at: yup.number().required(),
+    messages: yup.array().of(messageSchema),
+    metadata: object({ label: string(), user_id: string() }).test(
+      'max fields',
+      'metadata is limited to 16 fields',
+      (value) => Object.keys(value).length <= 16
+    ),
+    object: yup.mixed().oneOf(['thread']).required(),
+    tool_resources: threadToolResourcesSchema.nullable()
+  })
+  .noUnknown(true)
+  .strict();
 
 export const threadsSchema = array().of(threadSchema);
 

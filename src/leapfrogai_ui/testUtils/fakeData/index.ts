@@ -12,7 +12,7 @@ const userId = faker.string.uuid();
 
 type FakeMessageOptions = {
   id?: string;
-  role?: 'user' | 'assistant';
+  role?: Roles;
   thread_id?: string;
   user_id?: string;
   content?: string;
@@ -50,6 +50,7 @@ export const getFakeMessage = (options: FakeMessageOptions = {}): LFMessage => {
 };
 
 type FakeThreadOptions = {
+  id?: string;
   label?: string;
   numMessages?: number;
   messages?: LFMessage[];
@@ -57,14 +58,14 @@ type FakeThreadOptions = {
 };
 
 export const getFakeThread = (options: FakeThreadOptions = {}): LFThread => {
+  const thread_id = options.id || faker.string.uuid();
+
   const {
     label = faker.lorem.sentence(4),
     messages = [],
     created_at = getUnixSeconds(new Date()),
     numMessages = 0
   } = options;
-
-  const thread_id = faker.string.uuid();
 
   if (messages.length === 0 && numMessages > 0) {
     for (let i = 0; i < numMessages; i++) {
