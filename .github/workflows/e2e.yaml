@@ -108,7 +108,7 @@ jobs:
             make build-ui LOCAL_VERSION=e2e-test
             docker image prune -af
             uds zarf package deploy packages/ui/zarf-package-leapfrogai-ui-amd64-e2e-test.tar.zst --confirm
-            rm packages/api/zarf-package-leapfrogai-api-amd64-e2e-test.tar.zst
+            rm packages/api/zarf-package-leapfrogai-ui-amd64-e2e-test.tar.zst
 
         # Run the playwright UI tests using the deployed Supabase endpoint
         - name: UI and Supabase test
