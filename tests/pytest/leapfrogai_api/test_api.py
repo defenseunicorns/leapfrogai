@@ -25,27 +25,30 @@ security = HTTPBearer()
 #########################
 #########################
 
+
 class HTTPBearerModel:
-    def __init__(self, bearerFormat: Optional[str] = None, description: Optional[str] = None):
+    def __init__(
+        self, bearerFormat: Optional[str] = None, description: Optional[str] = None
+    ):
         self.bearerFormat = bearerFormat
         self.description = description
 
 
 class HTTPBearerMock:
     def __init__(
-            self,
-            *,
-            bearerFormat: Annotated[Optional[str], ...] = None,
-            scheme_name: Annotated[Optional[str], ...] = None,
-            description: Annotated[Optional[str], ...] = None,
-            auto_error: Annotated[bool, ...] = True,
+        self,
+        *,
+        bearerFormat: Annotated[Optional[str], ...] = None,
+        scheme_name: Annotated[Optional[str], ...] = None,
+        description: Annotated[Optional[str], ...] = None,
+        auto_error: Annotated[bool, ...] = True,
     ):
         self.model = HTTPBearerModel(bearerFormat=bearerFormat, description=description)
         self.scheme_name = scheme_name or self.__class__.__name__
         self.auto_error = auto_error
 
     async def __call__(
-            self, request: Request
+        self, request: Request
     ) -> Optional[HTTPAuthorizationCredentials]:
         # Allow all requests, do nothing
         return HTTPAuthorizationCredentials(scheme="Bearer", credentials="dummy")
@@ -132,9 +135,9 @@ def test_routes():
         found = False
         for actual_route in actual_routes:
             if (
-                    hasattr(actual_route, "path")
-                    and actual_route.path == route
-                    and actual_route.name == name
+                hasattr(actual_route, "path")
+                and actual_route.path == route
+                and actual_route.name == name
             ):
                 assert actual_route.methods == set(methods)
                 found = True
@@ -235,7 +238,7 @@ def test_stream_chat_completion(remove_auth_middleware):
         )
         assert response.status_code == 200
         assert (
-                response.headers.get("content-type") == "text/event-stream; charset=utf-8"
+            response.headers.get("content-type") == "text/event-stream; charset=utf-8"
         )
 
         # parse through the streamed response
