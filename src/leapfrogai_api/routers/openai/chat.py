@@ -19,9 +19,9 @@ security = HTTPBearer()
 
 @router.post("/completions")
 async def chat_complete(
-        req: ChatCompletionRequest,
-        model_config: Annotated[Config, Depends(get_model_config)],
-        auth_creds: Annotated[HTTPAuthorizationCredentials, Depends(security)],
+    req: ChatCompletionRequest,
+    model_config: Annotated[Config, Depends(get_model_config)],
+    auth_creds: Annotated[HTTPAuthorizationCredentials, Depends(security)],
 ):
     """Complete a chat conversation with the given model."""
 

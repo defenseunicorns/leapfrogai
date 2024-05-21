@@ -20,9 +20,9 @@ security = HTTPBearer()
 
 @router.post("/transcriptions")
 async def transcribe(
-        auth_creds: Annotated[HTTPAuthorizationCredentials, Depends(security)],
-        model_config: Annotated[Config, Depends(get_model_config)],
-        req: CreateTranscriptionRequest = Depends(CreateTranscriptionRequest.as_form),
+    auth_creds: Annotated[HTTPAuthorizationCredentials, Depends(security)],
+    model_config: Annotated[Config, Depends(get_model_config)],
+    req: CreateTranscriptionRequest = Depends(CreateTranscriptionRequest.as_form),
 ) -> CreateTranscriptionResponse:
     """Create a transcription from the given audio file."""
     model = model_config.get_model_backend(req.model)

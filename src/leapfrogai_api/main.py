@@ -44,6 +44,7 @@ app = FastAPI(lifespan=lifespan)
 
 skip_endpoint_auth = ["/healthz", "/docs", "/openapi.json"]
 
+
 @app.middleware("http")
 async def verify_supabase_auth(request: Request, call_next):
     if request.url.path in skip_endpoint_auth:

@@ -16,8 +16,8 @@ security = HTTPBearer()
 
 @router.get("")
 async def models(
-        auth_creds: Annotated[HTTPAuthorizationCredentials, Depends(security)],
-        model_config: Annotated[Config, Depends(get_model_config)],
+    auth_creds: Annotated[HTTPAuthorizationCredentials, Depends(security)],
+    model_config: Annotated[Config, Depends(get_model_config)],
 ) -> ModelResponse:
     """List all available models."""
     res = ModelResponse()

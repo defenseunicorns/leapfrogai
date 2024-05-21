@@ -6,8 +6,10 @@ from openai.types import FileObject
 from supabase_py_async import AsyncClient
 from leapfrogai_api.data.crud_base import CRUDBase
 
+
 class AuthFileObject(FileObject):
     user_id: str = Field(default="")
+
 
 class CRUDFileObject(CRUDBase[AuthFileObject]):
     """CRUD Operations for FileObject"""

@@ -15,8 +15,9 @@ security = HTTPBearer()
 
 @router.post("")
 async def complete(
-        auth_creds: Annotated[HTTPAuthorizationCredentials, Depends(security)],
-        req: CompletionRequest, model_config: Annotated[Config, Depends(get_model_config)]
+    auth_creds: Annotated[HTTPAuthorizationCredentials, Depends(security)],
+    req: CompletionRequest,
+    model_config: Annotated[Config, Depends(get_model_config)],
 ):
     """Complete a prompt with the given model."""
     # Get the model backend configuration

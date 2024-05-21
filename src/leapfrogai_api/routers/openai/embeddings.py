@@ -18,9 +18,9 @@ security = HTTPBearer()
 
 @router.post("")
 async def embeddings(
-        auth_creds: Annotated[HTTPAuthorizationCredentials, Depends(security)],
-        req: CreateEmbeddingRequest,
-        model_config: Annotated[Config, Depends(get_model_config)],
+    auth_creds: Annotated[HTTPAuthorizationCredentials, Depends(security)],
+    req: CreateEmbeddingRequest,
+    model_config: Annotated[Config, Depends(get_model_config)],
 ) -> CreateEmbeddingResponse:
     """Create embeddings from the given input."""
     model = model_config.get_model_backend(req.model)

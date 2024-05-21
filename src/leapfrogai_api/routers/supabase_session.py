@@ -1,4 +1,5 @@
 """Supabase session dependency."""
+
 import logging
 import os
 from typing import Annotated
@@ -10,7 +11,9 @@ from gotrue import errors, types
 
 async def init_supabase_client() -> AsyncClient:
     """Initialize a Supabase client."""
-    logging.info(f"The anon key is {os.getenv('SUPABASE_ANON_KEY')} the url is {os.getenv('SUPABASE_URL')}")
+    logging.info(
+        f"The anon key is {os.getenv('SUPABASE_ANON_KEY')} the url is {os.getenv('SUPABASE_URL')}"
+    )
     return await create_client(
         supabase_key=os.getenv("SUPABASE_ANON_KEY"),
         supabase_url=os.getenv("SUPABASE_URL"),
