@@ -2,7 +2,8 @@ import json
 import os
 import shutil
 import time
-from urllib.request import Request
+from fastapi.applications import Request
+from starlette.middleware.base import _CachedRequest
 
 import pytest
 from fastapi.testclient import TestClient
@@ -23,8 +24,13 @@ LFAI_CONFIG_FILEPATH = os.path.join(LFAI_CONFIG_PATH, LFAI_CONFIG_FILENAME)
 #########################
 
 
-async def pack_dummy_bearer_token(request: Request, call_next):
-    request.add_header("Authorization", "Bearer dummy")
+async def pack_dummy_bearer_token(request: _CachedRequest, call_next):
+    request.headers.__dict__["_list"].append(
+        (
+            "authorization".encode(),
+            f"Bearer dummy".encode(),
+        )
+    )
     return await call_next(request)
 
 
