@@ -10,7 +10,7 @@ from leapfrogai_api.routers.supabase_session import get_user_session
 class CRUDFileBucket(AsyncMixin):
     """CRUD Operations for FileBucket."""
 
-    def __ainit__(self, jwt: str, model: type[UploadFile]):
+    async def __ainit__(self, jwt: str, model: type[UploadFile]):
         self.client: AsyncClient = await get_user_session(jwt)
         self.model: type[UploadFile] = model
 
