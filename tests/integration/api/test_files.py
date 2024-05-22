@@ -31,7 +31,7 @@ client = TestClient(router, headers=headers)
 def read_testfile():
     """Read the test file content."""
     global testfile_content  # pylint: disable=global-statement
-    with open("tests/data/test.txt", "rb") as testfile:
+    with open(os.path.dirname(__file__) + "/../../../tests/data/test.txt", "rb") as testfile:
         testfile_content = testfile.read()
 
 
