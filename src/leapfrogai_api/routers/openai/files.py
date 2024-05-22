@@ -36,11 +36,11 @@ async def upload_file(
             status_code=status.HTTP_400_BAD_REQUEST, detail="Failed to parse file"
         ) from exc
 
-    crud_file_object = CRUDFileObject(auth_creds.credentials)
+    crud_file_object = await CRUDFileObject(auth_creds.credentials)
 
     try:
         file_object = await crud_file_object.create(object_=file_object)
-        crud_file_bucket = CRUDFileBucket(jwt=auth_creds.credentials, model=UploadFile)
+        crud_file_bucket = await CRUDFileBucket(jwt=auth_creds.credentials, model=UploadFile)
         await crud_file_bucket.upload(file=request.file, id_=file_object.id)
 
         return file_object
@@ -58,7 +58,7 @@ async def list_files(
     auth_creds: Annotated[HTTPAuthorizationCredentials, Depends(security)],
 ) -> ListFilesResponse:
     """List all files."""
-    crud_file_object = CRUDFileObject(auth_creds.credentials)
+    crud_file_object = await CRUDFileObject(auth_creds.credentials)
     crud_response = await crud_file_object.list()
 
     return ListFilesResponse(
@@ -73,7 +73,7 @@ async def retrieve_file(
     auth_creds: Annotated[HTTPAuthorizationCredentials, Depends(security)],
 ) -> FileObject | None:
     """Retrieve a file."""
-    crud_file_object = CRUDFileObject(auth_creds.credentials)
+    crud_file_object = await CRUDFileObject(auth_creds.credentials)
     return await crud_file_object.get(id_=file_id)
 
 
@@ -84,10 +84,10 @@ async def delete_file(
 ) -> FileDeleted:
     """Delete a file."""
 
-    crud_file_object = CRUDFileObject(auth_creds.credentials)
+    crud_file_object = await CRUDFileObject(auth_creds.credentials)
     file_deleted = await crud_file_object.delete(id_=file_id)
 
-    crud_file_bucket = CRUDFileBucket(jwt=auth_creds.credentials, model=UploadFile)
+    crud_file_bucket = await CRUDFileBucket(jwt=auth_creds.credentials, model=UploadFile)
     await crud_file_bucket.delete(id_=file_id)
 
     return FileDeleted(
@@ -104,7 +104,7 @@ async def retrieve_file_content(
 ):
     """Retrieve the content of a file."""
     try:
-        crud_file_bucket = CRUDFileBucket(jwt=auth_creds.credentials, model=UploadFile)
+        crud_file_bucket = await CRUDFileBucket(jwt=auth_creds.credentials, model=UploadFile)
         return await crud_file_bucket.download(id_=file_id)
     except FileNotFoundError as exc:
         raise HTTPException(

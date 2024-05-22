@@ -3,6 +3,8 @@
 from pydantic import Field
 from openai.types.beta import Assistant
 from supabase_py_async import AsyncClient
+
+from leapfrogai_api.data.async_mixin import AsyncMixin
 from leapfrogai_api.data.crud_base import CRUDBase
 from leapfrogai_api.routers.supabase_session import get_user_session
 
@@ -13,10 +15,10 @@ class AuthAssistant(Assistant):
     user_id: str = Field(default="")
 
 
-class CRUDAssistant(CRUDBase[AuthAssistant]):
+class CRUDAssistant(CRUDBase[AuthAssistant], AsyncMixin):
     """CRUD Operations for Assistant"""
 
-    def __init__(self, jwt: str, table_name: str = "assistant_objects"):
+    async def __ainit__(self, jwt: str, table_name: str = "assistant_objects"):
         db: AsyncClient = await get_user_session(jwt)
         super().__init__(jwt=jwt, db=db, model=AuthAssistant, table_name=table_name)
 

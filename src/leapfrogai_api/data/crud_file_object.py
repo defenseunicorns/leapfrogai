@@ -4,6 +4,8 @@ from pydantic import Field
 
 from openai.types import FileObject
 from supabase_py_async import AsyncClient
+
+from leapfrogai_api.data.async_mixin import AsyncMixin
 from leapfrogai_api.data.crud_base import CRUDBase
 from leapfrogai_api.routers.supabase_session import get_user_session
 
@@ -14,12 +16,12 @@ class AuthFileObject(FileObject):
     user_id: str = Field(default="")
 
 
-class CRUDFileObject(CRUDBase[AuthFileObject]):
+class CRUDFileObject(CRUDBase[AuthFileObject], AsyncMixin):
     """CRUD Operations for FileObject"""
 
-    def __init__(self, jwt: str, table_name: str = "file_objects"):
+    async def __ainit__(self, jwt: str, table_name: str = "file_objects"):
         db: AsyncClient = await get_user_session(jwt)
-        super().__init__(jwt=jwt, db=db, model=AuthFileObject, table_name=table_name)
+        super(CRUDFileObject, self).__init__(jwt=jwt, db=db, model=AuthFileObject, table_name=table_name)
 
     async def create(self, object_: FileObject) -> AuthFileObject | None:
         """Create a new file object."""

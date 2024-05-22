@@ -70,7 +70,7 @@ async def create_assistant(
         ) from exc
 
     try:
-        crud_assistant = CRUDAssistant(auth_creds.credentials)
+        crud_assistant = await CRUDAssistant(auth_creds.credentials)
         return await crud_assistant.create(object_=assistant)
     except HTTPException as exc:
         raise exc
@@ -87,7 +87,7 @@ async def list_assistants(
     auth_creds: Annotated[HTTPAuthorizationCredentials, Depends(security)],
 ) -> ListAssistantsResponse:
     """List all the assistants."""
-    crud_assistant = CRUDAssistant(auth_creds.credentials)
+    crud_assistant = await CRUDAssistant(jwt=auth_creds.credentials)
     crud_response = await crud_assistant.list()
 
     return ListAssistantsResponse(
@@ -103,7 +103,7 @@ async def retrieve_assistant(
 ) -> Assistant | None:
     """Retrieve an assistant."""
 
-    crud_assistant = CRUDAssistant(auth_creds.credentials)
+    crud_assistant = await CRUDAssistant(auth_creds.credentials)
     return await crud_assistant.get(id_=assistant_id)
 
 
@@ -161,7 +161,7 @@ async def modify_assistant(
             detail="Code interpreter tool is not supported",
         )
 
-    crud_assistant = CRUDAssistant(auth_creds.credentials)
+    crud_assistant = await CRUDAssistant(auth_creds.credentials)
 
     if not (old_assistant := await crud_assistant.get(id_=assistant_id)):
         raise HTTPException(
@@ -215,7 +215,7 @@ async def delete_assistant(
     auth_creds: Annotated[HTTPAuthorizationCredentials, Depends(security)],
 ) -> AssistantDeleted:
     """Delete an assistant."""
-    crud_assistant = CRUDAssistant(auth_creds.credentials)
+    crud_assistant = await CRUDAssistant(auth_creds.credentials)
     assistant_deleted = await crud_assistant.delete(id_=assistant_id)
     return AssistantDeleted(
         id=assistant_id,
