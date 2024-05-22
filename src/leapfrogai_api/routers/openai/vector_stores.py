@@ -48,22 +48,22 @@ async def create_vector_store(
     )
     try:
         new_vector_store = await crud_vector_store.create(object_=vector_store_object)
-        # if request.file_ids != []:
-        #     indexing_service = IndexingService(session=session)
-        #     for file_id in request.file_ids:
-        #         response = await indexing_service.index_file(
-        #             vector_store_id=new_vector_store.id, file_id=file_id
-        #         )
+        if request.file_ids != []:
+            indexing_service = IndexingService(auth_creds.credentials)
+            for file_id in request.file_ids:
+                response = await indexing_service.index_file(
+                    vector_store_id=new_vector_store.id, file_id=file_id
+                )
 
-        #         if response.status == "completed":
-        #             new_vector_store.file_counts.completed += 1
-        #         elif response.status == "failed":
-        #             new_vector_store.file_counts.failed += 1
-        #         elif response.status == "in_progress":
-        #             new_vector_store.file_counts.in_progress += 1
-        #         elif response.status == "cancelled":
-        #             new_vector_store.file_counts.cancelled += 1
-        #         new_vector_store.file_counts.total += 1
+                if response.status == "completed":
+                    new_vector_store.file_counts.completed += 1
+                elif response.status == "failed":
+                    new_vector_store.file_counts.failed += 1
+                elif response.status == "in_progress":
+                    new_vector_store.file_counts.in_progress += 1
+                elif response.status == "cancelled":
+                    new_vector_store.file_counts.cancelled += 1
+                new_vector_store.file_counts.total += 1
 
         new_vector_store.status = "completed"
 
@@ -146,22 +146,22 @@ async def modify_vector_store(
         ) from exc
 
     try:
-        # if request.file_ids != []:
-        #     indexing_service = IndexingService(session=session)
-        #     for file_id in request.file_ids:
-        #         response = await indexing_service.index_file(
-        #             vector_store_id=vector_store_id, file_id=file_id
-        #         )
+        if request.file_ids != []:
+            indexing_service = IndexingService(auth_creds.credentials)
+            for file_id in request.file_ids:
+                response = await indexing_service.index_file(
+                    vector_store_id=vector_store_id, file_id=file_id
+                )
 
-        #         if response.status == "completed":
-        #             new_vector_store.file_counts.completed += 1
-        #         elif response.status == "failed":
-        #             new_vector_store.file_counts.failed += 1
-        #         elif response.status == "in_progress":
-        #             new_vector_store.file_counts.in_progress += 1
-        #         elif response.status == "cancelled":
-        #             new_vector_store.file_counts.cancelled += 1
-        #         new_vector_store.file_counts.total += 1
+                if response.status == "completed":
+                    new_vector_store.file_counts.completed += 1
+                elif response.status == "failed":
+                    new_vector_store.file_counts.failed += 1
+                elif response.status == "in_progress":
+                    new_vector_store.file_counts.in_progress += 1
+                elif response.status == "cancelled":
+                    new_vector_store.file_counts.cancelled += 1
+                new_vector_store.file_counts.total += 1
 
         new_vector_store.status = "completed"
 
