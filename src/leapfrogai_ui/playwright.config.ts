@@ -60,7 +60,7 @@ const devConfig: PlaywrightTestConfig = {
 // when e2e testing, use the deployed instance
 const CI_Config: PlaywrightTestConfig = {
   use: {
-    baseURL: 'http://ai.uds.dev'
+    baseURL: 'https://ai.uds.dev'
   }
 };
 
