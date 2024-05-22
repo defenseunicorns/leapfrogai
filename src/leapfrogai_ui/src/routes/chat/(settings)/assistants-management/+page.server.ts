@@ -3,7 +3,7 @@ import { redirect } from '@sveltejs/kit';
 import type { LFAssistant } from '$lib/types/assistants';
 import { openai } from '$lib/server/constants';
 
-export const load: PageServerLoad = async ({ locals: { supabase, getSession } }) => {
+export const load: PageServerLoad = async ({ locals: { getSession } }) => {
   const session = await getSession();
 
   if (!session) {

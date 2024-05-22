@@ -100,11 +100,11 @@ describe('date helpers', () => {
     });
   });
 
-  describe('organizeConversationsByDate', () => {
+  describe('organizeThreadsByDate', () => {
     // Overriding to test with months that overlap years
     const todayOverride = new Date('2024-03-20T00:00');
 
-    it('organizes conversations by date category', () => {
+    it('organizes threads by date category', () => {
       const numMonthsToDisplay = 6;
       const threads = [
         // today
@@ -155,7 +155,7 @@ describe('date helpers', () => {
         })
       ];
 
-      const expectedOrganizedConversations = [
+      const expectedOrganizedThreads = [
         { label: 'Today', threads: [threads[0]] },
         { label: 'Yesterday', threads: [threads[1], threads[2]] },
         { label: 'This Month', threads: [threads[3]] },
@@ -168,7 +168,7 @@ describe('date helpers', () => {
         { label: 'Old', threads: [threads[7], threads[6]] } // tests ordering of old dates too
       ];
       const result = dates.organizeThreadsByDate(threads, todayOverride, numMonthsToDisplay);
-      expect(result).toEqual(expectedOrganizedConversations);
+      expect(result).toEqual(expectedOrganizedThreads);
     });
   });
 });

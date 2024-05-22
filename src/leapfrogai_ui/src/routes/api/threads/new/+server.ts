@@ -2,7 +2,6 @@ import { error, json } from '@sveltejs/kit';
 import { newThreadInputSchema } from '$lib/schemas/chat';
 import type { Profile } from '$lib/types/profile';
 import { openai } from '$lib/server/constants';
-import type { LFThread } from '$lib/types/threads';
 import type { Thread } from 'openai/resources/beta/threads/threads';
 
 export async function POST({ request, locals: { supabase, getSession } }) {
@@ -44,10 +43,12 @@ export async function POST({ request, locals: { supabase, getSession } }) {
     );
     error(500, 'Error creating thread');
   }
-
+  const updatedThreadIds = profile?.thread_ids
+    ? [...profile.thread_ids, newThread.id]
+    : [newThread.id];
   const { error: supabaseError } = await supabase
     .from('profiles')
-    .update({ thread_ids: [...profile?.thread_ids, newThread.id] })
+    .update({ thread_ids: updatedThreadIds })
     .eq('id', session.user.id);
 
   if (supabaseError) {

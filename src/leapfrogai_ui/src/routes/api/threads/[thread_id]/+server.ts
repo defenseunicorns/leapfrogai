@@ -1,7 +1,7 @@
 import { error, json } from '@sveltejs/kit';
 import { openai } from '$lib/server/constants';
 
-export async function GET({ request, params, locals: { getSession } }) {
+export async function GET({ params, locals: { getSession } }) {
   const session = await getSession();
   if (!session) {
     error(401, 'Unauthorized');

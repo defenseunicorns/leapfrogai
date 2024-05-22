@@ -1,6 +1,6 @@
 import { writable } from 'svelte/store';
 import { MAX_LABEL_SIZE } from '$lib/constants';
-import { goto, invalidateAll } from '$app/navigation';
+import { goto } from '$app/navigation';
 import { error } from '@sveltejs/kit';
 import { toastStore } from '$stores';
 import type { LFThread, NewThreadInput } from '$lib/types/threads';

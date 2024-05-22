@@ -56,7 +56,6 @@
     fileUploaderRef.click(); // re-open upload dialog
   };
 
-
   const handleSubmit = () => {
     skipCloseActions = true;
     shouldValidate = true;

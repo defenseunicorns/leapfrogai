@@ -3,7 +3,7 @@ import { DELETE } from './+server';
 import { sessionMock, sessionNullMock } from '$lib/mocks/supabase-mocks';
 import { mockOpenAI } from '../../../../../vitest-setup';
 
-describe('/api/conversations/delete', () => {
+describe('/api/threads/delete', () => {
   it('returns a 204 when the request completes', async () => {
     const request = new Request('http://thisurlhasnoeffect', {
       method: 'DELETE',

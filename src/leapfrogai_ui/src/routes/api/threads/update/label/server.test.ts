@@ -8,7 +8,7 @@ import { getFakeThread } from '../../../../../../testUtils/fakeData';
 const validLabel = faker.string.alpha({ length: MAX_LABEL_SIZE - 1 });
 const invalidLongLabel = faker.string.alpha({ length: MAX_LABEL_SIZE + 1 });
 
-describe('/api/conversations/update', () => {
+describe('/api/threads/update', () => {
   it('returns the updated thread when successful', async () => {
     const fakeThread = getFakeThread();
     mockOpenAI.setThread(fakeThread);

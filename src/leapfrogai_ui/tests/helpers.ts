@@ -1,9 +1,25 @@
 import { expect, type Page } from '@playwright/test';
+import { faker } from '@faker-js/faker';
 import { createClient } from '@supabase/supabase-js';
 import type { AssistantInput } from '$lib/types/assistants';
 import OpenAI from 'openai';
+import type { Profile } from '$lib/types/profile';
 
 const supabase = createClient(process.env.PUBLIC_SUPABASE_URL!, process.env.SERVICE_ROLE_KEY!);
+
+// These messages result in faster responses to avoid timeout issues
+export const getSimpleMathQuestion = () => {
+  const operations = [
+    { operation: 'add', preposition: 'to' },
+    { operation: 'subtract', preposition: 'from' },
+    { operation: 'divide', preposition: 'by' },
+    { operation: 'multiply', preposition: 'by' }
+  ];
+  const randomOperation = faker.helpers.arrayElement(operations);
+  const randomNumber1 = faker.number.int({ min: 1, max: 1000 });
+  const randomNumber2 = faker.number.int({ min: 1, max: 1000 });
+  return `${randomOperation.operation} ${randomNumber1} ${randomOperation.preposition} ${randomNumber2}`;
+};
 
 export const openai = new OpenAI({
   apiKey: process.env.LEAPFROGAI_API_KEY ?? '',
@@ -16,7 +32,7 @@ export const loadChatPage = async (page: Page) => {
   await expect(page).toHaveTitle('LeapfrogAI - Chat');
 };
 
-export const deleteConversation = async (page: Page, label: string) => {
+export const clickToDeleteThread = async (page: Page, label: string) => {
   await page.getByTestId(`overflow-menu-${label}`).click();
   await page.getByTestId(`overflow-menu-delete-${label}`).click();
 
@@ -47,23 +63,47 @@ export const createAssistant = async (page: Page, assistantInput: AssistantInput
 export const deleteActiveThread = async (page: Page) => {
   const urlParts = new URL(page.url()).pathname.split('/');
   const threadId = urlParts[urlParts.length - 1];
+
   if (threadId) {
     await deleteThread(threadId);
   }
 };
 export const deleteThread = async (id: string) => {
-  const res = await openai.beta.threads.del(id);
-  console.log(res)
+  await openai.beta.threads.del(id);
+  const { data: profile } = await supabase
+    .from('profiles')
+    .select(`*`)
+    .eq('email', process.env.USERNAME)
+    .returns<Profile[]>()
+    .single();
+
+  const updatedThreadIds = profile?.thread_ids.filter((existingId) => existingId !== id);
+
+  await supabase
+    .from('profiles')
+    .update({ thread_ids: updatedThreadIds })
+    .eq('email', process.env.USERNAME);
 };
 
 export const waitForResponseToComplete = async (page: Page) => {
-  await expect(page.getByTestId('cancel message')).toHaveCount(1, { timeout: 25000 });
-  await expect(page.getByTestId('cancel message')).toHaveCount(0, { timeout: 25000 });
-  await expect(page.getByTestId('send message')).toHaveCount(1, { timeout: 25000 });
+  await expect(page.getByTestId('cancel message')).toHaveCount(1, { timeout: 30000 });
+  await expect(page.getByTestId('cancel message')).toHaveCount(0, { timeout: 30000 });
+  await expect(page.getByTestId('send message')).toHaveCount(1, { timeout: 30000 });
 };
 
-export const deleteAssistantByName = async (name: string) => {
-  await supabase.from('conversations').delete().eq('name', name);
+export const deleteAssistant = async (page: Page, assistantName: string) => {
+  await page.waitForURL('/chat/assistants-management');
+
+  await page.getByTestId(`assistant-tile-${assistantName}`).getByTestId('overflow-menu').click();
+
+  // click overflow menu delete btn
+  await page.getByRole('menuitem', { name: 'Delete' }).click();
+
+  // click modal actual delete btn
+  await page.getByRole('button', { name: 'Delete' }).click();
+
+  await expect(page.getByText(`${assistantName} Assistant deleted.`)).toBeVisible();
+  await expect(page.getByText(assistantName)).not.toBeVisible();
 };
 
 export const attachAvatarImage = async (page: Page, imageName: string) => {

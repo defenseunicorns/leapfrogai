@@ -14,7 +14,6 @@ import OpenAIMock from '$lib/mocks/openai';
 // Fixes error: node.scrollIntoView is not a function
 window.HTMLElement.prototype.scrollIntoView = function () {};
 
-
 export const mockOpenAI = new OpenAIMock({ apiKey: '', baseURL: '' });
 
 vi.doMock('$lib/server/constants', () => {

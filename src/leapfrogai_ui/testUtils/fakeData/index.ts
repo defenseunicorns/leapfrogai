@@ -1,10 +1,11 @@
+// Can't use import aliases here because playwright needs these and it doens't work with relative imports
 import { faker } from '@faker-js/faker';
-import { assistantDefaults, DEFAULT_ASSISTANT_TEMP } from '$constants';
-import type { AssistantInput, LFAssistant } from '$lib/types/assistants';
-import type { LFMessage } from '$lib/types/messages';
-import type { LFThread, Roles } from '$lib/types/threads';
+import { assistantDefaults, DEFAULT_ASSISTANT_TEMP } from '../../src/lib/constants';
+import type { AssistantInput, LFAssistant } from '../../src/lib/types/assistants';
+import type { LFMessage } from '../../src/lib/types/messages';
+import type { LFThread, Roles } from '../../src/lib/types/threads';
 import type { MessageContent } from 'openai/resources/beta/threads/messages';
-import { getUnixSeconds } from '$helpers/dates';
+import { getUnixSeconds } from '../../src/lib/helpers/dates';
 
 const todayOverride = new Date('2024-03-20T00:00');
 

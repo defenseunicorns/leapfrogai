@@ -1,4 +1,4 @@
-import { error, json } from '@sveltejs/kit';
+import { error } from '@sveltejs/kit';
 import { openai } from '$lib/server/constants';
 import { stringIdSchema } from '$schemas/chat';
 

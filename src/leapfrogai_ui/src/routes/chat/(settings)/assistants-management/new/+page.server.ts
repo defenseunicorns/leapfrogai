@@ -2,12 +2,11 @@ import { superValidate } from 'sveltekit-superforms';
 import { fail, redirect } from '@sveltejs/kit';
 import { yup } from 'sveltekit-superforms/adapters';
 import { assistantDefaults, DEFAULT_ASSISTANT_TEMP } from '$lib/constants';
-import { env as envPublic } from '$env/dynamic/public';
-import { env as envPrivate } from '$env/dynamic/private';
+import { env } from '$env/dynamic/private';
 import type { PageServerLoad } from './$types';
 import { supabaseAssistantInputSchema } from '$lib/schemas/assistants';
 import { openai } from '$lib/server/constants';
-import type { LFAssistant, LFAssistantCreateParams } from '$lib/types/assistants';
+import type { LFAssistant } from '$lib/types/assistants';
 import { getAssistantAvatarUrl } from '$helpers/assistants';
 
 export const load: PageServerLoad = async ({ locals: { getSession } }) => {
@@ -43,12 +42,14 @@ export const actions = {
 
     // Create assistant object, we can't spread the form data here because we need to re-nest some of the values
     // TODO - can we build the assistant properly by modifying the name fields of form inputs to nest the data correctly
-    const assistant: LFAssistantCreateParams = {
+    const assistant: Omit<LFAssistant, 'id' | 'created_at'> = {
       name: form.data.name,
+      object: 'assistant',
       description: form.data.description,
       instructions: form.data.instructions,
       temperature: form.data.temperature,
-      model: envPrivate.DEFAULT_MODEL,
+      model: env.DEFAULT_MODEL,
+      tools: [],
       metadata: {
         ...assistantDefaults.metadata,
         data_sources: form.data.data_sources || '',
@@ -61,7 +62,7 @@ export const actions = {
     // Create assistant
     let createdAssistant: LFAssistant;
     try {
-      createdAssistant = await openai.beta.assistants.create(assistant);
+      createdAssistant = (await openai.beta.assistants.create(assistant)) as LFAssistant;
     } catch (e) {
       console.log(`Error adding avatar to assistant: ${e}`);
       return fail(500, { message: 'Error adding avatar to assistant.' });

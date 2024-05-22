@@ -6,7 +6,6 @@
   import { toastStore } from '$stores';
   import { Edit, TrashCan } from 'carbon-icons-svelte';
   import type { LFAssistant } from '$lib/types/assistants';
-  import {getAssistantAvatarUrl} from "$helpers/assistants";
 
   export let assistant: LFAssistant;
 

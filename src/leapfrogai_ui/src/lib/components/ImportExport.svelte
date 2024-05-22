@@ -1,5 +1,5 @@
 <script lang="ts">
-  import { Download, Export } from 'carbon-icons-svelte';
+  import { Export } from 'carbon-icons-svelte';
   import { Button } from 'carbon-components-svelte';
   import LFFileUploader from '$components/LFFileUploader.svelte';
   import { threadsStore, toastStore } from '$stores';

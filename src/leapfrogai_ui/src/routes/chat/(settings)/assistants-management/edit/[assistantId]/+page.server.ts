@@ -9,7 +9,7 @@ import { openai } from '$lib/server/constants';
 import type { EditAssistantInput, LFAssistant } from '$lib/types/assistants';
 import { getAssistantAvatarUrl } from '$helpers/assistants';
 
-export const load: PageServerLoad = async ({ params, locals: { getSession, supabase } }) => {
+export const load: PageServerLoad = async ({ params, locals: { getSession } }) => {
   const session = await getSession();
 
   if (!session) {
@@ -17,7 +17,7 @@ export const load: PageServerLoad = async ({ params, locals: { getSession, supab
   }
 
   const assistant = (await openai.beta.assistants.retrieve(params.assistantId)) as LFAssistant;
-  console.log('assistant: ', assistant);
+
   if (!assistant) {
     error(404, { message: 'Assistant not found.' });
   }
@@ -53,8 +53,8 @@ export const actions = {
       return fail(400, { form });
     }
 
-    let deleteAvatar = !form.data.avatar && !form.data.avatarFile;
-    let filePath = form.data.id;
+    const deleteAvatar = !form.data.avatar && !form.data.avatarFile;
+    const filePath = form.data.id;
 
     // Update avatar if new file uploaded
     if (form.data.avatarFile) {

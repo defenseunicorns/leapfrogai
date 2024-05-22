@@ -66,11 +66,11 @@ class OpenAI {
 
   beta = {
     threads: {
-      create: vi.fn().mockImplementation((providedThread: LFThread) => {
+      create: vi.fn().mockImplementation(() => {
         if (this.errors.createThread) this.throwError('createThread');
         return Promise.resolve(this.thread);
       }),
-      update: vi.fn().mockImplementation((id, body) => {
+      update: vi.fn().mockImplementation((_, body) => {
         if (this.errors.updateThread) this.throwError('updateThread');
         this.thread.metadata.label = body.metadata.label;
         return Promise.resolve(this.thread);
@@ -87,11 +87,11 @@ class OpenAI {
         return Promise.resolve(this.thread);
       }),
       messages: {
-        create: vi.fn().mockImplementation((providedMessage: LFMessage) => {
+        create: vi.fn().mockImplementation(() => {
           if (this.errors.createMessage) this.throwError('createMessage');
           return Promise.resolve(this.message);
         }),
-        del: vi.fn().mockImplementation((threadId, messageId) => {
+        del: vi.fn().mockImplementation((_, messageId) => {
           if (this.errors.deleteMessage) {
             this.resetError('deleteMessage');
             return Promise.resolve({
@@ -120,7 +120,7 @@ class OpenAI {
         if (this.errors.retrieveAssistant) this.throwError('retrieveAssistant');
         return Promise.resolve(this.assistant);
       }),
-      update: vi.fn().mockImplementation((id, body) => {
+      update: vi.fn().mockImplementation(() => {
         if (this.errors.updateAssistant) this.throwError('updateAssistant');
         return Promise.resolve(this.assistant);
       })

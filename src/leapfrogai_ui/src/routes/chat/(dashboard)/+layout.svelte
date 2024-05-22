@@ -7,9 +7,8 @@
 
   $: innerWidth = 0;
 
-  $: threadLabel = $threadsStore.threads.find(
-    (thread) => thread.id === $page.params.thread_id
-  )?.metadata.label;
+  $: threadLabel = $threadsStore.threads.find((thread) => thread.id === $page.params.thread_id)
+    ?.metadata.label;
 </script>
 
 <svelte:head>

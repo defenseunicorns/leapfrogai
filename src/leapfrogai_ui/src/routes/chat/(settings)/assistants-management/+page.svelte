@@ -4,7 +4,7 @@
   import { Add } from 'carbon-icons-svelte';
   import Fuse, { type FuseResult, type IFuseOptions } from 'fuse.js';
   import AssistantTile from '$components/AssistantTile.svelte';
-  import type {LFAssistant} from "$lib/types/assistants";
+  import type { LFAssistant } from '$lib/types/assistants';
 
   export let data;
 

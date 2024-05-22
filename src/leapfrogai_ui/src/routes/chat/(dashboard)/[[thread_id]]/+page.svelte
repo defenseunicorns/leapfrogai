@@ -23,7 +23,6 @@
   $: $page.params.thread_id,
     setMessages(activeThread?.messages?.map((m) => convertMessageToAiMessage(m)) || []);
 
-
   const { input, handleSubmit, messages, setMessages, isLoading, stop, append, reload } = useChat({
     initialMessages: $threadsStore.threads
       .find((thread) => thread.id === $page.params.thread_id)

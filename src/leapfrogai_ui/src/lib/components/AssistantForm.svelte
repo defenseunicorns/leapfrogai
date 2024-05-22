@@ -59,7 +59,6 @@
   let navigateTo: NavigationTarget;
   let leavePageConfirmed = false;
 
-
   // Show cancel modal if form is tainted and user attempts to navigate away
   beforeNavigate(({ cancel, to, type }) => {
     if (to) {
