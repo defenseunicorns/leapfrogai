@@ -54,6 +54,13 @@
           on:click={() => setActiveHeaderAction('')}>Assistants Management</a
         >
       </div>
+      <div class="link-container">
+        <a
+                href="/chat/file-management"
+                class="header-link"
+                on:click={() => setActiveHeaderAction('')}>File Management</a
+        >
+      </div>
     </HeaderAction>
     <HeaderAction
       data-testid="user header action button"
