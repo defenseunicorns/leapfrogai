@@ -1,8 +1,11 @@
 image:
   # x-release-please-start-version
-  lfaiAPITag: 0.7.0
+  lfaiAPITag: 0.7.2
   # x-release-please-end
   kiwigridTag: 1.23.3
+
+supabase:
+  url: "https://supabase-kong.###ZARF_VAR_HOSTED_DOMAIN###"
 
 api:
   replicas: 1

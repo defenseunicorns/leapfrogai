@@ -22,6 +22,16 @@ variables:
     embedding_model_name: text-embeddings
     top_k: 20
 
+  supabase:
+    keycloak_redirect_uris:
+      - "https://supabase-kong.uds.dev/auth/v1/callback"
+    webOrigins:
+      - "https://ai.uds.dev"
+    hosted_domain: "uds.dev"
+
+  leapfrogai-api:
+    hosted_domain: "uds.dev"
+
   leapfrogai-ui:
     subdomain: ai
     domain: uds.dev

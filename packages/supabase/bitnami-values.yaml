@@ -7,6 +7,10 @@ leapfrogai:
     component: kong
   sso:
     clientId: ###ZARF_CONST_EXTERNAL_KEYCLOAK_CLIENT_ID###
+    redirectUris:
+      - "https://{{ .Values.leapfrogai.package.host }}.###ZARF_VAR_HOSTED_DOMAIN###/auth/v1/callback"
+    webOrigins:
+      - "https://ai.###ZARF_VAR_HOSTED_DOMAIN###"
 
 global:
   jwt:
@@ -24,7 +28,7 @@ jwt:
     resourcesPreset: "none"
     podLabels:
       sidecar.istio.io/inject: "false"
-publicURL: "https://supabase-kong.uds.dev"
+publicURL: "https://supabase-kong.###ZARF_VAR_HOSTED_DOMAIN###"
 auth:
   enabled: ###ZARF_VAR_ENABLE_AUTH###
   defaultConfig: |
@@ -53,8 +57,8 @@ auth:
     GOTRUE_MAILER_URLPATHS_EMAIL_CHANGE: "{{ include "supabase.studio.publicURL" . }}/auth/v1/verify"
     GOTRUE_EXTERNAL_KEYCLOAK_ENABLED: "###ZARF_VAR_ENABLE_EXTERNAL_KEYCLOAK###"
     GOTRUE_EXTERNAL_KEYCLOAK_CLIENT_ID: "{{ .Values.leapfrogai.sso.clientId }}"
-    GOTRUE_EXTERNAL_KEYCLOAK_REDIRECT_URI: "###ZARF_CONST_EXTERNAL_KEYCLOAK_REDIRECT_URL###"
-    GOTRUE_EXTERNAL_KEYCLOAK_URL: "###ZARF_CONST_EXTERNAL_KEYCLOAK_URL###"
+    GOTRUE_EXTERNAL_KEYCLOAK_REDIRECT_URI: "https://{{ .Values.leapfrogai.package.host }}.###ZARF_VAR_HOSTED_DOMAIN###/auth/v1/callback"
+    GOTRUE_EXTERNAL_KEYCLOAK_URL: "https://sso.###ZARF_VAR_HOSTED_DOMAIN###/realms/uds"
   image:
     tag: 2.149.0-debian-12-r0
   resourcesPreset: "none"
@@ -100,7 +104,7 @@ storage:
 
 studio:
   enabled: ###ZARF_VAR_ENABLE_STUDIO###
-  publicURL: "https://ai.uds.dev"
+  publicURL: "https://ai.###ZARF_VAR_HOSTED_DOMAIN###"
   image:
     tag: 0.24.3-debian-12-r0
   resourcesPreset: "none"

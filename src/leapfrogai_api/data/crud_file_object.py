@@ -1,77 +1,34 @@
 """CRUD Operations for FileObject"""
 
+from openai.types import FileObject
 from supabase_py_async import AsyncClient
-from openai.types import FileObject, FileDeleted
+from leapfrogai_api.data.crud_base import CRUDBase
 
 
-class CRUDFileObject:
+class CRUDFileObject(CRUDBase[FileObject]):
     """CRUD Operations for FileObject"""
 
-    def __init__(self, model: type[FileObject]):
-        self.model = model
+    def __init__(self, model: type[FileObject], table_name: str = "file_objects"):
+        super().__init__(model=model, table_name=table_name)
 
-    async def create(
-        self, client: AsyncClient, file_object: FileObject
-    ) -> FileObject | None:
+    async def create(self, db: AsyncClient, object_: FileObject) -> FileObject | None:
         """Create a new file object."""
-        file_object_dict = file_object.model_dump()
-        if file_object_dict.get("id") == "":
-            del file_object_dict["id"]
-        data, _count = (
-            await client.table("file_objects").insert(file_object_dict).execute()
-        )
+        return await super().create(db=db, object_=object_)
 
-        _, response = data
-
-        if response:
-            return self.model(**response[0])
-        return None
-
-    async def get(self, client: AsyncClient, file_id: str) -> FileObject | None:
+    async def get(self, id_: str, db: AsyncClient) -> FileObject | None:
         """Get a file object by its ID."""
-        data, _count = (
-            await client.table("file_objects").select("*").eq("id", file_id).execute()
-        )
+        return await super().get(db=db, id_=id_)
 
-        _, response = data
-
-        if response:
-            return self.model(**response[0])
-        return None
-
-    async def list(self, client: AsyncClient) -> list[FileObject] | None:
+    async def list(self, db: AsyncClient) -> list[FileObject] | None:
         """List all file objects."""
-        data, _count = await client.table("file_objects").select("*").execute()
-
-        _, response = data
-
-        if response:
-            return [self.model(**item) for item in response]
-        return None
+        return await super().list(db=db)
 
     async def update(
-        self, client: AsyncClient, file_id: str, file_object: FileObject
+        self, id_: str, db: AsyncClient, object_: FileObject
     ) -> FileObject | None:
         """Update a file object by its ID."""
-        data, _count = (
-            await client.table("file_objects")
-            .update(file_object.model_dump())
-            .eq("id", file_id)
-            .execute()
-        )
+        return await super().update(id_=id_, db=db, object_=object_)
 
-        _, response = data
-
-        if response:
-            return self.model(**response[0])
-        return None
-
-    async def delete(self, client: AsyncClient, file_id: str) -> FileDeleted:
+    async def delete(self, id_: str, db: AsyncClient) -> bool:
         """Delete a file object by its ID."""
-        data, _count = (
-            await client.table("file_objects").delete().eq("id", file_id).execute()
-        )
-
-        _, response = data
-
-        return FileDeleted(id=file_id, deleted=bool(response), object="file")
+        return await super().delete(id_=id_, db=db)
