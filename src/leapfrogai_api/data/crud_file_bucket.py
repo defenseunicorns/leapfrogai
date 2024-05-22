@@ -24,7 +24,7 @@ class CRUDFileBucket(AsyncMixin):
     async def download(self, id_: str):
         """Get a file from the file bucket."""
 
-        return await self.client.storage.from_("public/file_bucket").download(path=f"{id_}")
+        return await self.client.storage.from_("file_bucket").download(path=f"{id_}")
 
     async def delete(self, id_: str):
         """Delete a file from the file bucket."""
