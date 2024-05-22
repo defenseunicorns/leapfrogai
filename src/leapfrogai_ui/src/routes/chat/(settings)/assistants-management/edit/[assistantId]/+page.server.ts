@@ -61,7 +61,7 @@ export const actions = {
       const { error } = await supabase.storage
         .from('assistant_avatars')
         .upload(filePath, form.data.avatarFile, { upsert: true });
-      console.log('error', error);
+
       if (error) {
         console.error('Error updating assistant avatar:', error);
         return fail(500, { message: 'Error updating assistant avatar.' });
