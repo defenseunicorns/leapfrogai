@@ -73,6 +73,7 @@ for each row execute function update_vector_store_bytes();
 create function match_vectors (
   query_embedding vector (768), -- Instructor-XL produces 768-length embeddings
   vs_id uuid,
+  user_id uuid,
   match_limit int,
   filter jsonb default '{}'
 ) returns table (
@@ -95,6 +96,7 @@ begin
     1 - (vector_store.embedding <=> query_embedding) as similarity
   from vector_store
   where vector_store_id = vs_id
+    and user_id = user_id
     and metadata @> filter
   order by vector_store.embedding <=> query_embedding
   limit match_limit;

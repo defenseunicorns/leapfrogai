@@ -110,10 +110,13 @@ class AsyncSupabaseVectorStore(AsyncMixin):
         """
         vector = await self.embedding.aembed_query(query)
 
+        user_id: str = (await self.client.auth.get_user(self.jwt)).user.id
+
         params = {
             "query_embedding": vector,
             "match_limit": k,
             "vs_id": vector_store_id,
+            "user_id": user_id,
         }
 
         query_builder = self.client.rpc(self.query_name, params=params)
