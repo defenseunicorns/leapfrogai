@@ -24,7 +24,7 @@ class CRUDAssistant(AsyncMixin, CRUDBase[AuthAssistant]):
             self, jwt=jwt, db=db, model=AuthAssistant, table_name=table_name
         )
 
-    async def create(self, object_: Assistant) -> Assistant | None:
+    async def create(self, object_: Assistant) -> AuthAssistant | None:
         """Create a new assistant."""
         user_id: str = (await self.db.auth.get_user(self.jwt)).user.id
         return await super().create(

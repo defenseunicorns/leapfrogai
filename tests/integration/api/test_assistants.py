@@ -1,4 +1,5 @@
 """Test the API endpoints for assistants."""
+import os
 
 import pytest
 from fastapi import Response, status
@@ -13,7 +14,20 @@ from leapfrogai_api.backend.types import (
 
 assistant_response: Response
 
-client = TestClient(router)
+
+class MissingEnvironmentVariable(Exception):
+    pass
+
+
+headers: dict[str, str] = {}
+
+try:
+    headers = {"Authorization": f"Bearer {os.environ['SUPABASE_USER_JWT']}"}
+except KeyError:
+    raise MissingEnvironmentVariable("SUPABASE_USER_JWT must be defined for the test to pass. "
+                                     "Please check the api README for instructions on obtaining this token.")
+
+client = TestClient(router, headers=headers)
 
 starting_assistant = Assistant(
     id="",
@@ -67,7 +81,7 @@ def create_assistant():
         response_format=starting_assistant.response_format,
     )
 
-    assistant_response = client.post("/openai/v1/assistants", json=request.model_dump())
+    assistant_response = client.post(url="/openai/v1/assistants", json=request.model_dump())
 
 
 @pytest.mark.xfail
@@ -92,8 +106,8 @@ def test_code_interpreter_fails():
 
     assert assistant_fail_response.status_code is status.HTTP_400_BAD_REQUEST
     assert (
-        assistant_fail_response.json()["detail"]
-        == "Unsupported tool type: code_interpreter"
+            assistant_fail_response.json()["detail"]
+            == "Unsupported tool type: code_interpreter"
     )
 
     modify_response = client.post(
@@ -180,7 +194,7 @@ def test_modify():
         get_modified_response.json()
     ), "Should return a Assistant."
     assert (
-        get_modified_response.json()["model"] == "test1"
+            get_modified_response.json()["model"] == "test1"
     ), f"Get endpoint should return modified Assistant {assistant_id}."
 
 
@@ -194,7 +208,7 @@ def test_delete():
         delete_response.json()
     ), "Should return a AssistantDeleted object."
     assert (
-        delete_response.json()["deleted"] is True
+            delete_response.json()["deleted"] is True
     ), f"Assistant {assistant_id} should be deleted."
 
 
@@ -207,7 +221,7 @@ def test_delete_twice():
         delete_response.json()
     ), "Should return a AssistantDeleted object."
     assert (
-        delete_response.json()["deleted"] is False
+            delete_response.json()["deleted"] is False
     ), f"Assistant {assistant_id} should not be able to delete twice."
 
 
@@ -218,5 +232,5 @@ def test_get_nonexistent():
     get_response = client.get(f"/openai/v1/assistants/{assistant_id}")
     assert get_response.status_code is status.HTTP_200_OK
     assert (
-        get_response.json() is None
+            get_response.json() is None
     ), f"Get should not return deleted Assistant {assistant_id}."

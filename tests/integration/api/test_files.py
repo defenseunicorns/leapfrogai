@@ -1,4 +1,5 @@
 """Test the API endpoints for files."""
+import os
 
 import pytest
 from fastapi import Response, status
@@ -10,7 +11,20 @@ from leapfrogai_api.routers.openai.files import router
 file_response: Response
 testfile_content: bytes
 
-client = TestClient(router)
+
+class MissingEnvironmentVariable(Exception):
+    pass
+
+
+headers: dict[str, str] = {}
+
+try:
+    headers = {"Authorization": f"Bearer {os.environ['SUPABASE_USER_JWT']}"}
+except KeyError:
+    raise MissingEnvironmentVariable("SUPABASE_USER_JWT must be defined for the test to pass. "
+                                     "Please check the api README for instructions on obtaining this token.")
+
+client = TestClient(router, headers=headers)
 
 
 @pytest.fixture(scope="session", autouse=True)
@@ -58,7 +72,7 @@ def test_get_content():
     get_content_response = client.get(f"/openai/v1/files/{file_id}/content")
     assert get_content_response.status_code is status.HTTP_200_OK
     assert (
-        testfile_content.decode() in get_content_response.text
+            testfile_content.decode() in get_content_response.text
     ), f"get_content should return the content for File {file_id}."
 
 
@@ -82,7 +96,7 @@ def test_delete():
         delete_response.json()
     ), "Should return a FileDeleted object."
     assert (
-        delete_response.json()["deleted"] is True
+            delete_response.json()["deleted"] is True
     ), f"Delete should be able to delete File {file_id}."
 
 
@@ -95,7 +109,7 @@ def test_delete_twice():
         delete_response.json()
     ), "Should return a FileDeleted object."
     assert (
-        delete_response.json()["deleted"] is False
+            delete_response.json()["deleted"] is False
     ), f"Delete should not be able to delete File {file_id} twice."
 
 
@@ -106,5 +120,5 @@ def test_get_nonexistent():
     get_response = client.get(f"/openai/v1/files/{file_id}")
     assert get_response.status_code is status.HTTP_200_OK
     assert (
-        get_response.json() is None
+            get_response.json() is None
     ), f"Get should not return deleted FileObject {file_id}."
