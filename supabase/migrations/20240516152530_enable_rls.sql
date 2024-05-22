@@ -23,11 +23,8 @@ create policy "Individuals can delete their own file_objects." on file_objects f
     delete using (auth.uid() = user_id);
 
 -- Policies for file_bucket
-create policy "Individuals can access files inside their file_bucket"
-on storage.objects
-for insert
-to authenticated
-with check (
-  bucket_id = 'file_bucket' and
-  (storage.foldername(name))[1] = (select auth.uid()::text)
+create policy "Authenticated individual can add files to file_bucket"
+on storage.objects for insert to authenticated with check (
+    -- restrict bucket
+    bucket_id = 'file_bucket'
 );

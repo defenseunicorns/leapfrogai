@@ -21,7 +21,9 @@ class CRUDFileObject(AsyncMixin, CRUDBase[AuthFileObject]):
 
     async def __ainit__(self, jwt: str, table_name: str = "file_objects"):
         db: AsyncClient = await get_user_session(jwt)
-        CRUDBase.__init__(self, jwt=jwt, db=db, model=AuthFileObject, table_name=table_name)
+        CRUDBase.__init__(
+            self, jwt=jwt, db=db, model=AuthFileObject, table_name=table_name
+        )
 
     async def create(self, object_: FileObject) -> AuthFileObject | None:
         """Create a new file object."""
