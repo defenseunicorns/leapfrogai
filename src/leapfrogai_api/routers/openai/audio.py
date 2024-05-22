@@ -2,7 +2,8 @@
 
 from itertools import chain
 from typing import Annotated
-from fastapi import APIRouter, Depends, HTTPException
+from fastapi import HTTPException, APIRouter, Depends
+from fastapi.security import HTTPAuthorizationCredentials, HTTPBearer
 from leapfrogai_api.backend.grpc_client import create_transcription
 from leapfrogai_api.backend.helpers import read_chunks
 from leapfrogai_api.backend.types import (
@@ -14,10 +15,12 @@ from leapfrogai_api.utils.config import Config
 import leapfrogai_sdk as lfai
 
 router = APIRouter(prefix="/openai/v1/audio", tags=["openai/audio"])
+security = HTTPBearer()
 
 
 @router.post("/transcriptions")
 async def transcribe(
+    auth_creds: Annotated[HTTPAuthorizationCredentials, Depends(security)],
     model_config: Annotated[Config, Depends(get_model_config)],
     req: CreateTranscriptionRequest = Depends(CreateTranscriptionRequest.as_form),
 ) -> CreateTranscriptionResponse:

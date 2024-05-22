@@ -9,23 +9,35 @@ A mostly OpenAI compliant API surface.
 
 ## Local Development
 
-Create a local Supabase instance (requires [[Supabase CLI](https://supabase.com/docs/guides/cli/getting-started)):
+1. Create a local Supabase instance (requires [[Supabase CLI](https://supabase.com/docs/guides/cli/getting-started)):
 
-``` bash
-supabase start # from /leapfrogai
+    ``` bash
+    supabase start # from /leapfrogai
 
-supabase db reset # clears all data and reinitializes migrations
+    supabase db reset # clears all data and reinitializes migrations
 
-supabase status # to check status and see your keys
-```
+    supabase status # to check status and see your keys
+    ```
 
-Setup environment variables:
+2. Go to your local Supabase dashboard and create a test user.
 
-``` bash
-export SUPABASE_URL="http://localhost:54321" # or whatever you configured it as in your Supabase config.toml
-export SUPABASE_SERVICE_KEY="<YOUR_KEY>" # supabase status will show you the keys
-export DEFAULT_EMBEDDINGS_MODEL="text-embeddings" # also needs to be setup via the config.yaml
-```
+3. Get and save a JWT token for that user with a curl command:
+
+    ``` bash
+    curl -X POST 'https://supabase-kong.uds.dev/auth/v1/token?grant_type=password' \-H "apikey: <anon-key>" \-H "Content-Type: application/json" \-d '{ "email": "<email>", "password": "<password>"}'
+    ```
+
+    * Replace `<anon-key>`, `<username>`, and `<password>` with the values from Supabase.
+
+4. Setup environment variables:
+    ``` bash
+    export SUPABASE_URL="http://localhost:54321" # or whatever you configured it as in your Supabase config.toml
+    export SUPABASE_ANON_KEY="<YOUR_KEY>" # supabase status will show you the keys
+    export DEFAULT_EMBEDDINGS_MODEL="text-embeddings" # also needs to be setup via the config.yaml
+    ```
+
+5. Make calls to the api swagger endpoint at `http://localhost:8080/docs` using your JWT token as the `HTTPBearer` token.
+   * Hit `Authorize` on the swagger page to enter your JWT token
 
 ## Integration Tests
 
@@ -43,3 +55,7 @@ From this directory run:
 ``` bash
 make test-integration
 ```
+
+## Notes
+
+* All API calls to `assistants` or `files` endpoints must be authenticated via a Supabase JWT token in the message's `Authorization` header.

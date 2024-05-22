@@ -2,9 +2,11 @@ import json
 import os
 import shutil
 import time
+from starlette.middleware.base import _CachedRequest
 
 import pytest
 from fastapi.testclient import TestClient
+from fastapi.applications import BaseHTTPMiddleware
 
 import leapfrogai_api.backend.types as lfai_types
 from leapfrogai_api.main import app
@@ -21,7 +23,25 @@ LFAI_CONFIG_FILEPATH = os.path.join(LFAI_CONFIG_PATH, LFAI_CONFIG_FILENAME)
 #########################
 
 
-def test_config_load():
+async def pack_dummy_bearer_token(request: _CachedRequest, call_next):
+    request.headers.__dict__["_list"].append(
+        (
+            "authorization".encode(),
+            "Bearer dummy".encode(),
+        )
+    )
+    return await call_next(request)
+
+
+@pytest.fixture
+def remove_auth_middleware():
+    app.user_middleware.clear()
+    app.middleware_stack = None
+    app.add_middleware(BaseHTTPMiddleware, dispatch=pack_dummy_bearer_token)
+    app.middleware_stack = app.build_middleware_stack()
+
+
+def test_config_load(remove_auth_middleware):
     """Test that the config is loaded correctly."""
     with TestClient(app) as client:
         response = client.get("/models")
@@ -33,7 +53,7 @@ def test_config_load():
         }
 
 
-def test_config_delete(tmp_path):
+def test_config_delete(tmp_path, remove_auth_middleware):
     """Test that the config is deleted correctly."""
     # move repeater-test-config.yaml to temp dir so that we can remove it at a later step
     tmp_config_filepath = shutil.copyfile(
@@ -153,7 +173,7 @@ def test_healthz():
     os.environ.get("LFAI_RUN_REPEATER_TESTS") != "true",
     reason="LFAI_RUN_REPEATER_TESTS envvar was not set to true",
 )
-def test_embedding():
+def test_embedding(remove_auth_middleware):
     """Test the embedding endpoint."""
     expected_embedding = [0.0 for _ in range(10)]
 
@@ -183,7 +203,7 @@ def test_embedding():
     os.environ.get("LFAI_RUN_REPEATER_TESTS") != "true",
     reason="LFAI_RUN_REPEATER_TESTS envvar was not set to true",
 )
-def test_chat_completion():
+def test_chat_completion(remove_auth_middleware):
     """Test the chat completion endpoint."""
     with TestClient(app) as client:
         input_content = "this is the chat completion input."
@@ -216,7 +236,7 @@ def test_chat_completion():
     os.environ.get("LFAI_RUN_REPEATER_TESTS") != "true",
     reason="LFAI_RUN_REPEATER_TESTS envvar was not set to true",
 )
-def test_stream_chat_completion():
+def test_stream_chat_completion(remove_auth_middleware):
     """Test the stream chat completion endpoint."""
     with TestClient(app) as client:
         input_content = "this is the stream chat completion input."

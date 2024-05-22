@@ -107,6 +107,17 @@ jobs:
             uds zarf package deploy packages/api/zarf-package-leapfrogai-api-amd64-e2e-test.tar.zst --set=EXPOSE_OPENAPI_SCHEMA=true --confirm
             rm packages/api/zarf-package-leapfrogai-api-amd64-e2e-test.tar.zst
 
+        - name: Set environment variable
+          id: set-env-var
+          run: |
+            echo "SERVICE_KEY=$(uds zarf tools kubectl get secret supabase-bootstrap-jwt -n leapfrogai -o jsonpath='{.data.service-key}' | base64 -d)" >> "$GITHUB_ENV"
+            echo "ANON_KEY=$(uds zarf tools kubectl get secret supabase-bootstrap-jwt -n leapfrogai -o jsonpath='{.data.anon-key}' | base64 -d)" >> "$GITHUB_ENV"
+
+        - name: Test API
+          run: |
+            python -m pip install requests
+            python -m pytest ./tests/e2e/test_api.py -v
+
         ##########
         # llama
         ##########

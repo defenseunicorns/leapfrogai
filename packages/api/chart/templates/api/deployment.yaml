@@ -47,11 +47,11 @@ spec:
             value: "{{ .Values.api.port }}"
           - name: SUPABASE_URL
             value: "{{ .Values.supabase.url }}"
-          - name: SUPABASE_SERVICE_KEY
+          - name: SUPABASE_ANON_KEY
             valueFrom:
               secretKeyRef:
                 name: supabase-bootstrap-jwt
-                key: service-key
+                key: anon-key
                 optional: true
           ports:
             - containerPort: 8080

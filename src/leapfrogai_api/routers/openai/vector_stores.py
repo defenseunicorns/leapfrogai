@@ -1,27 +1,33 @@
 """OpenAI Compliant Vector Store API Router."""
 
 import time
-from fastapi import HTTPException, APIRouter, status
+from typing import Annotated
+
+from fastapi import APIRouter, Depends, HTTPException, status
+from fastapi.security import HTTPAuthorizationCredentials, HTTPBearer
 from openai.types.beta import VectorStore, VectorStoreDeleted
-from openai.types.beta.vector_stores import VectorStoreFile, VectorStoreFileDeleted
 from openai.types.beta.vector_store import FileCounts
+from openai.types.beta.vector_stores import VectorStoreFile, VectorStoreFileDeleted
+from leapfrogai_api.backend.rag.index import IndexingService
 from leapfrogai_api.backend.types import (
     CreateVectorStoreRequest,
     ListVectorStoresResponse,
     ModifyVectorStoreRequest,
 )
-from leapfrogai_api.data.crud_vector_store_object import CRUDVectorStore
 from leapfrogai_api.data.crud_vector_store_file import CRUDVectorStoreFile
-from leapfrogai_api.routers.supabase_session import Session
-from leapfrogai_api.backend.rag.index import IndexingService
+from leapfrogai_api.data.crud_vector_store_object import CRUDVectorStore
 from leapfrogai_api.data.supabase_vector_store import AsyncSupabaseVectorStore
+from leapfrogai_api.routers.supabase_session import Session
 
 router = APIRouter(prefix="/openai/v1/vector_stores", tags=["openai/vector_stores"])
+security = HTTPBearer()
 
 
 @router.post("")
 async def create_vector_store(
-    session: Session, request: CreateVectorStoreRequest
+    session: Session,
+    request: CreateVectorStoreRequest,
+    auth_creds: Annotated[HTTPAuthorizationCredentials, Depends(security)],  # pylint: disable=unused-argument
 ) -> VectorStore:
     """Create a vector store."""
     crud_vector_store = CRUDVectorStore(model=VectorStore)
@@ -81,6 +87,7 @@ async def create_vector_store(
 @router.get("")
 async def list_vector_stores(
     session: Session,
+    auth_creds: Annotated[HTTPAuthorizationCredentials, Depends(security)],  # pylint: disable=unused-argument
 ) -> ListVectorStoresResponse:
     """List all the vector stores."""
 
@@ -95,7 +102,9 @@ async def list_vector_stores(
 
 @router.get("/{vector_store_id}")
 async def retrieve_vector_store(
-    session: Session, vector_store_id: str
+    session: Session,
+    vector_store_id: str,
+    auth_creds: Annotated[HTTPAuthorizationCredentials, Depends(security)],  # pylint: disable=unused-argument
 ) -> VectorStore | None:
     """Retrieve a vector store."""
 
@@ -105,7 +114,10 @@ async def retrieve_vector_store(
 
 @router.post("/{vector_store_id}")
 async def modify_vector_store(
-    session: Session, vector_store_id: str, request: ModifyVectorStoreRequest
+    session: Session,
+    vector_store_id: str,
+    request: ModifyVectorStoreRequest,
+    auth_creds: Annotated[HTTPAuthorizationCredentials, Depends(security)],  # pylint: disable=unused-argument
 ) -> VectorStore:
     """Modify a vector store."""
     crud_vector_store = CRUDVectorStore(model=VectorStore)
@@ -182,7 +194,9 @@ async def modify_vector_store(
 
 @router.delete("/{vector_store_id}")
 async def delete_vector_store(
-    session: Session, vector_store_id: str
+    session: Session,
+    vector_store_id: str,
+    auth_creds: Annotated[HTTPAuthorizationCredentials, Depends(security)],  # pylint: disable=unused-argument
 ) -> VectorStoreDeleted:
     """Delete a vector store."""
 
@@ -200,7 +214,10 @@ async def delete_vector_store(
 
 @router.post("/{vector_store_id}/files")
 async def create_vector_store_file(
-    session: Session, vector_store_id: str, file_id: str
+    session: Session,
+    vector_store_id: str,
+    file_id: str,
+    auth_creds: Annotated[HTTPAuthorizationCredentials, Depends(security)],  # pylint: disable=unused-argument
 ) -> VectorStoreFile:
     """Create a file in a vector store."""
 
@@ -219,7 +236,9 @@ async def create_vector_store_file(
 
 @router.get("/{vector_store_id}/files")
 async def list_vector_store_files(
-    session: Session, vector_store_id: str
+    session: Session,
+    vector_store_id: str,
+    auth_creds: Annotated[HTTPAuthorizationCredentials, Depends(security)],  # pylint: disable=unused-argument
 ) -> list[VectorStoreFile]:
     """List all the files in a vector store."""
 
@@ -239,7 +258,10 @@ async def list_vector_store_files(
 
 @router.get("/{vector_store_id}/files/{file_id}")
 async def retrieve_vector_store_file(
-    session: Session, vector_store_id: str, file_id: str
+    session: Session,
+    vector_store_id: str,
+    file_id: str,
+    auth_creds: Annotated[HTTPAuthorizationCredentials, Depends(security)],  # pylint: disable=unused-argument
 ) -> VectorStoreFile:
     """Retrieve a file in a vector store."""
 
@@ -251,7 +273,10 @@ async def retrieve_vector_store_file(
 
 @router.delete("/{vector_store_id}/files/{file_id}")
 async def delete_vector_store_file(
-    session: Session, vector_store_id: str, file_id: str
+    session: Session,
+    vector_store_id: str,
+    file_id: str,
+    auth_creds: Annotated[HTTPAuthorizationCredentials, Depends(security)],  # pylint: disable=unused-argument
 ) -> VectorStoreFileDeleted:
     """Delete a file in a vector store."""
 
