@@ -116,7 +116,7 @@ jobs:
         - name: Test API
           run: |
             python -m pip install requests
-            python -m pytest ./tests/e2e/test_api.py -v
+            python -m pytest ./tests/e2e/test_api_auth.py -v
 
         ##########
         # llama
