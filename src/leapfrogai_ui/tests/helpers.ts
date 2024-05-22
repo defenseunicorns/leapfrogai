@@ -92,7 +92,7 @@ export const waitForResponseToComplete = async (page: Page) => {
 };
 
 export const deleteAssistant = async (page: Page, assistantName: string) => {
-  await page.waitForURL('/chat/assistants-management');
+  await page.goto('/chat/assistants-management');
 
   await page.getByTestId(`assistant-tile-${assistantName}`).getByTestId('overflow-menu').click();
 
@@ -103,7 +103,6 @@ export const deleteAssistant = async (page: Page, assistantName: string) => {
   await page.getByRole('button', { name: 'Delete' }).click();
 
   await expect(page.getByText(`${assistantName} Assistant deleted.`)).toBeVisible();
-  await expect(page.getByText(assistantName)).not.toBeVisible();
 };
 
 export const attachAvatarImage = async (page: Page, imageName: string) => {

@@ -42,14 +42,12 @@ export const actions = {
 
     // Create assistant object, we can't spread the form data here because we need to re-nest some of the values
     // TODO - can we build the assistant properly by modifying the name fields of form inputs to nest the data correctly
-    const assistant: Omit<LFAssistant, 'id' | 'created_at'> = {
+    const assistant = {
       name: form.data.name,
-      object: 'assistant',
       description: form.data.description,
       instructions: form.data.instructions,
       temperature: form.data.temperature,
       model: env.DEFAULT_MODEL,
-      tools: [],
       metadata: {
         ...assistantDefaults.metadata,
         data_sources: form.data.data_sources || '',
@@ -64,8 +62,8 @@ export const actions = {
     try {
       createdAssistant = (await openai.beta.assistants.create(assistant)) as LFAssistant;
     } catch (e) {
-      console.log(`Error adding avatar to assistant: ${e}`);
-      return fail(500, { message: 'Error adding avatar to assistant.' });
+      console.log(`Error creating assistant: ${e}`);
+      return fail(500, { message: 'Error creating assistant.' });
     }
 
     // save avatar
