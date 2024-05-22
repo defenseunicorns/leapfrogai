@@ -2,12 +2,10 @@
 
 import tempfile
 from fastapi import UploadFile
-from openai.types import FileObject
 from openai.types.beta.vector_stores import VectorStoreFile
 from leapfrogai_api.data.crud_file_bucket import CRUDFileBucket
 from leapfrogai_api.data.crud_file_object import CRUDFileObject
 from leapfrogai_api.data.crud_vector_store_file import CRUDVectorStoreFile
-from leapfrogai_api.routers.supabase_session import Session
 from leapfrogai_api.backend.rag.document_loader import load_file, split
 from leapfrogai_api.data.supabase_vector_store import AsyncSupabaseVectorStore
 from leapfrogai_api.backend.rag.leapfrogai_embeddings import LeapfrogAIEmbeddings
@@ -16,28 +14,27 @@ from leapfrogai_api.backend.rag.leapfrogai_embeddings import LeapfrogAIEmbedding
 class IndexingService:
     """Service for indexing files into a vector store."""
 
-    def __init__(self, session: Session):
-        self.session = session
+    def __init__(self, auth_creds: str):
+        self.auth_creds = auth_creds
 
     async def index_file(self, vector_store_id: str, file_id: str) -> VectorStoreFile:
         """Index a file into a vector store."""
-        crud_vector_store_file = CRUDVectorStoreFile(model=VectorStoreFile)
+        crud_vector_store_file = await CRUDVectorStoreFile(self.auth_creds)
         vector_store_file = await crud_vector_store_file.get(
-            db=self.session, vector_store_id=vector_store_id, file_id=file_id
+            vector_store_id=vector_store_id, file_id=file_id
         )
 
         if vector_store_file:
             raise ValueError("File already indexed")
 
-        crud_file_object = CRUDFileObject(model=FileObject)
-        crud_file_bucket = CRUDFileBucket(model=UploadFile)
+        crud_file_object = await CRUDFileObject(self.auth_creds)
+        crud_file_bucket = await CRUDFileBucket(self.auth_creds, model=UploadFile)
 
-        file_object = await crud_file_object.get(db=self.session, id_=file_id)
+        file_object = await crud_file_object.get(id_=file_id)
 
         if not file_object:
             raise ValueError("File not found")
-
-        file_bytes = await crud_file_bucket.download(client=self.session, id_=file_id)
+        file_bytes = await crud_file_bucket.download(id_=file_id)
 
         with tempfile.NamedTemporaryFile(suffix=file_object.filename) as temp_file:
             temp_file.write(file_bytes)
@@ -55,13 +52,13 @@ class IndexingService:
             )
 
             vector_store_file = await crud_vector_store_file.create(
-                db=self.session, object_=vector_store_file
+                object_=vector_store_file
             )
 
             try:
                 embeddings_function = LeapfrogAIEmbeddings()
-                vector_store_client = AsyncSupabaseVectorStore(
-                    client=self.session, embedding=embeddings_function
+                vector_store_client = await AsyncSupabaseVectorStore(
+                    jwt=self.auth_creds, embedding=embeddings_function
                 )
 
                 ids = await vector_store_client.aadd_documents(
@@ -76,15 +73,15 @@ class IndexingService:
                     vector_store_file.status = "completed"
 
                 await crud_vector_store_file.update(
-                    db=self.session, id_=vector_store_file.id, object_=vector_store_file
+                    id_=vector_store_file.id, object_=vector_store_file
                 )
             except:
                 vector_store_file.status = "failed"
                 await crud_vector_store_file.update(
-                    db=self.session, id_=vector_store_file.id, object_=vector_store_file
+                    id_=vector_store_file.id, object_=vector_store_file
                 )
                 raise
 
             return await crud_vector_store_file.get(
-                db=self.session, vector_store_id=vector_store_id, file_id=file_id
+                vector_store_id=vector_store_id, file_id=file_id
             )

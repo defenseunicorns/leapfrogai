@@ -206,7 +206,7 @@ async def create_vector_store_file(
     """Create a file in a vector store."""
 
     try:
-        indexing_service = IndexingService(session=session)
+        indexing_service = IndexingService(auth_creds.credentials)
         vector_store_file = await indexing_service.index_file(
             vector_store_id=vector_store_id, file_id=file_id
         )
