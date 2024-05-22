@@ -11,7 +11,6 @@ from leapfrogai_api.backend.types import (
     ListAssistantsResponse,
     ModifyAssistantRequest,
 )
-from leapfrogai_api.routers.supabase_session import get_user_session
 from leapfrogai_api.data.crud_assistant_object import CRUDAssistant
 
 router = APIRouter(prefix="/openai/v1/assistants", tags=["openai/assistants"])
@@ -70,11 +69,8 @@ async def create_assistant(
         ) from exc
 
     try:
-        session = await get_user_session(auth_creds.credentials)
-        crud_assistant = CRUDAssistant(session, auth_creds.credentials)
-        return await crud_assistant.create(
-            db=session, object_=assistant
-        )
+        crud_assistant = CRUDAssistant(auth_creds.credentials)
+        return await crud_assistant.create(object_=assistant)
     except HTTPException as exc:
         raise exc
     except Exception as exc:
@@ -90,10 +86,8 @@ async def list_assistants(
     auth_creds: Annotated[HTTPAuthorizationCredentials, Depends(security)],
 ) -> ListAssistantsResponse:
     """List all the assistants."""
-    crud_assistant = CRUDAssistant()
-    crud_response = await crud_assistant.list(
-        db=await get_user_session(auth_creds.credentials)
-    )
+    crud_assistant = CRUDAssistant(auth_creds.credentials)
+    crud_response = await crud_assistant.list()
 
     return ListAssistantsResponse(
         object="list",
@@ -108,10 +102,8 @@ async def retrieve_assistant(
 ) -> Assistant | None:
     """Retrieve an assistant."""
 
-    crud_assistant = CRUDAssistant()
-    return await crud_assistant.get(
-        db=await get_user_session(auth_creds.credentials), id_=assistant_id
-    )
+    crud_assistant = CRUDAssistant(auth_creds.credentials)
+    return await crud_assistant.get(id_=assistant_id)
 
 
 @router.post("/{assistant_id}")
@@ -168,11 +160,10 @@ async def modify_assistant(
             detail="Code interpreter tool is not supported",
         )
 
-    crud_assistant = CRUDAssistant()
-    user_session = await get_user_session(auth_creds.credentials)
+    crud_assistant = CRUDAssistant(auth_creds.credentials)
 
     if not (
-        old_assistant := await crud_assistant.get(db=user_session, id_=assistant_id)
+        old_assistant := await crud_assistant.get(id_=assistant_id)
     ):
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST, detail="Assistant not found"
@@ -209,7 +200,6 @@ async def modify_assistant(
 
     try:
         return await crud_assistant.update(
-            db=user_session,
             object_=new_assistant,
             id_=assistant_id,
         )
@@ -226,10 +216,8 @@ async def delete_assistant(
     auth_creds: Annotated[HTTPAuthorizationCredentials, Depends(security)],
 ) -> AssistantDeleted:
     """Delete an assistant."""
-    crud_assistant = CRUDAssistant()
-    assistant_deleted = await crud_assistant.delete(
-        db=await get_user_session(auth_creds.credentials), id_=assistant_id
-    )
+    crud_assistant = CRUDAssistant(auth_creds.credentials)
+    assistant_deleted = await crud_assistant.delete(id_=assistant_id)
     return AssistantDeleted(
         id=assistant_id,
         deleted=bool(assistant_deleted),

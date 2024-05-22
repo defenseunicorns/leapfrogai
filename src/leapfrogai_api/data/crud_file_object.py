@@ -5,45 +5,44 @@ from pydantic import Field
 from openai.types import FileObject
 from supabase_py_async import AsyncClient
 from leapfrogai_api.data.crud_base import CRUDBase
+from leapfrogai_api.routers.supabase_session import get_user_session
 
 
 class AuthFileObject(FileObject):
+    """A wrapper for the FileObject that includes a user_id for auth"""
+
     user_id: str = Field(default="")
 
 
 class CRUDFileObject(CRUDBase[AuthFileObject]):
     """CRUD Operations for FileObject"""
 
-    def __init__(self, table_name: str = "file_objects"):
-        super().__init__(model=AuthFileObject, table_name=table_name)
+    def __init__(self, jwt: str, table_name: str = "file_objects"):
+        db: AsyncClient = await get_user_session(jwt)
+        super().__init__(jwt=jwt, db=db, model=AuthFileObject, table_name=table_name)
 
     async def create(
-        self, db: AsyncClient, object_: FileObject
+        self, object_: FileObject
     ) -> AuthFileObject | None:
         """Create a new file object."""
-        auth_file_object: AuthFileObject = AuthFileObject(
-            user_id=(await db.auth.get_user()).user.id, **object_.dict()
-        )
-        print("*******" + (await db.auth.get_user()).user.id)
-        return await super().create(db=db, object_=auth_file_object)
+        user_id: str = (await self.db.auth.get_user(self.jwt)).user.id
+        return await super().create(object_=AuthFileObject(user_id=user_id, **object_.dict()))
 
-    async def get(self, id_: str, db: AsyncClient) -> AuthFileObject | None:
+    async def get(self, id_: str) -> AuthFileObject | None:
         """Get a file object by its ID."""
-        return await super().get(db=db, id_=id_)
+        return await super().get(id_=id_)
 
-    async def list(self, db: AsyncClient) -> list[AuthFileObject] | None:
+    async def list(self) -> list[AuthFileObject] | None:
         """List all file objects."""
-        return await super().list(db=db)
+        return await super().list()
 
     async def update(
-        self, id_: str, db: AsyncClient, object_: FileObject
+        self, id_: str, object_: FileObject
     ) -> AuthFileObject | None:
         """Update a file object by its ID."""
-        auth_file_object: AuthFileObject = AuthFileObject(
-            user_id=(await db.auth.get_user()).user.id, **object_.dict()
-        )
-        return await super().update(id_=id_, db=db, object_=auth_file_object)
+        user_id: str = (await self.db.auth.get_user(self.jwt)).user.id
+        return await super().update(id_=id_,  object_=AuthFileObject(user_id=user_id, **object_.dict()))
 
-    async def delete(self, id_: str, db: AsyncClient) -> bool:
+    async def delete(self, id_: str) -> bool:
         """Delete a file object by its ID."""
-        return await super().delete(id_=id_, db=db)
+        return await super().delete(id_=id_)

@@ -1,54 +1,45 @@
 """CRUD Operations for Assistant."""
 
-import logging
-
 from pydantic import Field
 from openai.types.beta import Assistant
 from supabase_py_async import AsyncClient
 from leapfrogai_api.data.crud_base import CRUDBase
+from leapfrogai_api.routers.supabase_session import get_user_session
 
 
 class AuthAssistant(Assistant):
+    """A wrapper for the Assistant that includes a user_id for auth"""
+
     user_id: str = Field(default="")
 
 
 class CRUDAssistant(CRUDBase[AuthAssistant]):
     """CRUD Operations for Assistant"""
 
-    def __init__(self, db: AsyncClient, jwt: str, table_name: str = "assistant_objects"):
-        super().__init__(model=AuthAssistant, table_name=table_name)
-        self.db = db
-        self.jwt = jwt
+    def __init__(self, jwt: str, table_name: str = "assistant_objects"):
+        db: AsyncClient = await get_user_session(jwt)
+        super().__init__(jwt=jwt, db=db, model=AuthAssistant, table_name=table_name)
 
-    async def create(self, db: AsyncClient, object_: Assistant) -> Assistant | None:
+    async def create(self, object_: Assistant) -> Assistant | None:
         """Create a new assistant."""
-        logging.getLogger().info("Attempting to create new assistant")
-        userId: str = (await db.auth.get_user(self.jwt)).user.id
-        logging.getLogger().info(userId)
-        auth_assistant: AuthAssistant = AuthAssistant(
-            user_id=(await db.auth.get_user(self.jwt)).user.id, **object_.dict()
-        )
-        logging.getLogger().info((await db.auth.get_user(self.jwt)).user.id)
-        logging.getLogger().info(str(auth_assistant))
-        return await super().create(db=db, object_=auth_assistant)
+        user_id: str = (await self.db.auth.get_user(self.jwt)).user.id
+        return await super().create(object_=AuthAssistant(user_id=user_id, **object_.dict()))
 
-    async def get(self, id_: str, db: AsyncClient) -> AuthAssistant | None:
+    async def get(self, id_: str) -> AuthAssistant | None:
         """Get an assistant by its ID."""
-        return await super().get(db=db, id_=id_)
+        return await super().get(id_=id_)
 
-    async def list(self, db: AsyncClient) -> list[AuthAssistant] | None:
+    async def list(self) -> list[AuthAssistant] | None:
         """List all assistants."""
-        return await super().list(db=db)
+        return await super().list()
 
     async def update(
-        self, id_: str, db: AsyncClient, object_: Assistant
+        self, id_: str, object_: Assistant
     ) -> AuthAssistant | None:
         """Update an assistant by its ID."""
-        auth_assistant: AuthAssistant = AuthAssistant(
-            user_id=(await db.auth.get_user()).user.id, **object_.dict()
-        )
-        return await super().update(id_=id_, db=db, object_=auth_assistant)
+        user_id: str = (await self.db.auth.get_user(self.jwt)).user.id
+        return await super().update(id_=id_, object_=AuthAssistant(user_id=user_id, **object_.dict()))
 
-    async def delete(self, id_: str, db: AsyncClient) -> bool:
+    async def delete(self, id_: str) -> bool:
         """Delete an assistant by its ID."""
-        return await super().delete(id_=id_, db=db)
+        return await super().delete(id_=id_)
