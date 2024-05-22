@@ -13,6 +13,7 @@
       name: 'File Management'
     }
   ];
+  const isCurrentPage = (path: string) => $page.url.pathname === path;
 </script>
 
 <Content>
@@ -21,8 +22,9 @@
       <Breadcrumb noTrailingSlash>
         {#each paths as { path, name } (path)}
           {#if $page.url.pathname.includes(path)}
-            <BreadcrumbItem href={path} isCurrentPage={$page.url.pathname === path}
-              >{name}</BreadcrumbItem
+            <BreadcrumbItem
+              href={isCurrentPage(path) ? '' : path}
+              isCurrentPage={isCurrentPage(path)}>{name}</BreadcrumbItem
             >
           {/if}
         {/each}

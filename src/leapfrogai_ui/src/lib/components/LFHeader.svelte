@@ -47,18 +47,17 @@
       isOpen={activeHeaderAction.settings}
       on:open={() => setActiveHeaderAction('settings')}
     >
-      <div class="link-container">
+      <div class="links-container">
         <a
           href="/chat/assistants-management"
           class="header-link"
           on:click={() => setActiveHeaderAction('')}>Assistants Management</a
         >
-      </div>
-      <div class="link-container">
+
         <a
-                href="/chat/file-management"
-                class="header-link"
-                on:click={() => setActiveHeaderAction('')}>File Management</a
+          href="/chat/file-management"
+          class="header-link"
+          on:click={() => setActiveHeaderAction('')}>File Management</a
         >
       </div>
     </HeaderAction>
@@ -91,8 +90,11 @@
     height: 36px;
   }
 
-  .link-container {
-    padding: layout.$spacing-05;
+  .links-container {
+    display: flex;
+    padding: 1rem;
+    flex-direction: column;
+    gap: 0.88rem;
   }
 
   .header-link {

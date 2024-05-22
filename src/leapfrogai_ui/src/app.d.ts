@@ -4,6 +4,7 @@ import { Session, SupabaseClient } from '@supabase/supabase-js';
 import type { LFAssistant } from '$lib/types/assistants';
 import type { Profile } from '$lib/types/profile';
 import type { LFThread } from '$lib/types/threads';
+import type {FileObject} from "openai/src/resources/files"
 
 declare global {
   namespace App {
@@ -19,6 +20,7 @@ declare global {
       threads?: LFThread[];
       assistants?: LFAssistant[];
       assistant?: LFAssistant;
+      files?: FileObject[]
     }
     // interface PageState {}
     // interface Platform {}

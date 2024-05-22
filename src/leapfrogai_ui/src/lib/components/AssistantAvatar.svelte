@@ -25,6 +25,7 @@
   let errorMsg = '';
   let skipCloseActions = false;
 
+
   $: avatarToShow = tempFiles?.length > 0 ? URL.createObjectURL(tempFiles[0]) : $form.avatar;
   $: fileNotUploaded = !tempFiles[0]; // if on upload tab, you must upload a file to enable save
   $: fileTooBig = tempFiles[0]?.size > MAX_AVATAR_SIZE;
