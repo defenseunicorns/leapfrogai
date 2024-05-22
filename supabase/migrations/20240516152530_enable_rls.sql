@@ -21,3 +21,13 @@ create policy "Individuals can update their own file_objects." on file_objects f
 update using (auth.uid() = user_id);
 create policy "Individuals can delete their own file_objects." on file_objects for
     delete using (auth.uid() = user_id);
+
+-- Policies for file_bucket
+create policy "Individuals can access files inside their file_bucket"
+on storage.objects
+for insert
+to authenticated
+with check (
+  bucket_id = 'file_bucket' and
+  (storage.foldername(name))[1] = (select auth.uid()::text)
+);
