@@ -1,5 +1,7 @@
 """Test the API endpoints for files."""
 
+import os
+
 import pytest
 from fastapi import HTTPException, Response, status
 from fastapi.testclient import TestClient
@@ -9,14 +11,31 @@ from leapfrogai_api.routers.openai.files import router
 file_response: Response
 testfile_content: bytes
 
-client = TestClient(router)
+
+class MissingEnvironmentVariable(Exception):
+    pass
+
+
+headers: dict[str, str] = {}
+
+try:
+    headers = {"Authorization": f"Bearer {os.environ['SUPABASE_USER_JWT']}"}
+except KeyError:
+    raise MissingEnvironmentVariable(
+        "SUPABASE_USER_JWT must be defined for the test to pass. "
+        "Please check the api README for instructions on obtaining this token."
+    )
+
+client = TestClient(router, headers=headers)
 
 
 @pytest.fixture(scope="session", autouse=True)
 def read_testfile():
     """Read the test file content."""
     global testfile_content  # pylint: disable=global-statement
-    with open("tests/data/test.txt", "rb") as testfile:
+    with open(
+        os.path.dirname(__file__) + "/../../../tests/data/test.txt", "rb"
+    ) as testfile:
         testfile_content = testfile.read()
 
 

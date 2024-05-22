@@ -14,7 +14,9 @@ security = HTTPBearer()
 
 
 @router.post("")
-async def create_thread() -> Thread:
+async def create_thread(
+    auth_creds: Annotated[HTTPAuthorizationCredentials, Depends(security)],
+) -> Thread:
     """Create a thread."""
     # TODO: Implement this function
     raise HTTPException(status_code=501, detail="Not implemented")

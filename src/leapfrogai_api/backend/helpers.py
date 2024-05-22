@@ -29,10 +29,14 @@ async def recv_completion(
                         index=0,
                         text=c.choices[0].text,
                         logprobs=None,
-                        finish_reason="stop",
+                        finish_reason=c.choices[0].finish_reason,
                     )
                 ],
-                usage=Usage(prompt_tokens=0, completion_tokens=0, total_tokens=0),
+                usage=Usage(
+                    prompt_tokens=c.usage.prompt_tokens,
+                    completion_tokens=c.usage.completion_tokens,
+                    total_tokens=c.usage.total_tokens,
+                ),
             ).model_dump_json()
         )
         yield "\n\n"
@@ -60,10 +64,14 @@ async def recv_chat(
                         delta=ChatDelta(
                             role="assistant", content=c.choices[0].chat_item.content
                         ),
-                        finish_reason=None,
+                        finish_reason=c.choices[0].finish_reason,
                     )
                 ],
-                usage=Usage(prompt_tokens=0, completion_tokens=0, total_tokens=0),
+                usage=Usage(
+                    prompt_tokens=c.usage.prompt_tokens,
+                    completion_tokens=c.usage.completion_tokens,
+                    total_tokens=c.usage.total_tokens,
+                ),
             ).model_dump_json()
         )
         yield "\n\n"

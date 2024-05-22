@@ -29,7 +29,7 @@ class CRUDFileObject(AsyncMixin, CRUDBase[AuthFileObject]):
         """Create a new file object."""
         user_id: str = (await self.db.auth.get_user(self.jwt)).user.id
         return await super().create(
-            object_=AuthFileObject(user_id=user_id, **object_.dict())
+            object_=AuthFileObject(user_id=user_id, **object_.model_dump())
         )
 
     async def get(self, id_: str) -> AuthFileObject | None:
@@ -44,7 +44,7 @@ class CRUDFileObject(AsyncMixin, CRUDBase[AuthFileObject]):
         """Update a file object by its ID."""
         user_id: str = (await self.db.auth.get_user(self.jwt)).user.id
         return await super().update(
-            id_=id_, object_=AuthFileObject(user_id=user_id, **object_.dict())
+            id_=id_, object_=AuthFileObject(user_id=user_id, **object_.model_dump())
         )
 
     async def delete(self, id_: str) -> bool:

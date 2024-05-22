@@ -48,7 +48,11 @@ async def completion(model: Model, request: lfai.CompletionRequest):
                     logprobs=None,
                 )
             ],
-            usage=Usage(total_tokens=0, prompt_tokens=0),
+            usage=Usage(
+                prompt_tokens=response.usage.prompt_tokens,
+                completion_tokens=response.usage.completion_tokens,
+                total_tokens=response.usage.total_tokens,
+            ),
         )
 
 
@@ -79,10 +83,14 @@ async def chat_completion(model: Model, request: lfai.ChatCompletionRequest):
                         ).lower(),
                         content=response.choices[0].chat_item.content,
                     ),
-                    finish_reason="",
+                    finish_reason=response.choices[0].finish_reason,
                 )
             ],
-            usage=Usage(total_tokens=0, prompt_tokens=0),
+            usage=Usage(
+                prompt_tokens=response.usage.prompt_tokens,
+                completion_tokens=response.usage.completion_tokens,
+                total_tokens=response.usage.total_tokens,
+            ),
         )
 
 

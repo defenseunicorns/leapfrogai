@@ -33,7 +33,6 @@ A mostly OpenAI compliant API surface.
     ``` bash
     export SUPABASE_URL="http://localhost:54321" # or whatever you configured it as in your Supabase config.toml
     export SUPABASE_ANON_KEY="<YOUR_KEY>" # supabase status will show you the keys
-    export DEFAULT_EMBEDDINGS_MODEL="text-embeddings" # also needs to be setup via the config.yaml
     ```
 
 5. Make calls to the api swagger endpoint at `http://localhost:8080/docs` using your JWT token as the `HTTPBearer` token.
