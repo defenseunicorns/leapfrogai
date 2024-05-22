@@ -28,7 +28,7 @@ class CRUDAssistant(AsyncMixin, CRUDBase[AuthAssistant]):
         """Create a new assistant."""
         user_id: str = (await self.db.auth.get_user(self.jwt)).user.id
         return await super().create(
-            object_=AuthAssistant(user_id=user_id, **object_.dict())
+            object_=AuthAssistant(user_id=user_id, **object_.model_dump())
         )
 
     async def get(self, id_: str) -> AuthAssistant | None:
@@ -43,7 +43,7 @@ class CRUDAssistant(AsyncMixin, CRUDBase[AuthAssistant]):
         """Update an assistant by its ID."""
         user_id: str = (await self.db.auth.get_user(self.jwt)).user.id
         return await super().update(
-            id_=id_, object_=AuthAssistant(user_id=user_id, **object_.dict())
+            id_=id_, object_=AuthAssistant(user_id=user_id, **object_.model_dump())
         )
 
     async def delete(self, id_: str) -> bool:
