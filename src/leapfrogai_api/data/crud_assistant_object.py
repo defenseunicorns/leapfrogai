@@ -15,7 +15,7 @@ class AuthAssistant(Assistant):
     user_id: str = Field(default="")
 
 
-class CRUDAssistant(CRUDBase[AuthAssistant], AsyncMixin):
+class CRUDAssistant(AsyncMixin, CRUDBase[AuthAssistant]):
     """CRUD Operations for Assistant"""
 
     async def __ainit__(self, jwt: str, table_name: str = "assistant_objects"):

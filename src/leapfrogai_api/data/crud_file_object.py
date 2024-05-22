@@ -16,7 +16,7 @@ class AuthFileObject(FileObject):
     user_id: str = Field(default="")
 
 
-class CRUDFileObject(CRUDBase[AuthFileObject], AsyncMixin):
+class CRUDFileObject(AsyncMixin, CRUDBase[AuthFileObject]):
     """CRUD Operations for FileObject"""
 
     async def __ainit__(self, jwt: str, table_name: str = "file_objects"):
