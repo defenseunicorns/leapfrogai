@@ -89,10 +89,12 @@ async def delete_file(
     crud_file_object = await CRUDFileObject(auth_creds.credentials)
     file_deleted = await crud_file_object.delete(id_=file_id)
 
-    crud_file_bucket = await CRUDFileBucket(
-        jwt=auth_creds.credentials, model=UploadFile
-    )
-    await crud_file_bucket.delete(id_=file_id)
+    # We need to check if the RLS allowed the deletion before continuing with the bucket deletion
+    if file_deleted:
+        crud_file_bucket = await CRUDFileBucket(
+            jwt=auth_creds.credentials, model=UploadFile
+        )
+        await crud_file_bucket.delete(id_=file_id)
 
     return FileDeleted(
         id=file_id,
