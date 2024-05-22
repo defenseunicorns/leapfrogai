@@ -17,7 +17,7 @@ class AuthVectorStoreObject(VectorStore):
 class CRUDVectorStore(AsyncMixin, CRUDBase[AuthVectorStoreObject]):
     """CRUD Operations for VectorStore"""
 
-    async def __ainit__(
+    async def __ainit__(  # pylint: disable=arguments-differ
         self,
         jwt: str,
         table_name: str = "vector_store_objects",
@@ -27,11 +27,11 @@ class CRUDVectorStore(AsyncMixin, CRUDBase[AuthVectorStoreObject]):
             self, jwt=jwt, db=db, model=AuthVectorStoreObject, table_name=table_name
         )
 
-    async def create(self, object_: VectorStore) -> VectorStore | None:
+    async def create(self, object_: VectorStore) -> AuthVectorStoreObject | None:
         """Create new vector store."""
         user_id: str = (await self.db.auth.get_user(self.jwt)).user.id
         return await super().create(
-            object_=AuthVectorStoreObject(user_id=user_id, **object_.dict())
+            object_=AuthVectorStoreObject(user_id=user_id, **object_.model_dump())
         )
 
     async def get(self, id_: str) -> AuthVectorStoreObject | None:

@@ -23,6 +23,7 @@ create table
 create table
   vector_store_file_objects (
     id uuid references file_objects (id) on delete cascade,
+    user_id uuid references auth.users not null,
     created_at bigint default extract(epoch from now()) not null,
     last_error jsonb,
     object text check (object in ('vector_store.file')),
@@ -35,6 +36,7 @@ create table
 create table
   vector_store (
     id uuid primary key DEFAULT uuid_generate_v4(),
+    user_id uuid references auth.users not null,
     vector_store_id uuid references vector_store_objects (id) on delete cascade,
     file_id uuid references file_objects (id) on delete cascade,
     content text, -- corresponds to Document.pageContent

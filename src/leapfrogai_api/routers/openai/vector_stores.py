@@ -183,7 +183,7 @@ async def modify_vector_store(
 @router.delete("/{vector_store_id}")
 async def delete_vector_store(
     vector_store_id: str,
-    auth_creds: Annotated[HTTPAuthorizationCredentials, Depends(security)],  # pylint: disable=unused-argument
+    auth_creds: Annotated[HTTPAuthorizationCredentials, Depends(security)],
 ) -> VectorStoreDeleted:
     """Delete a vector store."""
 
@@ -199,10 +199,9 @@ async def delete_vector_store(
 
 @router.post("/{vector_store_id}/files")
 async def create_vector_store_file(
-    session: Session,
     vector_store_id: str,
     file_id: str,
-    auth_creds: Annotated[HTTPAuthorizationCredentials, Depends(security)],  # pylint: disable=unused-argument
+    auth_creds: Annotated[HTTPAuthorizationCredentials, Depends(security)],
 ) -> VectorStoreFile:
     """Create a file in a vector store."""
 
@@ -221,16 +220,15 @@ async def create_vector_store_file(
 
 @router.get("/{vector_store_id}/files")
 async def list_vector_store_files(
-    session: Session,
     vector_store_id: str,
-    auth_creds: Annotated[HTTPAuthorizationCredentials, Depends(security)],  # pylint: disable=unused-argument
+    auth_creds: Annotated[HTTPAuthorizationCredentials, Depends(security)],
 ) -> list[VectorStoreFile]:
     """List all the files in a vector store."""
 
     try:
-        crud_vector_store_file = CRUDVectorStoreFile(model=VectorStoreFile)
+        crud_vector_store_file = await CRUDVectorStoreFile(auth_creds.credentials)
         vector_store_files = await crud_vector_store_file.list(
-            db=session, vector_store_id=vector_store_id
+            vector_store_id=vector_store_id
         )
 
         return vector_store_files
@@ -243,7 +241,6 @@ async def list_vector_store_files(
 
 @router.get("/{vector_store_id}/files/{file_id}")
 async def retrieve_vector_store_file(
-    session: Session,
     vector_store_id: str,
     file_id: str,
     auth_creds: Annotated[HTTPAuthorizationCredentials, Depends(security)],  # pylint: disable=unused-argument
@@ -252,7 +249,8 @@ async def retrieve_vector_store_file(
 
     crud_vector_store_file = CRUDVectorStoreFile(model=VectorStoreFile)
     return await crud_vector_store_file.get(
-        db=session, vector_store_id=vector_store_id, file_id=file_id
+        vector_store_id=vector_store_id,
+        file_id=file_id,
     )
 
 
@@ -270,10 +268,10 @@ async def delete_vector_store_file(
         vector_store_id=vector_store_id, file_id=file_id
     )
 
-    crud_vector_store_file = CRUDVectorStoreFile(model=VectorStoreFile)
+    crud_vector_store_file = await CRUDVectorStoreFile(auth_creds.credentials)
 
     vector_store_file_deleted = await crud_vector_store_file.delete(
-        db=session, vector_store_id=vector_store_id, file_id=file_id
+        vector_store_id=vector_store_id, file_id=file_id
     )
 
     deleted = vectors_deleted and vector_store_file_deleted
