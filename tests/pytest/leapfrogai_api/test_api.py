@@ -194,6 +194,19 @@ def test_chat_completion(remove_auth_middleware):
         assert "message" in response_choices[0]
         assert "content" in response_choices[0].get("message")
 
+        # parse finish reason
+        assert "finish_reason" in response_choices[0]
+        assert "stop" == response_choices[0].get("finish_reason")
+
+        # parse usage data
+        response_usage = response_obj.get("usage")
+        prompt_tokens = response_usage.get("prompt_tokens")
+        completion_tokens = response_usage.get("completion_tokens")
+        total_tokens = response_usage.get("total_tokens")
+        assert prompt_tokens == len(input_content)
+        assert completion_tokens == len(input_content)
+        assert total_tokens == len(input_content) * 2
+
         # validate that the repeater repeated
         assert response_choices[0].get("message").get("content") == input_content
 
@@ -239,6 +252,17 @@ def test_stream_chat_completion(remove_auth_middleware):
                     assert "content" in choices[0].get("delta")
                     assert choices[0].get("delta").get("content") == input_content
                     iter_length += 1
+                    # parse finish reason
+                    assert "finish_reason" in choices[0]
+                    assert "stop" == choices[0].get("finish_reason")
+                    # parse usage data
+                    response_usage = stream_response.get("usage")
+                    prompt_tokens = response_usage.get("prompt_tokens")
+                    completion_tokens = response_usage.get("completion_tokens")
+                    total_tokens = response_usage.get("total_tokens")
+                    assert prompt_tokens == len(input_content)
+                    assert completion_tokens == len(input_content)
+                    assert total_tokens == len(input_content) * 2
 
         # The repeater only response with 5 messages
         assert iter_length == 5
