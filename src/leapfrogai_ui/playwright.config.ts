@@ -17,29 +17,29 @@ const config: PlaywrightTestConfig = {
       },
       dependencies: ['clear_db', 'setup']
     }
-    // {
-    //   name: 'firefox',
-    //   use: {
-    //     ...devices['Desktop Firefox'],
-    //     // Use prepared auth state.
-    //     storageState: 'playwright/.auth/user.json'
-    //   },
-    //   dependencies: ['clear_db', 'setup']
-    // },
-    // {
-    //   name: 'webkit',
-    //   use: { ...devices['Desktop Safari'], storageState: 'playwright/.auth/user.json' },
-    //   dependencies: ['clear_db', 'setup']
-    // },
-    // {
-    //   name: 'Edge',
-    //   use: {
-    //     ...devices['Desktop Edge'],
-    //     channel: 'msedge',
-    //     storageState: 'playwright/.auth/user.json'
-    //   },
-    //   dependencies: ['clear_db', 'setup']
-    // }
+    {
+      name: 'firefox',
+      use: {
+        ...devices['Desktop Firefox'],
+        // Use prepared auth state.
+        storageState: 'playwright/.auth/user.json'
+      },
+      dependencies: ['clear_db', 'setup']
+    },
+    {
+      name: 'webkit',
+      use: { ...devices['Desktop Safari'], storageState: 'playwright/.auth/user.json' },
+      dependencies: ['clear_db', 'setup']
+    },
+    {
+      name: 'Edge',
+      use: {
+        ...devices['Desktop Edge'],
+        channel: 'msedge',
+        storageState: 'playwright/.auth/user.json'
+      },
+      dependencies: ['clear_db', 'setup']
+    }
   ],
   webServer: {
     command: 'npm run build && npm run preview',
