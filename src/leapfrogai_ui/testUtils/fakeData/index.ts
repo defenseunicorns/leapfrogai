@@ -6,6 +6,7 @@ import type { LFMessage } from '../../src/lib/types/messages';
 import type { LFThread, Roles } from '../../src/lib/types/threads';
 import type { MessageContent } from 'openai/resources/beta/threads/messages';
 import { getUnixSeconds } from '../../src/lib/helpers/dates';
+import type { FileObject } from 'openai/src/resources/files';
 
 const todayOverride = new Date('2024-03-20T00:00');
 
@@ -138,4 +139,19 @@ export const getFakeAssistantInput = (): AssistantInput => {
     pictogram: 'default',
     avatar: ''
   };
+};
+
+export const getFakeFiles = (numFiles = 2) => {
+  const files: FileObject[] = [];
+  for (let i = 0; i < numFiles; i++) {
+    files.push({
+      id: faker.string.uuid(),
+      bytes: 32,
+      created_at: getUnixSeconds(new Date()),
+      filename: `${faker.word.noun()}.pdf`,
+      object: 'file',
+      purpose: 'assistants'
+    });
+  }
+  return files;
 };
