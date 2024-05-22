@@ -8,13 +8,6 @@ const internalPostgresError: PostgrestError = {
   hint: ''
 };
 
-const notFoundPostgresError: PostgrestError = {
-  code: '404',
-  message: 'Not Found',
-  details: '',
-  hint: ''
-};
-
 export const sessionMock = vi.fn(() => {
   const id = faker.string.uuid();
   const email = faker.internet.email();
@@ -54,16 +47,6 @@ export const sessionNullMock = vi.fn(() => Promise.resolve(null));
 
 /* ----- Re-usable mock components ----- */
 
-export const selectSingleReturnsMock = <T>(itemToReturn: T) => ({
-  select: vi.fn(() => ({
-    eq: vi.fn(() => ({
-      returns: vi.fn(() => ({
-        single: vi.fn(() => Promise.resolve({ error: null, data: itemToReturn }))
-      }))
-    }))
-  }))
-});
-
 export const selectSingleReturnsMockError = () => ({
   select: vi.fn(() => ({
     eq: vi.fn(() => ({
@@ -84,26 +67,6 @@ export const updateSingleReturnsMock = () => ({
   }))
 });
 
-export const updateSingleErrorMock = () => ({
-  update: vi.fn(() => ({
-    eq: vi.fn(() => ({
-      returns: vi.fn(() => ({
-        single: vi.fn(() => Promise.resolve({ error: internalPostgresError, data: null }))
-      }))
-    }))
-  }))
-});
-
-export const selectErrorMock = () => ({
-  select: vi.fn(() => ({
-    eq: vi.fn(() => ({
-      returns: vi.fn(() => ({
-        single: vi.fn(() => Promise.resolve({ error: notFoundPostgresError, data: {} }))
-      }))
-    }))
-  }))
-});
-
 export const supabaseSelectSingleByIdMock = <T>(itemToReturn: T) => ({
   select: vi.fn(() => ({
     eq: vi.fn(() => ({
@@ -118,16 +81,6 @@ export const supabaseUpdateErrorMock = () => ({
   update: vi.fn(() => ({
     eq: vi.fn(() => Promise.resolve({ error: internalPostgresError }))
   }))
-});
-
-export const supabaseDeleteErrorMock = () => ({
-  delete: vi.fn(() => ({
-    eq: vi.fn(() => Promise.resolve({ error: internalPostgresError }))
-  }))
-});
-
-export const storageUpdateMock = () => ({
-  ...supabaseFromMockWrapper({ upload: vi.fn(() => Promise.resolve({ error: null })) })
 });
 
 export const storageRemoveMock = () => ({
@@ -170,16 +123,6 @@ export const supabaseInsertSingleMock = <T>(itemToReturn: T) => ({
   }))
 });
 
-export const supabaseInsertErrorMock = () => ({
-  from: vi.fn(() => ({
-    insert: vi.fn(() => ({
-      select: vi.fn(() => ({
-        returns: vi.fn(() => Promise.resolve({ error: internalPostgresError, data: {} }))
-      }))
-    }))
-  }))
-});
-
 export const supabaseInsertSingleErrorMock = () => ({
   from: vi.fn(() => ({
     insert: vi.fn(() => ({
@@ -189,30 +132,6 @@ export const supabaseInsertSingleErrorMock = () => ({
         }))
       }))
     }))
-  }))
-});
-
-export const supabaseUpdateMock = () => ({
-  from: vi.fn(() => ({
-    update: vi.fn(() => ({
-      eq: vi.fn(() => Promise.resolve({ error: null }))
-    }))
-  }))
-});
-
-export const supabaseUpdateSingleMock = () => ({
-  from: vi.fn(() => ({
-    update: vi.fn(() => ({
-      eq: vi.fn(() => ({
-        single: vi.fn(() => Promise.resolve({ error: null }))
-      }))
-    }))
-  }))
-});
-
-export const supabaseDeleteMock = () => ({
-  from: vi.fn(() => ({
-    delete: vi.fn(() => ({ eq: vi.fn(() => Promise.resolve({ error: null })) }))
   }))
 });
 
