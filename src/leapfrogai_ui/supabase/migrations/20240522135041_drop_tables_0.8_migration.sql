@@ -1,2 +1,2 @@
-DROP TABLE conversations;
 DROP TABLE messages;
+DROP TABLE conversations;
