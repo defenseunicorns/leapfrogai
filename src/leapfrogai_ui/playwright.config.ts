@@ -16,7 +16,7 @@ const config: PlaywrightTestConfig = {
         storageState: 'playwright/.auth/user.json'
       },
       dependencies: ['clear_db', 'setup']
-    }
+    },
     {
       name: 'firefox',
       use: {
