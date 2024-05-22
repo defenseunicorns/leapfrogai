@@ -10,7 +10,9 @@ ModelType = TypeVar("ModelType", bound=BaseModel)
 class CRUDBase(Generic[ModelType]):
     """CRUD Operations"""
 
-    def __init__(self, jwt: str, db: AsyncClient, model: type[ModelType], table_name: str):
+    def __init__(
+        self, jwt: str, db: AsyncClient, model: type[ModelType], table_name: str
+    ):
         self.model = model
         self.table_name = table_name
         self.db = db
@@ -51,9 +53,7 @@ class CRUDBase(Generic[ModelType]):
             return [self.model(**item) for item in response]
         return None
 
-    async def update(
-        self, id_: str, object_: ModelType
-    ) -> ModelType | None:
+    async def update(self, id_: str, object_: ModelType) -> ModelType | None:
         """Update a vector store by its ID."""
         data, _count = (
             await self.db.table(self.table_name)
@@ -70,7 +70,9 @@ class CRUDBase(Generic[ModelType]):
 
     async def delete(self, id_: str) -> bool:
         """Delete a vector store by its ID."""
-        data, _count = await self.db.table(self.table_name).delete().eq("id", id_).execute()
+        data, _count = (
+            await self.db.table(self.table_name).delete().eq("id", id_).execute()
+        )
 
         _, response = data
 

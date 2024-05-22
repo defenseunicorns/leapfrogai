@@ -21,12 +21,12 @@ class CRUDFileObject(CRUDBase[AuthFileObject]):
         db: AsyncClient = await get_user_session(jwt)
         super().__init__(jwt=jwt, db=db, model=AuthFileObject, table_name=table_name)
 
-    async def create(
-        self, object_: FileObject
-    ) -> AuthFileObject | None:
+    async def create(self, object_: FileObject) -> AuthFileObject | None:
         """Create a new file object."""
         user_id: str = (await self.db.auth.get_user(self.jwt)).user.id
-        return await super().create(object_=AuthFileObject(user_id=user_id, **object_.dict()))
+        return await super().create(
+            object_=AuthFileObject(user_id=user_id, **object_.dict())
+        )
 
     async def get(self, id_: str) -> AuthFileObject | None:
         """Get a file object by its ID."""
@@ -36,12 +36,12 @@ class CRUDFileObject(CRUDBase[AuthFileObject]):
         """List all file objects."""
         return await super().list()
 
-    async def update(
-        self, id_: str, object_: FileObject
-    ) -> AuthFileObject | None:
+    async def update(self, id_: str, object_: FileObject) -> AuthFileObject | None:
         """Update a file object by its ID."""
         user_id: str = (await self.db.auth.get_user(self.jwt)).user.id
-        return await super().update(id_=id_,  object_=AuthFileObject(user_id=user_id, **object_.dict()))
+        return await super().update(
+            id_=id_, object_=AuthFileObject(user_id=user_id, **object_.dict())
+        )
 
     async def delete(self, id_: str) -> bool:
         """Delete a file object by its ID."""

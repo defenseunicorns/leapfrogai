@@ -23,7 +23,9 @@ class CRUDAssistant(CRUDBase[AuthAssistant]):
     async def create(self, object_: Assistant) -> Assistant | None:
         """Create a new assistant."""
         user_id: str = (await self.db.auth.get_user(self.jwt)).user.id
-        return await super().create(object_=AuthAssistant(user_id=user_id, **object_.dict()))
+        return await super().create(
+            object_=AuthAssistant(user_id=user_id, **object_.dict())
+        )
 
     async def get(self, id_: str) -> AuthAssistant | None:
         """Get an assistant by its ID."""
@@ -33,12 +35,12 @@ class CRUDAssistant(CRUDBase[AuthAssistant]):
         """List all assistants."""
         return await super().list()
 
-    async def update(
-        self, id_: str, object_: Assistant
-    ) -> AuthAssistant | None:
+    async def update(self, id_: str, object_: Assistant) -> AuthAssistant | None:
         """Update an assistant by its ID."""
         user_id: str = (await self.db.auth.get_user(self.jwt)).user.id
-        return await super().update(id_=id_, object_=AuthAssistant(user_id=user_id, **object_.dict()))
+        return await super().update(
+            id_=id_, object_=AuthAssistant(user_id=user_id, **object_.dict())
+        )
 
     async def delete(self, id_: str) -> bool:
         """Delete an assistant by its ID."""
