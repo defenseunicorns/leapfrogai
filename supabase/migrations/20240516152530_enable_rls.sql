@@ -29,3 +29,6 @@ on storage.objects for
 create policy "Authenticated individuals can view files in the file_bucket."
 on storage.objects for
     select to authenticated using (bucket_id = 'file_bucket');
+create policy "Authenticated individuals can delete files in the file_bucket."
+on storage.objects for
+    delete to authenticated using (bucket_id = 'file_bucket');
