@@ -1,8 +1,8 @@
 """OpenAI Compliant Vector Store API Router."""
 
 import time
+import logging
 from typing import Annotated
-
 from fastapi import APIRouter, Depends, HTTPException, status
 from fastapi.security import HTTPAuthorizationCredentials, HTTPBearer
 from openai.types.beta import VectorStore, VectorStoreDeleted
@@ -25,12 +25,11 @@ security = HTTPBearer()
 
 @router.post("")
 async def create_vector_store(
-    session: Session,
     request: CreateVectorStoreRequest,
-    auth_creds: Annotated[HTTPAuthorizationCredentials, Depends(security)],  # pylint: disable=unused-argument
+    auth_creds: Annotated[HTTPAuthorizationCredentials, Depends(security)],
 ) -> VectorStore:
     """Create a vector store."""
-    crud_vector_store = CRUDVectorStore(model=VectorStore)
+    crud_vector_store = await CRUDVectorStore(auth_creds.credentials)
 
     vector_store_object = VectorStore(
         id="",  # Leave blank to have Postgres generate a UUID
@@ -47,37 +46,33 @@ async def create_vector_store(
         expires_after=None,  # TODO: Handle expires_after
         expires_at=None,  # TODO: Handle expires_at
     )
-
     try:
-        new_vector_store = await crud_vector_store.create(
-            object_=vector_store_object, db=session
-        )  # Creates vector store with status in_progress for the duration of this function
-        if request.file_ids != []:
-            indexing_service = IndexingService(session=session)
-            for file_id in request.file_ids:
-                response = await indexing_service.index_file(
-                    vector_store_id=new_vector_store.id, file_id=file_id
-                )
+        new_vector_store = await crud_vector_store.create(object_=vector_store_object)
+        # if request.file_ids != []:
+        #     indexing_service = IndexingService(session=session)
+        #     for file_id in request.file_ids:
+        #         response = await indexing_service.index_file(
+        #             vector_store_id=new_vector_store.id, file_id=file_id
+        #         )
 
-                if response.status == "completed":
-                    new_vector_store.file_counts.completed += 1
-                elif response.status == "failed":
-                    new_vector_store.file_counts.failed += 1
-                elif response.status == "in_progress":
-                    new_vector_store.file_counts.in_progress += 1
-                elif response.status == "cancelled":
-                    new_vector_store.file_counts.cancelled += 1
-                new_vector_store.file_counts.total += 1
+        #         if response.status == "completed":
+        #             new_vector_store.file_counts.completed += 1
+        #         elif response.status == "failed":
+        #             new_vector_store.file_counts.failed += 1
+        #         elif response.status == "in_progress":
+        #             new_vector_store.file_counts.in_progress += 1
+        #         elif response.status == "cancelled":
+        #             new_vector_store.file_counts.cancelled += 1
+        #         new_vector_store.file_counts.total += 1
 
-            new_vector_store.status = "completed"
+        new_vector_store.status = "completed"
 
         return await crud_vector_store.update(
             id_=new_vector_store.id,
             object_=new_vector_store,
-            db=session,
         )
-
     except Exception as exc:
+        logging.debug(exc)
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail="Unable to create vector store",
@@ -86,13 +81,12 @@ async def create_vector_store(
 
 @router.get("")
 async def list_vector_stores(
-    session: Session,
     auth_creds: Annotated[HTTPAuthorizationCredentials, Depends(security)],  # pylint: disable=unused-argument
 ) -> ListVectorStoresResponse:
     """List all the vector stores."""
 
-    crud_vector_store = CRUDVectorStore(model=VectorStore)
-    crud_response = await crud_vector_store.list(db=session)
+    crud_vector_store = await CRUDVectorStore(auth_creds.credentials)
+    crud_response = await crud_vector_store.list()
 
     return ListVectorStoresResponse(
         object="list",
@@ -102,29 +96,25 @@ async def list_vector_stores(
 
 @router.get("/{vector_store_id}")
 async def retrieve_vector_store(
-    session: Session,
     vector_store_id: str,
     auth_creds: Annotated[HTTPAuthorizationCredentials, Depends(security)],  # pylint: disable=unused-argument
 ) -> VectorStore | None:
     """Retrieve a vector store."""
 
-    crud_vector_store = CRUDVectorStore(model=VectorStore)
-    return await crud_vector_store.get(db=session, id_=vector_store_id)
+    crud_vector_store = await CRUDVectorStore(auth_creds.credentials)
+    return await crud_vector_store.get(id_=vector_store_id)
 
 
 @router.post("/{vector_store_id}")
 async def modify_vector_store(
-    session: Session,
     vector_store_id: str,
     request: ModifyVectorStoreRequest,
     auth_creds: Annotated[HTTPAuthorizationCredentials, Depends(security)],  # pylint: disable=unused-argument
 ) -> VectorStore:
     """Modify a vector store."""
-    crud_vector_store = CRUDVectorStore(model=VectorStore)
+    crud_vector_store = await CRUDVectorStore(auth_creds.credentials)
 
-    if not (
-        old_vector_store := await crud_vector_store.get(db=session, id_=vector_store_id)
-    ):
+    if not (old_vector_store := await crud_vector_store.get(id_=vector_store_id)):
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
             detail="Vector store not found",
@@ -148,7 +138,6 @@ async def modify_vector_store(
         await crud_vector_store.update(
             id_=vector_store_id,
             object_=new_vector_store,
-            db=session,
         )  # Sets status to in_progress for the duration of this function
     except Exception as exc:
         raise HTTPException(
@@ -157,22 +146,22 @@ async def modify_vector_store(
         ) from exc
 
     try:
-        if request.file_ids != []:
-            indexing_service = IndexingService(session=session)
-            for file_id in request.file_ids:
-                response = await indexing_service.index_file(
-                    vector_store_id=vector_store_id, file_id=file_id
-                )
+        # if request.file_ids != []:
+        #     indexing_service = IndexingService(session=session)
+        #     for file_id in request.file_ids:
+        #         response = await indexing_service.index_file(
+        #             vector_store_id=vector_store_id, file_id=file_id
+        #         )
 
-                if response.status == "completed":
-                    new_vector_store.file_counts.completed += 1
-                elif response.status == "failed":
-                    new_vector_store.file_counts.failed += 1
-                elif response.status == "in_progress":
-                    new_vector_store.file_counts.in_progress += 1
-                elif response.status == "cancelled":
-                    new_vector_store.file_counts.cancelled += 1
-                new_vector_store.file_counts.total += 1
+        #         if response.status == "completed":
+        #             new_vector_store.file_counts.completed += 1
+        #         elif response.status == "failed":
+        #             new_vector_store.file_counts.failed += 1
+        #         elif response.status == "in_progress":
+        #             new_vector_store.file_counts.in_progress += 1
+        #         elif response.status == "cancelled":
+        #             new_vector_store.file_counts.cancelled += 1
+        #         new_vector_store.file_counts.total += 1
 
         new_vector_store.status = "completed"
 
@@ -183,7 +172,6 @@ async def modify_vector_store(
         return await crud_vector_store.update(
             id_=vector_store_id,
             object_=new_vector_store,
-            db=session,
         )
     except Exception as exc:
         raise HTTPException(
@@ -194,17 +182,14 @@ async def modify_vector_store(
 
 @router.delete("/{vector_store_id}")
 async def delete_vector_store(
-    session: Session,
     vector_store_id: str,
     auth_creds: Annotated[HTTPAuthorizationCredentials, Depends(security)],  # pylint: disable=unused-argument
 ) -> VectorStoreDeleted:
     """Delete a vector store."""
 
-    crud_vector_store = CRUDVectorStore(model=VectorStore)
+    crud_vector_store = await CRUDVectorStore(auth_creds.credentials)
 
-    vector_store_deleted = await crud_vector_store.delete(
-        db=session, id_=vector_store_id
-    )
+    vector_store_deleted = await crud_vector_store.delete(id_=vector_store_id)
     return VectorStoreDeleted(
         id=vector_store_id,
         object="vector_store.deleted",

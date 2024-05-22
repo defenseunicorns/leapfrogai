@@ -6,6 +6,7 @@ create extension if not exists vector;
 create table
   vector_store_objects (
     id uuid primary key DEFAULT uuid_generate_v4(),
+    user_id uuid references auth.users not null,
     bytes bigint,
     created_at bigint default extract(epoch from now()) not null,
     file_counts jsonb,
