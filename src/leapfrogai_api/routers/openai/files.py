@@ -40,7 +40,9 @@ async def upload_file(
 
     try:
         file_object = await crud_file_object.create(object_=file_object)
-        crud_file_bucket = await CRUDFileBucket(jwt=auth_creds.credentials, model=UploadFile)
+        crud_file_bucket = await CRUDFileBucket(
+            jwt=auth_creds.credentials, model=UploadFile
+        )
         await crud_file_bucket.upload(file=request.file, id_=file_object.id)
 
         return file_object
@@ -87,7 +89,9 @@ async def delete_file(
     crud_file_object = await CRUDFileObject(auth_creds.credentials)
     file_deleted = await crud_file_object.delete(id_=file_id)
 
-    crud_file_bucket = await CRUDFileBucket(jwt=auth_creds.credentials, model=UploadFile)
+    crud_file_bucket = await CRUDFileBucket(
+        jwt=auth_creds.credentials, model=UploadFile
+    )
     await crud_file_bucket.delete(id_=file_id)
 
     return FileDeleted(
@@ -104,7 +108,9 @@ async def retrieve_file_content(
 ):
     """Retrieve the content of a file."""
     try:
-        crud_file_bucket = await CRUDFileBucket(jwt=auth_creds.credentials, model=UploadFile)
+        crud_file_bucket = await CRUDFileBucket(
+            jwt=auth_creds.credentials, model=UploadFile
+        )
         return await crud_file_bucket.download(id_=file_id)
     except FileNotFoundError as exc:
         raise HTTPException(
