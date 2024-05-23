@@ -24,6 +24,7 @@ from leapfrogai_api.routers.supabase_session import (
     init_supabase_client,
 )
 from leapfrogai_api.utils import get_model_config
+from supabase_py_async import AsyncClient
 
 
 # handle startup & shutdown tasks
@@ -43,13 +44,20 @@ app = FastAPI(lifespan=lifespan)
 
 skip_endpoint_auth = ["/healthz", "/docs", "/openapi.json"]
 
+# Re-use anonymous session for initial user auth checks
+anon_session: AsyncClient | None = None
+
 
 @app.middleware("http")
 async def verify_supabase_auth(request: Request, call_next):
+    global anon_session
+
     if request.url.path in skip_endpoint_auth:
         return await call_next(request)
     else:
-        anon_session = await init_supabase_client()
+        if not anon_session:
+            anon_session = await init_supabase_client()
+
         authorization_header = request.headers.get("authorization")
 
         try:
