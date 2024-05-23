@@ -55,7 +55,7 @@ async def verify_supabase_auth(request: Request, call_next):
         try:
             await validate_user_authorization(anon_session, authorization_header)
         except HTTPException as e:
-            return JSONResponse(status_code=e.status_code, content={})
+            return JSONResponse(status_code=e.status_code, content=e.detail)
 
         return await call_next(request)
 
