@@ -10,7 +10,7 @@ setup('authenticate', async ({ page, clearDbData }) => {
     // when running in Github CI, create a new account because we don't have seed migrations
     if (process.env.TEST_ENV === 'CI') {
       await page.getByPlaceholder('Your email address').click();
-      await page.getByPlaceholder('Your email address').fill('user1@test.com');
+      await page.getByPlaceholder('Your email address').fill('ci_user@test.com');
       await page.getByPlaceholder('Your password').click();
       await page.getByPlaceholder('Your password').fill('password123');
       await page.getByRole('button', { name: 'Sign Up' }).click();
