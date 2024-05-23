@@ -29,15 +29,16 @@ LFAI_CONFIG_FILEPATH = os.path.join(LFAI_CONFIG_PATH, LFAI_CONFIG_FILENAME)
 #########################
 #########################
 
+
 class AsyncClient:
     """Supabase client class."""
 
     def __init__(
-            self,
-            supabase_url: str,
-            supabase_key: str,
-            access_token: Optional[str] = None,
-            options: ClientOptions = ClientOptions(),
+        self,
+        supabase_url: str,
+        supabase_key: str,
+        access_token: Optional[str] = None,
+        options: ClientOptions = ClientOptions(),
     ):
         self.supabase_url = supabase_url
         self.supabase_key = supabase_key
@@ -46,7 +47,7 @@ class AsyncClient:
 
 
 async def mock_init_supabase_client(
-        auth_creds: Annotated[HTTPAuthorizationCredentials, Depends(security)],
+    auth_creds: Annotated[HTTPAuthorizationCredentials, Depends(security)],
 ) -> AsyncClient:
     return AsyncClient("", "", "", ClientOptions())
 
@@ -144,9 +145,9 @@ def test_routes():
         found = False
         for actual_route in actual_routes:
             if (
-                    hasattr(actual_route, "path")
-                    and actual_route.path == route
-                    and actual_route.name == name
+                hasattr(actual_route, "path")
+                and actual_route.path == route
+                and actual_route.name == name
             ):
                 assert actual_route.methods == set(methods)
                 found = True
@@ -260,7 +261,7 @@ def test_stream_chat_completion(dummy_auth_middleware):
         )
         assert response.status_code == 200
         assert (
-                response.headers.get("content-type") == "text/event-stream; charset=utf-8"
+            response.headers.get("content-type") == "text/event-stream; charset=utf-8"
         )
 
         # parse through the streamed response
