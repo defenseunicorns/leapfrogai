@@ -37,8 +37,6 @@ async def lifespan(app: FastAPI):
 
 app = FastAPI(lifespan=lifespan)
 
-skip_endpoint_auth = ["/healthz", "/docs", "/openapi.json"]
-
 
 app.include_router(base_router)
 app.include_router(models.router)
