@@ -2,14 +2,21 @@ import json
 import os
 import shutil
 import time
-from starlette.middleware.base import _CachedRequest
+from typing import Annotated, Optional
 
 import pytest
-from fastapi.testclient import TestClient
+from fastapi import Depends
 from fastapi.applications import BaseHTTPMiddleware
+from fastapi.security import HTTPAuthorizationCredentials, HTTPBearer
+from fastapi.testclient import TestClient
+from starlette.middleware.base import _CachedRequest
+from supabase_py_async.lib.client_options import ClientOptions
 
 import leapfrogai_api.backend.types as lfai_types
 from leapfrogai_api.main import app
+from leapfrogai_api.routers.supabase_session import init_supabase_client
+
+security = HTTPBearer()
 
 # Set environment variables that the TestClient will use
 LFAI_CONFIG_FILENAME = os.environ["LFAI_CONFIG_FILENAME"] = "repeater-test-config.yaml"
@@ -21,6 +28,27 @@ LFAI_CONFIG_FILEPATH = os.path.join(LFAI_CONFIG_PATH, LFAI_CONFIG_FILENAME)
 
 #########################
 #########################
+
+class AsyncClient:
+    """Supabase client class."""
+
+    def __init__(
+            self,
+            supabase_url: str,
+            supabase_key: str,
+            access_token: Optional[str] = None,
+            options: ClientOptions = ClientOptions(),
+    ):
+        self.supabase_url = supabase_url
+        self.supabase_key = supabase_key
+        self.access_token = access_token
+        self.options = options
+
+
+async def mock_init_supabase_client(
+        auth_creds: Annotated[HTTPAuthorizationCredentials, Depends(security)],
+) -> AsyncClient:
+    return AsyncClient("", "", "", ClientOptions())
 
 
 async def pack_dummy_bearer_token(request: _CachedRequest, call_next):
@@ -35,8 +63,7 @@ async def pack_dummy_bearer_token(request: _CachedRequest, call_next):
 
 @pytest.fixture
 def dummy_auth_middleware():
-    os.environ["SUPABASE_ANON_KEY"] = "dummy"
-    os.environ["SUPABASE_URL"] = "dummy"
+    app.dependency_overrides[init_supabase_client] = mock_init_supabase_client
     app.user_middleware.clear()
     app.middleware_stack = None
     app.add_middleware(BaseHTTPMiddleware, dispatch=pack_dummy_bearer_token)
@@ -117,9 +144,9 @@ def test_routes():
         found = False
         for actual_route in actual_routes:
             if (
-                hasattr(actual_route, "path")
-                and actual_route.path == route
-                and actual_route.name == name
+                    hasattr(actual_route, "path")
+                    and actual_route.path == route
+                    and actual_route.name == name
             ):
                 assert actual_route.methods == set(methods)
                 found = True
@@ -233,7 +260,7 @@ def test_stream_chat_completion(dummy_auth_middleware):
         )
         assert response.status_code == 200
         assert (
-            response.headers.get("content-type") == "text/event-stream; charset=utf-8"
+                response.headers.get("content-type") == "text/event-stream; charset=utf-8"
         )
 
         # parse through the streamed response
