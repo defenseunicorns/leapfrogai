@@ -32,7 +32,6 @@
 
   $: rows = data.files;
 
-
   const { enhance, submit, submitting } = superForm(data.form, {
     validators: yup(filesSchema),
     invalidateAll: false,
@@ -77,6 +76,7 @@
         title: 'Files deleted',
         subtitle: ''
       });
+
       await invalidateAll();
     } else {
       toastStore.addToast({
@@ -183,8 +183,14 @@
               );
             }}
           />
-          <ToolbarMenu
-            ><ToolbarMenuItem on:click={() => (active = true)}>Edit</ToolbarMenuItem></ToolbarMenu
+          <ToolbarMenu data-testid="file-management-settings"
+            ><ToolbarMenuItem
+              data-testid="edit-btn"
+              on:click={(e) => {
+                e.preventDefault();
+                active = true;
+              }}>Edit</ToolbarMenuItem
+            ></ToolbarMenu
           >
           <FileUploaderButton
             bind:files={uploadedFiles}

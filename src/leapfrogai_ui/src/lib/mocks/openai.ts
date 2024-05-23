@@ -2,6 +2,7 @@ import { getFakeAssistant, getFakeMessage, getFakeThread } from '../../../testUt
 import type { LFThread } from '$lib/types/threads';
 import type { LFMessage } from '$lib/types/messages';
 import type { LFAssistant } from '$lib/types/assistants';
+import type { FileObject } from 'openai/resources/files';
 
 class OpenAI {
   private apiKey: string;
@@ -9,6 +10,7 @@ class OpenAI {
   private thread: LFThread;
   private message: LFMessage;
   private assistant: LFAssistant;
+  private uploadedFiles: FileObject[];
   private errors: {
     createThread: boolean;
     updateThread: boolean;
@@ -19,6 +21,7 @@ class OpenAI {
     deleteAssistant: boolean;
     retrieveAssistant: boolean;
     updateAssistant: boolean;
+    deleteFile: boolean;
   };
 
   constructor({ apiKey, baseURL }: { apiKey: string; baseURL: string }) {
@@ -27,6 +30,7 @@ class OpenAI {
     this.thread = getFakeThread();
     this.message = getFakeMessage();
     this.assistant = getFakeAssistant();
+    this.uploadedFiles = [];
     this.errors = {
       createThread: false,
       updateThread: false,
@@ -36,7 +40,8 @@ class OpenAI {
       deleteMessage: false,
       deleteAssistant: false,
       retrieveAssistant: false,
-      updateAssistant: false
+      updateAssistant: false,
+      deleteFile: false
     };
   }
 
@@ -49,6 +54,9 @@ class OpenAI {
   }
   setAssistant(assistant: LFAssistant) {
     this.assistant = assistant;
+  }
+  setFiles(files: FileObject[]) {
+    this.uploadedFiles = files;
   }
 
   setError(key: keyof typeof this.errors) {
@@ -63,6 +71,19 @@ class OpenAI {
   private resetError(key: keyof typeof this.errors) {
     this.errors[key] = false;
   }
+
+  files = {
+    list: vi.fn().mockImplementation(() => {
+      return Promise.resolve({ data: this.uploadedFiles });
+    }),
+    del: vi.fn().mockImplementation((id) => {
+      if (this.errors.deleteFile) {
+        this.resetError('deleteFile');
+        return Promise.resolve({ id, object: 'file', deleted: false });
+      }
+      return Promise.resolve({ id, object: 'file', deleted: true });
+    })
+  };
 
   beta = {
     threads: {
