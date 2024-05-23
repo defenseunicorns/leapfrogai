@@ -1,10 +1,10 @@
-import type { PageServerLoad } from './$types';
-import { fail, json, redirect } from '@sveltejs/kit';
-import { openai } from '$lib/server/constants';
-import { message, superValidate, withFiles } from 'sveltekit-superforms';
+import { fail, redirect } from '@sveltejs/kit';
+import { superValidate, withFiles } from 'sveltekit-superforms';
 import { yup } from 'sveltekit-superforms/adapters';
+import type { FileObject } from 'openai/resources/files';
+import type { PageServerLoad } from './$types';
+import { openai } from '$lib/server/constants';
 import { filesSchema } from '$schemas/files';
-import type { FileObject } from 'openai/src/resources/files';
 import type { FileRow } from '$lib/types/files';
 import { getUnixSeconds } from '$helpers/dates';
 
@@ -26,7 +26,6 @@ export const actions = {
     const form = await superValidate(request, yup(filesSchema));
 
     if (!form.valid) {
-      console.log(form.errors);
       return fail(400, { form });
     }
 
@@ -35,7 +34,6 @@ export const actions = {
       for (const file of form.data.files) {
         if (file) {
           try {
-            if (file.name === 'Resume.pdf') throw Error('error');
             const uploadedFile = await openai.files.create({
               file: file,
               purpose: 'assistants'

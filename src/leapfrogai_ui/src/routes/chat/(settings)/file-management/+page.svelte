@@ -1,31 +1,39 @@
 <script lang="ts">
   import {
+    Button,
     DataTable,
     FileUploaderButton,
     Loading,
     Toolbar,
+    ToolbarBatchActions,
     ToolbarContent,
+    ToolbarMenu,
+    ToolbarMenuItem,
     ToolbarSearch
   } from 'carbon-components-svelte';
-
-  import { formatDate } from '$helpers/dates';
-  import type { FileObject } from 'openai/src/resources/files';
-  import { CheckmarkFilled, ErrorFilled } from 'carbon-icons-svelte';
-  import { superForm } from 'sveltekit-superforms';
+  import type { FileObject } from 'openai/resources/files';
+  import { CheckmarkFilled, ErrorFilled, TrashCan } from 'carbon-icons-svelte';
   import { yup } from 'sveltekit-superforms/adapters';
+  import { superForm } from 'sveltekit-superforms';
+  import { formatDate } from '$helpers/dates';
   import { filesSchema } from '$schemas/files';
   import { toastStore } from '$stores';
   import type { FileRow } from '$lib/types/files';
+  import { invalidateAll } from '$app/navigation';
 
   export let data;
 
   let uploadedFiles: File[] = [];
   let rows: Array<FileObject | FileRow>;
+  let filteredRowIds: string[] = [];
+  let selectedRowIds: string[] = [];
+  let deleting = false;
+  let active = false;
+
   $: rows = data.files;
 
-  let filteredRowIds: string[] = [];
 
-  const { form, enhance, submit, submitting } = superForm(data.form, {
+  const { enhance, submit, submitting } = superForm(data.form, {
     validators: yup(filesSchema),
     invalidateAll: false,
     onResult({ result }) {
@@ -51,7 +59,38 @@
     }
   });
 
-  const updateAllFileStatus = (newFiles: Array<FileObject | { name: string; error: 'true' }>) => {
+  const handleDelete = async () => {
+    deleting = true;
+    const res = await fetch('/api/files/delete', {
+      method: 'DELETE',
+      body: JSON.stringify({ ids: selectedRowIds }),
+      headers: {
+        'Content-Type': 'application/json'
+      }
+    });
+
+    selectedRowIds = [];
+
+    if (res.ok) {
+      toastStore.addToast({
+        kind: 'success',
+        title: 'Files deleted',
+        subtitle: ''
+      });
+      await invalidateAll();
+    } else {
+      toastStore.addToast({
+        kind: 'error',
+        title: 'Error Deleting Files',
+        subtitle: ''
+      });
+
+      await invalidateAll();
+    }
+    deleting = false;
+  };
+
+  const updateAllFileStatus = (newFiles: Array<FileObject | FileRow>) => {
     // Remove all uploading files
     rows = rows.filter((row) => row.status !== 'uploading');
 
@@ -81,10 +120,11 @@
   const handleUpload = async () => {
     // Add pending files as table rows
     for (const file of uploadedFiles) {
-      const newFile = {
+      const newFile: FileRow = {
         id: `${file.name}-${new Date()}`, // temp id
         filename: file.name,
-        status: 'uploading'
+        status: 'uploading',
+        created_at: null
       };
       rows = [newFile, ...rows]; // re-assign array to trigger update in table
     }
@@ -98,9 +138,12 @@
 </script>
 
 <div class="file-management-container">
+  <div class="title">File Management</div>
   <form method="POST" enctype="multipart/form-data" use:enhance>
-    <div class="title">File Management</div>
     <DataTable
+      selectable={active}
+      batchSelection={active}
+      bind:selectedRowIds
       headers={[
         { key: 'filename', value: 'Name', width: '75%' },
         {
@@ -112,6 +155,22 @@
       sortable
     >
       <Toolbar>
+        <ToolbarBatchActions
+          bind:active
+          on:cancel={(e) => {
+            e.preventDefault();
+            active = false;
+            selectedRowIds = [];
+          }}
+        >
+          {#if deleting}
+            <div class="deleting">
+              <Loading withOverlay={false} small />
+            </div>
+          {:else}
+            <Button icon={TrashCan} on:click={handleDelete} disabled={deleting}>Delete</Button>
+          {/if}
+        </ToolbarBatchActions>
         <ToolbarContent>
           <ToolbarSearch
             bind:filteredRowIds
@@ -124,6 +183,9 @@
               );
             }}
           />
+          <ToolbarMenu
+            ><ToolbarMenuItem on:click={() => (active = true)}>Edit</ToolbarMenuItem></ToolbarMenu
+          >
           <FileUploaderButton
             bind:files={uploadedFiles}
             name="files"
@@ -184,5 +246,8 @@
   }
   .error {
     opacity: 50%;
+  }
+  .deleting {
+    margin-right: layout.$spacing-05;
   }
 </style>
