@@ -77,7 +77,7 @@ async def embed_chunks(chunks: list[Document]) -> list[list[float]]:
 
     model = get_model_config().get_model_backend(os.getenv("DEFAULT_EMBEDDINGS_MODEL"))
 
-    if model is None:
+    if not model:
         raise ValueError("Embeddings model not found.")
 
     chunk_texts = [chunk.page_content for chunk in chunks]

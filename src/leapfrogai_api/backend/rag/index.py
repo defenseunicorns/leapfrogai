@@ -20,11 +20,10 @@ class IndexingService:
     async def index_file(self, vector_store_id: str, file_id: str) -> VectorStoreFile:
         """Index a file into a vector store."""
         crud_vector_store_file = await CRUDVectorStoreFile(self.auth_creds)
-        vector_store_file = await crud_vector_store_file.get(
-            vector_store_id=vector_store_id, file_id=file_id
-        )
 
-        if vector_store_file:
+        if await crud_vector_store_file.get(
+            vector_store_id=vector_store_id, file_id=file_id
+        ):
             raise ValueError("File already indexed")
 
         crud_file_object = await CRUDFileObject(self.auth_creds)
