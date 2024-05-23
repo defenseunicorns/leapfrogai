@@ -2,12 +2,13 @@
 
 from typing import Annotated
 from fastapi import HTTPException, APIRouter, Depends
-from fastapi.security import HTTPAuthorizationCredentials, HTTPBearer
+from fastapi.security import HTTPBearer
 from leapfrogai_api.backend.grpc_client import (
     chat_completion,
     stream_chat_completion,
 )
 from leapfrogai_api.backend.helpers import grpc_chat_role
+from leapfrogai_api.routers.supabase_session import Session
 from leapfrogai_api.utils import get_model_config
 from leapfrogai_api.utils.config import Config
 from leapfrogai_api.backend.types import ChatCompletionRequest
@@ -21,7 +22,7 @@ security = HTTPBearer()
 async def chat_complete(
     req: ChatCompletionRequest,
     model_config: Annotated[Config, Depends(get_model_config)],
-    auth_creds: Annotated[HTTPAuthorizationCredentials, Depends(security)],
+    session: Session,
 ):
     """Complete a chat conversation with the given model."""
 

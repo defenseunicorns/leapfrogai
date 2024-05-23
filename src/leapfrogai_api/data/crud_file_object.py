@@ -5,9 +5,7 @@ from pydantic import Field
 from openai.types import FileObject
 from supabase_py_async import AsyncClient
 
-from leapfrogai_api.data.async_mixin import AsyncMixin
 from leapfrogai_api.data.crud_base import CRUDBase
-from leapfrogai_api.routers.supabase_session import get_user_session
 
 
 class AuthFileObject(FileObject):
@@ -16,18 +14,15 @@ class AuthFileObject(FileObject):
     user_id: str = Field(default="")
 
 
-class CRUDFileObject(AsyncMixin, CRUDBase[AuthFileObject]):
+class CRUDFileObject(CRUDBase[AuthFileObject]):
     """CRUD Operations for FileObject"""
 
-    async def __ainit__(self, jwt: str, table_name: str = "file_objects"):
-        db: AsyncClient = await get_user_session(jwt)
-        CRUDBase.__init__(
-            self, jwt=jwt, db=db, model=AuthFileObject, table_name=table_name
-        )
+    def __init__(self, db: AsyncClient, table_name: str = "file_objects"):
+        super().__init__(db=db, model=AuthFileObject, table_name=table_name)
 
     async def create(self, object_: FileObject) -> AuthFileObject | None:
         """Create a new file object."""
-        user_id: str = (await self.db.auth.get_user(self.jwt)).user.id
+        user_id: str = (await self.db.auth.get_user()).user.id
         return await super().create(
             object_=AuthFileObject(user_id=user_id, **object_.model_dump())
         )
@@ -42,7 +37,7 @@ class CRUDFileObject(AsyncMixin, CRUDBase[AuthFileObject]):
 
     async def update(self, id_: str, object_: FileObject) -> AuthFileObject | None:
         """Update a file object by its ID."""
-        user_id: str = (await self.db.auth.get_user(self.jwt)).user.id
+        user_id: str = (await self.db.auth.get_user()).user.id
         return await super().update(
             id_=id_, object_=AuthFileObject(user_id=user_id, **object_.model_dump())
         )

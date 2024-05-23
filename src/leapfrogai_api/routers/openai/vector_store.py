@@ -1,11 +1,12 @@
 """OpenAI Compliant Vector Store API Router."""
 
-from typing import Annotated
 
-from fastapi import HTTPException, APIRouter, Depends
-from fastapi.security import HTTPAuthorizationCredentials, HTTPBearer
+from fastapi import HTTPException, APIRouter
+from fastapi.security import HTTPBearer
 from openai.types.beta import VectorStore, VectorStoreDeleted
 from openai.types.beta.vector_stores import VectorStoreFile, VectorStoreFileDeleted
+
+from leapfrogai_api.routers.supabase_session import Session
 
 router = APIRouter(prefix="/openai/v1/vector_store", tags=["openai/vector_store"])
 security = HTTPBearer()
@@ -13,7 +14,7 @@ security = HTTPBearer()
 
 @router.post("")
 async def create_vector_store(
-    auth_creds: Annotated[HTTPAuthorizationCredentials, Depends(security)],
+    session: Session
 ) -> VectorStore:
     """Create a vector store."""
     # TODO: Implement this function
@@ -22,7 +23,7 @@ async def create_vector_store(
 
 @router.get("")
 async def list_vector_stores(
-    auth_creds: Annotated[HTTPAuthorizationCredentials, Depends(security)],
+    session: Session
 ) -> list[VectorStore]:
     """List all the vector stores."""
     # TODO: Implement this function
@@ -32,7 +33,7 @@ async def list_vector_stores(
 @router.get("/{vector_store_id}")
 async def retrieve_vector_store(
     vector_store_id: str,
-    auth_creds: Annotated[HTTPAuthorizationCredentials, Depends(security)],
+    session: Session
 ) -> VectorStore:
     """Retrieve a vector store."""
     # TODO: Implement this function
@@ -42,7 +43,7 @@ async def retrieve_vector_store(
 @router.post("/{vector_store_id}")
 async def modify_vector_store(
     vector_store_id: str,
-    auth_creds: Annotated[HTTPAuthorizationCredentials, Depends(security)],
+    session: Session
 ) -> VectorStore:
     """Modify a vector store."""
     # TODO: Implement this function
@@ -52,7 +53,7 @@ async def modify_vector_store(
 @router.delete("/{vector_store_id}")
 async def delete_vector_store(
     vector_store_id: str,
-    auth_creds: Annotated[HTTPAuthorizationCredentials, Depends(security)],
+    session: Session
 ) -> VectorStoreDeleted:
     """Delete a vector store."""
     # TODO: Implement this function
@@ -62,7 +63,7 @@ async def delete_vector_store(
 @router.post("/{vector_store_id}/files")
 async def create_vector_store_file(
     vector_store_id: str,
-    auth_creds: Annotated[HTTPAuthorizationCredentials, Depends(security)],
+    session: Session
 ) -> VectorStoreFile:
     """Create a file in a vector store."""
     # TODO: Implement this function
@@ -72,7 +73,7 @@ async def create_vector_store_file(
 @router.get("/{vector_store_id}/files")
 async def list_vector_store_files(
     vector_store_id: str,
-    auth_creds: Annotated[HTTPAuthorizationCredentials, Depends(security)],
+    session: Session
 ) -> list[VectorStoreFile]:
     """List all the files in a vector store."""
     # TODO: Implement this function
@@ -83,7 +84,7 @@ async def list_vector_store_files(
 async def delete_vector_store_file(
     vector_store_id: str,
     file_id: str,
-    auth_creds: Annotated[HTTPAuthorizationCredentials, Depends(security)],
+    session: Session
 ) -> VectorStoreFileDeleted:
     """Delete a file in a vector store."""
     # TODO: Implement this function

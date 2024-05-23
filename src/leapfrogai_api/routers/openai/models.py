@@ -2,11 +2,12 @@
 
 from typing import Annotated
 from fastapi import APIRouter, Depends
-from fastapi.security import HTTPAuthorizationCredentials, HTTPBearer
+from fastapi.security import HTTPBearer
 from leapfrogai_api.backend.types import (
     ModelResponse,
     ModelResponseModel,
 )
+from leapfrogai_api.routers.supabase_session import Session
 from leapfrogai_api.utils import get_model_config
 from leapfrogai_api.utils.config import Config
 
@@ -16,7 +17,7 @@ security = HTTPBearer()
 
 @router.get("")
 async def models(
-    auth_creds: Annotated[HTTPAuthorizationCredentials, Depends(security)],
+    session: Session,
     model_config: Annotated[Config, Depends(get_model_config)],
 ) -> ModelResponse:
     """List all available models."""

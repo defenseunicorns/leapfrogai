@@ -1,10 +1,9 @@
 """OpenAI Compliant Assistants API Router."""
 
 import logging
-from typing import Annotated
 
-from fastapi import HTTPException, APIRouter, status, Depends
-from fastapi.security import HTTPAuthorizationCredentials, HTTPBearer
+from fastapi import HTTPException, APIRouter, status
+from fastapi.security import HTTPBearer
 from openai.types.beta import Assistant, AssistantDeleted
 from openai.types.beta.assistant import ToolResources, ToolResourcesCodeInterpreter
 from leapfrogai_api.backend.types import (
@@ -13,6 +12,7 @@ from leapfrogai_api.backend.types import (
     ModifyAssistantRequest,
 )
 from leapfrogai_api.data.crud_assistant_object import CRUDAssistant
+from leapfrogai_api.routers.supabase_session import Session
 
 router = APIRouter(prefix="/openai/v1/assistants", tags=["openai/assistants"])
 security = HTTPBearer()
@@ -22,15 +22,15 @@ supported_tools = ["file_search"]
 
 @router.post("")
 async def create_assistant(
-    request: CreateAssistantRequest,
-    auth_creds: Annotated[HTTPAuthorizationCredentials, Depends(security)],
+        session: Session,
+        request: CreateAssistantRequest,
 ) -> Assistant:
     """Create an assistant."""
 
     if request.tools and (
-        unsupported_tool := next(
-            (tool for tool in request.tools if tool.type not in supported_tools), None
-        )
+            unsupported_tool := next(
+                (tool for tool in request.tools if tool.type not in supported_tools), None
+            )
     ):
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
@@ -38,9 +38,9 @@ async def create_assistant(
         )
 
     if request.tool_resources and any(
-        isinstance(tool_resource, ToolResourcesCodeInterpreter)
-        and tool_resource.get("file_ids")
-        for tool_resource in request.tool_resources
+            isinstance(tool_resource, ToolResourcesCodeInterpreter)
+            and tool_resource.get("file_ids")
+            for tool_resource in request.tool_resources
     ):
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
@@ -70,7 +70,7 @@ async def create_assistant(
         ) from exc
 
     try:
-        crud_assistant = await CRUDAssistant(auth_creds.credentials)
+        crud_assistant = CRUDAssistant(session)
         return await crud_assistant.create(object_=assistant)
     except HTTPException as exc:
         raise exc
@@ -84,10 +84,10 @@ async def create_assistant(
 
 @router.get("")
 async def list_assistants(
-    auth_creds: Annotated[HTTPAuthorizationCredentials, Depends(security)],
+        session: Session,
 ) -> ListAssistantsResponse:
     """List all the assistants."""
-    crud_assistant = await CRUDAssistant(jwt=auth_creds.credentials)
+    crud_assistant = CRUDAssistant(session)
     crud_response = await crud_assistant.list()
 
     return ListAssistantsResponse(
@@ -98,25 +98,26 @@ async def list_assistants(
 
 @router.get("/{assistant_id}")
 async def retrieve_assistant(
-    assistant_id: str,
-    auth_creds: Annotated[HTTPAuthorizationCredentials, Depends(security)],
+        session: Session,
+        assistant_id: str,
 ) -> Assistant | None:
     """Retrieve an assistant."""
 
-    crud_assistant = await CRUDAssistant(auth_creds.credentials)
+    crud_assistant = CRUDAssistant(session)
     return await crud_assistant.get(id_=assistant_id)
 
 
 @router.post("/{assistant_id}")
 async def modify_assistant(
-    assistant_id: str,
-    request: ModifyAssistantRequest,
-    auth_creds: Annotated[HTTPAuthorizationCredentials, Depends(security)],
+        session: Session,
+        assistant_id: str,
+        request: ModifyAssistantRequest,
 ) -> Assistant:
     """
     Modify an assistant.
 
     Args:
+        session (Session): An authenticated client for the current session.
         assistant_id (str): The ID of the assistant to modify.
         request (ModifyAssistantRequest): The request object containing the updated assistant information.
         auth_creds (HTTPAuthorizationCredentials): The authorization header that contains the user's API key.
@@ -142,9 +143,9 @@ async def modify_assistant(
     """
 
     if request.tools and (
-        unsupported_tool := next(
-            (tool for tool in request.tools if tool.type not in supported_tools), None
-        )
+            unsupported_tool := next(
+                (tool for tool in request.tools if tool.type not in supported_tools), None
+            )
     ):
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
@@ -152,16 +153,16 @@ async def modify_assistant(
         )
 
     if request.tool_resources and any(
-        isinstance(tool_resource, ToolResourcesCodeInterpreter)
-        and tool_resource.get("file_ids")
-        for tool_resource in request.tool_resources
+            isinstance(tool_resource, ToolResourcesCodeInterpreter)
+            and tool_resource.get("file_ids")
+            for tool_resource in request.tool_resources
     ):
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
             detail="Code interpreter tool is not supported",
         )
 
-    crud_assistant = await CRUDAssistant(auth_creds.credentials)
+    crud_assistant = CRUDAssistant(session)
 
     if not (old_assistant := await crud_assistant.get(id_=assistant_id)):
         raise HTTPException(
@@ -181,7 +182,7 @@ async def modify_assistant(
             tool_resources=ToolResources.model_validate(
                 getattr(request, "tool_resources", None)
             )
-            or old_assistant.tool_resources,
+                           or old_assistant.tool_resources,
             temperature=float(
                 getattr(request, "temperature", old_assistant.temperature)
             ),
@@ -211,11 +212,11 @@ async def modify_assistant(
 
 @router.delete("/{assistant_id}")
 async def delete_assistant(
-    assistant_id: str,
-    auth_creds: Annotated[HTTPAuthorizationCredentials, Depends(security)],
+        session: Session,
+        assistant_id: str,
 ) -> AssistantDeleted:
     """Delete an assistant."""
-    crud_assistant = await CRUDAssistant(auth_creds.credentials)
+    crud_assistant = CRUDAssistant(session)
     assistant_deleted = await crud_assistant.delete(id_=assistant_id)
     return AssistantDeleted(
         id=assistant_id,

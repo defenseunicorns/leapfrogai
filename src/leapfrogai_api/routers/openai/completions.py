@@ -2,9 +2,10 @@
 
 from typing import Annotated
 from fastapi import HTTPException, APIRouter, Depends
-from fastapi.security import HTTPAuthorizationCredentials, HTTPBearer
+from fastapi.security import HTTPBearer
 from leapfrogai_api.backend.grpc_client import completion, stream_completion
 from leapfrogai_api.backend.types import CompletionRequest
+from leapfrogai_api.routers.supabase_session import Session
 from leapfrogai_api.utils import get_model_config
 from leapfrogai_api.utils.config import Config
 import leapfrogai_sdk as lfai
@@ -15,7 +16,7 @@ security = HTTPBearer()
 
 @router.post("")
 async def complete(
-    auth_creds: Annotated[HTTPAuthorizationCredentials, Depends(security)],
+    session: Session,
     req: CompletionRequest,
     model_config: Annotated[Config, Depends(get_model_config)],
 ):

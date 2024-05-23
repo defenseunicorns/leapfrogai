@@ -11,12 +11,11 @@ class CRUDBase(Generic[ModelType]):
     """CRUD Operations"""
 
     def __init__(
-        self, jwt: str, db: AsyncClient, model: type[ModelType], table_name: str
+        self, db: AsyncClient, model: type[ModelType], table_name: str
     ):
         self.model = model
         self.table_name = table_name
         self.db = db
-        self.jwt = jwt
 
     async def create(self, object_: ModelType) -> ModelType | None:
         """Create new row."""
