@@ -10,7 +10,6 @@ class AsyncMixin:
     async def __ainit__(self, *args, **kwargs):
         """Async constructor, override this instead of the default constructor"""
         pass
-        
 
     async def __initobj(self):
         """Crutch used for __await__ after spawning"""
