@@ -1,4 +1,4 @@
-// Can't use import aliases here because playwright needs these and it doens't work with relative imports
+// Can't use import aliases here because playwright needs these and it doesn't work with relative imports
 import { faker } from '@faker-js/faker';
 import { assistantDefaults, DEFAULT_ASSISTANT_TEMP } from '../../src/lib/constants';
 import type { AssistantInput, LFAssistant } from '../../src/lib/types/assistants';
@@ -141,13 +141,19 @@ export const getFakeAssistantInput = (): AssistantInput => {
   };
 };
 
-export const getFakeFiles = (numFiles = 2) => {
+type GetFakeFilesOptions = {
+  numFiles?: number;
+  created_at?: Date;
+};
+export const getFakeFiles = (options: GetFakeFilesOptions = {}) => {
+  const { numFiles = 2, created_at = new Date() } = options;
+
   const files: FileObject[] = [];
   for (let i = 0; i < numFiles; i++) {
     files.push({
       id: faker.string.uuid(),
       bytes: 32,
-      created_at: getUnixSeconds(new Date()),
+      created_at: getUnixSeconds(created_at),
       filename: `${faker.word.noun()}.pdf`,
       object: 'file',
       purpose: 'assistants'

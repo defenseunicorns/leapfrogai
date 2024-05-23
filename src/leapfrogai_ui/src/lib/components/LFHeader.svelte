@@ -70,7 +70,7 @@
       isOpen={activeHeaderAction.user}
       on:open={() => setActiveHeaderAction('user')}
     >
-      <div class="link-container">
+      <div class="links-container">
         <form bind:this={signOutForm} method="post" action="/auth?/signout">
           <button
             class="header-link"
