@@ -8,7 +8,7 @@ class AsyncMixin:
         self.async_initialized = False
 
     async def __ainit__(self, *args, **kwargs):
-        """Async constructor, implement this instead of the default constructor"""
+        """Async constructor, override this instead of the default constructor"""
         pass
         
 

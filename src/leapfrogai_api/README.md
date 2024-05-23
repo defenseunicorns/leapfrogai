@@ -8,7 +8,7 @@ A mostly OpenAI compliant API surface.
 
 ## Local Development
 
-1. Create a local Supabase instance (requires [[Supabase CLI](https://supabase.com/docs/guides/cli/getting-started)):
+1. Create a local Supabase instance (requires [Supabase CLI](https://supabase.com/docs/guides/cli/getting-started)):
 
     ``` bash
     supabase start # from /leapfrogai
@@ -18,7 +18,12 @@ A mostly OpenAI compliant API surface.
     supabase status # to check status and see your keys
     ```
 
-2. Go to your local Supabase dashboard and create a test user.
+2. Go to your local Supabase dashboard and create a user to enable making authenticated calls from swagger, curl, etc...
+   ![Adding a user to Supabase](resources/adding-user.png?raw=true)
+   * Go to the Supabase dashboard
+   * Go to the `authentication` page
+   * Select `Manage` -> `users`
+   * Create a new user using via `Add user` -> `Create new user`
 
 3. Get and save a JWT token for that user with a curl command:
 
