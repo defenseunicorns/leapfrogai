@@ -4,7 +4,7 @@ from supabase_py_async import AsyncClient
 from fastapi import UploadFile
 
 
-class CRUDFileBucket():
+class CRUDFileBucket:
     """CRUD Operations for FileBucket."""
 
     def __init__(self, db: AsyncClient, model: type[UploadFile]):

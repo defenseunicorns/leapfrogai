@@ -21,6 +21,7 @@ from leapfrogai_api.routers.openai import (
 )
 from leapfrogai_api.utils import get_model_config
 
+
 # handle startup & shutdown tasks
 @asynccontextmanager
 async def lifespan(app: FastAPI):

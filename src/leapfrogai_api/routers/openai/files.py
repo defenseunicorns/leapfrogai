@@ -1,6 +1,5 @@
 """OpenAI Compliant Files API Router."""
 
-
 from fastapi import APIRouter, Depends, HTTPException, UploadFile, status
 from fastapi.security import HTTPBearer
 from openai.types import FileDeleted, FileObject
@@ -15,8 +14,8 @@ security = HTTPBearer()
 
 @router.post("")
 async def upload_file(
-        session: Session,
-        request: UploadFileRequest = Depends(UploadFileRequest.as_form),
+    session: Session,
+    request: UploadFileRequest = Depends(UploadFileRequest.as_form),
 ) -> FileObject:
     """Upload a file."""
 
@@ -40,9 +39,7 @@ async def upload_file(
 
     try:
         file_object = await crud_file_object.create(object_=file_object)
-        crud_file_bucket = CRUDFileBucket(
-            db=session, model=UploadFile
-        )
+        crud_file_bucket = CRUDFileBucket(db=session, model=UploadFile)
         await crud_file_bucket.upload(file=request.file, id_=file_object.id)
 
         return file_object
@@ -57,7 +54,7 @@ async def upload_file(
 
 @router.get("")
 async def list_files(
-        session: Session,
+    session: Session,
 ) -> ListFilesResponse:
     """List all files."""
     crud_file_object = CRUDFileObject(session)
@@ -71,8 +68,8 @@ async def list_files(
 
 @router.get("/{file_id}")
 async def retrieve_file(
-        session: Session,
-        file_id: str,
+    session: Session,
+    file_id: str,
 ) -> FileObject | None:
     """Retrieve a file."""
     crud_file_object = CRUDFileObject(session)
@@ -81,8 +78,8 @@ async def retrieve_file(
 
 @router.delete("/{file_id}")
 async def delete_file(
-        session: Session,
-        file_id: str,
+    session: Session,
+    file_id: str,
 ) -> FileDeleted:
     """Delete a file."""
 
@@ -91,9 +88,7 @@ async def delete_file(
 
     # We need to check if the RLS allowed the deletion before continuing with the bucket deletion
     if file_deleted:
-        crud_file_bucket = CRUDFileBucket(
-            db=session, model=UploadFile
-        )
+        crud_file_bucket = CRUDFileBucket(db=session, model=UploadFile)
         await crud_file_bucket.delete(id_=file_id)
 
     return FileDeleted(
@@ -105,14 +100,12 @@ async def delete_file(
 
 @router.get("/{file_id}/content")
 async def retrieve_file_content(
-        session: Session,
-        file_id: str,
+    session: Session,
+    file_id: str,
 ):
     """Retrieve the content of a file."""
     try:
-        crud_file_bucket = CRUDFileBucket(
-            db=session, model=UploadFile
-        )
+        crud_file_bucket = CRUDFileBucket(db=session, model=UploadFile)
         return await crud_file_bucket.download(id_=file_id)
     except FileNotFoundError as exc:
         raise HTTPException(

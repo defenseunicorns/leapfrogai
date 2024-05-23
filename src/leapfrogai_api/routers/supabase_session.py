@@ -11,7 +11,9 @@ from fastapi.security import HTTPAuthorizationCredentials, HTTPBearer
 security = HTTPBearer()
 
 
-async def init_supabase_client(auth_creds: Annotated[HTTPAuthorizationCredentials, Depends(security)]) -> AsyncClient:
+async def init_supabase_client(
+    auth_creds: Annotated[HTTPAuthorizationCredentials, Depends(security)],
+) -> AsyncClient:
     """
     Returns an authenticated Supabase client using the provided user's JWT token
 
@@ -21,19 +23,23 @@ async def init_supabase_client(auth_creds: Annotated[HTTPAuthorizationCredential
     Returns:
         user_client (AsyncClient): a client instantiated with a session associated with the JWT token
     """
-    
+
     client: AsyncClient = await create_client(
         supabase_key=os.getenv("SUPABASE_ANON_KEY"),
         supabase_url=os.getenv("SUPABASE_URL"),
         access_token=auth_creds.credentials,
-        options=ClientOptions(auto_refresh_token=False)
+        options=ClientOptions(auto_refresh_token=False),
     )
-    
-    # Set up a session for this client, a dummy refresh_token is used to prevent validation errors
-    await client.auth.set_session(access_token=auth_creds.credentials, refresh_token="dummy")
 
-    await validate_user_authorization(session=client, authorization=auth_creds.credentials)
-    
+    # Set up a session for this client, a dummy refresh_token is used to prevent validation errors
+    await client.auth.set_session(
+        access_token=auth_creds.credentials, refresh_token="dummy"
+    )
+
+    await validate_user_authorization(
+        session=client, authorization=auth_creds.credentials
+    )
+
     return client
 
 

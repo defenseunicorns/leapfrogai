@@ -10,9 +10,7 @@ ModelType = TypeVar("ModelType", bound=BaseModel)
 class CRUDBase(Generic[ModelType]):
     """CRUD Operations"""
 
-    def __init__(
-        self, db: AsyncClient, model: type[ModelType], table_name: str
-    ):
+    def __init__(self, db: AsyncClient, model: type[ModelType], table_name: str):
         self.model = model
         self.table_name = table_name
         self.db = db

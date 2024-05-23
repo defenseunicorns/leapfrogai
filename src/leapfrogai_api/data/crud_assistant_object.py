@@ -16,7 +16,12 @@ class AuthAssistant(Assistant):
 class CRUDAssistant(CRUDBase[AuthAssistant]):
     """CRUD Operations for Assistant"""
 
-    def __init__(self, db: AsyncClient, model: type[ModelType] = AuthAssistant, table_name: str = "assistant_objects"):
+    def __init__(
+        self,
+        db: AsyncClient,
+        model: type[ModelType] = AuthAssistant,
+        table_name: str = "assistant_objects",
+    ):
         super().__init__(db, model, table_name)
 
     async def create(self, object_: Assistant) -> AuthAssistant | None:
