@@ -8,7 +8,6 @@ WORKDIR /leapfrogai
 # NOTE: We are copying to this filename because installing 'optional extras' from a wheel requires the absolute path to the wheel file (instead of a wildcard whl)
 COPY build/*.whl build/
 COPY build/leapfrogai_api*.whl .
-RUN apt-get install libmagic1
 RUN pip install leapfrogai_api*.whl --no-index --find-links=build/
 
 FROM ghcr.io/defenseunicorns/leapfrogai/python:3.11-${ARCH}
