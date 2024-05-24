@@ -74,13 +74,35 @@ def test_routes():
         "/openai/v1/embeddings": ["POST"],
         "/openai/v1/audio/transcriptions": ["POST"],
         "/openai/v1/files": ["POST"],
+        "/openai/v1/assistants": ["POST"],
     }
+
+    assistants_routes = [
+        ("/openai/v1/assistants", "create_assistant", ["POST"]),
+        ("/openai/v1/assistants", "list_assistants", ["GET"]),
+        ("/openai/v1/assistants/{assistant_id}", "retrieve_assistant", ["GET"]),
+        ("/openai/v1/assistants/{assistant_id}", "modify_assistant", ["POST"]),
+        ("/openai/v1/assistants/{assistant_id}", "delete_assistant", ["DELETE"]),
+    ]
 
     actual_routes = app.routes
     for route in actual_routes:
         if hasattr(route, "path") and route.path in expected_routes:
             assert route.methods == set(expected_routes[route.path])
             del expected_routes[route.path]
+
+    for route, name, methods in assistants_routes:
+        found = False
+        for actual_route in actual_routes:
+            if (
+                hasattr(actual_route, "path")
+                and actual_route.path == route
+                and actual_route.name == name
+            ):
+                assert actual_route.methods == set(methods)
+                found = True
+                break
+        assert found, f"Missing route: {route}, {name}, {methods}"
 
     assert len(expected_routes) == 0
 
@@ -152,6 +174,19 @@ def test_chat_completion():
         assert "message" in response_choices[0]
         assert "content" in response_choices[0].get("message")
 
+        # parse finish reason
+        assert "finish_reason" in response_choices[0]
+        assert "stop" == response_choices[0].get("finish_reason")
+
+        # parse usage data
+        response_usage = response_obj.get("usage")
+        prompt_tokens = response_usage.get("prompt_tokens")
+        completion_tokens = response_usage.get("completion_tokens")
+        total_tokens = response_usage.get("total_tokens")
+        assert prompt_tokens == len(input_content)
+        assert completion_tokens == len(input_content)
+        assert total_tokens == len(input_content) * 2
+
         # validate that the repeater repeated
         assert response_choices[0].get("message").get("content") == input_content
 
@@ -197,6 +232,17 @@ def test_stream_chat_completion():
                     assert "content" in choices[0].get("delta")
                     assert choices[0].get("delta").get("content") == input_content
                     iter_length += 1
+                    # parse finish reason
+                    assert "finish_reason" in choices[0]
+                    assert "stop" == choices[0].get("finish_reason")
+                    # parse usage data
+                    response_usage = stream_response.get("usage")
+                    prompt_tokens = response_usage.get("prompt_tokens")
+                    completion_tokens = response_usage.get("completion_tokens")
+                    total_tokens = response_usage.get("total_tokens")
+                    assert prompt_tokens == len(input_content)
+                    assert completion_tokens == len(input_content)
+                    assert total_tokens == len(input_content) * 2
 
         # The repeater only response with 5 messages
         assert iter_length == 5
