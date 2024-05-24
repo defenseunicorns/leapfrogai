@@ -28,7 +28,7 @@ create table
     last_error jsonb,
     object text check (object in ('vector_store.file')),
     status text,
-    vector_store_id uuid references vector_store_objects (id) on delete cascade,
+    vector_store_id uuid references vector_store (id) on delete cascade,
     primary key (vector_store_id, id)
   );
 
@@ -37,7 +37,7 @@ create table
   vector_content (
     id uuid primary key DEFAULT uuid_generate_v4(),
     user_id uuid references auth.users not null,
-    vector_store_id uuid references vector_store_objects (id) on delete cascade,
+    vector_store_id uuid references vector_store (id) on delete cascade,
     file_id uuid references file_objects (id) on delete cascade,
     content text, -- corresponds to Document.pageContent
     metadata jsonb, -- corresponds to Document.metadata
@@ -55,8 +55,8 @@ begin
   from vector_store
   where vector_store_id = coalesce(new.vector_store_id, old.vector_store_id);
 
-  -- Update the bytes column in the vector_store_objects table
-  update vector_store_objects
+  -- Update the bytes column in the vector_store table
+  update vector_store
   set bytes = total_size
   where id = coalesce(new.vector_store_id, old.vector_store_id);
 
