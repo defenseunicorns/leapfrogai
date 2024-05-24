@@ -10,8 +10,9 @@ from fastapi.security import HTTPAuthorizationCredentials, HTTPBearer
 
 security = HTTPBearer()
 
+
 async def init_supabase_client(
-        auth_creds: Annotated[HTTPAuthorizationCredentials, Depends(security)],
+    auth_creds: Annotated[HTTPAuthorizationCredentials, Depends(security)],
 ) -> AsyncClient:
     """
     Returns an authenticated Supabase client using the provided user's JWT token
