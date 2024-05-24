@@ -1,7 +1,9 @@
 """Load a file and split it into chunks."""
 
-from filemime import filemime
 import os
+# This import is required for "magic" to work, see https://github.com/ahupp/python-magic/issues/233
+import pylibmagic  # noqa: F401
+import magic
 from langchain_community.document_loaders import (
     CSVLoader,
     Docx2txtLoader,
@@ -15,8 +17,6 @@ from langchain_text_splitters import RecursiveCharacterTextSplitter
 import leapfrogai_sdk as lfai
 from leapfrogai_api.utils import get_model_config
 from leapfrogai_api.backend.grpc_client import create_embeddings
-
-obj = filemime()
 
 HANDLERS = {
     "application/pdf": PyPDFLoader,
@@ -36,7 +36,7 @@ async def supported_mime_type(mime_type: str) -> bool:
 async def load_file(file_path: str) -> list[Document]:
     """Load a file and return a list of documents."""
 
-    mime_type = obj.load_file(file_path, mimeType=True)
+    mime_type = magic.from_file(file_path, mime=True)
 
     loader = HANDLERS.get(mime_type)
 
