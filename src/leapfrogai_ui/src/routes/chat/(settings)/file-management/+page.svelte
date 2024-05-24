@@ -27,6 +27,7 @@
   let selectedRowIds: string[] = [];
   let deleting = false;
   let active = selectedRowIds.length > 0;
+  let nonSelectableRowIds: string[] = [];
 
   $: rows = data.files;
   $: if (selectedRowIds.length === 0) active = false;
@@ -89,10 +90,9 @@
         subtitle: ''
       });
 
-      selectedRowIds = [];
-
       await invalidateAll();
     }
+    selectedRowIds = [];
     deleting = false;
   };
 
@@ -133,6 +133,7 @@
         created_at: null
       };
       rows = [newFile, ...rows]; // re-assign array to trigger update in table
+      nonSelectableRowIds = rows.map((row) => (row.status === 'uploading' ? row.id : ''));
     }
     submit(); //upload all files
   };
@@ -149,6 +150,7 @@
     <DataTable
       batchSelection={true}
       bind:selectedRowIds
+      bind:nonSelectableRowIds
       headers={[
         { key: 'filename', value: 'Name', width: '75%' },
         {
