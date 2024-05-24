@@ -27,13 +27,14 @@ A mostly OpenAI compliant API surface.
    * Replace `<anon-key>` with your anon-key which can be found in the environment variable `SUPABASE_ANON_KEY`
    * Replace `<email>`, and `<password>` with your design Supabase account credentials
 
-3. Get and save a JWT token for that user with a curl command:
+3. Get and save a JWT `access_token` for that user with a curl command:
 
     ``` bash
     curl -X POST 'http://localhost:54321/auth/v1/token?grant_type=password' \-H "apikey: <anon-key>" \-H "Content-Type: application/json" \-d '{ "email": "<email>", "password": "<password>"}'
     ```
 
     * Replace `<anon-key>`, `<email>`, and `<password>` with the values from Supabase.
+    * The `access_token` expires in 1 hour
 
 4. Setup environment variables:
     ``` bash
@@ -60,6 +61,7 @@ Also requires a JWT environment variable that is only used for tests:
 ``` bash
 export SUPABASE_USER_JWT="<your JWT>"
 ```
+
 
 From this directory run:
 
