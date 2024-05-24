@@ -14,10 +14,10 @@ dependencies = [
     "python-multipart >= 0.0.7", #indirect dep of FastAPI to receive form data for file uploads
     "watchfiles >= 0.21.0",
     "leapfrogai_sdk",
-    "supabase-py-async",
-    "langchain",
-    "langchain-community",
-    "unstructured[all-docs]",
+    "supabase-py-async >= 2.5.6",
+    "langchain >= 0.2.1",
+    "langchain-community >= 0.2.1",
+    "unstructured[all-docs] >= 0.14.2",
     "python-libmagic >= 0.4.0"
 ]
 requires-python = "~=3.11"
