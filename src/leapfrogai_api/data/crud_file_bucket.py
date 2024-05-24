@@ -3,15 +3,12 @@
 from supabase_py_async import AsyncClient
 from fastapi import UploadFile
 
-from leapfrogai_api.data.async_mixin import AsyncMixin
-from leapfrogai_api.routers.supabase_session import get_user_session
 
-
-class CRUDFileBucket(AsyncMixin):
+class CRUDFileBucket:
     """CRUD Operations for FileBucket."""
 
-    async def __ainit__(self, jwt: str, model: type[UploadFile]):
-        self.client: AsyncClient = await get_user_session(jwt)
+    def __init__(self, db: AsyncClient, model: type[UploadFile]):
+        self.client: AsyncClient = db
         self.model: type[UploadFile] = model
 
     async def upload(self, file: UploadFile, id_: str):

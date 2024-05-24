@@ -4,9 +4,7 @@ from pydantic import Field
 from openai.types.beta import Assistant
 from supabase_py_async import AsyncClient
 
-from leapfrogai_api.data.async_mixin import AsyncMixin
-from leapfrogai_api.data.crud_base import CRUDBase
-from leapfrogai_api.routers.supabase_session import get_user_session
+from leapfrogai_api.data.crud_base import CRUDBase, ModelType
 
 
 class AuthAssistant(Assistant):
@@ -15,18 +13,20 @@ class AuthAssistant(Assistant):
     user_id: str = Field(default="")
 
 
-class CRUDAssistant(AsyncMixin, CRUDBase[AuthAssistant]):
+class CRUDAssistant(CRUDBase[AuthAssistant]):
     """CRUD Operations for Assistant"""
 
-    async def __ainit__(self, jwt: str, table_name: str = "assistant_objects"):
-        db: AsyncClient = await get_user_session(jwt)
-        CRUDBase.__init__(
-            self, jwt=jwt, db=db, model=AuthAssistant, table_name=table_name
-        )
+    def __init__(
+        self,
+        db: AsyncClient,
+        model: type[ModelType] = AuthAssistant,
+        table_name: str = "assistant_objects",
+    ):
+        super().__init__(db, model, table_name)
 
     async def create(self, object_: Assistant) -> AuthAssistant | None:
         """Create a new assistant."""
-        user_id: str = (await self.db.auth.get_user(self.jwt)).user.id
+        user_id: str = (await self.db.auth.get_user()).user.id
         return await super().create(
             object_=AuthAssistant(user_id=user_id, **object_.model_dump())
         )
@@ -41,7 +41,7 @@ class CRUDAssistant(AsyncMixin, CRUDBase[AuthAssistant]):
 
     async def update(self, id_: str, object_: Assistant) -> AuthAssistant | None:
         """Update an assistant by its ID."""
-        user_id: str = (await self.db.auth.get_user(self.jwt)).user.id
+        user_id: str = (await self.db.auth.get_user()).user.id
         return await super().update(
             id_=id_, object_=AuthAssistant(user_id=user_id, **object_.model_dump())
         )

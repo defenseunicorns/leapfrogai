@@ -3,12 +3,10 @@
 from langchain_core.documents import Document
 from langchain_core.embeddings import Embeddings
 from supabase_py_async import AsyncClient
-from leapfrogai_api.routers.supabase_session import get_user_session
-from leapfrogai_api.data.async_mixin import AsyncMixin
 
 
 # Partially implements the Langchain Core VectorStore interface
-class AsyncSupabaseVectorStore(AsyncMixin):
+class AsyncSupabaseVectorStore():
     """An async vector store that uses Supabase as the backend.
 
     Args:
@@ -20,17 +18,16 @@ class AsyncSupabaseVectorStore(AsyncMixin):
 
     """
 
-    async def __ainit__(  # pylint: disable=arguments-differ
+    def __init__(
         self,
-        jwt: str,
+        db: AsyncClient,
         embedding: Embeddings | None = None,
         table_name: str = "vector_store",
         chunk_size: int = 500,
         query_name: str = "match_vectors",
     ) -> None:
         """Initializes the AsyncSupabaseVectorStore."""
-        self.client: AsyncClient = await get_user_session(jwt)
-        self.jwt = jwt
+        self.client: AsyncClient = db
         self.embedding: Embeddings = embedding
         self.table_name = table_name
         self.chunk_size = chunk_size
@@ -110,7 +107,7 @@ class AsyncSupabaseVectorStore(AsyncMixin):
         """
         vector = await self.embedding.aembed_query(query)
 
-        user_id: str = (await self.client.auth.get_user(self.jwt)).user.id
+        user_id: str = (await self.client.auth.get_user()).user.id
 
         params = {
             "query_embedding": vector,
@@ -171,7 +168,7 @@ class AsyncSupabaseVectorStore(AsyncMixin):
 
         """
 
-        user_id: str = (await self.client.auth.get_user(self.jwt)).user.id
+        user_id: str = (await self.client.auth.get_user()).user.id
 
         row: dict[str, any] = {
             "user_id": user_id,

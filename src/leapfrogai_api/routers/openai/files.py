@@ -1,14 +1,13 @@
 """OpenAI Compliant Files API Router."""
 
-from typing import Annotated
-
 from fastapi import APIRouter, Depends, HTTPException, UploadFile, status
-from fastapi.security import HTTPAuthorizationCredentials, HTTPBearer
+from fastapi.security import HTTPBearer
 from openai.types import FileDeleted, FileObject
 from leapfrogai_api.backend.types import ListFilesResponse, UploadFileRequest
 from leapfrogai_api.data.crud_file_object import CRUDFileObject
 from leapfrogai_api.data.crud_file_bucket import CRUDFileBucket
 from leapfrogai_api.backend.rag.document_loader import supported_mime_type
+from leapfrogai_api.routers.supabase_session import Session
 
 router = APIRouter(prefix="/openai/v1/files", tags=["openai/files"])
 security = HTTPBearer()
@@ -16,7 +15,7 @@ security = HTTPBearer()
 
 @router.post("")
 async def upload_file(
-    auth_creds: Annotated[HTTPAuthorizationCredentials, Depends(security)],
+    session: Session,
     request: UploadFileRequest = Depends(UploadFileRequest.as_form),
 ) -> FileObject:
     """Upload a file."""
@@ -43,13 +42,11 @@ async def upload_file(
             status_code=status.HTTP_400_BAD_REQUEST, detail="Failed to parse file"
         ) from exc
 
-    crud_file_object = await CRUDFileObject(auth_creds.credentials)
+    crud_file_object = CRUDFileObject(session)
 
     try:
         file_object = await crud_file_object.create(object_=file_object)
-        crud_file_bucket = await CRUDFileBucket(
-            jwt=auth_creds.credentials, model=UploadFile
-        )
+        crud_file_bucket = CRUDFileBucket(db=session, model=UploadFile)
         await crud_file_bucket.upload(file=request.file, id_=file_object.id)
 
         return file_object
@@ -64,10 +61,10 @@ async def upload_file(
 
 @router.get("")
 async def list_files(
-    auth_creds: Annotated[HTTPAuthorizationCredentials, Depends(security)],
+    session: Session,
 ) -> ListFilesResponse:
     """List all files."""
-    crud_file_object = await CRUDFileObject(auth_creds.credentials)
+    crud_file_object = CRUDFileObject(session)
     crud_response = await crud_file_object.list()
 
     return ListFilesResponse(
@@ -78,29 +75,27 @@ async def list_files(
 
 @router.get("/{file_id}")
 async def retrieve_file(
+    session: Session,
     file_id: str,
-    auth_creds: Annotated[HTTPAuthorizationCredentials, Depends(security)],
 ) -> FileObject | None:
     """Retrieve a file."""
-    crud_file_object = await CRUDFileObject(auth_creds.credentials)
+    crud_file_object = CRUDFileObject(session)
     return await crud_file_object.get(id_=file_id)
 
 
 @router.delete("/{file_id}")
 async def delete_file(
+    session: Session,
     file_id: str,
-    auth_creds: Annotated[HTTPAuthorizationCredentials, Depends(security)],
 ) -> FileDeleted:
     """Delete a file."""
 
-    crud_file_object = await CRUDFileObject(auth_creds.credentials)
+    crud_file_object = CRUDFileObject(session)
     file_deleted: bool = await crud_file_object.delete(id_=file_id)
 
     # We need to check if the RLS allowed the deletion before continuing with the bucket deletion
     if file_deleted:
-        crud_file_bucket = await CRUDFileBucket(
-            jwt=auth_creds.credentials, model=UploadFile
-        )
+        crud_file_bucket = CRUDFileBucket(db=session, model=UploadFile)
         await crud_file_bucket.delete(id_=file_id)
 
     return FileDeleted(
@@ -112,14 +107,12 @@ async def delete_file(
 
 @router.get("/{file_id}/content")
 async def retrieve_file_content(
+    session: Session,
     file_id: str,
-    auth_creds: Annotated[HTTPAuthorizationCredentials, Depends(security)],
 ):
     """Retrieve the content of a file."""
     try:
-        crud_file_bucket = await CRUDFileBucket(
-            jwt=auth_creds.credentials, model=UploadFile
-        )
+        crud_file_bucket = CRUDFileBucket(db=session, model=UploadFile)
         return await crud_file_bucket.download(id_=file_id)
     except FileNotFoundError as exc:
         raise HTTPException(

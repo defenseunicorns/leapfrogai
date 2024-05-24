@@ -2,14 +2,21 @@ import json
 import os
 import shutil
 import time
-from starlette.middleware.base import _CachedRequest
+from typing import Annotated, Optional
 
 import pytest
-from fastapi.testclient import TestClient
+from fastapi import Depends
 from fastapi.applications import BaseHTTPMiddleware
+from fastapi.security import HTTPAuthorizationCredentials, HTTPBearer
+from fastapi.testclient import TestClient
+from starlette.middleware.base import _CachedRequest
+from supabase_py_async.lib.client_options import ClientOptions
 
 import leapfrogai_api.backend.types as lfai_types
 from leapfrogai_api.main import app
+from leapfrogai_api.routers.supabase_session import init_supabase_client
+
+security = HTTPBearer()
 
 # Set environment variables that the TestClient will use
 LFAI_CONFIG_FILENAME = os.environ["LFAI_CONFIG_FILENAME"] = "repeater-test-config.yaml"
@@ -23,6 +30,28 @@ LFAI_CONFIG_FILEPATH = os.path.join(LFAI_CONFIG_PATH, LFAI_CONFIG_FILENAME)
 #########################
 
 
+class AsyncClient:
+    """Supabase client class."""
+
+    def __init__(
+        self,
+        supabase_url: str,
+        supabase_key: str,
+        access_token: Optional[str] = None,
+        options: ClientOptions = ClientOptions(),
+    ):
+        self.supabase_url = supabase_url
+        self.supabase_key = supabase_key
+        self.access_token = access_token
+        self.options = options
+
+
+async def mock_init_supabase_client(
+    auth_creds: Annotated[HTTPAuthorizationCredentials, Depends(security)],
+) -> AsyncClient:
+    return AsyncClient("", "", "", ClientOptions())
+
+
 async def pack_dummy_bearer_token(request: _CachedRequest, call_next):
     request.headers.__dict__["_list"].append(
         (
@@ -34,14 +63,15 @@ async def pack_dummy_bearer_token(request: _CachedRequest, call_next):
 
 
 @pytest.fixture
-def remove_auth_middleware():
+def dummy_auth_middleware():
+    app.dependency_overrides[init_supabase_client] = mock_init_supabase_client
     app.user_middleware.clear()
     app.middleware_stack = None
     app.add_middleware(BaseHTTPMiddleware, dispatch=pack_dummy_bearer_token)
     app.middleware_stack = app.build_middleware_stack()
 
 
-def test_config_load(remove_auth_middleware):
+def test_config_load(dummy_auth_middleware):
     """Test that the config is loaded correctly."""
     with TestClient(app) as client:
         response = client.get("/models")
@@ -53,7 +83,7 @@ def test_config_load(remove_auth_middleware):
         }
 
 
-def test_config_delete(tmp_path, remove_auth_middleware):
+def test_config_delete(tmp_path, dummy_auth_middleware):
     """Test that the config is deleted correctly."""
     # move repeater-test-config.yaml to temp dir so that we can remove it at a later step
     tmp_config_filepath = shutil.copyfile(
@@ -173,7 +203,7 @@ def test_healthz():
     os.environ.get("LFAI_RUN_REPEATER_TESTS") != "true",
     reason="LFAI_RUN_REPEATER_TESTS envvar was not set to true",
 )
-def test_embedding(remove_auth_middleware):
+def test_embedding(dummy_auth_middleware):
     """Test the embedding endpoint."""
     expected_embedding = [0.0 for _ in range(10)]
 
@@ -203,7 +233,7 @@ def test_embedding(remove_auth_middleware):
     os.environ.get("LFAI_RUN_REPEATER_TESTS") != "true",
     reason="LFAI_RUN_REPEATER_TESTS envvar was not set to true",
 )
-def test_chat_completion(remove_auth_middleware):
+def test_chat_completion(dummy_auth_middleware):
     """Test the chat completion endpoint."""
     with TestClient(app) as client:
         input_content = "this is the chat completion input."
@@ -249,7 +279,7 @@ def test_chat_completion(remove_auth_middleware):
     os.environ.get("LFAI_RUN_REPEATER_TESTS") != "true",
     reason="LFAI_RUN_REPEATER_TESTS envvar was not set to true",
 )
-def test_stream_chat_completion(remove_auth_middleware):
+def test_stream_chat_completion(dummy_auth_middleware):
     """Test the stream chat completion endpoint."""
     with TestClient(app) as client:
         input_content = "this is the stream chat completion input."

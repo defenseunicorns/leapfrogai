@@ -1,19 +1,16 @@
 """LeapfrogAI endpoints for RAG."""
 
-from typing import Annotated
-from fastapi import APIRouter, Depends
-from fastapi.security import HTTPAuthorizationCredentials, HTTPBearer
+from fastapi import APIRouter
 from leapfrogai_api.backend.rag.query import QueryService
 from leapfrogai_api.backend.types import RAGResponse
+from leapfrogai_api.routers.supabase_session import Session
 
 router = APIRouter(prefix="/leapfrogai/v1/rag", tags=["leapfrogai/rag"])
-
-security = HTTPBearer()
 
 
 @router.post("")
 async def query_rag(
-    auth_creds: Annotated[HTTPAuthorizationCredentials, Depends(security)],
+    session: Session,
     query: str,
     vector_store_id: str,
     k: int = 5,
@@ -30,7 +27,7 @@ async def query_rag(
     Returns:
         RAGResponse: The response from the RAG.
     """
-    query_service = QueryService(auth_creds.credentials)
+    query_service = QueryService(db=session)
 
     return await query_service.query_rag(
         query=query,

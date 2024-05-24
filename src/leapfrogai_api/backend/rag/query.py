@@ -1,3 +1,4 @@
+from supabase_py_async import AsyncClient
 from leapfrogai_api.data.supabase_vector_store import AsyncSupabaseVectorStore
 from leapfrogai_api.backend.rag.leapfrogai_embeddings import LeapfrogAIEmbeddings
 
@@ -5,9 +6,9 @@ from leapfrogai_api.backend.rag.leapfrogai_embeddings import LeapfrogAIEmbedding
 class QueryService:
     """Service for querying the RAG model."""
 
-    def __init__(self, jwt: str) -> None:
+    def __init__(self, db: AsyncClient) -> None:
         """Initializes the QueryService."""
-        self.jwt = jwt
+        self.db = db
 
     async def query_rag(self, query: str, vector_store_id: str, k: int = 5):
         """
@@ -22,7 +23,7 @@ class QueryService:
             dict: The response from the RAG model.
         """
         vector_store = await AsyncSupabaseVectorStore(
-            jwt=self.jwt,
+            db=self.db,
             embedding=LeapfrogAIEmbeddings(),
         )
 

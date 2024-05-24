@@ -1,34 +1,26 @@
 """CRUD Operations for VectorStoreFile."""
 
+from pydantic import Field
 from openai.types.beta.vector_stores import VectorStoreFile
 from supabase_py_async import AsyncClient
 from leapfrogai_api.data.crud_base import CRUDBase
-from leapfrogai_api.data.async_mixin import AsyncMixin
-from leapfrogai_api.routers.supabase_session import get_user_session
 
 
 class AuthVectorStoreFile(VectorStoreFile):
     """A wrapper for the VectorStoreFile that includes a user_id for auth"""
 
-    user_id: str = ""
+    user_id: str = Field(default="")
 
 
-class CRUDVectorStoreFile(AsyncMixin, CRUDBase[AuthVectorStoreFile]):
+class CRUDVectorStoreFile(CRUDBase[AuthVectorStoreFile]):
     """CRUD Operations for VectorStoreFile"""
 
-    async def __ainit__(  # pylint: disable=arguments-differ
-        self,
-        jwt: str,
-        table_name: str = "vector_store_file_objects",
-    ):
-        db: AsyncClient = await get_user_session(jwt)
-        CRUDBase.__init__(
-            self, jwt=jwt, db=db, model=AuthVectorStoreFile, table_name=table_name
-        )
+    def __init__(self, db: AsyncClient, table_name: str = "vector_store_file_objects"):
+        super().__init__(db=db, model=AuthVectorStoreFile, table_name=table_name)
 
     async def create(self, object_: VectorStoreFile) -> AuthVectorStoreFile | None:
         """Create a new vector store file."""
-        user_id: str = (await self.db.auth.get_user(self.jwt)).user.id
+        user_id: str = (await self.db.auth.get_user()).user.id
         return await super().create(
             object_=AuthVectorStoreFile(user_id=user_id, **object_.model_dump())
         )

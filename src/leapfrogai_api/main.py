@@ -4,8 +4,8 @@ import asyncio
 import logging
 from contextlib import asynccontextmanager
 
-from fastapi import FastAPI, Request, HTTPException
-from fastapi.responses import JSONResponse
+
+from fastapi import FastAPI
 
 from leapfrogai_api.routers.base import router as base_router
 from leapfrogai_api.routers.leapfrogai import rag
@@ -19,10 +19,6 @@ from leapfrogai_api.routers.openai import (
     files,
     threads,
     vector_stores,
-)
-from leapfrogai_api.routers.supabase_session import (
-    validate_user_authorization,
-    init_supabase_client,
 )
 from leapfrogai_api.utils import get_model_config
 
@@ -41,24 +37,6 @@ async def lifespan(app: FastAPI):
 
 
 app = FastAPI(lifespan=lifespan)
-
-skip_endpoint_auth = ["/healthz", "/docs", "/openapi.json"]
-
-
-@app.middleware("http")
-async def verify_supabase_auth(request: Request, call_next):
-    if request.url.path in skip_endpoint_auth:
-        return await call_next(request)
-    else:
-        anon_session = await init_supabase_client()
-        authorization_header = request.headers.get("authorization")
-
-        try:
-            await validate_user_authorization(anon_session, authorization_header)
-        except HTTPException as e:
-            return JSONResponse(status_code=e.status_code, content={})
-
-        return await call_next(request)
 
 
 app.include_router(base_router)

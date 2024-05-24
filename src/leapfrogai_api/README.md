@@ -9,7 +9,7 @@ A mostly OpenAI compliant API surface.
 
 ## Local Development
 
-1. Create a local Supabase instance (requires [[Supabase CLI](https://supabase.com/docs/guides/cli/getting-started)):
+1. Create a local Supabase instance (requires [Supabase CLI](https://supabase.com/docs/guides/cli/getting-started)):
 
     ``` bash
     supabase start # from /leapfrogai
@@ -19,7 +19,13 @@ A mostly OpenAI compliant API surface.
     supabase status # to check status and see your keys
     ```
 
-2. Go to your local Supabase dashboard and create a test user.
+2. Create a user in Supabase if you don't already have one to enable making authenticated calls from swagger, curl, etc...
+   ```bash
+   curl -X POST 'https://supabase-kong.uds.dev/auth/v1/signup' \-H "apikey: <anon-key>" \-H "Content-Type: application/json" \-d '{ "email": "<email>", "password": "<password>", "confirmPassword": "<password>"}'
+   ```
+   
+   * Replace `<anon-key>` with your anon-key which can be found in the environment variable `SUPABASE_ANON_KEY`
+   * Replace `<email>`, and `<password>` with your design Supabase account credentials
 
 3. Get and save a JWT token for that user with a curl command:
 
@@ -27,7 +33,7 @@ A mostly OpenAI compliant API surface.
     curl -X POST 'https://supabase-kong.uds.dev/auth/v1/token?grant_type=password' \-H "apikey: <anon-key>" \-H "Content-Type: application/json" \-d '{ "email": "<email>", "password": "<password>"}'
     ```
 
-    * Replace `<anon-key>`, `<username>`, and `<password>` with the values from Supabase.
+    * Replace `<anon-key>`, `<email>`, and `<password>` with the values from Supabase.
 
 4. Setup environment variables:
     ``` bash

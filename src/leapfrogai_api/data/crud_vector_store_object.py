@@ -4,8 +4,6 @@ from pydantic import Field
 from openai.types.beta import VectorStore
 from supabase_py_async import AsyncClient
 from leapfrogai_api.data.crud_base import CRUDBase
-from leapfrogai_api.data.async_mixin import AsyncMixin
-from leapfrogai_api.routers.supabase_session import get_user_session
 
 
 class AuthVectorStoreObject(VectorStore):
@@ -14,22 +12,15 @@ class AuthVectorStoreObject(VectorStore):
     user_id: str = Field(default="")
 
 
-class CRUDVectorStore(AsyncMixin, CRUDBase[AuthVectorStoreObject]):
+class CRUDVectorStore(CRUDBase[AuthVectorStoreObject]):
     """CRUD Operations for VectorStore"""
-
-    async def __ainit__(  # pylint: disable=arguments-differ
-        self,
-        jwt: str,
-        table_name: str = "vector_store_objects",
-    ):
-        db: AsyncClient = await get_user_session(jwt)
-        CRUDBase.__init__(
-            self, jwt=jwt, db=db, model=AuthVectorStoreObject, table_name=table_name
-        )
+    
+    async def __init__(self, db: AsyncClient, table_name: str = "vector_store_objects"):
+        super().__init__(db=db, model=AuthVectorStoreObject, table_name=table_name)
 
     async def create(self, object_: VectorStore) -> AuthVectorStoreObject | None:
         """Create new vector store."""
-        user_id: str = (await self.db.auth.get_user(self.jwt)).user.id
+        user_id: str = (await self.db.auth.get_user()).user.id
         return await super().create(
             object_=AuthVectorStoreObject(user_id=user_id, **object_.model_dump())
         )

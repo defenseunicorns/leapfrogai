@@ -26,10 +26,10 @@ security = HTTPBearer()
 @router.post("")
 async def create_vector_store(
     request: CreateVectorStoreRequest,
-    auth_creds: Annotated[HTTPAuthorizationCredentials, Depends(security)],
+    session: Session,
 ) -> VectorStore:
     """Create a vector store."""
-    crud_vector_store = await CRUDVectorStore(auth_creds.credentials)
+    crud_vector_store = await CRUDVectorStore(db=session)
 
     vector_store_object = VectorStore(
         id="",  # Leave blank to have Postgres generate a UUID
@@ -49,7 +49,7 @@ async def create_vector_store(
     try:
         new_vector_store = await crud_vector_store.create(object_=vector_store_object)
         if request.file_ids != []:
-            indexing_service = IndexingService(auth_creds.credentials)
+            indexing_service = IndexingService(db=session)
             for file_id in request.file_ids:
                 response = await indexing_service.index_file(
                     vector_store_id=new_vector_store.id, file_id=file_id
@@ -81,11 +81,11 @@ async def create_vector_store(
 
 @router.get("")
 async def list_vector_stores(
-    auth_creds: Annotated[HTTPAuthorizationCredentials, Depends(security)],  # pylint: disable=unused-argument
+    session: Session,
 ) -> ListVectorStoresResponse:
     """List all the vector stores."""
 
-    crud_vector_store = await CRUDVectorStore(auth_creds.credentials)
+    crud_vector_store = await CRUDVectorStore(db=session)
     crud_response = await crud_vector_store.list()
 
     return ListVectorStoresResponse(
@@ -97,11 +97,11 @@ async def list_vector_stores(
 @router.get("/{vector_store_id}")
 async def retrieve_vector_store(
     vector_store_id: str,
-    auth_creds: Annotated[HTTPAuthorizationCredentials, Depends(security)],  # pylint: disable=unused-argument
+    session: Session,
 ) -> VectorStore | None:
     """Retrieve a vector store."""
 
-    crud_vector_store = await CRUDVectorStore(auth_creds.credentials)
+    crud_vector_store = await CRUDVectorStore(db=session)
     return await crud_vector_store.get(id_=vector_store_id)
 
 
@@ -109,10 +109,10 @@ async def retrieve_vector_store(
 async def modify_vector_store(
     vector_store_id: str,
     request: ModifyVectorStoreRequest,
-    auth_creds: Annotated[HTTPAuthorizationCredentials, Depends(security)],  # pylint: disable=unused-argument
+    session: Session,
 ) -> VectorStore:
     """Modify a vector store."""
-    crud_vector_store = await CRUDVectorStore(auth_creds.credentials)
+    crud_vector_store = await CRUDVectorStore(db=session)
 
     if not (old_vector_store := await crud_vector_store.get(id_=vector_store_id)):
         raise HTTPException(
@@ -147,7 +147,7 @@ async def modify_vector_store(
 
     try:
         if request.file_ids != []:
-            indexing_service = IndexingService(auth_creds.credentials)
+            indexing_service = IndexingService(db=session)
             for file_id in request.file_ids:
                 response = await indexing_service.index_file(
                     vector_store_id=vector_store_id, file_id=file_id
@@ -243,11 +243,11 @@ async def list_vector_store_files(
 async def retrieve_vector_store_file(
     vector_store_id: str,
     file_id: str,
-    auth_creds: Annotated[HTTPAuthorizationCredentials, Depends(security)],  # pylint: disable=unused-argument
+    session: Session,
 ) -> VectorStoreFile:
     """Retrieve a file in a vector store."""
 
-    crud_vector_store_file = CRUDVectorStoreFile(model=VectorStoreFile)
+    crud_vector_store_file = CRUDVectorStoreFile(db=session)
     return await crud_vector_store_file.get(
         vector_store_id=vector_store_id,
         file_id=file_id,
@@ -259,16 +259,15 @@ async def delete_vector_store_file(
     session: Session,
     vector_store_id: str,
     file_id: str,
-    auth_creds: Annotated[HTTPAuthorizationCredentials, Depends(security)],  # pylint: disable=unused-argument
 ) -> VectorStoreFileDeleted:
     """Delete a file in a vector store."""
 
-    vector_store = AsyncSupabaseVectorStore(client=session)
+    vector_store = AsyncSupabaseVectorStore(db=session)
     vectors_deleted = await vector_store.adelete_file(
         vector_store_id=vector_store_id, file_id=file_id
     )
 
-    crud_vector_store_file = await CRUDVectorStoreFile(auth_creds.credentials)
+    crud_vector_store_file = await CRUDVectorStoreFile(db=session)
 
     vector_store_file_deleted = await crud_vector_store_file.delete(
         vector_store_id=vector_store_id, file_id=file_id
