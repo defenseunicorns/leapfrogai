@@ -20,7 +20,7 @@ const config = {
       $assets: 'src/lib/assets',
       $schemas: 'src/lib/schemas',
       $constants: 'src/lib/constants',
-      $testUtils: 'testUtils',
+      $testUtils: 'testUtils'
     }
   }
 };
