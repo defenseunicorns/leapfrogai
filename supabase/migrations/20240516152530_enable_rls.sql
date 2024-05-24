@@ -23,7 +23,7 @@ create policy "Individuals can delete their own file_objects." on file_objects f
     delete using (auth.uid() = user_id);
 
 -- Policies for file_bucket
-create policy "Individuals can add files to file_bucket."
+create policy "Any authenticated individual can add files to file_bucket."
 on storage.objects for
     insert to authenticated with check (bucket_id = 'file_bucket');
 create policy "Individuals can view their own files in the file_bucket."
