@@ -26,7 +26,7 @@ async def create_vector_store(
     session: Session,
 ) -> VectorStore:
     """Create a vector store."""
-    crud_vector_store = CRUDVectorStore(db=session)
+    crud_vector_store = CRUDVectorStore(db=session, table_name="vector_store")
 
     vector_store = VectorStore(
         id="",  # Leave blank to have Postgres generate a UUID
