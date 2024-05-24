@@ -18,7 +18,7 @@ dependencies = [
     "langchain >= 0.2.1",
     "langchain-community >= 0.2.1",
     "unstructured[all-docs] >= 0.14.2",
-    "python-libmagic >= 0.4.0"
+    "python-magic >= 0.4.27"
 ]
 requires-python = "~=3.11"
 
