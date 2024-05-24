@@ -1,4 +1,4 @@
-import { fireEvent, render, screen } from '@testing-library/svelte';
+import { fireEvent, render, screen, waitFor } from '@testing-library/svelte';
 import FileManagementPage from './+page.svelte';
 import { getFakeFiles } from '../../../../../testUtils/fakeData';
 import userEvent from '@testing-library/user-event';
@@ -6,7 +6,7 @@ import { formatDate } from '$helpers/dates';
 import { load } from './+page.server';
 import { sessionMock } from '$lib/mocks/supabase-mocks';
 import { mockOpenAI } from '../../../../../vitest-setup';
-import { mockDeleteFile } from '$lib/mocks/chat-mocks';
+import { mockDeleteFile, mockDeleteFileWithDelay } from '$lib/mocks/file-mocks';
 import { vi } from 'vitest';
 import { toastStore } from '$stores';
 
@@ -84,5 +84,36 @@ describe('file management', () => {
       title: 'File Deleted',
       subtitle: ''
     });
+  });
+
+  it('disables the delete button when there are no rows selected', async () => {
+    // Note - the delete button is hidden when there are no rows selected, but still on the page so it needs to be
+    // disabled
+    const files = getFakeFiles();
+    mockOpenAI.setFiles(files);
+
+    const data = await load({ locals: { getSession: sessionMock } });
+    render(FileManagementPage, { data });
+
+    const deleteBtn = screen.getByRole('button', { name: /delete/i });
+    expect(deleteBtn).toBeDisabled();
+  });
+  it('replaces the delete button with a loading spinner while deleting', async () => {
+    mockDeleteFileWithDelay();
+    const files = getFakeFiles();
+    mockOpenAI.setFiles(files);
+
+    const data = await load({ locals: { getSession: sessionMock } });
+    render(FileManagementPage, { data });
+
+    const deleteBtn = screen.getByRole('button', { name: /delete/i });
+
+    const checkboxes = screen.getAllByRole('checkbox');
+
+    await fireEvent.click(checkboxes[0]);
+    expect(screen.queryByTestId('delete-pending')).not.toBeInTheDocument();
+    await userEvent.click(screen.getByRole('button', { name: /delete/i }));
+    expect(deleteBtn).not.toBeInTheDocument();
+    expect(screen.queryByTestId('delete-pending')).toBeInTheDocument();
   });
 });

@@ -26,9 +26,10 @@
   let filteredRowIds: string[] = [];
   let selectedRowIds: string[] = [];
   let deleting = false;
-  let active = false;
+  let active = selectedRowIds.length > 0;
 
   $: rows = data.files;
+  $: if (selectedRowIds.length === 0) active = false;
 
   const { enhance, submit, submitting } = superForm(data.form, {
     validators: yup(filesSchema),
@@ -73,9 +74,6 @@
         'Content-Type': 'application/json'
       }
     });
-
-    selectedRowIds = [];
-
     if (res.ok) {
       toastStore.addToast({
         kind: 'success',
@@ -90,6 +88,8 @@
         title: `Error Deleting ${isMultipleFiles ? 'Files' : 'File'}`,
         subtitle: ''
       });
+
+      selectedRowIds = [];
 
       await invalidateAll();
     }
@@ -170,10 +170,12 @@
         >
           {#if deleting}
             <div class="deleting">
-              <Loading withOverlay={false} small />
+              <Loading withOverlay={false} small data-testid="delete-pending" />
             </div>
           {:else}
-            <Button icon={TrashCan} on:click={handleDelete} disabled={deleting}>Delete</Button>
+            <Button icon={TrashCan} on:click={handleDelete} disabled={selectedRowIds.length === 0}
+              >Delete</Button
+            >
           {/if}
         </ToolbarBatchActions>
         <ToolbarContent>

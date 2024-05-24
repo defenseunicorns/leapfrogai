@@ -81,7 +81,3 @@ export const mockEditThreadLabel = () => {
 export const mockEditThreadLabelError = () => {
   server.use(http.put('/api/threads/update/label', () => new HttpResponse(null, { status: 500 })));
 };
-
-export const mockDeleteFile = () => {
-  server.use(http.delete('/api/files/delete', () => new HttpResponse(null, { status: 204 })));
-};
