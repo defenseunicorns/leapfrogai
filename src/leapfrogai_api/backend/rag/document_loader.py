@@ -1,7 +1,7 @@
 """Load a file and split it into chunks."""
-
+from filemime import filemime
+obj = filemime()
 import os
-import magic
 from langchain_community.document_loaders import (
     CSVLoader,
     Docx2txtLoader,
@@ -35,7 +35,7 @@ async def supported_mime_type(mime_type: str) -> bool:
 async def load_file(file_path: str) -> list[Document]:
     """Load a file and return a list of documents."""
 
-    mime_type = magic.from_file(file_path, mime=True)
+    mime_type = obj.load_file(file_path, mimeType=True)
 
     loader = HANDLERS.get(mime_type)
 
