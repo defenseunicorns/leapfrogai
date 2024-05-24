@@ -85,7 +85,7 @@ test('it can delete multiple files', async ({ page }) => {
   await checkboxes[1].check();
   await checkboxes[2].check();
   await page.getByText('Delete').click();
-  await expect(page.getByText('Files deleted')).toBeVisible();
+  await expect(page.getByText('Files Deleted')).toBeVisible();
 });
 
 test('shows an error toast when there is an error deleting a file', async ({ page }) => {

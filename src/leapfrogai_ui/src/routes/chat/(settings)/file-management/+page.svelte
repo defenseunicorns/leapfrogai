@@ -79,7 +79,7 @@
     if (res.ok) {
       toastStore.addToast({
         kind: 'success',
-        title: `${isMultipleFiles ? 'Files' : 'File'} deleted`,
+        title: `${isMultipleFiles ? 'Files' : 'File'} Deleted`,
         subtitle: ''
       });
 
