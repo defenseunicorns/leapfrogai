@@ -33,6 +33,7 @@ A mostly OpenAI compliant API surface.
     ```
 
     * Replace `<anon-key>`, `<email>`, and `<password>` with the values from Supabase.
+    * Optionally you can save the `refresh_token` that is returned by the curl request and use the JWT after expiry.
 
 4. Setup environment variables:
     ``` bash
