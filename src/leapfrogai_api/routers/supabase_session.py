@@ -13,7 +13,7 @@ security = HTTPBearer()
 
 async def init_supabase_client(
     auth_creds: Annotated[HTTPAuthorizationCredentials, Depends(security)],
-    refresh_token: str = Header(default="dummy"), 
+    refresh_token: str = Header(default="dummy"),
 ) -> AsyncClient:
     """
     Returns an authenticated Supabase client using the provided user's JWT token
