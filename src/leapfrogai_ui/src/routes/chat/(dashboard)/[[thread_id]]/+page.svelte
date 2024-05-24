@@ -3,7 +3,7 @@
   import { Button } from 'carbon-components-svelte';
   import { afterUpdate, onMount, tick } from 'svelte';
   import { threadsStore, toastStore } from '$stores';
-  import { ArrowRight, Attachment, StopFilledAlt } from 'carbon-icons-svelte';
+  import { ArrowRight, StopFilledAlt } from 'carbon-icons-svelte';
   import { type Message as AIMessage, useChat } from 'ai/svelte';
   import { page } from '$app/stores';
   import { beforeNavigate } from '$app/navigation';
@@ -172,7 +172,6 @@
 
   <form on:submit={onSubmit}>
     <div class="chat-form-container">
-      <Button icon={Attachment} kind="ghost" size="small" iconDescription="Attach File" />
       <LFTextArea
         value={input}
         {onSubmit}

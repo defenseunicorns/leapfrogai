@@ -13,7 +13,7 @@
       name: 'File Management'
     }
   ];
-  const isCurrentPage = (path: string) => $page.url.pathname === path;
+  $: isCurrentPage = (path: string) => $page.url.pathname === path;
 </script>
 
 <Content>

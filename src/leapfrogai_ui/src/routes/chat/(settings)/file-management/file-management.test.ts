@@ -69,10 +69,6 @@ describe('file management', () => {
     const data = await load({ locals: { getSession: sessionMock } });
     render(FileManagementPage, { data });
 
-    const settingsBtn = screen.getByTestId('file-management-settings');
-    await userEvent.click(settingsBtn);
-
-    await userEvent.click(screen.getByRole('menuitem', { name: /edit/i }));
     const checkboxes = screen.getAllByRole('checkbox');
 
     await fireEvent.click(checkboxes[0]);

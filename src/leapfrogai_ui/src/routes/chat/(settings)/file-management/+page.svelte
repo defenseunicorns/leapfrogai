@@ -7,8 +7,6 @@
     Toolbar,
     ToolbarBatchActions,
     ToolbarContent,
-    ToolbarMenu,
-    ToolbarMenuItem,
     ToolbarSearch
   } from 'carbon-components-svelte';
   import type { FileObject } from 'openai/resources/files';
@@ -149,8 +147,7 @@
   <div class="title">File Management</div>
   <form method="POST" enctype="multipart/form-data" use:enhance>
     <DataTable
-      selectable={active}
-      batchSelection={active}
+      batchSelection={true}
       bind:selectedRowIds
       headers={[
         { key: 'filename', value: 'Name', width: '75%' },
@@ -191,15 +188,7 @@
               );
             }}
           />
-          <ToolbarMenu data-testid="file-management-settings"
-            ><ToolbarMenuItem
-              data-testid="edit-btn"
-              on:click={(e) => {
-                e.preventDefault();
-                active = true;
-              }}>Edit</ToolbarMenuItem
-            ></ToolbarMenu
-          >
+
           <FileUploaderButton
             bind:files={uploadedFiles}
             name="files"
@@ -215,18 +204,18 @@
       <svelte:fragment slot="cell" let:row let:cell>
         {#if cell.key === 'filename' && row.status === 'uploading'}
           <div class="item-with-status uploading">
-            <Loading withOverlay={false} small />
+            <Loading data-testid="uploading-file-icon" withOverlay={false} small />
             {cell.value}
           </div>
         {:else if cell.key === 'filename' && row.status === 'complete'}
           <div class="item-with-status">
-            <CheckmarkFilled color="#24a148" />
+            <CheckmarkFilled data-testid="file-uploaded-icon" color="#24a148" />
 
             {cell.value}
           </div>
         {:else if cell.key === 'filename' && row.status === 'error'}
           <div class="item-with-status error">
-            <ErrorFilled color="#DA1E28" />
+            <ErrorFilled data-testid="file-uploaded-error-icon" color="#DA1E28" />
             {cell.value}
           </div>
         {:else if cell.key === 'created_at'}

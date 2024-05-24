@@ -1,6 +1,6 @@
 import { expect, test } from './fixtures';
 import { getFakeAssistantInput } from '../testUtils/fakeData';
-import { deleteAssistantByName, uploadAvatar } from './helpers';
+import { deleteAssistant, uploadAvatar } from './helpers';
 import { NO_FILE_ERROR_TEXT } from '../src/lib/constants/index';
 
 test('it can search for and choose a pictogram as an avatar', async ({ page }) => {
@@ -31,7 +31,7 @@ test('it can search for and choose a pictogram as an avatar', async ({ page }) =
   await expect(pictogram).toBeVisible();
 
   // cleanup
-  await deleteAssistantByName(assistantInput.name);
+  await deleteAssistant(page, assistantInput.name);
 });
 
 // Note - once photo is uploaded, playwright is changing the url for the file so we cannot test the name of the image
@@ -60,7 +60,7 @@ test('it can upload an image as an avatar', async ({ page }) => {
   await expect(page.getByTestId(`assistant-tile-${assistantInput.name}`)).toBeVisible();
 
   // cleanup
-  await deleteAssistantByName(assistantInput.name);
+  await deleteAssistant(page, assistantInput.name);
 });
 
 test('it can change an image uploaded as an avatar', async ({ page }) => {
