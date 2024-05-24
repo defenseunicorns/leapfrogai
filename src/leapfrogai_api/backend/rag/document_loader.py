@@ -1,8 +1,6 @@
 """Load a file and split it into chunks."""
 
 from filemime import filemime
-
-obj = filemime()
 import os
 from langchain_community.document_loaders import (
     CSVLoader,
@@ -18,6 +16,7 @@ import leapfrogai_sdk as lfai
 from leapfrogai_api.utils import get_model_config
 from leapfrogai_api.backend.grpc_client import create_embeddings
 
+obj = filemime()
 
 HANDLERS = {
     "application/pdf": PyPDFLoader,
