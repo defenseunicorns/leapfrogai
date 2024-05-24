@@ -4,7 +4,7 @@ create extension if not exists vector;
 
 -- Create a table to store the OpenAI Vector Store Objects
 create table
-  vector_store_objects (
+  vector_store (
     id uuid primary key DEFAULT uuid_generate_v4(),
     user_id uuid references auth.users not null,
     bytes bigint,
@@ -21,7 +21,7 @@ create table
 
 -- Create a table to store the OpenAI Vector Store File Objects
 create table
-  vector_store_file_objects (
+  vector_store_file (
     id uuid references file_objects (id) on delete cascade,
     user_id uuid references auth.users not null,
     created_at bigint default extract(epoch from now()) not null,
@@ -34,7 +34,7 @@ create table
 
 -- Create a table to store your documents
 create table
-  vector_store (
+  vector_content (
     id uuid primary key DEFAULT uuid_generate_v4(),
     user_id uuid references auth.users not null,
     vector_store_id uuid references vector_store_objects (id) on delete cascade,

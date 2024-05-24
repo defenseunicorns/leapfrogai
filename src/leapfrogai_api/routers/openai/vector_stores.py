@@ -2,9 +2,7 @@
 
 import time
 import logging
-from typing import Annotated
-from fastapi import APIRouter, Depends, HTTPException, status
-from fastapi.security import HTTPAuthorizationCredentials, HTTPBearer
+from fastapi import APIRouter, HTTPException, status
 from openai.types.beta import VectorStore, VectorStoreDeleted
 from openai.types.beta.vector_store import FileCounts
 from openai.types.beta.vector_stores import VectorStoreFile, VectorStoreFileDeleted
@@ -20,7 +18,6 @@ from leapfrogai_api.data.supabase_vector_store import AsyncSupabaseVectorStore
 from leapfrogai_api.routers.supabase_session import Session
 
 router = APIRouter(prefix="/openai/v1/vector_stores", tags=["openai/vector_stores"])
-security = HTTPBearer()
 
 
 @router.post("")
@@ -29,7 +26,7 @@ async def create_vector_store(
     session: Session,
 ) -> VectorStore:
     """Create a vector store."""
-    crud_vector_store = await CRUDVectorStore(db=session)
+    crud_vector_store = CRUDVectorStore(db=session)
 
     vector_store_object = VectorStore(
         id="",  # Leave blank to have Postgres generate a UUID
@@ -85,7 +82,7 @@ async def list_vector_stores(
 ) -> ListVectorStoresResponse:
     """List all the vector stores."""
 
-    crud_vector_store = await CRUDVectorStore(db=session)
+    crud_vector_store = CRUDVectorStore(db=session)
     crud_response = await crud_vector_store.list()
 
     return ListVectorStoresResponse(
@@ -101,7 +98,7 @@ async def retrieve_vector_store(
 ) -> VectorStore | None:
     """Retrieve a vector store."""
 
-    crud_vector_store = await CRUDVectorStore(db=session)
+    crud_vector_store = CRUDVectorStore(db=session)
     return await crud_vector_store.get(id_=vector_store_id)
 
 
@@ -112,7 +109,7 @@ async def modify_vector_store(
     session: Session,
 ) -> VectorStore:
     """Modify a vector store."""
-    crud_vector_store = await CRUDVectorStore(db=session)
+    crud_vector_store = CRUDVectorStore(db=session)
 
     if not (old_vector_store := await crud_vector_store.get(id_=vector_store_id)):
         raise HTTPException(
@@ -183,11 +180,11 @@ async def modify_vector_store(
 @router.delete("/{vector_store_id}")
 async def delete_vector_store(
     vector_store_id: str,
-    auth_creds: Annotated[HTTPAuthorizationCredentials, Depends(security)],
+    session: Session,
 ) -> VectorStoreDeleted:
     """Delete a vector store."""
 
-    crud_vector_store = await CRUDVectorStore(auth_creds.credentials)
+    crud_vector_store = CRUDVectorStore(db=session)
 
     vector_store_deleted = await crud_vector_store.delete(id_=vector_store_id)
     return VectorStoreDeleted(
@@ -201,12 +198,12 @@ async def delete_vector_store(
 async def create_vector_store_file(
     vector_store_id: str,
     file_id: str,
-    auth_creds: Annotated[HTTPAuthorizationCredentials, Depends(security)],
+    session: Session,
 ) -> VectorStoreFile:
     """Create a file in a vector store."""
 
     try:
-        indexing_service = IndexingService(auth_creds.credentials)
+        indexing_service = IndexingService(db=session)
         vector_store_file = await indexing_service.index_file(
             vector_store_id=vector_store_id, file_id=file_id
         )
@@ -221,12 +218,12 @@ async def create_vector_store_file(
 @router.get("/{vector_store_id}/files")
 async def list_vector_store_files(
     vector_store_id: str,
-    auth_creds: Annotated[HTTPAuthorizationCredentials, Depends(security)],
+    session: Session,
 ) -> list[VectorStoreFile]:
     """List all the files in a vector store."""
 
     try:
-        crud_vector_store_file = await CRUDVectorStoreFile(auth_creds.credentials)
+        crud_vector_store_file = CRUDVectorStoreFile(db=session)
         vector_store_files = await crud_vector_store_file.list(
             vector_store_id=vector_store_id
         )
@@ -267,7 +264,7 @@ async def delete_vector_store_file(
         vector_store_id=vector_store_id, file_id=file_id
     )
 
-    crud_vector_store_file = await CRUDVectorStoreFile(db=session)
+    crud_vector_store_file = CRUDVectorStoreFile(db=session)
 
     vector_store_file_deleted = await crud_vector_store_file.delete(
         vector_store_id=vector_store_id, file_id=file_id

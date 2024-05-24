@@ -1,5 +1,6 @@
 """Test the API endpoints for assistants."""
 
+import os
 import pytest
 from fastapi import Response, status
 from fastapi.testclient import TestClient
@@ -13,7 +14,22 @@ from leapfrogai_api.routers.openai.vector_stores import router
 
 vector_store_response: Response
 
-client = TestClient(router)
+
+class MissingEnvironmentVariable(Exception):
+    pass
+
+
+headers: dict[str, str] = {}
+
+try:
+    headers = {"Authorization": f"Bearer {os.environ['SUPABASE_USER_JWT']}"}
+except KeyError as exc:
+    raise MissingEnvironmentVariable(
+        "SUPABASE_USER_JWT must be defined for the test to pass. "
+        "Please check the api README for instructions on obtaining this token."
+    ) from exc
+
+client = TestClient(router, headers=headers)
 
 
 @pytest.fixture(scope="session", autouse=True)
