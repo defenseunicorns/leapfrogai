@@ -15,7 +15,7 @@ class AuthVectorStoreFile(VectorStoreFile):
 class CRUDVectorStoreFile(CRUDBase[AuthVectorStoreFile]):
     """CRUD Operations for VectorStoreFile"""
 
-    def __init__(self, db: AsyncClient, table_name: str = "vector_store_file_objects"):
+    def __init__(self, db: AsyncClient, table_name: str = "vector_store_file"):
         super().__init__(db=db, model=AuthVectorStoreFile, table_name=table_name)
 
     async def create(self, object_: VectorStoreFile) -> AuthVectorStoreFile | None:

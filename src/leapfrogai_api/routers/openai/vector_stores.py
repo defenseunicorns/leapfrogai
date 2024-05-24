@@ -13,7 +13,7 @@ from leapfrogai_api.backend.types import (
     ModifyVectorStoreRequest,
 )
 from leapfrogai_api.data.crud_vector_store_file import CRUDVectorStoreFile
-from leapfrogai_api.data.crud_vector_store_object import CRUDVectorStore
+from leapfrogai_api.data.crud_vector_store import CRUDVectorStore
 from leapfrogai_api.data.supabase_vector_store import AsyncSupabaseVectorStore
 from leapfrogai_api.routers.supabase_session import Session
 
@@ -28,7 +28,7 @@ async def create_vector_store(
     """Create a vector store."""
     crud_vector_store = CRUDVectorStore(db=session)
 
-    vector_store_object = VectorStore(
+    vector_store = VectorStore(
         id="",  # Leave blank to have Postgres generate a UUID
         bytes=0,  # Automatically calculated by DB
         created_at=0,  # Leave blank to have Postgres generate a timestamp
@@ -44,7 +44,7 @@ async def create_vector_store(
         expires_at=None,  # TODO: Handle expires_at
     )
     try:
-        new_vector_store = await crud_vector_store.create(object_=vector_store_object)
+        new_vector_store = await crud_vector_store.create(object_=vector_store)
         if request.file_ids != []:
             indexing_service = IndexingService(db=session)
             for file_id in request.file_ids:

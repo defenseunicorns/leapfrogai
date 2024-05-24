@@ -12,7 +12,7 @@ class AsyncSupabaseVectorStore:
     Args:
         client (AsyncClient): The Supabase async client.
         embedding (Embeddings): The embedding model.
-        table_name (str, optional): The name of the database table. Defaults to "vector_store".
+        table_name (str, optional): The name of the database table. Defaults to "vector_content".
         chunk_size (int, optional): The chunk size for batch operations. Defaults to 500.
         query_name (str, optional): The name of the query to execute. Defaults to "match_vectors".
 
@@ -22,7 +22,7 @@ class AsyncSupabaseVectorStore:
         self,
         db: AsyncClient,
         embedding: Embeddings | None = None,
-        table_name: str = "vector_store",
+        table_name: str = "vector_content",
         chunk_size: int = 500,
         query_name: str = "match_vectors",
     ) -> None:
