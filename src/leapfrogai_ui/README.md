@@ -185,3 +185,13 @@ To get the MFA secret, create your new Keycloak user with the normal Keycloak lo
 When scanning the QR code, use an app that lets you see the url of the QR code. The secret is contained in that URL.
 
 Login flow was adapted from [this reference](https://supabase.com/docs/guides/getting-started/tutorials/with-sveltekit?database-method=sql)
+
+### Using OpenAI
+
+You can use OpenAI instead of Leapfrog API by changing these environment variables:
+
+```
+DEFAULT_MODEL=gpt-3.5-turbo
+LEAPFROGAI_API_BASE_URL=https://api.openai.com/v1
+LEAPFROGAI_API_KEY=<your-openai-api-key>
+```

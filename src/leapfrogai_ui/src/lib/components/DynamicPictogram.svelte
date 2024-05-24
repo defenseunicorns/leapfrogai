@@ -3,7 +3,7 @@
 
   export let iconName = 'default';
   export let width = '40px';
-  export let height = '40px';
+  export let height = '2.5rem';
 
   let Pictogram = iconMap.default;
 

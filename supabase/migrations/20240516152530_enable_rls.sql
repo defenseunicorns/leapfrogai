@@ -1,3 +1,13 @@
+-- Add user_id column to assistant_objects and file_objects tables
+alter table assistant_objects
+    add column user_id uuid references auth.users not null;
+alter table file_objects
+        add column user_id uuid references auth.users not null;
+-- Set buckets to private
+update storage.buckets
+    set public = false
+    where id = 'file_bucket';
+
 -- RLS policies
 alter table assistant_objects enable row level security;
 alter table file_objects enable row level security;

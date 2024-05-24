@@ -1,11 +1,17 @@
-import { faker } from '@faker-js/faker';
 import { expect, test } from './fixtures';
-import { loadChatPage, sendMessage, waitForResponseToComplete } from './helpers';
+import {
+  deleteActiveThread,
+  getSimpleMathQuestion,
+  loadChatPage,
+  sendMessage,
+  waitForResponseToComplete
+} from './helpers';
 import { delay } from 'msw';
 
+const newMessage1 = getSimpleMathQuestion();
+const newMessage2 = getSimpleMathQuestion();
+
 test('editing a message', async ({ page }) => {
-  const newMessage1 = faker.lorem.words(3);
-  const newMessage2 = faker.lorem.words(3);
   await loadChatPage(page);
 
   await sendMessage(page, newMessage1);
@@ -33,12 +39,11 @@ test('editing a message', async ({ page }) => {
   const editedMessage = page.getByTestId('message').nth(2);
   const textContent = await editedMessage.textContent();
   expect(textContent?.trim()).toEqual('edited message');
+  await deleteActiveThread(page);
 });
 
 test('editing a message when an AI response is missing', async ({ page }) => {
   let isFirstRequest = true;
-  const newMessage1 = faker.lorem.words(3);
-  const newMessage2 = faker.lorem.words(3);
 
   await page.route('*/**/api/chat', async (route) => {
     if (isFirstRequest) {
@@ -87,11 +92,10 @@ test('editing a message when an AI response is missing', async ({ page }) => {
   const editedMessage = page.getByTestId('message').nth(2);
   const textContent = await editedMessage.textContent();
   expect(textContent?.trim()).toEqual('edited message');
+  await deleteActiveThread(page);
 });
 
 test('regenerating responses', async ({ page }) => {
-  const newMessage1 = faker.lorem.words(3);
-
   await loadChatPage(page);
 
   await sendMessage(page, newMessage1);
@@ -104,4 +108,5 @@ test('regenerating responses', async ({ page }) => {
   await expect(messages).toHaveCount(1);
   await waitForResponseToComplete(page);
   await expect(messages).toHaveCount(2);
+  await deleteActiveThread(page);
 });

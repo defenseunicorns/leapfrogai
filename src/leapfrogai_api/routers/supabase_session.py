@@ -7,6 +7,8 @@ from supabase_py_async import AsyncClient, create_client, ClientOptions
 from httpx import HTTPStatusError
 from gotrue import errors, types
 from fastapi.security import HTTPAuthorizationCredentials, HTTPBearer
+import logging
+from base64 import binascii
 
 security = HTTPBearer()
 
@@ -31,10 +33,29 @@ async def init_supabase_client(
         options=ClientOptions(auto_refresh_token=False),
     )
 
-    # Set up a session for this client, a dummy refresh_token is used to prevent validation errors
-    await client.auth.set_session(
-        access_token=auth_creds.credentials, refresh_token="dummy"
-    )
+    try:
+        # Set up a session for this client, a dummy refresh_token is used to prevent validation errors
+        await client.auth.set_session(
+            access_token=auth_creds.credentials, refresh_token="dummy"
+        )
+    except errors.AuthApiError as e:
+        logging.error(f"\t{e}")
+        raise HTTPException(
+            detail="Token has expired or is not valid. Generate a new token",
+            status_code=status.HTTP_401_UNAUTHORIZED,
+        )
+    except binascii.Error as e:
+        logging.exception(f"\t{e}")
+        raise HTTPException(
+            detail="Failed to validate Authentication Token",
+            status_code=status.HTTP_401_UNAUTHORIZED,
+        )
+    except Exception as e:
+        logging.exception(f"\t{e}")
+        raise HTTPException(
+            detail="Failed to create Supabase session",
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+        )
 
     await validate_user_authorization(
         session=client, authorization=auth_creds.credentials
@@ -43,6 +64,7 @@ async def init_supabase_client(
     return client
 
 
+# This variable needs to be added to each endpoint even if it's not used to ensure auth is required for the endpoint
 Session = Annotated[AsyncClient, Depends(init_supabase_client)]
 
 

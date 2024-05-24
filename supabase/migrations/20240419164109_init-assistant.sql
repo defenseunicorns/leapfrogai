@@ -2,7 +2,6 @@
 create table
   assistant_objects (
     id uuid primary key DEFAULT uuid_generate_v4(),
-    user_id uuid references auth.users not null,
     created_at bigint default extract(epoch from now()) not null,
     description varchar(512),
     instructions text,

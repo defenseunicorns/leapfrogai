@@ -47,11 +47,17 @@
       isOpen={activeHeaderAction.settings}
       on:open={() => setActiveHeaderAction('settings')}
     >
-      <div class="link-container">
+      <div class="links-container">
         <a
           href="/chat/assistants-management"
           class="header-link"
           on:click={() => setActiveHeaderAction('')}>Assistants Management</a
+        >
+
+        <a
+          href="/chat/file-management"
+          class="header-link"
+          on:click={() => setActiveHeaderAction('')}>File Management</a
         >
       </div>
     </HeaderAction>
@@ -64,7 +70,7 @@
       isOpen={activeHeaderAction.user}
       on:open={() => setActiveHeaderAction('user')}
     >
-      <div class="link-container">
+      <div class="links-container">
         <form bind:this={signOutForm} method="post" action="/auth?/signout">
           <button
             class="header-link"
@@ -84,8 +90,11 @@
     height: 36px;
   }
 
-  .link-container {
-    padding: layout.$spacing-05;
+  .links-container {
+    display: flex;
+    padding: 1rem;
+    flex-direction: column;
+    gap: 0.88rem;
   }
 
   .header-link {

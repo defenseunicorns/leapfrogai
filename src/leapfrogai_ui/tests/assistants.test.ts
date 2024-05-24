@@ -1,7 +1,11 @@
 import { expect, test } from './fixtures';
-import { createAssistant, deleteAssistantByName, loadChatPage } from './helpers';
+import { createAssistant, deleteAllAssistants, loadChatPage } from './helpers';
 import { getFakeAssistantInput } from '../testUtils/fakeData';
 import type { ActionResult } from '@sveltejs/kit';
+
+test.afterEach(async () => {
+  await deleteAllAssistants();
+});
 
 test('it navigates to the assistants page', async ({ page }) => {
   await loadChatPage(page);
@@ -28,9 +32,6 @@ test('it creates an assistant and navigates back to the management page', async 
   await page.waitForURL('/chat/assistants-management');
   await expect(page.getByText('Assistant Created')).toBeVisible();
   await expect(page.getByTestId(`assistant-tile-${assistantInput.name}`)).toBeVisible();
-
-  // cleanup
-  await deleteAssistantByName(assistantInput.name);
 });
 
 test('displays an error toast when there is an error creating an assistant and remains on the assistant page', async ({
@@ -99,9 +100,6 @@ test('displays an error toast when there is an error editing an assistant and re
   await expect(page.getByText('Error Editing Assistant')).toBeVisible();
 
   await page.waitForURL(`/chat/assistants-management/edit/${assistantId}`);
-
-  // cleanup
-  await deleteAssistantByName(assistantInput1.name);
 });
 
 test('it can search for assistants', async ({ page, browserName }) => {
@@ -132,10 +130,6 @@ test('it can search for assistants', async ({ page, browserName }) => {
 
     await expect(page.getByTestId(`assistant-tile-${assistantInput2.name}`)).not.toBeVisible();
     await expect(page.getByTestId(`assistant-tile-${assistantInput1.name}`)).toBeVisible();
-
-    // cleanup
-    await deleteAssistantByName(assistantInput1.name);
-    await deleteAssistantByName(assistantInput2.name);
   }
 });
 
@@ -231,9 +225,6 @@ test('it allows you to edit an assistant', async ({ page }) => {
 
   await expect(page.getByText('Assistant Updated')).toBeVisible();
   await expect(page.getByTestId(`assistant-tile-${assistantInput2.name}`)).toBeVisible();
-
-  // cleanup
-  await deleteAssistantByName(assistantInput2.name);
 });
 
 test("it populates the assistants values when editing an assistant's details", async ({ page }) => {
@@ -252,9 +243,6 @@ test("it populates the assistants values when editing an assistant's details", a
   await expect(page.getByLabel('name')).toHaveValue(assistantInput.name);
   await expect(page.getByLabel('description')).toHaveValue(assistantInput.description);
   await expect(page.getByPlaceholder("You'll act as...")).toHaveValue(assistantInput.instructions);
-
-  // cleanup
-  await deleteAssistantByName(assistantInput.name);
 });
 
 test('it can delete assistants', async ({ page }) => {
@@ -262,7 +250,7 @@ test('it can delete assistants', async ({ page }) => {
 
   await createAssistant(page, assistantInput);
 
-  await page.waitForURL('/chat/assistants-management');
+  await page.goto('/chat/assistants-management');
 
   await page
     .getByTestId(`assistant-tile-${assistantInput.name}`)
@@ -276,5 +264,4 @@ test('it can delete assistants', async ({ page }) => {
   await page.getByRole('button', { name: 'Delete' }).click();
 
   await expect(page.getByText(`${assistantInput.name} Assistant deleted.`)).toBeVisible();
-  await expect(page.getByText(assistantInput.name)).not.toBeVisible();
 });

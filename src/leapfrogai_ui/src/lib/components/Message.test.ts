@@ -2,14 +2,15 @@ import { render, screen } from '@testing-library/svelte';
 import { afterAll, afterEach, type MockInstance, vi } from 'vitest';
 import { Message } from '$components/index';
 import userEvent from '@testing-library/user-event';
-import { getFakeMessage } from '../../../testUtils/fakeData';
+import { getFakeMessage } from '$testUtils/fakeData';
 import MessageWithToast from '$components/MessageWithToast.test.svelte';
+import { convertMessageToAiMessage, getMessageText } from '$helpers/threads';
 
 const fakeHandleMessageEdit = vi.fn();
 const fakeHandleRegenerate = vi.fn();
 
 const defaultMessageProps = {
-  message: getFakeMessage(),
+  message: convertMessageToAiMessage(getFakeMessage()),
   handleMessageEdit: fakeHandleMessageEdit,
   handleRegenerate: fakeHandleRegenerate,
   isLastMessage: false,
@@ -35,25 +36,25 @@ describe('Message component', () => {
   });
   it('removes the edit textarea and restores original text on close', async () => {
     const fakeMessage = getFakeMessage();
-    render(Message, { ...defaultMessageProps, message: fakeMessage });
+    render(Message, { ...defaultMessageProps, message: convertMessageToAiMessage(fakeMessage) });
     const editPromptBtn = screen.getByLabelText('edit prompt');
     expect(screen.queryByText('edit message input')).not.toBeInTheDocument();
-    expect(screen.getByText(fakeMessage.content)).toBeInTheDocument();
+    expect(screen.getByText(getMessageText(fakeMessage))).toBeInTheDocument();
     await userEvent.click(editPromptBtn);
 
     const input = screen.getByRole('textbox', { name: /edit message input/i });
     await userEvent.clear(input);
-    expect(screen.queryByText(fakeMessage.content)).not.toBeInTheDocument();
+    expect(screen.queryByText(getMessageText(fakeMessage))).not.toBeInTheDocument();
 
     await userEvent.click(screen.getByRole('button', { name: /cancel/i }));
-    expect(screen.getByText(fakeMessage.content)).toBeInTheDocument();
+    expect(screen.getByText(getMessageText(fakeMessage))).toBeInTheDocument();
   });
   it('submits message edit when submit is clicked', async () => {
     const fakeMessage = getFakeMessage();
-    render(Message, { ...defaultMessageProps, message: fakeMessage });
+    render(Message, { ...defaultMessageProps, message: convertMessageToAiMessage(fakeMessage) });
     const editPromptBtn = screen.getByLabelText('edit prompt');
     expect(screen.queryByText('edit message input')).not.toBeInTheDocument();
-    expect(screen.getByText(fakeMessage.content)).toBeInTheDocument();
+    expect(screen.getByText(getMessageText(fakeMessage))).toBeInTheDocument();
     await userEvent.click(editPromptBtn);
 
     await userEvent.click(screen.getByRole('button', { name: /submit/i }));
@@ -61,7 +62,10 @@ describe('Message component', () => {
   });
   it('does not allow editing non user messages', () => {
     const fakeAssistantMessage = getFakeMessage({ role: 'assistant' });
-    render(Message, { ...defaultMessageProps, message: fakeAssistantMessage });
+    render(Message, {
+      ...defaultMessageProps,
+      message: convertMessageToAiMessage(fakeAssistantMessage)
+    });
     expect(screen.queryByLabelText('edit prompt')).not.toBeInTheDocument();
   });
 
@@ -81,13 +85,13 @@ describe('Message component', () => {
       const fakeAssistantMessage = getFakeMessage({ role: 'assistant' });
       render(MessageWithToast, {
         ...defaultMessageProps,
-        message: fakeAssistantMessage
+        message: convertMessageToAiMessage(fakeAssistantMessage)
       });
 
       await userEvent.click(screen.getByLabelText('copy message'));
 
       expect(clipboardSpy).toHaveBeenCalledTimes(1);
-      expect(clipboardSpy).toHaveBeenCalledWith(fakeAssistantMessage.content);
+      expect(clipboardSpy).toHaveBeenCalledWith(getMessageText(fakeAssistantMessage));
       await screen.findByText('Response message copied.');
     });
     it('sends an error toast notification if there is an error copying text', async () => {
@@ -99,7 +103,7 @@ describe('Message component', () => {
       const fakeAssistantMessage = getFakeMessage({ role: 'assistant' });
       render(MessageWithToast, {
         ...defaultMessageProps,
-        message: fakeAssistantMessage
+        message: convertMessageToAiMessage(fakeAssistantMessage)
       });
 
       await userEvent.click(screen.getByLabelText('copy message'));
@@ -122,7 +126,7 @@ describe('Message component', () => {
     it('has copy and regenerate buttons for the last AI response', () => {
       render(MessageWithToast, {
         ...defaultMessageProps,
-        message: getFakeMessage({ role: 'assistant' }),
+        message: convertMessageToAiMessage(getFakeMessage({ role: 'assistant' })),
         isLastMessage: true
       });
 
@@ -132,7 +136,7 @@ describe('Message component', () => {
     it('does not have regenerate buttons for user messages', () => {
       render(MessageWithToast, {
         ...defaultMessageProps,
-        message: getFakeMessage({ role: 'user' }),
+        message: convertMessageToAiMessage(getFakeMessage({ role: 'user' })),
         isLastMessage: true
       });
 
@@ -141,7 +145,7 @@ describe('Message component', () => {
     it('does not have regenerate buttons for AI responses that are not the last response', () => {
       render(MessageWithToast, {
         ...defaultMessageProps,
-        message: getFakeMessage({ role: 'assistant' }),
+        message: convertMessageToAiMessage(getFakeMessage({ role: 'assistant' })),
         isLastMessage: false
       });
 
@@ -150,7 +154,7 @@ describe('Message component', () => {
     it('does not have a copy button for user messages', () => {
       render(MessageWithToast, {
         ...defaultMessageProps,
-        message: getFakeMessage({ role: 'user' })
+        message: convertMessageToAiMessage(getFakeMessage({ role: 'user' }))
       });
 
       expect(screen.queryByLabelText('copy message')).not.toBeInTheDocument();
@@ -158,7 +162,7 @@ describe('Message component', () => {
     it('removes the copy and regenerate buttons when a response is loading', () => {
       render(MessageWithToast, {
         ...defaultMessageProps,
-        message: getFakeMessage({ role: 'assistant' }),
+        message: convertMessageToAiMessage(getFakeMessage({ role: 'assistant' })),
         isLastMessage: true,
         isLoading: true
       });
@@ -168,7 +172,7 @@ describe('Message component', () => {
     it('leaves the copy button for messages when it is loading if not the latest message', () => {
       render(MessageWithToast, {
         ...defaultMessageProps,
-        message: getFakeMessage({ role: 'assistant' }),
+        message: convertMessageToAiMessage(getFakeMessage({ role: 'assistant' })),
         isLastMessage: false,
         isLoading: true
       });
@@ -177,7 +181,7 @@ describe('Message component', () => {
     it('leaves the edit button for messages when it is loading if not the latest message', () => {
       render(MessageWithToast, {
         ...defaultMessageProps,
-        message: getFakeMessage({ role: 'user' }),
+        message: convertMessageToAiMessage(getFakeMessage({ role: 'user' })),
         isLastMessage: false,
         isLoading: true
       });

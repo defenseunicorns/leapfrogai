@@ -21,11 +21,11 @@ headers: dict[str, str] = {}
 
 try:
     headers = {"Authorization": f"Bearer {os.environ['SUPABASE_USER_JWT']}"}
-except KeyError:
+except KeyError as exc:
     raise MissingEnvironmentVariable(
         "SUPABASE_USER_JWT must be defined for the test to pass. "
         "Please check the api README for instructions on obtaining this token."
-    )
+    ) from exc
 
 client = TestClient(router, headers=headers)
 
@@ -34,9 +34,7 @@ client = TestClient(router, headers=headers)
 def read_testfile():
     """Read the test file content."""
     global testfile_content  # pylint: disable=global-statement
-    with open(
-        os.path.dirname(__file__) + "/../../../tests/data/test.txt", "rb"
-    ) as testfile:
+    with open(os.path.dirname(__file__) + "/../../data/test.txt", "rb") as testfile:
         testfile_content = testfile.read()
 
 
