@@ -1,5 +1,5 @@
 import { mockOpenAI } from '../../../../../vitest-setup';
-import { getFakeThread } from '../../../../../testUtils/fakeData';
+import { getFakeThread } from '$testUtils/fakeData';
 import { GET } from './+server';
 import { sessionMock } from '$lib/mocks/supabase-mocks';
 

@@ -8,7 +8,7 @@ import {
 import { threadsStore, toastStore } from '$stores';
 import { fireEvent, render, screen, within } from '@testing-library/svelte';
 import userEvent from '@testing-library/user-event';
-import { fakeThreads, getFakeThread } from '../../../testUtils/fakeData';
+import { fakeThreads, getFakeThread } from '$testUtils/fakeData';
 import { vi } from 'vitest';
 import stores from '$app/stores';
 import { getUnixSeconds, monthNames } from '$helpers/dates';

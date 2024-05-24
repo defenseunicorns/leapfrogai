@@ -1,4 +1,4 @@
-import { getFakeAssistant, getFakeMessage, getFakeThread } from '../../../testUtils/fakeData';
+import { getFakeAssistant, getFakeMessage, getFakeThread } from '$testUtils/fakeData';
 import type { LFThread } from '$lib/types/threads';
 import type { LFMessage } from '$lib/types/messages';
 import type { LFAssistant } from '$lib/types/assistants';

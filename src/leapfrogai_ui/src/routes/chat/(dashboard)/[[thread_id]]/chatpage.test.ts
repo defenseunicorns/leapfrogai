@@ -1,7 +1,7 @@
 import { render, screen } from '@testing-library/svelte';
 import { threadsStore } from '$stores';
 
-import { fakeThreads, getFakeThread, getFakeMessage } from '../../../../../testUtils/fakeData';
+import { fakeThreads, getFakeThread, getFakeMessage } from '$testUtils/fakeData';
 import ChatPage from './+page.svelte';
 import ChatPageWithToast from './ChatPageWithToast.test.svelte';
 import userEvent from '@testing-library/user-event';

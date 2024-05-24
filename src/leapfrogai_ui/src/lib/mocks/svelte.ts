@@ -1,6 +1,6 @@
 import { type Readable, readable } from 'svelte/store';
 import type { Navigation, Page } from '@sveltejs/kit';
-import { fakeThreads } from '../../../testUtils/fakeData';
+import { fakeThreads } from '$testUtils/fakeData';
 import { faker } from '@faker-js/faker';
 
 type GetStoresOverrides = {

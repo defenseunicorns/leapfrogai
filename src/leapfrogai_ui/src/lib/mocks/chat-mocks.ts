@@ -1,7 +1,7 @@
 import { delay, http, HttpResponse } from 'msw';
 
 import { server } from '../../../vitest-setup';
-import { getFakeThread } from '../../../testUtils/fakeData';
+import { getFakeThread } from '$testUtils/fakeData';
 import type { LFMessage } from '$lib/types/messages';
 
 type MockChatCompletionOptions = {
