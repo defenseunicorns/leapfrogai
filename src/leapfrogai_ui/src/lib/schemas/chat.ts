@@ -1,4 +1,4 @@
-import {array, object, ObjectSchema, string} from 'yup';
+import { array, object, ObjectSchema, string } from 'yup';
 import { MAX_LABEL_SIZE } from '$lib/constants';
 import { env } from '$env/dynamic/public';
 import type { NewMessageInput } from '$lib/types/messages';

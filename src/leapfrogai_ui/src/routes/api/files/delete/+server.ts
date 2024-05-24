@@ -19,7 +19,7 @@ export async function DELETE({ request, locals: { getSession } }) {
   }
 
   for (const id of requestData.ids) {
-    let fileDeleted: any;
+    let fileDeleted;
     try {
       fileDeleted = await openai.files.del(id);
       if (!fileDeleted.deleted) {

@@ -1,4 +1,4 @@
-import {array, mixed, object, ValidationError} from 'yup';
+import { array, mixed, object, ValidationError } from 'yup';
 import { FILE_SIZE_ERROR_TEXT, MAX_FILE_SIZE } from '$constants';
 
 export const filesSchema = object({

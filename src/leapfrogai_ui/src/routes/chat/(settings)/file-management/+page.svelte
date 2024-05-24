@@ -35,6 +35,13 @@
   const { enhance, submit, submitting } = superForm(data.form, {
     validators: yup(filesSchema),
     invalidateAll: false,
+    onError() {
+      toastStore.addToast({
+        kind: 'error',
+        title: 'Import Failed',
+        subtitle: `Please try again or contact support`
+      });
+    },
     onResult({ result }) {
       if (result.type === 'success') {
         const uploadedFiles = result.data?.uploadedFiles;
@@ -59,6 +66,7 @@
   });
 
   const handleDelete = async () => {
+    const isMultipleFiles = selectedRowIds.length > 1;
     deleting = true;
     const res = await fetch('/api/files/delete', {
       method: 'DELETE',
@@ -73,7 +81,7 @@
     if (res.ok) {
       toastStore.addToast({
         kind: 'success',
-        title: 'Files deleted',
+        title: `${isMultipleFiles ? 'Files' : 'File'} deleted`,
         subtitle: ''
       });
 
@@ -81,7 +89,7 @@
     } else {
       toastStore.addToast({
         kind: 'error',
-        title: 'Error Deleting Files',
+        title: `Error Deleting ${isMultipleFiles ? 'Files' : 'File'}`,
         subtitle: ''
       });
 

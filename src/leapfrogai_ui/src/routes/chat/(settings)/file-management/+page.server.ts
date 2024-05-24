@@ -22,7 +22,12 @@ export const load: PageServerLoad = async ({ locals: { getSession } }) => {
 };
 
 export const actions = {
-  default: async ({ request }) => {
+  default: async ({ request, locals: { getSession } }) => {
+    const session = await getSession();
+    if (!session) {
+      return fail(401, { message: 'Unauthorized' });
+    }
+
     const form = await superValidate(request, yup(filesSchema));
 
     if (!form.valid) {
