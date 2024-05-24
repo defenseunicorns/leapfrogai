@@ -31,7 +31,6 @@ delete_urls = {
 
 # This is the anon_key for supabase, it provides access to the endpoints that would otherwise be inaccessible
 anon_key = os.environ["ANON_KEY"]
-service_key = os.environ["SERVICE_KEY"]
 
 test_email: str = "fakeuser@test.com"
 test_password: str = "password"
@@ -52,8 +51,8 @@ mock_assistant_body = {
 
 def create_test_user():
     headers = {
-        "apikey": f"{service_key}",
-        "Authorization": f"Bearer {service_key}",
+        "apikey": f"{anon_key}",
+        "Authorization": f"Bearer {anon_key}",
         "Content-Type": "application/json",
     }
     requests.post(
