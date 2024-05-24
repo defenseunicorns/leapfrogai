@@ -6,7 +6,7 @@ from supabase_py_async import AsyncClient
 
 
 # Partially implements the Langchain Core VectorStore interface
-class AsyncSupabaseVectorStore():
+class AsyncSupabaseVectorStore:
     """An async vector store that uses Supabase as the backend.
 
     Args:
