@@ -20,7 +20,7 @@ A mostly OpenAI compliant API surface.
 
 2. Create a user in Supabase if you don't already have one to enable making authenticated calls from swagger, curl, etc...
    ```bash
-   curl -X POST 'https://supabase-kong.uds.dev/auth/v1/signup' \-H "apikey: <anon-key>" \-H "Content-Type: application/json" \-d '{ "email": "<email>", "password": "<password>", "confirmPassword": "<password>"}'
+   curl -X POST 'http://localhost:54321/auth/v1/signup' \-H "apikey: <anon-key>" \-H "Content-Type: application/json" \-d '{ "email": "<email>", "password": "<password>", "confirmPassword": "<password>"}'
    ```
    
    * Replace `<anon-key>` with your anon-key which can be found in the environment variable `SUPABASE_ANON_KEY`
@@ -29,7 +29,7 @@ A mostly OpenAI compliant API surface.
 3. Get and save a JWT `access_token` for that user with a curl command:
 
     ``` bash
-    curl -X POST 'https://supabase-kong.uds.dev/auth/v1/token?grant_type=password' \-H "apikey: <anon-key>" \-H "Content-Type: application/json" \-d '{ "email": "<email>", "password": "<password>"}'
+    curl -X POST 'http://localhost:54321/auth/v1/token?grant_type=password' \-H "apikey: <anon-key>" \-H "Content-Type: application/json" \-d '{ "email": "<email>", "password": "<password>"}'
     ```
 
     * Replace `<anon-key>`, `<email>`, and `<password>` with the values from Supabase.
@@ -54,6 +54,13 @@ The integration tests serve to identify any mismatches between components:
 - Schema mismatches
 
 Integration tests require a Supabase instance and environment variables configured (see [Local Development](#local-development)).
+
+Also requires a JWT environment variable that is only used for tests:
+
+``` bash
+export SUPABASE_USER_JWT="<your JWT>"
+```
+
 
 From this directory run:
 
