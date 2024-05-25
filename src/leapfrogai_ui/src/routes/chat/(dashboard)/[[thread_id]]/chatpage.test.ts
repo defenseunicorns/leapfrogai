@@ -1,11 +1,7 @@
 import { render, screen } from '@testing-library/svelte';
-import { conversationsStore } from '$stores';
+import { threadsStore } from '$stores';
 
-import {
-  fakeConversations,
-  getFakeConversation,
-  getFakeMessage
-} from '../../../../../testUtils/fakeData';
+import { fakeThreads, getFakeThread, getFakeMessage } from '$testUtils/fakeData';
 import ChatPage from './+page.svelte';
 import ChatPageWithToast from './ChatPageWithToast.test.svelte';
 import userEvent from '@testing-library/user-event';
@@ -15,13 +11,14 @@ import { afterAll, beforeAll, vi } from 'vitest';
 import {
   mockChatCompletion,
   mockChatCompletionError,
-  mockNewConversation,
-  mockNewConversationError,
+  mockNewThread,
+  mockNewThreadError,
   mockNewMessage,
   mockNewMessageError
 } from '$lib/mocks/chat-mocks';
 import { delay } from 'msw';
 import { faker } from '@faker-js/faker';
+import { getMessageText } from '$helpers/threads';
 
 //Calls to vi.mock are hoisted to the top of the file, so you don't have access to variables declared in the global file scope unless they are defined with vi.hoisted before the call.
 const { getStores } = await vi.hoisted(() => import('$lib/mocks/svelte'));
@@ -42,24 +39,24 @@ describe('The Chat Page', () => {
   });
 
   it('it renders all the messages', async () => {
-    conversationsStore.set({
-      conversations: fakeConversations
+    threadsStore.set({
+      threads: fakeThreads
     });
 
     render(ChatPage);
 
-    for (let i = 0; i < fakeConversations[0].messages.length; i++) {
-      await screen.findByText(fakeConversations[0].messages[0].content);
+    for (let i = 0; i < fakeThreads[0].messages!.length; i++) {
+      await screen.findByText(getMessageText(fakeThreads[0].messages![i]));
     }
   });
 
   describe('chat form', () => {
     const question = 'What is AI?';
-    const fakeConversation = getFakeConversation();
+    const fakeThread = getFakeThread();
     const fakeMessage = getFakeMessage({
       role: 'user',
-      conversation_id: fakeConversation.id,
-      user_id: fakeConversation.user_id,
+      thread_id: fakeThread.id,
+      user_id: fakeThread.metadata.user_id,
       content: question
     });
 
@@ -70,12 +67,12 @@ describe('The Chat Page', () => {
     });
 
     it('submits the form then clears the input without throwing errors', async () => {
-      mockNewConversation();
+      mockNewThread();
       mockChatCompletion();
       mockNewMessage(fakeMessage);
 
-      conversationsStore.set({
-        conversations: []
+      threadsStore.set({
+        threads: []
       });
 
       const user = userEvent.setup();
@@ -95,12 +92,12 @@ describe('The Chat Page', () => {
 
     it('replaces submit with a cancel button while response is being processed', async () => {
       const delayTime = 500;
-      mockNewConversation();
+      mockNewThread();
       mockChatCompletion({ withDelay: true, delayTime: delayTime });
       mockNewMessage(fakeMessage);
 
-      conversationsStore.set({
-        conversations: []
+      threadsStore.set({
+        threads: []
       });
 
       const user = userEvent.setup();
@@ -134,7 +131,7 @@ describe('The Chat Page', () => {
 
     it('displays a toast error notification when there is an error with the AI response', async () => {
       mockChatCompletionError();
-      mockNewConversation();
+      mockNewThread();
 
       const user = userEvent.setup();
       const { getByLabelText } = render(ChatPageWithToast);
@@ -148,13 +145,13 @@ describe('The Chat Page', () => {
       await screen.findAllByText('Error getting AI Response');
     });
 
-    it('displays an error message when there is an error saving the new conversation', async () => {
-      conversationsStore.set({
-        conversations: []
+    it('displays an error message when there is an error saving the new thread', async () => {
+      threadsStore.set({
+        threads: []
       });
 
       mockChatCompletion();
-      mockNewConversationError();
+      mockNewThreadError();
 
       const { getByLabelText } = render(ChatPageWithToast);
 
@@ -163,17 +160,17 @@ describe('The Chat Page', () => {
 
       await userEvent.type(input, question);
       await userEvent.click(submitBtn);
-      await screen.findAllByText('Error saving conversation.');
+      await screen.findAllByText('Error saving thread.');
     });
 
-    describe('when there is an active conversation selected', () => {
+    describe('when there is an active thread selected', () => {
       beforeAll(() => {
         vi.mock('$app/stores', (): typeof stores => {
           const page: typeof stores.page = {
             subscribe(fn) {
               return getStores({
-                url: `http://localhost/chat/${fakeConversations[0].id}`,
-                params: { conversation_id: fakeConversations[0].id }
+                url: `http://localhost/chat/${fakeThreads[0].id}`,
+                params: { thread_id: fakeThreads[0].id }
               }).page.subscribe(fn);
             }
           };
@@ -199,8 +196,8 @@ describe('The Chat Page', () => {
       });
 
       it('displays an error message when there is an error saving the response', async () => {
-        conversationsStore.set({
-          conversations: fakeConversations
+        threadsStore.set({
+          threads: fakeThreads
         });
 
         mockChatCompletion();
@@ -218,13 +215,13 @@ describe('The Chat Page', () => {
       it('sends a toast when a message response is cancelled', async () => {
         // Note - testing actual cancel with E2E test because the mockChatCompletion mock is no
         // setup properly yet to return the AI responses
-        // Need an active conversation set to ensure the call to save the message is reached
+        // Need an active thread set to ensure the call to save the message is reached
         vi.mock('$app/stores', (): typeof stores => {
           const page: typeof stores.page = {
             subscribe(fn) {
               return getStores({
-                url: `http://localhost/chat/${fakeConversations[0].id}`,
-                params: { conversation_id: fakeConversations[0].id }
+                url: `http://localhost/chat/${fakeThreads[0].id}`,
+                params: { thread_id: fakeThreads[0].id }
               }).page.subscribe(fn);
             }
           };
@@ -249,7 +246,7 @@ describe('The Chat Page', () => {
         });
 
         const delayTime = 500;
-        mockNewConversation();
+        mockNewThread();
         mockChatCompletion({
           withDelay: true,
           delayTime: delayTime,
@@ -257,8 +254,8 @@ describe('The Chat Page', () => {
         });
         mockNewMessage(fakeMessage);
 
-        conversationsStore.set({
-          conversations: [fakeConversations[0]]
+        threadsStore.set({
+          threads: [fakeThreads[0]]
         });
         const user = userEvent.setup();
 

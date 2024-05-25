@@ -1,85 +1,83 @@
 import { faker } from '@faker-js/faker';
-import { DELETE } from '../../conversations/delete/+server';
-import {
-  sessionMock,
-  sessionNullMock,
-  supabaseDeleteErrorMock,
-  supabaseDeleteMock
-} from '$lib/mocks/supabase-mocks';
+import { DELETE } from './+server';
+import { sessionMock, sessionNullMock } from '$lib/mocks/supabase-mocks';
+import { mockOpenAI } from '../../../../../vitest-setup';
 
-describe('/api/conversations/delete', () => {
+describe('/api/threads/delete', () => {
   it('returns a 204 when the request completes', async () => {
-    const request = new Request('http://localhost:5173/api/messages/delete', {
+    const request = new Request('http://thisurlhasnoeffect', {
       method: 'DELETE',
-      body: JSON.stringify({ id: faker.string.uuid() })
+      body: JSON.stringify({ thread_id: faker.string.uuid(), message_id: faker.string.uuid() })
     });
     const res = await DELETE({
       request,
-      locals: { supabase: supabaseDeleteMock(), getSession: sessionMock }
+      locals: { getSession: sessionMock }
     });
     expect(res.status).toEqual(204);
   });
   it('returns a 401 when there is no session', async () => {
-    const request = new Request('http://localhost:5173/api/messages/delete', {
+    const request = new Request('http://thisurlhasnoeffect', {
       method: 'DELETE',
-      body: JSON.stringify({ id: faker.string.uuid() })
+      body: JSON.stringify({ thread_id: faker.string.uuid(), message_id: faker.string.uuid() })
     });
 
     await expect(
       DELETE({
         request,
-        locals: { supabase: {}, getSession: sessionNullMock }
+        locals: { getSession: sessionNullMock }
       })
     ).rejects.toMatchObject({
       status: 401
     });
   });
-  it('returns a 400 when message ID is not a uuid', async () => {
-    const request = new Request('http://localhost:5173/api/messages/delete', {
+  it('returns a 400 when message ID is not a string', async () => {
+    const request = new Request('http://thisurlhasnoeffect', {
       method: 'DELETE',
-      body: JSON.stringify({ id: '123' })
+      body: JSON.stringify({ thread_id: faker.string.uuid(), message_id: 123 })
     });
 
-    await expect(
-      DELETE({ request, locals: { supabase: {}, getSession: sessionMock } })
-    ).rejects.toMatchObject({
+    await expect(DELETE({ request, locals: { getSession: sessionMock } })).rejects.toMatchObject({
       status: 400
     });
   });
   it('returns a 400 when message ID is missing', async () => {
-    const request = new Request('http://localhost:5173/api/messages/delete', {
-      method: 'DELETE'
+    const request = new Request('http://thisurlhasnoeffect', {
+      method: 'DELETE',
+      body: JSON.stringify({ thread_id: faker.string.uuid() })
     });
 
-    await expect(
-      DELETE({ request, locals: { supabase: {}, getSession: sessionMock } })
-    ).rejects.toMatchObject({
+    await expect(DELETE({ request, locals: { getSession: sessionMock } })).rejects.toMatchObject({
       status: 400
     });
   });
 
   it('returns a 400 when extra body arguments are passed', async () => {
-    const request = new Request('http://localhost:5173/api/messages/delete', {
+    const request = new Request('http://thisurlhasnoeffect', {
       method: 'DELETE',
-      body: JSON.stringify({ id: faker.string.uuid(), wrong: 'key' })
+      body: JSON.stringify({
+        thread_id: faker.string.uuid(),
+        message_id: faker.string.uuid(),
+        wrong: 'key'
+      })
     });
 
-    await expect(
-      DELETE({ request, locals: { supabase: {}, getSession: sessionMock } })
-    ).rejects.toMatchObject({
+    await expect(DELETE({ request, locals: { getSession: sessionMock } })).rejects.toMatchObject({
       status: 400
     });
   });
-  it('returns a 500 when there is a supabase error', async () => {
-    const request = new Request('http://localhost:5173/api/messages/delete', {
+  it('returns a 500 when there is a openai error', async () => {
+    mockOpenAI.setError('deleteMessage');
+    const request = new Request('http://thisurlhasnoeffect', {
       method: 'DELETE',
-      body: JSON.stringify({ id: faker.string.uuid() })
+      body: JSON.stringify({ thread_id: faker.string.uuid(), message_id: faker.string.uuid() })
     });
 
     await expect(
       DELETE({
         request,
-        locals: { supabase: supabaseDeleteErrorMock(), getSession: sessionMock }
+        locals: {
+          getSession: sessionMock
+        }
       })
     ).rejects.toMatchObject({
       status: 500

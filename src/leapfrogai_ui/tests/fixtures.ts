@@ -13,8 +13,7 @@ export const test = base.extend<MyFixtures>({
         process.env.SERVICE_ROLE_KEY!
       );
 
-      await supabase.from('conversations').delete().neq('label', 'delete_all');
-      await supabase.from('assistants').delete().neq('name', 'delete_all');
+      await supabase.storage.emptyBucket('assistant_avatars');
     };
 
     await use(clearDbData);

@@ -1,26 +1,23 @@
 import { ChatSidebar } from '$components';
 import {
-  mockDeleteConversation,
-  mockDeleteConversationError,
-  mockEditConversationLabel,
-  mockEditConversationLabelError
+  mockDeleteThread,
+  mockDeleteThreadError,
+  mockEditThreadLabel,
+  mockEditThreadLabelError
 } from '$lib/mocks/chat-mocks';
-import { conversationsStore, toastStore } from '$stores';
+import { threadsStore, toastStore } from '$stores';
 import { fireEvent, render, screen, within } from '@testing-library/svelte';
 import userEvent from '@testing-library/user-event';
-import { fakeConversations, getFakeConversation } from '../../../testUtils/fakeData';
+import { fakeThreads, getFakeThread } from '$testUtils/fakeData';
 import { vi } from 'vitest';
 import stores from '$app/stores';
-import { monthNames } from '$helpers/dates';
+import { getUnixSeconds, monthNames } from '$helpers/dates';
 import * as navigation from '$app/navigation';
+import { getMessageText } from '$helpers/threads';
 
 const { getStores } = await vi.hoisted(() => import('../../lib/mocks/svelte'));
 
-const editConversationLabel = async (
-  oldLabel: string,
-  newLabel: string,
-  keyToPress = '{enter}'
-) => {
+const editThreadsLabel = async (oldLabel: string, newLabel: string, keyToPress = '{enter}') => {
   const overflowMenu = within(screen.getByTestId(`side-nav-menu-item-${oldLabel}`)).getByRole(
     'button',
     { name: /menu/i }
@@ -29,7 +26,7 @@ const editConversationLabel = async (
   const editBtn = within(overflowMenu).getByRole('menuitem', { name: /edit/i });
   await userEvent.click(editBtn);
 
-  const editInput = await screen.findByLabelText('edit conversation');
+  const editInput = await screen.findByLabelText('edit thread');
   await userEvent.clear(editInput);
   await userEvent.type(editInput, newLabel);
   await userEvent.keyboard(keyToPress);
@@ -39,8 +36,8 @@ vi.mock('$app/stores', (): typeof stores => {
   const page: typeof stores.page = {
     subscribe(fn) {
       return getStores({
-        url: `http://localhost/chat/${fakeConversations[0].id}`,
-        params: { conversation_id: fakeConversations[0].id }
+        url: `http://localhost/chat/${fakeThreads[0].id}`,
+        params: { thread_id: fakeThreads[0].id }
       }).page.subscribe(fn);
     }
   };
@@ -65,41 +62,39 @@ vi.mock('$app/stores', (): typeof stores => {
 });
 
 describe('ChatSidebar', () => {
-  it('renders conversations', async () => {
-    conversationsStore.set({
-      conversations: fakeConversations
+  it('renders threads', async () => {
+    threadsStore.set({
+      threads: fakeThreads
     });
 
     render(ChatSidebar);
 
-    const conversationsSection = screen.getByTestId('conversations');
+    const threadsSection = screen.getByTestId('threads');
 
-    fakeConversations.forEach((conversation) => {
-      expect(within(conversationsSection).getByText(conversation.label)).toBeInTheDocument();
+    fakeThreads.forEach((thread) => {
+      expect(within(threadsSection).getByText(thread.metadata.label)).toBeInTheDocument();
     });
   });
 
-  it('does not render date categories that have no conversations', async () => {
+  it('does not render date categories that have no threads', async () => {
     const today = new Date();
-    const fakeTodayConversation = getFakeConversation();
-    const fakeYesterdayConversation = getFakeConversation({
-      insertedAt: new Date(
-        today.getFullYear(),
-        today.getMonth(),
-        today.getDate() - 1
-      ).toDateString()
+    const fakeTodayThread = getFakeThread();
+    const fakeYesterdayThread = getFakeThread({
+      created_at: getUnixSeconds(
+        new Date(today.getFullYear(), today.getMonth(), today.getDate() - 1)
+      )
     });
 
-    conversationsStore.set({
-      conversations: [fakeTodayConversation, fakeYesterdayConversation] // uses date override starting in March
+    threadsStore.set({
+      threads: [fakeTodayThread, fakeYesterdayThread] // uses date override starting in March
     });
 
     render(ChatSidebar);
-    const conversationsSection = screen.getByTestId('conversations');
+    const threadsSection = screen.getByTestId('threads');
 
-    expect(within(conversationsSection).getByText(fakeTodayConversation.label)).toBeInTheDocument();
+    expect(within(threadsSection).getByText(fakeTodayThread.metadata.label)).toBeInTheDocument();
     expect(
-      within(conversationsSection).getByText(fakeYesterdayConversation.label)
+      within(threadsSection).getByText(fakeYesterdayThread.metadata.label)
     ).toBeInTheDocument();
 
     expect(screen.getByText('Today')).toBeInTheDocument();
@@ -109,19 +104,19 @@ describe('ChatSidebar', () => {
     expect(screen.queryByText(monthNames[today.getMonth() - 1])).not.toBeInTheDocument();
   });
 
-  it('deletes conversations', async () => {
-    mockDeleteConversation();
+  it('deletes threads', async () => {
+    mockDeleteThread();
 
-    conversationsStore.set({
-      conversations: fakeConversations
+    threadsStore.set({
+      threads: fakeThreads
     });
 
     render(ChatSidebar);
 
-    const conversationsSection = screen.getByTestId('conversations');
+    const threadsSection = screen.getByTestId('threads');
 
-    expect(within(conversationsSection).getByText(fakeConversations[0].label)).toBeInTheDocument();
-    expect(within(conversationsSection).getByText(fakeConversations[1].label)).toBeInTheDocument();
+    expect(within(threadsSection).getByText(fakeThreads[0].metadata.label)).toBeInTheDocument();
+    expect(within(threadsSection).getByText(fakeThreads[1].metadata.label)).toBeInTheDocument();
 
     const overflowMenu = screen.getAllByLabelText('menu')[0];
     await userEvent.click(overflowMenu);
@@ -138,24 +133,24 @@ describe('ChatSidebar', () => {
     expect(modal).not.toBeVisible;
 
     expect(
-      within(conversationsSection).queryByText(fakeConversations[0].label)
+      within(threadsSection).queryByText(fakeThreads[0].metadata.label)
     ).not.toBeInTheDocument();
-    expect(within(conversationsSection).getByText(fakeConversations[1].label)).toBeInTheDocument();
+    expect(within(threadsSection).getByText(fakeThreads[1].metadata.label)).toBeInTheDocument();
   });
-  it('dispatches a toast when there is an error deleting a conversation and it does not delete the conversation from the screen', async () => {
-    mockDeleteConversationError();
+  it('dispatches a toast when there is an error deleting a thread and it does not delete the thread from the screen', async () => {
+    mockDeleteThreadError();
 
     const toastSpy = vi.spyOn(toastStore, 'addToast');
 
-    conversationsStore.set({
-      conversations: fakeConversations
+    threadsStore.set({
+      threads: fakeThreads
     });
 
     render(ChatSidebar);
 
-    const conversationsSection = screen.getByTestId('conversations');
+    const threadsSection = screen.getByTestId('threads');
 
-    expect(within(conversationsSection).getByText(fakeConversations[0].label)).toBeInTheDocument();
+    expect(within(threadsSection).getByText(fakeThreads[0].metadata.label)).toBeInTheDocument();
 
     const overflowMenu = screen.getAllByLabelText('menu')[0];
     await userEvent.click(overflowMenu);
@@ -170,119 +165,119 @@ describe('ChatSidebar', () => {
     const confirmDeleteBtn = within(modal).getByText('Delete');
     await userEvent.click(confirmDeleteBtn);
 
-    expect(within(conversationsSection).getByText(fakeConversations[0].label)).toBeInTheDocument();
+    expect(within(threadsSection).getByText(fakeThreads[0].metadata.label)).toBeInTheDocument();
     expect(toastSpy).toHaveBeenCalledTimes(1);
   });
 
-  it('edits conversation labels', async () => {
+  it('edits thread labels', async () => {
     const newLabelText = 'new label';
-    mockEditConversationLabel();
+    mockEditThreadLabel();
 
-    conversationsStore.set({
-      conversations: fakeConversations
+    threadsStore.set({
+      threads: fakeThreads
     });
 
     render(ChatSidebar);
 
-    const conversationsSection = screen.getByTestId('conversations');
+    const threadsSection = screen.getByTestId('threads');
 
-    expect(within(conversationsSection).getByText(fakeConversations[0].label)).toBeInTheDocument();
+    expect(within(threadsSection).getByText(fakeThreads[0].metadata.label)).toBeInTheDocument();
 
-    await editConversationLabel(fakeConversations[0].label, newLabelText);
-    expect(within(conversationsSection).getByText(newLabelText)).toBeInTheDocument();
+    await editThreadsLabel(fakeThreads[0].metadata.label, newLabelText);
+    expect(within(threadsSection).getByText(newLabelText)).toBeInTheDocument();
   });
 
-  it('edits conversation labels when tab is pressed instead of enter', async () => {
+  it('edits thread labels when tab is pressed instead of enter', async () => {
     const newLabelText = 'new label';
-    mockEditConversationLabel();
+    mockEditThreadLabel();
 
-    conversationsStore.set({
-      conversations: fakeConversations
+    threadsStore.set({
+      threads: fakeThreads
     });
 
     render(ChatSidebar);
 
-    const conversationsSection = screen.getByTestId('conversations');
+    const threadsSection = screen.getByTestId('threads');
 
-    expect(within(conversationsSection).getByText(fakeConversations[0].label)).toBeInTheDocument();
+    expect(within(threadsSection).getByText(fakeThreads[0].metadata.label)).toBeInTheDocument();
 
-    await editConversationLabel(fakeConversations[0].label, newLabelText, '{Tab}');
-    expect(within(conversationsSection).getByText(newLabelText)).toBeInTheDocument();
+    await editThreadsLabel(fakeThreads[0].metadata.label, newLabelText, '{Tab}');
+    expect(within(threadsSection).getByText(newLabelText)).toBeInTheDocument();
   });
 
-  it('edits conversation labels when the user clicks away from the input (onBlur)', async () => {
+  it('edits thread labels when the user clicks away from the input (onBlur)', async () => {
     const newLabelText = 'new label';
-    mockEditConversationLabel();
+    mockEditThreadLabel();
 
-    conversationsStore.set({
-      conversations: fakeConversations
+    threadsStore.set({
+      threads: fakeThreads
     });
 
     render(ChatSidebar);
 
-    const conversationsSection = screen.getByTestId('conversations');
+    const threadsSection = screen.getByTestId('threads');
 
-    expect(within(conversationsSection).getByText(fakeConversations[0].label)).toBeInTheDocument();
+    expect(within(threadsSection).getByText(fakeThreads[0].metadata.label)).toBeInTheDocument();
 
     const overflowMenu = within(
-      screen.getByTestId(`side-nav-menu-item-${fakeConversations[0].label}`)
+      screen.getByTestId(`side-nav-menu-item-${fakeThreads[0].metadata.label}`)
     ).getByRole('button', { name: /menu/i });
     await userEvent.click(overflowMenu);
     const editBtn = within(overflowMenu).getByRole('menuitem', { name: /edit/i });
     await userEvent.click(editBtn);
-    const editInput = screen.getByLabelText('edit conversation');
+    const editInput = screen.getByLabelText('edit thread');
     await userEvent.clear(editInput);
     await userEvent.type(editInput, newLabelText);
 
     await fireEvent.blur(editInput);
-    await within(conversationsSection).findByText(newLabelText);
+    await within(threadsSection).findByText(newLabelText);
   });
 
-  it('dispatches a toast when there is an error editing a conversations label and it does not update the label on the screen', async () => {
-    mockEditConversationLabelError();
+  it('dispatches a toast when there is an error editing a threads label and it does not update the label on the screen', async () => {
+    mockEditThreadLabelError();
     const toastSpy = vi.spyOn(toastStore, 'addToast');
 
     const newLabelText = 'new label';
-    conversationsStore.set({
-      conversations: fakeConversations
+    threadsStore.set({
+      threads: fakeThreads
     });
 
     render(ChatSidebar);
 
-    const conversationsSection = screen.getByTestId('conversations');
+    const threadsSection = screen.getByTestId('threads');
 
-    expect(within(conversationsSection).getByText(fakeConversations[0].label)).toBeInTheDocument();
+    expect(within(threadsSection).getByText(fakeThreads[0].metadata.label)).toBeInTheDocument();
 
-    await editConversationLabel(fakeConversations[0].label, newLabelText);
+    await editThreadsLabel(fakeThreads[0].metadata.label, newLabelText);
     await userEvent.keyboard('{enter}');
-    expect(within(conversationsSection).getByText(fakeConversations[0].label)).toBeInTheDocument();
+    expect(within(threadsSection).getByText(fakeThreads[0].metadata.label)).toBeInTheDocument();
     expect(toastSpy).toHaveBeenCalledTimes(1);
   });
 
-  it('does not update the conversation label when the user presses escape and it removes the text input', async () => {
+  it('does not update the thread label when the user presses escape and it removes the text input', async () => {
     const newLabelText = 'new label';
-    conversationsStore.set({
-      conversations: fakeConversations
+    threadsStore.set({
+      threads: fakeThreads
     });
 
     render(ChatSidebar);
 
-    const conversationsSection = screen.getByTestId('conversations');
+    const threadsSection = screen.getByTestId('threads');
 
-    expect(within(conversationsSection).getByText(fakeConversations[0].label)).toBeInTheDocument();
+    expect(within(threadsSection).getByText(fakeThreads[0].metadata.label)).toBeInTheDocument();
 
-    await editConversationLabel(fakeConversations[0].label, newLabelText, '{escape}');
+    await editThreadsLabel(fakeThreads[0].metadata.label, newLabelText, '{escape}');
 
-    expect(screen.queryByLabelText('edit conversation')).not.toBeInTheDocument();
-    expect(within(conversationsSection).getByText(fakeConversations[0].label)).toBeInTheDocument();
+    expect(screen.queryByLabelText('edit thread')).not.toBeInTheDocument();
+    expect(within(threadsSection).getByText(fakeThreads[0].metadata.label)).toBeInTheDocument();
   });
 
   it('disables the input when enter is pressed', async () => {
     const newLabelText = 'new label';
-    mockEditConversationLabel();
+    mockEditThreadLabel();
 
-    conversationsStore.set({
-      conversations: fakeConversations
+    threadsStore.set({
+      threads: fakeThreads
     });
 
     render(ChatSidebar);
@@ -292,7 +287,7 @@ describe('ChatSidebar', () => {
     await userEvent.click(overflowMenu);
     const editBtn = within(overflowMenu).getByText('Edit');
     await userEvent.click(editBtn);
-    const editInput = screen.getByLabelText('edit conversation');
+    const editInput = screen.getByLabelText('edit thread');
     await userEvent.clear(editInput);
     await userEvent.type(editInput, newLabelText);
     await userEvent.keyboard('{enter}');
@@ -300,80 +295,81 @@ describe('ChatSidebar', () => {
   });
 
   it('removes the edit input when the focus on the input is lost', async () => {
-    mockEditConversationLabel();
+    mockEditThreadLabel();
     const newLabelText = 'new label';
 
-    conversationsStore.set({
-      conversations: fakeConversations
+    threadsStore.set({
+      threads: fakeThreads
     });
 
     render(ChatSidebar);
 
-    await editConversationLabel(fakeConversations[0].label, newLabelText, '{tab}');
-    const editInput = screen.queryByText('edit conversation');
+    await editThreadsLabel(fakeThreads[0].metadata.label, newLabelText, '{tab}');
+    const editInput = screen.queryByText('edit thread');
     expect(editInput).not.toBeInTheDocument();
   });
   it('changes the active chat thread', async () => {
     const goToSpy = vi.spyOn(navigation, 'goto');
 
-    const fakeConversation = getFakeConversation({ numMessages: 6 });
+    const fakeThread = getFakeThread({ numMessages: 6 });
 
-    conversationsStore.set({
-      conversations: [fakeConversation]
+    threadsStore.set({
+      threads: [fakeThread]
     });
 
     render(ChatSidebar);
 
-    expect(screen.queryByText(fakeConversation.messages[0].content)).not.toBeInTheDocument();
+    expect(screen.queryByText(getMessageText(fakeThread.messages![0]))).not.toBeInTheDocument();
 
-    await userEvent.click(screen.getByText(fakeConversation.label));
+    await userEvent.click(screen.getByText(fakeThread.metadata.label));
 
     expect(goToSpy).toHaveBeenCalledTimes(1);
-    expect(goToSpy).toHaveBeenCalledWith(`/chat/${fakeConversation.id}`);
+    expect(goToSpy).toHaveBeenCalledWith(`/chat/${fakeThread.id}`);
   });
-  it('search finds conversations by label', async () => {
-    const fakeConversation1 = getFakeConversation({ numMessages: 2 });
-    const fakeConversation2 = getFakeConversation({ numMessages: 2 });
-    const fakeConversation3 = getFakeConversation({ numMessages: 2 });
+  it('search finds threads by label', async () => {
+    const fakeThread1 = getFakeThread({ numMessages: 2 });
+    const fakeThread2 = getFakeThread({ numMessages: 2 });
+    const fakeThread3 = getFakeThread({ numMessages: 2 });
 
-    conversationsStore.set({
-      conversations: [fakeConversation1, fakeConversation2, fakeConversation3]
+    threadsStore.set({
+      threads: [fakeThread1, fakeThread2, fakeThread3]
     });
 
     render(ChatSidebar);
 
-    expect(screen.queryByText(fakeConversation1.label)).toBeInTheDocument();
-    expect(screen.queryByText(fakeConversation2.label)).toBeInTheDocument();
-    expect(screen.queryByText(fakeConversation3.label)).toBeInTheDocument();
+    expect(screen.queryByText(fakeThread1.metadata.label)).toBeInTheDocument();
+    expect(screen.queryByText(fakeThread2.metadata.label)).toBeInTheDocument();
+    expect(screen.queryByText(fakeThread3.metadata.label)).toBeInTheDocument();
 
     const searchBox = screen.getByPlaceholderText('Search...');
-    await userEvent.type(searchBox, fakeConversation2.label);
+    await userEvent.type(searchBox, fakeThread2.metadata.label);
 
-    expect(screen.queryByText(fakeConversation1.label)).not.toBeInTheDocument();
-    expect(screen.queryByText(fakeConversation2.label)).toBeInTheDocument();
-    expect(screen.queryByText(fakeConversation3.label)).not.toBeInTheDocument();
+    expect(screen.queryByText(fakeThread1.metadata.label)).not.toBeInTheDocument();
+    expect(screen.queryByText(fakeThread2.metadata.label)).toBeInTheDocument();
+    expect(screen.queryByText(fakeThread3.metadata.label)).not.toBeInTheDocument();
   });
 
-  it('search finds conversations by messages', async () => {
-    const fakeConversation1 = getFakeConversation({ numMessages: 2 });
-    const fakeConversation2 = getFakeConversation({ numMessages: 2 });
-    const fakeConversation3 = getFakeConversation({ numMessages: 2 });
+  it('search finds threads by messages', async () => {
+    const fakeThread1 = getFakeThread({ numMessages: 2 });
+    const fakeThread2 = getFakeThread({ numMessages: 2 });
+    const fakeThread3 = getFakeThread({ numMessages: 2 });
 
-    conversationsStore.set({
-      conversations: [fakeConversation1, fakeConversation2, fakeConversation3]
+    threadsStore.set({
+      threads: [fakeThread1, fakeThread2, fakeThread3]
     });
 
     render(ChatSidebar);
 
-    expect(screen.queryByText(fakeConversation1.label)).toBeInTheDocument();
-    expect(screen.queryByText(fakeConversation2.label)).toBeInTheDocument();
-    expect(screen.queryByText(fakeConversation3.label)).toBeInTheDocument();
+    expect(screen.queryByText(fakeThread1.metadata.label)).toBeInTheDocument();
+    expect(screen.queryByText(fakeThread2.metadata.label)).toBeInTheDocument();
+    expect(screen.queryByText(fakeThread3.metadata.label)).toBeInTheDocument();
 
     const searchBox = screen.getByPlaceholderText('Search...');
-    await userEvent.type(searchBox, fakeConversation1.messages[0].content);
 
-    expect(screen.queryByText(fakeConversation1.label)).toBeInTheDocument();
-    expect(screen.queryByText(fakeConversation2.label)).not.toBeInTheDocument();
-    expect(screen.queryByText(fakeConversation3.label)).not.toBeInTheDocument();
+    await userEvent.type(searchBox, getMessageText(fakeThread1.messages![0]));
+
+    expect(screen.queryByText(fakeThread1.metadata.label)).toBeInTheDocument();
+    expect(screen.queryByText(fakeThread2.metadata.label)).not.toBeInTheDocument();
+    expect(screen.queryByText(fakeThread3.metadata.label)).not.toBeInTheDocument();
   });
 });
