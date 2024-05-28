@@ -1,6 +1,9 @@
 // See https://kit.svelte.dev/docs/types#app
 // for information about these interfaces
-import { SupabaseClient, Session } from '@supabase/supabase-js';
+import { Session, SupabaseClient } from '@supabase/supabase-js';
+import type { LFAssistant } from '$lib/types/assistants';
+import type { Profile } from '$lib/types/profile';
+import type { LFThread } from '$lib/types/threads';
 
 declare global {
   namespace App {
@@ -11,12 +14,11 @@ declare global {
     }
     interface PageData {
       title?: string | null;
-      session: Session | null;
-      // TODO - add profile type
-      // profile?: any;
-      conversations?: Conversation[];
-      assistants?: Assistant[];
-      assistant?: Assistant;
+      session?: Session | null;
+      profile?: Profile;
+      threads?: LFThread[];
+      assistants?: LFAssistant[];
+      assistant?: LFAssistant;
     }
     // interface PageState {}
     // interface Platform {}

@@ -2,37 +2,39 @@
   import { LFTextArea } from '$components';
   import { Button } from 'carbon-components-svelte';
   import { afterUpdate, onMount, tick } from 'svelte';
-  import { conversationsStore, toastStore } from '$stores';
+  import { threadsStore, toastStore } from '$stores';
   import { ArrowRight, Attachment, StopFilledAlt } from 'carbon-icons-svelte';
   import { type Message as AIMessage, useChat } from 'ai/svelte';
   import { page } from '$app/stores';
   import { beforeNavigate } from '$app/navigation';
   import Message from '$components/Message.svelte';
+  import type { LFMessage } from '$lib/types/messages';
+  import { convertMessageToAiMessage, getMessageText } from '$helpers/threads';
 
   export let data;
+
   let messageThreadDiv: HTMLDivElement;
   let messageThreadDivHeight: number;
 
   let lengthInvalid: boolean; // bound to child LFTextArea
 
-  $: activeConversation = $conversationsStore.conversations.find(
-    (conversation) => conversation.id === $page.params.conversation_id
-  );
+  $: activeThread = $threadsStore.threads.find((thread) => thread.id === $page.params.thread_id);
 
-  $: $page.params.conversation_id, setMessages(activeConversation?.messages || []);
+  $: $page.params.thread_id,
+    setMessages(activeThread?.messages?.map((m) => convertMessageToAiMessage(m)) || []);
 
   const { input, handleSubmit, messages, setMessages, isLoading, stop, append, reload } = useChat({
-    initialMessages: $conversationsStore.conversations
-      .find((conversation) => conversation.id === $page.params.conversation_id)
-      ?.messages.map((message) => ({
+    initialMessages: $threadsStore.threads
+      .find((thread) => thread.id === $page.params.thread_id)
+      ?.messages?.map((message: LFMessage) => ({
         id: message.id,
-        content: message.content,
+        content: getMessageText(message),
         role: message.role
       })),
     onFinish: async (message: AIMessage) => {
-      if (activeConversation?.id) {
-        await conversationsStore.newMessage({
-          conversation_id: activeConversation?.id,
+      if (activeThread?.id) {
+        await threadsStore.newMessage({
+          thread_id: activeThread?.id,
           content: message.content,
           role: message.role
         });
@@ -53,21 +55,21 @@
     if ($isLoading) {
       await stopThenSave();
     } else {
-      if (!activeConversation?.id) {
-        // new conversation thread
-        await conversationsStore.newConversation($input);
+      if (!activeThread?.id) {
+        // new thread thread
+        await threadsStore.newThread($input);
         await tick(); // allow store to update
-        if (activeConversation?.id) {
-          await conversationsStore.newMessage({
-            conversation_id: activeConversation?.id,
+        if (activeThread?.id) {
+          await threadsStore.newMessage({
+            thread_id: activeThread?.id,
             content: $input,
             role: 'user'
           });
         }
       } else {
         // store user input
-        await conversationsStore.newMessage({
-          conversation_id: activeConversation?.id,
+        await threadsStore.newMessage({
+          thread_id: activeThread?.id,
           content: $input,
           role: 'user'
         });
@@ -87,39 +89,39 @@
       });
       const lastMessage = $messages[$messages.length - 1];
 
-      if (activeConversation?.id && lastMessage.role !== 'user') {
-        await conversationsStore.newMessage({
-          conversation_id: activeConversation?.id,
-          content: lastMessage.content, // save last message
+      if (activeThread?.id && lastMessage.role !== 'user') {
+        await threadsStore.newMessage({
+          thread_id: activeThread?.id,
+          content: getMessageText(lastMessage), // save last message
           role: lastMessage.role
         });
       }
     }
   };
 
-  const handleMessageEdit = async (e: SubmitEvent, message: AIMessage) => {
-    e.preventDefault();
+  const handleMessageEdit = async (
+    event: SubmitEvent | KeyboardEvent | MouseEvent,
+    message: AIMessage
+  ) => {
+    event.preventDefault();
 
     const messageIndex = $messages.findIndex((m) => m.id === message.id);
     // Ensure the message after the user's message exists and is a response from the AI
     const numToSplice =
       $messages[messageIndex + 1] && $messages[messageIndex + 1].role !== 'user' ? 2 : 1;
 
-    if (activeConversation?.id) {
+    if (activeThread?.id) {
       // delete old message from DB
-      await conversationsStore.deleteMessage(message.id, activeConversation.id);
+      await threadsStore.deleteMessage(activeThread.id, message.id);
       if (numToSplice === 2) {
         // also delete that message's response
-        await conversationsStore.deleteMessage(
-          $messages[messageIndex + 1].id,
-          activeConversation.id
-        );
+        await threadsStore.deleteMessage(activeThread.id, $messages[messageIndex + 1].id);
       }
 
       // save new message
-      await conversationsStore.newMessage({
-        conversation_id: activeConversation.id,
-        content: message.content,
+      await threadsStore.newMessage({
+        thread_id: activeThread.id,
+        content: getMessageText(message),
         role: 'user'
       });
     }
@@ -131,15 +133,15 @@
 
   const handleRegenerate = async () => {
     const messageIndex = $messages.length - 1;
-    if (activeConversation?.id) {
-      await conversationsStore.deleteMessage($messages[messageIndex].id, activeConversation.id);
+    if (activeThread?.id) {
+      await threadsStore.deleteMessage(activeThread.id, $messages[messageIndex].id);
     }
     setMessages($messages.toSpliced(messageIndex, 1));
     await reload();
   };
 
   onMount(() => {
-    conversationsStore.setConversations(data.conversations);
+    threadsStore.setThreads(data.threads || []);
   });
 
   afterUpdate(() => {

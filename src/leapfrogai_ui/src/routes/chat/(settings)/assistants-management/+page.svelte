@@ -4,12 +4,13 @@
   import { Add } from 'carbon-icons-svelte';
   import Fuse, { type FuseResult, type IFuseOptions } from 'fuse.js';
   import AssistantTile from '$components/AssistantTile.svelte';
+  import type { LFAssistant } from '$lib/types/assistants';
 
   export let data;
 
   let searchText = '';
-  let searchResults: FuseResult<Assistant>[];
-  let filteredAssistants: Assistant[] = [];
+  let searchResults: FuseResult<LFAssistant>[];
+  let filteredAssistants: LFAssistant[] = [];
   $: assistantsToDisplay = searchText ? filteredAssistants : data.assistants;
 
   const options: IFuseOptions<unknown> = {

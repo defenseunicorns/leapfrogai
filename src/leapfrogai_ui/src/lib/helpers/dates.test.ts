@@ -1,5 +1,6 @@
 import { dates } from '$helpers';
-import { getFakeConversation } from '../../../testUtils/fakeData';
+import { getFakeThread } from '$testUtils/fakeData';
+import { getUnixSeconds } from '$helpers/dates';
 
 describe('date helpers', () => {
   describe('isToday', () => {
@@ -89,87 +90,85 @@ describe('date helpers', () => {
     });
 
     it('returns "This Month" when the date is in the same month as the current date', () => {
-      const today = new Date();
-      const sameMonthDate = new Date(today.getFullYear(), today.getMonth(), 20);
+      const todayOverride = new Date('2024-03-01T00:00');
+      const sameMonthDate = new Date(todayOverride.getFullYear(), todayOverride.getMonth(), 20);
       const expectedCategory = 'This Month';
 
-      expect(dates.getDateCategory({ date: sameMonthDate })).toBe(expectedCategory);
+      expect(dates.getDateCategory({ date: sameMonthDate, today: todayOverride })).toBe(
+        expectedCategory
+      );
     });
   });
 
-  describe('organizeConversationsByDate', () => {
+  describe('organizeThreadsByDate', () => {
     // Overriding to test with months that overlap years
     const todayOverride = new Date('2024-03-20T00:00');
 
-    it('organizes conversations by date category', () => {
+    it('organizes threads by date category', () => {
       const numMonthsToDisplay = 6;
-      const conversations = [
+      const threads = [
         // today
-        getFakeConversation({ insertedAt: todayOverride.toDateString() }),
+        getFakeThread({ created_at: getUnixSeconds(todayOverride) }),
         // Yesterday
-        getFakeConversation({
-          insertedAt: new Date(
-            todayOverride.getFullYear(),
-            todayOverride.getMonth(),
-            todayOverride.getDate() - 1
-          ).toDateString()
+        getFakeThread({
+          created_at: getUnixSeconds(
+            new Date(
+              todayOverride.getFullYear(),
+              todayOverride.getMonth(),
+              todayOverride.getDate() - 1
+            )
+          )
         }),
-        getFakeConversation({
-          insertedAt: new Date(
-            todayOverride.getFullYear(),
-            todayOverride.getMonth(),
-            todayOverride.getDate() - 1
-          ).toDateString()
+        getFakeThread({
+          created_at: getUnixSeconds(
+            new Date(
+              todayOverride.getFullYear(),
+              todayOverride.getMonth(),
+              todayOverride.getDate() - 1
+            )
+          )
         }),
         // This Month
-        getFakeConversation({
-          insertedAt: new Date(
-            todayOverride.getFullYear(),
-            todayOverride.getMonth(),
-            10
-          ).toDateString()
+        getFakeThread({
+          created_at: getUnixSeconds(
+            new Date(todayOverride.getFullYear(), todayOverride.getMonth(), 10)
+          )
         }),
         // February
-        getFakeConversation({
-          insertedAt: new Date(new Date('2024-02-01T00:00')).toDateString()
+        getFakeThread({
+          created_at: getUnixSeconds(new Date(new Date('2024-02-01T00:00')))
         }),
         // December - 2023
-        getFakeConversation({
-          insertedAt: new Date(new Date('2023-12-01T00:00')).toDateString()
+        getFakeThread({
+          created_at: getUnixSeconds(new Date(new Date('2023-12-01T00:00')))
         }),
         // Old
-        getFakeConversation({
-          insertedAt: new Date(
-            todayOverride.getFullYear() - 2,
-            todayOverride.getMonth()
-          ).toDateString()
+        getFakeThread({
+          created_at: getUnixSeconds(
+            new Date(todayOverride.getFullYear() - 2, todayOverride.getMonth())
+          )
         }),
-        getFakeConversation({
-          insertedAt: new Date(
-            todayOverride.getFullYear(),
-            todayOverride.getMonth() - numMonthsToDisplay - 1
-          ).toDateString()
+        getFakeThread({
+          created_at: getUnixSeconds(
+            new Date(todayOverride.getFullYear(), todayOverride.getMonth() - numMonthsToDisplay - 1)
+          )
         })
       ];
 
-      const expectedOrganizedConversations = [
-        { label: 'Today', conversations: [conversations[0]] },
-        { label: 'Yesterday', conversations: [conversations[1], conversations[2]] },
-        { label: 'This Month', conversations: [conversations[3]] },
-        { label: 'February', conversations: [conversations[4]] },
-        { label: 'January', conversations: [] },
-        { label: 'December', conversations: [conversations[5]] },
-        { label: 'November', conversations: [] },
-        { label: 'October', conversations: [] },
-        { label: 'September', conversations: [] },
-        { label: 'Old', conversations: [conversations[7], conversations[6]] } // tests ordering of old dates too
+      const expectedOrganizedThreads = [
+        { label: 'Today', threads: [threads[0]] },
+        { label: 'Yesterday', threads: [threads[1], threads[2]] },
+        { label: 'This Month', threads: [threads[3]] },
+        { label: 'February', threads: [threads[4]] },
+        { label: 'January', threads: [] },
+        { label: 'December', threads: [threads[5]] },
+        { label: 'November', threads: [] },
+        { label: 'October', threads: [] },
+        { label: 'September', threads: [] },
+        { label: 'Old', threads: [threads[7], threads[6]] } // tests ordering of old dates too
       ];
-      const result = dates.organizeConversationsByDate(
-        conversations,
-        todayOverride,
-        numMonthsToDisplay
-      );
-      expect(result).toEqual(expectedOrganizedConversations);
+      const result = dates.organizeThreadsByDate(threads, todayOverride, numMonthsToDisplay);
+      expect(result).toEqual(expectedOrganizedThreads);
     });
   });
 });

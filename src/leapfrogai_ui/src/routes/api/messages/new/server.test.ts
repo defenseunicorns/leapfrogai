@@ -1,30 +1,30 @@
-import {
-  sessionMock,
-  sessionNullMock,
-  supabaseInsertErrorMock,
-  supabaseInsertMock
-} from '$lib/mocks/supabase-mocks';
-import { getFakeMessage } from '../../../../../testUtils/fakeData';
+import { sessionMock, sessionNullMock } from '$lib/mocks/supabase-mocks';
+import { getFakeMessage } from '$testUtils/fakeData';
 import { POST } from './+server';
+import { mockOpenAI } from '../../../../../vitest-setup';
+import type { NewMessageInput } from '$lib/types/messages';
+import { getMessageText } from '$helpers/threads';
 
 const message = getFakeMessage({});
 
-const validMessageBody = {
-  content: message.content,
-  conversation_id: message.conversation_id,
+const validMessageBody: NewMessageInput = {
+  content: getMessageText(message),
+  thread_id: message.thread_id,
   role: message.role
 };
 
 describe('/api/messages/new', () => {
   it('returns a 200 when successful', async () => {
-    const request = new Request('http://localhost:5173/api/messages/new', {
+    mockOpenAI.setMessage(message);
+
+    const request = new Request('http://thisurlhasnoeffect', {
       method: 'POST',
       body: JSON.stringify(validMessageBody)
     });
 
     const res = await POST({
       request,
-      locals: { getSession: sessionMock, supabase: supabaseInsertMock([message]) }
+      locals: { getSession: sessionMock }
     });
 
     const resData = await res.json();
@@ -33,7 +33,7 @@ describe('/api/messages/new', () => {
   });
 
   it('returns a 401 when there is no session', async () => {
-    const request = new Request('http://localhost:5173/api/messages/new', {
+    const request = new Request('http://thisurlhasnoeffect', {
       method: 'POST',
       body: JSON.stringify(validMessageBody)
     });
@@ -41,7 +41,7 @@ describe('/api/messages/new', () => {
     await expect(
       POST({
         request,
-        locals: { supabase: supabaseInsertMock([message]), getSession: sessionNullMock }
+        locals: { getSession: sessionNullMock }
       })
     ).rejects.toMatchObject({
       status: 401
@@ -49,21 +49,21 @@ describe('/api/messages/new', () => {
   });
   it('returns a 400 when the body is invalid', async () => {
     // Empty body
-    let request = new Request('http://localhost:5173/api/messages/new', {
+    let request = new Request('http://thisurlhasnoeffect', {
       method: 'POST'
     });
 
     await expect(
       POST({
         request,
-        locals: { supabase: supabaseInsertMock([message]), getSession: sessionMock }
+        locals: { getSession: sessionMock }
       })
     ).rejects.toMatchObject({
       status: 400
     });
 
     // Invalid param
-    request = new Request('http://localhost:5173/api/messages/new', {
+    request = new Request('http://thisurlhasnoeffect', {
       method: 'POST',
       body: JSON.stringify({ ...validMessageBody, id: '123' })
     });
@@ -71,14 +71,14 @@ describe('/api/messages/new', () => {
     await expect(
       POST({
         request,
-        locals: { supabase: supabaseInsertMock([message]), getSession: sessionMock }
+        locals: { getSession: sessionMock }
       })
     ).rejects.toMatchObject({
       status: 400
     });
 
     // Extra param
-    request = new Request('http://localhost:5173/api/messages/new', {
+    request = new Request('http://thisurlhasnoeffect', {
       method: 'POST',
       body: JSON.stringify({ ...validMessageBody, break: 'me' })
     });
@@ -86,14 +86,15 @@ describe('/api/messages/new', () => {
     await expect(
       POST({
         request,
-        locals: { supabase: supabaseInsertMock([message]), getSession: sessionMock }
+        locals: { getSession: sessionMock }
       })
     ).rejects.toMatchObject({
       status: 400
     });
   });
-  it('returns a 500 when there is a supabase error', async () => {
-    const request = new Request('http://localhost:5173/api/messages/new', {
+  it('returns a 500 when there is a openai error', async () => {
+    mockOpenAI.setError('createMessage');
+    const request = new Request('http://thisurlhasnoeffect', {
       method: 'POST',
       body: JSON.stringify(validMessageBody)
     });
@@ -101,7 +102,7 @@ describe('/api/messages/new', () => {
     await expect(
       POST({
         request,
-        locals: { supabase: supabaseInsertErrorMock(), getSession: sessionMock }
+        locals: { getSession: sessionMock }
       })
     ).rejects.toMatchObject({
       status: 500

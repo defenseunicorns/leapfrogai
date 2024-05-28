@@ -1,6 +1,6 @@
 import { render, screen } from '@testing-library/svelte';
 import AssistantsManagementPage from './+page.svelte';
-import { getFakeAssistant } from '../../../../../testUtils/fakeData';
+import { getFakeAssistant } from '$testUtils/fakeData';
 
 describe('Assistants management page', () => {
   it('displays all the assistants', async () => {

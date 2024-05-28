@@ -1,9 +1,12 @@
 <script lang="ts">
-  import { Download, Export } from 'carbon-icons-svelte';
+  import { Export } from 'carbon-icons-svelte';
   import { Button } from 'carbon-components-svelte';
   import LFFileUploader from '$components/LFFileUploader.svelte';
-  import { conversationsStore, toastStore } from '$stores';
-  import { conversationsSchema } from '$lib/schemas/chat';
+  import { threadsStore, toastStore } from '$stores';
+  import { threadsSchema } from '$schemas/threadSchema';
+  import type { LFThread } from '$lib/types/threads';
+
+  let importing = false;
 
   const readFileAsJson = <T,>(file: File): Promise<T> => {
     return new Promise((resolve, reject) => {
@@ -27,26 +30,33 @@
   };
 
   const onUpload = async (files: FileList) => {
-    let conversations: Conversation[] = [];
+    importing = true;
+    toastStore.addToast({
+      kind: 'info',
+      title: 'Info',
+      subtitle: `Importing conversations. Conversations will populate shortly...`
+    });
+    let threads: LFThread[] = [];
     try {
-      conversations = await readFileAsJson(files[0]);
-      await conversationsSchema.validate(conversations);
+      threads = await readFileAsJson(files[0]);
+      await threadsSchema.validate(threads);
     } catch {
       toastStore.addToast({
         kind: 'error',
         title: 'Error',
-        subtitle: `Conversations are incorrectly formatted.`
+        subtitle: `Threads are incorrectly formatted.`
       });
       return;
     }
-    await conversationsStore.importConversations(conversations);
+    await threadsStore.importThreads(threads);
+    importing = false;
   };
 
   const onExport = () => {
     try {
       const dataStr =
         'data:text/json; charset=utf-8,' +
-        encodeURIComponent(JSON.stringify($conversationsStore.conversations));
+        encodeURIComponent(JSON.stringify($threadsStore.threads));
       const downloadAnchorNode = document.createElement('a');
 
       downloadAnchorNode.setAttribute('href', dataStr);
@@ -58,19 +68,14 @@
       toastStore.addToast({
         kind: 'error',
         title: 'Error',
-        subtitle: `Error exporting conversations.`
+        subtitle: `Error exporting threads.`
       });
     }
   };
 </script>
 
 <div class="import-export-btns-container">
-  <LFFileUploader
-    accept={['application/json']}
-    icon={Download}
-    labelText="Import data"
-    {onUpload}
-  />
+  <LFFileUploader accept={['application/json']} {importing} {onUpload} />
   <Button
     id="export-btn"
     kind="ghost"

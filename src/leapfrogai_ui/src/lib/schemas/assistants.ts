@@ -1,25 +1,27 @@
 import { mixed, number, object, ObjectSchema, string, ValidationError } from 'yup';
+import type { AssistantInput, EditAssistantInput } from '$lib/types/assistants';
 import {
+  ASSISTANTS_DESCRIPTION_MAX_LENGTH,
   ASSISTANTS_INSTRUCTIONS_MAX_LENGTH,
   ASSISTANTS_NAME_MAX_LENGTH,
   AVATAR_FILE_SIZE_ERROR_TEXT,
   MAX_AVATAR_SIZE
 } from '$lib/constants';
-import { uuidSchema } from './chat';
 
 export const supabaseAssistantInputSchema: ObjectSchema<AssistantInput> = object({
   name: string()
     .max(ASSISTANTS_NAME_MAX_LENGTH)
     .required('This field is required. Please enter a name.'),
   description: string()
-    .max(ASSISTANTS_NAME_MAX_LENGTH)
+    .max(ASSISTANTS_DESCRIPTION_MAX_LENGTH)
     .required('This field is required. Please enter a tagline.'),
   instructions: string()
     .max(ASSISTANTS_INSTRUCTIONS_MAX_LENGTH)
     .required('This field is required. Please enter instructions.'),
   temperature: number().required('Required'),
   data_sources: string(),
-  avatar: mixed<File>()
+  avatar: string(),
+  avatarFile: mixed<File>()
     .nullable()
     .test('fileType', 'Please upload an image.', (value) => value == null || value instanceof File)
     .test('fileSize', AVATAR_FILE_SIZE_ERROR_TEXT, (value) => {
@@ -46,4 +48,4 @@ export const supabaseAssistantInputSchema: ObjectSchema<AssistantInput> = object
   .strict();
 
 export const editAssistantInputSchema: ObjectSchema<EditAssistantInput> =
-  supabaseAssistantInputSchema.concat(uuidSchema);
+  supabaseAssistantInputSchema.concat(object({ id: string().required() }));
