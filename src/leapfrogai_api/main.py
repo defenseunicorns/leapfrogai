@@ -40,6 +40,7 @@ app = FastAPI(lifespan=lifespan)
 
 logger = logging.getLogger(__name__)
 logger.setLevel(logging.DEBUG)
+logger.addHandler(logging.StreamHandler())
 
 app.include_router(base_router)
 app.include_router(models.router)
