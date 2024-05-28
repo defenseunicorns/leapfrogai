@@ -8,6 +8,8 @@ import toml
 import yaml
 from watchfiles import Change, awatch
 
+logging.basicConfig(level=logging.INFO)
+
 
 class Model:
     name: str
