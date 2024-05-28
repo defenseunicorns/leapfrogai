@@ -1,7 +1,7 @@
 import { faker } from '@faker-js/faker';
 import { POST } from './+server';
 import { MAX_LABEL_SIZE } from '$lib/constants';
-import { getFakeThread } from '../../../../../testUtils/fakeData';
+import { getFakeThread } from '$testUtils/fakeData';
 import {
   selectSingleReturnsMockError,
   sessionMock,

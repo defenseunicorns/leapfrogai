@@ -3,7 +3,7 @@ import { sessionMock, sessionNullMock } from '$lib/mocks/supabase-mocks';
 import { MAX_LABEL_SIZE } from '$lib/constants';
 import { PUT } from './+server';
 import { mockOpenAI } from '../../../../../../vitest-setup';
-import { getFakeThread } from '../../../../../../testUtils/fakeData';
+import { getFakeThread } from '$testUtils/fakeData';
 
 const validLabel = faker.string.alpha({ length: MAX_LABEL_SIZE - 1 });
 const invalidLongLabel = faker.string.alpha({ length: MAX_LABEL_SIZE + 1 });

@@ -25,7 +25,7 @@ export async function DELETE({ request, locals: { getSession } }) {
   );
 
   if (!messageDeleted.deleted) {
-    console.log(`error deleting message: ${JSON.stringify(messageDeleted)}`);
+    console.error(`error deleting message: ${JSON.stringify(messageDeleted)}`);
     error(500, 'Error deleting message');
   }
 

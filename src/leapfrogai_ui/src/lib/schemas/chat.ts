@@ -26,12 +26,6 @@ export const messageInputSchema: ObjectSchema<NewMessageInput> = object({
   .noUnknown(true)
   .strict();
 
-export const uuidSchema = object({
-  id: string().uuid().required()
-})
-  .noUnknown(true)
-  .strict();
-
 export const deleteMessageSchema = object({
   thread_id: string().required(),
   message_id: string().required()

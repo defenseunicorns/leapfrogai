@@ -13,7 +13,7 @@ import {
   supabaseInsertSingleMock,
   supabaseStorageMockWrapper
 } from '$lib/mocks/supabase-mocks';
-import { getFakeAssistant, getFakeAssistantInput } from '../../../../../testUtils/fakeData';
+import { getFakeAssistant, getFakeAssistantInput } from '$testUtils/fakeData';
 import type { PageServerLoad } from './$types';
 import AssistantForm from '$components/AssistantForm.svelte';
 import { mockOpenAI } from '../../../../../vitest-setup';

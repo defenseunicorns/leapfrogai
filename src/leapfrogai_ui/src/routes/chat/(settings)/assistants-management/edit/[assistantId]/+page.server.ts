@@ -97,7 +97,7 @@ export const actions = {
     try {
       await openai.beta.assistants.update(form.data.id, assistant);
     } catch (e) {
-      console.log(`Error updating assistant: ${e}`);
+      console.error(`Error updating assistant: ${e}`);
       return fail(500, { message: 'Error updating assistant.' });
     }
 

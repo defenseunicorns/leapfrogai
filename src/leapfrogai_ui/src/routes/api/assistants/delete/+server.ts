@@ -21,7 +21,7 @@ export async function DELETE({ request, locals: { supabase, getSession } }) {
 
   const assistantDeleted = await openai.beta.assistants.del(requestData.id);
   if (!assistantDeleted.deleted) {
-    console.log(`error deleting assistant: ${JSON.stringify(assistantDeleted)}`);
+    console.error(`error deleting assistant: ${JSON.stringify(assistantDeleted)}`);
     error(500, 'Error deleting assistant');
   }
 
@@ -30,7 +30,9 @@ export async function DELETE({ request, locals: { supabase, getSession } }) {
     .remove([requestData.id]);
   if (supabaseError) {
     // fail silently
-    console.log(`Error deleting assistant avatar. AssistantId: ${requestData.id}, error: ${error}`);
+    console.error(
+      `Error deleting assistant avatar. AssistantId: ${requestData.id}, error: ${error}`
+    );
   }
 
   return new Response(undefined, { status: 204 });

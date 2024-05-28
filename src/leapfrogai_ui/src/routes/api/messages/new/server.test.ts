@@ -1,5 +1,5 @@
 import { sessionMock, sessionNullMock } from '$lib/mocks/supabase-mocks';
-import { getFakeMessage } from '../../../../../testUtils/fakeData';
+import { getFakeMessage } from '$testUtils/fakeData';
 import { POST } from './+server';
 import { mockOpenAI } from '../../../../../vitest-setup';
 import type { NewMessageInput } from '$lib/types/messages';

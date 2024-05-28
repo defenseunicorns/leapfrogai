@@ -62,7 +62,7 @@ export const actions = {
     try {
       createdAssistant = (await openai.beta.assistants.create(assistant)) as LFAssistant;
     } catch (e) {
-      console.log(`Error creating assistant: ${e}`);
+      console.error(`Error creating assistant: ${e}`);
       return fail(500, { message: 'Error creating assistant.' });
     }
 
@@ -88,7 +88,7 @@ export const actions = {
           }
         });
       } catch (e) {
-        console.log(`Error adding avatar to assistant: ${e}`);
+        console.error(`Error adding avatar to assistant: ${e}`);
         return fail(500, { message: 'Error adding avatar to assistant.' });
       }
     }

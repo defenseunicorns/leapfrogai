@@ -256,11 +256,3 @@ test("it populates the assistants values when editing an assistant's details", a
   // cleanup
   await deleteAssistant(page, assistantInput.name);
 });
-
-test('it can delete assistants', async ({ page }) => {
-  const assistantInput = getFakeAssistantInput();
-
-  await createAssistant(page, assistantInput);
-
-  await deleteAssistant(page, assistantInput.name);
-});

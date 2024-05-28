@@ -1,5 +1,5 @@
 import { dates } from '$helpers';
-import { getFakeThread } from '../../../testUtils/fakeData';
+import { getFakeThread } from '$testUtils/fakeData';
 import { getUnixSeconds } from '$helpers/dates';
 
 describe('date helpers', () => {

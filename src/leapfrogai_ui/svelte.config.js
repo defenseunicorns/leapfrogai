@@ -19,7 +19,8 @@ const config = {
       $helpers: 'src/lib/helpers',
       $assets: 'src/lib/assets',
       $schemas: 'src/lib/schemas',
-      $constants: 'src/lib/constants'
+      $constants: 'src/lib/constants',
+      $testUtils: 'testUtils'
     }
   }
 };
