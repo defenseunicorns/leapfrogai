@@ -1,7 +1,6 @@
 """OpenAI Compliant Vector Store API Router."""
 
 import time
-import logging
 from fastapi import APIRouter, HTTPException, status
 from openai.types.beta import VectorStore, VectorStoreDeleted
 from openai.types.beta.vector_store import FileCounts
@@ -16,6 +15,7 @@ from leapfrogai_api.data.crud_vector_store_file import CRUDVectorStoreFile
 from leapfrogai_api.data.crud_vector_store import CRUDVectorStore
 from leapfrogai_api.data.async_supabase_vector_store import AsyncSupabaseVectorStore
 from leapfrogai_api.routers.supabase_session import Session
+import traceback
 
 router = APIRouter(prefix="/openai/v1/vector_stores", tags=["openai/vector_stores"])
 
@@ -69,7 +69,7 @@ async def create_vector_store(
             object_=new_vector_store,
         )
     except Exception as exc:
-        logging.error(f"Unable to create vector store {exc}")
+        traceback.print_exc()
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail="Unable to create vector store",
