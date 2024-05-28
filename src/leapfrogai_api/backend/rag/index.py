@@ -75,12 +75,12 @@ class IndexingService:
                 await crud_vector_store_file.update(
                     id_=vector_store_file.id, object_=vector_store_file
                 )
-            except:
+            except Exception as e:
                 vector_store_file.status = "failed"
                 await crud_vector_store_file.update(
                     id_=vector_store_file.id, object_=vector_store_file
                 )
-                raise
+                raise e
 
             return await crud_vector_store_file.get(
                 vector_store_id=vector_store_id, file_id=file_id
