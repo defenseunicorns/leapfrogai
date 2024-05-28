@@ -15,8 +15,8 @@ class AuthVectorStore(VectorStore):
 class CRUDVectorStore(CRUDBase[AuthVectorStore]):
     """CRUD Operations for VectorStore"""
 
-    def __init__(self, db: AsyncClient, table_name: str = "vector_store"):
-        super().__init__(db=db, model=AuthVectorStore, table_name=table_name)
+    def __init__(self, db: AsyncClient):
+        super().__init__(db=db, model=AuthVectorStore, table_name="vector_store")
 
     async def create(self, object_: VectorStore) -> AuthVectorStore | None:
         """Create new vector store."""
