@@ -156,11 +156,10 @@ class CreateEmbeddingRequest(BaseModel):
 
     model: str = Field(
         description="Model that will be doing the embedding",
-        examples=["text-embeddings"]
+        examples=["text-embeddings"],
     )
     input: str | list[str] | list[int] | list[list[int]] = Field(
-        description="The text to be embedded", 
-        examples=["My test input"]
+        description="The text to be embedded", examples=["My test input"]
     )
 
 
