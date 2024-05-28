@@ -2,7 +2,7 @@
 
 from __future__ import annotations
 from typing import Literal
-from pydantic import BaseModel
+from pydantic import BaseModel, Field
 from fastapi import UploadFile, Form, File
 from openai.types.beta.vector_store import ExpiresAfter
 from openai.types import FileObject
@@ -154,9 +154,14 @@ class ChatCompletionResponse(BaseModel):
 class CreateEmbeddingRequest(BaseModel):
     """Request object for creating embeddings."""
 
-    model: str
-    input: str | list[str] | list[int] | list[list[int]]
-    user: str | None = None
+    model: str = Field(
+        description="Model that will be doing the embedding",
+        examples=["text-embeddings"]
+    )
+    input: str | list[str] | list[int] | list[list[int]] = Field(
+        description="The text to be embedded", 
+        examples=["My test input"]
+    )
 
 
 class EmbeddingResponseData(BaseModel):
