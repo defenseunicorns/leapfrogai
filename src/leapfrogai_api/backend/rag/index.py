@@ -20,15 +20,15 @@ class IndexingService:
 
     async def index_file(self, vector_store_id: str, file_id: str) -> VectorStoreFile:
         """Index a file into a vector store."""
-        crud_vector_store_file = await CRUDVectorStoreFile(db=self.db)
+        crud_vector_store_file = CRUDVectorStoreFile(db=self.db)
 
         if await crud_vector_store_file.get(
             vector_store_id=vector_store_id, file_id=file_id
         ):
             raise ValueError("File already indexed")
 
-        crud_file_object = await CRUDFileObject(db=self.db)
-        crud_file_bucket = await CRUDFileBucket(db=self.db, model=UploadFile)
+        crud_file_object = CRUDFileObject(db=self.db)
+        crud_file_bucket = CRUDFileBucket(db=self.db, model=UploadFile)
 
         file_object = await crud_file_object.get(id_=file_id)
 
@@ -57,7 +57,7 @@ class IndexingService:
 
             try:
                 embeddings_function = LeapfrogAIEmbeddings()
-                vector_store_client = await AsyncSupabaseVectorStore(
+                vector_store_client = AsyncSupabaseVectorStore(
                     db=self.db, embedding=embeddings_function
                 )
 

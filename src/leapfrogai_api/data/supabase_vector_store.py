@@ -4,6 +4,8 @@ from langchain_core.documents import Document
 from langchain_core.embeddings import Embeddings
 from supabase_py_async import AsyncClient
 
+from leapfrogai_api.backend.rag.leapfrogai_embeddings import LeapfrogAIEmbeddings
+
 
 # Partially implements the Langchain Core VectorStore interface
 class AsyncSupabaseVectorStore:
@@ -12,26 +14,23 @@ class AsyncSupabaseVectorStore:
     Args:
         client (AsyncClient): The Supabase async client.
         embedding (Embeddings): The embedding model.
-        table_name (str, optional): The name of the database table. Defaults to "vector_content".
-        chunk_size (int, optional): The chunk size for batch operations. Defaults to 500.
-        query_name (str, optional): The name of the query to execute. Defaults to "match_vectors".
 
     """
 
     def __init__(
         self,
         db: AsyncClient,
-        embedding: Embeddings | None = None,
-        table_name: str = "vector_content",
-        chunk_size: int = 500,
-        query_name: str = "match_vectors",
+        embedding: Embeddings | LeapfrogAIEmbeddings | None = None,
     ) -> None:
         """Initializes the AsyncSupabaseVectorStore."""
         self.client: AsyncClient = db
         self.embedding: Embeddings = embedding
-        self.table_name = table_name
-        self.chunk_size = chunk_size
-        self.query_name = query_name
+        # The name of the database table. Defaults to "vector_content".
+        self.table_name: str = "vector_content"
+        # The chunk size for batch operations. Defaults to 500.
+        self.chunk_size: int = 500
+        # The name of the query to execute. Defaults to "match_vectors".
+        self.query_name: str = "match_vectors"
 
     async def adelete_file(self, vector_store_id: str, file_id: str) -> bool:
         """Delete a file from the vector store.

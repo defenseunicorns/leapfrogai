@@ -23,7 +23,6 @@ class LeapfrogAIEmbeddings:
             list[list[float]]: The list of embedding vectors for each document.
         """
         model = await self._get_model()
-        list_of_embeddings = []
         request = lfai.EmbeddingRequest(inputs=texts)
         response = await create_embeddings(model=model, request=request)
 

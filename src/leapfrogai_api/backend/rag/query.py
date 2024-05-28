@@ -22,7 +22,7 @@ class QueryService:
         Returns:
             dict: The response from the RAG model.
         """
-        vector_store = await AsyncSupabaseVectorStore(
+        vector_store = AsyncSupabaseVectorStore(
             db=self.db,
             embedding=LeapfrogAIEmbeddings(),
         )
