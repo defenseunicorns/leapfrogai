@@ -17,7 +17,7 @@
   import { filesSchema } from '$schemas/files';
   import { toastStore } from '$stores';
   import type { FileRow } from '$lib/types/files';
-  import { invalidateAll } from '$app/navigation';
+  import { invalidate } from '$app/navigation';
 
   export let data;
 
@@ -75,22 +75,19 @@
         'Content-Type': 'application/json'
       }
     });
+    await invalidate('/api/files');
     if (res.ok) {
       toastStore.addToast({
         kind: 'success',
         title: `${isMultipleFiles ? 'Files' : 'File'} Deleted`,
         subtitle: ''
       });
-
-      await invalidateAll();
     } else {
       toastStore.addToast({
         kind: 'error',
         title: `Error Deleting ${isMultipleFiles ? 'Files' : 'File'}`,
         subtitle: ''
       });
-
-      await invalidateAll();
     }
     selectedRowIds = [];
     deleting = false;

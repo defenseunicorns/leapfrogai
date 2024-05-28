@@ -1,29 +1,15 @@
-import { fail, redirect } from '@sveltejs/kit';
+import { fail } from '@sveltejs/kit';
 import { superValidate, withFiles } from 'sveltekit-superforms';
 import { yup } from 'sveltekit-superforms/adapters';
 import type { FileObject } from 'openai/resources/files';
-import type { PageServerLoad } from './$types';
 import { openai } from '$lib/server/constants';
 import { filesSchema } from '$schemas/files';
 import type { FileRow } from '$lib/types/files';
 import { getUnixSeconds } from '$helpers/dates';
 
-export const load: PageServerLoad = async ({ locals: { getSession } }) => {
-  const session = await getSession();
-
-  if (!session) {
-    throw redirect(303, '/');
-  }
-
-  const list = await openai.files.list();
-  const form = await superValidate(yup(filesSchema));
-
-  return { title: 'LeapfrogAI - File Management', files: list.data, form };
-};
-
 export const actions = {
-  default: async ({ request, locals: { getSession } }) => {
-    const session = await getSession();
+  default: async ({ request, locals: { safeGetSession } }) => {
+    const { session } = await safeGetSession();
     if (!session) {
       return fail(401, { message: 'Unauthorized' });
     }

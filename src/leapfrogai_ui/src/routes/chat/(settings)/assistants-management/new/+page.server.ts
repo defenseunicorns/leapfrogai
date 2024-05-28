@@ -3,14 +3,13 @@ import { fail, redirect } from '@sveltejs/kit';
 import { yup } from 'sveltekit-superforms/adapters';
 import { assistantDefaults, DEFAULT_ASSISTANT_TEMP } from '$lib/constants';
 import { env } from '$env/dynamic/private';
-import type { PageServerLoad } from './$types';
-import { supabaseAssistantInputSchema } from '$lib/schemas/assistants';
+import { assistantInputSchema } from '$lib/schemas/assistants';
 import { openai } from '$lib/server/constants';
 import type { LFAssistant } from '$lib/types/assistants';
 import { getAssistantAvatarUrl } from '$helpers/assistants';
 
-export const load: PageServerLoad = async ({ locals: { getSession } }) => {
-  const session = await getSession();
+export const load = async ({ locals: { safeGetSession } }) => {
+  const { session } = await safeGetSession();
 
   if (!session) {
     throw redirect(303, '/');
@@ -19,7 +18,7 @@ export const load: PageServerLoad = async ({ locals: { getSession } }) => {
   // Populate form with default temperature
   const form = await superValidate(
     { temperature: DEFAULT_ASSISTANT_TEMP },
-    yup(supabaseAssistantInputSchema),
+    yup(assistantInputSchema),
     { errors: false } // turn off errors for new assistant b/c providing default data turns them on
   );
 
@@ -27,14 +26,13 @@ export const load: PageServerLoad = async ({ locals: { getSession } }) => {
 };
 
 export const actions = {
-  default: async ({ request, locals: { supabase, getSession } }) => {
-    // Validate session
-    const session = await getSession();
+  default: async ({ request, locals: { supabase, safeGetSession } }) => {
+    const { session } = await safeGetSession();
     if (!session) {
       return fail(401, { message: 'Unauthorized' });
     }
 
-    const form = await superValidate(request, yup(supabaseAssistantInputSchema));
+    const form = await superValidate(request, yup(assistantInputSchema));
 
     if (!form.valid) {
       return fail(400, { form });

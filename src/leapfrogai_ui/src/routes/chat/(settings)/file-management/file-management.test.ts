@@ -3,19 +3,18 @@ import FileManagementPage from './+page.svelte';
 import { getFakeFiles } from '../../../../../testUtils/fakeData';
 import userEvent from '@testing-library/user-event';
 import { formatDate } from '$helpers/dates';
-import { load } from './+page.server';
+import { load } from './+page';
 import { sessionMock } from '$lib/mocks/supabase-mocks';
-import { mockOpenAI } from '../../../../../vitest-setup';
-import { mockDeleteFile, mockDeleteFileWithDelay } from '$lib/mocks/file-mocks';
+import { mockDeleteFile, mockDeleteFileWithDelay, mockGetFiles } from '$lib/mocks/file-mocks';
 import { vi } from 'vitest';
 import { toastStore } from '$stores';
 
 describe('file management', () => {
   it('lists all the files', async () => {
     const files = getFakeFiles();
-    mockOpenAI.setFiles(files);
+    mockGetFiles(files);
 
-    const data = await load({ locals: { getSession: sessionMock } });
+    const data = await load({ fetch: global.fetch, locals: { safeGetSession: sessionMock } });
     render(FileManagementPage, { data });
 
     files.forEach((file) => {
@@ -24,9 +23,9 @@ describe('file management', () => {
   });
   it('searches for files by filename', async () => {
     const files = getFakeFiles();
-    mockOpenAI.setFiles(files);
+    mockGetFiles(files);
 
-    const data = await load({ locals: { getSession: sessionMock } });
+    const data = await load({ fetch: global.fetch, locals: { safeGetSession: sessionMock } });
     render(FileManagementPage, { data });
 
     expect(screen.getByText(files[1].filename)).toBeInTheDocument();
@@ -45,9 +44,9 @@ describe('file management', () => {
     const file1 = getFakeFiles({ numFiles: 1 })[0];
     const file2 = getFakeFiles({ numFiles: 1, created_at: yesterday })[0];
 
-    mockOpenAI.setFiles([file1, file2]);
+    mockGetFiles([file1, file2]);
 
-    const data = await load({ locals: { getSession: sessionMock } });
+    const data = await load({ fetch: global.fetch, locals: { safeGetSession: sessionMock } });
 
     render(FileManagementPage, { data });
 
@@ -64,9 +63,9 @@ describe('file management', () => {
     const toastSpy = vi.spyOn(toastStore, 'addToast');
     mockDeleteFile();
     const files = getFakeFiles();
-    mockOpenAI.setFiles(files);
+    mockGetFiles(files);
 
-    const data = await load({ locals: { getSession: sessionMock } });
+    const data = await load({ fetch: global.fetch, locals: { safeGetSession: sessionMock } });
     render(FileManagementPage, { data });
 
     const checkboxes = screen.getAllByRole('checkbox');
@@ -90,9 +89,9 @@ describe('file management', () => {
     // Note - the delete button is hidden when there are no rows selected, but still on the page so it needs to be
     // disabled
     const files = getFakeFiles();
-    mockOpenAI.setFiles(files);
+    mockGetFiles(files);
 
-    const data = await load({ locals: { getSession: sessionMock } });
+    const data = await load({ fetch: global.fetch, locals: { safeGetSession: sessionMock } });
     render(FileManagementPage, { data });
 
     const deleteBtn = screen.getByRole('button', { name: /delete/i });
@@ -101,9 +100,9 @@ describe('file management', () => {
   it('replaces the delete button with a loading spinner while deleting', async () => {
     mockDeleteFileWithDelay();
     const files = getFakeFiles();
-    mockOpenAI.setFiles(files);
+    mockGetFiles(files);
 
-    const data = await load({ locals: { getSession: sessionMock } });
+    const data = await load({ fetch: global.fetch, locals: { safeGetSession: sessionMock } });
     render(FileManagementPage, { data });
 
     const deleteBtn = screen.getByRole('button', { name: /delete/i });

@@ -8,7 +8,7 @@ describe('the files upload form action', () => {
       method: 'POST'
     });
 
-    const res = await actions.default({ request, locals: { getSession: sessionMock } });
+    const res = await actions.default({ request, locals: { safeGetSession: sessionMock } });
     expect(res?.status).toEqual(400);
   });
   it('returns a 401 if the request is unauthenticated', async () => {
@@ -17,7 +17,7 @@ describe('the files upload form action', () => {
     });
     const res = await actions.default({
       request,
-      locals: { getSession: sessionNullMock }
+      locals: { safeGetSession: sessionNullMock }
     });
 
     expect(res?.status).toEqual(401);

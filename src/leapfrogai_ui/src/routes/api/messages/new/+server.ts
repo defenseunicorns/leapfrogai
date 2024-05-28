@@ -3,8 +3,8 @@ import { messageInputSchema } from '$lib/schemas/chat';
 import type { NewMessageInput } from '$lib/types/messages';
 import { openai } from '$lib/server/constants';
 
-export async function POST({ request, locals: { getSession } }) {
-  const session = await getSession();
+export async function POST({ request, locals: { safeGetSession } }) {
+  const { session } = await safeGetSession();
   if (!session) {
     error(401, 'Unauthorized');
   }

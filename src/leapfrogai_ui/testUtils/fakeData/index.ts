@@ -3,7 +3,7 @@ import { faker } from '@faker-js/faker';
 import { assistantDefaults, DEFAULT_ASSISTANT_TEMP } from '../../src/lib/constants';
 import type { AssistantInput, LFAssistant } from '../../src/lib/types/assistants';
 import type { LFMessage } from '../../src/lib/types/messages';
-import type { LFThread, Roles } from '../../src/lib/types/threads';
+import type { LFThread } from '../../src/lib/types/threads';
 import type { MessageContent } from 'openai/resources/beta/threads/messages';
 import { getUnixSeconds } from '../../src/lib/helpers/dates';
 import type { FileObject } from 'openai/resources/files';
@@ -14,7 +14,7 @@ const userId = faker.string.uuid();
 
 type FakeMessageOptions = {
   id?: string;
-  role?: Roles;
+  role?: 'user' | 'assistant';
   thread_id?: string;
   user_id?: string;
   content?: string;

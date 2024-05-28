@@ -8,7 +8,7 @@ import {
   MAX_AVATAR_SIZE
 } from '$lib/constants';
 
-export const supabaseAssistantInputSchema: ObjectSchema<AssistantInput> = object({
+export const assistantInputSchema: ObjectSchema<AssistantInput> = object({
   name: string()
     .max(ASSISTANTS_NAME_MAX_LENGTH)
     .required('This field is required. Please enter a name.'),
@@ -48,4 +48,4 @@ export const supabaseAssistantInputSchema: ObjectSchema<AssistantInput> = object
   .strict();
 
 export const editAssistantInputSchema: ObjectSchema<EditAssistantInput> =
-  supabaseAssistantInputSchema.concat(object({ id: string().required() }));
+  assistantInputSchema.concat(object({ id: string().required() }));

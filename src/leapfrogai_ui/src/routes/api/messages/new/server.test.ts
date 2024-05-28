@@ -24,7 +24,7 @@ describe('/api/messages/new', () => {
 
     const res = await POST({
       request,
-      locals: { getSession: sessionMock }
+      locals: { safeGetSession: sessionMock }
     });
 
     const resData = await res.json();
@@ -41,7 +41,7 @@ describe('/api/messages/new', () => {
     await expect(
       POST({
         request,
-        locals: { getSession: sessionNullMock }
+        locals: { safeGetSession: sessionNullMock }
       })
     ).rejects.toMatchObject({
       status: 401
@@ -56,7 +56,7 @@ describe('/api/messages/new', () => {
     await expect(
       POST({
         request,
-        locals: { getSession: sessionMock }
+        locals: { safeGetSession: sessionMock }
       })
     ).rejects.toMatchObject({
       status: 400
@@ -71,7 +71,7 @@ describe('/api/messages/new', () => {
     await expect(
       POST({
         request,
-        locals: { getSession: sessionMock }
+        locals: { safeGetSession: sessionMock }
       })
     ).rejects.toMatchObject({
       status: 400
@@ -86,7 +86,7 @@ describe('/api/messages/new', () => {
     await expect(
       POST({
         request,
-        locals: { getSession: sessionMock }
+        locals: { safeGetSession: sessionMock }
       })
     ).rejects.toMatchObject({
       status: 400
@@ -102,7 +102,7 @@ describe('/api/messages/new', () => {
     await expect(
       POST({
         request,
-        locals: { getSession: sessionMock }
+        locals: { safeGetSession: sessionMock }
       })
     ).rejects.toMatchObject({
       status: 500

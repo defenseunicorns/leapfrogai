@@ -1,5 +1,5 @@
 <script lang="ts">
-  import { goto, invalidateAll } from '$app/navigation';
+  import { goto, invalidate } from '$app/navigation';
   import { fade } from 'svelte/transition';
   import DynamicPictogram from '$components/DynamicPictogram.svelte';
   import { Modal, OverflowMenu, OverflowMenuItem } from 'carbon-components-svelte';
@@ -23,7 +23,7 @@
     deleteModalOpen = false;
 
     if (res.ok) {
-      await invalidateAll();
+      await invalidate('/api/assistants');
       toastStore.addToast({
         kind: 'info',
         title: 'Assistant Deleted.',

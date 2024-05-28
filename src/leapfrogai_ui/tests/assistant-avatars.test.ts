@@ -1,7 +1,11 @@
 import { expect, test } from './fixtures';
 import { getFakeAssistantInput } from '../testUtils/fakeData';
-import { deleteAssistant, uploadAvatar } from './helpers';
+import { deleteAllAssistants, uploadAvatar } from './helpers';
 import { NO_FILE_ERROR_TEXT } from '../src/lib/constants/index';
+
+test.afterEach(async () => {
+  await deleteAllAssistants();
+});
 
 test('it can search for and choose a pictogram as an avatar', async ({ page, browserName }) => {
   // Browser type 'chromium' is used for both edge and chrome, and we need each browser to pick a different pictogram
@@ -38,9 +42,6 @@ test('it can search for and choose a pictogram as an avatar', async ({ page, bro
 
     await page.waitForURL('**/chat/assistants-management');
     await expect(page.getByTestId(`pictogram-${pictogramName}`)).toBeVisible();
-
-    // cleanup
-    await deleteAssistant(page, assistantInput.name);
   }
 });
 
@@ -68,9 +69,6 @@ test('it can upload an image as an avatar', async ({ page }) => {
   await page.waitForURL('/chat/assistants-management');
   await expect(page.getByText('Assistant Created')).toBeVisible();
   await expect(page.getByTestId(`assistant-tile-${assistantInput.name}`)).toBeVisible();
-
-  // cleanup
-  await deleteAssistant(page, assistantInput.name);
 });
 
 test('it can change an image uploaded as an avatar', async ({ page }) => {

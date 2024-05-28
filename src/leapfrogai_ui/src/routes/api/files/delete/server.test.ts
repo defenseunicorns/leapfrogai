@@ -13,7 +13,7 @@ describe('/api/files/delete', () => {
     const res = await DELETE({
       request,
       locals: {
-        getSession: sessionMock
+        safeGetSession: sessionMock
       }
     });
 
@@ -28,7 +28,7 @@ describe('/api/files/delete', () => {
     await expect(
       DELETE({
         request,
-        locals: { getSession: sessionNullMock }
+        locals: { safeGetSession: sessionNullMock }
       })
     ).rejects.toMatchObject({
       status: 401
@@ -41,7 +41,9 @@ describe('/api/files/delete', () => {
       body: JSON.stringify({ ids: 123 })
     });
 
-    await expect(DELETE({ request, locals: { getSession: sessionMock } })).rejects.toMatchObject({
+    await expect(
+      DELETE({ request, locals: { safeGetSession: sessionMock } })
+    ).rejects.toMatchObject({
       status: 400
     });
   });
@@ -50,7 +52,9 @@ describe('/api/files/delete', () => {
       method: 'DELETE'
     });
 
-    await expect(DELETE({ request, locals: { getSession: sessionMock } })).rejects.toMatchObject({
+    await expect(
+      DELETE({ request, locals: { safeGetSession: sessionMock } })
+    ).rejects.toMatchObject({
       status: 400
     });
   });
@@ -60,7 +64,9 @@ describe('/api/files/delete', () => {
       body: JSON.stringify({ ids: [faker.string.uuid()], wrong: 'key' })
     });
 
-    await expect(DELETE({ request, locals: { getSession: sessionMock } })).rejects.toMatchObject({
+    await expect(
+      DELETE({ request, locals: { safeGetSession: sessionMock } })
+    ).rejects.toMatchObject({
       status: 400
     });
   });
@@ -76,7 +82,7 @@ describe('/api/files/delete', () => {
       DELETE({
         request,
         locals: {
-          getSession: sessionMock
+          safeGetSession: sessionMock
         }
       })
     ).rejects.toMatchObject({

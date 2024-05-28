@@ -2,8 +2,8 @@ import { error } from '@sveltejs/kit';
 import { openai } from '$lib/server/constants';
 import { stringIdArraySchema } from '$schemas/chat';
 
-export async function DELETE({ request, locals: { getSession } }) {
-  const session = await getSession();
+export async function DELETE({ request, locals: { safeGetSession } }) {
+  const { session } = await safeGetSession();
   if (!session) {
     error(401, 'Unauthorized');
   }

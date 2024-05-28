@@ -9,6 +9,7 @@ class OpenAI {
   private baseURL: string;
   private thread: LFThread;
   private message: LFMessage;
+  private assistants: LFAssistant[];
   private assistant: LFAssistant;
   private uploadedFiles: FileObject[];
   private errors: {
@@ -19,6 +20,7 @@ class OpenAI {
     createMessage: boolean;
     deleteMessage: boolean;
     deleteAssistant: boolean;
+    createAssistant: boolean;
     retrieveAssistant: boolean;
     updateAssistant: boolean;
     deleteFile: boolean;
@@ -29,6 +31,7 @@ class OpenAI {
     this.baseURL = baseURL;
     this.thread = getFakeThread();
     this.message = getFakeMessage();
+    this.assistants = [];
     this.assistant = getFakeAssistant();
     this.uploadedFiles = [];
     this.errors = {
@@ -38,6 +41,7 @@ class OpenAI {
       retrieveThread: false,
       createMessage: false,
       deleteMessage: false,
+      createAssistant: false,
       deleteAssistant: false,
       retrieveAssistant: false,
       updateAssistant: false,
@@ -51,6 +55,9 @@ class OpenAI {
   }
   setMessage(message: LFMessage) {
     this.message = message;
+  }
+  setAssistants(assistants: LFAssistant[]) {
+    this.assistants = assistants;
   }
   setAssistant(assistant: LFAssistant) {
     this.assistant = assistant;
@@ -130,6 +137,13 @@ class OpenAI {
       }
     },
     assistants: {
+      create: vi.fn().mockImplementation(() => {
+        if (this.errors.createAssistant) this.throwError('createAssistant');
+        return Promise.resolve(this.assistant);
+      }),
+      list: vi.fn().mockImplementation(() => {
+        return Promise.resolve({ data: this.assistants });
+      }),
       del: vi.fn().mockImplementation((id) => {
         if (this.errors.deleteAssistant) {
           this.resetError('deleteAssistant');

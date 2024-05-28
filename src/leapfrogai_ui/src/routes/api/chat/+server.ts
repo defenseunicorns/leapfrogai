@@ -1,6 +1,5 @@
 import { StreamingTextResponse, streamText } from 'ai';
 import { createOpenAI } from '@ai-sdk/openai';
-import type { RequestHandler } from './$types';
 import { env } from '$env/dynamic/private';
 import { error } from '@sveltejs/kit';
 import { getMessageText } from '$helpers/threads';
@@ -12,8 +11,8 @@ const openai = createOpenAI({
   baseURL: env.LEAPFROGAI_API_BASE_URL
 });
 
-export const POST = (async ({ request, locals: { getSession } }) => {
-  const session = await getSession();
+export async function POST({ request, locals: { safeGetSession } }) {
+  const { session } = await safeGetSession();
 
   if (!session) {
     error(401, 'Unauthorized');
@@ -46,4 +45,4 @@ export const POST = (async ({ request, locals: { getSession } }) => {
   });
 
   return new StreamingTextResponse(result.toAIStream());
-}) satisfies RequestHandler;
+}
