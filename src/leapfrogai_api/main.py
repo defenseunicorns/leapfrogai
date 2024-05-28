@@ -43,15 +43,6 @@ handler.setFormatter(logging.Formatter("%(asctime)s - %(levelname)s - %(message)
 logger.addHandler(handler)
 
 
-@app.on_event("startup")
-async def startup_event():
-    logger = logging.getLogger(__name__)
-    handler = logging.StreamHandler()
-    handler.setFormatter(logging.Formatter("%(asctime)s - %(levelname)s - %(message)s"))
-    logger.addHandler(handler)
-    logger.debug("TESTSETESTES")
-
-
 app.include_router(base_router)
 app.include_router(models.router)
 app.include_router(completions.router)
