@@ -25,18 +25,23 @@ export const load = async ({ locals: { supabase, safeGetSession } }) => {
     throw redirect(303, '/');
   }
 
-  const threads: LFThread[] = [];
+  let threads: LFThread[] = [];
   if (profile?.thread_ids && profile?.thread_ids.length > 0) {
-    for (const thread_id of profile.thread_ids) {
-      try {
+    try {
+      const threadPromises = profile.thread_ids.map(async (thread_id) => {
         const thread = (await openai.beta.threads.retrieve(thread_id)) as LFThread;
         const messagesPage = await openai.beta.threads.messages.list(thread.id);
         const messages = messagesPage.data as LFMessage[];
         messages.sort((a, b) => a.created_at - b.created_at);
-        threads.push({ ...thread, messages: messages });
-      } catch {
-        // fail silently
-      }
+        return { ...thread, messages: messages };
+      });
+
+      const resolvedThreads = await Promise.all(threadPromises);
+      threads.push(...resolvedThreads);
+    } catch (e) {
+      console.error(`Error fetching thread: ${e}`);
+      // fail silently
+      return null;
     }
   }
 

@@ -14,7 +14,7 @@ describe('file management', () => {
     const files = getFakeFiles();
     mockGetFiles(files);
 
-    const data = await load({ fetch: global.fetch, locals: { safeGetSession: sessionMock } });
+    const data = await load({ fetch: global.fetch });
     render(FileManagementPage, { data });
 
     files.forEach((file) => {
@@ -25,7 +25,7 @@ describe('file management', () => {
     const files = getFakeFiles();
     mockGetFiles(files);
 
-    const data = await load({ fetch: global.fetch, locals: { safeGetSession: sessionMock } });
+    const data = await load({ fetch: global.fetch });
     render(FileManagementPage, { data });
 
     expect(screen.getByText(files[1].filename)).toBeInTheDocument();
@@ -46,7 +46,7 @@ describe('file management', () => {
 
     mockGetFiles([file1, file2]);
 
-    const data = await load({ fetch: global.fetch, locals: { safeGetSession: sessionMock } });
+    const data = await load({ fetch: global.fetch });
 
     render(FileManagementPage, { data });
 
@@ -65,7 +65,7 @@ describe('file management', () => {
     const files = getFakeFiles();
     mockGetFiles(files);
 
-    const data = await load({ fetch: global.fetch, locals: { safeGetSession: sessionMock } });
+    const data = await load({ fetch: global.fetch });
     render(FileManagementPage, { data });
 
     const checkboxes = screen.getAllByRole('checkbox');
@@ -91,7 +91,7 @@ describe('file management', () => {
     const files = getFakeFiles();
     mockGetFiles(files);
 
-    const data = await load({ fetch: global.fetch, locals: { safeGetSession: sessionMock } });
+    const data = await load({ fetch: global.fetch });
     render(FileManagementPage, { data });
 
     const deleteBtn = screen.getByRole('button', { name: /delete/i });
@@ -102,7 +102,7 @@ describe('file management', () => {
     const files = getFakeFiles();
     mockGetFiles(files);
 
-    const data = await load({ fetch: global.fetch, locals: { safeGetSession: sessionMock } });
+    const data = await load({ fetch: global.fetch });
     render(FileManagementPage, { data });
 
     const deleteBtn = screen.getByRole('button', { name: /delete/i });
