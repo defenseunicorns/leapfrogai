@@ -69,7 +69,7 @@ async def create_vector_store(
             object_=new_vector_store,
         )
     except Exception as exc:
-        logging.error(f"Unable to create vector store {exc}")
+        logging.getLogger(__name__).error(f"Unable to create vector store {exc}")
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail="Unable to create vector store",

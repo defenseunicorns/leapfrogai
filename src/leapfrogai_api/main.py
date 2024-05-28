@@ -4,7 +4,6 @@ import asyncio
 import logging
 from contextlib import asynccontextmanager
 
-
 from fastapi import FastAPI
 
 from leapfrogai_api.routers.base import router as base_router
@@ -37,6 +36,15 @@ async def lifespan(app: FastAPI):
 
 
 app = FastAPI(lifespan=lifespan)
+
+
+@app.on_event("startup")
+async def startup_event():
+    logger = logging.getLogger(__name__)
+    handler = logging.StreamHandler()
+    handler.setFormatter(logging.Formatter("%(asctime)s - %(levelname)s - %(message)s"))
+    logger.addHandler(handler)
+    logger.debug("TESTSETESTES")
 
 
 app.include_router(base_router)
