@@ -131,8 +131,12 @@ def test_get_nonexistent():
 def test_invalid_file_type():
     """Test creating uploading an invalid file type."""
 
+    file_path = "../../../tests/data/0min12sec.wav"
+    dir_path = os.path.dirname(os.path.realpath(__file__))
+    relative_file_path = os.path.join(dir_path, file_path)
+
     with pytest.raises(HTTPException):
-        with open("tests/data/0min12sec.wav", "rb") as testfile:
+        with open(relative_file_path, "rb") as testfile:
             _ = client.post(
                 "/openai/v1/files",
                 files={"file": ("0min12sec.wav", testfile, "audio/wav")},
