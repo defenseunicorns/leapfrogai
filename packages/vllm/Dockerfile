@@ -49,11 +49,24 @@ RUN python3 -m venv .venv
 ENV PATH="/home/leapfrogai/.venv/bin:$PATH"
 
 
-# # create virtual environment for light-weight portability and minimal libraries
-# # NOTE: We are copying to this filename because installing 'optional extras' from a wheel requires the absolute path to the wheel file (instead of a wildcard whl)
-COPY build/*.whl build/
-COPY build/lfai_vllm*.whl .
-RUN pip install lfai_vllm*.whl --no-index --find-links=build/
+# create virtual environment for light-weight portability and minimal libraries
+
+# copy source
+USER root
+COPY src ./src
+COPY . ./package
+
+# build sdk
+RUN python -m pip wheel ./src/leapfrogai_sdk -w build
+
+# build package
+RUN python -m pip wheel ./package -w build --find-links=build/
+
+# install
+RUN pip install build/lfai_vllm*.whl --no-index --find-links=build/
+
+USER nonroot
+
 
 # download model
 ENV HF_HOME=/home/leapfrogai/.cache/huggingface

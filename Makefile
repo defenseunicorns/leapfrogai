@@ -24,6 +24,10 @@ clean: ## Clean up all the things (packages, build dirs, compiled .whl files, py
 	find . -name '*.whl' -delete
 	find . -name '*.egg-info' -type d -exec rm -rf {} +
 
+clean-docker: ## Clean up unused Docker resources
+	-docker system prune -ay
+	-docker volume prune -y
+
 gen-python: ## Generate the protobufs for the OpenAI typing within the leapfrogai_api module
 	python3 -m grpc_tools.protoc -I src/leapfrogai_sdk/proto \
 			--pyi_out=src/. \
@@ -94,13 +98,15 @@ build-llama-cpp-python: local-registry setup-package ## Build the llama-cpp-pyth
 	## Build the Zarf package
 	uds zarf package create packages/llama-cpp-python -o packages/llama-cpp-python --registry-override=ghcr.io=localhost:${REG_PORT} --insecure --set IMAGE_VERSION=${LOCAL_VERSION} --confirm
 
-setup-vllm-deps: sdk-wheel-pack ## Download the wheels for the optional 'vllm' dependencies
-	-rm packages/vllm/build/*.whl
-	python -m pip wheel packages/vllm -w packages/vllm/build --find-links=${SDK_DEST}
 
-build-vllm: local-registry setup-vllm-deps ## Build the vllm container and Zarf package
+setup-vllm-deps: sdk-wheel-pack ## Download the wheels for the optional 'vllm' dependencies
+	-rm ${PKG_DEST}/build/*.whl
+	#python -m pip wheel packages/vllm -w packages/vllm/build --find-links=${SDK_DEST}
+
+build-vllm: PKG_DEST = packages/vllm
+build-vllm: local-registry setup-package ## Build the vllm container and Zarf package
 	## Build the image (and tag it for the local registry)
-	docker build -t ghcr.io/defenseunicorns/leapfrogai/vllm:${LOCAL_VERSION} packages/vllm --build-arg ARCH=${ARCH}
+	docker build --platform=linux/${ARCH} -t ghcr.io/defenseunicorns/leapfrogai/vllm:${LOCAL_VERSION} packages/vllm --build-arg ARCH=${ARCH}
 	docker tag ghcr.io/defenseunicorns/leapfrogai/vllm:${LOCAL_VERSION} localhost:${REG_PORT}/defenseunicorns/leapfrogai/vllm:${LOCAL_VERSION}
 
 	## Push the image to the local registry (Zarf is super slow if the image is only in the local daemon)
@@ -145,8 +151,8 @@ build-repeater: local-registry setup-package ## Build the repeater container and
 	## Build the Zarf package
 	uds zarf package create packages/repeater -o packages/repeater --registry-override=ghcr.io=localhost:${REG_PORT} --insecure --set IMAGE_VERSION=${LOCAL_VERSION} --confirm
 
-build-cpu: build-api build-llama-cpp-python build-text-embeddings build-whisper ## Build all zarf packages for a cpu-enabled deployment of LFAI
+build-cpu: clean-docker build-api build-llama-cpp-python build-text-embeddings build-whisper ## Build all zarf packages for a cpu-enabled deployment of LFAI
 
-build-gpu: build-api build-vllm build-text-embeddings build-whisper ## Build all zarf packages for a gpu-enabled deployment of LFAI
+build-gpu: clean-docker build-api build-vllm build-text-embeddings build-whisper ## Build all zarf packages for a gpu-enabled deployment of LFAI
 
-build-all: build-api build-llama-cpp-python build-vllm build-text-embeddings build-whisper build-repeater ## Build all of the LFAI packages
+build-all: clean-docker build-api build-llama-cpp-python build-vllm build-text-embeddings build-whisper build-repeater ## Build all of the LFAI packages

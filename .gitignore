@@ -23,6 +23,7 @@ build/
 .ruff_cache
 .branches
 .temp
+packages/*/src/
 
 # local model and tokenizer files
 *.bin
