@@ -19,8 +19,6 @@ from leapfrogai_api.routers.supabase_session import Session
 
 router = APIRouter(prefix="/openai/v1/vector_stores", tags=["openai/vector_stores"])
 
-logging.basicConfig(level=logging.INFO)
-
 
 @router.post("")
 async def create_vector_store(
