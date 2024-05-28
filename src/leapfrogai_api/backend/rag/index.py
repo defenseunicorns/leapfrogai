@@ -8,7 +8,7 @@ from leapfrogai_api.data.crud_file_bucket import CRUDFileBucket
 from leapfrogai_api.data.crud_file_object import CRUDFileObject
 from leapfrogai_api.data.crud_vector_store_file import CRUDVectorStoreFile
 from leapfrogai_api.backend.rag.document_loader import load_file, split
-from leapfrogai_api.data.supabase_vector_store import AsyncSupabaseVectorStore
+from leapfrogai_api.data.async_supabase_vector_store import AsyncSupabaseVectorStore
 from leapfrogai_api.backend.rag.leapfrogai_embeddings import LeapfrogAIEmbeddings
 
 

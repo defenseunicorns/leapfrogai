@@ -1,5 +1,5 @@
 from supabase_py_async import AsyncClient
-from leapfrogai_api.data.supabase_vector_store import AsyncSupabaseVectorStore
+from leapfrogai_api.data.async_supabase_vector_store import AsyncSupabaseVectorStore
 from leapfrogai_api.backend.rag.leapfrogai_embeddings import LeapfrogAIEmbeddings
 
 
