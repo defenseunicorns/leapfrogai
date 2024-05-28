@@ -17,7 +17,7 @@ dependencies = [
     "supabase-py-async >= 2.5.6",
     "langchain >= 0.2.1",
     "langchain-community >= 0.2.1",
-    "unstructured[all-docs] >= 0.14.2",
+    "unstructured[md] >= 0.14.2",
     "pylibmagic >= 0.5.0", # Resolves issue with libmagic not being bundled with OS - https://github.com/ahupp/python-magic/issues/233, may not be needed after this is merged https://github.com/ahupp/python-magic/pull/294
     "python-magic >= 0.4.27"
 ]
