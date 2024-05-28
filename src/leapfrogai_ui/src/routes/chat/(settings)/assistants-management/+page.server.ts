@@ -1,23 +1,18 @@
 import type { PageServerLoad } from './$types';
-import { error, redirect } from '@sveltejs/kit';
+import { redirect } from '@sveltejs/kit';
+import type { LFAssistant } from '$lib/types/assistants';
+import { openai } from '$lib/server/constants';
 
-export const load: PageServerLoad = async ({ locals: { supabase, getSession } }) => {
+export const load: PageServerLoad = async ({ locals: { getSession } }) => {
   const session = await getSession();
 
   if (!session) {
     throw redirect(303, '/');
   }
 
-  const { data: assistants, error: assistantsError } = await supabase
-    .from('assistants')
-    .select('*')
-    .filter('metadata->>created_by', 'eq', session.user.id)
-    .order('name', { ascending: true });
+  const assistantsPage = await openai.beta.assistants.list();
 
-  if (assistantsError) {
-    console.log(`error getting user assistants: ${JSON.stringify(assistantsError)} `);
-    error(500, { message: 'Error loading assistants' });
-  }
+  const assistants = assistantsPage.data as LFAssistant[];
 
   return { title: 'LeapfrogAI - Assistants', assistants: assistants ?? [] };
 };

@@ -6,8 +6,12 @@
   import frog from '$assets/frog.png';
   import { writable } from 'svelte/store';
   import { toastStore } from '$stores';
+  import { getMessageText } from '$helpers/threads';
 
-  export let handleMessageEdit: (event: SubmitEvent, message: AIMessage) => Promise<void>;
+  export let handleMessageEdit: (
+    event: SubmitEvent | KeyboardEvent | MouseEvent,
+    message: AIMessage
+  ) => Promise<void>;
   export let handleRegenerate: () => Promise<void>;
   export let message: AIMessage;
   export let isLastMessage: boolean;
@@ -15,7 +19,7 @@
 
   let messageIsHovered = false;
   let editMode = false;
-  let value = writable(message.content);
+  let value = writable(getMessageText(message));
 
   const onSubmit = async (e: SubmitEvent | KeyboardEvent | MouseEvent) => {
     editMode = false;
@@ -24,7 +28,7 @@
 
   const handleCancel = () => {
     editMode = false;
-    value.set(message.content); // restore original value
+    value.set(getMessageText(message)); // restore original value
   };
 
   const handleCopy = async () => {
@@ -79,7 +83,7 @@
           </div>
         </div>
       {:else}
-        <Tile style="line-height: 20px;">{message.content}</Tile>
+        <Tile style="line-height: 20px;">{getMessageText(message)}</Tile>
       {/if}
 
       <div class="utils">

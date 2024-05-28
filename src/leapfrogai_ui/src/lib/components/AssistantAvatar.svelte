@@ -11,39 +11,45 @@
   import DynamicPictogram from '$components/DynamicPictogram.svelte';
   import { AVATAR_FILE_SIZE_ERROR_TEXT, MAX_AVATAR_SIZE, NO_FILE_ERROR_TEXT } from '$lib/constants';
 
+  export let form;
   export let files: File[];
-  export let avatarUrl = '';
   export let selectedPictogramName: string;
 
-  let tempAvatarUrl = avatarUrl;
+  let originalAvatar = $form.avatar;
   let tempFiles: File[] = [];
   let tempPictogram = selectedPictogramName || 'default';
   let modalOpen = false;
-  let selectedRadioButton: 'upload' | 'pictogram' = 'pictogram';
+  let selectedRadioButton: 'upload' | 'pictogram' = originalAvatar ? 'upload' : 'pictogram';
   let shouldValidate = false;
   let fileUploaderRef: HTMLInputElement;
   let errorMsg = '';
+  let skipCloseActions = false;
 
+  $: avatarToShow = tempFiles?.length > 0 ? URL.createObjectURL(tempFiles[0]) : $form.avatar;
   $: fileNotUploaded = !tempFiles[0]; // if on upload tab, you must upload a file to enable save
   $: fileTooBig = tempFiles[0]?.size > MAX_AVATAR_SIZE;
-  $: hideUploader = tempAvatarUrl ? true : tempFiles.length > 0;
+  $: hideUploader = avatarToShow ? true : tempFiles.length > 0;
 
   const handleRemove = () => {
     tempFiles = [];
-    tempAvatarUrl = '';
-    tempPictogram = 'default';
+    $form.avatar = '';
+    tempPictogram = selectedPictogramName || 'default';
     shouldValidate = false;
   };
 
-  const handleCancel = () => {
-    shouldValidate = false;
-    modalOpen = false;
-    tempPictogram = selectedPictogramName; // reset to original pictogram
-    if (files?.length > 0) {
-      tempFiles = [...files]; // reset to original file
-    } else {
-      tempFiles = [];
+  const handleClose = () => {
+    if (!skipCloseActions) {
+      shouldValidate = false;
+      modalOpen = false;
+      $form.avatar = originalAvatar;
+      tempPictogram = selectedPictogramName; // reset to original pictogram
+      if (files?.length > 0) {
+        tempFiles = [...files]; // reset to original file
+      } else {
+        tempFiles = [];
+      }
     }
+    skipCloseActions = false;
   };
 
   const handleChangeAvatar = () => {
@@ -51,6 +57,7 @@
   };
 
   const handleSubmit = () => {
+    skipCloseActions = true;
     shouldValidate = true;
 
     if (selectedRadioButton === 'upload') {
@@ -62,7 +69,6 @@
         errorMsg = AVATAR_FILE_SIZE_ERROR_TEXT;
         return;
       }
-
       files = [...tempFiles];
       modalOpen = false;
       shouldValidate = false;
@@ -71,14 +77,12 @@
       selectedPictogramName = tempPictogram;
       files = []; // remove saved avatar
       tempFiles = [];
+      $form.avatar = '';
+
       modalOpen = false;
       shouldValidate = false;
     }
   };
-
-  $: tempImagePreviewUrl = tempFiles?.length > 0 ? URL.createObjectURL(tempFiles[0]) : '';
-  $: savedImagePreviewUrl =
-    files?.length > 0 ? URL.createObjectURL(files[0]) : tempAvatarUrl ? tempAvatarUrl : '';
 </script>
 
 <div class="container">
@@ -88,8 +92,8 @@
     on:click|preventDefault={() => (modalOpen = true)}
     data-testid="mini-avatar-container"
   >
-    {#if savedImagePreviewUrl}
-      <div class="mini-avatar-image" style={`background-image: url(${savedImagePreviewUrl});`} />
+    {#if avatarToShow}
+      <div class="mini-avatar-image" style={`background-image: url(${avatarToShow});`} />
     {:else}
       <DynamicPictogram iconName={tempPictogram} width="32px" height="32px" />
     {/if}
@@ -101,8 +105,8 @@
     shouldSubmitOnEnter={false}
     primaryButtonText="Save"
     secondaryButtonText="Cancel"
-    on:close={handleCancel}
-    on:click:button--secondary={handleCancel}
+    on:close={handleClose}
+    on:click:button--secondary={handleClose}
     on:submit={handleSubmit}
     style="--modal-height:{tempPictogram === 'pictogram' ? '100%' : 'auto'};"
     class="avatar-modal"
@@ -117,12 +121,12 @@
       </span>
 
       <div class="avatar-upload-container" class:hidden={selectedRadioButton === 'pictogram'}>
-        {#if tempImagePreviewUrl}
+        {#if avatarToShow}
           <div class="avatar-container">
             <div
               data-testid="image-upload-avatar"
               class="avatar-image"
-              style={`background-image: url(${tempImagePreviewUrl});`}
+              style={`background-image: url(${avatarToShow});`}
             />
           </div>
         {/if}
@@ -133,11 +137,12 @@
           <FileUploaderButton
             bind:ref={fileUploaderRef}
             bind:files={tempFiles}
-            name="avatar"
+            name="avatarFile"
             kind="tertiary"
             labelText="Upload from computer"
             accept={['.jpg', '.jpeg', '.png']}
           />
+          <input type="hidden" name="avatar" bind:value={$form.avatar} />
         </div>
 
         {#if hideUploader}

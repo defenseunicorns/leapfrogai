@@ -8,10 +8,19 @@ import { afterAll, afterEach, beforeAll, vi } from 'vitest';
 import * as environment from '$app/environment';
 import * as navigation from '$app/navigation';
 import * as stores from '$app/stores';
-import { fakeConversations } from './testUtils/fakeData';
+import { fakeThreads } from '$testUtils/fakeData';
+import OpenAIMock from '$lib/mocks/openai';
 
 // Fixes error: node.scrollIntoView is not a function
 window.HTMLElement.prototype.scrollIntoView = function () {};
+
+export const mockOpenAI = new OpenAIMock({ apiKey: '', baseURL: '' });
+
+vi.doMock('$lib/server/constants', () => {
+  return {
+    openai: mockOpenAI
+  };
+});
 
 vi.mock('$env/dynamic/public', () => {
   return {
@@ -56,7 +65,7 @@ vi.mock('$app/stores', (): typeof stores => {
       error: null,
       // TODO - the profile and session types are incompletely mocked out
       data: {
-        conversations: fakeConversations,
+        threads: fakeThreads,
         profile: {},
         session: { user: { id: faker.string.uuid() } }
       },

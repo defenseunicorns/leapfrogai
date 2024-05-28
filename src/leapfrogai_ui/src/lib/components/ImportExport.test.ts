@@ -3,8 +3,8 @@ import { render, screen, waitFor } from '@testing-library/svelte';
 import ImportExport from '$components/ImportExport.svelte';
 import { afterEach, vi } from 'vitest';
 import { toastStore } from '$stores';
-import { getFakeConversation } from '../../../testUtils/fakeData';
-import { mockNewConversationError } from '$lib/mocks/chat-mocks';
+import { getFakeThread } from '$testUtils/fakeData';
+import { mockNewThreadError } from '$lib/mocks/chat-mocks';
 
 const uploadJSONFile = async (obj: object) => {
   const dataStr = JSON.stringify(obj);
@@ -32,29 +32,29 @@ describe('Import and Export data', () => {
 
     await uploadJSONFile(badData);
 
-    await waitFor(() => expect(toastSpy).toHaveBeenCalledTimes(1));
-    expect(toastSpy).toHaveBeenCalledWith({
+    await waitFor(() => expect(toastSpy).toHaveBeenCalledTimes(2)); // first call is importing notification
+    expect(toastSpy).toHaveBeenNthCalledWith(2, {
       kind: 'error',
       title: 'Error',
-      subtitle: `Conversations are incorrectly formatted.`
+      subtitle: `Threads are incorrectly formatted.`
     });
   });
 
   it('displays a toast error if their is an error while storing the imported data', async () => {
-    mockNewConversationError();
+    mockNewThreadError();
 
     const toastSpy = vi.spyOn(toastStore, 'addToast');
     render(ImportExport);
 
-    const data = getFakeConversation();
+    const data = getFakeThread();
 
     await uploadJSONFile([data]);
 
-    await waitFor(() => expect(toastSpy).toHaveBeenCalledTimes(1));
-    expect(toastSpy).toHaveBeenCalledWith({
+    await waitFor(() => expect(toastSpy).toHaveBeenCalledTimes(2));
+    expect(toastSpy).toHaveBeenNthCalledWith(2, {
       kind: 'error',
       title: 'Error',
-      subtitle: `Error importing conversation: ${data.label}`
+      subtitle: `Error importing thread: ${data.metadata.label}`
     });
   });
 
@@ -72,7 +72,7 @@ describe('Import and Export data', () => {
     expect(toastSpy).toHaveBeenCalledWith({
       kind: 'error',
       title: 'Error',
-      subtitle: `Error exporting conversations.`
+      subtitle: `Error exporting threads.`
     });
   });
 
