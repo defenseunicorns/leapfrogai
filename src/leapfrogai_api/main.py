@@ -38,10 +38,6 @@ async def lifespan(app: FastAPI):
 
 app = FastAPI(lifespan=lifespan)
 
-logger = logging.getLogger(__name__)
-logger.setLevel(logging.INFO)
-logger.addHandler(logging.StreamHandler())
-
 app.include_router(base_router)
 app.include_router(models.router)
 app.include_router(completions.router)
