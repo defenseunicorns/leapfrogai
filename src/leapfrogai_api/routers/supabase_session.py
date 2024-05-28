@@ -42,6 +42,7 @@ async def init_supabase_client(
 
     return client
 
+
 # This variable needs to be added to each endpoint even if it's not used to ensure auth is required for the endpoint
 Session = Annotated[AsyncClient, Depends(init_supabase_client)]
 
