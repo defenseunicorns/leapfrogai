@@ -1,8 +1,8 @@
 """OpenAI Compliant Vector Store API Router."""
 
 import time
+import logging
 from fastapi import APIRouter, HTTPException, status
-from fastapi.logger import logger
 from openai.types.beta import VectorStore, VectorStoreDeleted
 from openai.types.beta.vector_store import FileCounts
 from openai.types.beta.vector_stores import VectorStoreFile, VectorStoreFileDeleted
@@ -69,7 +69,7 @@ async def create_vector_store(
             object_=new_vector_store,
         )
     except Exception as exc:
-        logger.debug(exc)
+        logging.getLogger(__name__).debug(exc)
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail="Unable to create vector store",
