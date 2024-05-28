@@ -149,8 +149,8 @@ build-repeater: local-registry setup-repeater-deps ## Build the repeater contain
 	## Build the Zarf package
 	uds zarf package create packages/repeater -o packages/repeater --registry-override=ghcr.io=localhost:5000 --insecure --set IMAGE_VERSION=${LOCAL_VERSION} --confirm
 
-build-cpu: build-api build-llama-cpp-python build-text-embeddings build-whisper ## Build all zarf packages for a cpu-enabled deployment of LFAI
+build-cpu: build-supabase build-api build-ui build-llama-cpp-python build-text-embeddings build-whisper ## Build all zarf packages for a cpu-enabled deployment of LFAI
 
-build-gpu: build-api build-vllm build-text-embeddings build-whisper ## Build all zarf packages for a gpu-enabled deployment of LFAI
+build-gpu: build-supabase build-api build-ui build-vllm build-text-embeddings build-whisper ## Build all zarf packages for a gpu-enabled deployment of LFAI
 
-build-all: build-api build-llama-cpp-python build-vllm build-text-embeddings build-whisper build-repeater ## Build all of the LFAI packages
+build-all: build-cpu build-gpu ## Build all of the LFAI packages
