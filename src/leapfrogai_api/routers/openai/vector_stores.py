@@ -19,8 +19,6 @@ from leapfrogai_api.routers.supabase_session import Session
 
 router = APIRouter(prefix="/openai/v1/vector_stores", tags=["openai/vector_stores"])
 
-logging.basicConfig(level=logging.DEBUG)
-
 
 @router.post("")
 async def create_vector_store(
@@ -71,7 +69,7 @@ async def create_vector_store(
             object_=new_vector_store,
         )
     except Exception as exc:
-        logging.debug(f"Unable to create vector store {exc}")
+        logging.error(f"Unable to create vector store {exc}")
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail="Unable to create vector store",
