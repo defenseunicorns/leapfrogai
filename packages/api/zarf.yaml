@@ -35,4 +35,5 @@ components:
         - "lfai-values.yaml"
     images:
       - "ghcr.io/defenseunicorns/leapfrogai/leapfrogai-api:###ZARF_PKG_TMPL_LEAPFROGAI_IMAGE_VERSION###"
+      - "ghcr.io/defenseunicorns/leapfrogai/api-migrations:###ZARF_PKG_TMPL_LEAPFROGAI_IMAGE_VERSION###"
       - "kiwigrid/k8s-sidecar:1.23.3"

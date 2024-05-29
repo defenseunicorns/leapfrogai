@@ -46,12 +46,17 @@ setup-api-deps: sdk-wheel ## Download the wheels for the leapfrogai_api dependen
 	python -m pip wheel src/leapfrogai_api -w packages/api/build --find-links=${SDK_DEST}
 
 build-api: local-registry setup-api-deps ## Build the leapfrogai_api container and Zarf package
-	## Build the image (and tag it for the local registry)
+	## Build the API image (and tag it for the local registry)
 	docker build -t ghcr.io/defenseunicorns/leapfrogai/leapfrogai-api:${LOCAL_VERSION} packages/api
 	docker tag ghcr.io/defenseunicorns/leapfrogai/leapfrogai-api:${LOCAL_VERSION} localhost:5000/defenseunicorns/leapfrogai/leapfrogai-api:${LOCAL_VERSION}
 
-	## Push the image to the local registry (Zarf is super slow if the image is only in the local daemon)
+	## Build the migration container for this version of the API
+	docker build -t ghcr.io/defenseunicorns/leapfrogai/api-migrations:${LOCAL_VERSION} packages/api/supabase
+	docker tag ghcr.io/defenseunicorns/leapfrogai/api-migrations:${LOCAL_VERSION} localhost:5000/defenseunicorns/leapfrogai/api-migrations:${LOCAL_VERSION}
+
+	## Push the images to the local registry (Zarf is super slow if the image is only in the local daemon)
 	docker push localhost:5000/defenseunicorns/leapfrogai/leapfrogai-api:${LOCAL_VERSION}
+	docker push localhost:5000/defenseunicorns/leapfrogai/api-migrations:${LOCAL_VERSION}
 
 	## Build the Zarf package
 	uds zarf package create packages/api -o packages/api --registry-override=ghcr.io=localhost:5000 --insecure --set LEAPFROGAI_IMAGE_VERSION=${LOCAL_VERSION} --confirm

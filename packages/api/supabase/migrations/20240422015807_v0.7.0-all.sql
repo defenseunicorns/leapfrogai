@@ -10,9 +10,3 @@ create table
     status text,
     status_details text
   );
-
--- storage bucket for the files
-insert into storage.buckets
-  (id, name, public)
-values
-  ('file_bucket', 'files', true);
