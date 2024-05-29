@@ -4,7 +4,7 @@
   import { afterUpdate, onMount, tick } from 'svelte';
   import { threadsStore, toastStore } from '$stores';
   import { ArrowRight, StopFilledAlt, UserProfile } from 'carbon-icons-svelte';
-  import { type Message as AIMessage, useChat, useAssistant } from 'ai/svelte';
+  import { type Message as AIMessage, useAssistant, useChat } from 'ai/svelte';
   import { page } from '$app/stores';
   import { beforeNavigate, goto } from '$app/navigation';
   import Message from '$components/Message.svelte';
@@ -57,7 +57,6 @@
         content: getMessageText(message),
         role: message.role
       })),
-
     onFinish: async (message: AIMessage) => {
       if (!assistantMode && activeThread?.id) {
         await threadsStore.newMessage({
@@ -82,8 +81,25 @@
     submitMessage: submitAssistantMessage
   } = useAssistant({
     api: '/api/chat/assistants',
-    threadId: activeThread?.id,
+    threadId: activeThread?.id
   });
+
+  // Assistant messages streamed to the client do not have an assistant_id field. We need to add it so the
+  // assistant avatars and pictograms display.
+  // Messages from assistants will get the last active assistant used.
+  // When the page is refreshed, the messages are retrieved from the API and have the correct assistant_id assigned to them
+  $: if (
+    $assistantMessages.length > 0 &&
+    $assistantMessages[$assistantMessages.length - 1].role === 'assistant' &&
+    !$assistantMessages[$assistantMessages.length - 1].assistant_id
+  ) {
+    const updatedMessages = [...$assistantMessages];
+    const messageIndex = updatedMessages.findIndex(
+      (m) => m.id === $assistantMessages[$assistantMessages.length - 1].id
+    );
+    updatedMessages[messageIndex].assistant_id = selectedAssistantId;
+    $assistantMessages = [...updatedMessages];
+  }
 
   const onSubmit = async (e: SubmitEvent | KeyboardEvent) => {
     e.preventDefault();
@@ -115,6 +131,7 @@
           });
         }
       }
+
       if (assistantMode) {
         $assistantInput = $chatInput;
         $chatInput = '';
@@ -122,6 +139,7 @@
         await submitAssistantMessage(e, {
           // submit to AI (/api/chat/assistants)
           data: {
+            message: $chatInput,
             assistantId: selectedAssistantId,
             threadId: activeThread?.id || ''
           }
@@ -158,6 +176,7 @@
     message: AIMessage
   ) => {
     event.preventDefault();
+    // TODO - handle assistant messages
 
     const messageIndex = $messages.findIndex((m) => m.id === message.id);
     // Ensure the message after the user's message exists and is a response from the AI
@@ -215,8 +234,6 @@
 
     return getUnixSeconds(a.createdAt) - getUnixSeconds(b.createdAt);
   });
-
-  $: console.log(filteredMessages);
 </script>
 
 <!--Note - the messages are streamed live from the useChat messages, saving them in the db and store happens behind the scenes -->
@@ -238,6 +255,7 @@
   <div class="chat-form-container">
     <form on:submit={onSubmit}>
       <Dropdown
+        disabled={$isLoading}
         hideLabel
         direction="top"
         bind:selectedId={selectedAssistantId}

@@ -1,10 +1,11 @@
-import { StreamingTextResponse, streamText } from 'ai';
+import {  StreamingTextResponse, streamText } from 'ai';
 import { createOpenAI } from '@ai-sdk/openai';
 import { env } from '$env/dynamic/private';
 import { error } from '@sveltejs/kit';
 import { getMessageText } from '$helpers/threads';
 import type { LFMessage } from '$lib/types/messages';
 import { AIMessagesInputSchema } from '$schemas/messageSchema';
+
 
 const openai = createOpenAI({
   apiKey: env.LEAPFROGAI_API_KEY ?? '',
@@ -34,15 +35,15 @@ export async function POST({ request, locals: { safeGetSession } }) {
     messages.unshift({ content: env.DEFAULT_SYSTEM_PROMPT!, role: 'system' });
   }
 
-  const reformatedMessages = messages.map((message: LFMessage) => ({
-    ...message,
-    content: getMessageText(message)
-  }));
+    const reformatedMessages = messages.map((message: LFMessage) => ({
+      ...message,
+      content: getMessageText(message)
+    }));
 
-  const result = await streamText({
-    model: openai('gpt-4-turbo-preview'),
-    messages: reformatedMessages
-  });
+    const result = await streamText({
+      model: openai('gpt-4-turbo-preview'),
+      messages: reformatedMessages
+    });
 
   return new StreamingTextResponse(result.toAIStream());
 }
