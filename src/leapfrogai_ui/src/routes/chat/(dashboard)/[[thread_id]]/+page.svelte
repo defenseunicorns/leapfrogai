@@ -1,12 +1,12 @@
 <script lang="ts">
   import { LFTextArea } from '$components';
-  import { Button } from 'carbon-components-svelte';
+  import { Button, Dropdown } from 'carbon-components-svelte';
   import { afterUpdate, onMount, tick } from 'svelte';
   import { threadsStore, toastStore } from '$stores';
-  import { ArrowRight, StopFilledAlt } from 'carbon-icons-svelte';
-  import { type Message as AIMessage, useChat } from 'ai/svelte';
+  import { ArrowRight, StopFilledAlt, UserProfile } from 'carbon-icons-svelte';
+  import { type Message as AIMessage, useChat, useAssistant } from 'ai/svelte';
   import { page } from '$app/stores';
-  import { beforeNavigate } from '$app/navigation';
+  import { beforeNavigate, goto } from '$app/navigation';
   import Message from '$components/Message.svelte';
   import type { LFMessage } from '$lib/types/messages';
   import { convertMessageToAiMessage, getMessageText } from '$helpers/threads';
@@ -15,15 +15,34 @@
 
   let messageThreadDiv: HTMLDivElement;
   let messageThreadDivHeight: number;
-
   let lengthInvalid: boolean; // bound to child LFTextArea
 
-  $: activeThread = $threadsStore.threads.find((thread) => thread.id === $page.params.thread_id);
+  let assistantsList: Array<{ id: string; text: string }>;
+  let noSelectedAssistantId = `none-${new Date().toDateString()}`; // prevents id naming conflicts
+  let selectedAssistantId: string = noSelectedAssistantId;
+  $: assistantsList = [...data.assistants].map((assistant) => ({
+    id: assistant.id,
+    text: assistant.name || 'unknown'
+  }));
+  $: assistantMode =
+    selectedAssistantId !== noSelectedAssistantId && selectedAssistantId !== 'manage-assistants';
+  $: assistantsList.unshift({ id: noSelectedAssistantId, text: 'Select Assistant' }); // add dropdown item for no assistant selected
+  $: assistantsList.push({ id: `manage-assistants`, text: 'Manage Assistants' }); // add dropdown item for manage assistants button
 
+  $: activeThread = $threadsStore.threads.find((thread) => thread.id === $page.params.thread_id);
   $: $page.params.thread_id,
     setMessages(activeThread?.messages?.map((m) => convertMessageToAiMessage(m)) || []);
 
-  const { input, handleSubmit, messages, setMessages, isLoading, stop, append, reload } = useChat({
+  const {
+    input: chatInput,
+    handleSubmit: submitChatMessage,
+    messages,
+    setMessages,
+    isLoading,
+    stop,
+    append,
+    reload,
+  } = useChat({
     initialMessages: $threadsStore.threads
       .find((thread) => thread.id === $page.params.thread_id)
       ?.messages?.map((message: LFMessage) => ({
@@ -49,6 +68,20 @@
     }
   });
 
+  const {
+    status,
+    messages: assistantMessages,
+    input: assistantInput,
+    submitMessage: submitAssistantMessage
+  } = useAssistant({
+    api: '/api/chat/assistants',
+    body: {
+      threadId: activeThread?.id ? activeThread.id : null,
+      message: $assistantInput,
+      assistantId: selectedAssistantId
+    }
+  });
+
   const onSubmit = async (e: SubmitEvent | KeyboardEvent) => {
     e.preventDefault();
 
@@ -57,12 +90,12 @@
     } else {
       if (!activeThread?.id) {
         // new thread thread
-        await threadsStore.newThread($input);
+        await threadsStore.newThread($chatInput);
         await tick(); // allow store to update
         if (activeThread?.id) {
           await threadsStore.newMessage({
             thread_id: activeThread?.id,
-            content: $input,
+            content: $chatInput,
             role: 'user'
           });
         }
@@ -70,12 +103,16 @@
         // store user input
         await threadsStore.newMessage({
           thread_id: activeThread?.id,
-          content: $input,
+          content: $chatInput,
           role: 'user'
         });
       }
-
-      handleSubmit(e); // submit to AI (/api/chat)
+      if (assistantMode) {
+        $assistantInput = $chatInput;
+        await submitAssistantMessage(e); // submit to AI (/api/chat/assistants)
+      } else {
+        submitChatMessage(e); // submit to AI (/api/chat)
+      }
     }
   };
 
@@ -154,12 +191,14 @@
       await stopThenSave();
     }
   });
+
+  $: console.log([...$messages, ...$assistantMessages]);
 </script>
 
 <!--Note - the messages are streamed live from the useChat messages, saving them in the db and store happens behind the scenes -->
 <div class="chat-inner-content">
   <div class="messages" bind:this={messageThreadDiv} bind:offsetHeight={messageThreadDivHeight}>
-    {#each $messages as message, index (message.id)}
+    {#each [...$messages, ...$assistantMessages] as message, index (message.id)}
       <Message
         {message}
         {handleMessageEdit}
@@ -170,38 +209,60 @@
     {/each}
   </div>
 
-  <form on:submit={onSubmit}>
-    <div class="chat-form-container">
-      <LFTextArea
-        value={input}
-        {onSubmit}
-        ariaLabel="message input"
-        placeholder="Type your message here..."
-        bind:showLengthError={lengthInvalid}
-      />
+  <hr id="divider" class="bx--switcher__item--divider divider" />
+  <div class="chat-form-container">
+    <form on:submit={onSubmit}>
+      <Dropdown
+        hideLabel
+        direction="top"
+        bind:selectedId={selectedAssistantId}
+        items={assistantsList}
+        style="width: 25%; margin-bottom: 0.5rem"
+        let:item
+      >
+        {#if item.id === `manage-assistants`}
+          <div class="manage-assistants-btn" on:click={() => goto('/chat/assistants-management')}>
+            <UserProfile />
+            {item.text}
+          </div>
+        {:else}
+          <div>
+            {item.text}
+          </div>
+        {/if}
+      </Dropdown>
+      <div class="chat-input">
+        <LFTextArea
+          value={chatInput}
+          {onSubmit}
+          ariaLabel="message input"
+          placeholder="Type your message here..."
+          bind:showLengthError={lengthInvalid}
+        />
 
-      {#if !$isLoading}
-        <Button
-          data-testid="send message"
-          kind="secondary"
-          icon={ArrowRight}
-          size="field"
-          type="submit"
-          iconDescription="send"
-          disabled={$isLoading || !$input || lengthInvalid}
-        />
-      {:else}
-        <Button
-          data-testid="cancel message"
-          kind="secondary"
-          size="field"
-          type="submit"
-          icon={StopFilledAlt}
-          iconDescription="cancel"
-        />
-      {/if}
-    </div>
-  </form>
+        {#if !$isLoading}
+          <Button
+            data-testid="send message"
+            kind="secondary"
+            icon={ArrowRight}
+            size="field"
+            type="submit"
+            iconDescription="send"
+            disabled={$isLoading || !$chatInput || lengthInvalid}
+          />
+        {:else}
+          <Button
+            data-testid="cancel message"
+            kind="secondary"
+            size="field"
+            type="submit"
+            icon={StopFilledAlt}
+            iconDescription="cancel"
+          />
+        {/if}
+      </div>
+    </form>
+  </div>
 </div>
 
 <style lang="scss">
@@ -219,12 +280,32 @@
     margin-bottom: layout.$spacing-05;
     overflow: scroll;
     scrollbar-width: none;
+    padding: 0rem layout.$spacing-05;
   }
 
   .chat-form-container {
+    padding: 0rem layout.$spacing-05;
+  }
+
+  .chat-input {
     display: flex;
     justify-content: space-around;
     align-items: flex-end;
     gap: 0.5rem;
+  }
+
+  .divider {
+    width: 100%;
+    margin: 0.5rem 0;
+  }
+
+  .manage-assistants-btn {
+    display: flex;
+    align-items: center;
+    gap: layout.$spacing-03;
+  }
+
+  :global(#manage-assistants) {
+    outline: 1px solid themes.$border-subtle-03;
   }
 </style>

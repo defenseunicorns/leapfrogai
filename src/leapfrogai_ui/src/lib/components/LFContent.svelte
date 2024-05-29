@@ -3,7 +3,7 @@
   import { PoweredByDU } from '$components/index.js';
 </script>
 
-<Content>
+<Content style="padding: 1rem 0 !important">
   <div class="lf-content-container">
     <div class="slot-wrapper">
       <slot />
