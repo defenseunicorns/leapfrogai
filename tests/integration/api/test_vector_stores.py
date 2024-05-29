@@ -20,6 +20,7 @@ from leapfrogai_api.routers.openai.files import router as files_router
 INSTRUCTOR_XL_EMBEDDING_SIZE: int = 768
 
 
+# Used to mock the creation of embeddings as the remote embeddings service is unavailable in this test
 class FakeEmbeddingsWrapper(FakeEmbeddings):
 
     def __init__(self):
