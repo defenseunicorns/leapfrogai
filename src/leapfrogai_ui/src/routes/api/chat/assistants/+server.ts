@@ -1,5 +1,6 @@
 import { openai } from '$lib/server/constants';
 import { AssistantResponse } from 'ai';
+import { getUnixSeconds } from '$helpers/dates';
 
 export async function POST({ request }) {
   // TODO - validate
@@ -12,8 +13,6 @@ export async function POST({ request }) {
     };
   } = await request.json();
 
-  console.log('input', input);
-
   const threadId = input.data.threadId ?? (await openai.beta.threads.create({ metadata: {} })).id;
 
   // Add a message to the thread
@@ -23,11 +22,18 @@ export async function POST({ request }) {
   });
 
   return AssistantResponse(
-    { threadId: threadId, messageId: createdMessage.id },
+    {
+      threadId: threadId,
+      messageId: createdMessage.id
+    },
     async ({ forwardStream, sendDataMessage }) => {
       // Run the assistant on the thread
       const runStream = openai.beta.threads.runs.stream(threadId, {
-        assistant_id: input.data.assistantId
+        assistant_id:
+          input.data.assistantId ??
+          (() => {
+            throw new Error('assistant_id is not set');
+          })()
       });
 
       // forward run status would stream message deltas

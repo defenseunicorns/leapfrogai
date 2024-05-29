@@ -10,6 +10,7 @@
   import Message from '$components/Message.svelte';
   import type { LFMessage } from '$lib/types/messages';
   import { convertMessageToAiMessage, getMessageText } from '$helpers/threads';
+  import { getUnixSeconds } from '$helpers/dates.js';
 
   export let data;
 
@@ -33,6 +34,12 @@
   $: $page.params.thread_id,
     setMessages(activeThread?.messages?.map((m) => convertMessageToAiMessage(m)) || []);
 
+  const getAssistantImage = (assistant_id: string) => {
+    const myAssistant = data.assistants.find((assistant) => assistant.id === assistant_id);
+    if (myAssistant) return myAssistant.metadata.avatar ?? myAssistant.metadata.pictogram;
+    return null;
+  };
+
   const {
     input: chatInput,
     handleSubmit: submitChatMessage,
@@ -50,8 +57,9 @@
         content: getMessageText(message),
         role: message.role
       })),
+
     onFinish: async (message: AIMessage) => {
-      if (activeThread?.id) {
+      if (!assistantMode && activeThread?.id) {
         await threadsStore.newMessage({
           thread_id: activeThread?.id,
           content: message.content,
@@ -74,7 +82,7 @@
     submitMessage: submitAssistantMessage
   } = useAssistant({
     api: '/api/chat/assistants',
-    threadId: activeThread?.id
+    threadId: activeThread?.id,
   });
 
   const onSubmit = async (e: SubmitEvent | KeyboardEvent) => {
@@ -84,10 +92,13 @@
       await stopThenSave();
     } else {
       if (!activeThread?.id) {
-        // new thread thread
+        // new thread
         await threadsStore.newThread($chatInput);
         await tick(); // allow store to update
-        if (activeThread?.id) {
+
+        // If in chat mode, save the messages with store methods
+        // Assistant API saves the messages itself
+        if (!assistantMode && activeThread?.id) {
           await threadsStore.newMessage({
             thread_id: activeThread?.id,
             content: $chatInput,
@@ -95,21 +106,27 @@
           });
         }
       } else {
-        // store user input
-        await threadsStore.newMessage({
-          thread_id: activeThread?.id,
-          content: $chatInput,
-          role: 'user'
-        });
+        if (!assistantMode) {
+          // store user input
+          await threadsStore.newMessage({
+            thread_id: activeThread?.id,
+            content: $chatInput,
+            role: 'user'
+          });
+        }
       }
       if (assistantMode) {
         $assistantInput = $chatInput;
+        $chatInput = '';
+
         await submitAssistantMessage(e, {
+          // submit to AI (/api/chat/assistants)
           data: {
             assistantId: selectedAssistantId,
             threadId: activeThread?.id || ''
           }
-        }); // submit to AI (/api/chat/assistants)
+        });
+        $assistantInput = '';
       } else {
         submitChatMessage(e); // submit to AI (/api/chat)
       }
@@ -192,19 +209,27 @@
     }
   });
 
-  $: console.log([...$messages, ...$assistantMessages]);
+  $: filteredMessages = [...$assistantMessages, ...$messages].sort((a, b) => {
+    if (!a.createdAt) a.createdAt = new Date();
+    if (!b.createdAt) b.createdAt = new Date();
+
+    return getUnixSeconds(a.createdAt) - getUnixSeconds(b.createdAt);
+  });
+
+  $: console.log(filteredMessages);
 </script>
 
 <!--Note - the messages are streamed live from the useChat messages, saving them in the db and store happens behind the scenes -->
 <div class="chat-inner-content">
   <div class="messages" bind:this={messageThreadDiv} bind:offsetHeight={messageThreadDivHeight}>
-    {#each assistantMode ? $assistantMessages : $messages as message, index (message.id)}
+    {#each filteredMessages as message, index (message.id)}
       <Message
         {message}
         {handleMessageEdit}
         {handleRegenerate}
         isLastMessage={index === $messages.length - 1}
         isLoading={$isLoading || false}
+        assistantImage={message.assistant_id ? getAssistantImage(message.assistant_id) : null}
       />
     {/each}
   </div>

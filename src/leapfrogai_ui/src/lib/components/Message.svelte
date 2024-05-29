@@ -7,15 +7,17 @@
   import { writable } from 'svelte/store';
   import { toastStore } from '$stores';
   import { getMessageText } from '$helpers/threads';
+  import type { Message as OpenAIMessage } from 'openai/resources/beta/threads/messages';
 
   export let handleMessageEdit: (
     event: SubmitEvent | KeyboardEvent | MouseEvent,
-    message: AIMessage
+    message: AIMessage | OpenAIMessage
   ) => Promise<void>;
   export let handleRegenerate: () => Promise<void>;
-  export let message: AIMessage;
+  export let message: AIMessage | OpenAIMessage;
   export let isLastMessage: boolean;
   export let isLoading: boolean;
+  export let assistantImage: string | null = null;
 
   let messageIsHovered = false;
   let editMode = false;
@@ -64,6 +66,8 @@
       <div class="icon">
         <UserAvatar style="width: 24px; height: 24px;" />
       </div>
+    {:else if assistantImage}
+      <img alt="Assistant" src={assistantImage} class="icon" />
     {:else}
       <img alt="LeapfrogAI" src={frog} class="icon" />
     {/if}
