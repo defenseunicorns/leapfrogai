@@ -1,26 +1,33 @@
 import { openai } from '$lib/server/constants';
 import { AssistantResponse } from 'ai';
 
-export async function POST(req: Request) {
+export async function POST({ request }) {
   // TODO - validate
   // Parse the request body
   const input: {
-    threadId: string;
     message: string;
-    assistantId: string;
-  } = await req.json();
+    data: {
+      assistantId: string;
+      threadId: string | null;
+    };
+  } = await request.json();
+
+  console.log('input', input);
+
+  const threadId = input.data.threadId ?? (await openai.beta.threads.create({ metadata: {} })).id;
+
   // Add a message to the thread
-  const createdMessage = await openai.beta.threads.messages.create(input.threadId, {
+  const createdMessage = await openai.beta.threads.messages.create(threadId, {
     role: 'user',
     content: input.message
   });
 
   return AssistantResponse(
-    { threadId: input.threadId, messageId: createdMessage.id },
+    { threadId: threadId, messageId: createdMessage.id },
     async ({ forwardStream, sendDataMessage }) => {
       // Run the assistant on the thread
-      const runStream = openai.beta.threads.runs.stream(input.threadId, {
-        assistant_id: input.assistantId
+      const runStream = openai.beta.threads.runs.stream(threadId, {
+        assistant_id: input.data.assistantId
       });
 
       // forward run status would stream message deltas
@@ -45,7 +52,7 @@ export async function POST(req: Request) {
         );
 
         runResult = await forwardStream(
-          openai.beta.threads.runs.submitToolOutputsStream(input.threadId, runResult.id, {
+          openai.beta.threads.runs.submitToolOutputsStream(threadId, runResult.id, {
             tool_outputs
           })
         );

@@ -41,7 +41,7 @@
     isLoading,
     stop,
     append,
-    reload,
+    reload
   } = useChat({
     initialMessages: $threadsStore.threads
       .find((thread) => thread.id === $page.params.thread_id)
@@ -69,17 +69,12 @@
   });
 
   const {
-    status,
-    messages: assistantMessages,
     input: assistantInput,
+    messages: assistantMessages,
     submitMessage: submitAssistantMessage
   } = useAssistant({
     api: '/api/chat/assistants',
-    body: {
-      threadId: activeThread?.id ? activeThread.id : null,
-      message: $assistantInput,
-      assistantId: selectedAssistantId
-    }
+    threadId: activeThread?.id
   });
 
   const onSubmit = async (e: SubmitEvent | KeyboardEvent) => {
@@ -109,7 +104,12 @@
       }
       if (assistantMode) {
         $assistantInput = $chatInput;
-        await submitAssistantMessage(e); // submit to AI (/api/chat/assistants)
+        await submitAssistantMessage(e, {
+          data: {
+            assistantId: selectedAssistantId,
+            threadId: activeThread?.id || ''
+          }
+        }); // submit to AI (/api/chat/assistants)
       } else {
         submitChatMessage(e); // submit to AI (/api/chat)
       }
@@ -198,7 +198,7 @@
 <!--Note - the messages are streamed live from the useChat messages, saving them in the db and store happens behind the scenes -->
 <div class="chat-inner-content">
   <div class="messages" bind:this={messageThreadDiv} bind:offsetHeight={messageThreadDivHeight}>
-    {#each [...$messages, ...$assistantMessages] as message, index (message.id)}
+    {#each assistantMode ? $assistantMessages : $messages as message, index (message.id)}
       <Message
         {message}
         {handleMessageEdit}
