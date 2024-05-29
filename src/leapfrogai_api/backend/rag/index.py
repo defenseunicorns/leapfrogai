@@ -4,12 +4,17 @@ import tempfile
 from fastapi import UploadFile
 from openai.types.beta.vector_stores import VectorStoreFile
 from supabase_py_async import AsyncClient
+
+from langchain_core.embeddings import Embeddings
+from leapfrogai_api.backend.rag.leapfrogai_embeddings import LeapfrogAIEmbeddings
 from leapfrogai_api.data.crud_file_bucket import CRUDFileBucket
 from leapfrogai_api.data.crud_file_object import CRUDFileObject
 from leapfrogai_api.data.crud_vector_store_file import CRUDVectorStoreFile
 from leapfrogai_api.backend.rag.document_loader import load_file, split
 from leapfrogai_api.data.async_supabase_vector_store import AsyncSupabaseVectorStore
-from leapfrogai_api.backend.rag.leapfrogai_embeddings import LeapfrogAIEmbeddings
+
+# Allows for overwriting type of embeddings that will be instantiated
+embeddings_type: type[Embeddings] | type[LeapfrogAIEmbeddings] | None = LeapfrogAIEmbeddings
 
 
 class IndexingService:
@@ -17,13 +22,14 @@ class IndexingService:
 
     def __init__(self, db: AsyncClient):
         self.db = db
+        self.embeddings = embeddings_type()
 
     async def index_file(self, vector_store_id: str, file_id: str) -> VectorStoreFile:
         """Index a file into a vector store."""
         crud_vector_store_file = CRUDVectorStoreFile(db=self.db)
 
         if await crud_vector_store_file.get(
-            vector_store_id=vector_store_id, file_id=file_id
+                vector_store_id=vector_store_id, file_id=file_id
         ):
             raise ValueError("File already indexed")
 
@@ -56,9 +62,8 @@ class IndexingService:
             )
 
             try:
-                embeddings_function = LeapfrogAIEmbeddings()
                 vector_store_client = AsyncSupabaseVectorStore(
-                    db=self.db, embedding=embeddings_function
+                    db=self.db, embedding=self.embeddings
                 )
 
                 ids = await vector_store_client.aadd_documents(
