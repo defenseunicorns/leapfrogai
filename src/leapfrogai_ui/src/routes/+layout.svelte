@@ -35,8 +35,6 @@
 
 <Toasts />
 
-<LFHeader />
-
 <slot />
 
 <style lang="scss">
