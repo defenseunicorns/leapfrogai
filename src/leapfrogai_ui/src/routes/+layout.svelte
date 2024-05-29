@@ -35,7 +35,6 @@
 
 <Toasts />
 
-<LFHeader />
 
 <slot />
 
