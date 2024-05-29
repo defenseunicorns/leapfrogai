@@ -2,7 +2,6 @@
 
 import os
 import leapfrogai_sdk as lfai
-from leapfrogai_api.backend.types import CreateEmbeddingResponse
 from leapfrogai_api.utils import get_model_config
 from leapfrogai_api.backend.grpc_client import create_embeddings
 
@@ -14,11 +13,6 @@ class LeapfrogAIEmbeddings:
     This class provides methods to embed documents and query text using LeapfrogAI embeddings.
     """
 
-    async def create_embeddings(self, text_or_texts: list[str] | str) -> CreateEmbeddingResponse:
-        model = await self._get_model()
-        request = lfai.EmbeddingRequest(inputs=text_or_texts)
-        return await create_embeddings(model=model, request=request)
-
     async def aembed_documents(self, texts: list[str]) -> list[list[float]]:
         """Asynchronously embeds a list of documents.
 
@@ -28,7 +22,9 @@ class LeapfrogAIEmbeddings:
         Returns:
             list[list[float]]: The list of embedding vectors for each document.
         """
-        response = await self.create_embeddings(texts)
+        model = await self._get_model()
+        request = lfai.EmbeddingRequest(inputs=texts)
+        response = await create_embeddings(model=model, request=request)
 
         list_of_embeddings = [data.embedding for data in response.data]
 
@@ -43,9 +39,10 @@ class LeapfrogAIEmbeddings:
         Returns:
             list[float]: The embedding vector for the query text.
         """
-        response = await self.create_embeddings(text)
 
-        return response.data[0].embedding
+        list_of_embeddings = await self.aembed_documents([text])
+
+        return list_of_embeddings[0]
 
     async def _get_model(self, model_name: str = os.getenv("DEFAULT_EMBEDDINGS_MODEL")):
         """Gets the embeddings model.
