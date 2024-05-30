@@ -6,7 +6,7 @@
   import { ArrowRight, StopFilledAlt, UserProfile } from 'carbon-icons-svelte';
   import { type Message as AIMessage, useAssistant, useChat } from 'ai/svelte';
   import { page } from '$app/stores';
-  import { beforeNavigate, goto } from '$app/navigation';
+  import { beforeNavigate, goto, invalidate } from '$app/navigation';
   import Message from '$components/Message.svelte';
   import type { LFMessage } from '$lib/types/messages';
   import { convertMessageToAiMessage, getMessageText } from '$helpers/threads';
@@ -14,6 +14,9 @@
   import type { Message as OpenAIMessage } from 'openai/resources/beta/threads/messages';
 
   export let data;
+
+  $: activeThread = data.thread;
+  $: originalMessages = data.messages;
 
   // TODO - check mark for selected assistant
 
@@ -33,9 +36,22 @@
   $: assistantsList.unshift({ id: noSelectedAssistantId, text: 'Select Assistant' }); // add dropdown item for no assistant selected
   $: assistantsList.push({ id: `manage-assistants`, text: 'Manage Assistants' }); // add dropdown item for manage assistants button
 
-  $: activeThread = $threadsStore.threads.find((thread) => thread.id === $page.params.thread_id);
-  $: $page.params.thread_id,
-    setMessages(activeThread?.messages?.map((m) => convertMessageToAiMessage(m)) || []);
+  // Used to reset messages when thread id changes
+  const resetMessages = () => {
+    if (originalMessages && originalMessages.length > 0) {
+      setMessages(
+        originalMessages
+          .map((m) => convertMessageToAiMessage(m))
+          .sort((a, b) => a.created_at - b.created_at)
+      );
+      assistantSetMessages([]);
+    } else {
+      setMessages([]);
+      assistantSetMessages([]);
+    }
+  };
+
+  $: $page.params.thread_id, resetMessages();
 
   const getAssistantImage = (assistant_id: string) => {
     const myAssistant = data.assistants.find((assistant) => assistant.id === assistant_id);
@@ -53,13 +69,6 @@
     append,
     reload
   } = useChat({
-    initialMessages: $threadsStore.threads
-      .find((thread) => thread.id === $page.params.thread_id)
-      ?.messages?.map((message: LFMessage) => ({
-        id: message.id,
-        content: getMessageText(message),
-        role: message.role
-      })),
     onFinish: async (message: AIMessage) => {
       if (!assistantMode && activeThread?.id) {
         await threadsStore.newMessage({
