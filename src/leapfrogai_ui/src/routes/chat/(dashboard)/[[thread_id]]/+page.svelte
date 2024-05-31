@@ -6,21 +6,20 @@
   import { ArrowRight, StopFilledAlt, UserProfile } from 'carbon-icons-svelte';
   import { type Message as AIMessage, useAssistant, useChat } from 'ai/svelte';
   import { page } from '$app/stores';
-  import { beforeNavigate, goto } from '$app/navigation';
+  import { afterNavigate, beforeNavigate, goto } from '$app/navigation';
   import Message from '$components/Message.svelte';
-  import { convertMessageToAiMessage, getMessageText } from '$helpers/threads';
+  import { getMessageText } from '$helpers/threads';
   import { getUnixSeconds } from '$helpers/dates.js';
   import { NO_SELECTED_ASSISTANT_ID } from '$constants';
   import {
     createMessage,
     ensureMessagesHaveTimestamps,
-    fixDuplicateTimestamps,
+    adjustAIResponseTimestamps,
     getMessages,
     isAssistantMessage,
+    resetMessages,
     stopThenSave
   } from '$helpers/chatHelpers';
-  import type { Message as OpenAIMessage } from 'openai/resources/beta/threads/messages';
-  import { combineChunks } from '@supabase/ssr';
 
   export let data;
 
@@ -31,25 +30,20 @@
   let messageThreadDivHeight: number;
   let lengthInvalid: boolean; // bound to child LFTextArea
   let assistantsList: Array<{ id: string; text: string }>;
-
   /** END LOCAL VARS **/
 
   /** REACTIVE STATE **/
-
   $: activeThread = $threadsStore.threads.find((t) => t.id === $page.params.thread_id);
-
   $: assistantsList = [...data.assistants].map((assistant) => ({
     id: assistant.id,
     text: assistant.name || 'unknown'
   }));
   $: assistantsList.unshift({ id: NO_SELECTED_ASSISTANT_ID, text: 'Select Assistant' }); // add dropdown item for no assistant selected
   $: assistantsList.push({ id: `manage-assistants`, text: 'Manage Assistants' }); // add dropdown item for manage assistants button
-
   $: assistantMode =
     $threadsStore.selectedAssistantId !== NO_SELECTED_ASSISTANT_ID &&
     $threadsStore.selectedAssistantId !== 'manage-assistants';
 
-  $: $page.params.thread_id, resetMessages();
   $: messageInProgress = $isLoading || $status === 'in_progress';
 
   $: if (
@@ -58,14 +52,12 @@
   )
     createAndAddAssistantMessage();
 
-  $: sortedMessages = fixDuplicateTimestamps(
+  $: sortedMessages = adjustAIResponseTimestamps(
     ensureMessagesHaveTimestamps([...$chatMessages, ...$assistantMessages])
   ).sort((a, b) => a.created_at - b.created_at);
-
   /** END REACTIVE STATE **/
 
   const createAndAddAssistantMessage = async () => {
-    console.log('in create and add assistant message');
     // Streamed assistant responses don't contain an assistant_id, so we add it here
     // also add a createdAt date if not present
     const assistantMessagesCopy = [...$assistantMessages];
@@ -81,25 +73,6 @@
     if ($status === 'awaiting_message') {
       const messages = await getMessages($page.params.thread_id);
       await threadsStore.updateMessages($page.params.thread_id, messages);
-    }
-  };
-
-  // Used to reset messages when thread id changes
-  const resetMessages = () => {
-    console.log('in reset messages');
-    if (activeThread?.messages && activeThread.messages.length > 0) {
-      const assistantMessages = activeThread.messages
-        .filter((m) => m.run_id)
-        .map(convertMessageToAiMessage);
-      const chatMessages = activeThread.messages
-        .filter((m) => !m.run_id)
-        .map(convertMessageToAiMessage);
-
-      setAssistantMessages(assistantMessages);
-      setChatMessages(chatMessages);
-    } else {
-      setChatMessages([]);
-      setAssistantMessages([]);
     }
   };
 
@@ -125,6 +98,18 @@
           });
 
           await threadsStore.addMessageToStore(newMessage);
+          // Chat message streamed responses have id fields that are not different from the ones saved to the db
+          // Update the streamed messages array to have correct ids so they can be manipulated later (ex. edit, delete)
+
+          const messageIndexToUpdate = $chatMessages.findIndex((m) => m.id === message.id);
+          if (messageIndexToUpdate > -1) {
+            const messagesCopy = [...$chatMessages];
+            messagesCopy[messageIndexToUpdate] = {
+              ...newMessage,
+              content: getMessageText(message)
+            };
+            setChatMessages(messagesCopy);
+          }
         }
       } catch {
         toastStore.addToast({
@@ -239,14 +224,8 @@
     }
   };
 
-  $: console.log('chatMessages', $chatMessages);
-  $: console.log('assistantMessages', $assistantMessages);
-  $: console.log('sortedMessages', sortedMessages);
-
   onMount(async () => {
     threadsStore.setThreads(data.threads || []);
-    await tick();
-    resetMessages();
   });
 
   afterUpdate(() => {
@@ -265,6 +244,14 @@
         chatStop
       });
     }
+  });
+
+  afterNavigate(() => {
+    resetMessages({
+      activeThread,
+      setChatMessages,
+      setAssistantMessages
+    });
   });
 </script>
 

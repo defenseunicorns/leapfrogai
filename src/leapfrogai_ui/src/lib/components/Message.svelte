@@ -62,6 +62,7 @@
     } else {
       await handleChatMessageEdit({
         message: { ...message, content: convertTextToMessageContentArr($value) },
+        thread_id: $page.params.thread_id,
         messages,
         setMessages,
         append
