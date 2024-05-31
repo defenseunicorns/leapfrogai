@@ -19,8 +19,9 @@ RUN rm supabase_${version}_linux_amd64.apk
 RUN adduser -D $USER \
         && echo "$USER ALL=(ALL) NOPASSWD: ALL" > /etc/sudoers.d/$USER \
         && chmod 0440 /etc/sudoers.d/$USER
-RUN chown -R leapfrogai:leapfrogai /home
-USER $USER
 
 # Copy all migration scripts
 COPY migrations/*.sql supabase/migrations/
+
+RUN chown -R $USER:$USER /home
+USER $USER
