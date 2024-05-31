@@ -11,7 +11,16 @@
   import { convertMessageToAiMessage, getMessageText } from '$helpers/threads';
   import { getUnixSeconds } from '$helpers/dates.js';
   import { NO_SELECTED_ASSISTANT_ID } from '$constants';
-  import { createMessage, isAssistantMessage, stopThenSave } from '$helpers/chatHelpers';
+  import {
+    createMessage,
+    ensureMessagesHaveTimestamps,
+    fixDuplicateTimestamps,
+    getMessages,
+    isAssistantMessage,
+    stopThenSave
+  } from '$helpers/chatHelpers';
+  import type { Message as OpenAIMessage } from 'openai/resources/beta/threads/messages';
+  import { combineChunks } from '@supabase/ssr';
 
   export let data;
 
@@ -27,8 +36,7 @@
 
   /** REACTIVE STATE **/
 
-  $: activeThread = data.thread;
-  $: originalMessages = data.messages;
+  $: activeThread = $threadsStore.threads.find((t) => t.id === $page.params.thread_id);
 
   $: assistantsList = [...data.assistants].map((assistant) => ({
     id: assistant.id,
@@ -44,48 +52,48 @@
   $: $page.params.thread_id, resetMessages();
   $: messageInProgress = $isLoading || $status === 'in_progress';
 
-  // Assistant messages streamed to the client do not have an assistant_id field. We need to add it so the
-  // assistant avatars and pictograms display.
-  // Messages from assistants will get the last active assistant used.
-  // When the page is refreshed, the messages are retrieved from the API and have the correct assistant_id assigned to them
   $: if (
     $assistantMessages.length > 0 &&
     !$assistantMessages[$assistantMessages.length - 1].assistant_id
-  ) {
-    const updatedMessages = [...$assistantMessages];
-    const messageIndex = updatedMessages.findIndex(
-      (m) => m.id === $assistantMessages[$assistantMessages.length - 1].id
-    );
-    updatedMessages[messageIndex].assistant_id = $threadsStore.selectedAssistantId;
+  )
+    createAndAddAssistantMessage();
 
-    setAssistantMessages(updatedMessages);
-  }
-  $: combinedMessages = [...$assistantMessages, ...$chatMessages].sort((a, b) => {
-    if (a.created_at && b.created_at) {
-      if (a.createdAt === b.createdAt) {
-        if (a.role === 'user' && b.role === 'assistant') {
-          return -1; // 'user' should come first
-        } else if (a.role === 'assistant' && b.role === 'user') {
-          return 1; // 'assistant' should come after
-        }
-        return 0; // No change in order if roles are the same
-      }
-      return a.created_at - b.created_at;
-    }
-    if (!a.createdAt) a.createdAt = new Date();
-    if (!b.createdAt) b.createdAt = new Date();
+  $: sortedMessages = fixDuplicateTimestamps(
+    ensureMessagesHaveTimestamps([...$chatMessages, ...$assistantMessages])
+  ).sort((a, b) => a.created_at - b.created_at);
 
-    return getUnixSeconds(a.createdAt) - getUnixSeconds(b.createdAt);
-  });
   /** END REACTIVE STATE **/
+
+  const createAndAddAssistantMessage = async () => {
+    console.log('in create and add assistant message');
+    // Streamed assistant responses don't contain an assistant_id, so we add it here
+    // also add a createdAt date if not present
+    const assistantMessagesCopy = [...$assistantMessages];
+    const latestMessage = assistantMessagesCopy[assistantMessagesCopy.length - 1];
+    latestMessage.assistant_id = $threadsStore.selectedAssistantId;
+    if (!latestMessage.createdAt)
+      latestMessage.createdAt = latestMessage.created_at || getUnixSeconds(new Date());
+
+    setAssistantMessages(assistantMessagesCopy);
+
+    // We have a new assistant message
+    // '/api/chat/assistants' saves the messages with the API for us, so we re-fetch and updated the store here
+    if ($status === 'awaiting_message') {
+      const messages = await getMessages($page.params.thread_id);
+      await threadsStore.updateMessages($page.params.thread_id, messages);
+    }
+  };
 
   // Used to reset messages when thread id changes
   const resetMessages = () => {
-    if (originalMessages && originalMessages.length > 0) {
-      const assistantMessages = originalMessages
+    console.log('in reset messages');
+    if (activeThread?.messages && activeThread.messages.length > 0) {
+      const assistantMessages = activeThread.messages
         .filter((m) => m.run_id)
         .map(convertMessageToAiMessage);
-      const chatMessages = originalMessages.filter((m) => !m.run_id).map(convertMessageToAiMessage);
+      const chatMessages = activeThread.messages
+        .filter((m) => !m.run_id)
+        .map(convertMessageToAiMessage);
 
       setAssistantMessages(assistantMessages);
       setChatMessages(chatMessages);
@@ -188,7 +196,7 @@
 
       // store user input
       await threadsStore.addMessageToStore(newMessage);
-      console.log($chatMessages);
+
       submitChatMessage(e); // submit to AI (/api/chat)
     }
   };
@@ -231,8 +239,14 @@
     }
   };
 
-  onMount(() => {
+  $: console.log('chatMessages', $chatMessages);
+  $: console.log('assistantMessages', $assistantMessages);
+  $: console.log('sortedMessages', sortedMessages);
+
+  onMount(async () => {
     threadsStore.setThreads(data.threads || []);
+    await tick();
+    resetMessages();
   });
 
   afterUpdate(() => {
@@ -256,12 +270,12 @@
 
 <div class="chat-inner-content">
   <div class="messages" bind:this={messageThreadDiv} bind:offsetHeight={messageThreadDivHeight}>
-    {#each combinedMessages as message, index (message.id)}
+    {#each sortedMessages as message, index (message.id)}
       <Message
         {message}
         messages={isAssistantMessage(message) ? $assistantMessages : $chatMessages}
         setMessages={isAssistantMessage(message) ? setAssistantMessages : setChatMessages}
-        isLastMessage={index === combinedMessages.length - 1}
+        isLastMessage={index === sortedMessages.length - 1}
         isLoading={messageInProgress || false}
         append={isAssistantMessage(message) ? assistantAppend : chatAppend}
         {reload}

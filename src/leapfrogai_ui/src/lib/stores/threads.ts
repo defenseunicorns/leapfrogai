@@ -4,8 +4,9 @@ import { goto } from '$app/navigation';
 import { error } from '@sveltejs/kit';
 import { toastStore } from '$stores';
 import type { LFThread, NewThreadInput } from '$lib/types/threads';
-import type { LFMessage, NewMessageInput } from '$lib/types/messages';
+import type { LFMessage } from '$lib/types/messages';
 import { getMessageText } from '$helpers/threads';
+import {createMessage} from "$helpers/chatHelpers";
 
 type ThreadsStore = {
   threads: LFThread[];
@@ -111,7 +112,21 @@ const createThreadsStore = () => {
         });
       }
     },
-
+    updateMessages: async (thread_id: string, messages: LFMessage[]) => {
+      update((old) => {
+        const updatedThreads = [...old.threads];
+        const threadIndex = old.threads.findIndex((c) => c.id === thread_id);
+        const oldThread = old.threads[threadIndex];
+        updatedThreads[threadIndex] = {
+          ...oldThread,
+          messages
+        };
+        return {
+          ...old,
+          threads: updatedThreads
+        };
+      });
+    },
     addMessageToStore: async (newMessage: LFMessage) => {
       try {
         update((old) => {

@@ -7,7 +7,7 @@
   import frog from '$assets/frog.png';
   import { writable } from 'svelte/store';
   import { threadsStore, toastStore } from '$stores';
-  import { getMessageText } from '$helpers/threads';
+  import { convertTextToMessageContentArr, getMessageText } from '$helpers/threads';
   import type { Message as OpenAIMessage } from 'openai/resources/beta/threads/messages';
   import {
     getAssistantImage,
@@ -17,7 +17,8 @@
     handleChatRegenerate,
     isAssistantMessage
   } from '$helpers/chatHelpers';
-  import type {ChatRequestOptions, CreateMessage} from 'ai';
+  import type { ChatRequestOptions, CreateMessage } from 'ai';
+  import DynamicPictogram from '$components/DynamicPictogram.svelte';
 
   export let message: AIMessage | OpenAIMessage;
   export let messages: AIMessage[] = [];
@@ -47,13 +48,12 @@
     e.preventDefault();
     editMode = false;
 
-
     if (isAssistantMessage(message)) {
       threadsStore.setSelectedAssistantId(message.assistant_id);
 
       await handleAssistantMessageEdit({
         selectedAssistantId: $threadsStore.selectedAssistantId,
-        message: { ...message, content: $value },
+        message: { ...message, content: convertTextToMessageContentArr($value) },
         messages,
         thread_id: $page.params.thread_id,
         setMessages,
@@ -61,9 +61,8 @@
       });
     } else {
       await handleChatMessageEdit({
-        message: { ...message, content: $value },
+        message: { ...message, content: convertTextToMessageContentArr($value) },
         messages,
-        thread_id: $page.params.thread_id,
         setMessages,
         append
       });
@@ -108,8 +107,12 @@
       <div class="icon">
         <UserAvatar style="width: 24px; height: 24px;" />
       </div>
-    {:else if assistantImage}
+    {:else if assistantImage && assistantImage.startsWith('http')}
       <img alt="Assistant" src={assistantImage} class="icon" />
+    {:else if assistantImage}
+      <div class="icon">
+        <DynamicPictogram iconName={assistantImage} width="24px" height="24px" />
+      </div>
     {:else}
       <img alt="LeapfrogAI" src={frog} class="icon" />
     {/if}

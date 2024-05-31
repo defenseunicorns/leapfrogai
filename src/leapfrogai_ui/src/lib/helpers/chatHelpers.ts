@@ -1,12 +1,13 @@
 import { threadsStore, toastStore } from '$stores';
-import { convertMessageToAiMessage, getMessageText } from '$helpers/threads';
+import { getMessageText } from '$helpers/threads';
 import type { AssistantStatus, ChatRequestOptions, CreateMessage } from 'ai';
 import { type Message as AIMessage } from 'ai/svelte';
 import type { LFAssistant } from '$lib/types/assistants';
 import type { Message as OpenAIMessage } from 'openai/resources/beta/threads/messages';
 import { NO_SELECTED_ASSISTANT_ID } from '$constants';
-import type { NewMessageInput } from '$lib/types/messages';
+import type { LFMessage, NewMessageInput } from '$lib/types/messages';
 import { error } from '@sveltejs/kit';
+import { getUnixSeconds } from '$helpers/dates';
 
 export const createMessage = async (input: NewMessageInput) => {
   const res = await fetch('/api/messages/new', {
@@ -18,6 +19,14 @@ export const createMessage = async (input: NewMessageInput) => {
       'Content-Type': 'application/json'
     }
   });
+
+  if (res.ok) return res.json();
+
+  return error(500, 'Error saving message');
+};
+
+export const getMessages = async (thread_id: string) => {
+  const res = await fetch(`/api/messages/${thread_id}`);
 
   if (res.ok) return res.json();
 
@@ -76,13 +85,9 @@ export const getAssistantImage = (assistants: LFAssistant[], assistant_id: strin
   return null;
 };
 
-// TODO - create reg message, create assistant message, create regular message, order gets messed up
-// TODO - there's a sequence of events that that removes the assistant from an edited message
-
 type EditMessageArgs = {
-  message: AIMessage | OpenAIMessage;
+  message: Partial<OpenAIMessage>;
   messages: AIMessage[];
-  thread_id: string;
   setMessages: (messages: AIMessage[]) => void;
   append: (
     message: AIMessage | CreateMessage,
@@ -95,7 +100,6 @@ export const handleAssistantMessageEdit = async ({
   selectedAssistantId,
   message,
   messages,
-  thread_id,
   setMessages,
   append
 }: EditAssistantMessageArgs) => {
@@ -106,7 +110,7 @@ export const handleAssistantMessageEdit = async ({
 
   const deleteRes1 = await fetch('/api/messages/delete', {
     method: 'DELETE',
-    body: JSON.stringify({ thread_id, message_id: message.id }),
+    body: JSON.stringify({ thread_id: message.thread_id, message_id: message.id }),
     headers: {
       'Content-Type': 'application/json'
     }
@@ -124,7 +128,7 @@ export const handleAssistantMessageEdit = async ({
     const deleteRes2 = await fetch('/api/messages/delete', {
       method: 'DELETE',
       body: JSON.stringify({
-        thread_id,
+        thread_id: message.thread_id,
         message_id: messages[messageIndex + 1].id
       }),
       headers: {
@@ -142,50 +146,50 @@ export const handleAssistantMessageEdit = async ({
   }
   setMessages(messages.toSpliced(messageIndex, numToSplice));
   // send to /api/chat/assistants
-  const createMessage: CreateMessage = { content: getMessageText(message), role: 'user' };
-  await append(createMessage, {
-    data: {
-      message: getMessageText(message),
-      assistantId: selectedAssistantId,
-      threadId: thread_id
-    }
-  });
+  const cMessage: CreateMessage = { content: getMessageText(message), role: 'user' };
+  if (message.thread_id) {
+    await append(cMessage, {
+      data: {
+        message: getMessageText(message),
+        assistantId: selectedAssistantId,
+        threadId: message.thread_id
+      }
+    });
+  }
 };
 
 export const handleChatMessageEdit = async ({
   message,
   messages,
-  thread_id,
   setMessages,
   append
 }: EditMessageArgs) => {
-  const messageIndex = messages.findIndex((m) => m.id === message.id);
-  // Ensure the message after the user's message exists and is a response from the AI
-  const numToSplice =
-    messages[messageIndex + 1] && messages[messageIndex + 1].role !== 'user' ? 2 : 1;
-  console.log(message)
-  console.log(messageIndex)
-  console.log(messages)
-  if (thread_id) {
+  if (message.id && message.thread_id) {
+    const messageIndex = messages.findIndex((m) => m.id === message.id);
+    // Ensure the message after the user's message exists and is a response from the AI
+    const numToSplice =
+      messages[messageIndex + 1] && messages[messageIndex + 1].role !== 'user' ? 2 : 1;
+
     // delete old message from DB
-    await threadsStore.deleteMessage(thread_id, message.id);
+    await threadsStore.deleteMessage(message.thread_id, message.id);
     if (numToSplice === 2) {
       // also delete that message's response
-      await threadsStore.deleteMessage(thread_id, messages[messageIndex + 1].id);
+      await threadsStore.deleteMessage(message.thread_id, messages[messageIndex + 1].id);
     }
+    setMessages(messages.toSpliced(messageIndex, numToSplice)); // remove original message and response
 
-    // save new message
-    await threadsStore.addMessageToStore({
-      thread_id,
+    // send to /api/chat
+    const cMessage: CreateMessage = { content: getMessageText(message), role: 'user' };
+    await append(cMessage);
+    // Save with API
+    const newMessage = await createMessage({
+      thread_id: message.thread_id,
       content: getMessageText(message),
       role: 'user'
     });
-  }
-  setMessages(messages.toSpliced(messageIndex, numToSplice)); // remove original message and response
 
-  // send to /api/chat
-  const createMessage: CreateMessage = { content: getMessageText(message), role: 'user' };
-  await append(createMessage);
+    await threadsStore.addMessageToStore(newMessage);
+  }
 };
 
 export const isAssistantMessage = (message: AIMessage | OpenAIMessage) =>
@@ -275,4 +279,74 @@ export const handleChatRegenerate = async ({
   await threadsStore.deleteMessage(thread_id, message.id);
   setMessages(messages.toSpliced(-2, 2));
   await reload();
+};
+
+const isInSeconds = (num: number) => {
+  // Convert the number to a string
+  const numStr = num.toString();
+  // Check if it contains a decimal point
+  return numStr.includes('.');
+};
+
+// Sometimes streamed messages are returned with created_at fields, sometimes they only have createdAt
+// Sometimes the createdAt field is a number in unix milliseconds, unix seconds, or a date string
+// This logic ensures each message has a created_at field in unix milliseconds to sort by
+export const ensureMessagesHaveTimestamps = (messages: Array<AIMessage | OpenAIMessage>) => {
+  const updatedMessages = messages.map((message) => {
+    if (message.created_at) {
+      if (isInSeconds(message.created_at)) {
+        // convert to milliseconds
+        message.created_at = message.created_at * 1000;
+      }
+
+      return message;
+    }
+    if (message.createdAt) {
+      if (typeof message.createdAt === 'number') {
+        // createdAt is in form of unixSeconds
+        if (isInSeconds(message.createdAt)) {
+          // convert to milliseconds
+          message.created_at = message.createdAt * 1000;
+        } else {
+          message.created_at = message.createdAt;
+        }
+        return message;
+      }
+      if (typeof message.createdAt === 'string') {
+        // createdAt is in form of date
+        message.created_at = getUnixSeconds(message.createdAt);
+        return message;
+      } else {
+        message.created_at = new Date().getTime();
+      }
+    }
+    if (!message.createdAt) {
+      message.created_at = new Date().getTime();
+      return message;
+    }
+
+    return message;
+  });
+  return updatedMessages;
+};
+
+// Sometimes messages have the same createdAt timestamp, this will add 1 to the assistant createdAt to sort properly
+export const fixDuplicateTimestamps = (messages: Array<AIMessage | OpenAIMessage>) => {
+  const timestampCount: { [key: number]: number } = {};
+
+  // Count occurrences of each createdAt timestamp
+  messages.forEach((m) => {
+    const unixSeconds = m.created_at;
+    timestampCount[unixSeconds] = (timestampCount[unixSeconds] || 0) + 1;
+  });
+
+  // Adjust created_at for duplicates with role 'assistant'
+  messages.forEach((m) => {
+    const unixSeconds = m.created_at;
+    if (timestampCount[unixSeconds] > 1 && m.role === 'assistant') {
+      m.created_at = getUnixSeconds(new Date(unixSeconds + 1));
+    }
+  });
+
+  return messages;
 };
