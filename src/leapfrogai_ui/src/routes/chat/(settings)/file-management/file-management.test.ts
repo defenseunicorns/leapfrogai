@@ -4,7 +4,6 @@ import { getFakeFiles } from '../../../../../testUtils/fakeData';
 import userEvent from '@testing-library/user-event';
 import { formatDate } from '$helpers/dates';
 import { load } from './+page';
-import { sessionMock } from '$lib/mocks/supabase-mocks';
 import { mockDeleteFile, mockDeleteFileWithDelay, mockGetFiles } from '$lib/mocks/file-mocks';
 import { vi } from 'vitest';
 import { toastStore } from '$stores';

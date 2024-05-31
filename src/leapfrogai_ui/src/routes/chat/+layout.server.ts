@@ -25,7 +25,7 @@ export const load = async ({ locals: { supabase, safeGetSession } }) => {
     throw redirect(303, '/');
   }
 
-  let threads: LFThread[] = [];
+  const threads: LFThread[] = [];
   if (profile?.thread_ids && profile?.thread_ids.length > 0) {
     try {
       const threadPromises = profile.thread_ids.map(async (thread_id) => {

@@ -1,11 +1,10 @@
 <script lang="ts">
   import { invalidate } from '$app/navigation';
   import { onMount } from 'svelte';
-  import { LFHeader } from '$components';
+  import { Toasts } from '$components';
   import { page } from '$app/stores';
   import 'carbon-components-svelte/css/g90.css';
   import '../styles/main.scss';
-  import { Toasts } from '$components';
   import { Theme } from 'carbon-components-svelte';
   import type { CarbonTheme } from 'carbon-components-svelte/src/Theme/Theme.svelte';
 
@@ -34,7 +33,6 @@
 <Theme bind:theme />
 
 <Toasts />
-
 
 <slot />
 

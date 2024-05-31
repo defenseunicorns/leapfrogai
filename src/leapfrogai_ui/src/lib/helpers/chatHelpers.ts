@@ -7,8 +7,8 @@ import type { Message as OpenAIMessage } from 'openai/resources/beta/threads/mes
 import { NO_SELECTED_ASSISTANT_ID } from '$constants';
 import type { LFMessage, NewMessageInput } from '$lib/types/messages';
 import { error } from '@sveltejs/kit';
-import { getUnixSeconds } from '$helpers/dates';
 import type { LFThread } from '$lib/types/threads';
+import { tick } from 'svelte';
 
 export const createMessage = async (input: NewMessageInput) => {
   const res = await fetch('/api/messages/new', {
@@ -87,6 +87,7 @@ export const getAssistantImage = (assistants: LFAssistant[], assistant_id: strin
 };
 
 type EditMessageArgs = {
+  savedMessages: LFMessage[];
   message: Partial<OpenAIMessage>;
   messages: AIMessage[];
   thread_id: string;
@@ -100,6 +101,7 @@ type EditAssistantMessageArgs = EditMessageArgs & { selectedAssistantId: string 
 
 export const handleAssistantMessageEdit = async ({
   selectedAssistantId,
+  thread_id,
   message,
   messages,
   setMessages,
@@ -112,7 +114,7 @@ export const handleAssistantMessageEdit = async ({
 
   const deleteRes1 = await fetch('/api/messages/delete', {
     method: 'DELETE',
-    body: JSON.stringify({ thread_id: message.thread_id, message_id: message.id }),
+    body: JSON.stringify({ thread_id, message_id: message.id }),
     headers: {
       'Content-Type': 'application/json'
     }
@@ -130,7 +132,7 @@ export const handleAssistantMessageEdit = async ({
     const deleteRes2 = await fetch('/api/messages/delete', {
       method: 'DELETE',
       body: JSON.stringify({
-        thread_id: message.thread_id,
+        thread_id,
         message_id: messages[messageIndex + 1].id
       }),
       headers: {
@@ -149,26 +151,24 @@ export const handleAssistantMessageEdit = async ({
   setMessages(messages.toSpliced(messageIndex, numToSplice));
   // send to /api/chat/assistants
   const cMessage: CreateMessage = { content: getMessageText(message), role: 'user' };
-  if (message.thread_id) {
-    await append(cMessage, {
-      data: {
-        message: getMessageText(message),
-        assistantId: selectedAssistantId,
-        threadId: message.thread_id
-      }
-    });
-  }
+
+  await append(cMessage, {
+    data: {
+      message: getMessageText(message),
+      assistantId: selectedAssistantId,
+      threadId: thread_id
+    }
+  });
 };
 
 export const handleChatMessageEdit = async ({
+  savedMessages,
   message,
   messages,
   thread_id,
   setMessages,
   append
 }: EditMessageArgs) => {
-  console.log('here');
-  console.log('message', message);
   if (message.id) {
     const messageIndex = messages.findIndex((m) => m.id === message.id);
     // Ensure the message after the user's message exists and is a response from the AI
@@ -176,15 +176,24 @@ export const handleChatMessageEdit = async ({
       messages[messageIndex + 1] && messages[messageIndex + 1].role !== 'user' ? 2 : 1;
 
     // delete old message from DB
-    await threadsStore.deleteMessage(thread_id, message.id);
+    // savedMessages has the messages saved with the API, not the streamed messages
+    // The savedMessages have actual ids (not the temp ids associated with streamed messages)
+    // so we can use them to delete the messages from the db
+
+    await threadsStore.deleteMessage(thread_id, savedMessages[messageIndex].id);
     if (numToSplice === 2) {
       // also delete that message's response
-      await threadsStore.deleteMessage(thread_id, messages[messageIndex + 1].id);
+      await threadsStore.deleteMessage(thread_id, savedMessages[messageIndex + 1].id);
     }
     setMessages(messages.toSpliced(messageIndex, numToSplice)); // remove original message and response
+    await tick();
 
     // send to /api/chat
-    const cMessage: CreateMessage = { content: getMessageText(message), role: 'user' };
+    const cMessage: CreateMessage = {
+      content: getMessageText(message),
+      role: 'user',
+      createdAt: new Date()
+    };
     await append(cMessage);
     // Save with API
     const newMessage = await createMessage({
@@ -223,7 +232,7 @@ export const handleAssistantRegenerate = async ({
   // then manually append
   const deleteRes1 = await fetch('/api/messages/delete', {
     method: 'DELETE',
-    body: JSON.stringify({ thread_id: thread_id, message_id: response.id }),
+    body: JSON.stringify({ thread_id, message_id: response.id }),
     headers: {
       'Content-Type': 'application/json'
     }
@@ -238,7 +247,7 @@ export const handleAssistantRegenerate = async ({
   }
   const deleteRes2 = await fetch('/api/messages/delete', {
     method: 'DELETE',
-    body: JSON.stringify({ thread_id: thread_id, message_id: userMessage.id }),
+    body: JSON.stringify({ thread_id, message_id: userMessage.id }),
     headers: {
       'Content-Type': 'application/json'
     }
@@ -254,7 +263,11 @@ export const handleAssistantRegenerate = async ({
   const updatedMessages = messages.filter((m) => m.id !== response.id && m.id !== userMessage.id);
   setMessages(updatedMessages);
 
-  const createMessage: CreateMessage = { content: getMessageText(userMessage), role: 'user' };
+  const createMessage: CreateMessage = {
+    content: getMessageText(userMessage),
+    role: 'user',
+    createdAt: new Date()
+  };
 
   await append(createMessage, {
     data: {
@@ -266,6 +279,7 @@ export const handleAssistantRegenerate = async ({
 };
 
 type HandleChatRegenerateArgs = {
+  savedMessages: LFMessage[];
   thread_id: string;
   message: AIMessage | OpenAIMessage;
   messages: AIMessage[] | OpenAIMessage[];
@@ -275,72 +289,17 @@ type HandleChatRegenerateArgs = {
   ) => Promise<string | null | undefined>;
 };
 export const handleChatRegenerate = async ({
+  savedMessages,
   thread_id,
   message,
   messages,
   setMessages,
   reload
 }: HandleChatRegenerateArgs) => {
-  await threadsStore.deleteMessage(thread_id, message.id);
+  const messageIndex = messages.findIndex((m) => m.id === message.id);
+  await threadsStore.deleteMessage(thread_id, savedMessages[messageIndex].id);
   setMessages(messages.toSpliced(-2, 2));
   await reload();
-};
-
-const isInSeconds = (num: number) => {
-  // Convert the number to a string
-  const numStr = num.toString();
-  const digitsBeforeDecimal = numStr.split('.')[0].length;
-  return digitsBeforeDecimal <= 10;
-};
-
-// Sometimes streamed messages are returned with created_at fields, sometimes they only have createdAt
-// Sometimes the createdAt field is a number in unix milliseconds, unix seconds, or a date string
-// This logic ensures each message has a created_at field in unix milliseconds to sort by
-export const ensureMessagesHaveTimestamps = (messages: Array<AIMessage | OpenAIMessage>) => {
-  const updatedMessages = messages.map((message) => {
-    if (message.created_at) {
-      if (isInSeconds(message.created_at)) {
-        // convert to milliseconds
-        message.created_at = message.created_at * 1000;
-      }
-    } else if (message.createdAt) {
-      if (typeof message.createdAt === 'number') {
-        // createdAt is in form of unixSeconds
-        if (isInSeconds(message.createdAt)) {
-          // convert to milliseconds
-          message.created_at = message.createdAt * 1000;
-        } else {
-          message.created_at = message.createdAt;
-        }
-      } else if (typeof message.createdAt === 'string') {
-        // createdAt is in form of date
-        message.created_at = new Date().getTime();
-      } else {
-        message.created_at = new Date().getTime();
-      }
-    } else if (!message.createdAt) {
-      message.created_at = new Date().getTime();
-    }
-
-    return message;
-  });
-  return updatedMessages;
-};
-
-// Chat messages AI responses after creation with the API have created_at fields that are sometimes rounded down causing them to
-// be displayed before the corresponding user message. This function adjusts the created_at field of AI responses to add an additional
-// second to ensure they are displayed after the user message
-export const adjustAIResponseTimestamps = (messages: Array<AIMessage | OpenAIMessage>) => {
-  // Adjust created_at for duplicates with role 'assistant'
-  messages.forEach((m) => {
-    if (m.role === 'assistant') {
-      if (isInSeconds(m.created_at)) {
-        m.created_at = m.created_at + 1;
-      }
-    }
-  });
-
-  return messages;
 };
 
 type ResetMessagesArgs = {
@@ -368,4 +327,35 @@ export const resetMessages = ({
     setChatMessages([]);
     setAssistantMessages([]);
   }
+};
+
+// Ensure all timestamps are in unix milliseconds whether they were returned under the createdAt or created_at keys,
+// and whether they are strings, numbers, or Date objects
+const normalizeTimestamp = (message: AIMessage | OpenAIMessage): number => {
+  const dateValue = message.createdAt || message.created_at;
+
+  if (dateValue instanceof Date) {
+    return dateValue.getTime();
+  } else if (typeof dateValue === 'string') {
+    return new Date(dateValue).getTime();
+  } else if (typeof dateValue === 'number') {
+    // Assume the timestamp is in milliseconds if it's a large number, otherwise seconds
+    return dateValue > 10000000000 ? dateValue : dateValue * 1000;
+  }
+
+  return 0; // Default to 0 if no valid date is found
+};
+
+export const sortMessages = (
+  messages: Array<AIMessage | OpenAIMessage>
+): Array<AIMessage | OpenAIMessage> => {
+  return messages.sort((a, b) => {
+    const timeA = normalizeTimestamp(a);
+    const timeB = normalizeTimestamp(b);
+    return timeA - timeB;
+  });
+};
+
+export const delay = (ms: number): Promise<void> => {
+  return new Promise((resolve) => setTimeout(resolve, ms));
 };

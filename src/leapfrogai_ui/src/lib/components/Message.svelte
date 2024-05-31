@@ -43,6 +43,8 @@
   let messageIsHovered = false;
   let editMode = false;
   let value = writable(getMessageText(message));
+  let savedMessages =
+    $threadsStore.threads.find((t) => t.id === $page.params.thread_id)?.messages || [];
 
   const onSubmit = async (e: SubmitEvent | KeyboardEvent | MouseEvent) => {
     e.preventDefault();
@@ -61,6 +63,7 @@
       });
     } else {
       await handleChatMessageEdit({
+        savedMessages,
         message: { ...message, content: convertTextToMessageContentArr($value) },
         thread_id: $page.params.thread_id,
         messages,
@@ -173,6 +176,7 @@
                 });
               } else {
                 handleChatRegenerate({
+                  savedMessages,
                   message,
                   messages,
                   setMessages,

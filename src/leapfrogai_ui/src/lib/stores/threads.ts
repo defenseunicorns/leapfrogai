@@ -6,7 +6,7 @@ import { toastStore } from '$stores';
 import type { LFThread, NewThreadInput } from '$lib/types/threads';
 import type { LFMessage } from '$lib/types/messages';
 import { getMessageText } from '$helpers/threads';
-import {createMessage} from "$helpers/chatHelpers";
+import { createMessage } from '$helpers/chatHelpers';
 
 type ThreadsStore = {
   threads: LFThread[];

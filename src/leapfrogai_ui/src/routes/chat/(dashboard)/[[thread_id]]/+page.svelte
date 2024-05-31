@@ -13,11 +13,11 @@
   import { NO_SELECTED_ASSISTANT_ID } from '$constants';
   import {
     createMessage,
-    ensureMessagesHaveTimestamps,
-    adjustAIResponseTimestamps,
+    delay,
     getMessages,
     isAssistantMessage,
     resetMessages,
+    sortMessages,
     stopThenSave
   } from '$helpers/chatHelpers';
 
@@ -30,6 +30,7 @@
   let messageThreadDivHeight: number;
   let lengthInvalid: boolean; // bound to child LFTextArea
   let assistantsList: Array<{ id: string; text: string }>;
+  let blockSend = false;
   /** END LOCAL VARS **/
 
   /** REACTIVE STATE **/
@@ -46,15 +47,14 @@
 
   $: messageInProgress = $isLoading || $status === 'in_progress';
 
+  // On new assistant message
   $: if (
     $assistantMessages.length > 0 &&
     !$assistantMessages[$assistantMessages.length - 1].assistant_id
   )
     createAndAddAssistantMessage();
 
-  $: sortedMessages = adjustAIResponseTimestamps(
-    ensureMessagesHaveTimestamps([...$chatMessages, ...$assistantMessages])
-  ).sort((a, b) => a.created_at - b.created_at);
+  $: sortedMessages = sortMessages([...$chatMessages, ...$assistantMessages]);
   /** END REACTIVE STATE **/
 
   const createAndAddAssistantMessage = async () => {
@@ -88,7 +88,14 @@
     reload
   } = useChat({
     onFinish: async (message: AIMessage) => {
+      // OpenAI returns the creation timestamp in seconds instead of millisecond.
+      // If a response comes in quickly, we need to delay 1 second to ensure the timestamps of the user message
+      // and ai response are not exactly the same. This is important for sorting messages when they are initially loaded
+      // from the db/API (ex. browser refresh). Streamed messages are sorted realtime and we modify the timestamps to
+      // ensure we have millisecond precision
+      blockSend = true;
       try {
+        await delay(1050);
         if (!assistantMode && activeThread?.id) {
           // Save with API
           const newMessage = await createMessage({
@@ -98,19 +105,9 @@
           });
 
           await threadsStore.addMessageToStore(newMessage);
-          // Chat message streamed responses have id fields that are not different from the ones saved to the db
-          // Update the streamed messages array to have correct ids so they can be manipulated later (ex. edit, delete)
-
-          const messageIndexToUpdate = $chatMessages.findIndex((m) => m.id === message.id);
-          if (messageIndexToUpdate > -1) {
-            const messagesCopy = [...$chatMessages];
-            messagesCopy[messageIndexToUpdate] = {
-              ...newMessage,
-              content: getMessageText(message)
-            };
-            setChatMessages(messagesCopy);
-          }
         }
+        await delay(1050); // ensure next user message has a different timestamp
+        blockSend = false;
       } catch {
         toastStore.addToast({
           kind: 'error',
@@ -173,12 +170,12 @@
   const sendChatMessage = async (e: SubmitEvent | KeyboardEvent) => {
     if (activeThread?.id) {
       // Save with API
+
       const newMessage = await createMessage({
         thread_id: activeThread.id,
         content: $chatInput,
         role: 'user'
       });
-
       // store user input
       await threadsStore.addMessageToStore(newMessage);
 
@@ -311,7 +308,7 @@
             size="field"
             type="submit"
             iconDescription="send"
-            disabled={!$chatInput || lengthInvalid}
+            disabled={!$chatInput || lengthInvalid || blockSend}
           />
         {:else}
           <Button

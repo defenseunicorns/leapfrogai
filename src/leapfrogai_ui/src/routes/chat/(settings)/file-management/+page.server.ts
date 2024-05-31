@@ -21,7 +21,7 @@ export const actions = {
     }
 
     if (form.data.files) {
-      let fileId: string | null = null;
+      const fileId: string | null = null;
       let vectorStoreId: string | null = null;
       const purpose = 'assistants'; // Note - hardcoded for now, in the future this could be "assistants" | "batch" | "fine-tune"
 
