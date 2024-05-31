@@ -1,13 +1,13 @@
 apiVersion: batch/v1
 kind: Job
 metadata:
-  name: ui-migrations-{{ .Values.image.lfaiAPITag }}
+  name: ui-migrations-{{ .Values.image.tag }}
 spec:
   template:
     spec:
       containers:
       - name: supabase-cli
-        image: "ghcr.io/defenseunicorns/leapfrogai/api-migrations:{{ .Values.image.lfaiAPITag }}"
+        image: "ghcr.io/defenseunicorns/leapfrogai/ui-migrations:{{ .Values.image.tag }}"
         env:
             - name: POSTGRES_PASSWORD
               valueFrom:
@@ -15,6 +15,11 @@ spec:
                   name: supabase-postgresql
                   key: postgres-password
         # NOTE: This command is assuming the default username.
-        command: ["supabase", "db", "push", "--db-url=postgresql://postgres:$(POSTGRES_PASSWORD)@supabase-postgresql.{{ .Release.Namespace }}.svc.cluster.local:5432", "--debug"]
+        command: ["/bin/sh"]
+        args:
+          - -c
+          - >-
+            supabase migration fetch --db-url=postgresql://postgres:$(POSTGRES_PASSWORD)@supabase-postgresql.leapfrogai.svc.cluster.local:5432 --debug || true &&
+            supabase db push --db-url=postgresql://postgres:$(POSTGRES_PASSWORD)@supabase-postgresql.leapfrogai.svc.cluster.local:5432 --debug
       restartPolicy: Never
   backoffLimit: 4
