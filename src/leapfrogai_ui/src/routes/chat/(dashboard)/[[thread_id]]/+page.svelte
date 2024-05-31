@@ -6,75 +6,123 @@
   import { ArrowRight, StopFilledAlt, UserProfile } from 'carbon-icons-svelte';
   import { type Message as AIMessage, useAssistant, useChat } from 'ai/svelte';
   import { page } from '$app/stores';
-  import { beforeNavigate, goto, invalidate } from '$app/navigation';
+  import { beforeNavigate, goto } from '$app/navigation';
   import Message from '$components/Message.svelte';
-  import type { LFMessage } from '$lib/types/messages';
   import { convertMessageToAiMessage, getMessageText } from '$helpers/threads';
   import { getUnixSeconds } from '$helpers/dates.js';
-  import type { Message as OpenAIMessage } from 'openai/resources/beta/threads/messages';
+  import { NO_SELECTED_ASSISTANT_ID } from '$constants';
+  import { createMessage, isAssistantMessage, stopThenSave } from '$helpers/chatHelpers';
 
   export let data;
+
+  // TODO - check mark for selected assistant
+
+  /** LOCAL VARS **/
+  let messageThreadDiv: HTMLDivElement;
+  let messageThreadDivHeight: number;
+  let lengthInvalid: boolean; // bound to child LFTextArea
+  let assistantsList: Array<{ id: string; text: string }>;
+
+  /** END LOCAL VARS **/
+
+  /** REACTIVE STATE **/
 
   $: activeThread = data.thread;
   $: originalMessages = data.messages;
 
-  // TODO - check mark for selected assistant
-
-  let messageThreadDiv: HTMLDivElement;
-  let messageThreadDivHeight: number;
-  let lengthInvalid: boolean; // bound to child LFTextArea
-
-  let assistantsList: Array<{ id: string; text: string }>;
-  let noSelectedAssistantId = `none-${new Date().toDateString()}`; // prevents id naming conflicts
-  let selectedAssistantId: string = noSelectedAssistantId;
   $: assistantsList = [...data.assistants].map((assistant) => ({
     id: assistant.id,
     text: assistant.name || 'unknown'
   }));
-  $: assistantMode =
-    selectedAssistantId !== noSelectedAssistantId && selectedAssistantId !== 'manage-assistants';
-  $: assistantsList.unshift({ id: noSelectedAssistantId, text: 'Select Assistant' }); // add dropdown item for no assistant selected
+  $: assistantsList.unshift({ id: NO_SELECTED_ASSISTANT_ID, text: 'Select Assistant' }); // add dropdown item for no assistant selected
   $: assistantsList.push({ id: `manage-assistants`, text: 'Manage Assistants' }); // add dropdown item for manage assistants button
+
+  $: assistantMode =
+    $threadsStore.selectedAssistantId !== NO_SELECTED_ASSISTANT_ID &&
+    $threadsStore.selectedAssistantId !== 'manage-assistants';
+
+  $: $page.params.thread_id, resetMessages();
+  $: messageInProgress = $isLoading || $status === 'in_progress';
+
+  // Assistant messages streamed to the client do not have an assistant_id field. We need to add it so the
+  // assistant avatars and pictograms display.
+  // Messages from assistants will get the last active assistant used.
+  // When the page is refreshed, the messages are retrieved from the API and have the correct assistant_id assigned to them
+  $: if (
+    $assistantMessages.length > 0 &&
+    !$assistantMessages[$assistantMessages.length - 1].assistant_id
+  ) {
+    const updatedMessages = [...$assistantMessages];
+    const messageIndex = updatedMessages.findIndex(
+      (m) => m.id === $assistantMessages[$assistantMessages.length - 1].id
+    );
+    updatedMessages[messageIndex].assistant_id = $threadsStore.selectedAssistantId;
+
+    setAssistantMessages(updatedMessages);
+  }
+  $: combinedMessages = [...$assistantMessages, ...$chatMessages].sort((a, b) => {
+    if (a.created_at && b.created_at) {
+      if (a.createdAt === b.createdAt) {
+        if (a.role === 'user' && b.role === 'assistant') {
+          return -1; // 'user' should come first
+        } else if (a.role === 'assistant' && b.role === 'user') {
+          return 1; // 'assistant' should come after
+        }
+        return 0; // No change in order if roles are the same
+      }
+      return a.created_at - b.created_at;
+    }
+    if (!a.createdAt) a.createdAt = new Date();
+    if (!b.createdAt) b.createdAt = new Date();
+
+    return getUnixSeconds(a.createdAt) - getUnixSeconds(b.createdAt);
+  });
+  /** END REACTIVE STATE **/
 
   // Used to reset messages when thread id changes
   const resetMessages = () => {
     if (originalMessages && originalMessages.length > 0) {
-      setMessages(
-        originalMessages
-          .map((m) => convertMessageToAiMessage(m))
-          .sort((a, b) => a.created_at - b.created_at)
-      );
-      assistantSetMessages([]);
+      const assistantMessages = originalMessages
+        .filter((m) => m.run_id)
+        .map(convertMessageToAiMessage);
+      const chatMessages = originalMessages.filter((m) => !m.run_id).map(convertMessageToAiMessage);
+
+      setAssistantMessages(assistantMessages);
+      setChatMessages(chatMessages);
     } else {
-      setMessages([]);
-      assistantSetMessages([]);
+      setChatMessages([]);
+      setAssistantMessages([]);
     }
   };
 
-  $: $page.params.thread_id, resetMessages();
-
-  const getAssistantImage = (assistant_id: string) => {
-    const myAssistant = data.assistants.find((assistant) => assistant.id === assistant_id);
-    if (myAssistant) return myAssistant.metadata.avatar ?? myAssistant.metadata.pictogram;
-    return null;
-  };
-
+  /** useChat **/
   const {
     input: chatInput,
     handleSubmit: submitChatMessage,
-    messages,
-    setMessages,
+    messages: chatMessages,
+    setMessages: setChatMessages,
     isLoading,
-    stop,
-    append,
+    stop: chatStop,
+    append: chatAppend,
     reload
   } = useChat({
     onFinish: async (message: AIMessage) => {
-      if (!assistantMode && activeThread?.id) {
-        await threadsStore.newMessage({
-          thread_id: activeThread?.id,
-          content: message.content,
-          role: message.role
+      try {
+        if (!assistantMode && activeThread?.id) {
+          // Save with API
+          const newMessage = await createMessage({
+            thread_id: activeThread.id,
+            content: getMessageText(message),
+            role: 'assistant'
+          });
+
+          await threadsStore.addMessageToStore(newMessage);
+        }
+      } catch {
+        toastStore.addToast({
+          kind: 'error',
+          title: 'Error',
+          subtitle: 'Error saving AI Response'
         });
       }
     },
@@ -87,13 +135,14 @@
     }
   });
 
+  /** useAssistant **/
   const {
     status,
     input: assistantInput,
     messages: assistantMessages,
     submitMessage: submitAssistantMessage,
     stop: assistantStop,
-    setMessages: assistantSetMessages,
+    setMessages: setAssistantMessages,
     append: assistantAppend
   } = useAssistant({
     api: '/api/chat/assistants',
@@ -110,254 +159,75 @@
     }
   });
 
-  // Assistant messages streamed to the client do not have an assistant_id field. We need to add it so the
-  // assistant avatars and pictograms display.
-  // Messages from assistants will get the last active assistant used.
-  // When the page is refreshed, the messages are retrieved from the API and have the correct assistant_id assigned to them
-  $: if (
-    $assistantMessages.length > 0 &&
-    !$assistantMessages[$assistantMessages.length - 1].assistant_id
-  ) {
-    const updatedMessages = [...$assistantMessages];
-    const messageIndex = updatedMessages.findIndex(
-      (m) => m.id === $assistantMessages[$assistantMessages.length - 1].id
-    );
-    updatedMessages[messageIndex].assistant_id = selectedAssistantId;
+  const sendAssistantMessage = async (e: SubmitEvent | KeyboardEvent) => {
+    if (activeThread?.id) {
+      // assistant mode
+      $assistantInput = $chatInput;
+      $chatInput = ''; // clear chat input
 
-    assistantSetMessages(updatedMessages);
-  }
+      await submitAssistantMessage(e, {
+        // submit to AI (/api/chat/assistants)
+        data: {
+          message: $chatInput,
+          assistantId: $threadsStore.selectedAssistantId,
+          threadId: activeThread.id
+        }
+      });
+      $assistantInput = '';
+    }
+  };
 
-  $: messageInProgress = $isLoading || $status === 'in_progress';
+  const sendChatMessage = async (e: SubmitEvent | KeyboardEvent) => {
+    if (activeThread?.id) {
+      // Save with API
+      const newMessage = await createMessage({
+        thread_id: activeThread.id,
+        content: $chatInput,
+        role: 'user'
+      });
+
+      // store user input
+      await threadsStore.addMessageToStore(newMessage);
+      console.log($chatMessages);
+      submitChatMessage(e); // submit to AI (/api/chat)
+    }
+  };
 
   const onSubmit = async (e: SubmitEvent | KeyboardEvent) => {
     e.preventDefault();
 
-    if (messageInProgress) {
-      await stopThenSave();
+    if (messageInProgress && activeThread?.id) {
+      // message still sending
+      await stopThenSave({
+        activeThreadId: activeThread.id,
+        messages: $chatMessages,
+        status: $status,
+        isLoading: $isLoading || false,
+        assistantStop,
+        chatStop
+      });
+      return;
     } else {
       if (!activeThread?.id) {
-        // new thread
+        // create new thread
         await threadsStore.newThread($chatInput);
         await tick(); // allow store to update
 
         // If in chat mode, save the messages with store methods
         // Assistant API saves the messages itself
-        if (!assistantMode && activeThread?.id) {
-          await threadsStore.newMessage({
-            thread_id: activeThread?.id,
-            content: $chatInput,
-            role: 'user'
-          });
+        if (assistantMode) {
+          await sendAssistantMessage(e);
+        } else {
+          await sendChatMessage(e);
         }
       } else {
-        if (!assistantMode) {
-          // store user input
-          await threadsStore.newMessage({
-            thread_id: activeThread?.id,
-            content: $chatInput,
-            role: 'user'
-          });
+        // active thread exists
+        if (assistantMode) {
+          await sendAssistantMessage(e);
+        } else {
+          await sendChatMessage(e);
         }
       }
-
-      if (assistantMode) {
-        $assistantInput = $chatInput;
-        $chatInput = '';
-
-        await submitAssistantMessage(e, {
-          // submit to AI (/api/chat/assistants)
-          data: {
-            message: $chatInput,
-            assistantId: selectedAssistantId,
-            threadId: activeThread?.id || ''
-          }
-        });
-        $assistantInput = '';
-      } else {
-        submitChatMessage(e); // submit to AI (/api/chat)
-      }
-    }
-  };
-
-  const stopThenSave = async () => {
-    // Note - assistantStop does not cancel the actual run, it only stops the stream
-    // If you try to send another message while the run is still running on the server,
-    // you will get an error.
-    // issue opened for this here: https://github.com/vercel/ai/issues/1743
-    if ($status === 'in_progress') assistantStop();
-    else {
-      if ($isLoading) {
-        stop();
-        const lastMessage = $messages[$messages.length - 1];
-
-        if (activeThread?.id && lastMessage.role !== 'user') {
-          await threadsStore.newMessage({
-            thread_id: activeThread?.id,
-            content: getMessageText(lastMessage), // save last message
-            role: lastMessage.role
-          });
-        }
-      }
-    }
-
-    toastStore.addToast({
-      kind: 'info',
-      title: 'Response Canceled',
-      subtitle: 'Response generation canceled.'
-    });
-  };
-
-  // TODO - create reg message, create assistant message, create regular message, order gets messed up
-  // TODO - there's a sequence of events that that removes the assistant from an edited message
-  const handleMessageEdit = async (
-    event: SubmitEvent | KeyboardEvent | MouseEvent,
-    message: AIMessage
-  ) => {
-    event.preventDefault();
-
-    if (message.assistant_id && message.assistant_id !== noSelectedAssistantId) {
-      selectedAssistantId = message.assistant_id; // set the assistant in the dropdown
-      const messageIndex = $assistantMessages.findIndex((m) => m.id === message.id);
-      // Ensure the message after the user's message exists and is a response from the AI
-      const numToSplice =
-        $assistantMessages[messageIndex + 1] && $assistantMessages[messageIndex + 1].role !== 'user'
-          ? 2
-          : 1;
-
-      const deleteRes1 = await fetch('/api/messages/delete', {
-        method: 'DELETE',
-        body: JSON.stringify({ thread_id: activeThread?.id, message_id: message.id }),
-        headers: {
-          'Content-Type': 'application/json'
-        }
-      });
-      if (!deleteRes1.ok) {
-        toastStore.addToast({
-          kind: 'error',
-          title: 'Error Editing Message',
-          subtitle: 'Editing cancelled'
-        });
-        return;
-      }
-
-      if (numToSplice === 2) {
-        const deleteRes2 = await fetch('/api/messages/delete', {
-          method: 'DELETE',
-          body: JSON.stringify({
-            thread_id: activeThread?.id,
-            message_id: $assistantMessages[messageIndex + 1].id
-          }),
-          headers: {
-            'Content-Type': 'application/json'
-          }
-        });
-        if (!deleteRes2.ok) {
-          toastStore.addToast({
-            kind: 'error',
-            title: 'Error Editing Message',
-            subtitle: 'Editing Cancelled'
-          });
-          return;
-        }
-      }
-      assistantSetMessages($assistantMessages.toSpliced(messageIndex, numToSplice));
-      // send to /api/chat/assistants
-      await assistantAppend(
-        { ...message, createdAt: undefined },
-        {
-          data: {
-            message: message.content,
-            assistantId: selectedAssistantId,
-            threadId: activeThread?.id || ''
-          }
-        }
-      );
-    } else {
-      const messageIndex = $messages.findIndex((m) => m.id === message.id);
-      // Ensure the message after the user's message exists and is a response from the AI
-      const numToSplice =
-        $messages[messageIndex + 1] && $messages[messageIndex + 1].role !== 'user' ? 2 : 1;
-
-      if (activeThread?.id) {
-        // delete old message from DB
-        await threadsStore.deleteMessage(activeThread.id, message.id);
-        if (numToSplice === 2) {
-          // also delete that message's response
-          await threadsStore.deleteMessage(activeThread.id, $messages[messageIndex + 1].id);
-        }
-
-        // save new message
-        await threadsStore.newMessage({
-          thread_id: activeThread.id,
-          content: getMessageText(message),
-          role: 'user'
-        });
-      }
-      setMessages($messages.toSpliced(messageIndex, numToSplice)); // remove original message and response
-
-      // send to /api/chat
-      await append({ ...message, createdAt: undefined });
-    }
-  };
-
-  const handleRegenerate = async () => {
-    const lastMessageIndex = filteredMessages.length - 1;
-    const userMessage = filteredMessages[lastMessageIndex - 1];
-    const response = filteredMessages[lastMessageIndex];
-
-    if (response.assistant_id && response.assistant_id !== noSelectedAssistantId) {
-      // is assistant response
-      // useAssistant doesn't have a reload function, so we delete both the user message and the assistant response,
-      // then manually append
-      selectedAssistantId = response.assistant_id; // set the assistant in the dropdown
-      const deleteRes1 = await fetch('/api/messages/delete', {
-        method: 'DELETE',
-        body: JSON.stringify({ thread_id: activeThread?.id, message_id: response.id }),
-        headers: {
-          'Content-Type': 'application/json'
-        }
-      });
-      if (!deleteRes1.ok) {
-        toastStore.addToast({
-          kind: 'error',
-          title: 'Error Regenerating Message',
-          subtitle: 'Regeneration cancelled'
-        });
-        return;
-      }
-      const deleteRes2 = await fetch('/api/messages/delete', {
-        method: 'DELETE',
-        body: JSON.stringify({ thread_id: activeThread?.id, message_id: userMessage.id }),
-        headers: {
-          'Content-Type': 'application/json'
-        }
-      });
-      if (!deleteRes2.ok) {
-        toastStore.addToast({
-          kind: 'error',
-          title: 'Error Regenerating Message',
-          subtitle: 'Regeneration cancelled'
-        });
-        return;
-      }
-      assistantSetMessages($assistantMessages.toSpliced(-2, 2));
-
-      await assistantAppend(
-        { ...userMessage, createdAt: undefined },
-        {
-          data: {
-            message: userMessage.content,
-            assistantId: selectedAssistantId,
-            threadId: activeThread?.id || ''
-          }
-        }
-      );
-    } else if (activeThread?.id) {
-      // TODO - can we use the threadsStore.deleteMessage method for the assistants too
-      await threadsStore.deleteMessage(activeThread.id, response.id);
-      setMessages($messages.toSpliced(-2, 2));
-
-      await reload();
     }
   };
 
@@ -371,30 +241,30 @@
   });
 
   beforeNavigate(async () => {
-    if (messageInProgress) {
-      await stopThenSave();
+    if (messageInProgress && activeThread?.id) {
+      await stopThenSave({
+        activeThreadId: activeThread.id,
+        messages: $chatMessages,
+        status: $status,
+        isLoading: $isLoading || false,
+        assistantStop,
+        chatStop
+      });
     }
-  });
-
-  $: filteredMessages = [...$assistantMessages, ...$messages].sort((a, b) => {
-    if (!a.createdAt) a.createdAt = new Date();
-    if (!b.createdAt) b.createdAt = new Date();
-
-    return getUnixSeconds(a.createdAt) - getUnixSeconds(b.createdAt);
   });
 </script>
 
-<!--Note - the messages are streamed live from the useChat messages, saving them in the db and store happens behind the scenes -->
 <div class="chat-inner-content">
   <div class="messages" bind:this={messageThreadDiv} bind:offsetHeight={messageThreadDivHeight}>
-    {#each filteredMessages as message, index (message.id)}
+    {#each combinedMessages as message, index (message.id)}
       <Message
         {message}
-        {handleMessageEdit}
-        {handleRegenerate}
-        isLastMessage={index === filteredMessages.length - 1}
+        messages={isAssistantMessage(message) ? $assistantMessages : $chatMessages}
+        setMessages={isAssistantMessage(message) ? setAssistantMessages : setChatMessages}
+        isLastMessage={index === combinedMessages.length - 1}
         isLoading={messageInProgress || false}
-        assistantImage={message.assistant_id ? getAssistantImage(message.assistant_id) : null}
+        append={isAssistantMessage(message) ? assistantAppend : chatAppend}
+        {reload}
       />
     {/each}
   </div>
@@ -406,7 +276,8 @@
         disabled={messageInProgress}
         hideLabel
         direction="top"
-        bind:selectedId={selectedAssistantId}
+        selectedId={$threadsStore.selectedAssistantId}
+        on:select={(e) => threadsStore.setSelectedAssistantId(e.detail.selectedId)}
         items={assistantsList}
         style="width: 25%; margin-bottom: 0.5rem"
         let:item

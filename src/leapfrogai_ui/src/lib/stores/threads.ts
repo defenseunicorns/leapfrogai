@@ -1,5 +1,5 @@
 import { writable } from 'svelte/store';
-import { MAX_LABEL_SIZE } from '$lib/constants';
+import { MAX_LABEL_SIZE, NO_SELECTED_ASSISTANT_ID } from '$lib/constants';
 import { goto } from '$app/navigation';
 import { error } from '@sveltejs/kit';
 import { toastStore } from '$stores';
@@ -9,10 +9,12 @@ import { getMessageText } from '$helpers/threads';
 
 type ThreadsStore = {
   threads: LFThread[];
+  selectedAssistantId: string;
 };
 
 const defaultValues: ThreadsStore = {
-  threads: []
+  threads: [],
+  selectedAssistantId: NO_SELECTED_ASSISTANT_ID
 };
 
 const createThread = async (input: NewThreadInput) => {
@@ -26,22 +28,6 @@ const createThread = async (input: NewThreadInput) => {
   if (res.ok) return res.json();
 
   return error(500, 'Error creating thread');
-};
-
-const createMessage = async (input: NewMessageInput) => {
-  const res = await fetch('/api/messages/new', {
-    method: 'POST',
-    body: JSON.stringify({
-      ...input
-    }),
-    headers: {
-      'Content-Type': 'application/json'
-    }
-  });
-
-  if (res.ok) return res.json();
-
-  return error(500, 'Error saving message');
 };
 
 const deleteThread = async (id: string) => {
@@ -96,6 +82,9 @@ const createThreadsStore = () => {
     setThreads: (threads: LFThread[]) => {
       update((old) => ({ ...old, threads }));
     },
+    setSelectedAssistantId: (selectedAssistantId: string) => {
+      update((old) => ({ ...old, selectedAssistantId }));
+    },
     changeThread: async (newId: string | null) => {
       await goto(`/chat/${newId}`);
     },
@@ -123,26 +112,22 @@ const createThreadsStore = () => {
       }
     },
 
-    newMessage: async (message: NewMessageInput) => {
+    addMessageToStore: async (newMessage: LFMessage) => {
       try {
-        const newMessage = await createMessage(message);
+        update((old) => {
+          const updatedThreads = [...old.threads];
+          const threadIndex = old.threads.findIndex((c) => c.id === newMessage.thread_id);
+          const oldThread = old.threads[threadIndex];
 
-        if (newMessage) {
-          update((old) => {
-            const updatedThreads = [...old.threads];
-            const threadIndex = old.threads.findIndex((c) => c.id === newMessage.thread_id);
-            const oldThread = old.threads[threadIndex];
-
-            updatedThreads[threadIndex] = {
-              ...oldThread,
-              messages: [...(oldThread.messages || []), newMessage]
-            };
-            return {
-              ...old,
-              threads: updatedThreads
-            };
-          });
-        }
+          updatedThreads[threadIndex] = {
+            ...oldThread,
+            messages: [...(oldThread.messages || []), newMessage]
+          };
+          return {
+            ...old,
+            threads: updatedThreads
+          };
+        });
       } catch {
         toastStore.addToast({
           kind: 'error',

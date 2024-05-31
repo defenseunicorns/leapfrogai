@@ -1,10 +1,28 @@
 import { threadsStore, toastStore } from '$stores';
-import { getMessageText } from '$helpers/threads';
+import { convertMessageToAiMessage, getMessageText } from '$helpers/threads';
 import type { AssistantStatus, ChatRequestOptions, CreateMessage } from 'ai';
 import { type Message as AIMessage } from 'ai/svelte';
 import type { LFAssistant } from '$lib/types/assistants';
 import type { Message as OpenAIMessage } from 'openai/resources/beta/threads/messages';
 import { NO_SELECTED_ASSISTANT_ID } from '$constants';
+import type { NewMessageInput } from '$lib/types/messages';
+import { error } from '@sveltejs/kit';
+
+export const createMessage = async (input: NewMessageInput) => {
+  const res = await fetch('/api/messages/new', {
+    method: 'POST',
+    body: JSON.stringify({
+      ...input
+    }),
+    headers: {
+      'Content-Type': 'application/json'
+    }
+  });
+
+  if (res.ok) return res.json();
+
+  return error(500, 'Error saving message');
+};
 
 type StopThenSaveArgs = {
   activeThreadId: string;
@@ -33,11 +51,14 @@ export const stopThenSave = async ({
       const lastMessage = messages[messages.length - 1];
 
       if (activeThreadId && lastMessage.role !== 'user') {
-        await threadsStore.newMessage({
+        const newMessage = await createMessage({
           thread_id: activeThreadId,
-          content: getMessageText(lastMessage), // save last message
-          role: lastMessage.role
+          content: getMessageText(lastMessage),
+          role: lastMessage.role,
+          assistantId: lastMessage.assistant_id
         });
+
+        await threadsStore.addMessageToStore(newMessage);
       }
     }
   }
@@ -142,7 +163,9 @@ export const handleChatMessageEdit = async ({
   // Ensure the message after the user's message exists and is a response from the AI
   const numToSplice =
     messages[messageIndex + 1] && messages[messageIndex + 1].role !== 'user' ? 2 : 1;
-
+  console.log(message)
+  console.log(messageIndex)
+  console.log(messages)
   if (thread_id) {
     // delete old message from DB
     await threadsStore.deleteMessage(thread_id, message.id);
@@ -152,7 +175,7 @@ export const handleChatMessageEdit = async ({
     }
 
     // save new message
-    await threadsStore.newMessage({
+    await threadsStore.addMessageToStore({
       thread_id,
       content: getMessageText(message),
       role: 'user'
@@ -169,9 +192,9 @@ export const isAssistantMessage = (message: AIMessage | OpenAIMessage) =>
   message.assistant_id && message.assistant_id !== NO_SELECTED_ASSISTANT_ID;
 
 type HandleRegenerateArgs = {
-  messages: AIMessage[] | OpenAIMessage[];
+  messages: AIMessage[];
   thread_id: string;
-  setMessages: (messages: Array<AIMessage | OpenAIMessage>) => void;
+  setMessages: (messages: AIMessage[]) => void;
   append: (
     message: AIMessage | CreateMessage,
     requestOptions?: { data?: Record<string, string> }
@@ -219,25 +242,25 @@ export const handleAssistantRegenerate = async ({
     });
     return;
   }
-  setMessages(messages.toSpliced(-2, 2));
+  const updatedMessages = messages.filter((m) => m.id !== response.id && m.id !== userMessage.id);
+  setMessages(updatedMessages);
 
-  await append(
-    { ...userMessage, createdAt: undefined },
-    {
-      data: {
-        message: userMessage.content,
-        assistantId: response.assistant_id,
-        threadId: thread_id || ''
-      }
+  const createMessage: CreateMessage = { content: getMessageText(userMessage), role: 'user' };
+
+  await append(createMessage, {
+    data: {
+      message: getMessageText(userMessage),
+      assistantId: response.assistant_id,
+      threadId: thread_id || ''
     }
-  );
+  });
 };
 
 type HandleChatRegenerateArgs = {
   thread_id: string;
   message: AIMessage | OpenAIMessage;
   messages: AIMessage[] | OpenAIMessage[];
-  setMessages: (messages: Array<AIMessage | OpenAIMessage>) => void;
+  setMessages: (messages: AIMessage[]) => void;
   reload: (
     chatRequestOptions?: ChatRequestOptions | undefined
   ) => Promise<string | null | undefined>;

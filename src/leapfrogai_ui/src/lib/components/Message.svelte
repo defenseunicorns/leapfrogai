@@ -1,31 +1,73 @@
 <script lang="ts">
+  import { page } from '$app/stores';
   import { Button, Tile } from 'carbon-components-svelte';
   import { Copy, Edit, Reset, UserAvatar } from 'carbon-icons-svelte';
   import { type Message as AIMessage } from 'ai/svelte';
   import { LFTextArea } from '$components';
   import frog from '$assets/frog.png';
   import { writable } from 'svelte/store';
-  import { toastStore } from '$stores';
+  import { threadsStore, toastStore } from '$stores';
   import { getMessageText } from '$helpers/threads';
   import type { Message as OpenAIMessage } from 'openai/resources/beta/threads/messages';
+  import {
+    getAssistantImage,
+    handleAssistantMessageEdit,
+    handleAssistantRegenerate,
+    handleChatMessageEdit,
+    handleChatRegenerate,
+    isAssistantMessage
+  } from '$helpers/chatHelpers';
+  import type {ChatRequestOptions, CreateMessage} from 'ai';
 
-  export let handleMessageEdit: (
-    event: SubmitEvent | KeyboardEvent | MouseEvent,
-    message: AIMessage | OpenAIMessage
-  ) => Promise<void>;
-  export let handleRegenerate: () => Promise<void>;
   export let message: AIMessage | OpenAIMessage;
+  export let messages: AIMessage[] = [];
+  export let setMessages: (messages: AIMessage[]) => void;
   export let isLastMessage: boolean;
   export let isLoading: boolean;
-  export let assistantImage: string | null = null;
+  export let append: (
+    message: AIMessage | CreateMessage,
+    requestOptions?:
+      | {
+          data?: Record<string, string> | undefined;
+        }
+      | undefined
+  ) => Promise<any>;
+  export let reload: (
+    chatRequestOptions?: ChatRequestOptions | undefined
+  ) => Promise<string | null | undefined>;
 
+  let assistantImage = isAssistantMessage(message)
+    ? getAssistantImage($page.data.assistants || [], message.assistant_id)
+    : null;
   let messageIsHovered = false;
   let editMode = false;
   let value = writable(getMessageText(message));
 
   const onSubmit = async (e: SubmitEvent | KeyboardEvent | MouseEvent) => {
+    e.preventDefault();
     editMode = false;
-    await handleMessageEdit(e, { ...message, content: $value });
+
+
+    if (isAssistantMessage(message)) {
+      threadsStore.setSelectedAssistantId(message.assistant_id);
+
+      await handleAssistantMessageEdit({
+        selectedAssistantId: $threadsStore.selectedAssistantId,
+        message: { ...message, content: $value },
+        messages,
+        thread_id: $page.params.thread_id,
+        setMessages,
+        append
+      });
+    } else {
+      await handleChatMessageEdit({
+        message: { ...message, content: $value },
+        messages,
+        thread_id: $page.params.thread_id,
+        setMessages,
+        append
+      });
+    }
   };
 
   const handleCancel = () => {
@@ -116,7 +158,25 @@
             data-testid="regenerate btn"
             class="highlight-icon remove-btn-style"
             class:hide={!messageIsHovered}
-            on:click={handleRegenerate}
+            on:click={() => {
+              if (isAssistantMessage(message)) {
+                threadsStore.setSelectedAssistantId(message.assistant_id);
+                handleAssistantRegenerate({
+                  messages,
+                  setMessages,
+                  thread_id: $page.params.thread_id,
+                  append
+                });
+              } else {
+                handleChatRegenerate({
+                  message,
+                  messages,
+                  setMessages,
+                  thread_id: $page.params.thread_id,
+                  reload
+                });
+              }
+            }}
             aria-label="regenerate message"
             tabindex="0"><Reset /></button
           >
