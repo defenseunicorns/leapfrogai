@@ -18,7 +18,7 @@ describe('/api/assistants/delete', () => {
 
     const res = await DELETE({
       request,
-      locals: { getSession: sessionMock, supabase: storageMock }
+      locals: { safeGetSession: sessionMock, supabase: storageMock }
     });
     expect(res.status).toEqual(204);
 
@@ -34,7 +34,7 @@ describe('/api/assistants/delete', () => {
       DELETE({
         request,
         locals: {
-          getSession: sessionNullMock,
+          safeGetSession: sessionNullMock,
           supabase: supabaseStorageMockWrapper(storageRemoveMock())
         }
       })
@@ -53,7 +53,7 @@ describe('/api/assistants/delete', () => {
       DELETE({
         request,
         locals: {
-          getSession: sessionMock,
+          safeGetSession: sessionMock,
           supabase: supabaseStorageMockWrapper(storageRemoveMock())
         }
       })
@@ -70,7 +70,7 @@ describe('/api/assistants/delete', () => {
       DELETE({
         request,
         locals: {
-          getSession: sessionMock,
+          safeGetSession: sessionMock,
           supabase: supabaseStorageMockWrapper(storageRemoveMock())
         }
       })
@@ -90,7 +90,7 @@ describe('/api/assistants/delete', () => {
       DELETE({
         request,
         locals: {
-          getSession: sessionMock,
+          safeGetSession: sessionMock,
           supabase: supabaseStorageMockWrapper(storageRemoveMock())
         }
       })
@@ -109,7 +109,7 @@ describe('/api/assistants/delete', () => {
       DELETE({
         request,
         locals: {
-          getSession: sessionMock,
+          safeGetSession: sessionMock,
           supabase: supabaseStorageMockWrapper(storageRemoveMock())
         }
       })

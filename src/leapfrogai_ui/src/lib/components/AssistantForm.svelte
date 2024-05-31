@@ -7,13 +7,13 @@
   import { superForm } from 'sveltekit-superforms';
   import { Add } from 'carbon-icons-svelte';
   import { page } from '$app/stores';
-  import { beforeNavigate, goto } from '$app/navigation';
+  import { beforeNavigate, goto, invalidate } from '$app/navigation';
   import { Button, Modal, Slider, TextArea, TextInput } from 'carbon-components-svelte';
   import AssistantAvatar from '$components/AssistantAvatar.svelte';
   import { yup } from 'sveltekit-superforms/adapters';
   import { toastStore } from '$stores';
   import InputTooltip from '$components/InputTooltip.svelte';
-  import { editAssistantInputSchema, supabaseAssistantInputSchema } from '$lib/schemas/assistants';
+  import { editAssistantInputSchema, assistantInputSchema } from '$lib/schemas/assistants';
   import type { NavigationTarget } from '@sveltejs/kit';
   import { onMount } from 'svelte';
 
@@ -23,8 +23,10 @@
   let bypassCancelWarning = false;
 
   const { form, errors, enhance, submitting, isTainted } = superForm(data.form, {
-    validators: yup(isEditMode ? editAssistantInputSchema : supabaseAssistantInputSchema),
+    invalidateAll: false,
+    validators: yup(isEditMode ? editAssistantInputSchema : assistantInputSchema),
     onResult({ result }) {
+      invalidate('/api/assistants');
       if (result.type === 'redirect') {
         toastStore.addToast({
           kind: 'success',

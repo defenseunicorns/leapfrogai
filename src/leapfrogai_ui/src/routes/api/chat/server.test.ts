@@ -22,7 +22,7 @@ describe('/api/chat', () => {
     await expect(
       POST({
         request,
-        locals: { getSession: sessionNullMock }
+        locals: { safeGetSession: sessionNullMock }
       })
     ).rejects.toMatchObject({
       status: 401
@@ -35,7 +35,7 @@ describe('/api/chat', () => {
       body: JSON.stringify({ messages: [{ break: 'me' }] })
     });
 
-    await expect(POST({ request, locals: { getSession: sessionMock } })).rejects.toMatchObject({
+    await expect(POST({ request, locals: { safeGetSession: sessionMock } })).rejects.toMatchObject({
       status: 400
     });
   });
@@ -44,7 +44,7 @@ describe('/api/chat', () => {
       method: 'POST'
     });
 
-    await expect(POST({ request, locals: { getSession: sessionMock } })).rejects.toMatchObject({
+    await expect(POST({ request, locals: { safeGetSession: sessionMock } })).rejects.toMatchObject({
       status: 400
     });
   });
@@ -55,7 +55,7 @@ describe('/api/chat', () => {
       body: JSON.stringify({ messages: [validMessage], wrong: 'key' })
     });
 
-    await expect(POST({ request, locals: { getSession: sessionMock } })).rejects.toMatchObject({
+    await expect(POST({ request, locals: { safeGetSession: sessionMock } })).rejects.toMatchObject({
       status: 400
     });
   });

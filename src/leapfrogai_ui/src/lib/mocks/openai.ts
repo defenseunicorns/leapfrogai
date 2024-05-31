@@ -2,13 +2,16 @@ import { getFakeAssistant, getFakeMessage, getFakeThread } from '$testUtils/fake
 import type { LFThread } from '$lib/types/threads';
 import type { LFMessage } from '$lib/types/messages';
 import type { LFAssistant } from '$lib/types/assistants';
+import type { FileObject } from 'openai/resources/files';
 
 class OpenAI {
   private apiKey: string;
   private baseURL: string;
   private thread: LFThread;
   private message: LFMessage;
+  private assistants: LFAssistant[];
   private assistant: LFAssistant;
+  private uploadedFiles: FileObject[];
   private errors: {
     createThread: boolean;
     updateThread: boolean;
@@ -17,8 +20,10 @@ class OpenAI {
     createMessage: boolean;
     deleteMessage: boolean;
     deleteAssistant: boolean;
+    createAssistant: boolean;
     retrieveAssistant: boolean;
     updateAssistant: boolean;
+    deleteFile: boolean;
   };
 
   constructor({ apiKey, baseURL }: { apiKey: string; baseURL: string }) {
@@ -26,7 +31,9 @@ class OpenAI {
     this.baseURL = baseURL;
     this.thread = getFakeThread();
     this.message = getFakeMessage();
+    this.assistants = [];
     this.assistant = getFakeAssistant();
+    this.uploadedFiles = [];
     this.errors = {
       createThread: false,
       updateThread: false,
@@ -34,9 +41,11 @@ class OpenAI {
       retrieveThread: false,
       createMessage: false,
       deleteMessage: false,
+      createAssistant: false,
       deleteAssistant: false,
       retrieveAssistant: false,
-      updateAssistant: false
+      updateAssistant: false,
+      deleteFile: false
     };
   }
 
@@ -47,8 +56,14 @@ class OpenAI {
   setMessage(message: LFMessage) {
     this.message = message;
   }
+  setAssistants(assistants: LFAssistant[]) {
+    this.assistants = assistants;
+  }
   setAssistant(assistant: LFAssistant) {
     this.assistant = assistant;
+  }
+  setFiles(files: FileObject[]) {
+    this.uploadedFiles = files;
   }
 
   setError(key: keyof typeof this.errors) {
@@ -63,6 +78,19 @@ class OpenAI {
   private resetError(key: keyof typeof this.errors) {
     this.errors[key] = false;
   }
+
+  files = {
+    list: vi.fn().mockImplementation(() => {
+      return Promise.resolve({ data: this.uploadedFiles });
+    }),
+    del: vi.fn().mockImplementation((id) => {
+      if (this.errors.deleteFile) {
+        this.resetError('deleteFile');
+        return Promise.resolve({ id, object: 'file', deleted: false });
+      }
+      return Promise.resolve({ id, object: 'file', deleted: true });
+    })
+  };
 
   beta = {
     threads: {
@@ -109,6 +137,13 @@ class OpenAI {
       }
     },
     assistants: {
+      create: vi.fn().mockImplementation(() => {
+        if (this.errors.createAssistant) this.throwError('createAssistant');
+        return Promise.resolve(this.assistant);
+      }),
+      list: vi.fn().mockImplementation(() => {
+        return Promise.resolve({ data: this.assistants });
+      }),
       del: vi.fn().mockImplementation((id) => {
         if (this.errors.deleteAssistant) {
           this.resetError('deleteAssistant');

@@ -7,7 +7,6 @@ dotenv.config();
 const config: PlaywrightTestConfig = {
   projects: [
     { name: 'setup', testMatch: /.*\.setup\.ts/ },
-    { name: 'clear_db', testMatch: /.*\clear_db\.ts/ },
     {
       name: 'chromium',
       use: {
@@ -15,7 +14,7 @@ const config: PlaywrightTestConfig = {
         // Use prepared auth state.
         storageState: 'playwright/.auth/user.json'
       },
-      dependencies: ['clear_db', 'setup']
+      dependencies: ['setup']
     },
     {
       name: 'firefox',
@@ -24,12 +23,12 @@ const config: PlaywrightTestConfig = {
         // Use prepared auth state.
         storageState: 'playwright/.auth/user.json'
       },
-      dependencies: ['clear_db', 'setup']
+      dependencies: ['setup']
     },
     {
       name: 'webkit',
       use: { ...devices['Desktop Safari'], storageState: 'playwright/.auth/user.json' },
-      dependencies: ['clear_db', 'setup']
+      dependencies: ['setup']
     },
     {
       name: 'Edge',
@@ -38,7 +37,7 @@ const config: PlaywrightTestConfig = {
         channel: 'msedge',
         storageState: 'playwright/.auth/user.json'
       },
-      dependencies: ['clear_db', 'setup']
+      dependencies: ['setup']
     }
   ],
   webServer: {

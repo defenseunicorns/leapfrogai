@@ -1,37 +1,48 @@
 import { expect, test } from './fixtures';
 import { getFakeAssistantInput } from '../testUtils/fakeData';
-import { deleteAssistant, uploadAvatar } from './helpers';
+import { deleteAllAssistants, uploadAvatar } from './helpers';
 import { NO_FILE_ERROR_TEXT } from '../src/lib/constants/index';
 
-test('it can search for and choose a pictogram as an avatar', async ({ page }) => {
-  const assistantInput = getFakeAssistantInput();
+test.afterEach(async () => {
+  await deleteAllAssistants();
+});
 
-  const pictogramName = 'Analytics';
+test('it can search for and choose a pictogram as an avatar', async ({ page, browserName }) => {
+  // Browser type 'chromium' is used for both edge and chrome, and we need each browser to pick a different pictogram
+  // so we are only testing webkit here to avoid having the same pictogram picked for both edge and chrome
+  // Attempts to import the iconMap and pick random pictograms failed, the import breaks this test file and it won't
+  // show up in playwright
+  if (browserName === 'webkit') {
+    const assistantInput = getFakeAssistantInput();
+    const pictogramName = 'Airplane';
 
-  await page.goto('/chat/assistants-management/new');
+    await page.goto('/chat/assistants-management/new');
 
-  await page.getByLabel('name').fill(assistantInput.name);
-  await page.getByLabel('description').fill(assistantInput.description);
-  await page.getByPlaceholder("You'll act as...").fill(assistantInput.instructions);
+    await page.getByLabel('name').fill(assistantInput.name);
+    await page.getByLabel('description').fill(assistantInput.description);
+    await page.getByPlaceholder("You'll act as...").fill(assistantInput.instructions);
 
-  await page.locator('.mini-avatar-container').click();
+    await page.locator('.mini-avatar-container').click();
 
-  await page.getByPlaceholder('Search').click();
-  await page.getByPlaceholder('Search').fill(pictogramName);
+    await page.getByPlaceholder('Search').click();
+    await page.getByPlaceholder('Search').fill(pictogramName);
 
-  await page.getByTestId(`pictogram-${pictogramName}`).click();
-  await page.getByRole('dialog').getByRole('button', { name: 'Save' }).click();
+    await page.getByTestId(`pictogram-${pictogramName}`).click();
+    await page.getByRole('dialog').getByRole('button', { name: 'Save' }).click();
 
-  // Wait for modal save button to disappear
-  const saveButtons = page.getByRole('button', { name: 'Save' });
-  await expect(saveButtons).toHaveCount(1);
+    // Wait for modal save button to disappear
+    const saveButton = page.getByRole('button', { name: 'Save' });
+    await expect(saveButton).toHaveCount(1);
 
-  const miniAvatarContainer = page.getByTestId('mini-avatar-container');
-  const pictogram = miniAvatarContainer.getByTestId(`pictogram-${pictogramName}`);
-  await expect(pictogram).toBeVisible();
+    const miniAvatarContainer = page.getByTestId('mini-avatar-container');
+    const pictogram = miniAvatarContainer.getByTestId(`pictogram-${pictogramName}`);
+    await expect(pictogram).toBeVisible();
+    await saveButton.click();
+    await expect(page.getByText('Assistant Created')).toBeVisible();
 
-  // cleanup
-  await deleteAssistant(page, assistantInput.name);
+    await page.waitForURL('**/chat/assistants-management');
+    await expect(page.getByTestId(`pictogram-${pictogramName}`)).toBeVisible();
+  }
 });
 
 // Note - once photo is uploaded, playwright is changing the url for the file so we cannot test the name of the image
@@ -58,9 +69,6 @@ test('it can upload an image as an avatar', async ({ page }) => {
   await page.waitForURL('/chat/assistants-management');
   await expect(page.getByText('Assistant Created')).toBeVisible();
   await expect(page.getByTestId(`assistant-tile-${assistantInput.name}`)).toBeVisible();
-
-  // cleanup
-  await deleteAssistant(page, assistantInput.name);
 });
 
 test('it can change an image uploaded as an avatar', async ({ page }) => {

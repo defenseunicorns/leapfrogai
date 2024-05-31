@@ -19,7 +19,7 @@ describe('/api/threads/update', () => {
     });
     const res = await PUT({
       request,
-      locals: { getSession: sessionMock }
+      locals: { safeGetSession: sessionMock }
     });
 
     const updatedThread = await res.json();
@@ -40,7 +40,7 @@ describe('/api/threads/update', () => {
     await expect(
       PUT({
         request,
-        locals: { getSession: sessionNullMock }
+        locals: { safeGetSession: sessionNullMock }
       })
     ).rejects.toMatchObject({
       status: 401
@@ -53,7 +53,7 @@ describe('/api/threads/update', () => {
       body: JSON.stringify({ id: 123, label: validLabel })
     });
 
-    await expect(PUT({ request, locals: { getSession: sessionMock } })).rejects.toMatchObject({
+    await expect(PUT({ request, locals: { safeGetSession: sessionMock } })).rejects.toMatchObject({
       status: 400
     });
   });
@@ -64,7 +64,7 @@ describe('/api/threads/update', () => {
       body: JSON.stringify({ label: validLabel })
     });
 
-    await expect(PUT({ request, locals: { getSession: sessionMock } })).rejects.toMatchObject({
+    await expect(PUT({ request, locals: { safeGetSession: sessionMock } })).rejects.toMatchObject({
       status: 400
     });
   });
@@ -75,7 +75,7 @@ describe('/api/threads/update', () => {
       body: JSON.stringify({ id: faker.string.uuid(), label: invalidLongLabel })
     });
 
-    await expect(PUT({ request, locals: { getSession: sessionMock } })).rejects.toMatchObject({
+    await expect(PUT({ request, locals: { safeGetSession: sessionMock } })).rejects.toMatchObject({
       status: 400
     });
   });
@@ -85,7 +85,7 @@ describe('/api/threads/update', () => {
       body: JSON.stringify({ id: faker.string.uuid() })
     });
 
-    await expect(PUT({ request, locals: { getSession: sessionMock } })).rejects.toMatchObject({
+    await expect(PUT({ request, locals: { safeGetSession: sessionMock } })).rejects.toMatchObject({
       status: 400
     });
   });
@@ -95,7 +95,7 @@ describe('/api/threads/update', () => {
       body: JSON.stringify({ id: faker.string.uuid(), label: validLabel, break: 'me' })
     });
 
-    await expect(PUT({ request, locals: { getSession: sessionMock } })).rejects.toMatchObject({
+    await expect(PUT({ request, locals: { safeGetSession: sessionMock } })).rejects.toMatchObject({
       status: 400
     });
   });
@@ -111,7 +111,7 @@ describe('/api/threads/update', () => {
       PUT({
         request,
         locals: {
-          getSession: sessionMock
+          safeGetSession: sessionMock
         }
       })
     ).rejects.toMatchObject({

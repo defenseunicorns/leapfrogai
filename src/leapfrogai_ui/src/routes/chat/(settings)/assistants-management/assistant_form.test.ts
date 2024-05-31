@@ -9,19 +9,15 @@ import {
   sessionMock,
   sessionNullMock,
   storageRemoveMock,
-  supabaseInsertSingleErrorMock,
   supabaseInsertSingleMock,
   supabaseStorageMockWrapper
 } from '$lib/mocks/supabase-mocks';
 import { getFakeAssistant, getFakeAssistantInput } from '$testUtils/fakeData';
-import type { PageServerLoad } from './$types';
 import AssistantForm from '$components/AssistantForm.svelte';
 import { mockOpenAI } from '../../../../../vitest-setup';
 
 describe('Assistant Form', () => {
   let goToSpy: MockInstance;
-
-  let data: PageServerLoad;
 
   beforeAll(async () => {
     goToSpy = vi.spyOn(navigation, 'goto');
@@ -35,7 +31,7 @@ describe('Assistant Form', () => {
   });
 
   it('has a modal that navigates back to the management page', async () => {
-    data = await newLoad({ locals: { getSession: sessionMock } });
+    const data = await newLoad({ locals: { safeGetSession: sessionMock } });
     render(AssistantForm, { data });
 
     const cancelBtn = screen.getAllByRole('button', { name: /cancel/i })[1];
@@ -45,7 +41,7 @@ describe('Assistant Form', () => {
   });
 
   it('limits the name input length', async () => {
-    data = await newLoad({ locals: { getSession: sessionMock } });
+    const data = await newLoad({ locals: { safeGetSession: sessionMock } });
     render(AssistantForm, { data });
     const nameField = screen.getByRole('textbox', { name: /name/i });
     await userEvent.type(nameField, 'a'.repeat(ASSISTANTS_NAME_MAX_LENGTH + 1));
@@ -53,7 +49,7 @@ describe('Assistant Form', () => {
   });
 
   it('limits the description input length', async () => {
-    data = await newLoad({ locals: { getSession: sessionMock } });
+    const data = await newLoad({ locals: { safeGetSession: sessionMock } });
     render(AssistantForm, { data });
     const descriptionField = screen.getByRole('textbox', { name: /description/i });
     await userEvent.type(descriptionField, 'a'.repeat(ASSISTANTS_DESCRIPTION_MAX_LENGTH + 1));
@@ -85,7 +81,7 @@ describe('Assistant Form', () => {
       try {
         await newActions.default({
           request,
-          locals: { supabase: supabaseInsertSingleMock(assistant), getSession: sessionMock }
+          locals: { supabase: supabaseInsertSingleMock(assistant), safeGetSession: sessionMock }
         });
       } catch (redirect) {
         expect(redirect?.status).toEqual(303);
@@ -99,7 +95,7 @@ describe('Assistant Form', () => {
       });
       const res = await newActions.default({
         request,
-        locals: { supabase: {}, getSession: sessionNullMock }
+        locals: { supabase: {}, safeGetSession: sessionNullMock }
       });
 
       expect(res.status).toEqual(401);
@@ -115,30 +111,10 @@ describe('Assistant Form', () => {
     });
     const res = await newActions.default({
       request,
-      locals: { supabase: {}, getSession: sessionMock }
+      locals: { supabase: {}, safeGetSession: sessionMock }
     });
 
     expect(res.status).toEqual(400);
-  });
-
-  it('returns a 500 when there is a supabase error saving the assistant', async () => {
-    const formData = new FormData();
-    formData.append('name', 'My Assistant');
-    formData.append('description', 'This is an assistant');
-    formData.append('instructions', 'Be a helpful assistant');
-    formData.append('data_sources', '');
-    formData.append('pictogram', 'User');
-
-    const request = new Request('http://localhost:5173/chat/assistants-management/new', {
-      method: 'POST',
-      body: formData
-    });
-    const res = await newActions.default({
-      request,
-      locals: { supabase: supabaseInsertSingleErrorMock(), getSession: sessionMock }
-    });
-
-    expect(res.status).toEqual(500);
   });
 
   describe('the edit assistant server side form action', () => {
@@ -170,7 +146,7 @@ describe('Assistant Form', () => {
             supabase: supabaseStorageMockWrapper({
               ...storageRemoveMock()
             }),
-            getSession: sessionMock
+            safeGetSession: sessionMock
           }
         });
       } catch (redirect) {
@@ -185,7 +161,7 @@ describe('Assistant Form', () => {
       });
       const res = await editActions.default({
         request,
-        locals: { supabase: {}, getSession: sessionNullMock }
+        locals: { supabase: {}, safeGetSession: sessionNullMock }
       });
 
       expect(res.status).toEqual(401);
@@ -207,7 +183,7 @@ describe('Assistant Form', () => {
 
       const res = await editActions.default({
         request,
-        locals: { supabase: {}, getSession: sessionMock }
+        locals: { supabase: {}, safeGetSession: sessionMock }
       });
 
       expect(res.status).toEqual(400);
@@ -237,7 +213,7 @@ describe('Assistant Form', () => {
         request,
         locals: {
           supabase: {},
-          getSession: sessionMock
+          safeGetSession: sessionMock
         }
       });
 

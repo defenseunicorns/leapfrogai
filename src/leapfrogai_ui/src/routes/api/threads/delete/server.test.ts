@@ -28,7 +28,7 @@ describe('/api/threads/delete', () => {
           ...supabaseSelectSingleByIdMock(fakeProfile),
           ...updateMock
         }),
-        getSession: sessionMock
+        safeGetSession: sessionMock
       }
     });
 
@@ -46,7 +46,7 @@ describe('/api/threads/delete', () => {
     await expect(
       DELETE({
         request,
-        locals: { supabase: {}, getSession: sessionNullMock }
+        locals: { supabase: {}, safeGetSession: sessionNullMock }
       })
     ).rejects.toMatchObject({
       status: 401
@@ -60,7 +60,7 @@ describe('/api/threads/delete', () => {
     });
 
     await expect(
-      DELETE({ request, locals: { supabase: {}, getSession: sessionMock } })
+      DELETE({ request, locals: { supabase: {}, safeGetSession: sessionMock } })
     ).rejects.toMatchObject({
       status: 400
     });
@@ -71,7 +71,7 @@ describe('/api/threads/delete', () => {
     });
 
     await expect(
-      DELETE({ request, locals: { supabase: {}, getSession: sessionMock } })
+      DELETE({ request, locals: { supabase: {}, safeGetSession: sessionMock } })
     ).rejects.toMatchObject({
       status: 400
     });
@@ -83,7 +83,7 @@ describe('/api/threads/delete', () => {
     });
 
     await expect(
-      DELETE({ request, locals: { supabase: {}, getSession: sessionMock } })
+      DELETE({ request, locals: { supabase: {}, safeGetSession: sessionMock } })
     ).rejects.toMatchObject({
       status: 400
     });
@@ -103,7 +103,7 @@ describe('/api/threads/delete', () => {
             ...supabaseSelectSingleByIdMock(fakeProfile),
             ...supabaseUpdateErrorMock()
           }),
-          getSession: sessionMock
+          safeGetSession: sessionMock
         }
       })
     ).rejects.toMatchObject({
@@ -125,7 +125,7 @@ describe('/api/threads/delete', () => {
             ...supabaseSelectSingleByIdMock(fakeProfile),
             ...updateSingleReturnsMock()
           }),
-          getSession: sessionMock
+          safeGetSession: sessionMock
         }
       })
     ).rejects.toMatchObject({
