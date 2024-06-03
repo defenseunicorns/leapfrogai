@@ -1,9 +1,9 @@
 import type { LFAssistant } from '$lib/types/assistants';
-import { redirect } from '@sveltejs/kit';
 import type { Profile } from '$lib/types/profile';
 import type { LFThread } from '$lib/types/threads';
 import { openai } from '$lib/server/constants';
 import type { LFMessage } from '$lib/types/messages';
+import {redirect} from "@sveltejs/kit";
 
 
 export const load = async ({ fetch, locals: { supabase, safeGetSession } }) => {
