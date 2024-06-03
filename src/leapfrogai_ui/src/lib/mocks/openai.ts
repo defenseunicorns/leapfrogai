@@ -4,6 +4,7 @@ import type { LFMessage } from '$lib/types/messages';
 import type { LFAssistant } from '$lib/types/assistants';
 import type { FileObject } from 'openai/resources/files';
 import { merge } from 'lodash';
+import { AssistantStream } from 'openai/lib/AssistantStream';
 
 class OpenAI {
   private apiKey: string;

@@ -22,7 +22,11 @@
     sortMessages,
     stopThenSave
   } from '$helpers/chatHelpers';
-  import { ERROR_SAVING_MSG_TEXT } from '$constants/errorMessages';
+  import {
+    ERROR_GETTING_AI_RESPONSE_TEXT,
+    ERROR_GETTING_ASSISTANT_MSG_TEXT,
+    ERROR_SAVING_MSG_TEXT
+  } from '$constants/errorMessages';
 
   export let data: PageData;
 
@@ -68,6 +72,7 @@
     // and also add a createdAt date if not present
     const assistantMessagesCopy = [...$assistantMessages];
     const latestMessage = assistantMessagesCopy[assistantMessagesCopy.length - 1];
+
     latestMessage.assistant_id = $threadsStore.selectedAssistantId;
     if (!latestMessage.createdAt)
       latestMessage.createdAt = latestMessage.created_at || getUnixSeconds(new Date());
@@ -122,11 +127,12 @@
         });
       }
     },
-    onError: () => {
+    onError: (e) => {
+      console.log('in on error', e);
       toastStore.addToast({
         kind: 'error',
-        title: 'Error',
-        subtitle: 'Error getting AI Response'
+        title: ERROR_GETTING_AI_RESPONSE_TEXT.title,
+        subtitle: ERROR_GETTING_AI_RESPONSE_TEXT.subtitle
       });
     }
   });
@@ -148,8 +154,8 @@
       if (e.toString() !== 'DOMException: BodyStreamBuffer was aborted') {
         toastStore.addToast({
           kind: 'error',
-          title: 'Error',
-          subtitle: 'Error getting Assistant Response'
+          title: ERROR_GETTING_ASSISTANT_MSG_TEXT.title,
+          subtitle: ERROR_GETTING_ASSISTANT_MSG_TEXT.subtitle
         });
       }
     }
@@ -277,6 +283,7 @@
   <div class="chat-form-container">
     <form on:submit={onSubmit}>
       <Dropdown
+        data-testid="assistant-dropdown"
         disabled={messageInProgress}
         hideLabel
         direction="top"

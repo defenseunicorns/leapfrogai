@@ -1,63 +1,75 @@
 import { delay, http, HttpResponse } from 'msw';
 
 import { server } from '../../../vitest-setup';
-import { getFakeThread } from '$testUtils/fakeData';
-import type { LFMessage } from '$lib/types/messages';
+import { fakeThreads, getFakeOpenAIMessage } from '$testUtils/fakeData';
+import type { LFMessage, NewMessageInput } from '$lib/types/messages';
 import type { LFAssistant } from '$lib/types/assistants';
+import { AssistantResponse, createStreamDataTransformer, StreamingTextResponse } from 'ai';
+import { faker } from '@faker-js/faker';
 
 type MockChatCompletionOptions = {
   responseMsg?: string[];
   withDelay?: boolean;
   delayTime?: number;
 };
+
+export const fakeAiTextResponse = 'Fake AI Response';
+
+const returnStreamResponse = (responseMsg: string[]) => {
+  const encoder = new TextEncoder();
+  const stream = new ReadableStream({
+    start(controller) {
+      responseMsg?.forEach((msg) => controller.enqueue(encoder.encode(`${msg} `)));
+      controller.close();
+    }
+  });
+  const streamingTextResponse = new StreamingTextResponse(
+    stream.pipeThrough(createStreamDataTransformer())
+  );
+
+  return streamingTextResponse;
+};
 export const mockChatCompletion = (
+  options: MockChatCompletionOptions = {
+    responseMsg: fakeAiTextResponse.split(''),
+    withDelay: false,
+    delayTime: 0
+  }
+) => {
+  server.use(
+    http.post('/api/chat', async () => {
+      if (options.withDelay) {
+        await delay(options.delayTime);
+      }
+      return returnStreamResponse(options.responseMsg!);
+    })
+  );
+};
+
+// Note - this mock is imperfect, a fair amount of time was spent attempting to do
+// mock these responses so that the useAssistant hook would work,
+// but it was pretty complex and much more easily tested with an E2E
+export const mockChatAssistantCompletion = (
   options: MockChatCompletionOptions = {
     responseMsg: ['Fake', 'AI', 'Response'],
     withDelay: false,
     delayTime: 0
   }
 ) => {
-  const encoder = new TextEncoder();
-
   server.use(
-    http.post('/api/chat', async () => {
+    http.post('/api/chat/assistants', async () => {
       if (options.withDelay) {
         await delay(options.delayTime);
       }
-      const stream = new ReadableStream({
-        start(controller) {
-          options.responseMsg?.forEach((msg) => controller.enqueue(encoder.encode(msg)));
-          controller.close();
-        }
-      });
-      return new HttpResponse(stream, { headers: { 'Content-Type': 'text/plain' } });
+      return AssistantResponse(
+        {
+          threadId: fakeThreads[0].id,
+          messageId: `msg_${faker.string.uuid()}`
+        },
+        vi.fn(() => Promise.resolve())
+      );
     })
   );
-};
-
-export const mockChatAssistantCompletion = (
-    options: MockChatCompletionOptions = {
-        responseMsg: ['Fake', 'AI', 'Response'],
-        withDelay: false,
-        delayTime: 0
-    }
-) => {
-    const encoder = new TextEncoder();
-
-    server.use(
-        http.post('/api/chat/assistants', async () => {
-            if (options.withDelay) {
-                await delay(options.delayTime);
-            }
-            const stream = new ReadableStream({
-                start(controller) {
-                    options.responseMsg?.forEach((msg) => controller.enqueue(encoder.encode(msg)));
-                    controller.close();
-                }
-            });
-            return new HttpResponse(stream, { headers: { 'Content-Type': 'text/plain' } });
-        })
-    );
 };
 
 export const mockChatCompletionError = () => {
@@ -68,19 +80,11 @@ export const mockChatCompletionError = () => {
   );
 };
 
-export const mockNewThread = () => {
-  const fakeThread = getFakeThread();
+export const mockNewMessage = () => {
   server.use(
-    http.post('/api/threads/new', () => {
-      return HttpResponse.json(fakeThread);
-    })
-  );
-};
-
-export const mockNewMessage = (fakeMessage: LFMessage) => {
-  server.use(
-    http.post('/api/messages/new', () => {
-      return HttpResponse.json({ message: fakeMessage });
+    http.post('/api/messages/new', async ({ request }) => {
+      const resJson = (await request.json()) as NewMessageInput;
+      return HttpResponse.json({ message: getFakeOpenAIMessage(resJson) });
     })
   );
 };
@@ -116,3 +120,10 @@ export const mockGetAssistants = (assistants: LFAssistant[] = []) => {
   );
 };
 
+export const mockGetMessages = (messages: LFMessage[]) => {
+  server.use(
+    http.get('/api/messages', () => {
+      return HttpResponse.json(messages);
+    })
+  );
+};

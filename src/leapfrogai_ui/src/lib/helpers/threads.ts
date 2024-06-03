@@ -19,6 +19,7 @@ export const convertMessageToAiMessage = (message: LFMessage): AIMessage => {
   };
 };
 
+
 export const convertTextToMessageContentArr = (text: string): MessageContent[] => {
   return [
     {

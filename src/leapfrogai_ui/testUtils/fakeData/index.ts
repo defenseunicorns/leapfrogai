@@ -2,13 +2,14 @@
 import { faker } from '@faker-js/faker';
 import { assistantDefaults, DEFAULT_ASSISTANT_TEMP } from '../../src/lib/constants';
 import type { AssistantInput, LFAssistant } from '../../src/lib/types/assistants';
-import type { LFMessage } from '../../src/lib/types/messages';
+import type { LFMessage, NewMessageInput } from '../../src/lib/types/messages';
 import type { LFThread } from '../../src/lib/types/threads';
 import type { MessageContent } from 'openai/resources/beta/threads/messages';
 import { getUnixSeconds } from '../../src/lib/helpers/dates';
 import type { FileObject } from 'openai/resources/files';
 import type { Profile } from '$lib/types/profile';
 import type { Session } from '@supabase/supabase-js';
+import type { Message as OpenAIMessage } from 'openai/resources/beta/threads/messages';
 
 const todayOverride = new Date('2024-03-20T00:00');
 
@@ -218,5 +219,28 @@ export const getFakeSession = ({
       new_phone: undefined,
       created_at: new Date().toISOString()
     }
+  };
+};
+
+export const getFakeOpenAIMessage = ({
+  thread_id,
+  content,
+  role
+}: NewMessageInput): OpenAIMessage => {
+  return {
+    id: `msg_${faker.string.uuid()}`,
+    role,
+    thread_id,
+    content: [{ type: 'text', text: { value: content, annotations: [] } }],
+    assistant_id: null,
+    created_at: getUnixSeconds(new Date()),
+    incomplete_at: null,
+    incomplete_details: null,
+    metadata: null,
+    object: 'thread.message',
+    status: 'completed',
+    run_id: null,
+    attachments: null,
+    completed_at: getUnixSeconds(new Date())
   };
 };

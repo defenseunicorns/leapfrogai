@@ -1,6 +1,5 @@
 import { openai } from '$lib/server/constants';
 import { AssistantResponse } from 'ai';
-import { getUnixSeconds } from '$helpers/dates';
 
 export async function POST({ request }) {
   // TODO - validate
@@ -26,7 +25,7 @@ export async function POST({ request }) {
       threadId: threadId,
       messageId: createdMessage.id
     },
-    async ({ forwardStream, sendDataMessage }) => {
+    async ({ forwardStream }) => {
       // Run the assistant on the thread
       const runStream = openai.beta.threads.runs.stream(threadId, {
         assistant_id:

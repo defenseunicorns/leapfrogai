@@ -1,6 +1,12 @@
 import { render, screen } from '@testing-library/svelte';
 
-import { fakeThreads, getFakeMessage, getFakeProfile, getFakeThread } from '$testUtils/fakeData';
+import {
+  fakeThreads,
+  getFakeAssistant,
+  getFakeOpenAIMessage,
+  getFakeProfile,
+  getFakeThread
+} from '$testUtils/fakeData';
 import ChatPage from './+page.svelte';
 import ChatPageWithToast from './ChatPageWithToast.test.svelte';
 import userEvent from '@testing-library/user-event';
@@ -8,15 +14,15 @@ import stores from '$app/stores';
 import { afterAll, beforeAll, vi } from 'vitest';
 
 import {
+  fakeAiTextResponse,
+  mockChatAssistantCompletion,
   mockChatCompletion,
   mockChatCompletionError,
   mockGetAssistants,
+  mockGetMessages,
   mockNewMessage,
-  mockNewMessageError,
-  mockNewThread
+  mockNewMessageError
 } from '$lib/mocks/chat-mocks';
-import { delay } from 'msw';
-import { faker } from '@faker-js/faker';
 import { getMessageText } from '$helpers/threads';
 import { load } from './+page.server';
 import {
@@ -26,7 +32,13 @@ import {
 } from '$lib/mocks/supabase-mocks';
 import { mockOpenAI } from '../../../../../vitest-setup';
 import type { PageData } from './$types';
-import { ERROR_SAVING_MSG_TEXT } from '$constants/errorMessages';
+import {
+  ERROR_GETTING_AI_RESPONSE_TEXT,
+  ERROR_GETTING_ASSISTANT_MSG_TEXT,
+  ERROR_SAVING_MSG_TEXT
+} from '$constants/errorMessages';
+import { delay } from 'msw';
+import { faker } from '@faker-js/faker';
 
 //Calls to vi.mock are hoisted to the top of the file, so you don't have access to variables declared in the global file scope unless they are defined with vi.hoisted before the call.
 const { getStores } = await vi.hoisted(() => import('$lib/mocks/svelte'));
@@ -34,12 +46,9 @@ const { getStores } = await vi.hoisted(() => import('$lib/mocks/svelte'));
 let data: PageData;
 const question = 'What is AI?';
 const fakeThread = getFakeThread();
-const fakeMessage = getFakeMessage({
-  role: 'user',
-  thread_id: fakeThread.id,
-  user_id: fakeThread.metadata.user_id,
-  content: question
-});
+
+const assistant1 = getFakeAssistant();
+const assistant2 = getFakeAssistant();
 
 describe('when there is an active thread selected', () => {
   beforeAll(() => {
@@ -84,7 +93,7 @@ describe('when there is an active thread selected', () => {
 
   beforeEach(async () => {
     const allMessages = fakeThreads.flatMap((thread) => thread.messages);
-    mockGetAssistants();
+    mockGetAssistants([assistant1, assistant2]);
     mockOpenAI.setThreads(fakeThreads);
     mockOpenAI.setMessages(allMessages);
 
@@ -118,9 +127,8 @@ describe('when there is an active thread selected', () => {
   });
 
   it('submits the form then clears the input without throwing errors', async () => {
-    const message = getFakeMessage({ content: question });
     mockChatCompletion();
-    mockNewMessage(message);
+    mockNewMessage();
 
     const { getByLabelText } = render(ChatPage, { data });
 
@@ -133,12 +141,14 @@ describe('when there is an active thread selected', () => {
     await userEvent.click(submitBtn);
 
     expect(input.value).toBe('');
+
+    expect(screen.queryByText(ERROR_GETTING_AI_RESPONSE_TEXT.subtitle!)).not.toBeInTheDocument();
   });
 
   it('replaces submit with a cancel button while response is being processed', async () => {
     const delayTime = 500;
     mockChatCompletion({ withDelay: true, delayTime: delayTime });
-    mockNewMessage(fakeMessage);
+    mockNewMessage();
 
     const { getByLabelText } = render(ChatPage, { data });
 
@@ -153,6 +163,7 @@ describe('when there is an active thread selected', () => {
     await delay(delayTime);
 
     await userEvent.type(input, 'new question');
+    await delay(500);
     expect(screen.queryByTestId('cancel message')).not.toBeInTheDocument();
   });
 
@@ -168,10 +179,8 @@ describe('when there is an active thread selected', () => {
   });
 
   it('displays a toast error notification when there is an error with the AI response', async () => {
-    const fakeMessage = getFakeMessage({ content: question });
     mockChatCompletionError();
-    mockNewThread();
-    mockNewMessage(fakeMessage);
+    mockNewMessage();
     const { getByLabelText } = render(ChatPageWithToast, { data });
 
     const input = getByLabelText('message input') as HTMLInputElement;
@@ -180,7 +189,7 @@ describe('when there is an active thread selected', () => {
     await userEvent.type(input, question);
     await userEvent.click(submitBtn);
 
-    await screen.findAllByText('Error getting AI Response');
+    await screen.findAllByText(ERROR_GETTING_AI_RESPONSE_TEXT.subtitle!);
   });
 
   it('displays an error message when there is an error saving the response', async () => {
@@ -203,13 +212,12 @@ describe('when there is an active thread selected', () => {
     // Need an active thread set to ensure the call to save the message is reached
 
     const delayTime = 500;
-    mockNewThread();
     mockChatCompletion({
       withDelay: true,
       delayTime: delayTime,
       responseMsg: ['Fake', 'AI', 'Response']
     });
-    mockNewMessage(fakeMessage);
+    mockNewMessage();
 
     const { getByLabelText } = render(ChatPageWithToast, { data });
 
@@ -225,6 +233,39 @@ describe('when there is an active thread selected', () => {
     await screen.findAllByText('Response Canceled');
   });
 
+  // Note - this doesn't test receipt of the AI response, see note at below of file
+  it('can send a message with an assistant', async () => {
+    mockNewMessage();
+    mockChatAssistantCompletion();
+    mockGetMessages([
+      getFakeOpenAIMessage({ thread_id: fakeThreads[0].id, role: 'user', content: question }),
+      getFakeOpenAIMessage({
+        thread_id: fakeThreads[0].id,
+        role: 'assistant',
+        content: fakeAiTextResponse
+      })
+    ]);
+
+    const { getByLabelText, getByRole, getByText } = render(ChatPage, { data });
+
+    const assistantSelect = getByRole('button', {
+      name: /select assistant open menu/i
+    });
+    await userEvent.click(assistantSelect);
+    await userEvent.click(getByText(assistant1.name!));
+
+    const input = getByLabelText('message input') as HTMLInputElement;
+    const submitBtn = getByLabelText('send');
+
+    await userEvent.type(input, question);
+    await userEvent.click(submitBtn);
+
+    expect(screen.queryByText(ERROR_GETTING_ASSISTANT_MSG_TEXT.subtitle!)).not.toBeInTheDocument();
+  });
+
   // Note - Testing message editing requires an excessive amount of mocking and was deemed more practical and
   // maintainable to test with a Playwright E2E test
+
+  // The same applies to mocking of the streamed assistant responses. A fair amount of time was spent attempting to do
+  // this, but it was pretty complex and much more easily tested with an E2E
 });
