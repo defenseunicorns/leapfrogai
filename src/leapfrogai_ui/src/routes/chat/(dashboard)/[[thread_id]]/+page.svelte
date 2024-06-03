@@ -11,19 +11,18 @@
   import { getMessageText } from '$helpers/threads';
   import { getUnixSeconds } from '$helpers/dates.js';
   import { NO_SELECTED_ASSISTANT_ID } from '$constants';
-  import type {PageData} from "./$types";
+  import type { PageData } from './$types';
 
   import {
-    saveMessage,
     delay,
     getMessages,
     isAssistantMessage,
     resetMessages,
+    saveMessage,
     sortMessages,
     stopThenSave
   } from '$helpers/chatHelpers';
-
-
+  import { ERROR_SAVING_MSG_TEXT } from '$constants/errorMessages';
 
   export let data: PageData;
 
@@ -38,6 +37,7 @@
   /** END LOCAL VARS **/
 
   /** REACTIVE STATE **/
+
   $: activeThread = $threadsStore.threads.find((t) => t.id === $page.params.thread_id);
 
   $: assistantsList = [...data.assistants].map((assistant) => ({
@@ -60,6 +60,7 @@
     modifyAndSaveAssistantMessage();
 
   $: sortedMessages = sortMessages([...$chatMessages, ...$assistantMessages]);
+
   /** END REACTIVE STATE **/
 
   const modifyAndSaveAssistantMessage = async () => {
@@ -176,21 +177,28 @@
     if (activeThread?.id) {
       // Save with API
 
-      const newMessage = await saveMessage({
-        thread_id: activeThread.id,
-        content: $chatInput,
-        role: 'user'
-      });
-      // store user input
-      await threadsStore.addMessageToStore(newMessage);
+      try {
+        const newMessage = await saveMessage({
+          thread_id: activeThread.id,
+          content: $chatInput,
+          role: 'user'
+        });
+        // store user input
+        await threadsStore.addMessageToStore(newMessage);
 
-      submitChatMessage(e); // submit to AI (/api/chat)
+        submitChatMessage(e); // submit to AI (/api/chat)
+      } catch {
+        toastStore.addToast({
+          kind: 'error',
+          title: ERROR_SAVING_MSG_TEXT.title,
+          subtitle: ERROR_SAVING_MSG_TEXT.subtitle
+        });
+      }
     }
   };
 
   const onSubmit = async (e: SubmitEvent | KeyboardEvent) => {
     e.preventDefault();
-
     if (messageInProgress && activeThread?.id) {
       // message still sending
       await stopThenSave({
@@ -215,6 +223,12 @@
 
   onMount(async () => {
     threadsStore.setThreads(data.threads || []);
+    await tick();
+    resetMessages({
+      activeThread,
+      setChatMessages,
+      setAssistantMessages
+    });
   });
 
   afterUpdate(() => {

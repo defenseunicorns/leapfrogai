@@ -5,30 +5,40 @@ import userEvent from '@testing-library/user-event';
 import { getFakeMessage } from '$testUtils/fakeData';
 import MessageWithToast from '$components/MessageWithToast.test.svelte';
 import { convertMessageToAiMessage, getMessageText } from '$helpers/threads';
+import { type Message as AIMessage } from 'ai/svelte';
+import * as chatHelpers from '$helpers/chatHelpers';
 
-const fakeHandleMessageEdit = vi.fn();
-const fakeHandleRegenerate = vi.fn();
+const fakeAppend = vi.fn();
+const fakeReload = vi.fn();
 
-const defaultMessageProps = {
-  message: convertMessageToAiMessage(getFakeMessage()),
-  handleMessageEdit: fakeHandleMessageEdit,
-  handleRegenerate: fakeHandleRegenerate,
-  isLastMessage: false,
-  isLoading: false
+const getDefaultMessageProps = () => {
+  let messages: AIMessage[] = [];
+  const setMessages = (newMessages: AIMessage[]) => {
+    messages = [...newMessages];
+  };
+  return {
+    message: convertMessageToAiMessage(getFakeMessage()),
+    messages,
+    setMessages,
+    isLastMessage: false,
+    isLoading: false,
+    append: fakeAppend,
+    reload: fakeReload
+  };
 };
 
 describe('Message component', () => {
   afterEach(() => {
-    fakeHandleMessageEdit.mockReset();
-    fakeHandleRegenerate.mockReset();
+    fakeAppend.mockReset();
+    fakeReload.mockReset();
   });
 
   afterAll(() => {
-    fakeHandleMessageEdit.mockRestore();
-    fakeHandleRegenerate.mockRestore();
+    fakeAppend.mockRestore();
+    fakeReload.mockRestore();
   });
   it('displays edit text area when edit btn is clicked', async () => {
-    render(Message, { ...defaultMessageProps });
+    render(Message, { ...getDefaultMessageProps() });
     expect(screen.queryByText('edit message input')).not.toBeInTheDocument();
     const editPromptBtn = screen.getByLabelText('edit prompt');
     await userEvent.click(editPromptBtn);
@@ -36,7 +46,10 @@ describe('Message component', () => {
   });
   it('removes the edit textarea and restores original text on close', async () => {
     const fakeMessage = getFakeMessage();
-    render(Message, { ...defaultMessageProps, message: convertMessageToAiMessage(fakeMessage) });
+    render(Message, {
+      ...getDefaultMessageProps(),
+      message: convertMessageToAiMessage(fakeMessage)
+    });
     const editPromptBtn = screen.getByLabelText('edit prompt');
     expect(screen.queryByText('edit message input')).not.toBeInTheDocument();
     expect(screen.getByText(getMessageText(fakeMessage))).toBeInTheDocument();
@@ -50,20 +63,27 @@ describe('Message component', () => {
     expect(screen.getByText(getMessageText(fakeMessage))).toBeInTheDocument();
   });
   it('submits message edit when submit is clicked', async () => {
+    const handleEditSpy = vi
+      .spyOn(chatHelpers, 'handleChatMessageEdit')
+      .mockImplementationOnce(vi.fn());
+
     const fakeMessage = getFakeMessage();
-    render(Message, { ...defaultMessageProps, message: convertMessageToAiMessage(fakeMessage) });
+    render(Message, {
+      ...getDefaultMessageProps(),
+      message: convertMessageToAiMessage(fakeMessage)
+    });
     const editPromptBtn = screen.getByLabelText('edit prompt');
     expect(screen.queryByText('edit message input')).not.toBeInTheDocument();
     expect(screen.getByText(getMessageText(fakeMessage))).toBeInTheDocument();
     await userEvent.click(editPromptBtn);
 
     await userEvent.click(screen.getByRole('button', { name: /submit/i }));
-    expect(fakeHandleMessageEdit).toHaveBeenCalledTimes(1);
+    expect(handleEditSpy).toHaveBeenCalledTimes(1);
   });
   it('does not allow editing non user messages', () => {
     const fakeAssistantMessage = getFakeMessage({ role: 'assistant' });
     render(Message, {
-      ...defaultMessageProps,
+      ...getDefaultMessageProps(),
       message: convertMessageToAiMessage(fakeAssistantMessage)
     });
     expect(screen.queryByLabelText('edit prompt')).not.toBeInTheDocument();
@@ -84,7 +104,7 @@ describe('Message component', () => {
       clipboardSpy = vi.spyOn(navigator.clipboard, 'writeText');
       const fakeAssistantMessage = getFakeMessage({ role: 'assistant' });
       render(MessageWithToast, {
-        ...defaultMessageProps,
+        ...getDefaultMessageProps(),
         message: convertMessageToAiMessage(fakeAssistantMessage)
       });
 
@@ -102,7 +122,7 @@ describe('Message component', () => {
       clipboardSpy = vi.spyOn(navigator.clipboard, 'writeText');
       const fakeAssistantMessage = getFakeMessage({ role: 'assistant' });
       render(MessageWithToast, {
-        ...defaultMessageProps,
+        ...getDefaultMessageProps(),
         message: convertMessageToAiMessage(fakeAssistantMessage)
       });
 
@@ -113,7 +133,7 @@ describe('Message component', () => {
 
     it('disables edit submit button when message is loading', async () => {
       render(MessageWithToast, {
-        ...defaultMessageProps,
+        ...getDefaultMessageProps(),
         isLoading: true
       });
 
@@ -125,7 +145,7 @@ describe('Message component', () => {
     });
     it('has copy and regenerate buttons for the last AI response', () => {
       render(MessageWithToast, {
-        ...defaultMessageProps,
+        ...getDefaultMessageProps(),
         message: convertMessageToAiMessage(getFakeMessage({ role: 'assistant' })),
         isLastMessage: true
       });
@@ -135,7 +155,7 @@ describe('Message component', () => {
     });
     it('does not have regenerate buttons for user messages', () => {
       render(MessageWithToast, {
-        ...defaultMessageProps,
+        ...getDefaultMessageProps(),
         message: convertMessageToAiMessage(getFakeMessage({ role: 'user' })),
         isLastMessage: true
       });
@@ -144,7 +164,7 @@ describe('Message component', () => {
     });
     it('does not have regenerate buttons for AI responses that are not the last response', () => {
       render(MessageWithToast, {
-        ...defaultMessageProps,
+        ...getDefaultMessageProps(),
         message: convertMessageToAiMessage(getFakeMessage({ role: 'assistant' })),
         isLastMessage: false
       });
@@ -153,7 +173,7 @@ describe('Message component', () => {
     });
     it('does not have a copy button for user messages', () => {
       render(MessageWithToast, {
-        ...defaultMessageProps,
+        ...getDefaultMessageProps(),
         message: convertMessageToAiMessage(getFakeMessage({ role: 'user' }))
       });
 
@@ -161,7 +181,7 @@ describe('Message component', () => {
     });
     it('removes the copy and regenerate buttons when a response is loading', () => {
       render(MessageWithToast, {
-        ...defaultMessageProps,
+        ...getDefaultMessageProps(),
         message: convertMessageToAiMessage(getFakeMessage({ role: 'assistant' })),
         isLastMessage: true,
         isLoading: true
@@ -171,7 +191,7 @@ describe('Message component', () => {
     });
     it('leaves the copy button for messages when it is loading if not the latest message', () => {
       render(MessageWithToast, {
-        ...defaultMessageProps,
+        ...getDefaultMessageProps(),
         message: convertMessageToAiMessage(getFakeMessage({ role: 'assistant' })),
         isLastMessage: false,
         isLoading: true
@@ -180,7 +200,7 @@ describe('Message component', () => {
     });
     it('leaves the edit button for messages when it is loading if not the latest message', () => {
       render(MessageWithToast, {
-        ...defaultMessageProps,
+        ...getDefaultMessageProps(),
         message: convertMessageToAiMessage(getFakeMessage({ role: 'user' })),
         isLastMessage: false,
         isLoading: true

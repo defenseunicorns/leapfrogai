@@ -3,6 +3,7 @@ import { delay, http, HttpResponse } from 'msw';
 import { server } from '../../../vitest-setup';
 import { getFakeThread } from '$testUtils/fakeData';
 import type { LFMessage } from '$lib/types/messages';
+import type { LFAssistant } from '$lib/types/assistants';
 
 type MockChatCompletionOptions = {
   responseMsg?: string[];
@@ -32,6 +33,31 @@ export const mockChatCompletion = (
       return new HttpResponse(stream, { headers: { 'Content-Type': 'text/plain' } });
     })
   );
+};
+
+export const mockChatAssistantCompletion = (
+    options: MockChatCompletionOptions = {
+        responseMsg: ['Fake', 'AI', 'Response'],
+        withDelay: false,
+        delayTime: 0
+    }
+) => {
+    const encoder = new TextEncoder();
+
+    server.use(
+        http.post('/api/chat/assistants', async () => {
+            if (options.withDelay) {
+                await delay(options.delayTime);
+            }
+            const stream = new ReadableStream({
+                start(controller) {
+                    options.responseMsg?.forEach((msg) => controller.enqueue(encoder.encode(msg)));
+                    controller.close();
+                }
+            });
+            return new HttpResponse(stream, { headers: { 'Content-Type': 'text/plain' } });
+        })
+    );
 };
 
 export const mockChatCompletionError = () => {
@@ -81,3 +107,12 @@ export const mockEditThreadLabel = () => {
 export const mockEditThreadLabelError = () => {
   server.use(http.put('/api/threads/update/label', () => new HttpResponse(null, { status: 500 })));
 };
+
+export const mockGetAssistants = (assistants: LFAssistant[] = []) => {
+  server.use(
+    http.get('/api/assistants', () => {
+      return HttpResponse.json(assistants);
+    })
+  );
+};
+

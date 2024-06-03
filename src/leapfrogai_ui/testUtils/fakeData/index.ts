@@ -7,6 +7,8 @@ import type { LFThread } from '../../src/lib/types/threads';
 import type { MessageContent } from 'openai/resources/beta/threads/messages';
 import { getUnixSeconds } from '../../src/lib/helpers/dates';
 import type { FileObject } from 'openai/resources/files';
+import type { Profile } from '$lib/types/profile';
+import type { Session } from '@supabase/supabase-js';
 
 const todayOverride = new Date('2024-03-20T00:00');
 
@@ -161,4 +163,60 @@ export const getFakeFiles = (options: GetFakeFilesOptions = {}) => {
     });
   }
   return files;
+};
+
+type GetFakeProfileArgs = {
+  id?: string;
+  full_name?: string;
+  thread_ids?: string[];
+};
+export const getFakeProfile = ({
+  id = faker.string.uuid(),
+  full_name = faker.person.fullName(),
+  thread_ids = []
+}: GetFakeProfileArgs): Profile => {
+  return { id, full_name, thread_ids };
+};
+
+type GetFakeSessionArgs = {
+  user_id?: string;
+  email?: string;
+  full_name?: string;
+};
+
+export const getFakeSession = ({
+  user_id = faker.string.uuid(),
+  email = faker.internet.email(),
+  full_name = faker.person.fullName()
+}: GetFakeSessionArgs): Session => {
+  return {
+    provider_token: null,
+    provider_refresh_token: null,
+    access_token: '',
+    refresh_token: '',
+    expires_in: 3600,
+    expires_at: undefined,
+    token_type: 'bearer',
+    user: {
+      id: user_id,
+      app_metadata: { provider: 'keycloak', providers: ['keycloak'] },
+      user_metadata: {
+        email,
+        email_verified: true,
+        full_name,
+        iss: 'https://keycloak.admin.uds.dev/realms/uds',
+        name: full_name,
+        phone_verified: false,
+        provider_id: faker.string.uuid(),
+        sub: faker.string.uuid()
+      },
+      aud: 'authenticated',
+      confirmation_sent_at: undefined,
+      recovery_sent_at: undefined,
+      email_change_sent_at: undefined,
+      new_email: undefined,
+      new_phone: undefined,
+      created_at: new Date().toISOString()
+    }
+  };
 };

@@ -3,14 +3,17 @@ import type { LFThread } from '$lib/types/threads';
 import type { LFMessage } from '$lib/types/messages';
 import type { LFAssistant } from '$lib/types/assistants';
 import type { FileObject } from 'openai/resources/files';
+import { merge } from 'lodash';
 
 class OpenAI {
   private apiKey: string;
   private baseURL: string;
-  private thread: LFThread;
-  private message: LFMessage;
+  private tempThread: LFThread;
+  private threads: LFThread[];
+  private tempMessage: LFMessage;
+  private messages: LFMessage[];
   private assistants: LFAssistant[];
-  private assistant: LFAssistant;
+  private tempAssistant: LFAssistant;
   private uploadedFiles: FileObject[];
   private errors: {
     createThread: boolean;
@@ -29,10 +32,12 @@ class OpenAI {
   constructor({ apiKey, baseURL }: { apiKey: string; baseURL: string }) {
     this.apiKey = apiKey;
     this.baseURL = baseURL;
-    this.thread = getFakeThread();
-    this.message = getFakeMessage();
+    this.tempThread = getFakeThread();
+    this.threads = [];
+    this.tempMessage = getFakeMessage();
+    this.messages = [];
     this.assistants = [];
-    this.assistant = getFakeAssistant();
+    this.tempAssistant = getFakeAssistant();
     this.uploadedFiles = [];
     this.errors = {
       createThread: false,
@@ -50,17 +55,23 @@ class OpenAI {
   }
 
   // Used as a test setup method to set data you want to use
-  setThread(thread: LFThread) {
-    this.thread = thread;
+  setTempThread(thread: LFThread) {
+    this.tempThread = thread;
   }
-  setMessage(message: LFMessage) {
-    this.message = message;
+  setThreads(threads: LFThread[]) {
+    this.threads = threads;
+  }
+  setTempMessage(message: LFMessage) {
+    this.tempMessage = message;
+  }
+  setMessages(messages: LFMessage[]) {
+    this.messages = messages;
   }
   setAssistants(assistants: LFAssistant[]) {
     this.assistants = assistants;
   }
-  setAssistant(assistant: LFAssistant) {
-    this.assistant = assistant;
+  setTempAssistant(assistant: LFAssistant) {
+    this.tempAssistant = assistant;
   }
   setFiles(files: FileObject[]) {
     this.uploadedFiles = files;
@@ -94,30 +105,42 @@ class OpenAI {
 
   beta = {
     threads: {
+      // Create uses the "tempThread" which much be pre-set in your test
       create: vi.fn().mockImplementation(() => {
         if (this.errors.createThread) this.throwError('createThread');
-        return Promise.resolve(this.thread);
+        this.threads.push(this.tempThread);
+        return Promise.resolve(this.tempThread);
       }),
-      update: vi.fn().mockImplementation((_, body) => {
+      update: vi.fn().mockImplementation((id, body) => {
         if (this.errors.updateThread) this.throwError('updateThread');
-        this.thread.metadata.label = body.metadata.label;
-        return Promise.resolve(this.thread);
+        let threadToUpdateIndex = this.threads.findIndex((thread) => thread.id === id);
+        this.threads[threadToUpdateIndex] = merge(this.threads[threadToUpdateIndex], body);
+
+        return Promise.resolve(this.threads[threadToUpdateIndex]);
       }),
       del: vi.fn().mockImplementation((id) => {
         if (this.errors.deleteThread) {
           this.resetError('deleteThread');
           return Promise.resolve({ id, object: 'thread.deleted', deleted: false });
         }
+        this.threads = this.threads.filter((thread) => thread.id !== id);
         return Promise.resolve({ id, object: 'thread.deleted', deleted: true });
       }),
-      retrieve: vi.fn().mockImplementation(() => {
+      retrieve: vi.fn().mockImplementation((thread_id) => {
         if (this.errors.retrieveThread) this.throwError('retrieveThread');
-        return Promise.resolve(this.thread);
+        return Promise.resolve(this.threads.find((thread) => thread.id === thread_id));
       }),
       messages: {
+        list: vi.fn().mockImplementation((thread_id) => {
+          return Promise.resolve({
+            data: this.messages.filter((message) => message.thread_id === thread_id)
+          });
+        }),
+        // Create uses the "tempMessage" which much be pre-set in your test
         create: vi.fn().mockImplementation(() => {
           if (this.errors.createMessage) this.throwError('createMessage');
-          return Promise.resolve(this.message);
+          this.messages.push(this.tempMessage);
+          return Promise.resolve(this.tempMessage);
         }),
         del: vi.fn().mockImplementation((_, messageId) => {
           if (this.errors.deleteMessage) {
@@ -128,6 +151,7 @@ class OpenAI {
               deleted: false
             });
           }
+          this.messages = this.messages.filter((message) => message.id !== messageId);
           return Promise.resolve({
             id: messageId,
             object: 'thread.message.deleted',
@@ -137,9 +161,11 @@ class OpenAI {
       }
     },
     assistants: {
+      // Create uses the "tempAssistant" which much be pre-set in your test
       create: vi.fn().mockImplementation(() => {
         if (this.errors.createAssistant) this.throwError('createAssistant');
-        return Promise.resolve(this.assistant);
+        this.assistants.push(this.tempAssistant);
+        return Promise.resolve(this.tempAssistant);
       }),
       list: vi.fn().mockImplementation(() => {
         return Promise.resolve({ data: this.assistants });
@@ -149,15 +175,20 @@ class OpenAI {
           this.resetError('deleteAssistant');
           return Promise.resolve({ id, object: 'assistant.deleted', deleted: false });
         }
+        this.assistants = this.assistants.filter((assistant) => assistant.id !== id);
         return Promise.resolve({ id, object: 'assistant.deleted', deleted: true });
       }),
-      retrieve: vi.fn().mockImplementation(() => {
+      retrieve: vi.fn().mockImplementation((assistant_id) => {
         if (this.errors.retrieveAssistant) this.throwError('retrieveAssistant');
-        return Promise.resolve(this.assistant);
+        return Promise.resolve(this.assistants.find((assistant) => assistant.id === assistant_id));
       }),
-      update: vi.fn().mockImplementation(() => {
+      update: vi.fn().mockImplementation((id, body) => {
         if (this.errors.updateAssistant) this.throwError('updateAssistant');
-        return Promise.resolve(this.assistant);
+        const assistantToUpdateIndex = this.assistants.findIndex(
+          (assistant) => assistant.id === id
+        );
+        this.assistants[assistantToUpdateIndex] = merge(this.threads[assistantToUpdateIndex], body);
+        return Promise.resolve(this.assistants[assistantToUpdateIndex]);
       })
     }
   };

@@ -359,3 +359,17 @@ export const sortMessages = (
 export const delay = (ms: number): Promise<void> => {
   return new Promise((resolve) => setTimeout(resolve, ms));
 };
+
+export const normalizeTimestamp2 = (createdAt: Date | string | number): number => {
+
+  if (createdAt instanceof Date) {
+    return createdAt.getTime();
+  } else if (typeof createdAt === 'string') {
+    return new Date(createdAt).getTime();
+  } else if (typeof createdAt === 'number') {
+    // Assume the timestamp is in milliseconds if it's a large number, otherwise seconds
+    return createdAt > 10000000000 ? createdAt : createdAt * 1000;
+  }
+
+  return 0; // Default to 0 if no valid date is found
+};

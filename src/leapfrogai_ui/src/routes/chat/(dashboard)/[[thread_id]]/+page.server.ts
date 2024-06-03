@@ -13,6 +13,7 @@ export const load = async ({ fetch, locals: { supabase, safeGetSession } }) => {
     throw redirect(303, '/');
   }
 
+
   const { data: profile, error: profileError } = await supabase
     .from('profiles')
     .select(`*`)
@@ -26,6 +27,7 @@ export const load = async ({ fetch, locals: { supabase, safeGetSession } }) => {
     );
     throw redirect(303, '/');
   }
+
 
   const threads: LFThread[] = [];
   if (profile?.thread_ids && profile?.thread_ids.length > 0) {
@@ -49,6 +51,7 @@ export const load = async ({ fetch, locals: { supabase, safeGetSession } }) => {
 
   const response = await fetch('/api/assistants');
   const assistants = (await response.json()) as LFAssistant[];
+
 
   return { title: 'LeapfrogAI - Assistants', assistants: assistants ?? [], threads };
 };
