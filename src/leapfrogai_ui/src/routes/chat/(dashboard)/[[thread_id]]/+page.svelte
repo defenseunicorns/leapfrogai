@@ -11,8 +11,10 @@
   import { getMessageText } from '$helpers/threads';
   import { getUnixSeconds } from '$helpers/dates.js';
   import { NO_SELECTED_ASSISTANT_ID } from '$constants';
+  import type {PageData} from "./$types";
+
   import {
-    createMessage,
+    saveMessage,
     delay,
     getMessages,
     isAssistantMessage,
@@ -21,7 +23,9 @@
     stopThenSave
   } from '$helpers/chatHelpers';
 
-  export let data;
+
+
+  export let data: PageData;
 
   // TODO - check mark for selected assistant
 
@@ -35,6 +39,7 @@
 
   /** REACTIVE STATE **/
   $: activeThread = $threadsStore.threads.find((t) => t.id === $page.params.thread_id);
+
   $: assistantsList = [...data.assistants].map((assistant) => ({
     id: assistant.id,
     text: assistant.name || 'unknown'
@@ -47,19 +52,19 @@
 
   $: messageInProgress = $isLoading || $status === 'in_progress';
 
-  // On new assistant message
+  // new streamed assistant message received (has no assistant_id)
   $: if (
     $assistantMessages.length > 0 &&
     !$assistantMessages[$assistantMessages.length - 1].assistant_id
   )
-    createAndAddAssistantMessage();
+    modifyAndSaveAssistantMessage();
 
   $: sortedMessages = sortMessages([...$chatMessages, ...$assistantMessages]);
   /** END REACTIVE STATE **/
 
-  const createAndAddAssistantMessage = async () => {
+  const modifyAndSaveAssistantMessage = async () => {
     // Streamed assistant responses don't contain an assistant_id, so we add it here
-    // also add a createdAt date if not present
+    // and also add a createdAt date if not present
     const assistantMessagesCopy = [...$assistantMessages];
     const latestMessage = assistantMessagesCopy[assistantMessagesCopy.length - 1];
     latestMessage.assistant_id = $threadsStore.selectedAssistantId;
@@ -68,15 +73,14 @@
 
     setAssistantMessages(assistantMessagesCopy);
 
-    // We have a new assistant message
-    // '/api/chat/assistants' saves the messages with the API for us, so we re-fetch and updated the store here
+    // '/api/chat/assistants' saves the messages with the API to the db for us, so we re-fetch and update the store here
     if ($status === 'awaiting_message') {
       const messages = await getMessages($page.params.thread_id);
       await threadsStore.updateMessages($page.params.thread_id, messages);
     }
   };
 
-  /** useChat **/
+  /** useChat - streams messages with the /api/chat route**/
   const {
     input: chatInput,
     handleSubmit: submitChatMessage,
@@ -87,18 +91,19 @@
     append: chatAppend,
     reload
   } = useChat({
+    // Handle completed AI Responses
     onFinish: async (message: AIMessage) => {
-      // OpenAI returns the creation timestamp in seconds instead of millisecond.
+      // OpenAI returns the creation timestamp in seconds instead of milliseconds.
       // If a response comes in quickly, we need to delay 1 second to ensure the timestamps of the user message
-      // and ai response are not exactly the same. This is important for sorting messages when they are initially loaded
+      // and AI response are not exactly the same. This is important for sorting messages when they are initially loaded
       // from the db/API (ex. browser refresh). Streamed messages are sorted realtime and we modify the timestamps to
-      // ensure we have millisecond precision
+      // ensure we have millisecond precision.
       blockSend = true;
       try {
-        await delay(1050);
+        await delay(1000);
         if (!assistantMode && activeThread?.id) {
-          // Save with API
-          const newMessage = await createMessage({
+          // Save with API to db
+          const newMessage = await saveMessage({
             thread_id: activeThread.id,
             content: getMessageText(message),
             role: 'assistant'
@@ -106,7 +111,7 @@
 
           await threadsStore.addMessageToStore(newMessage);
         }
-        await delay(1050); // ensure next user message has a different timestamp
+        await delay(1000); // ensure next user message has a different timestamp
         blockSend = false;
       } catch {
         toastStore.addToast({
@@ -125,7 +130,7 @@
     }
   });
 
-  /** useAssistant **/
+  /** useAssistant - streams messages with the /api/chat/assistants route **/
   const {
     status,
     input: assistantInput,
@@ -138,8 +143,8 @@
     api: '/api/chat/assistants',
     threadId: activeThread?.id,
     onError: (e) => {
+      // ignore this error b/c it is expected on cancel
       if (e.toString() !== 'DOMException: BodyStreamBuffer was aborted') {
-        // this error is expected on cancel
         toastStore.addToast({
           kind: 'error',
           title: 'Error',
@@ -171,7 +176,7 @@
     if (activeThread?.id) {
       // Save with API
 
-      const newMessage = await createMessage({
+      const newMessage = await saveMessage({
         thread_id: activeThread.id,
         content: $chatInput,
         role: 'user'
@@ -202,22 +207,9 @@
         // create new thread
         await threadsStore.newThread($chatInput);
         await tick(); // allow store to update
-
-        // If in chat mode, save the messages with store methods
-        // Assistant API saves the messages itself
-        if (assistantMode) {
-          await sendAssistantMessage(e);
-        } else {
-          await sendChatMessage(e);
-        }
-      } else {
-        // active thread exists
-        if (assistantMode) {
-          await sendAssistantMessage(e);
-        } else {
-          await sendChatMessage(e);
-        }
       }
+
+      assistantMode ? await sendAssistantMessage(e) : await sendChatMessage(e);
     }
   };
 

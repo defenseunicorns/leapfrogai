@@ -1,10 +1,12 @@
+import type { LFAssistant } from '$lib/types/assistants';
 import { redirect } from '@sveltejs/kit';
 import type { Profile } from '$lib/types/profile';
 import type { LFThread } from '$lib/types/threads';
 import { openai } from '$lib/server/constants';
 import type { LFMessage } from '$lib/types/messages';
 
-export const load = async ({ locals: { supabase, safeGetSession } }) => {
+
+export const load = async ({ fetch, locals: { supabase, safeGetSession } }) => {
   const { session } = await safeGetSession();
 
   if (!session) {
@@ -45,5 +47,8 @@ export const load = async ({ locals: { supabase, safeGetSession } }) => {
     }
   }
 
-  return { title: 'LeapfrogAI - Chat', session, profile, threads };
+  const response = await fetch('/api/assistants');
+  const assistants = (await response.json()) as LFAssistant[];
+
+  return { title: 'LeapfrogAI - Assistants', assistants: assistants ?? [], threads };
 };

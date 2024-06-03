@@ -6,7 +6,7 @@ import { toastStore } from '$stores';
 import type { LFThread, NewThreadInput } from '$lib/types/threads';
 import type { LFMessage } from '$lib/types/messages';
 import { getMessageText } from '$helpers/threads';
-import { createMessage } from '$helpers/chatHelpers';
+import { saveMessage } from '$helpers/chatHelpers';
 
 type ThreadsStore = {
   threads: LFThread[];
@@ -227,7 +227,7 @@ const createThreadsStore = () => {
 
           for (const message of messages) {
             if (message.role === 'user' || message.role === 'assistant') {
-              const createdMessage = await createMessage({
+              const createdMessage = await saveMessage({
                 role: message.role,
                 content: getMessageText(message),
                 thread_id: createdThread.id

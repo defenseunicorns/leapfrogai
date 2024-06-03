@@ -10,7 +10,7 @@ import { error } from '@sveltejs/kit';
 import type { LFThread } from '$lib/types/threads';
 import { tick } from 'svelte';
 
-export const createMessage = async (input: NewMessageInput) => {
+export const saveMessage = async (input: NewMessageInput) => {
   const res = await fetch('/api/messages/new', {
     method: 'POST',
     body: JSON.stringify({
@@ -61,7 +61,7 @@ export const stopThenSave = async ({
       const lastMessage = messages[messages.length - 1];
 
       if (activeThreadId && lastMessage.role !== 'user') {
-        const newMessage = await createMessage({
+        const newMessage = await saveMessage({
           thread_id: activeThreadId,
           content: getMessageText(lastMessage),
           role: lastMessage.role,
@@ -196,7 +196,7 @@ export const handleChatMessageEdit = async ({
     };
     await append(cMessage);
     // Save with API
-    const newMessage = await createMessage({
+    const newMessage = await saveMessage({
       thread_id,
       content: getMessageText(message),
       role: 'user'

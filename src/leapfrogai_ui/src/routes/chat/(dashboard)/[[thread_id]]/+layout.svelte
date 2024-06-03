@@ -1,7 +1,7 @@
 <script lang="ts">
   import { page } from '$app/stores';
   import threadsStore from '$stores/threads';
-  import '../../../styles/main.scss';
+  import '../../../../styles/main.scss';
   import { ChatSidebar } from '$components';
   import LFContent from '$components/LFContent.svelte';
 

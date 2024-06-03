@@ -24,6 +24,11 @@ declare global {
       files?: FileObject[];
     }
 
+    interface PageServerLoad {
+      threads?: LFThread[];
+      assistants?: LFAssistant[];
+    }
+
     // interface PageState {}
     // interface Platform {}
   }
