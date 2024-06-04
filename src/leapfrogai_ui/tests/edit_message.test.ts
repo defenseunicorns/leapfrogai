@@ -23,6 +23,7 @@ test('editing a message', async ({ page }) => {
 
   // Edit first message
   await page.getByTestId('message').first().click();
+  await expect(page.getByLabel('edit prompt').first()).not.toBeDisabled(); // wait for message to finish saving
   await page.getByLabel('edit prompt').first().click();
   await page.getByLabel('edit message input').fill('edited message');
   await page.getByLabel('submit edited message').click();
@@ -106,6 +107,7 @@ test('regenerating responses', async ({ page }) => {
   const messages = page.getByTestId('message');
   await expect(messages).toHaveCount(2);
 
+  await expect(page.getByLabel('regenerate message')).not.toBeDisabled(); // wait for message to finish saving
   await page.getByLabel('regenerate message').click();
   await expect(messages).toHaveCount(1);
   await waitForResponseToComplete(page);
@@ -116,15 +118,18 @@ test('regenerating responses', async ({ page }) => {
 test('it can regenerate the last assistant response', async ({ page }) => {
   const assistant = await createAssistantWithApi();
 
-  const messages = page.getByTestId('message');
-
   await loadChatPage(page);
+  const messages = page.getByTestId('message');
   await expect(messages).toHaveCount(0);
 
   const assistantDropdown = page.getByTestId('assistant-dropdown');
   await assistantDropdown.click();
   await page.getByText(assistant!.name!).click();
 
+  await sendMessage(page, newMessage1);
+  await waitForResponseToComplete(page);
+
+  await expect(page.getByLabel('regenerate message')).not.toBeDisabled(); // wait for message to finish saving
   await page.getByLabel('regenerate message').click();
   await expect(messages).toHaveCount(1);
   await waitForResponseToComplete(page);
@@ -151,7 +156,9 @@ test('editing an assistant message', async ({ page }) => {
   await waitForResponseToComplete(page);
 
   // Edit first message
+
   await page.getByTestId('message').first().click();
+  await expect(page.getByLabel('edit prompt').first()).not.toBeDisabled(); // wait for message to finish saving
   await page.getByLabel('edit prompt').first().click();
   await page.getByLabel('edit message input').fill('edited message');
   await page.getByLabel('submit edited message').click();

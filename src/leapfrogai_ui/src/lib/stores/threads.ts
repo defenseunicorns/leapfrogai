@@ -11,11 +11,13 @@ import { saveMessage } from '$helpers/chatHelpers';
 type ThreadsStore = {
   threads: LFThread[];
   selectedAssistantId: string;
+  sendingBlocked: boolean;
 };
 
 const defaultValues: ThreadsStore = {
   threads: [],
-  selectedAssistantId: NO_SELECTED_ASSISTANT_ID
+  selectedAssistantId: NO_SELECTED_ASSISTANT_ID,
+  sendingBlocked: false
 };
 
 const createThread = async (input: NewThreadInput) => {
@@ -84,7 +86,12 @@ const createThreadsStore = () => {
       update((old) => ({ ...old, threads }));
     },
     setSelectedAssistantId: (selectedAssistantId: string) => {
-      update((old) => ({ ...old, selectedAssistantId }));
+      update((old) => {
+        return { ...old, selectedAssistantId };
+      });
+    },
+    setSendingBlocked: (status: boolean) => {
+      update((old) => ({ ...old, sendingBlocked: status }));
     },
     changeThread: async (newId: string | null) => {
       await goto(`/chat/${newId}`);
@@ -133,7 +140,6 @@ const createThreadsStore = () => {
           const updatedThreads = [...old.threads];
           const threadIndex = old.threads.findIndex((c) => c.id === newMessage.thread_id);
           const oldThread = old.threads[threadIndex];
-
           updatedThreads[threadIndex] = {
             ...oldThread,
             messages: [...(oldThread.messages || []), newMessage]

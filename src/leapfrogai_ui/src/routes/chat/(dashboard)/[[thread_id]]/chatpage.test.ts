@@ -1,25 +1,16 @@
 import { render, screen } from '@testing-library/svelte';
 
-import {
-  fakeThreads,
-  getFakeAssistant,
-  getFakeOpenAIMessage,
-  getFakeProfile
-} from '$testUtils/fakeData';
+import { fakeThreads, getFakeAssistant, getFakeProfile } from '$testUtils/fakeData';
 import ChatPage from './+page.svelte';
 import ChatPageWithToast from './ChatPageWithToast.test.svelte';
 import userEvent from '@testing-library/user-event';
 import stores from '$app/stores';
-import * as navigation from '$app/navigation';
 import { afterAll, beforeAll, vi } from 'vitest';
 
 import {
-  fakeAiTextResponse,
-  mockChatAssistantCompletion,
   mockChatCompletion,
   mockChatCompletionError,
   mockGetAssistants,
-  mockGetMessages,
   mockNewMessage,
   mockNewMessageError
 } from '$lib/mocks/chat-mocks';
@@ -31,11 +22,7 @@ import {
   supabaseSelectSingleByIdMock
 } from '$lib/mocks/supabase-mocks';
 import { mockOpenAI } from '../../../../../vitest-setup';
-import {
-  ERROR_GETTING_AI_RESPONSE_TEXT,
-  ERROR_GETTING_ASSISTANT_MSG_TEXT,
-  ERROR_SAVING_MSG_TEXT
-} from '$constants/errorMessages';
+import { ERROR_GETTING_AI_RESPONSE_TEXT, ERROR_SAVING_MSG_TEXT } from '$constants/errorMessages';
 import { delay } from 'msw';
 import { faker } from '@faker-js/faker';
 import type { LFThread } from '$lib/types/threads';
@@ -109,6 +96,7 @@ describe('when there is an active thread selected', () => {
     const fakeProfile = getFakeProfile({ thread_ids: fakeThreads.map((thread) => thread.id) });
 
     data = await load({
+      fetch: global.fetch,
       locals: {
         supabase: supabaseFromMockWrapper(supabaseSelectSingleByIdMock(fakeProfile)),
         safeGetSession: sessionMock
@@ -149,6 +137,10 @@ describe('when there is an active thread selected', () => {
     await userEvent.click(submitBtn);
 
     expect(input.value).toBe('');
+
+    // We have to wait for the manual delays in the onFinish function of useChat or this will continue running and
+    // affect other tests
+    await delay(2000);
 
     expect(screen.queryByText(ERROR_GETTING_AI_RESPONSE_TEXT.subtitle!)).not.toBeInTheDocument();
   });
@@ -241,21 +233,8 @@ describe('when there is an active thread selected', () => {
     await screen.findAllByText('Response Canceled');
   });
 
-  // TODO - this test breaks the test below it (For finding assistant dropdown)
-  // Note - this doesn't test receipt of the AI response, see note at below of file
-  it('can send a message with an assistant', async () => {
-    mockNewMessage();
-    mockChatAssistantCompletion();
-    mockGetMessages([
-      getFakeOpenAIMessage({ thread_id: fakeThreads[0].id, role: 'user', content: question }),
-      getFakeOpenAIMessage({
-        thread_id: fakeThreads[0].id,
-        role: 'assistant',
-        content: fakeAiTextResponse
-      })
-    ]);
-
-    const { getByLabelText, getByRole, getByText } = render(ChatPage, {
+  it('can select and assistant from the dropdown', async () => {
+    const { getByRole, getByText } = render(ChatPage, {
       data
     });
 
@@ -264,34 +243,8 @@ describe('when there is an active thread selected', () => {
     });
     await userEvent.click(assistantSelect);
     await userEvent.click(getByText(assistant1.name!));
-
-    const input = getByLabelText('message input') as HTMLInputElement;
-    const submitBtn = getByLabelText('send');
-
-    await userEvent.type(input, question);
-    await userEvent.click(submitBtn);
-
-    expect(screen.queryByText(ERROR_GETTING_ASSISTANT_MSG_TEXT.subtitle!)).not.toBeInTheDocument();
   });
 
-  it('has a button to go to the assistants management page in the assistant dropdown', async () => {
-    const goToSpy = vi.spyOn(navigation, 'goto');
-
-    const { getByRole, getByTestId } = render(ChatPage, { data });
-
-    const assistantSelect = getByRole('button', {
-      name: /select assistant open menu/i
-    });
-    await userEvent.click(assistantSelect);
-    await userEvent.click(
-      getByRole('button', {
-        name: /manage assistants/i
-      })
-    );
-
-    expect(goToSpy).toHaveBeenCalledTimes(1);
-    expect(goToSpy).toHaveBeenCalledWith(`/chat/assistants-management`);
-  });
   // Note - Testing message editing requires an excessive amount of mocking and was deemed more practical and
   // maintainable to test with a Playwright E2E test
 

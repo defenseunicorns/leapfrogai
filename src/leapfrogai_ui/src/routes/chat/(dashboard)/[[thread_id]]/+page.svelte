@@ -3,7 +3,7 @@
   import { Button, Dropdown } from 'carbon-components-svelte';
   import { afterUpdate, onMount, tick } from 'svelte';
   import { threadsStore, toastStore } from '$stores';
-  import { ArrowRight, StopFilledAlt, UserProfile } from 'carbon-icons-svelte';
+  import { ArrowRight, Checkmark, StopFilledAlt, UserProfile } from 'carbon-icons-svelte';
   import { type Message as AIMessage, useAssistant, useChat } from 'ai/svelte';
   import { page } from '$app/stores';
   import { afterNavigate, beforeNavigate, goto } from '$app/navigation';
@@ -27,18 +27,14 @@
     ERROR_SAVING_MSG_TEXT
   } from '$constants/errorMessages';
 
-  // TODO - some of the e2es are leaving threads and not deleting them
-  // TODO - create and link an issue for this pagedata typing issue
+  // TODO - this data is not receiving correct type inference, see issue: (https://github.com/defenseunicorns/leapfrogai/issues/587
   export let data;
-
-  // TODO - check mark for selected assistant
 
   /** LOCAL VARS **/
   let messageThreadDiv: HTMLDivElement;
   let messageThreadDivHeight: number;
   let lengthInvalid: boolean; // bound to child LFTextArea
   let assistantsList: Array<{ id: string; text: string }>;
-  let blockSend = false;
   /** END LOCAL VARS **/
 
   /** REACTIVE STATE **/
@@ -79,12 +75,13 @@
       latestMessage.createdAt = latestMessage.created_at || getUnixSeconds(new Date());
 
     setAssistantMessages(assistantMessagesCopy);
-
     // '/api/chat/assistants' saves the messages with the API to the db for us, so we re-fetch and update the store here
-    if ($status === 'awaiting_message') {
-      const messages = await getMessages($page.params.thread_id);
-      await threadsStore.updateMessages($page.params.thread_id, messages);
-    }
+    await updateMessagesFromAPI();
+  };
+
+  const updateMessagesFromAPI = async () => {
+    const messages = await getMessages($page.params.thread_id);
+    await threadsStore.updateMessages($page.params.thread_id, messages);
   };
 
   /** useChat - streams messages with the /api/chat route**/
@@ -105,7 +102,7 @@
       // and AI response are not exactly the same. This is important for sorting messages when they are initially loaded
       // from the db/API (ex. browser refresh). Streamed messages are sorted realtime and we modify the timestamps to
       // ensure we have millisecond precision.
-      blockSend = true;
+      threadsStore.setSendingBlocked(true);
       try {
         await delay(1000);
         if (!assistantMode && activeThread?.id) {
@@ -119,7 +116,6 @@
           await threadsStore.addMessageToStore(newMessage);
         }
         await delay(1000); // ensure next user message has a different timestamp
-        blockSend = false;
       } catch {
         toastStore.addToast({
           kind: 'error',
@@ -127,9 +123,9 @@
           subtitle: 'Error saving AI Response'
         });
       }
+      threadsStore.setSendingBlocked(false);
     },
-    onError: (e) => {
-      console.log('in on error', e);
+    onError: () => {
       toastStore.addToast({
         kind: 'error',
         title: ERROR_GETTING_AI_RESPONSE_TEXT.title,
@@ -183,7 +179,6 @@
   const sendChatMessage = async (e: SubmitEvent | KeyboardEvent) => {
     if (activeThread?.id) {
       // Save with API
-
       try {
         const newMessage = await saveMessage({
           thread_id: activeThread.id,
@@ -289,7 +284,13 @@
         hideLabel
         direction="top"
         selectedId={$threadsStore.selectedAssistantId}
-        on:select={(e) => threadsStore.setSelectedAssistantId(e.detail.selectedId)}
+        on:select={(e) => {
+          if ($threadsStore.selectedAssistantId === e.detail.selectedId)
+            threadsStore.setSelectedAssistantId(NO_SELECTED_ASSISTANT_ID); //deselect
+          else {
+            threadsStore.setSelectedAssistantId(e.detail.selectedId);
+          }
+        }}
         items={assistantsList}
         style="width: 25%; margin-bottom: 0.5rem"
         let:item
@@ -306,8 +307,11 @@
             {item.text}
           </button>
         {:else}
-          <div>
+          <div class="assistant-dropdown-item">
             {item.text}
+            {#if item.id !== NO_SELECTED_ASSISTANT_ID && $threadsStore.selectedAssistantId === item.id}
+              <Checkmark data-testid="checked" />
+            {/if}
           </div>
         {/if}
       </Dropdown>
@@ -328,7 +332,7 @@
             size="field"
             type="submit"
             iconDescription="send"
-            disabled={!$chatInput || lengthInvalid || blockSend}
+            disabled={!$chatInput || lengthInvalid || $threadsStore.sendingBlocked}
           />
         {:else}
           <Button
@@ -385,7 +389,16 @@
     gap: layout.$spacing-03;
   }
 
+  .assistant-dropdown-item {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+  }
+
   :global(#manage-assistants) {
     outline: 1px solid themes.$border-subtle-03;
+    :global(.bx--list-box__menu_item__option) {
+      padding-right: 0.25rem;
+    }
   }
 </style>

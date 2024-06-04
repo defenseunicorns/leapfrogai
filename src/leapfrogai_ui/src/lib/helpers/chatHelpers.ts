@@ -97,69 +97,6 @@ type EditMessageArgs = {
     requestOptions?: { data?: Record<string, string> }
   ) => Promise<void>;
 };
-type EditAssistantMessageArgs = EditMessageArgs & { selectedAssistantId: string };
-
-export const handleAssistantMessageEdit = async ({
-  selectedAssistantId,
-  thread_id,
-  message,
-  messages,
-  setMessages,
-  append
-}: EditAssistantMessageArgs) => {
-  const messageIndex = messages.findIndex((m) => m.id === message.id);
-  // Ensure the message after the user's message exists and is a response from the AI
-  const numToSplice =
-    messages[messageIndex + 1] && messages[messageIndex + 1].role !== 'user' ? 2 : 1;
-
-  const deleteRes1 = await fetch('/api/messages/delete', {
-    method: 'DELETE',
-    body: JSON.stringify({ thread_id, message_id: message.id }),
-    headers: {
-      'Content-Type': 'application/json'
-    }
-  });
-  if (!deleteRes1.ok) {
-    toastStore.addToast({
-      kind: 'error',
-      title: 'Error Editing Message',
-      subtitle: 'Editing cancelled'
-    });
-    return;
-  }
-
-  if (numToSplice === 2) {
-    const deleteRes2 = await fetch('/api/messages/delete', {
-      method: 'DELETE',
-      body: JSON.stringify({
-        thread_id,
-        message_id: messages[messageIndex + 1].id
-      }),
-      headers: {
-        'Content-Type': 'application/json'
-      }
-    });
-    if (!deleteRes2.ok) {
-      toastStore.addToast({
-        kind: 'error',
-        title: 'Error Editing Message',
-        subtitle: 'Editing Cancelled'
-      });
-      return;
-    }
-  }
-  setMessages(messages.toSpliced(messageIndex, numToSplice));
-  // send to /api/chat/assistants
-  const cMessage: CreateMessage = { content: getMessageText(message), role: 'user' };
-
-  await append(cMessage, {
-    data: {
-      message: getMessageText(message),
-      assistantId: selectedAssistantId,
-      threadId: thread_id
-    }
-  });
-};
 
 export const handleChatMessageEdit = async ({
   savedMessages,
@@ -188,25 +125,37 @@ export const handleChatMessageEdit = async ({
     setMessages(messages.toSpliced(messageIndex, numToSplice)); // remove original message and response
     await tick();
 
-    // send to /api/chat
+    // send to /api/chat or /api/chat/assistants
     const cMessage: CreateMessage = {
       content: getMessageText(message),
       role: 'user',
       createdAt: new Date()
     };
-    await append(cMessage);
-    // Save with API
-    const newMessage = await saveMessage({
-      thread_id,
-      content: getMessageText(message),
-      role: 'user'
-    });
 
-    await threadsStore.addMessageToStore(newMessage);
+    if (isAssistantMessage(message)) {
+      cMessage.assistant_id = message.assistant_id;
+      await append(cMessage, {
+        data: {
+          message: getMessageText(message),
+          assistantId: message.assistant_id!,
+          threadId: thread_id
+        }
+      });
+    } else {
+      await append(cMessage);
+      // Save with API
+      const newMessage = await saveMessage({
+        thread_id,
+        content: getMessageText(message),
+        role: 'user'
+      });
+
+      await threadsStore.addMessageToStore(newMessage);
+    }
   }
 };
 
-export const isAssistantMessage = (message: AIMessage | OpenAIMessage) =>
+export const isAssistantMessage = (message: Partial<AIMessage> | Partial<OpenAIMessage>) =>
   message.assistant_id && message.assistant_id !== NO_SELECTED_ASSISTANT_ID;
 
 type HandleRegenerateArgs = {
@@ -283,7 +232,7 @@ type HandleChatRegenerateArgs = {
   thread_id: string;
   message: AIMessage | OpenAIMessage;
   messages: AIMessage[] | OpenAIMessage[];
-  setMessages: (messages: AIMessage[]) => void;
+  setMessages: (messages: AIMessage[] | OpenAIMessage[]) => void;
   reload: (
     chatRequestOptions?: ChatRequestOptions | undefined
   ) => Promise<string | null | undefined>;

@@ -65,25 +65,29 @@ export const deleteActiveThread = async (page: Page) => {
   const urlParts = new URL(page.url()).pathname.split('/');
   const threadId = urlParts[urlParts.length - 1];
 
-  if (threadId) {
+  if (threadId && threadId !== 'chat') {
     await deleteThread(threadId);
   }
 };
 export const deleteThread = async (id: string) => {
   await openai.beta.threads.del(id);
+  const listUsers = await supabase.auth.admin.listUsers();
+  let userId = '';
+  for (const user of listUsers.data.users) {
+    if (user.email === process.env.USERNAME) {
+      userId = user.id;
+    }
+  }
   const { data: profile } = await supabase
     .from('profiles')
     .select(`*`)
-    .eq('email', process.env.USERNAME)
+    .eq('id', userId)
     .returns<Profile[]>()
     .single();
 
   const updatedThreadIds = profile?.thread_ids.filter((existingId) => existingId !== id);
 
-  await supabase
-    .from('profiles')
-    .update({ thread_ids: updatedThreadIds })
-    .eq('email', process.env.USERNAME);
+  await supabase.from('profiles').update({ thread_ids: updatedThreadIds }).eq('id', userId);
 };
 
 export const waitForResponseToComplete = async (page: Page) => {

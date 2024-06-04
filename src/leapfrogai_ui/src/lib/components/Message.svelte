@@ -11,7 +11,6 @@
   import type { Message as OpenAIMessage } from 'openai/resources/beta/threads/messages';
   import {
     getAssistantImage,
-    handleAssistantMessageEdit,
     handleAssistantRegenerate,
     handleChatMessageEdit,
     handleChatRegenerate,
@@ -45,8 +44,6 @@
   let messageIsHovered = false;
   let editMode = false;
   let value = writable(getMessageText(message));
-  let savedMessages =
-    $threadsStore.threads.find((t) => t.id === $page.params.thread_id)?.messages || [];
 
   const onSubmit = async (e: SubmitEvent | KeyboardEvent | MouseEvent) => {
     e.preventDefault();
@@ -54,25 +51,18 @@
 
     if (isAssistantMessage(message)) {
       threadsStore.setSelectedAssistantId(message.assistant_id);
-
-      await handleAssistantMessageEdit({
-        selectedAssistantId: $threadsStore.selectedAssistantId,
-        message: { ...message, content: convertTextToMessageContentArr($value) },
-        messages,
-        thread_id: $page.params.thread_id,
-        setMessages,
-        append
-      });
-    } else {
-      await handleChatMessageEdit({
-        savedMessages,
-        message: { ...message, content: convertTextToMessageContentArr($value) },
-        thread_id: $page.params.thread_id,
-        messages,
-        setMessages,
-        append
-      });
     }
+    const savedMessages =
+      $threadsStore.threads.find((t) => t.id === $page.params.thread_id)?.messages || [];
+
+    await handleChatMessageEdit({
+      savedMessages,
+      message: { ...message, content: convertTextToMessageContentArr($value) },
+      thread_id: $page.params.thread_id,
+      messages,
+      setMessages,
+      append
+    });
   };
 
   const handleCancel = () => {
@@ -145,7 +135,10 @@
         {#if message.role === 'user' && !editMode}
           <button
             data-testid="edit prompt btn"
-            class="highlight-icon remove-btn-style"
+            class="remove-btn-style"
+            class:highlight-icon={!$threadsStore.sendingBlocked}
+            class:disabled={$threadsStore.sendingBlocked}
+            disabled={$threadsStore.sendingBlocked}
             class:hide={!messageIsHovered}
             on:click={() => (editMode = true)}
             aria-label="edit prompt"
@@ -165,8 +158,11 @@
         {#if message.role !== 'user' && isLastMessage && !isLoading}
           <button
             data-testid="regenerate btn"
-            class="highlight-icon remove-btn-style"
+            class="remove-btn-style"
+            class:highlight-icon={!$threadsStore.sendingBlocked}
+            class:disabled={$threadsStore.sendingBlocked}
             class:hide={!messageIsHovered}
+            disabled={$threadsStore.sendingBlocked}
             on:click={() => {
               if (isAssistantMessage(message)) {
                 threadsStore.setSelectedAssistantId(message.assistant_id);
@@ -177,6 +173,9 @@
                   append
                 });
               } else {
+                const savedMessages =
+                  $threadsStore.threads.find((t) => t.id === $page.params.thread_id)?.messages ||
+                  [];
                 handleChatRegenerate({
                   savedMessages,
                   message,
@@ -257,5 +256,10 @@
     outline: 1px solid themes.$layer-02;
     border-bottom: 0;
     margin-top: 7px; // prevents edit box from jumping up on editMode
+  }
+
+  .disabled {
+    opacity: 50%;
+    cursor: not-allowed;
   }
 </style>

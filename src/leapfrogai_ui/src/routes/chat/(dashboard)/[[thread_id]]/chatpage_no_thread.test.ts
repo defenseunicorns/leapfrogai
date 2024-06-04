@@ -9,7 +9,7 @@ import {
   mockNewMessage,
   mockNewThreadError
 } from '$lib/mocks/chat-mocks';
-import { load } from './+page.server';
+import { load } from '../../+layout.server';
 import { mockOpenAI } from '../../../../../vitest-setup';
 import {
   sessionMock,

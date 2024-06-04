@@ -21,7 +21,7 @@ const getThreadWithMessages = async (thread_id: string): Promise<LFThread | null
   }
 };
 
-export const load = async ({ locals: { supabase, safeGetSession } }) => {
+export const load = async ({ fetch, locals: { supabase, safeGetSession } }) => {
   const { session } = await safeGetSession();
 
   if (!session) {
