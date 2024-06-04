@@ -8,7 +8,7 @@
   export let messages: AIMessage[] = [];
   export let setMessages: (messages: AIMessage[]) => void;
   export let isLastMessage: boolean;
-  export let isLoading: boolean;
+
   export let append: (
     message: AIMessage | CreateMessage,
     requestOptions?:
@@ -26,5 +26,5 @@
 
 <div>
   <Toasts />
-  <Message {message} {messages} {setMessages} {isLastMessage} {isLoading} {append} {reload} />
+  <Message {message} {messages} {setMessages} {isLastMessage} {append} {reload} />
 </div>

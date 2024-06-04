@@ -105,7 +105,8 @@
       // ensure we have millisecond precision.
       threadsStore.setSendingBlocked(true);
       try {
-        await delay(1000);
+        if (process.env.NODE_ENV !== 'test') await delay(1000);
+
         if (!assistantMode && activeThread?.id) {
           // Save with API to db
           const newMessage = await saveMessage({
@@ -116,7 +117,7 @@
 
           await threadsStore.addMessageToStore(newMessage);
         }
-        await delay(1000); // ensure next user message has a different timestamp
+        if (process.env.NODE_ENV !== 'test') await delay(1000); // ensure next user message has a different timestamp
       } catch {
         toastStore.addToast({
           kind: 'error',
@@ -188,7 +189,6 @@
         });
         // store user input
         await threadsStore.addMessageToStore(newMessage);
-
         submitChatMessage(e); // submit to AI (/api/chat)
       } catch {
         toastStore.addToast({

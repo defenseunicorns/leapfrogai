@@ -2,7 +2,7 @@ import { afterAll, beforeAll, vi } from 'vitest';
 import { render, screen } from '@testing-library/svelte';
 import userEvent from '@testing-library/user-event';
 import stores from '$app/stores';
-import { fakeThreads, getFakeMessage, getFakeProfile } from '$testUtils/fakeData';
+import { fakeThreads, getFakeProfile } from '$testUtils/fakeData';
 import {
   mockChatCompletion,
   mockGetAssistants,
@@ -87,10 +87,9 @@ describe('when there is NO active thread selected', () => {
   });
 
   it('displays an error message when there is an error saving the new thread', async () => {
-    const fakeMessage = getFakeMessage({ content: question });
     mockChatCompletion();
     mockNewThreadError();
-    mockNewMessage(fakeMessage);
+    mockNewMessage();
 
     const { getByLabelText } = render(ChatPageWithToast, { data });
 

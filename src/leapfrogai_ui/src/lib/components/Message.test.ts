@@ -2,11 +2,13 @@ import { render, screen } from '@testing-library/svelte';
 import { afterAll, afterEach, type MockInstance, vi } from 'vitest';
 import { Message } from '$components/index';
 import userEvent from '@testing-library/user-event';
-import { getFakeMessage } from '$testUtils/fakeData';
+import { fakeThreads, getFakeMessage } from '$testUtils/fakeData';
 import MessageWithToast from '$components/MessageWithToast.test.svelte';
 import { convertMessageToAiMessage, getMessageText } from '$helpers/threads';
 import { type Message as AIMessage } from 'ai/svelte';
 import * as chatHelpers from '$helpers/chatHelpers';
+import { threadsStore } from '$stores';
+import { NO_SELECTED_ASSISTANT_ID } from '$constants';
 
 const fakeAppend = vi.fn();
 const fakeReload = vi.fn();
@@ -132,9 +134,13 @@ describe('Message component', () => {
     });
 
     it('disables edit submit button when message is loading', async () => {
+      threadsStore.set({
+        threads: fakeThreads,
+        selectedAssistantId: NO_SELECTED_ASSISTANT_ID,
+        sendingBlocked: true
+      });
       render(MessageWithToast, {
-        ...getDefaultMessageProps(),
-        isLoading: true
+        ...getDefaultMessageProps()
       });
 
       const editPromptBtn = screen.getByLabelText('edit prompt');
@@ -144,6 +150,11 @@ describe('Message component', () => {
       expect(submitBtn).toHaveProperty('disabled', true);
     });
     it('has copy and regenerate buttons for the last AI response', () => {
+      threadsStore.set({
+        threads: fakeThreads,
+        selectedAssistantId: NO_SELECTED_ASSISTANT_ID,
+        sendingBlocked: false
+      });
       render(MessageWithToast, {
         ...getDefaultMessageProps(),
         message: convertMessageToAiMessage(getFakeMessage({ role: 'assistant' })),
@@ -179,31 +190,43 @@ describe('Message component', () => {
 
       expect(screen.queryByLabelText('copy message')).not.toBeInTheDocument();
     });
-    it('removes the copy and regenerate buttons when a response is loading', () => {
+    it('removes the regenerate buttons when a response is loading', () => {
+      threadsStore.set({
+        threads: fakeThreads,
+        selectedAssistantId: NO_SELECTED_ASSISTANT_ID,
+        sendingBlocked: true
+      });
       render(MessageWithToast, {
         ...getDefaultMessageProps(),
         message: convertMessageToAiMessage(getFakeMessage({ role: 'assistant' })),
-        isLastMessage: true,
-        isLoading: true
+        isLastMessage: true
       });
-      expect(screen.queryByLabelText('copy message')).not.toBeInTheDocument();
+      expect(screen.queryByLabelText('copy message')).toBeInTheDocument();
       expect(screen.queryByLabelText('regenerate message')).not.toBeInTheDocument();
     });
-    it('leaves the copy button for messages when it is loading if not the latest message', () => {
+    it('leaves the copy button for messages when it is loading', () => {
+      threadsStore.set({
+        threads: fakeThreads,
+        selectedAssistantId: NO_SELECTED_ASSISTANT_ID,
+        sendingBlocked: true
+      });
       render(MessageWithToast, {
         ...getDefaultMessageProps(),
         message: convertMessageToAiMessage(getFakeMessage({ role: 'assistant' })),
-        isLastMessage: false,
-        isLoading: true
+        isLastMessage: false
       });
       expect(screen.getByLabelText('copy message')).toBeInTheDocument();
     });
-    it('leaves the edit button for messages when it is loading if not the latest message', () => {
+    it('leaves the edit button for messages when it is loading', () => {
+      threadsStore.set({
+        threads: fakeThreads,
+        selectedAssistantId: NO_SELECTED_ASSISTANT_ID,
+        sendingBlocked: true
+      });
       render(MessageWithToast, {
         ...getDefaultMessageProps(),
         message: convertMessageToAiMessage(getFakeMessage({ role: 'user' })),
-        isLastMessage: false,
-        isLoading: true
+        isLastMessage: false
       });
       screen.getByLabelText('edit prompt');
     });

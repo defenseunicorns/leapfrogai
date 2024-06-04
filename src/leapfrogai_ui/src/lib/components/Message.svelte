@@ -136,8 +136,7 @@
             data-testid="edit prompt btn"
             class="remove-btn-style"
             class:highlight-icon={!$threadsStore.sendingBlocked}
-            class:hide={$threadsStore.sendingBlocked || !messageIsHovered}
-            disabled={$threadsStore.sendingBlocked}
+            class:hide={!messageIsHovered}
             on:click={() => (editMode = true)}
             aria-label="edit prompt"
             tabindex="0"><Edit /></button
@@ -158,9 +157,7 @@
             data-testid="regenerate btn"
             class="remove-btn-style"
             class:highlight-icon={!$threadsStore.sendingBlocked}
-            class:disabled={messageIsHovered && $threadsStore.sendingBlocked}
             class:hide={!messageIsHovered}
-            disabled={$threadsStore.sendingBlocked}
             on:click={() => {
               if (isAssistantMessage(message)) {
                 threadsStore.setSelectedAssistantId(message.assistant_id);
