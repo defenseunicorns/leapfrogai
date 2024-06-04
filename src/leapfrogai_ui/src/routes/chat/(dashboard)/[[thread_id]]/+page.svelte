@@ -51,7 +51,7 @@
     $threadsStore.selectedAssistantId !== NO_SELECTED_ASSISTANT_ID &&
     $threadsStore.selectedAssistantId !== 'manage-assistants';
 
-  $: messageInProgress = $isLoading || $status === 'in_progress';
+  $: if ($isLoading || $status === 'in_progress') threadsStore.setSendingBlocked(true);
 
   // new streamed assistant message received (has no assistant_id)
   $: if (
@@ -77,6 +77,7 @@
     setAssistantMessages(assistantMessagesCopy);
     // '/api/chat/assistants' saves the messages with the API to the db for us, so we re-fetch and update the store here
     await updateMessagesFromAPI();
+    threadsStore.setSendingBlocked(false);
   };
 
   const updateMessagesFromAPI = async () => {
@@ -201,7 +202,7 @@
 
   const onSubmit = async (e: SubmitEvent | KeyboardEvent) => {
     e.preventDefault();
-    if (messageInProgress && activeThread?.id) {
+    if ($threadsStore.sendingBlocked && activeThread?.id) {
       // message still sending
       await stopThenSave({
         activeThreadId: activeThread.id,
@@ -239,7 +240,7 @@
   });
 
   beforeNavigate(async () => {
-    if (messageInProgress && activeThread?.id) {
+    if ($threadsStore.sendingBlocked && activeThread?.id) {
       await stopThenSave({
         activeThreadId: activeThread.id,
         messages: $chatMessages,
@@ -268,7 +269,6 @@
         messages={isAssistantMessage(message) ? $assistantMessages : $chatMessages}
         setMessages={isAssistantMessage(message) ? setAssistantMessages : setChatMessages}
         isLastMessage={index === sortedMessages.length - 1}
-        isLoading={messageInProgress || false}
         append={isAssistantMessage(message) ? assistantAppend : chatAppend}
         {reload}
       />
@@ -280,7 +280,7 @@
     <form on:submit={onSubmit}>
       <Dropdown
         data-testid="assistant-dropdown"
-        disabled={messageInProgress}
+        disabled={$threadsStore.sendingBlocked}
         hideLabel
         direction="top"
         selectedId={$threadsStore.selectedAssistantId}

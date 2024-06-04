@@ -23,7 +23,6 @@
   export let messages: AIMessage[] = [];
   export let setMessages: (messages: AIMessage[]) => void;
   export let isLastMessage: boolean;
-  export let isLoading: boolean;
   export let append: (
     message: AIMessage | CreateMessage,
     requestOptions?:
@@ -121,7 +120,7 @@
             <Button size="small" kind="secondary" on:click={handleCancel}>Cancel</Button>
             <Button
               size="small"
-              disabled={isLoading}
+              disabled={$threadsStore.sendingBlocked}
               on:click={onSubmit}
               aria-label="submit edited message">Submit</Button
             >
@@ -137,15 +136,14 @@
             data-testid="edit prompt btn"
             class="remove-btn-style"
             class:highlight-icon={!$threadsStore.sendingBlocked}
-            class:disabled={$threadsStore.sendingBlocked}
+            class:hide={$threadsStore.sendingBlocked || !messageIsHovered}
             disabled={$threadsStore.sendingBlocked}
-            class:hide={!messageIsHovered}
             on:click={() => (editMode = true)}
             aria-label="edit prompt"
             tabindex="0"><Edit /></button
           >
         {/if}
-        {#if message.role !== 'user' && (isLastMessage ? !isLoading : true)}
+        {#if message.role !== 'user'}
           <button
             data-testid="copy btn"
             class="highlight-icon remove-btn-style"
@@ -155,12 +153,12 @@
             aria-label="copy message"><Copy /></button
           >
         {/if}
-        {#if message.role !== 'user' && isLastMessage && !isLoading}
+        {#if message.role !== 'user' && isLastMessage && !$threadsStore.sendingBlocked}
           <button
             data-testid="regenerate btn"
             class="remove-btn-style"
             class:highlight-icon={!$threadsStore.sendingBlocked}
-            class:disabled={$threadsStore.sendingBlocked}
+            class:disabled={messageIsHovered && $threadsStore.sendingBlocked}
             class:hide={!messageIsHovered}
             disabled={$threadsStore.sendingBlocked}
             on:click={() => {
@@ -258,8 +256,4 @@
     margin-top: 7px; // prevents edit box from jumping up on editMode
   }
 
-  .disabled {
-    opacity: 50%;
-    cursor: not-allowed;
-  }
 </style>
