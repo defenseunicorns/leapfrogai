@@ -1,6 +1,5 @@
 import { error, fail, redirect } from '@sveltejs/kit';
 import { superValidate } from 'sveltekit-superforms';
-import type { PageServerLoad } from './$types';
 import { yup } from 'sveltekit-superforms/adapters';
 import { editAssistantInputSchema } from '$lib/schemas/assistants';
 import { env } from '$env/dynamic/private';

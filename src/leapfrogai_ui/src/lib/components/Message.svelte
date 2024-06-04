@@ -255,5 +255,4 @@
     border-bottom: 0;
     margin-top: 7px; // prevents edit box from jumping up on editMode
   }
-
 </style>
