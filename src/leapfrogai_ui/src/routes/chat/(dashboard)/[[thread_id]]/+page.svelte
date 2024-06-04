@@ -284,11 +284,15 @@
         hideLabel
         direction="top"
         selectedId={$threadsStore.selectedAssistantId}
-        on:select={(e) => {
-          if ($threadsStore.selectedAssistantId === e.detail.selectedId)
-            threadsStore.setSelectedAssistantId(NO_SELECTED_ASSISTANT_ID); //deselect
-          else {
-            threadsStore.setSelectedAssistantId(e.detail.selectedId);
+        on:select={async (e) => {
+          if (e.detail.selectedId === 'manage-assistants') {
+            await goto('/chat/assistants-management');
+          } else {
+            if ($threadsStore.selectedAssistantId === e.detail.selectedId)
+              threadsStore.setSelectedAssistantId(NO_SELECTED_ASSISTANT_ID); //deselect
+            else {
+              threadsStore.setSelectedAssistantId(e.detail.selectedId);
+            }
           }
         }}
         items={assistantsList}
@@ -300,8 +304,6 @@
             id="manage assistants"
             data-testid="assistants-management-btn"
             class="manage-assistants-btn remove-btn-style"
-            style="width: 100%"
-            on:click={() => goto('/chat/assistants-management')}
           >
             <UserProfile />
             {item.text}
