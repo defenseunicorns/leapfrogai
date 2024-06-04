@@ -9,7 +9,7 @@ import { openai } from '$lib/server/constants';
 import type { EditAssistantInput, LFAssistant } from '$lib/types/assistants';
 import { getAssistantAvatarUrl } from '$helpers/assistants';
 
-export const load: PageServerLoad = async ({ params, locals: { safeGetSession } }) => {
+export const load = async ({ params, locals: { safeGetSession } }) => {
   const { session } = await safeGetSession();
 
   if (!session) {
