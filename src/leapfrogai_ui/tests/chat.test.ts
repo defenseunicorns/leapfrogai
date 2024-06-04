@@ -121,6 +121,7 @@ test('it can switch between normal chat and chat with an assistant', async ({ pa
   await expect(messages).toHaveCount(2);
 
   // Select assistant
+  await expect(page.getByTestId('assistant-dropdown')).not.toBeDisabled();
   const assistantDropdown = page.getByTestId('assistant-dropdown');
   await assistantDropdown.click();
   await page.getByText(assistant!.name!).click();
@@ -136,6 +137,7 @@ test('it can switch between normal chat and chat with an assistant', async ({ pa
   await expect(page.getByTestId('assistant-icon')).toHaveCount(1);
 
   // Test selected assistant has a checkmark and clicking it again de-selects the assistant
+  await expect(page.getByTestId('assistant-dropdown')).not.toBeDisabled();
   await assistantDropdown.click();
   await page.getByTestId('checked').click();
 
@@ -152,16 +154,4 @@ test('it can switch between normal chat and chat with an assistant', async ({ pa
   // Cleanup
   await deleteAssistantWithApi(assistant.id);
   await deleteActiveThread(page);
-});
-
-test('it can navigate to the assistants management page using the button in the assistant dropdown', async ({
-  page
-}) => {
-  await loadChatPage(page);
-
-  const assistantDropdown = page.getByTestId('assistant-dropdown');
-  await assistantDropdown.click();
-  await page.getByText('Manage Assistants').click();
-
-  await expect(page.url()).toContain('/chat/assistants-management');
 });

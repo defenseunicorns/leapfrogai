@@ -5,6 +5,7 @@ import ChatPage from './+page.svelte';
 import ChatPageWithToast from './ChatPageWithToast.test.svelte';
 import userEvent from '@testing-library/user-event';
 import stores from '$app/stores';
+import * as navigation from '$app/navigation';
 import { afterAll, beforeAll, vi } from 'vitest';
 
 import {
@@ -229,24 +230,24 @@ describe('when there is an active thread selected', () => {
     await screen.findAllByText('Response Canceled');
   });
 
-  // it('has a button to go to the assistants management page in the assistant dropdown', async () => {
-  //   const goToSpy = vi.spyOn(navigation, 'goto');
-  //
-  //   const { getByRole, getByTestId } = render(ChatPage, { data });
-  //
-  //   const assistantSelect = getByRole('button', {
-  //     name: /select assistant open menu/i
-  //   });
-  //   await userEvent.click(assistantSelect);
-  //   await userEvent.click(
-  //       getByRole('button', {
-  //         name: /manage assistants/i
-  //       })
-  //   );
-  //
-  //   expect(goToSpy).toHaveBeenCalledTimes(1);
-  //   expect(goToSpy).toHaveBeenCalledWith(`/chat/assistants-management`);
-  // });
+  it('has a button to go to the assistants management page in the assistant dropdown', async () => {
+    const goToSpy = vi.spyOn(navigation, 'goto');
+
+    const { getByRole } = render(ChatPage, { data });
+
+    const assistantSelect = getByRole('button', {
+      name: /select assistant open menu/i
+    });
+    await userEvent.click(assistantSelect);
+    await userEvent.click(
+      getByRole('button', {
+        name: /manage assistants/i
+      })
+    );
+
+    expect(goToSpy).toHaveBeenCalledTimes(1);
+    expect(goToSpy).toHaveBeenCalledWith(`/chat/assistants-management`);
+  });
 
   // Note - Testing message editing requires an excessive amount of mocking and was deemed more practical and
   // maintainable to test with a Playwright E2E test

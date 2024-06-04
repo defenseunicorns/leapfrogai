@@ -280,7 +280,7 @@
     <form on:submit={onSubmit}>
       <Dropdown
         data-testid="assistant-dropdown"
-        disabled={$threadsStore.sendingBlocked}
+        disabled={$isLoading || $status === 'in_progress'}
         hideLabel
         direction="top"
         selectedId={$threadsStore.selectedAssistantId}
