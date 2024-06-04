@@ -45,17 +45,16 @@ test.skip('it saves in progress responses when interrupted by a page reload', as
 test.skip('it saves in progress responses when interrupted by changing threads', async ({
   page
 }) => {
-  const messageForLongResponse = 'write me a long poem';
   await loadChatPage(page);
   const messages = page.getByTestId('message');
   await expect(messages).toHaveCount(0);
-  await sendMessage(page, messageForLongResponse);
 
+  await sendMessage(page, newMessage1);
   await expect(messages).toHaveCount(2);
 
   await page.getByText('New Chat').click();
   await expect(messages).toHaveCount(0);
-  await page.getByText(messageForLongResponse).click(); // switch back to original thread
+  await page.getByText(newMessage1).click(); // switch back to original thread
   await expect(messages).toHaveCount(2);
 
   await deleteActiveThread(page);
