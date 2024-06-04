@@ -1,7 +1,9 @@
 import { faker } from '@faker-js/faker';
 import { expect, test } from './fixtures';
 import {
+  createAssistantWithApi,
   deleteActiveThread,
+  deleteAssistantWithApi,
   getSimpleMathQuestion,
   loadChatPage,
   sendMessage,
@@ -9,6 +11,7 @@ import {
 } from './helpers';
 
 const newMessage1 = getSimpleMathQuestion();
+const newMessage2 = getSimpleMathQuestion();
 
 test('it can start a new thread and receive a response', async ({ page }) => {
   const messages = page.getByTestId('message');
@@ -101,4 +104,51 @@ test('it cancels responses when clicking enter instead of pause button and does 
 
     await deleteActiveThread(page);
   }
+});
+
+test('it can switch between normal chat and chat with an assistant', async ({ page }) => {
+  const assistant = await createAssistantWithApi();
+
+  const messages = page.getByTestId('message');
+  await loadChatPage(page);
+  await expect(messages).toHaveCount(0);
+
+  // Send regular chat message
+  await sendMessage(page, newMessage1);
+  await waitForResponseToComplete(page);
+
+  await expect(messages).toHaveCount(2);
+
+  // Select assistant
+  const assistantDropdown = page.getByTestId('assistant-dropdown');
+  await assistantDropdown.click();
+  await page.getByText(assistant!.name!).click();
+
+  // Send assistant chat message
+  await sendMessage(page, newMessage2);
+  await waitForResponseToComplete(page);
+
+  await expect(messages).toHaveCount(4);
+
+  await expect(page.getByTestId('user-icon')).toHaveCount(2);
+  await expect(page.getByTestId('leapfrog-icon')).toHaveCount(1);
+  await expect(page.getByTestId('assistant-icon')).toHaveCount(1);
+
+  // Select no assistant
+  await assistantDropdown.click();
+  await page.getByText('Select Assistant').click();
+
+  // Send regular chat message
+  await sendMessage(page, newMessage2);
+  await waitForResponseToComplete(page);
+
+  await expect(messages).toHaveCount(6);
+
+  await expect(page.getByTestId('user-icon')).toHaveCount(3);
+  await expect(page.getByTestId('leapfrog-icon')).toHaveCount(2);
+  await expect(page.getByTestId('assistant-icon')).toHaveCount(1);
+
+  // Cleanup
+  await deleteAssistantWithApi(assistant.id);
+  await deleteActiveThread(page);
 });

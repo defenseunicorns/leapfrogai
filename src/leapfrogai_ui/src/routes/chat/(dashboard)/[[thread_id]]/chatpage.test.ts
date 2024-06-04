@@ -4,13 +4,13 @@ import {
   fakeThreads,
   getFakeAssistant,
   getFakeOpenAIMessage,
-  getFakeProfile,
-  getFakeThread
+  getFakeProfile
 } from '$testUtils/fakeData';
 import ChatPage from './+page.svelte';
 import ChatPageWithToast from './ChatPageWithToast.test.svelte';
 import userEvent from '@testing-library/user-event';
 import stores from '$app/stores';
+import * as navigation from '$app/navigation';
 import { afterAll, beforeAll, vi } from 'vitest';
 
 import {
@@ -24,14 +24,13 @@ import {
   mockNewMessageError
 } from '$lib/mocks/chat-mocks';
 import { getMessageText } from '$helpers/threads';
-import { load } from './+page.server';
+import { load } from '../../+layout.server';
 import {
   sessionMock,
   supabaseFromMockWrapper,
   supabaseSelectSingleByIdMock
 } from '$lib/mocks/supabase-mocks';
 import { mockOpenAI } from '../../../../../vitest-setup';
-import type { PageData } from './$types';
 import {
   ERROR_GETTING_AI_RESPONSE_TEXT,
   ERROR_GETTING_ASSISTANT_MSG_TEXT,
@@ -39,13 +38,23 @@ import {
 } from '$constants/errorMessages';
 import { delay } from 'msw';
 import { faker } from '@faker-js/faker';
+import type { LFThread } from '$lib/types/threads';
+import type { Profile } from '$lib/types/profile';
+import type { Session } from '@supabase/supabase-js';
+import type { LFAssistant } from '$lib/types/assistants';
 
 //Calls to vi.mock are hoisted to the top of the file, so you don't have access to variables declared in the global file scope unless they are defined with vi.hoisted before the call.
 const { getStores } = await vi.hoisted(() => import('$lib/mocks/svelte'));
 
-let data: PageData;
+type LayoutData = {
+  title: string;
+  session: Session;
+  profile: Profile;
+  threads: LFThread[];
+  assistants: LFAssistant[];
+} | null;
+let data: LayoutData;
 const question = 'What is AI?';
-const fakeThread = getFakeThread();
 
 const assistant1 = getFakeAssistant();
 const assistant2 = getFakeAssistant();
@@ -100,7 +109,6 @@ describe('when there is an active thread selected', () => {
     const fakeProfile = getFakeProfile({ thread_ids: fakeThreads.map((thread) => thread.id) });
 
     data = await load({
-      fetch: global.fetch,
       locals: {
         supabase: supabaseFromMockWrapper(supabaseSelectSingleByIdMock(fakeProfile)),
         safeGetSession: sessionMock
@@ -233,6 +241,7 @@ describe('when there is an active thread selected', () => {
     await screen.findAllByText('Response Canceled');
   });
 
+  // TODO - this test breaks the test below it (For finding assistant dropdown)
   // Note - this doesn't test receipt of the AI response, see note at below of file
   it('can send a message with an assistant', async () => {
     mockNewMessage();
@@ -246,7 +255,9 @@ describe('when there is an active thread selected', () => {
       })
     ]);
 
-    const { getByLabelText, getByRole, getByText } = render(ChatPage, { data });
+    const { getByLabelText, getByRole, getByText } = render(ChatPage, {
+      data
+    });
 
     const assistantSelect = getByRole('button', {
       name: /select assistant open menu/i
@@ -263,6 +274,24 @@ describe('when there is an active thread selected', () => {
     expect(screen.queryByText(ERROR_GETTING_ASSISTANT_MSG_TEXT.subtitle!)).not.toBeInTheDocument();
   });
 
+  it('has a button to go to the assistants management page in the assistant dropdown', async () => {
+    const goToSpy = vi.spyOn(navigation, 'goto');
+
+    const { getByRole, getByTestId } = render(ChatPage, { data });
+
+    const assistantSelect = getByRole('button', {
+      name: /select assistant open menu/i
+    });
+    await userEvent.click(assistantSelect);
+    await userEvent.click(
+      getByRole('button', {
+        name: /manage assistants/i
+      })
+    );
+
+    expect(goToSpy).toHaveBeenCalledTimes(1);
+    expect(goToSpy).toHaveBeenCalledWith(`/chat/assistants-management`);
+  });
   // Note - Testing message editing requires an excessive amount of mocking and was deemed more practical and
   // maintainable to test with a Playwright E2E test
 

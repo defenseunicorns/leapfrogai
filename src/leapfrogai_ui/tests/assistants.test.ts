@@ -1,5 +1,5 @@
 import { expect, test } from './fixtures';
-import { createAssistant, deleteAllAssistants, loadChatPage } from './helpers';
+import { createAssistant, deleteActiveThread, deleteAllAssistants, loadChatPage } from './helpers';
 import { getFakeAssistantInput } from '../testUtils/fakeData';
 import type { ActionResult } from '@sveltejs/kit';
 
@@ -264,4 +264,5 @@ test('it can delete assistants', async ({ page }) => {
   await page.getByRole('button', { name: 'Delete' }).click();
 
   await expect(page.getByText(`${assistantInput.name} Assistant deleted.`)).toBeVisible();
+  await deleteActiveThread(page);
 });

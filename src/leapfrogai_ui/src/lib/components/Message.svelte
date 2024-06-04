@@ -32,6 +32,8 @@
           data?: Record<string, string> | undefined;
         }
       | undefined
+    // This any type matches the typing of the append function from Vercel AI
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
   ) => Promise<any>;
   export let reload: (
     chatRequestOptions?: ChatRequestOptions | undefined
@@ -109,16 +111,16 @@
   <div class="message-and-avatar">
     {#if message.role === 'user'}
       <div class="icon">
-        <UserAvatar style="width: 24px; height: 24px;" />
+        <UserAvatar style="width: 24px; height: 24px;" data-testid="user-icon" />
       </div>
     {:else if assistantImage && assistantImage.startsWith('http')}
-      <img alt="Assistant" src={assistantImage} class="icon" />
+      <img alt="Assistant" src={assistantImage} class="icon" data-testid="assistant-icon" />
     {:else if assistantImage}
-      <div class="icon">
+      <div class="icon" data-testid="assistant-icon">
         <DynamicPictogram iconName={assistantImage} width="24px" height="24px" />
       </div>
     {:else}
-      <img alt="LeapfrogAI" src={frog} class="icon" />
+      <img alt="LeapfrogAI" src={frog} class="icon" data-testid="leapfrog-icon" />
     {/if}
 
     <div class="message-and-utils">

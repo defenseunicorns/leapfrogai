@@ -11,7 +11,6 @@
   import { getMessageText } from '$helpers/threads';
   import { getUnixSeconds } from '$helpers/dates.js';
   import { NO_SELECTED_ASSISTANT_ID } from '$constants';
-  import type { PageData } from './$types';
 
   import {
     delay,
@@ -28,7 +27,9 @@
     ERROR_SAVING_MSG_TEXT
   } from '$constants/errorMessages';
 
-  export let data: PageData;
+  // TODO - some of the e2es are leaving threads and not deleting them
+  // TODO - create and link an issue for this pagedata typing issue
+  export let data;
 
   // TODO - check mark for selected assistant
 
@@ -44,7 +45,7 @@
 
   $: activeThread = $threadsStore.threads.find((t) => t.id === $page.params.thread_id);
 
-  $: assistantsList = [...data.assistants].map((assistant) => ({
+  $: assistantsList = [...(data.assistants || [])].map((assistant) => ({
     id: assistant.id,
     text: assistant.name || 'unknown'
   }));
@@ -294,10 +295,16 @@
         let:item
       >
         {#if item.id === `manage-assistants`}
-          <div class="manage-assistants-btn" on:click={() => goto('/chat/assistants-management')}>
+          <button
+            id="manage assistants"
+            data-testid="assistants-management-btn"
+            class="manage-assistants-btn remove-btn-style"
+            style="width: 100%"
+            on:click={() => goto('/chat/assistants-management')}
+          >
             <UserProfile />
             {item.text}
-          </div>
+          </button>
         {:else}
           <div>
             {item.text}

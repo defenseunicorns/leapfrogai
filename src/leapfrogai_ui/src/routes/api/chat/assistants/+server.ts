@@ -44,8 +44,10 @@ export async function POST({ request }) {
         runResult.required_action?.type === 'submit_tool_outputs'
       ) {
         const tool_outputs = runResult.required_action.submit_tool_outputs.tool_calls.map(
+          // This code comes from the docs, not going to modify the typing to fix the 'any' type here
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any
           (toolCall: any) => {
-            const parameters = JSON.parse(toolCall.function.arguments);
+            // const parameters = JSON.parse(toolCall.function.arguments);
 
             switch (toolCall.function.name) {
               // configure your tool calls here

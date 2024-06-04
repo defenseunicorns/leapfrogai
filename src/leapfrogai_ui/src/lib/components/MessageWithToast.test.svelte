@@ -16,11 +16,12 @@
           data?: Record<string, string> | undefined;
         }
       | undefined
+    // This any type matches the typing of the append function from Vercel AI
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
   ) => Promise<any>;
   export let reload: (
     chatRequestOptions?: ChatRequestOptions | undefined
   ) => Promise<string | null | undefined>;
-
 </script>
 
 <div>

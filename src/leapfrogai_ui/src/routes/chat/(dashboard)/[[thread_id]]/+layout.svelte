@@ -12,7 +12,7 @@
 </script>
 
 <svelte:head>
-  <title>{threadLabel || $page.data.title}</title>
+  <title>{threadLabel || 'LeapfrogAI - Chat'}</title>
 </svelte:head>
 
 <svelte:window bind:innerWidth />

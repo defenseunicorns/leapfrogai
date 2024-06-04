@@ -8,7 +8,7 @@ import { afterAll, afterEach, beforeAll, vi } from 'vitest';
 import * as environment from '$app/environment';
 import * as navigation from '$app/navigation';
 import * as stores from '$app/stores';
-import { fakeThreads, getFakeProfile, getFakeSession } from '$testUtils/fakeData';
+import { getFakeProfile, getFakeSession } from '$testUtils/fakeData';
 import OpenAIMock from '$lib/mocks/openai';
 
 // Fixes error: node.scrollIntoView is not a function
@@ -111,7 +111,7 @@ export const restHandlers = [];
 export const server = setupServer(...restHandlers);
 
 // Start server before all tests
-beforeAll(() => server.listen({ onUnhandledRequest: 'warn' }));
+beforeAll(() => server.listen({ onUnhandledRequest: 'error' }));
 
 //  Close server after all tests
 afterAll(() => server.close());

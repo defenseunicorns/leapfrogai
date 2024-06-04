@@ -1,9 +1,10 @@
 import { expect, type Page } from '@playwright/test';
 import { faker } from '@faker-js/faker';
 import { createClient } from '@supabase/supabase-js';
-import type { AssistantInput } from '$lib/types/assistants';
+import type { AssistantInput, LFAssistant } from '$lib/types/assistants';
 import OpenAI from 'openai';
 import type { Profile } from '$lib/types/profile';
+import { getFakeAssistantInput } from '$testUtils/fakeData';
 
 const supabase = createClient(process.env.PUBLIC_SUPABASE_URL!, process.env.SERVICE_ROLE_KEY!);
 
@@ -115,4 +116,24 @@ export const uploadAvatar = async (page: Page, imageName = 'Doug') => {
     return window.getComputedStyle(node).backgroundImage;
   });
   expect(hasImage).toBeDefined();
+};
+
+export const createAssistantWithApi = async () => {
+  const fakeAssistantInput = getFakeAssistantInput();
+  const assistantInput = {
+    name: fakeAssistantInput.name,
+    description: fakeAssistantInput.description,
+    instructions: fakeAssistantInput.instructions,
+    temperature: fakeAssistantInput.temperature,
+    model: process.env.DEFAULT_MODEL!,
+    metadata: {
+      pictogram: 'Default'
+    }
+  };
+
+  return (await openai.beta.assistants.create(assistantInput)) as LFAssistant;
+};
+
+export const deleteAssistantWithApi = async (id: string) => {
+  await openai.beta.assistants.del(id);
 };

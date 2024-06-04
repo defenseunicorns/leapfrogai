@@ -4,7 +4,6 @@ import type { LFMessage } from '$lib/types/messages';
 import type { LFAssistant } from '$lib/types/assistants';
 import type { FileObject } from 'openai/resources/files';
 import { merge } from 'lodash';
-import { AssistantStream } from 'openai/lib/AssistantStream';
 
 class OpenAI {
   private apiKey: string;
@@ -114,7 +113,7 @@ class OpenAI {
       }),
       update: vi.fn().mockImplementation((id, body) => {
         if (this.errors.updateThread) this.throwError('updateThread');
-        let threadToUpdateIndex = this.threads.findIndex((thread) => thread.id === id);
+        const threadToUpdateIndex = this.threads.findIndex((thread) => thread.id === id);
         this.threads[threadToUpdateIndex] = merge(this.threads[threadToUpdateIndex], body);
 
         return Promise.resolve(this.threads[threadToUpdateIndex]);

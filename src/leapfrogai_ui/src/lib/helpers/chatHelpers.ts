@@ -331,7 +331,7 @@ export const resetMessages = ({
 
 // Ensure all timestamps are in unix milliseconds whether they were returned under the createdAt or created_at keys,
 // and whether they are strings, numbers, or Date objects
-const normalizeTimestamp = (message: AIMessage | OpenAIMessage): number => {
+export const normalizeTimestamp = (message: AIMessage | OpenAIMessage | LFMessage): number => {
   const dateValue = message.createdAt || message.created_at;
 
   if (dateValue instanceof Date) {
@@ -358,18 +358,4 @@ export const sortMessages = (
 
 export const delay = (ms: number): Promise<void> => {
   return new Promise((resolve) => setTimeout(resolve, ms));
-};
-
-export const normalizeTimestamp2 = (createdAt: Date | string | number): number => {
-
-  if (createdAt instanceof Date) {
-    return createdAt.getTime();
-  } else if (typeof createdAt === 'string') {
-    return new Date(createdAt).getTime();
-  } else if (typeof createdAt === 'number') {
-    // Assume the timestamp is in milliseconds if it's a large number, otherwise seconds
-    return createdAt > 10000000000 ? createdAt : createdAt * 1000;
-  }
-
-  return 0; // Default to 0 if no valid date is found
 };
