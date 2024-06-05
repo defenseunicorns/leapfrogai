@@ -26,7 +26,7 @@
     invalidateAll: false,
     validators: yup(isEditMode ? editAssistantInputSchema : assistantInputSchema),
     onResult({ result }) {
-      invalidate('/api/assistants');
+      invalidate('lf:assistants');
       if (result.type === 'redirect') {
         toastStore.addToast({
           kind: 'success',

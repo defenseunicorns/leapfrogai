@@ -8,14 +8,22 @@ import { openai } from '$lib/server/constants';
 import type { EditAssistantInput, LFAssistant } from '$lib/types/assistants';
 import { getAssistantAvatarUrl } from '$helpers/assistants';
 
-export const load = async ({ params, locals: { safeGetSession } }) => {
+export const load = async ({ fetch, depends, params, locals: { safeGetSession } }) => {
+  depends('lf:files');
+
   const { session } = await safeGetSession();
 
   if (!session) {
     throw redirect(303, '/');
   }
 
-  const assistant = (await openai.beta.assistants.retrieve(params.assistantId)) as LFAssistant;
+  const promises: [Promise<LFAssistant>, Promise<Response>] = [
+    openai.beta.assistants.retrieve(params.assistantId) as Promise<LFAssistant>,
+    fetch('/api/files')
+  ];
+
+  const [assistant, filesRes] = await Promise.all(promises);
+  const files = await filesRes.json();
 
   if (!assistant) {
     error(404, { message: 'Assistant not found.' });
@@ -35,7 +43,7 @@ export const load = async ({ params, locals: { safeGetSession } }) => {
 
   const form = await superValidate(assistantFormData, yup(editAssistantInputSchema));
 
-  return { title: 'LeapfrogAI - Edit Assistant', form, assistant };
+  return { title: 'LeapfrogAI - Edit Assistant', form, assistant, files };
 };
 
 export const actions = {

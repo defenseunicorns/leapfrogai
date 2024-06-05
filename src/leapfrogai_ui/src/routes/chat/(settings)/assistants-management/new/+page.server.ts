@@ -8,12 +8,15 @@ import { openai } from '$lib/server/constants';
 import type { LFAssistant } from '$lib/types/assistants';
 import { getAssistantAvatarUrl } from '$helpers/assistants';
 
-export const load = async ({ locals: { safeGetSession } }) => {
-  const { session } = await safeGetSession();
+export const load = async ({ fetch, depends }) => {
+  depends('lf:files');
+  depends('lf:assistants');
 
-  if (!session) {
-    throw redirect(303, '/');
-  }
+  const promises = [fetch('/api/assistants'), fetch('/api/files')];
+  const [assistantsRes, filesRes] = await Promise.all(promises);
+
+  const assistants = await assistantsRes.json();
+  const files = await filesRes.json();
 
   // Populate form with default temperature
   const form = await superValidate(
@@ -22,7 +25,7 @@ export const load = async ({ locals: { safeGetSession } }) => {
     { errors: false } // turn off errors for new assistant b/c providing default data turns them on
   );
 
-  return { title: 'LeapfrogAI - New Assistant', form };
+  return { title: 'LeapfrogAI - New Assistant', form, assistants, files };
 };
 
 export const actions = {

@@ -23,7 +23,7 @@
     deleteModalOpen = false;
 
     if (res.ok) {
-      await invalidate('/api/assistants');
+      await invalidate('lf:assistants');
       toastStore.addToast({
         kind: 'info',
         title: 'Assistant Deleted.',
