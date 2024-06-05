@@ -124,7 +124,6 @@ export const getFakeAssistant = (): LFAssistant => {
     temperature: DEFAULT_ASSISTANT_TEMP,
     metadata: {
       user_id: faker.string.uuid(),
-      data_sources: '',
       pictogram: 'default',
       avatar: undefined
     },
@@ -138,7 +137,6 @@ export const getFakeAssistantInput = (): AssistantInput => {
     description: faker.lorem.sentence(),
     instructions: faker.lorem.paragraph(),
     temperature: DEFAULT_ASSISTANT_TEMP,
-    data_sources: '',
     pictogram: 'default',
     avatar: ''
   };

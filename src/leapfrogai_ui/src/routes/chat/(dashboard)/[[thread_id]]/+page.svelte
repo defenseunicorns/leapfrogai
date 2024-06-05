@@ -27,7 +27,6 @@
     ERROR_SAVING_MSG_TEXT
   } from '$constants/errorMessages';
 
-  // TODO - this data is not receiving correct type inference, see issue: (https://github.com/defenseunicorns/leapfrogai/issues/587
   export let data;
 
   /** LOCAL VARS **/

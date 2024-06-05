@@ -3,7 +3,6 @@ import type { Profile } from '$lib/types/profile';
 import type { LFThread } from '$lib/types/threads';
 import { openai } from '$lib/server/constants';
 import type { LFMessage } from '$lib/types/messages';
-import type { LFAssistant } from '$lib/types/assistants';
 
 const getThreadWithMessages = async (thread_id: string): Promise<LFThread | null> => {
   try {
@@ -62,8 +61,8 @@ export const load = async ({ fetch, locals: { supabase, safeGetSession } }) => {
     }
   }
 
-  const response = await fetch('/api/assistants');
-  const assistants = (await response.json()) as LFAssistant[];
+  const assistantsRes = await fetch('/api/assistants');
+  const assistants = await assistantsRes.json();
 
-  return { title: 'LeapfrogAI - Chat', session, profile, threads, assistants };
+  return { threads, assistants };
 };

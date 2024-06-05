@@ -24,6 +24,7 @@ declare global {
       files?: FileObject[];
     }
 
+
     // interface PageState {}
     // interface Platform {}
   }

@@ -17,7 +17,7 @@ import {
   mockNewMessageError
 } from '$lib/mocks/chat-mocks';
 import { getMessageText } from '$helpers/threads';
-import { load } from '../../+layout.server';
+import { load } from '../../(settings)/+layout.server';
 import {
   sessionMock,
   supabaseFromMockWrapper,
