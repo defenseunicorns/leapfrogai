@@ -12,5 +12,10 @@ api:
   port: 8080
   exposeOpenAPISchema: false
 
+  migration:
+    namespace: "leapfrogai"
+    serviceName: "supabase-postgresql"
+    servicePort: "5432"
+
 package:
   host: leapfrogai-api

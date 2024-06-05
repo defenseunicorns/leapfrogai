@@ -14,12 +14,19 @@ spec:
                 secretKeyRef:
                   name: supabase-postgresql
                   key: postgres-password
+            - name: MIGRATION_NAMESPACE
+              value: "{{ .Values.api.migration.namespace }}"
+            - name: MIGRATION_SERVICE_NAME
+              value: "{{ .Values.api.migration.serviceName }}"
+            - name: MIGRATION_SERVICE_PORT
+              value: "{{ .Values.api.migration.servicePort }}"
+
         # NOTE: This command is assuming the default username.
         command: ["/bin/sh"]
         args:
           - -c
           - >-
-            supabase migration fetch --db-url=postgresql://postgres:$(POSTGRES_PASSWORD)@supabase-postgresql.leapfrogai.svc.cluster.local:5432 --debug || true &&
-            supabase db push --db-url=postgresql://postgres:$(POSTGRES_PASSWORD)@supabase-postgresql.leapfrogai.svc.cluster.local:5432 --debug]
+            supabase migration fetch --db-url="postgresql://postgres:$POSTGRES_PASSWORD@$MIGRATION_SERVICE_NAME.$MIGRATION_NAMESPACE.svc.cluster.local:$MIGRATION_SERVICE_PORT" --debug || true &&
+            supabase db push --db-url="postgresql://postgres:$POSTGRES_PASSWORD@$MIGRATION_SERVICE_NAME.$MIGRATION_NAMESPACE.svc.cluster.local:$MIGRATION_SERVICE_PORT" --debug
       restartPolicy: Never
   backoffLimit: 4
