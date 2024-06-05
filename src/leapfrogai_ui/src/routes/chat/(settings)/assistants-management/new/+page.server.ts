@@ -48,6 +48,8 @@ export const actions = {
       form.data.data_sources.length > 0 &&
       typeof form.data.data_sources[0] === 'string';
 
+    let data_sources = withDataSources ? form.data.data_sources[0].split(',') : [];
+
     const assistant: AssistantCreateParams = {
       name: form.data.name,
       description: form.data.description,
@@ -60,7 +62,7 @@ export const actions = {
             file_search: {
               vector_stores: [
                 {
-                  file_ids: form.data.data_sources[0].split(',') || []
+                  file_ids: data_sources
                 }
               ]
             }

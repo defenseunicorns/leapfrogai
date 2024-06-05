@@ -21,8 +21,7 @@
 
   let isEditMode = $page.url.pathname.includes('edit');
   let bypassCancelWarning = false;
-  let selectedFileIds: string[] = [];
-
+  let selectedFileIds: string[] = data.form.data.data_sources || [];
 
   const { form, errors, enhance, submitting, isTainted } = superForm(data.form, {
     invalidateAll: false,
@@ -172,6 +171,11 @@
         tooltipText="Specific files your assistant can search and reference"
       />
       <AssistantFileSelect files={data?.files} bind:selectedFileIds />
+      <input
+        type="hidden"
+        name="vectorStoreId"
+        value={data?.assistant?.tool_resources?.file_search?.vector_store_ids[0] || undefined}
+      />
 
       <div>
         <Button

@@ -20,6 +20,7 @@ export const assistantInputSchema: ObjectSchema<AssistantInput> = object({
     .required('This field is required. Please enter instructions.'),
   temperature: number().required('Required'),
   data_sources: array().of(string()),
+  vectorStoreId: string(),
   avatar: string(),
   avatarFile: mixed<File>()
     .nullable()

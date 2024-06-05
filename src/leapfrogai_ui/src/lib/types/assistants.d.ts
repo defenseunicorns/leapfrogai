@@ -6,6 +6,7 @@ type AssistantInput = {
   instructions: string;
   temperature: number;
   data_sources?: string[];
+  vectorStoreId? string;
   avatar?: string;
   avatarFile?: File | null;
   pictogram?: string;
