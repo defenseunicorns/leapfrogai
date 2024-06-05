@@ -2,16 +2,20 @@ import { render, screen } from '@testing-library/svelte';
 import { afterAll, afterEach, type MockInstance, vi } from 'vitest';
 import { Message } from '$components/index';
 import userEvent from '@testing-library/user-event';
-import { fakeThreads, getFakeMessage } from '$testUtils/fakeData';
+import { fakeThreads, getFakeAssistant, getFakeMessage } from '$testUtils/fakeData';
 import MessageWithToast from '$components/MessageWithToast.test.svelte';
 import { convertMessageToAiMessage, getMessageText } from '$helpers/threads';
 import { type Message as AIMessage } from 'ai/svelte';
 import * as chatHelpers from '$helpers/chatHelpers';
 import { threadsStore } from '$stores';
 import { NO_SELECTED_ASSISTANT_ID } from '$constants';
+import stores from '$app/stores';
+
+const { getStores } = await vi.hoisted(() => import('$lib/mocks/svelte'));
 
 const fakeAppend = vi.fn();
 const fakeReload = vi.fn();
+const assistant = getFakeAssistant();
 
 const getDefaultMessageProps = () => {
   let messages: AIMessage[] = [];
@@ -30,6 +34,40 @@ const getDefaultMessageProps = () => {
 };
 
 describe('Message component', () => {
+  beforeAll(() => {
+    vi.mock('$app/stores', (): typeof stores => {
+      const page: typeof stores.page = {
+        subscribe(fn) {
+          return getStores({
+            url: `http://localhost/chat/${fakeThreads[0].id}`,
+            params: { thread_id: fakeThreads[0].id },
+            data: {
+              assistants: [assistant]
+            }
+          }).page.subscribe(fn);
+        }
+      };
+      const navigating: typeof stores.navigating = {
+        subscribe(fn) {
+          return getStores().navigating.subscribe(fn);
+        }
+      };
+      const updated: typeof stores.updated = {
+        subscribe(fn) {
+          return getStores().updated.subscribe(fn);
+        },
+        check: () => Promise.resolve(false)
+      };
+
+      return {
+        getStores,
+        navigating,
+        page,
+        updated
+      };
+    });
+  });
+
   afterEach(() => {
     fakeAppend.mockReset();
     fakeReload.mockReset();
@@ -39,6 +77,7 @@ describe('Message component', () => {
     fakeAppend.mockRestore();
     fakeReload.mockRestore();
   });
+
   it('displays edit text area when edit btn is clicked', async () => {
     render(Message, { ...getDefaultMessageProps() });
     expect(screen.queryByText('edit message input')).not.toBeInTheDocument();
@@ -229,6 +268,27 @@ describe('Message component', () => {
         isLastMessage: false
       });
       screen.getByLabelText('edit prompt');
+    });
+    it("Has the title 'You' for user messages", () => {
+      render(Message, {
+        ...getDefaultMessageProps(),
+        message: getFakeMessage({ role: 'user' })
+      });
+      screen.getByText('You');
+    });
+    it("Has the title 'LeapfrogAI Bot' for regular AI responses", () => {
+      render(Message, {
+        ...getDefaultMessageProps(),
+        message: getFakeMessage({ role: 'assistant', assistant_id: '123' })
+      });
+      screen.getByText('LeapfrogAI Bot');
+    });
+    it('Has the title of the assistant name for regular AI responses', () => {
+      render(Message, {
+        ...getDefaultMessageProps(),
+        message: getFakeMessage({ role: 'assistant', assistant_id: assistant.id })
+      });
+      screen.getByText(assistant.name!);
     });
   });
 });

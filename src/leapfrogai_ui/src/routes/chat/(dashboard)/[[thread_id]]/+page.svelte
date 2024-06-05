@@ -45,8 +45,8 @@
     id: assistant.id,
     text: assistant.name || 'unknown'
   }));
-  $: assistantsList.unshift({ id: NO_SELECTED_ASSISTANT_ID, text: 'Select Assistant' }); // add dropdown item for no assistant selected
-  $: assistantsList.push({ id: `manage-assistants`, text: 'Manage Assistants' }); // add dropdown item for manage assistants button
+  $: assistantsList.unshift({ id: NO_SELECTED_ASSISTANT_ID, text: 'Select assistant...' }); // add dropdown item for no assistant selected
+  $: assistantsList.push({ id: `manage-assistants`, text: 'Manage assistants' }); // add dropdown item for manage assistants button
   $: assistantMode =
     $threadsStore.selectedAssistantId !== NO_SELECTED_ASSISTANT_ID &&
     $threadsStore.selectedAssistantId !== 'manage-assistants';
@@ -275,8 +275,11 @@
     {/each}
   </div>
 
-  <hr id="divider" class="bx--switcher__item--divider divider" />
-  <div class="chat-form-container">
+  <hr id="divider" class="divider" />
+  <div
+    class="chat-form-container"
+    class:noAssistant={$threadsStore.selectedAssistantId === NO_SELECTED_ASSISTANT_ID}
+  >
     <form on:submit={onSubmit}>
       <Dropdown
         data-testid="assistant-dropdown"
@@ -380,11 +383,6 @@
     gap: 0.5rem;
   }
 
-  .divider {
-    width: 100%;
-    margin: 0.5rem 0;
-  }
-
   .manage-assistants-btn {
     display: flex;
     align-items: center;
@@ -401,6 +399,12 @@
     outline: 1px solid themes.$border-subtle-03;
     :global(.bx--list-box__menu_item__option) {
       padding-right: 0.25rem;
+    }
+  }
+
+  .noAssistant {
+    :global(.bx--list-box__label) {
+      color: themes.$text-secondary;
     }
   }
 </style>

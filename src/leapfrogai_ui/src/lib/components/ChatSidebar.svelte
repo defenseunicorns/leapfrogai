@@ -5,7 +5,6 @@
     OverflowMenu,
     OverflowMenuItem,
     SideNav,
-    SideNavDivider,
     SideNavItems,
     SideNavMenu,
     SideNavMenuItem,
@@ -163,7 +162,7 @@
                 bind:value={searchText}
                 maxlength={25}
               />
-              <SideNavDivider />
+              <hr id="divider" class="divider" />
             </div>
 
             <div
@@ -245,7 +244,7 @@
               {/each}
             </div>
             <div>
-              <SideNavDivider />
+              <hr id="divider" class="divider" />
               <ImportExport />
             </div>
           </div>

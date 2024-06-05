@@ -236,7 +236,7 @@ describe('when there is an active thread selected', () => {
     const { getByRole } = render(ChatPage, { data });
 
     const assistantSelect = getByRole('button', {
-      name: /select assistant open menu/i
+      name: /select assistant\.\.\. open menu/i
     });
     await userEvent.click(assistantSelect);
     await userEvent.click(
