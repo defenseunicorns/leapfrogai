@@ -6,7 +6,7 @@ import { faker } from '@faker-js/faker';
 type GetStoresOverrides = {
   url: string;
   params: Record<string, string>;
-  data: object;
+  data?: object;
 };
 
 export const getStores = (

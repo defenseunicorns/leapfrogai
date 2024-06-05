@@ -26,8 +26,10 @@
     ERROR_GETTING_ASSISTANT_MSG_TEXT,
     ERROR_SAVING_MSG_TEXT
   } from '$constants/errorMessages';
+  import type { PageServerLoad } from './$types';
 
-  export let data;
+  // TODO - this data is not receiving correct type inference, see issue: (https://github.com/defenseunicorns/leapfrogai/issues/587)
+  export let data: PageServerLoad;
 
   /** LOCAL VARS **/
   let messageThreadDiv: HTMLDivElement;

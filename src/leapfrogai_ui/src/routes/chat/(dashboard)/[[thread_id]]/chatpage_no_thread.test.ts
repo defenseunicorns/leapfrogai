@@ -9,7 +9,7 @@ import {
   mockNewMessage,
   mockNewThreadError
 } from '$lib/mocks/chat-mocks';
-import { load } from '../../+layout.server';
+import { load } from './+page.server';
 import { mockOpenAI } from '../../../../../vitest-setup';
 import {
   sessionMock,
@@ -17,11 +17,16 @@ import {
   supabaseSelectSingleByIdMock
 } from '$lib/mocks/supabase-mocks';
 import ChatPageWithToast from './ChatPageWithToast.test.svelte';
-import type { PageData } from '../../../../../.svelte-kit/types/src/routes/chat/(dashboard)/[[thread_id]]/$types';
+import type { LFThread } from '$lib/types/threads';
+import type { LFAssistant } from '$lib/types/assistants';
 
 const { getStores } = await vi.hoisted(() => import('$lib/mocks/svelte'));
 
-let data: PageData;
+type PageServerLoad = {
+  threads: LFThread[];
+  assistants: LFAssistant[];
+} | null;
+let data: PageServerLoad;
 const question = 'What is AI?';
 
 describe('when there is NO active thread selected', () => {

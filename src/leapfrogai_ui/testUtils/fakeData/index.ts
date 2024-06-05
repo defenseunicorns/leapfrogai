@@ -191,7 +191,7 @@ export const getFakeSession = ({
   user_id = faker.string.uuid(),
   email = faker.internet.email(),
   full_name = faker.person.fullName()
-}: GetFakeSessionArgs): Session => {
+}: GetFakeSessionArgs = {}): Session => {
   return {
     provider_token: null,
     provider_refresh_token: null,

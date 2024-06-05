@@ -38,9 +38,6 @@ test.beforeEach(async ({ page }) => {
   if (testRows.length === 1) {
     await page.getByText('Delete').click();
   }
-  if (testRows.length > 1) {
-    await page.getByText('Delete').click();
-  }
 
   await page.reload();
 
