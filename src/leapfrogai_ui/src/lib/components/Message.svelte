@@ -44,6 +44,13 @@
   let editMode = false;
   let value = writable(getMessageText(message));
 
+  const getAssistantName = (id?: string) => {
+    if (!id) return 'LeapfrogAI Bot';
+    return (
+      $page.data.assistants?.find((assistant) => assistant.id === id)?.name || 'LeapfrogAI Bot'
+    );
+  };
+
   const onSubmit = async (e: SubmitEvent | KeyboardEvent | MouseEvent) => {
     e.preventDefault();
     editMode = false;
@@ -127,7 +134,14 @@
           </div>
         </div>
       {:else}
-        <Tile style="line-height: 20px;">{getMessageText(message)}</Tile>
+        <Tile style="line-height: 20px;"
+          ><div class="message-content">
+            <div style="font-weight: bold">
+              {message.role === 'user' ? 'You' : getAssistantName(message.assistant_id)}
+            </div>
+            <div>{getMessageText(message)}</div>
+          </div></Tile
+        >
       {/if}
 
       <div class="utils">
@@ -251,5 +265,11 @@
     outline: 1px solid themes.$layer-02;
     border-bottom: 0;
     margin-top: 7px; // prevents edit box from jumping up on editMode
+  }
+
+  .message-content {
+    display: flex;
+    flex-direction: column;
+    gap: layout.$spacing-03;
   }
 </style>

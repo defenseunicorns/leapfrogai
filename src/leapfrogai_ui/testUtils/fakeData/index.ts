@@ -21,6 +21,7 @@ type FakeMessageOptions = {
   thread_id?: string;
   user_id?: string;
   content?: string;
+  assistant_id?: string;
   created_at?: number;
 };
 export const getFakeMessage = (options: FakeMessageOptions = {}): LFMessage => {
@@ -33,12 +34,13 @@ export const getFakeMessage = (options: FakeMessageOptions = {}): LFMessage => {
     role = 'user',
     user_id = faker.string.uuid(),
     thread_id = faker.string.uuid(),
-    created_at = getUnixSeconds(new Date())
+    created_at = getUnixSeconds(new Date()),
+    assistant_id = undefined
   } = options;
 
   return {
     id,
-    assistant_id: null,
+    assistant_id: assistant_id,
     attachments: null,
     completed_at: created_at,
     content: messageContent,
@@ -187,7 +189,7 @@ export const getFakeSession = ({
   user_id = faker.string.uuid(),
   email = faker.internet.email(),
   full_name = faker.person.fullName()
-}: GetFakeSessionArgs): Session => {
+}: GetFakeSessionArgs = {}): Session => {
   return {
     provider_token: null,
     provider_refresh_token: null,

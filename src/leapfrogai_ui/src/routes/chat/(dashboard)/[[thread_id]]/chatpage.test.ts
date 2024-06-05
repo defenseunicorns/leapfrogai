@@ -17,7 +17,7 @@ import {
   mockNewMessageError
 } from '$lib/mocks/chat-mocks';
 import { getMessageText } from '$helpers/threads';
-import { load } from '../../(settings)/+layout.server';
+import { load } from './+page.server';
 import {
   sessionMock,
   supabaseFromMockWrapper,
@@ -28,22 +28,17 @@ import { ERROR_GETTING_AI_RESPONSE_TEXT, ERROR_SAVING_MSG_TEXT } from '$constant
 
 import { faker } from '@faker-js/faker';
 import type { LFThread } from '$lib/types/threads';
-import type { Profile } from '$lib/types/profile';
-import type { Session } from '@supabase/supabase-js';
 import type { LFAssistant } from '$lib/types/assistants';
 import { delay } from '$helpers/chatHelpers';
 
 //Calls to vi.mock are hoisted to the top of the file, so you don't have access to variables declared in the global file scope unless they are defined with vi.hoisted before the call.
 const { getStores } = await vi.hoisted(() => import('$lib/mocks/svelte'));
 
-type LayoutData = {
-  title: string;
-  session: Session;
-  profile: Profile;
+type PageServerLoad = {
   threads: LFThread[];
   assistants: LFAssistant[];
 } | null;
-let data: LayoutData;
+let data: PageServerLoad;
 const question = 'What is AI?';
 
 const assistant1 = getFakeAssistant();
@@ -236,7 +231,7 @@ describe('when there is an active thread selected', () => {
     const { getByRole } = render(ChatPage, { data });
 
     const assistantSelect = getByRole('button', {
-      name: /select assistant open menu/i
+      name: /select assistant\.\.\. open menu/i
     });
     await userEvent.click(assistantSelect);
     await userEvent.click(

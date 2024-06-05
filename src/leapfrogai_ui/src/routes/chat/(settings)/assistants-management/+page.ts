@@ -4,5 +4,5 @@ export const load = async ({ fetch, depends }) => {
   const assistantsRes = await fetch('/api/assistants');
   const assistants = await assistantsRes.json();
 
-  return { assistants };
+  return { title: 'LeapfrogAI - Assistants Management', assistants };
 };

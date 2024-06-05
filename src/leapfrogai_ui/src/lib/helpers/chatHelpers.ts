@@ -82,7 +82,10 @@ export const stopThenSave = async ({
 
 export const getAssistantImage = (assistants: LFAssistant[], assistant_id: string) => {
   const myAssistant = assistants.find((assistant) => assistant.id === assistant_id);
-  if (myAssistant) return myAssistant.metadata.avatar ?? myAssistant.metadata.pictogram;
+  if (myAssistant)
+    return myAssistant.metadata.avatar
+      ? myAssistant.metadata.avatar
+      : myAssistant.metadata.pictogram;
   return null;
 };
 
