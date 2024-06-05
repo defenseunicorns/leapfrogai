@@ -1,5 +1,7 @@
 """Test the API endpoints for assistants."""
 
+import os
+
 import pytest
 from fastapi import Response, status
 from fastapi.testclient import TestClient
@@ -13,7 +15,22 @@ from leapfrogai_api.backend.types import (
 
 assistant_response: Response
 
-client = TestClient(router)
+
+class MissingEnvironmentVariable(Exception):
+    pass
+
+
+headers: dict[str, str] = {}
+
+try:
+    headers = {"Authorization": f"Bearer {os.environ['SUPABASE_USER_JWT']}"}
+except KeyError:
+    raise MissingEnvironmentVariable(
+        "SUPABASE_USER_JWT must be defined for the test to pass. "
+        "Please check the api README for instructions on obtaining this token."
+    )
+
+client = TestClient(router, headers=headers)
 
 starting_assistant = Assistant(
     id="",
@@ -67,7 +84,9 @@ def create_assistant():
         response_format=starting_assistant.response_format,
     )
 
-    assistant_response = client.post("/openai/v1/assistants", json=request.model_dump())
+    assistant_response = client.post(
+        url="/openai/v1/assistants", json=request.model_dump()
+    )
 
 
 @pytest.mark.xfail

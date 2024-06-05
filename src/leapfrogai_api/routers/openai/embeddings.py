@@ -1,22 +1,25 @@
 """FastAPI router for OpenAI embeddings API."""
 
 from typing import Annotated
-from fastapi import APIRouter, Depends, HTTPException
+from fastapi import HTTPException, APIRouter, Depends
+from fastapi.security import HTTPBearer
 from leapfrogai_api.backend.grpc_client import create_embeddings
 from leapfrogai_api.backend.types import (
     CreateEmbeddingRequest,
     CreateEmbeddingResponse,
 )
+from leapfrogai_api.routers.supabase_session import Session
 from leapfrogai_api.utils import get_model_config
 from leapfrogai_api.utils.config import Config
 import leapfrogai_sdk as lfai
 
-
 router = APIRouter(prefix="/openai/v1/embeddings", tags=["openai/embeddings"])
+security = HTTPBearer()
 
 
 @router.post("")
 async def embeddings(
+    session: Session,
     req: CreateEmbeddingRequest,
     model_config: Annotated[Config, Depends(get_model_config)],
 ) -> CreateEmbeddingResponse:
