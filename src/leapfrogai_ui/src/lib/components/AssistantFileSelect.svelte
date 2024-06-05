@@ -5,6 +5,7 @@
 
   export let files: FileObject[];
   export let selectedFileIds: string[];
+
 </script>
 
 <MultiSelect

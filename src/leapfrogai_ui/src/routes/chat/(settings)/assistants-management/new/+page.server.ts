@@ -46,26 +46,8 @@ export const actions = {
     const withDataSources =
       form.data.data_sources &&
       form.data.data_sources.length > 0 &&
-      form.data.data_sources[0] !== undefined;
+      typeof form.data.data_sources[0] === 'string';
 
-    let vectorStoreId = '';
-
-    if (withDataSources) {
-      // create a vector store with the files
-      try {
-        const vectorStore = await openai.beta.vectorStores.create({
-          name: `${form.data.name}-vector-store`,
-          file_ids: form.data.data_sources
-        });
-        vectorStoreId = vectorStore.id;
-      } catch (e) {
-        console.error(`Error creating vector store: ${e}`);
-        return fail(500, { message: 'Error creating vector store.' });
-      }
-      if (!vectorStoreId) {
-        return fail(500, { message: 'Error creating vector store.' });
-      }
-    }
     const assistant: AssistantCreateParams = {
       name: form.data.name,
       description: form.data.description,
@@ -76,7 +58,11 @@ export const actions = {
       tool_resources: withDataSources
         ? {
             file_search: {
-              vector_store_ids: [vectorStoreId]
+              vector_stores: [
+                {
+                  file_ids: form.data.data_sources[0].split(',') || []
+                }
+              ]
             }
           }
         : null,
