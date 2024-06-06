@@ -23,6 +23,19 @@ Go to `https://supabase-kong.uds.dev`. The login is `supabase-admin` the passwor
 
 **NOTE:** The `uds.dev` domain is only used for locally deployed LeapfrogAI packages, so this domain will be unreachable without first manually deploying the UDS bundle.
 
+## Local Supabase Troubleshooting
+
+* If you cannot reach `https://supabase-kong.uds.dev`, check if the `Packages` CRDs and `VirtualServices` contain `supabase-kong.uds.dev`. If they do not, try restarting the `pepr-uds-core-watcher` pod.
+* If logging in to the UI through keycloak returns a `500`, check and see if the `sql` migrations have been run in Supabase.
+  * You can find those in `leapfrogai/src/leapfrogai_ui/supabase/migrations`. They can be run in the studios SQL Editor.
+* To obtain a jwt token for testing, create a test user and run the following:
+```
+curl -X POST 'https://supabase-kong.uds.dev/auth/v1/token?grant_type=password' \-H "apikey: <anon-key>" \-H "Content-Type: application/json" \-d '{ "email": "<test-email>", "password": "<test-password>"}'
+```
+
+By following these steps, you'll have successfully set up Keycloak for your application, allowing secure authentication and authorization for your users.
+
+
 # Supabase Migrations
 
 ## Motivation
@@ -53,15 +66,3 @@ Keep the following in mind when adding new migrations:
   - update the package's `zarf.yaml` to include the new image
   - update the `Makefile` to build the new migrations image
   - add the new migrations image to the `release.yaml` pipeline
-
-# Troubleshooting
-
-* If you cannot reach `https://supabase-kong.uds.dev`, check if the `Packages` CRDs and `VirtualServices` contain `supabase-kong.uds.dev`. If they do not, try restarting the `pepr-uds-core-watcher` pod.
-* If logging in to the UI through keycloak returns a `500`, check and see if the `sql` migrations have been run in Supabase.
-  * You can find those in `leapfrogai/src/leapfrogai_ui/supabase/migrations`. They can be run in the studios SQL Editor.
-* To obtain a jwt token for testing, create a test user and run the following:
-```
-curl -X POST 'https://supabase-kong.uds.dev/auth/v1/token?grant_type=password' \-H "apikey: <anon-key>" \-H "Content-Type: application/json" \-d '{ "email": "<test-email>", "password": "<test-password>"}'
-```
-
-By following these steps, you'll have successfully set up Keycloak for your application, allowing secure authentication and authorization for your users.
