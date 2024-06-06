@@ -6,16 +6,17 @@
   import { ArrowRight, Checkmark, StopFilledAlt, UserProfile } from 'carbon-icons-svelte';
   import { type Message as AIMessage, useAssistant, useChat } from 'ai/svelte';
   import { page } from '$app/stores';
+  import type { Message as OpenAIMessage } from 'openai/resources/beta/threads/messages';
   import { afterNavigate, beforeNavigate, goto } from '$app/navigation';
   import Message from '$components/Message.svelte';
   import { getMessageText } from '$helpers/threads';
-  import { getUnixSeconds } from '$helpers/dates.js';
   import { NO_SELECTED_ASSISTANT_ID } from '$constants';
 
   import {
     delay,
     getMessages,
     isAssistantMessage,
+    processAnnotations,
     resetMessages,
     saveMessage,
     sortMessages,
@@ -27,6 +28,8 @@
     ERROR_SAVING_MSG_TEXT
   } from '$constants/errorMessages';
   import type { PageServerLoad } from './$types';
+  import { getUnixSeconds } from '$helpers/dates';
+  import type { LFMessage } from '$lib/types/messages';
 
   // TODO - this data is not receiving correct type inference, see issue: (https://github.com/defenseunicorns/leapfrogai/issues/587)
   export let data: PageServerLoad;
@@ -36,6 +39,7 @@
   let messageThreadDivHeight: number;
   let lengthInvalid: boolean; // bound to child LFTextArea
   let assistantsList: Array<{ id: string; text: string }>;
+  let hasSentAssistantMessage = false;
   /** END LOCAL VARS **/
 
   /** REACTIVE STATE **/
@@ -54,36 +58,51 @@
 
   $: if ($isLoading || $status === 'in_progress') threadsStore.setSendingBlocked(true);
 
-  // new streamed assistant message received (has no assistant_id)
+  // new streamed assistant message received (add in assistant_id and ensure it has a created_At timestamp)
   $: if (
     $assistantMessages.length > 0 &&
     !$assistantMessages[$assistantMessages.length - 1].assistant_id
-  )
-    modifyAndSaveAssistantMessage();
+  ) {
+    const lastMessage = { ...$assistantMessages[$assistantMessages.length - 1] };
+    lastMessage.assistant_id = $threadsStore.selectedAssistantId;
+    if (!lastMessage.createdAt)
+      lastMessage.createdAt =
+        $assistantMessages[$assistantMessages.length - 1].created_at || getUnixSeconds(new Date());
+    $assistantMessages[$assistantMessages.length - 1] = lastMessage;
+  }
+
+  $: if (hasSentAssistantMessage && $status === 'awaiting_message') {
+    // assistant stream has completed
+    console.log('processing completed assistant message');
+    handleCompletedAssistantStream();
+  }
 
   $: sortedMessages = sortMessages([...$chatMessages, ...$assistantMessages]);
 
   /** END REACTIVE STATE **/
 
-  const modifyAndSaveAssistantMessage = async () => {
-    // Streamed assistant responses don't contain an assistant_id, so we add it here
-    // and also add a createdAt date if not present
+  const handleCompletedAssistantStream = async () => {
+    // useAssistants sends messages to '/api/chat/assistants' which saves the messages with the API to the db for us
+    // Get the saved version of the messages (which have annotations)
+    const savedMessages = (await getMessages($page.params.thread_id)) as LFMessage[];
+
+    // update the store
+    await threadsStore.updateMessages($page.params.thread_id, savedMessages);
+
+    // parse annotations and add parsed text to streamed messages array ($assistantMessages)
     const assistantMessagesCopy = [...$assistantMessages];
-    const latestMessage = assistantMessagesCopy[assistantMessagesCopy.length - 1];
-
-    latestMessage.assistant_id = $threadsStore.selectedAssistantId;
-    if (!latestMessage.createdAt)
-      latestMessage.createdAt = latestMessage.created_at || getUnixSeconds(new Date());
-
+    for (const savedMessage of savedMessages) {
+      if (isAssistantMessage(savedMessage)) {
+        const parsedMessage = { ...processAnnotations(savedMessage, data.files) };
+        const index = assistantMessagesCopy.findIndex((m) => m.id === parsedMessage.id);
+        if (index > -1) {
+          assistantMessagesCopy[index].content = getMessageText(parsedMessage);
+        }
+      }
+    }
     setAssistantMessages(assistantMessagesCopy);
-    // '/api/chat/assistants' saves the messages with the API to the db for us, so we re-fetch and update the store here
-    await updateMessagesFromAPI();
-    threadsStore.setSendingBlocked(false);
-  };
 
-  const updateMessagesFromAPI = async () => {
-    const messages = await getMessages($page.params.thread_id);
-    await threadsStore.updateMessages($page.params.thread_id, messages);
+    threadsStore.setSendingBlocked(false);
   };
 
   /** useChat - streams messages with the /api/chat route**/
@@ -104,7 +123,6 @@
       // and AI response are not exactly the same. This is important for sorting messages when they are initially loaded
       // from the db/API (ex. browser refresh). Streamed messages are sorted realtime and we modify the timestamps to
       // ensure we have millisecond precision.
-      threadsStore.setSendingBlocked(true);
       try {
         if (process.env.NODE_ENV !== 'test') await delay(1000);
 
@@ -129,6 +147,7 @@
       threadsStore.setSendingBlocked(false);
     },
     onError: () => {
+      threadsStore.setSendingBlocked(false);
       toastStore.addToast({
         kind: 'error',
         title: ERROR_GETTING_AI_RESPONSE_TEXT.title,
@@ -150,6 +169,7 @@
     api: '/api/chat/assistants',
     threadId: activeThread?.id,
     onError: (e) => {
+      threadsStore.setSendingBlocked(false);
       // ignore this error b/c it is expected on cancel
       if (e.toString() !== 'DOMException: BodyStreamBuffer was aborted') {
         toastStore.addToast({
@@ -162,6 +182,8 @@
   });
 
   const sendAssistantMessage = async (e: SubmitEvent | KeyboardEvent) => {
+    threadsStore.setSendingBlocked(true);
+    hasSentAssistantMessage = true;
     if (activeThread?.id) {
       // assistant mode
       $assistantInput = $chatInput;
@@ -177,9 +199,11 @@
       });
       $assistantInput = '';
     }
+    threadsStore.setSendingBlocked(false);
   };
 
   const sendChatMessage = async (e: SubmitEvent | KeyboardEvent) => {
+    threadsStore.setSendingBlocked(true);
     if (activeThread?.id) {
       // Save with API
       try {
@@ -192,6 +216,7 @@
         await threadsStore.addMessageToStore(newMessage);
         submitChatMessage(e); // submit to AI (/api/chat)
       } catch {
+        threadsStore.setSendingBlocked(false);
         toastStore.addToast({
           kind: 'error',
           title: ERROR_SAVING_MSG_TEXT.title,
@@ -213,6 +238,7 @@
         assistantStop,
         chatStop
       });
+      threadsStore.setSendingBlocked(false);
       return;
     } else {
       if (!activeThread?.id) {
@@ -228,12 +254,18 @@
   onMount(async () => {
     threadsStore.setThreads(data.threads || []);
     await tick();
+
     resetMessages({
       activeThread,
       setChatMessages,
-      setAssistantMessages
+      setAssistantMessages,
+      files: data.files
     });
   });
+
+  $: console.log('active thread messages', activeThread?.messages)
+  $: console.log('chatMessages', $chatMessages)
+  $: console.log('assistantMessages', $assistantMessages)
 
   afterUpdate(() => {
     // Scroll to bottom
@@ -257,7 +289,8 @@
     resetMessages({
       activeThread,
       setChatMessages,
-      setAssistantMessages
+      setAssistantMessages,
+      files: data.files
     });
   });
 </script>
