@@ -221,5 +221,3 @@ Additionally, streamed messages have temporary ids that do not match the ids mes
 messages and saved messages in client side state in the correct order. We use this state to look up the saved ids and make the appropriate API calls with the permanent ids.
 
 While there are several automated tests for this logic, the edge cases and mocking scenarios are complex. Any modifications to this logic should be thoroughly manually tested.
-
-

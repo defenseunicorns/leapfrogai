@@ -8,12 +8,10 @@ export async function GET({ locals: { safeGetSession } }) {
   if (!session) {
     error(401, 'Unauthorized');
   }
-  try {
-    const assistantsPage = await openai.beta.assistants.list();
-    const assistants = assistantsPage.data as LFAssistant[];
-    return json(assistants ?? []);
-  } catch (e) {
-    console.error('Error fetching assistants', e);
-    return json([]);
-  }
+
+  const assistantsPage = await openai.beta.assistants.list();
+
+  const assistants = assistantsPage.data as LFAssistant[];
+
+  return json(assistants ?? []);
 }

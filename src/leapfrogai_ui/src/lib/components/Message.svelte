@@ -12,7 +12,7 @@
   import {
     getAssistantImage,
     handleAssistantRegenerate,
-    handleMessageEdit,
+    handleChatMessageEdit,
     handleChatRegenerate,
     isAssistantMessage
   } from '$helpers/chatHelpers';
@@ -38,7 +38,7 @@
   ) => Promise<string | null | undefined>;
 
   let assistantImage = isAssistantMessage(message)
-    ? getAssistantImage(...[$page.data.assistants || []], message.assistant_id)
+    ? getAssistantImage($page.data.assistants || [], message.assistant_id)
     : null;
   let messageIsHovered = false;
   let editMode = false;
@@ -58,15 +58,15 @@
     if (isAssistantMessage(message)) {
       threadsStore.setSelectedAssistantId(message.assistant_id);
     }
-    const storeMessages =
+    const savedMessages =
       $threadsStore.threads.find((t) => t.id === $page.params.thread_id)?.messages || [];
 
-    await handleMessageEdit({
-      storeMessages,
-      message: { ...message, content: $value },
-      streamedMessages: messages,
+    await handleChatMessageEdit({
+      savedMessages,
+      message: { ...message, content: convertTextToMessageContentArr($value) },
       thread_id: $page.params.thread_id,
-      setStreamedMessages: setMessages,
+      messages,
+      setMessages,
       append
     });
   };
@@ -182,11 +182,11 @@
                   append
                 });
               } else {
-                const storeMessages =
+                const savedMessages =
                   $threadsStore.threads.find((t) => t.id === $page.params.thread_id)?.messages ||
                   [];
                 handleChatRegenerate({
-                  storeMessages,
+                  savedMessages,
                   message,
                   messages,
                   setMessages,
