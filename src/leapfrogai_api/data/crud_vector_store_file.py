@@ -54,7 +54,7 @@ class CRUDVectorStoreFile(CRUDBase[AuthVectorStoreFile]):
         data, _count = (
             await self.db.table(self.table_name)
             .update(object_.model_dump())
-            .eq("file_id", id_)
+            .eq("id", id_)
             .eq("vector_store_id", object_.vector_store_id)
             .execute()
         )

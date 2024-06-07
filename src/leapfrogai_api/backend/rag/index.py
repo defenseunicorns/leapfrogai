@@ -123,7 +123,7 @@ class IndexingService:
             raise e
 
         return await crud_vector_store_file.get(
-            filters={"vector_store_id": vector_store_id, "id": file_id}
+            filters=FilterVectorStoreFile(vector_store_id=vector_store_id, id=file_id)
         )
 
     async def adelete_file(self, vector_store_id: str, file_id: str) -> bool:
