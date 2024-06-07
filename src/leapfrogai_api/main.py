@@ -3,7 +3,6 @@
 import asyncio
 import logging
 from contextlib import asynccontextmanager
-
 from fastapi import FastAPI
 
 from leapfrogai_api.routers.base import router as base_router
