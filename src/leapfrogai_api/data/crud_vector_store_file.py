@@ -14,7 +14,7 @@ class AuthVectorStoreFile(VectorStoreFile):
 
 class FilterVectorStoreFile(BaseModel):
     vector_store_id: str
-    file_id: str | None = None
+    id: str | None = None
 
 
 class CRUDVectorStoreFile(CRUDBase[AuthVectorStoreFile]):
@@ -34,7 +34,7 @@ class CRUDVectorStoreFile(CRUDBase[AuthVectorStoreFile]):
         self, filters: FilterVectorStoreFile | None = None
     ) -> VectorStoreFile | None:
         """Get vector store file by filters."""
-        return await super().get(filters=filters)
+        return await super().get(filters=filters.model_dump() if filters else None)
 
     async def list(
         self, filters: FilterVectorStoreFile | None = None
@@ -54,7 +54,7 @@ class CRUDVectorStoreFile(CRUDBase[AuthVectorStoreFile]):
         data, _count = (
             await self.db.table(self.table_name)
             .update(object_.model_dump())
-            .eq("id", id_)
+            .eq("file_id", id_)
             .eq("vector_store_id", object_.vector_store_id)
             .execute()
         )

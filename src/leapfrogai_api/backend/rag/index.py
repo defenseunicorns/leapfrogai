@@ -1,5 +1,6 @@
 """Indexing service for RAG files."""
 
+import logging
 import tempfile
 
 from fastapi import UploadFile
@@ -13,7 +14,11 @@ from leapfrogai_api.backend.rag.leapfrogai_embeddings import LeapfrogAIEmbedding
 from leapfrogai_api.backend.types import VectorStoreFileStatus
 from leapfrogai_api.data.crud_file_bucket import CRUDFileBucket
 from leapfrogai_api.data.crud_file_object import CRUDFileObject, FilterFileObject
-from leapfrogai_api.data.crud_vector_store_file import CRUDVectorStoreFile
+from leapfrogai_api.data.crud_vector_store import CRUDVectorStore, FilterVectorStore
+from leapfrogai_api.data.crud_vector_store_file import (
+    CRUDVectorStoreFile,
+    FilterVectorStoreFile,
+)
 
 # Allows for overwriting type of embeddings that will be instantiated
 embeddings_type: type[Embeddings] | type[LeapfrogAIEmbeddings] | None = (
@@ -36,12 +41,23 @@ class IndexingService:
 
     async def index_file(self, vector_store_id: str, file_id: str) -> VectorStoreFile:
         """Index a file into a vector store."""
+
         crud_vector_store_file = CRUDVectorStoreFile(db=self.db)
+        crud_vector_store = CRUDVectorStore(db=self.db)
 
         if await crud_vector_store_file.get(
-            filters={"vector_store_id": vector_store_id, "id": file_id}
+            filters=FilterVectorStoreFile(vector_store_id=vector_store_id, id=file_id)
         ):
+            print("File already indexed: %s", file_id)
+            logging.error("File already indexed: %s", file_id)
             raise FileAlreadyIndexedError("File already indexed")
+
+        if not (
+            await crud_vector_store.get(filters=FilterVectorStore(id=vector_store_id))
+        ):
+            print("Vector store doesn't exist: %s", vector_store_id)
+            logging.error("Vector store doesn't exist: %s", vector_store_id)
+            raise ValueError("Vector store not found")
 
         crud_file_object = CRUDFileObject(db=self.db)
         crud_file_bucket = CRUDFileBucket(db=self.db, model=UploadFile)
@@ -84,31 +100,31 @@ class IndexingService:
                 object_=vector_store_file
             )
 
-            try:
-                ids = await self.aadd_documents(
-                    documents=chunks,
-                    vector_store_id=vector_store_id,
-                    file_id=file_id,
-                )
-
-                if len(ids) == 0:
-                    vector_store_file.status = VectorStoreFileStatus.FAILED.value
-                else:
-                    vector_store_file.status = VectorStoreFileStatus.COMPLETED.value
-
-                await crud_vector_store_file.update(
-                    id_=vector_store_file.id, object_=vector_store_file
-                )
-            except Exception as e:
-                vector_store_file.status = VectorStoreFileStatus.FAILED.value
-                await crud_vector_store_file.update(
-                    id_=vector_store_file.id, object_=vector_store_file
-                )
-                raise e
-
-            return await crud_vector_store_file.get(
-                filters={"vector_store_id": vector_store_id, "id": file_id}
+        try:
+            ids = await self.aadd_documents(
+                documents=chunks,
+                vector_store_id=vector_store_id,
+                file_id=file_id,
             )
+
+            if len(ids) == 0:
+                vector_store_file.status = VectorStoreFileStatus.FAILED.value
+            else:
+                vector_store_file.status = VectorStoreFileStatus.COMPLETED.value
+
+            await crud_vector_store_file.update(
+                id_=vector_store_file.id, object_=vector_store_file
+            )
+        except Exception as e:
+            vector_store_file.status = VectorStoreFileStatus.FAILED.value
+            await crud_vector_store_file.update(
+                id_=vector_store_file.id, object_=vector_store_file
+            )
+            raise e
+
+        return await crud_vector_store_file.get(
+            filters={"vector_store_id": vector_store_id, "id": file_id}
+        )
 
     async def adelete_file(self, vector_store_id: str, file_id: str) -> bool:
         """Delete a file from the vector store.
