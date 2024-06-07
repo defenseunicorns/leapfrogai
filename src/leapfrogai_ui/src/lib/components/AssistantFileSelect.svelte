@@ -5,7 +5,6 @@
 
   export let files: FileObject[];
   export let selectedFileIds: string[];
-
 </script>
 
 <MultiSelect
@@ -19,7 +18,7 @@
   {#each [...(files || [])]
     .filter((f) => selectedFileIds.includes(f.id))
     .sort((a, b) => a.filename.localeCompare(b.filename)) as file}
-    <div transition:fade={{ duration: 70 }}>
+    <div transition:fade={{ duration: 70 }} >
       <FileUploaderItem
         id={file.id}
         name={file.filename}
