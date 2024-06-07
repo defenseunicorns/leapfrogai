@@ -2,16 +2,14 @@ import json
 import os
 import shutil
 import time
-from typing import Annotated, Optional
+from typing import Optional
 
 import pytest
-from fastapi import Depends
 from fastapi.applications import BaseHTTPMiddleware
-from fastapi.security import HTTPAuthorizationCredentials, HTTPBearer
+from fastapi.security import HTTPBearer
 from fastapi.testclient import TestClient
 from starlette.middleware.base import _CachedRequest
 from supabase_py_async.lib.client_options import ClientOptions
-
 import leapfrogai_api.backend.types as lfai_types
 from leapfrogai_api.main import app
 from leapfrogai_api.routers.supabase_session import init_supabase_client
@@ -46,14 +44,12 @@ class AsyncClient:
         self.options = options
 
 
-async def mock_init_supabase_client(
-    auth_creds: Annotated[HTTPAuthorizationCredentials, Depends(security)],
-) -> AsyncClient:
+async def mock_init_supabase_client() -> AsyncClient:
     return AsyncClient("", "", "", ClientOptions())
 
 
 async def pack_dummy_bearer_token(request: _CachedRequest, call_next):
-    request.headers.__dict__["_list"].append(
+    request.headers._list.append(
         (
             "authorization".encode(),
             "Bearer dummy".encode(),
@@ -71,7 +67,7 @@ def dummy_auth_middleware():
     app.middleware_stack = app.build_middleware_stack()
 
 
-def test_config_load(dummy_auth_middleware):
+def test_config_load():
     """Test that the config is loaded correctly."""
     with TestClient(app) as client:
         response = client.get("/models")
@@ -83,7 +79,7 @@ def test_config_load(dummy_auth_middleware):
         }
 
 
-def test_config_delete(tmp_path, dummy_auth_middleware):
+def test_config_delete(tmp_path):
     """Test that the config is deleted correctly."""
     # move repeater-test-config.yaml to temp dir so that we can remove it at a later step
     tmp_config_filepath = shutil.copyfile(
@@ -128,6 +124,11 @@ def test_routes():
     }
 
     openai_routes = [
+        ("/openai/v1/files", "upload_file", ["POST"]),
+        ("/openai/v1/files", "list_files", ["GET"]),
+        ("/openai/v1/files/{file_id}", "retrieve_file", ["GET"]),
+        ("/openai/v1/files/{file_id}", "delete_file", ["DELETE"]),
+        ("/openai/v1/files/{file_id}/content", "retrieve_file_content", ["GET"]),
         ("/openai/v1/assistants", "create_assistant", ["POST"]),
         ("/openai/v1/assistants", "list_assistants", ["GET"]),
         ("/openai/v1/assistants/{assistant_id}", "retrieve_assistant", ["GET"]),

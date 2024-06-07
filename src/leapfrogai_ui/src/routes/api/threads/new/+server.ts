@@ -4,8 +4,8 @@ import type { Profile } from '$lib/types/profile';
 import { openai } from '$lib/server/constants';
 import type { Thread } from 'openai/resources/beta/threads/threads';
 
-export async function POST({ request, locals: { supabase, getSession } }) {
-  const session = await getSession();
+export async function POST({ request, locals: { supabase, safeGetSession } }) {
+  const { session } = await safeGetSession();
   if (!session) {
     error(401, 'Unauthorized');
   }

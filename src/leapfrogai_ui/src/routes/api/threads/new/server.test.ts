@@ -33,7 +33,7 @@ describe('/api/threads/new', () => {
     const res = await POST({
       request,
       locals: {
-        getSession: sessionMock,
+        safeGetSession: sessionMock,
         supabase: supabaseFromMockWrapper({
           ...supabaseSelectSingleByIdMock(fakeProfile),
           ...updateMock
@@ -60,7 +60,7 @@ describe('/api/threads/new', () => {
         request,
         locals: {
           supabase: supabaseInsertMock([thread]),
-          getSession: sessionNullMock
+          safeGetSession: sessionNullMock
         }
       })
     ).rejects.toMatchObject({
@@ -77,7 +77,7 @@ describe('/api/threads/new', () => {
     await expect(
       POST({
         request,
-        locals: { supabase: supabaseInsertMock([thread]), getSession: sessionMock }
+        locals: { supabase: supabaseInsertMock([thread]), safeGetSession: sessionMock }
       })
     ).rejects.toMatchObject({
       status: 400
@@ -91,7 +91,7 @@ describe('/api/threads/new', () => {
     await expect(
       POST({
         request,
-        locals: { supabase: supabaseInsertMock([thread]), getSession: sessionMock }
+        locals: { supabase: supabaseInsertMock([thread]), safeGetSession: sessionMock }
       })
     ).rejects.toMatchObject({
       status: 400
@@ -106,7 +106,7 @@ describe('/api/threads/new', () => {
     await expect(
       POST({
         request,
-        locals: { supabase: supabaseInsertMock([thread]), getSession: sessionMock }
+        locals: { supabase: supabaseInsertMock([thread]), safeGetSession: sessionMock }
       })
     ).rejects.toMatchObject({
       status: 400
@@ -127,7 +127,7 @@ describe('/api/threads/new', () => {
             ...supabaseSelectSingleByIdMock(fakeProfile),
             ...supabaseUpdateErrorMock()
           }),
-          getSession: sessionMock
+          safeGetSession: sessionMock
         }
       })
     ).rejects.toMatchObject({
@@ -148,7 +148,7 @@ describe('/api/threads/new', () => {
             ...supabaseSelectSingleByIdMock(fakeProfile),
             ...selectSingleReturnsMockError()
           }),
-          getSession: sessionMock
+          safeGetSession: sessionMock
         }
       })
     ).rejects.toMatchObject({
@@ -169,7 +169,7 @@ describe('/api/threads/new', () => {
             ...supabaseSelectSingleByIdMock(fakeProfile),
             ...updateSingleReturnsMock()
           }),
-          getSession: sessionMock
+          safeGetSession: sessionMock
         }
       })
     ).rejects.toMatchObject({

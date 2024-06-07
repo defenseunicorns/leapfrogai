@@ -9,8 +9,8 @@ import { openai } from '$lib/server/constants';
 import type { EditAssistantInput, LFAssistant } from '$lib/types/assistants';
 import { getAssistantAvatarUrl } from '$helpers/assistants';
 
-export const load: PageServerLoad = async ({ params, locals: { getSession } }) => {
-  const session = await getSession();
+export const load: PageServerLoad = async ({ params, locals: { safeGetSession } }) => {
+  const { session } = await safeGetSession();
 
   if (!session) {
     throw redirect(303, '/');
@@ -40,9 +40,9 @@ export const load: PageServerLoad = async ({ params, locals: { getSession } }) =
 };
 
 export const actions = {
-  default: async ({ request, locals: { supabase, getSession } }) => {
+  default: async ({ request, locals: { supabase, safeGetSession } }) => {
     // Validate session
-    const session = await getSession();
+    const { session } = await safeGetSession();
     if (!session) {
       return fail(401, { message: 'Unauthorized' });
     }

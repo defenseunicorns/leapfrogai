@@ -3,9 +3,10 @@ import { faker } from '@faker-js/faker';
 import { assistantDefaults, DEFAULT_ASSISTANT_TEMP } from '../../src/lib/constants';
 import type { AssistantInput, LFAssistant } from '../../src/lib/types/assistants';
 import type { LFMessage } from '../../src/lib/types/messages';
-import type { LFThread, Roles } from '../../src/lib/types/threads';
+import type { LFThread } from '../../src/lib/types/threads';
 import type { MessageContent } from 'openai/resources/beta/threads/messages';
 import { getUnixSeconds } from '../../src/lib/helpers/dates';
+import type { FileObject } from 'openai/resources/files';
 
 const todayOverride = new Date('2024-03-20T00:00');
 
@@ -13,7 +14,7 @@ const userId = faker.string.uuid();
 
 type FakeMessageOptions = {
   id?: string;
-  role?: Roles;
+  role?: 'user' | 'assistant';
   thread_id?: string;
   user_id?: string;
   content?: string;
@@ -138,4 +139,26 @@ export const getFakeAssistantInput = (): AssistantInput => {
     pictogram: 'default',
     avatar: ''
   };
+};
+
+type GetFakeFilesOptions = {
+  numFiles?: number;
+  created_at?: Date;
+};
+export const getFakeFiles = (options: GetFakeFilesOptions = {}) => {
+  const { numFiles = 2, created_at = new Date() } = options;
+
+  const files: FileObject[] = [];
+  for (let i = 0; i < numFiles; i++) {
+    files.push({
+      id: faker.string.uuid(),
+      bytes: 32,
+      created_at: getUnixSeconds(created_at),
+      filename: `${faker.word.noun()}.pdf`,
+      object: 'file',
+      purpose: 'assistants',
+      status: 'processed'
+    });
+  }
+  return files;
 };

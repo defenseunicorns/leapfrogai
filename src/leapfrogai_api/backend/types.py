@@ -1,6 +1,9 @@
 """Typing definitions for assistants API."""
 
 from __future__ import annotations
+
+import datetime
+from enum import Enum
 from typing import Literal
 from pydantic import BaseModel, Field
 from fastapi import UploadFile, Form, File
@@ -9,6 +12,7 @@ from openai.types import FileObject
 from openai.types.beta import VectorStore
 from openai.types.beta import Assistant, AssistantTool
 from openai.types.beta.assistant import ToolResources
+
 
 ##########
 # GENERIC
@@ -281,6 +285,23 @@ class ListAssistantsResponse(BaseModel):
 ################
 
 
+class VectorStoreFileStatus(Enum):
+    """Enum for the status of a vector store file."""
+
+    IN_PROGRESS = "in_progress"
+    COMPLETED = "completed"
+    CANCELLED = "cancelled"
+    FAILED = "failed"
+
+
+class VectorStoreStatus(Enum):
+    """Enum for the status of a vector store."""
+
+    EXPIRED = "expired"
+    IN_PROGRESS = "in_progress"
+    COMPLETED = "completed"
+
+
 class CreateVectorStoreRequest(BaseModel):
     """Request object for creating a vector store."""
 
@@ -288,6 +309,49 @@ class CreateVectorStoreRequest(BaseModel):
     name: str | None = None
     expires_after: ExpiresAfter | None = ExpiresAfter(anchor="last_active_at", days=0)
     metadata: dict | None = {}
+
+    def add_days_to_timestamp(self, timestamp: int, days: int) -> int:
+        """
+        Adds a specified number of days to a timestamp. Used to when updating the VectorStore.
+
+        Args:
+            timestamp(int): An integer representing a timestamp.
+            days(int): The number of days to add.
+
+        Returns:
+            An integer representing the new timestamp with the added days.
+        """
+
+        # Convert the timestamp to a datetime object
+        datetime_obj = datetime.datetime.fromtimestamp(timestamp)
+
+        # Add the specified number of days
+        new_datetime_obj = datetime_obj + datetime.timedelta(days=days)
+
+        # Convert the new datetime object back to a timestamp
+        new_timestamp = new_datetime_obj.timestamp()
+
+        return int(new_timestamp)
+
+    def can_expire(self) -> bool:
+        return self.expires_after is not None
+
+    def get_expiry(self, last_active_at: int) -> tuple[ExpiresAfter | None, int | None]:
+        """
+        Return expiration details based on the provided last_active_at unix timestamp
+
+        Args:
+            last_active_at(int): An integer representing a timestamp when the vector store was last active.
+
+        Returns:
+            A tuple of when the vector store should expire and the timestamp of the expiry date.
+        """
+        if self.can_expire():
+            return self.expires_after, self.add_days_to_timestamp(
+                last_active_at, self.expires_after.days
+            )
+        else:
+            return None, None
 
 
 class ModifyVectorStoreRequest(CreateVectorStoreRequest):

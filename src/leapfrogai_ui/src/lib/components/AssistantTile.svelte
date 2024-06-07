@@ -1,5 +1,5 @@
 <script lang="ts">
-  import { goto, invalidateAll } from '$app/navigation';
+  import { goto, invalidate } from '$app/navigation';
   import { fade } from 'svelte/transition';
   import DynamicPictogram from '$components/DynamicPictogram.svelte';
   import { Modal, OverflowMenu, OverflowMenuItem } from 'carbon-components-svelte';
@@ -23,7 +23,7 @@
     deleteModalOpen = false;
 
     if (res.ok) {
-      await invalidateAll();
+      await invalidate('/api/assistants');
       toastStore.addToast({
         kind: 'info',
         title: 'Assistant Deleted.',
@@ -72,11 +72,13 @@
   {/if}
   <!--With fixed width and font sizes, there isn't a simple solution for multi line text ellipses, so doing it manually at specific character length instead-->
   <p class="name">
-    {assistant.name.length > 20 ? `${assistant.name.slice(0, 20)}...` : assistant.name}
+    {assistant.name && assistant.name.length > 20
+      ? `${assistant.name.slice(0, 20)}...`
+      : assistant.name}
   </p>
   <p class="description">
-    {assistant.description && assistant.description.length > 62
-      ? `${assistant.description?.slice(0, 62)}...`
+    {assistant.description && assistant.description.length > 75
+      ? `${assistant.description?.slice(0, 75)}...`
       : assistant.description}
   </p>
 
@@ -113,10 +115,15 @@
 
     .name {
       @include type.type-style('heading-03');
+      height: 1.75rem;
     }
 
     .description {
       @include type.type-style('body-01');
+      width: 256px;
+      height: 2.5rem;
+      word-wrap: break-word;
+      overflow: hidden;
     }
 
     .overflow-menu-container {
@@ -137,8 +144,8 @@
     display: flex;
     justify-content: center;
     align-items: center;
-    width: 3rem;
-    height: 3rem;
+    width: 2.5rem;
+    height: 2.5rem;
     border-radius: 50%;
 
     .mini-avatar-image {

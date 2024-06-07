@@ -11,7 +11,7 @@ describe('/api/threads/delete', () => {
     });
     const res = await DELETE({
       request,
-      locals: { getSession: sessionMock }
+      locals: { safeGetSession: sessionMock }
     });
     expect(res.status).toEqual(204);
   });
@@ -24,7 +24,7 @@ describe('/api/threads/delete', () => {
     await expect(
       DELETE({
         request,
-        locals: { getSession: sessionNullMock }
+        locals: { safeGetSession: sessionNullMock }
       })
     ).rejects.toMatchObject({
       status: 401
@@ -36,7 +36,9 @@ describe('/api/threads/delete', () => {
       body: JSON.stringify({ thread_id: faker.string.uuid(), message_id: 123 })
     });
 
-    await expect(DELETE({ request, locals: { getSession: sessionMock } })).rejects.toMatchObject({
+    await expect(
+      DELETE({ request, locals: { safeGetSession: sessionMock } })
+    ).rejects.toMatchObject({
       status: 400
     });
   });
@@ -46,7 +48,9 @@ describe('/api/threads/delete', () => {
       body: JSON.stringify({ thread_id: faker.string.uuid() })
     });
 
-    await expect(DELETE({ request, locals: { getSession: sessionMock } })).rejects.toMatchObject({
+    await expect(
+      DELETE({ request, locals: { safeGetSession: sessionMock } })
+    ).rejects.toMatchObject({
       status: 400
     });
   });
@@ -61,7 +65,9 @@ describe('/api/threads/delete', () => {
       })
     });
 
-    await expect(DELETE({ request, locals: { getSession: sessionMock } })).rejects.toMatchObject({
+    await expect(
+      DELETE({ request, locals: { safeGetSession: sessionMock } })
+    ).rejects.toMatchObject({
       status: 400
     });
   });
@@ -76,7 +82,7 @@ describe('/api/threads/delete', () => {
       DELETE({
         request,
         locals: {
-          getSession: sessionMock
+          safeGetSession: sessionMock
         }
       })
     ).rejects.toMatchObject({

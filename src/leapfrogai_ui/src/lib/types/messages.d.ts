@@ -4,7 +4,7 @@ import type { Roles } from '$lib/types/threads';
 export type NewMessageInput = {
   thread_id: string;
   content: string;
-  role: Roles;
+  role: 'user' | 'assistant';
   assistantId?: string;
 };
 

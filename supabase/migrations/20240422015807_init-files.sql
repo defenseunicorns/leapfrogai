@@ -2,7 +2,6 @@
 create table
   file_objects (
     id uuid primary key DEFAULT uuid_generate_v4(),
-    user_id uuid references auth.users not null,
     bytes int,
     created_at bigint default extract(epoch from now()) not null,
     filename text,
@@ -16,4 +15,4 @@ create table
 insert into storage.buckets
   (id, name, public)
 values
-  ('file_bucket', 'files', false);
+  ('file_bucket', 'files', true);

@@ -91,18 +91,11 @@ export const waitForResponseToComplete = async (page: Page) => {
   await expect(page.getByTestId('send message')).toHaveCount(1, { timeout: 30000 });
 };
 
-export const deleteAssistant = async (page: Page, assistantName: string) => {
-  await page.goto('/chat/assistants-management');
-
-  await page.getByTestId(`assistant-tile-${assistantName}`).getByTestId('overflow-menu').click();
-
-  // click overflow menu delete btn
-  await page.getByRole('menuitem', { name: 'Delete' }).click();
-
-  // click modal actual delete btn
-  await page.getByRole('button', { name: 'Delete' }).click();
-
-  await expect(page.getByText(`${assistantName} Assistant deleted.`)).toBeVisible();
+export const deleteAllAssistants = async () => {
+  const myAssistants = await openai.beta.assistants.list();
+  for (const assistant of myAssistants.data) {
+    await openai.beta.assistants.del(assistant.id);
+  }
 };
 
 export const attachAvatarImage = async (page: Page, imageName: string) => {

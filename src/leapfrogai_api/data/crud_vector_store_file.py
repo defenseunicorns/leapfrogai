@@ -1,6 +1,6 @@
 """CRUD Operations for VectorStoreFile."""
 
-from pydantic import Field
+from pydantic import BaseModel, Field
 from openai.types.beta.vector_stores import VectorStoreFile
 from supabase_py_async import AsyncClient
 from leapfrogai_api.data.crud_base import CRUDBase
@@ -12,57 +12,39 @@ class AuthVectorStoreFile(VectorStoreFile):
     user_id: str = Field(default="")
 
 
+class FilterVectorStoreFile(BaseModel):
+    vector_store_id: str
+    file_id: str | None = None
+
+
 class CRUDVectorStoreFile(CRUDBase[AuthVectorStoreFile]):
     """CRUD Operations for VectorStoreFile"""
 
     def __init__(self, db: AsyncClient, table_name: str = "vector_store_file"):
         super().__init__(db=db, model=AuthVectorStoreFile, table_name=table_name)
 
-    async def create(self, object_: VectorStoreFile) -> AuthVectorStoreFile | None:
+    async def create(self, object_: VectorStoreFile) -> VectorStoreFile | None:
         """Create a new vector store file."""
         user_id: str = (await self.db.auth.get_user()).user.id
         return await super().create(
             object_=AuthVectorStoreFile(user_id=user_id, **object_.model_dump())
         )
 
-    async def get(  # pylint: disable=arguments-differ
-        self, vector_store_id: str, file_id: str
-    ) -> AuthVectorStoreFile | None:
-        """Get a vector store file by its ID."""
-        data, _count = (
-            await self.db.table(self.table_name)
-            .select("*")
-            .eq("vector_store_id", vector_store_id)
-            .eq("id", file_id)
-            .execute()
-        )
+    async def get(
+        self, filters: FilterVectorStoreFile | None = None
+    ) -> VectorStoreFile | None:
+        """Get vector store file by filters."""
+        return await super().get(filters=filters)
 
-        _, response = data
-
-        if response:
-            return self.model(**response[0])
-        return None
-
-    async def list(  # pylint: disable=arguments-differ
-        self, vector_store_id: str
-    ) -> list[AuthVectorStoreFile] | None:
+    async def list(
+        self, filters: FilterVectorStoreFile | None = None
+    ) -> list[VectorStoreFile] | None:
         """List all vector store files."""
-        data, _count = (
-            await self.db.table(self.table_name)
-            .select("*")
-            .eq("vector_store_id", vector_store_id)
-            .execute()
-        )
-
-        _, response = data
-
-        if response:
-            return [self.model(**item) for item in response]
-        return None
+        return await super().list(filters={"vector_store_id": filters.vector_store_id})
 
     async def update(
         self, id_: str, object_: VectorStoreFile
-    ) -> AuthVectorStoreFile | None:
+    ) -> VectorStoreFile | None:
         """Update a vector store file by its ID.
         Args:
             id_ (str): The file id.
@@ -83,17 +65,6 @@ class CRUDVectorStoreFile(CRUDBase[AuthVectorStoreFile]):
             return self.model(**response[0])
         return None
 
-    async def delete(self, vector_store_id: str, file_id: str) -> bool:  # pylint: disable=arguments-differ
+    async def delete(self, filters: FilterVectorStoreFile | None = None) -> bool:
         """Delete a vector store file by its ID."""
-
-        data, _count = (
-            await self.db.table(self.table_name)
-            .delete()
-            .eq("vector_store_id", vector_store_id)
-            .eq("id", file_id)
-            .execute()
-        )
-
-        _, response = data
-
-        return bool(response)
+        return await super().delete(filters=filters)

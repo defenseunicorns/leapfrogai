@@ -3,8 +3,8 @@ import type { Profile } from '$lib/types/profile';
 import { openai } from '$lib/server/constants';
 import { stringIdSchema } from '$schemas/chat';
 
-export async function DELETE({ request, locals: { supabase, getSession } }) {
-  const session = await getSession();
+export async function DELETE({ request, locals: { supabase, safeGetSession } }) {
+  const { session } = await safeGetSession();
   if (!session) {
     error(401, 'Unauthorized');
   }

@@ -192,7 +192,7 @@ To run the LeapfrogAI API locally (starting from the root directory of the repos
 python -m pip install src/leapfrogai_sdk
 cd src/leapfrogai_api
 python -m pip install .
-uvicorn leapfrogai_api.main:app --port 3000 --reload
+uvicorn leapfrogai_api.main:app --port 3000 --log-level debug --reload
 ```
 
 #### Repeater

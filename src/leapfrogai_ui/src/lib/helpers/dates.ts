@@ -197,3 +197,33 @@ export const organizeThreadsByDate = (
 };
 
 export const getUnixSeconds = (date: Date) => date.getTime() / 1000;
+
+export const formatDate = (date: Date) => {
+  // Create an array with month names
+  const months = [
+    'Jan',
+    'Feb',
+    'Mar',
+    'Apr',
+    'May',
+    'Jun',
+    'Jul',
+    'Aug',
+    'Sep',
+    'Oct',
+    'Nov',
+    'Dec'
+  ];
+
+  // Get the day of the month
+  const day = date.getDate();
+
+  // Get the month name from the array
+  const month = months[date.getMonth()];
+
+  // Get the full year
+  const year = date.getFullYear();
+
+  // Return the formatted date string
+  return `${day} ${month} ${year}`;
+};

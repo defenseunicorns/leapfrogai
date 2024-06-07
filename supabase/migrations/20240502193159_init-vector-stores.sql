@@ -93,12 +93,12 @@ begin
     file_id,
     content,
     metadata,
-    1 - (vector_store.embedding <=> query_embedding) as similarity
-  from vector_store
+    1 - (vector_content.embedding <=> query_embedding) as similarity
+  from vector_content
   where vector_store_id = vs_id
     and user_id = user_id
     and metadata @> filter
-  order by vector_store.embedding <=> query_embedding
+  order by vector_content.embedding <=> query_embedding
   limit match_limit;
 end;
 $$;

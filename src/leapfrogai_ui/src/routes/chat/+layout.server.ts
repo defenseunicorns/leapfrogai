@@ -1,12 +1,11 @@
 import { redirect } from '@sveltejs/kit';
-import type { PageServerLoad } from './$types';
 import type { Profile } from '$lib/types/profile';
 import type { LFThread } from '$lib/types/threads';
 import { openai } from '$lib/server/constants';
 import type { LFMessage } from '$lib/types/messages';
 
-export const load: PageServerLoad = async ({ locals: { supabase, getSession } }) => {
-  const session = await getSession();
+export const load = async ({ locals: { supabase, safeGetSession } }) => {
+  const { session } = await safeGetSession();
 
   if (!session) {
     throw redirect(303, '/');
@@ -15,13 +14,13 @@ export const load: PageServerLoad = async ({ locals: { supabase, getSession } })
   const { data: profile, error: profileError } = await supabase
     .from('profiles')
     .select(`*`)
-    .eq('id', session.user.id)
+    .eq('id', session.user?.id)
     .returns<Profile[]>()
     .single();
 
   if (profileError) {
     console.error(
-      `error getting user profile for user_id: ${session.user.id}. ${JSON.stringify(profileError)}`
+      `error getting user profile for user_id: ${session.user?.id}. ${JSON.stringify(profileError)}`
     );
     throw redirect(303, '/');
   }

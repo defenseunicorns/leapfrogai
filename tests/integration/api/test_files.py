@@ -20,11 +20,11 @@ headers: dict[str, str] = {}
 
 try:
     headers = {"Authorization": f"Bearer {os.environ['SUPABASE_USER_JWT']}"}
-except KeyError:
+except KeyError as exc:
     raise MissingEnvironmentVariable(
         "SUPABASE_USER_JWT must be defined for the test to pass. "
         "Please check the api README for instructions on obtaining this token."
-    )
+    ) from exc
 
 client = TestClient(router, headers=headers)
 
@@ -33,9 +33,7 @@ client = TestClient(router, headers=headers)
 def read_testfile():
     """Read the test file content."""
     global testfile_content  # pylint: disable=global-statement
-    with open(
-        os.path.dirname(__file__) + "/../../../tests/data/test.txt", "rb"
-    ) as testfile:
+    with open(os.path.dirname(__file__) + "/../../data/test.txt", "rb") as testfile:
         testfile_content = testfile.read()
 
 
@@ -135,10 +133,11 @@ def test_invalid_file_type():
     dir_path = os.path.dirname(os.path.realpath(__file__))
     relative_file_path = os.path.join(dir_path, file_path)
 
-    with pytest.raises(HTTPException):
+    with pytest.raises(HTTPException) as exception:
         with open(relative_file_path, "rb") as testfile:
             _ = client.post(
                 "/openai/v1/files",
                 files={"file": ("0min12sec.wav", testfile, "audio/wav")},
                 data={"purpose": "assistants"},
             )
+            assert exception.status_code == status.HTTP_415_UNSUPPORTED_MEDIA_TYPE

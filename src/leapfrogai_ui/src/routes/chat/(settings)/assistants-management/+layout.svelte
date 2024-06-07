@@ -22,7 +22,7 @@
     }
   ];
 
-  const isCurrentPage = (path: string) =>
+  $: isCurrentPage = (path: string) =>
     $page.url.pathname === path ||
     // Handle edit route with assistant id as path parameter
     ($page.url.pathname.startsWith('/chat/assistants-management/edit/') &&

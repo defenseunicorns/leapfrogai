@@ -1,6 +1,7 @@
+"""Service for querying the RAG model."""
+
 from supabase_py_async import AsyncClient
-from leapfrogai_api.data.async_supabase_vector_store import AsyncSupabaseVectorStore
-from leapfrogai_api.backend.rag.leapfrogai_embeddings import LeapfrogAIEmbeddings
+from leapfrogai_api.backend.rag.index import IndexingService
 
 
 class QueryService:
@@ -22,10 +23,7 @@ class QueryService:
         Returns:
             dict: The response from the RAG model.
         """
-        vector_store = AsyncSupabaseVectorStore(
-            db=self.db,
-            embedding=LeapfrogAIEmbeddings(),
-        )
+        vector_store = IndexingService(db=self.db)
 
         response = await vector_store.asimilarity_search(
             query=query,

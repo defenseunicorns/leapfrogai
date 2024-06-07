@@ -1,5 +1,5 @@
 import { ValidationError } from 'yup';
-import { editAssistantInputSchema, supabaseAssistantInputSchema } from '$schemas/assistants';
+import { editAssistantInputSchema, assistantInputSchema } from '$schemas/assistants';
 import { ASSISTANTS_NAME_MAX_LENGTH } from '$constants';
 
 describe('supabaseAssistantInputSchema', () => {
@@ -15,7 +15,7 @@ describe('supabaseAssistantInputSchema', () => {
       pictogram: 'pictogram_url'
     };
 
-    await expect(supabaseAssistantInputSchema.validate(validInput)).resolves.toBe(validInput);
+    await expect(assistantInputSchema.validate(validInput)).resolves.toBe(validInput);
   });
 
   it('should fail validation with missing required fields', async () => {
@@ -30,9 +30,7 @@ describe('supabaseAssistantInputSchema', () => {
       pictogram: 'pictogram_url'
     };
 
-    await expect(supabaseAssistantInputSchema.validate(invalidInput)).rejects.toThrow(
-      ValidationError
-    );
+    await expect(assistantInputSchema.validate(invalidInput)).rejects.toThrow(ValidationError);
   });
 
   it('should fail validation if name exceeds max length', async () => {
@@ -47,9 +45,7 @@ describe('supabaseAssistantInputSchema', () => {
       pictogram: 'pictogram_url'
     };
 
-    await expect(supabaseAssistantInputSchema.validate(invalidInput)).rejects.toThrow(
-      ValidationError
-    );
+    await expect(assistantInputSchema.validate(invalidInput)).rejects.toThrow(ValidationError);
   });
 
   it('should fail validation if avatarFile is of incorrect type', async () => {
@@ -65,9 +61,7 @@ describe('supabaseAssistantInputSchema', () => {
       pictogram: 'pictogram_url'
     };
 
-    await expect(supabaseAssistantInputSchema.validate(invalidInput)).rejects.toThrow(
-      ValidationError
-    );
+    await expect(assistantInputSchema.validate(invalidInput)).rejects.toThrow(ValidationError);
   });
 });
 
