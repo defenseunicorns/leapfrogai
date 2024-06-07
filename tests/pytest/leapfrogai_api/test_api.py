@@ -136,7 +136,6 @@ def test_routes():
         ("/openai/v1/assistants/{assistant_id}", "delete_assistant", ["DELETE"]),
         ("/openai/v1/vector_stores", "create_vector_store", ["POST"]),
         ("/openai/v1/vector_stores", "list_vector_stores", ["GET"]),
-        ("/openai/v1/vector_stores", "list_vector_stores", ["GET"]),
         (
             "/openai/v1/vector_stores/{vector_store_id}",
             "retrieve_vector_store",
