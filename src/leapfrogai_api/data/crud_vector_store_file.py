@@ -51,9 +51,12 @@ class CRUDVectorStoreFile(CRUDBase[AuthVectorStoreFile]):
             db (AsyncClient): The Supabase async client.
             object_ (VectorStoreFile): The vector store file object (contains vector store id).
         """
+        dict_ = object_.model_dump()
+        del dict_["usage_bytes"]
+
         data, _count = (
             await self.db.table(self.table_name)
-            .update(object_.model_dump())
+            .update(dict_)
             .eq("id", id_)
             .eq("vector_store_id", object_.vector_store_id)
             .execute()

@@ -307,7 +307,9 @@ class CreateVectorStoreRequest(BaseModel):
 
     file_ids: list[str] | None = []
     name: str | None = None
-    expires_after: ExpiresAfter | None = ExpiresAfter(anchor="last_active_at", days=0)
+    expires_after: ExpiresAfter | None = Field(
+        default=None, examples=[ExpiresAfter(anchor="last_active_at", days=1)]
+    )
     metadata: dict | None = {}
 
     def add_days_to_timestamp(self, timestamp: int, days: int) -> int:
@@ -348,7 +350,7 @@ class CreateVectorStoreRequest(BaseModel):
         """
         if self.can_expire():
             return self.expires_after, self.add_days_to_timestamp(
-                last_active_at, self.expires_after.days
+                last_active_at, self.expires_after.days if self.expires_after else None
             )
         else:
             return None, None
