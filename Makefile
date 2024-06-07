@@ -154,3 +154,6 @@ build-cpu: build-api build-llama-cpp-python build-text-embeddings build-whisper 
 build-gpu: build-api build-vllm build-text-embeddings build-whisper ## Build all zarf packages for a gpu-enabled deployment of LFAI
 
 build-all: build-api build-llama-cpp-python build-vllm build-text-embeddings build-whisper build-repeater ## Build all of the LFAI packages
+
+include make-supabase.mk
+include make-tests.mk
