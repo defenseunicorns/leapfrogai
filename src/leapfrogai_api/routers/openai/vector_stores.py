@@ -38,7 +38,7 @@ async def create_vector_store(
 
     vector_store = VectorStore(
         id="",  # Leave blank to have Postgres generate a UUID
-        bytes=0,  # Automatically calculated by DB
+        usage_bytes=0,  # Automatically calculated by DB
         created_at=0,  # Leave blank to have Postgres generate a timestamp
         file_counts=FileCounts(
             cancelled=0, completed=0, failed=0, in_progress=0, total=0
@@ -132,7 +132,7 @@ async def modify_vector_store(
     try:
         new_vector_store = VectorStore(
             id=vector_store_id,
-            bytes=old_vector_store.bytes,  # Automatically calculated by DB
+            usage_bytes=old_vector_store.usage_bytes,  # Automatically calculated by DB
             created_at=old_vector_store.created_at,
             file_counts=old_vector_store.file_counts,
             last_active_at=old_vector_store.last_active_at,  # Update after indexing files

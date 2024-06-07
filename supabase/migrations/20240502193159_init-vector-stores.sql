@@ -7,7 +7,7 @@ create table
   vector_store (
     id uuid primary key DEFAULT uuid_generate_v4(),
     user_id uuid references auth.users not null,
-    bytes bigint,
+    usage_bytes bigint,
     created_at bigint default extract(epoch from now()) not null,
     file_counts jsonb,
     last_active_at bigint,
@@ -28,6 +28,8 @@ create table
     last_error jsonb,
     object text check (object in ('vector_store.file')),
     status text,
+    usage_bytes bigint,
+    chunking_strategy jsonb,
     vector_store_id uuid references vector_store (id) on delete cascade,
     primary key (vector_store_id, id)
   );
@@ -45,7 +47,7 @@ create table
   );
 
 -- Create a function to update the size in bytes
-create or replace function update_vector_store_bytes() returns trigger as $$
+create or replace function update_vector_store_usage_bytes() returns trigger as $$
 declare
   total_size bigint;
 begin
@@ -57,7 +59,7 @@ begin
 
   -- Update the bytes column in the vector_store table
   update vector_store
-  set bytes = total_size
+  set usage_bytes = total_size
   where id = coalesce(new.vector_store_id, old.vector_store_id);
 
   return new;
@@ -65,9 +67,9 @@ end;
 $$ language plpgsql;
 
 -- Create a trigger to call the function after insert, update, or delete on the vector_store table
-create trigger update_vector_store_bytes_trigger
+create trigger update_vector_store_usage_bytes_trigger
 after insert or update or delete on vector_content
-for each row execute function update_vector_store_bytes();
+for each row execute function update_vector_store_usage_bytes();
 
 -- Create a function to search for documents
 create function match_vectors (

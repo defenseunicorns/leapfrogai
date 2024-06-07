@@ -83,6 +83,7 @@ class IndexingService:
                     ),
                     object="vector_store.file",
                     status=VectorStoreFileStatus.FAILED.value,
+                    usage_bytes=0,
                     vector_store_id=vector_store_id,
                 )
                 return await crud_vector_store_file.create(object_=vector_store_file)
@@ -93,6 +94,7 @@ class IndexingService:
                 last_error=None,
                 object="vector_store.file",
                 status=VectorStoreFileStatus.IN_PROGRESS.value,
+                usage_bytes=0,
                 vector_store_id=vector_store_id,
             )
 

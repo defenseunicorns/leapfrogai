@@ -76,7 +76,7 @@ class CRUDVectorStore(CRUDBase[AuthVectorStore]):
         """Update a vector store by its ID."""
 
         dict_ = object_.model_dump()
-        del dict_["bytes"]  # Automatically calculated by DB
+        del dict_["usage_bytes"]  # Automatically calculated by DB
 
         data, _count = (
             await self.db.table(self.table_name).update(dict_).eq("id", id_).execute()
