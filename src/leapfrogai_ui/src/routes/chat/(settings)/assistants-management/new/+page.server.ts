@@ -42,32 +42,33 @@ export const actions = {
       return fail(400, { form });
     }
 
-    // Create assistant object, we can't spread the form data here because we need to re-nest some of the values
-    const withDataSources =
+    let data_sources =
       form.data.data_sources &&
       form.data.data_sources.length > 0 &&
-      typeof form.data.data_sources[0] === 'string';
+      typeof form.data.data_sources[0] === 'string'
+        ? form.data.data_sources[0].split(',')
+        : [];
 
-    let data_sources = withDataSources ? form.data.data_sources[0].split(',') : [];
-
+    // Create assistant object, we can't spread the form data here because we need to re-nest some of the values
     const assistant: AssistantCreateParams = {
       name: form.data.name,
       description: form.data.description,
       instructions: form.data.instructions,
       temperature: form.data.temperature,
       model: env.DEFAULT_MODEL,
-      tools: withDataSources ? [{ type: 'file_search' }] : [],
-      tool_resources: withDataSources
-        ? {
-            file_search: {
-              vector_stores: [
-                {
-                  file_ids: data_sources
-                }
-              ]
+      tools: data_sources.length > 0 ? [{ type: 'file_search' }] : [],
+      tool_resources:
+        data_sources.length > 0
+          ? {
+              file_search: {
+                vector_stores: [
+                  {
+                    file_ids: data_sources
+                  }
+                ]
+              }
             }
-          }
-        : null,
+          : null,
       metadata: {
         ...assistantDefaults.metadata,
         pictogram: form.data.pictogram,

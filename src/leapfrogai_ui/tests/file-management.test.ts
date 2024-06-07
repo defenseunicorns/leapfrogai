@@ -27,7 +27,7 @@ test.beforeEach(async ({ page }) => {
   // Delete all rows with filenames that start with "test" and end in .pdf
   const testPdfRows = await page.getByRole('row', { name: 'test.pdf' }).all();
   const testPdfForDeletionPdfRows = await page
-    .getByRole('row', { name: 'testPdfForDeletionTest.pdf' })
+    .getByRole('row', { name: 'test2.pdf' })
     .all();
 
   const testRows = [...testPdfRows, ...testPdfForDeletionPdfRows];
@@ -77,7 +77,7 @@ test('it can upload a file', async ({ page }) => {
 });
 
 test('it can delete multiple files', async ({ page }) => {
-  const filename = 'testPdfForDeletionTest.pdf';
+  const filename = 'test2.pdf';
 
   await uploadFile(page, `${filename}`);
   await expect(page.getByText(`${filename} imported successfully`)).toBeVisible();

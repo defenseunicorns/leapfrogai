@@ -1,0 +1,32 @@
+import { test, expect } from '@playwright/test';
+
+test('test', async ({ page }) => {
+  await page.goto('http://localhost:4173/');
+  await page.getByRole('button', { name: 'Log In with UDS SSO' }).click();
+  await page.getByLabel('Username or email').fill('fakekeycloakuser@test.com');
+  await page.getByLabel('Password').click();
+  await page.getByLabel('Password').fill('!zu7bVAhaZakF2j*y6ih');
+  await page.getByRole('button', { name: 'Log In' }).click();
+  await page.getByLabel('Six digit code').click();
+  await page.getByLabel('Six digit code').fill('259035');
+  await page.getByLabel('Six digit code').press('Enter');
+  await page.getByTestId('settings header action button').click();
+  await page.getByRole('link', { name: 'Assistants Management' }).click();
+  await page.getByTestId('assistant-tile-Andrew').getByTestId('overflow-menu').click();
+  await page.getByRole('menuitem', { name: 'Edit' }).click();
+  await page.getByRole('button', { name: 'Open menu' }).click();
+  await page.getByLabel('Choose an item').getByText('MetLife Advantages Overview.').click();
+  await page.getByLabel('Choose an item').locator('label').click();
+  await page.locator('#main-content div').filter({ hasText: 'Edit Assistant Avatar Image' }).nth(2).click();
+  await page.getByRole('button', { name: 'Save' }).click();
+  await page.goto('http://localhost:4173/chat/assistants-management');
+  await page.getByTestId('assistant-tile-Andrew').getByTestId('overflow-menu').click();
+  await page.getByRole('menuitem', { name: 'Edit' }).click();
+  await page.getByRole('button', { name: 'Open menu' }).click();
+  await page.getByLabel('Choose an item').locator('label').nth(1).click();
+  await page.getByLabel('Choose an item').locator('label').nth(2).click();
+  await page.getByRole('button', { name: 'Open menu' }).click();
+  await page.locator('.bx--file-close').first().click();
+  await page.locator('.bx--file-close').first().click();
+  await page.locator('.bx--file-close').click();
+});

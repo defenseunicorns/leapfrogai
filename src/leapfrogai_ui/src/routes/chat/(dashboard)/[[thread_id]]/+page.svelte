@@ -54,7 +54,7 @@
 
   $: if ($isLoading || $status === 'in_progress') threadsStore.setSendingBlocked(true);
 
-  // new streamed assistant message received (has no assistant_id)
+  // new streamed assistant message received (add in assistant_id and ensure it has a created_At timestamp)
   $: if (
     $assistantMessages.length > 0 &&
     !$assistantMessages[$assistantMessages.length - 1].assistant_id
@@ -104,7 +104,6 @@
       // and AI response are not exactly the same. This is important for sorting messages when they are initially loaded
       // from the db/API (ex. browser refresh). Streamed messages are sorted realtime and we modify the timestamps to
       // ensure we have millisecond precision.
-      threadsStore.setSendingBlocked(true);
       try {
         if (process.env.NODE_ENV !== 'test') await delay(1000);
 
@@ -129,6 +128,7 @@
       threadsStore.setSendingBlocked(false);
     },
     onError: () => {
+      threadsStore.setSendingBlocked(false);
       toastStore.addToast({
         kind: 'error',
         title: ERROR_GETTING_AI_RESPONSE_TEXT.title,
@@ -150,6 +150,7 @@
     api: '/api/chat/assistants',
     threadId: activeThread?.id,
     onError: (e) => {
+      threadsStore.setSendingBlocked(false);
       // ignore this error b/c it is expected on cancel
       if (e.toString() !== 'DOMException: BodyStreamBuffer was aborted') {
         toastStore.addToast({
@@ -162,6 +163,7 @@
   });
 
   const sendAssistantMessage = async (e: SubmitEvent | KeyboardEvent) => {
+    threadsStore.setSendingBlocked(true);
     if (activeThread?.id) {
       // assistant mode
       $assistantInput = $chatInput;
@@ -177,9 +179,11 @@
       });
       $assistantInput = '';
     }
+    threadsStore.setSendingBlocked(false);
   };
 
   const sendChatMessage = async (e: SubmitEvent | KeyboardEvent) => {
+    threadsStore.setSendingBlocked(true);
     if (activeThread?.id) {
       // Save with API
       try {
@@ -192,6 +196,7 @@
         await threadsStore.addMessageToStore(newMessage);
         submitChatMessage(e); // submit to AI (/api/chat)
       } catch {
+        threadsStore.setSendingBlocked(false);
         toastStore.addToast({
           kind: 'error',
           title: ERROR_SAVING_MSG_TEXT.title,
@@ -213,6 +218,7 @@
         assistantStop,
         chatStop
       });
+      threadsStore.setSendingBlocked(false);
       return;
     } else {
       if (!activeThread?.id) {
@@ -241,6 +247,7 @@
   });
 
   beforeNavigate(async () => {
+    console.log('thread blocked', $threadsStore.sendingBlocked, activeThread?.id);
     if ($threadsStore.sendingBlocked && activeThread?.id) {
       await stopThenSave({
         activeThreadId: activeThread.id,
@@ -312,6 +319,10 @@
             <UserProfile />
             {item.text}
           </button>
+        {:else if item.id === NO_SELECTED_ASSISTANT_ID}
+          <div class="noAssistant">
+            {item.text}
+          </div>
         {:else}
           <div class="assistant-dropdown-item">
             {item.text}
@@ -404,8 +415,9 @@
   }
 
   .noAssistant {
+    color: $gray-50;
     :global(.bx--list-box__label) {
-      color: themes.$text-secondary;
+      color: $gray-50;
     }
   }
 </style>

@@ -38,7 +38,7 @@
   ) => Promise<string | null | undefined>;
 
   let assistantImage = isAssistantMessage(message)
-    ? getAssistantImage($page.data.assistants || [], message.assistant_id)
+    ? getAssistantImage(...[$page.data.assistants || []], message.assistant_id)
     : null;
   let messageIsHovered = false;
   let editMode = false;

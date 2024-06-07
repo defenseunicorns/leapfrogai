@@ -5,6 +5,7 @@ import type { AssistantInput, LFAssistant } from '$lib/types/assistants';
 import OpenAI from 'openai';
 import type { Profile } from '$lib/types/profile';
 import { getFakeAssistantInput } from '$testUtils/fakeData';
+import * as fs from 'node:fs';
 
 const supabase = createClient(process.env.PUBLIC_SUPABASE_URL!, process.env.SERVICE_ROLE_KEY!);
 
@@ -99,7 +100,7 @@ export const waitForResponseToComplete = async (page: Page) => {
 export const deleteAllAssistants = async () => {
   const myAssistants = await openai.beta.assistants.list();
   for (const assistant of myAssistants.data) {
-    await openai.beta.assistants.del(assistant.id);
+    await deleteAssistantWithApi(assistant.id);
   }
 };
 
@@ -140,4 +141,16 @@ export const createAssistantWithApi = async () => {
 
 export const deleteAssistantWithApi = async (id: string) => {
   await openai.beta.assistants.del(id);
+};
+
+export const uploadFileWithApi = async (fileName = 'test.pdf') => {
+  const file = fs.createReadStream(`./tests/fixtures/${fileName}`);
+
+  return openai.files.create({
+    file: file,
+    purpose: 'assistants'
+  });
+};
+export const deleteFileWithApi = async (id: string) => {
+  return openai.files.del(id);
 };

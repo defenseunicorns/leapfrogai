@@ -98,18 +98,24 @@ export const actions = {
     }
 
     let data_sources =
-      form.data.data_sources &&
-      form.data.data_sources.length > 0 &&
-      typeof form.data.data_sources[0] === 'string'
-        ? form.data.data_sources[0].split(',')
-        : [];
+        form.data.data_sources &&
+        form.data.data_sources.length > 0 &&
+        typeof form.data.data_sources[0] === 'string'
+            ? form.data.data_sources[0].split(',')
+            : [];
 
-    const vectorStoreId = form.data.vectorStoreId;
-    if (vectorStoreId) {
+    let vectorStoreId: string = form.data.vectorStoreId;
+    if ((data_sources.length > 0 && !vectorStoreId) || vectorStoreId === 'undefined') {
+      const vectorStore = await openai.beta.vectorStores.create({
+        name: `${form.data.name}-vector-store`
+      });
+      vectorStoreId = vectorStore.id;
+    }
+    // undefined vector store id from form is passed as a string
+    if (vectorStoreId && vectorStoreId !== 'undefined') {
       try {
         const vectorStoreFilesPage = await openai.beta.vectorStores.files.list(vectorStoreId);
         const vectorStoreFiles = vectorStoreFilesPage.data;
-
         if (vectorStoreFiles) {
           const vectorStoreFileIds = vectorStoreFiles.map((file) => file.id);
           // delete and add files to vector store
