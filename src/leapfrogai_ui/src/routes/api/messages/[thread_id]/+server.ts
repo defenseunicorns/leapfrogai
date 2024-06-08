@@ -7,6 +7,7 @@ export async function GET({ params, locals: { safeGetSession } }) {
     error(401, 'Unauthorized');
   }
 
+  if (!params.thread_id) error(400, 'Invalid request');
   try {
     const threadMessages = await openai.beta.threads.messages.list(params.thread_id);
     return json(threadMessages.data);

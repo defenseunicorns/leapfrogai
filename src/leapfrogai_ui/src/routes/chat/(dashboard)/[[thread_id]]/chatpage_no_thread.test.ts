@@ -2,7 +2,7 @@ import { afterAll, beforeAll, vi } from 'vitest';
 import { render, screen } from '@testing-library/svelte';
 import userEvent from '@testing-library/user-event';
 import stores from '$app/stores';
-import { fakeThreads, getFakeProfile } from '$testUtils/fakeData';
+import { fakeThreads, getFakeFiles, getFakeProfile } from '$testUtils/fakeData';
 import {
   mockChatCompletion,
   mockGetAssistants,
@@ -19,15 +19,20 @@ import {
 import ChatPageWithToast from './ChatPageWithToast.test.svelte';
 import type { LFThread } from '$lib/types/threads';
 import type { LFAssistant } from '$lib/types/assistants';
+import type { FileObject } from 'openai/resources/files';
+import { mockGetFiles } from '$lib/mocks/file-mocks';
 
 const { getStores } = await vi.hoisted(() => import('$lib/mocks/svelte'));
 
 type PageServerLoad = {
   threads: LFThread[];
   assistants: LFAssistant[];
+  files: FileObject[];
 } | null;
 let data: PageServerLoad;
 const question = 'What is AI?';
+
+const files = getFakeFiles();
 
 describe('when there is NO active thread selected', () => {
   beforeAll(() => {
@@ -73,8 +78,10 @@ describe('when there is NO active thread selected', () => {
   beforeEach(async () => {
     const allMessages = fakeThreads.flatMap((thread) => thread.messages);
     mockGetAssistants();
+    mockGetFiles(files);
     mockOpenAI.setThreads(fakeThreads);
     mockOpenAI.setMessages(allMessages);
+    mockOpenAI.setFiles(files);
 
     const fakeProfile = getFakeProfile({ thread_ids: fakeThreads.map((thread) => thread.id) });
 

@@ -11,6 +11,16 @@ import type { LFThread } from '$lib/types/threads';
 import { tick } from 'svelte';
 import type { FileObject } from 'openai/resources/files';
 
+export const sortMessages = (
+  messages: Array<AIMessage | OpenAIMessage>
+): Array<AIMessage | OpenAIMessage> => {
+  return messages.sort((a, b) => {
+    const timeA = normalizeTimestamp(a);
+    const timeB = normalizeTimestamp(b);
+    return timeA - timeB;
+  });
+};
+
 export const saveMessage = async (input: NewMessageInput) => {
   const res = await fetch('/api/messages/new', {
     method: 'POST',
@@ -91,7 +101,7 @@ export const getAssistantImage = (assistants: LFAssistant[], assistant_id: strin
 };
 
 type EditMessageArgs = {
-  savedMessages: LFMessage[];
+  allStreamedMessages: AIMessage[];
   message: Partial<OpenAIMessage>;
   messages: AIMessage[];
   thread_id: string;
@@ -103,7 +113,7 @@ type EditMessageArgs = {
 };
 
 export const handleChatMessageEdit = async ({
-  savedMessages,
+  allStreamedMessages,
   message,
   messages,
   thread_id,
@@ -111,28 +121,40 @@ export const handleChatMessageEdit = async ({
   append
 }: EditMessageArgs) => {
   if (message.id) {
-    // Streamed chat messages will have temp ids, not actual ids. We need to find the actual id
-    const messageIndex = messages.findIndex((m) => m.id === message.id);
-    const messageId = messages[messageIndex].id;
-    const savedMessagesIndex = messages.findIndex((m) => m.id === messageId);
+    // Saved message are the completed messages returned from the API (have actual ids, not temp streamed ids)
+    // Streamed chat messages will have temp ids, not actual ids. Assistant messages (even the streamed ones) have actual ids
+    // When editing a streamed chat message, we have to fetch the saved messages and find the actual ids of the messages we want to delete
+    // First get the index of the messages from all the streamed messages, then find the actual id using that index
+    // from the saved messages
+    const savedMessages = (await getMessages(thread_id)) as LFMessage[];
+    sortMessages(savedMessages);
+
+    const messagesStreamedIndex = messages.findIndex((m) => m.id === message.id);
+    const allStreamedMessagesIndex = allStreamedMessages.findIndex((m) => m.id === message.id);
+
+    let savedMessageId: string | undefined = undefined;
+    let savedMessageResponseId: string | undefined = undefined;
+
+    savedMessageId = savedMessages[allStreamedMessagesIndex].id;
+    savedMessageResponseId = savedMessages[allStreamedMessagesIndex + 1].id;
 
     // Ensure the message after the user's message exists and is a response from the AI
     const numToSplice =
-      savedMessages[savedMessagesIndex + 1] && messages[savedMessagesIndex + 1].role !== 'user'
+      allStreamedMessages[allStreamedMessagesIndex + 1] &&
+      allStreamedMessages[allStreamedMessagesIndex + 1].role !== 'user'
         ? 2
         : 1;
 
     // delete old message from DB
-    // savedMessages has the messages saved with the API, not the streamed messages
-    // The savedMessages have actual ids (not the temp ids associated with streamed messages)
-    // so we can use them to delete the messages from the db
-
-    await threadsStore.deleteMessage(thread_id, savedMessages[savedMessagesIndex].id);
-    if (numToSplice === 2) {
-      // also delete that message's response
-      await threadsStore.deleteMessage(thread_id, savedMessages[savedMessagesIndex + 1].id);
+    if (savedMessageId) {
+      await threadsStore.deleteMessage(thread_id, savedMessageId);
     }
-    setMessages(messages.toSpliced(messageIndex, numToSplice)); // remove original message and response
+    if (numToSplice === 2 && savedMessageResponseId) {
+      // also delete that message's response
+      await threadsStore.deleteMessage(thread_id, savedMessageResponseId);
+    }
+    // Update the streamed messages (subset of the streamed messages, not all the streamed messages, eg. chat or assistants)
+    setMessages(messages.toSpliced(messagesStreamedIndex, numToSplice)); // remove original message and response
     await tick();
 
     // send to /api/chat or /api/chat/assistants
@@ -142,7 +164,7 @@ export const handleChatMessageEdit = async ({
       createdAt: new Date()
     };
 
-    if (isAssistantMessage(message)) {
+    if (isRunAssistantResponse(message)) {
       cMessage.assistant_id = message.assistant_id;
       await append(cMessage, {
         data: {
@@ -165,7 +187,7 @@ export const handleChatMessageEdit = async ({
   }
 };
 
-export const isAssistantMessage = (message: Partial<AIMessage> | Partial<OpenAIMessage>) =>
+export const isRunAssistantResponse = (message: Partial<AIMessage> | Partial<OpenAIMessage>) =>
   message.assistant_id && message.assistant_id !== NO_SELECTED_ASSISTANT_ID;
 
 type HandleRegenerateArgs = {
@@ -255,8 +277,8 @@ export const handleChatRegenerate = async ({
   setMessages,
   reload
 }: HandleChatRegenerateArgs) => {
-  const messageIndex = messages.findIndex((m) => m.id === message.id);
-  await threadsStore.deleteMessage(thread_id, savedMessages[messageIndex].id);
+  const streamedMessageIndex = messages.findIndex((m) => m.id === message.id);
+  await threadsStore.deleteMessage(thread_id, savedMessages[streamedMessageIndex].id);
   setMessages(messages.toSpliced(-2, 2));
   await reload();
 };
@@ -307,16 +329,6 @@ export const normalizeTimestamp = (message: AIMessage | OpenAIMessage | LFMessag
   return 0; // Default to 0 if no valid date is found
 };
 
-export const sortMessages = (
-  messages: Array<AIMessage | OpenAIMessage>
-): Array<AIMessage | OpenAIMessage> => {
-  return messages.sort((a, b) => {
-    const timeA = normalizeTimestamp(a);
-    const timeB = normalizeTimestamp(b);
-    return timeA - timeB;
-  });
-};
-
 export const delay = (ms: number): Promise<void> => {
   return new Promise((resolve) => setTimeout(resolve, ms));
 };
@@ -328,7 +340,7 @@ export const processAnnotations = (message: OpenAIMessage, files: FileObject[]) 
     messageCopy.content[0] !== undefined &&
     messageCopy.content[0].type === 'text'
   ) {
-    let messageContent = messageCopy.content[0].text;
+    const messageContent = messageCopy.content[0].text;
     const annotations = messageContent.annotations;
     const citations: string[] = [];
     // Iterate over the annotations and add footnotes

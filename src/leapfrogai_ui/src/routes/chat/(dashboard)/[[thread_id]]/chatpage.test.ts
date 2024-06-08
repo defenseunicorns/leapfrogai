@@ -1,6 +1,6 @@
 import { render, screen } from '@testing-library/svelte';
 
-import { fakeThreads, getFakeAssistant, getFakeProfile } from '$testUtils/fakeData';
+import { fakeThreads, getFakeAssistant, getFakeFiles, getFakeProfile } from '$testUtils/fakeData';
 import ChatPage from './+page.svelte';
 import ChatPageWithToast from './ChatPageWithToast.test.svelte';
 import userEvent from '@testing-library/user-event';
@@ -30,6 +30,7 @@ import { faker } from '@faker-js/faker';
 import type { LFThread } from '$lib/types/threads';
 import type { LFAssistant } from '$lib/types/assistants';
 import { delay } from '$helpers/chatHelpers';
+import { mockGetFiles } from '$lib/mocks/file-mocks';
 
 //Calls to vi.mock are hoisted to the top of the file, so you don't have access to variables declared in the global file scope unless they are defined with vi.hoisted before the call.
 const { getStores } = await vi.hoisted(() => import('$lib/mocks/svelte'));
@@ -43,6 +44,7 @@ const question = 'What is AI?';
 
 const assistant1 = getFakeAssistant();
 const assistant2 = getFakeAssistant();
+const files = getFakeFiles();
 
 describe('when there is an active thread selected', () => {
   beforeAll(() => {
@@ -88,8 +90,10 @@ describe('when there is an active thread selected', () => {
   beforeEach(async () => {
     const allMessages = fakeThreads.flatMap((thread) => thread.messages);
     mockGetAssistants([assistant1, assistant2]);
+    mockGetFiles(files);
     mockOpenAI.setThreads(fakeThreads);
     mockOpenAI.setMessages(allMessages);
+    mockOpenAI.setFiles(files);
 
     const fakeProfile = getFakeProfile({ thread_ids: fakeThreads.map((thread) => thread.id) });
 

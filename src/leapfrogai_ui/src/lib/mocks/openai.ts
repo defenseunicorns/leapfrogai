@@ -24,6 +24,8 @@ class OpenAI {
     updateThread: boolean;
     deleteThread: boolean;
     retrieveThread: boolean;
+    retrieveMessage: boolean;
+    listMessages: boolean;
     createMessage: boolean;
     deleteMessage: boolean;
     deleteAssistant: boolean;
@@ -50,6 +52,8 @@ class OpenAI {
       updateThread: false,
       deleteThread: false,
       retrieveThread: false,
+      retrieveMessage: false,
+      listMessages: false,
       createMessage: false,
       deleteMessage: false,
       createAssistant: false,
@@ -140,7 +144,12 @@ class OpenAI {
         return Promise.resolve(this.threads.find((thread) => thread.id === thread_id));
       }),
       messages: {
+        retrieve: vi.fn().mockImplementation((_, message_id) => {
+          if (this.errors.retrieveMessage) this.throwError('retrieveMessage');
+          return this.messages.find((message) => message.id === message_id);
+        }),
         list: vi.fn().mockImplementation((thread_id) => {
+          if (this.errors.listMessages) this.throwError('listMessages');
           return Promise.resolve({
             data: this.messages.filter((message) => message.thread_id === thread_id)
           });

@@ -7,10 +7,9 @@ export async function GET({ url, locals: { safeGetSession } }) {
     error(401, 'Unauthorized');
   }
 
-  // TODO - validate
   const thread_id = url.searchParams.get('thread_id');
   const message_id = url.searchParams.get('message_id');
-  console.log(`thread_id: ${thread_id}, message_id: ${message_id}`);
+
   if (!message_id || !thread_id) error(400, 'Invalid request');
   try {
     const message = await openai.beta.threads.messages.retrieve(thread_id, message_id);

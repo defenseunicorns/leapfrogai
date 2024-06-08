@@ -14,11 +14,12 @@
     handleAssistantRegenerate,
     handleChatMessageEdit,
     handleChatRegenerate,
-    isAssistantMessage
+    isRunAssistantResponse
   } from '$helpers/chatHelpers';
   import type { ChatRequestOptions, CreateMessage } from 'ai';
   import DynamicPictogram from '$components/DynamicPictogram.svelte';
 
+  export let allStreamedMessages: AIMessage[];
   export let message: AIMessage | OpenAIMessage;
   export let messages: AIMessage[] = [];
   export let setMessages: (messages: AIMessage[]) => void;
@@ -37,7 +38,7 @@
     chatRequestOptions?: ChatRequestOptions | undefined
   ) => Promise<string | null | undefined>;
 
-  let assistantImage = isAssistantMessage(message)
+  let assistantImage = isRunAssistantResponse(message)
     ? getAssistantImage(...[$page.data.assistants || []], message.assistant_id)
     : null;
   let messageIsHovered = false;
@@ -55,14 +56,12 @@
     e.preventDefault();
     editMode = false;
 
-    if (isAssistantMessage(message)) {
+    if (isRunAssistantResponse(message)) {
       threadsStore.setSelectedAssistantId(message.assistant_id);
     }
-    const savedMessages =
-      $threadsStore.threads.find((t) => t.id === $page.params.thread_id)?.messages || [];
 
     await handleChatMessageEdit({
-      savedMessages,
+      allStreamedMessages,
       message: { ...message, content: convertTextToMessageContentArr($value) },
       thread_id: $page.params.thread_id,
       messages,
@@ -173,7 +172,7 @@
             class:highlight-icon={!$threadsStore.sendingBlocked}
             class:hide={!messageIsHovered}
             on:click={() => {
-              if (isAssistantMessage(message)) {
+              if (isRunAssistantResponse(message)) {
                 threadsStore.setSelectedAssistantId(message.assistant_id);
                 handleAssistantRegenerate({
                   messages,

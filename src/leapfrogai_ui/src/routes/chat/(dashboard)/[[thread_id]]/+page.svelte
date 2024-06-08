@@ -14,7 +14,7 @@
 
   import {
     delay,
-    isAssistantMessage,
+    isRunAssistantResponse,
     processAnnotations,
     resetMessages,
     saveMessage,
@@ -296,11 +296,12 @@
   <div class="messages" bind:this={messageThreadDiv} bind:offsetHeight={messageThreadDivHeight}>
     {#each sortedMessages as message, index (message.id)}
       <Message
+        allStreamedMessages={sortedMessages}
         {message}
-        messages={isAssistantMessage(message) ? $assistantMessages : $chatMessages}
-        setMessages={isAssistantMessage(message) ? setAssistantMessages : setChatMessages}
+        messages={isRunAssistantResponse(message) ? $assistantMessages : $chatMessages}
+        setMessages={isRunAssistantResponse(message) ? setAssistantMessages : setChatMessages}
         isLastMessage={index === sortedMessages.length - 1}
-        append={isAssistantMessage(message) ? assistantAppend : chatAppend}
+        append={isRunAssistantResponse(message) ? assistantAppend : chatAppend}
         {reload}
       />
     {/each}
