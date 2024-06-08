@@ -4,12 +4,14 @@ import { assistantDefaults, DEFAULT_ASSISTANT_TEMP } from '../../src/lib/constan
 import type { AssistantInput, LFAssistant } from '../../src/lib/types/assistants';
 import type { LFMessage, NewMessageInput } from '../../src/lib/types/messages';
 import type { LFThread } from '../../src/lib/types/threads';
-import type { MessageContent } from 'openai/resources/beta/threads/messages';
+import type {
+  Message as OpenAIMessage,
+  MessageContent
+} from 'openai/resources/beta/threads/messages';
 import { getUnixSeconds } from '../../src/lib/helpers/dates';
 import type { FileObject } from 'openai/resources/files';
 import type { Profile } from '$lib/types/profile';
 import type { Session } from '@supabase/supabase-js';
-import type { Message as OpenAIMessage } from 'openai/resources/beta/threads/messages';
 
 const todayOverride = new Date('2024-03-20T00:00');
 
@@ -244,3 +246,12 @@ export const getFakeOpenAIMessage = ({
     completed_at: getUnixSeconds(new Date())
   };
 };
+
+export const getFakeFileObject = (): FileObject => ({
+  id: `file_${faker.string.uuid()}`,
+  bytes: 64,
+  created_at: getUnixSeconds(new Date()),
+  filename: `${faker.word.noun()}.pdf`,
+  object: 'file',
+  purpose: 'assistants'
+});

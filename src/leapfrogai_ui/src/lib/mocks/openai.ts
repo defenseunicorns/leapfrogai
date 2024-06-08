@@ -4,6 +4,8 @@ import type { LFMessage } from '$lib/types/messages';
 import type { LFAssistant } from '$lib/types/assistants';
 import type { FileObject } from 'openai/resources/files';
 import { merge } from 'lodash';
+import { faker } from '@faker-js/faker';
+import { getUnixSeconds } from '$helpers/dates';
 
 class OpenAI {
   private apiKey: string;
@@ -13,7 +15,9 @@ class OpenAI {
   private tempMessage: LFMessage;
   private messages: LFMessage[];
   private assistants: LFAssistant[];
+  private vectorStores: Array<{ id: string; name: string }>; // only a partial mock
   private tempAssistant: LFAssistant;
+  private tempVectorStoreFiles: FileObject[];
   private uploadedFiles: FileObject[];
   private errors: {
     createThread: boolean;
@@ -37,7 +41,9 @@ class OpenAI {
     this.tempMessage = getFakeMessage();
     this.messages = [];
     this.assistants = [];
+    this.vectorStores = [];
     this.tempAssistant = getFakeAssistant();
+    this.tempVectorStoreFiles = [];
     this.uploadedFiles = [];
     this.errors = {
       createThread: false,
@@ -72,6 +78,9 @@ class OpenAI {
   }
   setTempAssistant(assistant: LFAssistant) {
     this.tempAssistant = assistant;
+  }
+  setTempVectorStoreFiles(files: FileObject[]) {
+    this.tempVectorStoreFiles = files;
   }
   setFiles(files: FileObject[]) {
     this.uploadedFiles = files;
@@ -190,6 +199,35 @@ class OpenAI {
         this.assistants[assistantToUpdateIndex] = merge(this.threads[assistantToUpdateIndex], body);
         return Promise.resolve(this.assistants[assistantToUpdateIndex]);
       })
+    },
+    vectorStores: {
+      create: vi.fn().mockImplementation((body) => {
+        const newVectorStore = { id: faker.string.uuid(), name: body.name };
+        this.vectorStores.push(newVectorStore);
+        return newVectorStore;
+      }),
+      files: {
+        create: vi.fn().mockImplementation((vectorStoreId, body) => {
+          const file = this.uploadedFiles.find((file) => file.id === id);
+          if (file) this.tempVectorStoreFiles.push(file);
+          return {
+            id: body.file_id,
+            object: 'vector_store.file',
+            created_at: getUnixSeconds(new Date()),
+            usage_bytes: 1234,
+            vector_store_id: vectorStoreId,
+            status: 'completed',
+            last_error: null
+          };
+        }),
+        list: vi.fn().mockImplementation(() => {
+          return Promise.resolve({ data: this.tempVectorStoreFiles });
+        }),
+        del: vi.fn().mockImplementation((id: string) => {
+          this.tempVectorStoreFiles = this.tempVectorStoreFiles.filter((file) => file.id !== id);
+          return Promise.resolve({ id, object: 'vector_store.file.deleted', deleted: true });
+        })
+      }
     }
   };
 }

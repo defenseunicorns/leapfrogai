@@ -42,7 +42,7 @@ export const actions = {
       return fail(400, { form });
     }
 
-    let data_sources =
+    const data_sources =
       form.data.data_sources &&
       form.data.data_sources.length > 0 &&
       typeof form.data.data_sources[0] === 'string'

@@ -26,9 +26,7 @@ test.beforeEach(async ({ page }) => {
 
   // Delete all rows with filenames that start with "test" and end in .pdf
   const testPdfRows = await page.getByRole('row', { name: 'test.pdf' }).all();
-  const testPdfForDeletionPdfRows = await page
-    .getByRole('row', { name: 'test2.pdf' })
-    .all();
+  const testPdfForDeletionPdfRows = await page.getByRole('row', { name: 'test2.pdf' }).all();
 
   const testRows = [...testPdfRows, ...testPdfForDeletionPdfRows];
 
