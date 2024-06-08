@@ -14,8 +14,8 @@
 
   import {
     delay,
-    getMessages,
     isAssistantMessage,
+    processAnnotations,
     resetMessages,
     saveMessage,
     sortMessages,
@@ -27,6 +27,7 @@
     ERROR_SAVING_MSG_TEXT
   } from '$constants/errorMessages';
   import type { PageServerLoad } from './$types';
+  import { convertMessageToAiMessage } from '$helpers/threads.js';
 
   // TODO - this data is not receiving correct type inference, see issue: (https://github.com/defenseunicorns/leapfrogai/issues/587)
   export let data: PageServerLoad;
@@ -36,6 +37,7 @@
   let messageThreadDivHeight: number;
   let lengthInvalid: boolean; // bound to child LFTextArea
   let assistantsList: Array<{ id: string; text: string }>;
+  let hasSentAssistantMessage = false;
   /** END LOCAL VARS **/
 
   /** REACTIVE STATE **/
@@ -54,7 +56,7 @@
 
   $: if ($isLoading || $status === 'in_progress') threadsStore.setSendingBlocked(true);
 
-  // new streamed assistant message received (add in assistant_id and ensure it has a created_At timestamp)
+  // new streamed assistant message received (add in assistant_id and ensure it has a created_at timestamp)
   $: if (
     $assistantMessages.length > 0 &&
     !$assistantMessages[$assistantMessages.length - 1].assistant_id
@@ -63,7 +65,32 @@
 
   $: sortedMessages = sortMessages([...$chatMessages, ...$assistantMessages]);
 
+  // assistant stream has completed
+  $: if (hasSentAssistantMessage && $status === 'awaiting_message') {
+    fetchAndParseCompletedAssistantResponse();
+  }
+
   /** END REACTIVE STATE **/
+
+  const fetchAndParseCompletedAssistantResponse = async () => {
+    try {
+      const messageRes = await fetch(
+        `/api/messages?thread_id=${$page.params.thread_id}&message_id=${$assistantMessages[$assistantMessages.length - 1].id}`
+      );
+      const message = await messageRes.json();
+      const parsedMessage = processAnnotations(message, data.files);
+      const assistantMessagesCopy = [...$assistantMessages];
+      assistantMessagesCopy[assistantMessagesCopy.length - 1] =
+        convertMessageToAiMessage(parsedMessage);
+      setAssistantMessages(assistantMessagesCopy);
+      await threadsStore.updateMessages($page.params.thread_id, [
+        ...$chatMessages,
+        ...assistantMessagesCopy
+      ]);
+    } catch (error) {
+      console.log('error fetching message', error);
+    }
+  };
 
   const modifyAndSaveAssistantMessage = async () => {
     // Streamed assistant responses don't contain an assistant_id, so we add it here
@@ -76,14 +103,8 @@
       latestMessage.createdAt = latestMessage.created_at || getUnixSeconds(new Date());
 
     setAssistantMessages(assistantMessagesCopy);
-    // '/api/chat/assistants' saves the messages with the API to the db for us, so we re-fetch and update the store here
-    await updateMessagesFromAPI();
-    threadsStore.setSendingBlocked(false);
-  };
 
-  const updateMessagesFromAPI = async () => {
-    const messages = await getMessages($page.params.thread_id);
-    await threadsStore.updateMessages($page.params.thread_id, messages);
+    threadsStore.setSendingBlocked(false);
   };
 
   /** useChat - streams messages with the /api/chat route**/
@@ -163,6 +184,7 @@
   });
 
   const sendAssistantMessage = async (e: SubmitEvent | KeyboardEvent) => {
+    hasSentAssistantMessage = true;
     threadsStore.setSendingBlocked(true);
     if (activeThread?.id) {
       // assistant mode
@@ -237,7 +259,8 @@
     resetMessages({
       activeThread,
       setChatMessages,
-      setAssistantMessages
+      setAssistantMessages,
+      files: data.files
     });
   });
 
@@ -247,7 +270,6 @@
   });
 
   beforeNavigate(async () => {
-    console.log('thread blocked', $threadsStore.sendingBlocked, activeThread?.id);
     if ($threadsStore.sendingBlocked && activeThread?.id) {
       await stopThenSave({
         activeThreadId: activeThread.id,
@@ -264,7 +286,8 @@
     resetMessages({
       activeThread,
       setChatMessages,
-      setAssistantMessages
+      setAssistantMessages,
+      files: data.files
     });
   });
 </script>

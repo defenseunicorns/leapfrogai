@@ -61,8 +61,11 @@ export const load = async ({ fetch, locals: { supabase, safeGetSession } }) => {
     }
   }
 
-  const assistantsRes = await fetch('/api/assistants');
-  const assistants = await assistantsRes.json();
+  const promises = [fetch('/api/assistants'), fetch('/api/files')];
+  const [assistantsRes, filesRes] = await Promise.all(promises);
 
-  return { threads, assistants };
+  const assistants = await assistantsRes.json();
+  const files = await filesRes.json();
+
+  return { threads, assistants, files };
 };
