@@ -134,6 +134,39 @@ def test_routes():
         ("/openai/v1/assistants/{assistant_id}", "retrieve_assistant", ["GET"]),
         ("/openai/v1/assistants/{assistant_id}", "modify_assistant", ["POST"]),
         ("/openai/v1/assistants/{assistant_id}", "delete_assistant", ["DELETE"]),
+        ("/openai/v1/vector_stores", "create_vector_store", ["POST"]),
+        ("/openai/v1/vector_stores", "list_vector_stores", ["GET"]),
+        (
+            "/openai/v1/vector_stores/{vector_store_id}",
+            "retrieve_vector_store",
+            ["GET"],
+        ),
+        ("/openai/v1/vector_stores/{vector_store_id}", "modify_vector_store", ["POST"]),
+        (
+            "/openai/v1/vector_stores/{vector_store_id}",
+            "delete_vector_store",
+            ["DELETE"],
+        ),
+        (
+            "/openai/v1/vector_stores/{vector_store_id}/files",
+            "create_vector_store_file",
+            ["POST"],
+        ),
+        (
+            "/openai/v1/vector_stores/{vector_store_id}/files",
+            "list_vector_store_files",
+            ["GET"],
+        ),
+        (
+            "/openai/v1/vector_stores/{vector_store_id}/files/{file_id}",
+            "retrieve_vector_store_file",
+            ["GET"],
+        ),
+        (
+            "/openai/v1/vector_stores/{vector_store_id}/files/{file_id}",
+            "delete_vector_store_file",
+            ["DELETE"],
+        ),
     ]
 
     actual_routes = app.routes

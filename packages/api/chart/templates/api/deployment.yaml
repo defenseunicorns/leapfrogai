@@ -43,6 +43,8 @@ spec:
             value: /config/
           - name: LFAI_CONFIG_FILENAME
             value: "*.toml"
+          - name: DEFAULT_EMBEDDINGS_MODEL
+            value: "{{ .Values.api.defaultEmbeddingsModel }}"
           - name: PORT
             value: "{{ .Values.api.port }}"
           - name: SUPABASE_URL

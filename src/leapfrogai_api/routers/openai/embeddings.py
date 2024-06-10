@@ -12,6 +12,7 @@ from leapfrogai_api.routers.supabase_session import Session
 from leapfrogai_api.utils import get_model_config
 from leapfrogai_api.utils.config import Config
 import leapfrogai_sdk as lfai
+from fastapi import status
 
 router = APIRouter(prefix="/openai/v1/embeddings", tags=["openai/embeddings"])
 security = HTTPBearer()
@@ -27,15 +28,17 @@ async def embeddings(
     model = model_config.get_model_backend(req.model)
     if model is None:
         raise HTTPException(
-            status_code=405,
+            status_code=status.HTTP_405_METHOD_NOT_ALLOWED,
             detail=f"Model {req.model} not found. Currently supported models are {list(model_config.models.keys())}",
         )
 
     if isinstance(req.input, str):
         request = lfai.EmbeddingRequest(inputs=[req.input])
+    elif isinstance(req.input, list[str]):
+        request = lfai.EmbeddingRequest(inputs=req.input)
     else:
         raise HTTPException(
-            status_code=405,
+            status_code=status.HTTP_405_METHOD_NOT_ALLOWED,
             detail=f"Invalid input type {type(req.input)}. Currently supported types are str and list[str]",
         )
 

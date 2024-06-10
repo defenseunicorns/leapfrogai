@@ -1,10 +1,9 @@
 """CRUD Operations for Assistant."""
 
-from pydantic import Field
+from pydantic import BaseModel, Field
 from openai.types.beta import Assistant
 from supabase_py_async import AsyncClient
-
-from leapfrogai_api.data.crud_base import CRUDBase, ModelType
+from leapfrogai_api.data.crud_base import CRUDBase
 
 
 class AuthAssistant(Assistant):
@@ -13,39 +12,46 @@ class AuthAssistant(Assistant):
     user_id: str = Field(default="")
 
 
+class FilterAssistant(BaseModel):
+    """Validation for Assistant filter."""
+
+    id: str
+
+
 class CRUDAssistant(CRUDBase[AuthAssistant]):
     """CRUD Operations for Assistant"""
 
     def __init__(
         self,
         db: AsyncClient,
-        model: type[ModelType] = AuthAssistant,
         table_name: str = "assistant_objects",
     ):
-        super().__init__(db, model, table_name)
+        super().__init__(db=db, model=AuthAssistant, table_name=table_name)
 
-    async def create(self, object_: Assistant) -> AuthAssistant | None:
+    async def create(self, object_: Assistant) -> Assistant | None:
         """Create a new assistant."""
         user_id: str = (await self.db.auth.get_user()).user.id
         return await super().create(
             object_=AuthAssistant(user_id=user_id, **object_.model_dump())
         )
 
-    async def get(self, id_: str) -> AuthAssistant | None:
-        """Get an assistant by its ID."""
-        return await super().get(id_=id_)
+    async def get(self, filters: FilterAssistant | None = None) -> Assistant | None:
+        """Get assistant by filters."""
+        return await super().get(filters=filters.model_dump() if filters else None)
 
-    async def list(self) -> list[AuthAssistant] | None:
+    async def list(
+        self, filters: FilterAssistant | None = None
+    ) -> list[Assistant] | None:
         """List all assistants."""
-        return await super().list()
+        return await super().list(filters=filters.model_dump() if filters else None)
 
-    async def update(self, id_: str, object_: Assistant) -> AuthAssistant | None:
+    async def update(self, id_: str, object_: Assistant) -> Assistant | None:
         """Update an assistant by its ID."""
         user_id: str = (await self.db.auth.get_user()).user.id
         return await super().update(
             id_=id_, object_=AuthAssistant(user_id=user_id, **object_.model_dump())
         )
 
-    async def delete(self, id_: str) -> bool:
+    async def delete(self, filters: FilterAssistant | None = None) -> bool:
         """Delete an assistant by its ID."""
-        return await super().delete(id_=id_)
+        return await super().delete(filters=filters.model_dump() if filters else None)

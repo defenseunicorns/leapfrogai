@@ -4,8 +4,6 @@ A mostly OpenAI compliant API surface.
 
 ## Local Development Setup
 
-### Requirements
-
 1. Install dependencies
     ```bash
     make install
@@ -38,7 +36,7 @@ A mostly OpenAI compliant API surface.
     This will copy the JWT token to your clipboard.
 
 
-5. Make calls to the api swagger endpoint at `http://localhost:8080/docs` using your JWT token as the `HTTPBearer` token. 
+5. Make calls to the api swagger endpoint at `http://localhost:8080/docs` using your JWT token as the `HTTPBearer` token.
    * Hit `Authorize` on the swagger page to enter your JWT token
 
 ## Integration Tests

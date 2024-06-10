@@ -11,6 +11,7 @@ api:
   replicas: 1
   port: 8080
   exposeOpenAPISchema: false
+  defaultEmbeddingsModel: "###ZARF_VAR_DEFAULT_EMBEDDINGS_MODEL###"
 
 package:
   host: leapfrogai-api
