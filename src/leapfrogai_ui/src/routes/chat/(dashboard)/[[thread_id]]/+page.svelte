@@ -1,5 +1,5 @@
 <script lang="ts">
-  import {LFTextArea, PoweredByDU} from '$components';
+  import { LFTextArea, PoweredByDU } from '$components';
   import { Button } from 'carbon-components-svelte';
   import { afterUpdate, onMount, tick } from 'svelte';
   import { threadsStore, toastStore } from '$stores';
@@ -157,7 +157,7 @@
 
 <!--Note - the messages are streamed live from the useChat messages, saving them in the db and store happens behind the scenes -->
 <div class="chat-inner-content">
-  <div class="messages" bind:this={messageThreadDiv} >
+  <div class="messages" bind:this={messageThreadDiv}>
     {#each $messages as message, index (message.id)}
       <Message
         {message}
