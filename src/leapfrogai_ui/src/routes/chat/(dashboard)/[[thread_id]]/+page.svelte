@@ -406,6 +406,7 @@
   .noAssistant {
     :global(.bx--list-box__label) {
       color: themes.$text-secondary;
+      border-top: none;
     }
   }
 </style>
