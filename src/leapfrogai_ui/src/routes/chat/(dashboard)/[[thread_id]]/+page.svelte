@@ -344,7 +344,7 @@
             {item.text}
           </button>
         {:else if item.id === NO_SELECTED_ASSISTANT_ID}
-          <div class="noAssistant" }>
+          <div class="noAssistant">
             {item.text}
           </div>
         {:else}
