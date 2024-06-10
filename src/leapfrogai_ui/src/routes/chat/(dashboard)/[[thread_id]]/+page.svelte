@@ -300,7 +300,7 @@
           }
         }}
         items={assistantsList}
-        style="width: 25%; margin-bottom: 0.5rem"
+        style="width: 25%; margin-bottom: 0.5rem;"
         let:item
       >
         {#if item.id === `manage-assistants`}
@@ -312,6 +312,10 @@
             <UserProfile />
             {item.text}
           </button>
+        {:else if item.id === NO_SELECTED_ASSISTANT_ID}
+          <div class="noAssistant">
+            {item.text}
+          </div>
         {:else}
           <div class="assistant-dropdown-item">
             {item.text}
@@ -397,6 +401,7 @@
   }
 
   :global(#manage-assistants) {
+    z-index: 2; // ensures outline is on top of border of item below
     outline: 1px solid themes.$border-subtle-03;
     :global(.bx--list-box__menu_item__option) {
       padding-right: 0.25rem;
@@ -406,7 +411,6 @@
   .noAssistant {
     :global(.bx--list-box__label) {
       color: themes.$text-secondary;
-      border-top: none;
     }
   }
 </style>
