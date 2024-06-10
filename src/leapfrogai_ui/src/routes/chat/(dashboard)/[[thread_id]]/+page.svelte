@@ -344,12 +344,7 @@
             {item.text}
           </button>
         {:else if item.id === NO_SELECTED_ASSISTANT_ID}
-          <div
-            class="noAssistant"
-            style={`:global(${NO_SELECTED_ASSISTANT_ID}){:global(.bx--list-box__menu-item__option) {
-      border-top: none !important;}
-    }`}
-          >
+          <div class="noAssistant" }>
             {item.text}
           </div>
         {:else}
@@ -437,16 +432,10 @@
   }
 
   :global(#manage-assistants) {
+    z-index: 2; // ensures outline is on top of border of item below
     outline: 1px solid themes.$border-subtle-03;
     :global(.bx--list-box__menu_item__option) {
       padding-right: 0.25rem;
-    }
-  }
-
-  // NOTE - if the noSelectedAssistantId constant value changes, you will need to change this id
-  :global(#noSelectedAssistantId) {
-    :global(.bx--list-box__menu-item__option) {
-      border-top: none !important;
     }
   }
 
