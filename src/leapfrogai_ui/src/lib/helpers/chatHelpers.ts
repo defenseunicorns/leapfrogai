@@ -111,9 +111,10 @@ export const handleChatMessageEdit = async ({
 }: EditMessageArgs) => {
   if (message.id) {
     const messageIndex = messages.findIndex((m) => m.id === message.id);
+    const messageResponseIndex = messageIndex + 1;
     // Ensure the message after the user's message exists and is a response from the AI
     const numToSplice =
-      messages[messageIndex + 1] && messages[messageIndex + 1].role !== 'user' ? 2 : 1;
+      messages[messageResponseIndex] && messages[messageResponseIndex].role !== 'user' ? 2 : 1;
 
     // delete old message from DB
     // savedMessages has the messages saved with the API, not the streamed messages
@@ -123,7 +124,7 @@ export const handleChatMessageEdit = async ({
     await threadsStore.deleteMessage(thread_id, savedMessages[messageIndex].id);
     if (numToSplice === 2) {
       // also delete that message's response
-      await threadsStore.deleteMessage(thread_id, savedMessages[messageIndex + 1].id);
+      await threadsStore.deleteMessage(thread_id, savedMessages[messageResponseIndex].id);
     }
     setMessages(messages.toSpliced(messageIndex, numToSplice)); // remove original message and response
     await tick();

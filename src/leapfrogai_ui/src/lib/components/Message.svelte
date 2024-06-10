@@ -16,26 +16,15 @@
     handleChatRegenerate,
     isAssistantMessage
   } from '$helpers/chatHelpers';
-  import type { ChatRequestOptions, CreateMessage } from 'ai';
   import DynamicPictogram from '$components/DynamicPictogram.svelte';
+  import type { AppendFunction, ReloadFunction } from '$lib/types/messages';
 
   export let message: AIMessage | OpenAIMessage;
   export let messages: AIMessage[] = [];
   export let setMessages: (messages: AIMessage[]) => void;
   export let isLastMessage: boolean;
-  export let append: (
-    message: AIMessage | CreateMessage,
-    requestOptions?:
-      | {
-          data?: Record<string, string> | undefined;
-        }
-      | undefined
-    // This any type matches the typing of the append function from Vercel AI
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  ) => Promise<any>;
-  export let reload: (
-    chatRequestOptions?: ChatRequestOptions | undefined
-  ) => Promise<string | null | undefined>;
+  export let append: AppendFunction;
+  export let reload: ReloadFunction;
 
   let assistantImage = isAssistantMessage(message)
     ? getAssistantImage($page.data.assistants || [], message.assistant_id)
