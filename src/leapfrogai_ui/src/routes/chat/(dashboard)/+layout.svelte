@@ -3,7 +3,7 @@
   import threadsStore from '$stores/threads';
   import '../../../styles/main.scss';
   import { ChatSidebar } from '$components';
-  import LFContent from '$components/LFContent.svelte';
+  import { Content } from 'carbon-components-svelte';
 
   $: innerWidth = 0;
 
@@ -19,4 +19,6 @@
 
 <ChatSidebar />
 
-<LFContent><slot /></LFContent>
+<Content>
+  <slot />
+</Content>
