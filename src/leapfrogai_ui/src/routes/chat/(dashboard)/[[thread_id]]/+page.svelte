@@ -47,7 +47,7 @@
     text: assistant.name || 'unknown'
   }));
   $: assistantsList.unshift({ id: NO_SELECTED_ASSISTANT_ID, text: 'Select assistant...' }); // add dropdown item for no assistant selected
-  $: assistantsList.push({ id: `manage-assistants`, text: 'Manage assistants' }); // add dropdown item for manage assistants button
+  $: assistantsList.unshift({ id: `manage-assistants`, text: 'Manage assistants' }); // add dropdown item for manage assistants button
   $: assistantMode =
     $threadsStore.selectedAssistantId !== NO_SELECTED_ASSISTANT_ID &&
     $threadsStore.selectedAssistantId !== 'manage-assistants';
