@@ -13,5 +13,10 @@ api:
   exposeOpenAPISchema: false
   defaultEmbeddingsModel: "###ZARF_VAR_DEFAULT_EMBEDDINGS_MODEL###"
 
+  migration:
+    namespace: "leapfrogai"
+    serviceName: "supabase-postgresql"
+    servicePort: "5432"
+
 package:
   host: leapfrogai-api

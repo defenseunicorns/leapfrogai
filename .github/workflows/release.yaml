@@ -49,6 +49,7 @@ jobs:
       - name: Build and Publish API
         run: |
           docker buildx build --platform amd64,arm64 -t ghcr.io/defenseunicorns/leapfrogai/leapfrogai-api:${{ steps.get_version.outputs.version-without-v }} --push packages/api
+          docker buildx build --platform amd64,arm64 -t ghcr.io/defenseunicorns/leapfrogai/api-migrations:${{ steps.get_version.outputs.version-without-v }} --push packages/api/supabase
 
           zarf package create packages/api --set=LEAPFROGAI_IMAGE_VERSION=${{ steps.get_version.outputs.version-without-v }} --architecture amd64 --confirm
           zarf package create packages/api --set=LEAPFROGAI_IMAGE_VERSION=${{ steps.get_version.outputs.version-without-v }} --architecture arm64 --confirm
@@ -62,6 +63,7 @@ jobs:
       - name: Build and Publish UI
         run: |
           docker buildx build --platform amd64,arm64 -t ghcr.io/defenseunicorns/leapfrogai/leapfrogai-ui:${{ steps.get_version.outputs.version-without-v }} --push src/leapfrogai_ui
+          docker buildx build --platform amd64,arm64 -t ghcr.io/defenseunicorns/leapfrogai/ui-migrations:${{ steps.get_version.outputs.version-without-v }} --push src/leapfrogai_ui/supabase
 
           zarf package create packages/ui --set=IMAGE_VERSION=${{ steps.get_version.outputs.version-without-v }} --architecture amd64 --confirm
           zarf package create packages/ui --set=IMAGE_VERSION=${{ steps.get_version.outputs.version-without-v }} --architecture arm64 --confirm
