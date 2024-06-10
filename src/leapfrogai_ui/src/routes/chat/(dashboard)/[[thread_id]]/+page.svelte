@@ -344,7 +344,12 @@
             {item.text}
           </button>
         {:else if item.id === NO_SELECTED_ASSISTANT_ID}
-          <div class="noAssistant">
+          <div
+            class="noAssistant"
+            style={`:global(${NO_SELECTED_ASSISTANT_ID}){:global(.bx--list-box__menu-item__option) {
+      border-top: none !important;}
+    }`}
+          >
             {item.text}
           </div>
         {:else}
@@ -438,11 +443,17 @@
     }
   }
 
+  // NOTE - if the noSelectedAssistantId constant value changes, you will need to change this id
+  :global(#noSelectedAssistantId) {
+    :global(.bx--list-box__menu-item__option) {
+      border-top: none !important;
+    }
+  }
+
   .noAssistant {
     color: $gray-50;
     :global(.bx--list-box__label) {
       color: $gray-50;
-      border-top: none;
     }
   }
 </style>
