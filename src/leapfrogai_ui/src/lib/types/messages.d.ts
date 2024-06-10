@@ -3,6 +3,8 @@ import type {
   MessageContent
 } from 'openai/resources/beta/threads/messages';
 import type { Roles } from '$lib/types/threads';
+import type { Message as AIMessage } from 'ai/svelte';
+import type { ChatRequestOptions, CreateMessage } from 'ai';
 
 export type NewMessageInput = {
   thread_id: string;
@@ -20,3 +22,18 @@ export type LFMessage = omit<OpenAIMessage | 'content' | 'role' | 'metadata'> & 
   };
   createdAt?: Date | string | number;
 };
+
+export type AppendFunction = (
+  message: AIMessage | CreateMessage,
+  requestOptions?:
+    | {
+        data?: Record<string, string> | undefined;
+      }
+    | undefined
+  // This any type matches the typing of the append function from Vercel AI
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+) => Promise<any>;
+
+export type ReloadFunction = (
+  chatRequestOptions?: ChatRequestOptions | undefined
+) => Promise<string | null | undefined>;

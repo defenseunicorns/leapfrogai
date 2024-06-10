@@ -131,17 +131,18 @@ export const handleChatMessageEdit = async ({
 
     const messagesStreamedIndex = messages.findIndex((m) => m.id === message.id);
     const allStreamedMessagesIndex = allStreamedMessages.findIndex((m) => m.id === message.id);
+    const allStreamedMessagesResponseIndex = allStreamedMessagesIndex + 1;
 
     let savedMessageId: string | undefined = undefined;
     let savedMessageResponseId: string | undefined = undefined;
 
     savedMessageId = savedMessages[allStreamedMessagesIndex].id;
-    savedMessageResponseId = savedMessages[allStreamedMessagesIndex + 1].id;
+    savedMessageResponseId = savedMessages[allStreamedMessagesResponseIndex].id;
 
     // Ensure the message after the user's message exists and is a response from the AI
     const numToSplice =
-      allStreamedMessages[allStreamedMessagesIndex + 1] &&
-      allStreamedMessages[allStreamedMessagesIndex + 1].role !== 'user'
+      allStreamedMessages[allStreamedMessagesResponseIndex] &&
+      allStreamedMessages[allStreamedMessagesResponseIndex].role !== 'user'
         ? 2
         : 1;
 
