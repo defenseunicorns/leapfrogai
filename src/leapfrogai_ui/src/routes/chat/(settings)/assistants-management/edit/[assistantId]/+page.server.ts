@@ -9,7 +9,10 @@ import type { EditAssistantInput, LFAssistant } from '$lib/types/assistants';
 import { getAssistantAvatarUrl } from '$helpers/assistants';
 import type { AssistantCreateParams } from 'openai/resources/beta/assistants';
 import type { APIPromise } from 'openai/core';
-import type { VectorStoreFile, VectorStoreFileDeleted } from 'openai/resources/beta/vector-stores';
+import type {
+  VectorStoreFile,
+  VectorStoreFileDeleted
+} from 'openai/resources/beta/vector-stores/files';
 import { filesSchema } from '$schemas/files';
 
 export const load = async ({ fetch, depends, params, locals: { safeGetSession } }) => {
