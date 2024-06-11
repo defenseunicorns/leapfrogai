@@ -1,5 +1,5 @@
 <script lang="ts">
-  import { LFTextArea } from '$components';
+  import { LFTextArea, PoweredByDU } from '$components';
   import { Button } from 'carbon-components-svelte';
   import { afterUpdate, onMount, tick } from 'svelte';
   import { threadsStore, toastStore } from '$stores';
@@ -14,7 +14,6 @@
   export let data;
 
   let messageThreadDiv: HTMLDivElement;
-  let messageThreadDivHeight: number;
 
   let lengthInvalid: boolean; // bound to child LFTextArea
 
@@ -158,7 +157,7 @@
 
 <!--Note - the messages are streamed live from the useChat messages, saving them in the db and store happens behind the scenes -->
 <div class="chat-inner-content">
-  <div class="messages" bind:this={messageThreadDiv} bind:offsetHeight={messageThreadDivHeight}>
+  <div class="messages" bind:this={messageThreadDiv}>
     {#each $messages as message, index (message.id)}
       <Message
         {message}
@@ -202,6 +201,7 @@
       {/if}
     </div>
   </form>
+  <PoweredByDU />
 </div>
 
 <style lang="scss">
