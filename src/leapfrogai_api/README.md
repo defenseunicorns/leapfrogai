@@ -13,7 +13,7 @@ A mostly OpenAI compliant API surface.
     ```bash
     brew install supabase/tap/supabases
 
-    supabase start # from /leapfrogai
+    supabase start # from this directory
 
     supabase stop --project-id leapfrogai # stop api containers
 
