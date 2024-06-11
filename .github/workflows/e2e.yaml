@@ -83,7 +83,7 @@ jobs:
             rm packages/supabase/zarf-package-supabase-amd64-e2e-test.tar.zst
 
         - name: Set environment variable
-          id: set-env-var
+          id: set-env-var-api-key
           run: |
             echo "API_KEY=$(uds zarf tools kubectl get secret supabase-bootstrap-jwt -n leapfrogai -o jsonpath='{.data.anon-key}' | base64 -d)" >> "$GITHUB_ENV"
 
@@ -106,9 +106,9 @@ jobs:
             docker image prune -af
             uds zarf package deploy packages/api/zarf-package-leapfrogai-api-amd64-e2e-test.tar.zst --set=EXPOSE_OPENAPI_SCHEMA=true --confirm
             rm packages/api/zarf-package-leapfrogai-api-amd64-e2e-test.tar.zst
-            
+
         - name: Set environment variable
-          id: set-env-var
+          id: set-env-var-anon-key
           run: |
             echo "ANON_KEY=$(uds zarf tools kubectl get secret supabase-bootstrap-jwt -n leapfrogai -o jsonpath='{.data.anon-key}' | base64 -d)" >> "$GITHUB_ENV"
 
