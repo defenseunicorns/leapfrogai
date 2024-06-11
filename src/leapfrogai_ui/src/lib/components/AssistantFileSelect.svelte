@@ -1,13 +1,14 @@
 <script lang="ts">
-  import { FileUploaderItem, MultiSelect } from 'carbon-components-svelte';
+  import { FileUploaderItem } from 'carbon-components-svelte';
   import { fade } from 'svelte/transition';
   import type { FileObject } from 'openai/resources/files';
+  import LFMultiSelect from '$components/LFMultiSelect.svelte';
 
   export let files: FileObject[];
   export let selectedFileIds: string[];
 </script>
 
-<MultiSelect
+<LFMultiSelect
   label="Choose data sources"
   items={files?.map((file) => ({ id: file.id, text: file.filename }))}
   direction="top"
