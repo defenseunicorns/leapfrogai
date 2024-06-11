@@ -38,9 +38,7 @@
 
 <style lang="scss">
   :global(.bx--content) {
-    padding: 1rem !important;
-  }
-  :global(.bx--content) {
     height: calc(100vh - var(--header-height));
+    padding-bottom: 1rem;
   }
 </style>
