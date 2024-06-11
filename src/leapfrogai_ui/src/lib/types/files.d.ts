@@ -1,6 +1,6 @@
 import type { SuperValidated } from 'sveltekit-superforms';
 
-export type FileUploadStatus = 'uploading' | 'completed' | 'error' | 'hide';
+export type FileUploadStatus = 'uploading' | 'complete' | 'error' | 'hide';
 
 export type FileRow = {
   id: string;

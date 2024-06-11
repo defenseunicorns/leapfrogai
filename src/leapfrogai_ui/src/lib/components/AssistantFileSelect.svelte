@@ -6,6 +6,14 @@
   import type { FilesForm } from '$lib/types/files';
 
   export let filesForm: FilesForm;
+
+  // Files with errors remain selected for 1.5 seconds until the files are re-fetched do show the error state
+  // If the assistant is saved before they are re-fetched, we need to ensure any files with errors are removed
+  // from the list of ids being saved
+  $: fileIdsWithoutErrors = $filesStore.files
+    .filter((row) => row.status !== 'error')
+    .map((row) => row.id)
+    .filter((id) => $filesStore.selectedAssistantFileIds.includes(id));
 </script>
 
 <div id="multi-select-container">
@@ -20,15 +28,16 @@
 </div>
 
 <div class="file-item-list">
-  {#each [...$filesStore.files, ...$filesStore.pendingFiles, ...$filesStore.errorFiles]
+  {#each $filesStore.files
     .filter((f) => $filesStore.selectedAssistantFileIds.includes(f.id))
     .sort((a, b) => a.filename.localeCompare(b.filename)) as file}
     <div transition:fade={{ duration: 70 }}>
       <FileUploaderItem
+        invalid={file.status === 'error'}
         id={file.id}
         name={file.filename}
         size="small"
-        status="edit"
+        status={file.status === 'uploading' ? 'uploading' : 'edit'}
         style="max-width: 100%"
         on:delete={() => {
           filesStore.setSelectedAssistantFileIds(
@@ -38,42 +47,9 @@
       />
     </div>
   {/each}
-  {#each $filesStore.pendingFiles as pendingFile}
-    <div transition:fade={{ duration: 70 }}>
-      <FileUploaderItem
-        id={pendingFile.id}
-        name={pendingFile.filename}
-        size="small"
-        status="uploading"
-        style="max-width: 100%"
-        on:delete={() => {
-          filesStore.setSelectedAssistantFileIds(
-            $filesStore.selectedAssistantFileIds.filter((id) => id !== pendingFile.id)
-          );
-        }}
-      />
-    </div>
-  {/each}
-  {#each $filesStore.errorFiles as errorFile}
-    <div transition:fade={{ duration: 70 }}>
-      <FileUploaderItem
-        invalid
-        id={errorFile.id}
-        name={errorFile.filename}
-        size="small"
-        status="uploading"
-        style="max-width: 100%"
-        on:delete={() => {
-          filesStore.setSelectedAssistantFileIds(
-            $filesStore.selectedAssistantFileIds.filter((id) => id !== errorFile.id)
-          );
-        }}
-      />
-    </div>
-  {/each}
 </div>
 
-<input type="hidden" name="data_sources" bind:value={$filesStore.selectedAssistantFileIds} />
+<input type="hidden" name="data_sources" bind:value={fileIdsWithoutErrors} />
 
 <style lang="scss">
   #multi-select-container {

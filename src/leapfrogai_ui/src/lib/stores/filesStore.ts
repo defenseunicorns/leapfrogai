@@ -1,19 +1,26 @@
 import { writable } from 'svelte/store';
 import type { FileObject } from 'openai/resources/files';
-import type { FileRow, FileUploadStatus } from '$lib/types/files';
+import type { FileRow } from '$lib/types/files';
+import { invalidate } from '$app/navigation';
 
 type FilesStore = {
-  files: FileObject[];
-  pendingFiles: FileRow[];
-  errorFiles: FileRow[];
+  files: FileRow[];
   selectedAssistantFileIds: string[];
+  uploading: boolean;
 };
 
 const defaultValues: FilesStore = {
   files: [],
-  pendingFiles: [],
-  errorFiles: [],
-  selectedAssistantFileIds: []
+  selectedAssistantFileIds: [],
+  uploading: false
+};
+
+// Wait 1.5 seconds, then invalidate the files so they are re-fetched (will remove rows with status: "error")
+const waitThenInvalidate = () => {
+  // Wait 1.5 seconds, then remove error files and update status to hide for successful files
+  new Promise((resolve) => setTimeout(resolve, 1500)).then(() => {
+    invalidate('lf:files');
+  });
 };
 
 const createFilesStore = () => {
@@ -23,7 +30,8 @@ const createFilesStore = () => {
     subscribe,
     set,
     update,
-    setFiles: (newFiles: FileObject[]) => {
+    setUploading: (status: boolean) => update((old) => ({ ...old, uploading: status })),
+    setFiles: (newFiles: FileRow[]) => {
       update((old) => ({ ...old, files: [...newFiles] }));
     },
     addSelectedAssistantFileIds: (newIds: string[]) =>
@@ -34,36 +42,43 @@ const createFilesStore = () => {
     setSelectedAssistantFileIds: (newIds: string[]) => {
       update((old) => ({ ...old, selectedAssistantFileIds: newIds }));
     },
-    setPendingFiles: (pendingFiles: FileRow[]) => {
-      update((old) => ({ ...old, pendingFiles: [...pendingFiles] }));
-    },
-    addErrorFile: (errorFile: FileRow) => {
-      update((old) => ({ ...old, errorFiles: [...old.errorFiles, errorFile] }));
-    },
-    addPendingFile: async (pendingFile: FileRow) => {
-      update((old) => ({ ...old, pendingFiles: [...old.pendingFiles, pendingFile] }));
-    },
-    updatePendingFile: (oldId: string, newId: string, status: FileUploadStatus) => {
+    addUploadingFiles: (files: File[]) => {
       update((old) => {
-        const index = old.pendingFiles.findIndex((file) => file.id === oldId);
-        if (status === 'completed') {
-          return {
-            ...old,
-            pendingFiles: [old.pendingFiles.slice(index, 1)],
-            selectedAssistantFileIds: [...old.selectedAssistantFileIds, newId]
-          }; // remove from pending
+        let newFiles: FileRow[] = [];
+        let newFileIds: string[] = [];
+        for (const file of files) {
+          const id = `${file.name}-${new Date()}`; // temp id
+          newFiles.push({
+            id,
+            filename: file.name,
+            status: 'uploading',
+            created_at: null
+          });
+          newFileIds.push(id);
         }
-        if (status === 'error') {
-          const pendingFilesCopy = [...old.pendingFiles];
-          pendingFilesCopy[index] = { ...pendingFilesCopy[index], status };
-          return { ...old, pendingFiles: pendingFilesCopy };
-        }
+        return {
+          ...old,
+          files: [...old.files, ...newFiles],
+          selectedAssistantFileIds: [...old.selectedAssistantFileIds, ...newFileIds]
+        };
       });
     },
-    removePendingFile: (id: string) => {
+    updateWithUploadResults: (newFiles: Array<FileObject | FileRow>) => {
       update((old) => {
-        const index = old.pendingFiles.findIndex((file) => file.id === id);
-        return { ...old, pendingFiles: [old.pendingFiles.slice(index, 1)] };
+        const newRows = old.files.filter((file) => file.status !== 'uploading'); // get original rows without the uploads
+        // insert newly uploaded files with updated status
+        for (const file of newFiles) {
+          const item: FileRow = {
+            id: file.id,
+            filename: file.filename,
+            created_at: file.created_at,
+            status: file.status === 'error' ? 'error' : 'complete'
+          };
+          newRows.unshift(item);
+        }
+        waitThenInvalidate();
+
+        return { ...old, files: newRows };
       });
     }
   };

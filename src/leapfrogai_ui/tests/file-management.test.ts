@@ -21,7 +21,6 @@ const deleteFile = async (page: Page) => {
 };
 
 test.beforeEach(async ({ page }) => {
-  console.log('After Each running');
   await loadFileManagementPage(page);
 
   // Delete all rows with filenames that start with "test" and end in .pdf
@@ -39,7 +38,6 @@ test.beforeEach(async ({ page }) => {
 
   await page.reload();
 
-  console.log('After Each completed');
 });
 
 test('it can navigate to the file management page', async ({ page }) => {

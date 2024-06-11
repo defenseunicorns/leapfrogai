@@ -1,13 +1,12 @@
 <script lang="ts">
   import { Upload } from 'carbon-icons-svelte';
-  import { FileUploaderButton, ListBoxMenuItem } from 'carbon-components-svelte';
+  import { ListBoxMenuItem } from 'carbon-components-svelte';
   import { createEventDispatcher } from 'svelte';
-  import type { FileRow, FilesForm } from '$lib/types/files';
+  import type { FilesForm } from '$lib/types/files';
   import { filesStore, toastStore } from '$stores';
   import { superForm } from 'sveltekit-superforms';
   import { yup } from 'sveltekit-superforms/adapters';
   import { filesSchema } from '$schemas/files';
-  import { invalidate } from '$app/navigation';
 
   export let multiple = false;
   export let files: File[] = [];
@@ -38,16 +37,9 @@
 
   const handleUpload = () => {
     open = false; // close parent multi select
-    for (const file of files) {
-      const newFile: FileRow = {
-        id: `${file.name}-${new Date()}`, // temp id
-        filename: file.name,
-        status: 'uploading',
-        created_at: null
-      };
-      filesStore.addPendingFile(newFile);
-      submit();
-    }
+    filesStore.setUploading(true);
+    filesStore.addUploadingFiles(files);
+    submit();
   };
 
   // The parent ListBox that uses this component has on:click|preventDefault for the other
@@ -64,6 +56,7 @@
     validators: yup(filesSchema),
     invalidateAll: false,
     onError() {
+      filesStore.setUploading(false);
       toastStore.addToast({
         kind: 'error',
         title: 'Upload Failed',
@@ -74,17 +67,16 @@
       if (result.type === 'success') {
         const idsToSelect: string[] = [];
         const uploadedFiles = result.data?.uploadedFiles;
+        filesStore.updateWithUploadResults(result.data?.uploadedFiles);
         for (const uploadedFile of uploadedFiles) {
+          idsToSelect.push(uploadedFile.id);
           if (uploadedFile.status === 'error') {
-            filesStore.addErrorFile(uploadedFile);
             toastStore.addToast({
               kind: 'error',
               title: 'Upload Failed',
               subtitle: `${uploadedFile.filename} upload failed.`
             });
           } else {
-            idsToSelect.push(uploadedFile.id);
-
             toastStore.addToast({
               kind: 'success',
               title: 'Uploaded Successfully',
@@ -93,9 +85,8 @@
           }
         }
         filesStore.addSelectedAssistantFileIds(idsToSelect);
-        filesStore.setPendingFiles([]);
       }
-      await invalidate('lf:files');
+      filesStore.setUploading(false);
     }
   });
 </script>

@@ -86,8 +86,8 @@
         ...$chatMessages,
         ...assistantMessagesCopy
       ]);
-    } catch (error) {
-      console.log('error fetching message', error);
+    } catch {
+      // fail silently
     }
   };
 

@@ -16,6 +16,7 @@
   import type { NavigationTarget } from '@sveltejs/kit';
   import { onMount } from 'svelte';
   import AssistantFileSelect from '$components/AssistantFileSelect.svelte';
+  import type { FileRow } from '$lib/types/files';
 
   export let data;
 
@@ -77,7 +78,13 @@
   });
 
   $: if (data.files) {
-    filesStore.setFiles(data.files || []);
+    const fileRows: FileRow[] = data.files.map((file) => ({
+      id: file.id,
+      filename: file.filename,
+      created_at: file.created_at,
+      status: 'complete'
+    }));
+    filesStore.setFiles(fileRows);
   }
 
   onMount(() => {
@@ -89,6 +96,7 @@
       });
       goto('/chat/assistants-management');
     }
+    filesStore.setSelectedAssistantFileIds($form.data_sources || []);
   });
 </script>
 
@@ -189,7 +197,12 @@
             goto('/chat/assistants-management');
           }}>Cancel</Button
         >
-        <Button kind="primary" size="small" type="submit" disabled={$submitting}>Save</Button>
+        <Button
+          kind="primary"
+          size="small"
+          type="submit"
+          disabled={$submitting || $filesStore.uploading}>Save</Button
+        >
       </div>
     </div>
   </div>

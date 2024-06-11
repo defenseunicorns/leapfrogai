@@ -10,6 +10,7 @@ import { getAssistantAvatarUrl } from '$helpers/assistants';
 import type { AssistantCreateParams } from 'openai/resources/beta/assistants';
 import type { APIPromise } from 'openai/core';
 import type { VectorStoreFile, VectorStoreFileDeleted } from 'openai/resources/beta/vector-stores';
+import { filesSchema } from '$schemas/files';
 
 export const load = async ({ fetch, depends, params, locals: { safeGetSession } }) => {
   depends('lf:files');
@@ -55,8 +56,9 @@ export const load = async ({ fetch, depends, params, locals: { safeGetSession } 
   };
 
   const form = await superValidate(assistantFormData, yup(editAssistantInputSchema));
+  const filesForm = await superValidate({}, yup(filesSchema), { errors: false });
 
-  return { title: 'LeapfrogAI - Edit Assistant', form, assistant, files };
+  return { title: 'LeapfrogAI - Edit Assistant', form, filesForm, assistant, files };
 };
 
 export const actions = {
