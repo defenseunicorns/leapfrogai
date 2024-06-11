@@ -1,18 +1,28 @@
 <script lang="ts">
-  /**
-   * @typedef {any} MultiSelectItemId
-   * @typedef {string} MultiSelectItemText
-   * @typedef {{ id: MultiSelectItemId; text: MultiSelectItemText; disabled?: boolean; }} MultiSelectItem
-   * @event {{ selectedIds: MultiSelectItemId[]; selected: MultiSelectItem[]; unselected: MultiSelectItem[]; }} select
-   * @event {null} clear
-   * @event {FocusEvent | CustomEvent<FocusEvent>} blur
-   * @slot {{ item: MultiSelectItem; index: number }}
-   */
+  /* This components is a modified version of the Carbon Components Svelte MultiSelect.
+   It adds a button into the menu that allows uploading of files.
+   It has also been converted to use Typescript.
+ */
 
   import type {
     MultiSelectItem,
     MultiSelectItemId
   } from 'carbon-components-svelte/src/MultiSelect/MultiSelect.svelte';
+  import { afterUpdate, createEventDispatcher, setContext } from 'svelte';
+  import { WarningAltFilled, WarningFilled } from 'carbon-icons-svelte';
+  import {
+    Checkbox,
+    ListBox,
+    ListBoxField,
+    ListBoxMenu,
+    ListBoxMenuIcon,
+    ListBoxMenuItem,
+    ListBoxSelection
+  } from 'carbon-components-svelte';
+
+  import type { ListBoxMenuIconTranslationId } from 'carbon-components-svelte/src/ListBox/ListBoxMenuIcon.svelte';
+  import type { ListBoxSelectionTranslationId } from 'carbon-components-svelte/src/ListBox/ListBoxSelection.svelte';
+  import FileUploadMenuItem from '$components/FileUploadMenuItem.svelte';
 
   /**
    * Set the multiselect items
@@ -164,24 +174,10 @@
    */
   export let highlightedId: null | MultiSelectItemId = null;
 
-  import { afterUpdate, createEventDispatcher, setContext } from 'svelte';
-  import { WarningFilled, WarningAltFilled, Upload } from 'carbon-icons-svelte';
-  import {
-    Button,
-    Checkbox,
-    FileUploaderButton,
-    ListBox,
-    ListBoxField,
-    ListBoxMenu,
-    ListBoxMenuIcon,
-    ListBoxMenuItem,
-    ListBoxSelection
-  } from 'carbon-components-svelte';
-
-  import type { ListBoxMenuIconTranslationId } from 'carbon-components-svelte/src/ListBox/ListBoxMenuIcon.svelte';
-  import type { ListBoxSelectionTranslationId } from 'carbon-components-svelte/src/ListBox/ListBoxSelection.svelte';
-  import FileUploadMenuItem from '$components/FileUploadMenuItem.svelte';
-  import LFListBox from '$components/LFListBox.svelte';
+  /**
+   * Specify the accepted file types
+   */
+  export let accept: ReadonlyArray<string> = [];
 
   const dispatch = createEventDispatcher();
 
@@ -307,7 +303,7 @@
       </slot>
     </label>
   {/if}
-  <LFListBox
+  <ListBox
     role={undefined}
     {disabled}
     {invalid}
@@ -485,6 +481,13 @@
     </ListBoxField>
     <div style:display={open ? 'block' : 'none'}>
       <ListBoxMenu aria-label={ariaLabel} {id} aria-multiselectable="true">
+        <FileUploadMenuItem
+          id="file-upload"
+          labelText="Upload new data source"
+          {accept}
+          multiple
+          name="file-upload"
+        />
         {#each filterable ? filteredItems : sortedItems as item, i (item.id)}
           <ListBoxMenuItem
             id={item.id}
@@ -528,17 +531,9 @@
             </Checkbox>
           </ListBoxMenuItem>
         {/each}
-
-        <FileUploadMenuItem
-          id="file-upload"
-          labelText="Upload new data source"
-          accept={['.pdf', 'txt']}
-          multiple
-          name="file-upload"
-        />
       </ListBoxMenu>
     </div>
-  </LFListBox>
+  </ListBox>
 
   {#if !inline && !invalid && !warn && helperText}
     <div class:bx--form__helper-text={true} class:bx--form__helper-text--disabled={disabled}>
@@ -546,3 +541,4 @@
     </div>
   {/if}
 </div>
+

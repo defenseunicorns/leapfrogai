@@ -8,12 +8,14 @@
   export let selectedFileIds: string[];
 </script>
 
-<LFMultiSelect
-  label="Choose data sources"
-  items={files?.map((file) => ({ id: file.id, text: file.filename }))}
-  direction="top"
-  bind:selectedIds={selectedFileIds}
-/>
+<div id="multi-select-container">
+  <LFMultiSelect
+    label="Choose data sources"
+    items={files?.map((file) => ({ id: file.id, text: file.filename }))}
+    direction="top"
+    bind:selectedIds={selectedFileIds}
+  />
+</div>
 
 <div class="file-item-list">
   {#each [...(files || [])]
@@ -25,6 +27,7 @@
         name={file.filename}
         size="small"
         status="edit"
+        accept={['.pdf', 'txt']}
         style="max-width: 100%"
         on:delete={() => {
           selectedFileIds = selectedFileIds.filter((id) => id !== file.id);
@@ -37,6 +40,13 @@
 <input type="hidden" name="data_sources" bind:value={selectedFileIds} />
 
 <style lang="scss">
+  #multi-select-container {
+    // remove border from first item so button outline shows instead
+    :global(.bx--list-box__menu-item__option:nth-of-type(1)) {
+      border-top: none;
+    }
+  }
+
   .file-item-list {
     display: flex;
     flex-direction: column;
