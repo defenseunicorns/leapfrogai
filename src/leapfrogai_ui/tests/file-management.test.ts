@@ -1,23 +1,10 @@
 import { expect, test } from './fixtures';
-import { loadChatPage } from './helpers';
+import { deleteTestFilesWithApi, loadChatPage, uploadFile } from './helpers';
 import type { Page } from '@playwright/test';
 
 const loadFileManagementPage = async (page: Page) => {
   await page.goto('/chat/file-management');
   await expect(page).toHaveTitle('LeapfrogAI - File Management');
-};
-
-const uploadFile = async (page: Page, filename = 'test.pdf') => {
-  const fileChooserPromise = page.waitForEvent('filechooser');
-  await page.getByRole('button', { name: /upload/i }).click();
-  const fileChooser = await fileChooserPromise;
-  await fileChooser.setFiles(`./tests/fixtures/${filename}`);
-};
-
-const deleteFile = async (page: Page) => {
-  const checkboxes = await page.getByRole('checkbox').all();
-  await checkboxes[1].check(); // first checkbox is for selecting all, pick the second one
-  await page.getByText('Delete').click();
 };
 
 test.beforeEach(async ({ page }) => {
@@ -37,7 +24,6 @@ test.beforeEach(async ({ page }) => {
   }
 
   await page.reload();
-
 });
 
 test('it can navigate to the file management page', async ({ page }) => {
@@ -108,7 +94,7 @@ test('shows an error toast when there is an error deleting a file', async ({ pag
   await expect(page.getByText('test.pdf imported successfully')).toBeVisible();
   await expect(page.getByText('test.pdf imported successfully')).not.toBeVisible(); // wait for upload to finish
 
-  await deleteFile(page);
+  await deleteTestFilesWithApi();
   await expect(page.getByText('Error Deleting File')).toBeVisible();
 });
 

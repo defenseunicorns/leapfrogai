@@ -33,6 +33,7 @@
     .sort((a, b) => a.filename.localeCompare(b.filename)) as file}
     <div transition:fade={{ duration: 70 }}>
       <FileUploaderItem
+        data-testid={`${file.filename}-${file.status}-uploader-item`}
         invalid={file.status === 'error'}
         id={file.id}
         name={file.filename}

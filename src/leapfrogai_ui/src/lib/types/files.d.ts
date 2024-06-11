@@ -8,10 +8,11 @@ export type FileRow = {
   created_at: number | null;
   status: FileUploadStatus;
 };
-
+// This type is taken from SuperValidated, leaving the any
 
 export type FilesForm = SuperValidated<
   { files?: (File | null | undefined)[] | undefined },
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   any,
   { files?: (File | null | undefined)[] | undefined }
 >;

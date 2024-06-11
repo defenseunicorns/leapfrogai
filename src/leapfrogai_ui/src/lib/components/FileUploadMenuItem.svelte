@@ -56,7 +56,8 @@
     validators: yup(filesSchema),
     invalidateAll: false,
     onError() {
-      filesStore.setUploading(false);
+      // Backend failure, not just a single file failure
+      filesStore.setAllUploadingToError();
       toastStore.addToast({
         kind: 'error',
         title: 'Upload Failed',
@@ -99,6 +100,8 @@
   action="/chat/file-management"
 >
   <ListBoxMenuItem on:click={handleClick}>
+    <!-- svelte-ignore a11y-no-noninteractive-tabindex -->
+    <!-- svelte-ignore a11y-no-noninteractive-element-interactions -->
     <label
       for={id}
       aria-disabled={disabled}
@@ -106,7 +109,7 @@
       on:keydown
       on:keydown={({ key }) => {
         if (key === ' ' || key === 'Enter') {
-          ref.click();
+          ref?.click();
         }
       }}
     >

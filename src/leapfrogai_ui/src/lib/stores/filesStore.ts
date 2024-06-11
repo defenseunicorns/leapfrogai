@@ -17,7 +17,6 @@ const defaultValues: FilesStore = {
 
 // Wait 1.5 seconds, then invalidate the files so they are re-fetched (will remove rows with status: "error")
 const waitThenInvalidate = () => {
-  // Wait 1.5 seconds, then remove error files and update status to hide for successful files
   new Promise((resolve) => setTimeout(resolve, 1500)).then(() => {
     invalidate('lf:files');
   });
@@ -44,8 +43,8 @@ const createFilesStore = () => {
     },
     addUploadingFiles: (files: File[]) => {
       update((old) => {
-        let newFiles: FileRow[] = [];
-        let newFileIds: string[] = [];
+        const newFiles: FileRow[] = [];
+        const newFileIds: string[] = [];
         for (const file of files) {
           const id = `${file.name}-${new Date()}`; // temp id
           newFiles.push({
@@ -79,6 +78,24 @@ const createFilesStore = () => {
         waitThenInvalidate();
 
         return { ...old, files: newRows };
+      });
+    },
+    setAllUploadingToError: () => {
+      update((old) => {
+        const modifiedFiles = old.files.map((file) => {
+          if (file.status === 'uploading') {
+            file.status = 'error';
+          }
+          return file;
+        });
+
+        waitThenInvalidate();
+
+        return {
+          ...old,
+          files: modifiedFiles,
+          uploading: false
+        };
       });
     }
   };

@@ -1,5 +1,5 @@
 <script lang="ts">
-  /* This components is a modified version of the Carbon Components Svelte MultiSelect.
+  /* This component is a modified version of the Carbon Components Svelte MultiSelect.
    It adds a button into the menu that allows uploading of files.
    It has also been converted to use Typescript.
  */
@@ -40,9 +40,12 @@
    * Override the item name, title, labelText, or value passed to the user-selectable checkbox input as well as the hidden inputs.
    
    */
+  // Copied from Svelte Carbon components, seems like this doesn't do what it is supposed to
+  // so leaving as is and ignoring the eslint error
   export let itemToInput: (
     item: MultiSelectItem
-  ) => { name?: string; labelText?: any; title?: string; value?: string } = (item) => {};
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  ) => { name?: string; labelText?: string; title?: string; value?: string } = (item) => {};
 
   /**
    * Set the selected ids
@@ -494,7 +497,7 @@
           multiple
           disableLabelChanges
           {filesForm}
-          bind:open={open}
+          bind:open
         />
         {#each filterable ? filteredItems : sortedItems as item, i (item.id)}
           <ListBoxMenuItem
