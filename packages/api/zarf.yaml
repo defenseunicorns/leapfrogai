@@ -20,6 +20,8 @@ variables:
     description: "Flag to expose the OpenAPI schema for debugging."
   - name: HOSTED_DOMAIN
     default: "uds.dev"
+  - name: DEFAULT_EMBEDDINGS_MODEL
+    default: "text-embeddings"
 
 components:
   - name: leapfrogai
@@ -35,4 +37,14 @@ components:
         - "lfai-values.yaml"
     images:
       - "ghcr.io/defenseunicorns/leapfrogai/leapfrogai-api:###ZARF_PKG_TMPL_LEAPFROGAI_IMAGE_VERSION###"
+      - "ghcr.io/defenseunicorns/leapfrogai/api-migrations:###ZARF_PKG_TMPL_LEAPFROGAI_IMAGE_VERSION###"
       - "kiwigrid/k8s-sidecar:1.23.3"
+    actions:
+      onDeploy:
+        after:
+          - wait:
+              cluster:
+                kind: Job
+                name: api-migrations-###ZARF_PKG_TMPL_IMAGE_VERSION###
+                namespace: leapfrogai
+                condition: complete

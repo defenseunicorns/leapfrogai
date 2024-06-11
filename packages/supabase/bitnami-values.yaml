@@ -187,17 +187,6 @@ postgresql:
     resourcesPreset: "none"
     podLabels:
       sidecar.istio.io/inject: "false"
-    initdb:
-      scripts:
-        0000000000000000_migrate.sh: |
-          ###ZARF_VAR_MIGRATION_SCRIPT###
-
-        20240322174520_api_sql_schema.sql: |
-          ###ZARF_VAR_API_SQL_SCHEMA###
-
-        20240322174521_ui_sql_schema.sql: |
-          ###ZARF_VAR_UI_SQL_SCHEMA###
-
 
   commonAnnotations:
     helm.sh/resource-policy: keep

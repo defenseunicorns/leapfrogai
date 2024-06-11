@@ -79,9 +79,16 @@ components:
         # x-release-please-end
     images:
       - ghcr.io/defenseunicorns/leapfrogai/leapfrogai-ui:###ZARF_PKG_TMPL_IMAGE_VERSION###
+      - ghcr.io/defenseunicorns/leapfrogai/ui-migrations:###ZARF_PKG_TMPL_IMAGE_VERSION###
     actions:
       onDeploy:
         after:
+          - wait:
+              cluster:
+                kind: Job
+                name: ui-migrations-###ZARF_PKG_TMPL_IMAGE_VERSION###
+                namespace: leapfrogai
+                condition: complete
           - wait:
               cluster:
                 kind: Deployment
