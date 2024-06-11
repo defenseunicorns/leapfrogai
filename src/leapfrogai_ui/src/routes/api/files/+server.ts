@@ -14,3 +14,4 @@ export async function GET({ locals: { safeGetSession } }) {
 
   return json(files ?? []);
 }
+

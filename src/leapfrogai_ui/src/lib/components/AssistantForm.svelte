@@ -10,7 +10,7 @@
   import { Button, Modal, Slider, TextArea, TextInput } from 'carbon-components-svelte';
   import AssistantAvatar from '$components/AssistantAvatar.svelte';
   import { yup } from 'sveltekit-superforms/adapters';
-  import { toastStore } from '$stores';
+  import { filesStore, toastStore } from '$stores';
   import InputTooltip from '$components/InputTooltip.svelte';
   import { assistantInputSchema, editAssistantInputSchema } from '$lib/schemas/assistants';
   import type { NavigationTarget } from '@sveltejs/kit';
@@ -21,7 +21,6 @@
 
   let isEditMode = $page.url.pathname.includes('edit');
   let bypassCancelWarning = false;
-  let selectedFileIds: string[] = data.form.data.data_sources || [];
 
   const { form, errors, enhance, submitting, isTainted } = superForm(data.form, {
     invalidateAll: false,
@@ -76,6 +75,10 @@
       }
     }
   });
+
+  $: if (data.files) {
+    filesStore.setFiles(data.files || []);
+  }
 
   onMount(() => {
     if (isEditMode && Object.keys($errors).length > 0) {
@@ -170,7 +173,7 @@
         labelText="Data Sources"
         tooltipText="Specific files your assistant can search and reference"
       />
-      <AssistantFileSelect files={data?.files} bind:selectedFileIds />
+      <AssistantFileSelect filesForm={data.filesForm} />
       <input
         type="hidden"
         name="vectorStoreId"

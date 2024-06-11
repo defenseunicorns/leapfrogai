@@ -1,9 +1,13 @@
 <script lang="ts">
   import { Upload } from 'carbon-icons-svelte';
-  import { ListBoxMenuItem } from 'carbon-components-svelte';
+  import { FileUploaderButton, ListBoxMenuItem } from 'carbon-components-svelte';
   import { createEventDispatcher } from 'svelte';
-  import { fi } from '@faker-js/faker';
-  import type {FileRow} from "$lib/types/files";
+  import type { FileRow, FilesForm } from '$lib/types/files';
+  import { filesStore, toastStore } from '$stores';
+  import { superForm } from 'sveltekit-superforms';
+  import { yup } from 'sveltekit-superforms/adapters';
+  import { filesSchema } from '$schemas/files';
+  import { invalidate } from '$app/navigation';
 
   export let multiple = false;
   export let files: File[] = [];
@@ -13,8 +17,11 @@
   export let disabled = false;
   export let tabindex = '0';
   export let role = 'button';
-  export let name = '';
   export let accept: ReadonlyArray<string> = [];
+  export let disableLabelChanges = false;
+
+  export let filesForm: FilesForm; // for the form
+  export let open: boolean; //Parent LFMultiSelect open reactive variable
 
   let initialLabelText = labelText;
 
@@ -30,15 +37,18 @@
   }
 
   const handleUpload = () => {
-    for(const file of files){
+    open = false; // close parent multi select
+    for (const file of files) {
       const newFile: FileRow = {
         id: `${file.name}-${new Date()}`, // temp id
         filename: file.name,
         status: 'uploading',
         created_at: null
       };
+      filesStore.addPendingFile(newFile);
+      submit();
     }
-  }
+  };
 
   // The parent ListBox that uses this component has on:click|preventDefault for the other
   // items in the list box to prevent it from closing. We get around that with this function
@@ -49,9 +59,54 @@
       ref.click();
     }
   };
+
+  const { enhance, submit } = superForm(filesForm, {
+    validators: yup(filesSchema),
+    invalidateAll: false,
+    onError() {
+      toastStore.addToast({
+        kind: 'error',
+        title: 'Upload Failed',
+        subtitle: `Please try again or contact support`
+      });
+    },
+    onResult: async ({ result }) => {
+      if (result.type === 'success') {
+        const idsToSelect: string[] = [];
+        const uploadedFiles = result.data?.uploadedFiles;
+        for (const uploadedFile of uploadedFiles) {
+          if (uploadedFile.status === 'error') {
+            filesStore.addErrorFile(uploadedFile);
+            toastStore.addToast({
+              kind: 'error',
+              title: 'Upload Failed',
+              subtitle: `${uploadedFile.filename} upload failed.`
+            });
+          } else {
+            idsToSelect.push(uploadedFile.id);
+
+            toastStore.addToast({
+              kind: 'success',
+              title: 'Uploaded Successfully',
+              subtitle: `${uploadedFile.filename} uploaded successfully.`
+            });
+          }
+        }
+        filesStore.addSelectedAssistantFileIds(idsToSelect);
+        filesStore.setPendingFiles([]);
+      }
+      await invalidate('lf:files');
+    }
+  });
 </script>
 
-<div class="file-upload-container">
+<form
+  class="file-upload-container"
+  method="POST"
+  enctype="multipart/form-data"
+  use:enhance
+  action="/chat/file-management"
+>
   <ListBoxMenuItem on:click={handleClick}>
     <label
       for={id}
@@ -82,13 +137,15 @@
       tabindex="-1"
       {accept}
       {multiple}
-      {name}
+      name="files"
       class:bx--visually-hidden={true}
       {...$$restProps}
       on:change|stopPropagation={({ target }) => {
         if (target) {
           files = [...target.files];
-          labelText = files.length > 1 ? `${files.length} files` : files[0].name;
+          if (files && !disableLabelChanges) {
+            labelText = files.length > 1 ? `${files.length} files` : files[0].name;
+          }
           dispatch('change', files);
         }
       }}
@@ -100,7 +157,7 @@
       }}
     />
   </ListBoxMenuItem>
-</div>
+</form>
 
 <style lang="scss">
   .file-upload-container {

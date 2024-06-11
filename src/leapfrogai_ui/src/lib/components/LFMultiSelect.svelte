@@ -23,6 +23,7 @@
   import type { ListBoxMenuIconTranslationId } from 'carbon-components-svelte/src/ListBox/ListBoxMenuIcon.svelte';
   import type { ListBoxSelectionTranslationId } from 'carbon-components-svelte/src/ListBox/ListBoxSelection.svelte';
   import FileUploadMenuItem from '$components/FileUploadMenuItem.svelte';
+  import type { FilesForm } from '$lib/types/files';
 
   /**
    * Set the multiselect items
@@ -178,6 +179,11 @@
    * Specify the accepted file types
    */
   export let accept: ReadonlyArray<string> = [];
+
+  /**
+   * SuperValidated Form
+   */
+  export let filesForm: FilesForm;
 
   const dispatch = createEventDispatcher();
 
@@ -486,7 +492,9 @@
           labelText="Upload new data source"
           {accept}
           multiple
-          name="file-upload"
+          disableLabelChanges
+          {filesForm}
+          bind:open={open}
         />
         {#each filterable ? filteredItems : sortedItems as item, i (item.id)}
           <ListBoxMenuItem
@@ -541,4 +549,3 @@
     </div>
   {/if}
 </div>
-

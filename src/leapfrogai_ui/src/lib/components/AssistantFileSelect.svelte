@@ -1,25 +1,27 @@
 <script lang="ts">
   import { FileUploaderItem } from 'carbon-components-svelte';
   import { fade } from 'svelte/transition';
-  import type { FileObject } from 'openai/resources/files';
   import LFMultiSelect from '$components/LFMultiSelect.svelte';
+  import { filesStore } from '$stores';
+  import type { FilesForm } from '$lib/types/files';
 
-  export let files: FileObject[];
-  export let selectedFileIds: string[];
+  export let filesForm: FilesForm;
 </script>
 
 <div id="multi-select-container">
   <LFMultiSelect
     label="Choose data sources"
-    items={files?.map((file) => ({ id: file.id, text: file.filename }))}
+    items={$filesStore.files.map((file) => ({ id: file.id, text: file.filename }))}
     direction="top"
-    bind:selectedIds={selectedFileIds}
+    accept={['.pdf', 'txt']}
+    bind:selectedIds={$filesStore.selectedAssistantFileIds}
+    {filesForm}
   />
 </div>
 
 <div class="file-item-list">
-  {#each [...(files || [])]
-    .filter((f) => selectedFileIds.includes(f.id))
+  {#each [...$filesStore.files, ...$filesStore.pendingFiles, ...$filesStore.errorFiles]
+    .filter((f) => $filesStore.selectedAssistantFileIds.includes(f.id))
     .sort((a, b) => a.filename.localeCompare(b.filename)) as file}
     <div transition:fade={{ duration: 70 }}>
       <FileUploaderItem
@@ -27,17 +29,51 @@
         name={file.filename}
         size="small"
         status="edit"
-        accept={['.pdf', 'txt']}
         style="max-width: 100%"
         on:delete={() => {
-          selectedFileIds = selectedFileIds.filter((id) => id !== file.id);
+          filesStore.setSelectedAssistantFileIds(
+            $filesStore.selectedAssistantFileIds.filter((id) => id !== file.id)
+          );
+        }}
+      />
+    </div>
+  {/each}
+  {#each $filesStore.pendingFiles as pendingFile}
+    <div transition:fade={{ duration: 70 }}>
+      <FileUploaderItem
+        id={pendingFile.id}
+        name={pendingFile.filename}
+        size="small"
+        status="uploading"
+        style="max-width: 100%"
+        on:delete={() => {
+          filesStore.setSelectedAssistantFileIds(
+            $filesStore.selectedAssistantFileIds.filter((id) => id !== pendingFile.id)
+          );
+        }}
+      />
+    </div>
+  {/each}
+  {#each $filesStore.errorFiles as errorFile}
+    <div transition:fade={{ duration: 70 }}>
+      <FileUploaderItem
+        invalid
+        id={errorFile.id}
+        name={errorFile.filename}
+        size="small"
+        status="uploading"
+        style="max-width: 100%"
+        on:delete={() => {
+          filesStore.setSelectedAssistantFileIds(
+            $filesStore.selectedAssistantFileIds.filter((id) => id !== errorFile.id)
+          );
         }}
       />
     </div>
   {/each}
 </div>
 
-<input type="hidden" name="data_sources" bind:value={selectedFileIds} />
+<input type="hidden" name="data_sources" bind:value={$filesStore.selectedAssistantFileIds} />
 
 <style lang="scss">
   #multi-select-container {
