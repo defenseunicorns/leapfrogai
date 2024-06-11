@@ -21,4 +21,4 @@ COPY --from=builder /home/nonroot/.local/bin/uvicorn /home/nonroot/.local/bin/uv
 
 EXPOSE 8080
 
-ENTRYPOINT ["/home/nonroot/.local/bin/uvicorn", "leapfrogai_api.main:app", "--proxy-headers", "--host", "0.0.0.0", "--port", "8080"]
+ENTRYPOINT ["/home/nonroot/.local/bin/uvicorn", "leapfrogai_api.main:app", "--proxy-headers", "--host", "0.0.0.0", "--port", "8080", "--log-level", "debug"]

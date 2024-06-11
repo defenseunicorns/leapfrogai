@@ -1,20 +1,24 @@
 """OpenAI completions router."""
 
 from typing import Annotated
-from fastapi import APIRouter, Depends, HTTPException
+from fastapi import HTTPException, APIRouter, Depends
+from fastapi.security import HTTPBearer
 from leapfrogai_api.backend.grpc_client import completion, stream_completion
 from leapfrogai_api.backend.types import CompletionRequest
+from leapfrogai_api.routers.supabase_session import Session
 from leapfrogai_api.utils import get_model_config
 from leapfrogai_api.utils.config import Config
 import leapfrogai_sdk as lfai
 
-
 router = APIRouter(prefix="/openai/v1/completions", tags=["openai/completions"])
+security = HTTPBearer()
 
 
 @router.post("")
 async def complete(
-    req: CompletionRequest, model_config: Annotated[Config, Depends(get_model_config)]
+    session: Session,
+    req: CompletionRequest,
+    model_config: Annotated[Config, Depends(get_model_config)],
 ):
     """Complete a prompt with the given model."""
     # Get the model backend configuration
