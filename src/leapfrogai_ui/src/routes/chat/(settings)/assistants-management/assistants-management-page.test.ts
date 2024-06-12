@@ -3,6 +3,8 @@ import AssistantsManagementPage from './+page.svelte';
 import { getFakeAssistant } from '$testUtils/fakeData';
 
 describe('Assistants management page', () => {
+  // Assistant search tested with e2e
+
   it('displays all the assistants', async () => {
     const assistant1 = getFakeAssistant();
     const assistant2 = getFakeAssistant();
@@ -12,5 +14,4 @@ describe('Assistants management page', () => {
     screen.getByTestId(`assistant-tile-${assistant1.name!}`);
     screen.getByTestId(`assistant-tile-${assistant2.name!}`);
   });
-  // Assistant search tested with e2e
 });

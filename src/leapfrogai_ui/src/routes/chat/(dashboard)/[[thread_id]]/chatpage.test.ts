@@ -1,5 +1,4 @@
 import { render, screen } from '@testing-library/svelte';
-
 import { fakeThreads, getFakeAssistant, getFakeFiles, getFakeProfile } from '$testUtils/fakeData';
 import ChatPage from './+page.svelte';
 import ChatPageWithToast from './ChatPageWithToast.test.svelte';
@@ -35,11 +34,11 @@ import { mockGetFiles } from '$lib/mocks/file-mocks';
 //Calls to vi.mock are hoisted to the top of the file, so you don't have access to variables declared in the global file scope unless they are defined with vi.hoisted before the call.
 const { getStores } = await vi.hoisted(() => import('$lib/mocks/svelte'));
 
-type PageServerLoad = {
+type LayoutServerLoad = {
   threads: LFThread[];
   assistants: LFAssistant[];
 } | null;
-let data: PageServerLoad;
+let data: LayoutServerLoad;
 const question = 'What is AI?';
 
 const assistant1 = getFakeAssistant();

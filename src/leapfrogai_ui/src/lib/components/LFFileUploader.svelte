@@ -20,7 +20,7 @@
 
 <div>
   <input
-    data-testid="import data input"
+    data-testid="import-chat-history-input"
     id="import-conversations"
     bind:this={ref}
     type="file"
@@ -40,8 +40,9 @@
     id="import-btn"
     kind="ghost"
     disabled={importing}
+    size="small"
     icon={Download}
     iconDescription="Import conversations"
-    on:click={() => ref?.click()}>Import data</Button
+    on:click={() => ref?.click()}>Import chat history</Button
   >
 </div>
