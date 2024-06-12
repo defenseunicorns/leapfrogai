@@ -15,7 +15,7 @@ const validMessageBody: NewMessageInput = {
 
 describe('/api/messages/new', () => {
   it('returns a 200 when successful', async () => {
-    mockOpenAI.setMessage(message);
+    mockOpenAI.setTempMessage(message);
 
     const request = new Request('http://thisurlhasnoeffect', {
       method: 'POST',

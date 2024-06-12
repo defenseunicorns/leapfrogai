@@ -40,7 +40,7 @@ export async function POST({ request, locals: { safeGetSession } }) {
   }));
 
   const result = await streamText({
-    model: openai('gpt-4-turbo-preview'),
+    model: openai(env.DEFAULT_MODEL),
     messages: reformatedMessages
   });
 

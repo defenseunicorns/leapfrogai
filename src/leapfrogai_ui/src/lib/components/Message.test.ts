@@ -2,33 +2,84 @@ import { render, screen } from '@testing-library/svelte';
 import { afterAll, afterEach, type MockInstance, vi } from 'vitest';
 import { Message } from '$components/index';
 import userEvent from '@testing-library/user-event';
-import { getFakeMessage } from '$testUtils/fakeData';
+import { fakeThreads, getFakeAssistant, getFakeMessage } from '$testUtils/fakeData';
 import MessageWithToast from '$components/MessageWithToast.test.svelte';
 import { convertMessageToAiMessage, getMessageText } from '$helpers/threads';
+import { type Message as AIMessage } from 'ai/svelte';
+import * as chatHelpers from '$helpers/chatHelpers';
+import { threadsStore } from '$stores';
+import { NO_SELECTED_ASSISTANT_ID } from '$constants';
+import stores from '$app/stores';
 
-const fakeHandleMessageEdit = vi.fn();
-const fakeHandleRegenerate = vi.fn();
+const { getStores } = await vi.hoisted(() => import('$lib/mocks/svelte'));
 
-const defaultMessageProps = {
-  message: convertMessageToAiMessage(getFakeMessage()),
-  handleMessageEdit: fakeHandleMessageEdit,
-  handleRegenerate: fakeHandleRegenerate,
-  isLastMessage: false,
-  isLoading: false
+const fakeAppend = vi.fn();
+const fakeReload = vi.fn();
+const assistant = getFakeAssistant();
+
+const getDefaultMessageProps = () => {
+  let messages: AIMessage[] = [];
+  const setMessages = (newMessages: AIMessage[]) => {
+    messages = [...newMessages];
+  };
+  return {
+    message: convertMessageToAiMessage(getFakeMessage()),
+    messages,
+    setMessages,
+    isLastMessage: false,
+    isLoading: false,
+    append: fakeAppend,
+    reload: fakeReload
+  };
 };
 
 describe('Message component', () => {
+  beforeAll(() => {
+    vi.mock('$app/stores', (): typeof stores => {
+      const page: typeof stores.page = {
+        subscribe(fn) {
+          return getStores({
+            url: `http://localhost/chat/${fakeThreads[0].id}`,
+            params: { thread_id: fakeThreads[0].id },
+            data: {
+              assistants: [assistant]
+            }
+          }).page.subscribe(fn);
+        }
+      };
+      const navigating: typeof stores.navigating = {
+        subscribe(fn) {
+          return getStores().navigating.subscribe(fn);
+        }
+      };
+      const updated: typeof stores.updated = {
+        subscribe(fn) {
+          return getStores().updated.subscribe(fn);
+        },
+        check: () => Promise.resolve(false)
+      };
+
+      return {
+        getStores,
+        navigating,
+        page,
+        updated
+      };
+    });
+  });
+
   afterEach(() => {
-    fakeHandleMessageEdit.mockReset();
-    fakeHandleRegenerate.mockReset();
+    fakeAppend.mockReset();
+    fakeReload.mockReset();
   });
 
   afterAll(() => {
-    fakeHandleMessageEdit.mockRestore();
-    fakeHandleRegenerate.mockRestore();
+    fakeAppend.mockRestore();
+    fakeReload.mockRestore();
   });
+
   it('displays edit text area when edit btn is clicked', async () => {
-    render(Message, { ...defaultMessageProps });
+    render(Message, { ...getDefaultMessageProps() });
     expect(screen.queryByText('edit message input')).not.toBeInTheDocument();
     const editPromptBtn = screen.getByLabelText('edit prompt');
     await userEvent.click(editPromptBtn);
@@ -36,7 +87,10 @@ describe('Message component', () => {
   });
   it('removes the edit textarea and restores original text on close', async () => {
     const fakeMessage = getFakeMessage();
-    render(Message, { ...defaultMessageProps, message: convertMessageToAiMessage(fakeMessage) });
+    render(Message, {
+      ...getDefaultMessageProps(),
+      message: convertMessageToAiMessage(fakeMessage)
+    });
     const editPromptBtn = screen.getByLabelText('edit prompt');
     expect(screen.queryByText('edit message input')).not.toBeInTheDocument();
     expect(screen.getByText(getMessageText(fakeMessage))).toBeInTheDocument();
@@ -50,20 +104,27 @@ describe('Message component', () => {
     expect(screen.getByText(getMessageText(fakeMessage))).toBeInTheDocument();
   });
   it('submits message edit when submit is clicked', async () => {
+    const handleEditSpy = vi
+      .spyOn(chatHelpers, 'handleChatMessageEdit')
+      .mockImplementationOnce(vi.fn());
+
     const fakeMessage = getFakeMessage();
-    render(Message, { ...defaultMessageProps, message: convertMessageToAiMessage(fakeMessage) });
+    render(Message, {
+      ...getDefaultMessageProps(),
+      message: convertMessageToAiMessage(fakeMessage)
+    });
     const editPromptBtn = screen.getByLabelText('edit prompt');
     expect(screen.queryByText('edit message input')).not.toBeInTheDocument();
     expect(screen.getByText(getMessageText(fakeMessage))).toBeInTheDocument();
     await userEvent.click(editPromptBtn);
 
     await userEvent.click(screen.getByRole('button', { name: /submit/i }));
-    expect(fakeHandleMessageEdit).toHaveBeenCalledTimes(1);
+    expect(handleEditSpy).toHaveBeenCalledTimes(1);
   });
   it('does not allow editing non user messages', () => {
     const fakeAssistantMessage = getFakeMessage({ role: 'assistant' });
     render(Message, {
-      ...defaultMessageProps,
+      ...getDefaultMessageProps(),
       message: convertMessageToAiMessage(fakeAssistantMessage)
     });
     expect(screen.queryByLabelText('edit prompt')).not.toBeInTheDocument();
@@ -84,7 +145,7 @@ describe('Message component', () => {
       clipboardSpy = vi.spyOn(navigator.clipboard, 'writeText');
       const fakeAssistantMessage = getFakeMessage({ role: 'assistant' });
       render(MessageWithToast, {
-        ...defaultMessageProps,
+        ...getDefaultMessageProps(),
         message: convertMessageToAiMessage(fakeAssistantMessage)
       });
 
@@ -102,7 +163,7 @@ describe('Message component', () => {
       clipboardSpy = vi.spyOn(navigator.clipboard, 'writeText');
       const fakeAssistantMessage = getFakeMessage({ role: 'assistant' });
       render(MessageWithToast, {
-        ...defaultMessageProps,
+        ...getDefaultMessageProps(),
         message: convertMessageToAiMessage(fakeAssistantMessage)
       });
 
@@ -112,9 +173,13 @@ describe('Message component', () => {
     });
 
     it('disables edit submit button when message is loading', async () => {
+      threadsStore.set({
+        threads: fakeThreads,
+        selectedAssistantId: NO_SELECTED_ASSISTANT_ID,
+        sendingBlocked: true
+      });
       render(MessageWithToast, {
-        ...defaultMessageProps,
-        isLoading: true
+        ...getDefaultMessageProps()
       });
 
       const editPromptBtn = screen.getByLabelText('edit prompt');
@@ -124,8 +189,13 @@ describe('Message component', () => {
       expect(submitBtn).toHaveProperty('disabled', true);
     });
     it('has copy and regenerate buttons for the last AI response', () => {
+      threadsStore.set({
+        threads: fakeThreads,
+        selectedAssistantId: NO_SELECTED_ASSISTANT_ID,
+        sendingBlocked: false
+      });
       render(MessageWithToast, {
-        ...defaultMessageProps,
+        ...getDefaultMessageProps(),
         message: convertMessageToAiMessage(getFakeMessage({ role: 'assistant' })),
         isLastMessage: true
       });
@@ -135,7 +205,7 @@ describe('Message component', () => {
     });
     it('does not have regenerate buttons for user messages', () => {
       render(MessageWithToast, {
-        ...defaultMessageProps,
+        ...getDefaultMessageProps(),
         message: convertMessageToAiMessage(getFakeMessage({ role: 'user' })),
         isLastMessage: true
       });
@@ -144,7 +214,7 @@ describe('Message component', () => {
     });
     it('does not have regenerate buttons for AI responses that are not the last response', () => {
       render(MessageWithToast, {
-        ...defaultMessageProps,
+        ...getDefaultMessageProps(),
         message: convertMessageToAiMessage(getFakeMessage({ role: 'assistant' })),
         isLastMessage: false
       });
@@ -153,39 +223,72 @@ describe('Message component', () => {
     });
     it('does not have a copy button for user messages', () => {
       render(MessageWithToast, {
-        ...defaultMessageProps,
+        ...getDefaultMessageProps(),
         message: convertMessageToAiMessage(getFakeMessage({ role: 'user' }))
       });
 
       expect(screen.queryByLabelText('copy message')).not.toBeInTheDocument();
     });
-    it('removes the copy and regenerate buttons when a response is loading', () => {
-      render(MessageWithToast, {
-        ...defaultMessageProps,
-        message: convertMessageToAiMessage(getFakeMessage({ role: 'assistant' })),
-        isLastMessage: true,
-        isLoading: true
+    it('removes the regenerate buttons when a response is loading', () => {
+      threadsStore.set({
+        threads: fakeThreads,
+        selectedAssistantId: NO_SELECTED_ASSISTANT_ID,
+        sendingBlocked: true
       });
-      expect(screen.queryByLabelText('copy message')).not.toBeInTheDocument();
+      render(MessageWithToast, {
+        ...getDefaultMessageProps(),
+        message: convertMessageToAiMessage(getFakeMessage({ role: 'assistant' })),
+        isLastMessage: true
+      });
+      expect(screen.queryByLabelText('copy message')).toBeInTheDocument();
       expect(screen.queryByLabelText('regenerate message')).not.toBeInTheDocument();
     });
-    it('leaves the copy button for messages when it is loading if not the latest message', () => {
+    it('leaves the copy button for messages when it is loading', () => {
+      threadsStore.set({
+        threads: fakeThreads,
+        selectedAssistantId: NO_SELECTED_ASSISTANT_ID,
+        sendingBlocked: true
+      });
       render(MessageWithToast, {
-        ...defaultMessageProps,
+        ...getDefaultMessageProps(),
         message: convertMessageToAiMessage(getFakeMessage({ role: 'assistant' })),
-        isLastMessage: false,
-        isLoading: true
+        isLastMessage: false
       });
       expect(screen.getByLabelText('copy message')).toBeInTheDocument();
     });
-    it('leaves the edit button for messages when it is loading if not the latest message', () => {
+    it('leaves the edit button for messages when it is loading', () => {
+      threadsStore.set({
+        threads: fakeThreads,
+        selectedAssistantId: NO_SELECTED_ASSISTANT_ID,
+        sendingBlocked: true
+      });
       render(MessageWithToast, {
-        ...defaultMessageProps,
+        ...getDefaultMessageProps(),
         message: convertMessageToAiMessage(getFakeMessage({ role: 'user' })),
-        isLastMessage: false,
-        isLoading: true
+        isLastMessage: false
       });
       screen.getByLabelText('edit prompt');
+    });
+    it("Has the title 'You' for user messages", () => {
+      render(Message, {
+        ...getDefaultMessageProps(),
+        message: getFakeMessage({ role: 'user' })
+      });
+      screen.getByText('You');
+    });
+    it("Has the title 'LeapfrogAI Bot' for regular AI responses", () => {
+      render(Message, {
+        ...getDefaultMessageProps(),
+        message: getFakeMessage({ role: 'assistant', assistant_id: '123' })
+      });
+      screen.getByText('LeapfrogAI Bot');
+    });
+    it('Has the title of the assistant name for regular AI responses', () => {
+      render(Message, {
+        ...getDefaultMessageProps(),
+        message: getFakeMessage({ role: 'assistant', assistant_id: assistant.id })
+      });
+      screen.getByText(assistant.name!);
     });
   });
 });

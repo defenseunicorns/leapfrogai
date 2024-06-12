@@ -1,7 +1,7 @@
 <script lang="ts">
   import { page } from '$app/stores';
   import threadsStore from '$stores/threads';
-  import '../../../styles/main.scss';
+  import '../../../../styles/main.scss';
   import { ChatSidebar } from '$components';
   import { Content } from 'carbon-components-svelte';
 
@@ -12,7 +12,7 @@
 </script>
 
 <svelte:head>
-  <title>{threadLabel || $page.data.title}</title>
+  <title>{threadLabel || 'LeapfrogAI - Chat'}</title>
 </svelte:head>
 
 <svelte:window bind:innerWidth />
