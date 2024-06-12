@@ -111,6 +111,7 @@ const createThreadsStore = () => {
         });
         if (newThread) {
           newThread.messages = [];
+
           update((old) => {
             return {
               ...old,
@@ -163,6 +164,7 @@ const createThreadsStore = () => {
           ...old,
           threads: old.threads.filter((c) => c.id !== id)
         }));
+        await goto(`/chat`);
       } catch {
         toastStore.addToast({
           kind: 'error',

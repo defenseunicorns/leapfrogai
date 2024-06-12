@@ -30,8 +30,6 @@ describe('LFHeader', () => {
       lastVisitedThreadId: thread.id
     });
     render(LFHeader);
-    expect(
-      screen.getByTestId('header-logo-link')
-    ).toHaveAttribute('href', `/chat/${thread.id}`);
+    expect(screen.getByTestId('header-logo-link')).toHaveAttribute('href', `/chat/${thread.id}`);
   });
 });

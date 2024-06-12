@@ -4,7 +4,9 @@ import type { LFThread } from '$lib/types/threads';
 import { openai } from '$lib/server/constants';
 import type { LFMessage } from '$lib/types/messages';
 
-export const load = async ({ locals: { supabase, safeGetSession } }) => {
+export const load = async ({ depends, locals: { supabase, safeGetSession } }) => {
+  depends('lf:threads');
+  console.log('fetching threads in layout');
   const { session } = await safeGetSession();
 
   if (!session) {

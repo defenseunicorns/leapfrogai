@@ -1,7 +1,7 @@
 <script lang="ts">
   import { LFTextArea, PoweredByDU } from '$components';
   import { Button } from 'carbon-components-svelte';
-  import { afterUpdate, onMount, tick } from 'svelte';
+  import { afterUpdate, tick } from 'svelte';
   import { threadsStore, toastStore } from '$stores';
   import { ArrowRight, StopFilledAlt } from 'carbon-icons-svelte';
   import { type Message as AIMessage, useChat } from 'ai/svelte';
@@ -10,8 +10,6 @@
   import Message from '$components/Message.svelte';
   import type { LFMessage } from '$lib/types/messages';
   import { convertMessageToAiMessage, getMessageText } from '$helpers/threads';
-
-  export let data;
 
   let messageThreadDiv: HTMLDivElement;
 
@@ -139,10 +137,6 @@
     setMessages($messages.toSpliced(messageIndex, 1));
     await reload();
   };
-
-  onMount(() => {
-    threadsStore.setThreads(data.threads || []);
-  });
 
   afterUpdate(() => {
     // Scroll to bottom

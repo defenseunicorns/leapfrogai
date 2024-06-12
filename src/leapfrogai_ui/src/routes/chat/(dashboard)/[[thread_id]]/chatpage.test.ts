@@ -40,7 +40,8 @@ describe('The Chat Page', () => {
 
   it('it renders all the messages', async () => {
     threadsStore.set({
-      threads: fakeThreads
+      threads: fakeThreads,
+      lastVisitedThreadId: fakeThreads[0].id
     });
 
     render(ChatPage);
@@ -72,7 +73,8 @@ describe('The Chat Page', () => {
       mockNewMessage(fakeMessage);
 
       threadsStore.set({
-        threads: []
+        threads: [],
+        lastVisitedThreadId: ''
       });
 
       const user = userEvent.setup();
@@ -97,7 +99,8 @@ describe('The Chat Page', () => {
       mockNewMessage(fakeMessage);
 
       threadsStore.set({
-        threads: []
+        threads: [],
+        lastVisitedThreadId: ''
       });
 
       const user = userEvent.setup();
@@ -147,7 +150,8 @@ describe('The Chat Page', () => {
 
     it('displays an error message when there is an error saving the new thread', async () => {
       threadsStore.set({
-        threads: []
+        threads: [],
+        lastVisitedThreadId: ''
       });
 
       mockChatCompletion();
@@ -197,7 +201,8 @@ describe('The Chat Page', () => {
 
       it('displays an error message when there is an error saving the response', async () => {
         threadsStore.set({
-          threads: fakeThreads
+          threads: fakeThreads,
+          lastVisitedThreadId: fakeThreads[0].id
         });
 
         mockChatCompletion();
@@ -255,7 +260,8 @@ describe('The Chat Page', () => {
         mockNewMessage(fakeMessage);
 
         threadsStore.set({
-          threads: [fakeThreads[0]]
+          threads: [fakeThreads[0]],
+          lastVisitedThreadId: ''
         });
         const user = userEvent.setup();
 

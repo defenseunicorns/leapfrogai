@@ -64,7 +64,8 @@ vi.mock('$app/stores', (): typeof stores => {
 describe('ChatSidebar', () => {
   it('renders threads', async () => {
     threadsStore.set({
-      threads: fakeThreads
+      threads: fakeThreads,
+      lastVisitedThreadId: fakeThreads[0].id
     });
 
     render(ChatSidebar);
@@ -86,7 +87,8 @@ describe('ChatSidebar', () => {
     });
 
     threadsStore.set({
-      threads: [fakeTodayThread, fakeYesterdayThread] // uses date override starting in March
+      threads: [fakeTodayThread, fakeYesterdayThread], // uses date override starting in March
+      lastVisitedThreadId: ''
     });
 
     render(ChatSidebar);
@@ -108,7 +110,8 @@ describe('ChatSidebar', () => {
     mockDeleteThread();
 
     threadsStore.set({
-      threads: fakeThreads
+      threads: fakeThreads,
+      lastVisitedThreadId: fakeThreads[0].id
     });
 
     render(ChatSidebar);
@@ -143,7 +146,8 @@ describe('ChatSidebar', () => {
     const toastSpy = vi.spyOn(toastStore, 'addToast');
 
     threadsStore.set({
-      threads: fakeThreads
+      threads: fakeThreads,
+      lastVisitedThreadId: fakeThreads[0].id
     });
 
     render(ChatSidebar);
@@ -174,7 +178,8 @@ describe('ChatSidebar', () => {
     mockEditThreadLabel();
 
     threadsStore.set({
-      threads: fakeThreads
+      threads: fakeThreads,
+      lastVisitedThreadId: fakeThreads[0].id
     });
 
     render(ChatSidebar);
@@ -192,7 +197,8 @@ describe('ChatSidebar', () => {
     mockEditThreadLabel();
 
     threadsStore.set({
-      threads: fakeThreads
+      threads: fakeThreads,
+      lastVisitedThreadId: fakeThreads[0].id
     });
 
     render(ChatSidebar);
@@ -210,7 +216,8 @@ describe('ChatSidebar', () => {
     mockEditThreadLabel();
 
     threadsStore.set({
-      threads: fakeThreads
+      threads: fakeThreads,
+      lastVisitedThreadId: fakeThreads[0].id
     });
 
     render(ChatSidebar);
@@ -239,7 +246,8 @@ describe('ChatSidebar', () => {
 
     const newLabelText = 'new label';
     threadsStore.set({
-      threads: fakeThreads
+      threads: fakeThreads,
+      lastVisitedThreadId: fakeThreads[0].id
     });
 
     render(ChatSidebar);
@@ -257,7 +265,8 @@ describe('ChatSidebar', () => {
   it('does not update the thread label when the user presses escape and it removes the text input', async () => {
     const newLabelText = 'new label';
     threadsStore.set({
-      threads: fakeThreads
+      threads: fakeThreads,
+      lastVisitedThreadId: fakeThreads[0].id
     });
 
     render(ChatSidebar);
@@ -277,7 +286,8 @@ describe('ChatSidebar', () => {
     mockEditThreadLabel();
 
     threadsStore.set({
-      threads: fakeThreads
+      threads: fakeThreads,
+      lastVisitedThreadId: fakeThreads[0].id
     });
 
     render(ChatSidebar);
@@ -299,7 +309,8 @@ describe('ChatSidebar', () => {
     const newLabelText = 'new label';
 
     threadsStore.set({
-      threads: fakeThreads
+      threads: fakeThreads,
+      lastVisitedThreadId: fakeThreads[0].id
     });
 
     render(ChatSidebar);
@@ -314,7 +325,8 @@ describe('ChatSidebar', () => {
     const fakeThread = getFakeThread({ numMessages: 6 });
 
     threadsStore.set({
-      threads: [fakeThread]
+      threads: [fakeThread],
+      lastVisitedThreadId: fakeThreads[0].id
     });
 
     render(ChatSidebar);
@@ -332,7 +344,8 @@ describe('ChatSidebar', () => {
     const fakeThread3 = getFakeThread({ numMessages: 2 });
 
     threadsStore.set({
-      threads: [fakeThread1, fakeThread2, fakeThread3]
+      threads: [fakeThread1, fakeThread2, fakeThread3],
+      lastVisitedThreadId: ''
     });
 
     render(ChatSidebar);
@@ -355,7 +368,8 @@ describe('ChatSidebar', () => {
     const fakeThread3 = getFakeThread({ numMessages: 2 });
 
     threadsStore.set({
-      threads: [fakeThread1, fakeThread2, fakeThread3]
+      threads: [fakeThread1, fakeThread2, fakeThread3],
+      lastVisitedThreadId: ''
     });
 
     render(ChatSidebar);

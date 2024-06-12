@@ -1,5 +1,5 @@
 import { expect, test } from './fixtures';
-import {getSimpleMathQuestion, loadChatPage, sendMessage} from './helpers';
+import { getSimpleMathQuestion, loadChatPage, sendMessage } from './helpers';
 import type { Page } from '@playwright/test';
 
 const loadFileManagementPage = async (page: Page) => {
