@@ -12,12 +12,12 @@ const uploadJSONFile = async (obj: object) => {
   const blob = new Blob([dataStr]);
   const file = new File([blob], 'badData.json', { type: 'application/JSON' });
   File.prototype.text = vi.fn().mockResolvedValueOnce(dataStr);
-  const uploadBtn = screen.getByTestId('import data input');
+  const uploadBtn = screen.getByTestId('import-chat-history-input');
 
   await userEvent.upload(uploadBtn, file);
 };
 
-describe('Import and Export data', () => {
+describe('Import and Export chat history', () => {
   // Note - actual exporting and importing of data tested with E2E test
 
   afterEach(() => {
@@ -67,7 +67,7 @@ describe('Import and Export data', () => {
 
     render(ImportExport);
 
-    await userEvent.click(screen.getByText('Export data'));
+    await userEvent.click(screen.getByText('Export Chat History'));
     expect(toastSpy).toHaveBeenCalledTimes(1);
     expect(toastSpy).toHaveBeenCalledWith({
       kind: 'error',
@@ -78,7 +78,7 @@ describe('Import and Export data', () => {
 
   it('only allows uploading of JSON files', async () => {
     render(ImportExport);
-    const uploadBtn = screen.getByTestId('import data input');
+    const uploadBtn = screen.getByTestId('import-chat-history-input');
 
     expect(uploadBtn).toHaveAttribute('accept', 'application/json');
   });
