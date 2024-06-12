@@ -1,5 +1,5 @@
 <script lang="ts">
-  import { LFTextArea } from '$components';
+  import { LFTextArea, PoweredByDU } from '$components';
   import { Button, Dropdown } from 'carbon-components-svelte';
   import { afterUpdate, onMount, tick } from 'svelte';
   import { threadsStore, toastStore } from '$stores';
@@ -33,7 +33,6 @@
 
   /** LOCAL VARS **/
   let messageThreadDiv: HTMLDivElement;
-  let messageThreadDivHeight: number;
   let lengthInvalid: boolean; // bound to child LFTextArea
   let assistantsList: Array<{ id: string; text: string }>;
   /** END LOCAL VARS **/
@@ -263,7 +262,7 @@
 </script>
 
 <div class="chat-inner-content">
-  <div class="messages" bind:this={messageThreadDiv} bind:offsetHeight={messageThreadDivHeight}>
+  <div class="messages" bind:this={messageThreadDiv}>
     {#each sortedMessages as message, index (message.id)}
       <Message
         {message}
@@ -356,6 +355,7 @@
         {/if}
       </div>
     </form>
+    <PoweredByDU />
   </div>
 </div>
 
