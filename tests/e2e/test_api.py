@@ -1,21 +1,21 @@
 import io
+import json
 import logging
+import os
 import uuid
 
 import pytest as pytest
 import requests
-import os
-import json
 
 logger = logging.getLogger(__name__)
 test_id = str(uuid.uuid4())
 
 get_urls = {
-    "assistants_url": "http://leapfrogai-api.uds.dev/openai/v1/assistants",
-    "assistants_id_url": f"http://leapfrogai-api.uds.dev/openai/v1/assistants/{test_id}",
-    "files_url": "http://leapfrogai-api.uds.dev/openai/v1/files",
-    "files_specific_url": f"http://leapfrogai-api.uds.dev/openai/v1/files/{test_id}",
-    "files_specific_content_url": f"http://leapfrogai-api.uds.dev/openai/v1/files/{test_id}/content",
+    "assistants_url": "https://leapfrogai-api.uds.dev/openai/v1/assistants",
+    "assistants_id_url": f"https://leapfrogai-api.uds.dev/openai/v1/assistants/{test_id}",
+    "files_url": "https://leapfrogai-api.uds.dev/openai/v1/files",
+    "files_specific_url": f"https://leapfrogai-api.uds.dev/openai/v1/files/{test_id}",
+    "files_specific_content_url": f"https://leapfrogai-api.uds.dev/openai/v1/files/{test_id}/content",
 }
 
 post_urls = {
@@ -25,15 +25,18 @@ post_urls = {
 }
 
 delete_urls = {
-    "assistants_id_url": f"http://leapfrogai-api.uds.dev/openai/v1/assistants/{test_id}",
-    "files_specific_url": f"http://leapfrogai-api.uds.dev/openai/v1/files/{test_id}",
+    "assistants_id_url": f"https://leapfrogai-api.uds.dev/openai/v1/assistants/{test_id}",
+    "files_specific_url": f"https://leapfrogai-api.uds.dev/openai/v1/files/{test_id}",
 }
 
 # This is the anon_key for supabase, it provides access to the endpoints that would otherwise be inaccessible
 anon_key = os.environ["ANON_KEY"]
 
-test_email: str = "fakeuser@test.com"
+test_email: str = "fakeuser1@test.com"
 test_password: str = "password"
+
+# We need a jwt token that is properly decodeable but invalid in regards to not being a token for a valid user
+invalid_jwt_token = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxMjM0NTY3ODkwIiwibmFtZSI6IkpvaG4gRG9lIiwiaWF0IjoxNTE2MjM5MDIyfQ.SflKxwRJSMeKKF2QT4fwpMeJf36POk6yJV_adQssw5c"
 
 mock_assistant_body = {
     "name": "Test Assistant",
@@ -88,7 +91,7 @@ def verify_request(
     headers = (
         {"Authorization": f"Bearer {jwt_token}"}
         if legitimate
-        else {"Authorization": "Bearer faketoken"}
+        else {"Authorization": f"Bearer {invalid_jwt_token}"}
     )
 
     # Verify that legitimate requests are not forbidden
@@ -116,10 +119,18 @@ def verify_request(
             elif request_type == "delete":
                 response = requests.delete(urls[url], headers=headers)
 
-            if legitimate and response.status_code == 403:
+            # 'legitimate' requests should never return a 401 or a 403
+            if legitimate and (
+                response.status_code == 401 or response.status_code == 403
+            ):
                 response.raise_for_status()
 
-            if not legitimate and response.status_code != 403:
+            # 'illegitimate' requests should always return a 401 or a 403
+            if (
+                not legitimate
+                and response.status_code != 401
+                and response.status_code != 403
+            ):
                 raise Exception("An illegitimate request has been allowed")
 
         except requests.exceptions.RequestException:
