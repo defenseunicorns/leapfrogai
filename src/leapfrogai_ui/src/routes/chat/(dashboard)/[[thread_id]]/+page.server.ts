@@ -1,11 +1,14 @@
 import { redirect } from '@sveltejs/kit';
 import type { Profile } from '$lib/types/profile';
 import type { LFThread } from '$lib/types/threads';
-import { openai } from '$lib/server/constants';
+import {getOpenAiClient} from '$lib/server/constants';
 import type { LFMessage } from '$lib/types/messages';
 
-const getThreadWithMessages = async (thread_id: string): Promise<LFThread | null> => {
+
+
+const getThreadWithMessages = async (thread_id: string, access_token: string): Promise<LFThread | null> => {
   try {
+    const openai =  getOpenAiClient(access_token);
     const thread = (await openai.beta.threads.retrieve(thread_id)) as LFThread;
     if (!thread) {
       return null;
@@ -45,7 +48,7 @@ export const load = async ({ fetch, locals: { supabase, safeGetSession } }) => {
   if (profile?.thread_ids && profile?.thread_ids.length > 0) {
     try {
       const threadPromises = profile.thread_ids.map((thread_id) =>
-        getThreadWithMessages(thread_id)
+        getThreadWithMessages(thread_id, session.access_token)
       );
       const results = await Promise.allSettled(threadPromises);
 

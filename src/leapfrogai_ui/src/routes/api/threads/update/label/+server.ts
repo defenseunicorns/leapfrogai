@@ -1,6 +1,6 @@
 import { error, json } from '@sveltejs/kit';
 import { updateThreadLabelSchema } from '$lib/schemas/chat';
-import { openai } from '$lib/server/constants';
+import { getOpenAiClient } from '$lib/server/constants';
 
 export async function PUT({ request, locals: { safeGetSession } }) {
   const { session } = await safeGetSession();
@@ -19,6 +19,8 @@ export async function PUT({ request, locals: { safeGetSession } }) {
   }
 
   try {
+    const openai = getOpenAiClient(session.access_token);
+
     const updatedThread = await openai.beta.threads.update(requestData.id, {
       metadata: { label: requestData.label }
     });

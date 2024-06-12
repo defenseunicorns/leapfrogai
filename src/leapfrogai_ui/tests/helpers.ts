@@ -9,6 +9,14 @@ import * as fs from 'node:fs';
 
 const supabase = createClient(process.env.PUBLIC_SUPABASE_URL!, process.env.SERVICE_ROLE_KEY!);
 
+export const getOpenAiClient = (access_token?: string) =>
+  new OpenAI({
+    apiKey: process.env.OPENAI_API_KEY ? process.env.OPENAI_API_KEY : access_token,
+    baseURL: process.env.LEAPFROGAI_API_BASE_URL
+  });
+
+const serviceRoleOpenAI = getOpenAiClient(process.env.SERVICE_ROLE_KEY);
+
 // These messages result in faster responses to avoid timeout issues
 export const getSimpleMathQuestion = () => {
   const operations = [
@@ -22,11 +30,6 @@ export const getSimpleMathQuestion = () => {
   const randomNumber2 = faker.number.int({ min: 1, max: 1000 });
   return `${randomOperation.operation} ${randomNumber1} ${randomOperation.preposition} ${randomNumber2}`;
 };
-
-export const openai = new OpenAI({
-  apiKey: process.env.LEAPFROGAI_API_KEY ?? '',
-  baseURL: process.env.LEAPFROGAI_API_BASE_URL
-});
 
 export const loadChatPage = async (page: Page) => {
   await page.goto('/chat');
@@ -71,7 +74,7 @@ export const deleteActiveThread = async (page: Page) => {
   }
 };
 export const deleteThread = async (id: string) => {
-  await openai.beta.threads.del(id);
+  await serviceRoleOpenAI.beta.threads.del(id);
   const listUsers = await supabase.auth.admin.listUsers();
   let userId = '';
   for (const user of listUsers.data.users) {
@@ -98,7 +101,7 @@ export const waitForResponseToComplete = async (page: Page) => {
 };
 
 export const deleteAllAssistants = async () => {
-  const myAssistants = await openai.beta.assistants.list();
+  const myAssistants = await serviceRoleOpenAI.beta.assistants.list();
   for (const assistant of myAssistants.data) {
     await deleteAssistantWithApi(assistant.id);
   }
@@ -136,21 +139,21 @@ export const createAssistantWithApi = async () => {
     }
   };
 
-  return (await openai.beta.assistants.create(assistantInput)) as LFAssistant;
+  return (await serviceRoleOpenAI.beta.assistants.create(assistantInput)) as LFAssistant;
 };
 
 export const deleteAssistantWithApi = async (id: string) => {
-  await openai.beta.assistants.del(id);
+  await serviceRoleOpenAI.beta.assistants.del(id);
 };
 
 export const uploadFileWithApi = async (fileName = 'test.pdf') => {
   const file = fs.createReadStream(`./tests/fixtures/${fileName}`);
 
-  return openai.files.create({
+  return serviceRoleOpenAI.files.create({
     file: file,
     purpose: 'assistants'
   });
 };
 export const deleteFileWithApi = async (id: string) => {
-  return openai.files.del(id);
+  return serviceRoleOpenAI.files.del(id);
 };

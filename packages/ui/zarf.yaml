@@ -16,9 +16,8 @@ variables:
     default: http://api.leapfrogai.svc.cluster.local:8080/openai/v1
     prompt: true
     sensitive: true
-  - name: LEAPFROGAI_API_KEY
-    description: The api key the LeapfrogAI API (can be left default for local development)
-    default: my-test-key
+  - name: OPENAI_API_KEY
+    description: OpenAI API Key. If specified, app will use OpenAI instead of Leapfrog
     prompt: true
     sensitive: true
   - name: SUBDOMAIN

@@ -2,10 +2,10 @@ import { fail } from '@sveltejs/kit';
 import { superValidate, withFiles } from 'sveltekit-superforms';
 import { yup } from 'sveltekit-superforms/adapters';
 import type { FileObject } from 'openai/resources/files';
-import { openai } from '$lib/server/constants';
 import { filesSchema } from '$schemas/files';
 import type { FileRow } from '$lib/types/files';
 import { getUnixSeconds } from '$helpers/dates';
+import { getOpenAiClient } from '$lib/server/constants';
 
 export const actions = {
   default: async ({ request, locals: { safeGetSession } }) => {
@@ -19,6 +19,8 @@ export const actions = {
     if (!form.valid) {
       return fail(400, { form });
     }
+
+    const openai = getOpenAiClient(session.access_token);
 
     if (form.data.files) {
       const fileId: string | null = null;

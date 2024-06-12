@@ -4,12 +4,12 @@ import { yup } from 'sveltekit-superforms/adapters';
 import { editAssistantInputSchema } from '$lib/schemas/assistants';
 import { env } from '$env/dynamic/private';
 import { assistantDefaults, DEFAULT_ASSISTANT_TEMP } from '$lib/constants';
-import { openai } from '$lib/server/constants';
 import type { EditAssistantInput, LFAssistant } from '$lib/types/assistants';
 import { getAssistantAvatarUrl } from '$helpers/assistants';
 import type { AssistantCreateParams } from 'openai/resources/beta/assistants';
 import type { APIPromise } from 'openai/core';
 import type { VectorStoreFile, VectorStoreFileDeleted } from 'openai/resources/beta/vector-stores';
+import { getOpenAiClient } from '$lib/server/constants';
 
 export const load = async ({ fetch, depends, params, locals: { safeGetSession } }) => {
   depends('lf:files');
@@ -19,6 +19,8 @@ export const load = async ({ fetch, depends, params, locals: { safeGetSession } 
   if (!session) {
     throw redirect(303, '/');
   }
+
+  const openai = getOpenAiClient(session.access_token);
 
   const promises: [Promise<LFAssistant>, Promise<Response>] = [
     openai.beta.assistants.retrieve(params.assistantId) as Promise<LFAssistant>,

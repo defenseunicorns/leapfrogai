@@ -4,10 +4,10 @@ import { yup } from 'sveltekit-superforms/adapters';
 import { assistantDefaults, DEFAULT_ASSISTANT_TEMP } from '$lib/constants';
 import { env } from '$env/dynamic/private';
 import { assistantInputSchema } from '$lib/schemas/assistants';
-import { openai } from '$lib/server/constants';
 import type { LFAssistant } from '$lib/types/assistants';
 import { getAssistantAvatarUrl } from '$helpers/assistants';
 import type { AssistantCreateParams } from 'openai/resources/beta/assistants';
+import { getOpenAiClient } from '$lib/server/constants';
 
 export const load = async ({ fetch, depends }) => {
   depends('lf:files');
@@ -76,6 +76,8 @@ export const actions = {
         // avatar is added in later with an update call after saving to supabase
       }
     };
+
+    const openai = getOpenAiClient(session.access_token);
 
     // Create assistant
     let createdAssistant: LFAssistant;

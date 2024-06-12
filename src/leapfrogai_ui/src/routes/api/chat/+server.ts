@@ -6,11 +6,6 @@ import { getMessageText } from '$helpers/threads';
 import type { LFMessage } from '$lib/types/messages';
 import { AIMessagesInputSchema } from '$schemas/messageSchema';
 
-const openai = createOpenAI({
-  apiKey: env.LEAPFROGAI_API_KEY ?? '',
-  baseURL: env.LEAPFROGAI_API_BASE_URL
-});
-
 export async function POST({ request, locals: { safeGetSession } }) {
   const { session } = await safeGetSession();
 
@@ -28,6 +23,10 @@ export async function POST({ request, locals: { safeGetSession } }) {
   } catch {
     error(400, 'Bad Request');
   }
+  const openai = createOpenAI({
+    apiKey: env.OPENAI_API_KEY ? env.OPENAI_API_KEY : session.access_token,
+    baseURL: env.LEAPFROGAI_API_BASE_URL
+  });
 
   // Add the default system prompt to the beginning of the messages
   if (messages[0].content !== env.DEFAULT_SYSTEM_PROMPT) {
