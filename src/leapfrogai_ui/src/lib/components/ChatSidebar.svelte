@@ -301,7 +301,6 @@ https://github.com/carbon-design-system/carbon-components-svelte/issues/892
     display: flex;
     flex-direction: column;
     justify-content: space-between;
-    padding: 0 0 layout.$spacing-05 0;
 
     :global(.bx--side-nav__divider) {
       margin: layout.$spacing-03 0 0 0;

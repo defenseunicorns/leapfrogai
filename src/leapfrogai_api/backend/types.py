@@ -11,6 +11,8 @@ from openai.types.beta.vector_store import ExpiresAfter
 from openai.types import FileObject
 from openai.types.beta import VectorStore
 from openai.types.beta import Assistant, AssistantTool
+from openai.types.beta.threads import Message, MessageContent, TextContentBlock, Text
+from openai.types.beta.threads.message import Attachment
 from openai.types.beta.assistant import ToolResources
 
 
@@ -263,7 +265,7 @@ class CreateAssistantRequest(BaseModel):
     instructions: str | None = "You are a helpful assistant."
     tools: list[AssistantTool] | None = []  # This is all we support right now
     tool_resources: ToolResources | None = ToolResources()
-    metadata: object | None = {}
+    metadata: dict | None = Field(default=None, examples=[{}])
     temperature: float | None = 1.0
     top_p: float | None = 1.0
     response_format: Literal["auto"] | None = "auto"  # This is all we support right now
@@ -310,7 +312,7 @@ class CreateVectorStoreRequest(BaseModel):
     expires_after: ExpiresAfter | None = Field(
         default=None, examples=[ExpiresAfter(anchor="last_active_at", days=1)]
     )
-    metadata: dict | None = {}
+    metadata: dict | None = Field(default=None, examples=[{}])
 
     def add_days_to_timestamp(self, timestamp: int, days: int) -> int:
         """
@@ -335,9 +337,6 @@ class CreateVectorStoreRequest(BaseModel):
 
         return int(new_timestamp)
 
-    def can_expire(self) -> bool:
-        return self.expires_after is not None
-
     def get_expiry(self, last_active_at: int) -> tuple[ExpiresAfter | None, int | None]:
         """
         Return expiration details based on the provided last_active_at unix timestamp
@@ -348,12 +347,12 @@ class CreateVectorStoreRequest(BaseModel):
         Returns:
             A tuple of when the vector store should expire and the timestamp of the expiry date.
         """
-        if self.can_expire():
+        if isinstance(self.expires_after, ExpiresAfter):
             return self.expires_after, self.add_days_to_timestamp(
-                last_active_at, self.expires_after.days if self.expires_after else None
+                last_active_at, self.expires_after.days
             )
-        else:
-            return None, None
+
+        return None, None  # Will not expire
 
 
 class ModifyVectorStoreRequest(CreateVectorStoreRequest):
@@ -365,6 +364,44 @@ class ListVectorStoresResponse(BaseModel):
 
     object: str = Literal["list"]
     data: list[VectorStore] = []
+
+
+################
+# THREADS, RUNS, MESSAGES
+################
+
+
+class CreateThreadRequest(BaseModel):
+    """Request object for creating a thread."""
+
+    messages: list[Message] | None = Field(default=None, examples=[None])
+    tool_resources: ToolResources | None = Field(default=None, examples=[None])
+    metadata: dict | None = Field(default=None, examples=[{}])
+
+
+class ModifyThreadRequest(BaseModel):
+    """Request object for modifying a thread."""
+
+    tool_resources: ToolResources | None = Field(default=None, examples=[None])
+    metadata: dict | None = Field(default=None, examples=[{}])
+
+
+class CreateMessageRequest(BaseModel):
+    """Request object for creating a message."""
+
+    role: Literal["user", "assistant"] = Field(default="user")
+    content: list[MessageContent] = Field(
+        default=[TextContentBlock(text=Text(value="", annotations=[]), type="text")],
+        examples=[[TextContentBlock(text=Text(value="", annotations=[]), type="text")]],
+    )
+    attachments: list[Attachment] | None = Field(default=None, examples=[None])
+    metadata: dict | None = Field(default=None, examples=[{}])
+
+
+class ModifyMessageRequest(BaseModel):
+    """Request object for modifying a message."""
+
+    metadata: dict | None = Field(default=None, examples=[{}])
 
 
 ################

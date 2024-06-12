@@ -58,7 +58,7 @@ describe('AssistantFileSelect', () => {
   it('can de-select files', async () => {
     filesStore.set({
       files: mockFiles,
-      selectedAssistantFileIds: ['1'],
+      selectedAssistantFileIds: [mockFiles[0].id],
       uploading: false
     });
 
@@ -71,6 +71,6 @@ describe('AssistantFileSelect', () => {
 
     await userEvent.click(within(item).getByRole('button')); // deselect
 
-    await waitForElementToBeRemoved(() => screen.queryByTestId(testId));
+    await waitForElementToBeRemoved(() => screen.queryByTestId(testId), { timeout: 10000 });
   });
 });

@@ -8,12 +8,12 @@ import { openai } from '$lib/server/constants';
 import type { EditAssistantInput, LFAssistant } from '$lib/types/assistants';
 import { getAssistantAvatarUrl } from '$helpers/assistants';
 import type { AssistantCreateParams } from 'openai/resources/beta/assistants';
+import { filesSchema } from '$schemas/files';
 import type { APIPromise } from 'openai/core';
 import type {
-  VectorStoreFile,
-  VectorStoreFileDeleted
+    VectorStoreFile,
+    VectorStoreFileDeleted
 } from 'openai/resources/beta/vector-stores/files';
-import { filesSchema } from '$schemas/files';
 
 export const load = async ({ fetch, depends, params, locals: { safeGetSession } }) => {
   depends('lf:files');

@@ -12,6 +12,7 @@
   import { getUnixSeconds } from '$helpers/dates.js';
   import { NO_SELECTED_ASSISTANT_ID } from '$constants';
 
+
   import {
     delay,
     isRunAssistantResponse,
@@ -29,7 +30,6 @@
   import type { PageServerLoad } from './$types';
   import { convertMessageToAiMessage } from '$helpers/threads.js';
 
-  // TODO - this data is not receiving correct type inference, see issue: (https://github.com/defenseunicorns/leapfrogai/issues/587)
   export let data: PageServerLoad;
 
   /** LOCAL VARS **/
@@ -42,6 +42,7 @@
   /** REACTIVE STATE **/
 
   $: activeThread = $threadsStore.threads.find((t) => t.id === $page.params.thread_id);
+  $: $page.params.thread_id, threadsStore.setLastVisitedThreadId($page.params.thread_id);
 
   $: assistantsList = [...(data.assistants || [])].map((assistant) => ({
     id: assistant.id,
@@ -87,7 +88,7 @@
         ...assistantMessagesCopy
       ]);
     } catch {
-      // fail silently
+        // Fail Silently - error notification would not be useful to user, on failure, just show unparsed message
     }
   };
 
@@ -253,7 +254,6 @@
   };
 
   onMount(async () => {
-    threadsStore.setThreads(data.threads || []);
     await tick();
     resetMessages({
       activeThread,
