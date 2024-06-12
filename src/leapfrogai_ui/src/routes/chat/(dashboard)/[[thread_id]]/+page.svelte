@@ -12,7 +12,6 @@
   import { getUnixSeconds } from '$helpers/dates.js';
   import { NO_SELECTED_ASSISTANT_ID } from '$constants';
 
-
   import {
     delay,
     isRunAssistantResponse,
@@ -88,7 +87,7 @@
         ...assistantMessagesCopy
       ]);
     } catch {
-        // Fail Silently - error notification would not be useful to user, on failure, just show unparsed message
+      // Fail Silently - error notification would not be useful to user, on failure, just show unparsed message
     }
   };
 

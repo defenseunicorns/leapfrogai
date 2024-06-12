@@ -107,12 +107,12 @@ describe('when there is an active thread selected', () => {
       }
     });
 
-      threadsStore.set({
-          threads: fakeThreads,
-          lastVisitedThreadId: fakeThreads[0].id,
-          selectedAssistantId: NO_SELECTED_ASSISTANT_ID,
-          sendingBlocked: false
-      });
+    threadsStore.set({
+      threads: fakeThreads,
+      lastVisitedThreadId: fakeThreads[0].id,
+      selectedAssistantId: NO_SELECTED_ASSISTANT_ID,
+      sendingBlocked: false
+    });
   });
 
   afterAll(() => {

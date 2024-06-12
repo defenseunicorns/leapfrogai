@@ -11,8 +11,8 @@ import type { AssistantCreateParams } from 'openai/resources/beta/assistants';
 import { filesSchema } from '$schemas/files';
 import type { APIPromise } from 'openai/core';
 import type {
-    VectorStoreFile,
-    VectorStoreFileDeleted
+  VectorStoreFile,
+  VectorStoreFileDeleted
 } from 'openai/resources/beta/vector-stores/files';
 
 export const load = async ({ fetch, depends, params, locals: { safeGetSession } }) => {

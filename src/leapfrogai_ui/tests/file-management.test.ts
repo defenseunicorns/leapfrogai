@@ -1,5 +1,11 @@
 import { expect, test } from './fixtures';
-import { getSimpleMathQuestion, deleteTestFilesWithApi, sendMessage, loadChatPage, uploadFile } from './helpers';
+import {
+  getSimpleMathQuestion,
+  deleteTestFilesWithApi,
+  sendMessage,
+  loadChatPage,
+  uploadFile
+} from './helpers';
 import type { Page } from '@playwright/test';
 
 const loadFileManagementPage = async (page: Page) => {

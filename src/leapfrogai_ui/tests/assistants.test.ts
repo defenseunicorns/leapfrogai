@@ -1,5 +1,7 @@
 import { expect, test } from './fixtures';
-import { createAssistant, deleteActiveThread,
+import {
+  createAssistant,
+  deleteActiveThread,
   deleteAllAssistants,
   getSimpleMathQuestion,
   loadChatPage,
