@@ -1,5 +1,4 @@
 import { render, screen } from '@testing-library/svelte';
-
 import { fakeThreads, getFakeAssistant, getFakeFiles, getFakeProfile } from '$testUtils/fakeData';
 import ChatPage from './+page.svelte';
 import ChatPageWithToast from './ChatPageWithToast.test.svelte';
@@ -31,15 +30,17 @@ import type { LFThread } from '$lib/types/threads';
 import type { LFAssistant } from '$lib/types/assistants';
 import { delay } from '$helpers/chatHelpers';
 import { mockGetFiles } from '$lib/mocks/file-mocks';
+import { threadsStore } from '$stores';
+import { NO_SELECTED_ASSISTANT_ID } from '$constants';
 
 //Calls to vi.mock are hoisted to the top of the file, so you don't have access to variables declared in the global file scope unless they are defined with vi.hoisted before the call.
 const { getStores } = await vi.hoisted(() => import('$lib/mocks/svelte'));
 
-type PageServerLoad = {
+type LayoutServerLoad = {
   threads: LFThread[];
   assistants: LFAssistant[];
 } | null;
-let data: PageServerLoad;
+let data: LayoutServerLoad;
 const question = 'What is AI?';
 
 const assistant1 = getFakeAssistant();
@@ -103,6 +104,13 @@ describe('when there is an active thread selected', () => {
         supabase: supabaseFromMockWrapper(supabaseSelectSingleByIdMock(fakeProfile)),
         safeGetSession: sessionMock
       }
+    });
+
+    threadsStore.set({
+      threads: fakeThreads,
+      lastVisitedThreadId: fakeThreads[0].id,
+      selectedAssistantId: NO_SELECTED_ASSISTANT_ID,
+      sendingBlocked: false
     });
   });
 

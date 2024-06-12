@@ -66,7 +66,8 @@ describe('ChatSidebar', () => {
   it('renders threads', async () => {
     threadsStore.set({
       threads: fakeThreads,
-      selectedAssistantId: NO_SELECTED_ASSISTANT_ID
+      selectedAssistantId: NO_SELECTED_ASSISTANT_ID,
+      lastVisitedThreadId: fakeThreads[0].id
     });
 
     render(ChatSidebar);
@@ -89,7 +90,8 @@ describe('ChatSidebar', () => {
 
     threadsStore.set({
       threads: [fakeTodayThread, fakeYesterdayThread], // uses date override starting in March
-      selectedAssistantId: NO_SELECTED_ASSISTANT_ID
+      selectedAssistantId: NO_SELECTED_ASSISTANT_ID,
+      lastVisitedThreadId: ''
     });
 
     render(ChatSidebar);
@@ -112,7 +114,8 @@ describe('ChatSidebar', () => {
 
     threadsStore.set({
       threads: fakeThreads,
-      selectedAssistantId: NO_SELECTED_ASSISTANT_ID
+      selectedAssistantId: NO_SELECTED_ASSISTANT_ID,
+      lastVisitedThreadId: fakeThreads[0].id
     });
 
     render(ChatSidebar);
@@ -148,7 +151,8 @@ describe('ChatSidebar', () => {
 
     threadsStore.set({
       threads: fakeThreads,
-      selectedAssistantId: NO_SELECTED_ASSISTANT_ID
+      selectedAssistantId: NO_SELECTED_ASSISTANT_ID,
+      lastVisitedThreadId: fakeThreads[0].id
     });
 
     render(ChatSidebar);
@@ -180,7 +184,8 @@ describe('ChatSidebar', () => {
 
     threadsStore.set({
       threads: fakeThreads,
-      selectedAssistantId: NO_SELECTED_ASSISTANT_ID
+      selectedAssistantId: NO_SELECTED_ASSISTANT_ID,
+      lastVisitedThreadId: fakeThreads[0].id
     });
 
     render(ChatSidebar);
@@ -199,7 +204,8 @@ describe('ChatSidebar', () => {
 
     threadsStore.set({
       threads: fakeThreads,
-      selectedAssistantId: NO_SELECTED_ASSISTANT_ID
+      selectedAssistantId: NO_SELECTED_ASSISTANT_ID,
+      lastVisitedThreadId: fakeThreads[0].id
     });
 
     render(ChatSidebar);
@@ -218,7 +224,8 @@ describe('ChatSidebar', () => {
 
     threadsStore.set({
       threads: fakeThreads,
-      selectedAssistantId: NO_SELECTED_ASSISTANT_ID
+      selectedAssistantId: NO_SELECTED_ASSISTANT_ID,
+      lastVisitedThreadId: fakeThreads[0].id
     });
 
     render(ChatSidebar);
@@ -248,7 +255,8 @@ describe('ChatSidebar', () => {
     const newLabelText = 'new label';
     threadsStore.set({
       threads: fakeThreads,
-      selectedAssistantId: NO_SELECTED_ASSISTANT_ID
+      selectedAssistantId: NO_SELECTED_ASSISTANT_ID,
+      lastVisitedThreadId: fakeThreads[0].id
     });
 
     render(ChatSidebar);
@@ -267,7 +275,8 @@ describe('ChatSidebar', () => {
     const newLabelText = 'new label';
     threadsStore.set({
       threads: fakeThreads,
-      selectedAssistantId: NO_SELECTED_ASSISTANT_ID
+      selectedAssistantId: NO_SELECTED_ASSISTANT_ID,
+      lastVisitedThreadId: fakeThreads[0].id
     });
 
     render(ChatSidebar);
@@ -288,7 +297,8 @@ describe('ChatSidebar', () => {
 
     threadsStore.set({
       threads: fakeThreads,
-      selectedAssistantId: NO_SELECTED_ASSISTANT_ID
+      selectedAssistantId: NO_SELECTED_ASSISTANT_ID,
+      lastVisitedThreadId: fakeThreads[0].id
     });
 
     render(ChatSidebar);
@@ -311,7 +321,8 @@ describe('ChatSidebar', () => {
 
     threadsStore.set({
       threads: fakeThreads,
-      selectedAssistantId: NO_SELECTED_ASSISTANT_ID
+      selectedAssistantId: NO_SELECTED_ASSISTANT_ID,
+      lastVisitedThreadId: fakeThreads[0].id
     });
 
     render(ChatSidebar);
@@ -327,7 +338,8 @@ describe('ChatSidebar', () => {
 
     threadsStore.set({
       threads: [fakeThread],
-      selectedAssistantId: NO_SELECTED_ASSISTANT_ID
+      selectedAssistantId: NO_SELECTED_ASSISTANT_ID,
+      lastVisitedThreadId: fakeThreads[0].id
     });
 
     render(ChatSidebar);
@@ -346,7 +358,8 @@ describe('ChatSidebar', () => {
 
     threadsStore.set({
       threads: [fakeThread1, fakeThread2, fakeThread3],
-      selectedAssistantId: NO_SELECTED_ASSISTANT_ID
+      selectedAssistantId: NO_SELECTED_ASSISTANT_ID,
+      lastVisitedThreadId: ''
     });
 
     render(ChatSidebar);
@@ -370,7 +383,8 @@ describe('ChatSidebar', () => {
 
     threadsStore.set({
       threads: [fakeThread1, fakeThread2, fakeThread3],
-      selectedAssistantId: NO_SELECTED_ASSISTANT_ID
+      selectedAssistantId: NO_SELECTED_ASSISTANT_ID,
+      lastVisitedThreadId: ''
     });
 
     render(ChatSidebar);

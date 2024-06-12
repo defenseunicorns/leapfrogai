@@ -26,11 +26,10 @@
     ERROR_GETTING_ASSISTANT_MSG_TEXT,
     ERROR_SAVING_MSG_TEXT
   } from '$constants/errorMessages';
-  import type { PageServerLoad } from './$types';
+
   import { convertMessageToAiMessage } from '$helpers/threads.js';
 
-  // TODO - this data is not receiving correct type inference, see issue: (https://github.com/defenseunicorns/leapfrogai/issues/587)
-  export let data: PageServerLoad;
+  export let data;
 
   /** LOCAL VARS **/
   let messageThreadDiv: HTMLDivElement;
@@ -42,8 +41,9 @@
   /** REACTIVE STATE **/
 
   $: activeThread = $threadsStore.threads.find((t) => t.id === $page.params.thread_id);
+  $: $page.params.thread_id, threadsStore.setLastVisitedThreadId($page.params.thread_id);
 
-  $: assistantsList = [...(data.assistants || [])].map((assistant) => ({
+  $: assistantsList = [...(data?.assistants || [])].map((assistant) => ({
     id: assistant.id,
     text: assistant.name || 'unknown'
   }));
@@ -86,8 +86,8 @@
         ...$chatMessages,
         ...assistantMessagesCopy
       ]);
-    } catch (error) {
-      console.log('error fetching message', error);
+    } catch {
+      // Fail Silently - error notification would not be useful to user, on failure, just show unparsed message
     }
   };
 
@@ -253,7 +253,6 @@
   };
 
   onMount(async () => {
-    threadsStore.setThreads(data.threads || []);
     await tick();
     resetMessages({
       activeThread,
