@@ -19,6 +19,7 @@ variables:
   - name: OPENAI_API_KEY
     description: OpenAI API Key. If specified, app will use OpenAI instead of Leapfrog
     prompt: true
+    default: ""
     sensitive: true
   - name: SUBDOMAIN
     description: The subdomain for the application, Istio-ingress configuration
