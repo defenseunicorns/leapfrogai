@@ -1,5 +1,5 @@
 import { filesStore } from '$stores';
-import { render, screen, waitForElementToBeRemoved, within } from '@testing-library/svelte';
+import { render, screen } from '@testing-library/svelte';
 import AssistantFileSelect from '$components/AssistantFileSelect.svelte';
 import { superValidate } from 'sveltekit-superforms';
 import { yup } from 'sveltekit-superforms/adapters';
@@ -55,5 +55,4 @@ describe('AssistantFileSelect', () => {
     await userEvent.click(screen.getByText(mockFiles[0].filename));
     screen.getByTestId(`${mockFiles[0].filename}-${mockFiles[0].status}-uploader-item`);
   });
-
 });
