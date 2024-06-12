@@ -4,18 +4,18 @@ import uuid
 
 import pytest as pytest
 import requests
-import os
-import json
+
+from .utils import create_test_user
 
 logger = logging.getLogger(__name__)
 test_id = str(uuid.uuid4())
 
 get_urls = {
-    "assistants_url": "http://leapfrogai-api.uds.dev/openai/v1/assistants",
-    "assistants_id_url": f"http://leapfrogai-api.uds.dev/openai/v1/assistants/{test_id}",
-    "files_url": "http://leapfrogai-api.uds.dev/openai/v1/files",
-    "files_specific_url": f"http://leapfrogai-api.uds.dev/openai/v1/files/{test_id}",
-    "files_specific_content_url": f"http://leapfrogai-api.uds.dev/openai/v1/files/{test_id}/content",
+    "assistants_url": "https://leapfrogai-api.uds.dev/openai/v1/assistants",
+    "assistants_id_url": f"https://leapfrogai-api.uds.dev/openai/v1/assistants/{test_id}",
+    "files_url": "https://leapfrogai-api.uds.dev/openai/v1/files",
+    "files_specific_url": f"https://leapfrogai-api.uds.dev/openai/v1/files/{test_id}",
+    "files_specific_content_url": f"https://leapfrogai-api.uds.dev/openai/v1/files/{test_id}/content",
 }
 
 post_urls = {
@@ -25,15 +25,13 @@ post_urls = {
 }
 
 delete_urls = {
-    "assistants_id_url": f"http://leapfrogai-api.uds.dev/openai/v1/assistants/{test_id}",
-    "files_specific_url": f"http://leapfrogai-api.uds.dev/openai/v1/files/{test_id}",
+    "assistants_id_url": f"https://leapfrogai-api.uds.dev/openai/v1/assistants/{test_id}",
+    "files_specific_url": f"https://leapfrogai-api.uds.dev/openai/v1/files/{test_id}",
 }
 
-# This is the anon_key for supabase, it provides access to the endpoints that would otherwise be inaccessible
-anon_key = os.environ["ANON_KEY"]
 
-test_email: str = "fakeuser@test.com"
-test_password: str = "password"
+# We need a jwt token that is properly decodeable but invalid in regards to not being a token for a valid user
+invalid_jwt_token = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxMjM0NTY3ODkwIiwibmFtZSI6IkpvaG4gRG9lIiwiaWF0IjoxNTE2MjM5MDIyfQ.SflKxwRJSMeKKF2QT4fwpMeJf36POk6yJV_adQssw5c"
 
 mock_assistant_body = {
     "name": "Test Assistant",
@@ -49,46 +47,13 @@ mock_assistant_body = {
 }
 
 
-def create_test_user():
-    headers = {
-        "apikey": f"{anon_key}",
-        "Authorization": f"Bearer {anon_key}",
-        "Content-Type": "application/json",
-    }
-    requests.post(
-        url="https://supabase-kong.uds.dev/auth/v1/signup",
-        headers=headers,
-        json={
-            "email": test_email,
-            "password": test_password,
-            "confirmPassword": test_password,
-        },
-    )
-
-
-def get_jwt_token(api_key: str):
-    url = "https://supabase-kong.uds.dev/auth/v1/token?grant_type=password"
-    headers = {"apikey": f"{api_key}", "Content-Type": "application/json"}
-    data = {"email": test_email, "password": test_password}
-
-    response = requests.post(url, headers=headers, json=data)
-
-    if response.status_code != 200:
-        pytest.fail(
-            f"Request for the JWT token failed with status code {response.status_code} expected 200",
-            False,
-        )
-
-    return json.loads(response.content)["access_token"]
-
-
 def verify_request(
-    urls: dict[str, str], request_type: str, jwt_token: str, legitimate: True
+    urls: dict[str, str], request_type: str, jwt_token: str, legitimate: bool
 ):
     headers = (
         {"Authorization": f"Bearer {jwt_token}"}
         if legitimate
-        else {"Authorization": "Bearer faketoken"}
+        else {"Authorization": f"Bearer {invalid_jwt_token}"}
     )
 
     # Verify that legitimate requests are not forbidden
@@ -116,10 +81,18 @@ def verify_request(
             elif request_type == "delete":
                 response = requests.delete(urls[url], headers=headers)
 
-            if legitimate and response.status_code == 403:
+            # 'legitimate' requests should never return a 401 or a 403
+            if legitimate and (
+                response.status_code == 401 or response.status_code == 403
+            ):
                 response.raise_for_status()
 
-            if not legitimate and response.status_code != 403:
+            # 'illegitimate' requests should always return a 401 or a 403
+            if (
+                not legitimate
+                and response.status_code != 401
+                and response.status_code != 403
+            ):
                 raise Exception("An illegitimate request has been allowed")
 
         except requests.exceptions.RequestException:
@@ -127,8 +100,7 @@ def verify_request(
 
 
 def test_api_row_level_security():
-    create_test_user()
-    jwt_token = get_jwt_token(anon_key)
+    jwt_token = create_test_user()
 
     # Confirm that legitimate requests are allowed
     verify_request(get_urls, "get", jwt_token, True)
