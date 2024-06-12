@@ -1,12 +1,12 @@
 <script lang="ts">
   import { LFTextArea, PoweredByDU } from '$components';
   import { Button, Dropdown } from 'carbon-components-svelte';
-  import { afterUpdate, tick } from 'svelte';
+  import { afterUpdate, onMount, tick } from 'svelte';
   import { threadsStore, toastStore } from '$stores';
   import { ArrowRight, Checkmark, StopFilledAlt, UserProfile } from 'carbon-icons-svelte';
   import { type Message as AIMessage, useAssistant, useChat } from 'ai/svelte';
   import { page } from '$app/stores';
-  import { beforeNavigate, goto } from '$app/navigation';
+  import { afterNavigate, beforeNavigate, goto } from '$app/navigation';
   import Message from '$components/Message.svelte';
   import { getMessageText } from '$helpers/threads';
   import { getUnixSeconds } from '$helpers/dates.js';
@@ -42,15 +42,6 @@
 
   $: activeThread = $threadsStore.threads.find((t) => t.id === $page.params.thread_id);
   $: $page.params.thread_id, threadsStore.setLastVisitedThreadId($page.params.thread_id);
-  $: $page.params.thread_id,
-    resetMessages({
-      activeThread,
-      setChatMessages,
-      setAssistantMessages,
-      files: data.files
-    });
-
-  $: console.log('activeThread', activeThread);
 
   $: assistantsList = [...(data?.assistants || [])].map((assistant) => ({
     id: assistant.id,
@@ -261,6 +252,16 @@
     }
   };
 
+  onMount(async () => {
+    await tick();
+    resetMessages({
+      activeThread,
+      setChatMessages,
+      setAssistantMessages,
+      files: data.files
+    });
+  });
+
   afterUpdate(() => {
     // Scroll to bottom
     messageThreadDiv.scrollTop = messageThreadDiv.scrollHeight;
@@ -279,14 +280,14 @@
     }
   });
 
-  // afterNavigate(() => {
-  //   resetMessages({
-  //     activeThread,
-  //     setChatMessages,
-  //     setAssistantMessages,
-  //     files: data.files
-  //   });
-  // });
+  afterNavigate(() => {
+    resetMessages({
+      activeThread,
+      setChatMessages,
+      setAssistantMessages,
+      files: data.files
+    });
+  });
 </script>
 
 <div class="chat-inner-content">

@@ -1,6 +1,6 @@
 import { redirect } from '@sveltejs/kit';
 
-export const load = async ({ fetch, locals: { supabase, safeGetSession } }) => {
+export const load = async ({ fetch, locals: { safeGetSession } }) => {
   const { session } = await safeGetSession();
 
   if (!session) {
