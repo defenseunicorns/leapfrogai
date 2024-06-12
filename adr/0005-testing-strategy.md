@@ -41,9 +41,9 @@ Coverage is up to devs and can lapse.
 
 (4) We should be testing for both success and failure cases. We do not need to create custom error codes or return types for each error, we just need to make sure we are testing for all edge cases.
 
-(5) We should use `unittest.mock.patch` to mock features for testing.
+(5) Tests should mock out the layers that they are not testing, to isolate the program code being tested. We can use utils like `unittest.mock.patch`, `unittest.mock.MagicMock`, `unittest.mock.AsyncMock`, and others
 
-(6) We should use `pytest.mark.parametrize` to iterate over parameter lists for test function.
+(6) We should use `pytest.mark.parametrize` to iterate over parameter lists for test function instead of creating iteration loops inside test code. This method will break out each test run by parameter combinations and makes it easier to find failing conditions.
 
 (7) We should use `conftest.py` to set up the dev environment variables, and to create global test fixtures.
 
