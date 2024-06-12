@@ -178,7 +178,6 @@ def test_modify(create_file):
     request = ModifyVectorStoreRequest(
         file_ids=[create_file["id"]],
         name="test1",
-        expires_after=ExpiresAfter(anchor="last_active_at", days=0),
         metadata={},
     )
 
