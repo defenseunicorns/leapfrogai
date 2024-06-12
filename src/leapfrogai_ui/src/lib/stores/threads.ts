@@ -1,18 +1,23 @@
 import { writable } from 'svelte/store';
-import { MAX_LABEL_SIZE } from '$lib/constants';
+import { MAX_LABEL_SIZE, NO_SELECTED_ASSISTANT_ID } from '$lib/constants';
 import { goto } from '$app/navigation';
 import { error } from '@sveltejs/kit';
 import { toastStore } from '$stores';
 import type { LFThread, NewThreadInput } from '$lib/types/threads';
-import type { LFMessage, NewMessageInput } from '$lib/types/messages';
+import type { LFMessage } from '$lib/types/messages';
 import { getMessageText } from '$helpers/threads';
+import { saveMessage } from '$helpers/chatHelpers';
 
 type ThreadsStore = {
   threads: LFThread[];
+  selectedAssistantId: string;
+  sendingBlocked: boolean;
 };
 
 const defaultValues: ThreadsStore = {
-  threads: []
+  threads: [],
+  selectedAssistantId: NO_SELECTED_ASSISTANT_ID,
+  sendingBlocked: false
 };
 
 const createThread = async (input: NewThreadInput) => {
@@ -26,22 +31,6 @@ const createThread = async (input: NewThreadInput) => {
   if (res.ok) return res.json();
 
   return error(500, 'Error creating thread');
-};
-
-const createMessage = async (input: NewMessageInput) => {
-  const res = await fetch('/api/messages/new', {
-    method: 'POST',
-    body: JSON.stringify({
-      ...input
-    }),
-    headers: {
-      'Content-Type': 'application/json'
-    }
-  });
-
-  if (res.ok) return res.json();
-
-  return error(500, 'Error saving message');
 };
 
 const deleteThread = async (id: string) => {
@@ -96,6 +85,14 @@ const createThreadsStore = () => {
     setThreads: (threads: LFThread[]) => {
       update((old) => ({ ...old, threads }));
     },
+    setSelectedAssistantId: (selectedAssistantId: string) => {
+      update((old) => {
+        return { ...old, selectedAssistantId };
+      });
+    },
+    setSendingBlocked: (status: boolean) => {
+      update((old) => ({ ...old, sendingBlocked: status }));
+    },
     changeThread: async (newId: string | null) => {
       await goto(`/chat/${newId}`);
     },
@@ -122,27 +119,36 @@ const createThreadsStore = () => {
         });
       }
     },
-
-    newMessage: async (message: NewMessageInput) => {
+    updateMessages: async (thread_id: string, messages: LFMessage[]) => {
+      update((old) => {
+        const updatedThreads = [...old.threads];
+        const threadIndex = old.threads.findIndex((c) => c.id === thread_id);
+        const oldThread = old.threads[threadIndex];
+        updatedThreads[threadIndex] = {
+          ...oldThread,
+          messages
+        };
+        return {
+          ...old,
+          threads: updatedThreads
+        };
+      });
+    },
+    addMessageToStore: async (newMessage: LFMessage) => {
       try {
-        const newMessage = await createMessage(message);
-
-        if (newMessage) {
-          update((old) => {
-            const updatedThreads = [...old.threads];
-            const threadIndex = old.threads.findIndex((c) => c.id === newMessage.thread_id);
-            const oldThread = old.threads[threadIndex];
-
-            updatedThreads[threadIndex] = {
-              ...oldThread,
-              messages: [...(oldThread.messages || []), newMessage]
-            };
-            return {
-              ...old,
-              threads: updatedThreads
-            };
-          });
-        }
+        update((old) => {
+          const updatedThreads = [...old.threads];
+          const threadIndex = old.threads.findIndex((c) => c.id === newMessage.thread_id);
+          const oldThread = old.threads[threadIndex];
+          updatedThreads[threadIndex] = {
+            ...oldThread,
+            messages: [...(oldThread.messages || []), newMessage]
+          };
+          return {
+            ...old,
+            threads: updatedThreads
+          };
+        });
       } catch {
         toastStore.addToast({
           kind: 'error',
@@ -227,7 +233,7 @@ const createThreadsStore = () => {
 
           for (const message of messages) {
             if (message.role === 'user' || message.role === 'assistant') {
-              const createdMessage = await createMessage({
+              const createdMessage = await saveMessage({
                 role: message.role,
                 content: getMessageText(message),
                 thread_id: createdThread.id

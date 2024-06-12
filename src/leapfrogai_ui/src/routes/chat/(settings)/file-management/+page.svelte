@@ -42,7 +42,7 @@
         subtitle: `Please try again or contact support`
       });
     },
-    onResult({ result }) {
+    onResult: async ({ result }) => {
       if (result.type === 'success') {
         const uploadedFiles = result.data?.uploadedFiles;
         updateAllFileStatus(uploadedFiles);
@@ -62,6 +62,7 @@
           }
         }
       }
+      await invalidate('lf:files');
     }
   });
 
@@ -75,7 +76,7 @@
         'Content-Type': 'application/json'
       }
     });
-    await invalidate('/api/files');
+    await invalidate('lf:files');
     if (res.ok) {
       toastStore.addToast({
         kind: 'success',

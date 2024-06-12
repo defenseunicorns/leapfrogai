@@ -23,6 +23,7 @@ declare global {
       assistant?: LFAssistant;
       files?: FileObject[];
     }
+
     // interface PageState {}
     // interface Platform {}
   }

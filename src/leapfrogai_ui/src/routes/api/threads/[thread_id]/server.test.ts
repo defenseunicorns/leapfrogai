@@ -6,7 +6,7 @@ import { sessionMock } from '$lib/mocks/supabase-mocks';
 describe('/api/threads/[thread_id]', () => {
   it('returns a thread', async () => {
     const thread = getFakeThread();
-    mockOpenAI.setThread(thread);
+    mockOpenAI.setThreads([thread]);
 
     const res = await GET({
       params: {
@@ -24,7 +24,7 @@ describe('/api/threads/[thread_id]', () => {
   it('returns a 500 if there is an error retrieving the thread', async () => {
     const thread = getFakeThread();
 
-    mockOpenAI.setThread(thread);
+    mockOpenAI.setThreads([thread]);
     mockOpenAI.setError('retrieveThread');
 
     await expect(

@@ -1,146 +1,266 @@
 <script lang="ts">
   import { LFTextArea, PoweredByDU } from '$components';
-  import { Button } from 'carbon-components-svelte';
+  import { Button, Dropdown } from 'carbon-components-svelte';
   import { afterUpdate, onMount, tick } from 'svelte';
   import { threadsStore, toastStore } from '$stores';
-  import { ArrowRight, StopFilledAlt } from 'carbon-icons-svelte';
-  import { type Message as AIMessage, useChat } from 'ai/svelte';
+  import { ArrowRight, Checkmark, StopFilledAlt, UserProfile } from 'carbon-icons-svelte';
+  import { type Message as AIMessage, useAssistant, useChat } from 'ai/svelte';
   import { page } from '$app/stores';
-  import { beforeNavigate } from '$app/navigation';
+  import { afterNavigate, beforeNavigate, goto } from '$app/navigation';
   import Message from '$components/Message.svelte';
-  import type { LFMessage } from '$lib/types/messages';
-  import { convertMessageToAiMessage, getMessageText } from '$helpers/threads';
+  import { getMessageText } from '$helpers/threads';
+  import { getUnixSeconds } from '$helpers/dates.js';
+  import { NO_SELECTED_ASSISTANT_ID } from '$constants';
 
-  export let data;
+  import {
+    delay,
+    isRunAssistantResponse,
+    processAnnotations,
+    resetMessages,
+    saveMessage,
+    sortMessages,
+    stopThenSave
+  } from '$helpers/chatHelpers';
+  import {
+    ERROR_GETTING_AI_RESPONSE_TEXT,
+    ERROR_GETTING_ASSISTANT_MSG_TEXT,
+    ERROR_SAVING_MSG_TEXT
+  } from '$constants/errorMessages';
+  import type { PageServerLoad } from './$types';
+  import { convertMessageToAiMessage } from '$helpers/threads.js';
 
+  // TODO - this data is not receiving correct type inference, see issue: (https://github.com/defenseunicorns/leapfrogai/issues/587)
+  export let data: PageServerLoad;
+
+  /** LOCAL VARS **/
   let messageThreadDiv: HTMLDivElement;
-
   let lengthInvalid: boolean; // bound to child LFTextArea
+  let assistantsList: Array<{ id: string; text: string }>;
+  let hasSentAssistantMessage = false;
+  /** END LOCAL VARS **/
 
-  $: activeThread = $threadsStore.threads.find((thread) => thread.id === $page.params.thread_id);
+  /** REACTIVE STATE **/
 
-  $: $page.params.thread_id,
-    setMessages(activeThread?.messages?.map((m) => convertMessageToAiMessage(m)) || []);
+  $: activeThread = $threadsStore.threads.find((t) => t.id === $page.params.thread_id);
 
-  const { input, handleSubmit, messages, setMessages, isLoading, stop, append, reload } = useChat({
-    initialMessages: $threadsStore.threads
-      .find((thread) => thread.id === $page.params.thread_id)
-      ?.messages?.map((message: LFMessage) => ({
-        id: message.id,
-        content: getMessageText(message),
-        role: message.role
-      })),
+  $: assistantsList = [...(data.assistants || [])].map((assistant) => ({
+    id: assistant.id,
+    text: assistant.name || 'unknown'
+  }));
+  $: assistantsList.unshift({ id: NO_SELECTED_ASSISTANT_ID, text: 'Select assistant...' }); // add dropdown item for no assistant selected
+  $: assistantsList.unshift({ id: `manage-assistants`, text: 'Manage assistants' }); // add dropdown item for manage assistants button
+  $: assistantMode =
+    $threadsStore.selectedAssistantId !== NO_SELECTED_ASSISTANT_ID &&
+    $threadsStore.selectedAssistantId !== 'manage-assistants';
+
+  $: if ($isLoading || $status === 'in_progress') threadsStore.setSendingBlocked(true);
+
+  // new streamed assistant message received (add in assistant_id and ensure it has a created_at timestamp)
+  $: if (
+    $assistantMessages.length > 0 &&
+    !$assistantMessages[$assistantMessages.length - 1].assistant_id
+  )
+    modifyAndSaveAssistantMessage();
+
+  $: sortedMessages = sortMessages([...$chatMessages, ...$assistantMessages]);
+
+  // assistant stream has completed
+  $: if (hasSentAssistantMessage && $status === 'awaiting_message') {
+    fetchAndParseCompletedAssistantResponse();
+  }
+
+  /** END REACTIVE STATE **/
+
+  const fetchAndParseCompletedAssistantResponse = async () => {
+    try {
+      const messageRes = await fetch(
+        `/api/messages?thread_id=${$page.params.thread_id}&message_id=${$assistantMessages[$assistantMessages.length - 1].id}`
+      );
+      const message = await messageRes.json();
+      const parsedMessage = processAnnotations(message, data.files);
+      const assistantMessagesCopy = [...$assistantMessages];
+      assistantMessagesCopy[assistantMessagesCopy.length - 1] =
+        convertMessageToAiMessage(parsedMessage);
+      setAssistantMessages(assistantMessagesCopy);
+      await threadsStore.updateMessages($page.params.thread_id, [
+        ...$chatMessages,
+        ...assistantMessagesCopy
+      ]);
+    } catch (error) {
+      console.log('error fetching message', error);
+    }
+  };
+
+  const modifyAndSaveAssistantMessage = async () => {
+    // Streamed assistant responses don't contain an assistant_id, so we add it here
+    // and also add a createdAt date if not present
+    const assistantMessagesCopy = [...$assistantMessages];
+    const latestMessage = assistantMessagesCopy[assistantMessagesCopy.length - 1];
+
+    latestMessage.assistant_id = $threadsStore.selectedAssistantId;
+    if (!latestMessage.createdAt)
+      latestMessage.createdAt = latestMessage.created_at || getUnixSeconds(new Date());
+
+    setAssistantMessages(assistantMessagesCopy);
+
+    threadsStore.setSendingBlocked(false);
+  };
+
+  /** useChat - streams messages with the /api/chat route**/
+  const {
+    input: chatInput,
+    handleSubmit: submitChatMessage,
+    messages: chatMessages,
+    setMessages: setChatMessages,
+    isLoading,
+    stop: chatStop,
+    append: chatAppend,
+    reload
+  } = useChat({
+    // Handle completed AI Responses
     onFinish: async (message: AIMessage) => {
-      if (activeThread?.id) {
-        await threadsStore.newMessage({
-          thread_id: activeThread?.id,
-          content: message.content,
-          role: message.role
+      // OpenAI returns the creation timestamp in seconds instead of milliseconds.
+      // If a response comes in quickly, we need to delay 1 second to ensure the timestamps of the user message
+      // and AI response are not exactly the same. This is important for sorting messages when they are initially loaded
+      // from the db/API (ex. browser refresh). Streamed messages are sorted realtime and we modify the timestamps to
+      // ensure we have millisecond precision.
+      try {
+        if (process.env.NODE_ENV !== 'test') await delay(1000);
+
+        if (!assistantMode && activeThread?.id) {
+          // Save with API to db
+          const newMessage = await saveMessage({
+            thread_id: activeThread.id,
+            content: getMessageText(message),
+            role: 'assistant'
+          });
+
+          await threadsStore.addMessageToStore(newMessage);
+        }
+        if (process.env.NODE_ENV !== 'test') await delay(1000); // ensure next user message has a different timestamp
+      } catch {
+        toastStore.addToast({
+          kind: 'error',
+          title: 'Error',
+          subtitle: 'Error saving AI Response'
         });
       }
+      threadsStore.setSendingBlocked(false);
     },
     onError: () => {
+      threadsStore.setSendingBlocked(false);
       toastStore.addToast({
         kind: 'error',
-        title: 'Error',
-        subtitle: 'Error getting AI Response'
+        title: ERROR_GETTING_AI_RESPONSE_TEXT.title,
+        subtitle: ERROR_GETTING_AI_RESPONSE_TEXT.subtitle
       });
     }
   });
 
-  const onSubmit = async (e: SubmitEvent | KeyboardEvent) => {
-    e.preventDefault();
+  /** useAssistant - streams messages with the /api/chat/assistants route **/
+  const {
+    status,
+    input: assistantInput,
+    messages: assistantMessages,
+    submitMessage: submitAssistantMessage,
+    stop: assistantStop,
+    setMessages: setAssistantMessages,
+    append: assistantAppend
+  } = useAssistant({
+    api: '/api/chat/assistants',
+    threadId: activeThread?.id,
+    onError: (e) => {
+      threadsStore.setSendingBlocked(false);
+      // ignore this error b/c it is expected on cancel
+      if (e.toString() !== 'DOMException: BodyStreamBuffer was aborted') {
+        toastStore.addToast({
+          kind: 'error',
+          title: ERROR_GETTING_ASSISTANT_MSG_TEXT.title,
+          subtitle: ERROR_GETTING_ASSISTANT_MSG_TEXT.subtitle
+        });
+      }
+    }
+  });
 
-    if ($isLoading) {
-      await stopThenSave();
-    } else {
-      if (!activeThread?.id) {
-        // new thread thread
-        await threadsStore.newThread($input);
-        await tick(); // allow store to update
-        if (activeThread?.id) {
-          await threadsStore.newMessage({
-            thread_id: activeThread?.id,
-            content: $input,
-            role: 'user'
-          });
+  const sendAssistantMessage = async (e: SubmitEvent | KeyboardEvent) => {
+    hasSentAssistantMessage = true;
+    threadsStore.setSendingBlocked(true);
+    if (activeThread?.id) {
+      // assistant mode
+      $assistantInput = $chatInput;
+      $chatInput = ''; // clear chat input
+
+      await submitAssistantMessage(e, {
+        // submit to AI (/api/chat/assistants)
+        data: {
+          message: $chatInput,
+          assistantId: $threadsStore.selectedAssistantId,
+          threadId: activeThread.id
         }
-      } else {
-        // store user input
-        await threadsStore.newMessage({
-          thread_id: activeThread?.id,
-          content: $input,
+      });
+      $assistantInput = '';
+    }
+    threadsStore.setSendingBlocked(false);
+  };
+
+  const sendChatMessage = async (e: SubmitEvent | KeyboardEvent) => {
+    threadsStore.setSendingBlocked(true);
+    if (activeThread?.id) {
+      // Save with API
+      try {
+        const newMessage = await saveMessage({
+          thread_id: activeThread.id,
+          content: $chatInput,
           role: 'user'
         });
-      }
-
-      handleSubmit(e); // submit to AI (/api/chat)
-    }
-  };
-
-  const stopThenSave = async () => {
-    if ($isLoading) {
-      stop();
-      toastStore.addToast({
-        kind: 'info',
-        title: 'Response Canceled',
-        subtitle: 'Response generation canceled.'
-      });
-      const lastMessage = $messages[$messages.length - 1];
-
-      if (activeThread?.id && lastMessage.role !== 'user') {
-        await threadsStore.newMessage({
-          thread_id: activeThread?.id,
-          content: getMessageText(lastMessage), // save last message
-          role: lastMessage.role
+        // store user input
+        await threadsStore.addMessageToStore(newMessage);
+        submitChatMessage(e); // submit to AI (/api/chat)
+      } catch {
+        threadsStore.setSendingBlocked(false);
+        toastStore.addToast({
+          kind: 'error',
+          title: ERROR_SAVING_MSG_TEXT.title,
+          subtitle: ERROR_SAVING_MSG_TEXT.subtitle
         });
       }
     }
   };
 
-  const handleMessageEdit = async (
-    event: SubmitEvent | KeyboardEvent | MouseEvent,
-    message: AIMessage
-  ) => {
-    event.preventDefault();
-
-    const messageIndex = $messages.findIndex((m) => m.id === message.id);
-    // Ensure the message after the user's message exists and is a response from the AI
-    const numToSplice =
-      $messages[messageIndex + 1] && $messages[messageIndex + 1].role !== 'user' ? 2 : 1;
-
-    if (activeThread?.id) {
-      // delete old message from DB
-      await threadsStore.deleteMessage(activeThread.id, message.id);
-      if (numToSplice === 2) {
-        // also delete that message's response
-        await threadsStore.deleteMessage(activeThread.id, $messages[messageIndex + 1].id);
+  const onSubmit = async (e: SubmitEvent | KeyboardEvent) => {
+    e.preventDefault();
+    if ($threadsStore.sendingBlocked && activeThread?.id) {
+      // message still sending
+      await stopThenSave({
+        activeThreadId: activeThread.id,
+        messages: $chatMessages,
+        status: $status,
+        isLoading: $isLoading || false,
+        assistantStop,
+        chatStop
+      });
+      threadsStore.setSendingBlocked(false);
+      return;
+    } else {
+      if (!activeThread?.id) {
+        // create new thread
+        await threadsStore.newThread($chatInput);
+        await tick(); // allow store to update
       }
 
-      // save new message
-      await threadsStore.newMessage({
-        thread_id: activeThread.id,
-        content: getMessageText(message),
-        role: 'user'
-      });
+      assistantMode ? await sendAssistantMessage(e) : await sendChatMessage(e);
     }
-    setMessages($messages.toSpliced(messageIndex, numToSplice)); // remove original message and response
-
-    // send to /api/chat
-    await append(message);
   };
 
-  const handleRegenerate = async () => {
-    const messageIndex = $messages.length - 1;
-    if (activeThread?.id) {
-      await threadsStore.deleteMessage(activeThread.id, $messages[messageIndex].id);
-    }
-    setMessages($messages.toSpliced(messageIndex, 1));
-    await reload();
-  };
-
-  onMount(() => {
+  onMount(async () => {
     threadsStore.setThreads(data.threads || []);
+    await tick();
+    resetMessages({
+      activeThread,
+      setChatMessages,
+      setAssistantMessages,
+      files: data.files
+    });
   });
 
   afterUpdate(() => {
@@ -149,59 +269,125 @@
   });
 
   beforeNavigate(async () => {
-    if ($isLoading) {
-      await stopThenSave();
+    if ($threadsStore.sendingBlocked && activeThread?.id) {
+      await stopThenSave({
+        activeThreadId: activeThread.id,
+        messages: $chatMessages,
+        status: $status,
+        isLoading: $isLoading || false,
+        assistantStop,
+        chatStop
+      });
     }
+  });
+
+  afterNavigate(() => {
+    resetMessages({
+      activeThread,
+      setChatMessages,
+      setAssistantMessages,
+      files: data.files
+    });
   });
 </script>
 
-<!--Note - the messages are streamed live from the useChat messages, saving them in the db and store happens behind the scenes -->
 <div class="chat-inner-content">
   <div class="messages" bind:this={messageThreadDiv}>
-    {#each $messages as message, index (message.id)}
+    {#each sortedMessages as message, index (message.id)}
       <Message
+        allStreamedMessages={sortedMessages}
         {message}
-        {handleMessageEdit}
-        {handleRegenerate}
-        isLastMessage={index === $messages.length - 1}
-        isLoading={$isLoading || false}
+        messages={isRunAssistantResponse(message) ? $assistantMessages : $chatMessages}
+        setMessages={isRunAssistantResponse(message) ? setAssistantMessages : setChatMessages}
+        isLastMessage={index === sortedMessages.length - 1}
+        append={isRunAssistantResponse(message) ? assistantAppend : chatAppend}
+        {reload}
       />
     {/each}
   </div>
 
-  <form on:submit={onSubmit}>
-    <div class="chat-form-container">
-      <LFTextArea
-        value={input}
-        {onSubmit}
-        ariaLabel="message input"
-        placeholder="Type your message here..."
-        bind:showLengthError={lengthInvalid}
-      />
+  <hr id="divider" class="divider" />
+  <div
+    class="chat-form-container"
+    class:noAssistant={$threadsStore.selectedAssistantId === NO_SELECTED_ASSISTANT_ID}
+  >
+    <form on:submit={onSubmit}>
+      <Dropdown
+        data-testid="assistant-dropdown"
+        disabled={$isLoading || $status === 'in_progress'}
+        hideLabel
+        direction="top"
+        selectedId={$threadsStore.selectedAssistantId}
+        on:select={async (e) => {
+          if (e.detail.selectedId === 'manage-assistants') {
+            await goto('/chat/assistants-management');
+          } else {
+            if ($threadsStore.selectedAssistantId === e.detail.selectedId)
+              threadsStore.setSelectedAssistantId(NO_SELECTED_ASSISTANT_ID); //deselect
+            else {
+              threadsStore.setSelectedAssistantId(e.detail.selectedId);
+            }
+          }
+        }}
+        items={assistantsList}
+        style="width: 25%; margin-bottom: 0.5rem"
+        let:item
+      >
+        {#if item.id === `manage-assistants`}
+          <button
+            id="manage assistants"
+            data-testid="assistants-management-btn"
+            class="manage-assistants-btn remove-btn-style"
+          >
+            <UserProfile />
+            {item.text}
+          </button>
+        {:else if item.id === NO_SELECTED_ASSISTANT_ID}
+          <div class="noAssistant">
+            {item.text}
+          </div>
+        {:else}
+          <div class="assistant-dropdown-item">
+            {item.text}
+            {#if item.id !== NO_SELECTED_ASSISTANT_ID && $threadsStore.selectedAssistantId === item.id}
+              <Checkmark data-testid="checked" />
+            {/if}
+          </div>
+        {/if}
+      </Dropdown>
+      <div class="chat-input">
+        <LFTextArea
+          value={chatInput}
+          {onSubmit}
+          ariaLabel="message input"
+          placeholder="Type your message here..."
+          bind:showLengthError={lengthInvalid}
+        />
 
-      {#if !$isLoading}
-        <Button
-          data-testid="send message"
-          kind="secondary"
-          icon={ArrowRight}
-          size="field"
-          type="submit"
-          iconDescription="send"
-          disabled={$isLoading || !$input || lengthInvalid}
-        />
-      {:else}
-        <Button
-          data-testid="cancel message"
-          kind="secondary"
-          size="field"
-          type="submit"
-          icon={StopFilledAlt}
-          iconDescription="cancel"
-        />
-      {/if}
-    </div>
-  </form>
-  <PoweredByDU />
+        {#if !$isLoading && $status !== 'in_progress'}
+          <Button
+            data-testid="send message"
+            kind="secondary"
+            icon={ArrowRight}
+            size="field"
+            type="submit"
+            iconDescription="send"
+            disabled={!$chatInput || lengthInvalid || $threadsStore.sendingBlocked}
+          />
+        {:else}
+          <Button
+            data-testid="cancel message"
+            kind="secondary"
+            size="field"
+            type="submit"
+            icon={StopFilledAlt}
+            iconDescription="cancel"
+          />
+        {/if}
+      </div>
+    </form>
+    <PoweredByDU />
+  </div>
 </div>
 
 <style lang="scss">
@@ -219,12 +405,44 @@
     margin-bottom: layout.$spacing-05;
     overflow: scroll;
     scrollbar-width: none;
+    padding: 0rem layout.$spacing-05;
   }
 
   .chat-form-container {
+    padding: 0rem layout.$spacing-05;
+  }
+
+  .chat-input {
     display: flex;
     justify-content: space-around;
     align-items: flex-end;
     gap: 0.5rem;
+  }
+
+  .manage-assistants-btn {
+    display: flex;
+    align-items: center;
+    gap: layout.$spacing-03;
+  }
+
+  .assistant-dropdown-item {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+  }
+
+  :global(#manage-assistants) {
+    z-index: 2; // ensures outline is on top of border of item below
+    outline: 1px solid themes.$border-subtle-03;
+    :global(.bx--list-box__menu_item__option) {
+      padding-right: 0.25rem;
+    }
+  }
+
+  .noAssistant {
+    color: $gray-50;
+    :global(.bx--list-box__label) {
+      color: $gray-50;
+    }
   }
 </style>

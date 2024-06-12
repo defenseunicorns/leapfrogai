@@ -12,9 +12,11 @@ import {
   supabaseInsertSingleMock,
   supabaseStorageMockWrapper
 } from '$lib/mocks/supabase-mocks';
-import { getFakeAssistant, getFakeAssistantInput } from '$testUtils/fakeData';
+import { getFakeAssistant, getFakeAssistantInput, getFakeFileObject } from '$testUtils/fakeData';
 import AssistantForm from '$components/AssistantForm.svelte';
 import { mockOpenAI } from '../../../../../vitest-setup';
+import { mockGetAssistants } from '$lib/mocks/chat-mocks';
+import { mockGetFiles } from '$lib/mocks/file-mocks';
 
 describe('Assistant Form', () => {
   let goToSpy: MockInstance;
@@ -31,7 +33,12 @@ describe('Assistant Form', () => {
   });
 
   it('has a modal that navigates back to the management page', async () => {
-    const data = await newLoad({ locals: { safeGetSession: sessionMock } });
+    mockGetAssistants([]);
+    mockGetFiles([]);
+    const data = await newLoad({
+      fetch: global.fetch,
+      depends: vi.fn()
+    });
     render(AssistantForm, { data });
 
     const cancelBtn = screen.getAllByRole('button', { name: /cancel/i })[1];
@@ -41,7 +48,9 @@ describe('Assistant Form', () => {
   });
 
   it('limits the name input length', async () => {
-    const data = await newLoad({ locals: { safeGetSession: sessionMock } });
+    mockGetAssistants([]);
+    mockGetFiles([]);
+    const data = await newLoad({ fetch: global.fetch, depends: vi.fn() });
     render(AssistantForm, { data });
     const nameField = screen.getByRole('textbox', { name: /name/i });
     await userEvent.type(nameField, 'a'.repeat(ASSISTANTS_NAME_MAX_LENGTH + 1));
@@ -49,7 +58,9 @@ describe('Assistant Form', () => {
   });
 
   it('limits the description input length', async () => {
-    const data = await newLoad({ locals: { safeGetSession: sessionMock } });
+    mockGetAssistants([]);
+    mockGetFiles([]);
+    const data = await newLoad({ fetch: global.fetch, depends: vi.fn() });
     render(AssistantForm, { data });
     const descriptionField = screen.getByRole('textbox', { name: /description/i });
     await userEvent.type(descriptionField, 'a'.repeat(ASSISTANTS_DESCRIPTION_MAX_LENGTH + 1));
@@ -62,14 +73,19 @@ describe('Assistant Form', () => {
     */
 
   describe('the new assistant server side form action', () => {
-    it('redirects on success', async () => {
+    it('redirects on success (with data sources)', async () => {
+      const fakeFile1 = getFakeFileObject();
+      const fakeFile2 = getFakeFileObject();
+      mockOpenAI.setTempVectorStoreFiles([fakeFile1, fakeFile2]);
+
       const assistant = getFakeAssistantInput();
 
       const formData = new FormData();
       formData.append('name', assistant.name!);
       formData.append('description', assistant.description!);
       formData.append('instructions', assistant.instructions!);
-      formData.append('data_sources', '');
+      formData.append('data_sources', `${fakeFile1.filename},${fakeFile2.filename}`);
+
       formData.append('pictogram', 'User');
 
       const request = new Request('http://localhost:5173/chat/assistants-management/new', {
@@ -117,8 +133,12 @@ describe('Assistant Form', () => {
     expect(res.status).toEqual(400);
   });
 
-  describe('the edit assistant server side form action', () => {
+  describe('the edit assistant server side form action (with data sources)', () => {
     it('redirects on success', async () => {
+      const fakeFile1 = getFakeFileObject();
+      const fakeFile2 = getFakeFileObject();
+      mockOpenAI.setTempVectorStoreFiles([fakeFile1, fakeFile2]);
+
       const assistant = getFakeAssistant();
 
       const formData = new FormData();
@@ -126,7 +146,7 @@ describe('Assistant Form', () => {
       formData.append('name', assistant.name!);
       formData.append('description', assistant.description!);
       formData.append('instructions', assistant.instructions!);
-      formData.append('data_sources', '');
+      formData.append('data_sources', `${fakeFile1.filename},${fakeFile2.filename}`);
       formData.append('pictogram', 'User');
       // No avatar or avatarFile included to ensure we test the deletion call and mock for the avatar
 

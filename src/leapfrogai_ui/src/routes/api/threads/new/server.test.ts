@@ -26,7 +26,7 @@ describe('/api/threads/new', () => {
       body: JSON.stringify({ label: thread.metadata.label })
     });
 
-    mockOpenAI.setThread(thread);
+    mockOpenAI.setTempThread(thread);
 
     const updateMock = updateSingleReturnsMock();
 

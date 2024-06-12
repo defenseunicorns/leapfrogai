@@ -7,13 +7,17 @@ import { assistantInputSchema } from '$lib/schemas/assistants';
 import { openai } from '$lib/server/constants';
 import type { LFAssistant } from '$lib/types/assistants';
 import { getAssistantAvatarUrl } from '$helpers/assistants';
+import type { AssistantCreateParams } from 'openai/resources/beta/assistants';
 
-export const load = async ({ locals: { safeGetSession } }) => {
-  const { session } = await safeGetSession();
+export const load = async ({ fetch, depends }) => {
+  depends('lf:files');
+  depends('lf:assistants');
 
-  if (!session) {
-    throw redirect(303, '/');
-  }
+  const promises = [fetch('/api/assistants'), fetch('/api/files')];
+  const [assistantsRes, filesRes] = await Promise.all(promises);
+
+  const assistants = await assistantsRes.json();
+  const files = await filesRes.json();
 
   // Populate form with default temperature
   const form = await superValidate(
@@ -22,7 +26,7 @@ export const load = async ({ locals: { safeGetSession } }) => {
     { errors: false } // turn off errors for new assistant b/c providing default data turns them on
   );
 
-  return { title: 'LeapfrogAI - New Assistant', form };
+  return { title: 'LeapfrogAI - New Assistant', form, assistants, files };
 };
 
 export const actions = {
@@ -38,17 +42,35 @@ export const actions = {
       return fail(400, { form });
     }
 
+    const data_sources =
+      form.data.data_sources &&
+      form.data.data_sources.length > 0 &&
+      typeof form.data.data_sources[0] === 'string'
+        ? form.data.data_sources[0].split(',')
+        : [];
+
     // Create assistant object, we can't spread the form data here because we need to re-nest some of the values
-    // TODO - can we build the assistant properly by modifying the name fields of form inputs to nest the data correctly
-    const assistant = {
+    const assistant: AssistantCreateParams = {
       name: form.data.name,
       description: form.data.description,
       instructions: form.data.instructions,
       temperature: form.data.temperature,
       model: env.DEFAULT_MODEL,
+      tools: data_sources.length > 0 ? [{ type: 'file_search' }] : [],
+      tool_resources:
+        data_sources.length > 0
+          ? {
+              file_search: {
+                vector_stores: [
+                  {
+                    file_ids: data_sources
+                  }
+                ]
+              }
+            }
+          : null,
       metadata: {
         ...assistantDefaults.metadata,
-        data_sources: form.data.data_sources || '',
         pictogram: form.data.pictogram,
         user_id: session.user.id
         // avatar is added in later with an update call after saving to supabase

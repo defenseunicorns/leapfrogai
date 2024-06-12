@@ -1,6 +1,8 @@
-export const load = async ({ fetch }) => {
-  const response = await fetch('/api/assistants');
-  const assistants = await response.json();
+export const load = async ({ fetch, depends }) => {
+  depends('lf:assistants');
 
-  return { title: 'LeapfrogAI - Assistants', assistants: assistants ?? [] };
+  const assistantsRes = await fetch('/api/assistants');
+  const assistants = await assistantsRes.json();
+
+  return { title: 'LeapfrogAI - Assistants Management', assistants };
 };

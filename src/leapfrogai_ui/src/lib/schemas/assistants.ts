@@ -1,4 +1,4 @@
-import { mixed, number, object, ObjectSchema, string, ValidationError } from 'yup';
+import { array, mixed, number, object, ObjectSchema, string, ValidationError } from 'yup';
 import type { AssistantInput, EditAssistantInput } from '$lib/types/assistants';
 import {
   ASSISTANTS_DESCRIPTION_MAX_LENGTH,
@@ -19,7 +19,8 @@ export const assistantInputSchema: ObjectSchema<AssistantInput> = object({
     .max(ASSISTANTS_INSTRUCTIONS_MAX_LENGTH)
     .required('This field is required. Please enter instructions.'),
   temperature: number().required('Required'),
-  data_sources: string(),
+  data_sources: array().of(string()),
+  vectorStoreId: string(),
   avatar: string(),
   avatarFile: mixed<File>()
     .nullable()

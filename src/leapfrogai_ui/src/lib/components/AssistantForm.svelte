@@ -5,7 +5,6 @@
     ASSISTANTS_NAME_MAX_LENGTH
   } from '$lib/constants';
   import { superForm } from 'sveltekit-superforms';
-  import { Add } from 'carbon-icons-svelte';
   import { page } from '$app/stores';
   import { beforeNavigate, goto, invalidate } from '$app/navigation';
   import { Button, Modal, Slider, TextArea, TextInput } from 'carbon-components-svelte';
@@ -13,20 +12,22 @@
   import { yup } from 'sveltekit-superforms/adapters';
   import { toastStore } from '$stores';
   import InputTooltip from '$components/InputTooltip.svelte';
-  import { editAssistantInputSchema, assistantInputSchema } from '$lib/schemas/assistants';
+  import { assistantInputSchema, editAssistantInputSchema } from '$lib/schemas/assistants';
   import type { NavigationTarget } from '@sveltejs/kit';
   import { onMount } from 'svelte';
+  import AssistantFileSelect from '$components/AssistantFileSelect.svelte';
 
   export let data;
 
   let isEditMode = $page.url.pathname.includes('edit');
   let bypassCancelWarning = false;
+  let selectedFileIds: string[] = data.form.data.data_sources || [];
 
   const { form, errors, enhance, submitting, isTainted } = superForm(data.form, {
     invalidateAll: false,
     validators: yup(isEditMode ? editAssistantInputSchema : assistantInputSchema),
     onResult({ result }) {
-      invalidate('/api/assistants');
+      invalidate('lf:assistants');
       if (result.type === 'redirect') {
         toastStore.addToast({
           kind: 'success',
@@ -169,11 +170,12 @@
         labelText="Data Sources"
         tooltipText="Specific files your assistant can search and reference"
       />
-      <div>
-        <Button icon={Add} kind="secondary" size="small"
-          >Add <input name="data_sources" type="hidden" /></Button
-        >
-      </div>
+      <AssistantFileSelect files={data?.files} bind:selectedFileIds />
+      <input
+        type="hidden"
+        name="vectorStoreId"
+        value={data?.assistant?.tool_resources?.file_search?.vector_store_ids[0] || undefined}
+      />
 
       <div>
         <Button

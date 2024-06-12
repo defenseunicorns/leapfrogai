@@ -195,3 +195,29 @@ DEFAULT_MODEL=gpt-3.5-turbo
 LEAPFROGAI_API_BASE_URL=https://api.openai.com/v1
 LEAPFROGAI_API_KEY=<your-openai-api-key>
 ```
+
+### Chat Data Flow
+
+The logic for handling regular chat messages and assistant chat messages, along with persisting that data to the database is complex and deserves a detailed explanation.
+
+Our chat page allows the user to send messages to /api/chat ("regular chat") and /api/chat/assistants ("chat with assistant"). The messages are streamed to the client so that text is
+progressively displayed on the screen. We use the Vercel [AI SDK](https://sdk.vercel.ai/docs/getting-started/svelte) to handle streaming as well as response cancellation, regeneration, message editing, error handling, and more.
+
+Messages streamed with regular chat, use the "useChat" function.  
+Assistants use the "useAssistants" function.  
+These functions do not provide the same features and handle data differently, resulting in several edge cases.
+
+Here are a few of the big issues caused by these differences:
+
+The useChat function does not save messages with the API to the database, we have to handle that on our own.  
+Messages sent with useAssistants, however, are saved to the database automatically.
+
+Creation timestamps are handled differently depending on if they are streamed responses or if they have been saved to the database.
+Streamed messages have timestamps on the "createdAt" field, saved messages have timestamps on the "created_at" field. Sometimes the dates are Date strings, unix seconds, or unix milliseconds.
+Since dates can be returned in seconds, we lose some of the precision we would have for sorting the messages if they were returned in milliseconds. Due to this issue, there is logic in place to prevent the
+user from sending messages too quickly, ensuring timestamps are unique.
+
+Additionally, streamed messages have temporary ids that do not match the ids messages are assigned when they are saved to the database. This makes editing and deleting messages challenging, so we have to keep track of both streamed
+messages and saved messages in client side state in the correct order. We use this state to look up the saved ids and make the appropriate API calls with the permanent ids.
+
+While there are several automated tests for this logic, the edge cases and mocking scenarios are complex. Any modifications to this logic should be thoroughly manually tested.

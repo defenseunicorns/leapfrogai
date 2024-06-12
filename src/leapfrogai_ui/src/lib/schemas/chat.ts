@@ -21,7 +21,7 @@ export const messageInputSchema: ObjectSchema<NewMessageInput> = object({
   thread_id: string().required(),
   content: contentInputSchema,
   role: string<'user' | 'assistant'>().required(),
-  assistantId: string().uuid().optional()
+  assistantId: string().optional()
 })
   .noUnknown(true)
   .strict();

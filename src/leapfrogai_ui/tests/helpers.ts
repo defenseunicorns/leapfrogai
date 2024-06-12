@@ -1,9 +1,11 @@
 import { expect, type Page } from '@playwright/test';
 import { faker } from '@faker-js/faker';
 import { createClient } from '@supabase/supabase-js';
-import type { AssistantInput } from '$lib/types/assistants';
+import type { AssistantInput, LFAssistant } from '$lib/types/assistants';
 import OpenAI from 'openai';
 import type { Profile } from '$lib/types/profile';
+import { getFakeAssistantInput } from '$testUtils/fakeData';
+import * as fs from 'node:fs';
 
 const supabase = createClient(process.env.PUBLIC_SUPABASE_URL!, process.env.SERVICE_ROLE_KEY!);
 
@@ -64,25 +66,29 @@ export const deleteActiveThread = async (page: Page) => {
   const urlParts = new URL(page.url()).pathname.split('/');
   const threadId = urlParts[urlParts.length - 1];
 
-  if (threadId) {
+  if (threadId && threadId !== 'chat') {
     await deleteThread(threadId);
   }
 };
 export const deleteThread = async (id: string) => {
   await openai.beta.threads.del(id);
+  const listUsers = await supabase.auth.admin.listUsers();
+  let userId = '';
+  for (const user of listUsers.data.users) {
+    if (user.email === process.env.USERNAME) {
+      userId = user.id;
+    }
+  }
   const { data: profile } = await supabase
     .from('profiles')
     .select(`*`)
-    .eq('email', process.env.USERNAME)
+    .eq('id', userId)
     .returns<Profile[]>()
     .single();
 
   const updatedThreadIds = profile?.thread_ids.filter((existingId) => existingId !== id);
 
-  await supabase
-    .from('profiles')
-    .update({ thread_ids: updatedThreadIds })
-    .eq('email', process.env.USERNAME);
+  await supabase.from('profiles').update({ thread_ids: updatedThreadIds }).eq('id', userId);
 };
 
 export const waitForResponseToComplete = async (page: Page) => {
@@ -94,7 +100,7 @@ export const waitForResponseToComplete = async (page: Page) => {
 export const deleteAllAssistants = async () => {
   const myAssistants = await openai.beta.assistants.list();
   for (const assistant of myAssistants.data) {
-    await openai.beta.assistants.del(assistant.id);
+    await deleteAssistantWithApi(assistant.id);
   }
 };
 
@@ -115,4 +121,36 @@ export const uploadAvatar = async (page: Page, imageName = 'Doug') => {
     return window.getComputedStyle(node).backgroundImage;
   });
   expect(hasImage).toBeDefined();
+};
+
+export const createAssistantWithApi = async () => {
+  const fakeAssistantInput = getFakeAssistantInput();
+  const assistantInput = {
+    name: fakeAssistantInput.name,
+    description: fakeAssistantInput.description,
+    instructions: fakeAssistantInput.instructions,
+    temperature: fakeAssistantInput.temperature,
+    model: process.env.DEFAULT_MODEL!,
+    metadata: {
+      pictogram: 'Default'
+    }
+  };
+
+  return (await openai.beta.assistants.create(assistantInput)) as LFAssistant;
+};
+
+export const deleteAssistantWithApi = async (id: string) => {
+  await openai.beta.assistants.del(id);
+};
+
+export const uploadFileWithApi = async (fileName = 'test.pdf') => {
+  const file = fs.createReadStream(`./tests/fixtures/${fileName}`);
+
+  return openai.files.create({
+    file: file,
+    purpose: 'assistants'
+  });
+};
+export const deleteFileWithApi = async (id: string) => {
+  return openai.files.del(id);
 };
