@@ -9,10 +9,12 @@ import { getMessageText } from '$helpers/threads';
 
 type ThreadsStore = {
   threads: LFThread[];
+  lastVisitedThreadId: string;
 };
 
 const defaultValues: ThreadsStore = {
-  threads: []
+  threads: [],
+  lastVisitedThreadId: ''
 };
 
 const createThread = async (input: NewThreadInput) => {
@@ -95,6 +97,9 @@ const createThreadsStore = () => {
     update,
     setThreads: (threads: LFThread[]) => {
       update((old) => ({ ...old, threads }));
+    },
+    setLastVisitedThreadId: (id: string) => {
+      update((old) => ({ ...old, lastVisitedThreadId: id }));
     },
     changeThread: async (newId: string | null) => {
       await goto(`/chat/${newId}`);

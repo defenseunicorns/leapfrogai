@@ -67,7 +67,7 @@ describe('Import and Export chat history', () => {
 
     render(ImportExport);
 
-    await userEvent.click(screen.getByText('Export Chat History'));
+    await userEvent.click(screen.getByText('Export chat history'));
     expect(toastSpy).toHaveBeenCalledTimes(1);
     expect(toastSpy).toHaveBeenCalledWith({
       kind: 'error',

@@ -43,6 +43,6 @@
     size="small"
     icon={Download}
     iconDescription="Import conversations"
-    on:click={() => ref?.click()}>Import Chat History</Button
+    on:click={() => ref?.click()}>Import chat history</Button
   >
 </div>

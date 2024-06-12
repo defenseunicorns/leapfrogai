@@ -17,7 +17,7 @@ test('it can import and exports threads', async ({ page }) => {
   await expect(page.getByText(thread.metadata.label)).toHaveCount(1);
 
   const downloadPromise = page.waitForEvent('download');
-  await page.getByText('Export Chat History').click();
+  await page.getByText('Export chat history').click();
 
   const download = await downloadPromise;
 

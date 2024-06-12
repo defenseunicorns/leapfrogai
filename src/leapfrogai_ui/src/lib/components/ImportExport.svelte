@@ -82,7 +82,7 @@
     icon={Export}
     size="small"
     iconDescription="Export conversations"
-    on:click={onExport}>Export Chat History</Button
+    on:click={onExport}>Export chat history</Button
   >
 </div>
 

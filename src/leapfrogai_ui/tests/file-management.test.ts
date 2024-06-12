@@ -1,5 +1,5 @@
 import { expect, test } from './fixtures';
-import { loadChatPage } from './helpers';
+import {getSimpleMathQuestion, loadChatPage, sendMessage} from './helpers';
 import type { Page } from '@playwright/test';
 
 const loadFileManagementPage = async (page: Page) => {
@@ -45,6 +45,21 @@ test.beforeEach(async ({ page }) => {
   await page.reload();
 
   console.log('After Each completed');
+});
+
+test('it can navigate to the last visited thread with breadcrumbs', async ({ page }) => {
+  const newMessage = getSimpleMathQuestion();
+  await page.goto('/chat');
+  await sendMessage(page, newMessage);
+  const messages = page.getByTestId('message');
+  await expect(messages).toHaveCount(2);
+
+  const urlParts = new URL(page.url()).pathname.split('/');
+  const threadId = urlParts[urlParts.length - 1];
+
+  await page.goto('/chat/file-management');
+  await page.getByRole('link', { name: 'Chat' }).click();
+  await page.waitForURL(`/chat/${threadId}`);
 });
 
 test('it can navigate to the file management page', async ({ page }) => {

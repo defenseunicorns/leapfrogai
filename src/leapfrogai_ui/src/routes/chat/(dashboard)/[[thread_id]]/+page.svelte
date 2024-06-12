@@ -19,6 +19,7 @@
 
   $: activeThread = $threadsStore.threads.find((thread) => thread.id === $page.params.thread_id);
 
+  $: $page.params.thread_id, threadsStore.setLastVisitedThreadId($page.params.thread_id);
   $: $page.params.thread_id,
     setMessages(activeThread?.messages?.map((m) => convertMessageToAiMessage(m)) || []);
 
