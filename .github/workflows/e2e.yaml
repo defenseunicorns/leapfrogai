@@ -117,7 +117,7 @@ jobs:
         # This cleanup may need to be moved/removed when other packages depend on Supabase
         - name: Cleanup Supabase
           run: |
-            uds zarf package remove supabase -l=trace --confir
+            uds zarf package remove supabase -l=trace --confirm
 
         ##########
         # llama
