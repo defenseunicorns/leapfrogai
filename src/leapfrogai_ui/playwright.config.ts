@@ -4,7 +4,7 @@ import dotenv from 'dotenv';
 
 dotenv.config();
 
-const config: PlaywrightTestConfig = {
+const defaultConfig: PlaywrightTestConfig = {
   projects: [
     { name: 'setup', testMatch: /.*\.setup\.ts/ },
     {
@@ -40,13 +40,36 @@ const config: PlaywrightTestConfig = {
       dependencies: ['setup']
     }
   ],
+  testDir: 'tests',
+  testMatch: /(.+\.)?(test|spec)\.[jt]s/
+};
+
+// when in dev, create a local webserver
+const devConfig: PlaywrightTestConfig = {
   webServer: {
     command: 'npm run build && npm run preview',
     port: 4173,
     stderr: 'pipe'
   },
-  testDir: 'tests',
-  testMatch: /(.+\.)?(test|spec)\.[jt]s/
+  use: {
+    baseURL: 'http://localhost:4173'
+  }
+};
+
+// when e2e testing, use the deployed instance
+const CI_Config: PlaywrightTestConfig = {
+  use: {
+    baseURL: 'https://ai.uds.dev'
+  }
+};
+
+// get the environment type from command line. If none, set it to dev
+const environment = process.env.TEST_ENV || 'dev';
+
+// config object with default configuration and environment specific configuration
+const config: PlaywrightTestConfig = {
+  ...defaultConfig,
+  ...(environment === 'CI' ? CI_Config : devConfig)
 };
 
 export default config;
