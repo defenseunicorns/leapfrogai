@@ -2,6 +2,7 @@
   import { Breadcrumb, BreadcrumbItem, Content } from 'carbon-components-svelte';
   import { page } from '$app/stores';
   import { PoweredByDU } from '$components';
+  import { threadsStore } from '$stores';
 
   const paths = [
     {
@@ -14,6 +15,14 @@
     }
   ];
   $: isCurrentPage = (path: string) => $page.url.pathname === path;
+
+  const getPath = (path: string) => {
+    if (path === '/chat')
+      return $threadsStore.lastVisitedThreadId
+        ? `/chat/${$threadsStore.lastVisitedThreadId}`
+        : '/chat';
+    return path;
+  };
 </script>
 
 <Content>
@@ -23,7 +32,7 @@
         {#each paths as { path, name } (path)}
           {#if $page.url.pathname.includes(path)}
             <BreadcrumbItem
-              href={isCurrentPage(path) ? '' : path}
+              href={isCurrentPage(path) ? '' : getPath(path)}
               isCurrentPage={isCurrentPage(path)}>{name}</BreadcrumbItem
             >
           {/if}

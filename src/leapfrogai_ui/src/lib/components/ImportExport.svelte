@@ -80,8 +80,9 @@
     id="export-btn"
     kind="ghost"
     icon={Export}
+    size="small"
     iconDescription="Export conversations"
-    on:click={onExport}>Export data</Button
+    on:click={onExport}>Export chat history</Button
   >
 </div>
 
@@ -90,6 +91,7 @@
     display: flex;
     flex-direction: column;
     justify-content: space-between;
+    padding: layout.$spacing-03 0 layout.$spacing-03 0;
     :global(.bx--btn) {
       width: 100%;
       color: themes.$text-secondary;

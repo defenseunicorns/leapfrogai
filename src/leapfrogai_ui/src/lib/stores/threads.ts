@@ -12,12 +12,14 @@ type ThreadsStore = {
   threads: LFThread[];
   selectedAssistantId: string;
   sendingBlocked: boolean;
+  lastVisitedThreadId: string;
 };
 
 const defaultValues: ThreadsStore = {
   threads: [],
   selectedAssistantId: NO_SELECTED_ASSISTANT_ID,
-  sendingBlocked: false
+  sendingBlocked: false,
+  lastVisitedThreadId: ''
 };
 
 const createThread = async (input: NewThreadInput) => {
@@ -84,6 +86,9 @@ const createThreadsStore = () => {
     update,
     setThreads: (threads: LFThread[]) => {
       update((old) => ({ ...old, threads }));
+    },
+    setLastVisitedThreadId: (id: string) => {
+      update((old) => ({ ...old, lastVisitedThreadId: id }));
     },
     setSelectedAssistantId: (selectedAssistantId: string) => {
       update((old) => {
@@ -164,6 +169,7 @@ const createThreadsStore = () => {
           ...old,
           threads: old.threads.filter((c) => c.id !== id)
         }));
+        await goto(`/chat`);
       } catch {
         toastStore.addToast({
           kind: 'error',
