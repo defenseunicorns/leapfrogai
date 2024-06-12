@@ -87,7 +87,7 @@
         ...assistantMessagesCopy
       ]);
     } catch {
-      // Fail Silently
+      // Fail Silently - error notification would not be useful to user, on failure, just show unparsed message
     }
   };
 
