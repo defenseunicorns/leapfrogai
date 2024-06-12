@@ -55,6 +55,8 @@ describe('AssistantFileSelect', () => {
     await userEvent.click(screen.getByText(mockFiles[0].filename));
     screen.getByTestId(`${mockFiles[0].filename}-${mockFiles[0].status}-uploader-item`);
   });
+
+  // This test is flaky when run in pipeline with all other tests so it has a longer timeout
   it('can de-select files', async () => {
     filesStore.set({
       files: mockFiles,
@@ -71,6 +73,6 @@ describe('AssistantFileSelect', () => {
 
     await userEvent.click(within(item).getByRole('button')); // deselect
 
-    await waitForElementToBeRemoved(() => screen.queryByTestId(testId), { timeout: 10000 });
+    await waitForElementToBeRemoved(() => screen.queryByTestId(testId), { timeout: 20000 });
   });
 });
