@@ -45,7 +45,7 @@ python -m pip install .
 
 ```bash
 # To support Huggingface Hub model downloads
-python -m pip install .[dev]
+python -m pip install ".[dev]"
 ```
 
 ```bash
@@ -59,6 +59,8 @@ source .env
 # Supply a REPO_ID, FILENAME and REVISION if a different model is desired
 python src/model_download.py
 
+mv .model/*.gguf .model/model.gguf
+
 # Start Model Backend
-python -u src/main.py
+python -m leapfrogai_sdk.cli --app-dir=src/ main:Model
 ```

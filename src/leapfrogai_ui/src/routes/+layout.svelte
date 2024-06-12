@@ -1,10 +1,10 @@
 <script lang="ts">
   import { invalidate } from '$app/navigation';
   import { onMount } from 'svelte';
+  import { Toasts } from '$components';
   import { page } from '$app/stores';
   import 'carbon-components-svelte/css/g90.css';
   import '../styles/main.scss';
-  import { Toasts } from '$components';
   import { Theme } from 'carbon-components-svelte';
   import type { CarbonTheme } from 'carbon-components-svelte/src/Theme/Theme.svelte';
 
@@ -39,5 +39,6 @@
 <style lang="scss">
   :global(.bx--content) {
     height: calc(100vh - var(--header-height));
+    padding-bottom: 1rem;
   }
 </style>

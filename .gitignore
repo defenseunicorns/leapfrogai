@@ -23,7 +23,7 @@ build/
 .ruff_cache
 .branches
 .temp
-packages/*/src/
+src/leapfrogai_api/config.yaml
 
 # local model and tokenizer files
 *.bin

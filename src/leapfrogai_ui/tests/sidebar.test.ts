@@ -1,57 +1,56 @@
 import { faker } from '@faker-js/faker';
 import { expect, test } from '@playwright/test';
 import {
-  deleteConversation,
-  deleteConversationsByLabel,
+  clickToDeleteThread,
+  deleteActiveThread,
+  getSimpleMathQuestion,
   loadChatPage,
   sendMessage,
   waitForResponseToComplete
 } from './helpers';
 
-test('it can delete conversations', async ({ page }) => {
-  const newMessage = faker.lorem.words(3);
+const newMessage1 = getSimpleMathQuestion();
+const newMessage2 = getSimpleMathQuestion();
+const newMessage3 = getSimpleMathQuestion();
+
+test('it can delete threads', async ({ page }) => {
   await loadChatPage(page);
 
-  const conversationLocator = page.getByText(newMessage);
+  const threadLocator = page.getByText(newMessage1);
 
-  await sendMessage(page, newMessage);
-  await deleteConversation(page, newMessage);
-  await expect(conversationLocator).toHaveCount(0);
+  await sendMessage(page, newMessage1);
+  await clickToDeleteThread(page, newMessage1);
+  await expect(threadLocator).toHaveCount(0);
 });
 
-test('can edit conversation labels', async ({ page }) => {
-  const newMessage = faker.lorem.words(3);
+test('can edit thread labels', async ({ page }) => {
   const newLabel = faker.lorem.words(3);
 
   await loadChatPage(page);
 
   const messages = page.getByTestId('message');
-  await sendMessage(page, newMessage);
+  await sendMessage(page, newMessage1);
   await expect(messages).toHaveCount(2);
 
-  const overflowMenu = page.getByTestId(`overflow-menu-${newMessage}`);
+  const overflowMenu = page.getByTestId(`overflow-menu-${newMessage1}`);
   await overflowMenu.click();
 
   await overflowMenu.getByText('Edit').click();
 
-  await page.getByLabel('edit conversation').fill(newLabel);
+  await page.getByLabel('edit thread').fill(newLabel);
 
   await page.keyboard.down('Enter');
 
   await page.reload();
 
-  const conversationId = page.url().split('/chat/')[1];
+  const threadId = page.url().split('/chat/')[1];
 
-  expect(page.getByTestId(`conversation-label-${conversationId}`).getByText(newLabel));
+  expect(page.getByTestId(`thread-label-${threadId}`).getByText(newLabel));
 
-  await deleteConversationsByLabel([newMessage]);
+  await deleteActiveThread(page);
 });
 
-test('Can switch conversation threads', async ({ page }) => {
-  const newMessage1 = faker.lorem.words(3);
-  const newMessage2 = faker.lorem.words(3);
-  const newMessage3 = faker.lorem.words(3);
-
+test('Can switch threads', async ({ page }) => {
   await loadChatPage(page);
   await sendMessage(page, newMessage1);
   await waitForResponseToComplete(page);
@@ -67,8 +66,13 @@ test('Can switch conversation threads', async ({ page }) => {
   await waitForResponseToComplete(page);
   await expect(messages).toHaveCount(2);
 
-  await page.getByText(newMessage1).click(); // switch conversations by clicking conversation label
+  await page.getByText(newMessage1).click(); // switch threads by clicking thread label
 
   await expect(messages).toHaveCount(4);
-  await deleteConversationsByLabel([newMessage1, newMessage2, newMessage3]);
+
+  // cleanup
+  await deleteActiveThread(page); // delete thread 1
+  await page.getByText(newMessage3).click(); //switch to thread 2
+  await expect(messages).toHaveCount(2); // confirm thread 2
+  await deleteActiveThread(page); // delete thread 2
 });

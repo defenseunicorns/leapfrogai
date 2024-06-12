@@ -8,10 +8,19 @@ import { afterAll, afterEach, beforeAll, vi } from 'vitest';
 import * as environment from '$app/environment';
 import * as navigation from '$app/navigation';
 import * as stores from '$app/stores';
-import { fakeConversations } from './testUtils/fakeData';
+import { getFakeProfile, getFakeSession } from '$testUtils/fakeData';
+import OpenAIMock from '$lib/mocks/openai';
 
 // Fixes error: node.scrollIntoView is not a function
 window.HTMLElement.prototype.scrollIntoView = function () {};
+
+export const mockOpenAI = new OpenAIMock({ apiKey: '', baseURL: '' });
+
+vi.doMock('$lib/server/constants', () => {
+  return {
+    openai: mockOpenAI
+  };
+});
 
 vi.mock('$env/dynamic/public', () => {
   return {
@@ -47,6 +56,8 @@ vi.mock('$app/navigation', (): typeof navigation => ({
 // Mock SvelteKit runtime module $app/stores
 vi.mock('$app/stores', (): typeof stores => {
   const getStores: typeof stores.getStores = () => {
+    const user_id = faker.string.uuid();
+    const full_name = faker.person.fullName();
     const navigating = readable<Navigation | null>(null);
     const page = readable<Page>({
       url: new URL('http://localhost'),
@@ -54,11 +65,10 @@ vi.mock('$app/stores', (): typeof stores => {
       route: { id: null },
       status: 200,
       error: null,
-      // TODO - the profile and session types are incompletely mocked out
       data: {
-        conversations: fakeConversations,
-        profile: {},
-        session: { user: { id: faker.string.uuid() } }
+        threads: [],
+        profile: getFakeProfile({ id: user_id, full_name }),
+        session: getFakeSession({ user_id, full_name })
       },
       state: {},
       form: null

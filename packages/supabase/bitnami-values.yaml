@@ -28,7 +28,7 @@ jwt:
     resourcesPreset: "none"
     podLabels:
       sidecar.istio.io/inject: "false"
-publicURL: "https://{{ .Values.leapfrogai.package.host }}.###ZARF_VAR_HOSTED_DOMAIN###"
+publicURL: "https://supabase-kong.###ZARF_VAR_HOSTED_DOMAIN###"
 auth:
   enabled: ###ZARF_VAR_ENABLE_AUTH###
   defaultConfig: |
@@ -58,7 +58,7 @@ auth:
     GOTRUE_EXTERNAL_KEYCLOAK_ENABLED: "###ZARF_VAR_ENABLE_EXTERNAL_KEYCLOAK###"
     GOTRUE_EXTERNAL_KEYCLOAK_CLIENT_ID: "{{ .Values.leapfrogai.sso.clientId }}"
     GOTRUE_EXTERNAL_KEYCLOAK_REDIRECT_URI: "https://{{ .Values.leapfrogai.package.host }}.###ZARF_VAR_HOSTED_DOMAIN###/auth/v1/callback"
-    GOTRUE_EXTERNAL_KEYCLOAK_URL: "https://keycloak.admin.###ZARF_VAR_HOSTED_DOMAIN###/realms/uds"
+    GOTRUE_EXTERNAL_KEYCLOAK_URL: "https://sso.###ZARF_VAR_HOSTED_DOMAIN###/realms/uds"
   image:
     tag: 2.149.0-debian-12-r0
   resourcesPreset: "none"
@@ -187,17 +187,6 @@ postgresql:
     resourcesPreset: "none"
     podLabels:
       sidecar.istio.io/inject: "false"
-    initdb:
-      scripts:
-        0000000000000000_migrate.sh: |
-          ###ZARF_VAR_MIGRATION_SCRIPT###
-
-        20240322174520_api_sql_schema.sql: |
-          ###ZARF_VAR_API_SQL_SCHEMA###
-
-        20240322174521_ui_sql_schema.sql: |
-          ###ZARF_VAR_UI_SQL_SCHEMA###
-
 
   commonAnnotations:
     helm.sh/resource-policy: keep

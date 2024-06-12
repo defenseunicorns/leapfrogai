@@ -1,134 +1,117 @@
-import type { PageServerLoad } from './$types';
+import { superValidate } from 'sveltekit-superforms';
 import { fail, redirect } from '@sveltejs/kit';
-import { supabaseAssistantInputSchema } from '../../../../../schemas/assistants';
-import { assistantDefaults, AVATAR_FILE_SIZE_ERROR_TEXT, MAX_AVATAR_SIZE } from '$lib/constants';
+import { yup } from 'sveltekit-superforms/adapters';
+import { assistantDefaults, DEFAULT_ASSISTANT_TEMP } from '$lib/constants';
 import { env } from '$env/dynamic/private';
-import { v4 as uuidv4 } from 'uuid';
-import { assistantsStore } from '$stores';
-import { ValidationError } from 'yup';
+import { assistantInputSchema } from '$lib/schemas/assistants';
+import { openai } from '$lib/server/constants';
+import type { LFAssistant } from '$lib/types/assistants';
+import { getAssistantAvatarUrl } from '$helpers/assistants';
+import type { AssistantCreateParams } from 'openai/resources/beta/assistants';
 
-export const load: PageServerLoad = async ({ locals: { getSession } }) => {
-  const session = await getSession();
+export const load = async ({ fetch, depends }) => {
+  depends('lf:files');
+  depends('lf:assistants');
 
-  if (!session) {
-    throw redirect(303, '/');
-  }
+  const promises = [fetch('/api/assistants'), fetch('/api/files')];
+  const [assistantsRes, filesRes] = await Promise.all(promises);
 
-  return { title: 'LeapfrogAI - New Assistant' };
+  const assistants = await assistantsRes.json();
+  const files = await filesRes.json();
+
+  // Populate form with default temperature
+  const form = await superValidate(
+    { temperature: DEFAULT_ASSISTANT_TEMP },
+    yup(assistantInputSchema),
+    { errors: false } // turn off errors for new assistant b/c providing default data turns them on
+  );
+
+  return { title: 'LeapfrogAI - New Assistant', form, assistants, files };
 };
 
 export const actions = {
-  default: async ({ request, locals: { supabase, getSession } }) => {
-    // Validate session
-    const session = await getSession();
+  default: async ({ request, locals: { supabase, safeGetSession } }) => {
+    const { session } = await safeGetSession();
     if (!session) {
       return fail(401, { message: 'Unauthorized' });
     }
 
-    // Build Assistant Input object
-    const formData = await request.formData();
+    const form = await superValidate(request, yup(assistantInputSchema));
 
-    const name = formData.get('name') as string;
-    const description = formData.get('description') as string;
-    const instructions = formData.get('instructions') as string;
-    const temperature = formData.get('temperature') as string;
-    const data_sources = formData.get('data_sources') as string | undefined;
-    const avatarFile = formData.get('avatar') as File | undefined;
-    const pictogram = formData.get('pictogram') as string | undefined;
-
-    const assistantInput: NewAssistantInput = {
-      name,
-      description,
-      instructions,
-      temperature: Number(temperature),
-      data_sources,
-      pictogram
-    };
-    let avatarFilePath: string = '';
-
-    // Validate Assistant Input Object
-    try {
-      await supabaseAssistantInputSchema.validate(assistantInput, { abortEarly: false });
-    } catch (e) {
-      if (e instanceof ValidationError) {
-        const errors: { [key: string]: string } = {};
-        e.inner.forEach((innerVal) => {
-          if (innerVal.path) {
-            errors[innerVal.path] = innerVal.errors[0];
-          }
-        });
-
-        console.error(
-          `Form submission: create assistant validation errors: ${JSON.stringify(errors)}`
-        );
-        return fail(400, { message: 'Bad Request', errors });
-      }
-      return fail(500, { message: 'Internal Server Error' });
+    if (!form.valid) {
+      return fail(400, { form });
     }
 
-    // Upload Avatar
-    if (avatarFile?.size !== 0) {
-      if (!(avatarFile instanceof File)) {
-        return fail(400, { message: 'Invalid avatar' });
-      }
-      // Validate file type
-      const validExtensions = ['.jpeg', '.jpg', '.png'];
-      const fileExtension = avatarFile.name.match(/\.[0-9a-z]+$/i);
-      if (!fileExtension || !validExtensions.includes(fileExtension[0].toLowerCase())) {
-        return fail(400, {
-          message: 'Invalid file type, accepted types are: ' + validExtensions.join(', ')
-        });
-      }
+    const data_sources =
+      form.data.data_sources &&
+      form.data.data_sources.length > 0 &&
+      typeof form.data.data_sources[0] === 'string'
+        ? form.data.data_sources[0].split(',')
+        : [];
 
-      if (avatarFile.size > MAX_AVATAR_SIZE)
-        return fail(400, { message: AVATAR_FILE_SIZE_ERROR_TEXT });
-
-      const filePath = `${session.user.id}/assistant_avatars/${uuidv4()}/${avatarFile.name}`;
-
-      const { data: supabaseData, error } = await supabase.storage
-        .from('assistant_avatars')
-        .upload(filePath, avatarFile);
-
-      if (error) {
-        console.error('Error uploading to Supabase:', error);
-        return fail(500, { message: 'Error uploading file' });
-      }
-
-      avatarFilePath = supabaseData.path;
-    }
-
-    // Create Assistant Object
-    const assistant: Omit<Assistant, 'id' | 'created_at'> = {
-      ...assistantDefaults,
-      name: assistantInput.name,
-      description: assistantInput.description,
-      instructions: assistantInput.instructions,
-      temperature: assistantInput.temperature,
+    // Create assistant object, we can't spread the form data here because we need to re-nest some of the values
+    const assistant: AssistantCreateParams = {
+      name: form.data.name,
+      description: form.data.description,
+      instructions: form.data.instructions,
+      temperature: form.data.temperature,
       model: env.DEFAULT_MODEL,
+      tools: data_sources.length > 0 ? [{ type: 'file_search' }] : [],
+      tool_resources:
+        data_sources.length > 0
+          ? {
+              file_search: {
+                vector_stores: [
+                  {
+                    file_ids: data_sources
+                  }
+                ]
+              }
+            }
+          : null,
       metadata: {
         ...assistantDefaults.metadata,
-        data_sources: assistantInput.data_sources || '',
-        avatar: avatarFilePath,
-        pictogram: assistantInput.pictogram,
-        created_by: session.user.id
+        pictogram: form.data.pictogram,
+        user_id: session.user.id
+        // avatar is added in later with an update call after saving to supabase
       }
     };
 
-    // Save Assistant
-    const { error: responseError, data: createdAssistant } = await supabase
-      .from('assistants')
-      .insert(assistant)
-      .select()
-      .returns<Assistant[]>();
-
-    if (responseError) {
-      console.log(
-        `error creating assistant,  error status: ${responseError.code}: ${responseError.message}`
-      );
-      return fail(500, { message: 'Internal Server Error' });
+    // Create assistant
+    let createdAssistant: LFAssistant;
+    try {
+      createdAssistant = (await openai.beta.assistants.create(assistant)) as LFAssistant;
+    } catch (e) {
+      console.error(`Error creating assistant: ${e}`);
+      return fail(500, { message: 'Error creating assistant.' });
     }
 
-    assistantsStore.addAssistant(createdAssistant[0]);
+    // save avatar
+    if (form.data.avatarFile) {
+      const filePath = createdAssistant.id;
+
+      const { error } = await supabase.storage
+        .from('assistant_avatars')
+        .upload(filePath, form.data.avatarFile);
+
+      if (error) {
+        console.error('Error saving assistant avatar:', error);
+        return fail(500, { message: 'Error saving assistant avatar.' });
+      }
+
+      // update assistant with saved avatar path
+      try {
+        await openai.beta.assistants.update(createdAssistant.id, {
+          metadata: {
+            ...(createdAssistant.metadata ? createdAssistant.metadata : undefined),
+            avatar: getAssistantAvatarUrl(filePath)
+          }
+        });
+      } catch (e) {
+        console.error(`Error adding avatar to assistant: ${e}`);
+        return fail(500, { message: 'Error adding avatar to assistant.' });
+      }
+    }
 
     return redirect(303, '/chat/assistants-management');
   }

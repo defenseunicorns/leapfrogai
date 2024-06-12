@@ -4,6 +4,8 @@
   import { Download } from 'carbon-icons-svelte';
   import { Button } from 'carbon-components-svelte';
 
+  export let importing: boolean;
+
   /** Obtain a reference to the input HTML element */
   export let ref: HTMLInputElement | null = null;
   export let accept: string[] = [];
@@ -33,9 +35,11 @@
     bind:files
     class:bx--visually-hidden={true}
   />
+
   <Button
     id="import-btn"
     kind="ghost"
+    disabled={importing}
     icon={Download}
     iconDescription="Import conversations"
     on:click={() => ref?.click()}>Import data</Button

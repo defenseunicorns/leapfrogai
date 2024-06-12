@@ -15,8 +15,18 @@
     {
       path: '/chat/assistants-management/new',
       name: 'New Assistant'
+    },
+    {
+      path: '/chat/assistants-management/edit',
+      name: 'Edit Assistant'
     }
   ];
+
+  $: isCurrentPage = (path: string) =>
+    $page.url.pathname === path ||
+    // Handle edit route with assistant id as path parameter
+    ($page.url.pathname.startsWith('/chat/assistants-management/edit/') &&
+      path === '/chat/assistants-management/edit');
 </script>
 
 <Content>
@@ -25,8 +35,9 @@
       <Breadcrumb noTrailingSlash>
         {#each paths as { path, name } (path)}
           {#if $page.url.pathname.includes(path)}
-            <BreadcrumbItem href={path} isCurrentPage={$page.url.pathname === path}
-              >{name}</BreadcrumbItem
+            <BreadcrumbItem
+              href={isCurrentPage(path) ? '' : path}
+              isCurrentPage={isCurrentPage(path)}>{name}</BreadcrumbItem
             >
           {/if}
         {/each}
