@@ -1,0 +1,34 @@
+# yaml-language-server: $schema=https://raw.githubusercontent.com/defenseunicorns/zarf/main/zarf.schema.json
+
+kind: ZarfPackageConfig
+metadata:
+  name: "whisper"
+  version: "###ZARF_PKG_TMPL_IMAGE_VERSION###"
+  description: >
+    whisper model
+
+constants:
+  - name: IMAGE_VERSION
+    value: "###ZARF_PKG_TMPL_IMAGE_VERSION###"
+
+variables:
+  - name: GPU_LIMIT
+    description: The GPU limit for the model inferencing.
+    default: "0"
+    pattern: "^[0-9]+$"
+
+components:
+  - name: whisper-model
+    required: true
+    charts:
+      - name: whisper-model
+        namespace: leapfrogai
+        localPath: chart
+        releaseName: whisper-model
+        # x-release-please-start-version
+        version: 0.7.2
+        # x-release-please-end
+        valuesFiles:
+          - "whisper-values.yaml"
+    images:
+      - ghcr.io/defenseunicorns/leapfrogai/whisper:###ZARF_PKG_TMPL_IMAGE_VERSION###

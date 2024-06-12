@@ -1,0 +1,27 @@
+# yaml-language-server: $schema=https://raw.githubusercontent.com/defenseunicorns/zarf/main/zarf.schema.json
+kind: ZarfPackageConfig
+metadata:
+  name: vllm
+  version: "###ZARF_PKG_TMPL_IMAGE_VERSION###"
+  description: >
+    vLLM model
+
+constants:
+  - name: IMAGE_VERSION
+    value: "###ZARF_PKG_TMPL_IMAGE_VERSION###"
+
+components:
+  - name: vllm-model
+    required: true
+    charts:
+      - name: vllm-model
+        namespace: leapfrogai
+        localPath: chart
+        releaseName: vllm-model
+        # x-release-please-start-version
+        version: 0.7.2
+        # x-release-please-end
+        valuesFiles:
+          - "vllm-values.yaml"
+    images:
+      - ghcr.io/defenseunicorns/leapfrogai/vllm:###ZARF_PKG_TMPL_IMAGE_VERSION###

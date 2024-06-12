@@ -1,75 +1,32 @@
 [project]
-name = "leapfrogai-api"
-version = "0.5.3"
-dependencies = [
-    "fastapi >= 0.109.1",
-    "uvicorn >= 0.23.2",
-    "pydantic",
-    "python-multipart >= 0.0.7", #indirect dep of FastAPI to receive form data for file uploads
-    "watchfiles >= 0.21.0",
-    "grpcio >= 1.56.0",
-    "grpcio-tools >= 1.62.1",
-    "protobuf >= 4.23.3",
-    "grpcio-reflection >=1.58.0",
-    "grpcio-health-checking >=1.58.0",
-    "confz >= 2.0.1",
-    "pydantic >= 2.0",
-    "click >= 8.1.7",
-]
-requires-python = "==3.11.6"
+name = "leapfrogai"
+description = "ChatGPT type capabilities for secure, local, air-gapped systems."
+authors = [{ name = "LeapfrogAI Team", email = "ai@defenseunicorns.com" }]
+
+# x-release-please-start-version
+version = "0.7.2"
+# x-release-please-end
+
 readme = "README.md"
+license = {file = "LICENSE"}
 
-[project.optional-dependencies]
-
-# NOTE @JPERRY: I have removed 'toml >= 0.10.2', 'pydantic >= 2.3.0', and 'pyyaml >= 6.0.1'
-# TODO @JPERRY: These deps are no in the core 'dependencies' list. Consider removing this list.
-api = [
-    "fastapi >= 0.109.1",
-    "uvicorn >= 0.23.2",
-    "pydantic",
-    "python-multipart >= 0.0.7", #indirect dep of FastAPI to receive form data for file uploads
-    "watchfiles >= 0.21.0",
-]
-
-# TODO @JPERRY: These deps are no in the core 'dependencies' list. Consider removing this list.
-sdk = [
-    "grpcio >= 1.56.0",
-    "grpcio-tools >= 1.62.1",
-    "protobuf >= 4.23.3",
-    "grpcio-reflection >=1.58.0",
-    "grpcio-health-checking >=1.58.0",
-    "confz >= 2.0.1",
-    "pydantic >= 2.0",
-    "click >= 8.1.7",
-]
-
-dev = [
+dependencies = [  # Dev dependencies needed for all of lfai
+    "openai",
     "pip-tools == 7.3.0",
     "pytest",
+    "httpx",
     "ruff",
-    "huggingface_hub", #TODO: @JPERRY Figure out the sub modules (cli & hf_transfer)
 ]
-llama = [
-    "llama-cpp-python == 0.2.28",
-]
-vllm = [
-    "pydantic >= 2.3.0",
-    "vllm==0.3.2",
-]
+requires-python = "~=3.11"
 
 [tool.pip-tools]
 generate-hashes = true
 
-[tool.setuptools.packages.find]
-where = ["src"]
-exclude = ["chart"]
-
-[tool.pytest.ini_options]
-addopts = ["--import-mode=importlib"]
-
 [tool.ruff]
 target-version = "py311"
 
+[tool.pytest.ini_options]
+addopts = ["--import-mode=importlib"]
 
 [build-system]
 requires = ["setuptools"]

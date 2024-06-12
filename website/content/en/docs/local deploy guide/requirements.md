@@ -1,7 +1,7 @@
 ---
 title: Requirements 
 type: docs
-weight: 3
+weight: 4
 ---
 
 Prior to deploying LeapfrogAI, ensure that the following tools, packages, and requirements are met and present in your environment.

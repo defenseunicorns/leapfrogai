@@ -1,0 +1,28 @@
+# yaml-language-server: $schema=https://raw.githubusercontent.com/defenseunicorns/zarf/main/zarf.schema.json
+
+kind: ZarfPackageConfig
+metadata:
+  name: llama-cpp-python
+  version: "###ZARF_PKG_TMPL_IMAGE_VERSION###"
+  description: >
+    llama-cpp-python model
+
+constants:
+  - name: IMAGE_VERSION
+    value: "###ZARF_PKG_TMPL_IMAGE_VERSION###"
+
+components:
+  - name: llama-cpp-python-model
+    required: true
+    charts:
+      - name: llama-cpp-python-model
+        namespace: leapfrogai
+        localPath: chart
+        releaseName: llama-cpp-python-model
+        # x-release-please-start-version
+        version: 0.7.2
+        # x-release-please-end
+        valuesFiles:
+          - "llama-cpp-python-values.yaml"
+    images:
+      - ghcr.io/defenseunicorns/leapfrogai/llama-cpp-python:###ZARF_PKG_TMPL_IMAGE_VERSION###

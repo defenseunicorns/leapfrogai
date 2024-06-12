@@ -1,0 +1,51 @@
+[project]
+name = "leapfrogai-sdk"
+description = "A tool for building gRPC-based model backends for LeapfrogAI"
+
+# x-release-please-start-version
+version = "0.7.2"
+# x-release-please-end
+
+dependencies = [
+    "grpcio >= 1.56.0",
+    "grpcio-tools >= 1.62.1",
+    "protobuf >= 4.23.3",
+    "grpcio-reflection >=1.58.0",
+    "grpcio-health-checking >=1.58.0",
+    "confz >= 2.0.1",
+    "pydantic >= 2.0",
+    "click >= 8.1.7",
+]
+requires-python = "~=3.11"
+
+[project.scripts]
+lfai-cli = "leapfrogai_sdk.cli:cli"
+
+[tool.pip-tools]
+generate-hashes = true
+
+[tool.setuptools.packages.find]
+where = ["../"]
+include = ["leapfrogai_sdk*"]
+exclude = [
+    "leapfrogai_sdk/proto",
+]
+namespaces = false
+
+[tool.pytest.ini_options]
+addopts = ["--import-mode=importlib"]
+
+[tool.ruff]
+target-version = "py311"
+# exclude generated grpc code
+exclude = [
+    "audio",
+    "chat",
+    "completion",
+    "embeddings",
+    "name",
+]
+
+[build-system]
+requires = ["setuptools"]
+build-backend = "setuptools.build_meta"

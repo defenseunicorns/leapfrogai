@@ -1,5 +1,11 @@
 name: lint
-on: [pull_request]
+on:
+  pull_request:
+    types:
+      - ready_for_review
+      - review_requested
+      - synchronize
+      - milestoned
 
 # Declare default permissions as read only.
 permissions: read-all
@@ -14,10 +20,21 @@ jobs:
       - name: Validate Lint
         uses: chartboost/ruff-action@e18ae971ccee1b2d7bbef113930f00c670b78da4 # v1.0.0
         with:
-          version: 0.2.2
+          version: 0.3.4
 
       - name: Validate Formatting
         uses: chartboost/ruff-action@e18ae971ccee1b2d7bbef113930f00c670b78da4 # v1.0.0
         with:
-          version: 0.2.2
+          version: 0.3.4
           args: format --check
+
+      # Javascript & Typescript Linting
+      - uses: actions/setup-node@60edb5dd545a775178f52524783378180af0d1f8 # v4.0.2
+        with:
+          node-version-file: 'src/leapfrogai_ui/package.json'
+
+      - name: Install UI Dependencies
+        run: npm --prefix src/leapfrogai_ui ci
+
+      - name: Run UI Linter
+        run: npm --prefix src/leapfrogai_ui run lint

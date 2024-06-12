@@ -1,0 +1,97 @@
+kind: ZarfPackageConfig
+metadata:
+  name: leapfrogai-ui
+  version: '###ZARF_PKG_TMPL_IMAGE_VERSION###'
+  architecture: amd64
+  description: >
+    A UI for LeapfrogAI
+
+constants:
+  - name: IMAGE_VERSION
+    value: '###ZARF_PKG_TMPL_IMAGE_VERSION###'
+
+variables:
+  - name: LEAPFROGAI_API_BASE_URL #LEAPFROGAI_API_BASE_URL
+    description: The base URL for the LeapfrogAI API
+    default: http://api.leapfrogai.svc.cluster.local:8080/openai/v1
+    prompt: true
+    sensitive: true
+  - name: LEAPFROGAI_API_KEY
+    description: The api key the LeapfrogAI API (can be left default for local development)
+    default: my-test-key
+    prompt: true
+    sensitive: true
+  - name: SUBDOMAIN
+    description: The subdomain for the application, Istio-ingress configuration
+    default: "ai"
+  - name: DOMAIN
+    description: The domain to use for the application, Istio-ingress configuration
+    default: "uds.dev"
+    prompt: true
+    sensitive: true
+  - name: MODEL
+    description: The default LLM model to use for chat and summarization
+    default: llama-cpp-python
+    prompt: true
+    sensitive: false
+  - name: SYSTEM_PROMPT
+    description: The default system prompt to use for the LLM
+    default: 'You are a helpful AI assistant created by Defense Unicorns.'
+    prompt: true
+    sensitive: false
+  - name: TEMPERATURE
+    description: The default temperature for the LLM
+    default: '0.1'
+    prompt: true
+    sensitive: false
+  - name: SUPABASE_URL
+    description: URL for supabase
+    prompt: true
+    default: https://supabase-kong.uds.dev
+    sensitive: false
+  - name: SUPABASE_ANON_KEY
+    default: ''
+    description: Public key for Supabase
+    prompt: true
+    sensitive: false
+  - name: DISABLE_KEYCLOAK
+    description: Disable keycloak true or false
+    default: 'true'
+    prompt: true
+    sensitive: false
+  - name: MESSAGE_LENGTH_LIMIT
+    description: The maximum length of a message to allow from the user to the backend
+    default: '10000'
+    prompt: true
+    sensitive: false
+
+components:
+  - name: leapfrogai-ui
+    required: true
+    charts:
+      - name: leapfrogai-ui
+        namespace: leapfrogai
+        localPath: chart
+        valuesFiles:
+          - 'chart/ui-values.yaml'
+        # x-release-please-start-version
+        version: 0.7.2
+        # x-release-please-end
+    images:
+      - ghcr.io/defenseunicorns/leapfrogai/leapfrogai-ui:###ZARF_PKG_TMPL_IMAGE_VERSION###
+      - ghcr.io/defenseunicorns/leapfrogai/ui-migrations:###ZARF_PKG_TMPL_IMAGE_VERSION###
+    actions:
+      onDeploy:
+        after:
+          - wait:
+              cluster:
+                kind: Job
+                name: ui-migrations-###ZARF_PKG_TMPL_IMAGE_VERSION###
+                namespace: leapfrogai
+                condition: complete
+          - wait:
+              cluster:
+                kind: Deployment
+                name: leapfrogai-ui
+                namespace: leapfrogai
+                condition: Available

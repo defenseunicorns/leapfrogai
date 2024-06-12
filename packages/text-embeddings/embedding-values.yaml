@@ -1,0 +1,6 @@
+image:
+  tag: "###ZARF_CONST_IMAGE_VERSION###"
+
+resources:
+  limits:
+    nvidia.com/gpu: "###ZARF_VAR_GPU_LIMIT###"

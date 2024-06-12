@@ -2,10 +2,13 @@ apiVersion: apps/v1
 kind: Deployment
 metadata:
   name: api-deployment
+  namespace: {{ .Release.Namespace }}
 spec:
   replicas: {{ .Values.api.replcias }}
   strategy:
-    type: Recreate
+    rollingUpdate:
+      maxUnavailable: 0
+    type: RollingUpdate
   selector:
     matchLabels:
       app: api
@@ -33,15 +36,25 @@ spec:
           - name: NAMESPACE
             value: leapfrogai
         - name: api-container
-          image: ghcr.io/defenseunicorns/leapfrogai/api:{{ .Values.image.lfaiAPITag }}
+          image: ghcr.io/defenseunicorns/leapfrogai/leapfrogai-api:{{ .Values.image.lfaiAPITag }}
           imagePullPolicy: Always
           env:
           - name: LFAI_CONFIG_PATH
             value: /config/
           - name: LFAI_CONFIG_FILENAME
             value: "*.toml"
+          - name: DEFAULT_EMBEDDINGS_MODEL
+            value: "{{ .Values.api.defaultEmbeddingsModel }}"
           - name: PORT
             value: "{{ .Values.api.port }}"
+          - name: SUPABASE_URL
+            value: "{{ .Values.supabase.url }}"
+          - name: SUPABASE_ANON_KEY
+            valueFrom:
+              secretKeyRef:
+                name: supabase-bootstrap-jwt
+                key: anon-key
+                optional: true
           ports:
             - containerPort: 8080
           livenessProbe:
@@ -66,7 +79,3 @@ spec:
       volumes:
       - name: api-model
         emptyDir: {}
-        
-
-    
-  

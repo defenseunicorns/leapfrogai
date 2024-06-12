@@ -1,0 +1,26 @@
+apiVersion: uds.dev/v1alpha1
+kind: Package
+metadata:
+  name: {{ .Values.package.name }}
+  namespace: {{ .Release.Namespace }}
+spec:
+  network:
+    expose:
+      - service: {{ .Values.package.name }}
+        podLabels:
+          app: {{ .Values.package.name }}
+        host: {{ .Values.package.subdomain }}
+        gateway: tenant
+        port: 3000
+
+    allow:
+      - direction: Ingress
+        remoteGenerated: Anywhere
+
+      - direction: Egress
+        remoteGenerated: Anywhere
+
+      - direction: Egress
+        podLabels:
+          app: {{ .Values.package.name }}
+        remoteGenerated: Anywhere
