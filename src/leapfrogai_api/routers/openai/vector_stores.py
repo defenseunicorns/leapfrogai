@@ -1,6 +1,8 @@
 """OpenAI Compliant Vector Store API Router."""
 
 import logging
+import traceback
+
 from fastapi import APIRouter, HTTPException, status
 from openai.types.beta import VectorStore, VectorStoreDeleted
 from openai.types.beta.vector_stores import VectorStoreFile, VectorStoreFileDeleted
@@ -20,18 +22,6 @@ from leapfrogai_api.routers.supabase_session import Session
 router = APIRouter(prefix="/openai/v1/vector_stores", tags=["openai/vector_stores"])
 
 
-@router.post("")
-async def create_vector_store(
-    request: CreateVectorStoreRequest,
-    session: Session,
-) -> VectorStore:
-    """Create a vector store."""
-
-    indexing_service = IndexingService(db=session)
-    new_vector_store = await indexing_service.create_new_vector_store(request)
-    return new_vector_store
-
-
 @router.get("")
 async def list_vector_stores(
     session: Session,
@@ -47,15 +37,23 @@ async def list_vector_stores(
     )
 
 
-@router.get("/{vector_store_id}")
-async def retrieve_vector_store(
-    vector_store_id: str,
+@router.post("")
+async def create_vector_store(
+    request: CreateVectorStoreRequest,
     session: Session,
-) -> VectorStore | None:
-    """Retrieve a vector store."""
+) -> VectorStore:
+    """Create a vector store."""
 
-    crud_vector_store = CRUDVectorStore(db=session)
-    return await crud_vector_store.get(filters=FilterVectorStore(id=vector_store_id))
+    indexing_service = IndexingService(db=session)
+    try:
+        new_vector_store = await indexing_service.create_new_vector_store(request)
+    except Exception as exc:
+        traceback.print_exc()
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail="Unable to create vector store",
+        ) from exc
+    return new_vector_store
 
 
 @router.post("/{vector_store_id}")
@@ -67,10 +65,30 @@ async def modify_vector_store(
     """Modify a vector store."""
 
     indexing_service = IndexingService(db=session)
-    modified_vector_store = await indexing_service.modify_existing_vector_store(
-        vector_store_id=vector_store_id, request=request
-    )
+    try:
+        modified_vector_store = await indexing_service.modify_existing_vector_store(
+            vector_store_id=vector_store_id, request=request
+        )
+    except HTTPException as exc:
+        raise exc
+    except Exception as exc:
+        traceback.print_exc()
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail="Unable to modify vector store",
+        ) from exc
     return modified_vector_store
+
+
+@router.get("/{vector_store_id}")
+async def retrieve_vector_store(
+    vector_store_id: str,
+    session: Session,
+) -> VectorStore | None:
+    """Retrieve a vector store."""
+
+    crud_vector_store = CRUDVectorStore(db=session)
+    return await crud_vector_store.get(filters=FilterVectorStore(id=vector_store_id))
 
 
 @router.delete("/{vector_store_id}")

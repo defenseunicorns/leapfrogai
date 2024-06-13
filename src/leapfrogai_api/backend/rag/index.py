@@ -3,7 +3,6 @@
 import logging
 import tempfile
 import time
-import traceback
 
 
 from fastapi import HTTPException, UploadFile, status
@@ -137,6 +136,25 @@ class IndexingService:
             filters=FilterVectorStoreFile(vector_store_id=vector_store_id, id=file_id)
         )
 
+    async def index_files(
+        self, vector_store_id: str, file_ids: list[str]
+    ) -> list[VectorStoreFile]:
+        """Index a list of files into a vector store."""
+        responses = []
+        for file_id in file_ids:
+            try:
+                response = await self.index_file(
+                    vector_store_id=vector_store_id, file_id=file_id
+                )
+                responses.append(response)
+            except FileAlreadyIndexedError:
+                logging.info("File %s already exists and cannot be re-indexed", file_id)
+                continue
+            except Exception as exc:
+                raise exc
+
+        return responses
+
     async def create_new_vector_store(
         self, request: CreateVectorStoreRequest
     ) -> VectorStore:
@@ -162,36 +180,41 @@ class IndexingService:
             expires_after=expires_after,
             expires_at=expires_at,
         )
+        new_vector_store = await crud_vector_store.create(object_=vector_store)
+        if request.file_ids != []:
+            responses = await self.index_files(new_vector_store.id, request.file_ids)
+
+            for response in responses:
+                if response.status == VectorStoreFileStatus.COMPLETED.value:
+                    new_vector_store.file_counts.completed += 1
+                elif response.status == VectorStoreFileStatus.FAILED.value:
+                    new_vector_store.file_counts.failed += 1
+                elif response.status == VectorStoreFileStatus.IN_PROGRESS.value:
+                    new_vector_store.file_counts.in_progress += 1
+                elif response.status == VectorStoreFileStatus.CANCELLED.value:
+                    new_vector_store.file_counts.cancelled += 1
+                new_vector_store.file_counts.total += 1
+
+        new_vector_store.status = VectorStoreStatus.COMPLETED.value
+
+        return await crud_vector_store.update(
+            id_=new_vector_store.id,
+            object_=new_vector_store,
+        )
+
+    async def file_ids_are_valid(self, file_ids: str | list[str]) -> bool:
+        crud_file_object = CRUDFileObject(db=self.db)
+
+        if not isinstance(file_ids, list):
+            file_ids = [file_ids]
+
         try:
-            new_vector_store = await crud_vector_store.create(object_=vector_store)
-            if request.file_ids != []:
-                for file_id in request.file_ids:
-                    response = await self.index_file(
-                        vector_store_id=new_vector_store.id, file_id=file_id
-                    )
+            for file_id in file_ids:
+                await crud_file_object.get(filters=FilterFileObject(id=file_id))
+        except Exception:
+            return False
 
-                    if response.status == VectorStoreFileStatus.COMPLETED.value:
-                        new_vector_store.file_counts.completed += 1
-                    elif response.status == VectorStoreFileStatus.FAILED.value:
-                        new_vector_store.file_counts.failed += 1
-                    elif response.status == VectorStoreFileStatus.IN_PROGRESS.value:
-                        new_vector_store.file_counts.in_progress += 1
-                    elif response.status == VectorStoreFileStatus.CANCELLED.value:
-                        new_vector_store.file_counts.cancelled += 1
-                    new_vector_store.file_counts.total += 1
-
-            new_vector_store.status = VectorStoreStatus.COMPLETED.value
-
-            return await crud_vector_store.update(
-                id_=new_vector_store.id,
-                object_=new_vector_store,
-            )
-        except Exception as exc:
-            traceback.print_exc()
-            raise HTTPException(
-                status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-                detail="Unable to create vector store",
-            ) from exc
+        return True
 
     async def modify_existing_vector_store(
         self,
@@ -238,19 +261,11 @@ class IndexingService:
 
         try:
             if request.file_ids:
-                for file_id in request.file_ids:
-                    try:
-                        response = await self.index_file(
-                            vector_store_id=vector_store_id, file_id=file_id
-                        )
-                    except FileAlreadyIndexedError:
-                        logging.info(
-                            "File %s already exists and cannot be re-indexed", file_id
-                        )
-                        continue
-                    except Exception as exc:
-                        raise exc
+                responses = await self.index_files(
+                    new_vector_store.id, request.file_ids
+                )
 
+                for response in responses:
                     if response.status == VectorStoreFileStatus.COMPLETED.value:
                         new_vector_store.file_counts.completed += 1
                     elif response.status == VectorStoreFileStatus.FAILED.value:

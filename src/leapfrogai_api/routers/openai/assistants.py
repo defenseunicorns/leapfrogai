@@ -243,6 +243,13 @@ async def modify_assistant(
             )
         elif vector_stores_len == 1:
             logging.debug("Creating vector store for new assistant")
+            indexing_service = IndexingService(db=session)
+
+            if not indexing_service.file_ids_are_valid(vector_stores[0]["file_ids"]):
+                raise HTTPException(
+                    status_code=status.HTTP_400_BAD_REQUEST,
+                    detail="Invalid file ids attached to assistants request",
+                )
 
             vector_store_request = CreateVectorStoreRequest(
                 file_ids=vector_stores[0]["file_ids"],
@@ -251,7 +258,6 @@ async def modify_assistant(
                 metadata={},
             )
 
-            indexing_service = IndexingService(db=session)
             vector_store = await indexing_service.create_new_vector_store(
                 vector_store_request
             )
