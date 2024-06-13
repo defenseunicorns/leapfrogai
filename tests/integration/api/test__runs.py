@@ -3,23 +3,43 @@
 import os
 
 import pytest
-from fastapi import Response, status
+from fastapi import status
 from fastapi.testclient import TestClient
 from openai.types.beta import Assistant, Thread
+from openai.types.beta.thread import ToolResources
 from openai.types.beta.threads import Message, Text, TextContentBlock
-from leapfrogai_api.backend.types import CreateAssistantRequest
-from leapfrogai_api.routers.openai.assistants import \
-    router as assistants_router
-from leapfrogai_api.routers.openai.requests.create_message_request import \
-    CreateMessageRequest
-from leapfrogai_api.routers.openai.requests.create_thread_request import \
-    CreateThreadRequest
+from leapfrogai_api.backend.types import (
+    ChatCompletionRequest,
+    ChatCompletionResponse,
+    ChatMessage,
+    CreateAssistantRequest,
+)
+from leapfrogai_api.main import app
+from leapfrogai_api.routers.openai.assistants import router as assistants_router
+from leapfrogai_api.routers.openai.chat import router as chat_router
+from leapfrogai_api.routers.openai.requests.create_message_request import (
+    CreateMessageRequest,
+)
+from leapfrogai_api.routers.openai.requests.create_thread_request import (
+    CreateThreadRequest,
+)
+from leapfrogai_api.routers.openai.requests.thread_run_create_params_request import (
+    ThreadRunCreateParamsRequestBaseRequest,
+)
 from leapfrogai_api.routers.openai.threads import router as threads_router
 
-CHAT_MODEL="llama-cpp-python"
+CHAT_MODEL = "test-chat"
+
+LFAI_CONFIG_FILENAME = os.environ["LFAI_CONFIG_FILENAME"] = "test-config.yaml"
+LFAI_CONFIG_PATH = os.environ["LFAI_CONFIG_PATH"] = os.path.join(
+    os.path.dirname(__file__), "fixtures"
+)
+LFAI_CONFIG_FILEPATH = os.path.join(LFAI_CONFIG_PATH, LFAI_CONFIG_FILENAME)
+
 
 class MissingEnvironmentVariable(Exception):
     pass
+
 
 headers: dict[str, str] = {}
 
@@ -34,6 +54,7 @@ except KeyError as exc:
 
 assistant_client = TestClient(assistants_router, headers=headers)
 threads_client = TestClient(threads_router, headers=headers)
+chat_router = TestClient(chat_router, headers=headers)
 
 starting_assistant = Assistant(
     id="",
@@ -51,13 +72,10 @@ starting_assistant = Assistant(
     response_format="auto",
 )
 
-assistant_response: Response
 
-@pytest.fixture(scope="session", autouse=True)
+@pytest.fixture(scope="session")
 def create_assistant():
     """Create an assistant for testing. Requires a running Supabase instance."""
-
-    global assistant_response  # pylint: disable=global-statement
 
     request = CreateAssistantRequest(
         model=starting_assistant.model,
@@ -72,9 +90,8 @@ def create_assistant():
         response_format=starting_assistant.response_format,
     )
 
-    assistant_response = assistant_client.post(
-        url="/openai/v1/assistants", json=request.model_dump()
-    )
+    return assistant_client.post(url="/openai/v1/assistants", json=request.model_dump())
+
 
 # Create a thread with the previously created file and fake embeddings
 @pytest.fixture(scope="session")
@@ -88,6 +105,7 @@ def create_thread():
     )
 
     return threads_client.post("/openai/v1/threads", json=request.model_dump())
+
 
 @pytest.fixture(scope="session")
 def create_message(create_thread):
@@ -109,17 +127,20 @@ def create_message(create_thread):
 
     return {"message": message, "thread_id": create_thread.json()["id"]}
 
-def test_create():
+
+def test_create(create_assistant):
     """Test creating an assistant. Requires a running Supabase instance."""
-    assert assistant_response.status_code is status.HTTP_200_OK
+    assert create_assistant.status_code is status.HTTP_200_OK
     assert Assistant.model_validate(
-        assistant_response.json()
+        create_assistant.json()
     ), "Create should create an Assistant."
+
 
 def test_create_thread(create_thread):
     """Test creating a thread. Requires a running Supabase instance."""
     assert create_thread.status_code == status.HTTP_200_OK
     assert Thread.model_validate(create_thread.json()), "Create should create a Thread."
+
 
 def test_create_message(create_message):
     """Test creating a message. Requires a running Supabase instance."""
@@ -128,4 +149,61 @@ def test_create_message(create_message):
         create_message["message"].json()
     ), "Create should create a Message."
 
+
+def test_config_load():
+    """Test that the config is loaded correctly."""
+    with TestClient(app) as client:
+        response = client.get("/models")
+
+        assert response.status_code == 200
+        assert response.json() == {
+            "config_sources": {"test-config.yaml": [CHAT_MODEL]},
+            "models": {CHAT_MODEL: {"backend": "localhost:50051", "name": CHAT_MODEL}},
+        }
+
+
+def test_chat():
+    """Test chatting with an assistant. Requires a running Supabase instance."""
+
+    with TestClient(app, headers=headers) as client:
+        request = ChatCompletionRequest(
+            model=CHAT_MODEL, messages=[ChatMessage(role="user", content="test")]
+        )
+
+        response = client.post("/openai/v1/chat/completions", json=request.model_dump())
+
+        print(response)
+
+        assert response.status_code == status.HTTP_200_OK
+        assert ChatCompletionResponse.model_validate(response.json())
+
+
 # TODO: Create a run and test the run endpoints
+
+
+def test_run(create_assistant):
+    """Test running an assistant. Requires a running Supabase instance."""
+
+    with TestClient(app, headers=headers) as client:
+        assistant_id = create_assistant.json()["id"]
+
+        blah2 = ThreadRunCreateParamsRequestBaseRequest(
+            assistant_id=assistant_id,
+            instructions="Be happy!",
+            additional_instructions="Also be sad!",
+            tool_resources=ToolResources(file_search={}),
+            metadata={},
+            stream=False,
+        )
+
+        # blah = dict(
+        #     assistant_id=assistant_id,
+        #     instructions="Be happy!",
+        #     additional_instructions="Also be sad!",
+        #     metadata={},
+        #     stream=False,
+        # )
+
+        response = client.post("/openai/v1/threads/runs", json=blah2.model_dump())
+
+        assert response.status_code == status.HTTP_200_OK
