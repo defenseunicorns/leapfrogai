@@ -3,10 +3,6 @@
 from typing import Annotated, AsyncGenerator, Any
 
 from fastapi import HTTPException, APIRouter, Depends
-from fastapi.exception_handlers import (
-    request_validation_exception_handler,
-)
-from fastapi.exceptions import RequestValidationError
 from fastapi.security import HTTPBearer
 from openai.types.beta.threads import TextContentBlockParam
 
@@ -19,7 +15,6 @@ from leapfrogai_api.backend.grpc_client import (
 from leapfrogai_api.backend.helpers import grpc_chat_role
 from leapfrogai_api.backend.types import ChatCompletionRequest
 from leapfrogai_api.backend.validators import TextContentBlockParamValidator
-from leapfrogai_api.main import app
 from leapfrogai_api.routers.supabase_session import Session
 from leapfrogai_api.utils import get_model_config
 from leapfrogai_api.utils.config import Config
@@ -29,12 +24,6 @@ from leapfrogai_sdk.chat.chat_pb2 import (
 
 router = APIRouter(prefix="/openai/v1/chat", tags=["openai/chat"])
 security = HTTPBearer()
-
-
-@app.exception_handler(RequestValidationError)
-async def validation_exception_handler(request, exc):
-    print(f"OMG! The client sent invalid data!: {exc}")
-    return await request_validation_exception_handler(request, exc)
 
 
 @router.post("/completions")
