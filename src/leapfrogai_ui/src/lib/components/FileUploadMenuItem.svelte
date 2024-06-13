@@ -7,6 +7,7 @@
   import { superForm } from 'sveltekit-superforms';
   import { yup } from 'sveltekit-superforms/adapters';
   import { filesSchema } from '$schemas/files';
+  import type { ActionResult } from '@sveltejs/kit';
 
   export let multiple = false;
   export let files: File[] = [];
@@ -52,6 +53,32 @@
     }
   };
 
+  const handleResult = async (result: ActionResult) => {
+    if (result.type === 'success') {
+      const idsToSelect: string[] = [];
+      const uploadedFiles = result.data?.uploadedFiles;
+      filesStore.updateWithUploadResults(result.data?.uploadedFiles);
+      for (const uploadedFile of uploadedFiles) {
+        idsToSelect.push(uploadedFile.id);
+        if (uploadedFile.status === 'error') {
+          toastStore.addToast({
+            kind: 'error',
+            title: 'Upload Failed',
+            subtitle: `${uploadedFile.filename} upload failed.`
+          });
+        } else {
+          toastStore.addToast({
+            kind: 'success',
+            title: 'Uploaded Successfully',
+            subtitle: `${uploadedFile.filename} uploaded successfully.`
+          });
+        }
+      }
+      filesStore.addSelectedAssistantFileIds(idsToSelect);
+    }
+    filesStore.setUploading(false);
+  };
+
   const { enhance, submit } = superForm(filesForm, {
     validators: yup(filesSchema),
     invalidateAll: false,
@@ -64,31 +91,7 @@
         subtitle: `Please try again or contact support`
       });
     },
-    onResult: async ({ result }) => {
-      if (result.type === 'success') {
-        const idsToSelect: string[] = [];
-        const uploadedFiles = result.data?.uploadedFiles;
-        filesStore.updateWithUploadResults(result.data?.uploadedFiles);
-        for (const uploadedFile of uploadedFiles) {
-          idsToSelect.push(uploadedFile.id);
-          if (uploadedFile.status === 'error') {
-            toastStore.addToast({
-              kind: 'error',
-              title: 'Upload Failed',
-              subtitle: `${uploadedFile.filename} upload failed.`
-            });
-          } else {
-            toastStore.addToast({
-              kind: 'success',
-              title: 'Uploaded Successfully',
-              subtitle: `${uploadedFile.filename} uploaded successfully.`
-            });
-          }
-        }
-        filesStore.addSelectedAssistantFileIds(idsToSelect);
-      }
-      filesStore.setUploading(false);
-    }
+    onResult: async ({ result }) => handleResult(result)
   });
 </script>
 

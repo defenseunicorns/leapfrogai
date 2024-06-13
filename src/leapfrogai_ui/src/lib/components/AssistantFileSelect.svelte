@@ -7,6 +7,10 @@
 
   export let filesForm: FilesForm;
 
+  $: filteredStoreFiles = $filesStore.files
+          .filter((f) => $filesStore.selectedAssistantFileIds.includes(f.id))
+          .sort((a, b) => a.filename.localeCompare(b.filename))
+
   // Files with errors remain selected for 1.5 seconds until the files are re-fetched do show the error state
   // If the assistant is saved before they are re-fetched, we need to ensure any files with errors are removed
   // from the list of ids being saved
@@ -28,9 +32,7 @@
 </div>
 
 <div class="file-item-list">
-  {#each $filesStore.files
-    .filter((f) => $filesStore.selectedAssistantFileIds.includes(f.id))
-    .sort((a, b) => a.filename.localeCompare(b.filename)) as file}
+  {#each filteredStoreFiles as file}
     <div transition:fade={{ duration: 70 }}>
       <FileUploaderItem
         data-testid={`${file.filename}-${file.status}-uploader-item`}
