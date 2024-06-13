@@ -22,6 +22,9 @@ variables:
     default: "uds.dev"
   - name: DEFAULT_EMBEDDINGS_MODEL
     default: "text-embeddings"
+  - name: SUPABASE_CLUSTER_URL
+    description: The URL for Supabase for requests inside the cluster
+    default: http://supabase-kong.leapfrogai.svc.cluster.local:80
 
 components:
   - name: leapfrogai

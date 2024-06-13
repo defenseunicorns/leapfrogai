@@ -3,7 +3,7 @@ import traceback
 from fastapi import HTTPException, status
 from openai.types.beta import Thread
 from openai.types.beta.thread import ToolResources as BetaThreadToolResources
-from openai.types.beta.threads import Message, MessageDeleted, MessageContent
+from openai.types.beta.threads import Message, MessageDeleted
 from pydantic import BaseModel, Field
 from leapfrogai_api.data.crud_message import CRUDMessage
 from leapfrogai_api.data.crud_thread import CRUDThread
@@ -17,7 +17,7 @@ class CreateThreadRequest(BaseModel):
     tool_resources: BetaThreadToolResources | None = Field(
         default=None, examples=[None]
     )
-    metadata: dict | None = Field(default={}, examples=[{}])
+    metadata: dict | None = Field(default=None, examples=[{}])
 
     async def create_thread(self, session):
         crud_thread = CRUDThread(db=session)
@@ -36,14 +36,14 @@ class CreateThreadRequest(BaseModel):
 
         try:
             if self.messages:
-                new_messages = [
-                    await self.create_message(
-                        message.content,
-                        new_thread.id,
-                        session,
+                # TODO: DON'T pylint ignore here
+                for message in self.messages:  # pylint: disable=not-an-iterable
+                    new_messages.append(
+                        await self.create_message(
+                            new_thread.id,
+                            session,
+                        )
                     )
-                    for message in self.messages
-                ]
         except Exception as exc:
             for message in new_messages:
                 """Clean up any messages added prior to the error"""
@@ -52,12 +52,12 @@ class CreateThreadRequest(BaseModel):
                 )
             raise exc
 
-    async def create_message(
-        self, message_content: list[MessageContent], thread_id: str, session: Session
-    ) -> Message:
+    async def create_message(self, thread_id: str, session: Session) -> Message:
         """Create a message."""
         try:
             crud_message = CRUDMessage(db=session)
+
+            message_content = await self.get_message_content()
 
             message = Message(
                 id="",  # Leave blank to have Postgres generate a UUID

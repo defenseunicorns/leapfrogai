@@ -1,9 +1,8 @@
-"""Converters for the LeapfrogAI API"""
-
+import logging
+import traceback
 from typing import Iterable
 from openai.types.beta import AssistantStreamEvent
 from openai.types.beta.assistant_stream_event import ThreadMessageDelta
-from openai.types.beta.threads.file_citation_annotation import FileCitation
 from openai.types.beta.threads import (
     MessageContentPartParam,
     MessageContent,
@@ -14,8 +13,10 @@ from openai.types.beta.threads import (
     MessageDelta,
     TextDeltaBlock,
     TextDelta,
-    FileCitationAnnotation,
 )
+from pydantic_core import ValidationError
+
+from leapfrogai_api.backend.validators import TextContentBlockParamValidator
 
 
 def from_assistant_stream_event_to_str(stream_event: AssistantStreamEvent):
@@ -35,8 +36,13 @@ def from_content_param_to_content(
         result: str = ""
 
         for message_content_part in thread_message_content:
-            if isinstance(text := message_content_part.get("text"), str):
-                result += text
+            try:
+                if TextContentBlockParamValidator.validate_python(message_content_part):
+                    result += message_content_part.get("text")
+            except ValidationError:
+                traceback.print_exc()
+                logging.error("Failed to validate message content part")
+                continue
 
         return TextContentBlock(
             text=Text(annotations=[], value=result),
@@ -44,26 +50,9 @@ def from_content_param_to_content(
         )
 
 
-def from_text_to_message(text: str, file_ids: list[str]) -> Message:
-    all_file_ids: str = ""
-
-    for file_id in file_ids:
-        all_file_ids += f" [{file_id}]"
-
+def from_text_to_message(text: str) -> Message:
     message_content: TextContentBlock = TextContentBlock(
-        text=Text(
-            annotations=[
-                FileCitationAnnotation(
-                    text=f"[{file_id}]",
-                    file_citation=FileCitation(file_id=file_id, quote=""),
-                    start_index=0,
-                    end_index=0,
-                    type="file_citation",
-                )
-                for file_id in file_ids
-            ],
-            value=text + all_file_ids,
-        ),
+        text=Text(annotations=[], value=text),
         type="text",
     )
 
@@ -75,7 +64,6 @@ def from_text_to_message(text: str, file_ids: list[str]) -> Message:
         thread_id="",
         content=[message_content],
         role="assistant",
-        metadata=None,
     )
 
     return new_message

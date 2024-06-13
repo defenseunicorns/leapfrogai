@@ -16,10 +16,6 @@ from openai.types.beta.assistant import (
 )
 from openai.types.beta.assistant_tool import FileSearchTool
 from openai.types.beta.thread import ToolResources as BetaThreadToolResources
-from openai.types.beta.thread_create_params import (
-    ToolResourcesFileSearchVectorStoreChunkingStrategy,
-    ToolResourcesFileSearchVectorStoreChunkingStrategyAuto,
-)
 from openai.types.beta.threads.text_content_block_param import TextContentBlockParam
 from openai.types.beta.vector_store import ExpiresAfter
 from pydantic import BaseModel, Field
@@ -111,7 +107,7 @@ class ChatMessage(BaseModel):
     """Message object for chat completion."""
 
     role: Literal["user", "assistant", "system", "function"]
-    content: str | list[TextContentBlockParam]
+    content: str | TextContentBlockParam
 
 
 class ChatDelta(BaseModel):
@@ -268,29 +264,18 @@ class ListFilesResponse(BaseModel):
 class CreateAssistantRequest(BaseModel):
     """Request object for creating an assistant."""
 
-    model: str = Field(default="llama-cpp-python", examples=["llama-cpp-python"])
-    name: str | None = Field(default=None, examples=["Froggy Assistant"])
-    description: str | None = Field(default=None, examples=["A helpful assistant."])
-    instructions: str | None = Field(
-        default=None, examples=["You are a helpful assistant."]
+    model: str = "llama-cpp-python"
+    name: str | None = "Froggy Assistant"
+    description: str | None = "A helpful assistant."
+    instructions: str | None = "You are a helpful assistant."
+    tools: list[AssistantTool] | None = [FileSearchTool(type="file_search")]
+    tool_resources: BetaAssistantToolResources | None = BetaAssistantToolResources(
+        file_search=ToolResourcesFileSearch(vector_store_ids=[])
     )
-    tools: list[AssistantTool] | None = Field(
-        default=None, examples=[[FileSearchTool(type="file_search")]]
-    )
-    tool_resources: BetaAssistantToolResources | None = Field(
-        default=None,
-        examples=[
-            BetaAssistantToolResources(
-                file_search=ToolResourcesFileSearch(vector_store_ids=[])
-            )
-        ],
-    )
-    metadata: dict | None = Field(default={}, examples=[{}])
-    temperature: float | None = Field(default=None, examples=[1.0])
-    top_p: float | None = Field(default=None, examples=[1.0])
-    response_format: Literal["auto"] | None = Field(
-        default=None, examples=["auto"]
-    )  # This is all we support right now
+    metadata: dict | None = Field(default=None, examples=[{}])
+    temperature: float | None = 1.0
+    top_p: float | None = 1.0
+    response_format: Literal["auto"] | None = "auto"  # This is all we support right now
 
 
 class ModifyAssistantRequest(CreateAssistantRequest):
@@ -411,7 +396,7 @@ class ListVectorStoresResponse(BaseModel):
 class ModifyRunRequest(BaseModel):
     """Request object for modifying a run."""
 
-    metadata: dict[str, str] | None = Field(default=None, examples=[{}])
+    metadata: dict | None = Field(default=None, examples=[{}])
 
 
 class ModifyThreadRequest(BaseModel):

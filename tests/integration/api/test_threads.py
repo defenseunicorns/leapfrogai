@@ -9,6 +9,7 @@ from openai.types.beta.thread import ToolResourcesCodeInterpreter, ToolResources
 from openai.types.beta.threads import TextContentBlock, Text
 from leapfrogai_api.backend.types import (
     ModifyThreadRequest,
+    ModifyMessageRequest,
 )
 from leapfrogai_api.routers.openai.requests.create_message_request import (
     CreateMessageRequest,
@@ -16,7 +17,8 @@ from leapfrogai_api.routers.openai.requests.create_message_request import (
 from leapfrogai_api.routers.openai.requests.create_thread_request import (
     CreateThreadRequest,
 )
-from leapfrogai_api.routers.openai.threads import router
+from leapfrogai_api.routers.openai.threads import router as threads_router
+from leapfrogai_api.routers.openai.files import router as files_router
 
 
 class MissingEnvironmentVariable(Exception):
@@ -155,11 +157,27 @@ def test_delete_twice_thread(app_client, create_thread):
     ), "Should not be able to delete twice."
 
 
+def test_delete_twice_message(create_message):
+    """Test deleting a message twice. Requires a running Supabase instance."""
+    message_id = create_message["message"].json()["id"]
+    thread_id = create_message["thread_id"]
+    delete_response = threads_client.delete(
+        f"/openai/v1/threads/{thread_id}/messages/{message_id}"
+    )
+    assert delete_response.status_code == status.HTTP_200_OK
+    assert MessageDeleted.model_validate(
+        delete_response.json()
+    ), "Should return a MessageDeleted object."
+    assert (
+        delete_response.json()["deleted"] is False
+    ), "Should not be able to delete twice."
+
+
 @pytest.mark.xfail
-def test_get_nonexistent_thread(app_client, create_thread):
+def test_get_nonexistent_thread(create_thread):
     """Test getting a nonexistent thread. Requires a running Supabase instance."""
     thread_id = create_thread.json()["id"]
-    fail_response = app_client.get(f"/openai/v1/threads/{thread_id}")
+    fail_response = threads_client.get(f"/openai/v1/threads/{thread_id}")
     assert fail_response.status_code == status.HTTP_404_NOT_FOUND
     assert (
         fail_response.json().get("detail") == "Thread not found"

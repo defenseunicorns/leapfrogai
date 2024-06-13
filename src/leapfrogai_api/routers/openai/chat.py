@@ -1,7 +1,6 @@
 """OpenAI Chat API router."""
 
-from typing import Annotated, AsyncGenerator, Any
-
+from typing import Annotated, AsyncGenerator, Any, cast
 from fastapi import HTTPException, APIRouter, Depends
 from fastapi.security import HTTPBearer
 
@@ -12,13 +11,16 @@ from leapfrogai_api.backend.grpc_client import (
     stream_chat_completion_raw,
 )
 from leapfrogai_api.backend.helpers import grpc_chat_role
-from leapfrogai_api.backend.types import ChatCompletionRequest
+from leapfrogai_api.backend.validators import TextContentBlockParamValidator
 from leapfrogai_api.routers.supabase_session import Session
 from leapfrogai_api.utils import get_model_config
 from leapfrogai_api.utils.config import Config
+from leapfrogai_api.backend.types import ChatCompletionRequest
 from leapfrogai_sdk.chat.chat_pb2 import (
     ChatCompletionResponse as ProtobufChatCompletionResponse,
 )
+from openai.types.beta.threads import TextContentBlockParam
+import leapfrogai_sdk as lfai
 
 router = APIRouter(prefix="/openai/v1/chat", tags=["openai/chat"])
 security = HTTPBearer()
@@ -41,14 +43,10 @@ async def chat_complete(
 
     chat_items: list[lfai.ChatItem] = []
     for m in req.messages:
-        content: str = ""
-        if isinstance(m.content, str):
-            content = m.content
+        if TextContentBlockParamValidator.validate_python(m.content):
+            content: str = cast(m.content, TextContentBlockParam).text
         else:
-            message_content: str = ""
-            for part in m.content:
-                message_content += part.get("text")
-            content = message_content
+            content: str = m.content
 
         chat_items.append(lfai.ChatItem(role=grpc_chat_role(m.role), content=content))
     request = lfai.ChatCompletionRequest(
