@@ -178,16 +178,13 @@ def test_chat():
         assert ChatCompletionResponse.model_validate(response.json())
 
 
-# TODO: Create a run and test the run endpoints
-
-
 def test_run(create_assistant):
     """Test running an assistant. Requires a running Supabase instance."""
 
     with TestClient(app, headers=headers) as client:
         assistant_id = create_assistant.json()["id"]
 
-        blah2 = ThreadRunCreateParamsRequestBaseRequest(
+        request = ThreadRunCreateParamsRequestBaseRequest(
             assistant_id=assistant_id,
             instructions="Be happy!",
             additional_instructions="Also be sad!",
@@ -196,14 +193,6 @@ def test_run(create_assistant):
             stream=False,
         )
 
-        # blah = dict(
-        #     assistant_id=assistant_id,
-        #     instructions="Be happy!",
-        #     additional_instructions="Also be sad!",
-        #     metadata={},
-        #     stream=False,
-        # )
-
-        response = client.post("/openai/v1/threads/runs", json=blah2.model_dump())
+        response = client.post("/openai/v1/threads/runs", json=request.model_dump())
 
         assert response.status_code == status.HTTP_200_OK
