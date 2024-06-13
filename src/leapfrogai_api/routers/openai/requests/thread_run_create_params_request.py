@@ -21,6 +21,7 @@ from openai.types.beta.threads import MessageContent, Message, Run
 from pydantic import Field
 from starlette.responses import StreamingResponse
 
+from leapfrogai_api.routers.openai.requests.create_message_request import CreateMessageRequest
 from leapfrogai_api.routers.openai.requests.run_create_params_request_base import (
     RunCreateParamsRequestBase,
 )
@@ -89,8 +90,7 @@ class ThreadRunCreateParamsRequestBaseRequest(RunCreateParamsRequestBase):
                         message.get("content")
                     )
 
-                    thread_request.messages.append(
-                        Message(
+                    new_message: Message = Message(
                             id="",
                             created_at=0,
                             object="thread.message",
@@ -101,6 +101,9 @@ class ThreadRunCreateParamsRequestBaseRequest(RunCreateParamsRequestBase):
                             attachments=message.get("attachments"),
                             metadata=message.get("metadata"),
                         )
+
+                    thread_request.messages.append(
+                        new_message
                     )
                 except ValueError as exc:
                     logging.error(f"\t{exc}")
@@ -111,6 +114,16 @@ class ThreadRunCreateParamsRequestBaseRequest(RunCreateParamsRequestBase):
         await self.update_with_assistant_data(session)
         new_thread_request: CreateThreadRequest = await self.create_thread_request()
         new_thread = await new_thread_request.create_thread(session)
+
+        for message in new_thread_request.messages:
+            create_message_request: CreateMessageRequest = CreateMessageRequest(
+                role=message.role,
+                content=message.content,
+                attachments=message.attachments,
+                metadata=message.metadata
+            )
+            await create_message_request.create_message(new_thread.id, session)
+
         crud_run = CRUDRun(db=session)
         create_params: RunCreateParamsRequestBase = RunCreateParamsRequestBase(
             **self.__dict__
