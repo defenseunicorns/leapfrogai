@@ -30,11 +30,13 @@ export async function POST({ request, locals: { safeGetSession } }) {
     for (const assistant of myAssistants) {
       let assistantAffected = false;
       const vectorStoreIds = assistant.tool_resources?.file_search?.vector_store_ids;
+
       if (vectorStoreIds && vectorStoreIds.length > 0) {
         for (const vectorStoreId of vectorStoreIds) {
           if (assistantAffected) break; // only add assistant once if affected
           const vectorStoreFiles = await openai.beta.vectorStores.files.list(vectorStoreId);
           const vectorStoreFileIds = vectorStoreFiles.data.map((file) => file.id);
+
           for (const fileId of requestData.fileIds) {
             if (vectorStoreFileIds.includes(fileId)) {
               affectedAssistants.push(assistant);

@@ -25,8 +25,12 @@ export const filesSchema = object({
         return true;
       })
   )
-});
+})
+  .noUnknown(true)
+  .strict();
 
 export const filesCheckSchema = object({
   fileIds: array().of(string())
-});
+})
+  .noUnknown(true)
+  .strict();
