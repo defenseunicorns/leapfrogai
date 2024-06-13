@@ -8,6 +8,7 @@ import { openai } from '$lib/server/constants';
 import type { LFAssistant } from '$lib/types/assistants';
 import { getAssistantAvatarUrl } from '$helpers/assistants';
 import type { AssistantCreateParams } from 'openai/resources/beta/assistants';
+import { filesSchema } from '$schemas/files';
 
 export const load = async ({ fetch, depends }) => {
   depends('lf:files');
@@ -26,7 +27,9 @@ export const load = async ({ fetch, depends }) => {
     { errors: false } // turn off errors for new assistant b/c providing default data turns them on
   );
 
-  return { title: 'LeapfrogAI - New Assistant', form, assistants, files };
+  const filesForm = await superValidate({}, yup(filesSchema), { errors: false });
+
+  return { title: 'LeapfrogAI - New Assistant', form, filesForm, assistants, files };
 };
 
 export const actions = {

@@ -8,8 +8,12 @@ import { openai } from '$lib/server/constants';
 import type { EditAssistantInput, LFAssistant } from '$lib/types/assistants';
 import { getAssistantAvatarUrl } from '$helpers/assistants';
 import type { AssistantCreateParams } from 'openai/resources/beta/assistants';
+import { filesSchema } from '$schemas/files';
 import type { APIPromise } from 'openai/core';
-import type { VectorStoreFile, VectorStoreFileDeleted } from 'openai/resources/beta/vector-stores';
+import type {
+  VectorStoreFile,
+  VectorStoreFileDeleted
+} from 'openai/resources/beta/vector-stores/files';
 
 export const load = async ({ fetch, depends, params, locals: { safeGetSession } }) => {
   depends('lf:files');
@@ -31,7 +35,9 @@ export const load = async ({ fetch, depends, params, locals: { safeGetSession } 
   if (!assistant) {
     error(404, { message: 'Assistant not found.' });
   }
-  const vectorStoreId = assistant.tool_resources?.file_search?.vector_store_ids[0];
+  const vectorStoreId =
+    assistant.tool_resources?.file_search?.vector_store_ids &&
+    assistant.tool_resources?.file_search?.vector_store_ids[0];
   let file_ids: string[] = [];
   if (vectorStoreId) {
     try {
@@ -55,8 +61,9 @@ export const load = async ({ fetch, depends, params, locals: { safeGetSession } 
   };
 
   const form = await superValidate(assistantFormData, yup(editAssistantInputSchema));
+  const filesForm = await superValidate({}, yup(filesSchema), { errors: false });
 
-  return { title: 'LeapfrogAI - Edit Assistant', form, assistant, files };
+  return { title: 'LeapfrogAI - Edit Assistant', form, filesForm, assistant, files };
 };
 
 export const actions = {
@@ -104,7 +111,7 @@ export const actions = {
         ? form.data.data_sources[0].split(',')
         : [];
 
-    let vectorStoreId: string = form.data.vectorStoreId;
+    let vectorStoreId = form.data.vectorStoreId;
     if (data_sources.length > 0 && (!vectorStoreId || vectorStoreId === 'undefined')) {
       const vectorStore = await openai.beta.vectorStores.create({
         name: `${form.data.name}-vector-store`
@@ -153,7 +160,7 @@ export const actions = {
       model: env.DEFAULT_MODEL,
       tools: data_sources && data_sources.length > 0 ? [{ type: 'file_search' }] : [],
       tool_resources:
-        data_sources && data_sources.length > 0
+        data_sources && vectorStoreId && data_sources.length > 0
           ? {
               file_search: {
                 vector_store_ids: [vectorStoreId]

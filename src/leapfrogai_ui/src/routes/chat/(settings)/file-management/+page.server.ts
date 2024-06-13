@@ -22,8 +22,6 @@ export const actions = {
 
     if (form.data.files) {
       const fileId: string | null = null;
-      let vectorStoreId: string | null = null;
-      const purpose = 'assistants'; // Note - hardcoded for now, in the future this could be "assistants" | "batch" | "fine-tune"
 
       const uploadedFiles: Array<FileObject | FileRow> = [];
       for (const file of form.data.files) {
@@ -34,14 +32,6 @@ export const actions = {
               file: file,
               purpose: 'assistants'
             });
-            if (purpose === 'assistants') {
-              // Create vector store
-              const vectorStore = await openai.beta.vectorStores.create({
-                name: uploadedFile.filename,
-                file_ids: [uploadedFile.id]
-              });
-              vectorStoreId = vectorStore.id;
-            }
             uploadedFiles.push(uploadedFile);
           } catch (e) {
             console.error(`Error uploading file ${file.name}: ${e}`);
@@ -58,10 +48,6 @@ export const actions = {
               if (fileId) {
                 // Delete file
                 await openai.files.del(fileId);
-              }
-              if (vectorStoreId) {
-                // Delete vector store
-                await openai.beta.vectorStores.del(vectorStoreId);
               }
             } catch (e) {
               console.error(`Error cleaning up file/vector store: ${e}`);

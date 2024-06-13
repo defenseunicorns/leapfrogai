@@ -26,10 +26,10 @@
     ERROR_GETTING_ASSISTANT_MSG_TEXT,
     ERROR_SAVING_MSG_TEXT
   } from '$constants/errorMessages';
-
+  import type { PageServerLoad } from './$types';
   import { convertMessageToAiMessage } from '$helpers/threads.js';
 
-  export let data;
+  export let data: PageServerLoad;
 
   /** LOCAL VARS **/
   let messageThreadDiv: HTMLDivElement;
@@ -43,7 +43,7 @@
   $: activeThread = $threadsStore.threads.find((t) => t.id === $page.params.thread_id);
   $: $page.params.thread_id, threadsStore.setLastVisitedThreadId($page.params.thread_id);
 
-  $: assistantsList = [...(data?.assistants || [])].map((assistant) => ({
+  $: assistantsList = [...(data.assistants || [])].map((assistant) => ({
     id: assistant.id,
     text: assistant.name || 'unknown'
   }));
