@@ -1,35 +1,34 @@
 import { error, json } from '@sveltejs/kit';
-import { supabaseMessagesSchema } from '../../../../schemas/chat';
+import { messageInputSchema } from '$lib/schemas/chat';
+import type { NewMessageInput } from '$lib/types/messages';
+import { openai } from '$lib/server/constants';
 
-export async function POST({ request, locals: { supabase, getSession } }) {
-	const session = await getSession();
-	if (!session) {
-		error(401, 'Unauthorized');
-	}
+export async function POST({ request, locals: { safeGetSession } }) {
+  const { session } = await safeGetSession();
+  if (!session) {
+    error(401, 'Unauthorized');
+  }
 
-	let requestData: Omit<Message, 'id' | 'inserted_at' | 'user_id'>;
+  let requestData: NewMessageInput;
 
-	// Validate request body
-	try {
-		requestData = await request.json();
-		const isValid = await supabaseMessagesSchema.isValid(requestData);
-		if (!isValid) error(400, 'Bad Request');
-	} catch {
-		error(400, 'Bad Request');
-	}
+  // Validate request body
+  try {
+    requestData = await request.json();
+    const isValid = await messageInputSchema.isValid(requestData);
 
-	const message: Omit<Message, 'id' | 'inserted_at'> = { ...requestData, user_id: session.user.id };
+    if (!isValid) error(400, 'Bad Request');
+  } catch {
+    error(400, 'Bad Request');
+  }
 
-	const { error: responseError, data: createdMessage } = await supabase
-		.from('messages')
-		.insert(message)
-		.select()
-		.returns<Message[]>();
-
-	if (responseError) {
-		console.log(`error creating message,  error status: ${responseError.code}: ${responseError.message}`);
-		error(500, { message: 'Internal Server Error' });
-	}
-
-	return json(createdMessage[0]);
+  try {
+    const threadMessages = await openai.beta.threads.messages.create(requestData.thread_id, {
+      role: requestData.role,
+      content: requestData.content
+    });
+    return json(threadMessages);
+  } catch (e) {
+    console.error(`Error creating message: ${e}`);
+    error(500, 'Error creating message');
+  }
 }

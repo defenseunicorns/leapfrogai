@@ -1,4 +1,4 @@
-from typing import Any, Generator, List
+from typing import Any, List, Optional, AsyncGenerator
 
 from pydantic import BaseModel
 
@@ -13,7 +13,16 @@ from leapfrogai_sdk import (
     CompletionRequest,
     CompletionResponse,
     GrpcContext,
+    CompletionUsage,
 )
+from leapfrogai_sdk.chat.chat_pb2 import Usage
+from enum import Enum
+
+
+class FinishReason(Enum):
+    NONE = ""
+    STOP = "stop"
+    LENGTH = "length"
 
 
 class GenerationConfig(BaseModel):
@@ -40,6 +49,56 @@ def LLM(_cls):
     if not hasattr(_cls, "generate"):
         raise ValueError("LLM class requires a generate method")
 
+    if not hasattr(_cls, "count_tokens"):
+        raise ValueError("LLM class requires a count_tokens method")
+
+    def create_chat_completion_response(
+        text: str,
+        finish_reason: FinishReason = FinishReason.NONE,
+        prompt_tokens: int = -1,
+        completion_tokens: int = -1,
+    ) -> ChatCompletionResponse:
+        item: ChatItem = ChatItem(role=ChatRole.ASSISTANT, content=text)
+        choice: ChatCompletionChoice = ChatCompletionChoice(index=0, chat_item=item)
+
+        usage: Optional[Usage] = None
+        if prompt_tokens > -1 and completion_tokens > -1:
+            usage = Usage(
+                prompt_tokens=prompt_tokens,
+                completion_tokens=completion_tokens,
+                total_tokens=prompt_tokens + completion_tokens,
+            )
+
+        response: ChatCompletionResponse = ChatCompletionResponse(
+            choices=[choice], usage=usage
+        )
+
+        response.choices[0].finish_reason = str(finish_reason)
+
+        return response
+
+    def create_completion_response(
+        text: str,
+        finish_reason: FinishReason = FinishReason.NONE,
+        prompt_tokens: int = -1,
+        completion_tokens: int = -1,
+    ) -> CompletionResponse:
+        choice: CompletionChoice = CompletionChoice(index=0, text=text)
+
+        usage: Optional[CompletionUsage] = None
+        if prompt_tokens > -1 and completion_tokens > -1:
+            usage = CompletionUsage(
+                prompt_tokens=prompt_tokens,
+                completion_tokens=completion_tokens,
+                total_tokens=prompt_tokens + completion_tokens,
+            )
+
+        response: CompletionResponse = CompletionResponse(choices=[choice], usage=usage)
+
+        response.choices[0].finish_reason = str(finish_reason)
+
+        return response
+
     class NewClass(_cls):
         config: BackendConfig
 
@@ -49,7 +108,7 @@ def LLM(_cls):
 
         def _build_gen_stream(
             self, prompt: str, request: ChatCompletionRequest | CompletionRequest
-        ) -> Generator[str, Any, Any]:
+        ) -> AsyncGenerator[str, Any]:
             config = GenerationConfig(
                 max_new_tokens=request.max_new_tokens,
                 temperature=request.temperature,
@@ -73,30 +132,67 @@ def LLM(_cls):
         async def ChatComplete(
             self, request: ChatCompletionRequest, context: GrpcContext
         ) -> ChatCompletionResponse:
-            gen_stream = self._build_gen_stream(
-                self.config.apply_chat_template(request.chat_items), request
-            )
+            prompt = self.config.apply_chat_template(request.chat_items)
+
+            gen_stream = self._build_gen_stream(prompt, request)
 
             content = ""
-            for text_chunk in gen_stream:
+            async for text_chunk in gen_stream:
                 content += text_chunk
 
-            item = ChatItem(role=ChatRole.ASSISTANT, content=content)
-            choice = ChatCompletionChoice(index=0, chat_item=item)
-            return ChatCompletionResponse(choices=[choice])
+            completion_token_count: int = await self.count_tokens(content)
+
+            if completion_token_count < request.max_new_tokens:
+                finish_reason: FinishReason = FinishReason.STOP
+            else:
+                finish_reason: FinishReason = FinishReason.LENGTH
+
+            prompt_token_count: int = await self.count_tokens(prompt)
+
+            response = create_chat_completion_response(
+                content, finish_reason, prompt_token_count, completion_token_count
+            )
+
+            return response
 
         async def ChatCompleteStream(
             self, request: ChatCompletionRequest, context: GrpcContext
-        ) -> Generator[ChatCompletionResponse, Any, Any]:
-            gen_stream = self._build_gen_stream(
-                self.config.apply_chat_template(request.chat_items), request
+        ) -> AsyncGenerator[ChatCompletionResponse, Any]:
+            prompt = self.config.apply_chat_template(request.chat_items)
+
+            gen_stream = self._build_gen_stream(prompt, request)
+
+            last_delta: str | None = None
+            response_str: str = ""
+
+            async for text_chunk in gen_stream:
+                if last_delta:
+                    last_response: ChatCompletionResponse = (
+                        create_chat_completion_response(last_delta, FinishReason.NONE)
+                    )
+                    response_str += last_delta
+
+                    yield last_response
+
+                last_delta = text_chunk
+
+            if last_delta:
+                response_str += last_delta
+
+            completion_token_count: int = await self.count_tokens(response_str)
+
+            if completion_token_count < request.max_new_tokens:
+                finish_reason: FinishReason = FinishReason.STOP
+            else:
+                finish_reason: FinishReason = FinishReason.LENGTH
+
+            prompt_token_count: int = await self.count_tokens(prompt)
+
+            last_response: ChatCompletionResponse = create_chat_completion_response(
+                last_delta, finish_reason, prompt_token_count, completion_token_count
             )
 
-            for text_chunk in gen_stream:
-                item = ChatItem(role=ChatRole.ASSISTANT, content=text_chunk)
-                choice = ChatCompletionChoice(index=0, chat_item=item)
-
-                yield ChatCompletionResponse(choices=[choice])
+            yield last_response
 
         async def Complete(
             self, request: CompletionRequest, context: GrpcContext
@@ -104,20 +200,57 @@ def LLM(_cls):
             gen_stream = self._build_gen_stream(request.prompt, request)
 
             content = ""
-            for text_chunk in gen_stream:
+            async for text_chunk in gen_stream:
                 content += text_chunk
 
-            choice = CompletionChoice(index=0, text=content)
-            return CompletionResponse(choices=[choice])
+            completion_token_count: int = await self.count_tokens(content)
+
+            if completion_token_count < request.max_new_tokens:
+                finish_reason: FinishReason = FinishReason.STOP
+            else:
+                finish_reason: FinishReason = FinishReason.LENGTH
+
+            prompt_token_count: int = await self.count_tokens(request.prompt)
+
+            return create_completion_response(
+                content, finish_reason, prompt_token_count, completion_token_count
+            )
 
         async def CompleteStream(
             self, request: CompletionRequest, context: GrpcContext
-        ) -> Generator[CompletionResponse, Any, Any]:
+        ) -> AsyncGenerator[CompletionResponse, Any]:
             gen_stream = self._build_gen_stream(request.prompt, request)
-            for text_chunk in gen_stream:
-                print(text_chunk)
-                choice = CompletionChoice(index=0, text=text_chunk)
-                yield CompletionResponse(choices=[choice])
+            last_delta: str | None = None
+            response_str: str = ""
+
+            async for text_chunk in gen_stream:
+                if last_delta:
+                    last_response = create_completion_response(
+                        text=last_delta, finish_reason=FinishReason.NONE
+                    )
+                    response_str += last_delta
+
+                    yield last_response
+
+                last_delta = text_chunk
+
+            if last_delta:
+                response_str += last_delta
+
+            completion_token_count: int = await self.count_tokens(response_str)
+
+            if completion_token_count < request.max_new_tokens:
+                finish_reason: FinishReason = FinishReason.STOP
+            else:
+                finish_reason: FinishReason = FinishReason.LENGTH
+
+            prompt_token_count: int = await self.count_tokens(request.prompt)
+
+            last_response = create_completion_response(
+                last_delta, finish_reason, prompt_token_count, completion_token_count
+            )
+
+            yield last_response
 
     NewClass.__name__ = _cls.__name__
     return NewClass

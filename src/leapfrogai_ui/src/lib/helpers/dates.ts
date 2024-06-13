@@ -1,36 +1,38 @@
+import type { LFThread } from '$lib/types/threads';
+
 const NUM_MONTHS_TO_DISPLAY = 6;
 export const monthNames = [
-	'January',
-	'February',
-	'March',
-	'April',
-	'May',
-	'June',
-	'July',
-	'August',
-	'September',
-	'October',
-	'November',
-	'December'
+  'January',
+  'February',
+  'March',
+  'April',
+  'May',
+  'June',
+  'July',
+  'August',
+  'September',
+  'October',
+  'November',
+  'December'
 ];
 
 /**
  * Calculates the number of months between a past date and the current date.
  * @param pastDate The past date to compare against the current date.
+ * @param today  The current date. Defaults to the current date. Can be overridden for testing purposes.
  * @returns The number of months between the past date and the current date.
  */
-export const getNumMonthsAgo = (pastDate: Date) => {
-	const currentDate = new Date();
-	const currentYear = currentDate.getFullYear();
-	const currentMonth = currentDate.getMonth();
+export const getNumMonthsAgo = (pastDate: Date, today = new Date()) => {
+  const currentYear = today.getFullYear();
+  const currentMonth = today.getMonth();
 
-	const pastYear = pastDate.getFullYear();
-	const pastMonth = pastDate.getMonth();
+  const pastYear = pastDate.getFullYear();
+  const pastMonth = pastDate.getMonth();
 
-	const yearDiff = currentYear - pastYear;
-	const monthDiff = currentMonth - pastMonth;
+  const yearDiff = currentYear - pastYear;
+  const monthDiff = currentMonth - pastMonth;
 
-	return yearDiff * 12 + monthDiff;
+  return yearDiff * 12 + monthDiff;
 };
 
 /**
@@ -40,11 +42,11 @@ export const getNumMonthsAgo = (pastDate: Date) => {
  * @returns True if the dates are the same day, false otherwise.
  */
 export const isToday = (d1: Date, d2: Date) => {
-	return (
-		d1.getDate() === d2.getDate() &&
-		d1.getMonth() === d2.getMonth() &&
-		d1.getFullYear() === d2.getFullYear()
-	);
+  return (
+    d1.getDate() === d2.getDate() &&
+    d1.getMonth() === d2.getMonth() &&
+    d1.getFullYear() === d2.getFullYear()
+  );
 };
 
 /**
@@ -55,15 +57,15 @@ export const isToday = (d1: Date, d2: Date) => {
  * @returns {boolean} - Returns true if the first date is exactly one day before the second date, false otherwise.
  */
 function isOneDayBefore(firstDate: Date, secondDate: Date): boolean {
-	// Set both dates to midnight to ensure we're only comparing the dates, not the times
-	const first = new Date(firstDate.getFullYear(), firstDate.getMonth(), firstDate.getDate());
-	const second = new Date(secondDate.getFullYear(), secondDate.getMonth(), secondDate.getDate());
+  // Set both dates to midnight to ensure we're only comparing the dates, not the times
+  const first = new Date(firstDate.getFullYear(), firstDate.getMonth(), firstDate.getDate());
+  const second = new Date(secondDate.getFullYear(), secondDate.getMonth(), secondDate.getDate());
 
-	// Calculate the difference in milliseconds between the two dates
-	const diff = second.getTime() - first.getTime();
+  // Calculate the difference in milliseconds between the two dates
+  const diff = second.getTime() - first.getTime();
 
-	// Check if the difference is exactly 24 hours
-	return diff === 24 * 60 * 60 * 1000;
+  // Check if the difference is exactly 24 hours
+  return diff === 24 * 60 * 60 * 1000;
 }
 
 /**
@@ -79,23 +81,23 @@ function isOneDayBefore(firstDate: Date, secondDate: Date): boolean {
  */
 
 type GetDateCategoriesParams = {
-	today?: Date;
-	numMonthsToDisplay?: number;
+  today?: Date;
+  numMonthsToDisplay?: number;
 };
 export const getDateCategories = ({
-	today = new Date(),
-	numMonthsToDisplay = NUM_MONTHS_TO_DISPLAY
+  today = new Date(),
+  numMonthsToDisplay = NUM_MONTHS_TO_DISPLAY
 }: GetDateCategoriesParams = {}): string[] => {
-	let currentMonth = today.getMonth();
+  const currentMonth = today.getMonth();
 
-	let months = [];
-	for (let i = 1; i <= numMonthsToDisplay; i++) {
-		// Subtract one month at a time and wrap around using modulo operator
-		let monthIndex = (currentMonth - i + 12) % 12;
-		months.push(monthNames[monthIndex]);
-	}
+  const months = [];
+  for (let i = 1; i <= numMonthsToDisplay; i++) {
+    // Subtract one month at a time and wrap around using modulo operator
+    const monthIndex = (currentMonth - i + 12) % 12;
+    months.push(monthNames[monthIndex]);
+  }
 
-	return ['Today', 'Yesterday', 'This Month', ...months, 'Old'];
+  return ['Today', 'Yesterday', 'This Month', ...months, 'Old'];
 };
 
 /**
@@ -114,80 +116,114 @@ export const getDateCategories = ({
  */
 
 type GetDateCategoryParams = {
-	date: Date;
-	numMonthsToDisplay?: number;
-	today?: Date;
+  date: Date;
+  numMonthsToDisplay?: number;
+  today?: Date;
 };
 export const getDateCategory = ({
-	date,
-	numMonthsToDisplay = NUM_MONTHS_TO_DISPLAY,
-	today = new Date()
+  date,
+  numMonthsToDisplay = NUM_MONTHS_TO_DISPLAY,
+  today = new Date()
 }: GetDateCategoryParams): string => {
-	const dateCategories = getDateCategories({ today, numMonthsToDisplay });
-	const dateToCheck = new Date(date);
-	const yearsDiff = Math.abs(dateToCheck.getFullYear() - today.getFullYear());
-	const monthsDiff = getNumMonthsAgo(dateToCheck);
+  const dateCategories = getDateCategories({ today, numMonthsToDisplay });
+  const dateToCheck = new Date(date);
+  const yearsDiff = Math.abs(dateToCheck.getFullYear() - today.getFullYear());
+  const monthsDiff = getNumMonthsAgo(dateToCheck, today);
 
-	if (monthsDiff > numMonthsToDisplay) return 'Old';
+  if (monthsDiff > numMonthsToDisplay) return 'Old';
 
-	if (isToday(dateToCheck, today)) {
-		return 'Today';
-	}
+  if (isToday(dateToCheck, today)) {
+    return 'Today';
+  }
 
-	if (isOneDayBefore(dateToCheck, today)) {
-		return 'Yesterday';
-	}
+  if (isOneDayBefore(dateToCheck, today)) {
+    return 'Yesterday';
+  }
 
-	if (yearsDiff === 0 && dateToCheck.getMonth() === today.getMonth()) {
-		return 'This Month';
-	}
+  if (yearsDiff === 0 && dateToCheck.getMonth() === today.getMonth()) {
+    return 'This Month';
+  }
 
-	const month = monthNames[dateToCheck.getMonth()];
-	if (monthsDiff <= numMonthsToDisplay && dateCategories.includes(month)) return month;
-	else return 'Old';
+  const month = monthNames[dateToCheck.getMonth()];
+  if (monthsDiff <= numMonthsToDisplay && dateCategories.includes(month)) return month;
+  else return 'Old';
 };
 
 /**
- * Organizes an array of conversations by date category and sorts the 'Old' category by date.
+ * Organizes an array of threads by date category and sorts the 'Old' category by date.
  *
- * @param {Conversation[]} conversations - The array of conversations to be organized.
+ * @param {LFThread[]} threads - The array of threads to be organized.
  * @param {Date} [today=new Date()] - The current date. Defaults to the current date. Can override for testing purposes.
- * @param {number} [numMonthsToDisplay=NUM_MONTHS_TO_DISPLAY] - The number of months to display before putting in the 'Old' category. * @returns An object with date categories as keys and arrays of conversations as values.
+ * @param {number} [numMonthsToDisplay=NUM_MONTHS_TO_DISPLAY] - The number of months to display before putting in the 'Old' category. * @returns An object with date categories as keys and arrays of threads as values.
  *
  * This function first gets the date categories and initializes the result object.
- * Then, for each conversation, it finds its date category and adds it to the corresponding array in the result.
- * Finally, it sorts the conversations in the 'Old' category by date.
+ * Then, for each thread, it finds its date category and adds it to the corresponding array in the result.
+ * Finally, it sorts the threads in the 'Old' category by date.
  */
-export const organizeConversationsByDate = (
-	conversations: Conversation[],
-	today: Date = new Date(),
-	numMonthsToDisplay: number = NUM_MONTHS_TO_DISPLAY
+export const organizeThreadsByDate = (
+  threads: LFThread[],
+  today: Date = new Date(),
+  numMonthsToDisplay: number = NUM_MONTHS_TO_DISPLAY
 ) => {
-	const dateCategories = getDateCategories({ today, numMonthsToDisplay });
+  const dateCategories = getDateCategories({ today, numMonthsToDisplay });
 
-	const result: { label: string; conversations: Conversation[] }[] = [];
+  const result: { label: string; threads: LFThread[] }[] = [];
 
-	// Initialize result object with empty arrays for each date category and the proper labels
-	for (const category of dateCategories) {
-		result.push({ label: category, conversations: [] });
-	}
+  // Initialize result object with empty arrays for each date category and the proper labels
+  for (const category of dateCategories) {
+    result.push({ label: category, threads: [] });
+  }
 
-	// Add conversations to the corresponding date category
-	for (const conversation of conversations) {
-		const dateCategory = getDateCategory({
-			date: new Date(conversation.inserted_at),
-			numMonthsToDisplay,
-			today
-		});
-		const index = dateCategories.indexOf(dateCategory);
+  // Add threads to the corresponding date category
+  for (const thread of threads) {
+    const dateCategory = getDateCategory({
+      date: new Date(thread.created_at * 1000),
+      numMonthsToDisplay,
+      today
+    });
+    const index = dateCategories.indexOf(dateCategory);
 
-		result[index].conversations.push(conversation);
-	}
+    result[index].threads.push(thread);
+  }
 
-	// Sort conversations in the old category by date
-	const oldConversationsIndex = dateCategories.indexOf('Old');
-	result[oldConversationsIndex].conversations = result[oldConversationsIndex].conversations.sort(
-		(a, b) => new Date(b.inserted_at).getTime() - new Date(a.inserted_at).getTime()
-	);
-	return result;
+  // Sort each category by date
+  for (const category of dateCategories) {
+    const categoryIndex = dateCategories.indexOf(category);
+    result[categoryIndex].threads = result[categoryIndex].threads.sort(
+      (a, b) => new Date(b.created_at * 1000).getTime() - new Date(a.created_at * 1000).getTime()
+    );
+  }
+  return result;
+};
+
+export const getUnixSeconds = (date: Date) => date.getTime() / 1000;
+
+export const formatDate = (date: Date) => {
+  // Create an array with month names
+  const months = [
+    'Jan',
+    'Feb',
+    'Mar',
+    'Apr',
+    'May',
+    'Jun',
+    'Jul',
+    'Aug',
+    'Sep',
+    'Oct',
+    'Nov',
+    'Dec'
+  ];
+
+  // Get the day of the month
+  const day = date.getDate();
+
+  // Get the month name from the array
+  const month = months[date.getMonth()];
+
+  // Get the full year
+  const year = date.getFullYear();
+
+  // Return the formatted date string
+  return `${day} ${month} ${year}`;
 };

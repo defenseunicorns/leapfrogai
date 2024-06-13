@@ -1,7 +1,10 @@
 [project]
 name = "lfai-whisper"
-version = "0.6.1"
 description = "A LeapfrogAI API-compatible faster-whisper wrapper for audio transcription generation across CPU and GPU infrastructures."
+
+# x-release-please-start-version
+version = "0.7.2"
+# x-release-please-end
 
 dependencies = [
     "faster-whisper == 0.10.0",

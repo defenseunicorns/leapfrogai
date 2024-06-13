@@ -14,6 +14,15 @@ constants:
   - name: KIWIGRID_VERSION
     value: "1.23.3"
 
+variables:
+  - name: EXPOSE_OPENAPI_SCHEMA
+    default: "false"
+    description: "Flag to expose the OpenAPI schema for debugging."
+  - name: HOSTED_DOMAIN
+    default: "uds.dev"
+  - name: DEFAULT_EMBEDDINGS_MODEL
+    default: "text-embeddings"
+
 components:
   - name: leapfrogai
     required: true
@@ -21,9 +30,21 @@ components:
     - name: leapfrogai
       namespace: leapfrogai
       localPath: chart
-      version: 0.6.1
+      # x-release-please-start-version
+      version: 0.7.2
+      # x-release-please-end
       valuesFiles:
         - "lfai-values.yaml"
     images:
       - "ghcr.io/defenseunicorns/leapfrogai/leapfrogai-api:###ZARF_PKG_TMPL_LEAPFROGAI_IMAGE_VERSION###"
+      - "ghcr.io/defenseunicorns/leapfrogai/api-migrations:###ZARF_PKG_TMPL_LEAPFROGAI_IMAGE_VERSION###"
       - "kiwigrid/k8s-sidecar:1.23.3"
+    actions:
+      onDeploy:
+        after:
+          - wait:
+              cluster:
+                kind: Job
+                name: api-migrations-###ZARF_PKG_TMPL_LEAPFROGAI_IMAGE_VERSION###
+                namespace: leapfrogai
+                condition: complete

@@ -41,7 +41,7 @@ jobs:
           python-version-file: 'pyproject.toml'
 
       - name: Download Python Wheels
-        run: make setup-api-deps setup-llama-cpp-python-deps setup-vllm-deps setup-text-embeddings-deps setup-whisper-deps
+        run: make setup-api-deps setup-repeater-deps setup-llama-cpp-python-deps setup-vllm-deps setup-text-embeddings-deps setup-whisper-deps
 
       - name: Install Zarf
         uses: defenseunicorns/setup-zarf@f95763914e20e493bb5d45d63e30e17138f981d6 # v1.0.0
@@ -49,6 +49,7 @@ jobs:
       - name: Build and Publish API
         run: |
           docker buildx build --platform amd64,arm64 -t ghcr.io/defenseunicorns/leapfrogai/leapfrogai-api:${{ steps.get_version.outputs.version-without-v }} --push packages/api
+          docker buildx build --platform amd64,arm64 -t ghcr.io/defenseunicorns/leapfrogai/api-migrations:${{ steps.get_version.outputs.version-without-v }} --push packages/api/supabase
 
           zarf package create packages/api --set=LEAPFROGAI_IMAGE_VERSION=${{ steps.get_version.outputs.version-without-v }} --architecture amd64 --confirm
           zarf package create packages/api --set=LEAPFROGAI_IMAGE_VERSION=${{ steps.get_version.outputs.version-without-v }} --architecture arm64 --confirm
@@ -58,6 +59,41 @@ jobs:
 
           docker image prune -af
           rm zarf-package-leapfrogai-api-*.tar.zst
+
+      - name: Build and Publish UI
+        run: |
+          docker buildx build --platform amd64,arm64 -t ghcr.io/defenseunicorns/leapfrogai/leapfrogai-ui:${{ steps.get_version.outputs.version-without-v }} --push src/leapfrogai_ui
+          docker buildx build --platform amd64,arm64 -t ghcr.io/defenseunicorns/leapfrogai/ui-migrations:${{ steps.get_version.outputs.version-without-v }} --push src/leapfrogai_ui/supabase
+
+          zarf package create packages/ui --set=IMAGE_VERSION=${{ steps.get_version.outputs.version-without-v }} --architecture amd64 --confirm
+          zarf package create packages/ui --set=IMAGE_VERSION=${{ steps.get_version.outputs.version-without-v }} --architecture arm64 --confirm
+
+          zarf package publish zarf-package-leapfrogai-ui-amd64-${{ steps.get_version.outputs.version-without-v }}.tar.zst oci://ghcr.io/defenseunicorns/packages/leapfrogai
+          zarf package publish zarf-package-leapfrogai-ui-arm64-${{ steps.get_version.outputs.version-without-v }}.tar.zst oci://ghcr.io/defenseunicorns/packages/leapfrogai
+
+          docker image prune -af
+          rm zarf-package-leapfrogai-ui-*.tar.zst
+
+      - name: Build and Publish Supabase
+        run: |
+          zarf package create packages/supabase --set=IMAGE_VERSION=${{ steps.get_version.outputs.version-without-v }} --architecture amd64 --confirm
+          zarf package create packages/supabase --set=IMAGE_VERSION=${{ steps.get_version.outputs.version-without-v }} --architecture arm64 --confirm
+
+          zarf package publish zarf-package-supabase-amd64-${{ steps.get_version.outputs.version-without-v }}.tar.zst oci://ghcr.io/defenseunicorns/packages/leapfrogai
+          zarf package publish zarf-package-supabase-arm64-${{ steps.get_version.outputs.version-without-v }}.tar.zst oci://ghcr.io/defenseunicorns/packages/leapfrogai
+
+      - name: Build and Publish repeater
+        run: |
+          docker buildx build --platform amd64,arm64 -t ghcr.io/defenseunicorns/leapfrogai/repeater:${{ steps.get_version.outputs.version-without-v }} --push packages/repeater
+
+          zarf package create packages/repeater --set=IMAGE_VERSION=${{ steps.get_version.outputs.version-without-v }} --architecture amd64 --confirm
+          zarf package create packages/repeater --set=IMAGE_VERSION=${{ steps.get_version.outputs.version-without-v }} --architecture arm64 --confirm
+
+          zarf package publish zarf-package-repeater-amd64-${{ steps.get_version.outputs.version-without-v }}.tar.zst oci://ghcr.io/defenseunicorns/packages/leapfrogai
+          zarf package publish zarf-package-repeater-arm64-${{ steps.get_version.outputs.version-without-v }}.tar.zst oci://ghcr.io/defenseunicorns/packages/leapfrogai
+
+          docker image prune -af
+          rm zarf-package-repeater-*.tar.zst
 
       - name: Build and Publish llama
         run: |

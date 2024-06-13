@@ -18,7 +18,7 @@ on:
       - "CODEOWNERS"
       - ".gitignore"
       - "LICENSE"
-      - "pre-commit-config.yaml"
+      - ".pre-commit-config.yaml"
 
       # Catch pytests
       - "tests/pytest/**"
@@ -26,6 +26,9 @@ on:
       # Catch LFAI-UI things
       - "src/leapfrogai_ui/**"
       - "packages/ui/**"
+
+      # Catch changes to the repeater model
+      - "packages/repeater/**"
 
 
 permissions:

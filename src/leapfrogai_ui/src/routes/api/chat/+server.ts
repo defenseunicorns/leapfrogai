@@ -1,56 +1,48 @@
-import OpenAI from 'openai';
-import {
-	PUBLIC_DEFAULT_MODEL,
-	PUBLIC_DEFAULT_SYSTEM_PROMPT,
-	PUBLIC_DEFAULT_TEMPERATURE,
-	PUBLIC_LEAPFROGAI_API_BASE_URL
-} from '$env/static/public';
+import { StreamingTextResponse, streamText } from 'ai';
+import { createOpenAI } from '@ai-sdk/openai';
 import { env } from '$env/dynamic/private';
-import { OpenAIStream, StreamingTextResponse } from 'ai';
-import { messagesSchema } from '../../../schemas/chat';
 import { error } from '@sveltejs/kit';
+import { getMessageText } from '$helpers/threads';
+import type { LFMessage } from '$lib/types/messages';
+import { AIMessagesInputSchema } from '$schemas/messageSchema';
 
-// Set the runtime to edge for best performance
-export const config = {
-	runtime: 'edge'
-};
+const openai = createOpenAI({
+  apiKey: env.LEAPFROGAI_API_KEY ?? '',
+  baseURL: env.LEAPFROGAI_API_BASE_URL
+});
 
-// This endpoint is called by the Vercel AI SDK handleSubmit function
-export async function POST({ request, locals: { getSession } }) {
-	const session = await getSession();
-	if (!session) {
-		error(401, 'Unauthorized');
-	}
+export async function POST({ request, locals: { safeGetSession } }) {
+  const { session } = await safeGetSession();
 
-	let requestData: { messages: AIMessage[] };
+  if (!session) {
+    error(401, 'Unauthorized');
+  }
 
-	// Validate request body
-	try {
-		requestData = await request.json();
-		const isValid = await messagesSchema.isValid(requestData);
-		if (!isValid) error(400, 'Bad Request');
-	} catch {
-		error(400, 'Bad Request');
-	}
+  let messages;
+  // Validate request body
+  try {
+    const requestBody = await request.json();
+    const isValid = await AIMessagesInputSchema.isValid(requestBody);
+    if (!isValid) error(400, 'Bad Request');
+    messages = requestBody.messages;
+  } catch {
+    error(400, 'Bad Request');
+  }
 
-	const openai = new OpenAI({
-		apiKey: env.LEAPFROGAI_API_KEY,
-		baseURL: PUBLIC_LEAPFROGAI_API_BASE_URL
-	});
+  // Add the default system prompt to the beginning of the messages
+  if (messages[0].content !== env.DEFAULT_SYSTEM_PROMPT) {
+    messages.unshift({ content: env.DEFAULT_SYSTEM_PROMPT!, role: 'system' });
+  }
 
-	// Add the default system prompt to the beginning of the messages
-	if (requestData.messages[0].content !== PUBLIC_DEFAULT_SYSTEM_PROMPT) {
-		requestData.messages.unshift({ content: PUBLIC_DEFAULT_SYSTEM_PROMPT, role: 'system' });
-	}
+  const reformatedMessages = messages.map((message: LFMessage) => ({
+    ...message,
+    content: getMessageText(message)
+  }));
 
-	const response = await openai.chat.completions.create({
-		model: PUBLIC_DEFAULT_MODEL,
-		temperature: Number(PUBLIC_DEFAULT_TEMPERATURE),
-		max_tokens: 1000,
-		stream: true,
-		messages: requestData.messages
-	});
+  const result = await streamText({
+    model: openai(env.DEFAULT_MODEL),
+    messages: reformatedMessages
+  });
 
-	const stream = OpenAIStream(response);
-	return new StreamingTextResponse(stream);
+  return new StreamingTextResponse(result.toAIStream());
 }

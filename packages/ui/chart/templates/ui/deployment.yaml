@@ -1,41 +1,53 @@
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: leapfrogai-ui
+  name: {{ .Values.package.name }}
   namespace: leapfrogai
 spec:
   selector:
     matchLabels:
-      app: leapfrogai-ui
+      app: {{ .Values.package.name }}
   replicas: 1
   template:
     metadata:
       labels:
-        app: leapfrogai-ui
+        app: {{ .Values.package.name }}
     spec:
       containers:
-        - name: leapfrogai-ui
-          image: 'ghcr.io/defenseunicorns/leapfrogai/leapfrogai-ui:###ZARF_CONST_IMAGE_VERSION###'
+        - name: {{ .Values.package.name }}
+          image: "{{ .Values.image.repository }}:{{ .Values.image.tag | default .Chart.AppVersion }}"
+          imagePullPolicy: {{ .Values.image.pullPolicy }}
           ports:
             - containerPort: 3000
           env:
-            - name: PUBLIC_LEAPFROGAI_API_BASE_URL
+            - name: LEAPFROGAI_API_BASE_URL
               value: '###ZARF_VAR_LEAPFROGAI_API_BASE_URL###'
             - name: ORIGIN
-              value: '###ZARF_VAR_DOMAIN###'
-            - name: PUBLIC_DEFAULT_MODEL
+              value: "https://{{ .Values.package.subdomain }}.{{ .Values.package.domain }}"
+            - name: DEFAULT_MODEL
               value: '###ZARF_VAR_MODEL###'
-            - name: PUBLIC_DEFAULT_SYSTEM_PROMPT
+            - name: DEFAULT_SYSTEM_PROMPT
               value: '###ZARF_VAR_SYSTEM_PROMPT###'
-            - name: PUBLIC_DEFAULT_TEMPERATURE
+            - name: DEFAULT_TEMPERATURE
               value: '###ZARF_VAR_TEMPERATURE###'
             - name: LEAPFROGAI_API_KEY
               value: '###ZARF_VAR_LEAPFROGAI_API_KEY###'
             - name: PUBLIC_SUPABASE_URL
-              value: '###ZARF_VAR_SUPABASE_URL###'
+              value: {{ .Values.package.supabase_url }}
             - name: PUBLIC_SUPABASE_ANON_KEY
-              value: '###ZARF_VAR_SUPABASE_ANON_KEY###'
-
+              {{ if .Values.package.supabase_anon_key  }}
+              value: {{ .Values.package.supabase_anon_key }}
+              {{ else }}
+              valueFrom:
+                secretKeyRef:
+                  name: supabase-bootstrap-jwt
+                  key: anon-key
+                  optional: true
+              {{ end }}
+            - name: PUBLIC_DISABLE_KEYCLOAK
+              value: '###ZARF_VAR_DISABLE_KEYCLOAK###'
+            - name: PUBLIC_MESSAGE_LENGTH_LIMIT
+              value: '###ZARF_VAR_MESSAGE_LENGTH_LIMIT###'
           resources:
             requests:
               memory: '0'

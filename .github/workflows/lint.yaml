@@ -1,5 +1,11 @@
 name: lint
-on: [pull_request]
+on:
+  pull_request:
+    types:
+      - ready_for_review
+      - review_requested
+      - synchronize
+      - milestoned
 
 # Declare default permissions as read only.
 permissions: read-all
@@ -21,3 +27,14 @@ jobs:
         with:
           version: 0.3.4
           args: format --check
+
+      # Javascript & Typescript Linting
+      - uses: actions/setup-node@60edb5dd545a775178f52524783378180af0d1f8 # v4.0.2
+        with:
+          node-version-file: 'src/leapfrogai_ui/package.json'
+
+      - name: Install UI Dependencies
+        run: npm --prefix src/leapfrogai_ui ci
+
+      - name: Run UI Linter
+        run: npm --prefix src/leapfrogai_ui run lint

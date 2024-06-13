@@ -1,5 +1,32 @@
 name: pytest
-on: [pull_request]
+on:
+  pull_request:
+    types:
+      - ready_for_review
+      - review_requested
+      - synchronize
+      - milestoned
+    paths:
+      - "**"
+      - "!.github/**"
+      - ".github/workflows/pytest.yaml"
+      - ".github/workflows/pytest-shim.yaml"
+
+      # Ignore docs and website things
+      - "!**.md"
+      - "!docs/**"
+      - "!adr/**"
+      - "!website/**"
+      - "!netlify.toml"
+
+      # Ignore updates to generic github metadata files
+      - "!CODEOWNERS"
+      - "!.gitignore"
+      - "!LICENSE"
+
+      # Ignore LFAI-UI things (no Python)
+      - "!src/leapfrogai_ui/**"
+      - "!packages/ui/**"
 
 # Declare default permissions as read only.
 permissions: read-all
@@ -20,8 +47,15 @@ jobs:
         with:
           python-version-file: 'pyproject.toml'
 
+      - name: Build Repeater
+        run: |
+          make local-registry
+          make setup-repeater-deps
+          docker build -t ghcr.io/defenseunicorns/leapfrogai/repeater:dev packages/repeater
+          docker tag ghcr.io/defenseunicorns/leapfrogai/repeater:dev localhost:5000/defenseunicorns/leapfrogai/repeater:dev
+
       - name: Run Repeater
-        run: docker run -p 50051:50051 -d --name=repeater ghcr.io/defenseunicorns/leapfrogai/repeater:0.3.3
+        run: docker run -p 50051:50051 -d --name=repeater ghcr.io/defenseunicorns/leapfrogai/repeater:dev
 
       - name: Install Python Deps
         run: pip install "." "src/leapfrogai_api" "src/leapfrogai_sdk"

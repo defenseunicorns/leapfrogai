@@ -14,10 +14,16 @@ zarf-sbom/
 /values.yaml
 .pytest_cache
 *egg-info
+egg-info/
 build/
 *.whl
 .model/
 *.gguf
+.env
+.ruff_cache
+.branches
+.temp
+src/leapfrogai_api/config.yaml
 
 # local model and tokenizer files
 *.bin

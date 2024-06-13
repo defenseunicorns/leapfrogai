@@ -1,312 +1,419 @@
 <script lang="ts">
-	import {
-		Button,
-		Modal,
-		OverflowMenu,
-		OverflowMenuItem,
-		SideNav,
-		SideNavDivider,
-		SideNavLink,
-		SideNavMenu,
-		SideNavMenuItem,
-		TextInput
-	} from 'carbon-components-svelte';
-	import { AddComment, Download, Export, Settings } from 'carbon-icons-svelte';
-	import { dates } from '$helpers';
-	import { MAX_LABEL_SIZE } from '$lib/constants';
-	import { conversationsStore, toastStore } from '$stores';
-	import { page } from '$app/stores';
-	let deleteModalOpen = false;
-	let editConversationId: string | null = null;
-	let editLabelText: string | undefined = undefined;
-	let inputDisabled = false;
+  import {
+    Button,
+    Modal,
+    OverflowMenu,
+    OverflowMenuItem,
+    SideNav,
+    SideNavItems,
+    SideNavMenu,
+    SideNavMenuItem,
+    TextInput
+  } from 'carbon-components-svelte';
+  import { AddComment } from 'carbon-icons-svelte';
+  import { dates } from '$helpers';
+  import { MAX_LABEL_SIZE } from '$lib/constants';
+  import { threadsStore, uiStore } from '$stores';
+  import { page } from '$app/stores';
+  import { browser } from '$app/environment';
+  import ImportExport from '$components/ImportExport.svelte';
+  import Fuse, { type FuseResult, type IFuseOptions } from 'fuse.js';
+  import { onMount } from 'svelte';
+  import type { LFThread } from '$lib/types/threads';
+  import { getMessageText } from '$helpers/threads';
+  import { goto } from '$app/navigation';
 
-	$: activeConversation = $conversationsStore.conversations.find(
-		(conversation) => conversation.id === $page.params.conversation_id
-	);
+  let deleteModalOpen = false;
+  let editMode = false;
+  let editThreadId: string | null = null;
+  let editLabelText: string | undefined = undefined;
+  let editLabelInputDisabled = false;
+  let disableScroll = false;
+  let overflowMenuOpen = false;
+  let menuOffset = 0;
+  let scrollOffset = 0;
+  let activeThreadRef: HTMLElement | null;
+  let scrollBoxRef: HTMLElement;
+  let searchText = '';
+  let searchResults: FuseResult<LFThread>[];
+  let filteredThreads: LFThread[] = [];
 
-	$: organizedConversations = dates.organizeConversationsByDate($conversationsStore.conversations);
+  $: activeThread = $threadsStore.threads.find((thread) => thread.id === $page.params.thread_id);
 
-	const resetEditMode = () => {
-		editConversationId = null;
-		editLabelText = undefined;
-		inputDisabled = false;
-	};
+  $: editMode = !!activeThread?.id && editThreadId === activeThread.id;
 
-	const saveNewLabel = async () => {
-		if (editConversationId && editLabelText) {
-			inputDisabled = true;
-			const response = await fetch('/api/conversations/update/label', {
-				method: 'PUT',
-				body: JSON.stringify({ id: editConversationId, label: editLabelText }),
-				headers: {
-					'Content-Type': 'application/json'
-				}
-			});
+  $: organizedThreads = dates.organizeThreadsByDate(
+    searchText !== '' ? filteredThreads : $threadsStore.threads
+  );
 
-			if (response.ok) {
-				conversationsStore.updateConversationLabel(editConversationId, editLabelText);
-			} else {
-				toastStore.addToast({
-					kind: 'error',
-					title: 'Error',
-					subtitle: 'Error updating label'
-				});
-			}
-			resetEditMode();
-		}
-	};
+  const resetEditMode = () => {
+    disableScroll = false;
+    editThreadId = null;
+    editLabelText = undefined;
+    editLabelInputDisabled = false;
+  };
 
-	const handleEdit = async (e: KeyboardEvent) => {
-		if (e.key === 'Escape') {
-			resetEditMode();
-			return;
-		}
+  const saveNewLabel = async () => {
+    if (editThreadId && editLabelText) {
+      editLabelInputDisabled = true;
+      await threadsStore.updateThreadLabel(editThreadId, editLabelText);
+      resetEditMode();
+    }
+  };
 
-		if (e.key === 'Enter' || e.key === 'Tab') {
-			await saveNewLabel();
-		}
-	};
+  const handleEdit = async (e: KeyboardEvent | FocusEvent) => {
+    if (e.type === 'blur') {
+      await saveNewLabel();
+    }
+    if (e.type === 'keydown') {
+      const keyboardEvent = e as KeyboardEvent;
+      if (keyboardEvent.key === 'Escape') {
+        resetEditMode();
+        return;
+      }
 
-	const handleDelete = async () => {
-		if (activeConversation?.id) {
-			// A constraint on messages table will cascade delete all messages when the conversation is deleted
-			const res = await fetch('/api/conversations/delete', {
-				method: 'DELETE',
-				body: JSON.stringify({ conversationId: activeConversation.id }),
-				headers: {
-					'Content-Type': 'application/json'
-				}
-			});
-			if (res.ok) {
-				conversationsStore.deleteConversation(activeConversation.id);
-			} else {
-				toastStore.addToast({
-					kind: 'error',
-					title: 'Error',
-					subtitle: 'Error deleting conversation'
-				});
-			}
-		}
+      if (keyboardEvent.key === 'Enter' || keyboardEvent.key === 'Tab') {
+        await saveNewLabel();
+      }
+    }
+  };
 
-		deleteModalOpen = false;
-	};
+  const handleDelete = async () => {
+    deleteModalOpen = false;
+    if (activeThread?.id) {
+      await threadsStore.deleteThread(activeThread.id);
+    }
+    await goto('/chat');
+  };
+
+  const handleActiveThreadChange = (id: string) => {
+    threadsStore.changeThread(id);
+    activeThreadRef = document.getElementById(`side-nav-menu-item-${id}`);
+  };
+
+  // To properly display the overflow menu items for each thread, we have to calculate the height they
+  // should be displayed at due to the carbon override for allowing overflow
+  $: if (browser && activeThreadRef) {
+    menuOffset = activeThreadRef?.offsetTop;
+    scrollOffset = scrollBoxRef?.scrollTop;
+  } else {
+    if (!activeThreadRef) {
+      menuOffset = 0;
+      scrollOffset = 0;
+    }
+  }
+
+  const options: IFuseOptions<unknown> = {
+    keys: ['metadata.label', 'messages.content'],
+    minMatchCharLength: 3,
+    shouldSort: false,
+    findAllMatches: true,
+    threshold: 0, // perfect matches only
+    ignoreLocation: true
+  };
+
+  $: if (searchText) {
+    // Remap the message content to be a string instead of string | nested object
+    const threadsWithTextMessages = $threadsStore.threads.map((thread) => ({
+      ...thread,
+      messages: thread.messages?.map((message) => ({
+        ...message,
+        content: getMessageText(message)
+      }))
+    }));
+
+    const fuse = new Fuse(threadsWithTextMessages, options);
+    searchResults = fuse.search(searchText);
+    filteredThreads = searchResults.map((result) => result.item);
+  }
+
+  onMount(() => {
+    // When trying to set the isSideNavOpen to true when initialized as a variable
+    // Header component overrides it to false so menu closes, setting to true here
+    // to prevent that
+    uiStore.setIsSideNavOpen(true);
+  });
 </script>
 
-<SideNav aria-label="side navigation" isOpen={true} style="background-color: g90;">
-	<div class="new-chat-container">
-		<Button
-			kind="secondary"
-			size="small"
-			icon={AddComment}
-			class="new-chat-btn"
-			id="new-chat-btn"
-			on:click={() => conversationsStore.changeConversation(null)}>New Chat</Button
-		>
-		<TextInput light size="sm" placeholder="Search..." />
-		<SideNavDivider />
-	</div>
+<SideNav
+  bind:isOpen={$uiStore.isSideNavOpen}
+  aria-label="side navigation"
+  style="background-color: g90;"
+>
+  <div class="inner-side-nav-container">
+    <SideNavItems>
+      <div class="side-nav-items-container">
+        <div style="height: 100%">
+          <div class="side-nav-items-container">
+            <div class="new-chat-container">
+              <Button
+                kind="secondary"
+                size="small"
+                icon={AddComment}
+                class="new-chat-btn"
+                id="new-chat-btn"
+                aria-label="new thread"
+                on:click={() => handleActiveThreadChange('')}>New Chat</Button
+              >
+              <TextInput
+                light
+                size="sm"
+                placeholder="Search..."
+                bind:value={searchText}
+                maxlength={25}
+              />
+              <hr id="divider" class="divider" />
+            </div>
 
-	<div class="conversations" data-testid="conversations">
-		{#each organizedConversations as category}
-			{#if category.conversations.length > 0}
-				<SideNavMenu text={category.label} expanded data-testid="side-nav-menu">
-					{#each category.conversations as conversation (conversation.id)}
-						{@const editMode = editConversationId && editConversationId === conversation.id}
-						<div class:label-edit-mode={editMode}>
-							<SideNavMenuItem
-								data-testid="side-nav-menu-item-{conversation.label}"
-								isSelected={activeConversation?.id === conversation.id}
-								on:click={() => conversationsStore.changeConversation(conversation.id)}
-							>
-								<div class="menu-content">
-									{#if editMode}
-										<TextInput
-											bind:value={editLabelText}
-											size="sm"
-											class="edit-conversation"
-											on:keydown={(e) => handleEdit(e)}
-											on:blur={async () => {
-												await saveNewLabel();
-												resetEditMode();
-											}}
-											autofocus
-											maxlength={MAX_LABEL_SIZE}
-											readonly={inputDisabled}
-											aria-label="edit conversation"
-										/>
-									{:else}
-										<div data-testid="conversation-label-{conversation.id}" class="menu-text">
-											{conversation.label}
-										</div>
-										<OverflowMenu
-											on:click={(e) => {
-												e.stopPropagation();
-												if (activeConversation?.id !== conversation.id) {
-													conversationsStore.changeConversation(conversation.id);
-												}
-											}}
-											data-testid="overflow-menu-{conversation.label}"
-										>
-											<OverflowMenuItem
-												text="Edit"
-												on:click={() => {
-													editConversationId = conversation.id;
-													editLabelText = conversation.label;
-												}}
-											/>
-											<OverflowMenuItem
-												text="Delete"
-												on:click={() => (deleteModalOpen = true)}
-												data-testid="overflow-menu-delete-{conversation.label}"
-											/>
-										</OverflowMenu>
-									{/if}
-								</div>
-							</SideNavMenuItem>
-						</div>
-					{/each}
-				</SideNavMenu>
-			{/if}
-		{/each}
-	</div>
-	<Modal
-		danger
-		bind:open={deleteModalOpen}
-		modalHeading="Delete Chat"
-		primaryButtonText="Delete"
-		secondaryButtonText="Cancel"
-		on:click:button--secondary={() => (deleteModalOpen = false)}
-		on:open
-		on:close
-		on:submit={handleDelete}
-		>Are you sure you want to delete your <strong
-			>{activeConversation?.label.substring(0, MAX_LABEL_SIZE)}</strong
-		> chat?</Modal
-	>
+            <div
+              class:noScroll={disableScroll || editMode}
+              bind:this={scrollBoxRef}
+              class="threads"
+              data-testid="threads"
+            >
+              {#each organizedThreads as category}
+                {#if category.threads.length > 0}
+                  <SideNavMenu text={category.label} expanded data-testid="side-nav-menu">
+                    {#each category.threads as thread (thread.id)}
+                      <SideNavMenuItem
+                        data-testid="side-nav-menu-item-{thread.metadata.label}"
+                        id="side-nav-menu-item-{thread.id}"
+                        isSelected={activeThread?.id === thread.id}
+                        on:click={() => handleActiveThreadChange(thread.id)}
+                      >
+                        <div class="menu-content">
+                          {#if editMode && activeThread?.id === thread.id}
+                            <TextInput
+                              bind:value={editLabelText}
+                              size="sm"
+                              class="edit-thread"
+                              on:keydown={(e) => handleEdit(e)}
+                              on:blur={(e) => {
+                                handleEdit(e);
+                              }}
+                              autofocus
+                              maxlength={MAX_LABEL_SIZE}
+                              readonly={editLabelInputDisabled}
+                              aria-label="edit thread"
+                            />
+                          {:else}
+                            <div data-testid="thread-label-{thread.id}" class="menu-text">
+                              {thread.metadata.label}
+                            </div>
+                            <div>
+                              <OverflowMenu
+                                id={`overflow-menu-${thread.id}`}
+                                on:close={() => {
+                                  overflowMenuOpen = false;
+                                  disableScroll = false;
+                                }}
+                                on:click={(e) => {
+                                  e.stopPropagation();
+                                  overflowMenuOpen = true;
+                                  handleActiveThreadChange(thread.id);
+                                  disableScroll = true;
+                                }}
+                                data-testid="overflow-menu-{thread.metadata.label}"
+                                style={overflowMenuOpen && activeThread?.id === thread.id
+                                  ? `position: fixed; top: 0; left: 0; transform: translate(224px, ${menuOffset - scrollOffset + 48}px)`
+                                  : ''}
+                              >
+                                <OverflowMenuItem
+                                  text="Edit"
+                                  on:click={() => {
+                                    editThreadId = thread.id;
+                                    editLabelText = thread.metadata.label;
+                                  }}
+                                />
 
-	<div class="sidenav-links">
-		<SideNavLink>Import Data<slot name="icon"><Download /></slot></SideNavLink>
-		<SideNavLink>Export Data<slot name="icon"><Export /></slot></SideNavLink>
-		<SideNavLink>System Settings<slot name="icon"><Settings /></slot></SideNavLink>
-	</div>
-</SideNav>
+                                <OverflowMenuItem
+                                  data-testid="overflow-menu-delete-{thread.metadata.label}"
+                                  text="Delete"
+                                  on:click={() => {
+                                    deleteModalOpen = true;
+                                  }}
+                                />
+                              </OverflowMenu>
+                            </div>
+                          {/if}
+                        </div>
+                      </SideNavMenuItem>
+                    {/each}
+                  </SideNavMenu>
+                {/if}
+              {/each}
+            </div>
+            <div>
+              <hr id="divider" class="divider" />
+              <ImportExport />
+            </div>
+          </div>
+        </div>
+      </div></SideNavItems
+    >
+
+    <Modal
+      danger
+      bind:open={deleteModalOpen}
+      modalHeading="Delete Chat"
+      primaryButtonText="Delete"
+      secondaryButtonText="Cancel"
+      on:click:button--secondary={() => (deleteModalOpen = false)}
+      on:open
+      on:close
+      on:submit={handleDelete}
+      >Are you sure you want to delete your <strong
+        >{activeThread?.metadata.label.substring(0, MAX_LABEL_SIZE)}</strong
+      > chat?</Modal
+    >
+  </div></SideNav
+>
 
 <!-- NOTE - Carbon Components Svelte does not yet support theming of the UI Shell components so several
 properties had to be manually overridden.
 https://github.com/carbon-design-system/carbon-components-svelte/issues/892
-We might also want to investigate the Layer component once implemented in  Carbon Components Svelte V11.
 -->
 <style lang="scss">
-	.new-chat-container {
-		display: flex;
-		flex-direction: column;
-		gap: 8px;
-		padding: 16px;
-		:global(button.new-chat-btn) {
-			width: 100%;
-		}
-		:global(.bx--side-nav__divider) {
-			margin: 8px 0 0 0;
-			background-color: themes.$border-subtle-01;
-		}
-	}
-	.sidenav-links {
-		display: flex;
-		flex-direction: column;
-		padding: 8px 0 8px 0;
-		stroke: themes.$text-secondary;
-		:global(.bx--side-nav__link-text) {
-			color: themes.$text-secondary;
-		}
-	}
-	.menu-content {
-		width: 100% !important;
-		position: relative;
-		display: flex;
-		align-items: center;
-		justify-content: space-between;
-		width: 208px;
-		.menu-text {
-			width: 192px;
-			overflow: hidden;
-			text-overflow: ellipsis;
-			color: themes.$text-secondary;
-		}
+  .inner-side-nav-container {
+    height: 100%;
 
-		:global(.bx--overflow-menu) {
-			width: 16px;
-			height: 32px;
-		}
-	}
+    :global(.bx--overflow-menu) {
+      width: 16px;
+      height: 32px;
+      z-index: 1;
+    }
 
-	// The following overflow: visible !important overrides allow the OverflowMenu component
-	// to display correctly. There may be a better way to do this, but just realize you have
-	// to override things at several levels to get results.
-	// The !important is necessary for the changes to work in production builds.
-	.conversations {
-		flex-grow: 1;
-		overflow-y: scroll;
-		scrollbar-width: none;
-		border-bottom: 2px solid themes.$border-subtle-01;
-		overflow: visible !important;
-	}
+    :global(.bx--overflow-menu-options) {
+      left: 20px !important;
+    }
+  }
 
-	:global(.bx--side-nav__navigation) {
-		overflow: visible !important;
-		:global(.bx--side-nav__item) {
-			overflow: visible !important;
-		}
-	}
+  :global(.bx--side-nav__item) {
+    list-style-type: none;
+  }
 
-	:global(.bx--side-nav__link) {
-		&:hover {
-			background-color: #4d4d4d !important;
-		}
-	}
+  .noScroll {
+    overflow-y: hidden !important;
+  }
 
-	:global(.bx--side-nav__link[aria-current='page']) {
-		background-color: #4d4d4d !important;
-	}
+  .side-nav-items-container {
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
 
-	:global(.bx--side-nav__link-text) {
-		position: relative;
-		display: flex;
-		flex-grow: 1;
-		justify-content: space-between;
-		overflow: visible !important;
-		color: themes.$text-secondary !important;
-	}
+    :global(.bx--side-nav__divider) {
+      margin: layout.$spacing-03 0 0 0;
+      background-color: themes.$border-subtle-01;
+    }
+  }
 
-	:global(.bx--side-nav__navigation) {
-		background-color: themes.$layer-01 !important;
-		list-style: none;
-		height: calc(100vh - var(--header-height)) !important;
-		color: themes.$text-secondary !important;
-	}
+  .new-chat-container {
+    display: flex;
+    flex-direction: column;
+    gap: layout.$spacing-03;
+    padding: layout.$spacing-05;
 
-	:global(.bx--side-nav__submenu) {
-		color: themes.$text-secondary !important;
-		:global(svg) {
-			stroke: themes.$text-secondary;
-		}
-		&:hover {
-			background-color: #4d4d4d !important;
-		}
-	}
+    :global(button.new-chat-btn) {
+      width: 100%;
+    }
+  }
 
-	.label-edit-mode {
-		:global(.bx--side-nav__link) {
-			padding: 0 layout.$spacing-04 0 layout.$spacing-07;
-		}
-		:global(.bx--side-nav__link[aria-current='page']) {
-			background-color: themes.$layer-01 !important;
-		}
-		:global(input) {
-			height: 1.5rem;
-		}
-		:global(.bx--text-input) {
-			border-bottom: none;
-		}
-	}
+  .menu-content {
+    width: 100% !important;
+    position: relative;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    width: 208px;
+
+    .menu-text {
+      width: 192px;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      color: themes.$text-secondary;
+    }
+  }
+
+  // The following overflow: visible !important overrides allow the OverflowMenu component
+  // to display correctly. There may be a better way to do this, but just realize you have
+  // to override things at several levels to get results.
+  // The !important is necessary for the changes to work in production builds.
+  .threads {
+    flex-grow: 1;
+    scrollbar-width: none;
+    overflow-y: auto;
+  }
+
+  :global(.bx--side-nav__navigation) {
+    overflow: visible !important;
+
+    :global(.bx--side-nav__item) {
+      overflow: visible !important;
+      cursor: pointer;
+    }
+  }
+
+  :global(.bx--side-nav__link) {
+    &:hover {
+      background-color: #4d4d4d !important;
+    }
+  }
+
+  :global(.bx--side-nav__link[aria-current='page']) {
+    background-color: #4d4d4d !important;
+  }
+
+  :global(.bx--side-nav__link-text) {
+    position: relative;
+    display: flex;
+    flex-grow: 1;
+    justify-content: space-between;
+    text-align: left;
+    overflow: visible !important;
+    color: themes.$text-secondary !important;
+  }
+
+  :global(.bx--side-nav__navigation) {
+    background-color: themes.$layer-01 !important;
+    list-style: none;
+    height: calc(100vh - var(--header-height)) !important;
+    color: themes.$text-secondary !important;
+  }
+
+  :global(.bx--side-nav__items) {
+    text-align: center;
+    overflow: visible !important;
+    height: 100%;
+  }
+
+  :global(.bx--side-nav__submenu) {
+    color: themes.$text-secondary !important;
+
+    :global(svg) {
+      stroke: themes.$text-secondary;
+    }
+
+    &:hover {
+      background-color: #4d4d4d !important;
+    }
+  }
+
+  .label-edit-mode {
+    :global(.bx--side-nav__link) {
+      padding: 0 layout.$spacing-05 0 layout.$spacing-07;
+    }
+
+    :global(.bx--side-nav__link[aria-current='page']) {
+      background-color: themes.$layer-01 !important;
+    }
+
+    :global(input) {
+      height: 1.5rem;
+    }
+
+    :global(.bx--text-input) {
+      border-bottom: none;
+    }
+  }
 </style>

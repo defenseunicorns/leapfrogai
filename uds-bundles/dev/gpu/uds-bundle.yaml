@@ -1,3 +1,5 @@
+# yaml-language-server: $schema=https://raw.githubusercontent.com/defenseunicorns/uds-cli/main/uds.schema.json
+
 kind: UDSBundle
 metadata:
   name: leapfrogai
@@ -5,15 +7,10 @@ metadata:
   version: dev
 
 packages:
-  # OpenAI-like API 
+  # OpenAI-like API
   - name: leapfrogai-api
     path: ../../../packages/api
     ref: dev
-
-  # AI chat, transcription, and summarization frontend - not currently in this repo so it builds from ghcr
-  - name: leapfrogai-ui
-    repository: ghcr.io/defenseunicorns/packages/leapfrogai/leapfrogai-ui
-    ref: 0.3.5
 
   # Model for generic chat and summarization
   - name: vllm
@@ -33,4 +30,26 @@ packages:
   # Model for converting audio to text
   - name: whisper
     path: ../../../packages/whisper
+    ref: dev
+
+  # Supabase backend for the UI and API to interface with Postgresql
+  - name: supabase
+    path: ../../../packages/supabase/
+    ref: dev
+    overrides:
+      supabase:
+        supabase-secrets-generator:
+          variables:
+            - path: "leapfrogai.sso.redirectUris"
+              name: "KEYCLOAK_REDIRECT_URIS"
+              default:
+                - "https://supabase-kong.uds.dev/auth/v1/callback"
+            - path: "leapfrogai.sso.webOrigins"
+              name: KEYCLOAK_WEB_ORIGINS
+              default:
+                - "https://ai.uds.dev"
+
+  # UI
+  - name: leapfrogai-ui
+    path: ../../../packages/ui/
     ref: dev
