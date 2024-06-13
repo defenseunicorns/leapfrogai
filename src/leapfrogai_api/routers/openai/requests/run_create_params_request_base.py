@@ -152,7 +152,9 @@ class RunCreateParamsRequestBase(BaseModel):
         """List all the messages in a thread."""
         try:
             crud_message = CRUDMessage(db=session)
-            messages: list[Message] | None = await crud_message.list(filters={"thread_id": thread_id})
+            messages: list[Message] | None = await crud_message.list(
+                filters={"thread_id": thread_id}
+            )
 
             if messages is None:
                 return []
