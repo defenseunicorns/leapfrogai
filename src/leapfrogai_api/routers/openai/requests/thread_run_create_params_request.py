@@ -109,7 +109,8 @@ class ThreadRunCreateParamsRequestBaseRequest(RunCreateParamsRequestBase):
 
     async def create_run_and_thread(self, session):
         await self.update_with_assistant_data(session)
-        new_thread = (await self.create_thread_request()).create_thread(session)
+        new_thread_request: CreateThreadRequest = await self.create_thread_request()
+        new_thread = await new_thread_request.create_thread(session)
         crud_run = CRUDRun(db=session)
         create_params: RunCreateParamsRequestBase = RunCreateParamsRequestBase(
             **self.__dict__
