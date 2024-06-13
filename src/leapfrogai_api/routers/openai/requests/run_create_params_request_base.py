@@ -319,15 +319,15 @@ class RunCreateParamsRequestBase(BaseModel):
         )
 
         yield from_assistant_stream_event_to_str(
-                ThreadMessageCreated(data=new_message, event="thread.message.created")
-            )
+            ThreadMessageCreated(data=new_message, event="thread.message.created")
+        )
         yield "\n\n"
 
         yield from_assistant_stream_event_to_str(
-                ThreadMessageInProgress(
-                    data=new_message, event="thread.message.in_progress"
-                )
+            ThreadMessageInProgress(
+                data=new_message, event="thread.message.in_progress"
             )
+        )
         yield "\n\n"
 
         # The accumulated streaming response
