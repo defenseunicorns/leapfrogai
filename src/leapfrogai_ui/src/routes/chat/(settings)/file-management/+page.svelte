@@ -4,6 +4,7 @@
     DataTable,
     FileUploaderButton,
     Loading,
+    Modal,
     Toolbar,
     ToolbarBatchActions,
     ToolbarContent,
@@ -18,6 +19,7 @@
   import { toastStore } from '$stores';
   import type { FileRow } from '$lib/types/files';
   import { invalidate } from '$app/navigation';
+  import type { Assistant } from 'openai/resources/beta/assistants';
 
   export let data;
 
@@ -28,9 +30,40 @@
   let deleting = false;
   let active = selectedRowIds.length > 0;
   let nonSelectableRowIds: string[] = [];
+  let confirmDeleteModalOpen = false;
+  let affectedAssistants: Assistant[];
+  let affectedAssistantsLoading = false;
 
+  $: affectedAssistants = [];
   $: rows = data.files;
   $: if (selectedRowIds.length === 0) active = false;
+
+  const updateAllFileStatus = (newFiles: Array<FileObject | FileRow>) => {
+    // Remove all uploading files
+    rows = rows.filter((row) => row.status !== 'uploading');
+
+    const newRows = [...rows];
+    // insert newly uploaded files with updated status
+    for (const file of newFiles) {
+      const item: FileRow = {
+        id: file.id,
+        filename: file.filename,
+        created_at: file.created_at,
+        status: file.status === 'error' ? 'error' : 'complete'
+      };
+      newRows.unshift(item);
+    }
+    rows = [...newRows];
+
+    // Wait 1.5 seconds, then remove error files and update status to hide for successful files
+    new Promise((resolve) => setTimeout(resolve, 1500)).then(() => {
+      const rowsWithoutErrors = rows.filter((row) => row.status !== 'error');
+      rows = rowsWithoutErrors.map((row) => {
+        const item: FileRow = { ...row, status: 'hide' };
+        return item;
+      });
+    });
+  };
 
   const { enhance, submit, submitting } = superForm(data.form, {
     validators: yup(filesSchema),
@@ -67,8 +100,26 @@
   });
 
   const handleDelete = async () => {
+    affectedAssistantsLoading = true;
+    confirmDeleteModalOpen = true;
+    const getAffectedAssistants = await fetch(`/api/files/delete-check/`, {
+      method: 'POST',
+      body: JSON.stringify({ fileIds: selectedRowIds })
+    });
+    if (getAffectedAssistants.ok) {
+      const assistants = await getAffectedAssistants.json();
+      if (assistants && assistants.length > 0) {
+        affectedAssistants = assistants;
+      }
+    }
+
+    affectedAssistantsLoading = false;
+  };
+
+  const handleConfirmedDelete = async () => {
     const isMultipleFiles = selectedRowIds.length > 1;
     deleting = true;
+
     const res = await fetch('/api/files/delete', {
       method: 'DELETE',
       body: JSON.stringify({ ids: selectedRowIds }),
@@ -92,33 +143,6 @@
     }
     selectedRowIds = [];
     deleting = false;
-  };
-
-  const updateAllFileStatus = (newFiles: Array<FileObject | FileRow>) => {
-    // Remove all uploading files
-    rows = rows.filter((row) => row.status !== 'uploading');
-
-    const newRows = [...rows];
-    // insert newly uploaded files with updated status
-    for (const file of newFiles) {
-      const item: FileRow = {
-        id: file.id,
-        filename: file.filename,
-        created_at: file.created_at,
-        status: file.status === 'error' ? 'error' : 'complete'
-      };
-      newRows.unshift(item);
-    }
-    rows = [...newRows];
-
-    // Wait 1.5 seconds, then remove error files and update status to hide for successful files
-    new Promise((resolve) => setTimeout(resolve, 1500)).then(() => {
-      const rowsWithoutErrors = rows.filter((row) => row.status !== 'error');
-      rows = rowsWithoutErrors.map((row) => {
-        const item: FileRow = { ...row, status: 'hide' };
-        return item;
-      });
-    });
   };
 
   const handleUpload = async () => {
@@ -228,6 +252,27 @@
       </svelte:fragment>
     </DataTable>
   </form>
+
+  <Modal
+    danger
+    bind:open={confirmDeleteModalOpen}
+    modalHeading="Delete File"
+    shouldSubmitOnEnter={false}
+    primaryButtonText="Delete"
+    secondaryButtonText="Cancel"
+    on:click:button--secondary={() => (confirmDeleteModalOpen = false)}
+    on:submit={() => handleConfirmedDelete()}
+  >
+    <p>
+      Are you sure you want to delete <span style="font-weight: bold">[insert file names]</span>?
+      {#if affectedAssistants.length > 0}
+        This will affect the following assistants:
+        {#each affectedAssistants as affectedAssistant}
+          <li>{affectedAssistant.name}</li>
+        {/each}
+      {/if}
+    </p>
+  </Modal>
 </div>
 
 <style lang="scss">
