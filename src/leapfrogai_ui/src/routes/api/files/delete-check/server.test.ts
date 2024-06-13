@@ -168,10 +168,10 @@ describe('/api/files/delete-check', () => {
     });
 
     await expect(
-        POST({
-          request,
-          locals: { safeGetSession: sessionMock }
-        })
+      POST({
+        request,
+        locals: { safeGetSession: sessionMock }
+      })
     ).rejects.toMatchObject({
       status: 500
     });

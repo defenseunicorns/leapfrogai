@@ -76,7 +76,6 @@ describe('Assistant Form', () => {
     it('redirects on success (with data sources)', async () => {
       const fakeFile1 = getFakeFileObject();
       const fakeFile2 = getFakeFileObject();
-      mockOpenAI.setTempVectorStoreFiles([fakeFile1, fakeFile2]);
 
       const assistant = getFakeAssistantInput();
 
@@ -137,8 +136,6 @@ describe('Assistant Form', () => {
     it('redirects on success', async () => {
       const fakeFile1 = getFakeFileObject();
       const fakeFile2 = getFakeFileObject();
-      mockOpenAI.setTempVectorStoreFiles([fakeFile1, fakeFile2]);
-
       const assistant = getFakeAssistant();
 
       const formData = new FormData();
