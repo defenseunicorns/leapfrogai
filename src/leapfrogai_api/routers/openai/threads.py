@@ -3,18 +3,31 @@
 import traceback
 
 from fastapi import HTTPException, APIRouter, status
+from fastapi.responses import StreamingResponse
 from fastapi.security import HTTPBearer
 from openai.types.beta import Thread, ThreadDeleted
 from openai.types.beta.threads import Message, MessageDeleted, Run
 from openai.types.beta.threads.runs import RunStep
 
 from leapfrogai_api.backend.types import (
-    CreateThreadRequest,
     ModifyThreadRequest,
-    CreateMessageRequest,
     ModifyMessageRequest,
+    ModifyRunRequest,
+)
+from leapfrogai_api.routers.openai.requests.create_message_request import (
+    CreateMessageRequest,
+)
+from leapfrogai_api.routers.openai.requests.thread_run_create_params_request import (
+    ThreadRunCreateParamsRequestBaseRequest,
+)
+from leapfrogai_api.routers.openai.requests.run_create_params_request import (
+    RunCreateParamsRequestBaseRequest,
+)
+from leapfrogai_api.routers.openai.requests.create_thread_request import (
+    CreateThreadRequest,
 )
 from leapfrogai_api.data.crud_message import CRUDMessage
+from leapfrogai_api.data.crud_run import CRUDRun
 from leapfrogai_api.data.crud_thread import CRUDThread
 from leapfrogai_api.routers.supabase_session import Session
 
@@ -25,46 +38,17 @@ security = HTTPBearer()
 @router.post("")
 async def create_thread(request: CreateThreadRequest, session: Session) -> Thread:
     """Create a thread."""
-    new_messages: list[Message] = []
-    new_thread: Thread | None = None
     try:
-        crud_thread = CRUDThread(db=session)
+        new_thread: Thread | None = await request.create_thread(session)
 
-        thread = Thread(
-            id="",  # Leave blank to have Postgres generate a UUID
-            created_at=0,  # Leave blank to have Postgres generate a timestamp
-            metadata=request.metadata,
-            object="thread",
-            tool_resources=request.tool_resources,
-        )
-
-        new_thread = await crud_thread.create(object_=thread)
-
-        if new_thread and request.messages:
-            """Once the thread has been created, add all of the request's messages to the DB"""
-            for message in request.messages:
-                new_messages.append(
-                    await create_message(
-                        new_thread.id,
-                        CreateMessageRequest(
-                            role=message.role,
-                            content=message.content,
-                            attachments=message.attachments,
-                            metadata=message.metadata,
-                        ),
-                        session,
-                    )
-                )
-
-        return new_thread
-    except Exception as exc:
         if new_thread:
-            for message in new_messages:
-                """Clean up any messages added prior to the error"""
-                await delete_message(
-                    thread_id=new_thread.id, message_id=message.id, session=session
-                )
+            # Once the thread has been created, add all the request's messages to the DB
+            await request.create_messages(new_thread, session)
 
+            return new_thread
+        else:
+            raise Exception("Thread creation failed!")
+    except Exception as exc:
         traceback.print_exc()
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
@@ -72,11 +56,152 @@ async def create_thread(request: CreateThreadRequest, session: Session) -> Threa
         ) from exc
 
 
+@router.post("/{thread_id}/runs", response_model=None)
+async def create_run(
+    thread_id: str, session: Session, request: RunCreateParamsRequestBaseRequest
+) -> Run | StreamingResponse:
+    """Create a run."""
+
+    try:
+        new_run = await request.create_run(session, thread_id)
+
+        if not new_run:
+            raise Exception("The DB failed to create the run")
+
+        existing_thread: Thread = await retrieve_thread(
+            thread_id,
+            session,
+        )
+
+        return await request.generate_response(existing_thread, new_run, session)
+    except Exception as exc:
+        traceback.print_exc()
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail="Unable to create run",
+        ) from exc
+
+
+@router.post("/runs", response_model=None)
+async def create_thread_and_run(
+    session: Session, request: ThreadRunCreateParamsRequestBaseRequest
+) -> Run | StreamingResponse:
+    """Create a thread and run."""
+
+    try:
+        new_run, new_thread = await request.create_run_and_thread(session)
+
+        if not new_run:
+            raise Exception("The DB failed to create the run")
+
+        return await request.generate_response(new_run, new_thread, session)
+    except Exception as exc:
+        traceback.print_exc()
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail="Unable to create run",
+        ) from exc
+
+
+@router.get("/{thread_id}/runs")
+async def list_runs(thread_id: str, session: Session) -> list[Run]:
+    """List all the runs in a thread."""
+    try:
+        crud_run = CRUDRun(db=session)
+        runs = await crud_run.list(filters={"thread_id": thread_id})
+
+        return runs
+    except Exception as exc:
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=f"Failed to list runs for thread {thread_id}",
+        ) from exc
+
+
+@router.get("/{thread_id}/runs/{run_id}")
+async def retrieve_run(thread_id: str, run_id: str, session: Session) -> Run:
+    """Retrieve a run."""
+    crud_run = CRUDRun(db=session)
+    return await crud_run.get(filters={"id": run_id, "thread_id": thread_id})
+
+
+@router.post("/{thread_id}/runs/{run_id}")
+async def modify_run(
+    thread_id: str, run_id: str, request: ModifyRunRequest, session: Session
+) -> Run:
+    """Modify a run."""
+    run = CRUDRun(db=session)
+
+    if not (old_run := await run.get(filters={"id": run_id, "thread_id": thread_id})):
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="Run not found",
+        )
+
+    try:
+        new_run = Run(
+            id=run_id,
+            thread_id=thread_id,
+            created_at=old_run.created_at,
+            metadata=getattr(request, "metadata", old_run.metadata),
+            object="thread.run",
+        )
+
+        return await run.update(
+            id_=run_id,
+            object_=new_run,
+        )
+    except Exception as exc:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="Unable to parse run request",
+        ) from exc
+
+
+@router.post("/{thread_id}/runs/{run_id}/submit_tool_outputs")
+async def submit_tool_outputs(thread_id: str, run_id: str, session: Session) -> Run:
+    """Submit tool outputs for a run."""
+    # TODO: Implement this function
+    raise HTTPException(status_code=501, detail="Not implemented")
+
+
+@router.post("/{thread_id}/runs/{run_id}/cancel")
+async def cancel_run(thread_id: str, run_id: str, session: Session) -> Run:
+    """Cancel a run."""
+    # TODO: Implement this function
+    raise HTTPException(status_code=501, detail="Not implemented")
+
+
+@router.get("/{thread_id}/runs/{run_id}/steps")
+async def list_run_steps(
+    thread_id: str, run_id: str, session: Session
+) -> list[RunStep]:
+    """List all the steps in a run."""
+    # TODO: Implement this function
+    raise HTTPException(status_code=501, detail="Not implemented")
+
+
+@router.get("/{thread_id}/runs/{run_id}/steps/{step_id}")
+async def retrieve_run_step(
+    thread_id: str, run_id: str, step_id: str, session: Session
+) -> RunStep:
+    """Retrieve a step."""
+    # TODO: Implement this function
+    raise HTTPException(status_code=501, detail="Not implemented")
+
+
 @router.get("/{thread_id}")
-async def retrieve_thread(thread_id: str, session: Session) -> Thread | None:
+async def retrieve_thread(thread_id: str, session: Session) -> Thread:
     """Retrieve a thread."""
     crud_thread = CRUDThread(db=session)
-    return await crud_thread.get(filters={"id": thread_id})
+
+    if not (thread := await crud_thread.get(filters={"id": thread_id})):
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="Thread not found",
+        )
+
+    return thread
 
 
 @router.post("/{thread_id}")
@@ -141,15 +266,17 @@ async def create_message(
     try:
         crud_message = CRUDMessage(db=session)
 
+        message_content = await request.get_message_content()
+
         message = Message(
             id="",  # Leave blank to have Postgres generate a UUID
             attachments=request.attachments,
-            content=request.content,
+            content=message_content,
             created_at=0,  # Leave blank to have Postgres generate a timestamp
             metadata=request.metadata,
             object="thread.message",
             role=request.role,
-            status="in_progress",
+            status="completed",
             thread_id=thread_id,
         )
         return await crud_message.create(object_=message)
@@ -241,70 +368,3 @@ async def delete_message(
         deleted=bool(message_deleted),
         object="thread.message.deleted",
     )
-
-
-@router.post("/{thread_id}/runs")
-async def create_run(thread_id: str, session: Session) -> Run:
-    """Create a run."""
-    # TODO: Implement this function
-    raise HTTPException(status_code=501, detail="Not implemented")
-
-
-@router.post("/runs")
-async def create_thread_and_run(assistant_id: str, session: Session) -> Run:
-    """Create a thread and run."""
-    # TODO: Implement this function
-    raise HTTPException(status_code=501, detail="Not implemented")
-
-
-@router.get("/{thread_id}/runs")
-async def list_runs(thread_id: str, session: Session) -> list[Run]:
-    """List all the runs in a thread."""
-    # TODO: Implement this function
-    raise HTTPException(status_code=501, detail="Not implemented")
-
-
-@router.get("/{thread_id}/runs/{run_id}")
-async def retrieve_run(thread_id: str, run_id: str, session: Session) -> Run:
-    """Retrieve a run."""
-    # TODO: Implement this function
-    raise HTTPException(status_code=501, detail="Not implemented")
-
-
-@router.post("/{thread_id}/runs/{run_id}")
-def modify_run(thread_id: str, run_id: str, session: Session) -> Run:
-    """Modify a run."""
-    # TODO: Implement this function
-    raise HTTPException(status_code=501, detail="Not implemented")
-
-
-@router.post("/{thread_id}/runs/{run_id}/submit_tool_outputs")
-async def submit_tool_outputs(thread_id: str, run_id: str, session: Session) -> Run:
-    """Submit tool outputs for a run."""
-    # TODO: Implement this function
-    raise HTTPException(status_code=501, detail="Not implemented")
-
-
-@router.post("/{thread_id}/runs/{run_id}/cancel")
-async def cancel_run(thread_id: str, run_id: str, session: Session) -> Run:
-    """Cancel a run."""
-    # TODO: Implement this function
-    raise HTTPException(status_code=501, detail="Not implemented")
-
-
-@router.get("/{thread_id}/runs/{run_id}/steps")
-async def list_run_steps(
-    thread_id: str, run_id: str, session: Session
-) -> list[RunStep]:
-    """List all the steps in a run."""
-    # TODO: Implement this function
-    raise HTTPException(status_code=501, detail="Not implemented")
-
-
-@router.get("/{thread_id}/runs/{run_id}/steps/{step_id}")
-async def retrieve_run_step(
-    thread_id: str, run_id: str, step_id: str, session: Session
-) -> RunStep:
-    """Retrieve a step."""
-    # TODO: Implement this function
-    raise HTTPException(status_code=501, detail="Not implemented")

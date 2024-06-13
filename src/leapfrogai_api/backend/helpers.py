@@ -1,6 +1,6 @@
 """Helper functions for the OpenAI backend."""
 
-from typing import BinaryIO, Iterator
+from typing import BinaryIO, Iterator, AsyncGenerator, Any
 import grpc
 import leapfrogai_sdk as lfai
 from leapfrogai_api.backend.types import (
@@ -48,7 +48,7 @@ async def recv_chat(
     stream: grpc.aio.UnaryStreamCall[
         lfai.ChatCompletionRequest, lfai.ChatCompletionResponse
     ],
-):
+) -> AsyncGenerator[str, Any]:
     """Generator that yields chat completion responses as Server-Sent Events."""
     async for c in stream:
         yield (

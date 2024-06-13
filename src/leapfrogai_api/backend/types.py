@@ -5,15 +5,20 @@ from __future__ import annotations
 import datetime
 from enum import Enum
 from typing import Literal
-from pydantic import BaseModel, Field
+
 from fastapi import UploadFile, Form, File
-from openai.types.beta.vector_store import ExpiresAfter
 from openai.types import FileObject
-from openai.types.beta import VectorStore
 from openai.types.beta import Assistant, AssistantTool
-from openai.types.beta.threads import Message, MessageContent, TextContentBlock, Text
-from openai.types.beta.threads.message import Attachment
-from openai.types.beta.assistant import ToolResources
+from openai.types.beta import VectorStore
+from openai.types.beta.assistant import (
+    ToolResources as BetaAssistantToolResources,
+    ToolResourcesFileSearch,
+)
+from openai.types.beta.assistant_tool import FileSearchTool
+from openai.types.beta.thread import ToolResources as BetaThreadToolResources
+from openai.types.beta.threads.text_content_block_param import TextContentBlockParam
+from openai.types.beta.vector_store import ExpiresAfter
+from pydantic import BaseModel, Field
 
 
 ##########
@@ -101,8 +106,8 @@ class ChatFunction(BaseModel):
 class ChatMessage(BaseModel):
     """Message object for chat completion."""
 
-    role: str
-    content: str
+    role: Literal["user", "assistant", "system", "function"]
+    content: str | TextContentBlockParam
 
 
 class ChatDelta(BaseModel):
@@ -259,12 +264,14 @@ class ListFilesResponse(BaseModel):
 class CreateAssistantRequest(BaseModel):
     """Request object for creating an assistant."""
 
-    model: str = "mistral"
+    model: str = "llama-cpp-python"
     name: str | None = "Froggy Assistant"
     description: str | None = "A helpful assistant."
     instructions: str | None = "You are a helpful assistant."
-    tools: list[AssistantTool] | None = []  # This is all we support right now
-    tool_resources: ToolResources | None = ToolResources()
+    tools: list[AssistantTool] | None = [FileSearchTool(type="file_search")]
+    tool_resources: BetaAssistantToolResources | None = BetaAssistantToolResources(
+        file_search=ToolResourcesFileSearch(vector_store_ids=[])
+    )
     metadata: dict | None = Field(default=None, examples=[{}])
     temperature: float | None = 1.0
     top_p: float | None = 1.0
@@ -371,30 +378,18 @@ class ListVectorStoresResponse(BaseModel):
 ################
 
 
-class CreateThreadRequest(BaseModel):
-    """Request object for creating a thread."""
+class ModifyRunRequest(BaseModel):
+    """Request object for modifying a run."""
 
-    messages: list[Message] | None = Field(default=None, examples=[None])
-    tool_resources: ToolResources | None = Field(default=None, examples=[None])
     metadata: dict | None = Field(default=None, examples=[{}])
 
 
 class ModifyThreadRequest(BaseModel):
     """Request object for modifying a thread."""
 
-    tool_resources: ToolResources | None = Field(default=None, examples=[None])
-    metadata: dict | None = Field(default=None, examples=[{}])
-
-
-class CreateMessageRequest(BaseModel):
-    """Request object for creating a message."""
-
-    role: Literal["user", "assistant"] = Field(default="user")
-    content: list[MessageContent] = Field(
-        default=[TextContentBlock(text=Text(value="", annotations=[]), type="text")],
-        examples=[[TextContentBlock(text=Text(value="", annotations=[]), type="text")]],
+    tool_resources: BetaThreadToolResources | None = Field(
+        default=None, examples=[None]
     )
-    attachments: list[Attachment] | None = Field(default=None, examples=[None])
     metadata: dict | None = Field(default=None, examples=[{}])
 
 
