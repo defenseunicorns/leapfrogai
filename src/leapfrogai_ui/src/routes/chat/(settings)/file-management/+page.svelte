@@ -173,7 +173,7 @@
   }
 </script>
 
-<div data-testid="file-management-container" class="file-management-container">
+<div class="file-management-container">
   <div class="title">File Management</div>
   <form method="POST" enctype="multipart/form-data" use:enhance>
     <DataTable
