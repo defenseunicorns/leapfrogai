@@ -8,8 +8,8 @@
   export let filesForm: FilesForm;
 
   $: filteredStoreFiles = $filesStore.files
-          .filter((f) => $filesStore.selectedAssistantFileIds.includes(f.id))
-          .sort((a, b) => a.filename.localeCompare(b.filename))
+    .filter((f) => $filesStore.selectedAssistantFileIds.includes(f.id))
+    .sort((a, b) => a.filename.localeCompare(b.filename));
 
   // Files with errors remain selected for 1.5 seconds until the files are re-fetched do show the error state
   // If the assistant is saved before they are re-fetched, we need to ensure any files with errors are removed
