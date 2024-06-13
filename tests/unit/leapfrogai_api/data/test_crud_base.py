@@ -2,8 +2,9 @@ import pytest
 from unittest.mock import MagicMock, AsyncMock
 from pydantic import BaseModel
 from tests.utils.crud_utils import MockModel, execute_response_format
-from tests.mocks.mock_crud_base import mock_crud_base
+from tests.mocks.mock_session import mock_session
 
+from src.leapfrogai_api.data.crud_base import CRUDBase
 
 class MockModelNoID(BaseModel):
     name: str
@@ -33,9 +34,10 @@ mock_data_model = MockModel(id=1, name="mock-data")
     ({}, None, None, None),
     (None, None, None, None)
 ])
-async def test_create(mock_crud_base, mock_data_object, mock_response, expected_result, expected_call):
-    mock_crud_base.db.table().insert().execute.return_value = execute_response_format(mock_response)
-
+async def test_create(mock_session, mock_data_object, mock_response, expected_result, expected_call):
+    mock_session.table().insert().execute.return_value = execute_response_format(mock_response)
+    mock_crud_base = CRUDBase(db=mock_session, model=MockModel, table_name="dummy_table")
+        
     result = await mock_crud_base.create(mock_data_object)
 
     assert result == expected_result
@@ -53,9 +55,10 @@ async def test_create(mock_crud_base, mock_data_object, mock_response, expected_
     ({}, None, None),
     (None, None, None)
 ])
-async def test_get(mock_crud_base, filters, mock_response, expected_result):
-    mock_crud_base.db.table().select().execute.return_value = execute_response_format(mock_response)
-
+async def test_get(mock_session, filters, mock_response, expected_result):
+    mock_session.table().select().execute.return_value = execute_response_format(mock_response)
+    mock_crud_base = CRUDBase(db=mock_session, model=MockModel, table_name="dummy_table")
+    
     result = await mock_crud_base.get(filters)
 
     if expected_result:
@@ -65,20 +68,30 @@ async def test_get(mock_crud_base, filters, mock_response, expected_result):
 
 
 @pytest.mark.asyncio
-async def test_list(mock_crud_base):
+async def test_list(mock_session):
+    mock_crud_base = CRUDBase(db=mock_session, model=MockModel, table_name="dummy_table")
+    
     Mock_list = await mock_crud_base.list({})
+
     assert len(Mock_list) == 1
     assert Mock_list[0].id == 1
     assert Mock_list[0].name == "mock-data"
 
 @pytest.mark.asyncio
-async def test_update(mock_crud_base):
+async def test_update(mock_session):
     Mock_model_instance = MockModel(id=1, name="updated-data")
-    mock_crud_base.db.table().update().execute.return_value = execute_response_format(Mock_model_instance.model_dump())
+    mock_session.table().update().execute.return_value = execute_response_format(Mock_model_instance.model_dump())
+    mock_crud_base = CRUDBase(db=mock_session, model=MockModel, table_name="dummy_table")
+    
+    
     updated_Mock = await mock_crud_base.update("1", Mock_model_instance)
+
     assert updated_Mock == Mock_model_instance
 
 @pytest.mark.asyncio
-async def test_delete(mock_crud_base):
+async def test_delete(mock_session):
+    mock_crud_base = CRUDBase(db=mock_session, model=MockModel, table_name="dummy_table")
+    
     result = await mock_crud_base.delete({"id": 1})
+    
     assert result is True

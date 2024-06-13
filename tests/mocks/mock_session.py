@@ -1,17 +1,21 @@
 import pytest
 from unittest.mock import MagicMock, AsyncMock
-
 from tests.utils.crud_utils import MockModel, execute_response_format
 
-from src.leapfrogai_api.data.crud_base import CRUDBase
-
 @pytest.fixture
-def mock_crud_base():
-    # Create an AsyncMock for the db client
-    db = AsyncMock()
+def mock_session():
+    session = AsyncMock()
+
+    mock_user = MagicMock()
+    mock_user.user = MagicMock()
+    mock_user.user.id = "0"
+    mock_auth = MagicMock()
+    mock_auth.get_user = AsyncMock(return_value=mock_user)
+    
+    session.auth = mock_auth
 
     mock_table = MagicMock()
-    db.table = MagicMock(return_value=mock_table)
+    session.table = MagicMock(return_value=mock_table)
 
     mock_data = dict(id=1, name="mock-data")
 
@@ -34,4 +38,4 @@ def mock_crud_base():
     mock_delete.eq = MagicMock(return_value = mock_delete)
     mock_table.delete.return_value = mock_delete
 
-    return CRUDBase(db=db, model=MockModel, table_name="dummy_table")
+    return session
