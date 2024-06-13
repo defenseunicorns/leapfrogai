@@ -48,8 +48,10 @@ async def chat_complete(
             content = m.content
         else:
             if TextContentBlockParamValidator.validate_python(m.content):
-                message_content: TextContentBlockParam = m.content
-                content = message_content.get("text")
+                message_content: str = ""
+                for part in m.content:
+                    message_content += part.get("text")
+                content = message_content
 
         chat_items.append(lfai.ChatItem(role=grpc_chat_role(m.role), content=content))
     request = lfai.ChatCompletionRequest(

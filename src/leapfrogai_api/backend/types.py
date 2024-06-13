@@ -107,7 +107,7 @@ class ChatMessage(BaseModel):
     """Message object for chat completion."""
 
     role: Literal["user", "assistant", "system", "function"]
-    content: str | TextContentBlockParam
+    content: str | list[TextContentBlockParam]
 
 
 class ChatDelta(BaseModel):
