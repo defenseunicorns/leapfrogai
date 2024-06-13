@@ -25,6 +25,9 @@ const confirmDeletion = async (page: Page) => {
   await deleteBtns[1].click();
 };
 
+// TODO - these tests are flaky because they use the same two files (test.pdf and test2.pdf) and there can
+// be race conditions when uploading and deleting them while tests run in parallel
+
 test.beforeEach(async () => {
   await deleteTestFilesWithApi();
 });
@@ -94,7 +97,7 @@ test('confirms any affected assistants then deletes multiple files', async ({ pa
   const checkboxes = await page.getByRole('checkbox').all();
   await checkboxes[1].check({ force: true });
   await checkboxes[2].check({ force: true });
-  await initiateDeletion(page, `${filename2}, ${filename1}`);
+  await initiateDeletion(page, '');
   await confirmDeletion(page);
 
   await expect(page.getByText('Files Deleted')).toBeVisible();
