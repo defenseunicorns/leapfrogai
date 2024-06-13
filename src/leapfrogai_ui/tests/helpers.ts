@@ -182,7 +182,7 @@ export const deleteTestFilesWithApi = async () => {
   const list = await openai.files.list();
   const idsToDelete: string[] = [];
   for await (const file of list) {
-    if (file.filename === 'test.pdf' || file.filename === 'test2.pdf') {
+    if (file.filename.startsWith('test')) {
       idsToDelete.push(file.id);
     }
   }
