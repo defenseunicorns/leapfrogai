@@ -4,7 +4,6 @@
     DataTable,
     FileUploaderButton,
     Loading,
-    Modal,
     Toolbar,
     ToolbarBatchActions,
     ToolbarContent,
@@ -20,6 +19,7 @@
   import type { FileRow } from '$lib/types/files';
   import { invalidate } from '$app/navigation';
   import type { Assistant } from 'openai/resources/beta/assistants';
+  import ConfirmAssistantDeleteModal from '$components/ConfirmAssistantDeleteModal.svelte';
 
   export let data;
 
@@ -37,6 +37,10 @@
   $: affectedAssistants = [];
   $: rows = data.files;
   $: if (selectedRowIds.length === 0) active = false;
+  $: fileNames = selectedRowIds.map((id) => {
+    const fileName = data.files.find((file) => file.id === id)?.filename;
+    return fileName || '';
+  });
 
   const updateAllFileStatus = (newFiles: Array<FileObject | FileRow>) => {
     // Remove all uploading files
@@ -127,6 +131,7 @@
         'Content-Type': 'application/json'
       }
     });
+    confirmDeleteModalOpen = false;
     await invalidate('lf:files');
     if (res.ok) {
       toastStore.addToast({
@@ -252,27 +257,15 @@
       </svelte:fragment>
     </DataTable>
   </form>
-
-  <Modal
-    danger
+  <ConfirmAssistantDeleteModal
     bind:open={confirmDeleteModalOpen}
-    modalHeading="Delete File"
-    shouldSubmitOnEnter={false}
-    primaryButtonText="Delete"
-    secondaryButtonText="Cancel"
-    on:click:button--secondary={() => (confirmDeleteModalOpen = false)}
-    on:submit={() => handleConfirmedDelete()}
-  >
-    <p>
-      Are you sure you want to delete <span style="font-weight: bold">[insert file names]</span>?
-      {#if affectedAssistants.length > 0}
-        This will affect the following assistants:
-        {#each affectedAssistants as affectedAssistant}
-          <li>{affectedAssistant.name}</li>
-        {/each}
-      {/if}
-    </p>
-  </Modal>
+    bind:affectedAssistantsLoading
+    bind:deleting
+    bind:confirmDeleteModalOpen
+    {handleConfirmedDelete}
+    {affectedAssistants}
+    {fileNames}
+  />
 </div>
 
 <style lang="scss">
