@@ -112,6 +112,7 @@
     });
     if (getAffectedAssistants.ok) {
       const assistants = await getAffectedAssistants.json();
+
       if (assistants && assistants.length > 0) {
         affectedAssistants = assistants;
       }
@@ -133,6 +134,7 @@
     });
     confirmDeleteModalOpen = false;
     await invalidate('lf:files');
+
     if (res.ok) {
       toastStore.addToast({
         kind: 'success',

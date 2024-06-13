@@ -26,9 +26,7 @@
     <p>Checking for any assistants affected by deletion...</p>
   {:else}
     <p>
-      Are you sure you want to delete <span style="font-weight: bold"
-        >{fileNames.join(", ")}</span
-      >?
+      Are you sure you want to delete <span style="font-weight: bold">{fileNames.join(', ')}</span>?
       {#if affectedAssistants.length > 0}
         This will affect the following assistants:
         {#each affectedAssistants as affectedAssistant}
