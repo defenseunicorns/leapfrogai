@@ -4,7 +4,6 @@ import { POST } from './+server';
 import { sessionMock, sessionNullMock } from '$lib/mocks/supabase-mocks';
 
 describe('/api/chat', () => {
-  // TODO - will need to mock getOpenAiClient instead
   beforeAll(() => {
     vi.mock('openai');
   });

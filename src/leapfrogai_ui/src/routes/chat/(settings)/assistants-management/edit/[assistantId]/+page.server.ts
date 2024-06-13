@@ -33,7 +33,9 @@ export const load = async ({ fetch, depends, params, locals: { safeGetSession } 
   if (!assistant) {
     error(404, { message: 'Assistant not found.' });
   }
-  const vectorStoreId = assistant.tool_resources?.file_search?.vector_store_ids[0];
+  const vectorStoreId =
+    assistant.tool_resources?.file_search?.vector_store_ids &&
+    assistant.tool_resources?.file_search?.vector_store_ids[0];
   let file_ids: string[] = [];
   if (vectorStoreId) {
     try {
@@ -75,6 +77,7 @@ export const actions = {
       return fail(400, { form });
     }
 
+    const openai = getOpenAiClient(session.access_token);
     const deleteAvatar = !form.data.avatar && !form.data.avatarFile;
     const filePath = form.data.id;
 
@@ -106,7 +109,7 @@ export const actions = {
         ? form.data.data_sources[0].split(',')
         : [];
 
-    let vectorStoreId: string = form.data.vectorStoreId;
+    let vectorStoreId = form.data.vectorStoreId;
     if (data_sources.length > 0 && (!vectorStoreId || vectorStoreId === 'undefined')) {
       const vectorStore = await openai.beta.vectorStores.create({
         name: `${form.data.name}-vector-store`
@@ -155,7 +158,7 @@ export const actions = {
       model: env.DEFAULT_MODEL,
       tools: data_sources && data_sources.length > 0 ? [{ type: 'file_search' }] : [],
       tool_resources:
-        data_sources && data_sources.length > 0
+        data_sources && vectorStoreId && data_sources.length > 0
           ? {
               file_search: {
                 vector_store_ids: [vectorStoreId]

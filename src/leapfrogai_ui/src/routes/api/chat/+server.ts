@@ -28,11 +28,6 @@ export async function POST({ request, locals: { safeGetSession } }) {
     baseURL: env.LEAPFROGAI_API_BASE_URL
   });
 
-  // Add the default system prompt to the beginning of the messages
-  if (messages[0].content !== env.DEFAULT_SYSTEM_PROMPT) {
-    messages.unshift({ content: env.DEFAULT_SYSTEM_PROMPT!, role: 'system' });
-  }
-
   const reformatedMessages = messages.map((message: LFMessage) => ({
     ...message,
     content: getMessageText(message)
@@ -40,7 +35,8 @@ export async function POST({ request, locals: { safeGetSession } }) {
 
   const result = await streamText({
     model: openai(env.DEFAULT_MODEL),
-    messages: reformatedMessages
+    messages: reformatedMessages,
+    system: env.DEFAULT_SYSTEM_PROMPT
   });
 
   return new StreamingTextResponse(result.toAIStream());
