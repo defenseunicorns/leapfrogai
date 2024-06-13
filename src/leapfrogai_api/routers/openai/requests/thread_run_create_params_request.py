@@ -21,7 +21,9 @@ from openai.types.beta.threads import MessageContent, Message, Run
 from pydantic import Field
 from starlette.responses import StreamingResponse
 
-from leapfrogai_api.routers.openai.requests.create_message_request import CreateMessageRequest
+from leapfrogai_api.routers.openai.requests.create_message_request import (
+    CreateMessageRequest,
+)
 from leapfrogai_api.routers.openai.requests.run_create_params_request_base import (
     RunCreateParamsRequestBase,
 )
@@ -91,20 +93,18 @@ class ThreadRunCreateParamsRequestBaseRequest(RunCreateParamsRequestBase):
                     )
 
                     new_message: Message = Message(
-                            id="",
-                            created_at=0,
-                            object="thread.message",
-                            status="in_progress",
-                            thread_id="",
-                            content=[message_content],
-                            role=message.get("role"),
-                            attachments=message.get("attachments"),
-                            metadata=message.get("metadata"),
-                        )
-
-                    thread_request.messages.append(
-                        new_message
+                        id="",
+                        created_at=0,
+                        object="thread.message",
+                        status="in_progress",
+                        thread_id="",
+                        content=[message_content],
+                        role=message.get("role"),
+                        attachments=message.get("attachments"),
+                        metadata=message.get("metadata"),
                     )
+
+                    thread_request.messages.append(new_message)
                 except ValueError as exc:
                     logging.error(f"\t{exc}")
                     continue
@@ -120,7 +120,7 @@ class ThreadRunCreateParamsRequestBaseRequest(RunCreateParamsRequestBase):
                 role=message.role,
                 content=message.content,
                 attachments=message.attachments,
-                metadata=message.metadata
+                metadata=message.metadata,
             )
             await create_message_request.create_message(new_thread.id, session)
 
