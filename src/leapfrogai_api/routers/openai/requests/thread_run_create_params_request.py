@@ -121,7 +121,6 @@ class ThreadRunCreateParamsRequestBaseRequest(RunCreateParamsRequestBase):
             thread_id=new_thread.id,
             object="thread.run",
             status="completed",  # This is always completed as the new message is already created by this point
-            parallel_tool_calls=False,
             **create_params.__dict__,
         )
         new_run: Run | None = await crud_run.create(object_=run)
