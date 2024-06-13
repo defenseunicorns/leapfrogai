@@ -1,4 +1,5 @@
 import { render, screen } from '@testing-library/svelte';
+
 import { fakeThreads, getFakeAssistant, getFakeFiles, getFakeProfile } from '$testUtils/fakeData';
 import ChatPage from './+page.svelte';
 import ChatPageWithToast from './ChatPageWithToast.test.svelte';

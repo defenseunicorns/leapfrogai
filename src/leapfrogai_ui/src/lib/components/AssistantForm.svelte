@@ -10,18 +10,18 @@
   import { Button, Modal, Slider, TextArea, TextInput } from 'carbon-components-svelte';
   import AssistantAvatar from '$components/AssistantAvatar.svelte';
   import { yup } from 'sveltekit-superforms/adapters';
-  import { toastStore } from '$stores';
+  import { filesStore, toastStore } from '$stores';
   import InputTooltip from '$components/InputTooltip.svelte';
   import { assistantInputSchema, editAssistantInputSchema } from '$lib/schemas/assistants';
   import type { NavigationTarget } from '@sveltejs/kit';
   import { onMount } from 'svelte';
   import AssistantFileSelect from '$components/AssistantFileSelect.svelte';
+  import type { FileRow } from '$lib/types/files';
 
   export let data;
 
   let isEditMode = $page.url.pathname.includes('edit');
   let bypassCancelWarning = false;
-  let selectedFileIds: string[] = data.form.data.data_sources || [];
 
   const { form, errors, enhance, submitting, isTainted } = superForm(data.form, {
     invalidateAll: false,
@@ -77,6 +77,16 @@
     }
   });
 
+  $: if (data.files) {
+    const fileRows: FileRow[] = data.files.map((file) => ({
+      id: file.id,
+      filename: file.filename,
+      created_at: file.created_at,
+      status: 'complete'
+    }));
+    filesStore.setFiles(fileRows);
+  }
+
   onMount(() => {
     if (isEditMode && Object.keys($errors).length > 0) {
       toastStore.addToast({
@@ -86,6 +96,7 @@
       });
       goto('/chat/assistants-management');
     }
+    filesStore.setSelectedAssistantFileIds($form.data_sources || []);
   });
 </script>
 
@@ -170,7 +181,7 @@
         labelText="Data Sources"
         tooltipText="Specific files your assistant can search and reference"
       />
-      <AssistantFileSelect files={data?.files} bind:selectedFileIds />
+      <AssistantFileSelect filesForm={data.filesForm} />
       <input
         type="hidden"
         name="vectorStoreId"
@@ -186,7 +197,12 @@
             goto('/chat/assistants-management');
           }}>Cancel</Button
         >
-        <Button kind="primary" size="small" type="submit" disabled={$submitting}>Save</Button>
+        <Button
+          kind="primary"
+          size="small"
+          type="submit"
+          disabled={$submitting || $filesStore.uploading}>Save</Button
+        >
       </div>
     </div>
   </div>

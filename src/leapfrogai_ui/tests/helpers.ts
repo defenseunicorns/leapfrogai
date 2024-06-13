@@ -157,3 +157,42 @@ export const uploadFileWithApi = async (fileName = 'test.pdf') => {
 export const deleteFileWithApi = async (id: string) => {
   return serviceRoleOpenAI.files.del(id);
 };
+
+export const uploadFile = async (page: Page, filename = 'test.pdf', btnName = 'upload') => {
+  const fileChooserPromise = page.waitForEvent('filechooser');
+  await page.getByRole('button', { name: btnName }).click();
+  const fileChooser = await fileChooserPromise;
+  await fileChooser.setFiles(`./tests/fixtures/${filename}`);
+};
+
+export const deleteAssistant = async (page: Page, name: string) => {
+  await page.goto(`/chat/assistants-management`);
+  await page.getByTestId(`assistant-tile-${name}`).getByTestId('overflow-menu').click();
+  // click overflow menu delete btn
+  await page.getByRole('menuitem', { name: 'Delete' }).click();
+  // click modal actual delete btn
+  await page.getByRole('button', { name: 'Delete' }).click();
+};
+
+export const deleteFirstFile = async (page: Page) => {
+  await page.goto(`/chat/file-management`);
+  const checkboxes = await page.getByRole('checkbox').all();
+  await checkboxes[1].check(); // first checkbox is for selecting all, pick the second one
+  await page.getByText('Delete').click();
+};
+
+export const deleteTestFilesWithApi = async () => {
+  const list = await openai.files.list();
+  const idsToDelete: string[] = [];
+  for await (const file of list) {
+    if (file.filename === 'test.pdf' || file.filename === 'test2.pdf') {
+      idsToDelete.push(file.id);
+    }
+  }
+
+  const promises = [];
+  for (const id of idsToDelete) {
+    promises.push(openai.files.del(id));
+  }
+  await Promise.all(promises);
+};

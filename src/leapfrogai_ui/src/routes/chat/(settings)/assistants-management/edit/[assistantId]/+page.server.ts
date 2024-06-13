@@ -7,8 +7,12 @@ import { assistantDefaults, DEFAULT_ASSISTANT_TEMP } from '$lib/constants';
 import type { EditAssistantInput, LFAssistant } from '$lib/types/assistants';
 import { getAssistantAvatarUrl } from '$helpers/assistants';
 import type { AssistantCreateParams } from 'openai/resources/beta/assistants';
+import { filesSchema } from '$schemas/files';
 import type { APIPromise } from 'openai/core';
-import type { VectorStoreFile, VectorStoreFileDeleted } from 'openai/resources/beta/vector-stores';
+import type {
+  VectorStoreFile,
+  VectorStoreFileDeleted
+} from 'openai/resources/beta/vector-stores/files';
 import { getOpenAiClient } from '$lib/server/constants';
 
 export const load = async ({ fetch, depends, params, locals: { safeGetSession } }) => {
@@ -59,8 +63,9 @@ export const load = async ({ fetch, depends, params, locals: { safeGetSession } 
   };
 
   const form = await superValidate(assistantFormData, yup(editAssistantInputSchema));
+  const filesForm = await superValidate({}, yup(filesSchema), { errors: false });
 
-  return { title: 'LeapfrogAI - Edit Assistant', form, assistant, files };
+  return { title: 'LeapfrogAI - Edit Assistant', form, filesForm, assistant, files };
 };
 
 export const actions = {
