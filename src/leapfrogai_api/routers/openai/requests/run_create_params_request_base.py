@@ -313,7 +313,7 @@ class RunCreateParamsRequestBase(BaseModel):
             metadata=new_message.metadata,
         )
 
-        await create_message_request.create_message(
+        new_message = await create_message_request.create_message(
             thread_id=thread.id,
             session=session,
         )
