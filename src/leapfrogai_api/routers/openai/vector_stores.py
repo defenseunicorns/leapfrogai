@@ -24,6 +24,8 @@ from leapfrogai_api.data.crud_vector_store_file import (
     FilterVectorStoreFile,
 )
 from leapfrogai_api.routers.supabase_session import Session
+from leapfrogai_api.backend.types import VectorStoreFileStatus, VectorStoreStatus
+from openai.pagination import SyncCursorPage
 
 router = APIRouter(prefix="/openai/v1/vector_stores", tags=["openai/vector_stores"])
 
@@ -261,9 +263,9 @@ async def list_vector_store_files(
         )
 
         if vector_store_files is None:
-            return SyncCursorPage(object="list", data=[])
+            return SyncCursorPage(data=[])
 
-        return SyncCursorPage(object="list", data=vector_store_files)
+        return SyncCursorPage(data=vector_store_files)
     except Exception as exc:
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
