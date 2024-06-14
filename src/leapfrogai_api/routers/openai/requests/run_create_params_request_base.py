@@ -212,6 +212,8 @@ class RunCreateParamsRequestBase(BaseModel):
 
         use_rag: bool = self.can_use_rag(tool_resources)
 
+        rag_message: str = "Here are relevant docs needed to reply:\n"
+
         # 4 - The RAG results are appended behind the user's query
         file_ids: list[str] = []
         if use_rag:
@@ -233,20 +235,20 @@ class RunCreateParamsRequestBase(BaseModel):
                 # Insert the RAG response messages just before the user's query
                 for count, rag_response in enumerate(rag_responses.data):
                     file_ids.append(rag_response.file_id)
-                    response_with_instructions: str = (
-                        f"<start attached file {count}'s content>\n"
-                        f"{rag_response.content}"
-                        f"\n<end attached file {count}'s content>"
-                    )
-                    chat_messages.insert(
-                        0, ChatMessage(role="user", content=response_with_instructions)
-                    )  # TODO: Should this go in user or something else like function?
+                    response_with_instructions: str = f"{rag_response.content}"
+                    rag_message += f"{response_with_instructions}\n"
                     first_message.content += (
                         f" [{rag_response.file_id}]"  # Add file id to the user input
                     )
 
+            chat_messages.insert(
+                0, ChatMessage(role="function", content=rag_message)
+            )  # TODO: Should this go in user or something else like function?
+
         # 5 - The user query is pushed in as the first item in the list
         chat_messages.insert(0, first_message)
+
+        logging.info(chat_messages)
 
         return chat_messages, file_ids
 
