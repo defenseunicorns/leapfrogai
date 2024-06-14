@@ -1,4 +1,7 @@
+FROM ghcr.io/defenseunicorns/leapfrogai/leapfrogai-sdk:latest as sdk
+
 FROM nvidia/cuda:12.2.2-devel-ubuntu22.04 as builder
+ARG SDK_DEST=src/leapfrogai_sdk/build
 
 # Set the config file defaults
 ARG PYTHON_VERSION=3.11.6
@@ -40,6 +43,7 @@ RUN apt-get -y install git python3-venv make build-essential libssl-dev zlib1g-d
 RUN chown -R nonroot /home/leapfrogai/
 USER nonroot
 
+# # create virtual environment for light-weight portability and minimal libraries
 RUN git clone --depth=1 https://github.com/pyenv/pyenv.git .pyenv
 ENV PYENV_ROOT="/home/leapfrogai/.pyenv"
 ENV PATH="$PYENV_ROOT/shims:$PYENV_ROOT/bin:$PATH"
@@ -49,11 +53,12 @@ RUN python3 -m venv .venv
 ENV PATH="/home/leapfrogai/.venv/bin:$PATH"
 
 
-# # create virtual environment for light-weight portability and minimal libraries
-# # NOTE: We are copying to this filename because installing 'optional extras' from a wheel requires the absolute path to the wheel file (instead of a wildcard whl)
-COPY build/*.whl build/
-COPY build/lfai_vllm*.whl .
-RUN pip install lfai_vllm*.whl --no-index --find-links=build/
+COPY --from=sdk /leapfrogai/${SDK_DEST} ./${SDK_DEST}
+COPY packages/vllm packages/vllm
+
+RUN rm -f packages/vllm/build/*.whl
+RUN python -m pip wheel packages/vllm -w packages/vllm/build --find-links=${SDK_DEST}
+RUN pip install packages/vllm/build/lfai_vllm*.whl --no-index --find-links=packages/vllm/build/
 
 # download model
 ENV HF_HOME=/home/leapfrogai/.cache/huggingface
