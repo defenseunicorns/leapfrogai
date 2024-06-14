@@ -176,7 +176,7 @@
                   <SideNavMenu text={category.label} expanded data-testid="side-nav-menu">
                     {#each category.threads as thread (thread.id)}
                       <SideNavMenuItem
-                        data-testid="side-nav-menu-item-{thread.metadata.label}"
+                        data-testid="side-nav-menu-item-{thread.metadata?.label}"
                         id="side-nav-menu-item-{thread.id}"
                         isSelected={activeThread?.id === thread.id}
                         on:click={() => handleActiveThreadChange(thread.id)}
@@ -198,7 +198,7 @@
                             />
                           {:else}
                             <div data-testid="thread-label-{thread.id}" class="menu-text">
-                              {thread.metadata.label}
+                              {thread.metadata?.label}
                             </div>
                             <div>
                               <OverflowMenu
@@ -213,7 +213,7 @@
                                   handleActiveThreadChange(thread.id);
                                   disableScroll = true;
                                 }}
-                                data-testid="overflow-menu-{thread.metadata.label}"
+                                data-testid="overflow-menu-{thread.metadata?.label}"
                                 style={overflowMenuOpen && activeThread?.id === thread.id
                                   ? `position: fixed; top: 0; left: 0; transform: translate(224px, ${menuOffset - scrollOffset + 48}px)`
                                   : ''}
@@ -222,12 +222,12 @@
                                   text="Edit"
                                   on:click={() => {
                                     editThreadId = thread.id;
-                                    editLabelText = thread.metadata.label;
+                                    editLabelText = thread.metadata?.label;
                                   }}
                                 />
 
                                 <OverflowMenuItem
-                                  data-testid="overflow-menu-delete-{thread.metadata.label}"
+                                  data-testid="overflow-menu-delete-{thread.metadata?.label}"
                                   text="Delete"
                                   on:click={() => {
                                     deleteModalOpen = true;
@@ -263,7 +263,7 @@
       on:close
       on:submit={handleDelete}
       >Are you sure you want to delete your <strong
-        >{activeThread?.metadata.label.substring(0, MAX_LABEL_SIZE)}</strong
+        >{activeThread?.metadata?.label.substring(0, MAX_LABEL_SIZE)}</strong
       > chat?</Modal
     >
   </div></SideNav

@@ -59,9 +59,9 @@ export const actions = {
       instructions: form.data.instructions,
       temperature: form.data.temperature,
       model: env.DEFAULT_MODEL,
-      tools: data_sources.length > 0 ? [{ type: 'file_search' }] : [],
+      tools: data_sources && data_sources.length > 0 ? [{ type: 'file_search' }] : [],
       tool_resources:
-        data_sources.length > 0
+          data_sources && data_sources.length > 0
           ? {
               file_search: {
                 vector_stores: [
