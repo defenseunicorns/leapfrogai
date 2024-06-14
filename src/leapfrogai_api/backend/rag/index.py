@@ -165,56 +165,49 @@ class IndexingService:
 
         expires_after, expires_at = request.get_expiry(last_active_at)
 
-        vector_store = VectorStore(
-            id="",  # Leave blank to have Postgres generate a UUID
-            usage_bytes=0,  # Automatically calculated by DB
-            created_at=0,  # Leave blank to have Postgres generate a timestamp
-            file_counts=FileCounts(
-                cancelled=0, completed=0, failed=0, in_progress=0, total=0
-            ),
-            last_active_at=last_active_at,  # Set to current time
-            metadata=request.metadata,
-            name=request.name,
-            object="vector_store",
-            status=VectorStoreStatus.IN_PROGRESS.value,
-            expires_after=expires_after,
-            expires_at=expires_at,
-        )
-        new_vector_store = await crud_vector_store.create(object_=vector_store)
-        if request.file_ids != []:
-            responses = await self.index_files(new_vector_store.id, request.file_ids)
-
-            for response in responses:
-                if response.status == VectorStoreFileStatus.COMPLETED.value:
-                    new_vector_store.file_counts.completed += 1
-                elif response.status == VectorStoreFileStatus.FAILED.value:
-                    new_vector_store.file_counts.failed += 1
-                elif response.status == VectorStoreFileStatus.IN_PROGRESS.value:
-                    new_vector_store.file_counts.in_progress += 1
-                elif response.status == VectorStoreFileStatus.CANCELLED.value:
-                    new_vector_store.file_counts.cancelled += 1
-                new_vector_store.file_counts.total += 1
-
-        new_vector_store.status = VectorStoreStatus.COMPLETED.value
-
-        return await crud_vector_store.update(
-            id_=new_vector_store.id,
-            object_=new_vector_store,
-        )
-
-    async def file_ids_are_valid(self, file_ids: str | list[str]) -> bool:
-        crud_file_object = CRUDFileObject(db=self.db)
-
-        if not isinstance(file_ids, list):
-            file_ids = [file_ids]
+        try:
+            vector_store = VectorStore(
+                id="",  # Leave blank to have Postgres generate a UUID
+                usage_bytes=0,  # Automatically calculated by DB
+                created_at=0,  # Leave blank to have Postgres generate a timestamp
+                file_counts=FileCounts(
+                    cancelled=0, completed=0, failed=0, in_progress=0, total=0
+                ),
+                last_active_at=last_active_at,  # Set to current time
+                metadata=request.metadata,
+                name=request.name,
+                object="vector_store",
+                status=VectorStoreStatus.IN_PROGRESS.value,
+                expires_after=expires_after,
+                expires_at=expires_at,
+            )
+            new_vector_store = await crud_vector_store.create(object_=vector_store)
+        except Exception as exc:
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail="Unable to parse vector store request",
+            ) from exc
 
         try:
-            for file_id in file_ids:
-                await crud_file_object.get(filters=FilterFileObject(id=file_id))
-        except Exception:
-            return False
+            if request.file_ids != []:
+                responses = await self.index_files(
+                    new_vector_store.id, request.file_ids
+                )
 
-        return True
+                for response in responses:
+                    self._increment_vector_store_file_status(new_vector_store, response)
+
+            new_vector_store.status = VectorStoreStatus.COMPLETED.value
+
+            return await crud_vector_store.update(
+                id_=new_vector_store.id,
+                object_=new_vector_store,
+            )
+        except Exception as exc:
+            raise HTTPException(
+                status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+                detail="Unable to create vector store",
+            ) from exc
 
     async def modify_existing_vector_store(
         self,
@@ -264,17 +257,8 @@ class IndexingService:
                 responses = await self.index_files(
                     new_vector_store.id, request.file_ids
                 )
-
                 for response in responses:
-                    if response.status == VectorStoreFileStatus.COMPLETED.value:
-                        new_vector_store.file_counts.completed += 1
-                    elif response.status == VectorStoreFileStatus.FAILED.value:
-                        new_vector_store.file_counts.failed += 1
-                    elif response.status == VectorStoreFileStatus.IN_PROGRESS.value:
-                        new_vector_store.file_counts.in_progress += 1
-                    elif response.status == VectorStoreFileStatus.CANCELLED.value:
-                        new_vector_store.file_counts.cancelled += 1
-                    new_vector_store.file_counts.total += 1
+                    self._increment_vector_store_file_status(new_vector_store, response)
 
             new_vector_store.status = VectorStoreStatus.COMPLETED.value
 
@@ -297,6 +281,21 @@ class IndexingService:
                 status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
                 detail="Unable to update vector store",
             ) from exc
+
+    async def file_ids_are_valid(self, file_ids: str | list[str]) -> bool:
+        """Check if the provided file ids exist"""
+        crud_file_object = CRUDFileObject(db=self.db)
+
+        if not isinstance(file_ids, list):
+            file_ids = [file_ids]
+
+        try:
+            for file_id in file_ids:
+                await crud_file_object.get(filters=FilterFileObject(id=file_id))
+        except Exception:
+            return False
+
+        return True
 
     async def adelete_file(self, vector_store_id: str, file_id: str) -> bool:
         """Delete a file from the vector store.
@@ -386,6 +385,20 @@ class IndexingService:
         response = await query_builder.execute()
 
         return response
+
+    async def _increment_vector_store_file_status(
+        self, vector_store: VectorStore, file_response: VectorStoreFile
+    ):
+        """Increment the file count of a given vector store based on the file response"""
+        if file_response.status == VectorStoreFileStatus.COMPLETED.value:
+            vector_store.file_counts.completed += 1
+        elif file_response.status == VectorStoreFileStatus.FAILED.value:
+            vector_store.file_counts.failed += 1
+        elif file_response.status == VectorStoreFileStatus.IN_PROGRESS.value:
+            vector_store.file_counts.in_progress += 1
+        elif file_response.status == VectorStoreFileStatus.CANCELLED.value:
+            vector_store.file_counts.cancelled += 1
+        vector_store.file_counts.total += 1
 
     async def _adelete_vector(
         self,
