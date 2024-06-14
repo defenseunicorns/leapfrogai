@@ -67,6 +67,10 @@ from leapfrogai_api.utils import get_model_config
 from leapfrogai_sdk.chat.chat_pb2 import (
     ChatCompletionResponse as ProtobufChatCompletionResponse,
 )
+from openai.types.beta.thread import (
+    ToolResources as BetaThreadToolResources,
+    ToolResourcesFileSearch as BetaThreadToolResourcesFileSearch,
+)
 
 
 class RunCreateParamsRequestBase(BaseModel):
@@ -127,12 +131,16 @@ class RunCreateParamsRequestBase(BaseModel):
 
         return assistant
 
-    def can_use_rag(self, thread: Thread) -> bool:
+    def can_use_rag(
+        self,
+        tool_resources: BetaThreadToolResources | None,
+    ) -> bool:
+        if not tool_resources:
+            return False
+
         has_tool_choice: bool = self.tool_choice is not None
         has_tool_resources: bool = bool(
-            thread.tool_resources
-            and thread.tool_resources.file_search
-            and thread.tool_resources.file_search.vector_store_ids
+            tool_resources.file_search and tool_resources.file_search.vector_store_ids
         )
 
         if has_tool_choice and has_tool_resources:
@@ -172,8 +180,12 @@ class RunCreateParamsRequestBase(BaseModel):
             ) from exc
 
     async def create_chat_messages(
-        self, session: Session, thread: Thread, additional_instructions: str | None
-    ) -> (list[ChatMessage], list[Attachment]):
+        self,
+        session: Session,
+        thread: Thread,
+        additional_instructions: str | None,
+        tool_resources: BetaThreadToolResources | None = None,
+    ) -> (list[ChatMessage], list[str]):
         # Get existing messages
         thread_messages: list[Message] = await self.list_messages(thread.id, session)
 
@@ -206,15 +218,12 @@ class RunCreateParamsRequestBase(BaseModel):
         for message in chat_thread_messages[1:]:
             chat_messages.insert(0, message)
 
-        use_rag: bool = self.can_use_rag(thread)
+        use_rag: bool = self.can_use_rag(tool_resources)
 
         # 4 - The RAG results are appended behind the user's query
-        file_ids: list[Attachment] = []
+        file_ids: list[str] = []
         if use_rag:
             query_service = QueryService(db=session)
-            tool_resources: BetaThreadToolResources = cast(
-                BetaThreadToolResources, thread.tool_resources
-            )
             file_search: BetaThreadToolResourcesFileSearch = cast(
                 BetaThreadToolResourcesFileSearch, tool_resources.file_search
             )
@@ -231,16 +240,7 @@ class RunCreateParamsRequestBase(BaseModel):
 
                 # Insert the RAG response messages just before the user's query
                 for count, rag_response in enumerate(rag_responses.data):
-                    file_ids.append(
-                        Attachment(
-                            file_id=rag_response.file_id,
-                            tools=[
-                                AttachmentToolAssistantToolsFileSearchTypeOnly(
-                                    type="file_search"
-                                )
-                            ],
-                        )
-                    )
+                    file_ids.append(rag_response.file_id)
                     response_with_instructions: str = (
                         f"<start attached file {count}'s content>\n"
                         f"{rag_response.content}"
@@ -261,9 +261,18 @@ class RunCreateParamsRequestBase(BaseModel):
         thread: Thread,
         run_id: str,
         additional_instructions: str | None = None,
+        tool_resources: BetaThreadToolResources | None = None,
     ):
+        # If no tools resources are passed in, try the tools in the assistant
+        if not tool_resources:
+            crud_assistant = CRUDAssistant(session)
+            assistant: Assistant | None = await crud_assistant.get(
+                filters=FilterAssistant(id=self.assistant_id)
+            )
+            tool_resources = assistant.tool_resources
+
         chat_messages, attachments = await self.create_chat_messages(
-            session, thread, additional_instructions
+            session, thread, additional_instructions, tool_resources
         )
 
         # Generate a new message and add it to the thread creation request
@@ -308,9 +317,18 @@ class RunCreateParamsRequestBase(BaseModel):
         ending_messages: list[str],
         run_id: str,
         additional_instructions: str | None = None,
+        tool_resources: BetaThreadToolResources | None = None,
     ) -> AsyncGenerator[str, Any]:
+        # If no tools resources are passed in, try the tools in the assistant
+        if not tool_resources:
+            crud_assistant = CRUDAssistant(session)
+            assistant: Assistant | None = await crud_assistant.get(
+                filters=FilterAssistant(id=self.assistant_id)
+            )
+            tool_resources = assistant.tool_resources
+
         chat_messages, attachments = await self.create_chat_messages(
-            session, thread, additional_instructions
+            session, thread, additional_instructions, tool_resources
         )
 
         chat_response: AsyncGenerator[ProtobufChatCompletionResponse, Any] = (
