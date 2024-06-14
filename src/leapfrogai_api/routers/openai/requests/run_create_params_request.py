@@ -63,10 +63,7 @@ class RunCreateParamsRequestBaseRequest(RunCreateParamsRequestBase):
                     metadata=additional_message.get("metadata"),
                 )
 
-                await create_message_request.create_message(
-                    thread_id,
-                    session,
-                )
+                await create_message_request.create_message(session, thread_id)
 
     async def update_with_assistant_data(self, session: Session):
         await super().update_with_assistant_data(session)
