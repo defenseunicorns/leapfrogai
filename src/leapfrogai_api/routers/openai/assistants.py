@@ -173,6 +173,15 @@ async def modify_assistant(
         )
 
     try:
+        new_tool_resources: ToolResources | None
+
+        try:
+            new_tool_resources = ToolResources.model_validate(
+                getattr(request, "tool_resources", None)
+            )
+        except Exception:
+            new_tool_resources = old_assistant.tool_resources
+
         new_assistant = Assistant(
             id=assistant_id,
             created_at=old_assistant.created_at,
@@ -182,10 +191,7 @@ async def modify_assistant(
             model=getattr(request, "model", old_assistant.model),
             object="assistant",
             tools=getattr(request, "tools", old_assistant.tools),
-            tool_resources=ToolResources.model_validate(
-                getattr(request, "tool_resources", None)
-            )
-            or old_assistant.tool_resources,
+            tool_resources=new_tool_resources,
             temperature=float(
                 getattr(request, "temperature", old_assistant.temperature)
             ),
