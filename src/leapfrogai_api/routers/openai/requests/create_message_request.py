@@ -21,7 +21,7 @@ class CreateMessageRequest(BaseModel):
         examples=[[TextContentBlock(text=Text(value="", annotations=[]), type="text")]],
     )
     attachments: list[Attachment] | None = Field(default=None, examples=[None])
-    metadata: dict | None = Field(default=None, examples=[{}])
+    metadata: dict | None = Field(default={}, examples=[{}])
 
     async def get_message_content(self):
         if isinstance(self.content, str):
