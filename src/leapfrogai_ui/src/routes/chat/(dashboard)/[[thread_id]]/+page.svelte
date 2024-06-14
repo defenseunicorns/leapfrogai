@@ -77,6 +77,7 @@
         `/api/messages?thread_id=${$page.params.thread_id}&message_id=${$assistantMessages[$assistantMessages.length - 1].id}`
       );
       const message = await messageRes.json();
+      console.log('final fetched message', JSON.stringify(message));
       const parsedMessage = processAnnotations(message, data.files);
       const assistantMessagesCopy = [...$assistantMessages];
       assistantMessagesCopy[assistantMessagesCopy.length - 1] =
@@ -105,6 +106,8 @@
 
     threadsStore.setSendingBlocked(false);
   };
+
+  $: console.log('streamedmessages', $assistantMessages);
 
   /** useChat - streams messages with the /api/chat route**/
   const {
@@ -172,7 +175,7 @@
     onError: (e) => {
       threadsStore.setSendingBlocked(false);
       // ignore this error b/c it is expected on cancel
-      if (e.toString() !== 'DOMException: BodyStreamBuffer was aborted') {
+      if (e.message !== 'BodyStreamBuffer was aborted') {
         toastStore.addToast({
           kind: 'error',
           title: ERROR_GETTING_ASSISTANT_MSG_TEXT.title,
@@ -229,7 +232,7 @@
 
   const onSubmit = async (e: SubmitEvent | KeyboardEvent) => {
     e.preventDefault();
-    if ($threadsStore.sendingBlocked && activeThread?.id) {
+    if (($isLoading || $status === 'in_progress') && activeThread?.id) {
       // message still sending
       await stopThenSave({
         activeThreadId: activeThread.id,
