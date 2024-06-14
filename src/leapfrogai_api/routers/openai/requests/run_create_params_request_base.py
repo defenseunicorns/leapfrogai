@@ -176,6 +176,10 @@ class RunCreateParamsRequestBase(BaseModel):
     ) -> (list[ChatMessage], list[Attachment]):
         # Get existing messages
         thread_messages: list[Message] = await self.list_messages(thread.id, session)
+
+        if len(thread_messages) == 0:
+            return [], []
+
         # Holds the converted thread's messages, this will be built up with a series of push operations
         chat_messages: list[ChatMessage] = []
 
