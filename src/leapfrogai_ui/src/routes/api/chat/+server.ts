@@ -36,7 +36,7 @@ export async function POST({ request, locals: { safeGetSession } }) {
   const result = await streamText({
     model: openai(env.DEFAULT_MODEL),
     messages: reformatedMessages,
-    system: env.DEFAULT_SYSTEM_PROMPT
+    system: env.DEFAULT_SYSTEM_PROMPT,
   });
 
   return new StreamingTextResponse(result.toAIStream());
