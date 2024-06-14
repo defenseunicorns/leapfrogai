@@ -4,7 +4,7 @@ import os
 import pytest
 from fastapi import status
 from fastapi.testclient import TestClient
-from openai.types.beta import Assistant, Thread, AssistantDeleted
+from openai.types.beta import Assistant, Thread, AssistantDeleted, ThreadDeleted
 from openai.types.beta.thread import ToolResources
 from openai.types.beta.threads import Message, Text, TextContentBlock, Run
 from leapfrogai_api.backend.types import CreateAssistantRequest
@@ -173,6 +173,7 @@ def test_config_load(app_client):
     }
 
 
+@pytest.fixture(scope="session")
 def test_create_thread_and_run(app_client, create_assistant):
     """Test running an assistant. Requires a running Supabase instance."""
     assistant_id = create_assistant.json()["id"]
@@ -190,6 +191,8 @@ def test_create_thread_and_run(app_client, create_assistant):
 
     assert response.status_code == status.HTTP_200_OK
     assert Run.model_validate(response.json()), "Create should create a Run."
+
+    return response
 
 
 def test_create_run(create_run):
@@ -211,3 +214,15 @@ def test_delete_assistant(app_client, create_assistant):
     assert (
         response.json()["deleted"] is True
     ), f"Assistant {assistant_id} should be deleted."
+
+
+def test_delete_threads(app_client, create_thread):
+    """Test deleting a thread. Requires a running Supabase instance."""
+    thread_id = create_thread.json()["id"]
+
+    response = app_client.delete(f"/openai/v1/threads/{thread_id}")
+    assert response.status_code is status.HTTP_200_OK
+    assert ThreadDeleted.model_validate(
+        response.json()
+    ), "Should return a ThreadDeleted object."
+    assert response.json()["deleted"] is True, f"Thread {thread_id} should be deleted."
