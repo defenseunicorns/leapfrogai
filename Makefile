@@ -37,7 +37,7 @@ sdk-wheel: ## build wheels for the leapfrogai_sdk package as a dependency for ot
 	-rm ${SDK_DEST}/*.whl
 	python -m pip wheel src/leapfrogai_sdk -w ${SDK_DEST}
 
-build-supabase:
+build-supabase: local-registry
 	## Build the migration container for this version of the supabase package
 	docker build -t ghcr.io/defenseunicorns/leapfrogai/lfai-supabase-migrations:${LOCAL_VERSION} -f Dockerfile.migrations --build-arg="MIGRATIONS_DIR=packages/supabase/migrations" .
 	docker tag ghcr.io/defenseunicorns/leapfrogai/lfai-supabase-migrations:${LOCAL_VERSION} localhost:5000/defenseunicorns/leapfrogai/lfai-supabase-migrations:${LOCAL_VERSION}
