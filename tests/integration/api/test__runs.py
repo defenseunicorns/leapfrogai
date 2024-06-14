@@ -172,8 +172,6 @@ def test_chat():
 
         response = client.post("/openai/v1/chat/completions", json=request.model_dump())
 
-        print(response)
-
         assert response.status_code == status.HTTP_200_OK
         assert ChatCompletionResponse.model_validate(response.json())
 
