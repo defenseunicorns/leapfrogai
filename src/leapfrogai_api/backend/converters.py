@@ -57,7 +57,11 @@ def from_text_to_message(text: str, file_ids: list[str]) -> Message:
         text=Text(
             annotations=[
                 FileCitationAnnotation(
-                    file_citation=FileCitation(file_id=file_id, text=f"[{file_id}]")
+                    text=f"[{file_id}]",
+                    file_citation=FileCitation(file_id=file_id, quote=""),
+                    start_index=0,
+                    end_index=0,
+                    type="file_citation",
                 )
                 for file_id in file_ids
             ],
