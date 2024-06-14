@@ -106,7 +106,7 @@ async def create_thread_and_run(
 
 
 @router.get("/{thread_id}/runs")
-async def list_runs(thread_id: str, session: Session) -> list[Run]:
+async def list_runs(thread_id: str, session: Session) -> SyncCursorPage[Run]:
     """List all the runs in a thread."""
     try:
         crud_run = CRUDRun(db=session)
