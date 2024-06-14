@@ -4,7 +4,7 @@ from __future__ import annotations
 
 import datetime
 from enum import Enum
-from typing import Literal, List
+from typing import Literal
 
 from fastapi import UploadFile, Form, File
 from openai.types import FileObject
@@ -16,13 +16,13 @@ from openai.types.beta.assistant import (
 )
 from openai.types.beta.assistant_tool import FileSearchTool
 from openai.types.beta.thread import ToolResources as BetaThreadToolResources
-from openai.types.beta.threads.text_content_block_param import TextContentBlockParam
-from openai.types.beta.vector_store import ExpiresAfter
-from pydantic import BaseModel, Field
 from openai.types.beta.thread_create_params import (
     ToolResourcesFileSearchVectorStoreChunkingStrategy,
     ToolResourcesFileSearchVectorStoreChunkingStrategyAuto,
 )
+from openai.types.beta.threads.text_content_block_param import TextContentBlockParam
+from openai.types.beta.vector_store import ExpiresAfter
+from pydantic import BaseModel, Field
 
 
 ##########
