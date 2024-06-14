@@ -215,7 +215,7 @@ class RunCreateParamsRequestBase(BaseModel):
         rag_message: str = "Here are relevant docs needed to reply:\n"
 
         # 4 - The RAG results are appended behind the user's query
-        file_ids: list[str] = []
+        file_ids: set[str] = set()
         if use_rag:
             query_service = QueryService(db=session)
             file_search: BetaThreadToolResourcesFileSearch = cast(
@@ -234,7 +234,7 @@ class RunCreateParamsRequestBase(BaseModel):
 
                 # Insert the RAG response messages just before the user's query
                 for count, rag_response in enumerate(rag_responses.data):
-                    file_ids.append(rag_response.file_id)
+                    file_ids.add(rag_response.file_id)
                     response_with_instructions: str = f"{rag_response.content}"
                     rag_message += f"{response_with_instructions}\n"
 
@@ -247,7 +247,7 @@ class RunCreateParamsRequestBase(BaseModel):
 
         logging.info(chat_messages)
 
-        return chat_messages, file_ids
+        return chat_messages, list(file_ids)
 
     async def generate_message_for_thread(
         self,
