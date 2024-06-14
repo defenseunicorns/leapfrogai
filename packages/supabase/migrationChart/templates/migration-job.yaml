@@ -1,13 +1,13 @@
 apiVersion: batch/v1
 kind: Job
 metadata:
-  name: lfai-supabase-migrations-{{ .Values.leapfrogai.migration.imageTag }}
+  name: supabase-migrations-{{ .Values.leapfrogai.migration.imageTag }}
 spec:
   template:
     spec:
       containers:
       - name: supabase-cli
-        image: "ghcr.io/defenseunicorns/leapfrogai/lfai-supabase-migrations:{{ .Values.leapfrogai.migration.imageTag }}"
+        image: "ghcr.io/defenseunicorns/leapfrogai/supabase-migrations:{{ .Values.leapfrogai.migration.imageTag }}"
         env:
             - name: POSTGRES_PASSWORD
               valueFrom:

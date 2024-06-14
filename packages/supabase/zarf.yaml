@@ -118,21 +118,21 @@ components:
     description: "Migrations that operate on a database configuration level that require higher elevated permissions (ie adding extensions)"
     required: true
     charts:
-      - name: lfai-supabase-migrations
+      - name: supabase-migrations
         namespace: leapfrogai
         localPath: migrationChart/
-        releaseName: lfai-supabase-migrations
+        releaseName: supabase-migrations
         version: 0.0.1
         valuesFiles:
           - "migration-values.yaml"
     images:
-      - "ghcr.io/defenseunicorns/leapfrogai/lfai-supabase-migrations:###ZARF_PKG_TMPL_IMAGE_VERSION###"
+      - "ghcr.io/defenseunicorns/leapfrogai/supabase-migrations:###ZARF_PKG_TMPL_IMAGE_VERSION###"
     actions:
       onDeploy:
         after:
           - wait:
               cluster:
                 kind: Job
-                name: lfai-supabase-migrations-###ZARF_PKG_TMPL_IMAGE_VERSION###
+                name: supabase-migrations-###ZARF_PKG_TMPL_IMAGE_VERSION###
                 namespace: leapfrogai
                 condition: complete
