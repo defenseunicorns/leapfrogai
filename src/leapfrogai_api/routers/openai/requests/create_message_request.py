@@ -52,6 +52,7 @@ class CreateMessageRequest(BaseModel):
                 role=self.role,
                 status="completed",
                 thread_id=thread_id,
+                run_id=run_id
             )
             return await crud_message.create(object_=message)
         except Exception as exc:
