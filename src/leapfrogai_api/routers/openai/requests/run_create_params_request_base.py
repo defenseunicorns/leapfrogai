@@ -196,20 +196,18 @@ class RunCreateParamsRequestBase(BaseModel):
 
         # 1 - Model instructions (system message)
         if self.instructions:
-            chat_messages.insert(
-                0, ChatMessage(role="system", content=self.instructions)
-            )
+            chat_messages.append(ChatMessage(role="system", content=self.instructions))
 
         # 2 - Additional model instructions (system message)
         if additional_instructions:
-            chat_messages.insert(
-                0, ChatMessage(role="system", content=additional_instructions)
-            )
+            chat_messages.append(ChatMessage(role="system", content=additional_instructions))
 
         # 3 - The existing messages with everything after the first message
-        for message in chat_thread_messages[1:]:
+        chat_thread_messages_reversed = chat_thread_messages[1:]
+        chat_thread_messages_reversed.reverse()
+        for message in chat_thread_messages_reversed:
             logging.info("Inserting " + message.content)
-            chat_messages.insert(0, message)
+            chat_messages.append(message)
 
         use_rag: bool = self.can_use_rag(tool_resources)
 
@@ -239,12 +237,12 @@ class RunCreateParamsRequestBase(BaseModel):
                     response_with_instructions: str = f"{rag_response.content}"
                     rag_message += f"{response_with_instructions}\n"
 
-            chat_messages.insert(
-                0, ChatMessage(role="function", content=rag_message)
+            chat_messages.append(
+                ChatMessage(role="function", content=rag_message)
             )  # TODO: Should this go in user or something else like function?
 
         # 5 - The user query is pushed in as the first item in the list
-        chat_messages.insert(0, first_message)
+        chat_messages.append(first_message)
 
         for message in chat_messages:
             logging.info(message)
