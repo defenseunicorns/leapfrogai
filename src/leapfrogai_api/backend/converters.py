@@ -1,3 +1,4 @@
+import itertools
 import logging
 import traceback
 from typing import Iterable
@@ -53,6 +54,11 @@ def from_content_param_to_content(
 
 
 def from_text_to_message(text: str, file_ids: list[str]) -> Message:
+    all_file_ids: str = ""
+
+    for file_id in file_ids:
+        all_file_ids += f" [{file_id}]"
+
     message_content: TextContentBlock = TextContentBlock(
         text=Text(
             annotations=[
@@ -65,7 +71,7 @@ def from_text_to_message(text: str, file_ids: list[str]) -> Message:
                 )
                 for file_id in file_ids
             ],
-            value=text,
+            value=text + all_file_ids,
         ),
         type="text",
     )
