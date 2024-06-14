@@ -271,7 +271,7 @@ class RunCreateParamsRequestBase(BaseModel):
             )
             tool_resources = assistant.tool_resources
 
-        chat_messages, attachments = await self.create_chat_messages(
+        chat_messages, file_ids = await self.create_chat_messages(
             session, thread, additional_instructions, tool_resources
         )
 
@@ -293,12 +293,12 @@ class RunCreateParamsRequestBase(BaseModel):
 
         choice: ChatChoice = cast(ChatChoice, chat_response.choices[0])
 
-        message = from_text_to_message(choice.message.content)
+        message = from_text_to_message(choice.message.content, file_ids)
 
         create_message_request = CreateMessageRequest(
             role=message.role,
             content=message.content,
-            attachments=attachments,
+            attachments=message.attachments,
             metadata=message.metadata,
         )
 
@@ -327,7 +327,7 @@ class RunCreateParamsRequestBase(BaseModel):
             )
             tool_resources = assistant.tool_resources
 
-        chat_messages, attachments = await self.create_chat_messages(
+        chat_messages, file_ids = await self.create_chat_messages(
             session, thread, additional_instructions, tool_resources
         )
 
@@ -352,12 +352,12 @@ class RunCreateParamsRequestBase(BaseModel):
             yield "\n\n"
 
         # Create an empty message
-        new_message: Message = from_text_to_message("")
+        new_message: Message = from_text_to_message("", file_ids)
 
         create_message_request = CreateMessageRequest(
             role=new_message.role,
             content=new_message.content,
-            attachments=attachments,
+            attachments=new_message.attachments,
             metadata=new_message.metadata,
         )
 
