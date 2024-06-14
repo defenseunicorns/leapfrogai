@@ -88,7 +88,7 @@ class RunCreateParamsRequestBaseRequest(RunCreateParamsRequestBase):
         new_run: Run | None = await crud_run.create(object_=run)
         return new_run
 
-    async def generate_response(self, existing_thread, new_run, session):
+    async def generate_response(self, existing_thread, new_run: Run, session: Session):
         """Generate a new response based on the existing thread"""
         if self.stream:
             initial_messages: list[str] = (
@@ -98,7 +98,7 @@ class RunCreateParamsRequestBaseRequest(RunCreateParamsRequestBase):
                 RunCreateParamsRequestBase.get_ending_messages_base(new_run)
             )
             stream: AsyncGenerator[str, Any] = (
-                super().stream_generate_message_for_thread(session, initial_messages, existing_thread, ending_messages, self.additional_instructions)
+                super().stream_generate_message_for_thread(session, initial_messages, existing_thread, ending_messages, new_run.id, self.additional_instructions)
             )
 
             return StreamingResponse(stream, media_type="text/event-stream")

@@ -154,11 +154,11 @@ class ThreadRunCreateParamsRequestBaseRequest(RunCreateParamsRequestBase):
             )
             # Generate a new response based on the existing thread
             stream: AsyncGenerator[str, Any] = (
-                super().stream_generate_message_for_thread(session, initial_messages, new_thread, ending_messages)
+                super().stream_generate_message_for_thread(session, initial_messages, new_thread, ending_messages, new_run.id)
             )
 
             return StreamingResponse(stream, media_type="text/event-stream")
         else:
-            await super().generate_message_for_thread(session, new_thread)
+            await super().generate_message_for_thread(session, new_thread, new_run.id)
 
             return new_run

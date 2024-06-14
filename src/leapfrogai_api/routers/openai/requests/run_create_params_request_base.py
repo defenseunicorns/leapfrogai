@@ -233,6 +233,7 @@ class RunCreateParamsRequestBase(BaseModel):
         self,
         session: Session,
         thread: Thread,
+        run_id: str,
         additional_instructions: str | None = None,
     ):
         chat_messages: list[ChatMessage] = await self.create_chat_messages(
@@ -267,7 +268,7 @@ class RunCreateParamsRequestBase(BaseModel):
         )
 
         await create_message_request.create_message(
-            session=session, thread_id=thread.id
+            session=session, thread_id=thread.id, run_id=run_id
         )
 
     async def stream_generate_message_for_thread(
@@ -276,6 +277,7 @@ class RunCreateParamsRequestBase(BaseModel):
         initial_messages: list[str],
         thread: Thread,
         ending_messages: list[str],
+        run_id: str,
         additional_instructions: str | None = None,
     ) -> AsyncGenerator[str, Any]:
         chat_messages: list[ChatMessage] = await self.create_chat_messages(
@@ -313,7 +315,7 @@ class RunCreateParamsRequestBase(BaseModel):
         )
 
         new_message = await create_message_request.create_message(
-            session=session, thread_id=thread.id
+            session=session, thread_id=thread.id, run_id=run_id
         )
 
         yield from_assistant_stream_event_to_str(
