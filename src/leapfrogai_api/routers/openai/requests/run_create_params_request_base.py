@@ -207,9 +207,8 @@ class RunCreateParamsRequestBase(BaseModel):
             )
 
         # 3 - The existing messages with everything after the first message
-        chat_thread_messages_reversed = chat_thread_messages[1:]
-        chat_thread_messages_reversed.reverse()
-        for message in chat_thread_messages_reversed:
+        for message in chat_thread_messages[1:]:
+            logging.info("Inserting " + message.content)
             chat_messages.insert(0, message)
 
         use_rag: bool = self.can_use_rag(tool_resources)
