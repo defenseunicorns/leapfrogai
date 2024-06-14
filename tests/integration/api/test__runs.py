@@ -140,7 +140,7 @@ def create_run(app_client, create_assistant, create_thread):
     )
 
 
-def test_create_assistant(app_client, create_assistant):
+def test_create_assistant(create_assistant):
     """Test creating an assistant. Requires a running Supabase instance."""
     assert create_assistant.status_code is status.HTTP_200_OK
     assert Assistant.model_validate(
@@ -148,13 +148,13 @@ def test_create_assistant(app_client, create_assistant):
     ), "Create should create an Assistant."
 
 
-def test_create_thread(app_client, create_thread):
+def test_create_thread(create_thread):
     """Test creating a thread. Requires a running Supabase instance."""
     assert create_thread.status_code == status.HTTP_200_OK
     assert Thread.model_validate(create_thread.json()), "Create should create a Thread."
 
 
-def test_create_message(app_client, create_message):
+def test_create_message(create_message):
     """Test creating a message. Requires a running Supabase instance."""
     assert create_message["message"].status_code == status.HTTP_200_OK
     assert Message.model_validate(
@@ -188,13 +188,11 @@ def test_create_thread_and_run(app_client, create_assistant):
 
     response = app_client.post("/openai/v1/threads/runs", json=request.model_dump())
 
-    print(response.json())
-
     assert response.status_code == status.HTTP_200_OK
     assert Run.model_validate(response.json()), "Create should create a Run."
 
 
-def test_create_run(app_client, create_run):
+def test_create_run(create_run):
     """Test running an assistant. Requires a running Supabase instance."""
 
     assert create_run.status_code == status.HTTP_200_OK
