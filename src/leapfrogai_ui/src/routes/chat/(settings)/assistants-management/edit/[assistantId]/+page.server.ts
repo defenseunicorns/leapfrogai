@@ -14,6 +14,7 @@ import type {
   VectorStoreFileDeleted
 } from 'openai/resources/beta/vector-stores/files';
 import { getOpenAiClient } from '$lib/server/constants';
+import type { VectorStore } from 'openai/resources/beta/vector-stores/index';
 
 export const load = async ({ fetch, depends, params, locals: { safeGetSession } }) => {
   depends('lf:files');
@@ -37,6 +38,7 @@ export const load = async ({ fetch, depends, params, locals: { safeGetSession } 
   if (!assistant) {
     error(404, { message: 'Assistant not found.' });
   }
+  console.log('assistant', assistant);
   const vectorStoreId =
     assistant.tool_resources?.file_search?.vector_store_ids &&
     assistant.tool_resources?.file_search?.vector_store_ids[0];
@@ -126,6 +128,7 @@ export const actions = {
     if (vectorStoreId && vectorStoreId !== 'undefined') {
       try {
         const vectorStoreFilesPage = await openai.beta.vectorStores.files.list(vectorStoreId);
+
         const vectorStoreFiles = vectorStoreFilesPage.data;
         if (vectorStoreFiles) {
           const vectorStoreFileIds = vectorStoreFiles.map((file) => file.id);
@@ -154,6 +157,19 @@ export const actions = {
       }
     }
 
+    if (data_sources && data_sources.length > 0 && !vectorStoreId) {
+      try {
+        let vectorStore: VectorStore;
+        vectorStore = await openai.beta.vectorStores.create({
+          name: `${form.data.name}-vector-store`,
+          file_ids: data_sources
+        });
+        vectorStoreId = vectorStore.id;
+      } catch (e) {
+        console.error('Error creating vector store', e);
+      }
+    }
+
     // Create assistant object
     const assistant: AssistantCreateParams = {
       name: form.data.name,
@@ -162,14 +178,13 @@ export const actions = {
       temperature: form.data.temperature,
       model: env.DEFAULT_MODEL,
       tools: data_sources && data_sources.length > 0 ? [{ type: 'file_search' }] : [],
-      tool_resources:
-        data_sources && vectorStoreId && data_sources.length > 0
-          ? {
-              file_search: {
-                vector_store_ids: [vectorStoreId]
-              }
+      tool_resources: vectorStoreId
+        ? {
+            file_search: {
+              vector_store_ids: [vectorStoreId]
             }
-          : null,
+          }
+        : null,
       metadata: {
         ...assistantDefaults.metadata,
         avatar: deleteAvatar ? '' : getAssistantAvatarUrl(filePath),

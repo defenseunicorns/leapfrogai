@@ -9,6 +9,7 @@ import { getAssistantAvatarUrl } from '$helpers/assistants';
 import type { AssistantCreateParams } from 'openai/resources/beta/assistants';
 import { getOpenAiClient } from '$lib/server/constants';
 import { filesSchema } from '$schemas/files';
+import type { VectorStore } from 'openai/resources/beta/vector-stores/index';
 
 export const load = async ({ fetch, depends }) => {
   depends('lf:files');
@@ -52,6 +53,21 @@ export const actions = {
         ? form.data.data_sources[0].split(',')
         : [];
 
+    const openai = getOpenAiClient(session.access_token);
+
+    let vectorStore: VectorStore | undefined = undefined;
+    if (data_sources && data_sources.length > 0) {
+      try {
+        vectorStore = await openai.beta.vectorStores.create({
+          name: `${form.data.name}-vector-store`,
+          file_ids: data_sources
+        });
+      }
+      catch(e){
+        console.error('Error creating vector store', e)
+      }
+    }
+
     // Create assistant object, we can't spread the form data here because we need to re-nest some of the values
     const assistant: AssistantCreateParams = {
       name: form.data.name,
@@ -60,18 +76,13 @@ export const actions = {
       temperature: form.data.temperature,
       model: env.DEFAULT_MODEL,
       tools: data_sources && data_sources.length > 0 ? [{ type: 'file_search' }] : [],
-      tool_resources:
-          data_sources && data_sources.length > 0
-          ? {
-              file_search: {
-                vector_stores: [
-                  {
-                    file_ids: data_sources
-                  }
-                ]
-              }
+      tool_resources: vectorStore
+        ? {
+            file_search: {
+              vector_store_ids: [vectorStore.id]
             }
-          : null,
+          }
+        : null,
       metadata: {
         ...assistantDefaults.metadata,
         pictogram: form.data.pictogram,
@@ -79,8 +90,6 @@ export const actions = {
         // avatar is added in later with an update call after saving to supabase
       }
     };
-
-    const openai = getOpenAiClient(session.access_token);
 
     // Create assistant
     let createdAssistant: LFAssistant;
