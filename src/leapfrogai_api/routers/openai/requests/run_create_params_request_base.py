@@ -34,10 +34,6 @@ from openai.types.beta.threads import (
     Message,
 )
 from openai.types.beta.threads import Run
-from openai.types.beta.threads.message import (
-    Attachment,
-    AttachmentToolAssistantToolsFileSearchTypeOnly,
-)
 from openai.types.beta.threads.run_create_params import TruncationStrategy
 from postgrest.base_request_builder import SingleAPIResponse
 from pydantic import BaseModel, Field, ValidationError
@@ -66,10 +62,6 @@ from leapfrogai_api.routers.supabase_session import Session
 from leapfrogai_api.utils import get_model_config
 from leapfrogai_sdk.chat.chat_pb2 import (
     ChatCompletionResponse as ProtobufChatCompletionResponse,
-)
-from openai.types.beta.thread import (
-    ToolResources as BetaThreadToolResources,
-    ToolResourcesFileSearch as BetaThreadToolResourcesFileSearch,
 )
 
 
