@@ -104,7 +104,10 @@ class RunCreateParamsRequestBaseRequest(RunCreateParamsRequestBase):
             return StreamingResponse(stream, media_type="text/event-stream")
         else:
             await super().generate_message_for_thread(
-                session, existing_thread, self.additional_instructions
+                session=session,
+                thread=existing_thread,
+                run_id=new_run.id,
+                additional_instructions=self.additional_instructions,
             )
 
             return new_run
