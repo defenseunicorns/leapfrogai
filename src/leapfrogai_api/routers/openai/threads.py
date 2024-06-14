@@ -113,9 +113,9 @@ async def list_runs(thread_id: str, session: Session) -> SyncCursorPage[Run]:
         runs = await crud_run.list(filters={"thread_id": thread_id})
 
         if runs is None:
-            return SyncCursorPage(data=[])
+            return SyncCursorPage(object="list", data=[])
 
-        return SyncCursorPage(data=runs)
+        return SyncCursorPage(object="list", data=runs)
     except Exception as exc:
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
@@ -308,9 +308,9 @@ async def list_messages(thread_id: str, session: Session) -> SyncCursorPage[Mess
         )
 
         if messages is None:
-            return SyncCursorPage(data=[])
+            return SyncCursorPage(object="list", data=[])
 
-        return SyncCursorPage(data=messages)
+        return SyncCursorPage(object="list", data=messages)
     except Exception as exc:
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,

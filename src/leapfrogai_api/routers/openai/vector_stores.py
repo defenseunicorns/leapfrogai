@@ -15,8 +15,7 @@ from leapfrogai_api.backend.types import (
     CreateVectorStoreRequest,
     ListVectorStoresResponse,
     ModifyVectorStoreRequest,
-    VectorStoreFileStatus,
-    VectorStoreStatus,
+    CreateVectorStoreFileRequest,
 )
 from leapfrogai_api.data.crud_vector_store import CRUDVectorStore, FilterVectorStore
 from leapfrogai_api.data.crud_vector_store_file import (
@@ -263,9 +262,9 @@ async def list_vector_store_files(
         )
 
         if vector_store_files is None:
-            return SyncCursorPage(data=[])
+            return SyncCursorPage(object="list", data=[])
 
-        return SyncCursorPage(data=vector_store_files)
+        return SyncCursorPage(object="list", data=vector_store_files)
     except Exception as exc:
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
