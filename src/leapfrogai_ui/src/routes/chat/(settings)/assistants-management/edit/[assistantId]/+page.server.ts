@@ -118,10 +118,15 @@ export const actions = {
 
     let vectorStoreId = form.data.vectorStoreId;
     if (data_sources.length > 0 && (!vectorStoreId || vectorStoreId === 'undefined')) {
-      const vectorStore = await openai.beta.vectorStores.create({
-        name: `${form.data.name}-vector-store`
-      });
-      vectorStoreId = vectorStore.id;
+      try {
+        const vectorStore = await openai.beta.vectorStores.create({
+          name: `${form.data.name}-vector-store`
+        });
+        vectorStoreId = vectorStore.id;
+      } catch (e) {
+        console.error('Error creating vector store', e);
+        return fail(500, { message: 'Error creating vector store.' });
+      }
     }
 
     // undefined vector store id from form is passed as a string

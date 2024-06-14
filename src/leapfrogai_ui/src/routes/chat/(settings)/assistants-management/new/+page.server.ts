@@ -65,6 +65,7 @@ export const actions = {
       }
       catch(e){
         console.error('Error creating vector store', e)
+        return fail(500, { message: 'Error creating vector store.' });
       }
     }
 
