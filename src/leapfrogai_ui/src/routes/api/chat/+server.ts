@@ -23,6 +23,9 @@ export async function POST({ request, locals: { safeGetSession } }) {
   } catch {
     error(400, 'Bad Request');
   }
+
+  // We have to use the Vercel AI SDK createOpenAI helper here instead of our internal getOpenAiClient for streaming to
+  // work (Vercel AI uses a slightly different type of provider)
   const openai = createOpenAI({
     apiKey: env.OPENAI_API_KEY ? env.OPENAI_API_KEY : session.access_token,
     baseURL: env.LEAPFROGAI_API_BASE_URL

@@ -78,7 +78,7 @@
   });
 
   $: if (data.files) {
-    const fileRows: FileRow[] = data.files?.map((file) => ({
+    const fileRows: FileRow[] = data.files.map((file) => ({
       id: file.id,
       filename: file.filename,
       created_at: file.created_at,
