@@ -196,11 +196,15 @@ class RunCreateParamsRequestBase(BaseModel):
 
         # 1 - Model instructions (system message)
         if self.instructions:
-            chat_messages.insert(0, ChatMessage(role="system", content=self.instructions))
+            chat_messages.insert(
+                0, ChatMessage(role="system", content=self.instructions)
+            )
 
         # 2 - Additional model instructions (system message)
         if additional_instructions:
-            chat_messages.insert(0, ChatMessage(role="system", content=additional_instructions))
+            chat_messages.insert(
+                0, ChatMessage(role="system", content=additional_instructions)
+            )
 
         # 3 - The existing messages with everything after the first message
         chat_thread_messages_reversed = chat_thread_messages[1:]
@@ -236,9 +240,8 @@ class RunCreateParamsRequestBase(BaseModel):
                     response_with_instructions: str = f"{rag_response.content}"
                     rag_message += f"{response_with_instructions}\n"
 
-            chat_messages.insert(0, ChatMessage(
-                role="function",
-                content=rag_message)
+            chat_messages.insert(
+                0, ChatMessage(role="function", content=rag_message)
             )  # TODO: Should this go in user or something else like function?
 
         # 5 - The user query is pushed in as the first item in the list
