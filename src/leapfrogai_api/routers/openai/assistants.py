@@ -91,8 +91,11 @@ async def create_assistant(
 
             try:
                 await crud_vector_store.get(filters=FilterVectorStore(id=ids[0]))
-            except Exception as e:
-                raise e
+            except Exception:
+                raise HTTPException(
+                    status_code=status.HTTP_400_BAD_REQUEST,
+                    detail="Invalid vector store id was provided",
+                )
         else:
             logging.debug(
                 "No files or vector store id found; assistant will be created with no vector store"

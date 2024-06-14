@@ -6,6 +6,7 @@ import json
 import pytest
 from fastapi import Response, status
 from fastapi.testclient import TestClient
+from fastapi.exceptions import HTTPException
 from openai.types.beta import Assistant, AssistantDeleted
 
 from openai.types.beta.vector_store import ExpiresAfter
@@ -418,7 +419,6 @@ def test_create_with_existing_vector_store():
     ), "The created Assistant object should not have a 'vector_stores' field"
 
 
-@pytest.mark.xfail
 def test_create_with_too_many_vector_store_ids_fails():
     """Test creating a new assistant and supplying too many vector store ids. Requires a running Supabase instance."""
 
@@ -435,19 +435,26 @@ def test_create_with_too_many_vector_store_ids_fails():
         response_format=modified_assistant.response_format,
     )
 
-    new_vs_fail_response = assistants_client.post(
-        "/openai/v1/assistants",
-        json=request.model_dump(),
-    )
+    try:
+        new_vs_fail_response = assistants_client.post(
+            "/openai/v1/assistants",
+            json=request.model_dump(),
+        )
 
-    assert new_vs_fail_response.status_code is status.HTTP_400_BAD_REQUEST
-    assert (
-        new_vs_fail_response.json()["detail"]
-        == "There can be a maximum of 1 vector store attached to the assistant"
-    )
+        assert new_vs_fail_response.status_code is status.HTTP_400_BAD_REQUEST
+        assert (
+            new_vs_fail_response.json()["detail"]
+            == "There can be a maximum of 1 vector store attached to the assistant"
+        )
+
+    except HTTPException as exc:
+        assert exc.status_code == status.HTTP_400_BAD_REQUEST
+        assert (
+            exc.detail
+            == "There can be a maximum of 1 vector store attached to the assistant"
+        )
 
 
-@pytest.mark.xfail
 def test_create_with_too_many_vector_store_file_lists_fails():
     """Test creating a new assistant and supplying too many vector store lists. Requires a running Supabase instance."""
     request = CreateAssistantRequest(
@@ -470,19 +477,26 @@ def test_create_with_too_many_vector_store_file_lists_fails():
         response_format=modified_assistant.response_format,
     )
 
-    new_vs_fail_response = assistants_client.post(
-        "/openai/v1/assistants",
-        json=request.model_dump(),
-    )
+    try:
+        new_vs_fail_response = assistants_client.post(
+            "/openai/v1/assistants",
+            json=request.model_dump(),
+        )
 
-    assert new_vs_fail_response.status_code is status.HTTP_400_BAD_REQUEST
-    assert (
-        new_vs_fail_response.json()["detail"]
-        == "There can be a maximum of 1 vector store attached to the assistant"
-    )
+        assert new_vs_fail_response.status_code is status.HTTP_400_BAD_REQUEST
+        assert (
+            new_vs_fail_response.json()["detail"]
+            == "There can be a maximum of 1 vector store attached to the assistant"
+        ), "Should return HTTP 400 error due to invalid request"
+
+    except HTTPException as exc:
+        assert exc.status_code == status.HTTP_400_BAD_REQUEST
+        assert (
+            exc.detail
+            == "There can be a maximum of 1 vector store attached to the assistant"
+        )
 
 
-@pytest.mark.xfail
 def test_create_with_vector_store_files_and_ids_fails():
     """Test creating a new assistant and supplying both vector store ids and file lists. Requires a running Supabase instance."""
     request = CreateAssistantRequest(
@@ -503,19 +517,26 @@ def test_create_with_vector_store_files_and_ids_fails():
         response_format=modified_assistant.response_format,
     )
 
-    new_vs_fail_response = assistants_client.post(
-        "/openai/v1/assistants",
-        json=request.model_dump(),
-    )
+    try:
+        new_vs_fail_response = assistants_client.post(
+            "/openai/v1/assistants",
+            json=request.model_dump(),
+        )
 
-    assert new_vs_fail_response.status_code is status.HTTP_400_BAD_REQUEST
-    assert (
-        new_vs_fail_response.json()["detail"]
-        == "There can be a maximum of 1 vector store attached to the assistant"
-    )
+        assert new_vs_fail_response.status_code is status.HTTP_400_BAD_REQUEST
+        assert (
+            new_vs_fail_response.json()["detail"]
+            == "There can be a maximum of 1 vector store attached to the assistant"
+        ), "Should return HTTP 400 error due to invalid request"
+
+    except HTTPException as exc:
+        assert exc.status_code == status.HTTP_400_BAD_REQUEST
+        assert (
+            exc.detail
+            == "There can be a maximum of 1 vector store attached to the assistant"
+        )
 
 
-@pytest.mark.xfail
 def test_create_with_invalid_vector_store_id_fails():
     """Test creating a new assistant and supply an invalid vector store id. Requires a running Supabase instance."""
 
@@ -534,11 +555,17 @@ def test_create_with_invalid_vector_store_id_fails():
         response_format=modified_assistant.response_format,
     )
 
-    new_vs_response = assistants_client.post(
-        "/openai/v1/assistants",
-        json=request.model_dump(),
-    )
-    assert new_vs_response.status_code is status.HTTP_200_OK
-    assert Assistant.model_validate(
-        new_vs_response.json()
-    ), "Should return a Assistant."
+    try:
+        new_vs_fail_response = assistants_client.post(
+            "/openai/v1/assistants",
+            json=request.model_dump(),
+        )
+        assert new_vs_fail_response.status_code is status.HTTP_400_BAD_REQUEST
+        assert (
+            new_vs_fail_response.json()["detail"]
+            == "Invalid vector store id was provided"
+        ), "Should return HTTP 400 error due to invalid request"
+
+    except HTTPException as exc:
+        assert exc.status_code == status.HTTP_400_BAD_REQUEST
+        assert exc.detail == "Invalid vector store id was provided"
