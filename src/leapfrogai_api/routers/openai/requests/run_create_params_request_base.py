@@ -42,6 +42,11 @@ from openai.types.beta.threads.run_create_params import TruncationStrategy
 from postgrest.base_request_builder import SingleAPIResponse
 from pydantic import BaseModel, Field, ValidationError
 
+from leapfrogai_api.backend.converters import (
+    from_assistant_stream_event_to_str,
+    from_text_to_message,
+    from_chat_completion_choice_to_thread_message_delta,
+)
 from leapfrogai_api.backend.rag.query import QueryService
 from leapfrogai_api.backend.types import (
     ChatMessage,
@@ -51,14 +56,9 @@ from leapfrogai_api.backend.types import (
     ChatChoice,
 )
 from leapfrogai_api.backend.validators import AssistantToolChoiceParamValidator
+from leapfrogai_api.data.crud_assistant import CRUDAssistant, FilterAssistant
 from leapfrogai_api.data.crud_message import CRUDMessage
-from leapfrogai_api.routers.openai.assistants import retrieve_assistant
 from leapfrogai_api.routers.openai.chat import chat_complete, chat_complete_stream_raw
-from leapfrogai_api.backend.converters import (
-    from_assistant_stream_event_to_str,
-    from_text_to_message,
-    from_chat_completion_choice_to_thread_message_delta,
-)
 from leapfrogai_api.routers.openai.requests.create_message_request import (
     CreateMessageRequest,
 )
@@ -115,8 +115,9 @@ class RunCreateParamsRequestBase(BaseModel):
         ]
 
     async def update_with_assistant_data(self, session: Session) -> Assistant:
-        assistant: Assistant | None = await retrieve_assistant(
-            session=session, assistant_id=self.assistant_id
+        crud_assistant = CRUDAssistant(session)
+        assistant: Assistant | None = await crud_assistant.get(
+            filters=FilterAssistant(id=self.assistant_id)
         )
 
         self.model = self.model or assistant.model

@@ -36,11 +36,14 @@ class CreateThreadRequest(BaseModel):
 
         try:
             if self.messages:
-                new_messages = [await self.create_message(
-                    message.content,
-                    new_thread.id,
-                    session,
-                ) for message in self.messages]
+                new_messages = [
+                    await self.create_message(
+                        message.content,
+                        new_thread.id,
+                        session,
+                    )
+                    for message in self.messages
+                ]
         except Exception as exc:
             for message in new_messages:
                 """Clean up any messages added prior to the error"""
@@ -49,7 +52,9 @@ class CreateThreadRequest(BaseModel):
                 )
             raise exc
 
-    async def create_message(self, message_content: list[MessageContent], thread_id: str, session: Session) -> Message:
+    async def create_message(
+        self, message_content: list[MessageContent], thread_id: str, session: Session
+    ) -> Message:
         """Create a message."""
         try:
             crud_message = CRUDMessage(db=session)
