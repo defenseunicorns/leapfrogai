@@ -38,7 +38,7 @@ export const load = async ({ fetch, depends, params, locals: { safeGetSession } 
   if (!assistant) {
     error(404, { message: 'Assistant not found.' });
   }
-  console.log('assistant', assistant);
+
   const vectorStoreId =
     assistant.tool_resources?.file_search?.vector_store_ids &&
     assistant.tool_resources?.file_search?.vector_store_ids[0];
@@ -133,7 +133,6 @@ export const actions = {
     if (vectorStoreId && vectorStoreId !== 'undefined') {
       try {
         const vectorStoreFilesPage = await openai.beta.vectorStores.files.list(vectorStoreId);
-
         const vectorStoreFiles = vectorStoreFilesPage.data;
         if (vectorStoreFiles) {
           const vectorStoreFileIds = vectorStoreFiles.map((file) => file.id);
@@ -145,14 +144,12 @@ export const actions = {
           const promises: APIPromise<VectorStoreFileDeleted | VectorStoreFile>[] = [];
 
           for (const file_id of filesToDelete) {
-            promises.push(openai.beta.vectorStores.files.del(vectorStoreId, file_id));
+            await openai.beta.vectorStores.files.del(vectorStoreId, file_id);
           }
           for (const file_id of filesToAdd) {
-            promises.push(
-              openai.beta.vectorStores.files.create(vectorStoreId, {
-                file_id
-              })
-            );
+            await openai.beta.vectorStores.files.create(vectorStoreId, {
+              file_id
+            });
           }
           await Promise.all(promises);
         }

@@ -39,7 +39,6 @@
     let threads: LFThread[] = [];
     try {
       threads = await readFileAsJson(files[0]);
-      console.log(threads);
       await threadsSchema.validate(threads);
     } catch (e) {
       toastStore.addToast({
