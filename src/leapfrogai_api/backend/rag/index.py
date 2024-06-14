@@ -195,7 +195,9 @@ class IndexingService:
                 )
 
                 for response in responses:
-                    self._increment_vector_store_file_status(new_vector_store, response)
+                    await self._increment_vector_store_file_status(
+                        new_vector_store, response
+                    )
 
             new_vector_store.status = VectorStoreStatus.COMPLETED.value
 
@@ -204,10 +206,7 @@ class IndexingService:
                 object_=new_vector_store,
             )
         except Exception as exc:
-            raise HTTPException(
-                status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-                detail="Unable to create vector store",
-            ) from exc
+            raise exc
 
     async def modify_existing_vector_store(
         self,
@@ -258,7 +257,9 @@ class IndexingService:
                     new_vector_store.id, request.file_ids
                 )
                 for response in responses:
-                    self._increment_vector_store_file_status(new_vector_store, response)
+                    await self._increment_vector_store_file_status(
+                        new_vector_store, response
+                    )
 
             new_vector_store.status = VectorStoreStatus.COMPLETED.value
 
@@ -277,10 +278,7 @@ class IndexingService:
                 object_=new_vector_store,
             )
         except Exception as exc:
-            raise HTTPException(
-                status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-                detail="Unable to update vector store",
-            ) from exc
+            raise exc
 
     async def file_ids_are_valid(self, file_ids: str | list[str]) -> bool:
         """Check if the provided file ids exist"""

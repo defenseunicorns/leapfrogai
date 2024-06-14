@@ -86,11 +86,16 @@ async def create_assistant(
             logging.debug(
                 "Attaching vector store with id: {} to new assistant".format(ids[0])
             )
-            # How do we check to make sure the supplied vector_store_id is valid?
             crud_vector_store = CRUDVectorStore(db=session)
-
             try:
-                await crud_vector_store.get(filters=FilterVectorStore(id=ids[0]))
+                existing_vector_store = await crud_vector_store.get(
+                    filters=FilterVectorStore(id=ids[0])
+                )
+                if existing_vector_store is None:
+                    raise HTTPException(
+                        status_code=status.HTTP_400_BAD_REQUEST,
+                        detail="Provided vector store id was not found",
+                    )
             except Exception:
                 raise HTTPException(
                     status_code=status.HTTP_400_BAD_REQUEST,
@@ -270,13 +275,21 @@ async def modify_assistant(
             logging.debug(
                 "Attaching vector store with id: {} to new assistant".format(ids[0])
             )
-            # How do we check to make sure the supplied vector_store_id is valid?
             crud_vector_store = CRUDVectorStore(db=session)
-
             try:
-                await crud_vector_store.get(filters=FilterVectorStore(id=ids[0]))
-            except Exception as e:
-                raise e
+                existing_vector_store = await crud_vector_store.get(
+                    filters=FilterVectorStore(id=ids[0])
+                )
+                if existing_vector_store is None:
+                    raise HTTPException(
+                        status_code=status.HTTP_400_BAD_REQUEST,
+                        detail="Provided vector store id was not found",
+                    )
+            except Exception:
+                raise HTTPException(
+                    status_code=status.HTTP_400_BAD_REQUEST,
+                    detail="Invalid vector store id was provided",
+                )
         else:
             logging.debug(
                 "No files or vector store id found; assistant will be created with no vector store"
