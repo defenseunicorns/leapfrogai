@@ -268,7 +268,10 @@ class RunCreateParamsRequestBase(BaseModel):
         )
 
         await create_message_request.create_message(
-            session=session, thread_id=thread.id, run_id=run_id
+            session=session,
+            thread_id=thread.id,
+            run_id=run_id,
+            assistant_id=self.assistant_id,
         )
 
     async def stream_generate_message_for_thread(
@@ -315,7 +318,10 @@ class RunCreateParamsRequestBase(BaseModel):
         )
 
         new_message = await create_message_request.create_message(
-            session=session, thread_id=thread.id, run_id=run_id
+            session=session,
+            thread_id=thread.id,
+            run_id=run_id,
+            assistant_id=self.assistant_id,
         )
 
         yield from_assistant_stream_event_to_str(
