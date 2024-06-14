@@ -5,12 +5,14 @@ import { invalidate } from '$app/navigation';
 
 type FilesStore = {
   files: FileRow[];
+  selectedFileManagementFileIds: string[];
   selectedAssistantFileIds: string[];
   uploading: boolean;
 };
 
 const defaultValues: FilesStore = {
   files: [],
+  selectedFileManagementFileIds: [],
   selectedAssistantFileIds: [],
   uploading: false
 };
@@ -32,6 +34,14 @@ const createFilesStore = () => {
     setUploading: (status: boolean) => update((old) => ({ ...old, uploading: status })),
     setFiles: (newFiles: FileRow[]) => {
       update((old) => ({ ...old, files: [...newFiles] }));
+    },
+    addSelectedFileManagementFileIds: (newIds: string[]) =>
+        update((old) => ({
+          ...old,
+          selectedFileManagementFileIds: [...old.selectedFileManagementFileIds, ...newIds]
+        })),
+    setSelectedFileManagementFileIds: (newIds: string[]) => {
+      update((old) => ({ ...old, selectedFileManagementFileIds: newIds }));
     },
     addSelectedAssistantFileIds: (newIds: string[]) =>
       update((old) => ({
