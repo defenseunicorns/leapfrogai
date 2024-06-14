@@ -139,6 +139,11 @@ def test_get():
         get_response.json()
     ), f"Get should return VectorStore {vector_store_id}. Instead returned {get_response.json()}."
 
+    assert get_response.json()["file_counts"]["completed"] == 1
+    assert (
+        get_response.json()["file_counts"]["total"] == 1
+    ), "Should have an accurate file count"
+
 
 def test_get_expired():
     time.sleep(1)  # Wait an arbitrary amount of time for the vector store to expire
