@@ -13,6 +13,8 @@ constants:
   - name: EXTERNAL_KEYCLOAK_CLIENT_ID
     description: 'External keycloak client value'
     value: "uds-supabase"
+  - name: IMAGE_VERSION
+    value: '###ZARF_PKG_TMPL_IMAGE_VERSION###'
 
 variables:
   - name: HOSTED_DOMAIN
@@ -111,3 +113,26 @@ components:
         namespace: leapfrogai
         files:
           - "manifests/declarative-conf-configmap.yaml"
+
+  - name: supabase-migrations
+    description: "Migrations that operate on a database configuration level that require higher elevated permissions (ie adding extensions)"
+    required: true
+    charts:
+      - name: lfai-supabase-migrations
+        namespace: leapfrogai
+        localPath: migrationChart/
+        releaseName: lfai-supabase-migrations
+        version: 0.0.1
+        valuesFiles:
+          - "migration-values.yaml"
+    images:
+      - "ghcr.io/defenseunicorns/leapfrogai/lfai-supabase-migrations:###ZARF_PKG_TMPL_IMAGE_VERSION###"
+    actions:
+      onDeploy:
+        after:
+          - wait:
+              cluster:
+                kind: Job
+                name: lfai-supabase-migrations-###ZARF_PKG_TMPL_IMAGE_VERSION###
+                namespace: leapfrogai
+                condition: complete
