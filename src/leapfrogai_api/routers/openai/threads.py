@@ -8,6 +8,7 @@ from fastapi.security import HTTPBearer
 from openai.types.beta import Thread, ThreadDeleted
 from openai.types.beta.threads import Message, MessageDeleted, Run
 from openai.types.beta.threads.runs import RunStep
+from openai.pagination import SyncCursorPage
 
 from leapfrogai_api.backend.types import (
     ModifyThreadRequest,
@@ -289,7 +290,7 @@ async def create_message(
 
 
 @router.get("/{thread_id}/messages")
-async def list_messages(thread_id: str, session: Session) -> list[Message]:
+async def list_messages(thread_id: str, session: Session) -> SyncCursorPage[Message]:
     """List all the messages in a thread."""
     try:
         crud_message = CRUDMessage(db=session)
@@ -298,9 +299,9 @@ async def list_messages(thread_id: str, session: Session) -> list[Message]:
         )
 
         if messages is None:
-            return []
+            return SyncCursorPage(data=[])
 
-        return messages
+        return SyncCursorPage(data=messages)
     except Exception as exc:
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,

@@ -17,7 +17,7 @@ class CreateThreadRequest(BaseModel):
     tool_resources: BetaThreadToolResources | None = Field(
         default=None, examples=[None]
     )
-    metadata: dict | None = Field(default=None, examples=[{}])
+    metadata: dict | None = Field(default={}, examples=[{}])
 
     async def create_thread(self, session):
         crud_thread = CRUDThread(db=session)
