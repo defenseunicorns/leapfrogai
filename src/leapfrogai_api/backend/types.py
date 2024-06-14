@@ -281,7 +281,7 @@ class CreateAssistantRequest(BaseModel):
             )
         ],
     )
-    metadata: dict | None = Field(default=None, examples=[{}])
+    metadata: dict | None = Field(default={}, examples=[{}])
     temperature: float | None = Field(default=None, examples=[1.0])
     top_p: float | None = Field(default=None, examples=[1.0])
     response_format: Literal["auto"] | None = Field(
