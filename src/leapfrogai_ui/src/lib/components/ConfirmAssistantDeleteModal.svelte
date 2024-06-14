@@ -9,6 +9,12 @@
   export let handleConfirmedDelete: () => void;
   export let affectedAssistants: Assistant[];
   export let fileNames: string[];
+
+  const handleCancel = () => {
+    confirmDeleteModalOpen = false;
+    affectedAssistants = [];
+    affectedAssistantsLoading = false;
+  };
 </script>
 
 <Modal
@@ -19,11 +25,8 @@
   primaryButtonText="Delete"
   secondaryButtonText="Cancel"
   primaryButtonDisabled={affectedAssistantsLoading || deleting}
-  on:click:button--secondary={() => {
-    confirmDeleteModalOpen = false;
-    affectedAssistants = [];
-    affectedAssistantsLoading = false;
-  }}
+  on:click:button--secondary={handleCancel}
+  on:close={handleCancel}
   on:submit={() => handleConfirmedDelete()}
 >
   {#if affectedAssistantsLoading}
