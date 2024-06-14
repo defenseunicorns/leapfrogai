@@ -34,7 +34,11 @@ class CreateMessageRequest(BaseModel):
         return message_content
 
     async def create_message(
-        self, session: Session, thread_id: str, run_id: str = None
+        self,
+        session: Session,
+        thread_id: str,
+        run_id: str = None,
+        assistant_id: str = None,
     ) -> Message:
         """Create a message."""
         try:
@@ -52,7 +56,8 @@ class CreateMessageRequest(BaseModel):
                 role=self.role,
                 status="completed",
                 thread_id=thread_id,
-                run_id=run_id
+                assistant_id=assistant_id,
+                run_id=run_id,
             )
             return await crud_message.create(object_=message)
         except Exception as exc:
