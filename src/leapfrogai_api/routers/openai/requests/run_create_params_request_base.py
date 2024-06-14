@@ -247,7 +247,7 @@ class RunCreateParamsRequestBase(BaseModel):
 
         logging.info(chat_messages)
 
-        return chat_messages, list(file_ids)
+        return chat_messages, list(file_ids).reverse()
 
     async def generate_message_for_thread(
         self,
