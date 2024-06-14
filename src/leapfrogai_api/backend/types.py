@@ -267,15 +267,26 @@ class CreateAssistantRequest(BaseModel):
     model: str = Field(default="llama-cpp-python", examples=["llama-cpp-python"])
     name: str | None = Field(default=None, examples=["Froggy Assistant"])
     description: str | None = Field(default=None, examples=["A helpful assistant."])
-    instructions: str | None = Field(default=None, examples=["You are a helpful assistant."])
-    tools: list[AssistantTool] | None = Field(default=None, examples=[[FileSearchTool(type="file_search")]])
-    tool_resources: BetaAssistantToolResources | None = Field(default=None, examples=[BetaAssistantToolResources(
-        file_search=ToolResourcesFileSearch(vector_store_ids=[])
-    )])
+    instructions: str | None = Field(
+        default=None, examples=["You are a helpful assistant."]
+    )
+    tools: list[AssistantTool] | None = Field(
+        default=None, examples=[[FileSearchTool(type="file_search")]]
+    )
+    tool_resources: BetaAssistantToolResources | None = Field(
+        default=None,
+        examples=[
+            BetaAssistantToolResources(
+                file_search=ToolResourcesFileSearch(vector_store_ids=[])
+            )
+        ],
+    )
     metadata: dict | None = Field(default=None, examples=[{}])
     temperature: float | None = Field(default=None, examples=[1.0])
     top_p: float | None = Field(default=None, examples=[1.0])
-    response_format: Literal["auto"] | None = Field(default=None, examples=["auto"])  # This is all we support right now
+    response_format: Literal["auto"] | None = Field(
+        default=None, examples=["auto"]
+    )  # This is all we support right now
 
 
 class ModifyAssistantRequest(CreateAssistantRequest):

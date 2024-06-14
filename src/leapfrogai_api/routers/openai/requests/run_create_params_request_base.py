@@ -266,7 +266,9 @@ class RunCreateParamsRequestBase(BaseModel):
             metadata=message.metadata,
         )
 
-        await create_message_request.create_message(session=session, thread_id=thread.id)
+        await create_message_request.create_message(
+            session=session, thread_id=thread.id
+        )
 
     async def stream_generate_message_for_thread(
         self,
@@ -310,7 +312,9 @@ class RunCreateParamsRequestBase(BaseModel):
             metadata=new_message.metadata,
         )
 
-        new_message = await create_message_request.create_message(session=session, thread_id=thread.id)
+        new_message = await create_message_request.create_message(
+            session=session, thread_id=thread.id
+        )
 
         yield from_assistant_stream_event_to_str(
             ThreadMessageCreated(data=new_message, event="thread.message.created")
