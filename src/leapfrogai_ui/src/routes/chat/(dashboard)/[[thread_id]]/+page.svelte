@@ -271,7 +271,7 @@
   });
 
   beforeNavigate(async () => {
-    if ($threadsStore.sendingBlocked && activeThread?.id) {
+    if (($isLoading || $status === 'in_progress') && activeThread?.id) {
       await stopThenSave({
         activeThreadId: activeThread.id,
         messages: $chatMessages,
