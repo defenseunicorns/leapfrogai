@@ -19,7 +19,11 @@
   primaryButtonText="Delete"
   secondaryButtonText="Cancel"
   primaryButtonDisabled={affectedAssistantsLoading || deleting}
-  on:click:button--secondary={() => (confirmDeleteModalOpen = false)}
+  on:click:button--secondary={() => {
+    confirmDeleteModalOpen = false;
+    affectedAssistants = [];
+    affectedAssistantsLoading = false;
+  }}
   on:submit={() => handleConfirmedDelete()}
 >
   {#if affectedAssistantsLoading}
