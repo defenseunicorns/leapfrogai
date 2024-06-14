@@ -34,6 +34,10 @@ from openai.types.beta.threads import (
     Message,
 )
 from openai.types.beta.threads import Run
+from openai.types.beta.threads.message import (
+    Attachment,
+    AttachmentToolAssistantToolsFileSearchTypeOnly,
+)
 from openai.types.beta.threads.run_create_params import TruncationStrategy
 from postgrest.base_request_builder import SingleAPIResponse
 from pydantic import BaseModel, Field, ValidationError
@@ -168,30 +172,39 @@ class RunCreateParamsRequestBase(BaseModel):
 
     async def create_chat_messages(
         self, session: Session, thread: Thread, additional_instructions: str | None
-    ) -> list[ChatMessage]:
+    ) -> (list[ChatMessage], list[Attachment]):
         # Get existing messages
         thread_messages: list[Message] = await self.list_messages(thread.id, session)
-        # Holds the converted thread's messages
+        # Holds the converted thread's messages, this will be built up with a series of push operations
         chat_messages: list[ChatMessage] = []
-
-        # 1 - Model instructions (system message)
-        if self.instructions:
-            chat_messages.append(ChatMessage(role="system", content=self.instructions))
-
-        # 2 - Additional model instructions (system message)
-        if additional_instructions:
-            chat_messages.append(
-                ChatMessage(role="system", content=additional_instructions)
-            )
 
         chat_thread_messages = [
             ChatMessage(role=message.role, content=message.content[0].text.value)
             for message in thread_messages
         ]
 
+        first_message: ChatMessage = chat_thread_messages[0]
+
+        # 1 - Model instructions (system message)
+        if self.instructions:
+            chat_messages.insert(
+                0, ChatMessage(role="system", content=self.instructions)
+            )
+
+        # 2 - Additional model instructions (system message)
+        if additional_instructions:
+            chat_messages.insert(
+                0, ChatMessage(role="system", content=additional_instructions)
+            )
+
+        # 3 - The existing messages with everything after the first message
+        for message in chat_thread_messages[1:]:
+            chat_messages.insert(0, message)
+
         use_rag: bool = self.can_use_rag(thread)
 
-        # 3 - RAG results
+        # 4 - The RAG results are appended behind the user's query
+        file_ids: list[Attachment] = []
         if use_rag:
             query_service = QueryService(db=session)
             tool_resources: BetaThreadToolResources = cast(
@@ -206,28 +219,36 @@ class RunCreateParamsRequestBase(BaseModel):
                 rag_results_raw: SingleAPIResponse[
                     RAGResponse
                 ] = await query_service.query_rag(
-                    query=chat_thread_messages[0].content,
+                    query=first_message.content,
                     vector_store_id=vector_store_id,
                 )
                 rag_responses: RAGResponse = RAGResponse(data=rag_results_raw.data)
 
+                # Insert the RAG response messages just before the user's query
                 for count, rag_response in enumerate(rag_responses.data):
-                    """Insert the RAG response messages just before the user's query"""
+                    file_ids.append(
+                        Attachment(
+                            file_id=rag_response.file_id,
+                            tools=[
+                                AttachmentToolAssistantToolsFileSearchTypeOnly(
+                                    type="file_search"
+                                )
+                            ],
+                        )
+                    )
                     response_with_instructions: str = (
                         f"<start attached file {count}'s content>\n"
                         f"{rag_response.content}"
                         f"\n<end attached file {count}'s content>"
                     )
-                    chat_messages.append(
-                        ChatMessage(
-                            role="user", content=response_with_instructions
-                        ),  # TODO: Should this go in user or something else like function?
-                    )
+                    chat_messages.insert(
+                        0, ChatMessage(role="user", content=response_with_instructions)
+                    )  # TODO: Should this go in user or something else like function?
 
-        # 4 - Existing messages including the current user's message
-        chat_messages.extend(chat_thread_messages)
+        # 5 - The user query is pushed in as the first item in the list
+        chat_messages.insert(0, first_message)
 
-        return chat_messages
+        return chat_messages, file_ids
 
     async def generate_message_for_thread(
         self,
@@ -236,7 +257,7 @@ class RunCreateParamsRequestBase(BaseModel):
         run_id: str,
         additional_instructions: str | None = None,
     ):
-        chat_messages: list[ChatMessage] = await self.create_chat_messages(
+        chat_messages, attachments = await self.create_chat_messages(
             session, thread, additional_instructions
         )
 
@@ -263,7 +284,7 @@ class RunCreateParamsRequestBase(BaseModel):
         create_message_request = CreateMessageRequest(
             role=message.role,
             content=message.content,
-            attachments=message.attachments,
+            attachments=attachments,
             metadata=message.metadata,
         )
 
@@ -283,7 +304,7 @@ class RunCreateParamsRequestBase(BaseModel):
         run_id: str,
         additional_instructions: str | None = None,
     ) -> AsyncGenerator[str, Any]:
-        chat_messages: list[ChatMessage] = await self.create_chat_messages(
+        chat_messages, attachments = await self.create_chat_messages(
             session, thread, additional_instructions
         )
 
@@ -313,7 +334,7 @@ class RunCreateParamsRequestBase(BaseModel):
         create_message_request = CreateMessageRequest(
             role=new_message.role,
             content=new_message.content,
-            attachments=new_message.attachments,
+            attachments=attachments,
             metadata=new_message.metadata,
         )
 

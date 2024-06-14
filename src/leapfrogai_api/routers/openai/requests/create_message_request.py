@@ -37,8 +37,8 @@ class CreateMessageRequest(BaseModel):
         self,
         session: Session,
         thread_id: str,
-        run_id: str = None,
-        assistant_id: str = None,
+        run_id: str | None = None,
+        assistant_id: str | None = None,
     ) -> Message:
         """Create a message."""
         try:
