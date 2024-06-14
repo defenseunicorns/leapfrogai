@@ -7,7 +7,7 @@ from fastapi import status
 from fastapi.testclient import TestClient
 from openai.types.beta import Assistant, Thread
 from openai.types.beta.thread import ToolResources
-from openai.types.beta.threads import Message, Text, TextContentBlock
+from openai.types.beta.threads import Message, Text, TextContentBlock, Run
 from leapfrogai_api.backend.types import (
     ChatCompletionRequest,
     ChatCompletionResponse,
@@ -22,6 +22,9 @@ from leapfrogai_api.routers.openai.requests.create_message_request import (
 )
 from leapfrogai_api.routers.openai.requests.create_thread_request import (
     CreateThreadRequest,
+)
+from leapfrogai_api.routers.openai.requests.run_create_params_request import (
+    RunCreateParamsRequestBaseRequest,
 )
 from leapfrogai_api.routers.openai.requests.thread_run_create_params_request import (
     ThreadRunCreateParamsRequestBaseRequest,
@@ -176,7 +179,7 @@ def test_chat():
         assert ChatCompletionResponse.model_validate(response.json())
 
 
-def test_run(create_assistant):
+def test_create_thread_and_run(create_assistant):
     """Test running an assistant. Requires a running Supabase instance."""
 
     with TestClient(app, headers=headers) as client:
@@ -192,5 +195,31 @@ def test_run(create_assistant):
         )
 
         response = client.post("/openai/v1/threads/runs", json=request.model_dump())
+
+        print(response.json())
+
+        assert response.status_code == status.HTTP_200_OK
+        assert Run.model_validate(response.json()), "Create should create a Run."
+
+
+def test_create_run(create_assistant, create_thread):
+    """Test running an assistant. Requires a running Supabase instance."""
+
+    with TestClient(app, headers=headers) as client:
+        assistant_id = create_assistant.json()["id"]
+        thread_id = create_thread.json()["id"]
+
+        request = RunCreateParamsRequestBaseRequest(
+            assistant_id=assistant_id,
+            instructions="Be happy!",
+            additional_instructions="Also be sad!",
+            tool_resources=ToolResources(file_search={}),
+            metadata={},
+            stream=False,
+        )
+
+        response = client.post(
+            f"/openai/v1/threads/{thread_id}/runs", json=request.model_dump()
+        )
 
         assert response.status_code == status.HTTP_200_OK
