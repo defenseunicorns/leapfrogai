@@ -136,7 +136,9 @@ class ThreadRunCreateParamsRequestBaseRequest(RunCreateParamsRequestBase):
                 attachments=message.attachments,
                 metadata=message.metadata,
             )
-            await create_message_request.create_message(session, new_thread.id, new_run.id)
+            await create_message_request.create_message(
+                session, new_thread.id, new_run.id
+            )
 
         return new_run, new_thread
 

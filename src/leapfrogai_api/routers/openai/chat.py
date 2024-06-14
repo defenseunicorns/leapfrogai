@@ -28,9 +28,9 @@ security = HTTPBearer()
 
 @router.post("/completions")
 async def chat_complete(
-        req: ChatCompletionRequest,
-        model_config: Annotated[Config, Depends(get_model_config)],
-        session: Session,
+    req: ChatCompletionRequest,
+    model_config: Annotated[Config, Depends(get_model_config)],
+    session: Session,
 ):
     """Complete a chat conversation with the given model."""
 
@@ -66,8 +66,8 @@ async def chat_complete(
 
 
 async def chat_complete_stream_raw(
-        req: ChatCompletionRequest,
-        model_config: Annotated[Config, Depends(get_model_config)],
+    req: ChatCompletionRequest,
+    model_config: Annotated[Config, Depends(get_model_config)],
 ) -> AsyncGenerator[ProtobufChatCompletionResponse, Any]:
     """Complete a prompt with the given model."""
     # Get the model backend configuration
