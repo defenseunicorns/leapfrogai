@@ -1,6 +1,6 @@
 import { fireEvent, render, screen } from '@testing-library/svelte';
 import FileManagementPage from './+page.svelte';
-import { getFakeFiles } from '../../../../../testUtils/fakeData';
+import {getFakeFiles, getFakeSession} from '../../../../../testUtils/fakeData';
 import userEvent from '@testing-library/user-event';
 import { formatDate } from '$helpers/dates';
 import { load } from './+page';
@@ -13,8 +13,8 @@ describe('file management', () => {
     const files = getFakeFiles();
     mockGetFiles(files);
 
-    const data = await load({ fetch: global.fetch, depends: vi.fn() });
-    render(FileManagementPage, { data });
+    const data = await load();
+    render(FileManagementPage, { ...data, session: getFakeSession() });
 
     files.forEach((file) => {
       expect(screen.getByText(file.filename));

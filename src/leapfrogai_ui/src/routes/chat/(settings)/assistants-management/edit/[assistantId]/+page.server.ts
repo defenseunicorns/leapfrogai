@@ -15,22 +15,14 @@ import type {
   VectorStoreFileDeleted
 } from 'openai/resources/beta/vector-stores/files';
 
-export const load = async ({ fetch, depends, params, locals: { safeGetSession } }) => {
-  depends('lf:files');
-
+export const load = async ({ params, parent, locals: { safeGetSession } }) => {
   const { session } = await safeGetSession();
 
   if (!session) {
     throw redirect(303, '/');
   }
 
-  const promises: [Promise<LFAssistant>, Promise<Response>] = [
-    openai.beta.assistants.retrieve(params.assistantId) as Promise<LFAssistant>,
-    fetch('/api/files')
-  ];
-
-  const [assistant, filesRes] = await Promise.all(promises);
-  const files = await filesRes.json();
+  const assistant = (await openai.beta.assistants.retrieve(params.assistantId)) as LFAssistant;
 
   if (!assistant) {
     error(404, { message: 'Assistant not found.' });
@@ -63,7 +55,7 @@ export const load = async ({ fetch, depends, params, locals: { safeGetSession } 
   const form = await superValidate(assistantFormData, yup(editAssistantInputSchema));
   const filesForm = await superValidate({}, yup(filesSchema), { errors: false });
 
-  return { title: 'LeapfrogAI - Edit Assistant', form, filesForm, assistant, files };
+  return { title: 'LeapfrogAI - Edit Assistant', form, filesForm, assistant };
 };
 
 export const actions = {

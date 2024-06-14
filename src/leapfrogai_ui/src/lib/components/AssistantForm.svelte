@@ -77,15 +77,7 @@
     }
   });
 
-  $: if (data.files) {
-    const fileRows: FileRow[] = data.files.map((file) => ({
-      id: file.id,
-      filename: file.filename,
-      created_at: file.created_at,
-      status: 'complete'
-    }));
-    filesStore.setFiles(fileRows);
-  }
+
 
   onMount(() => {
     if (isEditMode && Object.keys($errors).length > 0) {

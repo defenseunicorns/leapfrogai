@@ -9,27 +9,24 @@
     ToolbarContent,
     ToolbarSearch
   } from 'carbon-components-svelte';
-  import type { FileObject } from 'openai/resources/files';
   import { CheckmarkFilled, ErrorFilled, TrashCan } from 'carbon-icons-svelte';
   import { yup } from 'sveltekit-superforms/adapters';
   import { superForm } from 'sveltekit-superforms';
   import { formatDate } from '$helpers/dates';
   import { filesSchema } from '$schemas/files';
   import { filesStore, toastStore } from '$stores';
-  import type { FileRow } from '$lib/types/files';
   import { invalidate } from '$app/navigation';
 
   export let data;
 
   let uploadedFiles: File[] = [];
-  let rows: Array<FileObject | FileRow>;
   let filteredRowIds: string[] = [];
   let deleting = false;
   let active = $filesStore.selectedFileManagementFileIds.length > 0;
   let nonSelectableRowIds: string[] = [];
 
-  $: rows = $filesStore.files;
   $: if ($filesStore.selectedFileManagementFileIds.length === 0) active = false;
+
 
   const { enhance, submit, submitting } = superForm(data.form, {
     validators: yup(filesSchema),
@@ -62,7 +59,6 @@
         }
       }
       filesStore.setUploading(false);
-      await invalidate('lf:files');
     }
   });
 
@@ -97,7 +93,9 @@
   const handleUpload = async () => {
     filesStore.setUploading(true);
     filesStore.addUploadingFiles(uploadedFiles);
-    nonSelectableRowIds = rows.map((row) => (row.status === 'uploading' ? row.id : ''));
+    nonSelectableRowIds = $filesStore.files.map((row) =>
+      row.status === 'uploading' ? row.id : ''
+    );
     submit(); //upload all files
   };
 
@@ -121,7 +119,7 @@
           value: 'Date Added'
         }
       ]}
-      {rows}
+      rows={$filesStore.files}
       sortable
     >
       <Toolbar>
@@ -131,7 +129,6 @@
             e.preventDefault();
             active = false;
             filesStore.setSelectedFileManagementFileIds([]);
-
           }}
         >
           {#if deleting}
@@ -139,8 +136,10 @@
               <Loading withOverlay={false} small data-testid="delete-pending" />
             </div>
           {:else}
-            <Button icon={TrashCan} on:click={handleDelete} disabled={$filesStore.selectedFileManagementFileIds.length === 0}
-              >Delete</Button
+            <Button
+              icon={TrashCan}
+              on:click={handleDelete}
+              disabled={$filesStore.selectedFileManagementFileIds.length === 0}>Delete</Button
             >
           {/if}
         </ToolbarBatchActions>

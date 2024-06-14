@@ -1,9 +1,8 @@
 <script lang="ts">
-  import { uiStore } from '$stores';
+  import { threadsStore, uiStore } from '$stores';
   import logo from '$assets/LeapfrogAI.png';
   import { Settings, UserAvatar } from 'carbon-icons-svelte';
   import { Header, HeaderAction, HeaderUtilities } from 'carbon-components-svelte';
-  import { threadsStore } from '$stores';
 
   let loading = false;
   let signOutForm: HTMLFormElement;

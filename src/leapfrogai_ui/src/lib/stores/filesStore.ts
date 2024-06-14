@@ -36,10 +36,10 @@ const createFilesStore = () => {
       update((old) => ({ ...old, files: [...newFiles] }));
     },
     addSelectedFileManagementFileIds: (newIds: string[]) =>
-        update((old) => ({
-          ...old,
-          selectedFileManagementFileIds: [...old.selectedFileManagementFileIds, ...newIds]
-        })),
+      update((old) => ({
+        ...old,
+        selectedFileManagementFileIds: [...old.selectedFileManagementFileIds, ...newIds]
+      })),
     setSelectedFileManagementFileIds: (newIds: string[]) => {
       update((old) => ({ ...old, selectedFileManagementFileIds: newIds }));
     },
@@ -51,7 +51,7 @@ const createFilesStore = () => {
     setSelectedAssistantFileIds: (newIds: string[]) => {
       update((old) => ({ ...old, selectedAssistantFileIds: newIds }));
     },
-    addUploadingFiles: (files: File[]) => {
+    addUploadingFiles: (files: File[], { setSelectedAssistantIds = false } = {}) => {
       update((old) => {
         const newFiles: FileRow[] = [];
         const newFileIds: string[] = [];
@@ -68,7 +68,9 @@ const createFilesStore = () => {
         return {
           ...old,
           files: [...old.files, ...newFiles],
-          selectedAssistantFileIds: [...old.selectedAssistantFileIds, ...newFileIds]
+          selectedAssistantFileIds: setSelectedAssistantIds
+            ? [...old.selectedAssistantFileIds, ...newFileIds]
+            : old.selectedAssistantFileIds
         };
       });
     },
