@@ -14,7 +14,7 @@ from openai.types.beta.threads import (
     MessageDelta,
     TextDeltaBlock,
     TextDelta,
-    FileCitationAnnotation
+    FileCitationAnnotation,
 )
 from pydantic_core import ValidationError
 
@@ -26,7 +26,7 @@ def from_assistant_stream_event_to_str(stream_event: AssistantStreamEvent):
 
 
 def from_content_param_to_content(
-        thread_message_content: str | Iterable[MessageContentPartParam],
+    thread_message_content: str | Iterable[MessageContentPartParam],
 ) -> MessageContent:
     """Converts messages from MessageContentPartParam to MessageContent"""
     if isinstance(thread_message_content, str):
@@ -54,12 +54,15 @@ def from_content_param_to_content(
 
 def from_text_to_message(text: str, file_ids: list[str]) -> Message:
     message_content: TextContentBlock = TextContentBlock(
-        text=Text(annotations=[
-            FileCitationAnnotation(file_citation=FileCitation(
-                file_id=file_id,
-                text=f"[{file_id}]"
-            )) for file_id in file_ids
-        ], value=text),
+        text=Text(
+            annotations=[
+                FileCitationAnnotation(
+                    file_citation=FileCitation(file_id=file_id, text=f"[{file_id}]")
+                )
+                for file_id in file_ids
+            ],
+            value=text,
+        ),
         type="text",
     )
 
@@ -78,7 +81,7 @@ def from_text_to_message(text: str, file_ids: list[str]) -> Message:
 
 
 async def from_chat_completion_choice_to_thread_message_delta(
-        index, random_uuid, streaming_response
+    index, random_uuid, streaming_response
 ) -> ThreadMessageDelta:
     thread_message_event: ThreadMessageDelta = ThreadMessageDelta(
         data=MessageDeltaEvent(
