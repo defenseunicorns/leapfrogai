@@ -241,7 +241,7 @@ class RunCreateParamsRequestBase(BaseModel):
                     chat_messages.insert(
                         0, ChatMessage(role="user", content=response_with_instructions)
                     )  # TODO: Should this go in user or something else like function?
-                    first_message += (
+                    first_message.content += (
                         f" [{rag_response.file_id}]"  # Add file id to the user input
                     )
 
