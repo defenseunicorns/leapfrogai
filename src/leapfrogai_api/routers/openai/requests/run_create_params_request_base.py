@@ -349,7 +349,7 @@ class RunCreateParamsRequestBase(BaseModel):
             yield "\n\n"
 
         # Create an empty message
-        new_message: Message = from_text_to_message("")
+        new_message: Message = from_text_to_message("", [])
 
         create_message_request = CreateMessageRequest(
             role=new_message.role,
