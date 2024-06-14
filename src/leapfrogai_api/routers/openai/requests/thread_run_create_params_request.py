@@ -115,15 +115,6 @@ class ThreadRunCreateParamsRequestBaseRequest(RunCreateParamsRequestBase):
         new_thread_request: CreateThreadRequest = await self.create_thread_request()
         new_thread = await new_thread_request.create_thread(session)
 
-        for message in new_thread_request.messages:
-            create_message_request: CreateMessageRequest = CreateMessageRequest(
-                role=message.role,
-                content=message.content,
-                attachments=message.attachments,
-                metadata=message.metadata,
-            )
-            await create_message_request.create_message(new_thread.id, session)
-
         crud_run = CRUDRun(db=session)
         create_params: RunCreateParamsRequestBase = RunCreateParamsRequestBase(
             **self.__dict__
@@ -137,6 +128,16 @@ class ThreadRunCreateParamsRequestBaseRequest(RunCreateParamsRequestBase):
             **create_params.__dict__,
         )
         new_run: Run | None = await crud_run.create(object_=run)
+
+        for message in new_thread_request.messages:
+            create_message_request: CreateMessageRequest = CreateMessageRequest(
+                role=message.role,
+                content=message.content,
+                attachments=message.attachments,
+                metadata=message.metadata,
+            )
+            await create_message_request.create_message(session, new_thread.id, new_run.id)
+
         return new_run, new_thread
 
     async def generate_response(self, new_run, new_thread, session):

@@ -112,7 +112,10 @@ async def list_runs(thread_id: str, session: Session) -> SyncCursorPage[Run]:
         crud_run = CRUDRun(db=session)
         runs = await crud_run.list(filters={"thread_id": thread_id})
 
-        return runs
+        if runs is None:
+            return SyncCursorPage(data=[])
+
+        return SyncCursorPage(data=runs)
     except Exception as exc:
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,

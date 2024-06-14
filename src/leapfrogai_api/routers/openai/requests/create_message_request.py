@@ -33,7 +33,7 @@ class CreateMessageRequest(BaseModel):
             message_content: list[MessageContent] = self.content
         return message_content
 
-    async def create_message(self, thread_id: str, session: Session) -> Message:
+    async def create_message(self, session: Session, thread_id: str, run_id: str = None) -> Message:
         """Create a message."""
         try:
             crud_message = CRUDMessage(db=session)
