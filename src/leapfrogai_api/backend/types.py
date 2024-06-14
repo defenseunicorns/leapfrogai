@@ -4,7 +4,7 @@ from __future__ import annotations
 
 import datetime
 from enum import Enum
-from typing import Literal
+from typing import Literal, List
 
 from fastapi import UploadFile, Form, File
 from openai.types import FileObject
@@ -19,6 +19,10 @@ from openai.types.beta.thread import ToolResources as BetaThreadToolResources
 from openai.types.beta.threads.text_content_block_param import TextContentBlockParam
 from openai.types.beta.vector_store import ExpiresAfter
 from pydantic import BaseModel, Field
+from openai.types.beta.thread_create_params import (
+    ToolResourcesFileSearchVectorStoreChunkingStrategy,
+    ToolResourcesFileSearchVectorStoreChunkingStrategyAuto,
+)
 
 
 ##########
@@ -320,6 +324,21 @@ class VectorStoreStatus(Enum):
     EXPIRED = "expired"
     IN_PROGRESS = "in_progress"
     COMPLETED = "completed"
+
+
+class CreateVectorStoreFileRequest(BaseModel):
+    """Request object for creating a vector store file."""
+
+    chunking_strategy: ToolResourcesFileSearchVectorStoreChunkingStrategy | None = (
+        Field(
+            default=None,
+            examples=[
+                ToolResourcesFileSearchVectorStoreChunkingStrategyAuto(type="auto")
+            ],
+        )
+    )
+
+    file_id: str = Field(default="", examples=[""])
 
 
 class CreateVectorStoreRequest(BaseModel):

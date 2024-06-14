@@ -64,6 +64,7 @@ def from_text_to_message(text: str) -> Message:
         thread_id="",
         content=[message_content],
         role="assistant",
+        metadata={},
     )
 
     return new_message
