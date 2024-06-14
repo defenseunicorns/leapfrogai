@@ -196,15 +196,17 @@ class RunCreateParamsRequestBase(BaseModel):
 
         # 1 - Model instructions (system message)
         if self.instructions:
-            chat_messages.append(ChatMessage(role="system", content=self.instructions))
+            chat_messages.insert(0, ChatMessage(role="system", content=self.instructions))
 
         # 2 - Additional model instructions (system message)
         if additional_instructions:
-            chat_messages.append(ChatMessage(role="system", content=additional_instructions))
+            chat_messages.insert(0, ChatMessage(role="system", content=additional_instructions))
 
         # 3 - The existing messages with everything after the first message
-        for message in chat_thread_messages[1:]:
-            chat_messages.append(message)
+        chat_thread_messages_reversed = chat_thread_messages[1:]
+        chat_thread_messages_reversed.reverse()
+        for message in chat_thread_messages_reversed:
+            chat_messages.insert(0, message)
 
         use_rag: bool = self.can_use_rag(tool_resources)
 
@@ -234,13 +236,13 @@ class RunCreateParamsRequestBase(BaseModel):
                     response_with_instructions: str = f"{rag_response.content}"
                     rag_message += f"{response_with_instructions}\n"
 
-            chat_messages.append(ChatMessage(
+            chat_messages.insert(0, ChatMessage(
                 role="function",
                 content=rag_message)
             )  # TODO: Should this go in user or something else like function?
 
         # 5 - The user query is pushed in as the first item in the list
-        chat_messages.append(first_message)
+        chat_messages.insert(0, first_message)
 
         for message in chat_messages:
             logging.info(message)
@@ -344,7 +346,7 @@ class RunCreateParamsRequestBase(BaseModel):
             yield "\n\n"
 
         # Create an empty message
-        new_message: Message = from_text_to_message("", file_ids)
+        new_message: Message = from_text_to_message("")
 
         create_message_request = CreateMessageRequest(
             role=new_message.role,
@@ -390,8 +392,6 @@ class RunCreateParamsRequestBase(BaseModel):
             index += 1
 
         new_message.content = from_text_to_message(response, file_ids).content
-
-        logging.info(new_message.content)
 
         crud_message = CRUDMessage(db=session)
 
