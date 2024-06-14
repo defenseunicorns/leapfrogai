@@ -185,7 +185,9 @@ async def modify_assistant(
             object="assistant",
             tools=getattr(request, "tools", old_assistant.tools),
             tool_resources=new_tool_resources,
-            temperature=getattr(request, "temperature", old_assistant.temperature),
+            temperature=float(
+                getattr(request, "temperature", old_assistant.temperature)
+            ),
             top_p=getattr(request, "top_p", old_assistant.top_p),
             metadata=getattr(request, "metadata", old_assistant.metadata),
             response_format=getattr(
