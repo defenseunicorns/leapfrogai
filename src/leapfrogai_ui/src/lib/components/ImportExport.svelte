@@ -40,7 +40,7 @@
     try {
       threads = await readFileAsJson(files[0]);
       await threadsSchema.validate(threads);
-    } catch (e) {
+    } catch {
       toastStore.addToast({
         kind: 'error',
         title: 'Error',

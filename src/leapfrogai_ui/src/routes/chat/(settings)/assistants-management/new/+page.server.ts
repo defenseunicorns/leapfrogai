@@ -62,9 +62,8 @@ export const actions = {
           name: `${form.data.name}-vector-store`,
           file_ids: data_sources
         });
-      }
-      catch(e){
-        console.error('Error creating vector store', e)
+      } catch (e) {
+        console.error('Error creating vector store', e);
         return fail(500, { message: 'Error creating vector store.' });
       }
     }

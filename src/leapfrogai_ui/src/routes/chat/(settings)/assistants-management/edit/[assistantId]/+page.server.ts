@@ -14,7 +14,6 @@ import type {
   VectorStoreFileDeleted
 } from 'openai/resources/beta/vector-stores/files';
 import { getOpenAiClient } from '$lib/server/constants';
-import type { VectorStore } from 'openai/resources/beta/vector-stores/index';
 
 export const load = async ({ fetch, depends, params, locals: { safeGetSession } }) => {
   depends('lf:files');
@@ -161,8 +160,7 @@ export const actions = {
 
     if (data_sources && data_sources.length > 0 && !vectorStoreId) {
       try {
-        let vectorStore: VectorStore;
-        vectorStore = await openai.beta.vectorStores.create({
+        const vectorStore = await openai.beta.vectorStores.create({
           name: `${form.data.name}-vector-store`,
           file_ids: data_sources
         });

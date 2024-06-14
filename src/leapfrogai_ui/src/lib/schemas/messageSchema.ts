@@ -63,7 +63,6 @@ const textSchema = yup.object().shape({
   value: yup.string().required()
 });
 
-
 const textContentBlockSchema = yup.object().shape({
   text: textSchema.required(),
   type: yup.mixed().oneOf(['text']).required()
