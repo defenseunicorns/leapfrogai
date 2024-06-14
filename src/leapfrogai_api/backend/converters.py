@@ -1,4 +1,3 @@
-import itertools
 import logging
 import traceback
 from typing import Iterable
