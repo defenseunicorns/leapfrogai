@@ -237,9 +237,6 @@ class RunCreateParamsRequestBase(BaseModel):
                     file_ids.append(rag_response.file_id)
                     response_with_instructions: str = f"{rag_response.content}"
                     rag_message += f"{response_with_instructions}\n"
-                    first_message.content += (
-                        f" [{rag_response.file_id}]"  # Add file id to the user input
-                    )
 
             chat_messages.insert(
                 0, ChatMessage(role="function", content=rag_message)
@@ -394,7 +391,7 @@ class RunCreateParamsRequestBase(BaseModel):
             yield "\n\n"
             index += 1
 
-        new_message.content[0].text.value = response
+        new_message.content = from_text_to_message(response, file_ids).content
 
         crud_message = CRUDMessage(db=session)
 
