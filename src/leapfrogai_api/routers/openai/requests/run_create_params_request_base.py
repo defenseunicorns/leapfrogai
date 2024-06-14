@@ -77,7 +77,7 @@ class RunCreateParamsRequestBase(BaseModel):
     )
     temperature: float | None = Field(default=None, examples=[1.0])
     tool_choice: AssistantToolChoiceOptionParam | None = Field(
-        default=None, examples=["auto"]
+        default="auto", examples=["auto"]
     )
     tools: list[AssistantToolParam] = Field(
         default=[], examples=[[FileSearchToolParam(type="file_search")]]
