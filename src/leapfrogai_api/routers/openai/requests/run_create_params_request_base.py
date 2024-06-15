@@ -252,7 +252,7 @@ class RunCreateParamsRequestBase(BaseModel):
 
             chat_messages.insert(
                 len(chat_messages) - 1,  # Insert right before the user message
-                ChatMessage(role="function", content=rag_message),
+                ChatMessage(role="user", content=rag_message),
             )  # TODO: Should this go in user or something else like function?
 
         return chat_messages, list(file_ids)
