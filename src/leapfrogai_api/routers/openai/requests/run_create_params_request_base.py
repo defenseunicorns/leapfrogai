@@ -182,6 +182,11 @@ class RunCreateParamsRequestBase(BaseModel):
         # Get existing messages
         thread_messages: list[Message] = await self.list_messages(thread.id, session)
 
+        def sort_by_created_at(msg: Message):
+            return msg.created_at
+
+        thread_messages.sort(key=sort_by_created_at)
+
         if len(thread_messages) == 0:
             return [], []
 
