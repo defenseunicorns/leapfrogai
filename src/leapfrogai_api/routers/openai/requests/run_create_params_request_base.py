@@ -388,10 +388,8 @@ class RunCreateParamsRequestBase(BaseModel):
             yield "\n\n"
             index += 1
 
-        logging.info("Response" + response)
-
-        new_message.content = from_text_to_message(response, file_ids).content
-        logging.info("content" + new_message.content[0].text.value)
+        # Generate it first without the file_ids so that the LLM doesn't hallucinate ids
+        new_message.content = from_text_to_message(response, []).content
         new_message.created_at = int(time.time())
 
         crud_message = CRUDMessage(db=session)
@@ -400,6 +398,9 @@ class RunCreateParamsRequestBase(BaseModel):
             id_=new_message.id,
             object_=new_message,
         )
+
+        # Generate the message content with the file_ids so that the frontend is aware of them
+        new_message.content = from_text_to_message(response, file_ids).content
 
         yield from_assistant_stream_event_to_str(
             ThreadMessageCompleted(
