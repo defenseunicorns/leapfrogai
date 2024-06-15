@@ -404,13 +404,13 @@ class RunCreateParamsRequestBase(BaseModel):
 
         crud_message = CRUDMessage(db=session)
 
-        await crud_message.update(
+        updated_message = await crud_message.update(
             id_=new_message.id,
             object_=new_message,
         )
 
         yield from_assistant_stream_event_to_str(
-            ThreadMessageCompleted(data=new_message, event="thread.message.completed")
+            ThreadMessageCompleted(data=updated_message, event="thread.message.completed")
         )
         yield "\n\n"
 
