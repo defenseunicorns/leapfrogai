@@ -125,8 +125,8 @@ class RunCreateParamsRequestBase(BaseModel):
         return assistant
 
     def can_use_rag(
-            self,
-            tool_resources: BetaThreadToolResources | None,
+        self,
+        tool_resources: BetaThreadToolResources | None,
     ) -> bool:
         if not tool_resources:
             return False
@@ -142,7 +142,7 @@ class RunCreateParamsRequestBase(BaseModel):
             else:
                 try:
                     if AssistantToolChoiceParamValidator.validate_python(
-                            self.tool_choice
+                        self.tool_choice
                     ):
                         return self.tool_choice.get("type") == "file_search"
                 except ValidationError:
@@ -173,11 +173,11 @@ class RunCreateParamsRequestBase(BaseModel):
             ) from exc
 
     async def create_chat_messages(
-            self,
-            session: Session,
-            thread: Thread,
-            additional_instructions: str | None,
-            tool_resources: BetaThreadToolResources | None = None,
+        self,
+        session: Session,
+        thread: Thread,
+        additional_instructions: str | None,
+        tool_resources: BetaThreadToolResources | None = None,
     ) -> (list[ChatMessage], list[str]):
         # Get existing messages
         thread_messages: list[Message] = await self.list_messages(thread.id, session)
@@ -206,7 +206,9 @@ class RunCreateParamsRequestBase(BaseModel):
 
         # 2 - Additional model instructions (system message)
         if additional_instructions:
-            chat_messages.append(ChatMessage(role="system", content=additional_instructions))
+            chat_messages.append(
+                ChatMessage(role="system", content=additional_instructions)
+            )
 
         # 3 - The existing messages with everything after the first message
         for message in chat_thread_messages:
@@ -240,19 +242,20 @@ class RunCreateParamsRequestBase(BaseModel):
                     response_with_instructions: str = f"{rag_response.content}"
                     rag_message += f"{response_with_instructions}\n"
 
-            chat_messages.insert(len(chat_messages) - 1,  # Insert right before the user message
-                                 ChatMessage(role="function", content=rag_message)
-                                 )  # TODO: Should this go in user or something else like function?
+            chat_messages.insert(
+                len(chat_messages) - 1,  # Insert right before the user message
+                ChatMessage(role="function", content=rag_message),
+            )  # TODO: Should this go in user or something else like function?
 
         return chat_messages, list(file_ids)
 
     async def generate_message_for_thread(
-            self,
-            session: Session,
-            thread: Thread,
-            run_id: str,
-            additional_instructions: str | None = None,
-            tool_resources: BetaThreadToolResources | None = None,
+        self,
+        session: Session,
+        thread: Thread,
+        run_id: str,
+        additional_instructions: str | None = None,
+        tool_resources: BetaThreadToolResources | None = None,
     ):
         # If no tools resources are passed in, try the tools in the assistant
         if not tool_resources:
@@ -301,14 +304,14 @@ class RunCreateParamsRequestBase(BaseModel):
         )
 
     async def stream_generate_message_for_thread(
-            self,
-            session: Session,
-            initial_messages: list[str],
-            thread: Thread,
-            ending_messages: list[str],
-            run_id: str,
-            additional_instructions: str | None = None,
-            tool_resources: BetaThreadToolResources | None = None,
+        self,
+        session: Session,
+        initial_messages: list[str],
+        thread: Thread,
+        ending_messages: list[str],
+        run_id: str,
+        additional_instructions: str | None = None,
+        tool_resources: BetaThreadToolResources | None = None,
     ) -> AsyncGenerator[str, Any]:
         # If no tools resources are passed in, try the tools in the assistant
         if not tool_resources:
