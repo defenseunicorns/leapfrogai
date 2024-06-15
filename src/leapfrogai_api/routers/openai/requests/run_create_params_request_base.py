@@ -191,7 +191,9 @@ class RunCreateParamsRequestBase(BaseModel):
         # The LLM may hallucinate if we leave the annotations in when we pass them into the LLM, so they are removed
         for message in thread_messages:
             for annotation in message.content[0].text.annotations:
-                message.content[0].text.value = message.content[0].text.value.replace(annotation.text, "")
+                message.content[0].text.value = message.content[0].text.value.replace(
+                    annotation.text, ""
+                )
 
         if len(thread_messages) == 0:
             return [], []
