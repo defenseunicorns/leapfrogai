@@ -124,8 +124,8 @@ class RunCreateParamsRequestBase(BaseModel):
         return assistant
 
     def can_use_rag(
-        self,
-        tool_resources: BetaThreadToolResources | None,
+            self,
+            tool_resources: BetaThreadToolResources | None,
     ) -> bool:
         if not tool_resources:
             return False
@@ -141,7 +141,7 @@ class RunCreateParamsRequestBase(BaseModel):
             else:
                 try:
                     if AssistantToolChoiceParamValidator.validate_python(
-                        self.tool_choice
+                            self.tool_choice
                     ):
                         return self.tool_choice.get("type") == "file_search"
                 except ValidationError:
@@ -172,11 +172,11 @@ class RunCreateParamsRequestBase(BaseModel):
             ) from exc
 
     async def create_chat_messages(
-        self,
-        session: Session,
-        thread: Thread,
-        additional_instructions: str | None,
-        tool_resources: BetaThreadToolResources | None = None,
+            self,
+            session: Session,
+            thread: Thread,
+            additional_instructions: str | None,
+            tool_resources: BetaThreadToolResources | None = None,
     ) -> (list[ChatMessage], list[str]):
         # Get existing messages
         thread_messages: list[Message] = await self.list_messages(thread.id, session)
@@ -203,10 +203,7 @@ class RunCreateParamsRequestBase(BaseModel):
             chat_messages.append(ChatMessage(role="system", content=additional_instructions))
 
         # 3 - The existing messages with everything after the first message
-        chat_thread_messages_reversed = chat_thread_messages[1:]
-        chat_thread_messages_reversed.reverse()
-        for message in chat_thread_messages_reversed:
-            logging.info("Inserting " + message.content)
+        for message in chat_thread_messages:
             chat_messages.append(message)
 
         use_rag: bool = self.can_use_rag(tool_resources)
@@ -237,12 +234,9 @@ class RunCreateParamsRequestBase(BaseModel):
                     response_with_instructions: str = f"{rag_response.content}"
                     rag_message += f"{response_with_instructions}\n"
 
-            chat_messages.append(
-                ChatMessage(role="function", content=rag_message)
-            )  # TODO: Should this go in user or something else like function?
-
-        # 5 - The user query is pushed in as the first item in the list
-        chat_messages.append(first_message)
+            chat_messages.insert(len(chat_messages) - 1,  # Insert right before the user message
+                                 ChatMessage(role="function", content=rag_message)
+                                 )  # TODO: Should this go in user or something else like function?
 
         for message in chat_messages:
             logging.info(message)
@@ -250,12 +244,12 @@ class RunCreateParamsRequestBase(BaseModel):
         return chat_messages, list(file_ids)
 
     async def generate_message_for_thread(
-        self,
-        session: Session,
-        thread: Thread,
-        run_id: str,
-        additional_instructions: str | None = None,
-        tool_resources: BetaThreadToolResources | None = None,
+            self,
+            session: Session,
+            thread: Thread,
+            run_id: str,
+            additional_instructions: str | None = None,
+            tool_resources: BetaThreadToolResources | None = None,
     ):
         # If no tools resources are passed in, try the tools in the assistant
         if not tool_resources:
@@ -304,14 +298,14 @@ class RunCreateParamsRequestBase(BaseModel):
         )
 
     async def stream_generate_message_for_thread(
-        self,
-        session: Session,
-        initial_messages: list[str],
-        thread: Thread,
-        ending_messages: list[str],
-        run_id: str,
-        additional_instructions: str | None = None,
-        tool_resources: BetaThreadToolResources | None = None,
+            self,
+            session: Session,
+            initial_messages: list[str],
+            thread: Thread,
+            ending_messages: list[str],
+            run_id: str,
+            additional_instructions: str | None = None,
+            tool_resources: BetaThreadToolResources | None = None,
     ) -> AsyncGenerator[str, Any]:
         # If no tools resources are passed in, try the tools in the assistant
         if not tool_resources:
