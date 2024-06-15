@@ -185,7 +185,13 @@ class RunCreateParamsRequestBase(BaseModel):
         def sort_by_created_at(msg: Message):
             return msg.created_at
 
+        # The messages are not guaranteed to come out of the DB sorted, so they are sorted here
         thread_messages.sort(key=sort_by_created_at)
+
+        # The LLM may hallucinate if we leave the annotations in when we pass them into the LLM, so they are removed
+        for message in thread_messages:
+            for annotation in message.content[0].text.annotations:
+                message.content[0].text.value = message.content[0].text.value.replace(annotation.text, "")
 
         if len(thread_messages) == 0:
             return [], []
@@ -391,8 +397,7 @@ class RunCreateParamsRequestBase(BaseModel):
             yield "\n\n"
             index += 1
 
-        # Generate it first without the file_ids so that the LLM doesn't hallucinate ids
-        new_message.content = from_text_to_message(response, []).content
+        new_message.content = from_text_to_message(response, file_ids).content
         new_message.created_at = int(time.time())
 
         crud_message = CRUDMessage(db=session)
@@ -401,9 +406,6 @@ class RunCreateParamsRequestBase(BaseModel):
             id_=new_message.id,
             object_=new_message,
         )
-
-        # Generate the message content with the file_ids so that the frontend is aware of them
-        new_message.content = from_text_to_message(response, file_ids).content
 
         yield from_assistant_stream_event_to_str(
             ThreadMessageCompleted(data=new_message, event="thread.message.completed")
