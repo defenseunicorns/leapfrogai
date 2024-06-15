@@ -22,7 +22,7 @@ class CRUDBase(Generic[ModelType]):
             "id"
         ):  # There are cases where the id is provided
             del dict_["id"]
-        if "created_at" in dict_:
+        if "created_at" in dict_ and dict_["created_at"] == 0:
             del dict_["created_at"]
         data, _count = await self.db.table(self.table_name).insert(dict_).execute()
 
