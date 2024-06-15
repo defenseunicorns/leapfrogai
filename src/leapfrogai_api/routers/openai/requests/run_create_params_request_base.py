@@ -410,7 +410,9 @@ class RunCreateParamsRequestBase(BaseModel):
         )
 
         yield from_assistant_stream_event_to_str(
-            ThreadMessageCompleted(data=updated_message, event="thread.message.completed")
+            ThreadMessageCompleted(
+                data=updated_message, event="thread.message.completed"
+            )
         )
         yield "\n\n"
 
