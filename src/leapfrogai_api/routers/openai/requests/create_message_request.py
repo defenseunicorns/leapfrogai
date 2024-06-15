@@ -1,6 +1,8 @@
 from __future__ import annotations
 
+import time
 import traceback
+from datetime import datetime, timezone
 from typing import Literal
 
 from fastapi import HTTPException, status
@@ -50,7 +52,7 @@ class CreateMessageRequest(BaseModel):
                 id="",  # Leave blank to have Postgres generate a UUID
                 attachments=self.attachments,
                 content=message_content,
-                created_at=0,  # Leave blank to have Postgres generate a timestamp
+                created_at=int(time.time()),  # Leave blank to have Postgres generate a timestamp
                 metadata=self.metadata,
                 object="thread.message",
                 role=self.role,
