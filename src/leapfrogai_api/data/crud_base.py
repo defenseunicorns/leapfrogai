@@ -22,8 +22,7 @@ class CRUDBase(Generic[ModelType]):
             "id"
         ):  # There are cases where the id is provided
             del dict_["id"]
-        # Only delete created_at if it is <= 0, the db time is not adequate for message ordering
-        if "created_at" in dict_ and dict_["created_at"] <= 0:
+        if "created_at" in dict_ and dict_["created_at"] == 0:
             del dict_["created_at"]
         data, _count = await self.db.table(self.table_name).insert(dict_).execute()
 
