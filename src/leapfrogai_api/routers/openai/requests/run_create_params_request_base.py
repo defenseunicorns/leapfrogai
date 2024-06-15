@@ -244,9 +244,6 @@ class RunCreateParamsRequestBase(BaseModel):
                                  ChatMessage(role="function", content=rag_message)
                                  )  # TODO: Should this go in user or something else like function?
 
-        for message in chat_messages:
-            logging.info(message)
-
         return chat_messages, list(file_ids)
 
     async def generate_message_for_thread(
@@ -391,7 +388,10 @@ class RunCreateParamsRequestBase(BaseModel):
             yield "\n\n"
             index += 1
 
+        logging.info("Response" + response)
+
         new_message.content = from_text_to_message(response, file_ids).content
+        logging.info("content" + new_message)
         new_message.created_at = int(time.time())
 
         crud_message = CRUDMessage(db=session)
