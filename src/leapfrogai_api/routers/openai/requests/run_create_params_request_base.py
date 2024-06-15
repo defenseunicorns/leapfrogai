@@ -391,7 +391,7 @@ class RunCreateParamsRequestBase(BaseModel):
         logging.info("Response" + response)
 
         new_message.content = from_text_to_message(response, file_ids).content
-        logging.info("content" + new_message)
+        logging.info("content" + new_message.content[0].text.value)
         new_message.created_at = int(time.time())
 
         crud_message = CRUDMessage(db=session)
