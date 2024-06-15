@@ -397,7 +397,7 @@ class RunCreateParamsRequestBase(BaseModel):
 
         crud_message = CRUDMessage(db=session)
 
-        updated_message: Message = await crud_message.update(
+        await crud_message.update(
             id_=new_message.id,
             object_=new_message,
         )
@@ -406,9 +406,7 @@ class RunCreateParamsRequestBase(BaseModel):
         new_message.content = from_text_to_message(response, file_ids).content
 
         yield from_assistant_stream_event_to_str(
-            ThreadMessageCompleted(
-                data=updated_message, event="thread.message.completed"
-            )
+            ThreadMessageCompleted(data=new_message, event="thread.message.completed")
         )
         yield "\n\n"
 
