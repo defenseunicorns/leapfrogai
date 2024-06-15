@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import logging
+import time
 import traceback
 import uuid
 from typing import cast, AsyncGenerator, Any
@@ -386,6 +387,7 @@ class RunCreateParamsRequestBase(BaseModel):
             index += 1
 
         new_message.content = from_text_to_message(response, file_ids).content
+        new_message.created_at = int(time.time())
 
         crud_message = CRUDMessage(db=session)
 
