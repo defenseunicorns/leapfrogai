@@ -411,7 +411,7 @@ class ListVectorStoresResponse(BaseModel):
 class ModifyRunRequest(BaseModel):
     """Request object for modifying a run."""
 
-    metadata: dict | None = Field(default=None, examples=[{}])
+    metadata: dict[str, str] | None = Field(default=None, examples=[{}])
 
 
 class ModifyThreadRequest(BaseModel):
