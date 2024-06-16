@@ -225,6 +225,26 @@ def test_retrieve_run(app_client, create_run):
     assert Run.model_validate(response.json()), "Retrieve should return a Run."
 
 
+def test_modify_run(app_client, create_run):
+    """Test modifying a run. Requires a running Supabase instance."""
+    thread_id = create_run.json()["thread_id"]
+    run_id = create_run.json()["id"]
+    updated_metadata = {
+        "test": "testing",
+    }
+
+    response = app_client.post(
+        f"/openai/v1/threads/{thread_id}/runs/{run_id}",
+        json={"metadata": updated_metadata},
+    )
+
+    assert response.status_code == status.HTTP_200_OK
+    assert Run.model_validate(response.json()), "Modify should return a Run."
+    assert (
+        response.json()["metadata"] == updated_metadata
+    ), "Modify should return a Run with the modified metadata."
+
+
 def test_delete_assistant(app_client, create_assistant):
     """Test deleting an assistant. Requires a running Supabase instance."""
     assistant_id = create_assistant.json()["id"]

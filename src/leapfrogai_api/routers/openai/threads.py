@@ -1,7 +1,6 @@
 """OpenAI Compliant Threads API Router."""
 
 import traceback
-
 from fastapi import HTTPException, APIRouter, status
 from fastapi.responses import StreamingResponse
 from fastapi.security import HTTPBearer
@@ -9,7 +8,6 @@ from openai.types.beta import Thread, ThreadDeleted
 from openai.types.beta.threads import Message, MessageDeleted, Run
 from openai.types.beta.threads.runs import RunStep
 from openai.pagination import SyncCursorPage
-
 from leapfrogai_api.backend.types import (
     ModifyThreadRequest,
     ModifyMessageRequest,
@@ -140,26 +138,20 @@ async def modify_run(
     thread_id: str, run_id: str, request: ModifyRunRequest, session: Session
 ) -> Run:
     """Modify a run."""
-    run = CRUDRun(db=session)
+    crud_run = CRUDRun(db=session)
 
-    if not (old_run := await run.get(filters={"id": run_id, "thread_id": thread_id})):
+    if not (run := await crud_run.get(filters={"id": run_id, "thread_id": thread_id})):
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
             detail="Run not found",
         )
 
     try:
-        new_run = Run(
-            id=run_id,
-            thread_id=thread_id,
-            created_at=old_run.created_at,
-            metadata=getattr(request, "metadata", old_run.metadata),
-            object="thread.run",
-        )
+        run.metadata = getattr(request, "metadata", run.metadata)
 
-        return await run.update(
+        return await crud_run.update(
             id_=run_id,
-            object_=new_run,
+            object_=run,
         )
     except Exception as exc:
         raise HTTPException(
