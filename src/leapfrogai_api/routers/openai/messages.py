@@ -1,5 +1,6 @@
 """OpenAI Compliant Threads API Router."""
 
+import traceback
 from fastapi import HTTPException, APIRouter, status
 from fastapi.security import HTTPBearer
 from openai.types.beta.threads import Message, MessageDeleted
@@ -22,10 +23,9 @@ async def create_message(
     thread_id: str, request: CreateMessageRequest, session: Session
 ) -> Message:
     """Create a message."""
-
-    crud_message = CRUDMessage(db=session)
-
     try:
+        crud_message = CRUDMessage(db=session)
+
         message_content = await request.get_message_content()
 
         message = Message(
@@ -39,19 +39,13 @@ async def create_message(
             status="completed",
             thread_id=thread_id,
         )
+        return await crud_message.create(object_=message)
     except Exception as exc:
-        raise HTTPException(
-            status_code=status.HTTP_400_BAD_REQUEST,
-            detail="Unable to parse message request.",
-        ) from exc
-
-    if not (response := await crud_message.create(object_=message)):
+        traceback.print_exc()
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            detail="Failed to create message.",
-        )
-
-    return response
+            detail="Unable to create message",
+        ) from exc
 
 
 @router.get("/{thread_id}/messages")
@@ -63,10 +57,10 @@ async def list_messages(thread_id: str, session: Session) -> SyncCursorPage[Mess
             filters={"thread_id": thread_id}
         )
 
-        if not messages:
-            messages = []
+        if messages is None:
+            return SyncCursorPage(object="list", data=[])
 
-        return SyncCursorPage(data=messages)
+        return SyncCursorPage(object="list", data=messages)
     except Exception as exc:
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
@@ -100,15 +94,18 @@ async def modify_message(
             detail="Message not found",
         )
 
-    message.metadata = getattr(request, "metadata", message.metadata)
+    try:
+        message.metadata = getattr(request, "metadata", message.metadata)
 
-    if not (response := await crud_message.update(id_=message_id, object_=message)):
-        raise HTTPException(
-            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            detail="Failed to update message",
+        return await crud_message.update(
+            id_=message_id,
+            object_=message,
         )
-
-    return response
+    except Exception as exc:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="Unable to parse message request",
+        ) from exc
 
 
 @router.delete("/{thread_id}/messages/{message_id}")

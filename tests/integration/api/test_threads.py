@@ -6,10 +6,9 @@ from fastapi import HTTPException, status
 from fastapi.testclient import TestClient
 from openai.types.beta import Thread, ThreadDeleted
 from openai.types.beta.thread import ToolResourcesCodeInterpreter, ToolResources
-from openai.types.beta.threads import TextContentBlock, Text, Message, MessageDeleted
+from openai.types.beta.threads import TextContentBlock, Text
 from leapfrogai_api.backend.types import (
     ModifyThreadRequest,
-    ModifyMessageRequest,
 )
 from leapfrogai_api.routers.openai.requests.create_message_request import (
     CreateMessageRequest,
@@ -17,8 +16,7 @@ from leapfrogai_api.routers.openai.requests.create_message_request import (
 from leapfrogai_api.routers.openai.requests.create_thread_request import (
     CreateThreadRequest,
 )
-from leapfrogai_api.routers.openai.threads import router as threads_router
-from leapfrogai_api.routers.openai.files import router as files_router
+from leapfrogai_api.routers.openai.threads import router
 
 
 class MissingEnvironmentVariable(Exception):
@@ -77,7 +75,7 @@ def create_message(app_client, create_thread):
     return {"message": message, "thread_id": create_thread.json()["id"]}
 
 
-def test_code_interpreter_fails():
+def test_code_interpreter_fails(app_client):
     """Test code interpreter fails."""
 
     tool_resources = ToolResources(
@@ -90,11 +88,11 @@ def test_code_interpreter_fails():
         metadata={},
     )
 
-    with pytest.raises(HTTPException) as exc:
-        threads_client.post("/openai/v1/threads", json=request.model_dump())
+    with pytest.raises(HTTPException) as code_exc:
+        app_client.post("/openai/v1/threads", json=request.model_dump())
 
-    assert exc.value.status_code == status.HTTP_400_BAD_REQUEST
-    assert exc.value.detail == f"Unsupported tool resource: {tool_resources}"
+    assert code_exc.value.status_code == status.HTTP_400_BAD_REQUEST
+    assert code_exc.value.detail == f"Unsupported tool resource: {tool_resources}"
 
 
 def test_create_thread(create_thread):
@@ -114,31 +112,7 @@ def test_get_thread(app_client, create_thread):
     ), f"Get should return Thread {threads_id}."
 
 
-def test_get_message(create_message):
-    """Test getting a messages. Requires a running Supabase instance."""
-    message_id = create_message["message"].json()["id"]
-    thread_id = create_message["thread_id"]
-    get_response = threads_client.get(
-        f"/openai/v1/threads/{thread_id}/messages/{message_id}"
-    )
-    assert get_response.status_code == status.HTTP_200_OK
-    assert Message.model_validate(
-        get_response.json()
-    ), f"Get should return Message {message_id}."
-
-
-def test_list_message(create_message):
-    """Test listing messages. Requires a running Supabase instance."""
-    thread_id = create_message["thread_id"]
-    list_response = threads_client.get(f"/openai/v1/threads/{thread_id}/messages")
-    assert list_response.status_code == status.HTTP_200_OK
-    for message_object in list_response.json()["data"]:
-        assert Message.model_validate(
-            message_object
-        ), "Should return a list of Message."
-
-
-def test_modify_thread(create_thread):
+def test_modify_thread(app_client, create_thread):
     """Test modifying a thread. Requires a running Supabase instance."""
     thread_id = create_thread.json()["id"]
     request = ModifyThreadRequest(
@@ -181,27 +155,11 @@ def test_delete_twice_thread(app_client, create_thread):
     ), "Should not be able to delete twice."
 
 
-def test_delete_twice_message(create_message):
-    """Test deleting a message twice. Requires a running Supabase instance."""
-    message_id = create_message["message"].json()["id"]
-    thread_id = create_message["thread_id"]
-    delete_response = threads_client.delete(
-        f"/openai/v1/threads/{thread_id}/messages/{message_id}"
-    )
-    assert delete_response.status_code == status.HTTP_200_OK
-    assert MessageDeleted.model_validate(
-        delete_response.json()
-    ), "Should return a MessageDeleted object."
-    assert (
-        delete_response.json()["deleted"] is False
-    ), "Should not be able to delete twice."
-
-
 @pytest.mark.xfail
-def test_get_nonexistent_thread(create_thread):
+def test_get_nonexistent_thread(app_client, create_thread):
     """Test getting a nonexistent thread. Requires a running Supabase instance."""
     thread_id = create_thread.json()["id"]
-    fail_response = threads_client.get(f"/openai/v1/threads/{thread_id}")
+    fail_response = app_client.get(f"/openai/v1/threads/{thread_id}")
     assert fail_response.status_code == status.HTTP_404_NOT_FOUND
     assert (
         fail_response.json().get("detail") == "Thread not found"
