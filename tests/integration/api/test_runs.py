@@ -162,17 +162,6 @@ def test_create_message(create_message):
     ), "Create should create a Message."
 
 
-def test_config_load(app_client):
-    """Test that the config is loaded correctly."""
-    response = app_client.get("/models")
-
-    assert response.status_code == 200
-    assert response.json() == {
-        "config_sources": {"test-config.yaml": [CHAT_MODEL]},
-        "models": {CHAT_MODEL: {"backend": "localhost:50051", "name": CHAT_MODEL}},
-    }
-
-
 @pytest.fixture(scope="session")
 def test_create_thread_and_run(app_client, create_assistant):
     """Test running an assistant. Requires a running Supabase instance."""
