@@ -29,7 +29,10 @@ from leapfrogai_api.data.crud_message import CRUDMessage
 from leapfrogai_api.data.crud_run import CRUDRun
 from leapfrogai_api.data.crud_thread import CRUDThread
 from leapfrogai_api.routers.supabase_session import Session
-from leapfrogai_api.utils.validate_tools import validate_tool_resources
+from leapfrogai_api.utils.validate_tools import (
+    validate_tool_resources,
+    validate_assistant_tool_choice_option,
+)
 
 router = APIRouter(prefix="/openai/v1/threads", tags=["openai/threads"])
 security = HTTPBearer()
@@ -66,6 +69,20 @@ async def create_run(
     thread_id: str, session: Session, request: RunCreateParamsRequestBaseRequest
 ) -> Run | StreamingResponse:
     """Create a run."""
+
+    if request.tools and not validate_tool_resources(request.tools):
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail=f"Unsupported tool resource: {request.tools}",
+        )
+
+    if request.tool_choice and not validate_assistant_tool_choice_option(
+        request.tool_choice
+    ):
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail=f"Unsupported tool choice option: {request.tool_choice}",
+        )
 
     try:
         new_run = await request.create_run(session, thread_id)
@@ -217,6 +234,13 @@ async def modify_thread(
     thread_id: str, request: ModifyThreadRequest, session: Session
 ) -> Thread:
     """Modify a thread."""
+
+    if request.tool_resources and not validate_tool_resources(request.tool_resources):
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail=f"Unsupported tool resource: {request.tool_resources}",
+        )
+
     crud_thread = CRUDThread(db=session)
 
     if not (thread := await crud_thread.get(filters={"id": thread_id})):
