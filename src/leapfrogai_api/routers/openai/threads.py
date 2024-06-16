@@ -29,9 +29,7 @@ from leapfrogai_api.data.crud_message import CRUDMessage
 from leapfrogai_api.data.crud_run import CRUDRun
 from leapfrogai_api.data.crud_thread import CRUDThread
 from leapfrogai_api.routers.supabase_session import Session
-from leapfrogai_api.utils.validate_tools import (
-    validate_tool_resources,
-)
+from leapfrogai_api.utils.validate_tools import validate_tool_resources
 
 router = APIRouter(prefix="/openai/v1/threads", tags=["openai/threads"])
 security = HTTPBearer()
@@ -40,6 +38,11 @@ security = HTTPBearer()
 @router.post("")
 async def create_thread(request: CreateThreadRequest, session: Session) -> Thread:
     """Create a thread."""
+    if request.tool_resources and not validate_tool_resources(request.tool_resources):
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail=f"Unsupported tool resource: {request.tool_resources}",
+        )
     try:
         new_thread: Thread | None = await request.create_thread(session)
 
@@ -214,13 +217,6 @@ async def modify_thread(
     thread_id: str, request: ModifyThreadRequest, session: Session
 ) -> Thread:
     """Modify a thread."""
-
-    if request.tool_resources and not validate_tool_resources(request.tool_resources):
-        raise HTTPException(
-            status_code=status.HTTP_400_BAD_REQUEST,
-            detail=f"Unsupported tool resource: {request.tool_resources}",
-        )
-
     crud_thread = CRUDThread(db=session)
 
     if not (thread := await crud_thread.get(filters={"id": thread_id})):
@@ -233,6 +229,11 @@ async def modify_thread(
         thread.metadata = getattr(request, "metadata", thread.metadata)
         thread.tool_resources = getattr(
             request, "tool_resources", thread.tool_resources
+        )
+
+        return await crud_thread.update(
+            id_=thread_id,
+            object_=thread,
         )
     except Exception as exc:
         raise HTTPException(
@@ -332,10 +333,10 @@ async def modify_message(
     thread_id: str, message_id: str, request: ModifyMessageRequest, session: Session
 ) -> Message:
     """Modify a message."""
-    message = CRUDMessage(db=session)
+    crud_message = CRUDMessage(db=session)
 
     if not (
-        old_message := await message.get(
+        message := await crud_message.get(
             filters={"id": message_id, "thread_id": thread_id}
         )
     ):
@@ -345,21 +346,11 @@ async def modify_message(
         )
 
     try:
-        new_message = Message(
-            id=message_id,
-            created_at=old_message.created_at,
-            content=old_message.content,
-            metadata=getattr(request, "metadata", old_message.metadata),
-            object="thread.message",
-            attachments=old_message.attachments,
-            role=old_message.role,
-            status=old_message.status,
-            thread_id=thread_id,
-        )
+        message.metadata = getattr(request, "metadata", message.metadata)
 
-        return await message.update(
+        return await crud_message.update(
             id_=message_id,
-            object_=new_message,
+            object_=message,
         )
     except Exception as exc:
         raise HTTPException(

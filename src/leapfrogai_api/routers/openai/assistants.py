@@ -29,13 +29,12 @@ async def create_assistant(
 ) -> Assistant:
     """Create an assistant."""
 
-    if request.tools:
-        for tool in request.tools:
-            if not validate_assistant_tool(tool):
-                raise HTTPException(
-                    status_code=status.HTTP_400_BAD_REQUEST,
-                    detail=f"Unsupported tool type: {tool.type}",
-                )
+    for tool in request.tools:
+        if not validate_assistant_tool(tool):
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail=f"Unsupported tool type: {tool.type}",
+            )
 
     if request.tool_resources and not validate_tool_resources(request.tool_resources):
         raise HTTPException(

@@ -6,7 +6,7 @@ from fastapi import HTTPException, status
 from fastapi.testclient import TestClient
 from openai.types.beta import Thread, ThreadDeleted
 from openai.types.beta.thread import ToolResourcesCodeInterpreter, ToolResources
-from openai.types.beta.threads import TextContentBlock, Text
+from openai.types.beta.threads import TextContentBlock, Text, Message, MessageDeleted
 from leapfrogai_api.backend.types import (
     ModifyThreadRequest,
     ModifyMessageRequest,
@@ -77,7 +77,7 @@ def create_message(app_client, create_thread):
     return {"message": message, "thread_id": create_thread.json()["id"]}
 
 
-def test_code_interpreter_fails(app_client):
+def test_code_interpreter_fails():
     """Test code interpreter fails."""
 
     tool_resources = ToolResources(
@@ -90,11 +90,11 @@ def test_code_interpreter_fails(app_client):
         metadata={},
     )
 
-    with pytest.raises(HTTPException) as code_exc:
-        app_client.post("/openai/v1/threads", json=request.model_dump())
+    with pytest.raises(HTTPException) as exc:
+        threads_client.post("/openai/v1/threads", json=request.model_dump())
 
-    assert code_exc.value.status_code == status.HTTP_400_BAD_REQUEST
-    assert code_exc.value.detail == f"Unsupported tool resource: {tool_resources}"
+    assert exc.value.status_code == status.HTTP_400_BAD_REQUEST
+    assert exc.value.detail == f"Unsupported tool resource: {tool_resources}"
 
 
 def test_create_thread(create_thread):
