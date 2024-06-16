@@ -16,6 +16,8 @@ from leapfrogai_api.routers.openai import (
     assistants,
     files,
     threads,
+    messages,
+    runs,
     vector_stores,
 )
 from leapfrogai_api.utils import get_model_config
@@ -60,6 +62,8 @@ app.include_router(audio.router)
 app.include_router(embeddings.router)
 app.include_router(assistants.router)
 app.include_router(files.router)
-app.include_router(threads.router)
 app.include_router(vector_stores.router)
+app.include_router(threads.router)
+app.include_router(messages.router)
+app.include_router(runs.router)
 app.include_router(rag.router)
