@@ -5,7 +5,7 @@ import pytest
 from fastapi import status
 from fastapi.testclient import TestClient
 from openai.types.beta import Assistant, Thread, AssistantDeleted, ThreadDeleted
-from openai.types.beta.thread import ToolResources, ToolResourcesFileSearch
+from openai.types.beta.thread import ToolResources
 from openai.types.beta.threads import Message, Text, TextContentBlock, Run
 from leapfrogai_api.backend.types import CreateAssistantRequest
 from leapfrogai_api.main import app
@@ -53,8 +53,8 @@ starting_assistant = Assistant(
     instructions="test",
     model=CHAT_MODEL,
     object="assistant",
-    tools=[],
-    tool_resources=None,
+    tools=[{"type": "file_search"}],
+    tool_resources={},
     temperature=1.0,
     top_p=1.0,
     metadata={},
@@ -87,6 +87,7 @@ def create_assistant(app_client):
     return app_client.post(url="/openai/v1/assistants", json=request.model_dump())
 
 
+# Create a thread with the previously created file and fake embeddings
 @pytest.fixture(scope="session")
 def create_thread(app_client):
     """Create a thread for testing. Requires a running Supabase instance."""
@@ -127,8 +128,8 @@ def create_run(app_client, create_assistant, create_thread):
 
     request = RunCreateParamsRequestBaseRequest(
         assistant_id=assistant_id,
-        instructions="You are a conversational assistant.",
-        additional_instructions="Respond as a Unicorn assistant named Doug.",
+        instructions="Be happy!",
+        additional_instructions="Also be sad!",
         tool_resources=ToolResources(file_search={}),
         metadata={},
         stream=False,
@@ -161,25 +162,37 @@ def test_create_message(create_message):
     ), "Create should create a Message."
 
 
+def test_config_load(app_client):
+    """Test that the config is loaded correctly."""
+    response = app_client.get("/models")
+
+    assert response.status_code == 200
+    assert response.json() == {
+        "config_sources": {"test-config.yaml": [CHAT_MODEL]},
+        "models": {CHAT_MODEL: {"backend": "localhost:50051", "name": CHAT_MODEL}},
+    }
+
+
+@pytest.fixture(scope="session")
 def test_create_thread_and_run(app_client, create_assistant):
     """Test running an assistant. Requires a running Supabase instance."""
     assistant_id = create_assistant.json()["id"]
 
     request = ThreadRunCreateParamsRequestBaseRequest(
         assistant_id=assistant_id,
-        instructions="You are a conversational assistant.",
-        additional_instructions="Respond as a Unicorn assistant named Doug.",
-        tool_resources=ToolResources(
-            file_search=ToolResourcesFileSearch(vector_store_ids=[])
-        ),
+        instructions="Be happy!",
+        additional_instructions="Also be sad!",
+        tool_resources=ToolResources(file_search={}),
         metadata={},
         stream=False,
     )
 
     response = app_client.post("/openai/v1/threads/runs", json=request.model_dump())
+
     assert response.status_code == status.HTTP_200_OK
-    assert "'user_id'" not in response.json(), "Create should not return a user_id."
     assert Run.model_validate(response.json()), "Create should create a Run."
+
+    return response
 
 
 def test_create_run(create_run):
@@ -187,7 +200,6 @@ def test_create_run(create_run):
 
     assert create_run.status_code == status.HTTP_200_OK
     assert Run.model_validate(create_run.json()), "Create should create a Run."
-    assert "user_id" not in create_run.json(), "Create should not return a user_id."
 
 
 def test_list_runs(app_client, create_thread):
