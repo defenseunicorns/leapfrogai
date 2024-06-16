@@ -3,10 +3,10 @@
 import os
 
 import pytest
-from fastapi import Response, status
+from fastapi import HTTPException, Response, status
 from fastapi.testclient import TestClient
 from openai.types.beta import Assistant, AssistantDeleted
-
+from openai.types.beta.assistant import ToolResources
 from leapfrogai_api.routers.openai.assistants import router
 from leapfrogai_api.backend.types import (
     CreateAssistantRequest,
@@ -57,7 +57,10 @@ modified_assistant = Assistant(
     model="test1",
     object="assistant",
     tools=[{"type": "file_search"}],
-    tool_resources={},
+    tool_resources=ToolResources(
+        file_search=None,
+        code_interpreter=None,
+    ),
     temperature=0,
     top_p=0.1,
     metadata={},
@@ -89,7 +92,6 @@ def create_assistant():
     )
 
 
-@pytest.mark.xfail
 def test_code_interpreter_fails():
     """Test creating an assistant with a code interpreter tool. Requires a running Supabase instance."""
     request = CreateAssistantRequest(
@@ -102,26 +104,14 @@ def test_code_interpreter_fails():
         metadata=modified_assistant.metadata,
         temperature=modified_assistant.temperature,
         top_p=modified_assistant.top_p,
-        response_format=modified_assistant,
+        response_format=modified_assistant.response_format,
     )
 
-    assistant_fail_response = client.post(
-        "/openai/v1/assistants", json=request.model_dump()
-    )
+    with pytest.raises(HTTPException) as exc:
+        client.post("/openai/v1/assistants", json=request.model_dump())
 
-    assert assistant_fail_response.status_code is status.HTTP_400_BAD_REQUEST
-    assert (
-        assistant_fail_response.json()["detail"]
-        == "Unsupported tool type: code_interpreter"
-    )
-
-    modify_response = client.post(
-        f"/openai/v1/assistants/{assistant_response.json()['id']}",
-        json=request.model_dump(),
-    )
-
-    assert modify_response.status_code is status.HTTP_400_BAD_REQUEST
-    assert modify_response.json()["detail"] == "Unsupported tool type: code_interpreter"
+    assert exc.value.status_code is status.HTTP_400_BAD_REQUEST
+    assert exc.value.detail == "Unsupported tool type: code_interpreter"
 
 
 def test_create():

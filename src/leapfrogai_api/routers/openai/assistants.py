@@ -13,6 +13,10 @@ from leapfrogai_api.backend.types import (
 )
 from leapfrogai_api.data.crud_assistant import CRUDAssistant, FilterAssistant
 from leapfrogai_api.routers.supabase_session import Session
+from leapfrogai_api.utils.validate_tools import (
+    validate_assistant_tool,
+    validate_tool_resources,
+)
 
 router = APIRouter(prefix="/openai/v1/assistants", tags=["openai/assistants"])
 security = HTTPBearer()
@@ -27,24 +31,17 @@ async def create_assistant(
 ) -> Assistant:
     """Create an assistant."""
 
-    if request.tools and (
-        unsupported_tool := next(
-            (tool for tool in request.tools if tool.type not in supported_tools), None
-        )
-    ):
-        raise HTTPException(
-            status_code=status.HTTP_400_BAD_REQUEST,
-            detail=f"Unsupported tool type: {unsupported_tool.type}",
-        )
+    for tool in request.tools:
+        if not validate_assistant_tool(tool):
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail=f"Unsupported tool type: {tool.type}",
+            )
 
-    if request.tool_resources and any(
-        isinstance(tool_resource, ToolResourcesCodeInterpreter)
-        and tool_resource.get("file_ids")
-        for tool_resource in request.tool_resources
-    ):
+    if request.tool_resources and not validate_tool_resources(request.tool_resources):
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
-            detail="Code interpreter tool is not supported",
+            detail=f"Unsupported tool resource: {request.tool_resources}",
         )
 
     try:
