@@ -202,6 +202,29 @@ def test_create_run(create_run):
     assert Run.model_validate(create_run.json()), "Create should create a Run."
 
 
+def test_list_runs(app_client, create_thread):
+    """Test listing runs. Requires a running Supabase instance."""
+
+    thread_id = create_thread.json()["id"]
+
+    response = app_client.get(f"/openai/v1/threads/{thread_id}/runs")
+
+    assert response.status_code == status.HTTP_200_OK
+    for run in response.json()["data"]:
+        assert Run.model_validate(run), "List should return a list of Runs."
+
+
+def test_retrieve_run(app_client, create_run):
+    """Test retrieving a run. Requires a running Supabase instance."""
+    thread_id = create_run.json()["thread_id"]
+    run_id = create_run.json()["id"]
+
+    response = app_client.get(f"/openai/v1/threads/{thread_id}/runs/{run_id}")
+
+    assert response.status_code == status.HTTP_200_OK
+    assert Run.model_validate(response.json()), "Retrieve should return a Run."
+
+
 def test_delete_assistant(app_client, create_assistant):
     """Test deleting an assistant. Requires a running Supabase instance."""
     assistant_id = create_assistant.json()["id"]
@@ -226,3 +249,18 @@ def test_delete_threads(app_client, create_thread):
         response.json()
     ), "Should return a ThreadDeleted object."
     assert response.json()["deleted"] is True, f"Thread {thread_id} should be deleted."
+
+
+def test_get_nonexistent_run(app_client, create_run):
+    """Test retrieving a run that does not exist. Requires a running Supabase instance."""
+    thread_id = create_run.json()["thread_id"]
+    run_id = create_run.json()["id"]
+
+    print(thread_id, run_id)
+
+    response = app_client.get(f"/openai/v1/threads/{thread_id}/runs/{run_id}")
+
+    assert response.status_code == status.HTTP_404_NOT_FOUND
+    assert response.json() == {
+        "detail": f"Run {run_id} not found for thread {thread_id}."
+    }

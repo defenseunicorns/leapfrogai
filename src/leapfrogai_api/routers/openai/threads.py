@@ -126,7 +126,13 @@ async def list_runs(thread_id: str, session: Session) -> SyncCursorPage[Run]:
 async def retrieve_run(thread_id: str, run_id: str, session: Session) -> Run:
     """Retrieve a run."""
     crud_run = CRUDRun(db=session)
-    return await crud_run.get(filters={"id": run_id, "thread_id": thread_id})
+
+    if not (run := await crud_run.get(filters={"id": run_id, "thread_id": thread_id})):
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail=f"Run {run_id} not found for thread {thread_id}.",
+        )
+    return run
 
 
 @router.post("/{thread_id}/runs/{run_id}")
