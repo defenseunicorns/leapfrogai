@@ -1,7 +1,14 @@
-import { openai } from '$lib/server/constants';
+import { getOpenAiClient } from '$lib/server/constants';
 import { AssistantResponse } from 'ai';
+import { error } from '@sveltejs/kit';
 
-export async function POST({ request }) {
+export async function POST({ request, locals: { safeGetSession } }) {
+  const { session } = await safeGetSession();
+
+  if (!session) {
+    error(401, 'Unauthorized');
+  }
+
   // TODO - validate
   // Parse the request body
   const input: {
@@ -11,6 +18,8 @@ export async function POST({ request }) {
       threadId: string | null;
     };
   } = await request.json();
+
+  const openai = getOpenAiClient(session.access_token);
 
   const threadId = input.data.threadId ?? (await openai.beta.threads.create({ metadata: {} })).id;
 

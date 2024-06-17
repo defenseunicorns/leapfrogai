@@ -1,5 +1,5 @@
 import { error } from '@sveltejs/kit';
-import { openai } from '$lib/server/constants';
+import { getOpenAiClient } from '$lib/server/constants';
 import { stringIdSchema } from '$schemas/chat';
 
 export async function DELETE({ request, locals: { supabase, safeGetSession } }) {
@@ -19,6 +19,7 @@ export async function DELETE({ request, locals: { supabase, safeGetSession } }) 
     error(400, 'Bad Request');
   }
 
+  const openai = getOpenAiClient(session.access_token);
   const assistantDeleted = await openai.beta.assistants.del(requestData.id);
   if (!assistantDeleted.deleted) {
     console.error(`error deleting assistant: ${JSON.stringify(assistantDeleted)}`);
