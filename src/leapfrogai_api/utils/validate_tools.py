@@ -24,7 +24,7 @@ def validate_tool_resources(
     tool_resources: Union[BetaAssistantToolResources, BetaThreadToolResources],
 ) -> bool:
     """Validate a ToolResources object."""
-    if isinstance(tool_resources.code_interpreter, ToolResourcesCodeInterpreter):
+    if hasattr(tool_resources, "code_interpreter") and isinstance(tool_resources.code_interpreter, ToolResourcesCodeInterpreter):
         return False
     return True
 
