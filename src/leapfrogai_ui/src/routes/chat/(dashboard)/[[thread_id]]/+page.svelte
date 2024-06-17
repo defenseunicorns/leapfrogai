@@ -107,8 +107,6 @@
     threadsStore.setSendingBlocked(false);
   };
 
-  $: console.log('streamedmessages', $assistantMessages);
-
   /** useChat - streams messages with the /api/chat route**/
   const {
     input: chatInput,
