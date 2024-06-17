@@ -6,6 +6,8 @@ import { filesSchema } from '$schemas/files';
 import type { FileRow } from '$lib/types/files';
 import { getUnixSeconds } from '$helpers/dates';
 import { getOpenAiClient } from '$lib/server/constants';
+import { delay } from '$helpers/chatHelpers';
+import { filesStore } from '$stores';
 
 export const actions = {
   default: async ({ request, locals: { safeGetSession } }) => {
@@ -29,11 +31,14 @@ export const actions = {
       for (const file of form.data.files) {
         if (file) {
           try {
+            await delay(3000);
+
             // Upload file
             const uploadedFile = await openai.files.create({
               file: file,
               purpose: 'assistants'
             });
+
             uploadedFiles.push(uploadedFile);
           } catch (e) {
             console.error(`Error uploading file ${file.name}: ${e}`);
@@ -58,6 +63,7 @@ export const actions = {
           }
         }
       }
+
 
       return withFiles({ form, uploadedFiles });
     }

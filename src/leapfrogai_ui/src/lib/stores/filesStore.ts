@@ -1,14 +1,18 @@
 import { writable } from 'svelte/store';
 import type { FileObject } from 'openai/resources/files';
-import type { FileRow } from '$lib/types/files';
+import type { FileRow, FilesForm } from '$lib/types/files';
 import { invalidate } from '$app/navigation';
-import { toastStore } from '$stores/index';
+import { filesStore, toastStore } from '$stores/index';
+import { superForm } from 'sveltekit-superforms';
+import { yup } from 'sveltekit-superforms/adapters';
+import { filesSchema } from '$schemas/files';
 
 type FilesStore = {
   files: FileRow[];
   selectedFileManagementFileIds: string[];
   selectedAssistantFileIds: string[];
   uploading: boolean;
+  pendingUploads: FileRow[];
 };
 
 const defaultValues: FilesStore = {
@@ -16,6 +20,7 @@ const defaultValues: FilesStore = {
   selectedFileManagementFileIds: [],
   selectedAssistantFileIds: [],
   uploading: false
+  pendingUploads: []
 };
 
 const createFilesStore = () => {
@@ -60,12 +65,12 @@ const createFilesStore = () => {
           files: [...old.files, ...newFiles],
           selectedAssistantFileIds: autoSelectUploadedFiles
             ? [...old.selectedAssistantFileIds, ...newFileIds]
-            : old.selectedAssistantFileIds
+            : old.selectedAssistantFileIds,
+          pendingUploads: newFiles
         };
       });
     },
     updateWithUploadResults: (newFiles: Array<FileObject | FileRow>) => {
-      console.log("in update with upload results")
       update((old) => {
         const newRows = old.files.filter((file) => file.status !== 'uploading'); // get original rows without the uploads
         // insert newly uploaded files with updated status
@@ -109,8 +114,6 @@ const createFilesStore = () => {
           }
           return file;
         });
-
-        waitThenInvalidate();
 
         return {
           ...old,
