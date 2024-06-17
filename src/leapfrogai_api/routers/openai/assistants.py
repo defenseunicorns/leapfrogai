@@ -17,6 +17,10 @@ from leapfrogai_api.backend.types import (
 from leapfrogai_api.data.crud_assistant import CRUDAssistant, FilterAssistant
 from leapfrogai_api.data.crud_vector_store import CRUDVectorStore, FilterVectorStore
 from leapfrogai_api.routers.supabase_session import Session
+from leapfrogai_api.utils.validate_tools import (
+    validate_assistant_tool,
+    validate_tool_resources,
+)
 
 router = APIRouter(prefix="/openai/v1/assistants", tags=["openai/assistants"])
 security = HTTPBearer()
@@ -32,22 +36,20 @@ async def create_assistant(
     """Create an assistant."""
 
     # check for unsupported tools
-    if request.tools and (
-        unsupported_tool := next(
-            (tool for tool in request.tools if tool.type not in supported_tools), None
-        )
-    ):
-        raise HTTPException(
-            status_code=status.HTTP_400_BAD_REQUEST,
-            detail=f"Unsupported tool type: {unsupported_tool.type}",
-        )
+    for tool in request.tools:
+        if not validate_assistant_tool(tool):
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail=f"Unsupported tool type: {tool.type}",
+            )
 
-    # check if the request includes a code interpreter
-    if request.tool_resources and request.tool_resources.code_interpreter is not None:
-        raise HTTPException(
-            status_code=status.HTTP_400_BAD_REQUEST,
-            detail="Code interpreter tool is not supported",
-        )
+    # check for unsupported tool resources
+    for tool_resource in request.tool_resources:
+        if not validate_tool_resources(tool_resource):
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail=f"Unsupported tool resource: {tool_resource}",
+            )
 
     # check if a vector store needs to be built or added to this assistant
     if request.tool_resources and request.tool_resources.file_search is not None:
@@ -205,22 +207,6 @@ async def modify_assistant(
         - response_format
     """
 
-    if request.tools and (
-        unsupported_tool := next(
-            (tool for tool in request.tools if tool.type not in supported_tools), None
-        )
-    ):
-        raise HTTPException(
-            status_code=status.HTTP_400_BAD_REQUEST,
-            detail=f"Unsupported tool type: {unsupported_tool.type}",
-        )
-
-    if request.tool_resources and request.tool_resources.code_interpreter:
-        raise HTTPException(
-            status_code=status.HTTP_400_BAD_REQUEST,
-            detail="Code interpreter tool is not supported",
-        )
-
     crud_assistant = CRUDAssistant(session)
 
     if not (
@@ -231,6 +217,22 @@ async def modify_assistant(
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST, detail="Assistant not found"
         )
+
+    # check for unsupported tools
+    for tool in request.tools:
+        if not validate_assistant_tool(tool):
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail=f"Unsupported tool type: {tool.type}",
+            )
+
+    # check for unsupported tool resources
+    for tool_resource in request.tool_resources:
+        if not validate_tool_resources(tool_resource):
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail=f"Unsupported tool resource: {tool_resource}",
+            )
 
     # check if a vector store needs to be built or added to this assistant
     if request.tool_resources and request.tool_resources.file_search is not None:
@@ -301,6 +303,15 @@ async def modify_assistant(
             )
 
     try:
+        new_tool_resources: ToolResources | None
+
+        try:
+            new_tool_resources = ToolResources.model_validate(
+                getattr(request, "tool_resources", None)
+            )
+        except Exception:
+            new_tool_resources = old_assistant.tool_resources
+
         new_assistant = Assistant(
             id=assistant_id,
             created_at=old_assistant.created_at,
@@ -310,10 +321,7 @@ async def modify_assistant(
             model=getattr(request, "model", old_assistant.model),
             object="assistant",
             tools=getattr(request, "tools", old_assistant.tools),
-            tool_resources=ToolResources.model_validate(
-                getattr(request, "tool_resources", None)
-            )
-            or old_assistant.tool_resources,
+            tool_resources=new_tool_resources,
             temperature=float(
                 getattr(request, "temperature", old_assistant.temperature)
             ),

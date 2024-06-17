@@ -1,6 +1,6 @@
 """gRPC client for OpenAI models."""
 
-from typing import Iterator
+from typing import Iterator, AsyncGenerator, Any
 import grpc
 from fastapi.responses import StreamingResponse
 import leapfrogai_sdk as lfai
@@ -15,6 +15,9 @@ from leapfrogai_api.backend.types import (
     CreateTranscriptionResponse,
     EmbeddingResponseData,
     Usage,
+)
+from leapfrogai_sdk.chat.chat_pb2 import (
+    ChatCompletionResponse as ProtobufChatCompletionResponse,
 )
 from leapfrogai_api.utils.config import Model
 
@@ -64,6 +67,22 @@ async def stream_chat_completion(model: Model, request: lfai.ChatCompletionReque
 
         await stream.wait_for_connection()
         return StreamingResponse(recv_chat(stream), media_type="text/event-stream")
+
+
+async def stream_chat_completion_raw(
+    model: Model, request: lfai.ChatCompletionRequest
+) -> AsyncGenerator[ProtobufChatCompletionResponse, Any]:
+    """Stream chat completion using the specified model."""
+    async with grpc.aio.insecure_channel(model.backend) as channel:
+        stub = lfai.ChatCompletionStreamServiceStub(channel)
+        stream: grpc.aio.UnaryStreamCall[
+            lfai.ChatCompletionRequest, lfai.ChatCompletionResponse
+        ] = stub.ChatCompleteStream(request)
+
+        await stream.wait_for_connection()
+
+        async for response in stream:
+            yield response
 
 
 # TODO: Clean up completion() and stream_completion() to reduce code duplication

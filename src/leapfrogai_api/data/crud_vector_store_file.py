@@ -70,4 +70,4 @@ class CRUDVectorStoreFile(CRUDBase[AuthVectorStoreFile]):
 
     async def delete(self, filters: FilterVectorStoreFile | None = None) -> bool:
         """Delete a vector store file by its ID."""
-        return await super().delete(filters=filters)
+        return await super().delete(filters=filters.model_dump() if filters else None)
