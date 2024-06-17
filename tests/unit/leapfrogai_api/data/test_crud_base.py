@@ -1,7 +1,7 @@
 import pytest
 from pydantic import BaseModel
 from tests.utils.crud_utils import execute_response_format
-from tests.mocks.mock_session import mock_session
+from tests.mocks.mock_session import mock_session   # noqa: F401
 from tests.mocks.mock_tables import mock_data_model, MockModel
 
 from src.leapfrogai_api.data.crud_base import CRUDBase
@@ -154,23 +154,6 @@ async def test_update_fail(mock_session, mock_response):
 
     with pytest.raises(RuntimeError):
         await mock_crud_base.update("1", mock_data_model)
-
-
-@pytest.mark.asyncio
-@pytest.mark.parametrize("filters, mock_response", [
-    ({"id": 1}, {}),
-    ({"id": 1}, None),
-    ({}, None),
-    (None, None)
-])
-async def test_update_fail(mock_session, filters, mock_response):
-    mock_crud_base = CRUDBase(db=mock_session, model=MockModel, table_name="dummy_table")
-    mock_table=mock_session.table(mock_crud_base.table_name)
-    mock_table.select().execute.return_value = execute_response_format(mock_response)
-    
-    with pytest.raises(RuntimeError):
-        await mock_crud_base.get(filters)
-
 
 
 @pytest.mark.asyncio

@@ -1,31 +1,38 @@
 import pytest
+from unittest.mock import AsyncMock
 
-from openai.types.beta.thread_create_and_run_params import Thread as ThreadCreateAndRunsThread
 from openai.types.beta.threads import Run
 from fastapi.responses import StreamingResponse
 
-from .conftest import mock_message, mock_thread, mock_assistant, mock_run
-from tests.mocks.mock_crud import mock_crud_base
-from tests.mocks.mock_session import mock_session
+from tests.mocks.mock_tables import mock_message, mock_thread, mock_assistant, mock_run
+from tests.mocks.mock_session import mock_session   # noqa: F401
 from tests.utils.crud_utils import execute_response_format
 
 from leapfrogai_api.routers.openai.requests.thread_run_create_params_request import ThreadRunCreateParamsRequestBaseRequest
-from leapfrogai_api.routers.openai.requests.run_create_params_request import RunCreateParamsRequestBaseRequest
-
-from leapfrogai_api.routers.openai.threads import create_run, create_thread_and_run, list_runs
+from leapfrogai_api.routers.openai.runs import create_run, create_thread_and_run, list_runs
 
 
 @pytest.mark.asyncio
 @pytest.mark.parametrize("mock_messages, expected_result", [
     ([mock_message], mock_thread)
 ])
-async def test_create_run(mock_session, mock_crud_base, mock_messages, expected_result):
+async def test_create_run(mock_session, mock_messages, expected_result):
+    # Create run
+    #     await self.update_with_assistant_data(session)
+    #           assistant: Assistant | None = await crud_assistant.get(
+    #     await self.create_additional_messages(session, thread_id)
+    # thread.get
+    # request.generate_response
+
+
     mock_thread_id = "1"
-    mock_request = RunCreateParamsRequestBaseRequest(
-        assistant_id="0"
-    )
-    
+    mock_request = AsyncMock()
+    mock_request.tools = False
+    mock_request.generate_response = AsyncMock(return_value=mock_run)
+
     mock_session.table().select().execute.return_value = execute_response_format(mock_assistant.model_dump())
+    mock_session.table().select().execute.return_value = execute_response_format(mock_thread.model_dump())
+    mock_session.table().insert().execute.return_value = execute_response_format(mock_run.model_dump())
 
     result = await create_run(
         session=mock_session, 
@@ -37,8 +44,8 @@ async def test_create_run(mock_session, mock_crud_base, mock_messages, expected_
 
 
 @pytest.mark.asyncio
-async def test_create_thread_and_run(mock_session, mock_crud_base):
-    #mock_data = ThreadCreateAndRunsThread(messages=[mock_message])
+async def test_create_thread_and_run(mock_session):
+    #mock_data = Thread(messages=[mock_message])
     mock_request = ThreadRunCreateParamsRequestBaseRequest()
 
     mock_session.table().select().execute.return_value = execute_response_format(mock_assistant.model_dump())
@@ -54,7 +61,7 @@ async def test_create_thread_and_run(mock_session, mock_crud_base):
 
 
 @pytest.mark.asyncio
-async def test_list_runs(mock_session, mock_crud_base):
+async def test_list_runs(mock_session):
     
     mock_session.table().select().execute.return_value = execute_response_format(mock_run.model_dump())
 
