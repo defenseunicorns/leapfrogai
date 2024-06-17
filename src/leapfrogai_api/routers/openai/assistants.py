@@ -44,12 +44,11 @@ async def create_assistant(
             )
 
     # check for unsupported tool resources
-    for tool_resource in request.tool_resources:
-        if not validate_tool_resources(tool_resource):
-            raise HTTPException(
-                status_code=status.HTTP_400_BAD_REQUEST,
-                detail=f"Unsupported tool resource: {tool_resource}",
-            )
+    if not validate_tool_resources(request.tool_resources):
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail=f"Unsupported tool resource: {request.tool_resources}",
+        )
 
     # check if a vector store needs to be built or added to this assistant
     if request.tool_resources and request.tool_resources.file_search is not None:
@@ -227,12 +226,11 @@ async def modify_assistant(
             )
 
     # check for unsupported tool resources
-    for tool_resource in request.tool_resources:
-        if not validate_tool_resources(tool_resource):
-            raise HTTPException(
-                status_code=status.HTTP_400_BAD_REQUEST,
-                detail=f"Unsupported tool resource: {tool_resource}",
-            )
+    if not validate_tool_resources(request.tool_resources):
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail=f"Unsupported tool resource: {request.tool_resources}",
+        )
 
     # check if a vector store needs to be built or added to this assistant
     if request.tool_resources and request.tool_resources.file_search is not None:

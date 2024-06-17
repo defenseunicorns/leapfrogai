@@ -365,10 +365,8 @@ def test_create_with_new_vector_store():
         f"/openai/v1/vector_stores/{new_vs_response.json()['tool_resources']['file_search']['vector_store_ids'][0]}/files"
     )
 
-    print(vs_files_response.json())
-
     assert (
-        file_id == vs_files_response.json()[0]["id"]
+        file_id == vs_files_response.json()["data"][0]["id"]
     ), "Original file id should be retrievable from the new vector store"
 
 
