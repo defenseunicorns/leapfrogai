@@ -85,8 +85,7 @@ class RunCreateParamsRequestBaseRequest(RunCreateParamsRequestBase):
             status="completed",
             **create_params.__dict__,
         )
-        new_run: Run | None = await crud_run.create(object_=run)
-        return new_run
+        return await crud_run.create(object_=run)
 
     async def generate_response(self, existing_thread, new_run: Run, session: Session):
         """Generate a new response based on the existing thread"""

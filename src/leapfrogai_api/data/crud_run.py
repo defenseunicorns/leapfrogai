@@ -21,11 +21,12 @@ class CRUDRun(CRUDBase[AuthRun]):
     async def create(self, object_: Run) -> Run | None:
         """Create new run."""
         user_id: str = (await self.db.auth.get_user()).user.id
-        run: AuthRun = await super().create(
+        response = await super().create(
             object_=AuthRun(user_id=user_id, **object_.model_dump())
         )
-        del run.user_id
-        return run
+        if response and hasattr(response, "user_id"):
+            delattr(response, "user_id")
+        return response
 
     async def get(self, filters: dict | None = None) -> Run | None:
         """Get a vector store by its ID."""

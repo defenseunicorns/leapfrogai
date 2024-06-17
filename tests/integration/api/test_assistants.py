@@ -120,6 +120,9 @@ def test_create():
     assert Assistant.model_validate(
         assistant_response.json()
     ), "Create should create an Assistant."
+    assert (
+        "user_id" not in assistant_response.json()
+    ), "Create should not return a user_id."
 
 
 def test_get():

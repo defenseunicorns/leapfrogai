@@ -175,9 +175,9 @@ def test_create_thread_and_run(app_client, create_assistant):
     )
 
     response = app_client.post("/openai/v1/threads/runs", json=request.model_dump())
-
     assert response.status_code == status.HTTP_200_OK
     assert Run.model_validate(response.json()), "Create should create a Run."
+    assert "user_id" not in response.json(), "Create should not return a user_id."
 
 
 def test_create_run(create_run):
@@ -185,6 +185,7 @@ def test_create_run(create_run):
 
     assert create_run.status_code == status.HTTP_200_OK
     assert Run.model_validate(create_run.json()), "Create should create a Run."
+    assert "user_id" not in create_run.json(), "Create should not return a user_id."
 
 
 def test_list_runs(app_client, create_thread):
