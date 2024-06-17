@@ -18,7 +18,7 @@ export const mockOpenAI = new OpenAIMock({ apiKey: '', baseURL: '' });
 
 vi.doMock('$lib/server/constants', () => {
   return {
-    openai: mockOpenAI
+    getOpenAiClient: vi.fn().mockReturnValue(mockOpenAI)
   };
 });
 

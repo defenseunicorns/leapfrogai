@@ -1,5 +1,5 @@
 import { error, json } from '@sveltejs/kit';
-import { openai } from '$lib/server/constants';
+import { getOpenAiClient } from '$lib/server/constants';
 
 export async function GET({ url, locals: { safeGetSession } }) {
   const { session } = await safeGetSession();
@@ -12,6 +12,8 @@ export async function GET({ url, locals: { safeGetSession } }) {
 
   if (!message_id || !thread_id) error(400, 'Invalid request');
   try {
+    const openai = getOpenAiClient(session.access_token);
+
     const message = await openai.beta.threads.messages.retrieve(thread_id, message_id);
     return json(message);
   } catch (e) {

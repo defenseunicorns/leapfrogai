@@ -1,5 +1,5 @@
 import { error, json } from '@sveltejs/kit';
-import { openai } from '$lib/server/constants';
+import { getOpenAiClient } from '$lib/server/constants';
 
 export async function GET({ params, locals: { safeGetSession } }) {
   const { session } = await safeGetSession();
@@ -8,6 +8,8 @@ export async function GET({ params, locals: { safeGetSession } }) {
   }
 
   try {
+    const openai = getOpenAiClient(session.access_token);
+
     const thread = await openai.beta.threads.retrieve(params.thread_id);
     return json(thread);
   } catch (e) {

@@ -193,7 +193,7 @@ You can use OpenAI instead of Leapfrog API by changing these environment variabl
 ```
 DEFAULT_MODEL=gpt-3.5-turbo
 LEAPFROGAI_API_BASE_URL=https://api.openai.com/v1
-LEAPFROGAI_API_KEY=<your-openai-api-key>
+OPENAI_API_KEY=<your-openai-api-key>
 ```
 
 ### Chat Data Flow
