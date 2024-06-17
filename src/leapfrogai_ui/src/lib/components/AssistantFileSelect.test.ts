@@ -21,7 +21,8 @@ describe('AssistantFileSelect', () => {
     filesStore.set({
       files: mockFiles,
       selectedAssistantFileIds: ['1', '2'],
-      uploading: false
+      uploading: false,
+      selectedFileManagementFileIds: []
     });
   });
 
@@ -41,7 +42,8 @@ describe('AssistantFileSelect', () => {
     filesStore.set({
       files: mockFiles,
       selectedAssistantFileIds: [],
-      uploading: false
+      uploading: false,
+      selectedFileManagementFileIds: []
     });
 
     render(AssistantFileSelect, {

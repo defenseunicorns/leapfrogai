@@ -39,7 +39,7 @@
   const handleUpload = () => {
     open = false; // close parent multi select
     filesStore.setUploading(true);
-    filesStore.addUploadingFiles(files, { setSelectedAssistantIds: true });
+    filesStore.addUploadingFiles(files, { autoSelectUploadedFiles: true });
     submit();
   };
 

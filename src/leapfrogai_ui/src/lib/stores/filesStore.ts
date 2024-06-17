@@ -47,7 +47,7 @@ const createFilesStore = () => {
     setSelectedAssistantFileIds: (newIds: string[]) => {
       update((old) => ({ ...old, selectedAssistantFileIds: newIds }));
     },
-    addUploadingFiles: (files: File[], { setSelectedAssistantIds = false } = {}) => {
+    addUploadingFiles: (files: File[], { autoSelectUploadedFiles = false } = {}) => {
       update((old) => {
         const newFiles: FileRow[] = [];
         const newFileIds: string[] = [];
@@ -64,7 +64,7 @@ const createFilesStore = () => {
         return {
           ...old,
           files: [...old.files, ...newFiles],
-          selectedAssistantFileIds: setSelectedAssistantIds
+          selectedAssistantFileIds: autoSelectUploadedFiles
             ? [...old.selectedAssistantFileIds, ...newFileIds]
             : old.selectedAssistantFileIds
         };
