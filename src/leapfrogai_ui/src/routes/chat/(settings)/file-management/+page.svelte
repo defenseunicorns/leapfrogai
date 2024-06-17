@@ -40,6 +40,7 @@
     onResult: async ({ result }) => {
       if (result.type === 'success') {
         filesStore.updateWithUploadResults(result.data?.uploadedFiles);
+        filesStore.waitThenInvalidate();
       }
       filesStore.setUploading(false);
     }
@@ -146,7 +147,7 @@
             disableLabelChanges
             disabled={$submitting}
             labelText="Upload"
-            accept={['.pdf', 'txt']}
+            accept={['.pdf', '.txt', '.text']}
           />
         </ToolbarContent>
       </Toolbar>

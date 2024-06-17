@@ -18,13 +18,6 @@ const defaultValues: FilesStore = {
   uploading: false
 };
 
-// Wait 1.5 seconds, then invalidate the files so they are re-fetched (will remove rows with status: "error")
-const waitThenInvalidate = () => {
-  new Promise((resolve) => setTimeout(resolve, 1500)).then(() => {
-    invalidate('lf:files');
-  });
-};
-
 const createFilesStore = () => {
   const { subscribe, set, update } = writable<FilesStore>({ ...defaultValues });
 
@@ -72,6 +65,7 @@ const createFilesStore = () => {
       });
     },
     updateWithUploadResults: (newFiles: Array<FileObject | FileRow>) => {
+      console.log("in update with upload results")
       update((old) => {
         const newRows = old.files.filter((file) => file.status !== 'uploading'); // get original rows without the uploads
         // insert newly uploaded files with updated status
@@ -98,9 +92,13 @@ const createFilesStore = () => {
             });
           }
         }
-        waitThenInvalidate();
 
         return { ...old, files: newRows };
+      });
+    },
+    waitThenInvalidate: () => {
+      new Promise((resolve) => setTimeout(resolve, 1500)).then(() => {
+        invalidate('lf:files');
       });
     },
     setAllUploadingToError: () => {

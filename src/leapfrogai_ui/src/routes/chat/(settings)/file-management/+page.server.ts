@@ -6,7 +6,6 @@ import { filesSchema } from '$schemas/files';
 import type { FileRow } from '$lib/types/files';
 import { getUnixSeconds } from '$helpers/dates';
 import { getOpenAiClient } from '$lib/server/constants';
-import { delay } from 'msw';
 
 export const actions = {
   default: async ({ request, locals: { safeGetSession } }) => {
@@ -35,7 +34,6 @@ export const actions = {
               file: file,
               purpose: 'assistants'
             });
-            await delay(200000);
             uploadedFiles.push(uploadedFile);
           } catch (e) {
             console.error(`Error uploading file ${file.name}: ${e}`);
