@@ -99,6 +99,7 @@ def test_create_thread(create_thread):
     """Test creating a thread. Requires a running Supabase instance."""
     assert create_thread.status_code == status.HTTP_200_OK
     assert Thread.model_validate(create_thread.json()), "Create should create a Thread."
+    assert "user_id" not in create_thread.json(), "Create should not return a user_id."
 
 
 def test_get_thread(app_client, create_thread):

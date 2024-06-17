@@ -57,6 +57,8 @@ def test_create():
         file_response.json()
     ), "Create should create a FileObject."
 
+    assert "user_id" not in file_response.json(), "Create should not return a user_id."
+
 
 def test_get():
     """Test getting a file. Requires a running Supabase instance."""
