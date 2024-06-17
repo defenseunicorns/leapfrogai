@@ -5,7 +5,7 @@
 ### Requirements:
 
 This application requires Supabase, and either Leapfrog API or OpenAI to function. Additionally, it can optionally use
-Keycloak for authentication. There are several different ways to run this, so please see the "Configuration Options" section
+Keycloak for authentication. There are several different ways to run it, so please see the "Configuration Options" section
 below for more information.
 
 ### Running the UI
@@ -65,16 +65,18 @@ run the UI outside of UDS on localhost (e.g. for development work), there are so
 
 ###### With Keycloak authentication
 
-1. If Supabase was deployed with UDS, it will have already configured a Keycloak Client for you. We need to modify this client to allow
+1. If Supabase was deployed with UDS, it will automatically configure a Keycloak Client for you. We need to modify this client to allow
    localhost URIs.  
    Within Keycloak, under the UDS Realm, edit the uds-supabase client.  
    Under "Valid redirect URIs" add:  
    http://localhost:5173/auth/callback  
    http://localhost:4173/auth/callback (for Playwright tests)
+2. If you want to connect Keycloak to a locally running Supabase instance (non UDS deployed), see the "Running Supabase locally" section below. 
 
 ###### Without Keycloak authentication
 
 1. To turn off Keycloak, set this .env variable: `PUBLIC_DISABLE_KEYCLOAK=false`
+
 
 
 ##### Running UI Locally with OpenAI
@@ -92,7 +94,7 @@ PUBLIC_SUPABASE_URL=https://supabase-kong.uds.dev
 PUBLIC_SUPABASE_ANON_KEY=<anon_key>
 ```
 
-To run Supabase locally:
+Running Supabase locally:
 1. Install [Supabase](https://supabase.com/docs/guides/cli/getting-started?platform=macos)
 2. Run: ```supabase start```
 The configuration files at src/leapfrogai_ui/supabase will ensure your Supabase is configured to work with Keycloak if 
@@ -210,7 +212,7 @@ In order to fix this, we have to edit the /etc/hosts file in the running Supabas
 because we are using the Supabase CLI to start it up, migrate the db, and seed it).
 
 Here is an example of how you can modify the /etc/hosts of the supabase container:
-```"supabase start && docker exec -u 0 supabase_auth_supabase /bin/sh -c \"echo '100.115.154.78 keycloak.admin.uds.dev' >> /etc/hosts\""```
+```"supabase start && docker exec -u 0 supabase_auth_supabase /bin/sh -c \"echo '100.115.154.78 keycloak.admin.uds.dev' >> /etc/hosts\"```
  **You must ensure the IP address used in this command is the correct IP for where you have Keycloak hosted.**
 If you need to use a different Keycloak server for local development, you will need to modify this command.
 
