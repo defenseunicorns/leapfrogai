@@ -3,6 +3,7 @@
 [![OpenSSF Scorecard](https://api.securityscorecards.dev/projects/github.com/defenseunicorns/leapfrogai/badge)](https://api.securityscorecards.dev/projects/github.com/defenseunicorns/leapfrogai)
 
 ## Table of Contents
+
 - [Table of Contents](#table-of-contents)
 - [Overview](#overview)
 - [Why Host Your Own LLM?](#why-host-your-own-llm)
@@ -128,14 +129,14 @@ Make sure your system has the [required dependencies](https://docs.leapfrog.ai/d
 
 For ease, it's best to create a virtual environment:
 
-``` shell
+```shell
 python -m venv .venv
 source .venv/bin/activate
 ```
 
 Each component is built into its own Zarf package. You can build all of the packages you need at once with the following `Make` targets:
 
-``` shell
+```shell
 make build-cpu    # api, llama-cpp-python, text-embeddings, whisper
 make build-gpu    # api, vllm, text-embeddings, whisper
 make build-all    # all of the backends
@@ -145,7 +146,7 @@ make build-all    # all of the backends
 
 You can build components individually using the following `Make` targets:
 
-``` shell
+```shell
 make build-api
 make build-vllm                 # if you have GPUs
 make build-llama-cpp-python     # if you have CPU only
@@ -157,20 +158,55 @@ Once the packages are created, you can deploy either a CPU or GPU-enabled deploy
 
 #### CPU
 
-``` shell
+```shell
 cd uds-bundles/dev/cpu
 uds create .
-uds deploy k3d-core-slim-dev:0.18.0
+uds deploy k3d-core-slim-dev:0.22.2
 uds deploy uds-bundle-leapfrogai*.tar.zst
 ```
 
 #### GPU
 
-``` shell
+```shell
 cd uds-bundles/dev/gpu
 uds create .
-uds deploy k3d-core-slim-dev:0.18.0 --set K3D_EXTRA_ARGS="--gpus=all --image=ghcr.io/justinthelaw/k3d-gpu-support:v1.27.4-k3s1-cuda"     # be sure to check if a newer version exists
+uds deploy k3d-core-slim-dev:0.22.2 --set K3D_EXTRA_ARGS="--gpus=all --image=ghcr.io/justinthelaw/k3d-gpu-support:v1.27.4-k3s1-cuda"     # be sure to check if a newer version exists
 uds deploy uds-bundle-leapfrogai-*.tar.zst --confirm
+```
+
+### Accessing the UI
+
+LeapfrogAI is integrated with UDS Core services that provide authentication services via KeyCloak. Below are general instructions for accessing the LeapfrogAI UI after a successful UDS deployment of UDS Core and LeapfrogAI.
+
+1. Connect to the KeyCloak admin panel
+  a. Run the following to get a port-forwarded tunnel:  `uds zarf connect keycloak`
+  b. Go to the resulting localhost URL and create an admin account
+2. Go to ai.uds.dev and press "Login using SSO"
+3. Register a new user by pressing "Register Here"
+4. Fill-in all of the information
+  a. The bot detection requires you to scroll and click around in a natural way, so if the Register button is not activated despite correct information, try moving around the page until the bot detection says 100% verified
+5. Using an authenticator, follow the MFA steps
+6. Go to sso.uds.dev
+  a. Login using the admin account you created earlier
+7. Approve the newly registered user
+  a. Click on the hamburger menu in the top left to open/close the sidebar
+  b. Go to the dropdown that likely says "Keycloak" and switch to the "uds" context
+  c. Click "Users" in the sidebar
+  d. Click on the newly registered user's username
+  e. Go to the "Email Verified" switch and toggle it to be "Yes"
+  f. Scroll to the bottom and press "Save"
+8. Go back to ai.uds.dev and login as the registered user to access the UI
+
+### Clean-up
+
+To clean-up or perform a fresh install, run the following commands in the context in which you had previously installed UDS Core and LeapfrogAI:
+
+```bash
+k3d cluster delete uds  # kills a running uds cluster
+uds zarf tools clear-cache # clears the Zarf tool cache
+rm -rf ~/.uds-cache # clears the UDS cache
+docker system prune -a -f # removes all hanging containers and images
+docker volume prune -f # removes all hanging container volumes
 ```
 
 ### Local Dev
@@ -179,7 +215,7 @@ The following instructions are for running each of the LFAI components for local
 
 It is highly recommended to make a virtual environment to keep the development environment clean:
 
-``` shell
+```shell
 python -m venv .venv
 source .venv/bin/activate
 ```
@@ -188,7 +224,7 @@ source .venv/bin/activate
 
 To run the LeapfrogAI API locally (starting from the root directory of the repository):
 
-```
+```shell
 python -m pip install src/leapfrogai_sdk
 cd src/leapfrogai_api
 python -m pip install .
@@ -203,7 +239,7 @@ The instructions for running the basic repeater model (used for testing the API)
 
 To run the llama-cpp-python backend locally (starting from the root directory of the repository):
 
-``` shell
+```shell
 python -m pip install src/leapfrogai_sdk
 cd packages/llama-cpp-python
 python -m pip install .[dev]
@@ -214,9 +250,10 @@ lfai-cli --app-dir=. main:Model
 ```
 
 #### Backend: text-embeddings
+
 To run the text-embeddings backend locally (starting from the root directory of the repository):
 
-``` shell
+```shell
 python -m pip install src/leapfrogai_sdk
 cd packages/text-embeddings
 python -m pip install .[dev]
@@ -225,9 +262,10 @@ python -u main.py
 ```
 
 #### Backend: vllm
+
 To run the vllm backend locally (starting from the root directory of the repository):
 
-``` shell
+```shell
 python -m pip install src/leapfrogai_sdk
 cd packages/vllm
 python -m pip install .[dev]
@@ -237,9 +275,10 @@ python -u src/main.py
 ```
 
 #### Backend: whisper
+
 To run the vllm backend locally (starting from the root directory of the repository):
 
-``` shell
+```shell
 python -m pip install src/leapfrogai_sdk
 cd packages/whisper
 python -m pip install ".[dev]"
