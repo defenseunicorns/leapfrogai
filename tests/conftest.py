@@ -1,6 +1,7 @@
 import os
 from dotenv import load_dotenv
 
+
 def pytest_configure(config):
     # runs once for all tests
 
@@ -10,5 +11,3 @@ def pytest_configure(config):
     os.environ["SUPABASE_URL"] = os.environ.get("SUPABASE_URL", "mock-data")
     os.environ["ANON_KEY"] = os.environ.get("SUPABASE_ANON_KEY", "mock-data")
     os.environ["API_KEY"] = os.environ.get("SUPABASE_ANON_KEY", "mock-data")
-    
-

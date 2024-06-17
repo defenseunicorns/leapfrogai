@@ -5,4 +5,3 @@ def execute_response_format(data):
         return ((None, [data]), 1)
     else:
         return None
-
