@@ -4,6 +4,7 @@
   import type { Message as OpenAIMessage } from 'openai/resources/beta/threads/messages';
   import type { AppendFunction, ReloadFunction } from '$lib/types/messages';
 
+  export let allStreamedMessages: AIMessage[];
   export let message: AIMessage | OpenAIMessage;
   export let messages: AIMessage[] = [];
   export let setMessages: (messages: AIMessage[]) => void;
@@ -15,5 +16,13 @@
 
 <div>
   <Toasts />
-  <Message {message} {messages} {setMessages} {isLastMessage} {append} {reload} />
+  <Message
+    {allStreamedMessages}
+    {message}
+    {messages}
+    {setMessages}
+    {isLastMessage}
+    {append}
+    {reload}
+  />
 </div>

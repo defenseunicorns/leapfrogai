@@ -35,11 +35,7 @@ const createFilesStore = () => {
     setFiles: (newFiles: FileRow[]) => {
       update((old) => ({ ...old, files: [...newFiles] }));
     },
-    addSelectedFileManagementFileIds: (newIds: string[]) =>
-      update((old) => ({
-        ...old,
-        selectedFileManagementFileIds: [...old.selectedFileManagementFileIds, ...newIds]
-      })),
+
     setSelectedFileManagementFileIds: (newIds: string[]) => {
       update((old) => ({ ...old, selectedFileManagementFileIds: newIds }));
     },

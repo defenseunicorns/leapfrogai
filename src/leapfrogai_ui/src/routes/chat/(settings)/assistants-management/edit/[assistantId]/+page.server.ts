@@ -15,7 +15,7 @@ import type {
   VectorStoreFileDeleted
 } from 'openai/resources/beta/vector-stores/files';
 
-export const load = async ({ params, parent, locals: { safeGetSession } }) => {
+export const load = async ({ params, locals: { safeGetSession } }) => {
   const { session } = await safeGetSession();
 
   if (!session) {

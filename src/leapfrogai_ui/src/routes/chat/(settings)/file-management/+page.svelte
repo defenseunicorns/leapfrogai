@@ -27,7 +27,6 @@
 
   $: if ($filesStore.selectedFileManagementFileIds.length === 0) active = false;
 
-
   const { enhance, submit, submitting } = superForm(data.form, {
     validators: yup(filesSchema),
     invalidateAll: false,

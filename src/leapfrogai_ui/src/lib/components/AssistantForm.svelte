@@ -16,7 +16,6 @@
   import type { NavigationTarget } from '@sveltejs/kit';
   import { onMount } from 'svelte';
   import AssistantFileSelect from '$components/AssistantFileSelect.svelte';
-  import type { FileRow } from '$lib/types/files';
 
   export let data;
 
@@ -76,8 +75,6 @@
       }
     }
   });
-
-
 
   onMount(() => {
     if (isEditMode && Object.keys($errors).length > 0) {
