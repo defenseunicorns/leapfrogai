@@ -1,7 +1,7 @@
 import { error, json } from '@sveltejs/kit';
 import { messageInputSchema } from '$lib/schemas/chat';
 import type { NewMessageInput } from '$lib/types/messages';
-import { openai } from '$lib/server/constants';
+import { getOpenAiClient } from '$lib/server/constants';
 
 export async function POST({ request, locals: { safeGetSession } }) {
   const { session } = await safeGetSession();
@@ -22,6 +22,8 @@ export async function POST({ request, locals: { safeGetSession } }) {
   }
 
   try {
+    const openai = getOpenAiClient(session.access_token);
+
     const threadMessages = await openai.beta.threads.messages.create(requestData.thread_id, {
       role: requestData.role,
       content: requestData.content
