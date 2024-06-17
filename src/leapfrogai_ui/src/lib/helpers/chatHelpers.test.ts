@@ -3,6 +3,7 @@ import type { Message as OpenAIMessage } from 'openai/resources/beta/threads/mes
 import { normalizeTimestamp, sortMessages } from '$helpers/chatHelpers';
 import { getFakeOpenAIMessage } from '$testUtils/fakeData';
 import type { LFMessage } from '$lib/types/messages';
+import { getUnixSeconds } from '$helpers/dates';
 
 describe('chat helpers', () => {
   describe('normalizeTimestamp', () => {
@@ -72,6 +73,52 @@ describe('chat helpers', () => {
       expect(sortedMessages[0].id).toBe('1');
       expect(sortedMessages[1].id).toBe('2');
       expect(sortedMessages[2].id).toBe('3');
+    });
+
+    it('should place assistant messages after user messages with the same timestamp', () => {
+      const messages: Array<AIMessage | OpenAIMessage> = [
+        {
+          id: '2',
+          content: 'test2',
+          role: 'user',
+          created_at: getUnixSeconds(new Date('2024-06-13T10:00:00Z'))
+        },
+        {
+          id: '3',
+          content: 'test3',
+          role: 'assistant',
+          created_at: getUnixSeconds(new Date('2024-06-13T10:00:00Z'))
+        },
+        {
+          id: '1',
+          content: 'test1',
+          role: 'user',
+          created_at: getUnixSeconds(new Date('2024-06-13T09:00:00Z'))
+        }
+      ];
+
+      const sortedMessages = sortMessages(messages);
+
+      expect(sortedMessages).toEqual([
+        {
+          id: '1',
+          content: 'test1',
+          created_at: getUnixSeconds(new Date('2024-06-13T09:00:00Z')),
+          role: 'user'
+        },
+        {
+          id: '2',
+          content: 'test2',
+          created_at: getUnixSeconds(new Date('2024-06-13T10:00:00Z')),
+          role: 'user'
+        },
+        {
+          id: '3',
+          content: 'test3',
+          created_at: getUnixSeconds(new Date('2024-06-13T10:00:00Z')),
+          role: 'assistant'
+        }
+      ]);
     });
   });
 });

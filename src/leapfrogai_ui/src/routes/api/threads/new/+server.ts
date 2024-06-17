@@ -1,7 +1,7 @@
 import { error, json } from '@sveltejs/kit';
 import { newThreadInputSchema } from '$lib/schemas/chat';
 import type { Profile } from '$lib/types/profile';
-import { openai } from '$lib/server/constants';
+import { getOpenAiClient } from '$lib/server/constants';
 import type { Thread } from 'openai/resources/beta/threads/threads';
 
 export async function POST({ request, locals: { supabase, safeGetSession } }) {
@@ -22,6 +22,8 @@ export async function POST({ request, locals: { supabase, safeGetSession } }) {
 
   let newThread: Thread;
   try {
+    const openai = getOpenAiClient(session.access_token);
+
     newThread = await openai.beta.threads.create({
       metadata: { user_id: session.user.id, label: requestData.label }
     });

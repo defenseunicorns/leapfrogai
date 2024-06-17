@@ -1,6 +1,6 @@
 import { error } from '@sveltejs/kit';
 import { deleteMessageSchema } from '$lib/schemas/chat';
-import { openai } from '$lib/server/constants';
+import { getOpenAiClient } from '$lib/server/constants';
 
 export async function DELETE({ request, locals: { safeGetSession } }) {
   const { session } = await safeGetSession();
@@ -18,6 +18,8 @@ export async function DELETE({ request, locals: { safeGetSession } }) {
   } catch {
     error(400, 'Bad Request');
   }
+
+  const openai = getOpenAiClient(session.access_token);
 
   const messageDeleted = await openai.beta.threads.messages.del(
     requestData.thread_id,
