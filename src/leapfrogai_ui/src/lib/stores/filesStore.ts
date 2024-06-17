@@ -1,7 +1,6 @@
 import { writable } from 'svelte/store';
 import type { FileObject } from 'openai/resources/files';
 import type { FileRow } from '$lib/types/files';
-import { invalidate } from '$app/navigation';
 
 type FilesStore = {
   files: FileRow[];
@@ -13,13 +12,6 @@ const defaultValues: FilesStore = {
   files: [],
   selectedAssistantFileIds: [],
   uploading: false
-};
-
-// Wait 1.5 seconds, then invalidate the files so they are re-fetched (will remove rows with status: "error")
-const waitThenInvalidate = () => {
-  new Promise((resolve) => setTimeout(resolve, 1500)).then(() => {
-    invalidate('lf:files');
-  });
 };
 
 const createFilesStore = () => {
@@ -75,7 +67,6 @@ const createFilesStore = () => {
           };
           newRows.unshift(item);
         }
-        waitThenInvalidate();
 
         return { ...old, files: newRows };
       });

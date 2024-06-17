@@ -25,7 +25,7 @@
     label="Choose data sources"
     items={$filesStore.files.map((file) => ({ id: file.id, text: file.filename }))}
     direction="top"
-    accept={['.pdf', 'txt']}
+    accept={['.pdf', '.txt', '.text']}
     bind:selectedIds={$filesStore.selectedAssistantFileIds}
     {filesForm}
   />

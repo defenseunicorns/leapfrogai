@@ -62,7 +62,6 @@
           }
         }
       }
-      await invalidate('lf:files');
     }
   });
 
@@ -198,7 +197,7 @@
             disableLabelChanges
             disabled={$submitting}
             labelText="Upload"
-            accept={['.pdf', 'txt']}
+            accept={['.pdf', '.txt', '.text']}
           />
         </ToolbarContent>
       </Toolbar>

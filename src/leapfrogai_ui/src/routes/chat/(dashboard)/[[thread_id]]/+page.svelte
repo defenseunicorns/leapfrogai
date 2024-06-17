@@ -42,6 +42,7 @@
 
   $: activeThread = $threadsStore.threads.find((t) => t.id === $page.params.thread_id);
   $: $page.params.thread_id, threadsStore.setLastVisitedThreadId($page.params.thread_id);
+  $: $page.params.thread_id, ($chatInput = '');
 
   $: assistantsList = [...(data.assistants || [])].map((assistant) => ({
     id: assistant.id,
@@ -106,8 +107,6 @@
 
     threadsStore.setSendingBlocked(false);
   };
-
-  $: console.log('streamedmessages', $assistantMessages);
 
   /** useChat - streams messages with the /api/chat route**/
   const {
