@@ -7,7 +7,6 @@ import type { FileRow } from '$lib/types/files';
 import { getUnixSeconds } from '$helpers/dates';
 import { getOpenAiClient } from '$lib/server/constants';
 import { delay } from '$helpers/chatHelpers';
-import { filesStore } from '$stores';
 
 export const actions = {
   default: async ({ request, locals: { safeGetSession } }) => {
@@ -63,7 +62,6 @@ export const actions = {
           }
         }
       }
-
 
       return withFiles({ form, uploadedFiles });
     }

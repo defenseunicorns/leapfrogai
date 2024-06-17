@@ -60,19 +60,6 @@
       filesStore.updateWithUploadResults(result.data?.uploadedFiles);
       for (const uploadedFile of uploadedFiles) {
         idsToSelect.push(uploadedFile.id);
-        if (uploadedFile.status === 'error') {
-          toastStore.addToast({
-            kind: 'error',
-            title: 'Upload Failed',
-            subtitle: `${uploadedFile.filename} upload failed.`
-          });
-        } else {
-          toastStore.addToast({
-            kind: 'success',
-            title: 'Uploaded Successfully',
-            subtitle: `${uploadedFile.filename} uploaded successfully.`
-          });
-        }
       }
       filesStore.addSelectedAssistantFileIds(idsToSelect);
     }

@@ -1,11 +1,7 @@
 import { writable } from 'svelte/store';
 import type { FileObject } from 'openai/resources/files';
-import type { FileRow, FilesForm } from '$lib/types/files';
-import { invalidate } from '$app/navigation';
-import { filesStore, toastStore } from '$stores/index';
-import { superForm } from 'sveltekit-superforms';
-import { yup } from 'sveltekit-superforms/adapters';
-import { filesSchema } from '$schemas/files';
+import type { FileRow } from '$lib/types/files';
+import { toastStore } from '$stores/index';
 
 type FilesStore = {
   files: FileRow[];
@@ -19,7 +15,7 @@ const defaultValues: FilesStore = {
   files: [],
   selectedFileManagementFileIds: [],
   selectedAssistantFileIds: [],
-  uploading: false
+  uploading: false,
   pendingUploads: []
 };
 
@@ -34,7 +30,9 @@ const createFilesStore = () => {
     setFiles: (newFiles: FileRow[]) => {
       update((old) => ({ ...old, files: [...newFiles] }));
     },
-
+    setPendingUploads: (newFiles: FileRow[]) => {
+      update((old) => ({ ...old, pendingUploads: [...newFiles] }));
+    },
     setSelectedFileManagementFileIds: (newIds: string[]) => {
       update((old) => ({ ...old, selectedFileManagementFileIds: newIds }));
     },
@@ -62,7 +60,6 @@ const createFilesStore = () => {
         }
         return {
           ...old,
-          files: [...old.files, ...newFiles],
           selectedAssistantFileIds: autoSelectUploadedFiles
             ? [...old.selectedAssistantFileIds, ...newFileIds]
             : old.selectedAssistantFileIds,
@@ -72,24 +69,25 @@ const createFilesStore = () => {
     },
     updateWithUploadResults: (newFiles: Array<FileObject | FileRow>) => {
       update((old) => {
-        const newRows = old.files.filter((file) => file.status !== 'uploading'); // get original rows without the uploads
-        // insert newly uploaded files with updated status
+        const successRows = [...old.files];
+        const failedRows: FileRow[] = [];
+
         for (const file of newFiles) {
-          const item: FileRow = {
+          const row: FileRow = {
             id: file.id,
             filename: file.filename,
             created_at: file.created_at,
             status: file.status === 'error' ? 'error' : 'complete'
           };
-          newRows.unshift(item);
-
           if (file.status === 'error') {
+            failedRows.push(row);
             toastStore.addToast({
               kind: 'error',
               title: 'Import Failed',
               subtitle: `${file.filename} import failed.`
             });
           } else {
+            successRows.push(row);
             toastStore.addToast({
               kind: 'success',
               title: 'Imported Successfully',
@@ -98,12 +96,21 @@ const createFilesStore = () => {
           }
         }
 
-        return { ...old, files: newRows };
-      });
-    },
-    waitThenInvalidate: () => {
-      new Promise((resolve) => setTimeout(resolve, 1500)).then(() => {
-        invalidate('lf:files');
+        // Remove the error files after 1.5 seconds
+        new Promise((resolve) => setTimeout(resolve, 1500)).then(() => {
+          update((old) => {
+            return {
+              ...old,
+              pendingUploads: [...old.pendingUploads.filter((row) => row.status !== 'error')]
+            };
+          });
+        });
+
+        return {
+          ...old,
+          files: successRows,
+          pendingUploads: failedRows
+        };
       });
     },
     setAllUploadingToError: () => {

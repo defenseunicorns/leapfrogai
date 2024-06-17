@@ -27,7 +27,6 @@
 
   $: if ($filesStore.selectedFileManagementFileIds.length === 0) active = false;
 
-
   const { enhance, submit, submitting } = superForm(data.form, {
     validators: yup(filesSchema),
     invalidateAll: false,
@@ -38,13 +37,12 @@
         subtitle: `Please try again or contact support`
       });
     },
-    // onResult: async ({ result }) => {
-    //   if (result.type === 'success') {
-    //     filesStore.updateWithUploadResults(result.data?.uploadedFiles);
-    //     filesStore.waitThenInvalidate();
-    //   }
-    //   filesStore.setUploading(false);
-    // }
+    onResult: async ({ result }) => {
+      if (result.type === 'success') {
+        filesStore.updateWithUploadResults(result.data?.uploadedFiles);
+      }
+      filesStore.setUploading(false);
+    }
   });
 
   const handleDelete = async () => {
@@ -104,7 +102,7 @@
           value: 'Date Added'
         }
       ]}
-      rows={$filesStore.files}
+      rows={[...$filesStore.files, ...$filesStore.pendingUploads]}
       sortable
     >
       <Toolbar>
