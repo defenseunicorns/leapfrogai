@@ -7,6 +7,7 @@ from openai.types.beta import (
     AssistantToolChoiceOption,
 )
 from openai.types.beta.assistant import ToolResources as BetaAssistantToolResources
+from openai.types.beta.thread import ToolResourcesCodeInterpreter
 from openai.types.beta.thread import ToolResources as BetaThreadToolResources
 
 SUPPORTED_TOOLS = ["file_search"]
@@ -23,7 +24,7 @@ def validate_tool_resources(
     tool_resources: Union[BetaAssistantToolResources, BetaThreadToolResources],
 ) -> bool:
     """Validate a ToolResources object."""
-    if tool_resources.code_interpreter:
+    if isinstance(tool_resources.code_interpreter, ToolResourcesCodeInterpreter):
         return False
     return True
 
