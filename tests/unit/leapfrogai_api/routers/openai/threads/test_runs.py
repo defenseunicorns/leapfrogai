@@ -4,8 +4,7 @@ from unittest.mock import AsyncMock
 from openai.types.beta.threads import Run
 from fastapi.responses import StreamingResponse
 
-from tests.mocks.mock_tables import mock_message, mock_thread, mock_assistant, mock_run
-from tests.mocks.mock_session import mock_session   # noqa: F401
+from tests.mocks.mock_tables import mock_thread, mock_assistant, mock_run
 from tests.utils.crud_utils import execute_response_format
 
 from leapfrogai_api.routers.openai.requests.thread_run_create_params_request import ThreadRunCreateParamsRequestBaseRequest
@@ -13,10 +12,7 @@ from leapfrogai_api.routers.openai.runs import create_run, create_thread_and_run
 
 
 @pytest.mark.asyncio
-@pytest.mark.parametrize("mock_messages, expected_result", [
-    ([mock_message], mock_thread)
-])
-async def test_create_run(mock_session, mock_messages, expected_result):
+async def test_create_run(mock_session):
     # Create run
     #     await self.update_with_assistant_data(session)
     #           assistant: Assistant | None = await crud_assistant.get(
@@ -30,6 +26,7 @@ async def test_create_run(mock_session, mock_messages, expected_result):
     mock_request.tools = False
     mock_request.generate_response = AsyncMock(return_value=mock_run)
 
+    #TODO: mock with side_effect
     mock_session.table().select().execute.return_value = execute_response_format(mock_assistant.model_dump())
     mock_session.table().select().execute.return_value = execute_response_format(mock_thread.model_dump())
     mock_session.table().insert().execute.return_value = execute_response_format(mock_run.model_dump())

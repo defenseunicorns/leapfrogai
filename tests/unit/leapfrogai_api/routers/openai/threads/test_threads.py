@@ -3,7 +3,6 @@ from openai.types.beta import Thread, ThreadDeleted
 from openai.types.beta.thread import ToolResources
 
 from tests.mocks.mock_tables import mock_message, mock_thread
-from tests.mocks.mock_session import mock_session   # noqa: F401
 from tests.utils.crud_utils import execute_response_format
 
 from leapfrogai_api.routers.openai.requests.create_thread_request import CreateThreadRequest
