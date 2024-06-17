@@ -87,7 +87,6 @@ def create_assistant(app_client):
     return app_client.post(url="/openai/v1/assistants", json=request.model_dump())
 
 
-# Create a thread with the previously created file and fake embeddings
 @pytest.fixture(scope="session")
 def create_thread(app_client):
     """Create a thread for testing. Requires a running Supabase instance."""
@@ -128,8 +127,8 @@ def create_run(app_client, create_assistant, create_thread):
 
     request = RunCreateParamsRequestBaseRequest(
         assistant_id=assistant_id,
-        instructions="Be happy!",
-        additional_instructions="Also be sad!",
+        instructions="You are a conversational assistant.",
+        additional_instructions="Respond as a Unicorn assistant named Doug.",
         tool_resources=ToolResources(file_search={}),
         metadata={},
         stream=False,
@@ -162,15 +161,14 @@ def test_create_message(create_message):
     ), "Create should create a Message."
 
 
-@pytest.fixture(scope="session")
 def test_create_thread_and_run(app_client, create_assistant):
     """Test running an assistant. Requires a running Supabase instance."""
     assistant_id = create_assistant.json()["id"]
 
     request = ThreadRunCreateParamsRequestBaseRequest(
         assistant_id=assistant_id,
-        instructions="Be happy!",
-        additional_instructions="Also be sad!",
+        instructions="You are a conversational assistant.",
+        additional_instructions="Respond as a Unicorn assistant named Doug.",
         tool_resources=ToolResources(file_search={}),
         metadata={},
         stream=False,
@@ -180,8 +178,6 @@ def test_create_thread_and_run(app_client, create_assistant):
 
     assert response.status_code == status.HTTP_200_OK
     assert Run.model_validate(response.json()), "Create should create a Run."
-
-    return response
 
 
 def test_create_run(create_run):
