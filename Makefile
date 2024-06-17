@@ -1,4 +1,5 @@
 ARCH ?= amd64
+export ZARF_ARCHITECTURE = $(ARCH)
 KEY ?= ""
 REG_PORT ?= 5000
 
@@ -44,7 +45,7 @@ build-supabase: local-registry
 	docker push localhost:${REG_PORT}/defenseunicorns/leapfrogai/supabase-migrations:${LOCAL_VERSION}
 
 	## Build the Zarf package
-	uds zarf package create packages/supabase -o packages/supabase --registry-override=ghcr.io=localhost:${REG_PORT} --set IMAGE_VERSION=${LOCAL_VERSION} --confirm
+	uds zarf package create packages/supabase -a ${ARCH} -o packages/supabase --registry-override=ghcr.io=localhost:${REG_PORT} --set IMAGE_VERSION=${LOCAL_VERSION} --confirm
 
 setup-api-deps: sdk-wheel ## Download the wheels for the leapfrogai_api dependencies
 
