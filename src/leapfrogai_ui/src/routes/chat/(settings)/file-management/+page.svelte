@@ -15,7 +15,7 @@
   import { formatDate } from '$helpers/dates';
   import { filesSchema } from '$schemas/files';
   import { filesStore, toastStore } from '$stores';
-  import { invalidate } from '$app/navigation';
+  import { afterNavigate, invalidate } from '$app/navigation';
 
   export let data;
 
@@ -86,6 +86,16 @@
     //files selected by user
     handleUpload();
   }
+
+  afterNavigate(() => {
+    // Remove files with "uploading" status from store and invalidate the route so files are re-fetched
+    // when the page is loaded again
+    // If we want to persist the uploading status, we will have to use event streaming/supabase realtime
+    filesStore.setPendingUploads(
+      $filesStore.pendingUploads.filter((file) => file.status === 'error')
+    );
+    invalidate('lf:files');
+  });
 </script>
 
 <div class="file-management-container">
