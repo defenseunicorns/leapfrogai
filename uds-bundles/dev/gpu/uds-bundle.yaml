@@ -7,6 +7,23 @@ metadata:
   version: dev
 
 packages:
+  # Supabase backend for the UI and API to interface with Postgresql
+  - name: supabase
+    path: ../../../packages/supabase/
+    ref: dev
+    overrides:
+      supabase:
+        supabase-secrets-generator:
+          variables:
+            - path: "leapfrogai.sso.redirectUris"
+              name: "KEYCLOAK_REDIRECT_URIS"
+              default:
+                - "https://supabase-kong.uds.dev/auth/v1/callback"
+            - path: "leapfrogai.sso.webOrigins"
+              name: KEYCLOAK_WEB_ORIGINS
+              default:
+                - "https://ai.uds.dev"
+
   # OpenAI-like API
   - name: leapfrogai-api
     path: ../../../packages/api
@@ -31,23 +48,6 @@ packages:
   - name: whisper
     path: ../../../packages/whisper
     ref: dev
-
-  # Supabase backend for the UI and API to interface with Postgresql
-  - name: supabase
-    path: ../../../packages/supabase/
-    ref: dev
-    overrides:
-      supabase:
-        supabase-secrets-generator:
-          variables:
-            - path: "leapfrogai.sso.redirectUris"
-              name: "KEYCLOAK_REDIRECT_URIS"
-              default:
-                - "https://supabase-kong.uds.dev/auth/v1/callback"
-            - path: "leapfrogai.sso.webOrigins"
-              name: KEYCLOAK_WEB_ORIGINS
-              default:
-                - "https://ai.uds.dev"
 
   # UI
   - name: leapfrogai-ui
