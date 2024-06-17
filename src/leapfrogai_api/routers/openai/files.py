@@ -20,7 +20,15 @@ async def upload_file(
 ) -> FileObject:
     """Upload a file."""
 
-    if not is_supported_mime_type(request.file.content_type):
+    if not request.file:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="No file provided!",
+        )
+
+    if request.file.content_type and not is_supported_mime_type(
+        request.file.content_type
+    ):
         raise HTTPException(
             status_code=status.HTTP_415_UNSUPPORTED_MEDIA_TYPE,
             detail=f"Unsupported file type {request.file.content_type}!",
@@ -29,9 +37,9 @@ async def upload_file(
     try:
         file_object = FileObject(
             id="",  # This is set by the database to prevent conflicts
-            bytes=request.file.size,
+            bytes=request.file.size if request.file.size else 0,
             created_at=0,  # This is set by the database to prevent conflicts
-            filename=request.file.filename,
+            filename=request.file.filename if request.file.filename else "",
             object="file",  # Per OpenAI Spec this should always be file
             purpose="assistants",  # we only support assistants for now
             status="uploaded",
@@ -52,7 +60,7 @@ async def upload_file(
         return file_object
 
     except Exception as exc:
-        crud_file_object.delete(filters={"id": file_object.id})
+        await crud_file_object.delete(filters=FilterFileObject(id=file_object.id))
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail="Failed to store file",

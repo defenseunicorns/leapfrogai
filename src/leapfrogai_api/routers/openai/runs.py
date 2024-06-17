@@ -5,7 +5,6 @@ from fastapi import HTTPException, APIRouter, status
 from fastapi.responses import StreamingResponse
 from fastapi.security import HTTPBearer
 from openai.types.beta.threads import Run
-from openai.types.beta.threads.runs import RunStep
 from openai.pagination import SyncCursorPage
 from leapfrogai_api.backend.types import (
     ModifyRunRequest,
@@ -20,7 +19,7 @@ from leapfrogai_api.data.crud_run import CRUDRun
 from leapfrogai_api.data.crud_thread import CRUDThread
 from leapfrogai_api.routers.supabase_session import Session
 from leapfrogai_api.utils.validate_tools import (
-    validate_tool_resources,
+    validate_assistant_tool,
     validate_assistant_tool_choice_option,
 )
 
@@ -34,7 +33,7 @@ async def create_run(
 ) -> Run | StreamingResponse:
     """Create a run."""
 
-    if request.tools and not validate_tool_resources(request.tools):
+    if request.tools and not validate_assistant_tool(request.tools):
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
             detail=f"Unsupported tool resource: {request.tools}",
@@ -48,16 +47,21 @@ async def create_run(
             detail=f"Unsupported tool choice option: {request.tool_choice}",
         )
 
+    if not (new_run := await request.create_run(session, thread_id)):
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail="The DB failed to create the run",
+        )
+
+    crud_thread = CRUDThread(db=session)
+
+    if not (existing_thread := await crud_thread.get(filters={"id": thread_id})):
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail=f"Thread {thread_id} not found.",
+        )
+
     try:
-        new_run = await request.create_run(session, thread_id)
-
-        if not new_run:
-            raise Exception("The DB failed to create the run")
-
-        crud_thread = CRUDThread(db=session)
-
-        existing_thread = await crud_thread.get(filters={"id": thread_id})
-
         return await request.generate_response(existing_thread, new_run, session)
     except Exception as exc:
         traceback.print_exc()
@@ -73,37 +77,39 @@ async def create_thread_and_run(
 ) -> Run | StreamingResponse:
     """Create a thread and run."""
 
+    new_run, new_thread = await request.create_run_and_thread(session)
+
+    if not new_run or not new_thread:
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail="The DB failed to create the run or thread",
+        )
+
     try:
-        new_run, new_thread = await request.create_run_and_thread(session)
-
-        if not new_run:
-            raise Exception("The DB failed to create the run")
-
-        return await request.generate_response(new_run, new_thread, session)
+        return await request.create_run_and_thread(session=session)
     except Exception as exc:
         traceback.print_exc()
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            detail="Unable to create run",
+            detail="Unable to create thread and run",
         ) from exc
 
 
 @router.get("/{thread_id}/runs")
 async def list_runs(thread_id: str, session: Session) -> SyncCursorPage[Run]:
     """List all the runs in a thread."""
-    try:
-        crud_run = CRUDRun(db=session)
-        runs = await crud_run.list(filters={"thread_id": thread_id})
+    crud_run = CRUDRun(db=session)
+    crud_thread = CRUDThread(db=session)
 
-        if runs is None:
-            return SyncCursorPage(object="list", data=[])
-
-        return SyncCursorPage(object="list", data=runs)
-    except Exception as exc:
+    if not await crud_thread.get(filters={"id": thread_id}):
         raise HTTPException(
-            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            detail=f"Failed to list runs for thread {thread_id}",
-        ) from exc
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail=f"Thread {thread_id} not found.",
+        )
+
+    if not (runs := await crud_run.list(filters={"thread_id": thread_id})):
+        runs = []
+    return SyncCursorPage(data=runs)
 
 
 @router.get("/{thread_id}/runs/{run_id}")
@@ -134,45 +140,16 @@ async def modify_run(
 
     try:
         run.metadata = getattr(request, "metadata", run.metadata)
-
-        return await crud_run.update(
-            id_=run_id,
-            object_=run,
-        )
     except Exception as exc:
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
             detail="Unable to parse run request",
         ) from exc
 
+    if not (response := await crud_run.update(id_=run_id, object_=run)):
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail="Failed to update run",
+        )
 
-@router.post("/{thread_id}/runs/{run_id}/submit_tool_outputs")
-async def submit_tool_outputs(thread_id: str, run_id: str, session: Session) -> Run:
-    """Submit tool outputs for a run."""
-    # TODO: Implement this function
-    raise HTTPException(status_code=501, detail="Not implemented")
-
-
-@router.post("/{thread_id}/runs/{run_id}/cancel")
-async def cancel_run(thread_id: str, run_id: str, session: Session) -> Run:
-    """Cancel a run."""
-    # TODO: Implement this function
-    raise HTTPException(status_code=501, detail="Not implemented")
-
-
-@router.get("/{thread_id}/runs/{run_id}/steps")
-async def list_run_steps(
-    thread_id: str, run_id: str, session: Session
-) -> list[RunStep]:
-    """List all the steps in a run."""
-    # TODO: Implement this function
-    raise HTTPException(status_code=501, detail="Not implemented")
-
-
-@router.get("/{thread_id}/runs/{run_id}/steps/{step_id}")
-async def retrieve_run_step(
-    thread_id: str, run_id: str, step_id: str, session: Session
-) -> RunStep:
-    """Retrieve a step."""
-    # TODO: Implement this function
-    raise HTTPException(status_code=501, detail="Not implemented")
+    return response
