@@ -15,13 +15,6 @@ const defaultValues: FilesStore = {
   uploading: false
 };
 
-// Wait 1.5 seconds, then invalidate the files so they are re-fetched (will remove rows with status: "error")
-const waitThenInvalidate = () => {
-  new Promise((resolve) => setTimeout(resolve, 1500)).then(() => {
-    invalidate('lf:files');
-  });
-};
-
 const createFilesStore = () => {
   const { subscribe, set, update } = writable<FilesStore>({ ...defaultValues });
 
@@ -75,7 +68,6 @@ const createFilesStore = () => {
           };
           newRows.unshift(item);
         }
-        waitThenInvalidate();
 
         return { ...old, files: newRows };
       });
