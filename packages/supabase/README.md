@@ -50,7 +50,7 @@ Migrations are handled using the [Supabase CLI](https://supabase.com/docs/guides
 
 Migrations are intended to be tracked by the package that needs them, so for example, migrations for API-specific needs are tracked within the [API package migrations](/packages/api/supabase/migrations/) and migrations needed by the UI are tracked within the [UI migrations](/src/leapfrogai_ui/supabase/migrations/).
 
-In order to submit migrations at deploy time, [K8s jobs](https://kubernetes.io/docs/concepts/workloads/controllers/job/) are used to run the Supabase CLI commands. These migration K8s jobs are built off of [small Docker Containers](/packages/api/supabase/Dockerfile) that solely run the Supabase CLI commands for their associated migrations. The Dockerfiles for these jobs must be colocated with the directory that contains its associated migrations, so for example, the migrations and Dockerfile for the API migrations live within the [API package's supabase directory](/packages/api/supabase).
+In order to submit migrations at deploy time, [K8s jobs](https://kubernetes.io/docs/concepts/workloads/controllers/job/) are used to run the Supabase CLI commands. These migration K8s jobs are built off of a small [Docker container](/Dockerfile.migrations) that runs the Supabase CLI commands for each packages associated migrations. The primary Dockerfile for these jobs is located at the root of the repository.
 
 The K8s jobs themselves simply pull any existing migrations from the remote database within the same cluster, then push up the local migrations. Due to the [schema migrations table](https://supabase.com/docs/reference/cli/usage#supabase-db-push), any migrations that have already been run on the remote database will be skipped, ensuring migrations are not repeated. Since each package's migrations should be separate, a different template is used for each job.
 
@@ -62,7 +62,6 @@ Keep the following in mind when adding new migrations:
 - Migrations should only update tables that have to do with their associated package. For example, the UI should not have associated migrations that affect the vector database, so no migration files doing so should be in the UI's supabase migrations directory. This keeps package migrations separable from one another.
 - When adding new migrations for a package that does not yet have migrations, remember to do the following to add a new K8s migration job
   - add a `migration-job.yaml` in the package's template directory
-  - add a `Dockerfile` to build the image that contains the Supabase CLI and migrations
   - update the package's `zarf.yaml` to include the new image
   - update the `Makefile` to build the new migrations image
   - add the new migrations image to the `release.yaml` pipeline
