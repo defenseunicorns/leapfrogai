@@ -35,3 +35,5 @@ export const assistantDefaults: Omit<LFAssistant, 'id' | 'created_at'> = {
 export const NO_FILE_ERROR_TEXT = 'Please upload an image or select a pictogram';
 export const AVATAR_FILE_SIZE_ERROR_TEXT = `File must be less than ${MAX_AVATAR_SIZE / 1000000} MB`;
 export const FILE_SIZE_ERROR_TEXT = `File must be less than ${MAX_FILE_SIZE / 1000000} MB`;
+
+export const NO_SELECTED_ASSISTANT_ID = 'noSelectedAssistantId';

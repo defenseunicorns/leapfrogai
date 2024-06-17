@@ -21,3 +21,12 @@
   cursor: pointer;
   outline: inherit;
 }
+
+.divider {
+  display: block;
+  width: 100%;
+  height: 1px;
+  margin: 0.5rem 0;
+  border: none;
+  background: themes.$border-subtle-00;
+}

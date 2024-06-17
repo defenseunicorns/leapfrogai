@@ -1,5 +1,11 @@
 import { expect, test } from './fixtures';
-import { loadChatPage } from './helpers';
+import {
+  getSimpleMathQuestion,
+  deleteTestFilesWithApi,
+  sendMessage,
+  loadChatPage,
+  uploadFile
+} from './helpers';
 import type { Page } from '@playwright/test';
 
 const loadFileManagementPage = async (page: Page) => {
@@ -7,28 +13,12 @@ const loadFileManagementPage = async (page: Page) => {
   await expect(page).toHaveTitle('LeapfrogAI - File Management');
 };
 
-const uploadFile = async (page: Page, filename = 'test.pdf') => {
-  const fileChooserPromise = page.waitForEvent('filechooser');
-  await page.getByRole('button', { name: /upload/i }).click();
-  const fileChooser = await fileChooserPromise;
-  await fileChooser.setFiles(`./tests/fixtures/${filename}`);
-};
-
-const deleteFile = async (page: Page) => {
-  const checkboxes = await page.getByRole('checkbox').all();
-  await checkboxes[1].check(); // first checkbox is for selecting all, pick the second one
-  await page.getByText('Delete').click();
-};
-
 test.beforeEach(async ({ page }) => {
-  console.log('After Each running');
   await loadFileManagementPage(page);
 
   // Delete all rows with filenames that start with "test" and end in .pdf
   const testPdfRows = await page.getByRole('row', { name: 'test.pdf' }).all();
-  const testPdfForDeletionPdfRows = await page
-    .getByRole('row', { name: 'testPdfForDeletionTest.pdf' })
-    .all();
+  const testPdfForDeletionPdfRows = await page.getByRole('row', { name: 'test2.pdf' }).all();
 
   const testRows = [...testPdfRows, ...testPdfForDeletionPdfRows];
 
@@ -38,13 +28,23 @@ test.beforeEach(async ({ page }) => {
   if (testRows.length === 1) {
     await page.getByText('Delete').click();
   }
-  if (testRows.length > 1) {
-    await page.getByText('Delete').click();
-  }
 
   await page.reload();
+});
 
-  console.log('After Each completed');
+test('it can navigate to the last visited thread with breadcrumbs', async ({ page }) => {
+  const newMessage = getSimpleMathQuestion();
+  await page.goto('/chat');
+  await sendMessage(page, newMessage);
+  const messages = page.getByTestId('message');
+  await expect(messages).toHaveCount(2);
+
+  const urlParts = new URL(page.url()).pathname.split('/');
+  const threadId = urlParts[urlParts.length - 1];
+
+  await page.goto('/chat/file-management');
+  await page.getByRole('link', { name: 'Chat' }).click();
+  await page.waitForURL(`/chat/${threadId}`);
 });
 
 test('it can navigate to the file management page', async ({ page }) => {
@@ -80,7 +80,7 @@ test('it can upload a file', async ({ page }) => {
 });
 
 test('it can delete multiple files', async ({ page }) => {
-  const filename = 'testPdfForDeletionTest.pdf';
+  const filename = 'test2.pdf';
 
   await uploadFile(page, `${filename}`);
   await expect(page.getByText(`${filename} imported successfully`)).toBeVisible();
@@ -115,7 +115,7 @@ test('shows an error toast when there is an error deleting a file', async ({ pag
   await expect(page.getByText('test.pdf imported successfully')).toBeVisible();
   await expect(page.getByText('test.pdf imported successfully')).not.toBeVisible(); // wait for upload to finish
 
-  await deleteFile(page);
+  await deleteTestFilesWithApi();
   await expect(page.getByText('Error Deleting File')).toBeVisible();
 });
 

@@ -6,11 +6,6 @@ import { getMessageText } from '$helpers/threads';
 import type { LFMessage } from '$lib/types/messages';
 import { AIMessagesInputSchema } from '$schemas/messageSchema';
 
-const openai = createOpenAI({
-  apiKey: env.LEAPFROGAI_API_KEY ?? '',
-  baseURL: env.LEAPFROGAI_API_BASE_URL
-});
-
 export async function POST({ request, locals: { safeGetSession } }) {
   const { session } = await safeGetSession();
 
@@ -29,10 +24,12 @@ export async function POST({ request, locals: { safeGetSession } }) {
     error(400, 'Bad Request');
   }
 
-  // Add the default system prompt to the beginning of the messages
-  if (messages[0].content !== env.DEFAULT_SYSTEM_PROMPT) {
-    messages.unshift({ content: env.DEFAULT_SYSTEM_PROMPT!, role: 'system' });
-  }
+  // We have to use the Vercel AI SDK createOpenAI helper here instead of our internal getOpenAiClient for streaming to
+  // work (Vercel AI uses a slightly different type of provider)
+  const openai = createOpenAI({
+    apiKey: env.OPENAI_API_KEY ? env.OPENAI_API_KEY : session.access_token,
+    baseURL: env.LEAPFROGAI_API_BASE_URL
+  });
 
   const reformatedMessages = messages.map((message: LFMessage) => ({
     ...message,
@@ -40,8 +37,9 @@ export async function POST({ request, locals: { safeGetSession } }) {
   }));
 
   const result = await streamText({
-    model: openai('gpt-4-turbo-preview'),
-    messages: reformatedMessages
+    model: openai(env.DEFAULT_MODEL),
+    messages: reformatedMessages,
+    system: env.DEFAULT_SYSTEM_PROMPT
   });
 
   return new StreamingTextResponse(result.toAIStream());

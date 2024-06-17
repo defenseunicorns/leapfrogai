@@ -4,6 +4,11 @@ image:
   # x-release-please-end
   kiwigridTag: 1.23.3
 
+  securityContext:
+    runAsUser: 65532
+    runAsGroup: 65532
+    fsGroup: 65532
+
 supabase:
   url: "https://supabase-kong.###ZARF_VAR_HOSTED_DOMAIN###"
 

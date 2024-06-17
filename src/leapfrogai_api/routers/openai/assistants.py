@@ -11,7 +11,7 @@ from leapfrogai_api.backend.types import (
     ListAssistantsResponse,
     ModifyAssistantRequest,
 )
-from leapfrogai_api.data.crud_assistant_object import CRUDAssistant, FilterAssistant
+from leapfrogai_api.data.crud_assistant import CRUDAssistant, FilterAssistant
 from leapfrogai_api.routers.supabase_session import Session
 
 router = APIRouter(prefix="/openai/v1/assistants", tags=["openai/assistants"])

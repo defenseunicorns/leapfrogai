@@ -14,6 +14,7 @@ import stores from '$app/stores';
 import { getUnixSeconds, monthNames } from '$helpers/dates';
 import * as navigation from '$app/navigation';
 import { getMessageText } from '$helpers/threads';
+import { NO_SELECTED_ASSISTANT_ID } from '$constants';
 
 const { getStores } = await vi.hoisted(() => import('../../lib/mocks/svelte'));
 
@@ -64,7 +65,9 @@ vi.mock('$app/stores', (): typeof stores => {
 describe('ChatSidebar', () => {
   it('renders threads', async () => {
     threadsStore.set({
-      threads: fakeThreads
+      threads: fakeThreads,
+      selectedAssistantId: NO_SELECTED_ASSISTANT_ID,
+      lastVisitedThreadId: fakeThreads[0].id
     });
 
     render(ChatSidebar);
@@ -86,7 +89,9 @@ describe('ChatSidebar', () => {
     });
 
     threadsStore.set({
-      threads: [fakeTodayThread, fakeYesterdayThread] // uses date override starting in March
+      threads: [fakeTodayThread, fakeYesterdayThread], // uses date override starting in March
+      selectedAssistantId: NO_SELECTED_ASSISTANT_ID,
+      lastVisitedThreadId: ''
     });
 
     render(ChatSidebar);
@@ -108,7 +113,9 @@ describe('ChatSidebar', () => {
     mockDeleteThread();
 
     threadsStore.set({
-      threads: fakeThreads
+      threads: fakeThreads,
+      selectedAssistantId: NO_SELECTED_ASSISTANT_ID,
+      lastVisitedThreadId: fakeThreads[0].id
     });
 
     render(ChatSidebar);
@@ -143,7 +150,9 @@ describe('ChatSidebar', () => {
     const toastSpy = vi.spyOn(toastStore, 'addToast');
 
     threadsStore.set({
-      threads: fakeThreads
+      threads: fakeThreads,
+      selectedAssistantId: NO_SELECTED_ASSISTANT_ID,
+      lastVisitedThreadId: fakeThreads[0].id
     });
 
     render(ChatSidebar);
@@ -174,7 +183,9 @@ describe('ChatSidebar', () => {
     mockEditThreadLabel();
 
     threadsStore.set({
-      threads: fakeThreads
+      threads: fakeThreads,
+      selectedAssistantId: NO_SELECTED_ASSISTANT_ID,
+      lastVisitedThreadId: fakeThreads[0].id
     });
 
     render(ChatSidebar);
@@ -192,7 +203,9 @@ describe('ChatSidebar', () => {
     mockEditThreadLabel();
 
     threadsStore.set({
-      threads: fakeThreads
+      threads: fakeThreads,
+      selectedAssistantId: NO_SELECTED_ASSISTANT_ID,
+      lastVisitedThreadId: fakeThreads[0].id
     });
 
     render(ChatSidebar);
@@ -210,7 +223,9 @@ describe('ChatSidebar', () => {
     mockEditThreadLabel();
 
     threadsStore.set({
-      threads: fakeThreads
+      threads: fakeThreads,
+      selectedAssistantId: NO_SELECTED_ASSISTANT_ID,
+      lastVisitedThreadId: fakeThreads[0].id
     });
 
     render(ChatSidebar);
@@ -239,7 +254,9 @@ describe('ChatSidebar', () => {
 
     const newLabelText = 'new label';
     threadsStore.set({
-      threads: fakeThreads
+      threads: fakeThreads,
+      selectedAssistantId: NO_SELECTED_ASSISTANT_ID,
+      lastVisitedThreadId: fakeThreads[0].id
     });
 
     render(ChatSidebar);
@@ -257,7 +274,9 @@ describe('ChatSidebar', () => {
   it('does not update the thread label when the user presses escape and it removes the text input', async () => {
     const newLabelText = 'new label';
     threadsStore.set({
-      threads: fakeThreads
+      threads: fakeThreads,
+      selectedAssistantId: NO_SELECTED_ASSISTANT_ID,
+      lastVisitedThreadId: fakeThreads[0].id
     });
 
     render(ChatSidebar);
@@ -277,7 +296,9 @@ describe('ChatSidebar', () => {
     mockEditThreadLabel();
 
     threadsStore.set({
-      threads: fakeThreads
+      threads: fakeThreads,
+      selectedAssistantId: NO_SELECTED_ASSISTANT_ID,
+      lastVisitedThreadId: fakeThreads[0].id
     });
 
     render(ChatSidebar);
@@ -299,7 +320,9 @@ describe('ChatSidebar', () => {
     const newLabelText = 'new label';
 
     threadsStore.set({
-      threads: fakeThreads
+      threads: fakeThreads,
+      selectedAssistantId: NO_SELECTED_ASSISTANT_ID,
+      lastVisitedThreadId: fakeThreads[0].id
     });
 
     render(ChatSidebar);
@@ -314,7 +337,9 @@ describe('ChatSidebar', () => {
     const fakeThread = getFakeThread({ numMessages: 6 });
 
     threadsStore.set({
-      threads: [fakeThread]
+      threads: [fakeThread],
+      selectedAssistantId: NO_SELECTED_ASSISTANT_ID,
+      lastVisitedThreadId: fakeThreads[0].id
     });
 
     render(ChatSidebar);
@@ -332,7 +357,9 @@ describe('ChatSidebar', () => {
     const fakeThread3 = getFakeThread({ numMessages: 2 });
 
     threadsStore.set({
-      threads: [fakeThread1, fakeThread2, fakeThread3]
+      threads: [fakeThread1, fakeThread2, fakeThread3],
+      selectedAssistantId: NO_SELECTED_ASSISTANT_ID,
+      lastVisitedThreadId: ''
     });
 
     render(ChatSidebar);
@@ -355,7 +382,9 @@ describe('ChatSidebar', () => {
     const fakeThread3 = getFakeThread({ numMessages: 2 });
 
     threadsStore.set({
-      threads: [fakeThread1, fakeThread2, fakeThread3]
+      threads: [fakeThread1, fakeThread2, fakeThread3],
+      selectedAssistantId: NO_SELECTED_ASSISTANT_ID,
+      lastVisitedThreadId: ''
     });
 
     render(ChatSidebar);
