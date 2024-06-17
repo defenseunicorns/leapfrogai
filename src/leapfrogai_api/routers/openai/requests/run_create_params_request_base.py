@@ -69,8 +69,8 @@ from leapfrogai_sdk.chat.chat_pb2 import (
 class RunCreateParamsRequestBase(BaseModel):
     assistant_id: str = Field(default="", examples=["123ab"])
     instructions: str = Field(default="", examples=["You are a helpful AI assistant."])
-    max_completion_tokens: int | None = Field(default=None, examples=[4096])
-    max_prompt_tokens: int | None = Field(default=None, examples=[32768])
+    max_completion_tokens: int | None = Field(default=128, examples=[4096])
+    max_prompt_tokens: int | None = Field(default=128, examples=[32768])
     metadata: dict | None = Field(default={}, examples=[{}])
     model: str | None = Field(default=None, examples=["llama-cpp-python"])
     response_format: AssistantResponseFormatOptionParam | None = Field(
@@ -88,6 +88,20 @@ class RunCreateParamsRequestBase(BaseModel):
         default=None, examples=[TruncationStrategy(type="auto", last_messages=None)]
     )
     parallel_tool_calls: bool | None = Field(default=False, examples=[False])
+
+    def __init__(self, **data):
+        super().__init__(**data)
+        # TODO: Temporary fix to ensure max_completion_tokens and max_prompt_tokens are set
+        if self.max_completion_tokens is None or self.max_completion_tokens < 1:
+            logging.warning(
+                "max_completion_tokens is not set or is less than 1, setting to 128"
+            )
+            self.max_completion_tokens = 128
+        if self.max_prompt_tokens is None or self.max_prompt_tokens < 1:
+            logging.warning(
+                "max_prompt_tokens is not set or is less than 1, setting to 128"
+            )
+            self.max_prompt_tokens = 128
 
     @staticmethod
     def get_initial_messages_base(run: Run) -> list[str]:
