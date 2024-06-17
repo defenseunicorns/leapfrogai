@@ -2,6 +2,7 @@ import { writable } from 'svelte/store';
 import type { FileObject } from 'openai/resources/files';
 import type { FileRow } from '$lib/types/files';
 import { invalidate } from '$app/navigation';
+import { toastStore } from '$stores/index';
 
 type FilesStore = {
   files: FileRow[];
@@ -82,6 +83,20 @@ const createFilesStore = () => {
             status: file.status === 'error' ? 'error' : 'complete'
           };
           newRows.unshift(item);
+
+          if (file.status === 'error') {
+            toastStore.addToast({
+              kind: 'error',
+              title: 'Import Failed',
+              subtitle: `${file.filename} import failed.`
+            });
+          } else {
+            toastStore.addToast({
+              kind: 'success',
+              title: 'Imported Successfully',
+              subtitle: `${file.filename} imported successfully.`
+            });
+          }
         }
         waitThenInvalidate();
 

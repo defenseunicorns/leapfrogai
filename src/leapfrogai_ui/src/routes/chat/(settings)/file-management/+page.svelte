@@ -39,23 +39,7 @@
     },
     onResult: async ({ result }) => {
       if (result.type === 'success') {
-        const uploadedFiles = result.data?.uploadedFiles;
         filesStore.updateWithUploadResults(result.data?.uploadedFiles);
-        for (const uploadedFile of uploadedFiles) {
-          if (uploadedFile.status === 'error') {
-            toastStore.addToast({
-              kind: 'error',
-              title: 'Import Failed',
-              subtitle: `${uploadedFile.filename} import failed.`
-            });
-          } else {
-            toastStore.addToast({
-              kind: 'success',
-              title: 'Imported Successfully',
-              subtitle: `${uploadedFile.filename} imported successfully.`
-            });
-          }
-        }
       }
       filesStore.setUploading(false);
     }

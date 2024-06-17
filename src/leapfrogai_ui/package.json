@@ -6,7 +6,7 @@
   },
   "private": true,
   "scripts": {
-    "dev": "npm run supabase:start && vite dev",
+    "dev": "vite dev",
     "build": "vite build",
     "preview": "vite preview",
     "test": "npm run test:integration && npm run test:unit",
