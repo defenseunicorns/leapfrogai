@@ -1,7 +1,6 @@
 import { writable } from 'svelte/store';
 import type { FileObject } from 'openai/resources/files';
 import type { FileRow } from '$lib/types/files';
-import { invalidate } from '$app/navigation';
 
 type FilesStore = {
   files: FileRow[];
