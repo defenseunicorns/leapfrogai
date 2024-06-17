@@ -287,44 +287,6 @@ def test_modify():
     ), f"Get endpoint should return modified Assistant {assistant_id}."
 
 
-def test_delete():
-    """Test deleting an assistant. Requires a running Supabase instance."""
-    assistant_id = assistant_response.json()["id"]
-
-    delete_response = assistants_client.delete(f"/openai/v1/assistants/{assistant_id}")
-    assert delete_response.status_code is status.HTTP_200_OK
-    assert AssistantDeleted.model_validate(
-        delete_response.json()
-    ), "Should return a AssistantDeleted object."
-    assert (
-        delete_response.json()["deleted"] is True
-    ), f"Assistant {assistant_id} should be deleted."
-
-
-def test_delete_twice():
-    """Test deleting an assistant twice. Requires a running Supabase instance."""
-    assistant_id = assistant_response.json()["id"]
-    delete_response = assistants_client.delete(f"/openai/v1/assistants/{assistant_id}")
-    assert delete_response.status_code is status.HTTP_200_OK
-    assert AssistantDeleted.model_validate(
-        delete_response.json()
-    ), "Should return a AssistantDeleted object."
-    assert (
-        delete_response.json()["deleted"] is False
-    ), f"Assistant {assistant_id} should not be able to delete twice."
-
-
-def test_get_nonexistent():
-    """Test getting a nonexistent assistant. Requires a running Supabase instance."""
-    assistant_id = assistant_response.json()["id"]
-
-    get_response = assistants_client.get(f"/openai/v1/assistants/{assistant_id}")
-    assert get_response.status_code is status.HTTP_200_OK
-    assert (
-        get_response.json() is None
-    ), f"Get should not return deleted Assistant {assistant_id}."
-
-
 def test_create_with_new_vector_store():
     """Test creating a new assistant and vector store in the same request. Requires a running Supabase instance."""
 
@@ -408,6 +370,153 @@ def test_create_with_existing_vector_store():
     assert (
         new_vs_response.json()["tool_resources"]["file_search"]["vector_stores"] is None
     ), "The created Assistant object should not have a 'vector_stores' field"
+
+
+def test_modify_with_new_vector_store():
+    """Test modifying an existing assistant and create a new vector store in the same request. Requires a running Supabase instance."""
+
+    file_id = file_response.json()["id"]
+
+    assistant_id = assistant_response.json()["id"]
+    get_response = assistants_client.get(f"/openai/v1/assistants/{assistant_id}")
+    assert get_response.status_code is status.HTTP_200_OK
+    assert Assistant.model_validate(
+        get_response.json()
+    ), f"Get endpoint should return Assistant {assistant_id}."
+
+    request = CreateAssistantRequest(
+        model=modified_assistant.model,
+        name=modified_assistant.name,
+        description=modified_assistant.description,
+        instructions=modified_assistant.instructions,
+        tools=[{"type": "file_search"}],
+        tool_resources={"file_search": {"vector_stores": [{"file_ids": [file_id]}]}},
+        metadata=modified_assistant.metadata,
+        temperature=modified_assistant.temperature,
+        top_p=modified_assistant.top_p,
+        response_format=modified_assistant.response_format,
+    )
+
+    modify_vs_response = assistants_client.post(
+        f"/openai/v1/assistants/{assistant_id}",
+        json=request.model_dump(),
+    )
+    assert modify_vs_response.status_code is status.HTTP_200_OK
+    assert Assistant.model_validate(
+        modify_vs_response.json()
+    ), "Should return an Assistant."
+
+    list_vs_response = vector_store_client.get("/openai/v1/vector_stores")
+    vs_ids = [datum["id"] for datum in list_vs_response.json()["data"]]
+
+    assert (
+        modify_vs_response.json()["tool_resources"]["file_search"]["vector_store_ids"][
+            0
+        ]
+        in vs_ids
+    ), "New vector store id should be found within the list of vector stores"
+
+    assert (
+        modify_vs_response.json()["tool_resources"]["file_search"]["vector_stores"]
+        is None
+    ), "The created Assistant object should not have a 'vector_stores' field"
+
+    vs_files_response = vector_store_client.get(
+        f"/openai/v1/vector_stores/{modify_vs_response.json()['tool_resources']['file_search']['vector_store_ids'][0]}/files"
+    )
+
+    assert (
+        file_id == vs_files_response.json()["data"][0]["id"]
+    ), "Original file id should be retrievable from the new vector store"
+
+
+def test_modify_with_existing_vector_store():
+    """Test modifying an existing assistant by attaching it to an existing vector store. Requires a running Supabase instance."""
+
+    vector_store_id = vector_store_response.json()["id"]
+
+    assistant_id = assistant_response.json()["id"]
+    get_response = assistants_client.get(f"/openai/v1/assistants/{assistant_id}")
+    assert get_response.status_code is status.HTTP_200_OK
+    assert Assistant.model_validate(
+        get_response.json()
+    ), f"Get endpoint should return Assistant {assistant_id}."
+
+    request = CreateAssistantRequest(
+        model=modified_assistant.model,
+        name=modified_assistant.name,
+        description=modified_assistant.description,
+        instructions=modified_assistant.instructions,
+        tools=[{"type": "file_search"}],
+        tool_resources={"file_search": {"vector_store_ids": [vector_store_id]}},
+        metadata=modified_assistant.metadata,
+        temperature=modified_assistant.temperature,
+        top_p=modified_assistant.top_p,
+        response_format=modified_assistant.response_format,
+    )
+
+    modify_vs_response = assistants_client.post(
+        f"/openai/v1/assistants/{assistant_id}",
+        json=request.model_dump(),
+    )
+    assert modify_vs_response.status_code is status.HTTP_200_OK
+    assert Assistant.model_validate(
+        modify_vs_response.json()
+    ), "Should return an Assistant."
+
+    assert (
+        modify_vs_response.json()["id"] == assistant_id
+    ), "The assistant's id should be unchanged"
+
+    assert (
+        modify_vs_response.json()["tool_resources"]["file_search"]["vector_store_ids"][
+            0
+        ]
+        == vector_store_id
+    ), "New vector store id should match the supplied vector store id"
+
+    assert (
+        modify_vs_response.json()["tool_resources"]["file_search"]["vector_stores"]
+        is None
+    ), "The created Assistant object should not have a 'vector_stores' field"
+
+
+def test_delete():
+    """Test deleting an assistant. Requires a running Supabase instance."""
+    assistant_id = assistant_response.json()["id"]
+
+    delete_response = assistants_client.delete(f"/openai/v1/assistants/{assistant_id}")
+    assert delete_response.status_code is status.HTTP_200_OK
+    assert AssistantDeleted.model_validate(
+        delete_response.json()
+    ), "Should return a AssistantDeleted object."
+    assert (
+        delete_response.json()["deleted"] is True
+    ), f"Assistant {assistant_id} should be deleted."
+
+
+def test_delete_twice():
+    """Test deleting an assistant twice. Requires a running Supabase instance."""
+    assistant_id = assistant_response.json()["id"]
+    delete_response = assistants_client.delete(f"/openai/v1/assistants/{assistant_id}")
+    assert delete_response.status_code is status.HTTP_200_OK
+    assert AssistantDeleted.model_validate(
+        delete_response.json()
+    ), "Should return a AssistantDeleted object."
+    assert (
+        delete_response.json()["deleted"] is False
+    ), f"Assistant {assistant_id} should not be able to delete twice."
+
+
+def test_get_nonexistent():
+    """Test getting a nonexistent assistant. Requires a running Supabase instance."""
+    assistant_id = assistant_response.json()["id"]
+
+    get_response = assistants_client.get(f"/openai/v1/assistants/{assistant_id}")
+    assert get_response.status_code is status.HTTP_200_OK
+    assert (
+        get_response.json() is None
+    ), f"Get should not return deleted Assistant {assistant_id}."
 
 
 def test_create_with_too_many_vector_store_ids_fails():
