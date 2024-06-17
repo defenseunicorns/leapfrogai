@@ -22,7 +22,8 @@ describe('AssistantFileSelect', () => {
       files: mockFiles,
       selectedAssistantFileIds: ['1', '2'],
       uploading: false,
-      selectedFileManagementFileIds: []
+      selectedFileManagementFileIds: [],
+      pendingUploads: []
     });
   });
 
@@ -43,7 +44,8 @@ describe('AssistantFileSelect', () => {
       files: mockFiles,
       selectedAssistantFileIds: [],
       uploading: false,
-      selectedFileManagementFileIds: []
+      selectedFileManagementFileIds: [],
+      pendingUploads: []
     });
 
     render(AssistantFileSelect, {
