@@ -176,7 +176,7 @@ uds deploy uds-bundle-leapfrogai-*.tar.zst --confirm
 
 ### Accessing the UI
 
-LeapfrogAI is integrated with UDS Core services that provide authentication services via KeyCloak. Below are general instructions for accessing the LeapfrogAI UI after a successful UDS deployment of UDS Core and LeapfrogAI.
+LeapfrogAI is integrated with the UDS Core KeyCloak service, which provides authentication via SSO. Below are general instructions for accessing the LeapfrogAI UI after a successful UDS deployment of UDS Core and LeapfrogAI.
 
 1. Connect to the KeyCloak admin panel
   a. Run the following to get a port-forwarded tunnel:  `uds zarf connect keycloak`
