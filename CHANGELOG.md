@@ -1,5 +1,40 @@
 # Changelog
 
+## [0.8.0](https://github.com/defenseunicorns/leapfrogai/compare/v0.7.2...v0.8.0) (2024-06-18)
+
+
+### Features
+
+* Add ability edit delete assistants within the UI ([#510](https://github.com/defenseunicorns/leapfrogai/issues/510)) ([e8408b7](https://github.com/defenseunicorns/leapfrogai/commit/e8408b75468902861a41c11060ae4d0b138f24ad))
+* **API:** Add authentication ([#533](https://github.com/defenseunicorns/leapfrogai/issues/533)) ([a634a59](https://github.com/defenseunicorns/leapfrogai/commit/a634a59d011fbbd2a355458e3bad711af16cb5df))
+* **api:** assistants endpoint ([#424](https://github.com/defenseunicorns/leapfrogai/issues/424)) ([0c483a1](https://github.com/defenseunicorns/leapfrogai/commit/0c483a1fd1848836bb1d964d0f1c831c26957ea6))
+* **api:** Runs endpoints ([#583](https://github.com/defenseunicorns/leapfrogai/issues/583)) ([fecf0f8](https://github.com/defenseunicorns/leapfrogai/commit/fecf0f8e6d163cf8e28237639cf1bf250d552398))
+* **api:** Threads and Message Endpoints ([#554](https://github.com/defenseunicorns/leapfrogai/issues/554)) ([4b69d3c](https://github.com/defenseunicorns/leapfrogai/commit/4b69d3c7713a6924d846afb60a72486135c4be30))
+* **api:** vector store endpoints ([#468](https://github.com/defenseunicorns/leapfrogai/issues/468)) ([2cc0737](https://github.com/defenseunicorns/leapfrogai/commit/2cc07376fca20d491a15a5c1fddc317f3bacdfad))
+* **ui:** 531 file management ([#558](https://github.com/defenseunicorns/leapfrogai/issues/558)) ([884761b](https://github.com/defenseunicorns/leapfrogai/commit/884761b06dde49bb701cc25678fefd03248cd102))
+* **ui:** Utilize OpenAI for backend ([#553](https://github.com/defenseunicorns/leapfrogai/issues/553)) ([5371956](https://github.com/defenseunicorns/leapfrogai/commit/5371956867d6a98196e22ec24574f885c25bce80))
+
+
+### Bug Fixes
+
+* **api:** Migrations ([#606](https://github.com/defenseunicorns/leapfrogai/issues/606)) ([e91e525](https://github.com/defenseunicorns/leapfrogai/commit/e91e5254482e447c1ec876c762c217aae5178e25))
+* **build:** supabase bundle deployment order ([#635](https://github.com/defenseunicorns/leapfrogai/issues/635)) ([c1a8294](https://github.com/defenseunicorns/leapfrogai/commit/c1a8294a2896795354c93fd442f24f1db6ed584a))
+* handle database permissions errors and workflow exceptions ([#609](https://github.com/defenseunicorns/leapfrogai/issues/609)) ([e910f06](https://github.com/defenseunicorns/leapfrogai/commit/e910f06bcf8a568717a3e7deac74b2ec1ebd04d0))
+* tool resources validation ([#654](https://github.com/defenseunicorns/leapfrogai/issues/654)) ([d2cbb09](https://github.com/defenseunicorns/leapfrogai/commit/d2cbb091129398ecab197ffae84adca6af22f638))
+* update README table of contents and formatting ([#653](https://github.com/defenseunicorns/leapfrogai/issues/653)) ([cd7e2a6](https://github.com/defenseunicorns/leapfrogai/commit/cd7e2a6d2c0857bf14edf68fff86108ca7d85fd3))
+* update the keycloak url that supabase redirects to ([#535](https://github.com/defenseunicorns/leapfrogai/issues/535)) ([541c7bd](https://github.com/defenseunicorns/leapfrogai/commit/541c7bdf82aa8dc94dbb1113ecfeb0f075f5b260))
+
+
+### Miscellaneous
+
+* Add RAG Evals Toolset ADR ([#529](https://github.com/defenseunicorns/leapfrogai/issues/529)) ([840f49a](https://github.com/defenseunicorns/leapfrogai/commit/840f49a1ecc7695fb96afd35c5a6c2097a77c581))
+* Add Supabase Migrations Documentation ([#592](https://github.com/defenseunicorns/leapfrogai/issues/592)) ([c1105b9](https://github.com/defenseunicorns/leapfrogai/commit/c1105b936c13f8ca715d7d1c08b3cc3c909e2902))
+* Backwards compatible migration support ([#618](https://github.com/defenseunicorns/leapfrogai/issues/618)) ([3b91e7f](https://github.com/defenseunicorns/leapfrogai/commit/3b91e7f378e2513b73765d0b874e345656224ddd))
+* better database migrations - managed by supabase ([#570](https://github.com/defenseunicorns/leapfrogai/issues/570)) ([ce6512f](https://github.com/defenseunicorns/leapfrogai/commit/ce6512f3731c508ff5a771ba203c852ddbd59985))
+* group 'minor' and 'patch' level npm dependency updates ([#547](https://github.com/defenseunicorns/leapfrogai/issues/547)) ([064cb84](https://github.com/defenseunicorns/leapfrogai/commit/064cb84de7e6711487ffd4b9513b09135cbbf1d4))
+* Handle migrations with least permissions necessary ([#630](https://github.com/defenseunicorns/leapfrogai/issues/630)) ([37badae](https://github.com/defenseunicorns/leapfrogai/commit/37badaeeee7d41e8dace24b94c0e52ac96594e59))
+* remove unused requirements.txt file ([#546](https://github.com/defenseunicorns/leapfrogai/issues/546)) ([e71e74f](https://github.com/defenseunicorns/leapfrogai/commit/e71e74fc23b68895ceaddc743db3d4386aa59d7a))
+
 ## [0.7.2](https://github.com/defenseunicorns/leapfrogai/compare/v0.7.1...v0.7.2) (2024-05-15)
 
 
