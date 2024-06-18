@@ -42,7 +42,6 @@
 
   $: activeThread = $threadsStore.threads.find((t) => t.id === $page.params.thread_id);
   $: $page.params.thread_id, threadsStore.setLastVisitedThreadId($page.params.thread_id);
-  $: $page.params.thread_id, ($chatInput = '');
 
   $: assistantsList = [...(data.assistants || [])].map((assistant) => ({
     id: assistant.id,
