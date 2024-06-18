@@ -80,8 +80,6 @@ const createFilesStore = () => {
           return file;
         });
 
-        waitThenInvalidate();
-
         return {
           ...old,
           files: modifiedFiles,

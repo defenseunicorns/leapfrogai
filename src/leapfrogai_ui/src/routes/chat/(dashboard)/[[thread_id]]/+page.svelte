@@ -26,10 +26,10 @@
     ERROR_GETTING_ASSISTANT_MSG_TEXT,
     ERROR_SAVING_MSG_TEXT
   } from '$constants/errorMessages';
-  import type { PageServerLoad } from './$types';
+
   import { convertMessageToAiMessage } from '$helpers/threads.js';
 
-  export let data: PageServerLoad;
+  export let data;
 
   /** LOCAL VARS **/
   let messageThreadDiv: HTMLDivElement;
@@ -40,7 +40,7 @@
 
   /** REACTIVE STATE **/
 
-  $: activeThread = $threadsStore.threads.find((t) => t.id === $page.params.thread_id);
+  // $: activeThread = $threadsStore.threads.find((t) => t.id === $page.params.thread_id);
   $: $page.params.thread_id, threadsStore.setLastVisitedThreadId($page.params.thread_id);
 
   $: assistantsList = [...(data.assistants || [])].map((assistant) => ({
@@ -127,10 +127,10 @@
       try {
         if (process.env.NODE_ENV !== 'test') await delay(1000);
 
-        if (!assistantMode && activeThread?.id) {
+        if (!assistantMode && data.thread?.id) {
           // Save with API to db
           const newMessage = await saveMessage({
-            thread_id: activeThread.id,
+            thread_id: data.thread.id,
             content: getMessageText(message),
             role: 'assistant'
           });
@@ -168,7 +168,7 @@
     append: assistantAppend
   } = useAssistant({
     api: '/api/chat/assistants',
-    threadId: activeThread?.id,
+    threadId: data.thread?.id,
     onError: (e) => {
       threadsStore.setSendingBlocked(false);
       // ignore this error b/c it is expected on cancel
@@ -185,7 +185,7 @@
   const sendAssistantMessage = async (e: SubmitEvent | KeyboardEvent) => {
     hasSentAssistantMessage = true;
     threadsStore.setSendingBlocked(true);
-    if (activeThread?.id) {
+    if (data.thread?.id) {
       // assistant mode
       $assistantInput = $chatInput;
       $chatInput = ''; // clear chat input
@@ -195,7 +195,7 @@
         data: {
           message: $chatInput,
           assistantId: $threadsStore.selectedAssistantId,
-          threadId: activeThread.id
+          threadId: data.thread.id
         }
       });
       $assistantInput = '';
@@ -205,11 +205,11 @@
 
   const sendChatMessage = async (e: SubmitEvent | KeyboardEvent) => {
     threadsStore.setSendingBlocked(true);
-    if (activeThread?.id) {
+    if (data.thread?.id) {
       // Save with API
       try {
         const newMessage = await saveMessage({
-          thread_id: activeThread.id,
+          thread_id: data.thread.id,
           content: $chatInput,
           role: 'user'
         });
@@ -229,10 +229,10 @@
 
   const onSubmit = async (e: SubmitEvent | KeyboardEvent) => {
     e.preventDefault();
-    if (($isLoading || $status === 'in_progress') && activeThread?.id) {
+    if (($isLoading || $status === 'in_progress') && data.thread?.id) {
       // message still sending
       await stopThenSave({
-        activeThreadId: activeThread.id,
+        activeThreadId: data.thread.id,
         messages: $chatMessages,
         status: $status,
         isLoading: $isLoading || false,
@@ -242,7 +242,7 @@
       threadsStore.setSendingBlocked(false);
       return;
     } else {
-      if (!activeThread?.id) {
+      if (!data.thread?.id) {
         // create new thread
         await threadsStore.newThread($chatInput);
         await tick(); // allow store to update
@@ -255,7 +255,7 @@
   onMount(async () => {
     await tick();
     resetMessages({
-      activeThread,
+      data.thread,
       setChatMessages,
       setAssistantMessages,
       files: data.files
@@ -268,10 +268,12 @@
   });
 
   beforeNavigate(async () => {
-    if (($isLoading || $status === 'in_progress') && activeThread?.id) {
+    console.log(`status: ${$status}`);
+    if (($isLoading || $status === 'in_progress') && data.thread?.id) {
+      const isAssistantChat = $threadsStore.selectedAssistantId !== NO_SELECTED_ASSISTANT_ID;
       await stopThenSave({
-        activeThreadId: activeThread.id,
-        messages: $chatMessages,
+       activeThreadId: data.thread.id,
+        messages: isAssistantChat ? $assistantMessages : $chatMessages,
         status: $status,
         isLoading: $isLoading || false,
         assistantStop,
@@ -282,7 +284,7 @@
 
   afterNavigate(() => {
     resetMessages({
-      activeThread,
+      activeThread: data.thread,
       setChatMessages,
       setAssistantMessages,
       files: data.files
