@@ -1,7 +1,6 @@
 .DS_Store
 node_modules
 /.svelte-kit
-/build
 /package
 **/.env
 !.env.public
@@ -21,19 +20,13 @@ README.md
 .prettierrc
 .eslintrc.cjs
 .editorconfig
-.vscode
 .idea
-.venv
-build
 package
-
 
 *.tar.zst
 zarf-sbom/
 
-
 playwright/.auth
-
 
 supabase/
 

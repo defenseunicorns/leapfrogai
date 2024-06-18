@@ -152,7 +152,7 @@ You can build components individually using the following `Make` targets:
 
 ```shell
 LOCAL_VERSION=dev make build-api
-LOCAL_VERSION=dev make build-vllm                 # if you have GPUs
+LOCAL_VERSION=dev make build-vllm                 # if you have GPUs (macOS not supported)
 LOCAL_VERSION=dev make build-llama-cpp-python     # if you have CPU only
 LOCAL_VERSION=dev make build-text-embeddings
 LOCAL_VERSION=dev make build-whisper
@@ -161,10 +161,12 @@ LOCAL_VERSION=dev make build-whisper
 **NOTE: If you do not prepend your commands with `LOCAL_VERSION=dev`, uds will not find the generated zarf packages, as
 they will be tagged with your current git hash instead of `dev` which uds expects**
 
-#### MacOS
+#### macOS
 
-To run the same commands in MacOS, you will need to prepend your command with a couple of env vars like so:
+To run the same commands in macOS, you will need to prepend your command with a couple of env vars like so:
+
 All Macs: `REG_PORT=5001`
+
 Apple Silicon (M1/M2/M3/M4 series) Macs: `ARCH=arm64`
 
 To demonstrate what this would look like for an Apple Silicon Mac:
@@ -176,9 +178,13 @@ To demonstrate what this would look like for an older Intel Mac:
 ``` shell
 REG_PORT=5001 LOCAL_VERSION=dev make build-cpu    # api, llama-cpp-python, text-embeddings, whisper
 ```
-Some containers do not support arm64 and therefore have their architecture specifiers hardcoded to amd64 (as of the of this writing, this is only Supabase: [issue](https://github.com/bitnami/charts/issues/22085))
 
-Once the packages are created, you can deploy either a CPU or GPU-enabled deployment via one of the UDS bundles:
+**OR**
+
+You can build components individually using the following `Make` targets, just like in the Linux section except ensuring
+to prepend the env vars detailed above.
+
+### Once the packages are created, you can deploy either a CPU or GPU-enabled deployment via one of the UDS bundles (macOS only supports cpu):
 
 #### CPU
 
