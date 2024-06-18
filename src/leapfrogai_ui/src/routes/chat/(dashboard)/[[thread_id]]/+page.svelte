@@ -40,7 +40,7 @@
 
   /** REACTIVE STATE **/
 
-  // $: activeThread = $threadsStore.threads.find((t) => t.id === $page.params.thread_id);
+
   $: $page.params.thread_id, threadsStore.setLastVisitedThreadId($page.params.thread_id);
 
   $: assistantsList = [...(data.assistants || [])].map((assistant) => ({
@@ -62,12 +62,13 @@
   )
     modifyAndSaveAssistantMessage();
 
-  $: sortedMessages = sortMessages([...$chatMessages, ...$assistantMessages]);
 
   // assistant stream has completed
   $: if (hasSentAssistantMessage && $status === 'awaiting_message') {
     fetchAndParseCompletedAssistantResponse();
   }
+
+  $: sortedMessages = sortMessages([...$chatMessages, ...$assistantMessages]);
 
   /** END REACTIVE STATE **/
 
@@ -253,15 +254,15 @@
     }
   };
 
-  onMount(async () => {
-    await tick();
-    resetMessages({
-      activeThread: data.thread,
-      setChatMessages,
-      setAssistantMessages,
-      files: data.files
-    });
-  });
+  // onMount(async () => {
+  //   // await tick();
+  //   resetMessages({
+  //     activeThread: data.thread,
+  //     setChatMessages,
+  //     setAssistantMessages,
+  //     files: data.files
+  //   });
+  // });
 
   afterUpdate(() => {
     // Scroll to bottom
@@ -283,10 +284,6 @@
   });
 
   afterNavigate(() => {
-    if (data.thread) {
-      // update store with latest thread fetched by page data
-      threadsStore.updateThread(data.thread);
-    }
     resetMessages({
       activeThread: data.thread,
       setChatMessages,

@@ -1,4 +1,6 @@
+import { browser } from '$app/environment';
 import type { LFThread } from '$lib/types/threads';
+import { threadsStore } from '$stores';
 
 export const load = async ({ params, fetch, depends }) => {
   depends('lf:thread');
@@ -14,6 +16,13 @@ export const load = async ({ params, fetch, depends }) => {
   let thread: LFThread | undefined = undefined;
   if (params.thread_id) {
     thread = await promiseResponses[2].json();
+  }
+
+  if (browser) {
+    if (thread) {
+      // update store with latest thread fetched by page data
+      threadsStore.updateThread(thread);
+    }
   }
 
   return { thread, assistants, files };
