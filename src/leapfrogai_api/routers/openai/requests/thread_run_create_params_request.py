@@ -77,7 +77,7 @@ class ThreadRunCreateParamsRequestBaseRequest(RunCreateParamsRequestBase):
 
         if assistant and assistant.tool_resources:
             assistant_tool_resources = BetaThreadToolResources.model_validate(
-                assistant.tool_resources
+                assistant.tool_resources.model_dump()
             )
 
             self.tool_resources = self.tool_resources or assistant_tool_resources

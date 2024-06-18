@@ -296,7 +296,7 @@ class RunCreateParamsRequestBase(BaseModel):
                 and isinstance(assistant.tool_resources, BetaAssistantToolResources)
             ):
                 tool_resources = BetaThreadToolResources.model_validate(
-                    assistant.tool_resources
+                    assistant.tool_resources.model_dump()
                 )
             else:
                 tool_resources = None
@@ -362,7 +362,7 @@ class RunCreateParamsRequestBase(BaseModel):
                 and isinstance(assistant.tool_resources, BetaAssistantToolResources)
             ):
                 tool_resources = BetaThreadToolResources.model_validate(
-                    assistant.tool_resources
+                    assistant.tool_resources.model_dump()
                 )
             else:
                 tool_resources = None
