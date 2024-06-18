@@ -15,7 +15,6 @@ export async function POST({ request, locals: { safeGetSession } }) {
   try {
     requestData = await request.json();
     const isValid = await messageInputSchema.isValid(requestData);
-
     if (!isValid) error(400, 'Bad Request');
   } catch {
     error(400, 'Bad Request');
