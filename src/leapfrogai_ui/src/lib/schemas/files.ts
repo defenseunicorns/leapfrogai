@@ -19,7 +19,7 @@ export const filesSchema = object({
         if (value == null) {
           return true;
         }
-        if (value.type !== 'application/pdf' && value.type !== 'application/txt') {
+        if (value.type !== 'application/pdf' && value.type !== 'text/plain') {
           return new ValidationError('Invalid file type, accepted types are: pdf and txt');
         }
         return true;
