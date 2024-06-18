@@ -34,6 +34,7 @@ export const actions = {
               file: file,
               purpose: 'assistants'
             });
+
             uploadedFiles.push(uploadedFile);
           } catch (e) {
             console.error(`Error uploading file ${file.name}: ${e}`);

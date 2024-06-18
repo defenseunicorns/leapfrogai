@@ -6,7 +6,7 @@ import { fakeThreads, getFakeAssistant, getFakeMessage } from '$testUtils/fakeDa
 import MessageWithToast from '$components/MessageWithToast.test.svelte';
 import { convertMessageToAiMessage, getMessageText } from '$helpers/threads';
 import { type Message as AIMessage } from 'ai/svelte';
-import * as chatHelpers from '$helpers/chatHelpers';
+import { chatHelpers } from '$helpers';
 import { threadsStore } from '$stores';
 import { NO_SELECTED_ASSISTANT_ID } from '$constants';
 import stores from '$app/stores';
@@ -23,11 +23,11 @@ const getDefaultMessageProps = () => {
     messages = [...newMessages];
   };
   return {
+    allStreamedMessages: [],
     message: convertMessageToAiMessage(getFakeMessage()),
     messages,
     setMessages,
     isLastMessage: false,
-    isLoading: false,
     append: fakeAppend,
     reload: fakeReload
   };
@@ -176,7 +176,8 @@ describe('Message component', () => {
       threadsStore.set({
         threads: fakeThreads,
         selectedAssistantId: NO_SELECTED_ASSISTANT_ID,
-        sendingBlocked: true
+        sendingBlocked: true,
+        lastVisitedThreadId: ''
       });
       render(MessageWithToast, {
         ...getDefaultMessageProps()
@@ -192,7 +193,8 @@ describe('Message component', () => {
       threadsStore.set({
         threads: fakeThreads,
         selectedAssistantId: NO_SELECTED_ASSISTANT_ID,
-        sendingBlocked: false
+        sendingBlocked: false,
+        lastVisitedThreadId: ''
       });
       render(MessageWithToast, {
         ...getDefaultMessageProps(),
@@ -233,7 +235,8 @@ describe('Message component', () => {
       threadsStore.set({
         threads: fakeThreads,
         selectedAssistantId: NO_SELECTED_ASSISTANT_ID,
-        sendingBlocked: true
+        sendingBlocked: true,
+        lastVisitedThreadId: ''
       });
       render(MessageWithToast, {
         ...getDefaultMessageProps(),
@@ -247,7 +250,8 @@ describe('Message component', () => {
       threadsStore.set({
         threads: fakeThreads,
         selectedAssistantId: NO_SELECTED_ASSISTANT_ID,
-        sendingBlocked: true
+        sendingBlocked: true,
+        lastVisitedThreadId: ''
       });
       render(MessageWithToast, {
         ...getDefaultMessageProps(),
@@ -260,7 +264,8 @@ describe('Message component', () => {
       threadsStore.set({
         threads: fakeThreads,
         selectedAssistantId: NO_SELECTED_ASSISTANT_ID,
-        sendingBlocked: true
+        sendingBlocked: true,
+        lastVisitedThreadId: ''
       });
       render(MessageWithToast, {
         ...getDefaultMessageProps(),

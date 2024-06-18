@@ -36,4 +36,4 @@ env:
 	$(call get_jwt_token,"${SUPABASE_URL}/auth/v1/token?grant_type=password")
 
 test-integration:
-	cd ../../ && python -m pytest tests/integration/api
+	cd ../../ && python -m pytest tests/integration/api/ -vv -s
