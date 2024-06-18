@@ -49,24 +49,25 @@ class RunCreateParamsRequestBaseRequest(RunCreateParamsRequestBase):
 
     async def create_additional_messages(self, session: Session, thread_id: str):
         """If additional messages exist, create them in the DB as a part of this thread"""
-        if self.additional_messages:
-            for additional_message in self.additional_messages:
-                # Convert the messages content into the correct format
-                if content := additional_message.get("content"):
-                    message_content = from_content_param_to_content(
-                        thread_message_content=content
-                    )
+        if not self.additional_messages:
+            self.additional_messages = []
 
-                create_message_request = CreateMessageRequest(
-                    role=additional_message["role"],
-                    content=[message_content],
-                    attachments=additional_message.get("attachments"),
-                    metadata=additional_message.get("metadata"),
+        for additional_message in self.additional_messages:
+            # Convert the messages content into the correct format
+            if content := additional_message.get("content"):
+                message_content = from_content_param_to_content(
+                    thread_message_content=content
                 )
+            create_message_request = CreateMessageRequest(
+                role=additional_message["role"],
+                content=[message_content],
+                attachments=additional_message.get("attachments"),
+                metadata=additional_message.get("metadata").__dict__,
+            )
 
-                await create_message_request.create_message(
-                    session=session, thread_id=thread_id
-                )
+            await create_message_request.create_message(
+                session=session, thread_id=thread_id
+            )
 
     async def update_with_assistant_data(self, session: Session):
         await super().update_with_assistant_data(session=session)

@@ -22,7 +22,7 @@ class CreateMessageRequest(BaseModel):
         examples=[[TextContentBlock(text=Text(value="", annotations=[]), type="text")]],
     )
     attachments: list[Attachment] | None = Field(default=None, examples=[None])
-    metadata: dict | None = Field(default={}, examples=[{}])
+    metadata: dict[str, str] | None = Field(default={}, examples=[{}])
 
     async def get_message_content(self) -> list[MessageContent]:
         """Get the message content."""
