@@ -21,7 +21,7 @@ It is recommended to run LeapfrogAI with UDS, but if you want to run the UI loca
 you can either:
 
 1. Connect to a UDS deployed version of the Leapfrog API and Supabase  
-   or  
+   or
 2. Connect to OpenAI and UDS deployed Supabase or locally running Supabase.
 
 _Note - most data CRUD operations utilize Leapfrog API or OpenAI, but some functionality still depends on a direct connection with Supabase._
@@ -29,7 +29,6 @@ _Note - most data CRUD operations utilize Leapfrog API or OpenAI, but some funct
 #### Running everything with UDS
 
 This is the easiest way to use the UI. Follow the documentation for running the entire [LeapfrogAI stack](https://github.com/defenseunicorns/leapfrogai)
-
 
 #### Running UI Locally with LeapfrogAI
 
@@ -74,33 +73,38 @@ run the UI outside of UDS on localhost (e.g. for development work), there are so
    Under "Valid redirect URIs" add:  
    http://localhost:5173/auth/callback  
    http://localhost:4173/auth/callback (for Playwright tests)
-2. If you want to connect Keycloak to a locally running Supabase instance (non UDS deployed), see the "Running Supabase locally" section below. 
+2. If you want to connect Keycloak to a locally running Supabase instance (non UDS deployed), see the "Running Supabase locally" section below.
 
 ###### Without Keycloak authentication
 
 1. To turn off Keycloak, set this .env variable: `PUBLIC_DISABLE_KEYCLOAK=false`
 
-
 ##### Running UI Locally with OpenAI
+
 Set the following .env variables:
+
 ```
 DEFAULT_MODEL=gpt-3.5-turbo
 LEAPFROGAI_API_BASE_URL=https://api.openai.com/v1
 #If specified, app will use OpenAI instead of Leapfrog
 OPENAI_API_KEY=<your_openai_api_key>
 ```
+
 You still need Supabase, so you can connect to UDS deployed Supabase, or run Supabase locally.
 To connect to UDS deployed Supabase, set these .env variables:
+
 ```
 PUBLIC_SUPABASE_URL=https://supabase-kong.uds.dev
 PUBLIC_SUPABASE_ANON_KEY=<anon_key>
 ```
 
 Running Supabase locally:
+
 1. Install [Supabase](https://supabase.com/docs/guides/cli/getting-started?platform=macos)
-2. Run: ```supabase start```
-The configuration files at src/leapfrogai_ui/supabase will ensure your Supabase is configured to work with Keycloak if 
-you set these .env variables:
+2. Run: `supabase start`
+   The configuration files at src/leapfrogai_ui/supabase will ensure your Supabase is configured to work with Keycloak if
+   you set these .env variables:
+
 ```
 SUPABASE_AUTH_KEYCLOAK_CLIENT_ID=uds-supabase
 SUPABASE_AUTH_KEYCLOAK_SECRET=<secret> #this is the client secret for the client in Keycloak
@@ -115,11 +119,9 @@ After starting supabase for the first time, you need to initialize the database 
 
 After this initial reset, if you start Supabase again it will already have the data and you don't need to run this command unless you want to restore it to the default.
 
-
 Stop Supabase:
 
 `npm run supabase:stop`
-
 
 ### Building
 
@@ -131,14 +133,13 @@ npm run build
 
 You can preview the production build with `npm run preview`.
 
-
 ## Developer Notes
 
 ### Tooling
 
 ### Supabase
 
-We use Supabase for authentication and a database. Application specific data 
+We use Supabase for authentication and a database. Application specific data
 (ex. user profile images, application settings like feature flags, etc..) should be stored directly in Supabase and
 would not normally utilize the Leapfrog API for CRUD operations.
 
@@ -155,7 +156,7 @@ restart playwright for them to take effect.
 Notes:
 
 1. Playwright tests are End-To-End tests and use the "real" full stack app. If you run these tests, they will use the configuration indicated by your
-.env file. See the "Configuration Options" section above to configure which database Playwright is using.
+   .env file. See the "Configuration Options" section above to configure which database Playwright is using.
 2. If you run the tests in headless mode (`npm run test:integration`) you do not need the app running, it will build the app and run on port 4173.
 
 # Supabase and Keycloak Integration
@@ -214,8 +215,8 @@ In order to fix this, we have to edit the /etc/hosts file in the running Supabas
 because we are using the Supabase CLI to start it up, migrate the db, and seed it).
 
 Here is an example of how you can modify the /etc/hosts of the supabase container:
-```"supabase start && docker exec -u 0 supabase_auth_supabase /bin/sh -c \"echo '100.115.154.78 keycloak.admin.uds.dev' >> /etc/hosts\"```
- **You must ensure the IP address used in this command is the correct IP for where you have Keycloak hosted.**
+`"supabase start && docker exec -u 0 supabase_auth_supabase /bin/sh -c \"echo '100.115.154.78 keycloak.admin.uds.dev' >> /etc/hosts\"`
+**You must ensure the IP address used in this command is the correct IP for where you have Keycloak hosted.**
 If you need to use a different Keycloak server for local development, you will need to modify this command.
 
 If your Keycloak server is not at a hosted domain, you will also need to modify the /etc/hosts on your machine:
@@ -276,7 +277,6 @@ To get the MFA secret, create your new Keycloak user with the normal Keycloak lo
 When scanning the QR code, use an app that lets you see the url of the QR code. The secret is contained in that URL.
 
 Login flow was adapted from [this reference](https://supabase.com/docs/guides/getting-started/tutorials/with-sveltekit?database-method=sql)
-
 
 ### Chat Data Flow
 
