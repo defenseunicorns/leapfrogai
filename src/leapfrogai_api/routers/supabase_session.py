@@ -26,6 +26,8 @@ async def init_supabase_client(
         user_client (AsyncClient): a client instantiated with a session associated with the JWT token
     """
 
+    # TODO: auth_creds is expecting to be decoded as jwt token, but our API key is not a jwt token
+
     client: AsyncClient = await create_client(
         supabase_key=os.getenv("SUPABASE_ANON_KEY"),
         supabase_url=os.getenv("SUPABASE_URL"),
@@ -95,4 +97,12 @@ async def validate_user_authorization(session: Session, authorization: str):
         authorized = False
 
     if not authorized:
+        # TODO: Once we sort out the API key, we can use the following code to check if the user is authorized
+        # await session.rpc('set_config', {'key': 'role', 'value': 'validator_role'})
+        # response = await session.table('api_keys').select('*').eq('api_key', api_key).execute()
+        # await session.rpc('reset_config', {'key': 'role'})
+
+        # if response.data:
+        #     authorized = True
+
         raise HTTPException(status_code=status.HTTP_403_FORBIDDEN)
