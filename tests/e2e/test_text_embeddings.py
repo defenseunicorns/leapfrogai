@@ -1,7 +1,7 @@
 from pathlib import Path
 
 import pytest
-from openai import InternalServerError, OpenAI
+from openai import InternalServerError
 
 model_name = "text-embeddings"
 
@@ -38,7 +38,7 @@ def test_embeddings(client):
     assert len(embedding_response.data[0].embedding) < 1000
 
 
-def test_transcriptions():
+def test_transcriptions(client):
     with pytest.raises(InternalServerError) as excinfo:
         client.audio.transcriptions.create(
             model=model_name, file=Path("tests/data/0min12sec.wav")
