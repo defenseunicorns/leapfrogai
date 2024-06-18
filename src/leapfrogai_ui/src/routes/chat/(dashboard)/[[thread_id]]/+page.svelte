@@ -230,10 +230,11 @@
   const onSubmit = async (e: SubmitEvent | KeyboardEvent) => {
     e.preventDefault();
     if (($isLoading || $status === 'in_progress') && data.thread?.id) {
+      const isAssistantChat = $status === 'in_progress';
       // message still sending
       await stopThenSave({
         activeThreadId: data.thread.id,
-        messages: $chatMessages,
+        messages: isAssistantChat ? $assistantMessages : $chatMessages,
         status: $status,
         isLoading: $isLoading || false,
         assistantStop,
@@ -255,7 +256,7 @@
   onMount(async () => {
     await tick();
     resetMessages({
-      data.thread,
+      activeThread: data.thread,
       setChatMessages,
       setAssistantMessages,
       files: data.files
@@ -268,11 +269,10 @@
   });
 
   beforeNavigate(async () => {
-    console.log(`status: ${$status}`);
     if (($isLoading || $status === 'in_progress') && data.thread?.id) {
-      const isAssistantChat = $threadsStore.selectedAssistantId !== NO_SELECTED_ASSISTANT_ID;
+      const isAssistantChat = $status === 'in_progress';
       await stopThenSave({
-       activeThreadId: data.thread.id,
+        activeThreadId: data.thread.id,
         messages: isAssistantChat ? $assistantMessages : $chatMessages,
         status: $status,
         isLoading: $isLoading || false,
@@ -283,6 +283,10 @@
   });
 
   afterNavigate(() => {
+    if (data.thread) {
+      // update store with latest thread fetched by page data
+      threadsStore.updateThread(data.thread);
+    }
     resetMessages({
       activeThread: data.thread,
       setChatMessages,

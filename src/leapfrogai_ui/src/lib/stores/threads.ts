@@ -101,6 +101,17 @@ const createThreadsStore = () => {
     changeThread: async (newId: string | null) => {
       await goto(`/chat/${newId}`);
     },
+    updateThread: (newThread: LFThread) => {
+      update((old) => {
+        const threadIndex = old.threads.findIndex((thread) => thread.id === newThread.id);
+        const threadsCopy = [...old.threads];
+        threadsCopy[threadIndex] = newThread;
+        return {
+          ...old,
+          threads: threadsCopy
+        };
+      });
+    },
     newThread: async (label: string) => {
       try {
         const newThread = await createThread({
