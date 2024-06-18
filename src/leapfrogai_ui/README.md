@@ -20,15 +20,15 @@ below for more information.
 It is recommended to run LeapfrogAI with UDS, but if you want to run the UI locally (on localhost, e.g. for local development),
 you can either:
 
-1. Connect to a UDS deployed version of the Leapfrog API and Supabase
-   or
+1. Connect to a UDS deployed version of the Leapfrog API and Supabase  
+   or  
 2. Connect to OpenAI and UDS deployed Supabase or locally running Supabase.
 
 _Note - most data CRUD operations utilize Leapfrog API or OpenAI, but some functionality still depends on a direct connection with Supabase._
 
 #### Running everything with UDS
 
-This is the easiest way to use the UI. Follow the documentation for installing the entire [LeapfrogAI stack](https://github.com/defenseunicorns/leapfrogai)
+This is the easiest way to use the UI. Follow the documentation for running the entire [LeapfrogAI stack](https://github.com/defenseunicorns/leapfrogai)
 
 
 #### Running UI Locally with LeapfrogAI
