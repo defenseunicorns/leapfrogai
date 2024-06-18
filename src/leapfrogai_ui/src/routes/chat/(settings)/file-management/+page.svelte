@@ -9,65 +9,31 @@
     ToolbarContent,
     ToolbarSearch
   } from 'carbon-components-svelte';
-  import type { FileObject } from 'openai/resources/files';
   import { CheckmarkFilled, ErrorFilled, TrashCan } from 'carbon-icons-svelte';
+  import { invalidate } from '$app/navigation';
   import { yup } from 'sveltekit-superforms/adapters';
   import { superForm } from 'sveltekit-superforms';
   import { formatDate } from '$helpers/dates';
   import { filesSchema } from '$schemas/files';
-  import { toastStore } from '$stores';
-  import type { FileRow } from '$lib/types/files';
-  import { invalidate } from '$app/navigation';
+  import { filesStore, toastStore } from '$stores';
+  import { afterNavigate, invalidate } from '$app/navigation';
   import type { Assistant } from 'openai/resources/beta/assistants';
   import ConfirmAssistantDeleteModal from '$components/ConfirmAssistantDeleteModal.svelte';
+
 
   export let data;
 
   let uploadedFiles: File[] = [];
-  let rows: Array<FileObject | FileRow>;
   let filteredRowIds: string[] = [];
-  let selectedRowIds: string[] = [];
   let deleting = false;
-  let active = selectedRowIds.length > 0;
+  let active = $filesStore.selectedFileManagementFileIds.length > 0;
   let nonSelectableRowIds: string[] = [];
   let confirmDeleteModalOpen = false;
   let affectedAssistants: Assistant[];
   let affectedAssistantsLoading = false;
 
   $: affectedAssistants = [];
-  $: rows = data.files;
-  $: if (selectedRowIds.length === 0) active = false;
-  $: fileNames = selectedRowIds.map((id) => {
-    const fileName = data.files.find((file) => file.id === id)?.filename;
-    return fileName || '';
-  });
-
-  const updateAllFileStatus = (newFiles: Array<FileObject | FileRow>) => {
-    // Remove all uploading files
-    rows = rows.filter((row) => row.status !== 'uploading');
-
-    const newRows = [...rows];
-    // insert newly uploaded files with updated status
-    for (const file of newFiles) {
-      const item: FileRow = {
-        id: file.id,
-        filename: file.filename,
-        created_at: file.created_at,
-        status: file.status === 'error' ? 'error' : 'complete'
-      };
-      newRows.unshift(item);
-    }
-    rows = [...newRows];
-
-    // Wait 1.5 seconds, then remove error files and update status to hide for successful files
-    new Promise((resolve) => setTimeout(resolve, 1500)).then(() => {
-      const rowsWithoutErrors = rows.filter((row) => row.status !== 'error');
-      rows = rowsWithoutErrors.map((row) => {
-        const item: FileRow = { ...row, status: 'hide' };
-        return item;
-      });
-    });
-  };
+  $: if ($filesStore.selectedFileManagementFileIds.length === 0) active = false;
 
   const { enhance, submit, submitting } = superForm(data.form, {
     validators: yup(filesSchema),
@@ -81,25 +47,9 @@
     },
     onResult: async ({ result }) => {
       if (result.type === 'success') {
-        const uploadedFiles = result.data?.uploadedFiles;
-        updateAllFileStatus(uploadedFiles);
-        for (const uploadedFile of uploadedFiles) {
-          if (uploadedFile.status === 'error') {
-            toastStore.addToast({
-              kind: 'error',
-              title: 'Import Failed',
-              subtitle: `${uploadedFile.filename} import failed.`
-            });
-          } else {
-            toastStore.addToast({
-              kind: 'success',
-              title: 'Imported Successfully',
-              subtitle: `${uploadedFile.filename} imported successfully.`
-            });
-          }
-        }
+        filesStore.updateWithUploadResults(result.data?.uploadedFiles);
       }
-      await invalidate('lf:files');
+      filesStore.setUploading(false);
     }
   });
 
@@ -122,19 +72,17 @@
   };
 
   const handleConfirmedDelete = async () => {
-    const isMultipleFiles = selectedRowIds.length > 1;
+    const isMultipleFiles = $filesStore.selectedFileManagementFileIds.length > 1;
     deleting = true;
-
     const res = await fetch('/api/files/delete', {
       method: 'DELETE',
-      body: JSON.stringify({ ids: selectedRowIds }),
+      body: JSON.stringify({ ids: $filesStore.selectedFileManagementFileIds }),
       headers: {
         'Content-Type': 'application/json'
       }
     });
     confirmDeleteModalOpen = false;
     await invalidate('lf:files');
-
     if (res.ok) {
       toastStore.addToast({
         kind: 'success',
@@ -148,22 +96,16 @@
         subtitle: ''
       });
     }
-    selectedRowIds = [];
+    filesStore.setSelectedFileManagementFileIds([]);
     deleting = false;
   };
 
   const handleUpload = async () => {
-    // Add pending files as table rows
-    for (const file of uploadedFiles) {
-      const newFile: FileRow = {
-        id: `${file.name}-${new Date()}`, // temp id
-        filename: file.name,
-        status: 'uploading',
-        created_at: null
-      };
-      rows = [newFile, ...rows]; // re-assign array to trigger update in table
-      nonSelectableRowIds = rows.map((row) => (row.status === 'uploading' ? row.id : ''));
-    }
+    filesStore.setUploading(true);
+    filesStore.addUploadingFiles(uploadedFiles);
+    nonSelectableRowIds = $filesStore.files.map((row) =>
+      row.status === 'uploading' ? row.id : ''
+    );
     submit(); //upload all files
   };
 
@@ -171,6 +113,16 @@
     //files selected by user
     handleUpload();
   }
+
+  afterNavigate(() => {
+    // Remove files with "uploading" status from store and invalidate the route so files are re-fetched
+    // when the page is loaded again
+    // If we want to persist the uploading status, we will have to use event streaming/supabase realtime
+    filesStore.setPendingUploads(
+      $filesStore.pendingUploads.filter((file) => file.status === 'error')
+    );
+    invalidate('lf:files');
+  });
 </script>
 
 <div class="file-management-container">
@@ -178,7 +130,7 @@
   <form method="POST" enctype="multipart/form-data" use:enhance>
     <DataTable
       batchSelection={true}
-      bind:selectedRowIds
+      bind:selectedRowIds={$filesStore.selectedFileManagementFileIds}
       bind:nonSelectableRowIds
       headers={[
         { key: 'filename', value: 'Name', width: '75%' },
@@ -187,7 +139,7 @@
           value: 'Date Added'
         }
       ]}
-      {rows}
+      rows={[...$filesStore.files, ...$filesStore.pendingUploads]}
       sortable
     >
       <Toolbar>
@@ -196,7 +148,7 @@
           on:cancel={(e) => {
             e.preventDefault();
             active = false;
-            selectedRowIds = [];
+            filesStore.setSelectedFileManagementFileIds([]);
           }}
         >
           {#if deleting}
@@ -204,8 +156,10 @@
               <Loading withOverlay={false} small data-testid="delete-pending" />
             </div>
           {:else}
-            <Button icon={TrashCan} on:click={handleDelete} disabled={selectedRowIds.length === 0}
-              >Delete</Button
+            <Button
+              icon={TrashCan}
+              on:click={handleDelete}
+              disabled={$filesStore.selectedFileManagementFileIds.length === 0}>Delete</Button
             >
           {/if}
         </ToolbarBatchActions>
@@ -229,7 +183,7 @@
             disableLabelChanges
             disabled={$submitting}
             labelText="Upload"
-            accept={['.pdf', 'txt']}
+            accept={['.pdf', '.txt', '.text']}
           />
         </ToolbarContent>
       </Toolbar>

@@ -7,6 +7,7 @@ import time
 import pytest
 from fastapi import Response, status
 from fastapi.testclient import TestClient
+from openai.types import FileDeleted
 from openai.types.beta import VectorStore, VectorStoreDeleted
 from openai.types.beta.vector_store import ExpiresAfter
 from langchain_core.embeddings.fake import FakeEmbeddings
@@ -119,6 +120,9 @@ def test_create():
     assert VectorStore.model_validate(
         vector_store_response.json()
     ), "Create should create a VectorStore."
+    assert (
+        "user_id" not in vector_store_response.json()
+    ), "Create should not return a user_id."
 
 
 def test_create_expired():
@@ -270,3 +274,13 @@ def test_get_nonexistent():
     assert (
         get_response.json() is None
     ), f"Get should not return deleted VectorStore {vector_store_id}."
+
+
+def test_cleanup_file(create_file):
+    """Test cleaning up the file created for the vector store. Requires a running Supabase instance."""
+    file_id = create_file["id"]
+    cleanup_response = files_client.delete(f"/openai/v1/files/{file_id}")
+    assert cleanup_response.status_code == status.HTTP_200_OK
+    assert FileDeleted.model_validate(
+        cleanup_response.json()
+    ), "Should return a FileDeleted object."

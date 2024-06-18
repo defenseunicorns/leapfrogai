@@ -1,7 +1,5 @@
 """OpenAI Compliant Assistants API Router."""
 
-import logging
-
 from fastapi import HTTPException, APIRouter, status
 from fastapi.security import HTTPBearer
 from openai.types.beta import Assistant, AssistantDeleted
@@ -13,6 +11,10 @@ from leapfrogai_api.backend.types import (
 )
 from leapfrogai_api.data.crud_assistant import CRUDAssistant, FilterAssistant
 from leapfrogai_api.routers.supabase_session import Session
+from leapfrogai_api.utils.validate_tools import (
+    validate_assistant_tool,
+    validate_tool_resources,
+)
 
 router = APIRouter(prefix="/openai/v1/assistants", tags=["openai/assistants"])
 security = HTTPBearer()
@@ -27,24 +29,18 @@ async def create_assistant(
 ) -> Assistant:
     """Create an assistant."""
 
-    if request.tools and (
-        unsupported_tool := next(
-            (tool for tool in request.tools if tool.type not in supported_tools), None
-        )
-    ):
-        raise HTTPException(
-            status_code=status.HTTP_400_BAD_REQUEST,
-            detail=f"Unsupported tool type: {unsupported_tool.type}",
-        )
+    if request.tools:
+        for tool in request.tools:
+            if not validate_assistant_tool(tool):
+                raise HTTPException(
+                    status_code=status.HTTP_400_BAD_REQUEST,
+                    detail=f"Unsupported tool type: {tool.type}",
+                )
 
-    if request.tool_resources and any(
-        isinstance(tool_resource, ToolResourcesCodeInterpreter)
-        and tool_resource.get("file_ids")
-        for tool_resource in request.tool_resources
-    ):
+    if request.tool_resources and not validate_tool_resources(request.tool_resources):
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
-            detail="Code interpreter tool is not supported",
+            detail=f"Unsupported tool resource: {request.tool_resources}",
         )
 
     try:
@@ -56,7 +52,7 @@ async def create_assistant(
             instructions=request.instructions,
             model=request.model,
             object="assistant",
-            tools=request.tools,
+            tools=request.tools or [],
             tool_resources=request.tool_resources,
             temperature=request.temperature,
             top_p=request.top_p,
@@ -69,17 +65,14 @@ async def create_assistant(
             detail="Unable to parse assistant request",
         ) from exc
 
-    try:
-        crud_assistant = CRUDAssistant(session)
-        return await crud_assistant.create(object_=assistant)
-    except HTTPException as exc:
-        raise exc
-    except Exception as exc:
-        logging.debug(exc)
+    crud_assistant = CRUDAssistant(session)
+
+    if not (response := await crud_assistant.create(object_=assistant)):
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail="Unable to create assistant",
-        ) from exc
+        )
+    return response
 
 
 @router.get("")
@@ -173,6 +166,15 @@ async def modify_assistant(
         )
 
     try:
+        new_tool_resources: ToolResources | None
+
+        try:
+            new_tool_resources = ToolResources.model_validate(
+                getattr(request, "tool_resources", None)
+            )
+        except Exception:
+            new_tool_resources = old_assistant.tool_resources
+
         new_assistant = Assistant(
             id=assistant_id,
             created_at=old_assistant.created_at,
@@ -182,13 +184,8 @@ async def modify_assistant(
             model=getattr(request, "model", old_assistant.model),
             object="assistant",
             tools=getattr(request, "tools", old_assistant.tools),
-            tool_resources=ToolResources.model_validate(
-                getattr(request, "tool_resources", None)
-            )
-            or old_assistant.tool_resources,
-            temperature=float(
-                getattr(request, "temperature", old_assistant.temperature)
-            ),
+            tool_resources=new_tool_resources,
+            temperature=getattr(request, "temperature", old_assistant.temperature),
             top_p=getattr(request, "top_p", old_assistant.top_p),
             metadata=getattr(request, "metadata", old_assistant.metadata),
             response_format=getattr(
@@ -201,16 +198,14 @@ async def modify_assistant(
             detail="Unable to parse assistant request",
         ) from exc
 
-    try:
-        return await crud_assistant.update(
-            object_=new_assistant,
-            id_=assistant_id,
-        )
-    except FileNotFoundError as exc:
+    if not (
+        response := await crud_assistant.update(object_=new_assistant, id_=assistant_id)
+    ):
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail="Failed to update assistant",
-        ) from exc
+        )
+    return response
 
 
 @router.delete("/{assistant_id}")

@@ -3,8 +3,13 @@
 from typing import Annotated
 from fastapi import HTTPException, APIRouter, Depends
 from fastapi.security import HTTPBearer
-from leapfrogai_api.backend.grpc_client import completion, stream_completion
-from leapfrogai_api.backend.types import CompletionRequest
+from leapfrogai_api.backend.grpc_client import (
+    completion,
+    stream_completion,
+)
+from leapfrogai_api.backend.types import (
+    CompletionRequest,
+)
 from leapfrogai_api.routers.supabase_session import Session
 from leapfrogai_api.utils import get_model_config
 from leapfrogai_api.utils.config import Config

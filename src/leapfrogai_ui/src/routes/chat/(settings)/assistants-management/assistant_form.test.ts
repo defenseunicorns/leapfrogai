@@ -35,10 +35,7 @@ describe('Assistant Form', () => {
   it('has a modal that navigates back to the management page', async () => {
     mockGetAssistants([]);
     mockGetFiles([]);
-    const data = await newLoad({
-      fetch: global.fetch,
-      depends: vi.fn()
-    });
+    const data = await newLoad();
     render(AssistantForm, { data });
 
     const cancelBtn = screen.getAllByRole('button', { name: /cancel/i })[1];
@@ -50,7 +47,7 @@ describe('Assistant Form', () => {
   it('limits the name input length', async () => {
     mockGetAssistants([]);
     mockGetFiles([]);
-    const data = await newLoad({ fetch: global.fetch, depends: vi.fn() });
+    const data = await newLoad();
     render(AssistantForm, { data });
     const nameField = screen.getByRole('textbox', { name: /name/i });
     await userEvent.type(nameField, 'a'.repeat(ASSISTANTS_NAME_MAX_LENGTH + 1));
@@ -60,7 +57,7 @@ describe('Assistant Form', () => {
   it('limits the description input length', async () => {
     mockGetAssistants([]);
     mockGetFiles([]);
-    const data = await newLoad({ fetch: global.fetch, depends: vi.fn() });
+    const data = await newLoad();
     render(AssistantForm, { data });
     const descriptionField = screen.getByRole('textbox', { name: /description/i });
     await userEvent.type(descriptionField, 'a'.repeat(ASSISTANTS_DESCRIPTION_MAX_LENGTH + 1));
