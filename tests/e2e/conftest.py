@@ -1,14 +1,24 @@
 import json
 import os
+from dotenv import load_dotenv
+
+from openai import OpenAI
 
 import pytest
 import requests
 
 # This is the anon_key for supabase, it provides access to the endpoints that would otherwise be inaccessible
-ANON_KEY = os.environ["ANON_KEY"]
+ANON_KEY = os.environ.get("ANON_KEY", "mock-data")
 
 DEFAULT_TEST_EMAIL = "fakeuser1@test.com"
 DEFAULT_TEST_PASSWORD = "password"
+
+
+@pytest.fixture(scope="module")
+def client():
+    return OpenAI(
+        base_url="https://leapfrogai-api.uds.dev/openai/v1", api_key=create_test_user()
+    )
 
 
 def create_test_user(

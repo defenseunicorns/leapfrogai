@@ -1,6 +1,6 @@
 import requests
 
-from .utils import ANON_KEY
+from .conftest import ANON_KEY
 
 health_urls = {
     "auth_health_url": "http://supabase-kong.uds.dev/auth/v1/health",
