@@ -51,7 +51,7 @@ jobs:
         env:
           LOCAL_VERSION: dev
         run: |
-          make build-repeater
+          make docker-repeater
       - name: Run Repeater
         run: docker run -p 50051:50051 -d --name=repeater ghcr.io/defenseunicorns/leapfrogai/repeater:dev
 
