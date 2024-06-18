@@ -48,12 +48,10 @@ jobs:
           python-version-file: 'pyproject.toml'
 
       - name: Build Repeater
+        env:
+          LOCAL_VERSION: dev
         run: |
-          make local-registry
-          make setup-repeater-deps
-          docker build -t ghcr.io/defenseunicorns/leapfrogai/repeater:dev packages/repeater
-          docker tag ghcr.io/defenseunicorns/leapfrogai/repeater:dev localhost:5000/defenseunicorns/leapfrogai/repeater:dev
-
+          make build-repeater
       - name: Run Repeater
         run: docker run -p 50051:50051 -d --name=repeater ghcr.io/defenseunicorns/leapfrogai/repeater:dev
 
