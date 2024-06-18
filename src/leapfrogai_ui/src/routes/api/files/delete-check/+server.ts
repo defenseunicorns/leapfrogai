@@ -2,7 +2,7 @@ import { error, json } from '@sveltejs/kit';
 
 import type { Assistant } from 'openai/resources/beta/assistants';
 import { filesCheckSchema } from '$schemas/files';
-import { openai } from '$lib/server/constants';
+import { getOpenAiClient } from '$lib/server/constants';
 
 export async function POST({ request, locals: { safeGetSession } }) {
   const { session } = await safeGetSession();
@@ -22,6 +22,8 @@ export async function POST({ request, locals: { safeGetSession } }) {
   }
 
   try {
+    const openai = getOpenAiClient(session.access_token);
+
     const affectedAssistants: Assistant[] = [];
 
     const myAssistantsPage = await openai.beta.assistants.list();

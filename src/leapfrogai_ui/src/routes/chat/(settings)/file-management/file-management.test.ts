@@ -29,6 +29,7 @@ describe('file management', () => {
 
     form = await superValidate(yup(filesSchema));
     filesStore.setFiles(convertFileObjectToFileRows(files));
+    filesStore.setSelectedFileManagementFileIds([]);
 
     render(FileManagementPage, {
       data: {
@@ -81,17 +82,17 @@ describe('file management', () => {
   });
 
   it('confirms the files and affected assistants, then deletes them', async () => {
-      const assistant1 = getFakeAssistant();
-      const assistant2 = getFakeAssistant();
+    const assistant1 = getFakeAssistant();
+    const assistant2 = getFakeAssistant();
     const toastSpy = vi.spyOn(toastStore, 'addToast');
     mockDeleteFile();
     mockGetFiles(files);
-      mockDeleteCheck([assistant1, assistant2]);
+    mockDeleteCheck([assistant1, assistant2]);
 
-    const checkboxes = screen.getAllByRole('checkbox');
-
-    await fireEvent.click(checkboxes[1]);
-    await fireEvent.click(checkboxes[2]);
+    const checkbox = screen.getByRole('checkbox', {
+      name: /select all rows/i
+    });
+    await fireEvent.click(checkbox);
 
     expect(screen.getByText(files[0].filename)).toBeInTheDocument();
     expect(screen.getByText(files[1].filename)).toBeInTheDocument();
@@ -152,20 +153,20 @@ describe('file management', () => {
     expect(screen.queryByTestId('delete-pending')).toBeInTheDocument();
   });
   it("doesn't display warning about affected assistants when the file doesn't affect any assistants", async () => {
-    const files = getFakeFiles();
     mockDeleteCheck([]); // no assistants affected
     mockGetFiles(files);
 
-    const checkboxes = screen.getAllByRole('checkbox');
-
-    await fireEvent.click(checkboxes[1]);
+    const checkbox = screen.getByRole('checkbox', {
+      name: /select all rows/i
+    });
+    await fireEvent.click(checkbox);
 
     const deleteBtns = screen.getAllByRole('button', { name: /delete/i });
 
     await userEvent.click(deleteBtns[0]);
 
     // Running deletion check
-    screen.getByText('Checking for any assistants affected by deletion...');
+    await screen.findByText('Checking for any assistants affected by deletion...');
     expect(deleteBtns[1]).toBeDisabled();
     await waitFor(() => expect(deleteBtns[1]).not.toBeDisabled());
 

@@ -10,7 +10,6 @@
     ToolbarSearch
   } from 'carbon-components-svelte';
   import { CheckmarkFilled, ErrorFilled, TrashCan } from 'carbon-icons-svelte';
-  import { invalidate } from '$app/navigation';
   import { yup } from 'sveltekit-superforms/adapters';
   import { superForm } from 'sveltekit-superforms';
   import { formatDate } from '$helpers/dates';
@@ -19,7 +18,6 @@
   import { afterNavigate, invalidate } from '$app/navigation';
   import type { Assistant } from 'openai/resources/beta/assistants';
   import ConfirmAssistantDeleteModal from '$components/ConfirmAssistantDeleteModal.svelte';
-
 
   export let data;
 
@@ -58,7 +56,7 @@
     confirmDeleteModalOpen = true;
     const getAffectedAssistants = await fetch(`/api/files/delete-check/`, {
       method: 'POST',
-      body: JSON.stringify({ fileIds: selectedRowIds })
+      body: JSON.stringify({ fileIds: $filesStore.selectedFileManagementFileIds })
     });
     if (getAffectedAssistants.ok) {
       const assistants = await getAffectedAssistants.json();
@@ -220,7 +218,6 @@
     bind:confirmDeleteModalOpen
     {handleConfirmedDelete}
     {affectedAssistants}
-    {fileNames}
   />
 </div>
 
