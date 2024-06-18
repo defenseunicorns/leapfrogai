@@ -9,12 +9,13 @@ from uuid import UUID
 
 from fastapi import HTTPException, status
 from openai.types.beta import (
-    AssistantResponseFormatOptionParam,
-    AssistantToolChoiceOptionParam,
-    AssistantToolParam,
-    FileSearchToolParam,
+    AssistantResponseFormatOption,
+    FileSearchTool,
     Assistant,
     Thread,
+    AssistantToolChoiceOption,
+    AssistantTool,
+    AssistantToolChoice,
 )
 from openai.types.beta.assistant_stream_event import (
     ThreadMessageCreated,
@@ -52,7 +53,6 @@ from leapfrogai_api.backend.types import (
     ChatCompletionRequest,
     ChatChoice,
 )
-from leapfrogai_api.backend.validators import AssistantToolChoiceParamValidator
 from leapfrogai_api.data.crud_assistant import CRUDAssistant, FilterAssistant
 from leapfrogai_api.data.crud_message import CRUDMessage
 from leapfrogai_api.routers.openai.chat import chat_complete, chat_complete_stream_raw
@@ -73,15 +73,15 @@ class RunCreateParamsRequestBase(BaseModel):
     max_prompt_tokens: int | None = Field(default=128, examples=[32768])
     metadata: dict | None = Field(default={}, examples=[{}])
     model: str | None = Field(default=None, examples=["llama-cpp-python"])
-    response_format: AssistantResponseFormatOptionParam | None = Field(
+    response_format: AssistantResponseFormatOption | None = Field(
         default=None, examples=["auto"]
     )
     temperature: float | None = Field(default=None, examples=[1.0])
-    tool_choice: AssistantToolChoiceOptionParam | None = Field(
+    tool_choice: AssistantToolChoiceOption | None = Field(
         default="auto", examples=["auto"]
     )
-    tools: list[AssistantToolParam] = Field(
-        default=[], examples=[[FileSearchToolParam(type="file_search")]]
+    tools: list[AssistantTool] = Field(
+        default=[], examples=[[FileSearchTool(type="file_search")]]
     )
     top_p: float | None = Field(default=None, examples=[1.0])
     truncation_strategy: TruncationStrategy | None = Field(
@@ -125,16 +125,17 @@ class RunCreateParamsRequestBase(BaseModel):
             )
         ]
 
-    async def update_with_assistant_data(self, session: Session) -> Assistant:
+    async def update_with_assistant_data(self, session: Session) -> Assistant | None:
         crud_assistant = CRUDAssistant(session)
-        assistant: Assistant | None = await crud_assistant.get(
+        assistant = await crud_assistant.get(
             filters=FilterAssistant(id=self.assistant_id)
         )
 
-        self.model = self.model or assistant.model
-        self.temperature = self.temperature or assistant.temperature
-        self.top_p = self.top_p or assistant.top_p
-        self.instructions = self.instructions or assistant.instructions
+        if assistant:
+            self.model = self.model or assistant.model
+            self.temperature = self.temperature or assistant.temperature
+            self.top_p = self.top_p or assistant.top_p
+            self.instructions = self.instructions or assistant.instructions or ""
 
         return assistant
 
@@ -155,10 +156,11 @@ class RunCreateParamsRequestBase(BaseModel):
                 return self.tool_choice == "auto" or self.tool_choice == "required"
             else:
                 try:
-                    if AssistantToolChoiceParamValidator.validate_python(
-                        self.tool_choice
+                    if (
+                        isinstance(self.tool_choice, AssistantToolChoice)
+                        and self.tool_choice.type == "file_search"
                     ):
-                        return self.tool_choice.get("type") == "file_search"
+                        return True
                 except ValidationError:
                     traceback.print_exc()
                     logging.error(
