@@ -47,9 +47,7 @@ build-supabase: local-registry
 	## Build the Zarf package
 	uds zarf package create packages/supabase -a ${ARCH} -o packages/supabase --registry-override=ghcr.io=localhost:${REG_PORT} --set IMAGE_VERSION=${LOCAL_VERSION} --confirm
 
-setup-api-deps: sdk-wheel ## Download the wheels for the leapfrogai_api dependencies
-
-build-api: local-registry setup-api-deps ## Build the leapfrogai_api container and Zarf package
+build-api: local-registry sdk-wheel ## Build the leapfrogai_api container and Zarf package
 	## Build the API image (and tag it for the local registry)
 	docker build --platform=linux/${ARCH} --build-arg ARCH=${ARCH} --build-arg SDK_DEST=${SDK_DEST} -t ghcr.io/defenseunicorns/leapfrogai/leapfrogai-api:${LOCAL_VERSION} -f packages/api/Dockerfile .
 	docker tag ghcr.io/defenseunicorns/leapfrogai/leapfrogai-api:${LOCAL_VERSION} localhost:${REG_PORT}/defenseunicorns/leapfrogai/leapfrogai-api:${LOCAL_VERSION}
@@ -82,10 +80,7 @@ build-ui: local-registry ## Build the leapfrogai_ui container and Zarf package
 	## Build the Zarf package
 	uds zarf package create packages/ui -o packages/ui --registry-override=ghcr.io=localhost:${REG_PORT} --insecure --set IMAGE_VERSION=${LOCAL_VERSION} --confirm
 
-
-setup-llama-cpp-python-deps: sdk-wheel ## Download the wheels for the optional 'llama-cpp-python' dependencies
-
-build-llama-cpp-python: local-registry setup-llama-cpp-python-deps ## Build the llama-cpp-python (cpu) container and Zarf package
+build-llama-cpp-python: local-registry sdk-wheel ## Build the llama-cpp-python (cpu) container and Zarf package
 	## Build the image (and tag it for the local registry)
 	docker build --platform=linux/${ARCH} --build-arg ARCH=${ARCH} -t ghcr.io/defenseunicorns/leapfrogai/llama-cpp-python:${LOCAL_VERSION} -f packages/llama-cpp-python/Dockerfile .
 	docker tag ghcr.io/defenseunicorns/leapfrogai/llama-cpp-python:${LOCAL_VERSION} localhost:${REG_PORT}/defenseunicorns/leapfrogai/llama-cpp-python:${LOCAL_VERSION}
@@ -96,11 +91,7 @@ build-llama-cpp-python: local-registry setup-llama-cpp-python-deps ## Build the 
 	## Build the Zarf package
 	uds zarf package create packages/llama-cpp-python -o packages/llama-cpp-python --registry-override=ghcr.io=localhost:${REG_PORT} --insecure --set IMAGE_VERSION=${LOCAL_VERSION} --confirm
 
-
-setup-vllm-deps: sdk-wheel ## Download the wheels for the optional 'vllm' dependencies
-
-
-build-vllm: local-registry setup-vllm-deps ## Build the vllm container and Zarf package
+build-vllm: local-registry sdk-wheel ## Build the vllm container and Zarf package
 	## Build the image (and tag it for the local registry)
 	docker build --platform=linux/${ARCH} --build-arg ARCH=${ARCH} -t ghcr.io/defenseunicorns/leapfrogai/vllm:${LOCAL_VERSION} -f packages/vllm/Dockerfile .
 	docker tag ghcr.io/defenseunicorns/leapfrogai/vllm:${LOCAL_VERSION} localhost:${REG_PORT}/defenseunicorns/leapfrogai/vllm:${LOCAL_VERSION}
@@ -111,11 +102,7 @@ build-vllm: local-registry setup-vllm-deps ## Build the vllm container and Zarf 
 	## Build the Zarf package
 	uds zarf package create packages/vllm -o packages/vllm --registry-override=ghcr.io=localhost:${REG_PORT} --insecure --set IMAGE_VERSION=${LOCAL_VERSION} --confirm
 
-
-setup-text-embeddings-deps: sdk-wheel ## Download the wheels for the optional 'text-embeddings' dependencies
-
-
-build-text-embeddings: local-registry setup-text-embeddings-deps ## Build the text-embeddings container and Zarf package
+build-text-embeddings: local-registry sdk-wheel ## Build the text-embeddings container and Zarf package
 	## Build the image (and tag it for the local registry)
 	docker build --platform=linux/${ARCH} --build-arg ARCH=${ARCH} -t ghcr.io/defenseunicorns/leapfrogai/text-embeddings:${LOCAL_VERSION} -f packages/text-embeddings/Dockerfile .
 	docker tag ghcr.io/defenseunicorns/leapfrogai/text-embeddings:${LOCAL_VERSION} localhost:${REG_PORT}/defenseunicorns/leapfrogai/text-embeddings:${LOCAL_VERSION}
@@ -127,9 +114,7 @@ build-text-embeddings: local-registry setup-text-embeddings-deps ## Build the te
 	uds zarf package create packages/text-embeddings -o packages/text-embeddings --registry-override=ghcr.io=localhost:${REG_PORT} --insecure --set IMAGE_VERSION=${LOCAL_VERSION} --confirm
 
 
-setup-whisper-deps: sdk-wheel ## Download the wheels for the optional 'whisper' dependencies
-
-build-whisper: local-registry setup-whisper-deps ## Build the whisper container and zarf package
+build-whisper: local-registry sdk-wheel ## Build the whisper container and zarf package
 	## Build the image (and tag it for the local registry)
 	docker build --platform=linux/${ARCH} --build-arg ARCH=${ARCH} -t ghcr.io/defenseunicorns/leapfrogai/whisper:${LOCAL_VERSION} -f packages/whisper/Dockerfile .
 	docker tag ghcr.io/defenseunicorns/leapfrogai/whisper:${LOCAL_VERSION} localhost:${REG_PORT}/defenseunicorns/leapfrogai/whisper:${LOCAL_VERSION}
@@ -140,13 +125,9 @@ build-whisper: local-registry setup-whisper-deps ## Build the whisper container 
 	## Build the Zarf package
 	uds zarf package create packages/whisper -o packages/whisper --registry-override=ghcr.io=localhost:${REG_PORT} --insecure --set IMAGE_VERSION=${LOCAL_VERSION} --confirm
 
-setup-repeater-deps: sdk-wheel ## Download the wheels for the optional 'repeater' dependencies
-	-rm packages/repeater/build/*.whl
-	python -m pip wheel packages/repeater -w packages/repeater/build --find-links=${SDK_DEST}
-
-build-repeater: local-registry setup-repeater-deps ## Build the repeater container and zarf package
+build-repeater: local-registry sdk-wheel ## Build the repeater container and zarf package
 	## Build the image (and tag it for the local registry)
-	docker build --platform=linux/${ARCH} --build-arg ARCH=${ARCH} -t ghcr.io/defenseunicorns/leapfrogai/repeater:${LOCAL_VERSION} packages/repeater
+	docker build --platform=linux/${ARCH} --build-arg ARCH=${ARCH} -t ghcr.io/defenseunicorns/leapfrogai/repeater:${LOCAL_VERSION} -f packages/repeater/Dockerfile .
 	docker tag ghcr.io/defenseunicorns/leapfrogai/repeater:${LOCAL_VERSION} localhost:${REG_PORT}/defenseunicorns/leapfrogai/repeater:${LOCAL_VERSION}
 
 	## Push the image to the local registry (Zarf is super slow if the image is only in the local daemon)

@@ -7,7 +7,6 @@ USER root
 WORKDIR /leapfrogai
 
 # copy the api dependencies over
-# NOTE: We are copying to this filename because installing 'optional extras' from a wheel requires the absolute path to the wheel file (instead of a wildcard whl)
 COPY --from=sdk /leapfrogai/${SDK_DEST} ${SDK_DEST}
 COPY src/leapfrogai_api src/leapfrogai_api
 
