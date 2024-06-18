@@ -1,4 +1,3 @@
-.DS_Store
 node_modules
 /.svelte-kit
 /package
@@ -21,16 +20,15 @@ README.md
 .eslintrc.cjs
 .editorconfig
 .idea
-package
 
 *.tar.zst
-zarf-sbom/
 
 playwright/.auth
 
 supabase/
 
 # Copied from .gitignore
+# temporary deployment and development artifacts
 data/*
 *.tar.zst
 __pycache__
@@ -56,6 +54,8 @@ build/
 .branches
 .temp
 src/leapfrogai_api/config.yaml
+.idea/
+/.python-version
 
 # local model and tokenizer files
 *.bin
