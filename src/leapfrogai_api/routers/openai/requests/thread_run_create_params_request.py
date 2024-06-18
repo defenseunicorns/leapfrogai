@@ -3,7 +3,7 @@ from __future__ import annotations
 import logging
 from typing import Iterable, AsyncGenerator, Any
 
-from openai.types.beta import Assistant
+from openai.types.beta import Thread
 from openai.types.beta.assistant_stream_event import ThreadCreated
 from openai.types.beta.thread import (
     ToolResources as BetaThreadToolResources,
@@ -73,8 +73,14 @@ class ThreadRunCreateParamsRequestBaseRequest(RunCreateParamsRequestBase):
     stream: bool | None = Field(default=None, examples=[False])
 
     async def update_with_assistant_data(self, session: Session):
-        assistant: Assistant = await super().update_with_assistant_data(session)
-        self.tool_resources = self.tool_resources or assistant.tool_resources
+        assistant = await super().update_with_assistant_data(session)
+
+        if assistant and assistant.tool_resources:
+            assistant_tool_resources = BetaThreadToolResources.model_validate(
+                assistant.tool_resources
+            )
+
+            self.tool_resources = self.tool_resources or assistant_tool_resources
 
     async def create_thread_request(self) -> CreateThreadRequest:
         thread_request: CreateThreadRequest = CreateThreadRequest(
@@ -110,7 +116,7 @@ class ThreadRunCreateParamsRequestBaseRequest(RunCreateParamsRequestBase):
                     continue
         return thread_request
 
-    async def create_run_and_thread(self, session):
+    async def create_run_and_thread(self, session: Session):
         await self.update_with_assistant_data(session)
         new_thread_request: CreateThreadRequest = await self.create_thread_request()
         new_thread = await new_thread_request.create_thread(session)
@@ -127,7 +133,7 @@ class ThreadRunCreateParamsRequestBaseRequest(RunCreateParamsRequestBase):
             status="completed",  # This is always completed as the new message is already created by this point
             **create_params.__dict__,
         )
-        new_run: Run | None = await crud_run.create(object_=run)
+        new_run = await crud_run.create(object_=run)
 
         for message in new_thread_request.messages:
             create_message_request: CreateMessageRequest = CreateMessageRequest(
@@ -137,12 +143,16 @@ class ThreadRunCreateParamsRequestBaseRequest(RunCreateParamsRequestBase):
                 metadata=message.metadata,
             )
             await create_message_request.create_message(
-                session, new_thread.id, new_run.id
+                session=session,
+                thread_id=new_thread.id,
+                run_id=new_run.id if new_run else None,
             )
 
         return new_run, new_thread
 
-    async def generate_response(self, new_run, new_thread, session):
+    async def generate_response(
+        self, new_run: Run, new_thread: Thread, session: Session
+    ):
         if self.stream:
             initial_messages: list[str] = [
                 from_assistant_stream_event_to_str(

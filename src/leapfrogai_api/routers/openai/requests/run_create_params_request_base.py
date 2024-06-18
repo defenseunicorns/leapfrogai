@@ -8,13 +8,15 @@ from typing import cast, AsyncGenerator, Any
 from uuid import UUID
 
 from fastapi import HTTPException, status
+from openai.types.beta.assistant import ToolResources as BetaAssistantToolResources
 from openai.types.beta import (
-    AssistantResponseFormatOptionParam,
-    AssistantToolChoiceOptionParam,
-    AssistantToolParam,
-    FileSearchToolParam,
+    AssistantResponseFormatOption,
+    FileSearchTool,
     Assistant,
     Thread,
+    AssistantToolChoiceOption,
+    AssistantTool,
+    AssistantToolChoice,
 )
 from openai.types.beta.assistant_stream_event import (
     ThreadMessageCreated,
@@ -33,6 +35,7 @@ from openai.types.beta.thread import (
 )
 from openai.types.beta.threads import (
     Message,
+    TextContentBlock,
 )
 from openai.types.beta.threads import Run
 from openai.types.beta.threads.run_create_params import TruncationStrategy
@@ -52,7 +55,6 @@ from leapfrogai_api.backend.types import (
     ChatCompletionRequest,
     ChatChoice,
 )
-from leapfrogai_api.backend.validators import AssistantToolChoiceParamValidator
 from leapfrogai_api.data.crud_assistant import CRUDAssistant, FilterAssistant
 from leapfrogai_api.data.crud_message import CRUDMessage
 from leapfrogai_api.routers.openai.chat import chat_complete, chat_complete_stream_raw
@@ -69,25 +71,39 @@ from leapfrogai_sdk.chat.chat_pb2 import (
 class RunCreateParamsRequestBase(BaseModel):
     assistant_id: str = Field(default="", examples=["123ab"])
     instructions: str = Field(default="", examples=["You are a helpful AI assistant."])
-    max_completion_tokens: int | None = Field(default=None, examples=[4096])
-    max_prompt_tokens: int | None = Field(default=None, examples=[32768])
+    max_completion_tokens: int | None = Field(default=128, examples=[4096])
+    max_prompt_tokens: int | None = Field(default=128, examples=[32768])
     metadata: dict | None = Field(default={}, examples=[{}])
     model: str | None = Field(default=None, examples=["llama-cpp-python"])
-    response_format: AssistantResponseFormatOptionParam | None = Field(
+    response_format: AssistantResponseFormatOption | None = Field(
         default=None, examples=["auto"]
     )
     temperature: float | None = Field(default=None, examples=[1.0])
-    tool_choice: AssistantToolChoiceOptionParam | None = Field(
+    tool_choice: AssistantToolChoiceOption | None = Field(
         default="auto", examples=["auto"]
     )
-    tools: list[AssistantToolParam] = Field(
-        default=[], examples=[[FileSearchToolParam(type="file_search")]]
+    tools: list[AssistantTool] = Field(
+        default=[], examples=[[FileSearchTool(type="file_search")]]
     )
     top_p: float | None = Field(default=None, examples=[1.0])
     truncation_strategy: TruncationStrategy | None = Field(
         default=None, examples=[TruncationStrategy(type="auto", last_messages=None)]
     )
     parallel_tool_calls: bool | None = Field(default=False, examples=[False])
+
+    def __init__(self, **data):
+        super().__init__(**data)
+        # TODO: Temporary fix to ensure max_completion_tokens and max_prompt_tokens are set
+        if self.max_completion_tokens is None or self.max_completion_tokens < 1:
+            logging.warning(
+                "max_completion_tokens is not set or is less than 1, setting to 128"
+            )
+            self.max_completion_tokens = 128
+        if self.max_prompt_tokens is None or self.max_prompt_tokens < 1:
+            logging.warning(
+                "max_prompt_tokens is not set or is less than 1, setting to 128"
+            )
+            self.max_prompt_tokens = 128
 
     @staticmethod
     def get_initial_messages_base(run: Run) -> list[str]:
@@ -111,16 +127,17 @@ class RunCreateParamsRequestBase(BaseModel):
             )
         ]
 
-    async def update_with_assistant_data(self, session: Session) -> Assistant:
+    async def update_with_assistant_data(self, session: Session) -> Assistant | None:
         crud_assistant = CRUDAssistant(session)
-        assistant: Assistant | None = await crud_assistant.get(
+        assistant = await crud_assistant.get(
             filters=FilterAssistant(id=self.assistant_id)
         )
 
-        self.model = self.model or assistant.model
-        self.temperature = self.temperature or assistant.temperature
-        self.top_p = self.top_p or assistant.top_p
-        self.instructions = self.instructions or assistant.instructions
+        if assistant:
+            self.model = self.model or assistant.model
+            self.temperature = self.temperature or assistant.temperature
+            self.top_p = self.top_p or assistant.top_p
+            self.instructions = self.instructions or assistant.instructions or ""
 
         return assistant
 
@@ -141,10 +158,8 @@ class RunCreateParamsRequestBase(BaseModel):
                 return self.tool_choice == "auto" or self.tool_choice == "required"
             else:
                 try:
-                    if AssistantToolChoiceParamValidator.validate_python(
-                        self.tool_choice
-                    ):
-                        return self.tool_choice.get("type") == "file_search"
+                    if isinstance(self.tool_choice, AssistantToolChoice):
+                        return self.tool_choice.type == "file_search"
                 except ValidationError:
                     traceback.print_exc()
                     logging.error(
@@ -178,9 +193,12 @@ class RunCreateParamsRequestBase(BaseModel):
         thread: Thread,
         additional_instructions: str | None,
         tool_resources: BetaThreadToolResources | None = None,
-    ) -> (list[ChatMessage], list[str]):
+    ) -> tuple[list[ChatMessage], list[str]]:
         # Get existing messages
         thread_messages: list[Message] = await self.list_messages(thread.id, session)
+
+        if len(thread_messages) == 0:
+            return [], []
 
         def sort_by_created_at(msg: Message):
             return msg.created_at
@@ -188,25 +206,25 @@ class RunCreateParamsRequestBase(BaseModel):
         # The messages are not guaranteed to come out of the DB sorted, so they are sorted here
         thread_messages.sort(key=sort_by_created_at)
 
-        # The LLM may hallucinate if we leave the annotations in when we pass them into the LLM, so they are removed
+        chat_thread_messages = []
+
         for message in thread_messages:
-            for annotation in message.content[0].text.annotations:
-                message.content[0].text.value = message.content[0].text.value.replace(
-                    annotation.text, ""
+            if isinstance(message.content[0], TextContentBlock):
+                for annotation in message.content[0].text.annotations:
+                    # The LLM may hallucinate if we leave the annotations in when we pass them into the LLM, so they are removed
+                    message.content[0].text.value = message.content[
+                        0
+                    ].text.value.replace(annotation.text, "")
+                chat_thread_messages.append(
+                    ChatMessage(
+                        role=message.role, content=message.content[0].text.value
+                    )
                 )
 
-        if len(thread_messages) == 0:
-            return [], []
+        first_message: ChatMessage = chat_thread_messages[0]
 
         # Holds the converted thread's messages, this will be built up with a series of push operations
         chat_messages: list[ChatMessage] = []
-
-        chat_thread_messages = [
-            ChatMessage(role=message.role, content=message.content[0].text.value)
-            for message in thread_messages
-        ]
-
-        first_message: ChatMessage = chat_thread_messages[0]
 
         # 1 - Model instructions (system message)
         if self.instructions:
@@ -268,10 +286,20 @@ class RunCreateParamsRequestBase(BaseModel):
         # If no tools resources are passed in, try the tools in the assistant
         if not tool_resources:
             crud_assistant = CRUDAssistant(session)
-            assistant: Assistant | None = await crud_assistant.get(
+            assistant = await crud_assistant.get(
                 filters=FilterAssistant(id=self.assistant_id)
             )
-            tool_resources = assistant.tool_resources
+
+            if (
+                assistant
+                and assistant.tool_resources
+                and isinstance(assistant.tool_resources, BetaAssistantToolResources)
+            ):
+                tool_resources = BetaThreadToolResources.model_validate(
+                    assistant.tool_resources
+                )
+            else:
+                tool_resources = None
 
         chat_messages, file_ids = await self.create_chat_messages(
             session, thread, additional_instructions, tool_resources
@@ -301,7 +329,7 @@ class RunCreateParamsRequestBase(BaseModel):
             role=message.role,
             content=message.content,
             attachments=message.attachments,
-            metadata=message.metadata,
+            metadata=message.metadata.__dict__ if message.metadata else None,
         )
 
         await create_message_request.create_message(
@@ -324,10 +352,20 @@ class RunCreateParamsRequestBase(BaseModel):
         # If no tools resources are passed in, try the tools in the assistant
         if not tool_resources:
             crud_assistant = CRUDAssistant(session)
-            assistant: Assistant | None = await crud_assistant.get(
+            assistant = await crud_assistant.get(
                 filters=FilterAssistant(id=self.assistant_id)
             )
-            tool_resources = assistant.tool_resources
+
+            if (
+                assistant
+                and assistant.tool_resources
+                and isinstance(assistant.tool_resources, BetaAssistantToolResources)
+            ):
+                tool_resources = BetaThreadToolResources.model_validate(
+                    assistant.tool_resources
+                )
+            else:
+                tool_resources = None
 
         chat_messages, file_ids = await self.create_chat_messages(
             session, thread, additional_instructions, tool_resources
@@ -360,7 +398,7 @@ class RunCreateParamsRequestBase(BaseModel):
             role=new_message.role,
             content=new_message.content,
             attachments=new_message.attachments,
-            metadata=new_message.metadata,
+            metadata=new_message.metadata.__dict__ if new_message.metadata else None,
         )
 
         new_message = await create_message_request.create_message(
@@ -404,10 +442,15 @@ class RunCreateParamsRequestBase(BaseModel):
 
         crud_message = CRUDMessage(db=session)
 
-        updated_message = await crud_message.update(
-            id_=new_message.id,
-            object_=new_message,
-        )
+        if not (
+            updated_message := await crud_message.update(
+                id_=new_message.id, object_=new_message
+            )
+        ):
+            raise HTTPException(
+                status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+                detail="Failed to update message during streaming",
+            )
 
         yield from_assistant_stream_event_to_str(
             ThreadMessageCompleted(

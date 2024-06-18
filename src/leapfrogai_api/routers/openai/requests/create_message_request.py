@@ -22,17 +22,17 @@ class CreateMessageRequest(BaseModel):
         examples=[[TextContentBlock(text=Text(value="", annotations=[]), type="text")]],
     )
     attachments: list[Attachment] | None = Field(default=None, examples=[None])
-    metadata: dict | None = Field(default={}, examples=[{}])
+    metadata: dict[str, str] | None = Field(default={}, examples=[{}])
 
-    async def get_message_content(self):
+    async def get_message_content(self) -> list[MessageContent]:
+        """Get the message content."""
         if isinstance(self.content, str):
             text_input: TextContentBlock = TextContentBlock(
                 text=Text(value=self.content, annotations=[]), type="text"
             )
-            message_content: list[MessageContent] = [text_input]
-        else:
-            message_content: list[MessageContent] = self.content
-        return message_content
+            return [text_input]
+
+        return self.content
 
     async def create_message(
         self,
@@ -62,7 +62,13 @@ class CreateMessageRequest(BaseModel):
                 assistant_id=assistant_id,
                 run_id=run_id,
             )
-            return await crud_message.create(object_=message)
+
+            if not (response := await crud_message.create(object_=message)):
+                raise HTTPException(
+                    status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+                    detail="Unable to create message",
+                )
+            return response
         except Exception as exc:
             traceback.print_exc()
             raise HTTPException(

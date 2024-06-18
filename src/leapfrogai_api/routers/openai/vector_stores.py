@@ -9,10 +9,10 @@ from openai.types.beta import VectorStore, VectorStoreDeleted
 from openai.types.beta.vector_stores import VectorStoreFile, VectorStoreFileDeleted
 from leapfrogai_api.backend.rag.index import IndexingService
 from leapfrogai_api.backend.types import (
+    CreateVectorStoreFileRequest,
     CreateVectorStoreRequest,
     ListVectorStoresResponse,
     ModifyVectorStoreRequest,
-    CreateVectorStoreFileRequest,
 )
 from leapfrogai_api.data.crud_vector_store import CRUDVectorStore, FilterVectorStore
 from leapfrogai_api.data.crud_vector_store_file import (

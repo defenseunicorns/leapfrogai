@@ -5,7 +5,7 @@ import pytest
 from fastapi import status
 from fastapi.testclient import TestClient
 from openai.types.beta import Assistant, Thread, AssistantDeleted, ThreadDeleted
-from openai.types.beta.thread import ToolResources
+from openai.types.beta.thread import ToolResources, ToolResourcesFileSearch
 from openai.types.beta.threads import Message, Text, TextContentBlock, Run
 from leapfrogai_api.backend.types import CreateAssistantRequest
 from leapfrogai_api.main import app
@@ -53,8 +53,8 @@ starting_assistant = Assistant(
     instructions="test",
     model=CHAT_MODEL,
     object="assistant",
-    tools=[{"type": "file_search"}],
-    tool_resources={},
+    tools=[],
+    tool_resources=None,
     temperature=1.0,
     top_p=1.0,
     metadata={},
@@ -169,15 +169,17 @@ def test_create_thread_and_run(app_client, create_assistant):
         assistant_id=assistant_id,
         instructions="You are a conversational assistant.",
         additional_instructions="Respond as a Unicorn assistant named Doug.",
-        tool_resources=ToolResources(file_search={}),
+        tool_resources=ToolResources(
+            file_search=ToolResourcesFileSearch(vector_store_ids=[])
+        ),
         metadata={},
         stream=False,
     )
 
     response = app_client.post("/openai/v1/threads/runs", json=request.model_dump())
     assert response.status_code == status.HTTP_200_OK
+    assert "'user_id'" not in response.json(), "Create should not return a user_id."
     assert Run.model_validate(response.json()), "Create should create a Run."
-    assert "user_id" not in response.json(), "Create should not return a user_id."
 
 
 def test_create_run(create_run):

@@ -80,16 +80,19 @@ async def modify_thread(
         thread.tool_resources = getattr(
             request, "tool_resources", thread.tool_resources
         )
-
-        return await crud_thread.update(
-            id_=thread_id,
-            object_=thread,
-        )
     except Exception as exc:
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
             detail="Unable to parse thread request",
         ) from exc
+
+    if not (response := await crud_thread.update(id_=thread_id, object_=thread)):
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail="Failed to update thread",
+        )
+
+    return response
 
 
 @router.delete("/{thread_id}")
