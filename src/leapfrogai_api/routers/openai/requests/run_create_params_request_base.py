@@ -8,6 +8,7 @@ from typing import cast, AsyncGenerator, Any
 from uuid import UUID
 
 from fastapi import HTTPException, status
+from openai.types.beta.assistant import ToolResources as BetaAssistantToolResources
 from openai.types.beta import (
     AssistantResponseFormatOption,
     FileSearchTool,
@@ -285,10 +286,20 @@ class RunCreateParamsRequestBase(BaseModel):
         # If no tools resources are passed in, try the tools in the assistant
         if not tool_resources:
             crud_assistant = CRUDAssistant(session)
-            assistant: Assistant | None = await crud_assistant.get(
+            assistant = await crud_assistant.get(
                 filters=FilterAssistant(id=self.assistant_id)
             )
-            tool_resources = assistant.tool_resources
+
+            if (
+                assistant
+                and assistant.tool_resources
+                and isinstance(assistant.tool_resources, BetaAssistantToolResources)
+            ):
+                tool_resources = BetaThreadToolResources.model_validate(
+                    assistant.tool_resources
+                )
+            else:
+                tool_resources = None
 
         chat_messages, file_ids = await self.create_chat_messages(
             session, thread, additional_instructions, tool_resources
@@ -341,10 +352,20 @@ class RunCreateParamsRequestBase(BaseModel):
         # If no tools resources are passed in, try the tools in the assistant
         if not tool_resources:
             crud_assistant = CRUDAssistant(session)
-            assistant: Assistant | None = await crud_assistant.get(
+            assistant = await crud_assistant.get(
                 filters=FilterAssistant(id=self.assistant_id)
             )
-            tool_resources = assistant.tool_resources
+
+            if (
+                assistant
+                and assistant.tool_resources
+                and isinstance(assistant.tool_resources, BetaAssistantToolResources)
+            ):
+                tool_resources = BetaThreadToolResources.model_validate(
+                    assistant.tool_resources
+                )
+            else:
+                tool_resources = None
 
         chat_messages, file_ids = await self.create_chat_messages(
             session, thread, additional_instructions, tool_resources
@@ -421,10 +442,15 @@ class RunCreateParamsRequestBase(BaseModel):
 
         crud_message = CRUDMessage(db=session)
 
-        updated_message = await crud_message.update(
-            id_=new_message.id,
-            object_=new_message,
-        )
+        if not (
+            updated_message := await crud_message.update(
+                id_=new_message.id, object_=new_message
+            )
+        ):
+            raise HTTPException(
+                status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+                detail="Failed to update message during streaming",
+            )
 
         yield from_assistant_stream_event_to_str(
             ThreadMessageCompleted(
