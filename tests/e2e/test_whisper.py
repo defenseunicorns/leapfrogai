@@ -3,6 +3,7 @@ from pathlib import Path
 import pytest
 from openai import InternalServerError
 
+
 def test_completions(client):
     with pytest.raises(InternalServerError) as excinfo:
         client.completions.create(
