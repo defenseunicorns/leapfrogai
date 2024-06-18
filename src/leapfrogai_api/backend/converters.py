@@ -1,5 +1,5 @@
-import logging
-import traceback
+"""Converters for the LeapfrogAI API"""
+
 from typing import Iterable
 from openai.types.beta import AssistantStreamEvent
 from openai.types.beta.assistant_stream_event import ThreadMessageDelta
@@ -16,9 +16,6 @@ from openai.types.beta.threads import (
     TextDelta,
     FileCitationAnnotation,
 )
-from pydantic_core import ValidationError
-
-from leapfrogai_api.backend.validators import TextContentBlockParamValidator
 
 
 def from_assistant_stream_event_to_str(stream_event: AssistantStreamEvent):
@@ -38,13 +35,8 @@ def from_content_param_to_content(
         result: str = ""
 
         for message_content_part in thread_message_content:
-            try:
-                if TextContentBlockParamValidator.validate_python(message_content_part):
-                    result += message_content_part.get("text")
-            except ValidationError:
-                traceback.print_exc()
-                logging.error("Failed to validate message content part")
-                continue
+            if isinstance(text := message_content_part.get("text"), str):
+                result += text
 
         return TextContentBlock(
             text=Text(annotations=[], value=result),
