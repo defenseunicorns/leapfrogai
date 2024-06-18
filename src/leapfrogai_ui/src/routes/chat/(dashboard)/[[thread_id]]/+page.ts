@@ -1,6 +1,7 @@
 import type { LFThread } from '$lib/types/threads';
 
-export const load = async ({ params, fetch }) => {
+export const load = async ({ params, fetch, depends }) => {
+  depends('lf:thread');
   const promises = [fetch('/api/assistants'), fetch('/api/files')];
 
   if (params.thread_id) promises.push(fetch(`/api/threads/${params.thread_id}`));
