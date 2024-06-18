@@ -34,6 +34,7 @@ from openai.types.beta.thread import (
 )
 from openai.types.beta.threads import (
     Message,
+    TextContentBlock,
 )
 from openai.types.beta.threads import Run
 from openai.types.beta.threads.run_create_params import TruncationStrategy
@@ -156,11 +157,8 @@ class RunCreateParamsRequestBase(BaseModel):
                 return self.tool_choice == "auto" or self.tool_choice == "required"
             else:
                 try:
-                    if (
-                        isinstance(self.tool_choice, AssistantToolChoice)
-                        and self.tool_choice.type == "file_search"
-                    ):
-                        return True
+                    if isinstance(self.tool_choice, AssistantToolChoice):
+                        return self.tool_choice.type == "file_search"
                 except ValidationError:
                     traceback.print_exc()
                     logging.error(
@@ -194,9 +192,12 @@ class RunCreateParamsRequestBase(BaseModel):
         thread: Thread,
         additional_instructions: str | None,
         tool_resources: BetaThreadToolResources | None = None,
-    ) -> (list[ChatMessage], list[str]):
+    ) -> tuple[list[ChatMessage], list[str]]:
         # Get existing messages
         thread_messages: list[Message] = await self.list_messages(thread.id, session)
+
+        if len(thread_messages) == 0:
+            return [], []
 
         def sort_by_created_at(msg: Message):
             return msg.created_at
@@ -204,25 +205,25 @@ class RunCreateParamsRequestBase(BaseModel):
         # The messages are not guaranteed to come out of the DB sorted, so they are sorted here
         thread_messages.sort(key=sort_by_created_at)
 
-        # The LLM may hallucinate if we leave the annotations in when we pass them into the LLM, so they are removed
+        chat_thread_messages = []
+
         for message in thread_messages:
-            for annotation in message.content[0].text.annotations:
-                message.content[0].text.value = message.content[0].text.value.replace(
-                    annotation.text, ""
+            if isinstance(message.content[0], TextContentBlock):
+                for annotation in message.content[0].text.annotations:
+                    # The LLM may hallucinate if we leave the annotations in when we pass them into the LLM, so they are removed
+                    message.content[0].text.value = message.content[
+                        0
+                    ].text.value.replace(annotation.text, "")
+                chat_thread_messages.append(
+                    ChatMessage(
+                        role=message.role, content=message.content[0].text.value
+                    )
                 )
 
-        if len(thread_messages) == 0:
-            return [], []
+        first_message: ChatMessage = chat_thread_messages[0]
 
         # Holds the converted thread's messages, this will be built up with a series of push operations
         chat_messages: list[ChatMessage] = []
-
-        chat_thread_messages = [
-            ChatMessage(role=message.role, content=message.content[0].text.value)
-            for message in thread_messages
-        ]
-
-        first_message: ChatMessage = chat_thread_messages[0]
 
         # 1 - Model instructions (system message)
         if self.instructions:
@@ -317,7 +318,7 @@ class RunCreateParamsRequestBase(BaseModel):
             role=message.role,
             content=message.content,
             attachments=message.attachments,
-            metadata=message.metadata,
+            metadata=message.metadata.__dict__ if message.metadata else None,
         )
 
         await create_message_request.create_message(
@@ -376,7 +377,7 @@ class RunCreateParamsRequestBase(BaseModel):
             role=new_message.role,
             content=new_message.content,
             attachments=new_message.attachments,
-            metadata=new_message.metadata,
+            metadata=new_message.metadata.__dict__ if new_message.metadata else None,
         )
 
         new_message = await create_message_request.create_message(

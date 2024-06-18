@@ -75,7 +75,7 @@ def from_text_to_message(text: str, file_ids: list[str]) -> Message:
         thread_id="",
         content=[message_content],
         role="assistant",
-        metadata={},
+        metadata=None,
     )
 
     return new_message
