@@ -16,6 +16,8 @@
   import { filesSchema } from '$schemas/files';
   import { filesStore, toastStore } from '$stores';
   import { afterNavigate, invalidate } from '$app/navigation';
+  import type { Assistant } from 'openai/resources/beta/assistants';
+  import ConfirmAssistantDeleteModal from '$components/ConfirmAssistantDeleteModal.svelte';
 
   export let data;
 
@@ -24,7 +26,11 @@
   let deleting = false;
   let active = $filesStore.selectedFileManagementFileIds.length > 0;
   let nonSelectableRowIds: string[] = [];
+  let confirmDeleteModalOpen = false;
+  let affectedAssistants: Assistant[];
+  let affectedAssistantsLoading = false;
 
+  $: affectedAssistants = [];
   $: if ($filesStore.selectedFileManagementFileIds.length === 0) active = false;
 
   const { enhance, submit, submitting } = superForm(data.form, {
@@ -46,6 +52,24 @@
   });
 
   const handleDelete = async () => {
+    affectedAssistantsLoading = true;
+    confirmDeleteModalOpen = true;
+    const getAffectedAssistants = await fetch(`/api/files/delete-check/`, {
+      method: 'POST',
+      body: JSON.stringify({ fileIds: $filesStore.selectedFileManagementFileIds })
+    });
+    if (getAffectedAssistants.ok) {
+      const assistants = await getAffectedAssistants.json();
+
+      if (assistants && assistants.length > 0) {
+        affectedAssistants = assistants;
+      }
+    }
+
+    affectedAssistantsLoading = false;
+  };
+
+  const handleConfirmedDelete = async () => {
     const isMultipleFiles = $filesStore.selectedFileManagementFileIds.length > 1;
     deleting = true;
     const res = await fetch('/api/files/delete', {
@@ -55,6 +79,7 @@
         'Content-Type': 'application/json'
       }
     });
+    confirmDeleteModalOpen = false;
     await invalidate('lf:files');
     if (res.ok) {
       toastStore.addToast({
@@ -186,6 +211,14 @@
       </svelte:fragment>
     </DataTable>
   </form>
+  <ConfirmAssistantDeleteModal
+    bind:open={confirmDeleteModalOpen}
+    bind:affectedAssistantsLoading
+    bind:deleting
+    bind:confirmDeleteModalOpen
+    {handleConfirmedDelete}
+    {affectedAssistants}
+  />
 </div>
 
 <style lang="scss">
