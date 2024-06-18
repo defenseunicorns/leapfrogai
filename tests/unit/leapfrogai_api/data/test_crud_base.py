@@ -90,7 +90,7 @@ async def test_create(
 @pytest.mark.asyncio
 @pytest.mark.parametrize(
     "mock_data_object, mock_response",
-    [(mock_data_model, None), ({}, None), (None, None)],
+    [(mock_data_model, {}), (mock_data_model, []), (mock_data_model, None)],
 )
 async def test_create_fail(mock_session, mock_data_object, mock_response):
     mock_crud_base = CRUDBase(
@@ -220,3 +220,16 @@ async def test_delete(mock_session):
     result = await mock_crud_base.delete({"id": 1})
 
     assert result is True
+
+
+@pytest.mark.asyncio
+@pytest.mark.parametrize("mock_response", [({}), ([]), (None)])
+async def test_delete_fail(mock_session, mock_response):
+    mock_crud_base = CRUDBase(
+        db=mock_session, model=MockModel, table_name="dummy_table"
+    )
+    mock_table = mock_session.table(mock_crud_base.table_name)
+    mock_table.delete().execute.return_value = execute_response_format(mock_response)
+
+    with pytest.raises(RuntimeError):
+        await mock_crud_base.update("1", mock_data_model)
