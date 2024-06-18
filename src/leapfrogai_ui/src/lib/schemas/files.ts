@@ -1,4 +1,4 @@
-import { array, mixed, object, ValidationError } from 'yup';
+import { array, mixed, object, string, ValidationError } from 'yup';
 import { FILE_SIZE_ERROR_TEXT, MAX_FILE_SIZE } from '$constants';
 
 export const filesSchema = object({
@@ -25,4 +25,12 @@ export const filesSchema = object({
         return true;
       })
   )
-});
+})
+  .noUnknown(true)
+  .strict();
+
+export const filesCheckSchema = object({
+  fileIds: array().of(string())
+})
+  .noUnknown(true)
+  .strict();

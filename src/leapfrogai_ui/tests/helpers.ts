@@ -174,18 +174,11 @@ export const deleteAssistant = async (page: Page, name: string) => {
   await page.getByRole('button', { name: 'Delete' }).click();
 };
 
-export const deleteFirstFile = async (page: Page) => {
-  await page.goto(`/chat/file-management`);
-  const checkboxes = await page.getByRole('checkbox').all();
-  await checkboxes[1].check(); // first checkbox is for selecting all, pick the second one
-  await page.getByText('Delete').click();
-};
-
 export const deleteTestFilesWithApi = async () => {
   const list = await openai.files.list();
   const idsToDelete: string[] = [];
   for await (const file of list) {
-    if (file.filename === 'test.pdf' || file.filename === 'test2.pdf') {
+    if (file.filename.startsWith('test')) {
       idsToDelete.push(file.id);
     }
   }
