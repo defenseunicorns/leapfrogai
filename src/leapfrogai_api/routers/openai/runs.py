@@ -86,7 +86,7 @@ async def create_thread_and_run(
         )
 
     try:
-        return await request.create_run_and_thread(session=session)
+        return await request.generate_response(new_run, new_thread, session)
     except Exception as exc:
         traceback.print_exc()
         raise HTTPException(
