@@ -87,7 +87,7 @@ components:
       - docker.io/bitnami/kubectl:1.30.0-debian-12-r0
       - docker.io/bitnami/os-shell:12-debian-12-r19
       - docker.io/bitnami/postgrest:11.2.2-debian-12-r15
-      - docker.io/bitnami/supabase-postgres:15.1.1-debian-12-r34
+      - docker.io/bitnami/supabase-postgres:15.1.1-debian-12-r69
       - docker.io/bitnami/supabase-postgres-meta:0.80.0-debian-12-r3
       - docker.io/bitnami/supabase-realtime:2.28.32-debian-12-r2
       - docker.io/bitnami/supabase-storage:0.48.4-debian-12-r2
