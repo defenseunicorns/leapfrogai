@@ -10,7 +10,7 @@ image:
     fsGroup: 65532
 
 supabase:
-  url: "https://supabase-kong.###ZARF_VAR_HOSTED_DOMAIN###"
+  url: "http://supabase-kong.leapfrogai.svc.cluster.local:80"
 
 api:
   replicas: 1

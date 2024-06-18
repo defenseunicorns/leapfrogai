@@ -4,14 +4,19 @@ import logging
 import time
 import traceback
 from fastapi import APIRouter, HTTPException, status
+from openai.pagination import SyncCursorPage
 from openai.types.beta import VectorStore, VectorStoreDeleted
 from openai.types.beta.vector_store import FileCounts
 from openai.types.beta.vector_stores import VectorStoreFile, VectorStoreFileDeleted
+
 from leapfrogai_api.backend.rag.index import FileAlreadyIndexedError, IndexingService
 from leapfrogai_api.backend.types import (
+    CreateVectorStoreFileRequest,
     CreateVectorStoreRequest,
     ListVectorStoresResponse,
     ModifyVectorStoreRequest,
+    VectorStoreFileStatus,
+    VectorStoreStatus,
 )
 from leapfrogai_api.data.crud_vector_store import CRUDVectorStore, FilterVectorStore
 from leapfrogai_api.data.crud_vector_store_file import (
@@ -19,7 +24,6 @@ from leapfrogai_api.data.crud_vector_store_file import (
     FilterVectorStoreFile,
 )
 from leapfrogai_api.routers.supabase_session import Session
-from leapfrogai_api.backend.types import VectorStoreFileStatus, VectorStoreStatus
 
 router = APIRouter(prefix="/openai/v1/vector_stores", tags=["openai/vector_stores"])
 
@@ -224,7 +228,7 @@ async def delete_vector_store(
 @router.post("/{vector_store_id}/files")
 async def create_vector_store_file(
     vector_store_id: str,
-    file_id: str,
+    request: CreateVectorStoreFileRequest,
     session: Session,
 ) -> VectorStoreFile:
     """Create a file in a vector store."""
@@ -232,7 +236,7 @@ async def create_vector_store_file(
     try:
         indexing_service = IndexingService(db=session)
         vector_store_file = await indexing_service.index_file(
-            vector_store_id=vector_store_id, file_id=file_id
+            vector_store_id=vector_store_id, file_id=request.file_id
         )
         return vector_store_file
     except Exception as exc:
@@ -247,7 +251,7 @@ async def create_vector_store_file(
 async def list_vector_store_files(
     vector_store_id: str,
     session: Session,
-) -> list[VectorStoreFile]:
+) -> SyncCursorPage[VectorStoreFile]:
     """List all the files in a vector store."""
 
     try:
@@ -255,7 +259,11 @@ async def list_vector_store_files(
         vector_store_files = await crud_vector_store_file.list(
             filters=FilterVectorStoreFile(vector_store_id=vector_store_id)
         )
-        return vector_store_files
+
+        if vector_store_files is None:
+            return SyncCursorPage(object="list", data=[])
+
+        return SyncCursorPage(object="list", data=vector_store_files)
     except Exception as exc:
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,

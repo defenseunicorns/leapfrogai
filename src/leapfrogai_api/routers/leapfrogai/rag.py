@@ -4,6 +4,7 @@ from fastapi import APIRouter
 from leapfrogai_api.backend.rag.query import QueryService
 from leapfrogai_api.backend.types import RAGResponse
 from leapfrogai_api.routers.supabase_session import Session
+from postgrest.base_request_builder import SingleAPIResponse
 
 router = APIRouter(prefix="/leapfrogai/v1/rag", tags=["leapfrogai/rag"])
 
@@ -28,9 +29,10 @@ async def query_rag(
         RAGResponse: The response from the RAG.
     """
     query_service = QueryService(db=session)
-
-    return await query_service.query_rag(
+    result: SingleAPIResponse[RAGResponse] = await query_service.query_rag(
         query=query,
         vector_store_id=vector_store_id,
         k=k,
     )
+
+    return RAGResponse(data=result.data)

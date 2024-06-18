@@ -2,6 +2,7 @@
 
 from supabase_py_async import AsyncClient
 from leapfrogai_api.backend.rag.index import IndexingService
+from postgrest.base_request_builder import SingleAPIResponse
 
 
 class QueryService:
@@ -11,7 +12,9 @@ class QueryService:
         """Initializes the QueryService."""
         self.db = db
 
-    async def query_rag(self, query: str, vector_store_id: str, k: int = 5):
+    async def query_rag(
+        self, query: str, vector_store_id: str, k: int = 5
+    ) -> SingleAPIResponse:
         """
         Query the Vector Store.
 
