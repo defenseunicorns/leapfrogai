@@ -11,16 +11,7 @@ import { getOpenAiClient } from '$lib/server/constants';
 import { filesSchema } from '$schemas/files';
 import type { VectorStore } from 'openai/resources/beta/vector-stores/index';
 
-export const load = async ({ fetch, depends }) => {
-  depends('lf:files');
-  depends('lf:assistants');
-
-  const promises = [fetch('/api/assistants'), fetch('/api/files')];
-  const [assistantsRes, filesRes] = await Promise.all(promises);
-
-  const assistants = await assistantsRes.json();
-  const files = await filesRes.json();
-
+export const load = async () => {
   // Populate form with default temperature
   const form = await superValidate(
     { temperature: DEFAULT_ASSISTANT_TEMP },
@@ -30,7 +21,7 @@ export const load = async ({ fetch, depends }) => {
 
   const filesForm = await superValidate({}, yup(filesSchema), { errors: false });
 
-  return { title: 'LeapfrogAI - New Assistant', form, filesForm, assistants, files };
+  return { title: 'LeapfrogAI - New Assistant', form, filesForm };
 };
 
 export const actions = {

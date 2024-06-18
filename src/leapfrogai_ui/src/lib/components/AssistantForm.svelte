@@ -16,14 +16,13 @@
   import type { NavigationTarget } from '@sveltejs/kit';
   import { onMount } from 'svelte';
   import AssistantFileSelect from '$components/AssistantFileSelect.svelte';
-  import type { FileRow } from '$lib/types/files';
 
   export let data;
 
   let isEditMode = $page.url.pathname.includes('edit');
   let bypassCancelWarning = false;
 
-  const { form, errors, enhance, submitting, isTainted } = superForm(data.form, {
+  const { form, errors, enhance, submitting, isTainted, delayed } = superForm(data.form, {
     invalidateAll: false,
     validators: yup(isEditMode ? editAssistantInputSchema : assistantInputSchema),
     onResult({ result }) {
@@ -76,16 +75,6 @@
       }
     }
   });
-
-  $: if (data.files) {
-    const fileRows: FileRow[] = data.files.map((file) => ({
-      id: file.id,
-      filename: file.filename,
-      created_at: file.created_at,
-      status: 'complete'
-    }));
-    filesStore.setFiles(fileRows);
-  }
 
   onMount(() => {
     if (isEditMode && Object.keys($errors).length > 0) {
@@ -188,7 +177,7 @@
         value={data?.assistant?.tool_resources?.file_search?.vector_store_ids[0] || undefined}
       />
 
-      <div>
+      <div class="btns-container">
         <Button
           kind="secondary"
           size="small"
@@ -197,12 +186,16 @@
             goto('/chat/assistants-management');
           }}>Cancel</Button
         >
+
         <Button
           kind="primary"
           size="small"
           type="submit"
           disabled={$submitting || $filesStore.uploading}>Save</Button
         >
+        {#if $delayed}
+          <span>Processing, please wait...</span>
+        {/if}
       </div>
     </div>
   </div>
@@ -254,6 +247,12 @@
         position: absolute;
         top: 25%;
       }
+    }
+
+    .btns-container {
+      display: flex;
+      align-items: center;
+      gap: 0.2rem;
     }
   }
 </style>

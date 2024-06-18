@@ -1,9 +1,9 @@
 import { expect, test } from './fixtures';
 import {
-  getSimpleMathQuestion,
   deleteTestFilesWithApi,
-  sendMessage,
+  getSimpleMathQuestion,
   loadChatPage,
+  sendMessage,
   uploadFile
 } from './helpers';
 import type { Page } from '@playwright/test';
