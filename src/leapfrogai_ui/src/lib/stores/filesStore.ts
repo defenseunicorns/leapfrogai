@@ -1,25 +1,22 @@
 import { writable } from 'svelte/store';
 import type { FileObject } from 'openai/resources/files';
 import type { FileRow } from '$lib/types/files';
-import { invalidate } from '$app/navigation';
+import { toastStore } from '$stores/index';
 
 type FilesStore = {
   files: FileRow[];
+  selectedFileManagementFileIds: string[];
   selectedAssistantFileIds: string[];
   uploading: boolean;
+  pendingUploads: FileRow[];
 };
 
 const defaultValues: FilesStore = {
   files: [],
+  selectedFileManagementFileIds: [],
   selectedAssistantFileIds: [],
-  uploading: false
-};
-
-// Wait 1.5 seconds, then invalidate the files so they are re-fetched (will remove rows with status: "error")
-const waitThenInvalidate = () => {
-  new Promise((resolve) => setTimeout(resolve, 1500)).then(() => {
-    invalidate('lf:files');
-  });
+  uploading: false,
+  pendingUploads: []
 };
 
 const createFilesStore = () => {
@@ -33,6 +30,12 @@ const createFilesStore = () => {
     setFiles: (newFiles: FileRow[]) => {
       update((old) => ({ ...old, files: [...newFiles] }));
     },
+    setPendingUploads: (newFiles: FileRow[]) => {
+      update((old) => ({ ...old, pendingUploads: [...newFiles] }));
+    },
+    setSelectedFileManagementFileIds: (newIds: string[]) => {
+      update((old) => ({ ...old, selectedFileManagementFileIds: newIds }));
+    },
     addSelectedAssistantFileIds: (newIds: string[]) =>
       update((old) => ({
         ...old,
@@ -41,7 +44,7 @@ const createFilesStore = () => {
     setSelectedAssistantFileIds: (newIds: string[]) => {
       update((old) => ({ ...old, selectedAssistantFileIds: newIds }));
     },
-    addUploadingFiles: (files: File[]) => {
+    addUploadingFiles: (files: File[], { autoSelectUploadedFiles = false } = {}) => {
       update((old) => {
         const newFiles: FileRow[] = [];
         const newFileIds: string[] = [];
@@ -57,27 +60,57 @@ const createFilesStore = () => {
         }
         return {
           ...old,
-          files: [...old.files, ...newFiles],
-          selectedAssistantFileIds: [...old.selectedAssistantFileIds, ...newFileIds]
+          selectedAssistantFileIds: autoSelectUploadedFiles
+            ? [...old.selectedAssistantFileIds, ...newFileIds]
+            : old.selectedAssistantFileIds,
+          pendingUploads: newFiles
         };
       });
     },
     updateWithUploadResults: (newFiles: Array<FileObject | FileRow>) => {
       update((old) => {
-        const newRows = old.files.filter((file) => file.status !== 'uploading'); // get original rows without the uploads
-        // insert newly uploaded files with updated status
+        const successRows = [...old.files];
+        const failedRows: FileRow[] = [];
+
         for (const file of newFiles) {
-          const item: FileRow = {
+          const row: FileRow = {
             id: file.id,
             filename: file.filename,
             created_at: file.created_at,
             status: file.status === 'error' ? 'error' : 'complete'
           };
-          newRows.unshift(item);
+          if (file.status === 'error') {
+            failedRows.push(row);
+            toastStore.addToast({
+              kind: 'error',
+              title: 'Import Failed',
+              subtitle: `${file.filename} import failed.`
+            });
+          } else {
+            successRows.push(row);
+            toastStore.addToast({
+              kind: 'success',
+              title: 'Imported Successfully',
+              subtitle: `${file.filename} imported successfully.`
+            });
+          }
         }
-        waitThenInvalidate();
 
-        return { ...old, files: newRows };
+        // Remove the error files after 1.5 seconds
+        new Promise((resolve) => setTimeout(resolve, 1500)).then(() => {
+          update((old) => {
+            return {
+              ...old,
+              pendingUploads: [...old.pendingUploads.filter((row) => row.status !== 'error')]
+            };
+          });
+        });
+
+        return {
+          ...old,
+          files: successRows,
+          pendingUploads: failedRows
+        };
       });
     },
     setAllUploadingToError: () => {
@@ -88,8 +121,6 @@ const createFilesStore = () => {
           }
           return file;
         });
-
-        waitThenInvalidate();
 
         return {
           ...old,

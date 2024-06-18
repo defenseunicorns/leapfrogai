@@ -1,31 +1,49 @@
 import { fireEvent, render, screen } from '@testing-library/svelte';
 import FileManagementPage from './+page.svelte';
-import { getFakeFiles } from '../../../../../testUtils/fakeData';
+import { getFakeFiles, getFakeSession } from '../../../../../testUtils/fakeData';
 import userEvent from '@testing-library/user-event';
 import { formatDate } from '$helpers/dates';
 import { load } from './+page';
 import { mockDeleteFile, mockDeleteFileWithDelay, mockGetFiles } from '$lib/mocks/file-mocks';
 import { vi } from 'vitest';
-import { toastStore } from '$stores';
+import { filesStore, toastStore } from '$stores';
+import { convertFileObjectToFileRows } from '$helpers/fileHelpers';
+import { superValidate } from 'sveltekit-superforms';
+import { yup } from 'sveltekit-superforms/adapters';
+import { filesSchema } from '$schemas/files';
+import type { SupabaseClient } from '@supabase/supabase-js';
+import type { FilesForm } from '$lib/types/files';
+import { tick } from 'svelte';
 
 describe('file management', () => {
-  it('lists all the files', async () => {
-    const files = getFakeFiles();
-    mockGetFiles(files);
+  const files = getFakeFiles();
+  let form: FilesForm;
 
-    const data = await load({ fetch: global.fetch, depends: vi.fn() });
-    render(FileManagementPage, { data });
+  beforeEach(async () => {
+    const data = await load();
+
+    form = await superValidate(yup(filesSchema));
+    filesStore.setFiles(convertFileObjectToFileRows(files));
+
+    render(FileManagementPage, {
+      data: {
+        ...data,
+        form,
+        session: getFakeSession(),
+        assistants: [],
+        supabase: {} as unknown as SupabaseClient
+      }
+    });
+  });
+  it('lists all the files', async () => {
+    mockGetFiles(files);
 
     files.forEach((file) => {
       expect(screen.getByText(file.filename));
     });
   });
   it('searches for files by filename', async () => {
-    const files = getFakeFiles();
     mockGetFiles(files);
-
-    const data = await load({ fetch: global.fetch, depends: vi.fn() });
-    render(FileManagementPage, { data });
 
     expect(screen.getByText(files[1].filename)).toBeInTheDocument();
     await userEvent.type(screen.getByRole('searchbox'), files[0].filename);
@@ -43,11 +61,10 @@ describe('file management', () => {
     const file1 = getFakeFiles({ numFiles: 1 })[0];
     const file2 = getFakeFiles({ numFiles: 1, created_at: yesterday })[0];
 
+    // Set different files for this test, await tick so component reflect store update
+    filesStore.setFiles(convertFileObjectToFileRows([file1, file2]));
+    await tick();
     mockGetFiles([file1, file2]);
-
-    const data = await load({ fetch: global.fetch, depends: vi.fn() });
-
-    render(FileManagementPage, { data });
 
     expect(screen.getByText(file2.filename)).toBeInTheDocument();
     await userEvent.type(
@@ -61,11 +78,7 @@ describe('file management', () => {
   it('deletes multiple files', async () => {
     const toastSpy = vi.spyOn(toastStore, 'addToast');
     mockDeleteFile();
-    const files = getFakeFiles();
     mockGetFiles(files);
-
-    const data = await load({ fetch: global.fetch, depends: vi.fn() });
-    render(FileManagementPage, { data });
 
     const checkboxes = screen.getAllByRole('checkbox');
 
@@ -87,22 +100,14 @@ describe('file management', () => {
   it('disables the delete button when there are no rows selected', async () => {
     // Note - the delete button is hidden when there are no rows selected, but still on the page so it needs to be
     // disabled
-    const files = getFakeFiles();
     mockGetFiles(files);
-
-    const data = await load({ fetch: global.fetch, depends: vi.fn() });
-    render(FileManagementPage, { data });
 
     const deleteBtn = screen.getByRole('button', { name: /delete/i });
     expect(deleteBtn).toBeDisabled();
   });
   it('replaces the delete button with a loading spinner while deleting', async () => {
     mockDeleteFileWithDelay();
-    const files = getFakeFiles();
     mockGetFiles(files);
-
-    const data = await load({ fetch: global.fetch, depends: vi.fn() });
-    render(FileManagementPage, { data });
 
     const deleteBtn = screen.getByRole('button', { name: /delete/i });
 

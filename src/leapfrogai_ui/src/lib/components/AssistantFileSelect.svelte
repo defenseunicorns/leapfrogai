@@ -7,15 +7,11 @@
 
   export let filesForm: FilesForm;
 
-  $: filteredStoreFiles = $filesStore.files
+  $: filteredStoreFiles = [...$filesStore.files, ...$filesStore.pendingUploads]
     .filter((f) => $filesStore.selectedAssistantFileIds.includes(f.id))
     .sort((a, b) => a.filename.localeCompare(b.filename));
 
-  // Files with errors remain selected for 1.5 seconds until the files are re-fetched do show the error state
-  // If the assistant is saved before they are re-fetched, we need to ensure any files with errors are removed
-  // from the list of ids being saved
   $: fileIdsWithoutErrors = $filesStore.files
-    .filter((row) => row.status !== 'error')
     .map((row) => row.id)
     .filter((id) => $filesStore.selectedAssistantFileIds.includes(id));
 </script>
@@ -25,7 +21,7 @@
     label="Choose data sources"
     items={$filesStore.files.map((file) => ({ id: file.id, text: file.filename }))}
     direction="top"
-    accept={['.pdf', 'txt']}
+    accept={['.pdf', '.txt', '.text']}
     bind:selectedIds={$filesStore.selectedAssistantFileIds}
     {filesForm}
   />

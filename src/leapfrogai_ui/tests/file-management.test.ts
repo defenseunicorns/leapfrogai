@@ -1,9 +1,9 @@
 import { expect, test } from './fixtures';
 import {
-  getSimpleMathQuestion,
   deleteTestFilesWithApi,
-  sendMessage,
+  getSimpleMathQuestion,
   loadChatPage,
+  sendMessage,
   uploadFile
 } from './helpers';
 import type { Page } from '@playwright/test';
@@ -56,7 +56,7 @@ test('it can navigate to the file management page', async ({ page }) => {
   await expect(page).toHaveTitle('LeapfrogAI - File Management');
 });
 
-test('it can upload a file', async ({ page }) => {
+test('it can upload a pdf file', async ({ page }) => {
   const checkboxes = await page.getByRole('checkbox').all();
   await uploadFile(page);
   const checkboxesDuringUpload = await page.getByRole('checkbox').all();
@@ -73,6 +73,29 @@ test('it can upload a file', async ({ page }) => {
 
   // test toast
   await expect(page.getByText('test.pdf imported successfully')).toBeVisible();
+
+  // test complete icon shows then disappears
+  await expect(page.getByTestId('file-uploaded-icon')).toBeVisible();
+  await expect(page.getByTestId('file-uploaded-icon')).not.toBeVisible();
+});
+
+test('it can upload a txt file', async ({ page }) => {
+  const checkboxes = await page.getByRole('checkbox').all();
+  await uploadFile(page, 'test.txt');
+  const checkboxesDuringUpload = await page.getByRole('checkbox').all();
+
+  // test loading icon shows then disappears
+  await expect(page.getByTestId('uploading-file-icon')).toBeVisible();
+  // Ensure an additional checkbox is not added during upload (it should not have one on that row. row is in nonSelectableRowIds)
+  await expect(checkboxesDuringUpload.length).toEqual(checkboxes.length);
+  await expect(page.getByTestId('uploading-file-icon')).not.toBeVisible();
+
+  const checkboxesAfterUpload = await page.getByRole('checkbox').all();
+  // Checkbox should now be present
+  await expect(checkboxesAfterUpload.length).toEqual(checkboxes.length + 1);
+
+  // test toast
+  await expect(page.getByText('test.txt imported successfully')).toBeVisible();
 
   // test complete icon shows then disappears
   await expect(page.getByTestId('file-uploaded-icon')).toBeVisible();
