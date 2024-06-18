@@ -48,7 +48,10 @@ DEFAULT_MODEL=llama-cpp-python # or vllm
 
 2. Run the frontend migrations
 
-[//]: # ' TODO'
+If you deploy the UI with UDS, the necessary database migrations will be applied. You can still run a local version of the UI, but the deployed version will have set up the
+database properly for you.
+
+Further instructions will be coming soon in a future release.
 
 ##### Authentication
 
@@ -78,7 +81,6 @@ run the UI outside of UDS on localhost (e.g. for development work), there are so
 1. To turn off Keycloak, set this .env variable: `PUBLIC_DISABLE_KEYCLOAK=false`
 
 
-
 ##### Running UI Locally with OpenAI
 Set the following .env variables:
 ```
@@ -101,7 +103,7 @@ The configuration files at src/leapfrogai_ui/supabase will ensure your Supabase 
 you set these .env variables:
 ```
 SUPABASE_AUTH_KEYCLOAK_CLIENT_ID=uds-supabase
-SUPABASE_AUTH_KEYCLOAK_SECRET=<secret>
+SUPABASE_AUTH_KEYCLOAK_SECRET=<secret> #this is the client secret for the client in Keycloak
 SUPABASE_AUTH_EXTERNAL_KEYCLOAK_URL=https://keycloak.admin.uds.dev/realms/uds
 ```
 
