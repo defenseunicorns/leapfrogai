@@ -42,7 +42,6 @@
 
   $: activeThread = $threadsStore.threads.find((t) => t.id === $page.params.thread_id);
   $: $page.params.thread_id, threadsStore.setLastVisitedThreadId($page.params.thread_id);
-  $: $page.params.thread_id, ($chatInput = '');
 
   $: assistantsList = [...(data.assistants || [])].map((assistant) => ({
     id: assistant.id,
@@ -78,7 +77,6 @@
         `/api/messages?thread_id=${$page.params.thread_id}&message_id=${$assistantMessages[$assistantMessages.length - 1].id}`
       );
       const message = await messageRes.json();
-      console.log('final fetched message', JSON.stringify(message));
       const parsedMessage = processAnnotations(message, data.files);
       const assistantMessagesCopy = [...$assistantMessages];
       assistantMessagesCopy[assistantMessagesCopy.length - 1] =
