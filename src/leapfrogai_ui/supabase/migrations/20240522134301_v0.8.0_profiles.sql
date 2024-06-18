@@ -24,3 +24,19 @@ create policy "Users can insert their own profile." on profiles
     for insert with check (auth.uid() = id);
 create policy "Users can update own profile." on profiles
     for update using (auth.uid() = id);
+
+-- Drop tables we no longer need (These tables are managed by the API now)
+DO $$
+BEGIN
+    BEGIN
+        DROP TABLE IF EXISTS messages;
+    END;
+
+    BEGIN
+        DROP TABLE IF EXISTS conversations;
+    END;
+
+    BEGIN
+        DROP TABLE IF EXISTS assistants;
+    END;
+END $$;

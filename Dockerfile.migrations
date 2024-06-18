@@ -1,6 +1,9 @@
 FROM --platform=$TARGETPLATFORM cgr.dev/chainguard/bash:latest
 ARG TARGETPLATFORM
 ARG version="1.169.8"
+ARG MIGRATIONS_DIR
+
+RUN test -n "$MIGRATIONS_DIR" || (echo "MIGRATIONS_PATH is required" && false)
 
 # Download the supabase cli
 RUN mkdir -p /usr/local/bin
@@ -13,4 +16,4 @@ RUN ARCH=$(echo $TARGETPLATFORM | cut -d '/' -f2) \
 USER 65532:65532
 
 # Download the migration scripts
-COPY --chown=65532:65532 migrations/*.sql supabase/migrations/
+COPY --chown=65532:65532 ${MIGRATIONS_DIR}/*.sql supabase/migrations/

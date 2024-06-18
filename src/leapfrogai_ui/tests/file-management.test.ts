@@ -13,23 +13,23 @@ const loadFileManagementPage = async (page: Page) => {
   await expect(page).toHaveTitle('LeapfrogAI - File Management');
 };
 
-test.beforeEach(async ({ page }) => {
-  await loadFileManagementPage(page);
+const initiateDeletion = async (page: Page, fileNameText: string) => {
+  const deleteBtn = page.getByRole('button', { name: 'delete' });
 
-  // Delete all rows with filenames that start with "test" and end in .pdf
-  const testPdfRows = await page.getByRole('row', { name: 'test.pdf' }).all();
-  const testPdfForDeletionPdfRows = await page.getByRole('row', { name: 'test2.pdf' }).all();
+  await deleteBtn.click();
+  await expect(page.getByText('Checking for any assistants affected by deletion...')).toBeVisible();
+  await expect(page.getByText(`Are you sure you want to delete ${fileNameText}`)).toBeVisible();
+};
+const confirmDeletion = async (page: Page) => {
+  const deleteBtns = await page.getByRole('button', { name: 'delete' }).all();
+  await deleteBtns[1].click();
+};
 
-  const testRows = [...testPdfRows, ...testPdfForDeletionPdfRows];
+// TODO - these tests are flaky because they use the same two files (test.pdf and test2.pdf) and there can
+// be race conditions when uploading and deleting them while tests run in parallel
 
-  for (const row of testRows) {
-    await row.getByRole('checkbox').click();
-  }
-  if (testRows.length === 1) {
-    await page.getByText('Delete').click();
-  }
-
-  await page.reload();
+test.beforeEach(async () => {
+  await deleteTestFilesWithApi();
 });
 
 test('it can navigate to the last visited thread with breadcrumbs', async ({ page }) => {
@@ -42,7 +42,8 @@ test('it can navigate to the last visited thread with breadcrumbs', async ({ pag
   const urlParts = new URL(page.url()).pathname.split('/');
   const threadId = urlParts[urlParts.length - 1];
 
-  await page.goto('/chat/file-management');
+  await page.getByLabel('Settings').click();
+  await page.getByText('File Management').click();
   await page.getByRole('link', { name: 'Chat' }).click();
   await page.waitForURL(`/chat/${threadId}`);
 });
@@ -57,6 +58,7 @@ test('it can navigate to the file management page', async ({ page }) => {
 });
 
 test('it can upload a pdf file', async ({ page }) => {
+  await loadFileManagementPage(page);
   const checkboxes = await page.getByRole('checkbox').all();
   await uploadFile(page);
   const checkboxesDuringUpload = await page.getByRole('checkbox').all();
@@ -102,24 +104,49 @@ test('it can upload a txt file', async ({ page }) => {
   await expect(page.getByTestId('file-uploaded-icon')).not.toBeVisible();
 });
 
-test('it can delete multiple files', async ({ page }) => {
-  const filename = 'test2.pdf';
+test('confirms any affected assistants then deletes multiple files', async ({ page }) => {
+  await loadFileManagementPage(page);
 
-  await uploadFile(page, `${filename}`);
-  await expect(page.getByText(`${filename} imported successfully`)).toBeVisible();
-  await expect(page.getByText(`${filename} imported successfully`)).not.toBeVisible(); // wait for upload to finish
-  await uploadFile(page, `${filename}`);
-  await expect(page.getByText(`${filename} imported successfully`)).toBeVisible();
-  await expect(page.getByText(`${filename} imported successfully`)).not.toBeVisible();
+  const filename1 = 'test.pdf';
+  const filename2 = 'test2.pdf';
+
+  await uploadFile(page, filename1);
+  await expect(page.getByText(`${filename1} imported successfully`)).toBeVisible();
+  await expect(page.getByText(`${filename1} imported successfully`)).not.toBeVisible(); // wait for upload to finish
+  await uploadFile(page, `${filename2}`);
+  await expect(page.getByText(`${filename2} imported successfully`)).toBeVisible();
+  await expect(page.getByText(`${filename2} imported successfully`)).not.toBeVisible();
 
   const checkboxes = await page.getByRole('checkbox').all();
-  await checkboxes[1].check();
-  await checkboxes[2].check();
-  await page.getByText('Delete').click();
+  await checkboxes[1].check({ force: true });
+  await checkboxes[2].check({ force: true });
+  await initiateDeletion(page, '');
+  await confirmDeletion(page);
+
   await expect(page.getByText('Files Deleted')).toBeVisible();
 });
 
+test('it cancel the delete confirmation modal', async ({ page }) => {
+  await loadFileManagementPage(page);
+
+  const filename = 'test.pdf';
+
+  await uploadFile(page, filename);
+  await expect(page.getByText(`${filename} imported successfully`)).toBeVisible();
+  await expect(page.getByText(`${filename} imported successfully`)).not.toBeVisible(); // wait for upload to finish
+
+  const checkboxes = await page.getByRole('checkbox').all();
+  await checkboxes[1].check({ force: true });
+
+  await initiateDeletion(page, filename);
+
+  const cancelBtn = page.getByRole('dialog').getByRole('button', { name: 'Cancel' });
+  await cancelBtn.click();
+  await expect(page.getByText(`Are you sure you want to delete ${filename}`)).not.toBeVisible();
+});
+
 test('shows an error toast when there is an error deleting a file', async ({ page }) => {
+  const filename = 'test.pdf';
   let hasBeenCalled = false;
   await page.route('*/**/api/files/delete', async (route) => {
     if (!hasBeenCalled && route.request().method() === 'DELETE') {
@@ -132,13 +159,18 @@ test('shows an error toast when there is an error deleting a file', async ({ pag
       }
     }
   });
-
-  await uploadFile(page);
+  await loadFileManagementPage(page);
+  await uploadFile(page, filename);
 
   await expect(page.getByText('test.pdf imported successfully')).toBeVisible();
   await expect(page.getByText('test.pdf imported successfully')).not.toBeVisible(); // wait for upload to finish
 
-  await deleteTestFilesWithApi();
+  const checkboxes = await page.getByRole('checkbox').all();
+  await checkboxes[1].check({ force: true });
+
+  await initiateDeletion(page, filename);
+  await confirmDeletion(page);
+
   await expect(page.getByText('Error Deleting File')).toBeVisible();
 });
 
