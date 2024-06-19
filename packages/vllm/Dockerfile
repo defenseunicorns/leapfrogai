@@ -40,7 +40,10 @@ RUN apt-get -y update \
 # get deps for vllm compilation, model download, and pyenv
 RUN apt-get -y install git python3-venv make build-essential libssl-dev zlib1g-dev libbz2-dev libreadline-dev libsqlite3-dev wget curl llvm libncurses5-dev libncursesw5-dev tk-dev libffi-dev
 
+COPY --from=sdk /leapfrogai/${SDK_DEST} ./${SDK_DEST}
+COPY packages/vllm packages/vllm
 RUN chown -R nonroot /home/leapfrogai/
+
 USER nonroot
 
 # # create virtual environment for light-weight portability and minimal libraries
@@ -52,17 +55,13 @@ RUN pyenv global ${PYTHON_VERSION}
 RUN python3 -m venv .venv
 ENV PATH="/home/leapfrogai/.venv/bin:$PATH"
 
-
-COPY --from=sdk /leapfrogai/${SDK_DEST} ./${SDK_DEST}
-COPY packages/vllm packages/vllm
-
 RUN rm -f packages/vllm/build/*.whl
 RUN python -m pip wheel packages/vllm -w packages/vllm/build --find-links=${SDK_DEST}
 RUN pip install packages/vllm/build/lfai_vllm*.whl --no-index --find-links=packages/vllm/build/
 
 # download model
 ENV HF_HOME=/home/leapfrogai/.cache/huggingface
-COPY src/ src/
+COPY packages/vllm/src/ src/
 
 # Load ARG values into env variables for pickup by confz
 ENV LAI_HF_HUB_ENABLE_HF_TRANSFER=${HF_HUB_ENABLE_HF_TRANSFER}
