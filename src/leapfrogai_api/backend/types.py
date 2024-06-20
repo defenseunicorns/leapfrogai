@@ -110,55 +110,138 @@ class ChatFunction(BaseModel):
 class ChatMessage(BaseModel):
     """Message object for chat completion."""
 
-    role: Literal["user", "assistant", "system", "function"]
-    content: str | list[TextContentBlockParam]
+    role: Literal["user", "assistant", "system", "function"] = Field(
+        default="user",
+        description="The role of the message author.",
+        examples=["user"]
+    )
+    content: str | list[TextContentBlockParam] = Field(
+        default="",
+        description="The content of the message. Can be a string or a list of text content blocks.",
+        examples=["Hello, how are you?"]
+    )
 
 
 class ChatDelta(BaseModel):
     """Delta object for chat completion."""
 
-    role: str
-    content: str | None = ""
+    role: str = Field(
+        default="",
+        description="The role of the author of this message delta.",
+        examples=["assistant"]
+    )
+    content: str | None = Field(
+        default="",
+        description="The content of this message delta."
+    )
 
 
 class ChatCompletionRequest(BaseModel):
     """Request object for chat completion."""
 
-    model: str
-    messages: list[ChatMessage]
-    functions: list | None = None
-    temperature: float | None = 1.0
-    top_p: float | None = 1
-    stream: bool | None = False
-    stop: str | None = None
-    max_tokens: int | None = 128
+    model: str = Field(
+        default="",
+        description="The ID of the model to use for chat completion.",
+        examples=["llama-cpp-python"]
+    )
+    messages: list[ChatMessage] = Field(
+        default=[],
+        description="A list of messages comprising the conversation so far."
+    )
+    functions: list | None = Field(
+        default=None,
+        description="A list of functions that the model may generate JSON inputs for."
+    )
+    temperature: float | None = Field(
+        default=1.0,
+        description="What sampling temperature to use, between 0 and 1. Higher values like 0.8 will make the output more random, while lower values like 0.2 will make it more focused and deterministic.",
+        ge=0,
+        le=2
+    )
+    top_p: float | None = Field(
+        default=1,
+        description="An alternative to sampling with temperature, called nucleus sampling, where the model considers the results of the tokens with top_p probability mass. So 0.1 means only the tokens comprising the top 10% probability mass are considered.",
+        gt=0,
+        le=1
+    )
+    stream: bool | None = Field(
+        default=False,
+        description="If set, partial message deltas will be sent. Tokens will be sent as data-only server-sent events as they become available, with the stream terminated by a data: [DONE] message."
+    )
+    stop: str | None = Field(
+        default=None,
+        description="Sequences that determine where the API will stop generating further tokens."
+    )
+    max_tokens: int | None = Field(
+        default=128,
+        description="The maximum number of tokens to generate in the chat completion.",
+        gt=0
+    )
 
 
 class ChatChoice(BaseModel):
     """Choice object for chat completion."""
 
-    index: int
-    message: ChatMessage
-    finish_reason: str | None = ""
+    index: int = Field(
+        default=0,
+        description="The index of this choice among the list of choices."
+    )
+    message: ChatMessage = Field(
+        default=ChatMessage(),
+        description="The message content for this choice."
+    )
+    finish_reason: str | None = Field(
+        default="",
+        description="The reason why the model stopped generating tokens.",
+        examples=["stop", "length"]
+    )
 
 
 class ChatStreamChoice(BaseModel):
     """Stream choice object for chat completion."""
 
-    index: int
-    delta: ChatDelta
-    finish_reason: str | None = ""
+    index: int = Field(
+        default=0,
+        description="The index of this choice among the list of choices."
+    )
+    delta: ChatDelta = Field(
+        default=ChatDelta(),
+        description="The delta content for this streaming choice."
+    )
+    finish_reason: str | None = Field(
+        default="",
+        description="The reason why the model stopped generating tokens.",
+        examples=["stop", "length"]
+    )
 
 
 class ChatCompletionResponse(BaseModel):
     """Response object for chat completion."""
 
-    id: str = ""
-    object: str = "chat.completion"
-    created: int = 0
-    model: str = ""
-    choices: list[ChatChoice] | list[ChatStreamChoice]
-    usage: Usage | None = None
+    id: str = Field(
+        default="",
+        description="A unique identifier for the chat completion."
+    )
+    object: str = Field(
+        default="chat.completion",
+        description="The object type, which is always 'chat.completion' for this response."
+    )
+    created: int = Field(
+        default=0,
+        description="The Unix timestamp (in seconds) of when the chat completion was created."
+    )
+    model: str = Field(
+        default="",
+        description="The ID of the model used for the chat completion."
+    )
+    choices: list[ChatChoice] | list[ChatStreamChoice] = Field(
+        default=[],
+        description="A list of chat completion choices. Can be either ChatChoice or ChatStreamChoice depending on whether streaming is enabled."
+    )
+    usage: Usage | None = Field(
+        default=None,
+        description="Usage statistics for the completion request."
+    )
 
 
 #############
@@ -268,14 +351,30 @@ class ListFilesResponse(BaseModel):
 class CreateAssistantRequest(BaseModel):
     """Request object for creating an assistant."""
 
-    model: str = Field(default="llama-cpp-python", examples=["llama-cpp-python"])
-    name: str | None = Field(default=None, examples=["Froggy Assistant"])
-    description: str | None = Field(default=None, examples=["A helpful assistant."])
+    model: str = Field(
+        default="llama-cpp-python",
+        examples=["llama-cpp-python"],
+        description="The model to be used by the assistant. Default is 'llama-cpp-python'."
+    )
+    name: str | None = Field(
+        default=None,
+        examples=["Froggy Assistant"],
+        description="The name of the assistant. Optional."
+    )
+    description: str | None = Field(
+        default=None,
+        examples=["A helpful assistant."],
+        description="A description of the assistant's purpose. Optional."
+    )
     instructions: str | None = Field(
-        default=None, examples=["You are a helpful assistant."]
+        default=None,
+        examples=["You are a helpful assistant."],
+        description="Instructions that the assistant should follow. Optional."
     )
     tools: list[AssistantTool] | None = Field(
-        default=None, examples=[[FileSearchTool(type="file_search")]]
+        default=None,
+        examples=[[FileSearchTool(type="file_search")]],
+        description="List of tools the assistant can use. Optional."
     )
     tool_resources: BetaAssistantToolResources | None = Field(
         default=None,
@@ -284,24 +383,47 @@ class CreateAssistantRequest(BaseModel):
                 file_search=ToolResourcesFileSearch(vector_store_ids=[])
             )
         ],
+        description="Resources for the tools used by the assistant. Optional."
     )
-    metadata: dict | None = Field(default={}, examples=[{}])
-    temperature: float | None = Field(default=None, examples=[1.0])
-    top_p: float | None = Field(default=None, examples=[1.0])
+    metadata: dict | None = Field(
+        default={},
+        examples=[{}],
+        description="Additional metadata for the assistant. Optional."
+    )
+    temperature: float | None = Field(
+        default=None,
+        examples=[1.0],
+        description="Sampling temperature for the model. Optional."
+    )
+    top_p: float | None = Field(
+        default=None,
+        examples=[1.0],
+        description="Nucleus sampling parameter. Optional."
+    )
     response_format: Literal["auto"] | None = Field(
-        default=None, examples=["auto"]
-    )  # This is all we support right now
+        default=None,
+        examples=["auto"],
+        description="The format of the assistant's responses. Currently only 'auto' is supported. Optional."
+    )
 
 
 class ModifyAssistantRequest(CreateAssistantRequest):
     """Request object for modifying an assistant."""
+    # Inherits all fields from CreateAssistantRequest
+    # All fields are optional for modification
 
 
 class ListAssistantsResponse(BaseModel):
-    """Response object for listing files."""
+    """Response object for listing assistants."""
 
-    object: str = Literal["list"]
-    data: list[Assistant] = []
+    object: str = Field(
+        default="list",
+        const=True,
+        description="The type of object. Always 'list' for this response."
+    )
+    data: list[Assistant] = Field(
+        description="A list of Assistant objects."
+    )
 
 
 ################
