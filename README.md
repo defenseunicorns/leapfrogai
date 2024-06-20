@@ -141,9 +141,9 @@ source .venv/bin/activate
 Each component is built into its own Zarf package. You can build all of the packages you need at once with the following `Make` targets:
 
 ```shell
-LOCAL_VERSION=dev make build-cpu    # api, llama-cpp-python, text-embeddings, whisper
-LOCAL_VERSION=dev make build-gpu    # api, vllm, text-embeddings, whisper
-LOCAL_VERSION=dev make build-all    # all of the backends
+LOCAL_VERSION=dev make build-cpu
+LOCAL_VERSION=dev make build-gpu
+LOCAL_VERSION=dev make build-all
 ```
 
 **OR**
@@ -174,9 +174,9 @@ To demonstrate what this would look like for an Apple Silicon Mac:
 REG_PORT=5001 ARCH=arm64 LOCAL_VERSION=dev make build-cpu    # api, llama-cpp-python, text-embeddings, whisper
 ```
 
-To demonstrate what this would look like for an older Intel Mac:
+To demonstrate what this would look like for an older Intel Mac (not officially supported):
 ``` shell
-REG_PORT=5001 LOCAL_VERSION=dev make build-cpu    # api, llama-cpp-python, text-embeddings, whisper
+REG_PORT=5001 LOCAL_VERSION=dev make build-cpu
 ```
 
 **OR**
