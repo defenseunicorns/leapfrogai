@@ -53,11 +53,11 @@ async def create_api_key(
             status_code=status.HTTP_400_BAD_REQUEST, detail="Invalid expiration time."
         )
 
-    response = await generate_and_store_api_key(session, user_id, request.expires_at)
+    response = await _generate_and_store_api_key(session, user_id, request.expires_at)
 
-    api_key = response[0]["api_key"]
-    created_at = response[0]["created_at"]
-    expires_at = response[0]["expires_at"]
+    api_key = response["api_key"]
+    created_at = response["created_at"]
+    expires_at = response["expires_at"]
 
     if not api_key:
         raise HTTPException(
@@ -126,19 +126,31 @@ async def revoke_api_key(
 @router.get("/list-api-keys")
 async def list_api_keys(
     session: Session,
-) -> dict[str, list[dict]]:
+):
     """List all API keys."""
     user_id: str = (await session.auth.get_user()).user.id
 
     data, _ = (
         await session.table("api_keys").select("*").eq("user_id", user_id).execute()
     )
-    _, response = data
+    _, db_response = data
 
-    return {"api_keys": response}
+    endpoint_response = []
+
+    for entry in db_response:
+        prefix, _, checksum = security.parse(entry["api_key"])
+        endpoint_response.append(
+            {
+                "api_key": f"{prefix}_****_{checksum}",
+                "created_at": entry["created_at"],
+                "expires_at": entry["expires_at"],
+            }
+        )
+
+    return endpoint_response
 
 
-async def generate_and_store_api_key(session: Session, user_id: str, expires_at: int):
+async def _generate_and_store_api_key(session: Session, user_id: str, expires_at: int):
     """Generate and store an API key."""
     read_once_token, hashed_token = security.generate_api_key()
 
@@ -156,7 +168,11 @@ async def generate_and_store_api_key(session: Session, user_id: str, expires_at:
     _, response = data
 
     if response:
-        return response
+        return {
+            "api_key": read_once_token,
+            "created_at": response[0]["created_at"],
+            "expires_at": response[0]["expires_at"],
+        }
 
     raise HTTPException(
         status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
