@@ -24,27 +24,26 @@ The default model that comes with this backend in this repository's officially r
 
 ### Run Locally
 
+
+To run the llama-cpp-python backend locally (starting from the root directory of the repository):
+
 From this directory:
 ```bash
 # Setup Virtual Environment
 python -m venv .venv
 source .venv/bin/activate
-
-python -m pip install ../../src/leapfrogai_sdk
-python -m pip install .
 ```
 
 ```bash
-# To support Huggingface Hub model downloads
-python -m pip install ".[dev]"
+# Install dependencies
+python -m pip install src/leapfrogai_sdk
+cd packages/llama-cpp-python
+python -m pip install .[dev]
 ```
 
 ```bash
-# Copy the environment variable file, change this if different params are needed
-cp .env.example .env
-
-# Make sure environment variables are set
-source .env
+# Copy the config example and make changes as needed
+cp config.example.yaml config.yaml
 
 # Clone Model
 # Supply a REPO_ID, FILENAME and REVISION if a different model is desired
@@ -53,5 +52,5 @@ python scripts/model_download.py
 mv .model/*.gguf .model/model.gguf
 
 # Start Model Backend
-python -m leapfrogai_sdk.cli --app-dir=. main:Model
+lfai-cli --app-dir=. main:Model
 ```

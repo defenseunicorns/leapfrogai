@@ -33,17 +33,17 @@ You can optionally specify different models or quantization types using the foll
 
 ### Run Locally
 
-From this directory:
+To run the vllm backend locally (starting from the root directory of the repository):
 ```bash
-# Setup Virtual Environment
+# Setup Virtual Environment if you haven't done so already
 python -m venv .venv
 source .venv/bin/activate
-
-python -m pip install ../../src/leapfrogai_sdk
-python -m pip install .
 ```
 
 ```bash
+# Install dependencies
+python -m pip install src/leapfrogai_sdk
+cd packages/vllm
 # To support Huggingface Hub model downloads
 python -m pip install ".[dev]"
 ```
@@ -62,5 +62,5 @@ python src/model_download.py
 mv .model/*.gguf .model/model.gguf
 
 # Start Model Backend
-python -m leapfrogai_sdk.cli --app-dir=src/ main:Model
+lfai-cli --app-dir=src/ main:Model
 ```

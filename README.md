@@ -24,12 +24,6 @@
   - [Accessing the UI](#accessing-the-ui)
   - [Cleanup](#cleanup)
   - [Local Dev](#local-dev)
-    - [API](#api-1)
-    - [Repeater](#repeater-1)
-    - [Backend: llama-cpp-python](#backend-llama-cpp-python)
-    - [Backend: text-embeddings](#backend-text-embeddings)
-    - [Backend: vllm](#backend-vllm)
-    - [Backend: whisper](#backend-whisper)
 - [Community](#community)
 
 ## Overview
@@ -55,19 +49,21 @@ The LeapfrogAI repository follows a monorepo structure based around an [API](#ap
 ```shell
 leapfrogai/
 ├── src/
-│   ├── leapfrogai_api/
-│   │   ├── main.py
-│   │   └── ...
-│   └── leapfrogai_sdk/
+│   ├── leapfrogai_api/     # source code for the API
+│   ├── leapfrogai_sdk/     # source code for the SDK
+│   └── leapfrogai_ui/      # source code for the UI
 ├── packages/
-│   ├── api/
-│   ├── llama-cpp-python/
-│   ├── text-embeddings/
-│   ├── vllm/
-│   └── whisper/
+│   ├── api/                # deployment infrastructure for the API
+│   ├── llama-cpp-python/   # source code & deployment infrastructure for the llama-cpp-python backend
+│   ├── repeater/           # source code & deployment infrastructure for the repeater model backend  
+│   ├── supabase/           # deployment infrastructure for the supabase database
+│   ├── text-embeddings/    # source code & deployment infrastructure for the text-embeddings backend
+│   ├── ui/                 # deployment infrastructure for the UI
+│   ├── vllm/               # source code & deployment infrastructure for the vllm backend
+│   └── whisper/            # source code & deployment infrastructure for the whisper backend
 ├── uds-bundles/
-│   ├── dev/
-│   └── latest/
+│   ├── dev/                # uds bundles for local uds dev deployments
+│   └── latest/             # uds bundles for the most current uds deployments
 ├── Makefile
 ├── pyproject.toml
 ├── README.md
@@ -86,6 +82,8 @@ LeapfrogAI provides an API that closely matches that of OpenAI's. This feature a
 
 ### Backends
 
+LeapfrogAI provides several backends for a variety of use cases.
+
 > Available Backends:
 > | Backend | AMD64 Support | ARM64 Support | Cuda Support | Docker Ready | K8s Ready | Zarf Ready |
 > | --- | --- | --- | --- | --- | --- | --- |
@@ -93,9 +91,6 @@ LeapfrogAI provides an API that closely matches that of OpenAI's. This feature a
 > | [whisper](packages/whisper/) | ✅ | 🚧 | ✅ | ✅ | ✅ | ✅ |
 > | [text-embeddings](packages/text-embeddings/) | ✅ | 🚧 | ✅ | ✅ | ✅ | ✅ |
 > | [vllm](packages/vllm/) | ✅ | ❌ | ✅ | ✅ | ✅ | ✅ |
-> | [rag](https://github.com/defenseunicorns/leapfrogai-backend-rag) (repo integration soon) | ✅ | ✅ | ❌ | ✅ | ✅ | ✅ |
-
-LeapfrogAI provides several backends for a variety of use cases.
 
 ### Image Hardening
 
@@ -139,8 +134,8 @@ source .venv/bin/activate
 Each component is built into its own Zarf package. You can build all of the packages you need at once with the following `Make` targets:
 
 ```shell
-make build-cpu    # api, llama-cpp-python, text-embeddings, whisper
-make build-gpu    # api, vllm, text-embeddings, whisper
+make build-cpu    # api, llama-cpp-python, text-embeddings, whisper, supabase
+make build-gpu    # api, vllm, text-embeddings, whisper, supabase
 make build-all    # all of the backends
 ```
 
@@ -150,6 +145,7 @@ You can build components individually using the following `Make` targets:
 
 ```shell
 make build-api
+make build-supabase
 make build-vllm                 # if you have GPUs
 make build-llama-cpp-python     # if you have CPU only
 make build-text-embeddings
@@ -220,80 +216,18 @@ docker volume prune -f # removes all hanging container volumes
 
 ### Local Dev
 
-The following instructions are for running each of the LFAI components for local development. This is useful when testing changes to a specific component, but will not assist in a full deployment of LeapfrogAI. Please refer to the above sections for deployment instructions.
+Each of the LFAI components can also be run individually outside a deployment environment via local development. This is useful when testing changes to a specific component, but will not assist in a full deployment of LeapfrogAI. Please refer to the above sections for deployment instructions.
 
-It is highly recommended to make a virtual environment to keep the development environment clean:
+Please refer to the linked READMEs for each individual packages local development instructions:
 
-```shell
-python -m venv .venv
-source .venv/bin/activate
-```
-
-#### API
-
-To run the LeapfrogAI API locally (starting from the root directory of the repository):
-
-```shell
-python -m pip install src/leapfrogai_sdk
-cd src/leapfrogai_api
-python -m pip install .
-uvicorn leapfrogai_api.main:app --port 3000 --log-level debug --reload
-```
-
-#### Repeater
-
-The instructions for running the basic repeater model (used for testing the API) can be found in the package [README](packages/repeater/README.md).
-
-#### Backend: llama-cpp-python
-
-To run the llama-cpp-python backend locally (starting from the root directory of the repository):
-
-```shell
-python -m pip install src/leapfrogai_sdk
-cd packages/llama-cpp-python
-python -m pip install .[dev]
-python scripts/model_download.py
-mv .model/*.gguf .model/model.gguf
-cp config.example.yaml config.yaml # Make any necessary updates
-lfai-cli --app-dir=. main:Model
-```
-
-#### Backend: text-embeddings
-
-To run the text-embeddings backend locally (starting from the root directory of the repository):
-
-```shell
-python -m pip install src/leapfrogai_sdk
-cd packages/text-embeddings
-python -m pip install .[dev]
-python scripts/model_download.py
-python -u main.py
-```
-
-#### Backend: vllm
-
-To run the vllm backend locally (starting from the root directory of the repository):
-
-```shell
-python -m pip install src/leapfrogai_sdk
-cd packages/vllm
-python -m pip install .[dev]
-python packages/vllm/src/model_download.py
-export QUANTIZATION=gptq
-python -u src/main.py
-```
-
-#### Backend: whisper
-
-To run the vllm backend locally (starting from the root directory of the repository):
-
-```shell
-python -m pip install src/leapfrogai_sdk
-cd packages/whisper
-python -m pip install ".[dev]"
-ct2-transformers-converter --model openai/whisper-base --output_dir .model --copy_files tokenizer.json --quantization float32
-python -u main.py
-```
+- [API](/src/leapfrogai_api/README.md)
+- [llama-cpp-python](/packages/llama-cpp-python/README.md)
+- [repeater](/packages/repeater/README.md)
+- [supabase](/packages/supabase/README.md)
+- [text-embeddings](/packages/text-embeddings/README.md)
+- [ui](/src/leapfrogai_ui/README.md)
+- [vllm](/packages/vllm/README.md)
+- [whisper](/packages/whisper/README.md)
 
 ## Community
 
