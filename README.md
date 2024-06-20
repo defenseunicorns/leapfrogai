@@ -19,10 +19,8 @@
 - [Usage](#usage)
   - [UDS (Latest)](#uds-latest)
   - [UDS (Dev)](#uds-dev)
-    - [CPU](#cpu)
-    - [GPU](#gpu)
-  - [Accessing the UI](#accessing-the-ui)
-  - [Cleanup](#cleanup)
+    - [Accessing the UI](#accessing-the-ui)
+    - [Cleanup](#cleanup)
   - [Local Dev](#local-dev)
 - [Community](#community)
 
@@ -120,59 +118,9 @@ LeapfrogAI can be deployed and run locally via UDS and Kubernetes, built out usi
 
 ### UDS (Dev)
 
-If you want to make some changes to LeapfrogAI before deploying via UDS (for example in a dev environment), you can follow these instructions:
+If you want to make some changes to LeapfrogAI before deploying via UDS (for example in a dev environment), follow the [UDS Dev Instructions](/uds-bundles/dev/README.md).
 
-Make sure your system has the [required dependencies](https://docs.leapfrog.ai/docs/local-deploy-guide/quick_start/#prerequisites).
-
-For ease, it's best to create a virtual environment:
-
-```shell
-python -m venv .venv
-source .venv/bin/activate
-```
-
-Each component is built into its own Zarf package. You can build all of the packages you need at once with the following `Make` targets:
-
-```shell
-make build-cpu    # api, llama-cpp-python, text-embeddings, whisper, supabase
-make build-gpu    # api, vllm, text-embeddings, whisper, supabase
-make build-all    # all of the backends
-```
-
-**OR**
-
-You can build components individually using the following `Make` targets:
-
-```shell
-make build-api
-make build-supabase
-make build-vllm                 # if you have GPUs
-make build-llama-cpp-python     # if you have CPU only
-make build-text-embeddings
-make build-whisper
-```
-
-Once the packages are created, you can deploy either a CPU or GPU-enabled deployment via one of the UDS bundles:
-
-#### CPU
-
-```shell
-cd uds-bundles/dev/cpu
-uds create .
-uds deploy k3d-core-slim-dev:0.22.2
-uds deploy uds-bundle-leapfrogai*.tar.zst
-```
-
-#### GPU
-
-```shell
-cd uds-bundles/dev/gpu
-uds create .
-uds deploy k3d-core-slim-dev:0.22.2 --set K3D_EXTRA_ARGS="--gpus=all --image=ghcr.io/justinthelaw/k3d-gpu-support:v1.27.4-k3s1-cuda"     # be sure to check if a newer version exists
-uds deploy uds-bundle-leapfrogai-*.tar.zst --confirm
-```
-
-### Accessing the UI
+#### Accessing the UI
 
 LeapfrogAI is integrated with the UDS Core KeyCloak service, which provides authentication via SSO. Below are general instructions for accessing the LeapfrogAI UI after a successful UDS deployment of UDS Core and LeapfrogAI.
 
@@ -202,7 +150,7 @@ LeapfrogAI is integrated with the UDS Core KeyCloak service, which provides auth
 
 8. Go back to ai.uds.dev and login as the registered user to access the UI
 
-### Cleanup
+#### Cleanup
 
 To clean-up or perform a fresh install, run the following commands in the context in which you had previously installed UDS Core and LeapfrogAI:
 
