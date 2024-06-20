@@ -71,8 +71,8 @@ from leapfrogai_sdk.chat.chat_pb2 import (
 class RunCreateParamsRequestBase(BaseModel):
     assistant_id: str = Field(default="", examples=["123ab"])
     instructions: str = Field(default="", examples=["You are a helpful AI assistant."])
-    max_completion_tokens: int | None = Field(default=128, examples=[4096])
-    max_prompt_tokens: int | None = Field(default=128, examples=[32768])
+    max_completion_tokens: int | None = Field(default=1024, examples=[4096])
+    max_prompt_tokens: int | None = Field(default=1024, examples=[32768])
     metadata: dict | None = Field(default={}, examples=[{}])
     model: str | None = Field(default=None, examples=["llama-cpp-python"])
     response_format: AssistantResponseFormatOption | None = Field(
@@ -96,14 +96,14 @@ class RunCreateParamsRequestBase(BaseModel):
         # TODO: Temporary fix to ensure max_completion_tokens and max_prompt_tokens are set
         if self.max_completion_tokens is None or self.max_completion_tokens < 1:
             logging.warning(
-                "max_completion_tokens is not set or is less than 1, setting to 128"
+                "max_completion_tokens is not set or is less than 1, setting to 1024"
             )
-            self.max_completion_tokens = 128
+            self.max_completion_tokens = 1024
         if self.max_prompt_tokens is None or self.max_prompt_tokens < 1:
             logging.warning(
-                "max_prompt_tokens is not set or is less than 1, setting to 128"
+                "max_prompt_tokens is not set or is less than 1, setting to 1024"
             )
-            self.max_prompt_tokens = 128
+            self.max_prompt_tokens = 1024
 
     @staticmethod
     def get_initial_messages_base(run: Run) -> list[str]:
@@ -296,7 +296,7 @@ class RunCreateParamsRequestBase(BaseModel):
                 and isinstance(assistant.tool_resources, BetaAssistantToolResources)
             ):
                 tool_resources = BetaThreadToolResources.model_validate(
-                    assistant.tool_resources
+                    assistant.tool_resources.model_dump()
                 )
             else:
                 tool_resources = None
@@ -362,7 +362,7 @@ class RunCreateParamsRequestBase(BaseModel):
                 and isinstance(assistant.tool_resources, BetaAssistantToolResources)
             ):
                 tool_resources = BetaThreadToolResources.model_validate(
-                    assistant.tool_resources
+                    assistant.tool_resources.model_dump()
                 )
             else:
                 tool_resources = None
