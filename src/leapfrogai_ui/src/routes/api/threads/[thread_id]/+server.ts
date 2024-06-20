@@ -7,20 +7,15 @@ const getThreadWithMessages = async (
   thread_id: string,
   access_token: string
 ): Promise<LFThread | null> => {
-  try {
-    const openai = getOpenAiClient(access_token);
-    const thread = (await openai.beta.threads.retrieve(thread_id)) as LFThread;
-    if (!thread) {
-      return null;
-    }
-    const messagesPage = await openai.beta.threads.messages.list(thread.id);
-    const messages = messagesPage.data as LFMessage[];
-    messages.sort((a, b) => a.created_at - b.created_at);
-    return { ...thread, messages: messages };
-  } catch (e) {
-    console.error(`Error fetching thread or messages: ${e}`);
+  const openai = getOpenAiClient(access_token);
+  const thread = (await openai.beta.threads.retrieve(thread_id)) as LFThread;
+  if (!thread) {
     return null;
   }
+  const messagesPage = await openai.beta.threads.messages.list(thread.id);
+  const messages = messagesPage.data as LFMessage[];
+  messages.sort((a, b) => a.created_at - b.created_at);
+  return { ...thread, messages: messages };
 };
 
 export async function GET({ params, locals: { safeGetSession } }) {

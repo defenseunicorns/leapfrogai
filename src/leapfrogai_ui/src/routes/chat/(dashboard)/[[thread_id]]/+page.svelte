@@ -6,7 +6,7 @@
   import { ArrowRight, Checkmark, StopFilledAlt, UserProfile } from 'carbon-icons-svelte';
   import { type Message as VercelAIMessage, useAssistant, useChat } from 'ai/svelte';
   import { page } from '$app/stores';
-  import { afterNavigate, beforeNavigate, goto } from '$app/navigation';
+  import { beforeNavigate, goto } from '$app/navigation';
   import Message from '$components/Message.svelte';
   import { getMessageText } from '$helpers/threads';
   import { getUnixSeconds } from '$helpers/dates.js';
@@ -41,6 +41,13 @@
   /** REACTIVE STATE **/
 
   $: $page.params.thread_id, threadsStore.setLastVisitedThreadId($page.params.thread_id);
+  $: $page.params.thread_id,
+    resetMessages({
+      activeThread: data.thread,
+      setChatMessages,
+      setAssistantMessages,
+      files: data.files
+    });
 
   $: assistantMode =
     $threadsStore.selectedAssistantId !== NO_SELECTED_ASSISTANT_ID &&
@@ -49,11 +56,7 @@
   $: if ($isLoading || $status === 'in_progress') threadsStore.setSendingBlocked(true);
 
   // new streamed assistant message received (add in assistant_id and ensure it has a created_at timestamp)
-  $: if (
-    $assistantMessages.length > 0 &&
-    !$assistantMessages[$assistantMessages.length - 1].assistant_id
-  )
-    modifyStreamedAssistantResponse();
+  $: $assistantMessages, modifyStreamedAssistantResponse();
 
   // assistant stream has completed
   $: if (hasSentAssistantMessage && $status === 'awaiting_message') {
@@ -91,13 +94,16 @@
     // and also add a createdAt date if not present
     const assistantMessagesCopy = [...$assistantMessages];
     const latestMessage = assistantMessagesCopy[assistantMessagesCopy.length - 1];
+    if (latestMessage) {
+      if (!latestMessage.assistant_id) {
+        latestMessage.assistant_id = $threadsStore.selectedAssistantId;
+      }
 
-    latestMessage.assistant_id = $threadsStore.selectedAssistantId;
-    if (!latestMessage.createdAt)
-      latestMessage.createdAt = latestMessage.created_at || getUnixSeconds(new Date());
+      if (!latestMessage.createdAt)
+        latestMessage.createdAt = latestMessage.created_at || getUnixSeconds(new Date());
 
-    setAssistantMessages(assistantMessagesCopy);
-
+      setAssistantMessages(assistantMessagesCopy);
+    }
     threadsStore.setSendingBlocked(false);
   };
 
@@ -274,15 +280,6 @@
         chatStop
       });
     }
-  });
-
-  afterNavigate(() => {
-    resetMessages({
-      activeThread: data.thread,
-      setChatMessages,
-      setAssistantMessages,
-      files: data.files
-    });
   });
 </script>
 

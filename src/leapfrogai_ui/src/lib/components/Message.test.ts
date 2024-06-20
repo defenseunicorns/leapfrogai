@@ -2,20 +2,16 @@ import { render, screen } from '@testing-library/svelte';
 import { afterAll, afterEach, type MockInstance, vi } from 'vitest';
 import { Message } from '$components/index';
 import userEvent from '@testing-library/user-event';
-import { fakeThreads, getFakeAssistant, getFakeMessage } from '$testUtils/fakeData';
+import { fakeAssistants, fakeThreads, getFakeMessage } from '$testUtils/fakeData';
 import MessageWithToast from '$components/MessageWithToast.test.svelte';
 import { convertMessageToVercelAiMessage, getMessageText } from '$helpers/threads';
 import { type Message as VercelAIMessage } from 'ai/svelte';
 import { chatHelpers } from '$helpers';
 import { threadsStore } from '$stores';
 import { NO_SELECTED_ASSISTANT_ID } from '$constants';
-import stores from '$app/stores';
-
-const { getStores } = await vi.hoisted(() => import('$lib/mocks/svelte'));
 
 const fakeAppend = vi.fn();
 const fakeReload = vi.fn();
-const assistant = getFakeAssistant();
 
 const getDefaultMessageProps = () => {
   let messages: VercelAIMessage[] = [];
@@ -34,40 +30,6 @@ const getDefaultMessageProps = () => {
 };
 
 describe('Message component', () => {
-  beforeAll(() => {
-    vi.mock('$app/stores', (): typeof stores => {
-      const page: typeof stores.page = {
-        subscribe(fn) {
-          return getStores({
-            url: `http://localhost/chat/${fakeThreads[0].id}`,
-            params: { thread_id: fakeThreads[0].id },
-            data: {
-              assistants: [assistant]
-            }
-          }).page.subscribe(fn);
-        }
-      };
-      const navigating: typeof stores.navigating = {
-        subscribe(fn) {
-          return getStores().navigating.subscribe(fn);
-        }
-      };
-      const updated: typeof stores.updated = {
-        subscribe(fn) {
-          return getStores().updated.subscribe(fn);
-        },
-        check: () => Promise.resolve(false)
-      };
-
-      return {
-        getStores,
-        navigating,
-        page,
-        updated
-      };
-    });
-  });
-
   afterEach(() => {
     fakeAppend.mockReset();
     fakeReload.mockReset();
@@ -105,7 +67,7 @@ describe('Message component', () => {
   });
   it('submits message edit when submit is clicked', async () => {
     const handleEditSpy = vi
-      .spyOn(chatHelpers, 'handleChatMessageEdit')
+      .spyOn(chatHelpers, 'handleMessageEdit')
       .mockImplementationOnce(vi.fn());
 
     const fakeMessage = getFakeMessage();
@@ -291,9 +253,9 @@ describe('Message component', () => {
     it('Has the title of the assistant name for regular AI responses', () => {
       render(Message, {
         ...getDefaultMessageProps(),
-        message: getFakeMessage({ role: 'assistant', assistant_id: assistant.id })
+        message: getFakeMessage({ role: 'assistant', assistant_id: fakeAssistants[0].id })
       });
-      screen.getByText(assistant.name!);
+      screen.getByText(fakeAssistants[0].name!);
     });
   });
 });

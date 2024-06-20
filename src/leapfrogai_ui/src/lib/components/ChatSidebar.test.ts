@@ -10,13 +10,11 @@ import { fireEvent, render, screen, within } from '@testing-library/svelte';
 import userEvent from '@testing-library/user-event';
 import { fakeThreads, getFakeThread } from '$testUtils/fakeData';
 import { vi } from 'vitest';
-import stores from '$app/stores';
+
 import { getUnixSeconds, monthNames } from '$helpers/dates';
 import * as navigation from '$app/navigation';
 import { getMessageText } from '$helpers/threads';
 import { NO_SELECTED_ASSISTANT_ID } from '$constants';
-
-const { getStores } = await vi.hoisted(() => import('../../lib/mocks/svelte'));
 
 const editThreadsLabel = async (oldLabel: string, newLabel: string, keyToPress = '{enter}') => {
   const overflowMenu = within(screen.getByTestId(`side-nav-menu-item-${oldLabel}`)).getByRole(
@@ -32,35 +30,6 @@ const editThreadsLabel = async (oldLabel: string, newLabel: string, keyToPress =
   await userEvent.type(editInput, newLabel);
   await userEvent.keyboard(keyToPress);
 };
-
-vi.mock('$app/stores', (): typeof stores => {
-  const page: typeof stores.page = {
-    subscribe(fn) {
-      return getStores({
-        url: `http://localhost/chat/${fakeThreads[0].id}`,
-        params: { thread_id: fakeThreads[0].id }
-      }).page.subscribe(fn);
-    }
-  };
-  const navigating: typeof stores.navigating = {
-    subscribe(fn) {
-      return getStores().navigating.subscribe(fn);
-    }
-  };
-  const updated: typeof stores.updated = {
-    subscribe(fn) {
-      return getStores().updated.subscribe(fn);
-    },
-    check: () => Promise.resolve(false)
-  };
-
-  return {
-    getStores,
-    navigating,
-    page,
-    updated
-  };
-});
 
 describe('ChatSidebar', () => {
   it('renders threads', async () => {

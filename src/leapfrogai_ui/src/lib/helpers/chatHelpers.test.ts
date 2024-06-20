@@ -49,14 +49,14 @@ describe('chat helpers', () => {
       expect(timestamp).toBe(timestampValue * 1000);
     });
 
-    it('should return 0 for invalid or missing date value', () => {
+    it('should default to a timestamp in miliseconds of right now for invalid or missing date value', () => {
       const message: LFMessage = {
         ...getFakeOpenAIMessage({ thread_id: '123', content: 'test', role: 'user' }),
         createdAt: null,
         created_at: null
       };
       const timestamp = normalizeTimestamp(message);
-      expect(timestamp).toBe(0);
+      expect(timestamp).toBe(new Date().getTime());
     });
   });
 

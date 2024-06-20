@@ -16,15 +16,6 @@ export const sortMessages = (messages: VercelOrOpenAIMessage[]): VercelOrOpenAIM
     const timeA = normalizeTimestamp(a);
     const timeB = normalizeTimestamp(b);
 
-    if (timeA === timeB) {
-      if (a.role === 'assistant' && b.role !== 'assistant') {
-        return 1; // a should come after b
-      }
-      if (a.role !== 'assistant' && b.role === 'assistant') {
-        return -1; // b should come after a
-      }
-    }
-
     return timeA - timeB;
   });
 };
@@ -336,7 +327,7 @@ export const normalizeTimestamp = (message: VercelOrOpenAIMessage | LFMessage): 
     return dateValue > 10000000000 ? dateValue : dateValue * 1000;
   }
 
-  return 0; // Default to 0 if no valid date is found
+  return new Date().getTime(); // Default to now
 };
 
 export const delay = (ms: number): Promise<void> => {

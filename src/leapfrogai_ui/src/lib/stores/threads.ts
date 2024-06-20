@@ -153,11 +153,19 @@ const createThreadsStore = () => {
     updateMessage: (threadId: string, messageId: string, newMessage: LFMessage) => {
       update((old) => {
         const threadIndex = old.threads.findIndex((thread) => thread.id === threadId);
-        const messageIndex = old.threads[threadIndex].messages.findIndex(
-          (message) => message.id === messageId
-        );
+        if (threadIndex === -1) return old;
+
         const updatedThreads = [...old.threads];
-        updatedThreads[threadIndex].messages[messageIndex] = newMessage;
+        const messages = updatedThreads[threadIndex].messages;
+
+        if (messages) {
+          const messageIndex = messages.findIndex((message) => message.id === messageId);
+          if (messageIndex !== -1) {
+            // if message found, update it
+            messages[messageIndex] = newMessage;
+          }
+        }
+
         return {
           ...old,
           threads: updatedThreads
