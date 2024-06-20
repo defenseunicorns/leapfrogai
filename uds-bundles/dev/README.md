@@ -51,3 +51,7 @@ uds create .
 uds deploy k3d-core-slim-dev:0.22.2 --set K3D_EXTRA_ARGS="--gpus=all --image=ghcr.io/justinthelaw/k3d-gpu-support:v1.27.4-k3s1-cuda"     # be sure to check if a newer version exists
 uds deploy uds-bundle-leapfrogai-*.tar.zst --confirm
 ```
+
+## Checking and Managing the Deployment
+
+For tips on how to monitor the deployment, accessing the UI, and clean up, please reference the [Quick Start](https://docs.leapfrog.ai/docs/local-deploy-guide/quick_start/#checking-deployment) guide in the LeapfrogAI docs.
