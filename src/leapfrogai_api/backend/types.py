@@ -284,12 +284,34 @@ class CreateEmbeddingResponse(BaseModel):
 
 
 class CreateTranscriptionRequest(BaseModel):
-    file: UploadFile
-    model: str
-    language: str = ""
-    prompt: str = ""
-    response_format: str = ""
-    temperature: float = 1.0
+    """Request object for creating a transcription."""
+
+    file: UploadFile = Field(
+        ...,
+        description="The audio file to transcribe. Supports any audio format that ffmpeg can handle. For a complete list of supported formats, see: https://ffmpeg.org/ffmpeg-formats.html"
+    )
+    model: str = Field(
+        ...,
+        description="ID of the model to use."
+    )
+    language: str = Field(
+        default="",
+        description="The language of the input audio. Supplying the input language in ISO-639-1 format will improve accuracy and latency."
+    )
+    prompt: str = Field(
+        default="",
+        description="An optional text to guide the model's style or continue a previous audio segment. The prompt should match the audio language."
+    )
+    response_format: str = Field(
+        default="json",
+        description="The format of the transcript output, in one of these options: json, text, srt, verbose_json, or vtt.",
+    )
+    temperature: float = Field(
+        default=1.0,
+        ge=0,
+        le=1,
+        description="The sampling temperature, between 0 and 1. Higher values like 0.8 will make the output more random, while lower values like 0.2 will make it more focused and deterministic. If set to 0, the model will use log probability to automatically increase the temperature until certain thresholds are hit."
+    )
 
     @classmethod
     def as_form(
@@ -298,9 +320,9 @@ class CreateTranscriptionRequest(BaseModel):
         model: str = Form(...),
         language: str | None = Form(""),
         prompt: str | None = Form(""),
-        response_format: str | None = Form(""),
+        response_format: str | None = Form("json"),
         temperature: float | None = Form(1.0),
-    ) -> CreateTranscriptionRequest:
+    ) -> "CreateTranscriptionRequest":
         return cls(
             file=file,
             model=model,
@@ -312,7 +334,13 @@ class CreateTranscriptionRequest(BaseModel):
 
 
 class CreateTranscriptionResponse(BaseModel):
-    text: str
+    """Response object for transcription."""
+
+    text: str = Field(
+        ...,
+        description="The transcribed text.",
+        examples=["Hello, this is a transcription of the audio file."]
+    )
 
 
 #############
