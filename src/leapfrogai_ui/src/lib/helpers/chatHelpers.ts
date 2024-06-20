@@ -68,19 +68,19 @@ export const stopThenSave = async ({
   else {
     if (isLoading) {
       chatStop();
+      const lastMessage = messages[messages.length - 1];
+
+      if (activeThreadId && lastMessage.role !== 'user') {
+        const newMessage = await saveMessage({
+          thread_id: activeThreadId,
+          content: getMessageText(lastMessage),
+          role: lastMessage.role,
+          assistantId: lastMessage.assistant_id
+        });
+
+        await threadsStore.addMessageToStore(newMessage);
+      }
     }
-  }
-  const lastMessage = messages[messages.length - 1];
-
-  if (activeThreadId && lastMessage.role !== 'user') {
-    const newMessage = await saveMessage({
-      thread_id: activeThreadId,
-      content: getMessageText(lastMessage),
-      role: lastMessage.role,
-      assistantId: lastMessage.assistant_id
-    });
-
-    await threadsStore.addMessageToStore(newMessage);
   }
 
   toastStore.addToast({
