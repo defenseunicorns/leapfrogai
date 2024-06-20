@@ -16,6 +16,7 @@ dependencies = [  # Dev dependencies needed for all of lfai
     "pytest",
     "httpx",
     "ruff",
+    "python-dotenv"
 ]
 requires-python = "~=3.11"
 
