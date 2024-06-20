@@ -12,10 +12,10 @@
 - [Components](#components)
   - [API](#api)
   - [Backends](#backends)
-  - [Image Hardening](#image-hardening)
   - [SDK](#sdk)
   - [User Interface](#user-interface)
   - [Repeater](#repeater)
+  - [Image Hardening](#image-hardening)
 - [Usage](#usage)
   - [UDS (Latest)](#uds-latest)
   - [UDS (Dev)](#uds-dev)
@@ -90,14 +90,6 @@ LeapfrogAI provides several backends for a variety of use cases.
 > | [text-embeddings](packages/text-embeddings/) | ✅ | 🚧 | ✅ | ✅ | ✅ | ✅ |
 > | [vllm](packages/vllm/) | ✅ | ❌ | ✅ | ✅ | ✅ | ✅ |
 
-### Image Hardening
-
-> GitHub Repo:
->
-> - [leapfrogai-images](https://github.com/defenseunicorns/leapfrogai-images)
-
-LeapfrogAI leverages Chainguard's [apko](https://github.com/chainguard-dev/apko) to harden base python images - pinning Python versions to the latest supported version by the other components of the LeapfrogAI stack.
-
 ### SDK
 
 The LeapfrogAI [SDK](src/leapfrogai_sdk/) provides a standard set of protobuff and python utilities for implementing backends and gRPC.
@@ -109,6 +101,14 @@ LeapfrogAI provides a [User Interface](src/leapfrogai_ui/) with support for comm
 ### Repeater
 
 The [repeater](packages/repeater/) "model" is a basic "backend" that parrots all inputs it receives back to the user. It is built out the same way all the actual backends are and it primarily used for testing the API.
+
+### Image Hardening
+
+> GitHub Repo:
+>
+> - [leapfrogai-images](https://github.com/defenseunicorns/leapfrogai-images)
+
+LeapfrogAI leverages Chainguard's [apko](https://github.com/chainguard-dev/apko) to harden base python images - pinning Python versions to the latest supported version by the other components of the LeapfrogAI stack.
 
 ## Usage
 
