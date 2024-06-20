@@ -1,7 +1,6 @@
 """LeapfrogAI endpoints for Auth."""
 
 import logging
-
 import time
 from fastapi import APIRouter, HTTPException, status
 from pydantic import BaseModel, Field
@@ -23,23 +22,52 @@ class CreateAPIKeyRequest(BaseModel):
     )
 
 
+class CreateAPIKeyResponse(BaseModel):
+    """Response body for creating an API key."""
+
+    api_key: str = Field(
+        description="The API key.",
+        examples=["lfai_1234567890abcdef1234567890abcdef_1234"],
+    )
+    created_at: int = Field(
+        description="The time at which the API key was created, in seconds since the Unix epoch.",
+        examples=[int(time.time())],
+    )
+    expires_at: int = Field(
+        description="The time at which the API key expires, in seconds since the Unix epoch.",
+        examples=[int(time.time()) + 60 * 60 * 24 * 30],  # default to 30 days
+    )
+
+
 @router.post("/create-api-key")
 async def create_api_key(
     session: Session,
     request: CreateAPIKeyRequest,
-) -> dict[str, str]:
+) -> CreateAPIKeyResponse:
     """Create an API key."""
 
     user_id: str = (await session.auth.get_user()).user.id
-    
-    if request.expires_at < time.time():
-        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Invalid expiration time.")
 
-    api_key = await generate_and_store_api_key(session, user_id, request.expires_at)
+    if request.expires_at < time.time():
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST, detail="Invalid expiration time."
+        )
+
+    response = await generate_and_store_api_key(session, user_id, request.expires_at)
+
+    api_key = response[0]["api_key"]
+    created_at = response[0]["created_at"]
+    expires_at = response[0]["expires_at"]
 
     if not api_key:
-        raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail="Failed to create API key.")
-    return {"api_key": api_key}
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail="Failed to create API key.",
+        )
+
+    return CreateAPIKeyResponse(
+        api_key=api_key, created_at=created_at, expires_at=expires_at
+    )
 
 
 @router.post("/validate-api-key")
@@ -88,7 +116,10 @@ async def revoke_api_key(
         await session.table("api_keys").delete().eq("api_key", stored_key).execute()
     )
     if not response:
-        raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail="Failed to revoke API key.")
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail="Failed to revoke API key.",
+        )
     return {"message": "API key revoked."}
 
 
@@ -107,9 +138,7 @@ async def list_api_keys(
     return {"api_keys": response}
 
 
-async def generate_and_store_api_key(
-    session: Session, user_id: str, expires_at: int
-) -> str:
+async def generate_and_store_api_key(session: Session, user_id: str, expires_at: int):
     """Generate and store an API key."""
     read_once_token, hashed_token = security.generate_api_key()
 
@@ -127,6 +156,9 @@ async def generate_and_store_api_key(
     _, response = data
 
     if response:
-        return read_once_token
+        return response
 
-    raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail="Failed to create API key.")
+    raise HTTPException(
+        status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+        detail="Failed to create API key.",
+    )
