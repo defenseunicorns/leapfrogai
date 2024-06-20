@@ -43,7 +43,7 @@
     text="Delete"
     on:click={(e) => {
       e.stopPropagation();
-      deleteModalOpen = true
+      deleteModalOpen = true;
     }}
   />
 </OverflowMenu>

@@ -4,7 +4,7 @@
   import { afterUpdate, onMount, tick } from 'svelte';
   import { threadsStore, toastStore } from '$stores';
   import { ArrowRight, Checkmark, StopFilledAlt, UserProfile } from 'carbon-icons-svelte';
-  import { type Message as AIMessage, useAssistant, useChat } from 'ai/svelte';
+  import { type Message as VercelAIMessage, useAssistant, useChat } from 'ai/svelte';
   import { page } from '$app/stores';
   import { afterNavigate, beforeNavigate, goto } from '$app/navigation';
   import Message from '$components/Message.svelte';
@@ -27,7 +27,7 @@
     ERROR_SAVING_MSG_TEXT
   } from '$constants/errorMessages';
 
-  import { convertMessageToAiMessage } from '$helpers/threads.js';
+  import { convertMessageToVercelAiMessage } from '$helpers/threads.js';
 
   export let data;
 
@@ -40,15 +40,8 @@
 
   /** REACTIVE STATE **/
 
-
   $: $page.params.thread_id, threadsStore.setLastVisitedThreadId($page.params.thread_id);
 
-  $: assistantsList = [...(data.assistants || [])].map((assistant) => ({
-    id: assistant.id,
-    text: assistant.name || 'unknown'
-  }));
-  $: assistantsList.unshift({ id: NO_SELECTED_ASSISTANT_ID, text: 'Select assistant...' }); // add dropdown item for no assistant selected
-  $: assistantsList.unshift({ id: `manage-assistants`, text: 'Manage assistants' }); // add dropdown item for manage assistants button
   $: assistantMode =
     $threadsStore.selectedAssistantId !== NO_SELECTED_ASSISTANT_ID &&
     $threadsStore.selectedAssistantId !== 'manage-assistants';
@@ -60,8 +53,7 @@
     $assistantMessages.length > 0 &&
     !$assistantMessages[$assistantMessages.length - 1].assistant_id
   )
-    modifyAndSaveAssistantMessage();
-
+    modifyStreamedAssistantResponse();
 
   // assistant stream has completed
   $: if (hasSentAssistantMessage && $status === 'awaiting_message') {
@@ -72,6 +64,7 @@
 
   /** END REACTIVE STATE **/
 
+  // Annotations are stored after the run completes, so we re-fetch the last message to get them
   const fetchAndParseCompletedAssistantResponse = async () => {
     try {
       const messageRes = await fetch(
@@ -81,18 +74,19 @@
       const parsedMessage = processAnnotations(message, data.files);
       const assistantMessagesCopy = [...$assistantMessages];
       assistantMessagesCopy[assistantMessagesCopy.length - 1] =
-        convertMessageToAiMessage(parsedMessage);
+        convertMessageToVercelAiMessage(parsedMessage);
       setAssistantMessages(assistantMessagesCopy);
-      await threadsStore.updateMessages($page.params.thread_id, [
-        ...$chatMessages,
-        ...assistantMessagesCopy
-      ]);
+      threadsStore.updateMessage(
+        $page.params.thread_id,
+        $assistantMessages[$assistantMessages.length - 1].id,
+        parsedMessage
+      );
     } catch {
       // Fail Silently - error notification would not be useful to user, on failure, just show unparsed message
     }
   };
 
-  const modifyAndSaveAssistantMessage = async () => {
+  const modifyStreamedAssistantResponse = async () => {
     // Streamed assistant responses don't contain an assistant_id, so we add it here
     // and also add a createdAt date if not present
     const assistantMessagesCopy = [...$assistantMessages];
@@ -119,7 +113,7 @@
     reload
   } = useChat({
     // Handle completed AI Responses
-    onFinish: async (message: AIMessage) => {
+    onFinish: async (message: VercelAIMessage) => {
       // OpenAI returns the creation timestamp in seconds instead of milliseconds.
       // If a response comes in quickly, we need to delay 1 second to ensure the timestamps of the user message
       // and AI response are not exactly the same. This is important for sorting messages when they are initially loaded
@@ -254,15 +248,14 @@
     }
   };
 
-  // onMount(async () => {
-  //   // await tick();
-  //   resetMessages({
-  //     activeThread: data.thread,
-  //     setChatMessages,
-  //     setAssistantMessages,
-  //     files: data.files
-  //   });
-  // });
+  onMount(async () => {
+    assistantsList = [...(data.assistants || [])].map((assistant) => ({
+      id: assistant.id,
+      text: assistant.name || 'unknown'
+    }));
+    assistantsList.unshift({ id: NO_SELECTED_ASSISTANT_ID, text: 'Select assistant...' }); // add dropdown item for no assistant selected
+    assistantsList.unshift({ id: `manage-assistants`, text: 'Manage assistants' }); // add dropdown item for manage assistants button
+  });
 
   afterUpdate(() => {
     // Scroll to bottom

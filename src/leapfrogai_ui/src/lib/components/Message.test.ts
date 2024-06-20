@@ -4,8 +4,8 @@ import { Message } from '$components/index';
 import userEvent from '@testing-library/user-event';
 import { fakeThreads, getFakeAssistant, getFakeMessage } from '$testUtils/fakeData';
 import MessageWithToast from '$components/MessageWithToast.test.svelte';
-import { convertMessageToAiMessage, getMessageText } from '$helpers/threads';
-import { type Message as AIMessage } from 'ai/svelte';
+import { convertMessageToVercelAiMessage, getMessageText } from '$helpers/threads';
+import { type Message as VercelAIMessage } from 'ai/svelte';
 import { chatHelpers } from '$helpers';
 import { threadsStore } from '$stores';
 import { NO_SELECTED_ASSISTANT_ID } from '$constants';
@@ -18,13 +18,13 @@ const fakeReload = vi.fn();
 const assistant = getFakeAssistant();
 
 const getDefaultMessageProps = () => {
-  let messages: AIMessage[] = [];
-  const setMessages = (newMessages: AIMessage[]) => {
+  let messages: VercelAIMessage[] = [];
+  const setMessages = (newMessages: VercelAIMessage[]) => {
     messages = [...newMessages];
   };
   return {
     allStreamedMessages: [],
-    message: convertMessageToAiMessage(getFakeMessage()),
+    message: convertMessageToVercelAiMessage(getFakeMessage()),
     messages,
     setMessages,
     isLastMessage: false,
@@ -89,7 +89,7 @@ describe('Message component', () => {
     const fakeMessage = getFakeMessage();
     render(Message, {
       ...getDefaultMessageProps(),
-      message: convertMessageToAiMessage(fakeMessage)
+      message: convertMessageToVercelAiMessage(fakeMessage)
     });
     const editPromptBtn = screen.getByLabelText('edit prompt');
     expect(screen.queryByText('edit message input')).not.toBeInTheDocument();
@@ -111,7 +111,7 @@ describe('Message component', () => {
     const fakeMessage = getFakeMessage();
     render(Message, {
       ...getDefaultMessageProps(),
-      message: convertMessageToAiMessage(fakeMessage)
+      message: convertMessageToVercelAiMessage(fakeMessage)
     });
     const editPromptBtn = screen.getByLabelText('edit prompt');
     expect(screen.queryByText('edit message input')).not.toBeInTheDocument();
@@ -125,7 +125,7 @@ describe('Message component', () => {
     const fakeAssistantMessage = getFakeMessage({ role: 'assistant' });
     render(Message, {
       ...getDefaultMessageProps(),
-      message: convertMessageToAiMessage(fakeAssistantMessage)
+      message: convertMessageToVercelAiMessage(fakeAssistantMessage)
     });
     expect(screen.queryByLabelText('edit prompt')).not.toBeInTheDocument();
   });
@@ -146,7 +146,7 @@ describe('Message component', () => {
       const fakeAssistantMessage = getFakeMessage({ role: 'assistant' });
       render(MessageWithToast, {
         ...getDefaultMessageProps(),
-        message: convertMessageToAiMessage(fakeAssistantMessage)
+        message: convertMessageToVercelAiMessage(fakeAssistantMessage)
       });
 
       await userEvent.click(screen.getByLabelText('copy message'));
@@ -164,7 +164,7 @@ describe('Message component', () => {
       const fakeAssistantMessage = getFakeMessage({ role: 'assistant' });
       render(MessageWithToast, {
         ...getDefaultMessageProps(),
-        message: convertMessageToAiMessage(fakeAssistantMessage)
+        message: convertMessageToVercelAiMessage(fakeAssistantMessage)
       });
 
       await userEvent.click(screen.getByLabelText('copy message'));
@@ -198,7 +198,7 @@ describe('Message component', () => {
       });
       render(MessageWithToast, {
         ...getDefaultMessageProps(),
-        message: convertMessageToAiMessage(getFakeMessage({ role: 'assistant' })),
+        message: convertMessageToVercelAiMessage(getFakeMessage({ role: 'assistant' })),
         isLastMessage: true
       });
 
@@ -208,7 +208,7 @@ describe('Message component', () => {
     it('does not have regenerate buttons for user messages', () => {
       render(MessageWithToast, {
         ...getDefaultMessageProps(),
-        message: convertMessageToAiMessage(getFakeMessage({ role: 'user' })),
+        message: convertMessageToVercelAiMessage(getFakeMessage({ role: 'user' })),
         isLastMessage: true
       });
 
@@ -217,7 +217,7 @@ describe('Message component', () => {
     it('does not have regenerate buttons for AI responses that are not the last response', () => {
       render(MessageWithToast, {
         ...getDefaultMessageProps(),
-        message: convertMessageToAiMessage(getFakeMessage({ role: 'assistant' })),
+        message: convertMessageToVercelAiMessage(getFakeMessage({ role: 'assistant' })),
         isLastMessage: false
       });
 
@@ -226,7 +226,7 @@ describe('Message component', () => {
     it('does not have a copy button for user messages', () => {
       render(MessageWithToast, {
         ...getDefaultMessageProps(),
-        message: convertMessageToAiMessage(getFakeMessage({ role: 'user' }))
+        message: convertMessageToVercelAiMessage(getFakeMessage({ role: 'user' }))
       });
 
       expect(screen.queryByLabelText('copy message')).not.toBeInTheDocument();
@@ -240,7 +240,7 @@ describe('Message component', () => {
       });
       render(MessageWithToast, {
         ...getDefaultMessageProps(),
-        message: convertMessageToAiMessage(getFakeMessage({ role: 'assistant' })),
+        message: convertMessageToVercelAiMessage(getFakeMessage({ role: 'assistant' })),
         isLastMessage: true
       });
       expect(screen.queryByLabelText('copy message')).toBeInTheDocument();
@@ -255,7 +255,7 @@ describe('Message component', () => {
       });
       render(MessageWithToast, {
         ...getDefaultMessageProps(),
-        message: convertMessageToAiMessage(getFakeMessage({ role: 'assistant' })),
+        message: convertMessageToVercelAiMessage(getFakeMessage({ role: 'assistant' })),
         isLastMessage: false
       });
       expect(screen.getByLabelText('copy message')).toBeInTheDocument();
@@ -269,7 +269,7 @@ describe('Message component', () => {
       });
       render(MessageWithToast, {
         ...getDefaultMessageProps(),
-        message: convertMessageToAiMessage(getFakeMessage({ role: 'user' })),
+        message: convertMessageToVercelAiMessage(getFakeMessage({ role: 'user' })),
         isLastMessage: false
       });
       screen.getByLabelText('edit prompt');

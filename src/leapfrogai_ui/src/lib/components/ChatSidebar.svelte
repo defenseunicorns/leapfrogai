@@ -157,7 +157,7 @@
               {#each organizedThreads as category}
                 {#if category.threads.length > 0}
                   <SideNavMenu text={category.label} expanded data-testid="side-nav-menu">
-                    {#each category.threads as thread, index (thread.id)}
+                    {#each category.threads as thread (thread.id)}
                       <SideNavMenuItem
                         data-testid="side-nav-menu-item-{thread.metadata.label}"
                         id="side-nav-menu-item-{thread.id}"

@@ -66,6 +66,7 @@ describe('ChatSidebar', () => {
   it('renders threads', async () => {
     threadsStore.set({
       threads: fakeThreads,
+      sendingBlocked: false,
       selectedAssistantId: NO_SELECTED_ASSISTANT_ID,
       lastVisitedThreadId: fakeThreads[0].id
     });
@@ -90,6 +91,7 @@ describe('ChatSidebar', () => {
 
     threadsStore.set({
       threads: [fakeTodayThread, fakeYesterdayThread], // uses date override starting in March
+      sendingBlocked: false,
       selectedAssistantId: NO_SELECTED_ASSISTANT_ID,
       lastVisitedThreadId: ''
     });
@@ -114,6 +116,7 @@ describe('ChatSidebar', () => {
 
     threadsStore.set({
       threads: fakeThreads,
+      sendingBlocked: false,
       selectedAssistantId: NO_SELECTED_ASSISTANT_ID,
       lastVisitedThreadId: fakeThreads[0].id
     });
@@ -151,6 +154,7 @@ describe('ChatSidebar', () => {
 
     threadsStore.set({
       threads: fakeThreads,
+      sendingBlocked: false,
       selectedAssistantId: NO_SELECTED_ASSISTANT_ID,
       lastVisitedThreadId: fakeThreads[0].id
     });
@@ -184,6 +188,7 @@ describe('ChatSidebar', () => {
 
     threadsStore.set({
       threads: fakeThreads,
+      sendingBlocked: false,
       selectedAssistantId: NO_SELECTED_ASSISTANT_ID,
       lastVisitedThreadId: fakeThreads[0].id
     });
@@ -204,6 +209,7 @@ describe('ChatSidebar', () => {
 
     threadsStore.set({
       threads: fakeThreads,
+      sendingBlocked: false,
       selectedAssistantId: NO_SELECTED_ASSISTANT_ID,
       lastVisitedThreadId: fakeThreads[0].id
     });
@@ -224,6 +230,7 @@ describe('ChatSidebar', () => {
 
     threadsStore.set({
       threads: fakeThreads,
+      sendingBlocked: false,
       selectedAssistantId: NO_SELECTED_ASSISTANT_ID,
       lastVisitedThreadId: fakeThreads[0].id
     });
@@ -255,6 +262,7 @@ describe('ChatSidebar', () => {
     const newLabelText = 'new label';
     threadsStore.set({
       threads: fakeThreads,
+      sendingBlocked: false,
       selectedAssistantId: NO_SELECTED_ASSISTANT_ID,
       lastVisitedThreadId: fakeThreads[0].id
     });
@@ -275,6 +283,7 @@ describe('ChatSidebar', () => {
     const newLabelText = 'new label';
     threadsStore.set({
       threads: fakeThreads,
+      sendingBlocked: false,
       selectedAssistantId: NO_SELECTED_ASSISTANT_ID,
       lastVisitedThreadId: fakeThreads[0].id
     });
@@ -297,6 +306,7 @@ describe('ChatSidebar', () => {
 
     threadsStore.set({
       threads: fakeThreads,
+      sendingBlocked: false,
       selectedAssistantId: NO_SELECTED_ASSISTANT_ID,
       lastVisitedThreadId: fakeThreads[0].id
     });
@@ -321,6 +331,7 @@ describe('ChatSidebar', () => {
 
     threadsStore.set({
       threads: fakeThreads,
+      sendingBlocked: false,
       selectedAssistantId: NO_SELECTED_ASSISTANT_ID,
       lastVisitedThreadId: fakeThreads[0].id
     });
@@ -338,6 +349,7 @@ describe('ChatSidebar', () => {
 
     threadsStore.set({
       threads: [fakeThread],
+      sendingBlocked: false,
       selectedAssistantId: NO_SELECTED_ASSISTANT_ID,
       lastVisitedThreadId: fakeThreads[0].id
     });
@@ -358,6 +370,7 @@ describe('ChatSidebar', () => {
 
     threadsStore.set({
       threads: [fakeThread1, fakeThread2, fakeThread3],
+      sendingBlocked: false,
       selectedAssistantId: NO_SELECTED_ASSISTANT_ID,
       lastVisitedThreadId: ''
     });
@@ -383,6 +396,7 @@ describe('ChatSidebar', () => {
 
     threadsStore.set({
       threads: [fakeThread1, fakeThread2, fakeThread3],
+      sendingBlocked: false,
       selectedAssistantId: NO_SELECTED_ASSISTANT_ID,
       lastVisitedThreadId: ''
     });

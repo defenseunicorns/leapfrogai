@@ -135,7 +135,7 @@ const createThreadsStore = () => {
         });
       }
     },
-    updateMessages: async (thread_id: string, messages: LFMessage[]) => {
+    updateMessages: (thread_id: string, messages: LFMessage[]) => {
       update((old) => {
         const updatedThreads = [...old.threads];
         const threadIndex = old.threads.findIndex((c) => c.id === thread_id);
@@ -144,6 +144,20 @@ const createThreadsStore = () => {
           ...oldThread,
           messages
         };
+        return {
+          ...old,
+          threads: updatedThreads
+        };
+      });
+    },
+    updateMessage: (threadId: string, messageId: string, newMessage: LFMessage) => {
+      update((old) => {
+        const threadIndex = old.threads.findIndex((thread) => thread.id === threadId);
+        const messageIndex = old.threads[threadIndex].messages.findIndex(
+          (message) => message.id === messageId
+        );
+        const updatedThreads = [...old.threads];
+        updatedThreads[threadIndex].messages[messageIndex] = newMessage;
         return {
           ...old,
           threads: updatedThreads

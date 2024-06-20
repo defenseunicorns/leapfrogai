@@ -30,8 +30,6 @@ export async function GET({ params, locals: { safeGetSession } }) {
   }
 
   try {
-    const openai = getOpenAiClient(session.access_token);
-
     const thread = await getThreadWithMessages(params.thread_id, session.access_token);
     return json(thread);
   } catch (e) {
