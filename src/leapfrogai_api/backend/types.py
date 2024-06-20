@@ -34,16 +34,13 @@ class Usage(BaseModel):
     """Usage object."""
 
     prompt_tokens: int = Field(
-        ...,
-        description="The number of tokens used in the prompt."
+        ..., description="The number of tokens used in the prompt."
     )
     completion_tokens: int | None = Field(
-        None,
-        description="The number of tokens generated in the completion."
+        None, description="The number of tokens generated in the completion."
     )
     total_tokens: int = Field(
-        ...,
-        description="The total number of tokens used (prompt + completion)."
+        ..., description="The total number of tokens used (prompt + completion)."
     )
 
 
@@ -79,78 +76,59 @@ class CompletionRequest(BaseModel):
     model: str = Field(
         ...,
         description="The ID of the model to use for completion.",
-        example="llama-cpp-python"
+        example="llama-cpp-python",
     )
     prompt: str | list[int] = Field(
         ...,
         description="The prompt to generate completions for. Can be a string or a list of integers representing token IDs.",
-        example="Once upon a time,"
+        example="Once upon a time,",
     )
     stream: bool = Field(
-        False,
-        description="Whether to stream the results as they become available."
+        False, description="Whether to stream the results as they become available."
     )
     max_tokens: int | None = Field(
-        16,
-        description="The maximum number of tokens to generate.",
-        ge=1
+        16, description="The maximum number of tokens to generate.", ge=1
     )
     temperature: float | None = Field(
         1.0,
         description="Sampling temperature to use. Higher values mean more random completions. Use lower values for more deterministic completions. The upper limit may vary depending on the backend used.",
-        ge=0.0
+        ge=0.0,
     )
 
 
 class CompletionChoice(BaseModel):
     """Choice object for completion."""
 
-    index: int = Field(
-        ...,
-        description="The index of this completion choice."
-    )
-    text: str = Field(
-        ...,
-        description="The generated text for this completion choice."
-    )
+    index: int = Field(..., description="The index of this completion choice.")
+    text: str = Field(..., description="The generated text for this completion choice.")
     logprobs: object | None = Field(
         None,
-        description="Log probabilities for the generated tokens. Only returned if requested."
+        description="Log probabilities for the generated tokens. Only returned if requested.",
     )
     finish_reason: str = Field(
-        "",
-        description="The reason why the completion finished.",
-        example="length"
+        "", description="The reason why the completion finished.", example="length"
     )
 
 
 class CompletionResponse(BaseModel):
     """Response object for completion."""
 
-    id: str = Field(
-        "",
-        description="A unique identifier for this completion response."
-    )
+    id: str = Field("", description="A unique identifier for this completion response.")
     object: str = Field(
         "completion",
         const=True,
-        description="The object type, which is always 'completion' for this response."
+        description="The object type, which is always 'completion' for this response.",
     )
     created: int = Field(
         0,
-        description="The Unix timestamp (in seconds) of when the completion was created."
+        description="The Unix timestamp (in seconds) of when the completion was created.",
     )
-    model: str = Field(
-        "",
-        description="The ID of the model used for the completion."
-    )
+    model: str = Field("", description="The ID of the model used for the completion.")
     choices: list[CompletionChoice] = Field(
-        ...,
-        description="A list of generated completions."
+        ..., description="A list of generated completions."
     )
     usage: Usage | None = Field(
-        None,
-        description="Usage statistics for the completion request."
+        None, description="Usage statistics for the completion request."
     )
 
 
@@ -171,14 +149,12 @@ class ChatMessage(BaseModel):
     """Message object for chat completion."""
 
     role: Literal["user", "assistant", "system", "function"] = Field(
-        default="user",
-        description="The role of the message author.",
-        examples=["user"]
+        default="user", description="The role of the message author.", examples=["user"]
     )
     content: str | list[TextContentBlockParam] = Field(
         default="",
         description="The content of the message. Can be a string or a list of text content blocks.",
-        examples=["Hello, how are you?"]
+        examples=["Hello, how are you?"],
     )
 
 
@@ -188,11 +164,10 @@ class ChatDelta(BaseModel):
     role: str = Field(
         default="",
         description="The role of the author of this message delta.",
-        examples=["assistant"]
+        examples=["assistant"],
     )
     content: str | None = Field(
-        default="",
-        description="The content of this message delta."
+        default="", description="The content of this message delta."
     )
 
 
@@ -202,39 +177,38 @@ class ChatCompletionRequest(BaseModel):
     model: str = Field(
         default="",
         description="The ID of the model to use for chat completion.",
-        examples=["llama-cpp-python"]
+        examples=["llama-cpp-python"],
     )
     messages: list[ChatMessage] = Field(
-        default=[],
-        description="A list of messages comprising the conversation so far."
+        default=[], description="A list of messages comprising the conversation so far."
     )
     functions: list | None = Field(
         default=None,
-        description="A list of functions that the model may generate JSON inputs for."
+        description="A list of functions that the model may generate JSON inputs for.",
     )
     temperature: float | None = Field(
         default=1.0,
         description="What sampling temperature to use. Higher values like 0.8 will make the output more random, while lower values like 0.2 will make it more focused and deterministic. The upper limit may vary depending on the backend used.",
-        ge=0
+        ge=0,
     )
     top_p: float | None = Field(
         default=1,
         description="An alternative to sampling with temperature, called nucleus sampling, where the model considers the results of the tokens with top_p probability mass. So 0.1 means only the tokens comprising the top 10% probability mass are considered.",
         gt=0,
-        le=1
+        le=1,
     )
     stream: bool | None = Field(
         default=False,
-        description="If set, partial message deltas will be sent. Tokens will be sent as data-only server-sent events as they become available, with the stream terminated by a data: [DONE] message."
+        description="If set, partial message deltas will be sent. Tokens will be sent as data-only server-sent events as they become available, with the stream terminated by a data: [DONE] message.",
     )
     stop: str | None = Field(
         default=None,
-        description="Sequences that determine where the API will stop generating further tokens."
+        description="Sequences that determine where the API will stop generating further tokens.",
     )
     max_tokens: int | None = Field(
         default=128,
         description="The maximum number of tokens to generate in the chat completion.",
-        gt=0
+        gt=0,
     )
 
 
@@ -242,17 +216,15 @@ class ChatChoice(BaseModel):
     """Choice object for chat completion."""
 
     index: int = Field(
-        default=0,
-        description="The index of this choice among the list of choices."
+        default=0, description="The index of this choice among the list of choices."
     )
     message: ChatMessage = Field(
-        default=ChatMessage(),
-        description="The message content for this choice."
+        default=ChatMessage(), description="The message content for this choice."
     )
     finish_reason: str | None = Field(
         default="",
         description="The reason why the model stopped generating tokens.",
-        examples=["stop", "length"]
+        examples=["stop", "length"],
     )
 
 
@@ -260,17 +232,15 @@ class ChatStreamChoice(BaseModel):
     """Stream choice object for chat completion."""
 
     index: int = Field(
-        default=0,
-        description="The index of this choice among the list of choices."
+        default=0, description="The index of this choice among the list of choices."
     )
     delta: ChatDelta = Field(
-        default=ChatDelta(),
-        description="The delta content for this streaming choice."
+        default=ChatDelta(), description="The delta content for this streaming choice."
     )
     finish_reason: str | None = Field(
         default="",
         description="The reason why the model stopped generating tokens.",
-        examples=["stop", "length"]
+        examples=["stop", "length"],
     )
 
 
@@ -278,28 +248,25 @@ class ChatCompletionResponse(BaseModel):
     """Response object for chat completion."""
 
     id: str = Field(
-        default="",
-        description="A unique identifier for the chat completion."
+        default="", description="A unique identifier for the chat completion."
     )
     object: str = Field(
         default="chat.completion",
-        description="The object type, which is always 'chat.completion' for this response."
+        description="The object type, which is always 'chat.completion' for this response.",
     )
     created: int = Field(
         default=0,
-        description="The Unix timestamp (in seconds) of when the chat completion was created."
+        description="The Unix timestamp (in seconds) of when the chat completion was created.",
     )
     model: str = Field(
-        default="",
-        description="The ID of the model used for the chat completion."
+        default="", description="The ID of the model used for the chat completion."
     )
     choices: list[ChatChoice] | list[ChatStreamChoice] = Field(
         default=[],
-        description="A list of chat completion choices. Can be either ChatChoice or ChatStreamChoice depending on whether streaming is enabled."
+        description="A list of chat completion choices. Can be either ChatChoice or ChatStreamChoice depending on whether streaming is enabled.",
     )
     usage: Usage | None = Field(
-        default=None,
-        description="Usage statistics for the completion request."
+        default=None, description="Usage statistics for the completion request."
     )
 
 
@@ -347,19 +314,16 @@ class CreateTranscriptionRequest(BaseModel):
 
     file: UploadFile = Field(
         ...,
-        description="The audio file to transcribe. Supports any audio format that ffmpeg can handle. For a complete list of supported formats, see: https://ffmpeg.org/ffmpeg-formats.html"
+        description="The audio file to transcribe. Supports any audio format that ffmpeg can handle. For a complete list of supported formats, see: https://ffmpeg.org/ffmpeg-formats.html",
     )
-    model: str = Field(
-        ...,
-        description="ID of the model to use."
-    )
+    model: str = Field(..., description="ID of the model to use.")
     language: str = Field(
         default="",
-        description="The language of the input audio. Supplying the input language in ISO-639-1 format will improve accuracy and latency."
+        description="The language of the input audio. Supplying the input language in ISO-639-1 format will improve accuracy and latency.",
     )
     prompt: str = Field(
         default="",
-        description="An optional text to guide the model's style or continue a previous audio segment. The prompt should match the audio language."
+        description="An optional text to guide the model's style or continue a previous audio segment. The prompt should match the audio language.",
     )
     response_format: str = Field(
         default="json",
@@ -369,7 +333,7 @@ class CreateTranscriptionRequest(BaseModel):
         default=1.0,
         ge=0,
         le=1,
-        description="The sampling temperature, between 0 and 1. Higher values like 0.8 will make the output more random, while lower values like 0.2 will make it more focused and deterministic. If set to 0, the model will use log probability to automatically increase the temperature until certain thresholds are hit."
+        description="The sampling temperature, between 0 and 1. Higher values like 0.8 will make the output more random, while lower values like 0.2 will make it more focused and deterministic. If set to 0, the model will use log probability to automatically increase the temperature until certain thresholds are hit.",
     )
 
     @classmethod
@@ -398,7 +362,7 @@ class CreateTranscriptionResponse(BaseModel):
     text: str = Field(
         ...,
         description="The transcribed text.",
-        examples=["Hello, this is a transcription of the audio file."]
+        examples=["Hello, this is a transcription of the audio file."],
     )
 
 
@@ -441,27 +405,27 @@ class CreateAssistantRequest(BaseModel):
     model: str = Field(
         default="llama-cpp-python",
         examples=["llama-cpp-python"],
-        description="The model to be used by the assistant. Default is 'llama-cpp-python'."
+        description="The model to be used by the assistant. Default is 'llama-cpp-python'.",
     )
     name: str | None = Field(
         default=None,
         examples=["Froggy Assistant"],
-        description="The name of the assistant. Optional."
+        description="The name of the assistant. Optional.",
     )
     description: str | None = Field(
         default=None,
         examples=["A helpful assistant."],
-        description="A description of the assistant's purpose. Optional."
+        description="A description of the assistant's purpose. Optional.",
     )
     instructions: str | None = Field(
         default=None,
         examples=["You are a helpful assistant."],
-        description="Instructions that the assistant should follow. Optional."
+        description="Instructions that the assistant should follow. Optional.",
     )
     tools: list[AssistantTool] | None = Field(
         default=None,
         examples=[[FileSearchTool(type="file_search")]],
-        description="List of tools the assistant can use. Optional."
+        description="List of tools the assistant can use. Optional.",
     )
     tool_resources: BetaAssistantToolResources | None = Field(
         default=None,
@@ -470,32 +434,33 @@ class CreateAssistantRequest(BaseModel):
                 file_search=ToolResourcesFileSearch(vector_store_ids=[])
             )
         ],
-        description="Resources for the tools used by the assistant. Optional."
+        description="Resources for the tools used by the assistant. Optional.",
     )
     metadata: dict | None = Field(
         default={},
         examples=[{}],
-        description="Additional metadata for the assistant. Optional."
+        description="Additional metadata for the assistant. Optional.",
     )
     temperature: float | None = Field(
         default=None,
         examples=[1.0],
-        description="Sampling temperature for the model. Optional."
+        description="Sampling temperature for the model. Optional.",
     )
     top_p: float | None = Field(
         default=None,
         examples=[1.0],
-        description="Nucleus sampling parameter. Optional."
+        description="Nucleus sampling parameter. Optional.",
     )
     response_format: Literal["auto"] | None = Field(
         default=None,
         examples=["auto"],
-        description="The format of the assistant's responses. Currently only 'auto' is supported. Optional."
+        description="The format of the assistant's responses. Currently only 'auto' is supported. Optional.",
     )
 
 
 class ModifyAssistantRequest(CreateAssistantRequest):
     """Request object for modifying an assistant."""
+
     # Inherits all fields from CreateAssistantRequest
     # All fields are optional for modification
 
@@ -506,11 +471,9 @@ class ListAssistantsResponse(BaseModel):
     object: str = Field(
         default="list",
         const=True,
-        description="The type of object. Always 'list' for this response."
+        description="The type of object. Always 'list' for this response.",
     )
-    data: list[Assistant] = Field(
-        description="A list of Assistant objects."
-    )
+    data: list[Assistant] = Field(description="A list of Assistant objects.")
 
 
 ################

@@ -66,7 +66,9 @@ async def stream_chat_completion(model: Model, request: lfai.ChatCompletionReque
         stream = stub.ChatCompleteStream(request)
 
         await stream.wait_for_connection()
-        return StreamingResponse(recv_chat(stream, model.name), media_type="text/event-stream")
+        return StreamingResponse(
+            recv_chat(stream, model.name), media_type="text/event-stream"
+        )
 
 
 async def stream_chat_completion_raw(
