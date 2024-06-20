@@ -3,7 +3,7 @@
 import logging
 
 import time
-from fastapi import APIRouter, HTTPException
+from fastapi import APIRouter, HTTPException, status
 from pydantic import BaseModel, Field
 from leapfrogai_api.routers.supabase_session import Session
 import leapfrogai_api.backend.security.api_key as security
@@ -31,11 +31,14 @@ async def create_api_key(
     """Create an API key."""
 
     user_id: str = (await session.auth.get_user()).user.id
+    
+    if request.expires_at < time.time():
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Invalid expiration time.")
 
     api_key = await generate_and_store_api_key(session, user_id, request.expires_at)
 
     if not api_key:
-        raise HTTPException(status_code=500, detail="Failed to create API key.")
+        raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail="Failed to create API key.")
     return {"api_key": api_key}
 
 
@@ -85,7 +88,7 @@ async def revoke_api_key(
         await session.table("api_keys").delete().eq("api_key", stored_key).execute()
     )
     if not response:
-        raise HTTPException(status_code=500, detail="Failed to revoke API key.")
+        raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail="Failed to revoke API key.")
     return {"message": "API key revoked."}
 
 
@@ -126,4 +129,4 @@ async def generate_and_store_api_key(
     if response:
         return read_once_token
 
-    raise HTTPException(status_code=500, detail="Failed to store API key.")
+    raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail="Failed to create API key.")
