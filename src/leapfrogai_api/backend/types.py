@@ -33,9 +33,18 @@ from pydantic import BaseModel, Field
 class Usage(BaseModel):
     """Usage object."""
 
-    prompt_tokens: int
-    completion_tokens: int | None = None
-    total_tokens: int
+    prompt_tokens: int = Field(
+        ...,
+        description="The number of tokens used in the prompt."
+    )
+    completion_tokens: int | None = Field(
+        None,
+        description="The number of tokens generated in the completion."
+    )
+    total_tokens: int = Field(
+        ...,
+        description="The total number of tokens used (prompt + completion)."
+    )
 
 
 ##########
@@ -67,31 +76,82 @@ class ModelResponse(BaseModel):
 class CompletionRequest(BaseModel):
     """Request object for completion."""
 
-    model: str
-    prompt: str | list[int]
-    stream: bool | None = False
-    max_tokens: int | None = 16
-    temperature: float | None = 1.0
+    model: str = Field(
+        ...,
+        description="The ID of the model to use for completion.",
+        example="llama-cpp-python"
+    )
+    prompt: str | list[int] = Field(
+        ...,
+        description="The prompt to generate completions for. Can be a string or a list of integers representing token IDs.",
+        example="Once upon a time,"
+    )
+    stream: bool = Field(
+        False,
+        description="Whether to stream the results as they become available."
+    )
+    max_tokens: int | None = Field(
+        16,
+        description="The maximum number of tokens to generate.",
+        ge=1
+    )
+    temperature: float | None = Field(
+        1.0,
+        description="Sampling temperature to use. Higher values mean more random completions. Use lower values for more deterministic completions. The upper limit may vary depending on the backend used.",
+        ge=0.0
+    )
 
 
 class CompletionChoice(BaseModel):
     """Choice object for completion."""
 
-    index: int
-    text: str
-    logprobs: object = None
-    finish_reason: str = ""
+    index: int = Field(
+        ...,
+        description="The index of this completion choice."
+    )
+    text: str = Field(
+        ...,
+        description="The generated text for this completion choice."
+    )
+    logprobs: object | None = Field(
+        None,
+        description="Log probabilities for the generated tokens. Only returned if requested."
+    )
+    finish_reason: str = Field(
+        "",
+        description="The reason why the completion finished.",
+        example="length"
+    )
 
 
 class CompletionResponse(BaseModel):
     """Response object for completion."""
 
-    id: str = ""
-    object: str = "completion"
-    created: int = 0
-    model: str = ""
-    choices: list[CompletionChoice]
-    usage: Usage | None = None
+    id: str = Field(
+        "",
+        description="A unique identifier for this completion response."
+    )
+    object: str = Field(
+        "completion",
+        const=True,
+        description="The object type, which is always 'completion' for this response."
+    )
+    created: int = Field(
+        0,
+        description="The Unix timestamp (in seconds) of when the completion was created."
+    )
+    model: str = Field(
+        "",
+        description="The ID of the model used for the completion."
+    )
+    choices: list[CompletionChoice] = Field(
+        ...,
+        description="A list of generated completions."
+    )
+    usage: Usage | None = Field(
+        None,
+        description="Usage statistics for the completion request."
+    )
 
 
 ##########
@@ -154,9 +214,8 @@ class ChatCompletionRequest(BaseModel):
     )
     temperature: float | None = Field(
         default=1.0,
-        description="What sampling temperature to use, between 0 and 1. Higher values like 0.8 will make the output more random, while lower values like 0.2 will make it more focused and deterministic.",
-        ge=0,
-        le=2
+        description="What sampling temperature to use. Higher values like 0.8 will make the output more random, while lower values like 0.2 will make it more focused and deterministic. The upper limit may vary depending on the backend used.",
+        ge=0
     )
     top_p: float | None = Field(
         default=1,
