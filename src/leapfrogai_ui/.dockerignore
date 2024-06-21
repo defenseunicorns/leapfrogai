@@ -30,7 +30,7 @@ supabase/
 # Copied from .gitignore
 # temporary deployment and development artifacts
 data/*
-*.tar.zst
+**/*.tar.zst
 __pycache__
 .venv
 .ipynb_checkpoints
@@ -46,7 +46,7 @@ zarf-sbom/
 *egg-info
 egg-info/
 build/
-*.whl
+**/*.whl
 .model/
 *.gguf
 .env
