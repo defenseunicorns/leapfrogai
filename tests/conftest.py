@@ -1,9 +1,11 @@
+# This file will be imported by all test files
 import os
 from dotenv import load_dotenv
 
 
 def pytest_configure(config):
-    # runs once for all tests
+    # This will run once per test run
+    # before tests are collected or executed
 
     load_dotenv()
 

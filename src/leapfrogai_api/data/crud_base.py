@@ -24,13 +24,12 @@ class CRUDBase(Generic[ModelType]):
             del dict_["id"]
         # Only delete created_at if it is <= 0, the db time is not adequate for message ordering
         if "created_at" in dict_ and not (
-            isinstance(dict_["created_at"], int) and
-            dict_["created_at"] > 0
+            isinstance(dict_["created_at"], int) and dict_["created_at"] > 0
         ):
             del dict_["created_at"]
 
         result = await self.db.table(self.table_name).insert(dict_).execute()
-        
+
         try:
             return self.model(**result[0][1][0])
         except Exception:
@@ -45,7 +44,7 @@ class CRUDBase(Generic[ModelType]):
                 query = query.eq(key, value)
 
         result = await query.execute()
-        
+
         try:
             return self.model(**result[0][1][0])
         except Exception:
@@ -60,7 +59,7 @@ class CRUDBase(Generic[ModelType]):
                 query = query.eq(key, value)
 
         result = await query.execute()
-    
+
         try:
             return [self.model(**item) for item in result[0][1]] or None
         except Exception:
