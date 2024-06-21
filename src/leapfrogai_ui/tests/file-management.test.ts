@@ -28,8 +28,8 @@ const confirmDeletion = async (page: Page) => {
 // TODO - these tests are flaky because they use the same two files (test.pdf and test2.pdf) and there can
 // be race conditions when uploading and deleting them while tests run in parallel
 
-test.beforeEach(async () => {
-  await deleteTestFilesWithApi();
+test.beforeEach(async ({ openAIClient }) => {
+  await deleteTestFilesWithApi(openAIClient);
 });
 
 test('it can navigate to the last visited thread with breadcrumbs', async ({ page }) => {

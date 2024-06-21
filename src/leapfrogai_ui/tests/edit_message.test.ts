@@ -13,7 +13,7 @@ import { delay } from 'msw';
 const newMessage1 = getSimpleMathQuestion();
 const newMessage2 = getSimpleMathQuestion();
 
-test('editing a message', async ({ page }) => {
+test('editing a message', async ({ page, openAIClient }) => {
   await loadChatPage(page);
 
   await sendMessage(page, newMessage1);
@@ -42,10 +42,10 @@ test('editing a message', async ({ page }) => {
   const editedMessage = page.getByTestId('message').nth(2);
   const textContent = await editedMessage.textContent();
   expect(textContent?.trim()).toEqual('edited message');
-  await deleteActiveThread(page);
+  await deleteActiveThread(page, openAIClient);
 });
 
-test('editing a message when an AI response is missing', async ({ page }) => {
+test('editing a message when an AI response is missing', async ({ page, openAIClient }) => {
   let isFirstRequest = true;
 
   await page.route('*/**/api/chat', async (route) => {
@@ -95,10 +95,10 @@ test('editing a message when an AI response is missing', async ({ page }) => {
   const editedMessage = page.getByTestId('message').nth(2);
   const textContent = await editedMessage.textContent();
   expect(textContent?.trim()).toEqual('edited message');
-  await deleteActiveThread(page);
+  await deleteActiveThread(page, openAIClient);
 });
 
-test('regenerating responses', async ({ page }) => {
+test('regenerating responses', async ({ page, openAIClient }) => {
   await loadChatPage(page);
 
   await sendMessage(page, newMessage1);
@@ -112,11 +112,11 @@ test('regenerating responses', async ({ page }) => {
   await expect(messages).toHaveCount(1);
   await waitForResponseToComplete(page);
   await expect(messages).toHaveCount(2);
-  await deleteActiveThread(page);
+  await deleteActiveThread(page, openAIClient);
 });
 
-test('it can regenerate the last assistant response', async ({ page }) => {
-  const assistant = await createAssistantWithApi();
+test('it can regenerate the last assistant response', async ({ page, openAIClient }) => {
+  const assistant = await createAssistantWithApi(openAIClient);
 
   await loadChatPage(page);
   const messages = page.getByTestId('message');
@@ -136,12 +136,12 @@ test('it can regenerate the last assistant response', async ({ page }) => {
   await expect(messages).toHaveCount(2);
 
   // Cleanup
-  await deleteAssistantWithApi(assistant.id);
-  await deleteActiveThread(page);
+  await deleteAssistantWithApi(assistant.id, openAIClient);
+  await deleteActiveThread(page, openAIClient);
 });
 
-test('editing an assistant message', async ({ page }) => {
-  const assistant = await createAssistantWithApi();
+test('editing an assistant message', async ({ page, openAIClient }) => {
+  const assistant = await createAssistantWithApi(openAIClient);
 
   await loadChatPage(page);
 
@@ -182,6 +182,6 @@ test('editing an assistant message', async ({ page }) => {
   await expect(page.getByTestId('assistant-icon')).toHaveCount(2);
 
   // Cleanup
-  await deleteAssistantWithApi(assistant.id);
-  await deleteActiveThread(page);
+  await deleteAssistantWithApi(assistant.id, openAIClient);
+  await deleteActiveThread(page, openAIClient);
 });

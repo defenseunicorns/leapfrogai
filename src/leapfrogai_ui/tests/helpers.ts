@@ -1,21 +1,14 @@
 import { expect, type Page } from '@playwright/test';
 import { faker } from '@faker-js/faker';
-import { createClient } from '@supabase/supabase-js';
 import type { AssistantInput, LFAssistant } from '$lib/types/assistants';
 import OpenAI from 'openai';
 import type { Profile } from '$lib/types/profile';
 import { getFakeAssistantInput } from '$testUtils/fakeData';
 import * as fs from 'node:fs';
+import { createClient } from '@supabase/supabase-js';
+import type { AssistantCreateParams } from 'openai/resources/beta/assistants';
 
 const supabase = createClient(process.env.PUBLIC_SUPABASE_URL!, process.env.SERVICE_ROLE_KEY!);
-
-export const getOpenAiClient = (access_token?: string) =>
-  new OpenAI({
-    apiKey: process.env.OPENAI_API_KEY ? process.env.OPENAI_API_KEY : access_token,
-    baseURL: process.env.LEAPFROGAI_API_BASE_URL
-  });
-
-const serviceRoleOpenAI = getOpenAiClient(process.env.SERVICE_ROLE_KEY);
 
 // These messages result in faster responses to avoid timeout issues
 export const getSimpleMathQuestion = () => {
@@ -28,7 +21,7 @@ export const getSimpleMathQuestion = () => {
   const randomOperation = faker.helpers.arrayElement(operations);
   const randomNumber1 = faker.number.int({ min: 1, max: 1000 });
   const randomNumber2 = faker.number.int({ min: 1, max: 1000 });
-  return `${randomOperation.operation} ${randomNumber1} ${randomOperation.preposition} ${randomNumber2}`;
+  return `${randomOperation.operation} ${randomNumber1} ${randomOperation.preposition} ${randomNumber2}, respond with no more than one sentence`;
 };
 
 export const loadChatPage = async (page: Page) => {
@@ -65,16 +58,16 @@ export const createAssistant = async (page: Page, assistantInput: AssistantInput
   await saveButtons.click();
 };
 
-export const deleteActiveThread = async (page: Page) => {
+export const deleteActiveThread = async (page: Page, openAIClient: OpenAI) => {
   const urlParts = new URL(page.url()).pathname.split('/');
   const threadId = urlParts[urlParts.length - 1];
 
   if (threadId && threadId !== 'chat') {
-    await deleteThread(threadId);
+    await deleteThread(threadId, openAIClient);
   }
 };
-export const deleteThread = async (id: string) => {
-  await serviceRoleOpenAI.beta.threads.del(id);
+export const deleteThread = async (id: string, openAIClient: OpenAI) => {
+  await openAIClient.beta.threads.del(id);
   const listUsers = await supabase.auth.admin.listUsers();
   let userId = '';
   for (const user of listUsers.data.users) {
@@ -95,15 +88,15 @@ export const deleteThread = async (id: string) => {
 };
 
 export const waitForResponseToComplete = async (page: Page) => {
-  await expect(page.getByTestId('cancel message')).toHaveCount(1, { timeout: 30000 });
-  await expect(page.getByTestId('cancel message')).toHaveCount(0, { timeout: 30000 });
-  await expect(page.getByTestId('send message')).toHaveCount(1, { timeout: 30000 });
+  await expect(page.getByTestId('cancel message')).toHaveCount(1, { timeout: 60000 });
+  await expect(page.getByTestId('cancel message')).toHaveCount(0, { timeout: 60000 });
+  await expect(page.getByTestId('send message')).toHaveCount(1, { timeout: 60000 });
 };
 
-export const deleteAllAssistants = async () => {
-  const myAssistants = await serviceRoleOpenAI.beta.assistants.list();
+export const deleteAllAssistants = async (openAIClient: OpenAI) => {
+  const myAssistants = await openAIClient.beta.assistants.list();
   for (const assistant of myAssistants.data) {
-    await deleteAssistantWithApi(assistant.id);
+    await deleteAssistantWithApi(assistant.id, openAIClient);
   }
 };
 
@@ -126,36 +119,37 @@ export const uploadAvatar = async (page: Page, imageName = 'Doug') => {
   expect(hasImage).toBeDefined();
 };
 
-export const createAssistantWithApi = async () => {
+export const createAssistantWithApi = async (openAIClient: OpenAI) => {
   const fakeAssistantInput = getFakeAssistantInput();
-  const assistantInput = {
+  const assistantInput: AssistantCreateParams = {
     name: fakeAssistantInput.name,
     description: fakeAssistantInput.description,
     instructions: fakeAssistantInput.instructions,
     temperature: fakeAssistantInput.temperature,
     model: process.env.DEFAULT_MODEL!,
+    tools: [],
     metadata: {
       pictogram: 'Default'
     }
   };
 
-  return (await serviceRoleOpenAI.beta.assistants.create(assistantInput)) as LFAssistant;
+  return (await openAIClient.beta.assistants.create(assistantInput)) as LFAssistant;
 };
 
-export const deleteAssistantWithApi = async (id: string) => {
-  await serviceRoleOpenAI.beta.assistants.del(id);
+export const deleteAssistantWithApi = async (id: string, openAIClient: OpenAI) => {
+  await openAIClient.beta.assistants.del(id);
 };
 
-export const uploadFileWithApi = async (fileName = 'test.pdf') => {
+export const uploadFileWithApi = async (fileName = 'test.pdf', openAIClient: OpenAI) => {
   const file = fs.createReadStream(`./tests/fixtures/${fileName}`);
 
-  return serviceRoleOpenAI.files.create({
+  return openAIClient.files.create({
     file: file,
     purpose: 'assistants'
   });
 };
-export const deleteFileWithApi = async (id: string) => {
-  return serviceRoleOpenAI.files.del(id);
+export const deleteFileWithApi = async (id: string, openAIClient: OpenAI) => {
+  return openAIClient.files.del(id);
 };
 
 export const uploadFile = async (page: Page, filename = 'test.pdf', btnName = 'upload') => {
@@ -174,8 +168,8 @@ export const deleteAssistant = async (page: Page, name: string) => {
   await page.getByRole('button', { name: 'Delete' }).click();
 };
 
-export const deleteTestFilesWithApi = async () => {
-  const list = await openai.files.list();
+export const deleteTestFilesWithApi = async (openAIClient: OpenAI) => {
+  const list = await openAIClient.files.list();
   const idsToDelete: string[] = [];
   for await (const file of list) {
     if (file.filename.startsWith('test')) {
@@ -185,7 +179,7 @@ export const deleteTestFilesWithApi = async () => {
 
   const promises = [];
   for (const id of idsToDelete) {
-    promises.push(openai.files.del(id));
+    promises.push(openAIClient.files.del(id));
   }
   await Promise.all(promises);
 };

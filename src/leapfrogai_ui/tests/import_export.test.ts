@@ -1,4 +1,4 @@
-import { expect, test } from '@playwright/test';
+import { expect, test } from './fixtures';
 import { loadChatPage } from './helpers';
 import { getFakeThread } from '../testUtils/fakeData';
 import type { LFThread } from '$lib/types/threads';

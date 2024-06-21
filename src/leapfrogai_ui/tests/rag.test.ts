@@ -11,10 +11,10 @@ import {
 import { getFakeAssistantInput } from '$testUtils/fakeData';
 import { delay } from 'msw';
 
-test('can edit an assistant and attach files to it', async ({ page }) => {
-  const uploadedFile1 = await uploadFileWithApi('test.pdf');
-  const uploadedFile2 = await uploadFileWithApi('test2.pdf');
-  const assistant = await createAssistantWithApi();
+test('can edit an assistant and attach files to it', async ({ page, openAIClient }) => {
+  const uploadedFile1 = await uploadFileWithApi('test.pdf', openAIClient);
+  const uploadedFile2 = await uploadFileWithApi('test2.pdf', openAIClient);
+  const assistant = await createAssistantWithApi(openAIClient);
   await page.goto(`/chat/assistants-management/edit/${assistant.id}`);
 
   await page.getByRole('button', { name: 'Open menu' }).click();
@@ -24,15 +24,15 @@ test('can edit an assistant and attach files to it', async ({ page }) => {
   await expect(page.getByText('Assistant Updated')).toBeVisible();
 
   // Cleanup
-  await deleteFileWithApi(uploadedFile1.id);
-  await deleteFileWithApi(uploadedFile2.id);
-  await deleteAssistantWithApi(assistant.id);
+  await deleteFileWithApi(uploadedFile1.id, openAIClient);
+  await deleteFileWithApi(uploadedFile2.id, openAIClient);
+  await deleteAssistantWithApi(assistant.id, openAIClient);
 });
 
-test('can create a new assistant and attach files to it', async ({ page }) => {
+test('can create a new assistant and attach files to it', async ({ page, openAIClient }) => {
   const assistantInput = getFakeAssistantInput();
-  const uploadedFile1 = await uploadFileWithApi('test.pdf');
-  const uploadedFile2 = await uploadFileWithApi('test2.pdf');
+  const uploadedFile1 = await uploadFileWithApi('test.pdf', openAIClient);
+  const uploadedFile2 = await uploadFileWithApi('test2.pdf', openAIClient);
   await page.goto(`/chat/assistants-management/new`);
 
   await page.getByLabel('name').fill(assistantInput.name);
@@ -47,14 +47,14 @@ test('can create a new assistant and attach files to it', async ({ page }) => {
 
   // Cleanup
   await deleteAssistant(page, assistantInput.name);
-  await deleteFileWithApi(uploadedFile1.id);
-  await deleteFileWithApi(uploadedFile2.id);
+  await deleteFileWithApi(uploadedFile1.id, openAIClient);
+  await deleteFileWithApi(uploadedFile2.id, openAIClient);
 });
 
-test('it can edit an assistant and remove a file', async ({ page }) => {
-  const uploadedFile1 = await uploadFileWithApi('test.pdf');
-  const uploadedFile2 = await uploadFileWithApi('test2.pdf');
-  const assistant = await createAssistantWithApi();
+test('it can edit an assistant and remove a file', async ({ page, openAIClient }) => {
+  const uploadedFile1 = await uploadFileWithApi('test.pdf', openAIClient);
+  const uploadedFile2 = await uploadFileWithApi('test2.pdf', openAIClient);
+  const assistant = await createAssistantWithApi(openAIClient);
   await page.goto(`/chat/assistants-management/edit/${assistant.id}`);
 
   // Create assistant with files
@@ -74,13 +74,14 @@ test('it can edit an assistant and remove a file', async ({ page }) => {
   await expect(page.getByText('Assistant Updated')).toBeVisible();
 
   // Cleanup
-  await deleteFileWithApi(uploadedFile1.id);
-  await deleteFileWithApi(uploadedFile2.id);
-  await deleteAssistantWithApi(assistant.id);
+  await deleteFileWithApi(uploadedFile1.id, openAIClient);
+  await deleteFileWithApi(uploadedFile2.id, openAIClient);
+  await deleteAssistantWithApi(assistant.id, openAIClient);
 });
 
 test('while creating an assistant, it can upload new files and save the assistant', async ({
-  page
+  page,
+  openAIClient
 }) => {
   const assistantInput = getFakeAssistantInput();
   const fileName = 'test.pdf';
@@ -104,14 +105,15 @@ test('while creating an assistant, it can upload new files and save the assistan
 
   // Cleanup
   await deleteAssistant(page, assistantInput.name);
-  await deleteTestFilesWithApi();
+  await deleteTestFilesWithApi(openAIClient);
 });
 
 test('while editing an assistant, it can upload new files and save the assistant', async ({
-  page
+  page,
+  openAIClient
 }) => {
   const fileName = 'test.pdf';
-  const assistant = await createAssistantWithApi();
+  const assistant = await createAssistantWithApi(openAIClient);
   await page.goto(`/chat/assistants-management/edit/${assistant.id}`);
 
   await page.getByRole('button', { name: 'Open menu' }).click();
@@ -126,8 +128,8 @@ test('while editing an assistant, it can upload new files and save the assistant
   await expect(page.getByText('Assistant Updated')).toBeVisible();
 
   // Cleanup
-  await deleteAssistantWithApi(assistant.id);
-  await deleteTestFilesWithApi();
+  await deleteAssistantWithApi(assistant.id, openAIClient);
+  await deleteTestFilesWithApi(openAIClient);
 });
 
 test('it displays a failed toast and temporarily failed uploader item when a the file upload endpoint completely fails', async ({

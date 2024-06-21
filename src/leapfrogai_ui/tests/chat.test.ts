@@ -13,7 +13,7 @@ import {
 const newMessage1 = getSimpleMathQuestion();
 const newMessage2 = getSimpleMathQuestion();
 
-test('it can start a new thread and receive a response', async ({ page }) => {
+test('it can start a new thread and receive a response', async ({ page, openAIClient }) => {
   await loadChatPage(page);
   const messages = page.getByTestId('message');
   await expect(messages).toHaveCount(0);
@@ -24,11 +24,14 @@ test('it can start a new thread and receive a response', async ({ page }) => {
 
   await expect(page.getByText('Internal Server Error')).toHaveCount(0);
 
-  await deleteActiveThread(page);
+  await deleteActiveThread(page, openAIClient);
 });
 
 // Flaky test - works manually. More likely to pass in Chrome than Firefox.
-test.skip('it saves in progress responses when interrupted by a page reload', async ({ page }) => {
+test.skip('it saves in progress responses when interrupted by a page reload', async ({
+  page,
+  openAIClient
+}) => {
   // test.use({ defaultBrowserType: 'chromium' }); // This sets the browser to Chrome for this test
 
   const newMessage = faker.lorem.words(20);
@@ -38,12 +41,13 @@ test.skip('it saves in progress responses when interrupted by a page reload', as
   await expect(messages).toHaveCount(2);
   await page.reload();
   await expect(page.getByTestId('message')).toHaveCount(2);
-  await deleteActiveThread(page);
+  await deleteActiveThread(page, openAIClient);
 });
 
 // Flaky test - works manually.
 test.skip('it saves in progress responses when interrupted by changing threads', async ({
-  page
+  page,
+  openAIClient
 }) => {
   await loadChatPage(page);
   const messages = page.getByTestId('message');
@@ -57,14 +61,14 @@ test.skip('it saves in progress responses when interrupted by changing threads',
   await page.getByText(newMessage1).click(); // switch back to original thread
   await expect(messages).toHaveCount(2);
 
-  await deleteActiveThread(page);
+  await deleteActiveThread(page, openAIClient);
 });
 
 function countWords(str: string) {
   return str.trim().split(/\s+/).length;
 }
 
-test('it cancels responses', async ({ page }) => {
+test('it cancels responses', async ({ page, openAIClient }) => {
   await loadChatPage(page);
   const messages = page.getByTestId('message');
   await sendMessage(page, newMessage1);
@@ -78,12 +82,13 @@ test('it cancels responses', async ({ page }) => {
   const responseText = await response.textContent();
   expect(countWords(responseText!)).toBeLessThan(50);
 
-  await deleteActiveThread(page);
+  await deleteActiveThread(page, openAIClient);
 });
 
 test('it cancels responses when clicking enter instead of pause button and does not send next message', async ({
   page,
-  browserName
+  browserName,
+  openAIClient
 }) => {
   // This test does not pass in Firefox, but it does work when tested manually. Not worth spending
   // additional time debugging at this time. E2E passes for other browsers.
@@ -103,21 +108,26 @@ test('it cancels responses when clicking enter instead of pause button and does 
     const responseText = await response.textContent();
     expect(countWords(responseText!)).toBeLessThan(50);
 
-    await deleteActiveThread(page);
+    await deleteActiveThread(page, openAIClient);
   }
 });
 
-test('it can switch between normal chat and chat with an assistant', async ({ page }) => {
-  const assistant = await createAssistantWithApi();
+// TODO - Leapfrog API is currently too slow when sending assistant responses so when this test
+// runs with multiple browsers in parallel, it times out. It should usually work for individual
+// browsers unless the API is receiving additional run requests simultaneously
+test('it can switch between normal chat and chat with an assistant', async ({
+  page,
+  openAIClient
+}) => {
+  const assistant = await createAssistantWithApi(openAIClient);
 
-  const messages = page.getByTestId('message');
   await loadChatPage(page);
+  const messages = page.getByTestId('message');
   await expect(messages).toHaveCount(0);
 
   // Send regular chat message
   await sendMessage(page, newMessage1);
   await waitForResponseToComplete(page);
-
   await expect(messages).toHaveCount(2);
 
   // Select assistant
@@ -152,6 +162,6 @@ test('it can switch between normal chat and chat with an assistant', async ({ pa
   await expect(page.getByTestId('assistant-icon')).toHaveCount(1);
 
   // Cleanup
-  await deleteAssistantWithApi(assistant.id);
-  await deleteActiveThread(page);
+  await deleteAssistantWithApi(assistant.id, openAIClient);
+  await deleteActiveThread(page, openAIClient);
 });

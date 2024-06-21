@@ -10,8 +10,8 @@ import {
 import { getFakeAssistantInput } from '../testUtils/fakeData';
 import type { ActionResult } from '@sveltejs/kit';
 
-test.afterEach(async () => {
-  await deleteAllAssistants();
+test.afterEach(async ({ openAIClient }) => {
+  await deleteAllAssistants(openAIClient);
 });
 
 test('it navigates to the assistants page', async ({ page }) => {
@@ -140,7 +140,10 @@ test('it can search for assistants', async ({ page, browserName }) => {
   }
 });
 
-test('it can navigate to the last visited thread with breadcrumbs', async ({ page }) => {
+test('it can navigate to the last visited thread with breadcrumbs', async ({
+  page,
+  openAIClient
+}) => {
   const newMessage = getSimpleMathQuestion();
   await page.goto('/chat');
   await sendMessage(page, newMessage);
@@ -160,7 +163,7 @@ test('it can navigate to the last visited thread with breadcrumbs', async ({ pag
   await page.waitForURL(`/chat/${threadId}`);
 
   // Cleanup
-  await deleteActiveThread(page);
+  await deleteActiveThread(page, openAIClient);
 });
 
 test('it validates input', async ({ page }) => {
@@ -265,7 +268,7 @@ test("it populates the assistants values when editing an assistant's details", a
   await expect(page.getByPlaceholder("You'll act as...")).toHaveValue(assistantInput.instructions);
 });
 
-test('it can delete assistants', async ({ page }) => {
+test('it can delete assistants', async ({ page, openAIClient }) => {
   const assistantInput = getFakeAssistantInput();
 
   await createAssistant(page, assistantInput);
@@ -284,5 +287,5 @@ test('it can delete assistants', async ({ page }) => {
   await page.getByRole('button', { name: 'Delete' }).click();
 
   await expect(page.getByText(`${assistantInput.name} Assistant deleted.`)).toBeVisible();
-  await deleteActiveThread(page);
+  await deleteActiveThread(page, openAIClient);
 });

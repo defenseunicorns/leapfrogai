@@ -3,8 +3,8 @@ import { getFakeAssistantInput } from '../testUtils/fakeData';
 import { deleteAllAssistants, uploadAvatar } from './helpers';
 import { NO_FILE_ERROR_TEXT } from '../src/lib/constants/index';
 
-test.afterEach(async () => {
-  await deleteAllAssistants();
+test.afterEach(async ({openAIClient}) => {
+  await deleteAllAssistants(openAIClient);
 });
 
 test('it can search for and choose a pictogram as an avatar', async ({ page, browserName }) => {
