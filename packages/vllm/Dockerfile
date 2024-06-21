@@ -88,19 +88,13 @@ RUN groupadd -g 65532 vglusers && \
 
 WORKDIR /home/leapfrogai
 
-# grab necesary python dependencies
-RUN apt-get -y update \
-    && apt-get install -y software-properties-common \
-    && add-apt-repository universe \
-    && add-apt-repository ppa:deadsnakes/ppa  \
-    && apt-get -y update
-
-# get deps for vllm compilation, model download, and pyenv
-RUN apt-get -y install git python3-venv make build-essential libssl-dev zlib1g-dev libbz2-dev libreadline-dev libsqlite3-dev wget curl llvm libncurses5-dev libncursesw5-dev tk-dev libffi-dev
-
 COPY --from=sdk /leapfrogai/${SDK_DEST} ./${SDK_DEST}
-COPY packages/vllm packages/vllm
+COPY --from=builder /home/leapfrogai/.venv /home/leapfrogai/.venv
+COPY --from=builder /home/leapfrogai/packages/vllm/src /home/leapfrogai/packages/vllm/src
 RUN chown -R nonroot /home/leapfrogai/
+
+RUN apt-get -y update
+RUN apt-get -y install git wget build-essential libssl-dev zlib1g-dev libffi-dev
 
 USER nonroot
 
@@ -109,12 +103,7 @@ RUN git clone --depth=1 https://github.com/pyenv/pyenv.git .pyenv
 ENV PYENV_ROOT="/home/leapfrogai/.pyenv"
 ENV PATH="$PYENV_ROOT/shims:$PYENV_ROOT/bin:$PATH"
 RUN pyenv install ${PYTHON_VERSION}
-RUN python3 -m venv .venv
 ENV PATH="/home/leapfrogai/.venv/bin:$PATH"
-## COPIED FROM ABOVE ##
-
-COPY --from=builder /home/leapfrogai/.venv /home/leapfrogai/.venv
-COPY --from=builder /home/leapfrogai/packages/vllm/src /home/leapfrogai/packages/vllm/src
 
 # download model
 ENV HF_HOME=/home/leapfrogai/.cache/huggingface
