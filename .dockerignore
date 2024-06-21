@@ -1,5 +1,3 @@
-# Copied from .gitignore
-# temporary deployment and development artifacts
 **/*.tar.zst
 **/Dockerfile*
 **/.gitignore
