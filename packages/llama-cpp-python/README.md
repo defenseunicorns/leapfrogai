@@ -34,8 +34,9 @@ REVISION  # eg: "3f65d882253d1f15a113dabf473a7c02a004d2b5"
 
 To build and deploy just the llama-cpp-python Zarf package (from the root of the repository):
 
+> Deploy a [UDS cluster](/README.md#uds) if one isn't deployed already
+
 ```shell
-uds deploy k3d-core-slim-dev:0.22.2      # if no cluster exists already
 make build-llama-cpp-python LOCAL_VERSION=dev
 uds zarf package deploy packages/llama-cpp-python/zarf-package-llama-cpp-python-*-dev.tar.zst --confirm
 ```

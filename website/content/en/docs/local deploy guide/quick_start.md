@@ -12,6 +12,7 @@ The fastest and easiest way to get started with a deployment of LeapfrogAI is by
 
 - [Docker](https://docs.docker.com/engine/install/)
 - [K3D](https://k3d.io/)
+- [Zarf](https://docs.zarf.dev/getting-started/install/)
 - [UDS CLI](https://github.com/defenseunicorns/uds-cli)
 
 GPU considerations (NVIDIA GPUs only):

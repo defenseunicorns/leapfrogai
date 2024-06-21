@@ -36,19 +36,35 @@ Once the packages are created, you can deploy either a CPU or GPU-enabled deploy
 
 ## CPU
 
+Create the uds CPU bundle:
 ```shell
 cd uds-bundles/dev/cpu
 uds create .
-uds deploy k3d-core-slim-dev:0.22.2
+```
+
+Deploy a [UDS cluster](/README.md#uds) if one isn't deployed already
+
+Deploy the LeapfrogAI bundle:
+```shell
 uds deploy uds-bundle-leapfrogai*.tar.zst
 ```
 
 ## GPU
 
+Create the uds GPU bundle:
 ```shell
 cd uds-bundles/dev/gpu
 uds create .
-uds deploy k3d-core-slim-dev:0.22.2 --set K3D_EXTRA_ARGS="--gpus=all --image=ghcr.io/justinthelaw/k3d-gpu-support:v1.27.4-k3s1-cuda"     # be sure to check if a newer version exists
+```
+
+Deploy a [UDS cluster](/README.md#uds) with the following flags, as so:
+
+```shell
+uds deploy {k3d-cluster-name} --set K3D_EXTRA_ARGS="--gpus=all --image=ghcr.io/justinthelaw/k3d-gpu-support:v1.27.4-k3s1-cuda"
+```
+
+Deploy the LeapfrogAI bundle:
+```shell
 uds deploy uds-bundle-leapfrogai-*.tar.zst --confirm
 ```
 

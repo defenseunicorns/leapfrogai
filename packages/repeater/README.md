@@ -11,8 +11,9 @@ The repeater model is used to verify that the API is able to both load configs f
 
 To build and deploy just the repeater Zarf package (from the root of the repository):
 
+> Deploy a [UDS cluster](/README.md#uds) if one isn't deployed already
+
 ```shell
-uds deploy k3d-core-slim-dev:0.22.2      # if no cluster exists already
 make build-repeater LOCAL_VERSION=dev
 uds zarf package deploy packages/repeater/zarf-package-repeater-*-dev.tar.zst --confirm
 ```

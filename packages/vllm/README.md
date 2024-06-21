@@ -35,8 +35,9 @@ You can optionally specify different models or quantization types using the foll
 
 To build and deploy just the VLLM Zarf package (from the root of the repository):
 
+> Deploy a [UDS cluster](/README.md#uds) if one isn't deployed already
+
 ```shell
-uds deploy k3d-core-slim-dev:0.22.2      # if no cluster exists already
 make build-vllm LOCAL_VERSION=dev
 uds zarf package deploy packages/vllm/zarf-package-vllm-*-dev.tar.zst --confirm
 ```

@@ -17,8 +17,9 @@
   - [Repeater](#repeater)
   - [Image Hardening](#image-hardening)
 - [Usage](#usage)
-  - [UDS (Latest)](#uds-latest)
-  - [UDS (Dev)](#uds-dev)
+  - [UDS](#uds)
+    - [UDS Latest](#uds-latest)
+    - [UDS Dev](#uds-dev)
   - [Local Dev](#local-dev)
 - [Community](#community)
 
@@ -110,11 +111,21 @@ LeapfrogAI leverages Chainguard's [apko](https://github.com/chainguard-dev/apko)
 
 ## Usage
 
-### UDS (Latest)
+### UDS
 
-LeapfrogAI can be deployed and run locally via UDS and Kubernetes, built out using [Zarf](https://zarf.dev) packages. This pulls the most recent package images and is the most stable way of running a local LeapfrogAI deployment. These instructions can be found on the [LeapfrogAI Docs](https://docs.leapfrog.ai/docs/) site.
+LeapfrogAI can be deployed and run locally via UDS and Kubernetes, built out using [Zarf](https://zarf.dev) packages. See the [Quick Start](https://docs.leapfrog.ai/docs/local-deploy-guide/quick_start/#prerequisites) for a list of prerequisite packages that must be installed first.
 
-### UDS (Dev)
+Prior to deploying any LeapfrogAI packages, a UDS Kubernetes cluster must be deployed using the most recent k3d bundle:
+
+```sh
+uds deploy k3d-core-slim-dev:0.22.2
+```
+
+#### UDS Latest
+
+This type of deployment pulls the most recent package images and is the most stable way of running a local LeapfrogAI deployment. These instructions can be found on the [LeapfrogAI Docs](https://docs.leapfrog.ai/docs/) site.
+
+#### UDS Dev
 
 If you want to make some changes to LeapfrogAI before deploying via UDS (for example in a dev environment), follow the [UDS Dev Instructions](/uds-bundles/dev/README.md).
 
