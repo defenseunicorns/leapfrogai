@@ -5,7 +5,19 @@ A LeapfrogAI API-compatible [whisper](https://huggingface.co/openai/whisper-base
 
 # Usage
 
-To run the vllm backend locally (starting from the root directory of the repository):
+## Zarf Package Deployment
+
+To build and deploy just the whisper Zarf package (from the root of the repository):
+
+```shell
+uds deploy k3d-core-slim-dev:0.22.2      # if no cluster exists already
+make build-whisper LOCAL_VERSION=dev
+uds zarf package deploy packages/whisper/zarf-package-whisper-*-dev.tar.zst --confirm
+```
+
+## Local Development
+
+To run the vllm backend locally without K8s (starting from the root directory of the repository):
 
 ```shell
 python -m pip install src/leapfrogai_sdk

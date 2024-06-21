@@ -30,7 +30,17 @@ FILENAME  # eg: "synthia-7b-v2.0.Q4_K_M.gguf"
 REVISION  # eg: "3f65d882253d1f15a113dabf473a7c02a004d2b5"
 ```
 
-### Run Locally
+## Zarf Package Deployment
+
+To build and deploy just the llama-cpp-python Zarf package (from the root of the repository):
+
+```shell
+uds deploy k3d-core-slim-dev:0.22.2      # if no cluster exists already
+make build-llama-cpp-python LOCAL_VERSION=dev
+uds zarf package deploy packages/llama-cpp-python/zarf-package-llama-cpp-python-*-dev.tar.zst --confirm
+```
+
+## Run Locally
 
 
 To run the llama-cpp-python backend locally (starting from the root directory of the repository):

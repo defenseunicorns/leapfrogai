@@ -2,6 +2,16 @@
 
 A mostly OpenAI compliant API surface.
 
+## Zarf Package Deployment
+
+To build and deploy just the API Zarf package (from the root of the repository):
+
+```shell
+uds deploy k3d-core-slim-dev:0.22.2      # if no cluster exists already
+make build-api LOCAL_VERSION=dev
+uds zarf package deploy packages/api/zarf-package-leapfrogai-api-*-dev.tar.zst --confirm
+```
+
 ## Local Development Setup
 
 1. Install dependencies

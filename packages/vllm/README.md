@@ -31,7 +31,17 @@ You can optionally specify different models or quantization types using the foll
 - `--build-arg QUANTIZATION="gptq"`: Quantization type (e.g., gptq, awq, or empty for un-quantized)
 - `--build-arg TENSOR_PARALLEL_SIZE="1"`: The number of gpus to spread the tensor processing across
 
-### Run Locally
+## Zarf Package Deployment
+
+To build and deploy just the VLLM Zarf package (from the root of the repository):
+
+```shell
+uds deploy k3d-core-slim-dev:0.22.2      # if no cluster exists already
+make build-vllm LOCAL_VERSION=dev
+uds zarf package deploy packages/vllm/zarf-package-vllm-*-dev.tar.zst --confirm
+```
+
+## Run Locally
 
 To run the vllm backend locally (starting from the root directory of the repository):
 ```bash

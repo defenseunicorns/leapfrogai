@@ -7,7 +7,17 @@ A LeapfrogAI API-compatible [instructor-xl](https://huggingface.co/hkunlp/instru
 
 # Usage
 
-### Local Development
+## Zarf Package Deployment
+
+To build and deploy just the text-embeddings Zarf package (from the root of the repository):
+
+```shell
+uds deploy k3d-core-slim-dev:0.22.2      # if no cluster exists already
+make build-text-embeddings LOCAL_VERSION=dev
+uds zarf package deploy packages/text-embeddings/zarf-package-text-embeddings-*-dev.tar.zst --confirm
+```
+
+## Local Development
 
 To run the text-embeddings backend locally (starting from the root directory of the repository):
 
