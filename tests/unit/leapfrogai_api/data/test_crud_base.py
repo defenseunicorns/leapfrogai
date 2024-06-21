@@ -49,16 +49,22 @@ mock_data_dict = dict(id=1, name="mock-data")
             dict(id=1, name="mock-data", field_name=None),
         ),
         (
+            MockModelFields(id=1, name="mock-data", created_at=1),
+            mock_data_dict,
+            mock_data_model,
+            dict(id=1, name="mock-data", created_at=1, field_name=None),
+        ),
+        (
             MockModelFields(id=1, name="mock-data", created_at="mock-data"),
             mock_data_dict,
             mock_data_model,
             dict(id=1, name="mock-data", field_name=None),
         ),
         (
-            MockModelFields(id=1, name="mock-data"),
+            MockModelFields(id=1, name="mock-data", field_name="mock-data"),
             mock_data_dict,
             mock_data_model,
-            dict(id=1, name="mock-data"),
+            dict(id=1, name="mock-data", field_name="mock-data"),
         ),
         (
             MockModelFields(
@@ -89,18 +95,19 @@ async def test_create(
 
 @pytest.mark.asyncio
 @pytest.mark.parametrize(
-    "mock_data_object, mock_response",
-    [(mock_data_model, {}), (mock_data_model, []), (mock_data_model, None)],
+    "mock_response",
+    [({}), ([]), (None)],
 )
-async def test_create_fail(mock_session, mock_data_object, mock_response):
+async def test_create_fail(mock_session, mock_response):
     mock_crud_base = CRUDBase(
         db=mock_session, model=MockModel, table_name="dummy_table"
     )
     mock_table = mock_session.table(mock_crud_base.table_name)
     mock_table.insert().execute.return_value = execute_response_format(mock_response)
 
-    with pytest.raises(RuntimeError):
-        await mock_crud_base.create(mock_data_object)
+    result = await mock_crud_base.create(mock_data_model)
+    
+    assert result == None
 
 
 @pytest.mark.asyncio
@@ -135,8 +142,9 @@ async def test_get_fail(mock_session, filters, mock_response):
     mock_table = mock_session.table(mock_crud_base.table_name)
     mock_table.select().execute.return_value = execute_response_format(mock_response)
 
-    with pytest.raises(RuntimeError):
-        await mock_crud_base.get(filters)
+    result = await mock_crud_base.get(filters)
+
+    assert result == None
 
 
 @pytest.mark.asyncio
@@ -176,8 +184,9 @@ async def test_list_fail(mock_session, filters, mock_response):
     mock_table = mock_session.table(mock_crud_base.table_name)
     mock_table.select().execute.return_value = execute_response_format(mock_response)
 
-    with pytest.raises(RuntimeError):
-        await mock_crud_base.get(filters)
+    result = await mock_crud_base.get(filters)
+
+    assert result == None
 
 
 @pytest.mark.asyncio
@@ -207,8 +216,9 @@ async def test_update_fail(mock_session, mock_response):
     mock_table = mock_session.table(mock_crud_base.table_name)
     mock_table.update().execute.return_value = execute_response_format(mock_response)
 
-    with pytest.raises(RuntimeError):
-        await mock_crud_base.update("1", mock_data_model)
+    result = await mock_crud_base.update("1", mock_data_model)
+
+    assert result == None
 
 
 @pytest.mark.asyncio
@@ -230,6 +240,8 @@ async def test_delete_fail(mock_session, mock_response):
     )
     mock_table = mock_session.table(mock_crud_base.table_name)
     mock_table.delete().execute.return_value = execute_response_format(mock_response)
+    
+    result = await mock_crud_base.update("1", mock_data_model)
 
-    with pytest.raises(RuntimeError):
-        await mock_crud_base.update("1", mock_data_model)
+    assert result == None
+
