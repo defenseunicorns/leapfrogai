@@ -15,7 +15,7 @@ dependencies = [
     "python-multipart >= 0.0.7", #indirect dep of FastAPI to receive form data for file uploads
     "watchfiles >= 0.21.0",
     "leapfrogai_sdk",
-    "supabase",
+    "supabase >= 2.5.1",
     "langchain >= 0.2.1",
     "langchain-community >= 0.2.1",
     "unstructured[md] >= 0.14.2", # Only specify necessary filetypes to prevent package bloat (e.g. 130MB vs 6GB)

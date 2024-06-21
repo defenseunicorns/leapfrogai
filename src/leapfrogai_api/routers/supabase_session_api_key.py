@@ -4,11 +4,25 @@ import os
 from typing import Annotated
 from fastapi import Depends, HTTPException, status
 from fastapi.security import HTTPAuthorizationCredentials, HTTPBearer
-from supabase_py_async import AsyncClient, ClientOptions, create_client
+from supabase import AClient as AsyncClient
+from supabase import ClientOptions, acreate_client
 
 security = HTTPBearer()
 
 # TODO: This is a work in progress file to figure out how to validate the API key via request header.
+
+
+def get_vars() -> tuple[str, str]:
+    supabase_url = os.getenv("SUPABASE_URL")
+    supabase_key = os.getenv("SUPABASE_ANON_KEY")
+
+    if not supabase_url or not supabase_key:
+        raise HTTPException(
+            detail="Supabase URL or Supabase Anon Key is not set",
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+        )
+
+    return supabase_url, supabase_key
 
 
 async def init_supabase_client(
@@ -30,10 +44,9 @@ async def init_supabase_client(
             status_code=status.HTTP_401_UNAUTHORIZED,
         )
 
-    client: AsyncClient = await create_client(
-        supabase_key=os.getenv("SUPABASE_ANON_KEY"),
-        supabase_url=os.getenv("SUPABASE_URL"),
-        options=ClientOptions(auto_refresh_token=False),
+    client: AsyncClient = await acreate_client(
+        supabase_key=get_vars()[1],
+        supabase_url=get_vars()[0],
     )
 
     return client
@@ -55,16 +68,16 @@ async def validate_api_authorization(api_key: str) -> bool:
     authorized = True
 
     if api_key:
-        session = await create_client(
-            supabase_key=os.getenv("SUPABASE_ANON_KEY"),
-            supabase_url=os.getenv("SUPABASE_URL"),
+        session = await acreate_client(
+            supabase_key=get_vars()[1],
+            supabase_url=get_vars()[0],
             options=ClientOptions(auto_refresh_token=False),
         )
-        await session.rpc("set_config", {"key": "role", "value": "validator_role"})
+        # await session.rpc("set_config", {"key": "role", "value": "validator_role"})
         response = (
             await session.table("api_keys").select("*").eq("api_key", api_key).execute()
         )
-        await session.rpc("reset_config", {"key": "role"})
+        # await session.rpc("reset_config", {"key": "role"})
 
         if not response.data:
             authorized = False

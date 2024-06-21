@@ -29,9 +29,17 @@ async def init_supabase_client(
 
     # TODO: auth_creds is expecting to be decoded as jwt token, but our API key is not a jwt token
 
+    supabase_url = os.getenv("SUPABASE_URL")
+    supabase_key = os.getenv("SUPABASE_ANON_KEY")
+
+    if not supabase_url or not supabase_key:
+        raise HTTPException(
+            detail="Supabase URL or Supabase Anon Key is not set",
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+        )
+
     client: AClient = await acreate_client(
-        supabase_key=os.getenv("SUPABASE_ANON_KEY") or "",
-        supabase_url=os.getenv("SUPABASE_URL") or "",
+        supabase_url=supabase_url, supabase_key=supabase_key
     )
 
     try:
