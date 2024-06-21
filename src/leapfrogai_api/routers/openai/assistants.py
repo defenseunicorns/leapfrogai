@@ -230,12 +230,13 @@ async def modify_assistant(
         )
 
     # check for unsupported tools
-    for tool in request.tools:
-        if not validate_assistant_tool(tool):
-            raise HTTPException(
-                status_code=status.HTTP_400_BAD_REQUEST,
-                detail=f"Unsupported tool type: {tool.type}",
-            )
+    if request.tools:
+        for tool in request.tools:
+            if not validate_assistant_tool(tool):
+                raise HTTPException(
+                    status_code=status.HTTP_400_BAD_REQUEST,
+                    detail=f"Unsupported tool type: {tool.type}",
+                )
 
     # check for unsupported tool resources
     if not validate_tool_resources(request.tool_resources):
@@ -336,6 +337,9 @@ async def modify_assistant(
         except Exception:
             new_tool_resources = old_assistant.tool_resources
 
+        if request.tools is None:
+            request.tools = old_assistant.tools
+
         new_assistant = Assistant(
             id=assistant_id,
             created_at=old_assistant.created_at,
@@ -344,7 +348,7 @@ async def modify_assistant(
             instructions=getattr(request, "instructions", old_assistant.instructions),
             model=getattr(request, "model", old_assistant.model),
             object="assistant",
-            tools=getattr(request, "tools", old_assistant.tools),
+            tools=request.tools,
             tool_resources=new_tool_resources,
             temperature=getattr(request, "temperature", old_assistant.temperature),
             top_p=getattr(request, "top_p", old_assistant.top_p),

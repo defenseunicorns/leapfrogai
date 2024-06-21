@@ -287,6 +287,59 @@ def test_modify():
     ), f"Get endpoint should return modified Assistant {assistant_id}."
 
 
+def test_modify_with_no_tools():
+    """Test modifying an assistant without tools or tool_resources. Requires a running Supabase instance."""
+
+    global modified_assistant  # pylint: disable=global-statement
+
+    assistant_id = assistant_response.json()["id"]
+    get_response = assistants_client.get(f"/openai/v1/assistants/{assistant_id}")
+    assert get_response.status_code is status.HTTP_200_OK
+    assert Assistant.model_validate(
+        get_response.json()
+    ), f"Get endpoint should return Assistant {assistant_id}."
+
+    request = ModifyAssistantRequest(
+        model=modified_assistant.model,
+        name=modified_assistant.name,
+        description=modified_assistant.description,
+        instructions=modified_assistant.instructions,
+        tools=None,
+        tool_resources=None,
+        metadata=modified_assistant.metadata,
+        temperature=modified_assistant.temperature,
+        top_p=modified_assistant.top_p,
+        response_format=modified_assistant.response_format,
+    )
+
+    modify_response = assistants_client.post(
+        f"/openai/v1/assistants/{assistant_id}",
+        json=request.model_dump(),
+    )
+    assert modify_response.status_code is status.HTTP_200_OK
+    assert Assistant.model_validate(
+        modify_response.json()
+    ), "Should return a Assistant."
+
+    modified_assistant.id = modify_response.json()["id"]
+    modified_assistant.created_at = modify_response.json()["created_at"]
+
+    assert modified_assistant == Assistant(
+        **modify_response.json()
+    ), f"Modify endpoint should return modified Assistant {assistant_id}."
+
+    get_modified_response = assistants_client.get(
+        f"/openai/v1/assistants/{assistant_id}"
+    )
+    assert get_modified_response.status_code is status.HTTP_200_OK
+    assert Assistant.model_validate(
+        get_modified_response.json()
+    ), "Should return a Assistant."
+    assert (
+        get_modified_response.json()["model"] == "test1"
+    ), f"Get endpoint should return modified Assistant {assistant_id}."
+
+
 def test_create_with_new_vector_store():
     """Test creating a new assistant and vector store in the same request. Requires a running Supabase instance."""
 
