@@ -6,6 +6,7 @@ from fastapi import Depends, HTTPException, status
 from fastapi.security import HTTPAuthorizationCredentials, HTTPBearer
 from supabase import AClient as AsyncClient
 from supabase import ClientOptions, acreate_client
+from leapfrogai_api.backend.security.api_key import encode_unique_key, parse
 
 security = HTTPBearer()
 
@@ -66,20 +67,30 @@ async def validate_api_authorization(api_key: str) -> bool:
     """
 
     authorized = True
+    supabase_service_key = os.getenv("SUPABASE_SERVICE_KEY")
+
+    if not supabase_service_key:
+        raise HTTPException(
+            detail="Supabase Service Key is not set",
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+        )
 
     if api_key:
         session = await acreate_client(
-            supabase_key=get_vars()[1],
+            supabase_key=supabase_service_key,
             supabase_url=get_vars()[0],
             options=ClientOptions(auto_refresh_token=False),
         )
-        # await session.rpc("set_config", {"key": "role", "value": "validator_role"})
+
+        _, key, _ = parse(api_key)
+
+        api_key = encode_unique_key(key)
+
         response = (
             await session.table("api_keys").select("*").eq("api_key", api_key).execute()
         )
-        # await session.rpc("reset_config", {"key": "role"})
 
-        if not response.data:
+        if not response.data[0]["api_key"] == api_key:
             authorized = False
 
     return authorized
