@@ -6,7 +6,7 @@
   } from '$lib/constants';
   import { superForm } from 'sveltekit-superforms';
   import { page } from '$app/stores';
-  import { beforeNavigate, goto, invalidate } from '$app/navigation';
+  import { beforeNavigate, goto } from '$app/navigation';
   import { Button, Modal, Slider, TextArea, TextInput } from 'carbon-components-svelte';
   import AssistantAvatar from '$components/AssistantAvatar.svelte';
   import { yup } from 'sveltekit-superforms/adapters';
@@ -26,7 +26,6 @@
     invalidateAll: false,
     validators: yup(isEditMode ? editAssistantInputSchema : assistantInputSchema),
     onResult({ result }) {
-      invalidate('lf:assistants');
       if (result.type === 'redirect') {
         toastStore.addToast({
           kind: 'success',

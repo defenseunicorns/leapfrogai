@@ -127,7 +127,6 @@ export const createAssistantWithApi = async (openAIClient: OpenAI) => {
     instructions: fakeAssistantInput.instructions,
     temperature: fakeAssistantInput.temperature,
     model: process.env.DEFAULT_MODEL!,
-    tools: [],
     metadata: {
       pictogram: 'Default'
     }
