@@ -22,6 +22,14 @@ The following are additional assumptions for GPU inferencing:
 
 The default model that comes with this backend in this repository's officially released images is a [4-bit quantization of the Synthia-7b model](https://huggingface.co/TheBloke/SynthIA-7B-v2.0-GPTQ).
 
+Models are pulled from [HuggingFace Hub](https://huggingface.co/models) via the [model_download.py](/packages/llama-cpp-python/scripts/model_download.py) script. To change what model comes with the llama-cpp-python backend, set the following environment variables:
+
+```bash
+REPO_ID   # eg: "TheBloke/SynthIA-7B-v2.0-GGUF"
+FILENAME  # eg: "synthia-7b-v2.0.Q4_K_M.gguf"
+REVISION  # eg: "3f65d882253d1f15a113dabf473a7c02a004d2b5"
+```
+
 ### Run Locally
 
 
