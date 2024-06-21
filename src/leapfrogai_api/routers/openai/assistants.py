@@ -3,7 +3,7 @@
 from fastapi import HTTPException, APIRouter, status
 from fastapi.security import HTTPBearer
 from openai.types.beta import Assistant, AssistantDeleted
-from openai.types.beta.assistant import ToolResources, ToolResourcesCodeInterpreter
+from openai.types.beta.assistant import ToolResourcesCodeInterpreter
 
 from leapfrogai_api.backend.helpers import object_or_default
 from leapfrogai_api.backend.types import (
