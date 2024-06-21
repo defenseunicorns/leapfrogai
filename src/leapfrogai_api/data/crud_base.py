@@ -33,7 +33,7 @@ class CRUDBase(Generic[ModelType]):
         
         try:
             return self.model(**result[0][1][0])
-        except:
+        except Exception:
             return None
 
     async def get(self, filters: dict | None = None) -> ModelType | None:
@@ -48,7 +48,7 @@ class CRUDBase(Generic[ModelType]):
         
         try:
             return self.model(**result[0][1][0])
-        except:
+        except Exception:
             return None
 
     async def list(self, filters: dict | None = None) -> list[ModelType] | None:
@@ -63,7 +63,7 @@ class CRUDBase(Generic[ModelType]):
     
         try:
             return [self.model(**item) for item in result[0][1]] or None
-        except:
+        except Exception:
             return None
 
     async def update(self, id_: str, object_: ModelType) -> ModelType | None:
@@ -77,7 +77,7 @@ class CRUDBase(Generic[ModelType]):
 
         try:
             return self.model(**result[0][1][0])
-        except:
+        except Exception:
             return None
 
     async def delete(self, filters: dict | None = None) -> bool:
@@ -92,5 +92,5 @@ class CRUDBase(Generic[ModelType]):
 
         try:
             return True if result[0][1] else None
-        except:
+        except Exception:
             return None

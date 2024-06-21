@@ -106,8 +106,8 @@ async def test_create_fail(mock_session, mock_response):
     mock_table.insert().execute.return_value = execute_response_format(mock_response)
 
     result = await mock_crud_base.create(mock_data_model)
-    
-    assert result == None
+
+    assert result is None
 
 
 @pytest.mark.asyncio
@@ -144,7 +144,7 @@ async def test_get_fail(mock_session, filters, mock_response):
 
     result = await mock_crud_base.get(filters)
 
-    assert result == None
+    assert result is None
 
 
 @pytest.mark.asyncio
@@ -186,7 +186,7 @@ async def test_list_fail(mock_session, filters, mock_response):
 
     result = await mock_crud_base.get(filters)
 
-    assert result == None
+    assert result is None
 
 
 @pytest.mark.asyncio
@@ -218,7 +218,7 @@ async def test_update_fail(mock_session, mock_response):
 
     result = await mock_crud_base.update("1", mock_data_model)
 
-    assert result == None
+    assert result is None
 
 
 @pytest.mark.asyncio
@@ -240,8 +240,7 @@ async def test_delete_fail(mock_session, mock_response):
     )
     mock_table = mock_session.table(mock_crud_base.table_name)
     mock_table.delete().execute.return_value = execute_response_format(mock_response)
-    
+
     result = await mock_crud_base.update("1", mock_data_model)
 
-    assert result == None
-
+    assert result is None
