@@ -26,8 +26,8 @@ supported_tools = ["file_search"]
 
 @router.post("")
 async def create_assistant(
-        session: Session,
-        request: CreateAssistantRequest,
+    session: Session,
+    request: CreateAssistantRequest,
 ) -> Assistant:
     """Create an assistant."""
 
@@ -79,7 +79,7 @@ async def create_assistant(
 
 @router.get("")
 async def list_assistants(
-        session: Session,
+    session: Session,
 ) -> ListAssistantsResponse:
     """List all the assistants."""
     crud_assistant = CRUDAssistant(session)
@@ -93,8 +93,8 @@ async def list_assistants(
 
 @router.get("/{assistant_id}")
 async def retrieve_assistant(
-        session: Session,
-        assistant_id: str,
+    session: Session,
+    assistant_id: str,
 ) -> Assistant | None:
     """Retrieve an assistant."""
 
@@ -104,9 +104,9 @@ async def retrieve_assistant(
 
 @router.post("/{assistant_id}")
 async def modify_assistant(
-        session: Session,
-        assistant_id: str,
-        request: ModifyAssistantRequest,
+    session: Session,
+    assistant_id: str,
+    request: ModifyAssistantRequest,
 ) -> Assistant:
     """
     Modify an assistant.
@@ -137,9 +137,9 @@ async def modify_assistant(
     """
 
     if request.tools and (
-            unsupported_tool := next(
-                (tool for tool in request.tools if tool.type not in supported_tools), None
-            )
+        unsupported_tool := next(
+            (tool for tool in request.tools if tool.type not in supported_tools), None
+        )
     ):
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
@@ -147,9 +147,9 @@ async def modify_assistant(
         )
 
     if request.tool_resources and any(
-            isinstance(tool_resource, ToolResourcesCodeInterpreter)
-            and tool_resource.get("file_ids")
-            for tool_resource in request.tool_resources
+        isinstance(tool_resource, ToolResourcesCodeInterpreter)
+        and tool_resource.get("file_ids")
+        for tool_resource in request.tool_resources
     ):
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
@@ -159,9 +159,9 @@ async def modify_assistant(
     crud_assistant = CRUDAssistant(session)
 
     if not (
-            old_assistant := await crud_assistant.get(
-                filters=FilterAssistant(id=assistant_id)
-            )
+        old_assistant := await crud_assistant.get(
+            filters=FilterAssistant(id=assistant_id)
+        )
     ):
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST, detail="Assistant not found"
@@ -182,8 +182,7 @@ async def modify_assistant(
             object="assistant",
             tools=object_or_default(request.tools, old_assistant.tools),
             tool_resources=object_or_default(
-                request.tool_resources,
-                old_assistant.tool_resources
+                request.tool_resources, old_assistant.tool_resources
             ),
             temperature=object_or_default(
                 request.temperature, old_assistant.temperature
@@ -201,7 +200,7 @@ async def modify_assistant(
         ) from exc
 
     if not (
-            response := await crud_assistant.update(object_=new_assistant, id_=assistant_id)
+        response := await crud_assistant.update(object_=new_assistant, id_=assistant_id)
     ):
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
@@ -212,8 +211,8 @@ async def modify_assistant(
 
 @router.delete("/{assistant_id}")
 async def delete_assistant(
-        session: Session,
-        assistant_id: str,
+    session: Session,
+    assistant_id: str,
 ) -> AssistantDeleted:
     """Delete an assistant."""
     crud_assistant = CRUDAssistant(session)
