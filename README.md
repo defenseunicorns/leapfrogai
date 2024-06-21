@@ -45,21 +45,21 @@ The LeapfrogAI repository follows a monorepo structure based around an [API](#ap
 ```shell
 leapfrogai/
 ├── src/
-│   ├── leapfrogai_api/     # source code for the API
-│   ├── leapfrogai_sdk/     # source code for the SDK
-│   └── leapfrogai_ui/      # source code for the UI
+│   ├── leapfrogai_api/   # source code for the API
+│   ├── leapfrogai_sdk/   # source code for the SDK
+│   └── leapfrogai_ui/    # source code for the UI
 ├── packages/
-│   ├── api/                # deployment infrastructure for the API
-│   ├── llama-cpp-python/   # source code & deployment infrastructure for the llama-cpp-python backend
-│   ├── repeater/           # source code & deployment infrastructure for the repeater model backend  
-│   ├── supabase/           # deployment infrastructure for the supabase database
-│   ├── text-embeddings/    # source code & deployment infrastructure for the text-embeddings backend
-│   ├── ui/                 # deployment infrastructure for the UI
-│   ├── vllm/               # source code & deployment infrastructure for the vllm backend
-│   └── whisper/            # source code & deployment infrastructure for the whisper backend
+│   ├── api/              # deployment infrastructure for the API
+│   ├── llama-cpp-python/ # source code & deployment infrastructure for the llama-cpp-python backend
+│   ├── repeater/         # source code & deployment infrastructure for the repeater model backend  
+│   ├── supabase/         # deployment infrastructure for the Supabase backend and postgres database
+│   ├── text-embeddings/  # source code & deployment infrastructure for the text-embeddings backend
+│   ├── ui/               # deployment infrastructure for the UI
+│   ├── vllm/             # source code & deployment infrastructure for the vllm backend
+│   └── whisper/          # source code & deployment infrastructure for the whisper backend
 ├── uds-bundles/
-│   ├── dev/                # uds bundles for local uds dev deployments
-│   └── latest/             # uds bundles for the most current uds deployments
+│   ├── dev/              # uds bundles for local uds dev deployments
+│   └── latest/           # uds bundles for the most current uds deployments
 ├── Makefile
 ├── pyproject.toml
 ├── README.md
@@ -121,7 +121,7 @@ If you want to make some changes to LeapfrogAI before deploying via UDS (for exa
 
 ### Local Dev
 
-Each of the LFAI components can also be run individually outside a deployment environment via local development. This is useful when testing changes to a specific component, but will not assist in a full deployment of LeapfrogAI. Please refer to the above sections for deployment instructions.
+Each of the LFAI components can also be run individually outside of a Kubernetes environment via local development. This is useful when testing changes to a specific component, but will not assist in a full deployment of LeapfrogAI. Please refer to the above sections for deployment instructions.
 
 Please refer to the linked READMEs for each individual packages local development instructions:
 

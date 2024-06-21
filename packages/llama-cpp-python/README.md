@@ -56,13 +56,10 @@ source .venv/bin/activate
 # Install dependencies
 python -m pip install src/leapfrogai_sdk
 cd packages/llama-cpp-python
-python -m pip install .[dev]
+python -m pip install ".[dev]"
 ```
 
 ```bash
-# Copy the config example and make changes as needed
-cp config.example.yaml config.yaml
-
 # Clone Model
 # Supply a REPO_ID, FILENAME and REVISION if a different model is desired
 python scripts/model_download.py

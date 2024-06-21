@@ -29,7 +29,7 @@ source .venv/bin/activate
 # install dependencies
 python -m pip install src/leapfrogai_sdk
 cd packages/text-embeddings
-python -m pip install .[dev]
+python -m pip install ".[dev]"
 
 # download the model
 python scripts/model_download.py
