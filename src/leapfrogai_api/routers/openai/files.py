@@ -59,15 +59,10 @@ async def upload_file(
         )
 
     crud_file_bucket = CRUDFileBucket(db=session, model=UploadFile)
-    try:
-        await crud_file_bucket.upload(file=request.file, id_=file_object.id)
-        return file_object
-    except Exception as exc:
-        await crud_file_object.delete(filters=FilterFileObject(id=file_object.id))
-        raise HTTPException(
-            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            detail="Failed to store file",
-        ) from exc
+
+    response = await crud_file_bucket.upload(file=request.file, id_=file_object.id)
+    print(response)
+    return file_object
 
 
 @router.get("")

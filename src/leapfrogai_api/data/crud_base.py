@@ -1,7 +1,7 @@
 """CRUD Operations for VectorStore."""
 
 from typing import Generic, TypeVar
-from supabase_py_async import AsyncClient
+from supabase import AClient as AsyncClient
 from pydantic import BaseModel
 
 ModelType = TypeVar("ModelType", bound=BaseModel)

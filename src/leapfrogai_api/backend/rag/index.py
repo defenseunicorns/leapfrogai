@@ -8,7 +8,7 @@ from langchain_core.documents import Document
 from langchain_core.embeddings import Embeddings
 from openai.types.beta.vector_stores import VectorStoreFile
 from openai.types.beta.vector_stores.vector_store_file import LastError
-from supabase_py_async import AsyncClient
+from supabase import AClient as AsyncClient
 from leapfrogai_api.backend.rag.document_loader import load_file, split
 from leapfrogai_api.backend.rag.leapfrogai_embeddings import LeapfrogAIEmbeddings
 from leapfrogai_api.backend.types import VectorStoreFileStatus

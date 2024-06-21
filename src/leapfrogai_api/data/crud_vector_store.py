@@ -4,7 +4,7 @@ import time
 
 from pydantic import BaseModel, Field
 from openai.types.beta import VectorStore
-from supabase_py_async import AsyncClient
+from supabase import AClient as AsyncClient
 from leapfrogai_api.data.crud_base import CRUDBase
 
 
