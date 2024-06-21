@@ -99,6 +99,7 @@ const createFilesStore = () => {
         // Remove the error files after 1.5 seconds
         new Promise((resolve) => setTimeout(resolve, 1500)).then(() => {
           update((old) => {
+            old.files.forEach((row) => (row.status = 'hide'));
             return {
               ...old,
               pendingUploads: [...old.pendingUploads.filter((row) => row.status !== 'error')]

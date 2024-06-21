@@ -20,7 +20,7 @@ test('it navigates to the assistants page', async ({ page }) => {
   await page.getByLabel('Settings').click();
   await page.getByText('Assistants Management').click();
 
-  await expect(page).toHaveTitle('LeapfrogAI - Assistants');
+  await expect(page).toHaveTitle('LeapfrogAI - Assistants Management');
 });
 
 test('it has a button that navigates to the new assistant page', async ({ page }) => {
