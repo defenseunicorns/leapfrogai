@@ -14,30 +14,30 @@ from leapfrogai_api.backend.types import (
 
 
 async def recv_completion(
-        stream: grpc.aio.UnaryStreamCall[lfai.CompletionRequest, lfai.CompletionResponse],
+    stream: grpc.aio.UnaryStreamCall[lfai.CompletionRequest, lfai.CompletionResponse],
 ):
     async for c in stream:
         yield (
-                "data: "
-                + CompletionResponse(
-            id="foo",
-            object="completion.chunk",
-            created=55,
-            model="mpt-7b-8k-chat",
-            choices=[
-                CompletionChoice(
-                    index=0,
-                    text=c.choices[0].text,
-                    logprobs=None,
-                    finish_reason=c.choices[0].finish_reason,
-                )
-            ],
-            usage=Usage(
-                prompt_tokens=c.usage.prompt_tokens,
-                completion_tokens=c.usage.completion_tokens,
-                total_tokens=c.usage.total_tokens,
-            ),
-        ).model_dump_json()
+            "data: "
+            + CompletionResponse(
+                id="foo",
+                object="completion.chunk",
+                created=55,
+                model="mpt-7b-8k-chat",
+                choices=[
+                    CompletionChoice(
+                        index=0,
+                        text=c.choices[0].text,
+                        logprobs=None,
+                        finish_reason=c.choices[0].finish_reason,
+                    )
+                ],
+                usage=Usage(
+                    prompt_tokens=c.usage.prompt_tokens,
+                    completion_tokens=c.usage.completion_tokens,
+                    total_tokens=c.usage.total_tokens,
+                ),
+            ).model_dump_json()
         )
         yield "\n\n"
 
@@ -45,34 +45,34 @@ async def recv_completion(
 
 
 async def recv_chat(
-        stream: grpc.aio.UnaryStreamCall[
-            lfai.ChatCompletionRequest, lfai.ChatCompletionResponse
-        ],
+    stream: grpc.aio.UnaryStreamCall[
+        lfai.ChatCompletionRequest, lfai.ChatCompletionResponse
+    ],
 ) -> AsyncGenerator[str, Any]:
     """Generator that yields chat completion responses as Server-Sent Events."""
     async for c in stream:
         yield (
-                "data: "
-                + ChatCompletionResponse(
-            id="foo",
-            object="chat.completion.chunk",
-            created=55,
-            model="mpt-7b-8k-chat",
-            choices=[
-                ChatStreamChoice(
-                    index=0,
-                    delta=ChatDelta(
-                        role="assistant", content=c.choices[0].chat_item.content
-                    ),
-                    finish_reason=c.choices[0].finish_reason,
-                )
-            ],
-            usage=Usage(
-                prompt_tokens=c.usage.prompt_tokens,
-                completion_tokens=c.usage.completion_tokens,
-                total_tokens=c.usage.total_tokens,
-            ),
-        ).model_dump_json()
+            "data: "
+            + ChatCompletionResponse(
+                id="foo",
+                object="chat.completion.chunk",
+                created=55,
+                model="mpt-7b-8k-chat",
+                choices=[
+                    ChatStreamChoice(
+                        index=0,
+                        delta=ChatDelta(
+                            role="assistant", content=c.choices[0].chat_item.content
+                        ),
+                        finish_reason=c.choices[0].finish_reason,
+                    )
+                ],
+                usage=Usage(
+                    prompt_tokens=c.usage.prompt_tokens,
+                    completion_tokens=c.usage.completion_tokens,
+                    total_tokens=c.usage.total_tokens,
+                ),
+            ).model_dump_json()
         )
         yield "\n\n"
 
