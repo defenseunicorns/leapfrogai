@@ -397,8 +397,14 @@ class CreateTranscriptionResponse(BaseModel):
 class UploadFileRequest(BaseModel):
     """Request object for uploading a file."""
 
-    file: UploadFile
-    purpose: Literal["assistants"] | None = "assistants"
+    file: UploadFile = Field(
+        ...,
+        description="The file to be uploaded. Must be a supported file type.",
+    )
+    purpose: Literal["assistants"] | None = Field(
+        default="assistants",
+        description="The intended purpose of the uploaded file. Currently, only 'assistants' is supported.",
+    )
 
     @classmethod
     def as_form(
@@ -413,8 +419,14 @@ class UploadFileRequest(BaseModel):
 class ListFilesResponse(BaseModel):
     """Response object for listing files."""
 
-    object: str = Literal["list"]
-    data: list[FileObject] = []
+    object: Literal["list"] = Field(
+        default="list",
+        description="The type of object returned. Always 'list' for file listing.",
+    )
+    data: list[FileObject] = Field(
+        default=[],
+        description="An array of File objects, each representing an uploaded file.",
+    )
 
 
 #############
