@@ -127,7 +127,7 @@ test('confirms any affected assistants then deletes multiple files', async ({ pa
   await expect(page.getByText('Files Deleted')).toBeVisible();
 });
 
-test('it cancel the delete confirmation modal', async ({ page }) => {
+test('it cancels the delete confirmation modal', async ({ page }) => {
   await loadFileManagementPage(page);
 
   const filename = 'test.pdf';
@@ -136,6 +136,7 @@ test('it cancel the delete confirmation modal', async ({ page }) => {
   await expect(page.getByText(`${filename} imported successfully`)).toBeVisible();
   await expect(page.getByText(`${filename} imported successfully`)).not.toBeVisible(); // wait for upload to finish
 
+  // TODO - if there are other files uploaded, test.pdf may not be at the top so this could click the wrong checkbox
   const checkboxes = await page.getByRole('checkbox').all();
   await checkboxes[1].check({ force: true });
 
