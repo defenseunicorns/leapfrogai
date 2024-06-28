@@ -2,7 +2,6 @@ kind: ZarfPackageConfig
 metadata:
   name: leapfrogai-ui
   version: '###ZARF_PKG_TMPL_IMAGE_VERSION###'
-  architecture: amd64
   description: >
     A UI for LeapfrogAI
 

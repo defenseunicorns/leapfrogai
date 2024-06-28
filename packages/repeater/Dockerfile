@@ -1,18 +1,22 @@
-ARG ARCH=amd64
+ARG ARCH
+FROM ghcr.io/defenseunicorns/leapfrogai/leapfrogai-sdk:latest as sdk
 
 # hardened and slim python w/ developer tools image
 FROM ghcr.io/defenseunicorns/leapfrogai/python:3.11-dev-${ARCH} as builder
-
+ARG SDK_DEST=src/leapfrogai_sdk/build
+USER root
 WORKDIR /leapfrogai
 
+COPY --from=sdk /leapfrogai/${SDK_DEST} ${SDK_DEST}
+COPY packages/repeater packages/repeater
+
 # create virtual environment for light-weight portability and minimal libraries
-RUN python3.11 -m venv .venv
+RUN python -m venv .venv
 ENV PATH="/leapfrogai/.venv/bin:$PATH"
 
-# copy and install all python dependencies
-COPY build/*.whl build/
-COPY build/lfai_repeater*.whl .
-RUN pip install lfai_repeater*.whl --no-index --find-links=build/
+RUN rm -f packages/repeater/build/*.whl
+RUN python -m pip wheel packages/repeater -w packages/repeater/build --find-links=${SDK_DEST}
+RUN pip install packages/repeater/build/lfai_repeater*.whl --no-index --find-links=packages/repeater/build/
 
 # hardened and slim python image
 FROM ghcr.io/defenseunicorns/leapfrogai/python:3.11-${ARCH}
@@ -23,7 +27,7 @@ WORKDIR /leapfrogai
 
 COPY --from=builder /leapfrogai/.venv/ /leapfrogai/.venv/
 
-COPY repeater.py .
+COPY packages/repeater/repeater.py .
 
 # Publish port
 EXPOSE 50051:50051

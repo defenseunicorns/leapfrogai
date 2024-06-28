@@ -137,12 +137,14 @@ python -m venv .venv
 source .venv/bin/activate
 ```
 
+#### Linux and Windows (via WSL2)
+
 Each component is built into its own Zarf package. You can build all of the packages you need at once with the following `Make` targets:
 
 ```shell
-make build-cpu    # api, llama-cpp-python, text-embeddings, whisper
-make build-gpu    # api, vllm, text-embeddings, whisper
-make build-all    # all of the backends
+LOCAL_VERSION=dev make build-cpu
+LOCAL_VERSION=dev make build-gpu
+LOCAL_VERSION=dev make build-all
 ```
 
 **OR**
@@ -150,22 +152,48 @@ make build-all    # all of the backends
 You can build components individually using the following `Make` targets:
 
 ```shell
-make build-api
-make build-vllm                 # if you have GPUs
-make build-llama-cpp-python     # if you have CPU only
-make build-text-embeddings
-make build-whisper
+LOCAL_VERSION=dev make build-api
+LOCAL_VERSION=dev make build-vllm                 # if you have GPUs (macOS not supported)
+LOCAL_VERSION=dev make build-llama-cpp-python     # if you have CPU only
+LOCAL_VERSION=dev make build-text-embeddings
+LOCAL_VERSION=dev make build-whisper
 ```
 
-Once the packages are created, you can deploy either a CPU or GPU-enabled deployment via one of the UDS bundles:
+**NOTE: If you do not prepend your commands with `LOCAL_VERSION=dev`, uds will not find the generated zarf packages, as
+they will be tagged with your current git hash instead of `dev` which uds expects**
+
+#### macOS
+
+To run the same commands in macOS, you will need to prepend your command with a couple of env vars like so:
+
+All Macs: `REG_PORT=5001`
+
+Apple Silicon (M1/M2/M3/M4 series) Macs: `ARCH=arm64`
+
+To demonstrate what this would look like for an Apple Silicon Mac:
+``` shell
+REG_PORT=5001 ARCH=arm64 LOCAL_VERSION=dev make build-cpu    # api, llama-cpp-python, text-embeddings, whisper
+```
+
+To demonstrate what this would look like for an older Intel Mac (not officially supported):
+``` shell
+REG_PORT=5001 LOCAL_VERSION=dev make build-cpu
+```
+
+**OR**
+
+You can build components individually using the following `Make` targets, just like in the Linux section except ensuring
+to prepend the env vars detailed above.
+
+### Once the packages are created, you can deploy either a CPU or GPU-enabled deployment via one of the UDS bundles (macOS only supports cpu):
 
 #### CPU
 
 ```shell
 cd uds-bundles/dev/cpu
-uds create .
-uds deploy k3d-core-slim-dev:0.22.2
-uds deploy uds-bundle-leapfrogai*.tar.zst
+uds create -c .
+uds deploy -c k3d-core-slim-dev:0.22.2
+uds deploy -c uds-bundle-leapfrogai*.tar.zst
 ```
 
 #### GPU
