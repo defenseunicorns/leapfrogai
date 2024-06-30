@@ -67,7 +67,7 @@ async def validate_api_authorization(api_key: str) -> bool:
     """
 
     authorized = True
-    supabase_service_key = os.getenv("SUPABASE_SERVICE_KEY")
+    supabase_service_key = os.getenv("SUPABASE_ANON_KEY")
 
     if not supabase_service_key:
         raise HTTPException(
@@ -76,19 +76,19 @@ async def validate_api_authorization(api_key: str) -> bool:
         )
 
     if api_key:
-        session = await acreate_client(
-            supabase_key=supabase_service_key,
-            supabase_url=get_vars()[0],
-            options=ClientOptions(auto_refresh_token=False),
-        )
-
         _, key, _ = parse(api_key)
 
         api_key = encode_unique_key(key)
 
-        response = (
-            await session.table("api_keys").select("*").eq("api_key", api_key).execute()
+        headers = {"x-custom-api-key": api_key}
+
+        session = await acreate_client(
+            supabase_key=supabase_service_key,
+            supabase_url=get_vars()[0],
+            options=ClientOptions(auto_refresh_token=False, headers=headers),
         )
+
+        response = await session.table("api_keys").select("*").execute()
 
         if not response.data[0]["api_key"] == api_key:
             authorized = False
