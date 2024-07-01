@@ -138,13 +138,10 @@ export const deleteAssistantWithApi = async (id: string, openAIClient: OpenAI) =
   await openAIClient.beta.assistants.del(id);
 };
 
-
 export const deleteAssistant = async (page: Page, name: string) => {
-  await page.goto(`/chat/assistants-management`);
   await page.getByTestId(`assistant-tile-${name}`).getByTestId('overflow-menu').click();
   // click overflow menu delete btn
   await page.getByRole('menuitem', { name: 'Delete' }).click();
   // click modal actual delete btn
   await page.getByRole('button', { name: 'Delete' }).click();
 };
-

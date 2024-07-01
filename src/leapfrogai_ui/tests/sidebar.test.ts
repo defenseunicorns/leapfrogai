@@ -7,7 +7,7 @@ import {
   loadChatPage,
   sendMessage,
   waitForResponseToComplete
-} from './helpers';
+} from './helpers/helpers';
 
 const newMessage1 = getSimpleMathQuestion();
 const newMessage2 = getSimpleMathQuestion();

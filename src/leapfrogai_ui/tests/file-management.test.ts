@@ -1,11 +1,13 @@
 import { expect, test } from './fixtures';
 import { faker } from '@faker-js/faker';
-import { getSimpleMathQuestion, loadChatPage, sendMessage } from './helpers';
+import { getSimpleMathQuestion, loadChatPage, sendMessage } from './helpers/helpers';
 import {
   confirmDeletion,
   createPDF,
   createTextFile,
   deleteAllGeneratedFixtureFiles,
+  deleteAllTestFilesWithApi,
+  deleteFileByName,
   deleteFixtureFile,
   deleteTestFilesWithApi,
   getFileTableRow,
@@ -18,8 +20,9 @@ test.beforeEach(async ({ openAIClient }) => {
   await deleteTestFilesWithApi(openAIClient);
 });
 
-test.afterAll(() => {
+test.afterAll(async ({ openAIClient }) => {
   deleteAllGeneratedFixtureFiles(); // cleanup any files that were not deleted during tests (e.g. due to test failure)
+  await deleteAllTestFilesWithApi(openAIClient);
 });
 
 test('it can navigate to the last visited thread with breadcrumbs', async ({ page }) => {
@@ -47,7 +50,7 @@ test('it can navigate to the file management page', async ({ page }) => {
   await expect(page).toHaveTitle('LeapfrogAI - File Management');
 });
 
-test('it can upload a pdf file', async ({ page }) => {
+test('it can upload a pdf file', async ({ page, openAIClient }) => {
   const filename = `${faker.word.noun()}-test.pdf`;
   await createPDF(filename);
   await loadFileManagementPage(page);
@@ -79,12 +82,10 @@ test('it can upload a pdf file', async ({ page }) => {
 
   // cleanup
   deleteFixtureFile(filename);
-  row!.getByRole('checkbox').check({ force: true });
-  await initiateDeletion(page, filename);
-  await confirmDeletion(page);
+  await deleteFileByName(filename, openAIClient);
 });
 
-test('it can upload a txt file', async ({ page }) => {
+test('it can upload a txt file', async ({ page, openAIClient }) => {
   const filename = `${faker.word.noun()}-test.txt`;
   createTextFile(filename);
   await loadFileManagementPage(page);
@@ -116,12 +117,13 @@ test('it can upload a txt file', async ({ page }) => {
 
   // cleanup
   deleteFixtureFile(filename);
-  row!.getByRole('checkbox').check({ force: true });
-  await initiateDeletion(page, filename);
-  await confirmDeletion(page);
+  await deleteFileByName(filename, openAIClient);
 });
 
-test('confirms any affected assistants then deletes multiple files', async ({ page }) => {
+test('confirms any affected assistants then deletes multiple files', async ({
+  page,
+  openAIClient
+}) => {
   await loadFileManagementPage(page);
 
   const filename1 = `${faker.word.noun()}-test.pdf`;
@@ -151,9 +153,11 @@ test('confirms any affected assistants then deletes multiple files', async ({ pa
   // cleanup
   deleteFixtureFile(filename1);
   deleteFixtureFile(filename2);
+  await deleteFileByName(filename1, openAIClient);
+  await deleteFileByName(filename2, openAIClient);
 });
 
-test('it cancels the delete confirmation modal', async ({ page }) => {
+test('it cancels the delete confirmation modal', async ({ page, openAIClient }) => {
   await loadFileManagementPage(page);
 
   const filename = `${faker.word.noun()}-test.pdf`;
@@ -175,12 +179,13 @@ test('it cancels the delete confirmation modal', async ({ page }) => {
 
   // Cleanup
   deleteFixtureFile(filename);
-  await initiateDeletion(page, filename);
-  await confirmDeletion(page);
+  await deleteFileByName(filename, openAIClient);
 });
 
-// TODO - this test doesn't clean up created files b/c we need to un-mock the error then cleanup
-test('shows an error toast when there is an error deleting a file', async ({ page }) => {
+test('shows an error toast when there is an error deleting a file', async ({
+  page,
+  openAIClient
+}) => {
   const filename = `${faker.word.noun()}-test.pdf`;
   await createPDF(filename);
 
@@ -213,33 +218,34 @@ test('shows an error toast when there is an error deleting a file', async ({ pag
 
   // Cleanup
   deleteFixtureFile(filename);
+  await deleteFileByName(filename, openAIClient);
 });
 
-test('it shows toast when there is an error submitting the form', async ({ page, browserName }) => {
-  // Test passes on all browsers individually, but fails randomly when run in parallel. Unknown why.
-  // Not a critical test, so only running on Firefox.
-  if (browserName === 'firefox') {
-    await page.route('*/**/chat/file-management', async (route) => {
-      if (route.request().method() === 'POST') {
-        const json = {};
+test('it shows toast when there is an error submitting the form', async ({
+  page,
+  openAIClient
+}) => {
+  await page.route('*/**/chat/file-management', async (route) => {
+    if (route.request().method() === 'POST') {
+      const json = {};
 
-        await route.fulfill({ json });
-      } else {
-        const response = await route.fetch();
-        await route.fulfill({ response });
-      }
-    });
+      await route.fulfill({ json });
+    } else {
+      const response = await route.fetch();
+      await route.fulfill({ response });
+    }
+  });
 
-    await loadFileManagementPage(page);
+  await loadFileManagementPage(page);
 
-    const filename = `${faker.word.noun()}-test.pdf`;
-    await createPDF(filename);
+  const filename = `${faker.word.noun()}-test.pdf`;
+  await createPDF(filename);
 
-    await uploadFile(page, filename);
+  await uploadFile(page, filename);
 
-    await expect(page.getByText('Import Failed')).toBeVisible();
+  await expect(page.getByText('Import Failed')).toBeVisible();
 
-    // Cleanup
-    deleteFixtureFile(filename);
-  }
+  // Cleanup
+  deleteFixtureFile(filename);
+  await deleteFileByName(filename, openAIClient);
 });

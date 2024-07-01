@@ -176,6 +176,5 @@ describe('file management', () => {
     expect(
       screen.queryByText(/this will affect the following assistants/i)
     ).not.toBeInTheDocument();
-
   });
 });

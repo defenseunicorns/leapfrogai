@@ -94,7 +94,7 @@ export const stopThenSave = async ({
     title: 'Response Canceled',
     subtitle: 'Response generation canceled.'
   });
-  threadsStore.setSendingBlocked(false)
+  threadsStore.setSendingBlocked(false);
 };
 
 export const getAssistantImage = (assistants: LFAssistant[], assistant_id: string) => {

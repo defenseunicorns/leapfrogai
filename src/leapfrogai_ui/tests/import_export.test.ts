@@ -1,5 +1,5 @@
 import { expect, test } from './fixtures';
-import { loadChatPage } from './helpers';
+import { loadChatPage } from './helpers/helpers';
 import { getFakeThread } from '../testUtils/fakeData';
 import type { LFThread } from '$lib/types/threads';
 

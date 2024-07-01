@@ -6,10 +6,11 @@ import {
   getSimpleMathQuestion,
   loadChatPage,
   sendMessage
-} from './helpers';
+} from './helpers/helpers';
 import { getFakeAssistantInput } from '../testUtils/fakeData';
 import type { ActionResult } from '@sveltejs/kit';
 
+// TODO - deleting all assistants  is causing flaky tests
 test.afterEach(async ({ openAIClient }) => {
   await deleteAllAssistants(openAIClient);
 });
@@ -109,35 +110,32 @@ test('displays an error toast when there is an error editing an assistant and re
   await page.waitForURL(`/chat/assistants-management/edit/${assistantId}`);
 });
 
-test('it can search for assistants', async ({ page, browserName }) => {
-  // this test is flaky on webkit, passes manual testing
-  if (browserName !== 'webkit') {
-    const assistantInput1 = getFakeAssistantInput();
-    const assistantInput2 = getFakeAssistantInput();
+test('it can search for assistants', async ({ page }) => {
+  const assistantInput1 = getFakeAssistantInput();
+  const assistantInput2 = getFakeAssistantInput();
 
-    await createAssistant(page, assistantInput1);
-    await createAssistant(page, assistantInput2);
+  await createAssistant(page, assistantInput1);
+  await createAssistant(page, assistantInput2);
 
-    // Search by name
-    await page.waitForURL('/chat/assistants-management');
-    await page.getByRole('searchbox').fill(assistantInput1.name);
+  // Search by name
+  await page.waitForURL('/chat/assistants-management');
+  await page.getByRole('searchbox').fill(assistantInput1.name);
 
-    await expect(page.getByTestId(`assistant-tile-${assistantInput2.name}`)).not.toBeVisible();
-    await expect(page.getByTestId(`assistant-tile-${assistantInput1.name}`)).toBeVisible();
+  await expect(page.getByTestId(`assistant-tile-${assistantInput2.name}`)).not.toBeVisible();
+  await expect(page.getByTestId(`assistant-tile-${assistantInput1.name}`)).toBeVisible();
 
-    // search by description
-    await page.getByRole('searchbox').clear();
-    await page.getByRole('searchbox').fill(assistantInput2.description);
+  // search by description
+  await page.getByRole('searchbox').clear();
+  await page.getByRole('searchbox').fill(assistantInput2.description);
 
-    await expect(page.getByTestId(`assistant-tile-${assistantInput2.name}`)).toBeVisible();
-    await expect(page.getByTestId(`assistant-tile-${assistantInput1.name}`)).not.toBeVisible();
+  await expect(page.getByTestId(`assistant-tile-${assistantInput2.name}`)).toBeVisible();
+  await expect(page.getByTestId(`assistant-tile-${assistantInput1.name}`)).not.toBeVisible();
 
-    // Search by instructions
-    await page.getByRole('searchbox').fill(assistantInput1.instructions);
+  // Search by instructions
+  await page.getByRole('searchbox').fill(assistantInput1.instructions);
 
-    await expect(page.getByTestId(`assistant-tile-${assistantInput2.name}`)).not.toBeVisible();
-    await expect(page.getByTestId(`assistant-tile-${assistantInput1.name}`)).toBeVisible();
-  }
+  await expect(page.getByTestId(`assistant-tile-${assistantInput2.name}`)).not.toBeVisible();
+  await expect(page.getByTestId(`assistant-tile-${assistantInput1.name}`)).toBeVisible();
 });
 
 test('it can navigate to the last visited thread with breadcrumbs', async ({
@@ -268,7 +266,7 @@ test("it populates the assistants values when editing an assistant's details", a
   await expect(page.getByPlaceholder("You'll act as...")).toHaveValue(assistantInput.instructions);
 });
 
-test('it can delete assistants', async ({ page, openAIClient }) => {
+test('it can delete assistants', async ({ page }) => {
   const assistantInput = getFakeAssistantInput();
 
   await createAssistant(page, assistantInput);
@@ -287,5 +285,4 @@ test('it can delete assistants', async ({ page, openAIClient }) => {
   await page.getByRole('button', { name: 'Delete' }).click();
 
   await expect(page.getByText(`${assistantInput.name} Assistant deleted.`)).toBeVisible();
-  await deleteActiveThread(page, openAIClient);
 });

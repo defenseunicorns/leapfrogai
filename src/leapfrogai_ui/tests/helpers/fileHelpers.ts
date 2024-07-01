@@ -4,11 +4,19 @@ import type { Page } from '@playwright/test';
 import { PDFDocument } from 'pdf-lib';
 import { expect } from '../fixtures';
 
-export const uploadFileWithApi = async (fileName = 'test.pdf', openAIClient: OpenAI) => {
-  const file = fs.createReadStream(`./tests/fixtures/${fileName}`);
+export const uploadFileWithApi = async (filename = 'test.pdf', openAIClient: OpenAI) => {
+  const filePath = `./tests/fixtures/${filename}`;
+  const fileContent = fs.readFileSync(filePath);
+
+  const file = new File([new Blob([fileContent])], filename, {
+    type: 'application/pdf'
+  });
+
+  // This can also be done IAW the OpenAI API documentation with fs.createReadStream, but Leapfrog API does not currently
+  // support a ReadStream. Open Issue: https://github.com/defenseunicorns/leapfrogai/issues/710
 
   return openAIClient.files.create({
-    file: file,
+    file,
     purpose: 'assistants'
   });
 };
@@ -106,4 +114,24 @@ export const initiateDeletion = async (page: Page, fileNameText: string) => {
 export const confirmDeletion = async (page: Page) => {
   const deleteBtns = await page.getByRole('button', { name: 'delete' }).all();
   await deleteBtns[1].click();
+};
+
+export const deleteFileByName = async (filename: string, openAIClient: OpenAI) => {
+  const list = await openAIClient.files.list();
+
+  for await (const file of list) {
+    if (file.filename === filename) {
+      openAIClient.files.del(file.id);
+    }
+  }
+};
+
+export const deleteAllTestFilesWithApi = async (openAIClient: OpenAI) => {
+  const list = await openAIClient.files.list();
+
+  for await (const file of list) {
+    if (file.filename.endsWith('-test.pdf') || file.filename.endsWith('-test.txt')) {
+      openAIClient.files.del(file.id);
+    }
+  }
 };

@@ -1,48 +1,67 @@
 import { expect, test } from './fixtures';
+import { faker } from '@faker-js/faker';
 import { getFakeAssistantInput } from '../testUtils/fakeData';
-import { deleteAllAssistants, uploadAvatar } from './helpers';
+import { deleteAllAssistants, uploadAvatar } from './helpers/helpers';
 import { NO_FILE_ERROR_TEXT } from '../src/lib/constants/index';
 
-test.afterEach(async ({openAIClient}) => {
+test.afterEach(async ({ openAIClient }) => {
   await deleteAllAssistants(openAIClient);
 });
 
-test('it can search for and choose a pictogram as an avatar', async ({ page, browserName }) => {
-  // Browser type 'chromium' is used for both edge and chrome, and we need each browser to pick a different pictogram
-  // so we are only testing webkit here to avoid having the same pictogram picked for both edge and chrome
+test('it can search for and choose a pictogram as an avatar', async ({ page }) => {
+  // We need each browser to pick a different pictogram
+  // this can result in collisions and a flaky test
   // Attempts to import the iconMap and pick random pictograms failed, the import breaks this test file and it won't
   // show up in playwright
-  if (browserName === 'webkit') {
-    const assistantInput = getFakeAssistantInput();
-    const pictogramName = 'Airplane';
+  const assistantInput = getFakeAssistantInput();
+  const pictogramName = faker.helpers.arrayElement([
+    'Agriculture',
+    'Airplane',
+    'AmsterdamWindmill',
+    'Analytics',
+    'Analyze',
+    'AnalyzeCode',
+    'AnalyzesData',
+    'AnalyzingContainers',
+    'AppDeveloper',
+    'AppModernization',
+    'ApplicationIntegration',
+    'ApplicationPlatform',
+    'ApplicationSecurity',
+    'ArtTools_01',
+    'AsiaAustralia',
+    'AudioData',
+    'AuditTrail',
+    'AugmentedReality',
+    'Automobile'
+  ]);
 
-    await page.goto('/chat/assistants-management/new');
+  await page.goto('/chat/assistants-management/new');
 
-    await page.getByLabel('name').fill(assistantInput.name);
-    await page.getByLabel('description').fill(assistantInput.description);
-    await page.getByPlaceholder("You'll act as...").fill(assistantInput.instructions);
+  await page.getByLabel('name').fill(assistantInput.name);
+  await page.getByLabel('description').fill(assistantInput.description);
+  await page.getByPlaceholder("You'll act as...").fill(assistantInput.instructions);
 
-    await page.locator('.mini-avatar-container').click();
+  await page.locator('.mini-avatar-container').click();
 
-    await page.getByPlaceholder('Search').click();
-    await page.getByPlaceholder('Search').fill(pictogramName);
+  await page.getByPlaceholder('Search').click();
+  await page.getByPlaceholder('Search').fill(pictogramName);
 
-    await page.getByTestId(`pictogram-${pictogramName}`).click();
-    await page.getByRole('dialog').getByRole('button', { name: 'Save' }).click();
+  await page.getByTestId(`pictogram-${pictogramName}`).click();
+  await page.getByRole('dialog').getByRole('button', { name: 'Save' }).click();
 
-    // Wait for modal save button to disappear
-    const saveButton = page.getByRole('button', { name: 'Save' });
-    await expect(saveButton).toHaveCount(1);
+  // Wait for modal save button to disappear
+  const saveButton = page.getByRole('button', { name: 'Save' });
+  await expect(saveButton).toHaveCount(1);
 
-    const miniAvatarContainer = page.getByTestId('mini-avatar-container');
-    const pictogram = miniAvatarContainer.getByTestId(`pictogram-${pictogramName}`);
-    await expect(pictogram).toBeVisible();
-    await saveButton.click();
-    await expect(page.getByText('Assistant Created')).toBeVisible();
+  const miniAvatarContainer = page.getByTestId('mini-avatar-container');
+  const pictogram = miniAvatarContainer.getByTestId(`pictogram-${pictogramName}`);
+  await expect(pictogram).toBeVisible();
+  await saveButton.click();
+  await expect(page.getByText('Assistant Created')).toBeVisible();
 
-    await page.waitForURL('**/chat/assistants-management');
-    await expect(page.getByTestId(`pictogram-${pictogramName}`)).toBeVisible();
-  }
+  await page.waitForURL('**/chat/assistants-management');
+  await expect(page.getByTestId(`pictogram-${pictogramName}`)).toBeVisible();
 });
 
 // Note - once photo is uploaded, playwright is changing the url for the file so we cannot test the name of the image

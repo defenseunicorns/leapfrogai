@@ -8,7 +8,7 @@ import {
   loadChatPage,
   sendMessage,
   waitForResponseToComplete
-} from './helpers';
+} from './helpers/helpers';
 
 const newMessage1 = getSimpleMathQuestion();
 const newMessage2 = getSimpleMathQuestion();
@@ -27,33 +27,30 @@ test('it can start a new thread and receive a response', async ({ page, openAICl
   await deleteActiveThread(page, openAIClient);
 });
 
-// Flaky test - works manually. More likely to pass in Chrome than Firefox.
-test.skip('it saves in progress responses when interrupted by a page reload', async ({
+test('it saves in progress responses when interrupted by a page reload', async ({
   page,
   openAIClient
 }) => {
-  // test.use({ defaultBrowserType: 'chromium' }); // This sets the browser to Chrome for this test
-
-  const newMessage = faker.lorem.words(20);
+  const messageWithLongResponse = 'write me a long poem';
   await loadChatPage(page);
   const messages = page.getByTestId('message');
-  await sendMessage(page, newMessage);
+  await sendMessage(page, messageWithLongResponse);
   await expect(messages).toHaveCount(2);
   await page.reload();
   await expect(page.getByTestId('message')).toHaveCount(2);
   await deleteActiveThread(page, openAIClient);
 });
 
-// Flaky test - works manually.
-test.skip('it saves in progress responses when interrupted by changing threads', async ({
+test('it saves in progress responses when interrupted by changing threads', async ({
   page,
   openAIClient
 }) => {
+  const messageWithLongResponse = 'write me a long poem';
   await loadChatPage(page);
   const messages = page.getByTestId('message');
   await expect(messages).toHaveCount(0);
 
-  await sendMessage(page, newMessage1);
+  await sendMessage(page, messageWithLongResponse);
   await expect(messages).toHaveCount(2);
 
   await page.getByText('New Chat').click();
@@ -87,29 +84,24 @@ test('it cancels responses', async ({ page, openAIClient }) => {
 
 test('it cancels responses when clicking enter instead of pause button and does not send next message', async ({
   page,
-  browserName,
   openAIClient
 }) => {
-  // This test does not pass in Firefox, but it does work when tested manually. Not worth spending
-  // additional time debugging at this time. E2E passes for other browsers.
-  if (browserName !== 'firefox') {
-    const messageWithLongResponse = 'write me a long poem'; // response must take a long time for this test to work
-    await loadChatPage(page);
-    const messages = page.getByTestId('message');
-    await sendMessage(page, messageWithLongResponse);
-    await expect(messages).toHaveCount(2); // ensure new response is being received
-    await page.getByLabel('message input').fill('new question');
-    await page.waitForTimeout(25); // let it partially complete
-    await page.keyboard.down('Enter'); // pause response
-    await page.waitForTimeout(200); // wait to ensure new question was not sent
-    await expect(messages).toHaveCount(2);
-    const allMessages = await messages.all();
-    const response = allMessages[1];
-    const responseText = await response.textContent();
-    expect(countWords(responseText!)).toBeLessThan(50);
+  const messageWithLongResponse = 'write me a long poem'; // response must take a long time for this test to work
+  await loadChatPage(page);
+  const messages = page.getByTestId('message');
+  await sendMessage(page, messageWithLongResponse);
+  await expect(messages).toHaveCount(2); // ensure new response is being received
+  await page.getByLabel('message input').fill('new question');
+  await page.waitForTimeout(25); // let it partially complete
+  await page.keyboard.down('Enter'); // pause response
+  await page.waitForTimeout(200); // wait to ensure new question was not sent
+  await expect(messages).toHaveCount(2);
+  const allMessages = await messages.all();
+  const response = allMessages[1];
+  const responseText = await response.textContent();
+  expect(countWords(responseText!)).toBeLessThan(50);
 
-    await deleteActiveThread(page, openAIClient);
-  }
+  await deleteActiveThread(page, openAIClient);
 });
 
 // TODO - Leapfrog API is currently too slow when sending assistant responses so when this test
