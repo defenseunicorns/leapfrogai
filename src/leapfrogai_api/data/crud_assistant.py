@@ -30,7 +30,14 @@ class CRUDAssistant(CRUDBase[AuthAssistant]):
 
     async def create(self, object_: Assistant) -> Assistant | None:
         """Create a new assistant."""
-        user_id: str = (await self.db.auth.get_user()).user.id
+        if self.db.options.headers.get("x-custom-api-key"):
+            data, _count = await self.db.table("api_keys").select("user_id").execute()
+            _, tmp = data
+            user_id: str = tmp[0]["user_id"]
+            print(user_id)
+        else:
+            user_id: str = (await self.db.auth.get_user()).user.id
+
         return await super().create(
             object_=AuthAssistant(user_id=user_id, **object_.model_dump())
         )

@@ -21,3 +21,16 @@ create policy "Individuals can create api_keys." on api_keys for
     insert with check (auth.uid() = user_id);
 create policy "Individuals can delete their own api_keys." on api_keys for
     delete using (auth.uid() = user_id);
+
+-- Update the insert policy
+drop policy "Individuals can create assistant_objects." on assistant_objects;
+
+create policy "Individuals can create assistant_objects" on assistant_objects for
+    insert with check (
+        auth.uid() = user_id
+        or
+        exists (
+            select * from api_keys
+            where api_keys.api_key = current_setting('request.headers')::json->>'x-custom-api-key'
+        )
+    );

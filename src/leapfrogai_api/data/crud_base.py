@@ -25,6 +25,9 @@ class CRUDBase(Generic[ModelType]):
         # Only delete created_at if it is <= 0, the db time is not adequate for message ordering
         if "created_at" in dict_ and dict_["created_at"] <= 0:
             del dict_["created_at"]
+
+        print(dict_)
+        print(self.db.options.headers.get("x-custom-api-key"))
         data, _count = await self.db.table(self.table_name).insert(dict_).execute()
 
         _, response = data

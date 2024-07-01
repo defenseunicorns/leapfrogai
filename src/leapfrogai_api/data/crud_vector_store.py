@@ -29,6 +29,7 @@ class CRUDVectorStore(CRUDBase[AuthVectorStore]):
     async def create(self, object_: VectorStore) -> VectorStore | None:
         """Create new vector store."""
         user_id: str = (await self.db.auth.get_user()).user.id
+        print(user_id)
         return await super().create(
             object_=AuthVectorStore(user_id=user_id, **object_.model_dump())
         )

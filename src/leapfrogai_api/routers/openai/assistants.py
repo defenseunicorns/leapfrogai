@@ -12,7 +12,7 @@ from leapfrogai_api.backend.types import (
     ModifyAssistantRequest,
 )
 from leapfrogai_api.data.crud_assistant import CRUDAssistant, FilterAssistant
-from leapfrogai_api.routers.supabase_session import Session
+from leapfrogai_api.routers.supabase_session_api_key import Session
 from leapfrogai_api.utils.validate_tools import (
     validate_assistant_tool,
     validate_tool_resources,

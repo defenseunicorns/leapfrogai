@@ -39,7 +39,11 @@ async def init_supabase_client(
         user_client (AsyncClient): a client instantiated with a session associated with the JWT token
     """
 
-    if not await validate_api_authorization(auth_creds.credentials):
+    _, key, _ = parse(auth_creds.credentials)
+
+    api_key = encode_unique_key(key)
+
+    if not await validate_api_authorization(api_key):
         raise HTTPException(
             detail="Token has expired or is not valid. Generate a new token",
             status_code=status.HTTP_401_UNAUTHORIZED,
@@ -48,6 +52,9 @@ async def init_supabase_client(
     client: AsyncClient = await acreate_client(
         supabase_key=get_vars()[1],
         supabase_url=get_vars()[0],
+        options=ClientOptions(
+            auto_refresh_token=False, headers={"x-custom-api-key": api_key}
+        ),
     )
 
     return client
@@ -76,10 +83,6 @@ async def validate_api_authorization(api_key: str) -> bool:
         )
 
     if api_key:
-        _, key, _ = parse(api_key)
-
-        api_key = encode_unique_key(key)
-
         headers = {"x-custom-api-key": api_key}
 
         session = await acreate_client(
