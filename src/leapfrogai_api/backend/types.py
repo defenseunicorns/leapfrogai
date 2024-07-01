@@ -70,7 +70,7 @@ class CompletionRequest(BaseModel):
     model: str
     prompt: str | list[int]
     stream: bool | None = False
-    max_tokens: int | None = 16
+    max_tokens: int | None = 4096
     temperature: float | None = 1.0
 
 
@@ -131,7 +131,7 @@ class ChatCompletionRequest(BaseModel):
     top_p: float | None = 1
     stream: bool | None = False
     stop: str | None = None
-    max_tokens: int | None = 128
+    max_tokens: int | None = 4096
 
 
 class ChatChoice(BaseModel):
