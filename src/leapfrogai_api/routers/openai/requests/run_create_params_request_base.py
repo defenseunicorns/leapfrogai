@@ -72,7 +72,7 @@ class RunCreateParamsRequestBase(BaseModel):
     assistant_id: str = Field(default="", examples=["123ab"])
     instructions: str = Field(default="", examples=["You are a helpful AI assistant."])
     max_completion_tokens: int | None = Field(default=4096, examples=[4096])
-    max_prompt_tokens: int | None = Field(default=4096, examples=[32768])
+    max_prompt_tokens: int | None = Field(default=4096, examples=[4096])
     metadata: dict | None = Field(default={}, examples=[{}])
     model: str | None = Field(default=None, examples=["llama-cpp-python"])
     response_format: AssistantResponseFormatOption | None = Field(
