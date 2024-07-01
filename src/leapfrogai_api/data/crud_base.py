@@ -31,7 +31,7 @@ class CRUDBase(Generic[ModelType]):
         result = await self.db.table(self.table_name).insert(dict_).execute()
 
         try:
-            return self.model(**result[0][1][0])
+            return self.model(**result[0][1])
         except Exception:
             return None
 
@@ -75,7 +75,7 @@ class CRUDBase(Generic[ModelType]):
         )
 
         try:
-            return self.model(**result[0][1][0])
+            return self.model(**result[0][1])
         except Exception:
             return None
 

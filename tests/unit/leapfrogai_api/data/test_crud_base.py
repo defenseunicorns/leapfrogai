@@ -113,7 +113,7 @@ async def test_create_fail(mock_session, mock_response):
 @pytest.mark.asyncio
 @pytest.mark.parametrize(
     "filters, mock_response, expected_result",
-    [({"id": 1}, dict(id=1, name="mock-data"), MockModel(id=1, name="mock-data"))],
+    [({"id": 1}, [dict(id=1, name="mock-data")], MockModel(id=1, name="mock-data"))],
 )
 async def test_get(mock_session, filters, mock_response, expected_result):
     mock_crud_base = CRUDBase(
@@ -151,7 +151,7 @@ async def test_get_fail(mock_session, filters, mock_response):
 @pytest.mark.parametrize(
     "filters, mock_response, expected_result",
     [
-        ({"id": 1}, dict(id=1, name="mock-data"), [MockModel(id=1, name="mock-data")]),
+        ({"id": 1}, [dict(id=1, name="mock-data")], [MockModel(id=1, name="mock-data")]),
         (
             {"id": 1},
             [dict(id=1, name="mock-data"), dict(id=2, name="mock-data")],

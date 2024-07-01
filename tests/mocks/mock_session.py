@@ -42,7 +42,7 @@ def mock_table(table_name=None):
     mock_table.insert.return_value = mock_insert
 
     mock_select = AsyncMock()
-    mock_select.execute.return_value = execute_response_format(mock_data.model_dump())
+    mock_select.execute.return_value = execute_response_format([mock_data.model_dump()])
     mock_select.eq = MagicMock(return_value=mock_select)
     mock_table.select.return_value = mock_select
 
