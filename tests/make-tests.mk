@@ -24,7 +24,7 @@ test-env:
 	@read -s -p "Enter your DEV API password: " SUPABASE_PASS; echo; \
 	$(call get_jwt_token,"${SUPABASE_URL}/auth/v1/token?grant_type=password")
 
-test-api-integration:
+test-int-api:
 	source .env; PYTHONPATH=$$(pwd) pytest -vv -s tests/integration/api 
 
 test-unit:
