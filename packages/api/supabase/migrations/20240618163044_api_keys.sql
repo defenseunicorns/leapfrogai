@@ -22,37 +22,27 @@ create policy "Individuals can create api_keys." on api_keys for
 create policy "Individuals can delete their own api_keys." on api_keys for
     delete using (auth.uid() = user_id);
 
-create policy "Allow reading api_keys for verification" on api_keys
-for select
-to authenticated
-using (true);
-
 -- Update the insert policy
 drop policy "Individuals can view their own assistant_objects. " on assistant_objects;
 drop policy "Individuals can create assistant_objects." on assistant_objects;
 drop policy "Individuals can update their own assistant_objects." on assistant_objects;
 drop policy "Individuals can delete their own assistant_objects." on assistant_objects;
 
-create policy "Individuals can CRUD their own assistant_objects." on assistant_objects for
+-- CRUD Assistants via standard auth
+create policy "Assistants CRUD via Auth." on assistant_objects for
     all with check (
         auth.uid() = user_id
-        or
+    );
+
+-- CRUD Assistants via API key
+create policy "Assistants CRUD via API Key."
+    on assistant_objects for all
+    to anon
+    using
+    (
         exists (
-            select 1 from api_keys
+            select 1
+            from api_keys
             where api_keys.api_key = current_setting('request.headers')::json->>'x-custom-api-key'
         )
     );
-
-create or replace function debug_assistant_objects_insert() returns trigger as $$
-begin
-  raise log 'Attempting to insert: auth.uid=%, user_id=%, api_key=%',
-    auth.uid(),
-    NEW.user_id,
-    current_setting('request.headers', true)::json->>'x-custom-api-key';
-  return NEW;
-end;
-$$ language plpgsql;
-
-create trigger debug_assistant_objects_insert_trigger
-before insert on assistant_objects
-for each row execute function debug_assistant_objects_insert();
