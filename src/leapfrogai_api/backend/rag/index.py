@@ -125,12 +125,12 @@ class IndexingService:
             await crud_vector_store_file.update(
                 id_=vector_store_file.id, object_=vector_store_file
             )
-        except Exception as e:
+        except Exception as exc:
             vector_store_file.status = VectorStoreFileStatus.FAILED.value
             await crud_vector_store_file.update(
                 id_=vector_store_file.id, object_=vector_store_file
             )
-            raise e
+            raise exc
 
         return await crud_vector_store_file.get(
             filters=FilterVectorStoreFile(vector_store_id=vector_store_id, id=file_id)
@@ -182,13 +182,7 @@ class IndexingService:
                 expires_at=expires_at,
             )
             new_vector_store = await crud_vector_store.create(object_=vector_store)
-        except Exception as exc:
-            raise HTTPException(
-                status_code=status.HTTP_400_BAD_REQUEST,
-                detail="Unable to parse vector store request",
-            ) from exc
 
-        try:
             if request.file_ids != []:
                 responses = await self.index_files(
                     new_vector_store.id, request.file_ids
@@ -206,7 +200,11 @@ class IndexingService:
                 object_=new_vector_store,
             )
         except Exception as exc:
-            raise exc
+            logging.error(exc)
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail="Unable to parse vector store request",
+            ) from exc
 
     async def modify_existing_vector_store(
         self,
@@ -245,13 +243,7 @@ class IndexingService:
                 id_=vector_store_id,
                 object_=new_vector_store,
             )  # Sets status to in_progress for the duration of this function
-        except Exception as exc:
-            raise HTTPException(
-                status_code=status.HTTP_400_BAD_REQUEST,
-                detail="Unable to parse vector store request",
-            ) from exc
 
-        try:
             if request.file_ids:
                 responses = await self.index_files(
                     new_vector_store.id, request.file_ids
@@ -278,7 +270,11 @@ class IndexingService:
                 object_=new_vector_store,
             )
         except Exception as exc:
-            raise exc
+            logging.error(exc)
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail="Unable to parse vector store request",
+            ) from exc
 
     async def file_ids_are_valid(self, file_ids: str | list[str]) -> bool:
         """Check if the provided file ids exist"""

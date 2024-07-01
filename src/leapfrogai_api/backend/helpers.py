@@ -105,7 +105,7 @@ def read_chunks(file: BinaryIO, chunk_size: int) -> Iterator[lfai.AudioRequest]:
 
 
 def object_or_default(obj: Any | None, _default: Any) -> Any:
-    if obj:
+    if obj or obj == 0:
         return obj
     else:
         return _default
