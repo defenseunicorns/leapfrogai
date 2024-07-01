@@ -58,7 +58,8 @@ leapfrogai/
 │   ├── leapfrogai_api/
 │   │   ├── main.py
 │   │   └── ...
-│   └── leapfrogai_sdk/
+│   ├── leapfrogai_sdk/
+│   └── leapfrogai_ui/
 ├── packages/
 │   ├── api/
 │   ├── llama-cpp-python/

@@ -7,7 +7,7 @@ from fastapi import HTTPException, APIRouter, status
 from fastapi.security import HTTPBearer
 from leapfrogai_api.backend.rag.index import IndexingService
 from openai.types.beta import Assistant, AssistantDeleted
-from openai.types.beta.assistant import ToolResources
+from leapfrogai_api.backend.helpers import object_or_default
 from leapfrogai_api.backend.types import (
     CreateAssistantRequest,
     ListAssistantsResponse,
@@ -328,33 +328,29 @@ async def modify_assistant(
             )
 
     try:
-        new_tool_resources: ToolResources | None
-
-        try:
-            new_tool_resources = ToolResources.model_validate(
-                getattr(request, "tool_resources", None)
-            )
-        except Exception:
-            new_tool_resources = old_assistant.tool_resources
-
-        if request.tools is None:
-            request.tools = old_assistant.tools
-
         new_assistant = Assistant(
             id=assistant_id,
             created_at=old_assistant.created_at,
-            name=getattr(request, "name", old_assistant.name),
-            description=getattr(request, "description", old_assistant.description),
-            instructions=getattr(request, "instructions", old_assistant.instructions),
-            model=getattr(request, "model", old_assistant.model),
+            name=object_or_default(request.name, old_assistant.name),
+            description=object_or_default(
+                request.description, old_assistant.description
+            ),
+            instructions=object_or_default(
+                request.instructions, old_assistant.instructions
+            ),
+            model=object_or_default(request.model, old_assistant.model),
             object="assistant",
-            tools=request.tools,
-            tool_resources=new_tool_resources,
-            temperature=getattr(request, "temperature", old_assistant.temperature),
-            top_p=getattr(request, "top_p", old_assistant.top_p),
-            metadata=getattr(request, "metadata", old_assistant.metadata),
-            response_format=getattr(
-                request, "response_format", old_assistant.response_format
+            tools=object_or_default(request.tools, old_assistant.tools),
+            tool_resources=object_or_default(
+                request.tool_resources, old_assistant.tool_resources
+            ),
+            temperature=object_or_default(
+                request.temperature, old_assistant.temperature
+            ),
+            top_p=object_or_default(request.top_p, old_assistant.top_p),
+            metadata=object_or_default(request.metadata, old_assistant.metadata),
+            response_format=object_or_default(
+                request.response_format, old_assistant.response_format
             ),
         )
     except Exception as exc:
