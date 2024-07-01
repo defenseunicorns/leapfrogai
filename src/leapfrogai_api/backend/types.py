@@ -57,9 +57,8 @@ class ModelResponseModel(BaseModel):
         description="The unique identifier of the model.",
         examples=["llama-cpp-python"],
     )
-    object: str = Field(
+    object: Literal["model"] = Field(
         default="model",
-        const=True,
         description="The object type, which is always 'model' for this response.",
     )
     created: int = Field(
@@ -67,9 +66,8 @@ class ModelResponseModel(BaseModel):
         description="The Unix timestamp (in seconds) when the model was created. Always 0 for LeapfrogAI models.",
         examples=[0],
     )
-    owned_by: str = Field(
+    owned_by: Literal["leapfrogai"] = Field(
         default="leapfrogai",
-        const=True,
         description="The organization that owns the model. Always 'leapfrogai' for LeapfrogAI models.",
     )
 
@@ -77,9 +75,8 @@ class ModelResponseModel(BaseModel):
 class ModelResponse(BaseModel):
     """Response object for listing available models."""
 
-    object: str = Field(
+    object: Literal["list"] = Field(
         default="list",
-        const=True,
         description="The object type, which is always 'list' for this response.",
     )
     data: list[ModelResponseModel] = Field(
@@ -136,9 +133,8 @@ class CompletionResponse(BaseModel):
     """Response object for completion."""
 
     id: str = Field("", description="A unique identifier for this completion response.")
-    object: str = Field(
+    object: Literal["completion"] = Field(
         "completion",
-        const=True,
         description="The object type, which is always 'completion' for this response.",
     )
     created: int = Field(
@@ -530,9 +526,8 @@ class ModifyAssistantRequest(CreateAssistantRequest):
 class ListAssistantsResponse(BaseModel):
     """Response object for listing assistants."""
 
-    object: str = Field(
+    object: Literal["list"] = Field(
         default="list",
-        const=True,
         description="The type of object. Always 'list' for this response.",
     )
     data: list[Assistant] = Field(description="A list of Assistant objects.")
@@ -652,9 +647,8 @@ class ModifyVectorStoreRequest(CreateVectorStoreRequest):
 class ListVectorStoresResponse(BaseModel):
     """Response object for listing files."""
 
-    object: str = Field(
+    object: Literal["list"] = Field(
         default="list",
-        const=True,
         description="The type of object. Always 'list' for this response.",
     )
     data: list[VectorStore] = Field(
