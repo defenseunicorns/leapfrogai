@@ -67,12 +67,19 @@ from leapfrogai_sdk.chat.chat_pb2 import (
     ChatCompletionResponse as ProtobufChatCompletionResponse,
 )
 
+DEFAULT_MAX_COMPLETION_TOKENS = 4096
+DEFAULT_MAX_PROMPT_TOKENS = 4096
+
 
 class RunCreateParamsRequestBase(BaseModel):
     assistant_id: str = Field(default="", examples=["123ab"])
     instructions: str = Field(default="", examples=["You are a helpful AI assistant."])
-    max_completion_tokens: int | None = Field(default=4096, examples=[4096])
-    max_prompt_tokens: int | None = Field(default=4096, examples=[4096])
+    max_completion_tokens: int | None = Field(
+        default=DEFAULT_MAX_COMPLETION_TOKENS, examples=[DEFAULT_MAX_COMPLETION_TOKENS]
+    )
+    max_prompt_tokens: int | None = Field(
+        default=DEFAULT_MAX_PROMPT_TOKENS, examples=[DEFAULT_MAX_PROMPT_TOKENS]
+    )
     metadata: dict | None = Field(default={}, examples=[{}])
     model: str | None = Field(default=None, examples=["llama-cpp-python"])
     response_format: AssistantResponseFormatOption | None = Field(
@@ -96,14 +103,16 @@ class RunCreateParamsRequestBase(BaseModel):
         # TODO: Temporary fix to ensure max_completion_tokens and max_prompt_tokens are set
         if self.max_completion_tokens is None or self.max_completion_tokens < 1:
             logging.warning(
-                "max_completion_tokens is not set or is less than 1, setting to 1024"
+                "max_completion_tokens is not set or is less than 1, setting to %s",
+                DEFAULT_MAX_COMPLETION_TOKENS,
             )
-            self.max_completion_tokens = 4096
+            self.max_completion_tokens = DEFAULT_MAX_COMPLETION_TOKENS
         if self.max_prompt_tokens is None or self.max_prompt_tokens < 1:
             logging.warning(
-                "max_prompt_tokens is not set or is less than 1, setting to 1024"
+                "max_prompt_tokens is not set or is less than 1, setting to %s",
+                DEFAULT_MAX_PROMPT_TOKENS,
             )
-            self.max_prompt_tokens = 4096
+            self.max_prompt_tokens = DEFAULT_MAX_PROMPT_TOKENS
 
     @staticmethod
     def get_initial_messages_base(run: Run) -> list[str]:
