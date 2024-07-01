@@ -93,6 +93,8 @@ async def validate_api_authorization(api_key: str) -> bool:
 
         response = await session.table("api_keys").select("*").execute()
 
+        if not response or not response.data:
+            return False
         if not response.data[0]["api_key"] == api_key:
             authorized = False
 
