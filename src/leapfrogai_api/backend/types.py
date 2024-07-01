@@ -50,19 +50,41 @@ class Usage(BaseModel):
 
 
 class ModelResponseModel(BaseModel):
-    """Response object for models."""
+    """Represents a single model in the response."""
 
-    id: str
-    object: str = "model"
-    created: int = 0
-    owned_by: str = "leapfrogai"
+    id: str = Field(
+        ...,
+        description="The unique identifier of the model.",
+        examples=["llama-cpp-python"],
+    )
+    object: str = Field(
+        default="model",
+        const=True,
+        description="The object type, which is always 'model' for this response.",
+    )
+    created: int = Field(
+        default=0,
+        description="The Unix timestamp (in seconds) when the model was created. Always 0 for LeapfrogAI models.",
+        examples=[0],
+    )
+    owned_by: str = Field(
+        default="leapfrogai",
+        const=True,
+        description="The organization that owns the model. Always 'leapfrogai' for LeapfrogAI models.",
+    )
 
 
 class ModelResponse(BaseModel):
-    """Response object for models."""
+    """Response object for listing available models."""
 
-    object: str = "list"
-    data: list[ModelResponseModel] = []
+    object: str = Field(
+        default="list",
+        const=True,
+        description="The object type, which is always 'list' for this response.",
+    )
+    data: list[ModelResponseModel] = Field(
+        ..., description="A list of available models.", min_length=0
+    )
 
 
 ############
@@ -149,12 +171,17 @@ class ChatMessage(BaseModel):
     """Message object for chat completion."""
 
     role: Literal["user", "assistant", "system", "function"] = Field(
-        default="user", description="The role of the message author.", examples=["user"]
+        default="user",
+        description="The role of the message author.",
+        examples=["user", "assistant", "system", "function"],
     )
     content: str | list[TextContentBlockParam] = Field(
         default="",
         description="The content of the message. Can be a string or a list of text content blocks.",
-        examples=["Hello, how are you?"],
+        examples=[
+            "Hello, how are you?",
+            [{"type": "text", "text": "Hello, how are you?"}],
+        ],
     )
 
 
@@ -361,13 +388,13 @@ class CreateTranscriptionRequest(BaseModel):
 
     @classmethod
     def as_form(
-            cls,
-            file: UploadFile = File(...),
-            model: str = Form(...),
-            language: str | None = Form(""),
-            prompt: str | None = Form(""),
-            response_format: str | None = Form(""),
-            temperature: float | None = Form(1.0),
+        cls,
+        file: UploadFile = File(...),
+        model: str = Form(...),
+        language: str | None = Form(""),
+        prompt: str | None = Form(""),
+        response_format: str | None = Form(""),
+        temperature: float | None = Form(1.0),
     ) -> CreateTranscriptionRequest:
         return cls(
             file=file,
@@ -539,24 +566,43 @@ class CreateVectorStoreFileRequest(BaseModel):
     chunking_strategy: ToolResourcesFileSearchVectorStoreChunkingStrategy | None = (
         Field(
             default=None,
+            description="The strategy for chunking the file content. Use 'auto' for automatic chunking.",
             examples=[
                 ToolResourcesFileSearchVectorStoreChunkingStrategyAuto(type="auto")
             ],
         )
     )
 
-    file_id: str = Field(default="", examples=[""])
+    file_id: str = Field(
+        default="",
+        description="The ID of the file to be added to the vector store.",
+        examples=["file-abc123"],
+    )
 
 
 class CreateVectorStoreRequest(BaseModel):
     """Request object for creating a vector store."""
 
-    file_ids: list[str] | None = []
-    name: str | None = None
-    expires_after: ExpiresAfter | None = Field(
-        default=None, examples=[ExpiresAfter(anchor="last_active_at", days=1)]
+    file_ids: list[str] | None = Field(
+        default=[],
+        description="List of file IDs to be included in the vector store.",
+        example=["file-abc123", "file-def456"],
     )
-    metadata: dict | None = Field(default=None, examples=[{}])
+    name: str | None = Field(
+        default=None,
+        description="Optional name for the vector store.",
+        example="My Vector Store",
+    )
+    expires_after: ExpiresAfter | None = Field(
+        default=None,
+        description="Expiration settings for the vector store.",
+        examples=[ExpiresAfter(anchor="last_active_at", days=1)],
+    )
+    metadata: dict | None = Field(
+        default=None,
+        description="Optional metadata for the vector store.",
+        example={"project": "AI Research", "version": "1.0"},
+    )
 
     def add_days_to_timestamp(self, timestamp: int, days: int) -> int:
         """
@@ -606,8 +652,15 @@ class ModifyVectorStoreRequest(CreateVectorStoreRequest):
 class ListVectorStoresResponse(BaseModel):
     """Response object for listing files."""
 
-    object: str = Literal["list"]
-    data: list[VectorStore] = []
+    object: str = Field(
+        default="list",
+        const=True,
+        description="The type of object. Always 'list' for this response.",
+    )
+    data: list[VectorStore] = Field(
+        default=[],
+        description="A list of VectorStore objects.",
+    )
 
 
 ################
@@ -642,17 +695,27 @@ class ModifyMessageRequest(BaseModel):
 
 
 class RAGItem(BaseModel):
-    """Object for RAG."""
+    """Object representing a single item in a Retrieval-Augmented Generation (RAG) result."""
 
-    id: str
-    vector_store_id: str
-    file_id: str
-    content: str
-    metadata: dict
-    similarity: float
+    id: str = Field(..., description="Unique identifier for the RAG item.")
+    vector_store_id: str = Field(
+        ..., description="ID of the vector store containing this item."
+    )
+    file_id: str = Field(..., description="ID of the file associated with this item.")
+    content: str = Field(..., description="The actual content of the RAG item.")
+    metadata: dict = Field(
+        ..., description="Additional metadata associated with the RAG item."
+    )
+    similarity: float = Field(
+        ..., description="Similarity score of this item to the query."
+    )
 
 
 class RAGResponse(BaseModel):
-    """Response object for RAG."""
+    """Response object for RAG queries."""
 
-    data: list[RAGItem] = []
+    data: list[RAGItem] = Field(
+        ...,
+        description="List of RAG items returned as a result of the query.",
+        min_length=0,
+    )
