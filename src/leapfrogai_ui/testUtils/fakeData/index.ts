@@ -104,23 +104,6 @@ export const getFakeThread = (options: FakeThreadOptions = {}): LFThread => {
   };
 };
 
-export const fakeThreads: LFThread[] = [
-  // today
-  getFakeThread({ numMessages: 2, created_at: getUnixSeconds(todayOverride) }),
-  // yesterday
-  getFakeThread({
-    numMessages: 2,
-    created_at: getUnixSeconds(
-      new Date(todayOverride.getFullYear(), todayOverride.getMonth(), todayOverride.getDate() - 1)
-    )
-  }),
-  // This Month
-  getFakeThread({
-    numMessages: 2,
-    created_at: getUnixSeconds(new Date(todayOverride.getFullYear(), todayOverride.getMonth(), 10))
-  })
-];
-
 type GetFakeAssistantOptions = {
   vectorStoreId?: string;
 };
@@ -147,6 +130,24 @@ export const getFakeAssistant = (options: GetFakeAssistantOptions = {}): LFAssis
     created_at: Date.now()
   };
 };
+
+export const fakeThreads: LFThread[] = [
+  // today
+  getFakeThread({ numMessages: 2, created_at: getUnixSeconds(todayOverride) }),
+  // yesterday
+  getFakeThread({
+    numMessages: 2,
+    created_at: getUnixSeconds(
+      new Date(todayOverride.getFullYear(), todayOverride.getMonth(), todayOverride.getDate() - 1)
+    )
+  }),
+  // This Month
+  getFakeThread({
+    numMessages: 2,
+    created_at: getUnixSeconds(new Date(todayOverride.getFullYear(), todayOverride.getMonth(), 10))
+  })
+];
+export const fakeAssistants: LFAssistant[] = [getFakeAssistant(), getFakeAssistant()];
 
 export const getFakeAssistantInput = (): AssistantInput => {
   return {
