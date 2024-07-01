@@ -1,6 +1,10 @@
 import { expect, test } from './fixtures';
+import { faker } from '@faker-js/faker';
 import {
+  createPDF,
+  deletePdf,
   deleteTestFilesWithApi,
+  getFileTableRow,
   getSimpleMathQuestion,
   loadChatPage,
   sendMessage,
@@ -58,27 +62,36 @@ test('it can navigate to the file management page', async ({ page }) => {
 });
 
 test('it can upload a pdf file', async ({ page }) => {
+  const filename = `${faker.word.noun()}-test.pdf`;
+  await createPDF(filename);
   await loadFileManagementPage(page);
-  const checkboxes = await page.getByRole('checkbox').all();
-  await uploadFile(page);
-  const checkboxesDuringUpload = await page.getByRole('checkbox').all();
+  await uploadFile(page, filename);
+
+  const row = await getFileTableRow(page, filename);
+  expect(row).not.toBeNull();
+
+  const uploadingFileIcon = row!.getByTestId('uploading-file-icon');
+  const fileUploadedIcon = row!.getByTestId('file-uploaded-icon');
 
   // test loading icon shows then disappears
-  await expect(page.getByTestId('uploading-file-icon')).toBeVisible();
+  await expect(uploadingFileIcon).toBeVisible();
   // Ensure an additional checkbox is not added during upload (it should not have one on that row. row is in nonSelectableRowIds)
-  expect(checkboxesDuringUpload.length).toEqual(checkboxes.length);
-  await expect(page.getByTestId('uploading-file-icon')).not.toBeVisible();
+  const rowCheckboxesBefore = await row!.getByRole('checkbox').all();
+  expect(rowCheckboxesBefore.length).toEqual(0);
+  await expect(uploadingFileIcon).not.toBeVisible();
 
-  const checkboxesAfterUpload = await page.getByRole('checkbox').all();
   // Checkbox should now be present
-  expect(checkboxesAfterUpload.length).toEqual(checkboxes.length + 1);
-
+  const rowCheckboxesAfter = await row!.getByRole('checkbox').all();
+  expect(rowCheckboxesAfter.length).toEqual(1);
   // test toast
-  await expect(page.getByText('test.pdf imported successfully')).toBeVisible();
+  await expect(page.getByText(`${filename} imported successfully`)).toBeVisible();
 
   // test complete icon shows then disappears
-  await expect(page.getByTestId('file-uploaded-icon')).toBeVisible();
-  await expect(page.getByTestId('file-uploaded-icon')).not.toBeVisible();
+  await expect(fileUploadedIcon).toBeVisible();
+  await expect(fileUploadedIcon).not.toBeVisible();
+
+  // cleanup
+  deletePdf(filename);
 });
 
 test('it can upload a txt file', async ({ page }) => {

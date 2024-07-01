@@ -16,7 +16,13 @@ export const sortMessages = (messages: VercelOrOpenAIMessage[]): VercelOrOpenAIM
     const timeA = normalizeTimestamp(a);
     const timeB = normalizeTimestamp(b);
 
-    return timeA - timeB;
+    if (timeA === timeB) {
+      if (a.role === b.role) {
+        return 0; // same created_at and role
+      }
+      return a.role === 'user' ? -1 : 1; // user comes before assistant
+    }
+    return timeA - timeB; // sort by created_at
   });
 };
 
@@ -88,6 +94,7 @@ export const stopThenSave = async ({
     title: 'Response Canceled',
     subtitle: 'Response generation canceled.'
   });
+  threadsStore.setSendingBlocked(false)
 };
 
 export const getAssistantImage = (assistants: LFAssistant[], assistant_id: string) => {

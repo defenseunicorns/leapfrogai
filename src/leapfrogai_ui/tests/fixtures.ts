@@ -45,7 +45,7 @@ export const test = base.extend<MyFixtures>({
     const parsedValue = JSON.parse(`${decodedValue}"}`);
 
     const client = new OpenAI({
-      apiKey: parsedValue.access_token,
+      apiKey: process.env.OPENAI_API_KEY || parsedValue.access_token,
       baseURL: process.env.LEAPFROGAI_API_BASE_URL
     });
     await use(client);

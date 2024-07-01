@@ -13,7 +13,6 @@
   import { NO_SELECTED_ASSISTANT_ID } from '$constants';
 
   import {
-    delay,
     isRunAssistantResponse,
     processAnnotations,
     resetMessages,
@@ -104,7 +103,7 @@
 
       setAssistantMessages(assistantMessagesCopy);
     }
-    threadsStore.setSendingBlocked(false);
+    await threadsStore.setSendingBlocked(false);
   };
 
   /** useChat - streams messages with the /api/chat route**/
@@ -120,14 +119,7 @@
   } = useChat({
     // Handle completed AI Responses
     onFinish: async (message: VercelAIMessage) => {
-      // OpenAI returns the creation timestamp in seconds instead of milliseconds.
-      // If a response comes in quickly, we need to delay 1 second to ensure the timestamps of the user message
-      // and AI response are not exactly the same. This is important for sorting messages when they are initially loaded
-      // from the db/API (ex. browser refresh). Streamed messages are sorted realtime and we modify the timestamps to
-      // ensure we have millisecond precision.
       try {
-        if (process.env.NODE_ENV !== 'test') await delay(1000);
-
         if (!assistantMode && data.thread?.id) {
           // Save with API to db
           const newMessage = await saveMessage({
@@ -138,7 +130,6 @@
 
           await threadsStore.addMessageToStore(newMessage);
         }
-        if (process.env.NODE_ENV !== 'test') await delay(1000); // ensure next user message has a different timestamp
       } catch {
         toastStore.addToast({
           kind: 'error',
@@ -146,15 +137,15 @@
           subtitle: 'Error saving AI Response'
         });
       }
-      threadsStore.setSendingBlocked(false);
+      await threadsStore.setSendingBlocked(false);
     },
-    onError: () => {
-      threadsStore.setSendingBlocked(false);
+    onError: async () => {
       toastStore.addToast({
         kind: 'error',
         title: ERROR_GETTING_AI_RESPONSE_TEXT.title,
         subtitle: ERROR_GETTING_AI_RESPONSE_TEXT.subtitle
       });
+      await threadsStore.setSendingBlocked(false);
     }
   });
 
@@ -170,8 +161,7 @@
   } = useAssistant({
     api: '/api/chat/assistants',
     threadId: data.thread?.id,
-    onError: (e) => {
-      threadsStore.setSendingBlocked(false);
+    onError: async (e) => {
       // ignore this error b/c it is expected on cancel
       if (e.message !== 'BodyStreamBuffer was aborted') {
         toastStore.addToast({
@@ -180,12 +170,13 @@
           subtitle: ERROR_GETTING_ASSISTANT_MSG_TEXT.subtitle
         });
       }
+      await threadsStore.setSendingBlocked(false);
     }
   });
 
   const sendAssistantMessage = async (e: SubmitEvent | KeyboardEvent) => {
     hasSentAssistantMessage = true;
-    threadsStore.setSendingBlocked(true);
+    await threadsStore.setSendingBlocked(true);
     if (data.thread?.id) {
       // assistant mode
       $assistantInput = $chatInput;
@@ -201,11 +192,11 @@
       });
       $assistantInput = '';
     }
-    threadsStore.setSendingBlocked(false);
+    await threadsStore.setSendingBlocked(false);
   };
 
   const sendChatMessage = async (e: SubmitEvent | KeyboardEvent) => {
-    threadsStore.setSendingBlocked(true);
+    await threadsStore.setSendingBlocked(true);
     if (data.thread?.id) {
       // Save with API
       try {
@@ -218,16 +209,22 @@
         await threadsStore.addMessageToStore(newMessage);
         submitChatMessage(e); // submit to AI (/api/chat)
       } catch {
-        threadsStore.setSendingBlocked(false);
         toastStore.addToast({
           kind: 'error',
           title: ERROR_SAVING_MSG_TEXT.title,
           subtitle: ERROR_SAVING_MSG_TEXT.subtitle
         });
+        await threadsStore.setSendingBlocked(false);
       }
     }
   };
 
+  // OpenAI returns the creation timestamp in seconds instead of milliseconds.
+  // If a response comes in quickly, we need to delay 1 second to ensure the timestamps of the user message
+  // and AI response are not exactly the same. This is important for sorting messages when they are initially loaded
+  // from the db/API (ex. browser refresh). Streamed messages are sorted realtime and we modify the timestamps to
+  // ensure we have millisecond precision.
+  // setSendingBlocked (when called with the value 'false') automatically handles this delay
   const onSubmit = async (e: SubmitEvent | KeyboardEvent) => {
     e.preventDefault();
     if (($isLoading || $status === 'in_progress') && data.thread?.id) {
@@ -241,7 +238,7 @@
         assistantStop,
         chatStop
       });
-      threadsStore.setSendingBlocked(false);
+      await threadsStore.setSendingBlocked(false);
       return;
     } else {
       if (!data.thread?.id) {
@@ -249,7 +246,14 @@
         await threadsStore.newThread($chatInput);
         await tick(); // allow store to update
       }
-
+      if ($threadsStore.sendingBlocked) {
+        toastStore.addToast({
+          kind: 'warning',
+          title: 'Rate limiting',
+          subtitle: 'Please wait a moment before sending another message'
+        });
+        return;
+      }
       assistantMode ? await sendAssistantMessage(e) : await sendChatMessage(e);
     }
   };
