@@ -4,10 +4,8 @@ import type { AssistantInput, LFAssistant } from '$lib/types/assistants';
 import OpenAI from 'openai';
 import type { Profile } from '$lib/types/profile';
 import { getFakeAssistantInput } from '$testUtils/fakeData';
-import * as fs from 'node:fs';
 import { createClient } from '@supabase/supabase-js';
 import type { AssistantCreateParams } from 'openai/resources/beta/assistants';
-import { PDFDocument } from 'pdf-lib';
 
 const supabase = createClient(process.env.PUBLIC_SUPABASE_URL!, process.env.SERVICE_ROLE_KEY!);
 
@@ -140,61 +138,6 @@ export const deleteAssistantWithApi = async (id: string, openAIClient: OpenAI) =
   await openAIClient.beta.assistants.del(id);
 };
 
-export const uploadFileWithApi = async (fileName = 'test.pdf', openAIClient: OpenAI) => {
-  const file = fs.createReadStream(`./tests/fixtures/${fileName}`);
-
-  return openAIClient.files.create({
-    file: file,
-    purpose: 'assistants'
-  });
-};
-export const deleteFileWithApi = async (id: string, openAIClient: OpenAI) => {
-  return openAIClient.files.del(id);
-};
-
-export const createPDF = async (filename = `${new Date().toISOString()}-test.pdf`) => {
-  const pdfDoc = await PDFDocument.create();
-  const page = pdfDoc.addPage();
-  // Get the width and height of the page
-  const { height } = page.getSize();
-
-  const fontSize = 30;
-  page.drawText('Ribbit!', {
-    x: 50,
-    y: height - 4 * fontSize,
-    size: fontSize
-  });
-
-  const pdfBytes = await pdfDoc.save();
-  fs.writeFileSync(`./tests/fixtures/${filename}`, pdfBytes);
-};
-
-export const deletePdf = (filename: string) => {
-  if (fs.existsSync(`./tests/fixtures/${filename}`)) {
-    fs.unlinkSync(`./tests/fixtures/${filename}`);
-  }
-};
-
-export const uploadFile = async (page: Page, filename = 'test.pdf', btnName = 'upload') => {
-  const fileChooserPromise = page.waitForEvent('filechooser');
-  await page.getByRole('button', { name: btnName }).click();
-  const fileChooser = await fileChooserPromise;
-  await fileChooser.setFiles(`./tests/fixtures/${filename}`);
-};
-
-export const getFileTableRow = async (page: Page, filename: string) => {
-  const rows = page.locator('table tr');
-  let targetRow;
-  for (let i = 0; i < (await rows.count()); i++) {
-    const row = rows.nth(i);
-    const rowText = await row.textContent();
-    if (rowText?.includes(filename)) {
-      targetRow = row;
-      break;
-    }
-  }
-  return targetRow;
-};
 
 export const deleteAssistant = async (page: Page, name: string) => {
   await page.goto(`/chat/assistants-management`);
@@ -205,18 +148,3 @@ export const deleteAssistant = async (page: Page, name: string) => {
   await page.getByRole('button', { name: 'Delete' }).click();
 };
 
-export const deleteTestFilesWithApi = async (openAIClient: OpenAI) => {
-  const list = await openAIClient.files.list();
-  const idsToDelete: string[] = [];
-  for await (const file of list) {
-    if (file.filename.startsWith('test')) {
-      idsToDelete.push(file.id);
-    }
-  }
-
-  const promises = [];
-  for (const id of idsToDelete) {
-    promises.push(openAIClient.files.del(id));
-  }
-  await Promise.all(promises);
-};

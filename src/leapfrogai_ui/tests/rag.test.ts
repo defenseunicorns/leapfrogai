@@ -2,14 +2,11 @@ import { expect, test } from './fixtures';
 import {
   createAssistantWithApi,
   deleteAssistant,
-  deleteAssistantWithApi,
-  deleteFileWithApi,
-  deleteTestFilesWithApi,
-  uploadFile,
-  uploadFileWithApi
+  deleteAssistantWithApi
 } from './helpers';
 import { getFakeAssistantInput } from '$testUtils/fakeData';
 import { delay } from 'msw';
+import {deleteFileWithApi, deleteTestFilesWithApi, uploadFile, uploadFileWithApi} from "./helpers/fileHelpers";
 
 test('can edit an assistant and attach files to it', async ({ page, openAIClient }) => {
   const uploadedFile1 = await uploadFileWithApi('test.pdf', openAIClient);
