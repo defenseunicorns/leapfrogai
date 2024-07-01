@@ -106,3 +106,10 @@ def read_chunks(file: BinaryIO, chunk_size: int) -> Iterator[lfai.AudioRequest]:
         if not chunk:
             break
         yield lfai.AudioRequest(chunk_data=chunk)
+
+
+def object_or_default(obj: Any | None, _default: Any) -> Any:
+    if obj:
+        return obj
+    else:
+        return _default
