@@ -23,6 +23,7 @@ HANDLERS = {
     "text/markdown": UnstructuredMarkdownLoader,
     "application/msword": Docx2txtLoader,
     "application/vnd.openxmlformats-officedocument.wordprocessingml.document": Docx2txtLoader,
+    "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet": Docx2txtLoader,
 }
 
 
