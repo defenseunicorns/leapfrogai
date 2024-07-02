@@ -10,7 +10,7 @@ dependencies = [
     "InstructorEmbedding >= 1.0.1",
     "torch == 2.1.2",
     "numpy == 1.26.3",
-    "tqdm == 4.66.1",
+    "tqdm == 4.66.3",
     "sentence-transformers == 2.2.2",
     "transformers == 4.38.0",
     "leapfrogai-sdk",
