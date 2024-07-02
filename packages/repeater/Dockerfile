@@ -1,5 +1,6 @@
 ARG ARCH
-FROM ghcr.io/defenseunicorns/leapfrogai/leapfrogai-sdk:latest as sdk
+ARG LOCAL_VERSION
+FROM ghcr.io/defenseunicorns/leapfrogai/leapfrogai-sdk:${LOCAL_VERSION} as sdk
 
 # hardened and slim python w/ developer tools image
 FROM ghcr.io/defenseunicorns/leapfrogai/python:3.11-dev-${ARCH} as builder

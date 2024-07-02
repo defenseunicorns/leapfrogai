@@ -1,5 +1,6 @@
 ARG ARCH
-FROM ghcr.io/defenseunicorns/leapfrogai/leapfrogai-sdk:latest as sdk
+ARG LOCAL_VERSION
+FROM ghcr.io/defenseunicorns/leapfrogai/leapfrogai-sdk:${LOCAL_VERSION} as sdk
 
 FROM --platform=$BUILDPLATFORM ghcr.io/defenseunicorns/leapfrogai/python:3.11-dev as builder
 USER root

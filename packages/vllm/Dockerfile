@@ -1,4 +1,5 @@
-FROM ghcr.io/defenseunicorns/leapfrogai/leapfrogai-sdk:latest as sdk
+ARG LOCAL_VERSION
+FROM ghcr.io/defenseunicorns/leapfrogai/leapfrogai-sdk:${LOCAL_VERSION} as sdk
 
 FROM nvidia/cuda:12.2.2-devel-ubuntu22.04 as builder
 ARG SDK_DEST=src/leapfrogai_sdk/build

@@ -72,6 +72,8 @@ cd uds-bundles/dev/cpu
 uds create .
 ```
 
+Deploy a [UDS cluster](/README.md#uds) if one isn't deployed already
+
 Deploy the LeapfrogAI bundle:
 ```shell
 uds deploy uds-bundle-leapfrogai*.tar.zst
@@ -85,9 +87,12 @@ cd uds-bundles/dev/gpu
 uds create .
 ```
 
+Deploy a [UDS cluster](/README.md#uds) with the following flags, as so:
+
 ```shell
 uds deploy {k3d-cluster-name} --set K3D_EXTRA_ARGS="--gpus=all --image=ghcr.io/justinthelaw/k3d-gpu-support:v1.27.4-k3s1-cuda"
 ```
+
 
 Deploy the LeapfrogAI bundle:
 ```shell
