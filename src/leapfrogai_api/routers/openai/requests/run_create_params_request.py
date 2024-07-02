@@ -18,7 +18,7 @@ from leapfrogai_api.data.crud_run import CRUDRun
 from leapfrogai_api.backend.converters import (
     from_content_param_to_content,
 )
-from leapfrogai_api.routers.supabase_session_api_key import Session
+from leapfrogai_api.routers.supabase_session import Session
 
 
 class RunCreateParamsRequestBaseRequest(RunCreateParamsRequestBase):

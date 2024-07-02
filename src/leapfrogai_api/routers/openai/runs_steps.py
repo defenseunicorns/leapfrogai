@@ -4,7 +4,7 @@ from fastapi import HTTPException, APIRouter
 from fastapi.security import HTTPBearer
 from openai.types.beta.threads import Run
 from openai.types.beta.threads.runs import RunStep
-from leapfrogai_api.routers.supabase_session_api_key import Session
+from leapfrogai_api.routers.supabase_session import Session
 
 router = APIRouter(prefix="/openai/v1/threads", tags=["openai/threads/run-steps"])
 security = HTTPBearer()

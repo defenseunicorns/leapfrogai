@@ -7,7 +7,7 @@ from openai.types.beta.threads import Message, MessageDeleted, MessageContent
 from pydantic import BaseModel, Field
 from leapfrogai_api.data.crud_message import CRUDMessage
 from leapfrogai_api.data.crud_thread import CRUDThread
-from leapfrogai_api.routers.supabase_session_api_key import Session
+from leapfrogai_api.routers.supabase_session import Session
 
 
 class CreateThreadRequest(BaseModel):

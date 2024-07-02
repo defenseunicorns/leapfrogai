@@ -3,7 +3,7 @@
 from fastapi import APIRouter
 from fastapi.security import HTTPBearer
 from leapfrogai_api.utils import get_model_config
-from leapfrogai_api.routers.supabase_session_api_key import Session
+from leapfrogai_api.routers.supabase_session import Session
 
 router = APIRouter(tags=["/"])
 security = HTTPBearer()

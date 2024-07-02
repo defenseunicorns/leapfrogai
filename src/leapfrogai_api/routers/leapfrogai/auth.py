@@ -3,7 +3,7 @@
 import time
 from fastapi import APIRouter, HTTPException, status
 from pydantic import BaseModel, Field
-from leapfrogai_api.routers.supabase_session_api_key import Session
+from leapfrogai_api.routers.supabase_session import Session
 import leapfrogai_api.backend.security.api_key as security
 
 router = APIRouter(prefix="/leapfrogai/v1/auth", tags=["leapfrogai/auth"])

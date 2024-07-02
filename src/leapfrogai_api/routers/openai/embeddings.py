@@ -7,7 +7,7 @@ from fastapi.security import HTTPBearer
 import leapfrogai_sdk as lfai
 from leapfrogai_api.backend.grpc_client import create_embeddings
 from leapfrogai_api.backend.types import CreateEmbeddingRequest, CreateEmbeddingResponse
-from leapfrogai_api.routers.supabase_session_api_key import Session
+from leapfrogai_api.routers.supabase_session import Session
 from leapfrogai_api.utils import get_model_config
 from leapfrogai_api.utils.config import Config
 

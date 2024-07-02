@@ -63,7 +63,7 @@ from leapfrogai_api.routers.openai.chat import chat_complete, chat_complete_stre
 from leapfrogai_api.routers.openai.requests.create_message_request import (
     CreateMessageRequest,
 )
-from leapfrogai_api.routers.supabase_session_api_key import Session
+from leapfrogai_api.routers.supabase_session import Session
 from leapfrogai_api.utils import get_model_config
 from leapfrogai_sdk.chat.chat_pb2 import (
     ChatCompletionResponse as ProtobufChatCompletionResponse,

@@ -7,7 +7,7 @@ from leapfrogai_api.backend.types import (
     ModelResponse,
     ModelResponseModel,
 )
-from leapfrogai_api.routers.supabase_session_api_key import Session
+from leapfrogai_api.routers.supabase_session import Session
 from leapfrogai_api.utils import get_model_config
 from leapfrogai_api.utils.config import Config
 

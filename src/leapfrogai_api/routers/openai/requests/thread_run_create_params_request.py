@@ -36,7 +36,7 @@ from leapfrogai_api.routers.openai.requests.create_thread_request import (
     CreateThreadRequest,
 )
 
-from leapfrogai_api.routers.supabase_session_api_key import Session
+from leapfrogai_api.routers.supabase_session import Session
 
 
 class ThreadRunCreateParamsRequestBaseRequest(RunCreateParamsRequestBase):

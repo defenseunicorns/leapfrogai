@@ -10,7 +10,7 @@ from leapfrogai_api.backend.grpc_client import (
 from leapfrogai_api.backend.types import (
     CompletionRequest,
 )
-from leapfrogai_api.routers.supabase_session_api_key import Session
+from leapfrogai_api.routers.supabase_session import Session
 from leapfrogai_api.utils import get_model_config
 from leapfrogai_api.utils.config import Config
 import leapfrogai_sdk as lfai
