@@ -59,7 +59,7 @@ async def init_supabase_client(
         client.options.headers = {"x-custom-api-key": api_key}
         client.options.auto_refresh_token = False
 
-        if not await _validate_api_authorization(api_key):
+        if not await _validate_api_authorization(client):
             raise HTTPException(
                 detail="API Key has expired or is not valid. Generate a new token",
                 status_code=status.HTTP_401_UNAUTHORIZED,
@@ -86,7 +86,7 @@ async def init_supabase_client(
 Session = Annotated[AsyncClient, Depends(init_supabase_client)]
 
 
-async def _validate_api_authorization(session) -> bool:
+async def _validate_api_authorization(session: AsyncClient) -> bool:
     """
     Check if the provided API key is valid
 

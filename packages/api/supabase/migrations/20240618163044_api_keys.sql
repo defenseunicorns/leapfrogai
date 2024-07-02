@@ -24,21 +24,70 @@ create policy "Individuals can create api_keys." on api_keys for
 create policy "Individuals can delete their own api_keys." on api_keys for
     delete using (auth.uid() = user_id);
 
--- Update the insert policy
-drop policy "Individuals can view their own assistant_objects. " on assistant_objects;
-drop policy "Individuals can create assistant_objects." on assistant_objects;
-drop policy "Individuals can update their own assistant_objects." on assistant_objects;
-drop policy "Individuals can delete their own assistant_objects." on assistant_objects;
+-- API Key Policies
 
--- CRUD Assistants via standard auth
-create policy "Assistants CRUD via Auth."
+create policy "Individuals can CRUD their own assistant_objects via API key."
     on assistant_objects for all
-    to authenticated
-    using (auth.uid() = user_id);
+    to anon
+    using
+    (
+        exists (
+            select 1
+            from api_keys
+            where api_keys.api_key = current_setting('request.headers')::json->>'x-custom-api-key'
+        )
+    );
 
--- CRUD Assistants via API key
-create policy "Assistants CRUD via API Key."
-    on assistant_objects for all
+create policy "Individuals can CRUD their own thread_objects via API key."
+    on thread_objects for all
+    to anon
+    using
+    (
+        exists (
+            select 1
+            from api_keys
+            where api_keys.api_key = current_setting('request.headers')::json->>'x-custom-api-key'
+        )
+    );
+
+create policy "Individuals can CRUD their own message_objects via API key."
+    on message_objects for all
+    to anon
+    using
+    (
+        exists (
+            select 1
+            from api_keys
+            where api_keys.api_key = current_setting('request.headers')::json->>'x-custom-api-key'
+        )
+    );
+
+create policy "Individuals can CRUD their own file_objects via API key."
+    on file_objects for all
+    to anon
+    using
+    (
+        exists (
+            select 1
+            from api_keys
+            where api_keys.api_key = current_setting('request.headers')::json->>'x-custom-api-key'
+        )
+    );
+
+create policy "Individuals can CRUD file_bucket via API key."
+    on storage.buckets for all
+    to anon
+    using
+    (
+        exists (
+            select 1
+            from api_keys
+            where api_keys.api_key = current_setting('request.headers')::json->>'x-custom-api-key'
+        )
+    );
+
+create policy "Individuals can CRUD their own run_objects via API key."
+    on run_objects for all
     to anon
     using
     (

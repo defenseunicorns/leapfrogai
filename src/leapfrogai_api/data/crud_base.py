@@ -17,7 +17,10 @@ class CRUDBase(Generic[ModelType]):
 
     async def create(self, object_: ModelType) -> ModelType | None:
         """Create new row."""
+
         dict_ = object_.model_dump()
+        dict_["user_id"] = await self._get_user_id()
+
         if "id" in dict_ and not dict_.get(
             "id"
         ):  # There are cases where the id is provided
@@ -29,6 +32,9 @@ class CRUDBase(Generic[ModelType]):
         data, _count = await self.db.table(self.table_name).insert(dict_).execute()
 
         _, response = data
+
+        if hasattr(response[0], "user_id"):
+            del response[0]["user_id"]
 
         if response:
             return self.model(**response[0])
@@ -68,11 +74,12 @@ class CRUDBase(Generic[ModelType]):
 
     async def update(self, id_: str, object_: ModelType) -> ModelType | None:
         """Update a row by its ID."""
+
+        dict_ = object_.model_dump()
+        dict_["user_id"] = await self._get_user_id()
+
         data, _count = (
-            await self.db.table(self.table_name)
-            .update(object_.model_dump())
-            .eq("id", id_)
-            .execute()
+            await self.db.table(self.table_name).update(dict_).eq("id", id_).execute()
         )
 
         _, response = data
@@ -96,3 +103,16 @@ class CRUDBase(Generic[ModelType]):
         if response:
             return True
         return False
+
+    async def _get_user_id(self) -> str:
+        """Get the user_id from the API key."""
+
+        if self.db.options.headers.get("x-custom-api-key"):
+            data, _count = await self.db.table("api_keys").select("user_id").execute()
+            _, tmp = data
+            user_id: str = tmp[0]["user_id"]
+            print(user_id)
+        else:
+            user_id = (await self.db.auth.get_user()).user.id
+
+        return user_id
