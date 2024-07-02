@@ -12,24 +12,15 @@
 - [Components](#components)
   - [API](#api)
   - [Backends](#backends)
-  - [Image Hardening](#image-hardening)
   - [SDK](#sdk)
   - [User Interface](#user-interface)
   - [Repeater](#repeater)
+  - [Image Hardening](#image-hardening)
 - [Usage](#usage)
-  - [UDS (Latest)](#uds-latest)
-  - [UDS (Dev)](#uds-dev)
-    - [CPU](#cpu)
-    - [GPU](#gpu)
-  - [Accessing the UI](#accessing-the-ui)
-  - [Cleanup](#cleanup)
+  - [UDS](#uds)
+    - [UDS Latest](#uds-latest)
+    - [UDS Dev](#uds-dev)
   - [Local Dev](#local-dev)
-    - [API](#api-1)
-    - [Repeater](#repeater-1)
-    - [Backend: llama-cpp-python](#backend-llama-cpp-python)
-    - [Backend: text-embeddings](#backend-text-embeddings)
-    - [Backend: vllm](#backend-vllm)
-    - [Backend: whisper](#backend-whisper)
 - [Community](#community)
 
 ## Overview
@@ -55,20 +46,21 @@ The LeapfrogAI repository follows a monorepo structure based around an [API](#ap
 ```shell
 leapfrogai/
 ├── src/
-│   ├── leapfrogai_api/
-│   │   ├── main.py
-│   │   └── ...
-│   ├── leapfrogai_sdk/
-│   └── leapfrogai_ui/
+│   ├── leapfrogai_api/   # source code for the API
+│   ├── leapfrogai_sdk/   # source code for the SDK
+│   └── leapfrogai_ui/    # source code for the UI
 ├── packages/
-│   ├── api/
-│   ├── llama-cpp-python/
-│   ├── text-embeddings/
-│   ├── vllm/
-│   └── whisper/
+│   ├── api/              # deployment infrastructure for the API
+│   ├── llama-cpp-python/ # source code & deployment infrastructure for the llama-cpp-python backend
+│   ├── repeater/         # source code & deployment infrastructure for the repeater model backend  
+│   ├── supabase/         # deployment infrastructure for the Supabase backend and postgres database
+│   ├── text-embeddings/  # source code & deployment infrastructure for the text-embeddings backend
+│   ├── ui/               # deployment infrastructure for the UI
+│   ├── vllm/             # source code & deployment infrastructure for the vllm backend
+│   └── whisper/          # source code & deployment infrastructure for the whisper backend
 ├── uds-bundles/
-│   ├── dev/
-│   └── latest/
+│   ├── dev/              # uds bundles for local uds dev deployments
+│   └── latest/           # uds bundles for the most current uds deployments
 ├── Makefile
 ├── pyproject.toml
 ├── README.md
@@ -87,6 +79,8 @@ LeapfrogAI provides an API that closely matches that of OpenAI's. This feature a
 
 ### Backends
 
+LeapfrogAI provides several backends for a variety of use cases.
+
 > Available Backends:
 > | Backend | AMD64 Support | ARM64 Support | Cuda Support | Docker Ready | K8s Ready | Zarf Ready |
 > | --- | --- | --- | --- | --- | --- | --- |
@@ -94,17 +88,6 @@ LeapfrogAI provides an API that closely matches that of OpenAI's. This feature a
 > | [whisper](packages/whisper/) | ✅ | 🚧 | ✅ | ✅ | ✅ | ✅ |
 > | [text-embeddings](packages/text-embeddings/) | ✅ | 🚧 | ✅ | ✅ | ✅ | ✅ |
 > | [vllm](packages/vllm/) | ✅ | ❌ | ✅ | ✅ | ✅ | ✅ |
-> | [rag](https://github.com/defenseunicorns/leapfrogai-backend-rag) (repo integration soon) | ✅ | ✅ | ❌ | ✅ | ✅ | ✅ |
-
-LeapfrogAI provides several backends for a variety of use cases.
-
-### Image Hardening
-
-> GitHub Repo:
->
-> - [leapfrogai-images](https://github.com/defenseunicorns/leapfrogai-images)
-
-LeapfrogAI leverages Chainguard's [apko](https://github.com/chainguard-dev/apko) to harden base python images - pinning Python versions to the latest supported version by the other components of the LeapfrogAI stack.
 
 ### SDK
 
@@ -118,183 +101,49 @@ LeapfrogAI provides a [User Interface](src/leapfrogai_ui/) with support for comm
 
 The [repeater](packages/repeater/) "model" is a basic "backend" that parrots all inputs it receives back to the user. It is built out the same way all the actual backends are and it primarily used for testing the API.
 
+### Image Hardening
+
+> GitHub Repo:
+>
+> - [leapfrogai-images](https://github.com/defenseunicorns/leapfrogai-images)
+
+LeapfrogAI leverages Chainguard's [apko](https://github.com/chainguard-dev/apko) to harden base python images - pinning Python versions to the latest supported version by the other components of the LeapfrogAI stack.
+
 ## Usage
 
-### UDS (Latest)
+### UDS
 
-LeapfrogAI can be deployed and run locally via UDS and Kubernetes, built out using [Zarf](https://zarf.dev) packages. This pulls the most recent package images and is the most stable way of running a local LeapfrogAI deployment. These instructions can be found on the [LeapfrogAI Docs](https://docs.leapfrog.ai/docs/) site.
+LeapfrogAI can be deployed and run locally via UDS and Kubernetes, built out using [Zarf](https://zarf.dev) packages. See the [Quick Start](https://docs.leapfrog.ai/docs/local-deploy-guide/quick_start/#prerequisites) for a list of prerequisite packages that must be installed first.
 
-### UDS (Dev)
+Prior to deploying any LeapfrogAI packages, a UDS Kubernetes cluster must be deployed using the most recent k3d bundle:
 
-If you want to make some changes to LeapfrogAI before deploying via UDS (for example in a dev environment), you can follow these instructions:
-
-Make sure your system has the [required dependencies](https://docs.leapfrog.ai/docs/local-deploy-guide/quick_start/#prerequisites).
-
-For ease, it's best to create a virtual environment:
-
-```shell
-python -m venv .venv
-source .venv/bin/activate
-```
-
-Each component is built into its own Zarf package. You can build all of the packages you need at once with the following `Make` targets:
-
-```shell
-make build-cpu    # api, llama-cpp-python, text-embeddings, whisper
-make build-gpu    # api, vllm, text-embeddings, whisper
-make build-all    # all of the backends
-```
-
-**OR**
-
-You can build components individually using the following `Make` targets:
-
-```shell
-make build-api
-make build-vllm                 # if you have GPUs
-make build-llama-cpp-python     # if you have CPU only
-make build-text-embeddings
-make build-whisper
-```
-
-Once the packages are created, you can deploy either a CPU or GPU-enabled deployment via one of the UDS bundles:
-
-#### CPU
-
-```shell
-cd uds-bundles/dev/cpu
-uds create .
+```sh
 uds deploy k3d-core-slim-dev:0.22.2
-uds deploy uds-bundle-leapfrogai*.tar.zst
 ```
 
-#### GPU
+#### UDS Latest
 
-```shell
-cd uds-bundles/dev/gpu
-uds create .
-uds deploy k3d-core-slim-dev:0.22.2 --set K3D_EXTRA_ARGS="--gpus=all --image=ghcr.io/justinthelaw/k3d-gpu-support:v1.27.4-k3s1-cuda"     # be sure to check if a newer version exists
-uds deploy uds-bundle-leapfrogai-*.tar.zst --confirm
-```
+This type of deployment pulls the most recent package images and is the most stable way of running a local LeapfrogAI deployment. These instructions can be found on the [LeapfrogAI Docs](https://docs.leapfrog.ai/docs/) site.
 
-### Accessing the UI
+#### UDS Dev
 
-LeapfrogAI is integrated with the UDS Core KeyCloak service, which provides authentication via SSO. Below are general instructions for accessing the LeapfrogAI UI after a successful UDS deployment of UDS Core and LeapfrogAI.
+If you want to make some changes to LeapfrogAI before deploying via UDS (for example in a dev environment), follow the [UDS Dev Instructions](/uds-bundles/dev/README.md).
 
-1. Connect to the KeyCloak admin panel
-    - Run the following to get a port-forwarded tunnel:  `uds zarf connect keycloak`
-    - Go to the resulting localhost URL and create an admin account
-
-2. Go to ai.uds.dev and press "Login using SSO"
-
-3. Register a new user by pressing "Register Here"
-
-4. Fill-in all of the information
-    - The bot detection requires you to scroll and click around in a natural way, so if the Register button is not activated despite correct information, try moving around the page until the bot detection says 100% verified
-
-5. Using an authenticator, follow the MFA steps
-
-6. Go to sso.uds.dev
-    - Login using the admin account you created earlier
-
-7. Approve the newly registered user
-    - Click on the hamburger menu in the top left to open/close the sidebar
-    - Go to the dropdown that likely says "Keycloak" and switch to the "uds" context
-    - Click "Users" in the sidebar
-    - Click on the newly registered user's username
-    - Go to the "Email Verified" switch and toggle it to be "Yes"
-    - Scroll to the bottom and press "Save"
-
-8. Go back to ai.uds.dev and login as the registered user to access the UI
-
-### Cleanup
-
-To clean-up or perform a fresh install, run the following commands in the context in which you had previously installed UDS Core and LeapfrogAI:
-
-```bash
-k3d cluster delete uds  # kills a running uds cluster
-uds zarf tools clear-cache # clears the Zarf tool cache
-rm -rf ~/.uds-cache # clears the UDS cache
-docker system prune -a -f # removes all hanging containers and images
-docker volume prune -f # removes all hanging container volumes
-```
 
 ### Local Dev
 
-The following instructions are for running each of the LFAI components for local development. This is useful when testing changes to a specific component, but will not assist in a full deployment of LeapfrogAI. Please refer to the above sections for deployment instructions.
+Each of the LFAI components can also be run individually outside of a Kubernetes environment via local development. This is useful when testing changes to a specific component, but will not assist in a full deployment of LeapfrogAI. Please refer to the above sections for deployment instructions.
 
-It is highly recommended to make a virtual environment to keep the development environment clean:
+Please refer to the linked READMEs for each individual packages local development instructions:
 
-```shell
-python -m venv .venv
-source .venv/bin/activate
-```
-
-#### API
-
-To run the LeapfrogAI API locally (starting from the root directory of the repository):
-
-```shell
-python -m pip install src/leapfrogai_sdk
-cd src/leapfrogai_api
-python -m pip install .
-uvicorn leapfrogai_api.main:app --port 3000 --log-level debug --reload
-```
-
-#### Repeater
-
-The instructions for running the basic repeater model (used for testing the API) can be found in the package [README](packages/repeater/README.md).
-
-#### Backend: llama-cpp-python
-
-To run the llama-cpp-python backend locally (starting from the root directory of the repository):
-
-```shell
-python -m pip install src/leapfrogai_sdk
-cd packages/llama-cpp-python
-python -m pip install .[dev]
-python scripts/model_download.py
-mv .model/*.gguf .model/model.gguf
-cp config.example.yaml config.yaml # Make any necessary updates
-lfai-cli --app-dir=. main:Model
-```
-
-#### Backend: text-embeddings
-
-To run the text-embeddings backend locally (starting from the root directory of the repository):
-
-```shell
-python -m pip install src/leapfrogai_sdk
-cd packages/text-embeddings
-python -m pip install .[dev]
-python scripts/model_download.py
-python -u main.py
-```
-
-#### Backend: vllm
-
-To run the vllm backend locally (starting from the root directory of the repository):
-
-```shell
-python -m pip install src/leapfrogai_sdk
-cd packages/vllm
-python -m pip install .[dev]
-python packages/vllm/src/model_download.py
-export QUANTIZATION=gptq
-python -u src/main.py
-```
-
-#### Backend: whisper
-
-To run the vllm backend locally (starting from the root directory of the repository):
-
-```shell
-python -m pip install src/leapfrogai_sdk
-cd packages/whisper
-python -m pip install ".[dev]"
-ct2-transformers-converter --model openai/whisper-base --output_dir .model --copy_files tokenizer.json --quantization float32
-python -u main.py
-```
+- [API](/src/leapfrogai_api/README.md)
+- [llama-cpp-python](/packages/llama-cpp-python/README.md)
+- [repeater](/packages/repeater/README.md)
+- [supabase](/packages/supabase/README.md)
+- [text-embeddings](/packages/text-embeddings/README.md)
+- [ui](/src/leapfrogai_ui/README.md)
+- [vllm](/packages/vllm/README.md)
+- [whisper](/packages/whisper/README.md)
 
 ## Community
 
