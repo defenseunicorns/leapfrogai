@@ -123,6 +123,11 @@ Stop Supabase:
 
 `npm run supabase:stop`
 
+_Warning - if switching the application from utilizing Leapfrog API to OpenAI or vice versa,
+and you encounter this error:_
+`Server responded with status code 431. See https://vitejs.dev/guide/troubleshooting.html#_431-request-header-fields-too-large.`
+_you need to clear your browser cookies_
+
 ### Building
 
 To create a production version of the app:

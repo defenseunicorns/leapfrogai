@@ -1,9 +1,9 @@
-import { type Message as AIMessage } from 'ai/svelte';
+import { type Message as VercelAIMessage } from 'ai/svelte';
 import type { Message, MessageContent } from 'openai/resources/beta/threads/messages';
 import type { LFMessage } from '$lib/types/messages';
 
 export const getMessageText = (
-  message: Partial<LFMessage> | Partial<Message> | Partial<AIMessage>
+  message: Partial<LFMessage> | Partial<Message> | Partial<VercelAIMessage>
 ) => {
   if (typeof message.content === 'string') return message.content;
   if (message.content && message.content[0] && message.content[0].type === 'text') {
@@ -12,7 +12,7 @@ export const getMessageText = (
   return '';
 };
 
-export const convertMessageToAiMessage = (message: LFMessage): AIMessage => {
+export const convertMessageToVercelAiMessage = (message: LFMessage): VercelAIMessage => {
   return {
     ...message,
     content: getMessageText(message)

@@ -1,13 +1,13 @@
 <script lang="ts">
   import { Message, Toasts } from '$components';
-  import { type Message as AIMessage } from 'ai/svelte';
-  import type { Message as OpenAIMessage } from 'openai/resources/beta/threads/messages';
-  import type { AppendFunction, ReloadFunction } from '$lib/types/messages';
+  import { type Message as VercelAIMessage } from 'ai/svelte';
 
-  export let allStreamedMessages: AIMessage[];
-  export let message: AIMessage | OpenAIMessage;
-  export let messages: AIMessage[] = [];
-  export let setMessages: (messages: AIMessage[]) => void;
+  import type { AppendFunction, ReloadFunction, VercelOrOpenAIMessage } from '$lib/types/messages';
+
+  export let allStreamedMessages: VercelAIMessage[];
+  export let message: VercelOrOpenAIMessage;
+  export let messages: VercelAIMessage[] = [];
+  export let setMessages: (messages: VercelAIMessage[]) => void;
   export let isLastMessage: boolean;
 
   export let append: AppendFunction;

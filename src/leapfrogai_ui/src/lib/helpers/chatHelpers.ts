@@ -1,31 +1,20 @@
 import { threadsStore, toastStore } from '$stores';
-import { convertMessageToAiMessage, getMessageText } from '$helpers/threads';
+import { convertMessageToVercelAiMessage, getMessageText } from '$helpers/threads';
 import type { AssistantStatus, ChatRequestOptions, CreateMessage } from 'ai';
-import { type Message as AIMessage } from 'ai/svelte';
+import { type Message as VercelAIMessage } from 'ai/svelte';
 import type { LFAssistant } from '$lib/types/assistants';
 import type { Message as OpenAIMessage } from 'openai/resources/beta/threads/messages';
 import { NO_SELECTED_ASSISTANT_ID } from '$constants';
-import type { LFMessage, NewMessageInput } from '$lib/types/messages';
+import type { LFMessage, NewMessageInput, VercelOrOpenAIMessage } from '$lib/types/messages';
 import { error } from '@sveltejs/kit';
 import type { LFThread } from '$lib/types/threads';
 import { tick } from 'svelte';
 import type { FileObject } from 'openai/resources/files';
 
-export const sortMessages = (
-  messages: Array<AIMessage | OpenAIMessage>
-): Array<AIMessage | OpenAIMessage> => {
+export const sortMessages = (messages: VercelOrOpenAIMessage[]): VercelOrOpenAIMessage[] => {
   return messages.sort((a, b) => {
     const timeA = normalizeTimestamp(a);
     const timeB = normalizeTimestamp(b);
-
-    if (timeA === timeB) {
-      if (a.role === 'assistant' && b.role !== 'assistant') {
-        return 1; // a should come after b
-      }
-      if (a.role !== 'assistant' && b.role === 'assistant') {
-        return -1; // b should come after a
-      }
-    }
 
     return timeA - timeB;
   });
@@ -57,7 +46,7 @@ export const getMessages = async (thread_id: string) => {
 
 type StopThenSaveArgs = {
   activeThreadId: string;
-  messages: AIMessage[];
+  messages: VercelAIMessage[];
   status: AssistantStatus;
   isLoading: boolean;
   assistantStop: () => void;
@@ -111,18 +100,18 @@ export const getAssistantImage = (assistants: LFAssistant[], assistant_id: strin
 };
 
 type EditMessageArgs = {
-  allStreamedMessages: AIMessage[];
+  allStreamedMessages: VercelOrOpenAIMessage[];
   message: Partial<OpenAIMessage>;
-  messages: AIMessage[];
+  messages: VercelAIMessage[];
   thread_id: string;
-  setMessages: (messages: AIMessage[]) => void;
+  setMessages: (messages: VercelAIMessage[]) => void;
   append: (
-    message: AIMessage | CreateMessage,
+    message: VercelAIMessage | CreateMessage,
     requestOptions?: { data?: Record<string, string> }
   ) => Promise<void>;
 };
 
-export const handleChatMessageEdit = async ({
+export const handleMessageEdit = async ({
   allStreamedMessages,
   message,
   messages,
@@ -198,15 +187,16 @@ export const handleChatMessageEdit = async ({
   }
 };
 
-export const isRunAssistantResponse = (message: Partial<AIMessage> | Partial<OpenAIMessage>) =>
-  message.assistant_id && message.assistant_id !== NO_SELECTED_ASSISTANT_ID;
+export const isRunAssistantResponse = (
+  message: Partial<VercelAIMessage> | Partial<OpenAIMessage>
+) => message.assistant_id && message.assistant_id !== NO_SELECTED_ASSISTANT_ID;
 
 type HandleRegenerateArgs = {
-  messages: AIMessage[];
+  messages: VercelAIMessage[];
   thread_id: string;
-  setMessages: (messages: AIMessage[]) => void;
+  setMessages: (messages: VercelAIMessage[]) => void;
   append: (
-    message: AIMessage | CreateMessage,
+    message: VercelAIMessage | CreateMessage,
     requestOptions?: { data?: Record<string, string> }
   ) => Promise<void>;
 };
@@ -273,9 +263,9 @@ export const handleAssistantRegenerate = async ({
 type HandleChatRegenerateArgs = {
   savedMessages: LFMessage[];
   thread_id: string;
-  message: AIMessage | OpenAIMessage;
-  messages: AIMessage[] | OpenAIMessage[];
-  setMessages: (messages: AIMessage[] | OpenAIMessage[]) => void;
+  message: VercelOrOpenAIMessage;
+  messages: VercelAIMessage[];
+  setMessages: (messages: VercelAIMessage[]) => void;
   reload: (
     chatRequestOptions?: ChatRequestOptions | undefined
   ) => Promise<string | null | undefined>;
@@ -310,10 +300,10 @@ export const resetMessages = ({
   if (activeThread?.messages && activeThread.messages.length > 0) {
     const parsedAssistantMessages = activeThread.messages
       .filter((m) => m.run_id)
-      .map((m) => convertMessageToAiMessage(processAnnotations(m, files)));
+      .map((m) => convertMessageToVercelAiMessage(processAnnotations(m, files)));
     const chatMessages = activeThread.messages
       .filter((m) => !m.run_id)
-      .map(convertMessageToAiMessage);
+      .map(convertMessageToVercelAiMessage);
 
     setAssistantMessages(parsedAssistantMessages);
     setChatMessages(chatMessages);
@@ -325,7 +315,7 @@ export const resetMessages = ({
 
 // Ensure all timestamps are in unix milliseconds whether they were returned under the createdAt or created_at keys,
 // and whether they are strings, numbers, or Date objects
-export const normalizeTimestamp = (message: AIMessage | OpenAIMessage | LFMessage): number => {
+export const normalizeTimestamp = (message: VercelOrOpenAIMessage | LFMessage): number => {
   const dateValue = message.createdAt || message.created_at;
 
   if (dateValue instanceof Date) {
@@ -337,7 +327,7 @@ export const normalizeTimestamp = (message: AIMessage | OpenAIMessage | LFMessag
     return dateValue > 10000000000 ? dateValue : dateValue * 1000;
   }
 
-  return 0; // Default to 0 if no valid date is found
+  return new Date().getTime(); // Default to now
 };
 
 export const delay = (ms: number): Promise<void> => {
