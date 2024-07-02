@@ -22,30 +22,45 @@ The following are additional assumptions for GPU inferencing:
 
 The default model that comes with this backend in this repository's officially released images is a [4-bit quantization of the Synthia-7b model](https://huggingface.co/TheBloke/SynthIA-7B-v2.0-GPTQ).
 
-### Run Locally
+Models are pulled from [HuggingFace Hub](https://huggingface.co/models) via the [model_download.py](/packages/llama-cpp-python/scripts/model_download.py) script. To change what model comes with the llama-cpp-python backend, set the following environment variables:
+
+```bash
+REPO_ID   # eg: "TheBloke/SynthIA-7B-v2.0-GGUF"
+FILENAME  # eg: "synthia-7b-v2.0.Q4_K_M.gguf"
+REVISION  # eg: "3f65d882253d1f15a113dabf473a7c02a004d2b5"
+```
+
+## Zarf Package Deployment
+
+To build and deploy just the llama-cpp-python Zarf package (from the root of the repository):
+
+> Deploy a [UDS cluster](/README.md#uds) if one isn't deployed already
+
+```shell
+make build-llama-cpp-python LOCAL_VERSION=dev
+uds zarf package deploy packages/llama-cpp-python/zarf-package-llama-cpp-python-*-dev.tar.zst --confirm
+```
+
+## Run Locally
+
+
+To run the llama-cpp-python backend locally (starting from the root directory of the repository):
 
 From this directory:
 ```bash
 # Setup Virtual Environment
 python -m venv .venv
 source .venv/bin/activate
-
-python -m pip install ../../src/leapfrogai_sdk
-python -m pip install .
 ```
 
 ```bash
-# To support Huggingface Hub model downloads
+# Install dependencies
+python -m pip install src/leapfrogai_sdk
+cd packages/llama-cpp-python
 python -m pip install ".[dev]"
 ```
 
 ```bash
-# Copy the environment variable file, change this if different params are needed
-cp .env.example .env
-
-# Make sure environment variables are set
-source .env
-
 # Clone Model
 # Supply a REPO_ID, FILENAME and REVISION if a different model is desired
 python scripts/model_download.py
@@ -53,5 +68,5 @@ python scripts/model_download.py
 mv .model/*.gguf .model/model.gguf
 
 # Start Model Backend
-python -m leapfrogai_sdk.cli --app-dir=. main:Model
+lfai-cli --app-dir=. main:Model
 ```
