@@ -45,7 +45,8 @@ class Usage(BaseModel):
         ..., description="The number of tokens used in the prompt."
     )
     completion_tokens: int | None = Field(
-        default=DEFAULT_MAX_COMPLETION_TOKENS, description="The number of tokens generated in the completion."
+        default=DEFAULT_MAX_COMPLETION_TOKENS,
+        description="The number of tokens generated in the completion.",
     )
     total_tokens: int = Field(
         ..., description="The total number of tokens used (prompt + completion)."
@@ -114,7 +115,9 @@ class CompletionRequest(BaseModel):
         False, description="Whether to stream the results as they become available."
     )
     max_tokens: int | None = Field(
-        default=DEFAULT_MAX_COMPLETION_TOKENS, description="The maximum number of tokens to generate.", ge=1
+        default=DEFAULT_MAX_COMPLETION_TOKENS,
+        description="The maximum number of tokens to generate.",
+        ge=1,
     )
     temperature: float | None = Field(
         1.0,
