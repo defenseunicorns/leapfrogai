@@ -2,6 +2,17 @@
 
 A mostly OpenAI compliant API surface.
 
+## Zarf Package Deployment
+
+To build and deploy just the API Zarf package (from the root of the repository):
+
+> Deploy a [UDS cluster](/README.md#uds) if one isn't deployed already
+
+```shell
+make build-api LOCAL_VERSION=dev
+uds zarf package deploy packages/api/zarf-package-leapfrogai-api-*-dev.tar.zst --confirm
+```
+
 ## Local Development Setup
 
 1. Install dependencies
