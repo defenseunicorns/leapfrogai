@@ -2,19 +2,128 @@
 
 ## Getting Started
 
-1. You will need Supabase installed before running the application:
-   [Supabase](https://supabase.com/docs/guides/cli/getting-started?platform=macos)
+### Requirements:
 
-2. Create a `.env` file at the route of the project, reference the `.env.example` file for values to put in the .env file
+This application requires Supabase, and either Leapfrog API or OpenAI to function. Additionally, it can optionally use
+Keycloak for authentication. There are several different ways to run it, so please see the "Configuration Options" section
+below for more information.
 
-3. Install dependencies:
+### Running the UI
+
+1. Change directories: `cd src/leapfrogai_ui`
+2. Create a `.env` file at the root of the UI project (src/leapfrogai_ui), reference the `.env.example` file for values to put in the .env file
+3. Install dependencies: `npm install`
+4. Run `npm run dev -- --open`
+
+### Configuration Options
+
+It is recommended to run LeapfrogAI with UDS, but if you want to run the UI locally (on localhost, e.g. for local development),
+you can either:
+
+1. Connect to a UDS deployed version of the Leapfrog API and Supabase  
+   or
+2. Connect to OpenAI and UDS deployed Supabase or locally running Supabase.
+
+_Note - most data CRUD operations utilize Leapfrog API or OpenAI, but some functionality still depends on a direct connection with Supabase._
+
+#### Running everything with UDS
+
+This is the easiest way to use the UI. Follow the documentation for running the entire [LeapfrogAI stack](https://github.com/defenseunicorns/leapfrogai)
+
+#### Running UI Locally with LeapfrogAI
+
+If running the UI locally and utilizing LeapfrogAPI, <ins>**you must use the same Supabase instance that the Leapfrog API is utilizing**</ins>.
+
+1. Connect the UI to a UDS deployed version of Supabase and Leapfrog API.
+   Ensure these env variables are set appropriately in your .env file:
 
 ```
-npm i
-npm run dev -- --open
+PUBLIC_SUPABASE_URL=https://supabase-kong.uds.dev
+PUBLIC_SUPABASE_ANON_KEY=<anon_key>
+...
+LEAPFROGAI_API_BASE_URL=https://leapfrogai-api.uds.dev/openai/v1
+DEFAULT_MODEL=llama-cpp-python # or vllm
 ```
 
-## Building
+2. Run the frontend migrations
+
+If you deploy the UI with UDS, the necessary database migrations will be applied. You can still run a local version of the UI, but the deployed version will have set up the
+database properly for you.
+
+Further instructions will be coming soon in a future release.
+
+##### Authentication
+
+You can choose to use Keycloak (with UDS) or turn Keycloak off and just use Supabase.
+
+When the UI and API are deployed with UDS, everything will be configured properly automatically, but if you want to
+run the UI outside of UDS on localhost (e.g. for development work), there are some manual configuration steps:
+
+1. Modify the "GOTRUE_URI_ALLOW_LIST" within Supabase.  
+   The Supabase UDS package has a ConfigMap called "supabase-auth-default".  
+   Add these variables to the "GOTRUE_URI_ALLOW_LIST" (no spaces!):
+   `http://localhost:5173/auth/callback,http://localhost:5173,http://localhost:4173/auth/callback,http://localhost:4173`  
+   Note - Port 4173 is utilized by Playwright for E2E tests. You do not need this if you are not concerned about Playwright.
+
+###### With Keycloak authentication
+
+1. If Supabase was deployed with UDS, it will automatically configure a Keycloak Client for you. We need to modify this client to allow
+   localhost URIs.  
+   Within Keycloak, under the UDS Realm, edit the uds-supabase client.  
+   Under "Valid redirect URIs" add:  
+   http://localhost:5173/auth/callback  
+   http://localhost:4173/auth/callback (for Playwright tests)
+2. If you want to connect Keycloak to a locally running Supabase instance (non UDS deployed), see the "Running Supabase locally" section below.
+
+###### Without Keycloak authentication
+
+1. To turn off Keycloak, set this .env variable: `PUBLIC_DISABLE_KEYCLOAK=false`
+
+##### Running UI Locally with OpenAI
+
+Set the following .env variables:
+
+```
+DEFAULT_MODEL=gpt-3.5-turbo
+LEAPFROGAI_API_BASE_URL=https://api.openai.com/v1
+#If specified, app will use OpenAI instead of Leapfrog
+OPENAI_API_KEY=<your_openai_api_key>
+```
+
+You still need Supabase, so you can connect to UDS deployed Supabase, or run Supabase locally.
+To connect to UDS deployed Supabase, set these .env variables:
+
+```
+PUBLIC_SUPABASE_URL=https://supabase-kong.uds.dev
+PUBLIC_SUPABASE_ANON_KEY=<anon_key>
+```
+
+Running Supabase locally:
+
+1. Install [Supabase](https://supabase.com/docs/guides/cli/getting-started?platform=macos)
+2. Run: `supabase start`
+   The configuration files at src/leapfrogai_ui/supabase will ensure your Supabase is configured to work with Keycloak if
+   you set these .env variables:
+
+```
+SUPABASE_AUTH_KEYCLOAK_CLIENT_ID=uds-supabase
+SUPABASE_AUTH_KEYCLOAK_SECRET=<secret> #this is the client secret for the client in Keycloak
+SUPABASE_AUTH_EXTERNAL_KEYCLOAK_URL=https://keycloak.admin.uds.dev/realms/uds
+```
+
+After it starts, the Supabase API URL and Anon key are printed to the console. These are used in the .env file to connect to Supabase.
+
+After starting supabase for the first time, you need to initialize the database with migrations and seed data:
+
+`supabase db reset`
+
+After this initial reset, if you start Supabase again it will already have the data and you don't need to run this command unless you want to restore it to the default.
+
+Stop Supabase:
+
+`npm run supabase:stop`
+
+### Building
 
 To create a production version of the app:
 
@@ -24,33 +133,15 @@ npm run build
 
 You can preview the production build with `npm run preview`.
 
-> To deploy your app, you may need to install an [adapter](https://kit.svelte.dev/docs/adapters) for your target environment.
-
 ## Developer Notes
 
 ### Tooling
 
 ### Supabase
 
-We use Supabase for authentication and a database. Playwright tests run against a running instance of Supabase that you can start locally. You need the [Supabase CLI](https://supabase.com/docs/guides/cli/getting-started) installed to do so. Before running Playwright tests, make sure Supabase and the frontend are running `npm run dev` will start both.
-
-Run locally:
-
-`npm run supabase:start`
-
-After it starts, the Supabase API URL and Anon key are printed to the console. These are used in the .env file to connect to Supabase.
-
-After starting supabase for the first time, you need to initialize the database with migrations and seed data:
-
-`npm run supabase:reset`
-
-After this initial reset, if you start Supabase again it will already have the data and you don't need to run this command unless you want to restore it to the default.
-
-Note - `npm run dev` will start Supabase and the frontend, but it does not run the migrations and seeding.
-
-Stop Supabase:
-
-`npm run supabase:stop`
+We use Supabase for authentication and a database. Application specific data
+(ex. user profile images, application settings like feature flags, etc..) should be stored directly in Supabase and
+would not normally utilize the Leapfrog API for CRUD operations.
 
 ### Playwright End-to-End Tests
 
@@ -64,9 +155,9 @@ restart playwright for them to take effect.
 
 Notes:
 
-1. Running the script above will reset the locally running Supabase instance and re-seed the database. You will
-   lose existing data.
-2. if you run the tests in headless mode (`npm run test:integration`) you do not need the app running, it will build the app and run on port 4173.
+1. Playwright tests are End-To-End tests and use the "real" full stack app. If you run these tests, they will use the configuration indicated by your
+   .env file. See the "Configuration Options" section above to configure which database Playwright is using.
+2. If you run the tests in headless mode (`npm run test:integration`) you do not need the app running, it will build the app and run on port 4173.
 
 # Supabase and Keycloak Integration
 
@@ -123,8 +214,9 @@ don't work if you are using the Supabase CLI and not running a pure [docker vers
 In order to fix this, we have to edit the /etc/hosts file in the running Supabase Auth container (we can't add this through a docker compose file
 because we are using the Supabase CLI to start it up, migrate the db, and seed it).
 
-`npm run supabase:start` will start Supabase and modify the /etc/hosts to properly direct requests to the Keycloak server. **You must ensure the IP address used
-in this command is the correct IP for where you have Keycloak hosted.**
+Here is an example of how you can modify the /etc/hosts of the supabase container:
+`"supabase start && docker exec -u 0 supabase_auth_supabase /bin/sh -c \"echo '100.115.154.78 keycloak.admin.uds.dev' >> /etc/hosts\"`
+**You must ensure the IP address used in this command is the correct IP for where you have Keycloak hosted.**
 If you need to use a different Keycloak server for local development, you will need to modify this command.
 
 If your Keycloak server is not at a hosted domain, you will also need to modify the /etc/hosts on your machine:
@@ -186,12 +278,28 @@ When scanning the QR code, use an app that lets you see the url of the QR code. 
 
 Login flow was adapted from [this reference](https://supabase.com/docs/guides/getting-started/tutorials/with-sveltekit?database-method=sql)
 
-### Using OpenAI
+### Chat Data Flow
 
-You can use OpenAI instead of Leapfrog API by changing these environment variables:
+The logic for handling regular chat messages and assistant chat messages, along with persisting that data to the database is complex and deserves a detailed explanation.
 
-```
-DEFAULT_MODEL=gpt-3.5-turbo
-LEAPFROGAI_API_BASE_URL=https://api.openai.com/v1
-LEAPFROGAI_API_KEY=<your-openai-api-key>
-```
+Our chat page allows the user to send messages to /api/chat ("regular chat") and /api/chat/assistants ("chat with assistant"). The messages are streamed to the client so that text is
+progressively displayed on the screen. We use the Vercel [AI SDK](https://sdk.vercel.ai/docs/getting-started/svelte) to handle streaming as well as response cancellation, regeneration, message editing, error handling, and more.
+
+Messages streamed with regular chat, use the "useChat" function.  
+Assistants use the "useAssistants" function.  
+These functions do not provide the same features and handle data differently, resulting in several edge cases.
+
+Here are a few of the big issues caused by these differences:
+
+The useChat function does not save messages with the API to the database, we have to handle that on our own.  
+Messages sent with useAssistants, however, are saved to the database automatically.
+
+Creation timestamps are handled differently depending on if they are streamed responses or if they have been saved to the database.
+Streamed messages have timestamps on the "createdAt" field, saved messages have timestamps on the "created_at" field. Sometimes the dates are Date strings, unix seconds, or unix milliseconds.
+Since dates can be returned in seconds, we lose some of the precision we would have for sorting the messages if they were returned in milliseconds. Due to this issue, there is logic in place to prevent the
+user from sending messages too quickly, ensuring timestamps are unique.
+
+Additionally, streamed messages have temporary ids that do not match the ids messages are assigned when they are saved to the database. This makes editing and deleting messages challenging, so we have to keep track of both streamed
+messages and saved messages in client side state in the correct order. We use this state to look up the saved ids and make the appropriate API calls with the permanent ids.
+
+While there are several automated tests for this logic, the edge cases and mocking scenarios are complex. Any modifications to this logic should be thoroughly manually tested.

@@ -3,9 +3,10 @@
   import { fade } from 'svelte/transition';
   import DynamicPictogram from '$components/DynamicPictogram.svelte';
   import { Modal, OverflowMenu, OverflowMenuItem } from 'carbon-components-svelte';
-  import { toastStore } from '$stores';
+  import { threadsStore, toastStore } from '$stores';
   import { Edit, TrashCan } from 'carbon-icons-svelte';
   import type { LFAssistant } from '$lib/types/assistants';
+  import { NO_SELECTED_ASSISTANT_ID } from '$constants';
 
   export let assistant: LFAssistant;
 
@@ -19,11 +20,13 @@
         'Content-Type': 'application/json'
       }
     });
+    if ($threadsStore.selectedAssistantId === assistant.id)
+      threadsStore.setSelectedAssistantId(NO_SELECTED_ASSISTANT_ID);
 
     deleteModalOpen = false;
 
     if (res.ok) {
-      await invalidate('/api/assistants');
+      await invalidate('lf:assistants');
       toastStore.addToast({
         kind: 'info',
         title: 'Assistant Deleted.',
@@ -81,23 +84,23 @@
       ? `${assistant.description?.slice(0, 75)}...`
       : assistant.description}
   </p>
-
-  <Modal
-    danger
-    bind:open={deleteModalOpen}
-    modalHeading="Delete Assistant"
-    primaryButtonText="Delete"
-    secondaryButtonText="Cancel"
-    on:click:button--secondary={() => (deleteModalOpen = false)}
-    on:submit={() => handleDelete()}
-  >
-    <p>
-      Are you sure you want to delete your
-      <span style="font-weight: bold">{assistant.name}</span>
-      assistant?
-    </p>
-  </Modal>
 </div>
+
+<Modal
+  danger
+  bind:open={deleteModalOpen}
+  modalHeading="Delete Assistant"
+  primaryButtonText="Delete"
+  secondaryButtonText="Cancel"
+  on:click:button--secondary={() => (deleteModalOpen = false)}
+  on:submit={() => handleDelete()}
+>
+  <p>
+    Are you sure you want to delete your
+    <span style="font-weight: bold">{assistant.name}</span>
+    assistant?
+  </p>
+</Modal>
 
 <style lang="scss">
   .assistant-tile {

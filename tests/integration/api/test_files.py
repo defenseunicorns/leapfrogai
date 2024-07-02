@@ -1,23 +1,39 @@
 """Test the API endpoints for files."""
 
-import pytest
-from fastapi import Response, status
-from fastapi.testclient import TestClient
-from openai.types import FileObject, FileDeleted
+import os
 
+import pytest
+from fastapi import HTTPException, Response, status
+from fastapi.testclient import TestClient
+from openai.types import FileDeleted, FileObject
 from leapfrogai_api.routers.openai.files import router
 
 file_response: Response
 testfile_content: bytes
 
-client = TestClient(router)
+
+class MissingEnvironmentVariable(Exception):
+    pass
+
+
+headers: dict[str, str] = {}
+
+try:
+    headers = {"Authorization": f"Bearer {os.environ['SUPABASE_USER_JWT']}"}
+except KeyError as exc:
+    raise MissingEnvironmentVariable(
+        "SUPABASE_USER_JWT must be defined for the test to pass. "
+        "Please check the api README for instructions on obtaining this token."
+    ) from exc
+
+client = TestClient(router, headers=headers)
 
 
 @pytest.fixture(scope="session", autouse=True)
 def read_testfile():
     """Read the test file content."""
     global testfile_content  # pylint: disable=global-statement
-    with open("tests/data/test.txt", "rb") as testfile:
+    with open(os.path.dirname(__file__) + "/../../data/test.txt", "rb") as testfile:
         testfile_content = testfile.read()
 
 
@@ -40,6 +56,8 @@ def test_create():
     assert FileObject.model_validate(
         file_response.json()
     ), "Create should create a FileObject."
+
+    assert "user_id" not in file_response.json(), "Create should not return a user_id."
 
 
 def test_get():
@@ -108,3 +126,20 @@ def test_get_nonexistent():
     assert (
         get_response.json() is None
     ), f"Get should not return deleted FileObject {file_id}."
+
+
+def test_invalid_file_type():
+    """Test creating uploading an invalid file type."""
+
+    file_path = "../../../tests/data/0min12sec.wav"
+    dir_path = os.path.dirname(os.path.realpath(__file__))
+    relative_file_path = os.path.join(dir_path, file_path)
+
+    with pytest.raises(HTTPException) as exception:
+        with open(relative_file_path, "rb") as testfile:
+            _ = client.post(
+                "/openai/v1/files",
+                files={"file": ("0min12sec.wav", testfile, "audio/wav")},
+                data={"purpose": "assistants"},
+            )
+            assert exception.status_code == status.HTTP_415_UNSUPPORTED_MEDIA_TYPE

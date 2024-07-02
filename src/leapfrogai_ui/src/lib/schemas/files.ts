@@ -1,4 +1,4 @@
-import { array, mixed, object, ValidationError } from 'yup';
+import { array, mixed, object, string, ValidationError } from 'yup';
 import { FILE_SIZE_ERROR_TEXT, MAX_FILE_SIZE } from '$constants';
 
 export const filesSchema = object({
@@ -19,10 +19,18 @@ export const filesSchema = object({
         if (value == null) {
           return true;
         }
-        if (value.type !== 'application/pdf' && value.type !== 'application/txt') {
+        if (value.type !== 'application/pdf' && value.type !== 'text/plain') {
           return new ValidationError('Invalid file type, accepted types are: pdf and txt');
         }
         return true;
       })
   )
-});
+})
+  .noUnknown(true)
+  .strict();
+
+export const filesCheckSchema = object({
+  fileIds: array().of(string())
+})
+  .noUnknown(true)
+  .strict();

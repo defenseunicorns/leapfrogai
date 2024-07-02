@@ -9,7 +9,7 @@ describe('supabaseAssistantInputSchema', () => {
       description: 'This is a description',
       instructions: 'These are instructions',
       temperature: 0.5,
-      data_sources: 'some_data_source',
+      data_sources: ['some_data_source'],
       avatar: 'avatar_url',
       avatarFile: null,
       pictogram: 'pictogram_url'
@@ -24,7 +24,7 @@ describe('supabaseAssistantInputSchema', () => {
       description: 'This is a description',
       instructions: 'These are instructions',
       temperature: 0.5,
-      data_sources: 'some_data_source',
+      data_sources: ['some_data_source'],
       avatar: 'avatar_url',
       avatarFile: null,
       pictogram: 'pictogram_url'
@@ -39,7 +39,7 @@ describe('supabaseAssistantInputSchema', () => {
       description: 'This is a description',
       instructions: 'These are instructions',
       temperature: 0.5,
-      data_sources: 'some_data_source',
+      data_sources: ['some_data_source'],
       avatar: 'avatar_url',
       avatarFile: null,
       pictogram: 'pictogram_url'
@@ -55,7 +55,7 @@ describe('supabaseAssistantInputSchema', () => {
       description: 'This is a description',
       instructions: 'These are instructions',
       temperature: 0.5,
-      data_sources: 'some_data_source',
+      data_sources: ['some_data_source'],
       avatar: 'avatar_url',
       avatarFile: invalidFile,
       pictogram: 'pictogram_url'
@@ -73,7 +73,7 @@ describe('editAssistantInputSchema', () => {
       description: 'This is a description',
       instructions: 'These are instructions',
       temperature: 0.5,
-      data_sources: 'some_data_source',
+      data_sources: ['some_data_source'],
       avatar: 'avatar_url',
       avatarFile: null,
       pictogram: 'pictogram_url'
@@ -88,7 +88,7 @@ describe('editAssistantInputSchema', () => {
       description: 'This is a description',
       instructions: 'These are instructions',
       temperature: 0.5,
-      data_sources: 'some_data_source',
+      data_sources: ['some_data_source'],
       avatar: 'avatar_url',
       avatarFile: null,
       pictogram: 'pictogram_url'

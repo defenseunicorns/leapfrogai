@@ -1,5 +1,5 @@
 <script lang="ts">
-  import { uiStore } from '$stores';
+  import { threadsStore, uiStore } from '$stores';
   import logo from '$assets/LeapfrogAI.png';
   import { Settings, UserAvatar } from 'carbon-icons-svelte';
   import { Header, HeaderAction, HeaderUtilities } from 'carbon-components-svelte';
@@ -36,7 +36,14 @@
   persistentHamburgerMenu={innerWidth ? innerWidth < 1056 : false}
   bind:isSideNavOpen={$uiStore.isSideNavOpen}
 >
-  <span slot="platform"><img alt="LeapfrogAI Logo" src={logo} class="logo" /></span>
+  <span slot="platform"
+    ><a
+      data-testid="header-logo-link"
+      href={$threadsStore.lastVisitedThreadId
+        ? `/chat/${$threadsStore.lastVisitedThreadId}`
+        : '/chat'}><img alt="LeapfrogAI Logo" src={logo} class="logo" /></a
+    ></span
+  >
   <HeaderUtilities>
     <HeaderAction
       data-testid="settings header action button"

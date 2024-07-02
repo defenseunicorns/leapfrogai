@@ -2,8 +2,10 @@ import { sveltekit } from '@sveltejs/kit/vite';
 import { defineConfig } from 'vite';
 import { optimizeCss } from 'carbon-preprocess-svelte';
 
+import { svelteTesting } from '@testing-library/svelte/vite';
+
 export default defineConfig(() => ({
-  plugins: [sveltekit(), optimizeCss()],
+  plugins: [sveltekit(), svelteTesting(), optimizeCss()],
   test: {
     environment: 'jsdom',
     setupFiles: ['./vitest-setup.ts'],

@@ -1,6 +1,6 @@
 """Helper functions for the OpenAI backend."""
 
-from typing import BinaryIO, Iterator
+from typing import BinaryIO, Iterator, AsyncGenerator, Any
 import grpc
 import leapfrogai_sdk as lfai
 from leapfrogai_api.backend.types import (
@@ -48,7 +48,7 @@ async def recv_chat(
     stream: grpc.aio.UnaryStreamCall[
         lfai.ChatCompletionRequest, lfai.ChatCompletionResponse
     ],
-):
+) -> AsyncGenerator[str, Any]:
     """Generator that yields chat completion responses as Server-Sent Events."""
     async for c in stream:
         yield (
@@ -102,3 +102,10 @@ def read_chunks(file: BinaryIO, chunk_size: int) -> Iterator[lfai.AudioRequest]:
         if not chunk:
             break
         yield lfai.AudioRequest(chunk_data=chunk)
+
+
+def object_or_default(obj: Any | None, _default: Any) -> Any:
+    if obj:
+        return obj
+    else:
+        return _default

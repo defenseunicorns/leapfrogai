@@ -1,45 +1,48 @@
 """OpenAI Compliant Assistants API Router."""
 
-from fastapi import APIRouter, HTTPException, status
+from fastapi import HTTPException, APIRouter, status
+from fastapi.security import HTTPBearer
 from openai.types.beta import Assistant, AssistantDeleted
-from openai.types.beta.assistant import ToolResources, ToolResourcesCodeInterpreter
+from openai.types.beta.assistant import ToolResourcesCodeInterpreter
+
+from leapfrogai_api.backend.helpers import object_or_default
 from leapfrogai_api.backend.types import (
     CreateAssistantRequest,
     ListAssistantsResponse,
     ModifyAssistantRequest,
 )
-from leapfrogai_api.data.crud_assistant_object import CRUDAssistant
+from leapfrogai_api.data.crud_assistant import CRUDAssistant, FilterAssistant
 from leapfrogai_api.routers.supabase_session import Session
+from leapfrogai_api.utils.validate_tools import (
+    validate_assistant_tool,
+    validate_tool_resources,
+)
 
 router = APIRouter(prefix="/openai/v1/assistants", tags=["openai/assistants"])
+security = HTTPBearer()
 
 supported_tools = ["file_search"]
 
 
 @router.post("")
 async def create_assistant(
-    session: Session, request: CreateAssistantRequest
+    session: Session,
+    request: CreateAssistantRequest,
 ) -> Assistant:
     """Create an assistant."""
 
-    if request.tools and (
-        unsupported_tool := next(
-            (tool for tool in request.tools if tool.type not in supported_tools), None
-        )
-    ):
-        raise HTTPException(
-            status_code=status.HTTP_400_BAD_REQUEST,
-            detail=f"Unsupported tool type: {unsupported_tool.type}",
-        )
+    if request.tools:
+        for tool in request.tools:
+            if not validate_assistant_tool(tool):
+                raise HTTPException(
+                    status_code=status.HTTP_400_BAD_REQUEST,
+                    detail=f"Unsupported tool type: {tool.type}",
+                )
 
-    if request.tool_resources and any(
-        isinstance(tool_resource, ToolResourcesCodeInterpreter)
-        and tool_resource.get("file_ids")
-        for tool_resource in request.tool_resources
-    ):
+    if request.tool_resources and not validate_tool_resources(request.tool_resources):
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
-            detail="Code interpreter tool is not supported",
+            detail=f"Unsupported tool resource: {request.tool_resources}",
         )
 
     try:
@@ -51,7 +54,7 @@ async def create_assistant(
             instructions=request.instructions,
             model=request.model,
             object="assistant",
-            tools=request.tools,
+            tools=request.tools or [],
             tool_resources=request.tool_resources,
             temperature=request.temperature,
             top_p=request.top_p,
@@ -64,21 +67,23 @@ async def create_assistant(
             detail="Unable to parse assistant request",
         ) from exc
 
-    try:
-        crud_assistant = CRUDAssistant(model=Assistant)
-        return await crud_assistant.create(db=session, object_=assistant)
-    except Exception as exc:
+    crud_assistant = CRUDAssistant(session)
+
+    if not (response := await crud_assistant.create(object_=assistant)):
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail="Unable to create assistant",
-        ) from exc
+        )
+    return response
 
 
 @router.get("")
-async def list_assistants(session: Session) -> ListAssistantsResponse:
+async def list_assistants(
+    session: Session,
+) -> ListAssistantsResponse:
     """List all the assistants."""
-    crud_assistant = CRUDAssistant(model=Assistant)
-    crud_response = await crud_assistant.list(db=session)
+    crud_assistant = CRUDAssistant(session)
+    crud_response = await crud_assistant.list()
 
     return ListAssistantsResponse(
         object="list",
@@ -87,22 +92,27 @@ async def list_assistants(session: Session) -> ListAssistantsResponse:
 
 
 @router.get("/{assistant_id}")
-async def retrieve_assistant(session: Session, assistant_id: str) -> Assistant | None:
+async def retrieve_assistant(
+    session: Session,
+    assistant_id: str,
+) -> Assistant | None:
     """Retrieve an assistant."""
 
-    crud_assistant = CRUDAssistant(model=Assistant)
-    return await crud_assistant.get(db=session, id_=assistant_id)
+    crud_assistant = CRUDAssistant(session)
+    return await crud_assistant.get(filters=FilterAssistant(id=assistant_id))
 
 
 @router.post("/{assistant_id}")
 async def modify_assistant(
-    session: Session, assistant_id: str, request: ModifyAssistantRequest
+    session: Session,
+    assistant_id: str,
+    request: ModifyAssistantRequest,
 ) -> Assistant:
     """
     Modify an assistant.
 
     Args:
-        session (Session): The database session.
+        session (Session): An authenticated client for the current session.
         assistant_id (str): The ID of the assistant to modify.
         request (ModifyAssistantRequest): The request object containing the updated assistant information.
 
@@ -146,9 +156,13 @@ async def modify_assistant(
             detail="Code interpreter tool is not supported",
         )
 
-    crud_assistant = CRUDAssistant(model=Assistant)
+    crud_assistant = CRUDAssistant(session)
 
-    if not (old_assistant := await crud_assistant.get(db=session, id_=assistant_id)):
+    if not (
+        old_assistant := await crud_assistant.get(
+            filters=FilterAssistant(id=assistant_id)
+        )
+    ):
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST, detail="Assistant not found"
         )
@@ -157,23 +171,26 @@ async def modify_assistant(
         new_assistant = Assistant(
             id=assistant_id,
             created_at=old_assistant.created_at,
-            name=getattr(request, "name", old_assistant.name),
-            description=getattr(request, "description", old_assistant.description),
-            instructions=getattr(request, "instructions", old_assistant.instructions),
-            model=getattr(request, "model", old_assistant.model),
-            object="assistant",
-            tools=getattr(request, "tools", old_assistant.tools),
-            tool_resources=ToolResources.model_validate(
-                getattr(request, "tool_resources", None)
-            )
-            or old_assistant.tool_resources,
-            temperature=float(
-                getattr(request, "temperature", old_assistant.temperature)
+            name=object_or_default(request.name, old_assistant.name),
+            description=object_or_default(
+                request.description, old_assistant.description
             ),
-            top_p=getattr(request, "top_p", old_assistant.top_p),
-            metadata=getattr(request, "metadata", old_assistant.metadata),
-            response_format=getattr(
-                request, "response_format", old_assistant.response_format
+            instructions=object_or_default(
+                request.instructions, old_assistant.instructions
+            ),
+            model=object_or_default(request.model, old_assistant.model),
+            object="assistant",
+            tools=object_or_default(request.tools, old_assistant.tools),
+            tool_resources=object_or_default(
+                request.tool_resources, old_assistant.tool_resources
+            ),
+            temperature=object_or_default(
+                request.temperature, old_assistant.temperature
+            ),
+            top_p=object_or_default(request.top_p, old_assistant.top_p),
+            metadata=object_or_default(request.metadata, old_assistant.metadata),
+            response_format=object_or_default(
+                request.response_format, old_assistant.response_format
             ),
         )
     except Exception as exc:
@@ -182,22 +199,26 @@ async def modify_assistant(
             detail="Unable to parse assistant request",
         ) from exc
 
-    try:
-        return await crud_assistant.update(
-            db=session, object_=new_assistant, id_=assistant_id
-        )
-    except FileNotFoundError as exc:
+    if not (
+        response := await crud_assistant.update(object_=new_assistant, id_=assistant_id)
+    ):
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail="Failed to update assistant",
-        ) from exc
+        )
+    return response
 
 
 @router.delete("/{assistant_id}")
-async def delete_assistant(session: Session, assistant_id: str) -> AssistantDeleted:
+async def delete_assistant(
+    session: Session,
+    assistant_id: str,
+) -> AssistantDeleted:
     """Delete an assistant."""
-    crud_assistant = CRUDAssistant(model=Assistant)
-    assistant_deleted = await crud_assistant.delete(db=session, id_=assistant_id)
+    crud_assistant = CRUDAssistant(session)
+    assistant_deleted = await crud_assistant.delete(
+        filters=FilterAssistant(id=assistant_id)
+    )
     return AssistantDeleted(
         id=assistant_id,
         deleted=bool(assistant_deleted),

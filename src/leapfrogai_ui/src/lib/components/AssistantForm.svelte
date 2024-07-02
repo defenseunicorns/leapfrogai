@@ -5,28 +5,28 @@
     ASSISTANTS_NAME_MAX_LENGTH
   } from '$lib/constants';
   import { superForm } from 'sveltekit-superforms';
-  import { Add } from 'carbon-icons-svelte';
   import { page } from '$app/stores';
   import { beforeNavigate, goto, invalidate } from '$app/navigation';
   import { Button, Modal, Slider, TextArea, TextInput } from 'carbon-components-svelte';
   import AssistantAvatar from '$components/AssistantAvatar.svelte';
   import { yup } from 'sveltekit-superforms/adapters';
-  import { toastStore } from '$stores';
+  import { filesStore, toastStore } from '$stores';
   import InputTooltip from '$components/InputTooltip.svelte';
-  import { editAssistantInputSchema, assistantInputSchema } from '$lib/schemas/assistants';
+  import { assistantInputSchema, editAssistantInputSchema } from '$lib/schemas/assistants';
   import type { NavigationTarget } from '@sveltejs/kit';
   import { onMount } from 'svelte';
+  import AssistantFileSelect from '$components/AssistantFileSelect.svelte';
 
   export let data;
 
   let isEditMode = $page.url.pathname.includes('edit');
   let bypassCancelWarning = false;
 
-  const { form, errors, enhance, submitting, isTainted } = superForm(data.form, {
+  const { form, errors, enhance, submitting, isTainted, delayed } = superForm(data.form, {
     invalidateAll: false,
     validators: yup(isEditMode ? editAssistantInputSchema : assistantInputSchema),
     onResult({ result }) {
-      invalidate('/api/assistants');
+      invalidate('lf:assistants');
       if (result.type === 'redirect') {
         toastStore.addToast({
           kind: 'success',
@@ -85,6 +85,7 @@
       });
       goto('/chat/assistants-management');
     }
+    filesStore.setSelectedAssistantFileIds($form.data_sources || []);
   });
 </script>
 
@@ -169,13 +170,14 @@
         labelText="Data Sources"
         tooltipText="Specific files your assistant can search and reference"
       />
-      <div>
-        <Button icon={Add} kind="secondary" size="small"
-          >Add <input name="data_sources" type="hidden" /></Button
-        >
-      </div>
+      <AssistantFileSelect filesForm={data.filesForm} />
+      <input
+        type="hidden"
+        name="vectorStoreId"
+        value={data?.assistant?.tool_resources?.file_search?.vector_store_ids[0] || undefined}
+      />
 
-      <div>
+      <div class="btns-container">
         <Button
           kind="secondary"
           size="small"
@@ -184,7 +186,16 @@
             goto('/chat/assistants-management');
           }}>Cancel</Button
         >
-        <Button kind="primary" size="small" type="submit" disabled={$submitting}>Save</Button>
+
+        <Button
+          kind="primary"
+          size="small"
+          type="submit"
+          disabled={$submitting || $filesStore.uploading}>Save</Button
+        >
+        {#if $delayed}
+          <span>Processing, please wait...</span>
+        {/if}
       </div>
     </div>
   </div>
@@ -236,6 +247,12 @@
         position: absolute;
         top: 25%;
       }
+    }
+
+    .btns-container {
+      display: flex;
+      align-items: center;
+      gap: 0.2rem;
     }
   }
 </style>

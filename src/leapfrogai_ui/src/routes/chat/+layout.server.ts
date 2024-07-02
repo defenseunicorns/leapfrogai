@@ -1,8 +1,28 @@
 import { redirect } from '@sveltejs/kit';
 import type { Profile } from '$lib/types/profile';
 import type { LFThread } from '$lib/types/threads';
-import { openai } from '$lib/server/constants';
 import type { LFMessage } from '$lib/types/messages';
+import { getOpenAiClient } from '$lib/server/constants';
+
+const getThreadWithMessages = async (
+  thread_id: string,
+  access_token: string
+): Promise<LFThread | null> => {
+  try {
+    const openai = getOpenAiClient(access_token);
+    const thread = (await openai.beta.threads.retrieve(thread_id)) as LFThread;
+    if (!thread) {
+      return null;
+    }
+    const messagesPage = await openai.beta.threads.messages.list(thread.id);
+    const messages = messagesPage.data as LFMessage[];
+    messages.sort((a, b) => a.created_at - b.created_at);
+    return { ...thread, messages: messages };
+  } catch (e) {
+    console.error(`Error fetching thread or messages: ${e}`);
+    return null;
+  }
+};
 
 export const load = async ({ locals: { supabase, safeGetSession } }) => {
   const { session } = await safeGetSession();
@@ -27,18 +47,23 @@ export const load = async ({ locals: { supabase, safeGetSession } }) => {
 
   const threads: LFThread[] = [];
   if (profile?.thread_ids && profile?.thread_ids.length > 0) {
-    for (const thread_id of profile.thread_ids) {
-      try {
-        const thread = (await openai.beta.threads.retrieve(thread_id)) as LFThread;
-        const messagesPage = await openai.beta.threads.messages.list(thread.id);
-        const messages = messagesPage.data as LFMessage[];
-        messages.sort((a, b) => a.created_at - b.created_at);
-        threads.push({ ...thread, messages: messages });
-      } catch {
-        // fail silently
-      }
+    try {
+      const threadPromises = profile.thread_ids.map((thread_id) =>
+        getThreadWithMessages(thread_id, session.access_token)
+      );
+      const results = await Promise.allSettled(threadPromises);
+
+      results.forEach((result) => {
+        if (result.status === 'fulfilled' && result.value) {
+          threads.push(result.value);
+        }
+      });
+    } catch (e) {
+      console.error(`Error fetching threads: ${e}`);
+      // fail silently
+      return null;
     }
   }
 
-  return { title: 'LeapfrogAI - Chat', session, profile, threads };
+  return { threads };
 };

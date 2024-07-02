@@ -6,10 +6,11 @@ import { faker } from '@faker-js/faker';
 type GetStoresOverrides = {
   url: string;
   params: Record<string, string>;
+  data?: object;
 };
 
 export const getStores = (
-  options: GetStoresOverrides = { url: 'http://localhost', params: {} }
+  options: GetStoresOverrides = { url: 'http://localhost', params: {}, data: {} }
 ) => {
   const id = faker.string.uuid();
   const navigating = readable<Navigation | null>(null);
@@ -34,7 +35,8 @@ export const getStores = (
           aud: '',
           created_at: new Date().toISOString()
         }
-      }
+      },
+      ...options.data
     },
     state: {},
     form: null

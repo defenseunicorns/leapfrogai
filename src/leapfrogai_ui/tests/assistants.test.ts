@@ -1,5 +1,12 @@
 import { expect, test } from './fixtures';
-import { createAssistant, deleteAllAssistants, loadChatPage } from './helpers';
+import {
+  createAssistant,
+  deleteActiveThread,
+  deleteAllAssistants,
+  getSimpleMathQuestion,
+  loadChatPage,
+  sendMessage
+} from './helpers';
 import { getFakeAssistantInput } from '../testUtils/fakeData';
 import type { ActionResult } from '@sveltejs/kit';
 
@@ -133,14 +140,27 @@ test('it can search for assistants', async ({ page, browserName }) => {
   }
 });
 
-test('it can navigate with breadcrumbs', async ({ page }) => {
-  await page.goto('/chat/assistants-management');
+test('it can navigate to the last visited thread with breadcrumbs', async ({ page }) => {
+  const newMessage = getSimpleMathQuestion();
+  await page.goto('/chat');
+  await sendMessage(page, newMessage);
+  const messages = page.getByTestId('message');
+  await expect(messages).toHaveCount(2);
+
+  const urlParts = new URL(page.url()).pathname.split('/');
+  const threadId = urlParts[urlParts.length - 1];
+
+  await page.getByLabel('Settings').click();
+  await page.getByText('Assistants Management').click();
   await page.getByRole('button', { name: 'New Assistant' }).click();
   await page.waitForURL('/chat/assistants-management/new');
   await page.getByRole('link', { name: 'Assistants Management' }).click();
   await page.waitForURL('/chat/assistants-management');
   await page.getByRole('link', { name: 'Chat' }).click();
-  await page.waitForURL('/chat');
+  await page.waitForURL(`/chat/${threadId}`);
+
+  // Cleanup
+  await deleteActiveThread(page);
 });
 
 test('it validates input', async ({ page }) => {
@@ -264,4 +284,5 @@ test('it can delete assistants', async ({ page }) => {
   await page.getByRole('button', { name: 'Delete' }).click();
 
   await expect(page.getByText(`${assistantInput.name} Assistant deleted.`)).toBeVisible();
+  await deleteActiveThread(page);
 });

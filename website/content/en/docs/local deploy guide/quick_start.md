@@ -12,6 +12,7 @@ The fastest and easiest way to get started with a deployment of LeapfrogAI is by
 
 - [Docker](https://docs.docker.com/engine/install/)
 - [K3D](https://k3d.io/)
+- [Zarf](https://docs.zarf.dev/getting-started/install/)
 - [UDS CLI](https://github.com/defenseunicorns/uds-cli)
 
 GPU considerations (NVIDIA GPUs only):
@@ -50,7 +51,7 @@ From within the cloned repository, deploy K3D and the LeapfrogAI bundle:
 ``` bash
 cd uds-bundles/latest/cpu/
 uds create .
-uds deploy k3d-core-slim-dev:0.18.0      # be sure to check if a newer version exists
+uds deploy k3d-core-slim-dev:0.22.2      # be sure to check if a newer version exists
 uds deploy uds-bundle-leapfrogai-*.tar.zst --confirm
 ```
 
@@ -61,7 +62,7 @@ In order to test the GPU deployment locally on K3d, use the following command wh
 ```bash
  cd uds-bundles/latest/gpu/
  uds create .
- uds deploy k3d-core-slim-dev:0.18.0 --set K3D_EXTRA_ARGS="--gpus=all --image=ghcr.io/justinthelaw/k3d-gpu-support:v1.27.4-k3s1-cuda"     # be sure to check if a newer version exists
+ uds deploy k3d-core-slim-dev:0.22.2 --set K3D_EXTRA_ARGS="--gpus=all --image=ghcr.io/justinthelaw/k3d-gpu-support:v1.27.4-k3s1-cuda"     # be sure to check if a newer version exists
  uds deploy uds-bundle-leapfrogai-*.tar.zst --confirm
 ```
 
@@ -79,7 +80,41 @@ uds zarf tools monitor
 | API        | <https://leapfrogai-api.uds.dev/docs> |
 | RAG Server | <https://leapfrogai-rag.uds.dev/docs> |
 
+## Accessing the UI
+
+LeapfrogAI is integrated with the UDS Core KeyCloak service, which provides authentication via SSO. Below are general instructions for accessing the LeapfrogAI UI after a successful UDS deployment of UDS Core and LeapfrogAI.
+
+1. Connect to the KeyCloak admin panel
+  a. Run the following to get a port-forwarded tunnel:  `uds zarf connect keycloak`
+  b. Go to the resulting localhost URL and create an admin account
+2. Go to ai.uds.dev and press "Login using SSO"
+3. Register a new user by pressing "Register Here"
+4. Fill-in all of the information
+  a. The bot detection requires you to scroll and click around in a natural way, so if the Register button is not activated despite correct information, try moving around the page until the bot detection says 100% verified
+5. Using an authenticator, follow the MFA steps
+6. Go to sso.uds.dev
+  a. Login using the admin account you created earlier
+7. Approve the newly registered user
+  a. Click on the hamburger menu in the top left to open/close the sidebar
+  b. Go to the dropdown that likely says "Keycloak" and switch to the "uds" context
+  c. Click "Users" in the sidebar
+  d. Click on the newly registered user's username
+  e. Go to the "Email Verified" switch and toggle it to be "Yes"
+  f. Scroll to the bottom and press "Save"
+8. Go back to ai.uds.dev and login as the registered user to access the UI
+
+## Clean-up
+
+To clean-up or perform a fresh install, run the following commands in the context in which you had previously installed UDS Core and LeapfrogAI:
+
+```bash
+k3d cluster delete uds  # kills a running uds cluster
+uds zarf tools clear-cache # clears the Zarf tool cache
+rm -rf ~/.uds-cache # clears the UDS cache
+docker system prune -a -f # removes all hanging containers and images
+docker volume prune -f # removes all hanging container volumes
+```
+
 ## References
 
 - [UDS-Core](https://github.com/defenseunicorns/uds-core)
-

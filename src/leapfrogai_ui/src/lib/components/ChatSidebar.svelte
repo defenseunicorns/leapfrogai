@@ -5,7 +5,6 @@
     OverflowMenu,
     OverflowMenuItem,
     SideNav,
-    SideNavDivider,
     SideNavItems,
     SideNavMenu,
     SideNavMenuItem,
@@ -163,7 +162,7 @@
                 bind:value={searchText}
                 maxlength={25}
               />
-              <SideNavDivider />
+              <hr id="divider" class="divider" />
             </div>
 
             <div
@@ -245,7 +244,7 @@
               {/each}
             </div>
             <div>
-              <SideNavDivider />
+              <hr id="divider" class="divider" />
               <ImportExport />
             </div>
           </div>
@@ -302,7 +301,6 @@ https://github.com/carbon-design-system/carbon-components-svelte/issues/892
     display: flex;
     flex-direction: column;
     justify-content: space-between;
-    padding: 0 0 layout.$spacing-05 0;
 
     :global(.bx--side-nav__divider) {
       margin: layout.$spacing-03 0 0 0;

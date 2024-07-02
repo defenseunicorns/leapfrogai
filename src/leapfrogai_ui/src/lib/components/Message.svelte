@@ -1,29 +1,62 @@
 <script lang="ts">
+  import { page } from '$app/stores';
   import { Button, Tile } from 'carbon-components-svelte';
   import { Copy, Edit, Reset, UserAvatar } from 'carbon-icons-svelte';
   import { type Message as AIMessage } from 'ai/svelte';
   import { LFTextArea } from '$components';
   import frog from '$assets/frog.png';
   import { writable } from 'svelte/store';
-  import { toastStore } from '$stores';
-  import { getMessageText } from '$helpers/threads';
+  import { threadsStore, toastStore } from '$stores';
+  import { convertTextToMessageContentArr, getMessageText } from '$helpers/threads';
+  import type { Message as OpenAIMessage } from 'openai/resources/beta/threads/messages';
+  import {
+    getAssistantImage,
+    handleAssistantRegenerate,
+    handleChatMessageEdit,
+    handleChatRegenerate,
+    isRunAssistantResponse
+  } from '$helpers/chatHelpers';
+  import DynamicPictogram from '$components/DynamicPictogram.svelte';
+  import type { AppendFunction, ReloadFunction } from '$lib/types/messages';
 
-  export let handleMessageEdit: (
-    event: SubmitEvent | KeyboardEvent | MouseEvent,
-    message: AIMessage
-  ) => Promise<void>;
-  export let handleRegenerate: () => Promise<void>;
-  export let message: AIMessage;
+  export let allStreamedMessages: AIMessage[];
+  export let message: AIMessage | OpenAIMessage;
+  export let messages: AIMessage[] = [];
+  export let setMessages: (messages: AIMessage[]) => void;
   export let isLastMessage: boolean;
-  export let isLoading: boolean;
+  export let append: AppendFunction;
+  export let reload: ReloadFunction;
 
+  let assistantImage = isRunAssistantResponse(message)
+    ? getAssistantImage(...[$page.data.assistants || []], message.assistant_id)
+    : null;
   let messageIsHovered = false;
   let editMode = false;
   let value = writable(getMessageText(message));
 
+  const getAssistantName = (id?: string) => {
+    if (!id) return 'LeapfrogAI Bot';
+    return (
+      $page.data.assistants?.find((assistant) => assistant.id === id)?.name || 'LeapfrogAI Bot'
+    );
+  };
+
   const onSubmit = async (e: SubmitEvent | KeyboardEvent | MouseEvent) => {
+    e.preventDefault();
     editMode = false;
-    await handleMessageEdit(e, { ...message, content: $value });
+
+    if (isRunAssistantResponse(message)) {
+      threadsStore.setSelectedAssistantId(message.assistant_id);
+    }
+
+    await handleChatMessageEdit({
+      allStreamedMessages,
+      message: { ...message, content: convertTextToMessageContentArr($value) },
+      thread_id: $page.params.thread_id,
+      messages,
+      setMessages,
+      append
+    });
   };
 
   const handleCancel = () => {
@@ -62,10 +95,16 @@
   <div class="message-and-avatar">
     {#if message.role === 'user'}
       <div class="icon">
-        <UserAvatar style="width: 24px; height: 24px;" />
+        <UserAvatar style="width: 24px; height: 24px;" data-testid="user-icon" />
+      </div>
+    {:else if assistantImage && assistantImage.startsWith('http')}
+      <img alt="Assistant" src={assistantImage} class="icon" data-testid="assistant-icon" />
+    {:else if assistantImage}
+      <div class="icon" data-testid="assistant-icon">
+        <DynamicPictogram iconName={assistantImage} width="24px" height="24px" />
       </div>
     {:else}
-      <img alt="LeapfrogAI" src={frog} class="icon" />
+      <img alt="LeapfrogAI" src={frog} class="icon" data-testid="leapfrog-icon" />
     {/if}
 
     <div class="message-and-utils">
@@ -76,28 +115,36 @@
             <Button size="small" kind="secondary" on:click={handleCancel}>Cancel</Button>
             <Button
               size="small"
-              disabled={isLoading}
+              disabled={$threadsStore.sendingBlocked}
               on:click={onSubmit}
               aria-label="submit edited message">Submit</Button
             >
           </div>
         </div>
       {:else}
-        <Tile style="line-height: 20px;">{getMessageText(message)}</Tile>
+        <Tile style="line-height: 20px;"
+          ><div class="message-content">
+            <div style="font-weight: bold">
+              {message.role === 'user' ? 'You' : getAssistantName(message.assistant_id)}
+            </div>
+            <div>{getMessageText(message)}</div>
+          </div></Tile
+        >
       {/if}
 
       <div class="utils">
         {#if message.role === 'user' && !editMode}
           <button
             data-testid="edit prompt btn"
-            class="highlight-icon remove-btn-style"
+            class="remove-btn-style"
+            class:highlight-icon={!$threadsStore.sendingBlocked}
             class:hide={!messageIsHovered}
             on:click={() => (editMode = true)}
             aria-label="edit prompt"
             tabindex="0"><Edit /></button
           >
         {/if}
-        {#if message.role !== 'user' && (isLastMessage ? !isLoading : true)}
+        {#if message.role !== 'user'}
           <button
             data-testid="copy btn"
             class="highlight-icon remove-btn-style"
@@ -107,12 +154,35 @@
             aria-label="copy message"><Copy /></button
           >
         {/if}
-        {#if message.role !== 'user' && isLastMessage && !isLoading}
+        {#if message.role !== 'user' && isLastMessage && !$threadsStore.sendingBlocked}
           <button
             data-testid="regenerate btn"
-            class="highlight-icon remove-btn-style"
+            class="remove-btn-style"
+            class:highlight-icon={!$threadsStore.sendingBlocked}
             class:hide={!messageIsHovered}
-            on:click={handleRegenerate}
+            on:click={() => {
+              if (isRunAssistantResponse(message)) {
+                threadsStore.setSelectedAssistantId(message.assistant_id);
+                handleAssistantRegenerate({
+                  messages,
+                  setMessages,
+                  thread_id: $page.params.thread_id,
+                  append
+                });
+              } else {
+                const savedMessages =
+                  $threadsStore.threads.find((t) => t.id === $page.params.thread_id)?.messages ||
+                  [];
+                handleChatRegenerate({
+                  savedMessages,
+                  message,
+                  messages,
+                  setMessages,
+                  thread_id: $page.params.thread_id,
+                  reload
+                });
+              }
+            }}
             aria-label="regenerate message"
             tabindex="0"><Reset /></button
           >
@@ -183,5 +253,11 @@
     outline: 1px solid themes.$layer-02;
     border-bottom: 0;
     margin-top: 7px; // prevents edit box from jumping up on editMode
+  }
+
+  .message-content {
+    display: flex;
+    flex-direction: column;
+    gap: layout.$spacing-03;
   }
 </style>

@@ -1,12 +1,37 @@
 """Typing definitions for assistants API."""
 
 from __future__ import annotations
+
+import datetime
+from enum import Enum
 from typing import Literal
-from pydantic import BaseModel
+
 from fastapi import UploadFile, Form, File
 from openai.types import FileObject
 from openai.types.beta import Assistant, AssistantTool
-from openai.types.beta.assistant import ToolResources
+from openai.types.beta import VectorStore
+from openai.types.beta.assistant import (
+    ToolResources as BetaAssistantToolResources,
+    ToolResourcesFileSearch,
+)
+from openai.types.beta.assistant_tool import FileSearchTool
+from openai.types.beta.thread import ToolResources as BetaThreadToolResources
+from openai.types.beta.thread_create_params import (
+    ToolResourcesFileSearchVectorStoreChunkingStrategy,
+    ToolResourcesFileSearchVectorStoreChunkingStrategyAuto,
+)
+from openai.types.beta.threads.text_content_block_param import TextContentBlockParam
+from openai.types.beta.vector_store import ExpiresAfter
+from pydantic import BaseModel, Field
+
+##########
+# DEFAULTS
+##########
+
+
+DEFAULT_MAX_COMPLETION_TOKENS = 4096
+DEFAULT_MAX_PROMPT_TOKENS = 4096
+
 
 ##########
 # GENERIC
@@ -17,7 +42,7 @@ class Usage(BaseModel):
     """Usage object."""
 
     prompt_tokens: int
-    completion_tokens: int | None = None
+    completion_tokens: int | None = DEFAULT_MAX_COMPLETION_TOKENS
     total_tokens: int
 
 
@@ -53,7 +78,7 @@ class CompletionRequest(BaseModel):
     model: str
     prompt: str | list[int]
     stream: bool | None = False
-    max_tokens: int | None = 16
+    max_tokens: int | None = DEFAULT_MAX_COMPLETION_TOKENS
     temperature: float | None = 1.0
 
 
@@ -93,8 +118,8 @@ class ChatFunction(BaseModel):
 class ChatMessage(BaseModel):
     """Message object for chat completion."""
 
-    role: str
-    content: str
+    role: Literal["user", "assistant", "system", "function"]
+    content: str | list[TextContentBlockParam]
 
 
 class ChatDelta(BaseModel):
@@ -114,7 +139,7 @@ class ChatCompletionRequest(BaseModel):
     top_p: float | None = 1
     stream: bool | None = False
     stop: str | None = None
-    max_tokens: int | None = 128
+    max_tokens: int | None = DEFAULT_MAX_COMPLETION_TOKENS
 
 
 class ChatChoice(BaseModel):
@@ -152,9 +177,13 @@ class ChatCompletionResponse(BaseModel):
 class CreateEmbeddingRequest(BaseModel):
     """Request object for creating embeddings."""
 
-    model: str
-    input: str | list[str] | list[int] | list[list[int]]
-    user: str | None = None
+    model: str = Field(
+        description="Model that will be doing the embedding",
+        examples=["text-embeddings"],
+    )
+    input: str | list[str] | list[int] | list[list[int]] = Field(
+        description="The text to be embedded", examples=["My test input"]
+    )
 
 
 class EmbeddingResponseData(BaseModel):
@@ -247,16 +276,29 @@ class ListFilesResponse(BaseModel):
 class CreateAssistantRequest(BaseModel):
     """Request object for creating an assistant."""
 
-    model: str = "mistral"
-    name: str | None = "Froggy Assistant"
-    description: str | None = "A helpful assistant."
-    instructions: str | None = "You are a helpful assistant."
-    tools: list[AssistantTool] | None = []  # This is all we support right now
-    tool_resources: ToolResources | None = ToolResources()
-    metadata: object | None = {}
-    temperature: float | None = 1.0
-    top_p: float | None = 1.0
-    response_format: Literal["auto"] | None = "auto"  # This is all we support right now
+    model: str = Field(default="llama-cpp-python", examples=["llama-cpp-python"])
+    name: str | None = Field(default=None, examples=["Froggy Assistant"])
+    description: str | None = Field(default=None, examples=["A helpful assistant."])
+    instructions: str | None = Field(
+        default=None, examples=["You are a helpful assistant."]
+    )
+    tools: list[AssistantTool] | None = Field(
+        default=None, examples=[[FileSearchTool(type="file_search")]]
+    )
+    tool_resources: BetaAssistantToolResources | None = Field(
+        default=None,
+        examples=[
+            BetaAssistantToolResources(
+                file_search=ToolResourcesFileSearch(vector_store_ids=[])
+            )
+        ],
+    )
+    metadata: dict | None = Field(default={}, examples=[{}])
+    temperature: float | None = Field(default=None, examples=[1.0])
+    top_p: float | None = Field(default=None, examples=[1.0])
+    response_format: Literal["auto"] | None = Field(
+        default=None, examples=["auto"]
+    )  # This is all we support right now
 
 
 class ModifyAssistantRequest(CreateAssistantRequest):
@@ -268,3 +310,150 @@ class ListAssistantsResponse(BaseModel):
 
     object: str = Literal["list"]
     data: list[Assistant] = []
+
+
+################
+# VECTOR STORES
+################
+
+
+class VectorStoreFileStatus(Enum):
+    """Enum for the status of a vector store file."""
+
+    IN_PROGRESS = "in_progress"
+    COMPLETED = "completed"
+    CANCELLED = "cancelled"
+    FAILED = "failed"
+
+
+class VectorStoreStatus(Enum):
+    """Enum for the status of a vector store."""
+
+    EXPIRED = "expired"
+    IN_PROGRESS = "in_progress"
+    COMPLETED = "completed"
+
+
+class CreateVectorStoreFileRequest(BaseModel):
+    """Request object for creating a vector store file."""
+
+    chunking_strategy: ToolResourcesFileSearchVectorStoreChunkingStrategy | None = (
+        Field(
+            default=None,
+            examples=[
+                ToolResourcesFileSearchVectorStoreChunkingStrategyAuto(type="auto")
+            ],
+        )
+    )
+
+    file_id: str = Field(default="", examples=[""])
+
+
+class CreateVectorStoreRequest(BaseModel):
+    """Request object for creating a vector store."""
+
+    file_ids: list[str] | None = []
+    name: str | None = None
+    expires_after: ExpiresAfter | None = Field(
+        default=None, examples=[ExpiresAfter(anchor="last_active_at", days=1)]
+    )
+    metadata: dict | None = Field(default=None, examples=[{}])
+
+    def add_days_to_timestamp(self, timestamp: int, days: int) -> int:
+        """
+        Adds a specified number of days to a timestamp. Used to when updating the VectorStore.
+
+        Args:
+            timestamp(int): An integer representing a timestamp.
+            days(int): The number of days to add.
+
+        Returns:
+            An integer representing the new timestamp with the added days.
+        """
+
+        # Convert the timestamp to a datetime object
+        datetime_obj = datetime.datetime.fromtimestamp(timestamp)
+
+        # Add the specified number of days
+        new_datetime_obj = datetime_obj + datetime.timedelta(days=days)
+
+        # Convert the new datetime object back to a timestamp
+        new_timestamp = new_datetime_obj.timestamp()
+
+        return int(new_timestamp)
+
+    def get_expiry(self, last_active_at: int) -> tuple[ExpiresAfter | None, int | None]:
+        """
+        Return expiration details based on the provided last_active_at unix timestamp
+
+        Args:
+            last_active_at(int): An integer representing a timestamp when the vector store was last active.
+
+        Returns:
+            A tuple of when the vector store should expire and the timestamp of the expiry date.
+        """
+        if isinstance(self.expires_after, ExpiresAfter):
+            return self.expires_after, self.add_days_to_timestamp(
+                last_active_at, self.expires_after.days
+            )
+
+        return None, None  # Will not expire
+
+
+class ModifyVectorStoreRequest(CreateVectorStoreRequest):
+    """Request object for modifying a vector store."""
+
+
+class ListVectorStoresResponse(BaseModel):
+    """Response object for listing files."""
+
+    object: str = Literal["list"]
+    data: list[VectorStore] = []
+
+
+################
+# THREADS, RUNS, MESSAGES
+################
+
+
+class ModifyRunRequest(BaseModel):
+    """Request object for modifying a run."""
+
+    metadata: dict[str, str] | None = Field(default=None, examples=[{}])
+
+
+class ModifyThreadRequest(BaseModel):
+    """Request object for modifying a thread."""
+
+    tool_resources: BetaThreadToolResources | None = Field(
+        default=None, examples=[None]
+    )
+    metadata: dict | None = Field(default=None, examples=[{}])
+
+
+class ModifyMessageRequest(BaseModel):
+    """Request object for modifying a message."""
+
+    metadata: dict | None = Field(default=None, examples=[{}])
+
+
+################
+# LEAPFROGAI RAG
+################
+
+
+class RAGItem(BaseModel):
+    """Object for RAG."""
+
+    id: str
+    vector_store_id: str
+    file_id: str
+    content: str
+    metadata: dict
+    similarity: float
+
+
+class RAGResponse(BaseModel):
+    """Response object for RAG."""
+
+    data: list[RAGItem] = []
