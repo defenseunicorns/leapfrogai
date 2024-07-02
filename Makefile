@@ -169,3 +169,6 @@ build-cpu: build-supabase build-api build-ui build-llama-cpp-python build-text-e
 build-gpu: build-supabase build-api build-ui build-vllm build-text-embeddings build-whisper ## Build all zarf packages for a gpu-enabled deployment of LFAI
 
 build-all: build-cpu build-gpu ## Build all of the LFAI packages
+
+include make-tests.mk
+include make-supabase.mk

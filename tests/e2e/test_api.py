@@ -5,7 +5,7 @@ import uuid
 import pytest as pytest
 import requests
 
-from .utils import create_test_user
+from .conftest import create_test_user
 
 logger = logging.getLogger(__name__)
 test_id = str(uuid.uuid4())
