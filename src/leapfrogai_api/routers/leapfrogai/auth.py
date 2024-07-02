@@ -102,6 +102,8 @@ async def revoke_api_key(
 ) -> dict[str, str]:
     """Revoke an API key."""
 
+    # TODO: Need to be able to revoke a key without having the original unique key
+
     try:
         encoded_key = security.validate_and_encode_api_key(api_key)
     except ValueError as exc:

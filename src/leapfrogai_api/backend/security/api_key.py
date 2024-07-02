@@ -10,8 +10,8 @@ def generate_api_key() -> tuple[str, str]:
     """Generate an API key.
 
     returns:
-        read_once_token: str
-        hashed_token: str
+        read_once_token: str - in the format: {prefix}_{unique_key}_{checksum}
+        hashed_token: str - in the format: {prefix}_{hashed_key}_{checksum}
     """
     unique_key = secrets.token_bytes(32).hex()
     hashed_token = encode_unique_key(unique_key)
@@ -24,7 +24,10 @@ def generate_api_key() -> tuple[str, str]:
 
 
 def validate_and_encode_api_key(api_key: str) -> tuple[bool, str]:
-    """Validate and encode an API key.
+    """
+    Validate and encode an API key.
+
+    Should be in the form: `{prefix}_{unique_key}_{checksum}`
 
     returns:
         valid: bool
@@ -32,6 +35,7 @@ def validate_and_encode_api_key(api_key: str) -> tuple[bool, str]:
     """
 
     valid = validate_api_key(api_key)
+    encoded_key = ""
 
     if valid:
         encoded_key = encode_unique_key(parse_api_key(api_key)[1])
