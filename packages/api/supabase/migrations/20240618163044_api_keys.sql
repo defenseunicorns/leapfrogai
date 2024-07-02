@@ -1,4 +1,4 @@
--- Initialize api_keys table with row level security policies
+-- Initialize api_keys table
 create table api_keys (
     id uuid primary key default uuid_generate_v4(),
     user_id uuid references auth.users not null,
@@ -6,6 +6,8 @@ create table api_keys (
     created_at bigint default extract(epoch from now()) not null,
     expires_at bigint
 );
+
+--- RLS for api_keys table
 
 alter table api_keys enable row level security;
 
@@ -29,10 +31,10 @@ drop policy "Individuals can update their own assistant_objects." on assistant_o
 drop policy "Individuals can delete their own assistant_objects." on assistant_objects;
 
 -- CRUD Assistants via standard auth
-create policy "Assistants CRUD via Auth." on assistant_objects for
-    all with check (
-        auth.uid() = user_id
-    );
+create policy "Assistants CRUD via Auth."
+    on assistant_objects for all
+    to authenticated
+    using (auth.uid() = user_id);
 
 -- CRUD Assistants via API key
 create policy "Assistants CRUD via API Key."

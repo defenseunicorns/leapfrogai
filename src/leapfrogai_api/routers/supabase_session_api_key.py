@@ -5,15 +5,26 @@ from typing import Annotated
 from fastapi import Depends, HTTPException, status
 from fastapi.security import HTTPAuthorizationCredentials, HTTPBearer
 from supabase import AClient as AsyncClient
-from supabase import ClientOptions, acreate_client
-from leapfrogai_api.backend.security.api_key import encode_unique_key, parse
+from supabase import acreate_client
+from supabase.client import ClientOptions
+from leapfrogai_api.backend.security.api_key import (
+    encode_unique_key,
+    parse_api_key,
+    validate_api_key,
+)
 
 security = HTTPBearer()
 
 # TODO: This is a work in progress file to figure out how to validate the API key via request header.
 
 
-def get_vars() -> tuple[str, str]:
+def get_supabase_vars() -> tuple[str, str]:
+    """Gets the Supabase URL and Supabase Anon Key from the environment variables
+
+    Returns:
+        tuple[str, str]: the Supabase URL and Supabase Anon Key
+    """
+
     supabase_url = os.getenv("SUPABASE_URL")
     supabase_key = os.getenv("SUPABASE_ANON_KEY")
 
@@ -24,6 +35,23 @@ def get_vars() -> tuple[str, str]:
         )
 
     return supabase_url, supabase_key
+
+
+def validate_jtw_token(token: str) -> bool:
+    """Validates the JWT token
+
+    Parameters:
+        token (str): the JWT token
+
+    Returns:
+        bool: True if the token is valid, False otherwise
+    """
+
+    try:
+        _header, _payload, _signature = token.split(".")
+        return True
+    except ValueError:
+        return False
 
 
 async def init_supabase_client(
@@ -39,25 +67,45 @@ async def init_supabase_client(
         user_client (AsyncClient): a client instantiated with a session associated with the JWT token
     """
 
-    _, key, _ = parse(auth_creds.credentials)
+    supabase_url, supabase_key = get_supabase_vars()
 
-    api_key = encode_unique_key(key)
+    if validate_api_key(auth_creds.credentials):
+        _, key, _ = parse_api_key(auth_creds.credentials)
 
-    if not await validate_api_authorization(api_key):
-        raise HTTPException(
-            detail="Token has expired or is not valid. Generate a new token",
-            status_code=status.HTTP_401_UNAUTHORIZED,
+        api_key = encode_unique_key(key)
+
+        if not await validate_api_authorization(api_key):
+            raise HTTPException(
+                detail="Token has expired or is not valid. Generate a new token",
+                status_code=status.HTTP_401_UNAUTHORIZED,
+            )
+
+        client: AsyncClient = await acreate_client(
+            supabase_url=supabase_url,
+            supabase_key=supabase_key,
+            options=ClientOptions(
+                auto_refresh_token=False, headers={"x-custom-api-key": api_key}
+            ),
         )
 
-    client: AsyncClient = await acreate_client(
-        supabase_key=get_vars()[1],
-        supabase_url=get_vars()[0],
-        options=ClientOptions(
-            auto_refresh_token=False, headers={"x-custom-api-key": api_key}
-        ),
-    )
+        return client
 
-    return client
+    if validate_jtw_token(auth_creds.credentials):
+        client = await acreate_client(
+            supabase_key=supabase_key,
+            supabase_url=supabase_url,
+        )
+
+        await client.auth.set_session(
+            access_token=auth_creds.credentials, refresh_token="dummy"
+        )
+
+        return client
+
+    raise HTTPException(
+        detail="Invalid credentials provided",
+        status_code=status.HTTP_401_UNAUTHORIZED,
+    )
 
 
 # This variable needs to be added to each endpoint even if it's not used to ensure auth is required for the endpoint
@@ -87,7 +135,7 @@ async def validate_api_authorization(api_key: str) -> bool:
 
         session = await acreate_client(
             supabase_key=supabase_service_key,
-            supabase_url=get_vars()[0],
+            supabase_url=get_supabase_vars()[0],
             options=ClientOptions(auto_refresh_token=False, headers=headers),
         )
 

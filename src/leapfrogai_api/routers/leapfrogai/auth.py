@@ -77,7 +77,7 @@ async def validate_api_key(
 ) -> dict:
     """Validate an API key."""
 
-    prefix, unique_key, checksum = security.parse(api_key)
+    prefix, unique_key, checksum = security.parse_api_key(api_key)
 
     if not prefix == KEY_PREFIX:
         logging.warning("Received API key with incorrect prefix")
@@ -108,7 +108,7 @@ async def revoke_api_key(
 ) -> dict[str, str]:
     """Revoke an API key."""
 
-    _, key, _ = security.parse(api_key)
+    _, key, _ = security.parse_api_key(api_key)
 
     stored_key = security.encode_unique_key(unique_key=key)
 
@@ -138,7 +138,7 @@ async def list_api_keys(
     endpoint_response = []
 
     for entry in db_response:
-        prefix, _, checksum = security.parse(entry["api_key"])
+        prefix, _, checksum = security.parse_api_key(entry["api_key"])
         endpoint_response.append(
             {
                 "api_key": f"{prefix}_****_{checksum}",

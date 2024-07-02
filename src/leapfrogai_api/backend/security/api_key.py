@@ -15,7 +15,7 @@ def generate_api_key() -> tuple[str, str]:
     """
     unique_key = secrets.token_bytes(32).hex()
     hashed_token = encode_unique_key(unique_key)
-    checksum = parse(hashed_token)[2]
+    checksum = parse_api_key(hashed_token)[2]
 
     read_once_token = f"{KEY_PREFIX}_{unique_key}_{checksum}"
     hashed_token = encode_unique_key(unique_key)
@@ -39,7 +39,21 @@ def validate_checksum(unique_key: str, checksum: str):
     return hashlib.sha256(unique_key.encode()).hexdigest()[:4] == checksum
 
 
-def parse(api_key: str) -> tuple[str, str, str]:
+def validate_api_key(api_key: str) -> bool:
+    """Validate an API key.
+
+    returns:
+        bool: True if the key is valid, False otherwise
+    """
+    try:
+        _prefix, key, checksum = parse_api_key(api_key)
+    except ValueError:
+        return False
+
+    return validate_checksum(key, checksum)
+
+
+def parse_api_key(api_key: str) -> tuple[str, str, str]:
     """Parse an API key into its components.
 
     key format: {prefix}_{unique_key}_{checksum}
