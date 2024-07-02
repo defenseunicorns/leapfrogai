@@ -93,6 +93,7 @@ async def validate_user_authorization(session: Session, authorization: str):
 
         try:
             user_response: types.UserResponse = await session.auth.get_user(api_key)
+
             if user_response is None:
                 authorized = False
         except HTTPStatusError:
@@ -103,12 +104,4 @@ async def validate_user_authorization(session: Session, authorization: str):
         authorized = False
 
     if not authorized:
-        # TODO: Once we sort out the API key, we can use the following code to check if the user is authorized
-        # await session.rpc('set_config', {'key': 'role', 'value': 'validator_role'})
-        # response = await session.table('api_keys').select('*').eq('api_key', api_key).execute()
-        # await session.rpc('reset_config', {'key': 'role'})
-
-        # if response.data:
-        #     authorized = True
-
         raise HTTPException(status_code=status.HTTP_403_FORBIDDEN)
