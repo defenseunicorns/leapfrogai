@@ -24,6 +24,14 @@ from openai.types.beta.threads.text_content_block_param import TextContentBlockP
 from openai.types.beta.vector_store import ExpiresAfter
 from pydantic import BaseModel, Field
 
+##########
+# DEFAULTS
+##########
+
+
+DEFAULT_MAX_COMPLETION_TOKENS = 4096
+DEFAULT_MAX_PROMPT_TOKENS = 4096
+
 
 ##########
 # GENERIC
@@ -37,7 +45,7 @@ class Usage(BaseModel):
         ..., description="The number of tokens used in the prompt."
     )
     completion_tokens: int | None = Field(
-        None, description="The number of tokens generated in the completion."
+        default=DEFAULT_MAX_COMPLETION_TOKENS, description="The number of tokens generated in the completion."
     )
     total_tokens: int = Field(
         ..., description="The total number of tokens used (prompt + completion)."
@@ -100,13 +108,13 @@ class CompletionRequest(BaseModel):
     prompt: str | list[int] = Field(
         ...,
         description="The prompt to generate completions for. Can be a string or a list of integers representing token IDs.",
-        example="Once upon a time,",
+        examples=["Once upon a time,"],
     )
     stream: bool = Field(
         False, description="Whether to stream the results as they become available."
     )
     max_tokens: int | None = Field(
-        16, description="The maximum number of tokens to generate.", ge=1
+        default=DEFAULT_MAX_COMPLETION_TOKENS, description="The maximum number of tokens to generate.", ge=1
     )
     temperature: float | None = Field(
         1.0,
@@ -229,7 +237,7 @@ class ChatCompletionRequest(BaseModel):
         description="Sequences that determine where the API will stop generating further tokens.",
     )
     max_tokens: int | None = Field(
-        default=128,
+        default=DEFAULT_MAX_COMPLETION_TOKENS,
         description="The maximum number of tokens to generate in the chat completion.",
         gt=0,
     )
