@@ -12,7 +12,7 @@ from starlette.middleware.base import _CachedRequest
 from supabase import ClientOptions
 import leapfrogai_api.backend.types as lfai_types
 from leapfrogai_api.main import app
-from leapfrogai_api.routers.supabase_session import init_supabase_client
+from leapfrogai_api.routers.supabase_session_api_key import init_supabase_client
 
 security = HTTPBearer()
 
