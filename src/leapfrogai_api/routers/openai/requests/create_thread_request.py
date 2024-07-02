@@ -13,11 +13,21 @@ from leapfrogai_api.routers.supabase_session import Session
 class CreateThreadRequest(BaseModel):
     """Request object for creating a thread."""
 
-    messages: list[Message] | None = Field(default=None, examples=[None])
-    tool_resources: BetaThreadToolResources | None = Field(
-        default=None, examples=[None]
+    messages: list[Message] | None = Field(
+        default=None,
+        description="An optional list of messages to initialize the thread with.",
+        examples=[None],
     )
-    metadata: dict | None = Field(default={}, examples=[{}])
+    tool_resources: BetaThreadToolResources | None = Field(
+        default=None,
+        description="Optional tool resources associated with the thread.",
+        examples=[None],
+    )
+    metadata: dict | None = Field(
+        default={},
+        description="Optional metadata to associate with the thread.",
+        examples=[{"user_id": "usr_12345", "session_id": "sess_67890"}],
+    )
 
     async def create_thread(self, session):
         crud_thread = CRUDThread(db=session)

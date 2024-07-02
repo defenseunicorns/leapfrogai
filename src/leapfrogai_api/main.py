@@ -65,7 +65,9 @@ app.include_router(assistants.router)
 app.include_router(files.router)
 app.include_router(vector_stores.router)
 app.include_router(runs.router)
-app.include_router(threads.router)
 app.include_router(messages.router)
 app.include_router(runs_steps.router)
 app.include_router(rag.router)
+# This should be at the bottom to prevent it preempting more specific runs endpoints
+# https://fastapi.tiangolo.com/tutorial/path-params/#order-matters
+app.include_router(threads.router)
