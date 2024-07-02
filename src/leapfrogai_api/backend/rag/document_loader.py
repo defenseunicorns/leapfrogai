@@ -10,7 +10,7 @@ from langchain_community.document_loaders import (
     PyPDFLoader,
     TextLoader,
     UnstructuredHTMLLoader,
-    UnstructuredMarkdownLoader,
+    UnstructuredMarkdownLoader, UnstructuredExcelLoader,
 )
 from langchain_core.documents import Document
 from langchain_text_splitters import RecursiveCharacterTextSplitter
@@ -23,7 +23,7 @@ HANDLERS = {
     "text/markdown": UnstructuredMarkdownLoader,
     "application/msword": Docx2txtLoader,
     "application/vnd.openxmlformats-officedocument.wordprocessingml.document": Docx2txtLoader,
-    "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet": Docx2txtLoader,
+    "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet": UnstructuredExcelLoader,
 }
 
 
