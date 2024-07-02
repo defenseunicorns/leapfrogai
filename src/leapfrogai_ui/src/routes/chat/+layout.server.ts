@@ -24,7 +24,7 @@ const getThreadWithMessages = async (
   }
 };
 
-export const load = async ({ locals: { supabase, safeGetSession } }) => {
+export const load = async ({ locals: { supabase, safeGetSession }, parent }) => {
   const { session } = await safeGetSession();
 
   if (!session) {

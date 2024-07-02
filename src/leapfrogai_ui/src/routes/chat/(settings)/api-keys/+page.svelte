@@ -3,17 +3,21 @@
     Button,
     ContentSwitcher,
     DataTable,
+    Loading,
     Modal,
     Switch,
     TextInput,
+    Tile,
     Toolbar,
+    ToolbarBatchActions,
     ToolbarContent,
     ToolbarSearch
   } from 'carbon-components-svelte';
+  import { fade } from 'svelte/transition';
   import { superForm } from 'sveltekit-superforms';
   import { yup } from 'sveltekit-superforms/adapters';
   import { formatDate } from '$helpers/dates';
-  import { Add } from 'carbon-icons-svelte';
+  import { Add, Copy, TrashCan } from 'carbon-icons-svelte';
   import { toastStore } from '$stores';
   import { newAPIKeySchema } from '$schemas/apiKey.js';
   import { invalidate } from '$app/navigation';
@@ -23,8 +27,11 @@
   let selectedRowIds: string[] = [];
   let filteredRowIds: string[] = [];
   let modalOpen = false;
+  let confirmDeleteModalOpen = false;
+  let deleting = false;
   let selectedExpirationIndex = 1;
   let selectedExpirationDate: number;
+  let createdKey: string | null = null;
 
   $: {
     switch (selectedExpirationIndex) {
@@ -54,12 +61,19 @@
     }
   }
   $: active = selectedRowIds.length > 0;
+  $: keyNames = data.keys
+    .map((key) => {
+      if (selectedRowIds.includes(key.id)) return key.name;
+    })
+    .filter((key) => key !== undefined)
+    .join(', ');
 
   const { form, errors, enhance, submit, reset } = superForm(data.form, {
     invalidateAll: false,
     validators: yup(newAPIKeySchema),
     onResult({ result }) {
       if (result.type === 'success') {
+        createdKey = result.data?.key;
         modalOpen = false;
         toastStore.addToast({
           kind: 'success',
@@ -77,6 +91,8 @@
     }
   });
 
+  // Keys returned from the API list call should already be masked for security
+  // We use this to mask the created key before the user copies it
   const formatKey = (key: string) => {
     const firstTwo = key.slice(0, 5);
     const lastFour = key.slice(-4);
@@ -91,38 +107,120 @@
   const handleSubmit = () => {
     submit();
   };
+
+  const handleDelete = async () => {
+    deleting = true;
+    const isMultiple = selectedRowIds.length > 1;
+    const res = { ok: true }; // TODO - api call here
+    confirmDeleteModalOpen = false;
+    await invalidate('lf:api-keys');
+    if (res.ok) {
+      toastStore.addToast({
+        kind: 'success',
+        title: `${isMultiple ? 'Keys' : 'Key'} Deleted`,
+        subtitle: ''
+      });
+    } else {
+      toastStore.addToast({
+        kind: 'error',
+        title: `Error Deleting ${isMultiple ? 'Keys' : 'Key'}`,
+        subtitle: ''
+      });
+    }
+    selectedRowIds = [];
+    deleting = false;
+  };
+
+  const handleCancelConfirmDelete = () => {
+    confirmDeleteModalOpen = false;
+    selectedRowIds = [];
+    active = false;
+  };
+
+  const handleCopyKey = async () => {
+    if (createdKey) {
+      await navigator.clipboard.writeText(createdKey);
+      toastStore.addToast({
+        kind: 'info',
+        title: 'API Key Copied',
+        subtitle: ''
+      });
+      createdKey = null;
+    }
+  };
 </script>
 
 <div class="container">
-  <div class="title">API Keys</div>
+  <div class="centered-spaced-container">
+    <div class="title">API Keys</div>
+    {#if createdKey}
+      <div class="centered-spaced-container" transition:fade={{ duration: 70 }}>
+        <p>New Key:</p>
+        <span
+          ><div class="key-container">
+            {formatKey(createdKey)}
+            <button
+              data-testid="copy btn"
+              class="highlight-icon remove-btn-style"
+              on:click={handleCopyKey}
+              tabindex="0"
+              aria-label="copy key"><Copy /></button
+            >
+          </div></span
+        >
+        <p>You can only copy this value once, save it somewhere safe.</p>
+      </div>
+    {/if}
+  </div>
   <form method="POST" enctype="multipart/form-data" use:enhance>
     <DataTable
       bind:selectedRowIds
       headers={[
         { key: 'name', value: 'Name' },
-        { key: 'key', value: 'Secret Keys', display: (key) => formatKey(key) },
+        { key: 'api_key', value: 'Secret Keys', display: (key) => formatKey(key) },
         {
           key: 'created_at',
           value: 'Created',
           display: (created_at) => formatDate(new Date(created_at))
         },
         {
-          key: 'expiration',
+          key: 'expires_at',
           value: 'Expires',
           display: (created_at) => formatDate(new Date(created_at))
         },
         { key: 'permissions', value: 'Permissions' }
       ]}
       rows={data.keys || []}
+      batchSelection={true}
       sortable
     >
       <Toolbar>
+        <ToolbarBatchActions
+          bind:active
+          on:cancel={(e) => {
+            e.preventDefault();
+            active = false;
+            selectedRowIds = [];
+          }}
+        >
+          {#if deleting}
+            <div class="deleting">
+              <Loading withOverlay={false} small data-testid="delete-pending" />
+            </div>
+          {:else}
+            <Button
+              icon={TrashCan}
+              on:click={() => (confirmDeleteModalOpen = true)}
+              disabled={selectedRowIds.length === 0}>Delete</Button
+            >
+          {/if}</ToolbarBatchActions
+        >
         <ToolbarContent>
           <ToolbarSearch
             bind:filteredRowIds
             shouldFilterRows={(row, value) => {
               // filter for name and date
-              const formattedDate = formatDate(new Date(row.created_at * 1000)).toLowerCase();
+              const formattedDate = formatDate(new Date(row.created_at)).toLowerCase();
               return (
                 formattedDate.includes(value.toString().toLowerCase()) ||
                 row.name.toLowerCase().includes(value.toString().toLowerCase())
@@ -144,6 +242,7 @@
       primaryButtonText="Create"
       secondaryButtonText="Cancel"
       shouldSubmitOnEnter={false}
+      hasForm
       on:click:button--secondary={handleCancel}
       on:close={handleCancel}
       on:submit={() => handleSubmit()}
@@ -169,10 +268,25 @@
           <Switch text="60 Days" />
           <Switch text="90 Days" />
         </ContentSwitcher>
-        <input type="hidden" name="expiration" value={selectedExpirationDate} />
+        <input type="hidden" name="expires_at" value={selectedExpirationDate} />
       </div>
     </Modal>
   </form>
+
+  <Modal
+    danger
+    bind:open={confirmDeleteModalOpen}
+    modalHeading={`Delete API ${keyNames.length > 0 ? 'Keys' : 'Key'}`}
+    primaryButtonText="Delete"
+    secondaryButtonText="Cancel"
+    shouldSubmitOnEnter={false}
+    primaryButtonDisabled={deleting}
+    on:click:button--secondary={() => handleCancelConfirmDelete()}
+    on:close={() => handleCancelConfirmDelete()}
+    on:submit={() => handleDelete()}
+  >
+    <p>Are you sure you want to delete <span style="font-weight: bold">{keyNames}</span>?</p>
+  </Modal>
 </div>
 
 <style lang="scss">
@@ -183,6 +297,21 @@
     padding: 0 12rem 0 12rem;
   }
 
+  .centered-spaced-container {
+    display: flex;
+    gap: layout.$spacing-06;
+    align-items: center;
+  }
+
+  .key-container {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    background-color: themes.$layer-01;
+    padding: layout.$spacing-03;
+    gap: layout.$spacing-06;
+  }
+
   .title {
     @include type.type-style('heading-05');
   }
@@ -191,5 +320,9 @@
     display: flex;
     flex-direction: column;
     gap: layout.$spacing-06;
+  }
+
+  .deleting {
+    margin-right: layout.$spacing-05;
   }
 </style>

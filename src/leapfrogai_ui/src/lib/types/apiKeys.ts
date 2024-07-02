@@ -1,3 +1,5 @@
+import type { SuperValidated } from 'sveltekit-superforms';
+
 export enum PERMISSIONS {
   ALL = 'ALL',
   READ = 'READ',
@@ -8,8 +10,14 @@ export enum PERMISSIONS {
 export type APIKeyRow = {
   id: string;
   name: string;
-  key: string;
+  api_key: string;
   created_at: number;
-  expiration: number;
+  expires_at: number;
   permissions: PERMISSIONS;
 };
+
+export type APIKeysForm = SuperValidated<
+  { name: string; expires_at: number },
+  any,
+  { name: string; expires_at: number }
+>;
