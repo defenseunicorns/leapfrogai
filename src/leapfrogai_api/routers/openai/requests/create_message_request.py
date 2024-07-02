@@ -3,14 +3,12 @@ from __future__ import annotations
 import time
 import traceback
 from typing import Literal
-
 from fastapi import HTTPException, status
 from openai.types.beta.threads import MessageContent, TextContentBlock, Text, Message
 from openai.types.beta.threads.message import Attachment
 from pydantic import BaseModel, Field
-
 from leapfrogai_api.data.crud_message import CRUDMessage
-from leapfrogai_api.routers.supabase_session import Session
+from leapfrogai_api.routers.supabase_session_api_key import Session
 
 
 class CreateMessageRequest(BaseModel):

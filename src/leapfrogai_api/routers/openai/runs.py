@@ -17,7 +17,7 @@ from leapfrogai_api.routers.openai.requests.run_create_params_request import (
 )
 from leapfrogai_api.data.crud_run import CRUDRun
 from leapfrogai_api.data.crud_thread import CRUDThread
-from leapfrogai_api.routers.supabase_session import Session
+from leapfrogai_api.routers.supabase_session_api_key import Session
 from leapfrogai_api.utils.validate_tools import (
     validate_assistant_tool,
     validate_assistant_tool_choice_option,

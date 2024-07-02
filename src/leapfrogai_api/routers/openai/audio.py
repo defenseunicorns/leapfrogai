@@ -10,7 +10,7 @@ from leapfrogai_api.backend.types import (
     CreateTranscriptionRequest,
     CreateTranscriptionResponse,
 )
-from leapfrogai_api.routers.supabase_session import Session
+from leapfrogai_api.routers.supabase_session_api_key import Session
 from leapfrogai_api.utils import get_model_config
 from leapfrogai_api.utils.config import Config
 import leapfrogai_sdk as lfai
@@ -21,7 +21,7 @@ security = HTTPBearer()
 
 @router.post("/transcriptions")
 async def transcribe(
-    session: Session,
+    session: Session,  # pylint: disable=unused-argument # required for authorizing endpoint
     model_config: Annotated[Config, Depends(get_model_config)],
     req: CreateTranscriptionRequest = Depends(CreateTranscriptionRequest.as_form),
 ) -> CreateTranscriptionResponse:

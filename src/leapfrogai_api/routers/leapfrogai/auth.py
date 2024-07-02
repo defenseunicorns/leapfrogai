@@ -4,7 +4,7 @@ import logging
 import time
 from fastapi import APIRouter, HTTPException, status
 from pydantic import BaseModel, Field
-from leapfrogai_api.routers.supabase_session import Session
+from leapfrogai_api.routers.supabase_session_api_key import Session
 import leapfrogai_api.backend.security.api_key as security
 
 router = APIRouter(prefix="/leapfrogai/v1/auth", tags=["leapfrogai/auth"])
@@ -77,20 +77,14 @@ async def validate_api_key(
 ) -> dict:
     """Validate an API key."""
 
-    prefix, unique_key, checksum = security.parse_api_key(api_key)
-
-    if not prefix == KEY_PREFIX:
-        logging.warning("Received API key with incorrect prefix")
-        return {"valid": False, "details": "Invalid prefix"}
-    if not security.validate_checksum(unique_key=unique_key, checksum=checksum):
-        logging.warning("Received API key with incorrect checksum")
-        return {"valid": False, "details": "Invalid checksum"}
+    try:
+        encoded_key = security.validate_and_encode_api_key(api_key)
+    except ValueError:
+        logging.warning("Received API key with incorrect format")
+        return {"valid": False, "details": "Invalid format"}
 
     data, _ = (
-        await session.table("api_keys")
-        .select("*")
-        .eq("api_key", security.encode_unique_key(unique_key=unique_key))
-        .execute()
+        await session.table("api_keys").select("*").eq("api_key", encoded_key).execute()
     )
     _, response = data
 
@@ -108,12 +102,16 @@ async def revoke_api_key(
 ) -> dict[str, str]:
     """Revoke an API key."""
 
-    _, key, _ = security.parse_api_key(api_key)
-
-    stored_key = security.encode_unique_key(unique_key=key)
+    try:
+        encoded_key = security.validate_and_encode_api_key(api_key)
+    except ValueError as exc:
+        logging.warning("Received API key with incorrect format")
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST, detail="Invalid API key format."
+        ) from exc
 
     response = (
-        await session.table("api_keys").delete().eq("api_key", stored_key).execute()
+        await session.table("api_keys").delete().eq("api_key", encoded_key).execute()
     )
     if not response:
         raise HTTPException(

@@ -23,6 +23,22 @@ def generate_api_key() -> tuple[str, str]:
     return read_once_token, hashed_token
 
 
+def validate_and_encode_api_key(api_key: str) -> tuple[bool, str]:
+    """Validate and encode an API key.
+
+    returns:
+        valid: bool
+        encoded_key: str
+    """
+
+    valid = validate_api_key(api_key)
+
+    if valid:
+        encoded_key = encode_unique_key(parse_api_key(api_key)[1])
+
+    return valid, encoded_key
+
+
 def encode_unique_key(unique_key: str):
     """Hashes and encodes an API key as a string.
 
@@ -34,7 +50,7 @@ def encode_unique_key(unique_key: str):
     return f"{KEY_PREFIX}_{one_way_hash}_{checksum}"
 
 
-def validate_checksum(unique_key: str, checksum: str):
+def _validate_checksum(unique_key: str, checksum: str):
     """Validate the checksum of an API key."""
     return hashlib.sha256(unique_key.encode()).hexdigest()[:4] == checksum
 
@@ -50,7 +66,7 @@ def validate_api_key(api_key: str) -> bool:
     except ValueError:
         return False
 
-    return validate_checksum(key, checksum)
+    return _validate_checksum(key, checksum)
 
 
 def parse_api_key(api_key: str) -> tuple[str, str, str]:

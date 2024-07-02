@@ -11,7 +11,7 @@ from leapfrogai_api.routers.openai.requests.create_message_request import (
     CreateMessageRequest,
 )
 from leapfrogai_api.data.crud_message import CRUDMessage
-from leapfrogai_api.routers.supabase_session import Session
+from leapfrogai_api.routers.supabase_session_api_key import Session
 
 router = APIRouter(prefix="/openai/v1/threads", tags=["openai/threads/messages"])
 security = HTTPBearer()
