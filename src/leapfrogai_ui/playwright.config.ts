@@ -14,6 +14,7 @@ const chromeConfig = {
   dependencies: ['setup']
 };
 
+// LEAVE THIS COMMENTED OUT CODE FOR DEVELOPMENT PURPOSES/TESTING
 // const firefoxConfig = {
 //   name: 'firefox',
 //   use: {
