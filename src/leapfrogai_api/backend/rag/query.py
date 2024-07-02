@@ -1,6 +1,6 @@
 """Service for querying the RAG model."""
 
-from supabase_py_async import AsyncClient
+from supabase import AClient as AsyncClient
 from leapfrogai_api.backend.rag.index import IndexingService
 from postgrest.base_request_builder import SingleAPIResponse
 

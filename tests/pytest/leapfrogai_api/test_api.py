@@ -9,7 +9,7 @@ from fastapi.applications import BaseHTTPMiddleware
 from fastapi.security import HTTPBearer
 from fastapi.testclient import TestClient
 from starlette.middleware.base import _CachedRequest
-from supabase_py_async.lib.client_options import ClientOptions
+from supabase import ClientOptions
 import leapfrogai_api.backend.types as lfai_types
 from leapfrogai_api.main import app
 from leapfrogai_api.routers.supabase_session import init_supabase_client

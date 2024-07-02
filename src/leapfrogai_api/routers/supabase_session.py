@@ -8,14 +8,15 @@ from fastapi import Depends, HTTPException, status
 from fastapi.security import HTTPAuthorizationCredentials, HTTPBearer
 from gotrue import errors, types
 from httpx import HTTPStatusError
-from supabase_py_async import AsyncClient, ClientOptions, create_client
+from supabase import acreate_client, AClient
+
 
 security = HTTPBearer()
 
 
 async def init_supabase_client(
     auth_creds: Annotated[HTTPAuthorizationCredentials, Depends(security)],
-) -> AsyncClient:
+):
     """
     Returns an authenticated Supabase client using the provided user's JWT token
 
@@ -26,11 +27,19 @@ async def init_supabase_client(
         user_client (AsyncClient): a client instantiated with a session associated with the JWT token
     """
 
-    client: AsyncClient = await create_client(
-        supabase_key=os.getenv("SUPABASE_ANON_KEY"),
-        supabase_url=os.getenv("SUPABASE_URL"),
-        access_token=auth_creds.credentials,
-        options=ClientOptions(auto_refresh_token=False),
+    # TODO: auth_creds is expecting to be decoded as jwt token, but our API key is not a jwt token
+
+    supabase_url = os.getenv("SUPABASE_URL")
+    supabase_key = os.getenv("SUPABASE_ANON_KEY")
+
+    if not supabase_url or not supabase_key:
+        raise HTTPException(
+            detail="Supabase URL or Supabase Anon Key is not set",
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+        )
+
+    client: AClient = await acreate_client(
+        supabase_url=supabase_url, supabase_key=supabase_key
     )
 
     try:
@@ -65,7 +74,7 @@ async def init_supabase_client(
 
 
 # This variable needs to be added to each endpoint even if it's not used to ensure auth is required for the endpoint
-Session = Annotated[AsyncClient, Depends(init_supabase_client)]
+Session = Annotated[AClient, Depends(init_supabase_client)]
 
 
 async def validate_user_authorization(session: Session, authorization: str):

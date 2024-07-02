@@ -1,7 +1,7 @@
 """CRUD Operations for VectorStore."""
 
 from typing import Generic, TypeVar
-from supabase_py_async import AsyncClient
+from supabase import AClient as AsyncClient
 from pydantic import BaseModel
 
 ModelType = TypeVar("ModelType", bound=BaseModel)
@@ -25,6 +25,7 @@ class CRUDBase(Generic[ModelType]):
         # Only delete created_at if it is <= 0, the db time is not adequate for message ordering
         if "created_at" in dict_ and dict_["created_at"] <= 0:
             del dict_["created_at"]
+
         data, _count = await self.db.table(self.table_name).insert(dict_).execute()
 
         _, response = data

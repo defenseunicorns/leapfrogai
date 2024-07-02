@@ -2,7 +2,7 @@
 
 from pydantic import Field
 from openai.types.beta.threads import Message
-from supabase_py_async import AsyncClient
+from supabase import AClient as AsyncClient
 from leapfrogai_api.data.crud_base import CRUDBase
 
 
