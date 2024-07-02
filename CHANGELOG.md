@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.8.1](https://github.com/defenseunicorns/leapfrogai/compare/v0.8.0...v0.8.1) (2024-07-02)
+
+
+### Miscellaneous
+
+* Fill in package READMEs and update docs ([#660](https://github.com/defenseunicorns/leapfrogai/issues/660)) ([7dab8bd](https://github.com/defenseunicorns/leapfrogai/commit/7dab8bd7934b573a77c6fed2be5d6b1d0417a246))
+
 ## [0.8.0](https://github.com/defenseunicorns/leapfrogai/compare/v0.7.2...v0.8.0) (2024-06-18)
 
 
