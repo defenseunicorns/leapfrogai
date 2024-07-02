@@ -10,15 +10,16 @@ import leapfrogai_api.backend.security.api_key as security
 router = APIRouter(prefix="/leapfrogai/v1/auth", tags=["leapfrogai/auth"])
 
 KEY_PREFIX = "lfai"
+THIRTY_DAYS = 60 * 60 * 24 * 30  # in seconds
 
 
 class CreateAPIKeyRequest(BaseModel):
     """Request body for creating an API key."""
 
     expires_at: int = Field(
-        default=int(time.time()) + 60 * 60 * 24 * 30,
+        default=int(time.time()) + THIRTY_DAYS,
         description="The time at which the API key expires, in seconds since the Unix epoch.",
-        examples=[int(time.time()) + 60 * 60 * 24 * 30],  # default to 30 days
+        examples=[int(time.time()) + THIRTY_DAYS],
     )
 
 
@@ -35,7 +36,7 @@ class CreateAPIKeyResponse(BaseModel):
     )
     expires_at: int = Field(
         description="The time at which the API key expires, in seconds since the Unix epoch.",
-        examples=[int(time.time()) + 60 * 60 * 24 * 30],  # default to 30 days
+        examples=[int(time.time()) + THIRTY_DAYS],
     )
 
 
