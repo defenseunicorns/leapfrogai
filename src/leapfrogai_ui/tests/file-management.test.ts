@@ -1,12 +1,10 @@
 import { expect, test } from './fixtures';
 import { faker } from '@faker-js/faker';
-import { getSimpleMathQuestion, loadChatPage, sendMessage } from './helpers/helpers';
+import { getSimpleMathQuestion, loadChatPage } from './helpers/helpers';
 import {
   confirmDeletion,
   createPDF,
   createTextFile,
-  deleteAllGeneratedFixtureFiles,
-  deleteAllTestFilesWithApi,
   deleteFileByName,
   deleteFixtureFile,
   deleteTestFilesWithApi,
@@ -15,14 +13,10 @@ import {
   loadFileManagementPage,
   uploadFile
 } from './helpers/fileHelpers';
+import { sendMessage } from './helpers/threadHelpers';
 
 test.beforeEach(async ({ openAIClient }) => {
   await deleteTestFilesWithApi(openAIClient);
-});
-
-test.afterAll(async ({ openAIClient }) => {
-  deleteAllGeneratedFixtureFiles(); // cleanup any files that were not deleted during tests (e.g. due to test failure)
-  await deleteAllTestFilesWithApi(openAIClient);
 });
 
 test('it can navigate to the last visited thread with breadcrumbs', async ({ page }) => {

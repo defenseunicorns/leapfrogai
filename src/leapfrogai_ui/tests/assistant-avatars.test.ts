@@ -1,8 +1,8 @@
 import { expect, test } from './fixtures';
 import { faker } from '@faker-js/faker';
 import { getFakeAssistantInput } from '../testUtils/fakeData';
-import { deleteAllAssistants, uploadAvatar } from './helpers/helpers';
 import { NO_FILE_ERROR_TEXT } from '../src/lib/constants/index';
+import { deleteAllAssistants, uploadAvatar } from './helpers/assistantHelpers';
 
 test.afterEach(async ({ openAIClient }) => {
   await deleteAllAssistants(openAIClient);

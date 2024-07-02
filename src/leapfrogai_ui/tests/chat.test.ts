@@ -1,14 +1,11 @@
-import { faker } from '@faker-js/faker';
 import { expect, test } from './fixtures';
+import { getSimpleMathQuestion, loadChatPage, LONG_RESPONSE_PROMPT } from './helpers/helpers';
+import { createAssistantWithApi, deleteAssistantWithApi } from './helpers/assistantHelpers';
 import {
-  createAssistantWithApi,
   deleteActiveThread,
-  deleteAssistantWithApi,
-  getSimpleMathQuestion,
-  loadChatPage,
   sendMessage,
   waitForResponseToComplete
-} from './helpers/helpers';
+} from './helpers/threadHelpers';
 
 const newMessage1 = getSimpleMathQuestion();
 const newMessage2 = getSimpleMathQuestion();
@@ -31,10 +28,10 @@ test('it saves in progress responses when interrupted by a page reload', async (
   page,
   openAIClient
 }) => {
-  const messageWithLongResponse = 'write me a long poem';
+  const uniqueLongMessagePrompt = `${LONG_RESPONSE_PROMPT} ${new Date().toISOString()}`;
   await loadChatPage(page);
   const messages = page.getByTestId('message');
-  await sendMessage(page, messageWithLongResponse);
+  await sendMessage(page, uniqueLongMessagePrompt);
   await expect(messages).toHaveCount(2);
   await page.reload();
   await expect(page.getByTestId('message')).toHaveCount(2);
@@ -45,17 +42,17 @@ test('it saves in progress responses when interrupted by changing threads', asyn
   page,
   openAIClient
 }) => {
-  const messageWithLongResponse = 'write me a long poem';
+  const uniqueLongMessagePrompt = `${LONG_RESPONSE_PROMPT} ${new Date().toISOString()}`;
   await loadChatPage(page);
   const messages = page.getByTestId('message');
   await expect(messages).toHaveCount(0);
 
-  await sendMessage(page, messageWithLongResponse);
+  await sendMessage(page, uniqueLongMessagePrompt);
   await expect(messages).toHaveCount(2);
 
   await page.getByText('New Chat').click();
   await expect(messages).toHaveCount(0);
-  await page.getByText(newMessage1).click(); // switch back to original thread
+  await page.getByText(uniqueLongMessagePrompt).click(); // switch back to original thread
   await expect(messages).toHaveCount(2);
 
   await deleteActiveThread(page, openAIClient);
@@ -86,10 +83,9 @@ test('it cancels responses when clicking enter instead of pause button and does 
   page,
   openAIClient
 }) => {
-  const messageWithLongResponse = 'write me a long poem'; // response must take a long time for this test to work
   await loadChatPage(page);
   const messages = page.getByTestId('message');
-  await sendMessage(page, messageWithLongResponse);
+  await sendMessage(page, LONG_RESPONSE_PROMPT); // response must take a long time for this test to work
   await expect(messages).toHaveCount(2); // ensure new response is being received
   await page.getByLabel('message input').fill('new question');
   await page.waitForTimeout(25); // let it partially complete

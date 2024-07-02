@@ -1,47 +1,56 @@
-import { devices } from '@playwright/test';
 import type { PlaywrightTestConfig } from '@playwright/test';
+import { devices } from '@playwright/test';
 import dotenv from 'dotenv';
 
 dotenv.config();
 
-// TODO - see if we can get all browsers working
+const chromeConfig = {
+  name: 'chromium',
+  use: {
+    ...devices['Desktop Chrome'],
+    // Use prepared auth state.
+    storageState: 'playwright/.auth/user.json'
+  },
+  dependencies: ['setup']
+};
+
+// const firefoxConfig = {
+//   name: 'firefox',
+//   use: {
+//     ...devices['Desktop Firefox'],
+//     // Use prepared auth state.
+//     storageState: 'playwright/.auth/user.json'
+//   },
+//   dependencies: ['setup']
+// };
+// const webkitConfig = {
+//   name: 'webkit',
+//   use: { ...devices['Desktop Safari'], storageState: 'playwright/.auth/user.json' },
+//   dependencies: ['setup']
+// };
+// const edgeConfig = {
+//   name: 'Edge',
+//   use: {
+//     ...devices['Desktop Edge'],
+//     channel: 'msedge',
+//     storageState: 'playwright/.auth/user.json'
+//   },
+//   dependencies: ['setup']
+// };
+
 const config: PlaywrightTestConfig = {
+  // running more than 1 worker can cause flakiness due to test files being run at the same time in different browsers
+  // (e.x. navigation history is incorrect)
+  // Additionally, Leapfrog API is slow when attaching files to assistants, resulting in flaky tests
+  // We can attempt in increase number of browser and workers in the pipeline when the API is faster
+  workers: 1,
   projects: [
-    { name: 'setup', testMatch: /.*\.setup\.ts/ },
+    { name: 'setup', testMatch: /global\.setup\.ts/, teardown: 'cleanup' },
     {
-      name: 'chromium',
-      use: {
-        ...devices['Desktop Chrome'],
-        // Use prepared auth state.
-        storageState: 'playwright/.auth/user.json'
-      },
-      dependencies: ['setup']
-    }
-    // Leapfrog API currently has too many timeout issues resulting in flaky tests right now due to slow response times
-    // We can re-enable other browsers when the API is faster
-    // {
-    //   name: 'firefox',
-    //   use: {
-    //     ...devices['Desktop Firefox'],
-    //     // Use prepared auth state.
-    //     storageState: 'playwright/.auth/user.json'
-    //   },
-    //   dependencies: ['setup']
-    // },
-    // {
-    //   name: 'webkit',
-    //   use: { ...devices['Desktop Safari'], storageState: 'playwright/.auth/user.json' },
-    //   dependencies: ['setup']
-    // },
-    // {
-    //   name: 'Edge',
-    //   use: {
-    //     ...devices['Desktop Edge'],
-    //     channel: 'msedge',
-    //     storageState: 'playwright/.auth/user.json'
-    //   },
-    //   dependencies: ['setup']
-    // }
+      name: 'cleanup',
+      testMatch: /global\.teardown\.ts/
+    },
+    { ...chromeConfig }
   ],
   webServer: {
     command: 'npm run build && npm run preview',

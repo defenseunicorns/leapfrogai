@@ -1,13 +1,11 @@
-import { faker } from '@faker-js/faker';
 import { expect, test } from './fixtures';
+import { getSimpleMathQuestion, loadChatPage } from './helpers/helpers';
 import {
   clickToDeleteThread,
   deleteActiveThread,
-  getSimpleMathQuestion,
-  loadChatPage,
   sendMessage,
   waitForResponseToComplete
-} from './helpers/helpers';
+} from './helpers/threadHelpers';
 
 const newMessage1 = getSimpleMathQuestion();
 const newMessage2 = getSimpleMathQuestion();
@@ -24,7 +22,7 @@ test('it can delete threads', async ({ page }) => {
 });
 
 test('can edit thread labels', async ({ page, openAIClient }) => {
-  const newLabel = faker.lorem.words(3);
+  const newLabel = getSimpleMathQuestion();
 
   await loadChatPage(page);
 

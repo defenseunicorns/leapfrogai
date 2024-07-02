@@ -1,11 +1,9 @@
 import { expect, test } from './fixtures';
-import { createAssistantWithApi, deleteAssistant, deleteAssistantWithApi } from './helpers/helpers';
 import { getFakeAssistantInput } from '$testUtils/fakeData';
 import { delay } from 'msw';
 import {
   createPDF,
   deleteAllGeneratedFixtureFiles,
-  deleteAllTestFilesWithApi,
   deleteFileByName,
   deleteFileWithApi,
   deleteFixtureFile,
@@ -14,13 +12,14 @@ import {
   uploadFileWithApi
 } from './helpers/fileHelpers';
 import { faker } from '@faker-js/faker';
+import {
+  createAssistantWithApi,
+  deleteAssistant,
+  deleteAssistantWithApi
+} from './helpers/assistantHelpers';
 
 test.afterAll(() => {
   deleteAllGeneratedFixtureFiles(); // cleanup any files that were not deleted during tests (e.g. due to test failure)
-});
-
-test.afterAll(async ({ openAIClient }) => {
-  await deleteAllTestFilesWithApi(openAIClient);
 });
 
 test('can edit an assistant and attach files to it', async ({ page, openAIClient }) => {
@@ -71,7 +70,7 @@ test('can create a new assistant and attach files to it', async ({ page, openAIC
 
   // Cleanup
   expect(page.waitForURL('/chat/assistants-management'));
-  await deleteAssistant(page, assistantInput.name);
+  await deleteAssistant(assistantInput.name, page);
   await deleteFileWithApi(uploadedFile1.id, openAIClient);
   await deleteFileWithApi(uploadedFile2.id, openAIClient);
   deleteFixtureFile(filename1);
@@ -139,7 +138,7 @@ test('while creating an assistant, it can upload new files and save the assistan
 
   // Cleanup
   expect(page.waitForURL('/chat/assistants-management'));
-  await deleteAssistant(page, assistantInput.name);
+  await deleteAssistant(assistantInput.name, page);
   await deleteTestFilesWithApi(openAIClient);
   deleteFixtureFile(filename);
   await deleteFileByName(filename, openAIClient);

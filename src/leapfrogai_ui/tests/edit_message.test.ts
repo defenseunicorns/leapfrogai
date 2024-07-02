@@ -1,14 +1,12 @@
 import { expect, test } from './fixtures';
+import { getSimpleMathQuestion, loadChatPage } from './helpers/helpers';
+import { delay } from 'msw';
+import { createAssistantWithApi, deleteAssistantWithApi } from './helpers/assistantHelpers';
 import {
-  createAssistantWithApi,
   deleteActiveThread,
-  deleteAssistantWithApi,
-  getSimpleMathQuestion,
-  loadChatPage,
   sendMessage,
   waitForResponseToComplete
-} from './helpers/helpers';
-import { delay } from 'msw';
+} from './helpers/threadHelpers';
 
 const newMessage1 = getSimpleMathQuestion();
 const newMessage2 = getSimpleMathQuestion();
