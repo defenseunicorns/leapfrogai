@@ -66,6 +66,10 @@
           class="header-link"
           on:click={() => setActiveHeaderAction('')}>File Management</a
         >
+
+        <a href="/chat/api-keys" class="header-link" on:click={() => setActiveHeaderAction('')}
+          >API Keys</a
+        >
       </div>
     </HeaderAction>
     <HeaderAction

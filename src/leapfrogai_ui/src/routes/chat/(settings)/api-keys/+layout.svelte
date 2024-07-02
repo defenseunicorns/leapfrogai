@@ -1,7 +1,6 @@
 <script lang="ts">
-  import { Breadcrumb, BreadcrumbItem, Content } from 'carbon-components-svelte';
   import { page } from '$app/stores';
-  import { PoweredByDU } from '$components';
+  import { Breadcrumb, BreadcrumbItem, Content } from 'carbon-components-svelte';
   import { threadsStore } from '$stores';
 
   const paths = [
@@ -10,10 +9,11 @@
       name: 'Chat'
     },
     {
-      path: '/chat/file-management',
-      name: 'File Management'
+      path: '/chat/api-keys',
+      name: 'API Keys'
     }
   ];
+
   $: isCurrentPage = (path: string) => $page.url.pathname === path;
 
   const getPath = (path: string) => {
@@ -40,8 +40,5 @@
       </Breadcrumb>
       <slot />
     </div>
-
-    <PoweredByDU />
   </div>
 </Content>
-
