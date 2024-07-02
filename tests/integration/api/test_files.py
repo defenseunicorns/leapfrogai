@@ -154,7 +154,9 @@ async def test_excel_file_handling():
     excel_file_path = os.path.join(os.path.dirname(__file__), "../../data/test.xlsx")
 
     # Ensure the file exists
-    assert os.path.exists(excel_file_path), f"Test Excel file not found at {excel_file_path}"
+    assert os.path.exists(
+        excel_file_path
+    ), f"Test Excel file not found at {excel_file_path}"
 
     # Test file loading and splitting
     documents = await load_file(excel_file_path)
@@ -170,7 +172,12 @@ async def test_excel_file_handling():
         response = client.post(
             "/openai/v1/files",
             files={
-                "file": ("test.xlsx", excel_file, "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet")},
+                "file": (
+                    "test.xlsx",
+                    excel_file,
+                    "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+                )
+            },
             data={"purpose": "assistants"},
         )
 
@@ -179,22 +186,37 @@ async def test_excel_file_handling():
 
     # Test file retrieval
     get_response = client.get(f"/openai/v1/files/{file_object.id}")
-    assert get_response.status_code == 200, f"Failed to retrieve file: {get_response.text}"
+    assert (
+        get_response.status_code == 200
+    ), f"Failed to retrieve file: {get_response.text}"
     retrieved_file = FileObject.model_validate(get_response.json())
-    assert retrieved_file.id == file_object.id, "Retrieved file ID doesn't match uploaded file ID"
+    assert (
+        retrieved_file.id == file_object.id
+    ), "Retrieved file ID doesn't match uploaded file ID"
 
     # Test file content retrieval
     content_response = client.get(f"/openai/v1/files/{file_object.id}/content")
-    assert content_response.status_code == 200, f"Failed to retrieve file content: {content_response.text}"
-    assert content_response.headers[
-               "Content-Type"] == "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
-    assert content_response.headers["Content-Disposition"] == f'attachment; filename="{file_object.filename}"'
+    assert (
+        content_response.status_code == 200
+    ), f"Failed to retrieve file content: {content_response.text}"
+    assert (
+        content_response.headers["Content-Type"]
+        == "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
+    )
+    assert (
+        content_response.headers["Content-Disposition"]
+        == f'attachment; filename="{file_object.filename}"'
+    )
     assert len(content_response.content) > 0, "File content is empty"
 
     # Test file deletion
     delete_response = client.delete(f"/openai/v1/files/{file_object.id}")
-    assert delete_response.status_code == 200, f"Failed to delete file: {delete_response.text}"
-    assert delete_response.json()["deleted"] is True, "File was not deleted successfully"
+    assert (
+        delete_response.status_code == 200
+    ), f"Failed to delete file: {delete_response.text}"
+    assert (
+        delete_response.json()["deleted"] is True
+    ), "File was not deleted successfully"
 
     # Verify file is no longer retrievable
     get_deleted_response = client.get(f"/openai/v1/files/{file_object.id}")

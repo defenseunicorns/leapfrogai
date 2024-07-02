@@ -10,7 +10,8 @@ from langchain_community.document_loaders import (
     PyPDFLoader,
     TextLoader,
     UnstructuredHTMLLoader,
-    UnstructuredMarkdownLoader, UnstructuredExcelLoader,
+    UnstructuredMarkdownLoader,
+    UnstructuredExcelLoader,
 )
 from langchain_core.documents import Document
 from langchain_text_splitters import RecursiveCharacterTextSplitter
@@ -25,6 +26,27 @@ HANDLERS = {
     "application/vnd.openxmlformats-officedocument.wordprocessingml.document": Docx2txtLoader,
     "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet": UnstructuredExcelLoader,
 }
+
+# Mapping of file extensions to MIME types
+EXTENSION_TO_MIME_TYPE = {
+    ".pdf": "application/pdf",
+    ".txt": "text/plain",
+    ".html": "text/html",
+    ".htm": "text/html",
+    ".csv": "text/csv",
+    ".md": "text/markdown",
+    ".doc": "application/msword",
+    ".docx": "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
+    ".xlsx": "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+}
+
+
+def get_mime_type_from_filename(file_name: str) -> str:
+    """Get the MIME type based on the file extension."""
+    import os
+
+    _, ext = os.path.splitext(file_name.lower())
+    return EXTENSION_TO_MIME_TYPE.get(ext, "application/octet-stream")
 
 
 def is_supported_mime_type(mime_type: str) -> bool:
