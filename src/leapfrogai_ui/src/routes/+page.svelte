@@ -18,7 +18,6 @@
   }
 
   async function signInWithKeycloak() {
-    console.log(data.url);
     await data.supabase.auth.signInWithOAuth({
       provider: 'keycloak',
       options: {

@@ -1,19 +1,17 @@
 import { expect, test } from './fixtures';
+import { getSimpleMathQuestion, loadChatPage } from './helpers/helpers';
+import { delay } from 'msw';
+import { createAssistantWithApi, deleteAssistantWithApi } from './helpers/assistantHelpers';
 import {
-  createAssistantWithApi,
   deleteActiveThread,
-  deleteAssistantWithApi,
-  getSimpleMathQuestion,
-  loadChatPage,
   sendMessage,
   waitForResponseToComplete
-} from './helpers';
-import { delay } from 'msw';
+} from './helpers/threadHelpers';
 
 const newMessage1 = getSimpleMathQuestion();
 const newMessage2 = getSimpleMathQuestion();
 
-test('editing a message', async ({ page }) => {
+test('editing a message', async ({ page, openAIClient }) => {
   await loadChatPage(page);
 
   await sendMessage(page, newMessage1);
@@ -34,18 +32,18 @@ test('editing a message', async ({ page }) => {
   await expect(messages).toHaveCount(4);
 
   // Ensure original first message was deleted and is now the second message
-  const firstMessage = page.getByTestId('message').nth(0);
+  const firstMessage = page.getByTestId('message').first();
   const firstMessageTextContent = await firstMessage.textContent();
-  expect(firstMessageTextContent?.trim()).toEqual(newMessage2);
+  expect(firstMessageTextContent?.trim()).toEqual(`You ${newMessage2}`); // 'You' is card header for the user message
 
   // Check the third message is now the edited message
   const editedMessage = page.getByTestId('message').nth(2);
   const textContent = await editedMessage.textContent();
-  expect(textContent?.trim()).toEqual('edited message');
-  await deleteActiveThread(page);
+  expect(textContent?.trim()).toEqual('You edited message');
+  await deleteActiveThread(page, openAIClient);
 });
 
-test('editing a message when an AI response is missing', async ({ page }) => {
+test('editing a message when an AI response is missing', async ({ page, openAIClient }) => {
   let isFirstRequest = true;
 
   await page.route('*/**/api/chat', async (route) => {
@@ -87,18 +85,18 @@ test('editing a message when an AI response is missing', async ({ page }) => {
   await expect(messages).toHaveCount(4);
 
   // Ensure original first message was deleted and is now the second message
-  const firstMessage = page.getByTestId('message').nth(0);
+  const firstMessage = page.getByTestId('message').first();
   const firstMessageTextContent = await firstMessage.textContent();
-  expect(firstMessageTextContent?.trim()).toEqual(newMessage2);
+  expect(firstMessageTextContent?.trim()).toEqual(`You ${newMessage2}`); // 'You' is card header for the user message
 
   // Check the third message is now the edited message
   const editedMessage = page.getByTestId('message').nth(2);
   const textContent = await editedMessage.textContent();
-  expect(textContent?.trim()).toEqual('edited message');
-  await deleteActiveThread(page);
+  expect(textContent?.trim()).toEqual('You edited message');
+  await deleteActiveThread(page, openAIClient);
 });
 
-test('regenerating responses', async ({ page }) => {
+test('regenerating responses', async ({ page, openAIClient }) => {
   await loadChatPage(page);
 
   await sendMessage(page, newMessage1);
@@ -112,11 +110,11 @@ test('regenerating responses', async ({ page }) => {
   await expect(messages).toHaveCount(1);
   await waitForResponseToComplete(page);
   await expect(messages).toHaveCount(2);
-  await deleteActiveThread(page);
+  await deleteActiveThread(page, openAIClient);
 });
 
-test('it can regenerate the last assistant response', async ({ page }) => {
-  const assistant = await createAssistantWithApi();
+test('it can regenerate the last assistant response', async ({ page, openAIClient }) => {
+  const assistant = await createAssistantWithApi(openAIClient);
 
   await loadChatPage(page);
   const messages = page.getByTestId('message');
@@ -136,12 +134,12 @@ test('it can regenerate the last assistant response', async ({ page }) => {
   await expect(messages).toHaveCount(2);
 
   // Cleanup
-  await deleteAssistantWithApi(assistant.id);
-  await deleteActiveThread(page);
+  await deleteAssistantWithApi(assistant.id, openAIClient);
+  await deleteActiveThread(page, openAIClient);
 });
 
-test('editing an assistant message', async ({ page }) => {
-  const assistant = await createAssistantWithApi();
+test('editing an assistant message', async ({ page, openAIClient }) => {
+  const assistant = await createAssistantWithApi(openAIClient);
 
   await loadChatPage(page);
 
@@ -169,19 +167,19 @@ test('editing an assistant message', async ({ page }) => {
   await expect(messages).toHaveCount(4);
 
   // Ensure original first message was deleted and is now the second message
-  const firstMessage = page.getByTestId('message').nth(0);
+  const firstMessage = page.getByTestId('message').first();
   const firstMessageTextContent = await firstMessage.textContent();
-  expect(firstMessageTextContent?.trim()).toEqual(newMessage2);
+  expect(firstMessageTextContent?.trim()).toEqual(`You ${newMessage2}`); // 'You' is card header for the user message
 
   // Check the third message is now the edited message
   const editedMessage = page.getByTestId('message').nth(2);
   const textContent = await editedMessage.textContent();
-  expect(textContent?.trim()).toEqual('edited message');
+  expect(textContent?.trim()).toEqual('You edited message');
 
   await expect(page.getByTestId('user-icon')).toHaveCount(2);
   await expect(page.getByTestId('assistant-icon')).toHaveCount(2);
 
   // Cleanup
-  await deleteAssistantWithApi(assistant.id);
-  await deleteActiveThread(page);
+  await deleteAssistantWithApi(assistant.id, openAIClient);
+  await deleteActiveThread(page, openAIClient);
 });

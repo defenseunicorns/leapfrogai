@@ -3,7 +3,7 @@ import type {
   MessageContent
 } from 'openai/resources/beta/threads/messages';
 import type { Roles } from '$lib/types/threads';
-import type { Message as AIMessage } from 'ai/svelte';
+import type { Message as VercelAIMessage } from 'ai/svelte';
 import type { ChatRequestOptions, CreateMessage } from 'ai';
 
 export type NewMessageInput = {
@@ -24,7 +24,7 @@ export type LFMessage = omit<OpenAIMessage | 'content' | 'role' | 'metadata'> & 
 };
 
 export type AppendFunction = (
-  message: AIMessage | CreateMessage,
+  message: VercelAIMessage | CreateMessage,
   requestOptions?:
     | {
         data?: Record<string, string> | undefined;
@@ -37,3 +37,5 @@ export type AppendFunction = (
 export type ReloadFunction = (
   chatRequestOptions?: ChatRequestOptions | undefined
 ) => Promise<string | null | undefined>;
+
+export type VercelOrOpenAIMessage = AIMessage | OpenAIMessage;

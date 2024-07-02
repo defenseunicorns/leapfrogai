@@ -1,18 +1,13 @@
 import { expect, test } from './fixtures';
-import {
-  createAssistant,
-  deleteActiveThread,
-  deleteAllAssistants,
-  getSimpleMathQuestion,
-  loadChatPage,
-  sendMessage
-} from './helpers';
+import { getSimpleMathQuestion, loadChatPage } from './helpers/helpers';
 import { getFakeAssistantInput } from '../testUtils/fakeData';
 import type { ActionResult } from '@sveltejs/kit';
-
-test.afterEach(async () => {
-  await deleteAllAssistants();
-});
+import {
+  createAssistant,
+  deleteAssistant,
+  deleteAssistantWithApi
+} from './helpers/assistantHelpers';
+import { deleteActiveThread, sendMessage } from './helpers/threadHelpers';
 
 test('it navigates to the assistants page', async ({ page }) => {
   await loadChatPage(page);
@@ -20,7 +15,7 @@ test('it navigates to the assistants page', async ({ page }) => {
   await page.getByLabel('Settings').click();
   await page.getByText('Assistants Management').click();
 
-  await expect(page).toHaveTitle('LeapfrogAI - Assistants');
+  await expect(page).toHaveTitle('LeapfrogAI - Assistants Management');
 });
 
 test('it has a button that navigates to the new assistant page', async ({ page }) => {
@@ -34,11 +29,14 @@ test('it has a button that navigates to the new assistant page', async ({ page }
 test('it creates an assistant and navigates back to the management page', async ({ page }) => {
   const assistantInput = getFakeAssistantInput();
 
-  await createAssistant(page, assistantInput);
+  await createAssistant(assistantInput, page);
 
   await page.waitForURL('/chat/assistants-management');
   await expect(page.getByText('Assistant Created')).toBeVisible();
   await expect(page.getByTestId(`assistant-tile-${assistantInput.name}`)).toBeVisible();
+
+  // cleanup
+  await deleteAssistant(assistantInput.name, page);
 });
 
 test('displays an error toast when there is an error creating an assistant and remains on the assistant page', async ({
@@ -60,17 +58,18 @@ test('displays an error toast when there is an error creating an assistant and r
     }
   });
 
-  await createAssistant(page, assistantInput);
+  await createAssistant(assistantInput, page);
 
   await expect(page.getByText('Error Creating Assistant')).toBeVisible();
 });
 test('displays an error toast when there is an error editing an assistant and remains on the assistant page', async ({
-  page
+  page,
+  openAIClient
 }) => {
   const assistantInput1 = getFakeAssistantInput();
   const assistantInput2 = getFakeAssistantInput();
 
-  await createAssistant(page, assistantInput1);
+  await createAssistant(assistantInput1, page);
 
   await page
     .getByTestId(`assistant-tile-${assistantInput1.name}`)
@@ -107,40 +106,48 @@ test('displays an error toast when there is an error editing an assistant and re
   await expect(page.getByText('Error Editing Assistant')).toBeVisible();
 
   await page.waitForURL(`/chat/assistants-management/edit/${assistantId}`);
+
+  // cleanup
+  await deleteAssistantWithApi(assistantId, openAIClient);
 });
 
-test('it can search for assistants', async ({ page, browserName }) => {
-  // this test is flaky on webkit, passes manual testing
-  if (browserName !== 'webkit') {
-    const assistantInput1 = getFakeAssistantInput();
-    const assistantInput2 = getFakeAssistantInput();
+test('it can search for assistants', async ({ page }) => {
+  const assistantInput1 = getFakeAssistantInput();
+  const assistantInput2 = getFakeAssistantInput();
 
-    await createAssistant(page, assistantInput1);
-    await createAssistant(page, assistantInput2);
+  await createAssistant(assistantInput1, page);
+  await createAssistant(assistantInput2, page);
 
-    // Search by name
-    await page.waitForURL('/chat/assistants-management');
-    await page.getByRole('searchbox').fill(assistantInput1.name);
+  // Search by name
+  await page.waitForURL('/chat/assistants-management');
+  await page.getByRole('searchbox').fill(assistantInput1.name);
 
-    await expect(page.getByTestId(`assistant-tile-${assistantInput2.name}`)).not.toBeVisible();
-    await expect(page.getByTestId(`assistant-tile-${assistantInput1.name}`)).toBeVisible();
+  await expect(page.getByTestId(`assistant-tile-${assistantInput2.name}`)).not.toBeVisible();
+  await expect(page.getByTestId(`assistant-tile-${assistantInput1.name}`)).toBeVisible();
 
-    // search by description
-    await page.getByRole('searchbox').clear();
-    await page.getByRole('searchbox').fill(assistantInput2.description);
+  // search by description
+  await page.getByRole('searchbox').clear();
+  await page.getByRole('searchbox').fill(assistantInput2.description);
 
-    await expect(page.getByTestId(`assistant-tile-${assistantInput2.name}`)).toBeVisible();
-    await expect(page.getByTestId(`assistant-tile-${assistantInput1.name}`)).not.toBeVisible();
+  await expect(page.getByTestId(`assistant-tile-${assistantInput2.name}`)).toBeVisible();
+  await expect(page.getByTestId(`assistant-tile-${assistantInput1.name}`)).not.toBeVisible();
 
-    // Search by instructions
-    await page.getByRole('searchbox').fill(assistantInput1.instructions);
+  // Search by instructions
+  await page.getByRole('searchbox').fill(assistantInput1.instructions);
 
-    await expect(page.getByTestId(`assistant-tile-${assistantInput2.name}`)).not.toBeVisible();
-    await expect(page.getByTestId(`assistant-tile-${assistantInput1.name}`)).toBeVisible();
-  }
+  await expect(page.getByTestId(`assistant-tile-${assistantInput2.name}`)).not.toBeVisible();
+  await expect(page.getByTestId(`assistant-tile-${assistantInput1.name}`)).toBeVisible();
+
+  // cleanup
+  await page.getByRole('searchbox').clear();
+  await deleteAssistant(assistantInput1.name, page);
+  await deleteAssistant(assistantInput2.name, page);
 });
 
-test('it can navigate to the last visited thread with breadcrumbs', async ({ page }) => {
+test('it can navigate to the last visited thread with breadcrumbs', async ({
+  page,
+  openAIClient
+}) => {
   const newMessage = getSimpleMathQuestion();
   await page.goto('/chat');
   await sendMessage(page, newMessage);
@@ -160,7 +167,7 @@ test('it can navigate to the last visited thread with breadcrumbs', async ({ pag
   await page.waitForURL(`/chat/${threadId}`);
 
   // Cleanup
-  await deleteActiveThread(page);
+  await deleteActiveThread(page, openAIClient);
 });
 
 test('it validates input', async ({ page }) => {
@@ -219,7 +226,7 @@ test('it allows you to edit an assistant', async ({ page }) => {
   const assistantInput1 = getFakeAssistantInput();
   const assistantInput2 = getFakeAssistantInput();
 
-  await createAssistant(page, assistantInput1);
+  await createAssistant(assistantInput1, page);
 
   await page.waitForURL('/chat/assistants-management');
 
@@ -250,7 +257,7 @@ test('it allows you to edit an assistant', async ({ page }) => {
 test("it populates the assistants values when editing an assistant's details", async ({ page }) => {
   const assistantInput = getFakeAssistantInput();
 
-  await createAssistant(page, assistantInput);
+  await createAssistant(assistantInput, page);
 
   await page.waitForURL('/chat/assistants-management');
 
@@ -268,7 +275,7 @@ test("it populates the assistants values when editing an assistant's details", a
 test('it can delete assistants', async ({ page }) => {
   const assistantInput = getFakeAssistantInput();
 
-  await createAssistant(page, assistantInput);
+  await createAssistant(assistantInput, page);
 
   await page.goto('/chat/assistants-management');
 
@@ -284,5 +291,4 @@ test('it can delete assistants', async ({ page }) => {
   await page.getByRole('button', { name: 'Delete' }).click();
 
   await expect(page.getByText(`${assistantInput.name} Assistant deleted.`)).toBeVisible();
-  await deleteActiveThread(page);
 });

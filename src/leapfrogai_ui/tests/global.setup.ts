@@ -1,10 +1,9 @@
 import { test as setup } from './fixtures';
-const authFile = 'playwright/.auth/user.json';
 import * as OTPAuth from 'otpauth';
 
-setup('authenticate', async ({ page, clearDbData }) => {
-  await clearDbData();
+const authFile = 'playwright/.auth/user.json';
 
+setup('authenticate', async ({ page }) => {
   await page.goto('http://localhost:4173');
   if (process.env.PUBLIC_DISABLE_KEYCLOAK === 'true') {
     // uses local supabase test users, logs in directly with Supabase, no Keycloak
@@ -32,14 +31,6 @@ setup('authenticate', async ({ page, clearDbData }) => {
     const code = totp.generate();
     await page.getByLabel('Six digit code').fill(code);
     await page.getByRole('button', { name: 'Log In' }).click();
-
-    // Chrome gets stuck here for an unknown reason, does not happen in real life
-    // This hack allows the test to continue
-    // ref: https://github.com/microsoft/playwright/issues/16160
-    // I suspect it is an issue with the Supabase callback, but the output in the Playwright UI does not show the error page
-    // I was able to see the error when using a VSCode Playwright plugin that records your actions
-    await page.waitForLoadState('domcontentloaded');
-    await page.reload();
   }
 
   // Wait until the page receives the cookies.
