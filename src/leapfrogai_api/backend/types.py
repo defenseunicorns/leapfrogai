@@ -24,6 +24,14 @@ from openai.types.beta.threads.text_content_block_param import TextContentBlockP
 from openai.types.beta.vector_store import ExpiresAfter
 from pydantic import BaseModel, Field
 
+##########
+# DEFAULTS
+##########
+
+
+DEFAULT_MAX_COMPLETION_TOKENS = 4096
+DEFAULT_MAX_PROMPT_TOKENS = 4096
+
 
 ##########
 # GENERIC
@@ -34,7 +42,7 @@ class Usage(BaseModel):
     """Usage object."""
 
     prompt_tokens: int
-    completion_tokens: int | None = None
+    completion_tokens: int | None = DEFAULT_MAX_COMPLETION_TOKENS
     total_tokens: int
 
 
@@ -70,7 +78,7 @@ class CompletionRequest(BaseModel):
     model: str
     prompt: str | list[int]
     stream: bool | None = False
-    max_tokens: int | None = 4096
+    max_tokens: int | None = DEFAULT_MAX_COMPLETION_TOKENS
     temperature: float | None = 1.0
 
 
@@ -131,7 +139,7 @@ class ChatCompletionRequest(BaseModel):
     top_p: float | None = 1
     stream: bool | None = False
     stop: str | None = None
-    max_tokens: int | None = 4096
+    max_tokens: int | None = DEFAULT_MAX_COMPLETION_TOKENS
 
 
 class ChatChoice(BaseModel):

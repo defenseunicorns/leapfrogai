@@ -54,6 +54,8 @@ from leapfrogai_api.backend.types import (
     ChatCompletionResponse,
     ChatCompletionRequest,
     ChatChoice,
+    DEFAULT_MAX_COMPLETION_TOKENS,
+    DEFAULT_MAX_PROMPT_TOKENS,
 )
 from leapfrogai_api.data.crud_assistant import CRUDAssistant, FilterAssistant
 from leapfrogai_api.data.crud_message import CRUDMessage
@@ -66,9 +68,6 @@ from leapfrogai_api.utils import get_model_config
 from leapfrogai_sdk.chat.chat_pb2 import (
     ChatCompletionResponse as ProtobufChatCompletionResponse,
 )
-
-DEFAULT_MAX_COMPLETION_TOKENS = 4096
-DEFAULT_MAX_PROMPT_TOKENS = 4096
 
 
 class RunCreateParamsRequestBase(BaseModel):
