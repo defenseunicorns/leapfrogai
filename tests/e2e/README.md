@@ -16,12 +16,10 @@ The tests in this directory are also able to be run locally! We are currently op
 
 There are several ways you can setup and run these tests. Here is one such way:
 
-```bash
-# Setup the UDS cluster
-# NOTE: This stands up a k3d cluster and installs istio & pepr
-# NOTE: Be sure to use the latest released version at the time you're reading this!
-uds deploy oci://ghcr.io/defenseunicorns/packages/uds/bundles/k3d-core-slim-dev:0.22.2 --confirm
+> Deploy the [UDS cluster](/README.md#uds) \
+> NOTE: This stands up a k3d cluster and installs istio & pepr
 
+```bash
 # Build and Deploy the LFAI API
 make build-api
 uds zarf package deploy zarf-package-leapfrogai-api-*.tar.zst
