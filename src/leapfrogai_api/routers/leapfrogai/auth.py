@@ -1,6 +1,7 @@
 """LeapfrogAI endpoints for Auth."""
 
 import time
+from typing import Annotated
 from fastapi import APIRouter, HTTPException, status
 from pydantic import BaseModel, Field
 from leapfrogai_api.routers.supabase_session import Session
@@ -31,8 +32,14 @@ class CreateAPIKeyRequest(BaseModel):
 class APIKeyItem(BaseModel):
     """Response body for an API key."""
 
-    name: str | None
-    id: str
+    name: str | None = Field(
+        description="The name of the API key.",
+        examples=["API Key 1"],
+    )
+    id: str = Field(
+        description="The UUID of the API key.",
+        examples=["12345678-1234-1234-1234-1234567890ab"],
+    )
     api_key: str = Field(
         description="The API key.",
         examples=["lfai_1234567890abcdef1234567890abcdef_1234"],
@@ -52,7 +59,11 @@ async def create_api_key(
     session: Session,
     request: CreateAPIKeyRequest,
 ) -> APIKeyItem:
-    """Create an API key."""
+    """
+    Create an API key.
+
+    WARNING: The API key is only returned once. Store it securely.
+    """
 
     user_id: str = (await session.auth.get_user()).user.id
 
@@ -80,7 +91,7 @@ async def create_api_key(
 @router.delete("/revoke-api-key/{api_key_id}", status_code=status.HTTP_204_NO_CONTENT)
 async def revoke_api_key(
     session: Session,
-    api_key_id: str,
+    api_key_id: Annotated[str, Field(description="The UUID of the API key.")],
 ):
     """Revoke an API key."""
 
