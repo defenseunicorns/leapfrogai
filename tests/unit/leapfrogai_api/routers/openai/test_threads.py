@@ -19,6 +19,7 @@ from leapfrogai_api.routers.openai.threads import (
     create_thread,
     retrieve_thread,
     modify_thread,
+    delete_thread,
 )
 
 from tests.mocks.mock_tables import mock_message, mock_thread
@@ -124,30 +125,34 @@ async def test_modify_thread(
 @pytest.mark.parametrize(
     "mock_tool_resource, mock_get_response, mock_update_response, expected_status_code",
     [
+        # invalid tool resource
         (
             ToolResources(code_interpreter=mock_resource_code_interpreter),
             None,
             None,
             status.HTTP_400_BAD_REQUEST,
-        ),  # invalid tool resource
+        ),
+        # invalid tool resource
         (
             ToolResources(code_interpreter=dict(mock="data")),
             None,
             None,
             status.HTTP_400_BAD_REQUEST,
-        ),  # invalid tool resource
+        ),
+        # no CRUDThread.get response
         (
             ToolResources(),
             None,
             None,
             status.HTTP_404_NOT_FOUND,
-        ),  # no CRUDThread.get response
+        ),
+        # no CRUDThread.update response
         (
             ToolResources(),
             mock_thread,
             None,
             status.HTTP_500_INTERNAL_SERVER_ERROR,
-        ),  # no CRUDThread.update response
+        ),
     ],
 )
 @patch.object(CRUDThread, "update")
@@ -173,13 +178,13 @@ async def test_modify_thread_fail(
     assert exc_info.value.status_code == expected_status_code
 
 
-# @pytest.mark.asyncio
-# @patch.object(CRUDThread, "delete")
-# async def test_delete_thread(mock_delete, session):
-#     mock_delete.return_value = True
+@pytest.mark.asyncio
+@patch.object(CRUDThread, "delete")
+async def test_delete_thread(mock_thread_delete, mock_session):
+    mock_thread_delete.return_value = True
 
-#     response = await router.delete_thread("1", session)
+    response = await delete_thread("1", mock_session)
 
-#     assert response.id == "1"
-#     assert response.object == "thread.deleted"
-#     assert response.deleted
+    assert response.id == "1"
+    assert response.object == "thread.deleted"
+    assert response.deleted
