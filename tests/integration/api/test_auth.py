@@ -53,18 +53,16 @@ def test_create_api_key(create_api_key):
     assert "expires_at" in create_api_key.json(), "Create should return an expires_at."
 
 
-# def test_revoke_api_key(create_api_key):
-#     """Test revoking an API key. Requires a running Supabase instance."""
+def test_revoke_api_key(create_api_key):
+    """Test revoking an API key. Requires a running Supabase instance."""
 
-#     uuid = create_api_key.json()["id"]
+    api_key_id = create_api_key.json()["id"]
 
-#     request = {
-#         "id": uuid,
-#     }
-
-#     response = client.post("/leapfrogai/v1/auth/revoke-api-key", json=request)
-#     assert response.status_code is status.HTTP_200_OK
-# assert "revoked" in response.json(), "Revoke should return a revoked."
-# assert response.json()["revoked"] is True, "Revoke should return a revoked as True."
-# assert "message" in response.json(), "Revoke should return a message."
-# assert response.json()["message"] == "API key revoked.", "Revoke should return a message as 'API key revoked.'."
+    response = client.delete(f"/leapfrogai/v1/auth/revoke-api-key/{api_key_id}")
+    assert response.status_code is status.HTTP_200_OK
+    assert "revoked" in response.json(), "Revoke should return a revoked."
+    assert response.json()["revoked"] is True, "Revoke should return a revoked as True."
+    assert "message" in response.json(), "Revoke should return a message."
+    assert (
+        response.json()["message"] == "API key revoked."
+    ), "Revoke should return a message as 'API key revoked.'."

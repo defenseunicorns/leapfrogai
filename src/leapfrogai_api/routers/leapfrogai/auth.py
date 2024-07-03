@@ -85,19 +85,21 @@ async def create_api_key(
     return api_key_item
 
 
-@router.post("/revoke-api-key")
+@router.delete("/revoke-api-key/{api_key_id}")
 async def revoke_api_key(
     session: Session,
-    id: str,
+    api_key_id: str,
 ) -> RevokeAPIKey:
     """Revoke an API key."""
 
-    data, _count = await session.table("api_keys").delete().eq("id", id).execute()
+    data, _count = (
+        await session.table("api_keys").delete().eq("id", api_key_id).execute()
+    )
 
     if not data[1]:
-        return RevokeAPIKey(id=id, revoked=False, message="API key not found.")
+        return RevokeAPIKey(id=api_key_id, revoked=False, message="API key not found.")
 
-    return RevokeAPIKey(id=id, revoked=True, message="API key revoked.")
+    return RevokeAPIKey(id=api_key_id, revoked=True, message="API key revoked.")
 
 
 @router.get("/list-api-keys")
@@ -154,7 +156,7 @@ async def _generate_and_store_api_key(
             name=name,
             id=response[0]["id"],  # This is set by the database
             api_key=read_once_token,
-            created_at=response[0]["created_at"],
+            created_at=response[0]["created_at"],  # This is set by the database
             expires_at=response[0]["expires_at"],
         )
 
