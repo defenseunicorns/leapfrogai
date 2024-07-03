@@ -68,7 +68,7 @@ async def init_supabase_client(
         return client
 
     # If API Key Auth fails, try JWT Auth
-    if _validate_jtw_token(auth_creds.credentials):
+    if _validate_jwt_token(auth_creds.credentials):
         await client.auth.set_session(
             access_token=auth_creds.credentials, refresh_token="dummy"
         )
@@ -136,7 +136,7 @@ async def _validate_jwt_authorization(session, authorization: str) -> bool:
     return authorized
 
 
-def _validate_jtw_token(token: str) -> bool:
+def _validate_jwt_token(token: str) -> bool:
     """
     Check if the provided JWT token is valid
 

@@ -40,8 +40,6 @@ def validate_and_encode_api_key(api_key: str) -> tuple[bool, str]:
     if valid:
         encoded_key = encode_unique_key(parse_api_key(api_key)[1])
 
-    print(valid, encoded_key)
-
     return valid, encoded_key
 
 

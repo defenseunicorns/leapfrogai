@@ -33,7 +33,7 @@ class CRUDBase(Generic[ModelType]):
 
         _, response = data
 
-        if hasattr(response[0], "user_id"):
+        if response and "user_id" in response[0]:
             del response[0]["user_id"]
 
         if response:
@@ -84,6 +84,9 @@ class CRUDBase(Generic[ModelType]):
 
         _, response = data
 
+        if response and "user_id" in response[0]:
+            del response[0]["user_id"]
+
         if response:
             return self.model(**response[0])
         return None
@@ -111,7 +114,6 @@ class CRUDBase(Generic[ModelType]):
             data, _count = await self.db.table("api_keys").select("user_id").execute()
             _, tmp = data
             user_id: str = tmp[0]["user_id"]
-            print(user_id)
         else:
             user_id = (await self.db.auth.get_user()).user.id
 
