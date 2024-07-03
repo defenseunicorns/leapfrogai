@@ -1,3 +1,3 @@
 models:
 - name: test-chat
-  backend: localhost:50051
+  backend: localhost:50052

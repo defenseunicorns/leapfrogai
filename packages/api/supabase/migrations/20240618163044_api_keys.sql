@@ -97,3 +97,39 @@ create policy "Individuals can CRUD their own run_objects via API key."
             where api_keys.api_key = current_setting('request.headers')::json->>'x-custom-api-key'
         )
     );
+
+create policy "Individuals can CRUD their own vector_store via API key."
+    on vector_store for all
+    to anon
+    using
+    (
+        exists (
+            select 1
+            from api_keys
+            where api_keys.api_key = current_setting('request.headers')::json->>'x-custom-api-key'
+        )
+    );
+
+create policy "Individuals can CRUD their own vector_store_file via API key."
+    on vector_store_file for all
+    to anon
+    using
+    (
+        exists (
+            select 1
+            from api_keys
+            where api_keys.api_key = current_setting('request.headers')::json->>'x-custom-api-key'
+        )
+    );
+
+create policy "Individuals can CRUD their own vector_content via API key."
+    on vector_content for all
+    to anon
+    using
+    (
+        exists (
+            select 1
+            from api_keys
+            where api_keys.api_key = current_setting('request.headers')::json->>'x-custom-api-key'
+        )
+    );

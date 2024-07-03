@@ -2,16 +2,10 @@
 
 import time
 
-from pydantic import BaseModel, Field
+from pydantic import BaseModel
 from openai.types.beta import VectorStore
 from supabase import AClient as AsyncClient
 from leapfrogai_api.data.crud_base import CRUDBase
-
-
-class AuthVectorStore(VectorStore):
-    """A wrapper for the VectorStore that includes a user_id for auth"""
-
-    user_id: str = Field(default="")
 
 
 class FilterVectorStore(BaseModel):
@@ -20,24 +14,16 @@ class FilterVectorStore(BaseModel):
     id: str
 
 
-class CRUDVectorStore(CRUDBase[AuthVectorStore]):
+class CRUDVectorStore(CRUDBase[VectorStore]):
     """CRUD Operations for VectorStore"""
 
     def __init__(self, db: AsyncClient):
-        super().__init__(db=db, model=AuthVectorStore, table_name="vector_store")
-
-    async def create(self, object_: VectorStore) -> VectorStore | None:
-        """Create new vector store."""
-        user_id: str = (await self.db.auth.get_user()).user.id
-        print(user_id)
-        return await super().create(
-            object_=AuthVectorStore(user_id=user_id, **object_.model_dump())
-        )
+        super().__init__(db=db, model=VectorStore, table_name="vector_store")
 
     async def get(self, filters: FilterVectorStore | None = None) -> VectorStore | None:
         """Get vector store by filters."""
 
-        vector_store: AuthVectorStore | None = await super().get(
+        vector_store: VectorStore | None = await super().get(
             filters=filters.model_dump() if filters else None
         )
 
@@ -51,10 +37,10 @@ class CRUDVectorStore(CRUDBase[AuthVectorStore]):
     ) -> list[VectorStore] | None:
         """List all vector stores."""
 
-        vector_stores: list[AuthVectorStore] | None = await super().list(
+        vector_stores: list[VectorStore] | None = await super().list(
             filters=filters.model_dump() if filters else None
         )
-        non_expired_vector_stores: list[AuthVectorStore] | None = None
+        non_expired_vector_stores: list[VectorStore] | None = None
 
         if vector_stores:
             # Iterate through each vector store and delete expired entries
@@ -86,6 +72,8 @@ class CRUDVectorStore(CRUDBase[AuthVectorStore]):
         _, response = data
 
         if response:
+            if "user_id" in response[0]:
+                del response[0]["user_id"]
             return self.model(**response[0])
         return None
 
@@ -93,7 +81,7 @@ class CRUDVectorStore(CRUDBase[AuthVectorStore]):
         """Delete a vector store by its ID."""
         return await super().delete(filters=filters.model_dump() if filters else None)
 
-    async def delete_when_expired(self, vector_store: AuthVectorStore | None) -> bool:
+    async def delete_when_expired(self, vector_store: VectorStore | None) -> bool:
         """Delete vector stores when they are expired"""
 
         if vector_store and vector_store.expires_at and vector_store.expires_after:

@@ -33,10 +33,10 @@ class CRUDBase(Generic[ModelType]):
 
         _, response = data
 
-        if response and "user_id" in response[0]:
-            del response[0]["user_id"]
-
         if response:
+            if "user_id" in response[0]:
+                del response[0]["user_id"]
+
             return self.model(**response[0])
         return None
 
@@ -53,6 +53,8 @@ class CRUDBase(Generic[ModelType]):
         _, response = data
 
         if response:
+            if "user_id" in response[0]:
+                del response[0]["user_id"]
             return self.model(**response[0])
         return None
 
@@ -69,6 +71,9 @@ class CRUDBase(Generic[ModelType]):
         _, response = data
 
         if response:
+            for item in response:
+                if "user_id" in item:
+                    del item["user_id"]
             return [self.model(**item) for item in response]
         return None
 
@@ -84,10 +89,9 @@ class CRUDBase(Generic[ModelType]):
 
         _, response = data
 
-        if response and "user_id" in response[0]:
-            del response[0]["user_id"]
-
         if response:
+            if "user_id" in response[0]:
+                del response[0]["user_id"]
             return self.model(**response[0])
         return None
 

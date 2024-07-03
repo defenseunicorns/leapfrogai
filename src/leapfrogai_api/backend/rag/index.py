@@ -184,7 +184,7 @@ class IndexingService:
                 metadata=document.metadata,
                 embedding=embedding,
             )
-            ids.append(response.data[0]["id"])
+            ids.append(response[0]["id"])
 
         return ids
 
@@ -273,5 +273,12 @@ class IndexingService:
             "metadata": metadata,
             "embedding": embedding,
         }
-        response = await self.db.from_(self.table_name).insert(row).execute()
+        data, _count = await self.db.from_(self.table_name).insert(row).execute()
+
+        _, response = data
+
+        for item in response:
+            if "user_id" in item:
+                del item["user_id"]
+
         return response
