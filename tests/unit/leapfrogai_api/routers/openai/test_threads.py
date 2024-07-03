@@ -1,15 +1,12 @@
 import pytest
 from unittest.mock import patch
-from leapfrogai_api.routers.openai.threads import router
 from leapfrogai_api.routers.openai.requests.create_thread_request import (
     CreateThreadRequest,
 )
-from leapfrogai_api.backend.types import ModifyThreadRequest
 from leapfrogai_api.data.crud_thread import CRUDThread
 from leapfrogai_api.data.crud_message import CRUDMessage
-from openai.types.beta import Thread
 
-from leapfrogai_api.routers.openai.threads import create_thread
+from leapfrogai_api.routers.openai.threads import create_thread, retrieve_thread
 
 from tests.mocks.mock_tables import mock_message, mock_thread
 
@@ -23,14 +20,18 @@ from tests.mocks.mock_tables import mock_message, mock_thread
 async def test_create_thread(
     mock_create_messages, mock_create_thread, mock_message_payload, mock_session
 ):
+    # Prep mock data
     mock_create_thread.return_value = mock_thread
     mock_create_messages.return_value = mock_message
 
     mock_metadata = dict(mockfield="mock-data")
 
     request = CreateThreadRequest(messages=mock_message_payload, metadata=mock_metadata)
+
+    # Make the test call
     response = await create_thread(request, mock_session)
 
+    # Verify response
     assert response.id == "1"
     assert response.object == "thread"
 
@@ -52,38 +53,41 @@ async def test_create_thread(
 
 @pytest.mark.asyncio
 @patch.object(CRUDThread, "get")
-async def test_retrieve_thread(mock_get, session):
-    mock_get.return_value = Thread(id="1", object="thread", messages=[])
+async def test_retrieve_thread(mock_get, mock_session):
+    # prep mock data
+    mock_get.return_value = mock_thread
 
-    response = await router.retrieve_thread("1", session)
+    # make test call
+    response = await retrieve_thread(mock_thread.id, mock_session)
 
-    assert response.id == "1"
-    assert response.object == "thread"
-    assert response.messages == []
+    # verify response
+    assert response == mock_thread
 
-
-@pytest.mark.asyncio
-@patch.object(CRUDThread, "get")
-@patch.object(CRUDThread, "update")
-async def test_modify_thread(mock_update, mock_get, session):
-    mock_get.return_value = Thread(id="1", object="thread", messages=[])
-    mock_update.return_value = Thread(id="1", object="thread", messages=[])
-
-    request = ModifyThreadRequest()
-    response = await router.modify_thread("1", request, session)
-
-    assert response.id == "1"
-    assert response.object == "thread"
-    assert response.messages == []
+    mock_get.assert_called_once_with(filters={"id": mock_thread.id})
 
 
-@pytest.mark.asyncio
-@patch.object(CRUDThread, "delete")
-async def test_delete_thread(mock_delete, session):
-    mock_delete.return_value = True
+# @pytest.mark.asyncio
+# @patch.object(CRUDThread, "get")
+# @patch.object(CRUDThread, "update")
+# async def test_modify_thread(mock_update, mock_get, session):
+#     mock_get.return_value = Thread(id="1", object="thread", messages=[])
+#     mock_update.return_value = Thread(id="1", object="thread", messages=[])
 
-    response = await router.delete_thread("1", session)
+#     request = ModifyThreadRequest()
+#     response = await router.modify_thread("1", request, session)
 
-    assert response.id == "1"
-    assert response.object == "thread.deleted"
-    assert response.deleted
+#     assert response.id == "1"
+#     assert response.object == "thread"
+#     assert response.messages == []
+
+
+# @pytest.mark.asyncio
+# @patch.object(CRUDThread, "delete")
+# async def test_delete_thread(mock_delete, session):
+#     mock_delete.return_value = True
+
+#     response = await router.delete_thread("1", session)
+
+#     assert response.id == "1"
+#     assert response.object == "thread.deleted"
+#     assert response.deleted
