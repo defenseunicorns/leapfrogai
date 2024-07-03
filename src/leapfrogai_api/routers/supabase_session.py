@@ -56,8 +56,8 @@ async def init_supabase_client(
     valid, api_key = validate_and_encode_api_key(auth_creds.credentials)
 
     if valid and api_key:
-        client.options.headers = {"x-custom-api-key": api_key}
         client.options.auto_refresh_token = False
+        client.options.headers.update({"x-custom-api-key": api_key})
 
         if not await _validate_api_authorization(client):
             raise HTTPException(
