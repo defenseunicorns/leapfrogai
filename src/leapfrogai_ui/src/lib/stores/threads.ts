@@ -95,11 +95,29 @@ const createThreadsStore = () => {
         return { ...old, selectedAssistantId };
       });
     },
-    setSendingBlocked: (status: boolean) => {
-      update((old) => ({ ...old, sendingBlocked: status }));
+    // Important - this method has a built in delay to ensure next user message has a different timestamp when setting to false (unblocking)
+    setSendingBlocked: async (status: boolean) => {
+      if (!status && process.env.NODE_ENV !== 'test') {
+        new Promise((resolve) => setTimeout(resolve, 1000)).then(() => {
+          update((old) => ({ ...old, sendingBlocked: status }));
+        });
+      } else {
+        update((old) => ({ ...old, sendingBlocked: status }));
+      }
     },
     changeThread: async (newId: string | null) => {
       await goto(`/chat/${newId}`);
+    },
+    updateThread: (newThread: LFThread) => {
+      update((old) => {
+        const threadIndex = old.threads.findIndex((thread) => thread.id === newThread.id);
+        const threadsCopy = [...old.threads];
+        threadsCopy[threadIndex] = newThread;
+        return {
+          ...old,
+          threads: threadsCopy
+        };
+      });
     },
     newThread: async (label: string) => {
       try {
@@ -124,7 +142,7 @@ const createThreadsStore = () => {
         });
       }
     },
-    updateMessages: async (thread_id: string, messages: LFMessage[]) => {
+    updateMessages: (thread_id: string, messages: LFMessage[]) => {
       update((old) => {
         const updatedThreads = [...old.threads];
         const threadIndex = old.threads.findIndex((c) => c.id === thread_id);
@@ -133,6 +151,28 @@ const createThreadsStore = () => {
           ...oldThread,
           messages
         };
+        return {
+          ...old,
+          threads: updatedThreads
+        };
+      });
+    },
+    updateMessage: (threadId: string, messageId: string, newMessage: LFMessage) => {
+      update((old) => {
+        const threadIndex = old.threads.findIndex((thread) => thread.id === threadId);
+        if (threadIndex === -1) return old;
+
+        const updatedThreads = [...old.threads];
+        const messages = updatedThreads[threadIndex].messages;
+
+        if (messages) {
+          const messageIndex = messages.findIndex((message) => message.id === messageId);
+          if (messageIndex !== -1) {
+            // if message found, update it
+            messages[messageIndex] = newMessage;
+          }
+        }
+
         return {
           ...old,
           threads: updatedThreads

@@ -4,6 +4,7 @@ import { getFakeOpenAIMessage } from '$testUtils/fakeData';
 import type { LFMessage, NewMessageInput } from '$lib/types/messages';
 import type { LFAssistant } from '$lib/types/assistants';
 import { createStreamDataTransformer, StreamingTextResponse } from 'ai';
+import type { LFThread } from '$lib/types/threads';
 
 type MockChatCompletionOptions = {
   responseMsg?: string[];
@@ -86,6 +87,14 @@ export const mockGetMessages = (thread_id: string, messages: LFMessage[]) => {
   server.use(
     http.get(`/api/messages/${thread_id}`, () => {
       return HttpResponse.json(messages);
+    })
+  );
+};
+
+export const mockGetThread = (thread: LFThread) => {
+  server.use(
+    http.get(`/api/threads/${thread.id}`, () => {
+      return HttpResponse.json(thread);
     })
   );
 };

@@ -1,35 +1,21 @@
 import { expect, test } from './fixtures';
+import { faker } from '@faker-js/faker';
+import {getTableRow, getSimpleMathQuestion, loadChatPage} from './helpers/helpers';
 import {
+  confirmDeletion,
+  createPDF,
+  createTextFile,
+  deleteFileByName,
+  deleteFixtureFile,
   deleteTestFilesWithApi,
-  getSimpleMathQuestion,
-  loadChatPage,
-  sendMessage,
+  initiateDeletion,
+  loadFileManagementPage,
   uploadFile
-} from './helpers';
-import type { Page } from '@playwright/test';
+} from './helpers/fileHelpers';
+import { sendMessage } from './helpers/threadHelpers';
 
-const loadFileManagementPage = async (page: Page) => {
-  await page.goto('/chat/file-management');
-  await expect(page).toHaveTitle('LeapfrogAI - File Management');
-};
-
-const initiateDeletion = async (page: Page, fileNameText: string) => {
-  const deleteBtn = page.getByRole('button', { name: 'delete' });
-
-  await deleteBtn.click();
-  await expect(page.getByText('Checking for any assistants affected by deletion...')).toBeVisible();
-  await expect(page.getByText(`Are you sure you want to delete ${fileNameText}`)).toBeVisible();
-};
-const confirmDeletion = async (page: Page) => {
-  const deleteBtns = await page.getByRole('button', { name: 'delete' }).all();
-  await deleteBtns[1].click();
-};
-
-// TODO - these tests are flaky because they use the same two files (test.pdf and test2.pdf) and there can
-// be race conditions when uploading and deleting them while tests run in parallel
-
-test.beforeEach(async () => {
-  await deleteTestFilesWithApi();
+test.beforeEach(async ({ openAIClient }) => {
+  await deleteTestFilesWithApi(openAIClient);
 });
 
 test('it can navigate to the last visited thread with breadcrumbs', async ({ page }) => {
@@ -57,58 +43,86 @@ test('it can navigate to the file management page', async ({ page }) => {
   await expect(page).toHaveTitle('LeapfrogAI - File Management');
 });
 
-test('it can upload a pdf file', async ({ page }) => {
+test('it can upload a pdf file', async ({ page, openAIClient }) => {
+  const filename = `${faker.word.noun()}-test.pdf`;
+  await createPDF(filename);
   await loadFileManagementPage(page);
-  const checkboxes = await page.getByRole('checkbox').all();
-  await uploadFile(page);
-  const checkboxesDuringUpload = await page.getByRole('checkbox').all();
+  await uploadFile(page, filename);
+
+  const row = await getTableRow(page, filename);
+  expect(row).not.toBeNull();
+
+  const uploadingFileIcon = row!.getByTestId('uploading-file-icon');
+  const fileUploadedIcon = row!.getByTestId('file-uploaded-icon');
 
   // test loading icon shows then disappears
-  await expect(page.getByTestId('uploading-file-icon')).toBeVisible();
+  await expect(uploadingFileIcon).toBeVisible();
   // Ensure an additional checkbox is not added during upload (it should not have one on that row. row is in nonSelectableRowIds)
-  await expect(checkboxesDuringUpload.length).toEqual(checkboxes.length);
-  await expect(page.getByTestId('uploading-file-icon')).not.toBeVisible();
+  const rowCheckboxesBefore = await row!.getByRole('checkbox').all();
+  expect(rowCheckboxesBefore.length).toEqual(0);
+  await expect(fileUploadedIcon).toBeVisible();
+  await expect(uploadingFileIcon).not.toBeVisible();
 
-  const checkboxesAfterUpload = await page.getByRole('checkbox').all();
   // Checkbox should now be present
-  await expect(checkboxesAfterUpload.length).toEqual(checkboxes.length + 1);
+  const rowCheckboxesAfter = await row!.getByRole('checkbox').all();
+  expect(rowCheckboxesAfter.length).toEqual(1);
 
   // test toast
-  await expect(page.getByText('test.pdf imported successfully')).toBeVisible();
+  await expect(page.getByText(`${filename} imported successfully`)).toBeVisible();
 
-  // test complete icon shows then disappears
-  await expect(page.getByTestId('file-uploaded-icon')).toBeVisible();
-  await expect(page.getByTestId('file-uploaded-icon')).not.toBeVisible();
+  // test complete icon disappears
+  await expect(fileUploadedIcon).not.toBeVisible();
+
+  // cleanup
+  deleteFixtureFile(filename);
+  await deleteFileByName(filename, openAIClient);
 });
 
-test('it can upload a txt file', async ({ page }) => {
-  const checkboxes = await page.getByRole('checkbox').all();
-  await uploadFile(page, 'test.txt');
-  const checkboxesDuringUpload = await page.getByRole('checkbox').all();
+test('it can upload a txt file', async ({ page, openAIClient }) => {
+  const filename = `${faker.word.noun()}-test.txt`;
+  createTextFile(filename);
+  await loadFileManagementPage(page);
+  await uploadFile(page, filename);
+
+  const row = await getTableRow(page, filename);
+  expect(row).not.toBeNull();
+
+  const uploadingFileIcon = row!.getByTestId('uploading-file-icon');
+  const fileUploadedIcon = row!.getByTestId('file-uploaded-icon');
 
   // test loading icon shows then disappears
-  await expect(page.getByTestId('uploading-file-icon')).toBeVisible();
+  await expect(uploadingFileIcon).toBeVisible();
   // Ensure an additional checkbox is not added during upload (it should not have one on that row. row is in nonSelectableRowIds)
-  await expect(checkboxesDuringUpload.length).toEqual(checkboxes.length);
-  await expect(page.getByTestId('uploading-file-icon')).not.toBeVisible();
+  const rowCheckboxesBefore = await row!.getByRole('checkbox').all();
+  expect(rowCheckboxesBefore.length).toEqual(0);
+  await expect(fileUploadedIcon).toBeVisible();
+  await expect(uploadingFileIcon).not.toBeVisible();
 
-  const checkboxesAfterUpload = await page.getByRole('checkbox').all();
   // Checkbox should now be present
-  await expect(checkboxesAfterUpload.length).toEqual(checkboxes.length + 1);
+  const rowCheckboxesAfter = await row!.getByRole('checkbox').all();
+  expect(rowCheckboxesAfter.length).toEqual(1);
 
   // test toast
-  await expect(page.getByText('test.txt imported successfully')).toBeVisible();
+  await expect(page.getByText(`${filename} imported successfully`)).toBeVisible();
 
-  // test complete icon shows then disappears
-  await expect(page.getByTestId('file-uploaded-icon')).toBeVisible();
-  await expect(page.getByTestId('file-uploaded-icon')).not.toBeVisible();
+  // test complete icon disappears
+  await expect(fileUploadedIcon).not.toBeVisible();
+
+  // cleanup
+  deleteFixtureFile(filename);
+  await deleteFileByName(filename, openAIClient);
 });
 
-test('confirms any affected assistants then deletes multiple files', async ({ page }) => {
+test('confirms any affected assistants then deletes multiple files', async ({
+  page,
+  openAIClient
+}) => {
   await loadFileManagementPage(page);
 
-  const filename1 = 'test.pdf';
-  const filename2 = 'test2.pdf';
+  const filename1 = `${faker.word.noun()}-test.pdf`;
+  const filename2 = `${faker.word.noun()}-test.pdf`;
+  await createPDF(filename1);
+  await createPDF(filename2);
 
   await uploadFile(page, filename1);
   await expect(page.getByText(`${filename1} imported successfully`)).toBeVisible();
@@ -117,36 +131,57 @@ test('confirms any affected assistants then deletes multiple files', async ({ pa
   await expect(page.getByText(`${filename2} imported successfully`)).toBeVisible();
   await expect(page.getByText(`${filename2} imported successfully`)).not.toBeVisible();
 
-  const checkboxes = await page.getByRole('checkbox').all();
-  await checkboxes[1].check({ force: true });
-  await checkboxes[2].check({ force: true });
-  await initiateDeletion(page, '');
+  const row1 = await getTableRow(page, filename1);
+  const row2 = await getTableRow(page, filename2);
+  expect(row1).not.toBeNull();
+  expect(row2).not.toBeNull();
+
+  await row1!.getByRole('checkbox').check({ force: true });
+  await row2!.getByRole('checkbox').check({ force: true });
+  await initiateDeletion(page, `${filename1}, ${filename2}`);
   await confirmDeletion(page);
 
   await expect(page.getByText('Files Deleted')).toBeVisible();
+
+  // cleanup
+  deleteFixtureFile(filename1);
+  deleteFixtureFile(filename2);
+  await deleteFileByName(filename1, openAIClient);
+  await deleteFileByName(filename2, openAIClient);
 });
 
-test('it cancel the delete confirmation modal', async ({ page }) => {
+test('it cancels the delete confirmation modal', async ({ page, openAIClient }) => {
   await loadFileManagementPage(page);
 
-  const filename = 'test.pdf';
+  const filename = `${faker.word.noun()}-test.pdf`;
+  await createPDF(filename);
 
   await uploadFile(page, filename);
   await expect(page.getByText(`${filename} imported successfully`)).toBeVisible();
   await expect(page.getByText(`${filename} imported successfully`)).not.toBeVisible(); // wait for upload to finish
 
-  const checkboxes = await page.getByRole('checkbox').all();
-  await checkboxes[1].check({ force: true });
+  const row = await getTableRow(page, filename);
+  expect(row).not.toBeNull();
+  await row!.getByRole('checkbox').check({ force: true });
 
   await initiateDeletion(page, filename);
 
   const cancelBtn = page.getByRole('dialog').getByRole('button', { name: 'Cancel' });
   await cancelBtn.click();
   await expect(page.getByText(`Are you sure you want to delete ${filename}`)).not.toBeVisible();
+
+  // Cleanup
+  deleteFixtureFile(filename);
+  await deleteFileByName(filename, openAIClient);
 });
 
-test('shows an error toast when there is an error deleting a file', async ({ page }) => {
-  const filename = 'test.pdf';
+test('shows an error toast when there is an error deleting a file', async ({
+  page,
+  openAIClient
+}) => {
+  const filename = `${faker.word.noun()}-test.pdf`;
+  await createPDF(filename);
+
   let hasBeenCalled = false;
   await page.route('*/**/api/files/delete', async (route) => {
     if (!hasBeenCalled && route.request().method() === 'DELETE') {
@@ -162,19 +197,27 @@ test('shows an error toast when there is an error deleting a file', async ({ pag
   await loadFileManagementPage(page);
   await uploadFile(page, filename);
 
-  await expect(page.getByText('test.pdf imported successfully')).toBeVisible();
-  await expect(page.getByText('test.pdf imported successfully')).not.toBeVisible(); // wait for upload to finish
+  await expect(page.getByText(`${filename} imported successfully`)).toBeVisible();
+  await expect(page.getByText(`${filename} imported successfully`)).not.toBeVisible(); // wait for upload to finish
 
-  const checkboxes = await page.getByRole('checkbox').all();
-  await checkboxes[1].check({ force: true });
+  const row = await getTableRow(page, filename);
+  expect(row).not.toBeNull();
+  await row!.getByRole('checkbox').check({ force: true });
 
   await initiateDeletion(page, filename);
   await confirmDeletion(page);
 
   await expect(page.getByText('Error Deleting File')).toBeVisible();
+
+  // Cleanup
+  deleteFixtureFile(filename);
+  await deleteFileByName(filename, openAIClient);
 });
 
-test('it shows toast when there is an error submitting the form', async ({ page }) => {
+test('it shows toast when there is an error submitting the form', async ({
+  page,
+  openAIClient
+}) => {
   await page.route('*/**/chat/file-management', async (route) => {
     if (route.request().method() === 'POST') {
       const json = {};
@@ -186,6 +229,16 @@ test('it shows toast when there is an error submitting the form', async ({ page 
     }
   });
 
-  await uploadFile(page);
+  await loadFileManagementPage(page);
+
+  const filename = `${faker.word.noun()}-test.pdf`;
+  await createPDF(filename);
+
+  await uploadFile(page, filename);
+
   await expect(page.getByText('Import Failed')).toBeVisible();
+
+  // Cleanup
+  deleteFixtureFile(filename);
+  await deleteFileByName(filename, openAIClient);
 });

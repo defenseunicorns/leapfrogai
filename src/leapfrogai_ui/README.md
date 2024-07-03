@@ -108,7 +108,7 @@ Running Supabase locally:
 ```
 SUPABASE_AUTH_KEYCLOAK_CLIENT_ID=uds-supabase
 SUPABASE_AUTH_KEYCLOAK_SECRET=<secret> #this is the client secret for the client in Keycloak
-SUPABASE_AUTH_EXTERNAL_KEYCLOAK_URL=https://keycloak.admin.uds.dev/realms/uds
+SUPABASE_AUTH_EXTERNAL_KEYCLOAK_URL=https://sso.uds.dev/realms/uds
 ```
 
 After it starts, the Supabase API URL and Anon key are printed to the console. These are used in the .env file to connect to Supabase.
@@ -122,6 +122,11 @@ After this initial reset, if you start Supabase again it will already have the d
 Stop Supabase:
 
 `npm run supabase:stop`
+
+_Warning - if switching the application from utilizing Leapfrog API to OpenAI or vice versa,
+and you encounter this error:_
+`Server responded with status code 431. See https://vitejs.dev/guide/troubleshooting.html#_431-request-header-fields-too-large.`
+_you need to clear your browser cookies_
 
 ### Building
 

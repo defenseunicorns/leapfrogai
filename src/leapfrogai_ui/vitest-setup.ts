@@ -1,18 +1,18 @@
 import '@testing-library/jest-dom/vitest';
 import '@testing-library/svelte/vitest';
 import { setupServer } from 'msw/node';
-import type { Navigation, Page } from '@sveltejs/kit';
-import { faker } from '@faker-js/faker';
-import { readable, type Readable } from 'svelte/store';
 import { afterAll, afterEach, beforeAll, vi } from 'vitest';
 import * as environment from '$app/environment';
 import * as navigation from '$app/navigation';
 import * as stores from '$app/stores';
-import { getFakeProfile, getFakeSession } from '$testUtils/fakeData';
+import { fakeAssistants, fakeThreads } from '$testUtils/fakeData';
 import OpenAIMock from '$lib/mocks/openai';
 import dotenv from 'dotenv';
 
 dotenv.config();
+
+//Calls to vi.mock are hoisted to the top of the file, so you don't have access to variables declared in the global file scope unless they are defined with vi.hoisted before the call.
+const { getStores } = await vi.hoisted(() => import('$lib/mocks/svelte'));
 
 // Fixes error: node.scrollIntoView is not a function
 window.HTMLElement.prototype.scrollIntoView = function () {};
@@ -58,35 +58,18 @@ vi.mock('$app/navigation', (): typeof navigation => ({
 
 // Mock SvelteKit runtime module $app/stores
 vi.mock('$app/stores', (): typeof stores => {
-  const getStores: typeof stores.getStores = () => {
-    const user_id = faker.string.uuid();
-    const full_name = faker.person.fullName();
-    const navigating = readable<Navigation | null>(null);
-    const page = readable<Page>({
-      url: new URL('http://localhost'),
-      params: {},
-      route: { id: null },
-      status: 200,
-      error: null,
-      data: {
-        threads: [],
-        profile: getFakeProfile({ id: user_id, full_name }),
-        session: getFakeSession({ user_id, full_name })
-      },
-      state: {},
-      form: null
-    });
-    const updated: Readable<boolean> & { check(): Promise<boolean> } = {
-      subscribe: readable(false).subscribe,
-      check: () => Promise.resolve(false)
-    };
-
-    return { navigating, page, updated };
-  };
-
   const page: typeof stores.page = {
     subscribe(fn) {
-      return getStores().page.subscribe(fn);
+      return getStores({
+        url: `http://localhost/chat/${fakeThreads[0].id}`,
+        params: { thread_id: fakeThreads[0].id },
+        data: {
+          threads: fakeThreads,
+          assistants: fakeAssistants,
+          assistant: undefined,
+          files: []
+        }
+      }).page.subscribe(fn);
     }
   };
   const navigating: typeof stores.navigating = {

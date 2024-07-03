@@ -2,27 +2,26 @@
   import { page } from '$app/stores';
   import { Button, Tile } from 'carbon-components-svelte';
   import { Copy, Edit, Reset, UserAvatar } from 'carbon-icons-svelte';
-  import { type Message as AIMessage } from 'ai/svelte';
+  import { type Message as VercelAIMessage } from 'ai/svelte';
   import { LFTextArea } from '$components';
   import frog from '$assets/frog.png';
   import { writable } from 'svelte/store';
   import { threadsStore, toastStore } from '$stores';
   import { convertTextToMessageContentArr, getMessageText } from '$helpers/threads';
-  import type { Message as OpenAIMessage } from 'openai/resources/beta/threads/messages';
   import {
     getAssistantImage,
     handleAssistantRegenerate,
-    handleChatMessageEdit,
     handleChatRegenerate,
+    handleMessageEdit,
     isRunAssistantResponse
   } from '$helpers/chatHelpers';
   import DynamicPictogram from '$components/DynamicPictogram.svelte';
-  import type { AppendFunction, ReloadFunction } from '$lib/types/messages';
+  import type { AppendFunction, ReloadFunction, VercelOrOpenAIMessage } from '$lib/types/messages';
 
-  export let allStreamedMessages: AIMessage[];
-  export let message: AIMessage | OpenAIMessage;
-  export let messages: AIMessage[] = [];
-  export let setMessages: (messages: AIMessage[]) => void;
+  export let allStreamedMessages: VercelOrOpenAIMessage[];
+  export let message: VercelOrOpenAIMessage;
+  export let messages: VercelAIMessage[] = [];
+  export let setMessages: (messages: VercelAIMessage[]) => void;
   export let isLastMessage: boolean;
   export let append: AppendFunction;
   export let reload: ReloadFunction;
@@ -49,7 +48,7 @@
       threadsStore.setSelectedAssistantId(message.assistant_id);
     }
 
-    await handleChatMessageEdit({
+    await handleMessageEdit({
       allStreamedMessages,
       message: { ...message, content: convertTextToMessageContentArr($value) },
       thread_id: $page.params.thread_id,

@@ -1,5 +1,5 @@
 import { expect, test } from './fixtures';
-import { loadApiKeyPage, loadChatPage } from './helpers';
+import { getTableRow, loadApiKeyPage, loadChatPage } from './helpers/helpers';
 
 test('it can navigate to the API key page', async ({ page }) => {
   await loadChatPage(page);
@@ -20,6 +20,13 @@ test('it can create and delete an API key', async ({ page }) => {
   await expect(page.getByText(`${keyName} created successfully`)).toBeVisible();
   await page.getByRole('button', { name: 'Close' }).click({ force: true });
   await expect(page.getByText('Save secret key')).not.toBeVisible();
-
+  const row = await getTableRow(page, keyName);
+  expect(row).not.toBeNull();
+  await row!.getByRole('checkbox').check({ force: true });
+  const deleteBtn = page.getByRole('button', { name: 'delete' });
+  await deleteBtn.click();
+  await expect(page.getByText(`Are you sure you want to delete ${keyName}?`)).toBeVisible();
+  const deleteBtns = await page.getByRole('button', { name: 'delete' }).all();
+  await deleteBtns[1].click();
+  await expect(page.getByText('Key Deleted')).toBeVisible();
 });
-
