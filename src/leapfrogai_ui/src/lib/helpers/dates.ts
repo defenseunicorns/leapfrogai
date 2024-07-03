@@ -228,12 +228,12 @@ export const formatDate = (date: Date) => {
   return `${day} ${month} ${year}`;
 };
 
-// Calculate the number of days between two dates (dates are in milliseconds)
+// Calculate the number of days between two dates (dates are in seconds)
 export const calculateDays = (beginDate: number, endDate: number) => {
-  const differenceInMilliseconds = Math.abs(endDate - beginDate);
-  // Convert milliseconds to days
-  const millisecondsPerDay = 1000 * 60 * 60 * 24;
-  const differenceInDays = differenceInMilliseconds / millisecondsPerDay;
+  const differenceInSeconds = Math.abs(endDate - beginDate);
+  // Convert seconds to days
+  const secondsPerDay = 60 * 60 * 24;
+  const differenceInDays = differenceInSeconds / secondsPerDay;
 
-  return differenceInDays;
+  return Math.round(differenceInDays);
 };

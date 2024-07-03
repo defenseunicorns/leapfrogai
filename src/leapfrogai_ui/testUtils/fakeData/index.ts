@@ -329,8 +329,8 @@ export const getFakeApiKeys = (options: GetFakeApiKeysOptions = {}): APIKeyRow[]
       id: faker.string.uuid(),
       name: faker.word.noun(),
       api_key: `lfai_${faker.string.uuid()}`,
-      created_at: created_at.getTime(),
-      expires_at: sevenDays.getTime(),
+      created_at: created_at.getTime() / 1000,
+      expires_at: sevenDays.getTime() / 1000,
       permissions: faker.helpers.arrayElement([
         PERMISSIONS.ALL,
         PERMISSIONS.READ,

@@ -32,7 +32,11 @@ export const load = async ({ depends, locals: { safeGetSession } }) => {
   }
 
   keys = await res.json();
-  // keys = [];
+  // convert from seconds to milliseconds
+  keys.forEach((key) => {
+    key.created_at = key.created_at * 1000;
+    key.expires_at = key.expires_at * 1000;
+  });
 
   return { title: 'LeapfrogAI - API Keys', form, keys };
 };
@@ -51,7 +55,10 @@ export const actions = {
     }
 
     const res = await fetch(`${env.LEAPFROGAI_API_BASE_URL}/leapfrogai/v1/auth/create-api-key`, {
-      headers: { Authorization: `Bearer ${session.access_token}` },
+      headers: {
+        Authorization: `Bearer ${session.access_token}`,
+        'Content-Type': 'application/json'
+      },
       method: 'POST',
       body: JSON.stringify(form.data)
     });
@@ -59,14 +66,7 @@ export const actions = {
       return fail(500, { form });
     }
     const newKey = await res.json();
-    // const newKey: APIKeyRow = {
-    //   id: '1',
-    //   name: "testName",
-    //   api_key: '12345',
-    //   created_at: new Date().getTime(),
-    //   expires_at: new Date().getTime(),
-    //   permissions: PERMISSIONS.ALL
-    // };
+
     return {
       form,
       key: newKey

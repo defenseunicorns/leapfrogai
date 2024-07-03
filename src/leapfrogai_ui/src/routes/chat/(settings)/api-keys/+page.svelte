@@ -42,29 +42,29 @@
       case 0: {
         const sevenDays = new Date();
         sevenDays.setDate(sevenDays.getDate() + 7);
-        selectedExpirationDate = sevenDays.getTime();
+        selectedExpirationDate = Math.floor(sevenDays.getTime() / 1000);
         break;
       }
       case 1: {
         const thirtyDays = new Date();
         thirtyDays.setDate(thirtyDays.getDate() + 30);
-        selectedExpirationDate = thirtyDays.getTime();
+        selectedExpirationDate = Math.floor(thirtyDays.getTime() / 1000);
         break;
       }
       case 2: {
         const sixtyDays = new Date();
         sixtyDays.setDate(sixtyDays.getDate() + 60);
-        selectedExpirationDate = sixtyDays.getTime();
+        selectedExpirationDate = Math.floor(sixtyDays.getTime() / 1000);
         break;
       }
       case 3: {
         const ninetyDays = new Date();
         ninetyDays.setDate(ninetyDays.getDate() + 90);
-        selectedExpirationDate = ninetyDays.getTime();
+        selectedExpirationDate = Math.floor(ninetyDays.getTime() / 1000);
         break;
       }
       default: {
-        selectedExpirationDate = new Date().getTime();
+        selectedExpirationDate = Math.floor(new Date().getTime() / 1000);
         break;
       }
     }
@@ -96,7 +96,6 @@
       handleError();
     },
     onResult({ result }) {
-      console.log(result);
       if (result.type === 'success') {
         createdKey = result.data?.key;
         modalOpen = false;
@@ -138,7 +137,6 @@
         title: `${isMultiple ? 'Keys' : 'Key'} Deleted`,
         subtitle: ''
       });
-      await invalidate('lf:api-keys');
     } else {
       toastStore.addToast({
         kind: 'error',
@@ -146,6 +144,7 @@
         subtitle: ''
       });
     }
+    await invalidate('lf:api-keys');
   };
 
   const handleCancelConfirmDelete = () => {
@@ -209,7 +208,7 @@
           value: 'Expires',
           display: (created_at) => formatDate(new Date(created_at))
         },
-        { key: 'permissions', value: 'Permissions' }
+        { key: 'permissions', value: 'Permissions', display: (permissions) => permissions || '' }
       ]}
       rows={data.keys || []}
       batchSelection={true}
@@ -347,7 +346,7 @@
         <div style="width: 100%">
           <label for="saved-expiration" class:bx--label={true}>Expiration</label>
           <p id="saved-expiration">
-            {`${calculateDays(createdKey.created_at, createdKey.expires_at)} days - ${formatDate(new Date(createdKey.expires_at))}`}
+            {`${calculateDays(createdKey.created_at, createdKey.expires_at)} days - ${formatDate(new Date(createdKey.expires_at * 1000))}`}
           </p>
         </div>
       </div>

@@ -75,7 +75,7 @@ describe('/api/api-keys/delete', () => {
     });
   });
 
-  it('returns a 500 when there is a openai error', async () => {
+  it('returns a 500 when there is an API error', async () => {
     mockRevokeApiKeyError();
     const request = new Request('http://thisurlhasnoeffect', {
       method: 'DELETE',

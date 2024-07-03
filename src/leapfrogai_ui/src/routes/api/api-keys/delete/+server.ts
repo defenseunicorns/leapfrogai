@@ -25,16 +25,21 @@ export async function DELETE({ request, locals: { safeGetSession } }) {
   const promises: Promise<Response>[] = [];
   for (const id of requestData.ids) {
     promises.push(
-      fetch(`${env.LEAPFROGAI_API_BASE_URL}/leapfrogai/v1/auth/revoke-api-key`, {
+      fetch(`${env.LEAPFROGAI_API_BASE_URL}/leapfrogai/v1/auth/revoke-api-key/${id}`, {
         method: 'DELETE',
-        headers: { Authorization: `Bearer ${session.access_token}` },
-        body: JSON.stringify({ id })
+        headers: {
+          Authorization: `Bearer ${session.access_token}`,
+          'Content-Type': 'application/json'
+        }
       })
     );
   }
   const results = await Promise.allSettled(promises);
   results.forEach((result) => {
-    if (result.status !== 'fulfilled' || result.value.status !== 204) {
+    if (
+      result.status === 'rejected' ||
+      !(result.value.status === 200 || result.value.status === 204)
+    ) {
       const msg = `Error deleting API ${requestData.ids.length > 1 ? 'keys' : 'key'}`;
       console.error(`${msg} ${JSON.stringify(result)}`);
       error(500, msg);

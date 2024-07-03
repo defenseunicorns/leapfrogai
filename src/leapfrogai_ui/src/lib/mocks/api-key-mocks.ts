@@ -70,7 +70,7 @@ export const mockCreateApiKeyError = () => {
 export const mockRevokeApiKey = () => {
   server.use(
     http.delete(
-      `${process.env.LEAPFROGAI_API_BASE_URL}/leapfrogai/v1/auth/revoke-api-key`,
+      `${process.env.LEAPFROGAI_API_BASE_URL}/leapfrogai/v1/auth/revoke-api-key/:id`,
       () => new HttpResponse(null, { status: 204 })
     )
   );
@@ -79,7 +79,7 @@ export const mockRevokeApiKey = () => {
 export const mockRevokeApiKeyError = () => {
   server.use(
     http.delete(
-      `${process.env.LEAPFROGAI_API_BASE_URL}/leapfrogai/v1/auth/revoke-api-key`,
+      `${process.env.LEAPFROGAI_API_BASE_URL}/leapfrogai/v1/auth/revoke-api-key/:id`,
       () => new HttpResponse(null, { status: 500 })
     )
   );

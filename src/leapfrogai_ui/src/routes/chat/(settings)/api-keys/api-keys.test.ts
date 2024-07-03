@@ -43,10 +43,20 @@ describe('api keys', () => {
   });
   it('searches for keys by date', async () => {
     expect(screen.getByText(keys[0].name)).toBeInTheDocument();
-    await userEvent.type(screen.getByRole('searchbox'), formatDate(new Date(keys[0].created_at)));
+    await userEvent.type(
+      screen.getByRole('searchbox'),
+      formatDate(new Date(keys[0].created_at * 1000))
+    );
     expect(screen.queryByText(keys[1].name)).not.toBeInTheDocument();
     expect(screen.getByText(keys[0].name)).toBeInTheDocument();
   });
+  it('searches for keys by secret', async () => {
+    expect(screen.getByText(keys[0].name)).toBeInTheDocument();
+    await userEvent.type(screen.getByRole('searchbox'), keys[0].api_key.slice(-4));
+    expect(screen.queryByText(keys[1].name)).not.toBeInTheDocument();
+    expect(screen.getByText(keys[0].name)).toBeInTheDocument();
+  });
+
   it('can delete keys', async () => {
     mockDeleteApiKey();
     const toastSpy = vi.spyOn(toastStore, 'addToast');
@@ -136,6 +146,6 @@ describe('api keys', () => {
     });
   });
 
-  // TODO - test here for feature flag?
-  // TODO - test copy key and disappear
+  // Note - not testing the feature flagging of blocking api-keys page when using OPEN AI
+  // Note - testing copying of created key via E2E due to TypeError mentioned with above test
 });
