@@ -105,7 +105,6 @@ The following URLs should now also be available to view LFAI resources:
 | ---------- | ------------------------------------- |
 | UI         | <https://ai.uds.dev>                  |
 | API        | <https://leapfrogai-api.uds.dev/docs> |
-| RAG Server | <https://leapfrogai-rag.uds.dev/docs> |
 
 ## Accessing the UI
 
