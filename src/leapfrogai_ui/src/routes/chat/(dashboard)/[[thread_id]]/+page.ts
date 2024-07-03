@@ -2,8 +2,7 @@ import { browser } from '$app/environment';
 import type { LFThread } from '$lib/types/threads';
 import { threadsStore } from '$stores';
 
-export const load = async ({ params, fetch, depends }) => {
-  depends('lf:thread');
+export const load = async ({ params, fetch }) => {
   const promises = [fetch('/api/assistants'), fetch('/api/files')];
 
   if (params.thread_id) promises.push(fetch(`/api/threads/${params.thread_id}`));
