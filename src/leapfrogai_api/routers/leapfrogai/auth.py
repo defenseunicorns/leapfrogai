@@ -47,14 +47,6 @@ class APIKeyItem(BaseModel):
     )
 
 
-class RevokeAPIKey(BaseModel):
-    """Request body for revoking an API key."""
-
-    id: str
-    revoked: bool
-    message: str
-
-
 @router.post("/create-api-key")
 async def create_api_key(
     session: Session,
@@ -85,11 +77,11 @@ async def create_api_key(
     return api_key_item
 
 
-@router.delete("/revoke-api-key/{api_key_id}")
+@router.delete("/revoke-api-key/{api_key_id}", status_code=status.HTTP_204_NO_CONTENT)
 async def revoke_api_key(
     session: Session,
     api_key_id: str,
-) -> RevokeAPIKey:
+):
     """Revoke an API key."""
 
     data, _count = (
@@ -97,9 +89,9 @@ async def revoke_api_key(
     )
 
     if not data[1]:
-        return RevokeAPIKey(id=api_key_id, revoked=False, message="API key not found.")
-
-    return RevokeAPIKey(id=api_key_id, revoked=True, message="API key revoked.")
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND, detail="API key not found."
+        )
 
 
 @router.get("/list-api-keys")
