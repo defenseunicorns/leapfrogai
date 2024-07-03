@@ -91,12 +91,15 @@ In order to test the GPU deployment locally on K3d, use the following command wh
 ```
 
 ## Checking Deployment
-
-Inspect the cluster using:
+Once the cluster and LFAI have deployed, the cluster and pods can be inspected using uds:
 
 ```bash
 uds zarf tools monitor
 ```
+
+The following URLs should now also be available to view LFAI resources:
+
+**DISCLAIMER**: These URls will only be available *after* both K3D-core and LFAI have been deployed. They will also only be available on the host system that deployed the cluster.
 
 | Tool       | URL                                   |
 | ---------- | ------------------------------------- |
