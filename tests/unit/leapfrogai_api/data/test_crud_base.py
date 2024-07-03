@@ -151,7 +151,11 @@ async def test_get_fail(mock_session, filters, mock_response):
 @pytest.mark.parametrize(
     "filters, mock_response, expected_result",
     [
-        ({"id": 1}, [dict(id=1, name="mock-data")], [MockModel(id=1, name="mock-data")]),
+        (
+            {"id": 1},
+            [dict(id=1, name="mock-data")],
+            [MockModel(id=1, name="mock-data")],
+        ),
         (
             {"id": 1},
             [dict(id=1, name="mock-data"), dict(id=2, name="mock-data")],

@@ -1,4 +1,4 @@
-class MockAPIResponse():
+class MockAPIResponse:
     def __init__(self, data=None):
         if isinstance(data, list):
             self.data = data

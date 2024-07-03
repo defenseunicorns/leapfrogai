@@ -29,7 +29,7 @@ class CRUDBase(Generic[ModelType]):
             del dict_["created_at"]
 
         result = await self.db.table(self.table_name).insert(dict_).execute()
-        
+
         try:
             return self.model(**result.data[0])
         except Exception:
