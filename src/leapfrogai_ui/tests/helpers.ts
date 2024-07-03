@@ -37,6 +37,12 @@ export const loadChatPage = async (page: Page) => {
   await expect(page).toHaveTitle('LeapfrogAI - Chat');
 };
 
+export const loadApiKeyPage = async (page: Page) => {
+  await page.goto('/chat/api-keys');
+  await page.waitForURL('/chat/api-keys');
+  await expect(page).toHaveTitle('LeapfrogAI - API Keys');
+};
+
 export const clickToDeleteThread = async (page: Page, label: string) => {
   await page.getByTestId(`overflow-menu-${label}`).click();
   await page.getByTestId(`overflow-menu-delete-${label}`).click();
