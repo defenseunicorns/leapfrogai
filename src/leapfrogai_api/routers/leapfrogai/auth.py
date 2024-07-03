@@ -15,6 +15,12 @@ THIRTY_DAYS = 60 * 60 * 24 * 30  # in seconds
 class CreateAPIKeyRequest(BaseModel):
     """Request body for creating an API key."""
 
+    name: str | None = Field(
+        default=None,
+        description="The name of the API key.",
+        examples=["API Key 1"],
+    )
+
     expires_at: int = Field(
         default=int(time.time()) + THIRTY_DAYS,
         description="The time at which the API key expires, in seconds since the Unix epoch.",
@@ -25,6 +31,7 @@ class CreateAPIKeyRequest(BaseModel):
 class APIKeyItem(BaseModel):
     """Response body for an API key."""
 
+    name: str | None
     id: str
     api_key: str = Field(
         description="The API key.",
@@ -64,7 +71,10 @@ async def create_api_key(
 
     try:
         api_key_item = await _generate_and_store_api_key(
-            session, user_id, request.expires_at
+            session=session,
+            name=request.name,
+            expires_at=request.expires_at,
+            user_id=user_id,
         )
     except HTTPException as exc:
         raise HTTPException(
@@ -78,16 +88,16 @@ async def create_api_key(
 @router.post("/revoke-api-key")
 async def revoke_api_key(
     session: Session,
-    id_: str,
+    id: str,
 ) -> RevokeAPIKey:
     """Revoke an API key."""
 
-    data, _count = await session.table("api_keys").delete().eq("id", id_).execute()
+    data, _count = await session.table("api_keys").delete().eq("id", id).execute()
 
     if not data[1]:
-        return RevokeAPIKey(id=id_, revoked=False, message="API key not found.")
+        return RevokeAPIKey(id=id, revoked=False, message="API key not found.")
 
-    return RevokeAPIKey(id=id_, revoked=True, message="API key revoked.")
+    return RevokeAPIKey(id=id, revoked=True, message="API key revoked.")
 
 
 @router.get("/list-api-keys")
@@ -108,6 +118,7 @@ async def list_api_keys(
         prefix, _, checksum = security.parse_api_key(entry["api_key"])
         endpoint_response.append(
             APIKeyItem(
+                name=entry["name"],
                 id=entry["id"],
                 api_key=f"{prefix}_****_{checksum}",
                 created_at=entry["created_at"],
@@ -119,7 +130,7 @@ async def list_api_keys(
 
 
 async def _generate_and_store_api_key(
-    session: Session, user_id: str, expires_at: int
+    session: Session, user_id: str, expires_at: int, name: str | None = None
 ) -> APIKeyItem:
     """Generate and store an API key."""
     read_once_token, hashed_token = security.generate_api_key()
@@ -128,6 +139,7 @@ async def _generate_and_store_api_key(
         await session.table("api_keys")
         .insert(
             {
+                "name": name,
                 "user_id": user_id,
                 "api_key": hashed_token,
                 "expires_at": expires_at,
@@ -139,6 +151,7 @@ async def _generate_and_store_api_key(
 
     if response:
         return APIKeyItem(
+            name=name,
             id=response[0]["id"],  # This is set by the database
             api_key=read_once_token,
             created_at=response[0]["created_at"],

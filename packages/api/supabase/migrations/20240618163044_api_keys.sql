@@ -1,5 +1,6 @@
 -- Initialize api_keys table
 create table api_keys (
+    name text,
     id uuid primary key default uuid_generate_v4(),
     user_id uuid references auth.users not null,
     api_key text not null unique,
