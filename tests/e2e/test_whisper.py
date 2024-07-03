@@ -46,3 +46,12 @@ def test_transcriptions():
 
     assert len(transcription.text) > 0  # The transcription should not be empty
     assert len(transcription.text) < 500  # The transcription should not be too long
+
+
+def test_translations():
+    translation = client.audio.translations.create(
+        model="whisper", file=Path("tests/data/arabic-audio.wav")
+    )
+
+    assert len(translation.text) > 0  # The translation should not be empty
+    assert len(translation.text) < 500  # The translation should not be too long
