@@ -4,6 +4,10 @@ from fastapi import HTTPException, status
 from openai.types.beta import Thread
 from openai.types.beta.thread import ToolResources as BetaThreadToolResources
 from openai.types.beta.threads import Message, MessageDeleted, MessageContent
+from openai.types.beta.threads.message import Attachment
+
+from typing_extensions import Literal
+from typing import List, Optional
 from pydantic import BaseModel, Field
 from leapfrogai_api.data.crud_message import CRUDMessage
 from leapfrogai_api.data.crud_thread import CRUDThread
@@ -48,9 +52,11 @@ class CreateThreadRequest(BaseModel):
             if self.messages:
                 new_messages = [
                     await self.create_message(
-                        message.content,
-                        new_thread.id,
-                        session,
+                        role=message.role,
+                        message_content=message.content,
+                        attachments=message.attachments,
+                        thread_id=new_thread.id,
+                        session=session,
                     )
                     for message in self.messages
                 ]
@@ -63,7 +69,12 @@ class CreateThreadRequest(BaseModel):
             raise exc
 
     async def create_message(
-        self, message_content: list[MessageContent], thread_id: str, session: Session
+        self,
+        role: Literal["user", "assistant"],
+        message_content: list[MessageContent],
+        attachments: Optional[List[Attachment]],
+        thread_id: str,
+        session: Session,
     ) -> Message:
         """Create a message."""
         try:
@@ -71,12 +82,12 @@ class CreateThreadRequest(BaseModel):
 
             message = Message(
                 id="",  # Leave blank to have Postgres generate a UUID
-                attachments=self.attachments,
+                attachments=attachments,
                 content=message_content,
                 created_at=0,  # Leave blank to have Postgres generate a timestamp
                 metadata=self.metadata,
                 object="thread.message",
-                role=self.role,
+                role=role,
                 status="completed",
                 thread_id=thread_id,
             )

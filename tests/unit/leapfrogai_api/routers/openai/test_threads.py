@@ -26,27 +26,28 @@ async def test_create_thread(
     mock_create_thread.return_value = mock_thread
     mock_create_messages.return_value = mock_message
 
-    request = CreateThreadRequest(
-        messages=mock_message_payload, metadata=dict(mockfield="mock-data")
-    )
+    mock_metadata = dict(mockfield="mock-data")
+
+    request = CreateThreadRequest(messages=mock_message_payload, metadata=mock_metadata)
     response = await create_thread(request, mock_session)
 
     assert response.id == "1"
     assert response.object == "thread"
 
-    # check if CRUDThread.create was called with our mock-data passed through
+    # Check if CRUDThread.create was called with our mock-data passed through
     mock_create_thread.assert_called_once()
     _, kwargs = mock_create_thread.call_args
     assert kwargs["object_"].metadata["mockfield"] == "mock-data"
 
-    # check if CRUDMessage.create was called N times
+    # Check if CRUDMessage.create was called N times
     assert mock_create_messages.call_count == len(mock_message_payload)
 
     # Verify each call to CRUDMessage.create was with the expected message
     for idx, call in enumerate(mock_create_messages.call_args_list):
-        args, kwargs = call
-        # Assuming the create method is called with the message as the first argument
-        assert args[0] == mock_message_payload[idx]
+        _, kwargs = call
+        # assert kwargs["object_"] == mock_message_payload[idx]
+        assert kwargs["object_"].metadata == mock_metadata
+        assert kwargs["object_"].content == mock_message_payload[idx].content
 
 
 @pytest.mark.asyncio
