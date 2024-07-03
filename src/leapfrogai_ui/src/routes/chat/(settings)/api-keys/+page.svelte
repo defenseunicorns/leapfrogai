@@ -80,6 +80,7 @@
         title: 'Error creating API Key',
         subtitle: ''
       });
+      invalidate('lf:api-keys');
     },
     onResult({ result }) {
       if (result.type === 'success') {
@@ -264,7 +265,9 @@
           This API key is linked to your user account and get be used to make API calls to Leapfrog
           AI. Keep this key safe and private.
         </p>
+
         <TextInput
+          id="name"
           name="name"
           labelText="Name"
           placeholder="Test Key"
@@ -274,12 +277,20 @@
           invalid={!!$errors.name}
           invalidText={$errors.name?.toString()}
         />
-        <ContentSwitcher size="xl" style="width: 60%" bind:selectedIndex={selectedExpirationIndex}>
-          <Switch text="7 Days" />
-          <Switch text="30 Days" />
-          <Switch text="60 Days" />
-          <Switch text="90 Days" />
-        </ContentSwitcher>
+        <div>
+          <label for="expiration" class:bx--label={true}>Expiration</label>
+          <ContentSwitcher
+            id="expiration"
+            size="xl"
+            style="width: 60%"
+            bind:selectedIndex={selectedExpirationIndex}
+          >
+            <Switch text="7 Days" />
+            <Switch text="30 Days" />
+            <Switch text="60 Days" />
+            <Switch text="90 Days" />
+          </ContentSwitcher>
+        </div>
         <input type="hidden" name="expires_at" value={selectedExpirationDate} />
       </div>
     </Modal>

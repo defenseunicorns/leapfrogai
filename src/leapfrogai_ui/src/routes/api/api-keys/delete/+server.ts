@@ -32,18 +32,14 @@ export async function DELETE({ request, locals: { safeGetSession } }) {
       })
     );
   }
-
-  await Promise.all(promises);
-  // TODO - handle error
-
-  // const res = await fetch(`${env.LEAPFROGAI_API_BASE_URL}/leapfrogai/v1/auth/revoke-api-key`, {
-  //   method: 'DELETE',
-  //   headers: { Authorization: `Bearer ${session.access_token}` },
-  //   body: JSON.stringify({ ids: requestData.ids })
-  // });
-  // if (!res.ok) {
-  //   console.error(`error revoking API key(s): ${res.status}`);
-  //   error(500, 'Error revoking API key(s)');
-  // }
-  return new Response(undefined, { status: 204 });
+  const results = await Promise.allSettled(promises);
+  results.forEach((result) => {
+    if (result.status === 'fulfilled' && result.value.status === 204) {
+      return new Response(undefined, { status: 204 });
+    } else {
+      const msg = `Error deleting API ${requestData.ids.length > 1 ? 'keys' : 'key'}`;
+      console.error(`${msg} ${JSON.stringify(result)}`);
+      error(500, msg);
+    }
+  });
 }
