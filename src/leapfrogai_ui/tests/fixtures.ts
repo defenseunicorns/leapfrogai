@@ -17,7 +17,7 @@ type Cookie = {
   sameSite: string;
 };
 
-export const getOpenAIClient = () => {
+export const getToken = () => {
   const authData = JSON.parse(fs.readFileSync('playwright/.auth/user.json', 'utf-8'));
   const cookie = authData.cookies.find(
     (cookie: Cookie) => cookie.name === 'sb-supabase-kong-auth-token.0'
@@ -26,9 +26,13 @@ export const getOpenAIClient = () => {
   const decodedValue = decodeURIComponent(cookie.value);
   // The cookie value is missing ending " and }, so we append it
   const parsedValue = JSON.parse(`${decodedValue}"}`);
+  return parsedValue.token;
+};
+export const getOpenAIClient = () => {
+  const token = getToken();
 
   const client = new OpenAI({
-    apiKey: process.env.OPENAI_API_KEY || parsedValue.access_token,
+    apiKey: process.env.OPENAI_API_KEY || token,
     baseURL: process.env.LEAPFROGAI_API_BASE_URL
   });
   return client;
