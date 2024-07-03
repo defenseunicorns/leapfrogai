@@ -62,15 +62,25 @@
   }
   $: active = selectedRowIds.length > 0;
   $: keyNames = data.keys
-    .map((key) => {
-      if (selectedRowIds.includes(key.id)) return key.name;
-    })
-    .filter((key) => key !== undefined)
-    .join(', ');
+    ? data.keys
+        .map((key) => {
+          if (selectedRowIds.includes(key.id)) return key.name;
+        })
+        .filter((key) => key !== undefined)
+        .join(', ')
+    : '';
 
   const { form, errors, enhance, submit, reset } = superForm(data.form, {
     invalidateAll: false,
     validators: yup(newAPIKeySchema),
+    onError() {
+      modalOpen = false;
+      toastStore.addToast({
+        kind: 'error',
+        title: 'Error creating API Key',
+        subtitle: ''
+      });
+    },
     onResult({ result }) {
       if (result.type === 'success') {
         createdKey = result.data?.key;
@@ -81,12 +91,6 @@
           subtitle: ''
         });
         invalidate('lf:api-keys');
-      } else if (result.type === 'error') {
-        toastStore.addToast({
-          kind: 'error',
-          title: `Error creating API Key`,
-          subtitle: 'Please try again or contact support'
-        });
       }
     }
   });
@@ -111,15 +115,21 @@
   const handleDelete = async () => {
     deleting = true;
     const isMultiple = selectedRowIds.length > 1;
-    const res = { ok: true }; // TODO - api call here
+    const res = await fetch('/api/api-keys/delete', {
+      body: JSON.stringify({ ids: selectedRowIds }),
+      method: 'DELETE'
+    });
+
     confirmDeleteModalOpen = false;
-    await invalidate('lf:api-keys');
+    selectedRowIds = [];
+    deleting = false;
     if (res.ok) {
       toastStore.addToast({
         kind: 'success',
         title: `${isMultiple ? 'Keys' : 'Key'} Deleted`,
         subtitle: ''
       });
+      await invalidate('lf:api-keys');
     } else {
       toastStore.addToast({
         kind: 'error',
@@ -127,8 +137,6 @@
         subtitle: ''
       });
     }
-    selectedRowIds = [];
-    deleting = false;
   };
 
   const handleCancelConfirmDelete = () => {
@@ -220,10 +228,14 @@
             bind:filteredRowIds
             shouldFilterRows={(row, value) => {
               // filter for name and date
-              const formattedDate = formatDate(new Date(row.created_at)).toLowerCase();
+              const formattedCreatedAtDate = formatDate(new Date(row.created_at)).toLowerCase();
+              const formattedExpiresAtDate = formatDate(new Date(row.expires_at)).toLowerCase();
               return (
-                formattedDate.includes(value.toString().toLowerCase()) ||
-                row.name.toLowerCase().includes(value.toString().toLowerCase())
+                row.name.toLowerCase().includes(value.toString().toLowerCase()) ||
+                row.api_key.toLowerCase().includes(value.toString().toLowerCase()) ||
+                formattedCreatedAtDate.includes(value.toString().toLowerCase()) ||
+                formattedExpiresAtDate.includes(value.toString().toLowerCase()) ||
+                row.permissions.toLowerCase().includes(value.toString().toLowerCase())
               );
             }}
           />

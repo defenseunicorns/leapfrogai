@@ -1,20 +1,39 @@
-import { message, superValidate } from 'sveltekit-superforms';
+import { message, superValidate, fail as superformsFail } from 'sveltekit-superforms';
 import { yup } from 'sveltekit-superforms/adapters';
 import { newAPIKeySchema } from '$schemas/apiKey';
 import { type APIKeyRow, PERMISSIONS } from '$lib/types/apiKeys';
-import { fail, json, redirect } from '@sveltejs/kit';
+import { error, fail, redirect } from '@sveltejs/kit';
 import { env } from '$env/dynamic/private';
 
-export const load = async ({ depends }) => {
+export const load = async ({ depends, locals: { safeGetSession } }) => {
   depends('lf:api-keys');
+  const form = await superValidate(yup(newAPIKeySchema));
+
+  const { session } = await safeGetSession();
+  if (!session) {
+    error(401, { message: 'Unauthorized' });
+  }
 
   // Feature Flag - if using OpenAI, disable API Keys page
   if (env.OPENAI_API_KEY) {
     throw redirect(303, '/');
   }
-  const form = await superValidate(yup(newAPIKeySchema));
 
-  let keys: APIKeyRow[] = [
+  let keys: APIKeyRow[] = [];
+
+  // const res = await fetch(`${env.LEAPFROGAI_API_BASE_URL}/leapfrogai/v1/auth/list-api-keys`, {
+  //   headers: {
+  //     Authorization: `Bearer ${session.access_token}`
+  //   }
+  // });
+  //
+  // if (!res.ok) {
+  //   return error(500, { message: 'Error fetching API keys' });
+  // }
+  //
+  // keys = await res.json();
+
+  keys = [
     {
       id: '1',
       name: 'key-1',
@@ -61,13 +80,17 @@ export const actions = {
     const form = await superValidate(request, yup(newAPIKeySchema));
 
     if (!form.valid) {
-      return fail(400, { form });
+      return superformsFail(400, { form });
     }
 
-    // TODO - create API key call here
-
-    console.log('form submission data', form.data);
-
-    return { form, key: '123451234512345' };
+    // const res = await fetch(`${env.LEAPFROGAI_API_BASE_URL}/leapfrogai/v1/auth/create-api-key`, {
+    //   headers: { Authorization: `Bearer ${session.access_token}` },
+    //   method: 'POST',
+    //   body: JSON.stringify(form.data)
+    // });
+    // if (!res.ok) {
+    //   throw new Error('Error creating API key');
+    // }
+    return { form, key: '123451234512345' }; // TODO - replace with response from API
   }
 };

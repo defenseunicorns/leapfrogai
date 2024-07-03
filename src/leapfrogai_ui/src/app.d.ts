@@ -5,6 +5,7 @@ import type { LFAssistant } from '$lib/types/assistants';
 import type { Profile } from '$lib/types/profile';
 import type { LFThread } from '$lib/types/threads';
 import type { FileObject } from 'openai/resources/files';
+import type {APIKeyRow} from "$lib/types/apiKeys";
 
 declare global {
   namespace App {
@@ -22,6 +23,7 @@ declare global {
       assistants?: LFAssistant[];
       assistant?: LFAssistant;
       files?: FileObject[];
+      keys?: APIKeyRow[];
     }
 
     // interface PageState {}
