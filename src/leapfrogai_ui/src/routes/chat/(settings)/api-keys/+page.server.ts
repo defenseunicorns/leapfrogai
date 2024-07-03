@@ -1,8 +1,8 @@
-import { message, superValidate, fail as superformsFail } from 'sveltekit-superforms';
+import { error, fail, redirect } from '@sveltejs/kit';
+import { superValidate } from 'sveltekit-superforms';
 import { yup } from 'sveltekit-superforms/adapters';
 import { newAPIKeySchema } from '$schemas/apiKey';
-import { type APIKeyRow, PERMISSIONS } from '$lib/types/apiKeys';
-import { error, fail, redirect } from '@sveltejs/kit';
+import { type APIKeyRow } from '$lib/types/apiKeys';
 import { env } from '$env/dynamic/private';
 
 export const load = async ({ depends, locals: { safeGetSession } }) => {
@@ -32,41 +32,8 @@ export const load = async ({ depends, locals: { safeGetSession } }) => {
   // }
   //
   // keys = await res.json();
+  keys = [];
 
-  keys = [
-    {
-      id: '1',
-      name: 'key-1',
-      api_key: 'lfai_fghijklmnopqrstuvwxyz',
-      created_at: new Date().getTime(),
-      expires_at: new Date().getTime(),
-      permissions: PERMISSIONS.ALL
-    },
-    {
-      id: '2',
-      name: 'key-2',
-      api_key: 'lfai_fghijklmnopqrstuvwxyz',
-      created_at: new Date().getTime(),
-      expires_at: new Date().getTime(),
-      permissions: PERMISSIONS.WRITE
-    },
-    {
-      id: '3',
-      name: 'key-3',
-      api_key: 'lfai_fghijklmnopqrstuvwxyz',
-      created_at: new Date().getTime(),
-      expires_at: new Date().getTime(),
-      permissions: PERMISSIONS.READ_WRITE
-    },
-    {
-      id: '4',
-      name: 'key-4',
-      api_key: 'lfai_fghijklmnopqrstuvwxyz',
-      created_at: new Date().getTime(),
-      expires_at: new Date().getTime(),
-      permissions: PERMISSIONS.READ
-    }
-  ];
   return { title: 'LeapfrogAI - API Keys', form, keys };
 };
 
@@ -80,17 +47,19 @@ export const actions = {
     const form = await superValidate(request, yup(newAPIKeySchema));
 
     if (!form.valid) {
-      return superformsFail(400, { form });
+      return fail(400, { form });
     }
 
-    // const res = await fetch(`${env.LEAPFROGAI_API_BASE_URL}/leapfrogai/v1/auth/create-api-key`, {
-    //   headers: { Authorization: `Bearer ${session.access_token}` },
-    //   method: 'POST',
-    //   body: JSON.stringify(form.data)
-    // });
-    // if (!res.ok) {
-    //   throw new Error('Error creating API key');
-    // }
-    return { form, key: '123451234512345' }; // TODO - replace with response from API
+    const res = await fetch(`${env.LEAPFROGAI_API_BASE_URL}/leapfrogai/v1/auth/create-api-key`, {
+      headers: { Authorization: `Bearer ${session.access_token}` },
+      method: 'POST',
+      body: JSON.stringify(form.data)
+    });
+    if (!res.ok) {
+      return fail(500, { form });
+    }
+    const newKey = await res.json();
+
+    return { form, key: newKey.api_key };
   }
 };

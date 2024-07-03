@@ -1,6 +1,7 @@
-import { number, object, string } from 'yup';
+import { number, object, type ObjectSchema, string } from 'yup';
+import type { NewApiKeyInput } from '$lib/types/apiKeys';
 
-export const newAPIKeySchema = object({
+export const newAPIKeySchema: ObjectSchema<NewApiKeyInput> = object({
   name: string().required(),
   expires_at: number().required()
 })

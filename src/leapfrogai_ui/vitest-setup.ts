@@ -10,6 +10,9 @@ import * as navigation from '$app/navigation';
 import * as stores from '$app/stores';
 import { getFakeProfile, getFakeSession } from '$testUtils/fakeData';
 import OpenAIMock from '$lib/mocks/openai';
+import dotenv from 'dotenv';
+
+dotenv.config();
 
 // Fixes error: node.scrollIntoView is not a function
 window.HTMLElement.prototype.scrollIntoView = function () {};

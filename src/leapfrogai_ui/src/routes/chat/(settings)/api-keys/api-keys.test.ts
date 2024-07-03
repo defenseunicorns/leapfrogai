@@ -1,37 +1,42 @@
-import { fireEvent, render, screen, waitFor } from '@testing-library/svelte';
+import { fireEvent, render, screen, waitFor, within } from '@testing-library/svelte';
 import { load } from './+page.server';
 import { superValidate } from 'sveltekit-superforms';
 import { yup } from 'sveltekit-superforms/adapters';
 import { newAPIKeySchema } from '$schemas/apiKey';
 import ApiKeyPage from './+page.svelte';
-import { mockDeleteApiKey, mockGetKeys } from '$lib/mocks/api-key-mocks';
-import type { APIKeysForm } from '$lib/types/apiKeys';
+import {
+  mockCreateApiKey,
+  mockCreateApiKeyFormAction,
+  mockDeleteApiKey,
+  mockGetKeys
+} from '$lib/mocks/api-key-mocks';
+import type { APIKeysForm, NewApiKeyInput } from '$lib/types/apiKeys';
 import { getFakeApiKeys } from '$testUtils/fakeData';
 import userEvent from '@testing-library/user-event';
 import { toastStore } from '$stores';
 import { formatDate } from '$helpers/dates';
 import { vi } from 'vitest';
+import { faker } from '@faker-js/faker';
+import { sessionMock } from '$lib/mocks/supabase-mocks';
 
 describe('api keys', () => {
   let form: APIKeysForm;
   const keys = getFakeApiKeys();
 
   beforeEach(async () => {
-    const data = await load({ depends: vi.fn() });
+    mockGetKeys(keys);
+    const data = await load({ depends: vi.fn(), locals: { safeGetSession: sessionMock } });
     form = await superValidate(yup(newAPIKeySchema));
     render(ApiKeyPage, {
       data: { ...data, form }
     });
   });
   it('lists all the keys', () => {
-    mockGetKeys(keys); // TODO - ensure this is correctly mocked once we have actual endpoint
-
     keys.forEach((key) => {
       expect(screen.getByText(key.name));
     });
   });
   it('searches by name', async () => {
-    mockGetKeys(keys);
     expect(screen.getByText(keys[1].name)).toBeInTheDocument();
     await userEvent.type(screen.getByRole('searchbox'), keys[0].name);
     expect(screen.queryByText(keys[1].name)).not.toBeInTheDocument();
@@ -78,14 +83,11 @@ describe('api keys', () => {
   it('disables the delete button when there are no rows selected', async () => {
     // Note - the delete button is hidden when there are no rows selected, but still on the page so it needs to be
     // disabled
-    mockGetKeys(keys);
 
     const deleteBtn = screen.getAllByRole('button', { name: /delete/i })[0];
     expect(deleteBtn).toBeDisabled();
   });
   it('replaces the delete button with a loading spinner while deleting', async () => {
-    mockGetKeys(keys);
-
     const deleteBtns = screen.getAllByRole('button', { name: /delete/i });
 
     const checkboxes = screen.getAllByRole('checkbox');
@@ -103,7 +105,31 @@ describe('api keys', () => {
     expect(screen.queryByTestId('delete-pending')).toBeInTheDocument();
   });
   // This may have to be an e2e
-  it('can create new keys', () => {});
+  it('can create new keys', async () => {
+    const toastSpy = vi.spyOn(toastStore, 'addToast');
+
+    const keyName = faker.word.noun();
+    const sixtyDays = new Date();
+    sixtyDays.setDate(sixtyDays.getDate() + 60);
+    const api_key_to_return = 'lfai_12345';
+    mockCreateApiKeyFormAction(keyName, api_key_to_return, sixtyDays.getTime());
+
+    await userEvent.click(screen.getByRole('button', { name: /create new/i }));
+    await userEvent.type(screen.getByLabelText(/name/i), keyName);
+    await userEvent.click(screen.getByText('60 Days'));
+
+    const dialog = screen.getByRole('dialog', {
+      name: /create new api key/i
+    });
+
+    await userEvent.click(within(dialog).getByRole('button', { name: /create/i }));
+
+    expect(toastSpy).toHaveBeenCalledWith({
+      kind: 'success',
+      title: 'API key created',
+      subtitle: ''
+    });
+  });
 
   // Toasts?
   // TODO - test here for feature flag?

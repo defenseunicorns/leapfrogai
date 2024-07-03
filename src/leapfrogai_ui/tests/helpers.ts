@@ -12,7 +12,7 @@ const supabase = createClient(process.env.PUBLIC_SUPABASE_URL!, process.env.SERV
 export const getOpenAiClient = (access_token?: string) =>
   new OpenAI({
     apiKey: process.env.OPENAI_API_KEY ? process.env.OPENAI_API_KEY : access_token,
-    baseURL: process.env.LEAPFROGAI_API_BASE_URL
+    baseURL: `${process.env.LEAPFROGAI_API_BASE_URL}/openai/v1`
   });
 
 const serviceRoleOpenAI = getOpenAiClient(process.env.SERVICE_ROLE_KEY);

@@ -41,7 +41,7 @@ If running the UI locally and utilizing LeapfrogAPI, <ins>**you must use the sam
 PUBLIC_SUPABASE_URL=https://supabase-kong.uds.dev
 PUBLIC_SUPABASE_ANON_KEY=<anon_key>
 ...
-LEAPFROGAI_API_BASE_URL=https://leapfrogai-api.uds.dev/openai/v1
+LEAPFROGAI_API_BASE_URL=https://leapfrogai-api.uds.dev
 DEFAULT_MODEL=llama-cpp-python # or vllm
 ```
 

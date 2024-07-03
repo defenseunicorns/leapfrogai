@@ -70,17 +70,21 @@
         .join(', ')
     : '';
 
+  const handleError = () => {
+    modalOpen = false;
+    toastStore.addToast({
+      kind: 'error',
+      title: 'Error creating API Key',
+      subtitle: ''
+    });
+    invalidate('lf:api-keys');
+  };
+
   const { form, errors, enhance, submit, reset } = superForm(data.form, {
     invalidateAll: false,
     validators: yup(newAPIKeySchema),
     onError() {
-      modalOpen = false;
-      toastStore.addToast({
-        kind: 'error',
-        title: 'Error creating API Key',
-        subtitle: ''
-      });
-      invalidate('lf:api-keys');
+      handleError();
     },
     onResult({ result }) {
       if (result.type === 'success') {
@@ -92,6 +96,8 @@
           subtitle: ''
         });
         invalidate('lf:api-keys');
+      } else if (result.type === 'failure') {
+        handleError();
       }
     }
   });

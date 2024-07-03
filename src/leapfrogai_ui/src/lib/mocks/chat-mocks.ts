@@ -45,8 +45,8 @@ export const mockChatCompletionError = () => {
 export const mockNewMessage = () => {
   server.use(
     http.post('/api/messages/new', async ({ request }) => {
-      const resJson = (await request.json()) as NewMessageInput;
-      return HttpResponse.json(getFakeOpenAIMessage(resJson));
+      const reqJson = (await request.json()) as NewMessageInput;
+      return HttpResponse.json(getFakeOpenAIMessage(reqJson));
     })
   );
 };

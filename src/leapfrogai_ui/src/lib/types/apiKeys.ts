@@ -16,8 +16,8 @@ export type APIKeyRow = {
   permissions: PERMISSIONS;
 };
 
-export type APIKeysForm = SuperValidated<
-  { name: string; expires_at: number },
-  any,
-  { name: string; expires_at: number }
->;
+export type NewApiKeyInput = {
+  name: string;
+  expires_at: number;
+};
+export type APIKeysForm = SuperValidated<NewApiKeyInput, any, NewApiKeyInput>;
