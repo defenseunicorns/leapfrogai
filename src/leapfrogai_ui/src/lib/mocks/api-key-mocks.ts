@@ -1,8 +1,7 @@
-import { http, HttpResponse } from 'msw';
+import { delay, http, HttpResponse } from 'msw';
 import { type APIKeyRow, type NewApiKeyInput, PERMISSIONS } from '$lib/types/apiKeys';
 import { server } from '../../../vitest-setup';
 import { faker } from '@faker-js/faker';
-import type { ActionResult } from '@sveltejs/kit';
 
 export const mockGetKeys = (keys: APIKeyRow[]) => {
   server.use(
@@ -12,22 +11,28 @@ export const mockGetKeys = (keys: APIKeyRow[]) => {
   );
 };
 
-export const mockDeleteApiKey = () => {
+type MockDeleteApiKeyOptions = {
+  withDelay?: boolean;
+};
+export const mockDeleteApiKey = (options: MockDeleteApiKeyOptions = {}) => {
   server.use(
-    http.delete(
-      `${process.env.LEAPFROGAI_API_BASE_URL}/leapfrogai/v1/auth/revoke-api-key`,
-      () => new HttpResponse(null, { status: 204 })
-    )
+    http.delete('/api/api-keys/delete', async () => {
+      const { withDelay } = options;
+      if (withDelay) {
+        await delay(200);
+      }
+      return new HttpResponse(null, { status: 204 });
+    })
   );
 };
 
-export const mockCreateApiKeyFormAction = (name: string, api_key: string, expires_at: number) => {
+export const mockCreateApiKeyFormAction = (key: APIKeyRow) => {
   server.use(
     http.post('/', () =>
       HttpResponse.json({
         type: 'success',
         status: 200,
-        data: `[{\"form\":1,\"key\":8},{\"id\":2,\"valid\":3,\"posted\":3,\"errors\":4,\"data\":5},\"61uqcw\",true,{},{\"name\":6,\"expires_at\":7},\"${name}\",${expires_at},\"${api_key}\"]`
+        data: `[{"form":1,"key":8},{"id":2,"valid":3,"posted":3,"errors":4,"data":5},"61uqcw",true,{},{"name":6,"expires_at":7},"${key.name}",${key.created_at},{"id":9,"name":10,"api_key":11,"created_at":12,"expires_at":12,"permissions":13},"${key.id}","${key.name}","${key.api_key}",${key.expires_at},"${key.permissions}"]`
       })
     )
   );
@@ -58,6 +63,24 @@ export const mockCreateApiKeyError = () => {
     http.post(
       `${process.env.LEAPFROGAI_API_BASE_URL}/leapfrogai/v1/auth/create-api-key`,
       async () => new HttpResponse(null, { status: 500 })
+    )
+  );
+};
+
+export const mockRevokeApiKey = () => {
+  server.use(
+    http.delete(
+      `${process.env.LEAPFROGAI_API_BASE_URL}/leapfrogai/v1/auth/revoke-api-key`,
+      () => new HttpResponse(null, { status: 204 })
+    )
+  );
+};
+
+export const mockRevokeApiKeyError = () => {
+  server.use(
+    http.delete(
+      `${process.env.LEAPFROGAI_API_BASE_URL}/leapfrogai/v1/auth/revoke-api-key`,
+      () => new HttpResponse(null, { status: 500 })
     )
   );
 };

@@ -321,14 +321,15 @@ export const getFakeApiKeys = (options: GetFakeApiKeysOptions = {}): APIKeyRow[]
   const { numKeys = 4 } = options;
   const result: APIKeyRow[] = [];
   for (let i = 0; i < numKeys; i++) {
-    const now = new Date();
-    const sevenDays = now;
-    sevenDays.setDate(now.getDate() + 7);
+    const created_at = new Date();
+    created_at.setDate(created_at.getDate() - faker.number.int({ min: 0, max: 60 }));
+    const sevenDays = new Date();
+    sevenDays.setDate(created_at.getDate() + 7);
     result.push({
       id: faker.string.uuid(),
       name: faker.word.noun(),
       api_key: `lfai_${faker.string.uuid()}`,
-      created_at: now.getTime(),
+      created_at: created_at.getTime(),
       expires_at: sevenDays.getTime(),
       permissions: faker.helpers.arrayElement([
         PERMISSIONS.ALL,

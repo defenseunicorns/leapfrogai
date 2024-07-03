@@ -51,7 +51,7 @@ describe('api keys form action', () => {
     });
 
     expect(res.key).toBeDefined();
-    expect(res.key.startsWith('lfai_')).toEqual(true);
+    expect(res.key.api_key.startsWith('lfai_')).toEqual(true);
   });
   it('returns a 500 status if there is error with the create api call', async () => {
     mockCreateApiKeyError();

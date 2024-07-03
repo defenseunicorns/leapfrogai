@@ -239,7 +239,6 @@
     padding-left: layout.$spacing-05;
   }
 
-
   .edit-prompt :global(.lf-text-area.bx--text-area) {
     background: themes.$background;
     outline: 1px solid themes.$layer-02;

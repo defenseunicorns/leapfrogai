@@ -7,7 +7,6 @@
     Modal,
     Switch,
     TextInput,
-    Tile,
     Toolbar,
     ToolbarBatchActions,
     ToolbarContent,
@@ -16,11 +15,13 @@
   import { fade } from 'svelte/transition';
   import { superForm } from 'sveltekit-superforms';
   import { yup } from 'sveltekit-superforms/adapters';
-  import { formatDate } from '$helpers/dates';
+  import { calculateDays, formatDate } from '$helpers/dates';
   import { Add, Copy, TrashCan } from 'carbon-icons-svelte';
   import { toastStore } from '$stores';
   import { newAPIKeySchema } from '$schemas/apiKey.js';
   import { invalidate } from '$app/navigation';
+  import type { APIKeyRow } from '$lib/types/apiKeys';
+  import { formatKeyLong, formatKeyShort } from '$helpers/apiKeyHelpers';
 
   export let data;
 
@@ -28,36 +29,44 @@
   let filteredRowIds: string[] = [];
   let modalOpen = false;
   let confirmDeleteModalOpen = false;
+  let copyKeyModalOpen = false;
   let deleting = false;
   let selectedExpirationIndex = 1;
   let selectedExpirationDate: number;
-  let createdKey: string | null = null;
+  let createdKey: APIKeyRow | null = null;
+  let saveKeyModalRef: HTMLDivElement;
 
+  // Set actual expiration date based on selected Switch
   $: {
     switch (selectedExpirationIndex) {
-      case 0:
+      case 0: {
         const sevenDays = new Date();
         sevenDays.setDate(sevenDays.getDate() + 7);
         selectedExpirationDate = sevenDays.getTime();
         break;
-      case 1:
+      }
+      case 1: {
         const thirtyDays = new Date();
         thirtyDays.setDate(thirtyDays.getDate() + 30);
         selectedExpirationDate = thirtyDays.getTime();
         break;
-      case 2:
+      }
+      case 2: {
         const sixtyDays = new Date();
         sixtyDays.setDate(sixtyDays.getDate() + 60);
         selectedExpirationDate = sixtyDays.getTime();
         break;
-      case 3:
+      }
+      case 3: {
         const ninetyDays = new Date();
         ninetyDays.setDate(ninetyDays.getDate() + 90);
         selectedExpirationDate = ninetyDays.getTime();
         break;
-      default:
+      }
+      default: {
         selectedExpirationDate = new Date().getTime();
         break;
+      }
     }
   }
   $: active = selectedRowIds.length > 0;
@@ -74,7 +83,7 @@
     modalOpen = false;
     toastStore.addToast({
       kind: 'error',
-      title: 'Error creating API Key',
+      title: 'Creation Failed',
       subtitle: ''
     });
     invalidate('lf:api-keys');
@@ -87,13 +96,15 @@
       handleError();
     },
     onResult({ result }) {
+      console.log(result);
       if (result.type === 'success') {
         createdKey = result.data?.key;
         modalOpen = false;
+        copyKeyModalOpen = true;
         toastStore.addToast({
           kind: 'success',
-          title: 'API key created',
-          subtitle: ''
+          title: 'Created Successfully',
+          subtitle: `${result.data?.form.data.name} created successfully.`
         });
         invalidate('lf:api-keys');
       } else if (result.type === 'failure') {
@@ -101,14 +112,6 @@
       }
     }
   });
-
-  // Keys returned from the API list call should already be masked for security
-  // We use this to mask the created key before the user copies it
-  const formatKey = (key: string) => {
-    const firstTwo = key.slice(0, 5);
-    const lastFour = key.slice(-4);
-    return `${firstTwo}...${lastFour}`;
-  };
 
   const handleCancel = () => {
     modalOpen = false;
@@ -126,7 +129,6 @@
       body: JSON.stringify({ ids: selectedRowIds }),
       method: 'DELETE'
     });
-
     confirmDeleteModalOpen = false;
     selectedRowIds = [];
     deleting = false;
@@ -154,14 +156,18 @@
 
   const handleCopyKey = async () => {
     if (createdKey) {
-      await navigator.clipboard.writeText(createdKey);
+      await navigator.clipboard.writeText(createdKey.api_key);
       toastStore.addToast({
         kind: 'info',
         title: 'API Key Copied',
         subtitle: ''
       });
-      createdKey = null;
     }
+  };
+
+  const handleCloseCopyKeyModal = () => {
+    copyKeyModalOpen = false;
+    createdKey = null;
   };
 </script>
 
@@ -173,7 +179,7 @@
         <p>New Key:</p>
         <span
           ><div class="key-container">
-            {formatKey(createdKey)}
+            {formatKeyShort(createdKey.api_key)}
             <button
               data-testid="copy btn"
               class="highlight-icon remove-btn-style"
@@ -192,7 +198,7 @@
       bind:selectedRowIds
       headers={[
         { key: 'name', value: 'Name' },
-        { key: 'api_key', value: 'Secret Keys', display: (key) => formatKey(key) },
+        { key: 'api_key', value: 'Secret Keys', display: (key) => formatKeyShort(key) },
         {
           key: 'created_at',
           value: 'Created',
@@ -257,10 +263,9 @@
     </DataTable>
     <Modal
       bind:open={modalOpen}
-      modalHeading="Create new API key"
+      modalHeading="Create new secret key"
       primaryButtonText="Create"
       secondaryButtonText="Cancel"
-      shouldSubmitOnEnter={false}
       hasForm
       on:click:button--secondary={handleCancel}
       on:close={handleCancel}
@@ -268,8 +273,8 @@
     >
       <div class="modal-inner-content">
         <p style="width: 70%;">
-          This API key is linked to your user account and get be used to make API calls to Leapfrog
-          AI. Keep this key safe and private.
+          This API key is linked to your user account and gives full access to it. Please be careful
+          and keep it secret.
         </p>
 
         <TextInput
@@ -308,13 +313,45 @@
     modalHeading={`Delete API ${keyNames.length > 0 ? 'Keys' : 'Key'}`}
     primaryButtonText="Delete"
     secondaryButtonText="Cancel"
-    shouldSubmitOnEnter={false}
     primaryButtonDisabled={deleting}
     on:click:button--secondary={() => handleCancelConfirmDelete()}
     on:close={() => handleCancelConfirmDelete()}
     on:submit={() => handleDelete()}
   >
     <p>Are you sure you want to delete <span style="font-weight: bold">{keyNames}</span>?</p>
+  </Modal>
+
+  <Modal
+    bind:ref={saveKeyModalRef}
+    bind:open={copyKeyModalOpen}
+    modalHeading="Save secret key"
+    primaryButtonText="Close"
+    on:close={handleCloseCopyKeyModal}
+    on:submit={handleCloseCopyKeyModal}
+  >
+    {#if createdKey}
+      <div class="centered-spaced-container" style="flex-direction: column">
+        <p>
+          Please store this secret key in a safe and accessible place. For security purposes, it
+          cannot be viewed again through your LeapfrogAI account. If you lose it, you'll need to
+          create a new one.
+        </p>
+        <div class="centered-spaced-lg-container" style="width: 100%">
+          <TextInput
+            readonly
+            labelText="Key"
+            value={formatKeyLong(createdKey.api_key, saveKeyModalRef?.offsetWidth || 200)}
+          />
+          <Button kind="tertiary" icon={Copy} size="small" on:click={handleCopyKey}>Copy</Button>
+        </div>
+        <div style="width: 100%">
+          <label for="saved-expiration" class:bx--label={true}>Expiration</label>
+          <p id="saved-expiration">
+            {`${calculateDays(createdKey.created_at, createdKey.expires_at)} days - ${formatDate(new Date(createdKey.expires_at))}`}
+          </p>
+        </div>
+      </div>
+    {/if}
   </Modal>
 </div>
 
@@ -330,6 +367,14 @@
     display: flex;
     gap: layout.$spacing-06;
     align-items: center;
+  }
+  .centered-spaced-lg-container {
+    display: flex;
+    gap: layout.$spacing-07;
+    align-items: center;
+    :global(.bx--text-input__readonly-icon) {
+      display: none;
+    }
   }
 
   .key-container {

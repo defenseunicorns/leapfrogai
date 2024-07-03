@@ -20,4 +20,7 @@ export type NewApiKeyInput = {
   name: string;
   expires_at: number;
 };
+
+// This type is taken from SuperValidated, leaving the any
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 export type APIKeysForm = SuperValidated<NewApiKeyInput, any, NewApiKeyInput>;

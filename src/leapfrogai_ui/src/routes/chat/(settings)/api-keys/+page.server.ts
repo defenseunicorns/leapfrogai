@@ -21,18 +21,18 @@ export const load = async ({ depends, locals: { safeGetSession } }) => {
 
   let keys: APIKeyRow[] = [];
 
-  // const res = await fetch(`${env.LEAPFROGAI_API_BASE_URL}/leapfrogai/v1/auth/list-api-keys`, {
-  //   headers: {
-  //     Authorization: `Bearer ${session.access_token}`
-  //   }
-  // });
-  //
-  // if (!res.ok) {
-  //   return error(500, { message: 'Error fetching API keys' });
-  // }
-  //
-  // keys = await res.json();
-  keys = [];
+  const res = await fetch(`${env.LEAPFROGAI_API_BASE_URL}/leapfrogai/v1/auth/list-api-keys`, {
+    headers: {
+      Authorization: `Bearer ${session.access_token}`
+    }
+  });
+
+  if (!res.ok) {
+    return error(500, { message: 'Error fetching API keys' });
+  }
+
+  keys = await res.json();
+  // keys = [];
 
   return { title: 'LeapfrogAI - API Keys', form, keys };
 };
@@ -59,7 +59,17 @@ export const actions = {
       return fail(500, { form });
     }
     const newKey = await res.json();
-
-    return { form, key: newKey.api_key };
+    // const newKey: APIKeyRow = {
+    //   id: '1',
+    //   name: "testName",
+    //   api_key: '12345',
+    //   created_at: new Date().getTime(),
+    //   expires_at: new Date().getTime(),
+    //   permissions: PERMISSIONS.ALL
+    // };
+    return {
+      form,
+      key: newKey
+    };
   }
 };

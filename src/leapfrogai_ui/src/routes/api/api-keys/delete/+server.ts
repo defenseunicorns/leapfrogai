@@ -34,12 +34,11 @@ export async function DELETE({ request, locals: { safeGetSession } }) {
   }
   const results = await Promise.allSettled(promises);
   results.forEach((result) => {
-    if (result.status === 'fulfilled' && result.value.status === 204) {
-      return new Response(undefined, { status: 204 });
-    } else {
+    if (result.status !== 'fulfilled' || result.value.status !== 204) {
       const msg = `Error deleting API ${requestData.ids.length > 1 ? 'keys' : 'key'}`;
       console.error(`${msg} ${JSON.stringify(result)}`);
       error(500, msg);
     }
   });
+  return new Response(undefined, { status: 204 });
 }
