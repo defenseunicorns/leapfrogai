@@ -1,4 +1,6 @@
 from __future__ import annotations
+
+import logging
 from typing import AsyncGenerator, Any
 from openai.types.beta.threads import Run
 from openai.types.beta.threads.run_create_params import (
@@ -22,9 +24,14 @@ from leapfrogai_api.routers.supabase_session import Session
 
 
 class RunCreateParamsRequestBaseRequest(RunCreateParamsRequestBase):
-    additional_instructions: str | None = Field(default=None, examples=[""])
+    additional_instructions: str | None = Field(
+        default=None,
+        examples=["Please provide a summary of the conversation so far."],
+        description="Additional instructions to be considered during the run execution.",
+    )
     additional_messages: list[AdditionalMessage] | None = Field(
         default=[],
+        description="A list of additional messages to be added to the thread before the run starts.",
         examples=[
             [
                 AdditionalMessage(
@@ -45,7 +52,11 @@ class RunCreateParamsRequestBaseRequest(RunCreateParamsRequestBase):
             ]
         ],
     )
-    stream: bool | None = Field(default=None, examples=[False])
+    stream: bool | None = Field(
+        default=None,
+        description="If set to true, the response will be streamed as it's generated.",
+        example=False,
+    )
 
     async def create_additional_messages(self, session: Session, thread_id: str):
         """If additional messages exist, create them in the DB as a part of this thread"""
@@ -58,6 +69,12 @@ class RunCreateParamsRequestBaseRequest(RunCreateParamsRequestBase):
                 message_content = from_content_param_to_content(
                     thread_message_content=content
                 )
+            else:
+                logging.getLogger(__name__).warning(
+                    "Found additional message without content"
+                )
+                continue
+
             create_message_request = CreateMessageRequest(
                 role=additional_message["role"],
                 content=[message_content],
