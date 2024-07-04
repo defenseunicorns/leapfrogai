@@ -143,7 +143,7 @@ async def create_transcription(model: Model, request: Iterator[lfai.AudioRequest
 
 
 async def create_translation(model: Model, request: Iterator[lfai.AudioRequest]):
-    """Transcribe audio using the specified model."""
+    """Translate audio using the specified model."""
     async with grpc.aio.insecure_channel(model.backend) as channel:
         stub = lfai.AudioStub(channel)
         response: lfai.AudioResponse = await stub.Translate(request)
