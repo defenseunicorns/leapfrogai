@@ -36,6 +36,7 @@ create policy "Individuals can CRUD their own assistant_objects via API key."
             select 1
             from api_keys
             where api_keys.api_key = current_setting('request.headers')::json->>'x-custom-api-key'
+            and api_keys.user_id = assistant_objects.user_id
         )
     );
 
@@ -48,6 +49,7 @@ create policy "Individuals can CRUD their own thread_objects via API key."
             select 1
             from api_keys
             where api_keys.api_key = current_setting('request.headers')::json->>'x-custom-api-key'
+            and api_keys.user_id = thread_objects.user_id
         )
     );
 
@@ -60,6 +62,7 @@ create policy "Individuals can CRUD their own message_objects via API key."
             select 1
             from api_keys
             where api_keys.api_key = current_setting('request.headers')::json->>'x-custom-api-key'
+            and api_keys.user_id = message_objects.user_id
         )
     );
 
@@ -72,6 +75,7 @@ create policy "Individuals can CRUD their own file_objects via API key."
             select 1
             from api_keys
             where api_keys.api_key = current_setting('request.headers')::json->>'x-custom-api-key'
+            and api_keys.user_id = file_objects.user_id
         )
     );
 
@@ -96,6 +100,7 @@ create policy "Individuals can CRUD their own run_objects via API key."
             select 1
             from api_keys
             where api_keys.api_key = current_setting('request.headers')::json->>'x-custom-api-key'
+            and api_keys.user_id = run_objects.user_id
         )
     );
 
@@ -108,6 +113,7 @@ create policy "Individuals can CRUD their own vector_store via API key."
             select 1
             from api_keys
             where api_keys.api_key = current_setting('request.headers')::json->>'x-custom-api-key'
+            and api_keys.user_id = vector_store.user_id
         )
     );
 
@@ -120,6 +126,7 @@ create policy "Individuals can CRUD their own vector_store_file via API key."
             select 1
             from api_keys
             where api_keys.api_key = current_setting('request.headers')::json->>'x-custom-api-key'
+            and api_keys.user_id = vector_store_file.user_id
         )
     );
 
@@ -132,5 +139,6 @@ create policy "Individuals can CRUD their own vector_content via API key."
             select 1
             from api_keys
             where api_keys.api_key = current_setting('request.headers')::json->>'x-custom-api-key'
+            and api_keys.user_id = vector_content.user_id
         )
     );
