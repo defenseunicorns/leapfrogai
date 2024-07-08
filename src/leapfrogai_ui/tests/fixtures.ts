@@ -26,16 +26,14 @@ export const getToken = () => {
   const decodedValue = decodeURIComponent(cookie.value);
   // The cookie value is missing ending " and }, so we append it
   const parsedValue = JSON.parse(`${decodedValue}"}`);
-  return parsedValue.token;
+  return parsedValue.access_token;
 };
 export const getOpenAIClient = () => {
   const token = getToken();
-
-  const client = new OpenAI({
+  return new OpenAI({
     apiKey: process.env.OPENAI_API_KEY || token,
-    baseURL: process.env.LEAPFROGAI_API_BASE_URL
+    baseURL: `${process.env.LEAPFROGAI_API_BASE_URL}/openai/v1`
   });
-  return client;
 };
 
 export const test = base.extend<MyFixtures>({
