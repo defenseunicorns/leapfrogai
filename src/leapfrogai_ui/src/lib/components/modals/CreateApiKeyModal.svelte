@@ -12,6 +12,7 @@
 
 <Modal
   bind:open={modalOpen}
+  preventCloseOnClickOutside
   modalHeading="Create new secret key"
   primaryButtonText="Create"
   secondaryButtonText="Cancel"

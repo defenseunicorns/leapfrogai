@@ -203,6 +203,7 @@
 <div class="cancel-modal">
   <Modal
     bind:open={cancelModalOpen}
+    preventCloseOnClickOutside
     modalHeading="Unsaved Changes"
     primaryButtonText="Leave this page"
     secondaryButtonText="Stay on page"

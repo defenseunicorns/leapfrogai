@@ -20,10 +20,15 @@ import { sessionMock } from '$lib/mocks/supabase-mocks';
 
 describe('api keys', () => {
   let form: APIKeysForm;
-  const keys = getFakeApiKeys();
+  const keys = getFakeApiKeys({ numKeys: 4 });
 
   beforeEach(async () => {
     mockGetKeys(keys);
+    keys[0].permissions = PERMISSIONS.ALL;
+    keys[1].permissions = PERMISSIONS.READ;
+    keys[2].permissions = PERMISSIONS.WRITE;
+    keys[3].permissions = PERMISSIONS.READ_WRITE;
+
     const data = await load({ depends: vi.fn(), locals: { safeGetSession: sessionMock } });
     form = await superValidate(yup(newAPIKeySchema));
     render(ApiKeyPage, {
@@ -41,7 +46,7 @@ describe('api keys', () => {
     expect(screen.queryByText(keys[1].name)).not.toBeInTheDocument();
     expect(screen.getByText(keys[0].name)).toBeInTheDocument();
   });
-  it('searches for keys by date', async () => {
+  it('searches for keys by created date', async () => {
     expect(screen.getByText(keys[0].name)).toBeInTheDocument();
     await userEvent.type(
       screen.getByRole('searchbox'),
@@ -50,9 +55,24 @@ describe('api keys', () => {
     expect(screen.queryByText(keys[1].name)).not.toBeInTheDocument();
     expect(screen.getByText(keys[0].name)).toBeInTheDocument();
   });
+  it('searches for keys by expiration date', async () => {
+    expect(screen.getByText(keys[0].name)).toBeInTheDocument();
+    await userEvent.type(
+      screen.getByRole('searchbox'),
+      formatDate(new Date(keys[0].expires_at * 1000))
+    );
+    expect(screen.queryByText(keys[1].name)).not.toBeInTheDocument();
+    expect(screen.getByText(keys[0].name)).toBeInTheDocument();
+  });
   it('searches for keys by secret', async () => {
     expect(screen.getByText(keys[0].name)).toBeInTheDocument();
     await userEvent.type(screen.getByRole('searchbox'), keys[0].api_key.slice(-4));
+    expect(screen.queryByText(keys[1].name)).not.toBeInTheDocument();
+    expect(screen.getByText(keys[0].name)).toBeInTheDocument();
+  });
+  it('searches for keys by permissions', async () => {
+    expect(screen.getByText(keys[0].name)).toBeInTheDocument();
+    await userEvent.type(screen.getByRole('searchbox'), keys[0].permissions);
     expect(screen.queryByText(keys[1].name)).not.toBeInTheDocument();
     expect(screen.getByText(keys[0].name)).toBeInTheDocument();
   });

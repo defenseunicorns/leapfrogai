@@ -88,6 +88,7 @@
 
 <Modal
   danger
+  preventCloseOnClickOutside
   bind:open={deleteModalOpen}
   modalHeading="Delete Assistant"
   primaryButtonText="Delete"

@@ -8,11 +8,10 @@
     ToolbarContent,
     ToolbarSearch
   } from 'carbon-components-svelte';
-  import { fade } from 'svelte/transition';
   import { superForm } from 'sveltekit-superforms';
   import { yup } from 'sveltekit-superforms/adapters';
   import { formatDate } from '$helpers/dates';
-  import { Add, Copy, TrashCan } from 'carbon-icons-svelte';
+  import { Add, TrashCan } from 'carbon-icons-svelte';
   import { toastStore } from '$stores';
   import { newAPIKeySchema } from '$schemas/apiKey.js';
   import { invalidate } from '$app/navigation';
@@ -20,7 +19,7 @@
   import { formatKeyShort } from '$helpers/apiKeyHelpers';
   import CreateApiKeyModal from '$components/modals/CreateApiKeyModal.svelte';
   import DeleteApiKeyModal from '$components/modals/DeleteApiKeyModal.svelte';
-  import SaveApiKeyModal from '$components/modals/SaveApiKeyModal.svelte';
+  import SaveApiKeyModal from '$components/modals/CopyApiKeyModal.svelte';
 
   export let data;
 
@@ -87,7 +86,6 @@
     invalidate('lf:api-keys');
   };
 
-  $: console.log('errors', $errors);
   const { form, errors, enhance, submit, reset } = superForm(data.form, {
     invalidateAll: false,
     validators: yup(newAPIKeySchema),
@@ -166,24 +164,6 @@
 <div class="container">
   <div class="centered-spaced-container">
     <div class="title">API Keys</div>
-    {#if createdKey}
-      <div class="centered-spaced-container" transition:fade={{ duration: 70 }}>
-        <p>New Key:</p>
-        <span
-          ><div class="key-container">
-            {formatKeyShort(createdKey.api_key)}
-            <button
-              data-testid="copy btn"
-              class="highlight-icon remove-btn-style"
-              on:click={handleCopyKey}
-              tabindex="0"
-              aria-label="copy key"><Copy /></button
-            >
-          </div></span
-        >
-        <p>You can only copy this value once, save it somewhere safe.</p>
-      </div>
-    {/if}
   </div>
   <form method="POST" enctype="multipart/form-data" use:enhance>
     <DataTable
@@ -240,7 +220,7 @@
                 row.api_key.toLowerCase().includes(value.toString().toLowerCase()) ||
                 formattedCreatedAtDate.includes(value.toString().toLowerCase()) ||
                 formattedExpiresAtDate.includes(value.toString().toLowerCase()) ||
-                row.permissions.toLowerCase().includes(value.toString().toLowerCase())
+                row.permissions?.toLowerCase().includes(value.toString().toLowerCase())
               );
             }}
           />
@@ -258,9 +238,9 @@
       {handleCancel}
       {submit}
       bind:name={$form.name}
+      bind:selectedExpirationIndex
+      bind:selectedExpirationDate
       invalidText={$errors.name?.toString()}
-      {selectedExpirationIndex}
-      {selectedExpirationDate}
     />
   </form>
 
@@ -286,15 +266,6 @@
     display: flex;
     gap: layout.$spacing-06;
     align-items: center;
-  }
-
-  .key-container {
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    background-color: themes.$layer-01;
-    padding: layout.$spacing-03;
-    gap: layout.$spacing-06;
   }
 
   .title {

@@ -16,6 +16,7 @@
 <Modal
   bind:ref={saveKeyModalRef}
   bind:open={copyKeyModalOpen}
+  preventCloseOnClickOutside
   modalHeading="Save secret key"
   primaryButtonText="Close"
   on:close={handleCloseCopyKeyModal}
