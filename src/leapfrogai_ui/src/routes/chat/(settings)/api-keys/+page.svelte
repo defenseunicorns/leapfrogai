@@ -19,7 +19,7 @@
   import { formatKeyShort } from '$helpers/apiKeyHelpers';
   import CreateApiKeyModal from '$components/modals/CreateApiKeyModal.svelte';
   import DeleteApiKeyModal from '$components/modals/DeleteApiKeyModal.svelte';
-  import SaveApiKeyModal from '$components/modals/SaveApiKeyModal.svelte';
+  import SaveApiKeyModal from '$components/modals/CopyApiKeyModal.svelte';
 
   export let data;
 
@@ -238,9 +238,9 @@
       {handleCancel}
       {submit}
       bind:name={$form.name}
+      bind:selectedExpirationIndex
+      bind:selectedExpirationDate
       invalidText={$errors.name?.toString()}
-      {selectedExpirationIndex}
-      {selectedExpirationDate}
     />
   </form>
 

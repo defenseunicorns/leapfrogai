@@ -230,10 +230,13 @@ export const formatDate = (date: Date) => {
 
 // Calculate the number of days between two dates (dates are in seconds)
 export const calculateDays = (beginDate: number, endDate: number) => {
+  console.log('beginDate', beginDate)
+  console.log('endDate', endDate)
   const differenceInSeconds = Math.abs(endDate - beginDate);
   // Convert seconds to days
   const secondsPerDay = 60 * 60 * 24;
   const differenceInDays = differenceInSeconds / secondsPerDay;
-
+console.log('differenceInSeconds', differenceInSeconds)
+console.log('differenceInDays', differenceInDays)
   return Math.round(differenceInDays);
 };
