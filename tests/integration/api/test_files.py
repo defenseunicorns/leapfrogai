@@ -181,7 +181,9 @@ async def test_excel_file_handling():
             data={"purpose": "assistants"},
         )
 
-    assert response.status_code == status.HTTP_200_OK, f"Failed to upload Excel file: {response.text}"
+    assert (
+        response.status_code == status.HTTP_200_OK
+    ), f"Failed to upload Excel file: {response.text}"
     file_object = FileObject.model_validate(response.json())
 
     # Test file retrieval
