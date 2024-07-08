@@ -41,11 +41,20 @@ describe('api keys', () => {
     expect(screen.queryByText(keys[1].name)).not.toBeInTheDocument();
     expect(screen.getByText(keys[0].name)).toBeInTheDocument();
   });
-  it('searches for keys by date', async () => {
+  it('searches for keys by created date', async () => {
     expect(screen.getByText(keys[0].name)).toBeInTheDocument();
     await userEvent.type(
       screen.getByRole('searchbox'),
       formatDate(new Date(keys[0].created_at * 1000))
+    );
+    expect(screen.queryByText(keys[1].name)).not.toBeInTheDocument();
+    expect(screen.getByText(keys[0].name)).toBeInTheDocument();
+  });
+  it('searches for keys by expiration date', async () => {
+    expect(screen.getByText(keys[0].name)).toBeInTheDocument();
+    await userEvent.type(
+      screen.getByRole('searchbox'),
+      formatDate(new Date(keys[0].expires_at * 1000))
     );
     expect(screen.queryByText(keys[1].name)).not.toBeInTheDocument();
     expect(screen.getByText(keys[0].name)).toBeInTheDocument();
