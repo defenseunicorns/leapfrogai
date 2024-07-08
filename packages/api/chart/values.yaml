@@ -1,11 +1,16 @@
 image:
   # x-release-please-start-version
-  lfaiAPITag: 0.7.2
+  lfaiAPITag: 0.8.0
   # x-release-please-end
   kiwigridTag: 1.23.3
 
+  securityContext:
+    runAsUser: 65532
+    runAsGroup: 65532
+    fsGroup: 65532
+
 supabase:
-  url: "https://supabase-kong.###ZARF_VAR_HOSTED_DOMAIN###"
+  url: "http://supabase-kong.leapfrogai.svc.cluster.local:80"
 
 api:
   replicas: 1

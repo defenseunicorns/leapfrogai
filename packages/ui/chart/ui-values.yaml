@@ -4,6 +4,11 @@ image:
   # Overrides the image tag whose default is the chart appVersion.
   tag: '###ZARF_CONST_IMAGE_VERSION###'
 
+  securityContext:
+    runAsUser: 65532
+    runAsGroup: 65532
+    fsGroup: 65532
+
 package:
   name: leapfrogai-ui
   subdomain: '###ZARF_VAR_SUBDOMAIN###'

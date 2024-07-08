@@ -1,28 +1,23 @@
 import { render, screen } from '@testing-library/svelte';
 
-import { fakeThreads, getFakeAssistant, getFakeFiles, getFakeProfile } from '$testUtils/fakeData';
+import { fakeThreads, getFakeAssistant, getFakeFiles } from '$testUtils/fakeData';
 import ChatPage from './+page.svelte';
 import ChatPageWithToast from './ChatPageWithToast.test.svelte';
 import userEvent from '@testing-library/user-event';
-import stores from '$app/stores';
 import * as navigation from '$app/navigation';
-import { afterAll, beforeAll, vi } from 'vitest';
+import { afterAll, vi } from 'vitest';
 
 import {
   fakeAiTextResponse,
   mockChatCompletion,
   mockChatCompletionError,
   mockGetAssistants,
+  mockGetThread,
   mockNewMessage,
   mockNewMessageError
 } from '$lib/mocks/chat-mocks';
 import { getMessageText } from '$helpers/threads';
-import { load } from './+page.server';
-import {
-  sessionMock,
-  supabaseFromMockWrapper,
-  supabaseSelectSingleByIdMock
-} from '$lib/mocks/supabase-mocks';
+import { load } from './+page';
 import { mockOpenAI } from '../../../../../vitest-setup';
 import { ERROR_GETTING_AI_RESPONSE_TEXT, ERROR_SAVING_MSG_TEXT } from '$constants/errorMessages';
 
@@ -31,15 +26,14 @@ import type { LFThread } from '$lib/types/threads';
 import type { LFAssistant } from '$lib/types/assistants';
 import { delay } from '$helpers/chatHelpers';
 import { mockGetFiles } from '$lib/mocks/file-mocks';
+import { threadsStore } from '$stores';
+import { NO_SELECTED_ASSISTANT_ID } from '$constants';
 
-//Calls to vi.mock are hoisted to the top of the file, so you don't have access to variables declared in the global file scope unless they are defined with vi.hoisted before the call.
-const { getStores } = await vi.hoisted(() => import('$lib/mocks/svelte'));
-
-type PageServerLoad = {
+type LayoutServerLoad = {
   threads: LFThread[];
   assistants: LFAssistant[];
 } | null;
-let data: PageServerLoad;
+let data: LayoutServerLoad;
 const question = 'What is AI?';
 
 const assistant1 = getFakeAssistant();
@@ -55,54 +49,28 @@ describe('when there is an active thread selected', () => {
         }
       };
     });
-
-    // set active thread
-    vi.mock('$app/stores', (): typeof stores => {
-      const page: typeof stores.page = {
-        subscribe(fn) {
-          return getStores({
-            url: `http://localhost/chat/${fakeThreads[0].id}`,
-            params: { thread_id: fakeThreads[0].id }
-          }).page.subscribe(fn);
-        }
-      };
-      const navigating: typeof stores.navigating = {
-        subscribe(fn) {
-          return getStores().navigating.subscribe(fn);
-        }
-      };
-      const updated: typeof stores.updated = {
-        subscribe(fn) {
-          return getStores().updated.subscribe(fn);
-        },
-        check: () => Promise.resolve(false)
-      };
-
-      return {
-        getStores,
-        navigating,
-        page,
-        updated
-      };
-    });
   });
 
   beforeEach(async () => {
     const allMessages = fakeThreads.flatMap((thread) => thread.messages);
     mockGetAssistants([assistant1, assistant2]);
     mockGetFiles(files);
+    mockGetThread(fakeThreads[0]);
     mockOpenAI.setThreads(fakeThreads);
     mockOpenAI.setMessages(allMessages);
     mockOpenAI.setFiles(files);
 
-    const fakeProfile = getFakeProfile({ thread_ids: fakeThreads.map((thread) => thread.id) });
-
     data = await load({
       fetch: global.fetch,
-      locals: {
-        supabase: supabaseFromMockWrapper(supabaseSelectSingleByIdMock(fakeProfile)),
-        safeGetSession: sessionMock
-      }
+      depends: vi.fn(),
+      params: { thread_id: fakeThreads[0].id }
+    });
+
+    threadsStore.set({
+      threads: fakeThreads,
+      lastVisitedThreadId: fakeThreads[0].id,
+      selectedAssistantId: NO_SELECTED_ASSISTANT_ID,
+      sendingBlocked: false
     });
   });
 

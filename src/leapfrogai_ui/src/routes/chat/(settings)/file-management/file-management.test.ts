@@ -1,31 +1,55 @@
-import { fireEvent, render, screen } from '@testing-library/svelte';
+import { fireEvent, render, screen, waitFor } from '@testing-library/svelte';
 import FileManagementPage from './+page.svelte';
-import { getFakeFiles } from '../../../../../testUtils/fakeData';
+import { getFakeAssistant, getFakeFiles, getFakeSession } from '$testUtils/fakeData';
 import userEvent from '@testing-library/user-event';
 import { formatDate } from '$helpers/dates';
 import { load } from './+page';
-import { mockDeleteFile, mockDeleteFileWithDelay, mockGetFiles } from '$lib/mocks/file-mocks';
+import {
+  mockDeleteCheck,
+  mockDeleteFile,
+  mockDeleteFileWithDelay,
+  mockGetFiles
+} from '$lib/mocks/file-mocks';
 import { vi } from 'vitest';
-import { toastStore } from '$stores';
+import { filesStore, toastStore } from '$stores';
+import { convertFileObjectToFileRows } from '$helpers/fileHelpers';
+import { superValidate } from 'sveltekit-superforms';
+import { yup } from 'sveltekit-superforms/adapters';
+import { filesSchema } from '$schemas/files';
+import type { SupabaseClient } from '@supabase/supabase-js';
+import type { FilesForm } from '$lib/types/files';
+import { tick } from 'svelte';
 
 describe('file management', () => {
-  it('lists all the files', async () => {
-    const files = getFakeFiles();
-    mockGetFiles(files);
+  const files = getFakeFiles();
+  let form: FilesForm;
 
-    const data = await load({ fetch: global.fetch, depends: vi.fn() });
-    render(FileManagementPage, { data });
+  beforeEach(async () => {
+    const data = await load();
+
+    form = await superValidate(yup(filesSchema));
+    filesStore.setFiles(convertFileObjectToFileRows(files));
+    filesStore.setSelectedFileManagementFileIds([]);
+
+    render(FileManagementPage, {
+      data: {
+        ...data,
+        form,
+        session: getFakeSession(),
+        assistants: [],
+        supabase: {} as unknown as SupabaseClient
+      }
+    });
+  });
+  it('lists all the files', async () => {
+    mockGetFiles(files);
 
     files.forEach((file) => {
       expect(screen.getByText(file.filename));
     });
   });
   it('searches for files by filename', async () => {
-    const files = getFakeFiles();
     mockGetFiles(files);
-
-    const data = await load({ fetch: global.fetch, depends: vi.fn() });
-    render(FileManagementPage, { data });
 
     expect(screen.getByText(files[1].filename)).toBeInTheDocument();
     await userEvent.type(screen.getByRole('searchbox'), files[0].filename);
@@ -43,11 +67,10 @@ describe('file management', () => {
     const file1 = getFakeFiles({ numFiles: 1 })[0];
     const file2 = getFakeFiles({ numFiles: 1, created_at: yesterday })[0];
 
+    // Set different files for this test, await tick so component reflect store update
+    filesStore.setFiles(convertFileObjectToFileRows([file1, file2]));
+    await tick();
     mockGetFiles([file1, file2]);
-
-    const data = await load({ fetch: global.fetch, depends: vi.fn() });
-
-    render(FileManagementPage, { data });
 
     expect(screen.getByText(file2.filename)).toBeInTheDocument();
     await userEvent.type(
@@ -58,28 +81,44 @@ describe('file management', () => {
     expect(screen.getByText(file1.filename)).toBeInTheDocument();
   });
 
-  it('deletes multiple files', async () => {
+  it('confirms the files and affected assistants, then deletes them', async () => {
+    const assistant1 = getFakeAssistant();
+    const assistant2 = getFakeAssistant();
     const toastSpy = vi.spyOn(toastStore, 'addToast');
     mockDeleteFile();
-    const files = getFakeFiles();
     mockGetFiles(files);
+    mockDeleteCheck([assistant1, assistant2]);
 
-    const data = await load({ fetch: global.fetch, depends: vi.fn() });
-    render(FileManagementPage, { data });
-
-    const checkboxes = screen.getAllByRole('checkbox');
-
-    await fireEvent.click(checkboxes[0]);
-    await fireEvent.click(checkboxes[1]);
+    const checkbox = screen.getByRole('checkbox', {
+      name: /select all rows/i
+    });
+    await fireEvent.click(checkbox);
 
     expect(screen.getByText(files[0].filename)).toBeInTheDocument();
     expect(screen.getByText(files[1].filename)).toBeInTheDocument();
 
-    await userEvent.click(screen.getByRole('button', { name: /delete/i }));
+    const deleteBtns = screen.getAllByRole('button', { name: /delete/i });
+
+    await userEvent.click(deleteBtns[0]);
+
+    // Running deletion check
+    expect(screen.getByText('Checking for any assistants affected by deletion...'));
+    expect(deleteBtns[1]).toBeDisabled();
+    await waitFor(() => expect(deleteBtns[1]).not.toBeDisabled());
+
+    // Deletion check completed
+    screen.getByText(/are you sure you want to delete \?/i);
+
+    // Affected assistants displayed
+    expect(screen.queryByText(assistant1.name!));
+    expect(screen.queryByText(assistant2.name!));
+
+    await waitFor(() => expect(deleteBtns[1]).not.toBeDisabled());
+    await userEvent.click(deleteBtns[1]);
 
     expect(toastSpy).toHaveBeenCalledWith({
       kind: 'success',
-      title: 'File Deleted',
+      title: 'Files Deleted',
       subtitle: ''
     });
   });
@@ -87,31 +126,55 @@ describe('file management', () => {
   it('disables the delete button when there are no rows selected', async () => {
     // Note - the delete button is hidden when there are no rows selected, but still on the page so it needs to be
     // disabled
-    const files = getFakeFiles();
     mockGetFiles(files);
 
-    const data = await load({ fetch: global.fetch, depends: vi.fn() });
-    render(FileManagementPage, { data });
-
-    const deleteBtn = screen.getByRole('button', { name: /delete/i });
+    const deleteBtn = screen.getAllByRole('button', { name: /delete/i })[0];
     expect(deleteBtn).toBeDisabled();
   });
   it('replaces the delete button with a loading spinner while deleting', async () => {
+    mockDeleteCheck([]);
     mockDeleteFileWithDelay();
-    const files = getFakeFiles();
     mockGetFiles(files);
 
-    const data = await load({ fetch: global.fetch, depends: vi.fn() });
-    render(FileManagementPage, { data });
-
-    const deleteBtn = screen.getByRole('button', { name: /delete/i });
+    const deleteBtns = screen.getAllByRole('button', { name: /delete/i });
 
     const checkboxes = screen.getAllByRole('checkbox');
 
-    await fireEvent.click(checkboxes[0]);
-    expect(screen.queryByTestId('delete-pending')).not.toBeInTheDocument();
-    await userEvent.click(screen.getByRole('button', { name: /delete/i }));
-    expect(deleteBtn).not.toBeInTheDocument();
+    await fireEvent.click(checkboxes[1]); // select file
+    expect(screen.queryByTestId('delete-pending')).not.toBeInTheDocument(); // no loading spinner yet
+    await userEvent.click(deleteBtns[0]);
+    await waitFor(() => expect(deleteBtns[1]).not.toBeDisabled());
+    // Deletion check completed
+    screen.getByText(/are you sure you want to delete \?/i);
+
+    await userEvent.click(deleteBtns[1]); // confirm delete
+    const deleteBtns2 = screen.getAllByRole('button', { name: /delete/i });
+    expect(deleteBtns2).toHaveLength(1); // only modal delete btn remains in document
     expect(screen.queryByTestId('delete-pending')).toBeInTheDocument();
+  });
+  it("doesn't display warning about affected assistants when the file doesn't affect any assistants", async () => {
+    mockDeleteCheck([]); // no assistants affected
+    mockGetFiles(files);
+
+    const checkbox = screen.getByRole('checkbox', {
+      name: /select all rows/i
+    });
+    await fireEvent.click(checkbox);
+
+    const deleteBtns = screen.getAllByRole('button', { name: /delete/i });
+
+    await userEvent.click(deleteBtns[0]);
+
+    // Running deletion check
+    await screen.findByText('Checking for any assistants affected by deletion...');
+    expect(deleteBtns[1]).toBeDisabled();
+    await waitFor(() => expect(deleteBtns[1]).not.toBeDisabled());
+
+    // Deletion check completed
+    screen.getByText(/are you sure you want to delete \?/i);
+
+    expect(
+      screen.queryByText(/this will affect the following assistants/i)
+    ).not.toBeInTheDocument();
   });
 });

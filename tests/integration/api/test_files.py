@@ -6,6 +6,8 @@ import pytest
 from fastapi import HTTPException, Response, status
 from fastapi.testclient import TestClient
 from openai.types import FileDeleted, FileObject
+
+from leapfrogai_api.backend.rag.document_loader import load_file, split
 from leapfrogai_api.routers.openai.files import router
 
 file_response: Response
@@ -56,6 +58,8 @@ def test_create():
     assert FileObject.model_validate(
         file_response.json()
     ), "Create should create a FileObject."
+
+    assert "user_id" not in file_response.json(), "Create should not return a user_id."
 
 
 def test_get():
@@ -141,3 +145,82 @@ def test_invalid_file_type():
                 data={"purpose": "assistants"},
             )
             assert exception.status_code == status.HTTP_415_UNSUPPORTED_MEDIA_TYPE
+
+
+@pytest.mark.asyncio
+async def test_excel_file_handling():
+    """Test handling of an Excel file including upload, retrieval, and deletion."""
+    # Path to the test Excel file
+    excel_file_path = os.path.join(os.path.dirname(__file__), "../../data/test.xlsx")
+
+    # Ensure the file exists
+    assert os.path.exists(
+        excel_file_path
+    ), f"Test Excel file not found at {excel_file_path}"
+
+    # Test file loading and splitting
+    documents = await load_file(excel_file_path)
+    assert len(documents) > 0, "No documents were loaded from the Excel file"
+    assert documents[0].page_content, "The first document has no content"
+
+    split_documents = await split(documents)
+    assert len(split_documents) >= len(documents), "Documents were not split properly"
+    assert split_documents[0].page_content, "The first split document has no content"
+
+    # Test file upload via API
+    with open(excel_file_path, "rb") as excel_file:
+        response = client.post(
+            "/openai/v1/files",
+            files={
+                "file": (
+                    "test.xlsx",
+                    excel_file,
+                    "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+                )
+            },
+            data={"purpose": "assistants"},
+        )
+
+    assert (
+        response.status_code == status.HTTP_200_OK
+    ), f"Failed to upload Excel file: {response.text}"
+    file_object = FileObject.model_validate(response.json())
+
+    # Test file retrieval
+    get_response = client.get(f"/openai/v1/files/{file_object.id}")
+    assert (
+        get_response.status_code == status.HTTP_200_OK
+    ), f"Failed to retrieve file: {get_response.text}"
+    retrieved_file = FileObject.model_validate(get_response.json())
+    assert (
+        retrieved_file.id == file_object.id
+    ), "Retrieved file ID doesn't match uploaded file ID"
+
+    # Test file content retrieval
+    content_response = client.get(f"/openai/v1/files/{file_object.id}/content")
+    assert (
+        content_response.status_code == status.HTTP_200_OK
+    ), f"Failed to retrieve file content: {content_response.text}"
+    assert (
+        content_response.headers["Content-Type"]
+        == "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
+    )
+    assert (
+        content_response.headers["Content-Disposition"]
+        == f'attachment; filename="{file_object.filename}"'
+    )
+    assert len(content_response.content) > 0, "File content is empty"
+
+    # Test file deletion
+    delete_response = client.delete(f"/openai/v1/files/{file_object.id}")
+    assert (
+        delete_response.status_code == status.HTTP_200_OK
+    ), f"Failed to delete file: {delete_response.text}"
+    assert (
+        delete_response.json()["deleted"] is True
+    ), "File was not deleted successfully"
+
+    # Verify file is no longer retrievable
+    get_deleted_response = client.get(f"/openai/v1/files/{file_object.id}")
+    assert get_deleted_response.status_code == status.HTTP_200_OK
+    assert get_deleted_response.json() is None, "Deleted file should not be retrievable"

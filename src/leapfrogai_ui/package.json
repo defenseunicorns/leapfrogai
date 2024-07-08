@@ -6,7 +6,7 @@
   },
   "private": true,
   "scripts": {
-    "dev": "npm run supabase:start && vite dev",
+    "dev": "vite dev",
     "build": "vite build",
     "preview": "vite preview",
     "test": "npm run test:integration && npm run test:unit",
@@ -19,7 +19,7 @@
     "test:unit": "vitest run",
     "test:unit:watch": "vitest",
     "prepare": "husky",
-    "supabase:start": "supabase start && docker exec -u 0 supabase_auth_supabase /bin/sh -c \"echo '100.115.154.78 keycloak.admin.uds.dev' >> /etc/hosts\"",
+    "supabase:start": "supabase start",
     "supabase:stop": "supabase stop",
     "supabase:reset": "supabase db reset",
     "supbase:migrate": "supabase migration up"

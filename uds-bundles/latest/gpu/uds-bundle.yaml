@@ -5,48 +5,15 @@ metadata:
   name: leapfrogai
   description: A UDS bundle for deploying LeapfrogAI
   # x-release-please-start-version
-  version: 0.7.2
+  version: 0.8.0
   # x-release-please-end
 
 packages:
-  # OpenAI-like API
-  - name: leapfrogai-api
-    repository: ghcr.io/defenseunicorns/packages/leapfrogai/leapfrogai-api
-    # x-release-please-start-version
-    ref: 0.7.2
-    # x-release-please-end
-
-  # Model for generic chat and summarization
-  - name: vllm
-    repository: ghcr.io/defenseunicorns/packages/leapfrogai/vllm
-    # x-release-please-start-version
-    ref: 0.7.2
-    # x-release-please-end
-
-  # Model for providing vector embeddings for text
-  - name: text-embeddings
-    repository: ghcr.io/defenseunicorns/packages/leapfrogai/text-embeddings
-    # x-release-please-start-version
-    ref: 0.7.2
-    # x-release-please-end
-
-  # Legacy: Backend capability for RAG and VectorDB
-  - name: rag
-    repository: ghcr.io/defenseunicorns/packages/leapfrogai/rag
-    ref: 0.3.1
-
-  # Model for converting audio to text
-  - name: whisper
-    repository: ghcr.io/defenseunicorns/packages/leapfrogai/whisper
-    # x-release-please-start-version
-    ref: 0.7.2
-    # x-release-please-end
-
   # Supabase backend for the UI and API to interface with Postgresql
   - name: supabase
     repository: ghcr.io/defenseunicorns/packages/leapfrogai/supabase
     # x-release-please-start-version
-    ref: 0.7.2
+    ref: 0.8.0
     # x-release-please-end
     overrides:
       supabase:
@@ -61,9 +28,37 @@ packages:
               default:
                 - "https://ai.uds.dev"
 
+  # OpenAI-like API
+  - name: leapfrogai-api
+    repository: ghcr.io/defenseunicorns/packages/leapfrogai/leapfrogai-api
+    # x-release-please-start-version
+    ref: 0.8.0
+    # x-release-please-end
+
+  # Model for generic chat and summarization
+  - name: vllm
+    repository: ghcr.io/defenseunicorns/packages/leapfrogai/vllm
+    # x-release-please-start-version
+    ref: 0.8.0
+    # x-release-please-end
+
+  # Model for providing vector embeddings for text
+  - name: text-embeddings
+    repository: ghcr.io/defenseunicorns/packages/leapfrogai/text-embeddings
+    # x-release-please-start-version
+    ref: 0.8.0
+    # x-release-please-end
+
+  # Model for converting audio to text
+  - name: whisper
+    repository: ghcr.io/defenseunicorns/packages/leapfrogai/whisper
+    # x-release-please-start-version
+    ref: 0.8.0
+    # x-release-please-end
+
   # UI - new UI TODO - point to ghcr image after Sprint 0.7.0
   - name: leapfrogai-ui
     repository: ghcr.io/defenseunicorns/packages/leapfrogai/leapfrogai-ui
     # x-release-please-start-version
-    ref: 0.7.2
+    ref: 0.8.0
     # x-release-please-end

@@ -1,41 +1,63 @@
 <script lang="ts">
-  import { FileUploaderItem, MultiSelect } from 'carbon-components-svelte';
+  import { FileUploaderItem } from 'carbon-components-svelte';
   import { fade } from 'svelte/transition';
-  import type { FileObject } from 'openai/resources/files';
+  import LFMultiSelect from '$components/LFMultiSelect.svelte';
+  import { filesStore } from '$stores';
+  import type { FilesForm } from '$lib/types/files';
 
-  export let files: FileObject[];
-  export let selectedFileIds: string[];
+  export let filesForm: FilesForm;
+
+  $: filteredStoreFiles = [...$filesStore.files, ...$filesStore.pendingUploads]
+    .filter((f) => $filesStore.selectedAssistantFileIds.includes(f.id))
+    .sort((a, b) => a.filename.localeCompare(b.filename));
+
+  $: fileIdsWithoutErrors = $filesStore.files
+    .map((row) => row.id)
+    .filter((id) => $filesStore.selectedAssistantFileIds.includes(id));
 </script>
 
-<MultiSelect
-  label="Choose data sources"
-  items={files?.map((file) => ({ id: file.id, text: file.filename }))}
-  direction="top"
-  bind:selectedIds={selectedFileIds}
-/>
+<div id="multi-select-container">
+  <LFMultiSelect
+    label="Choose data sources"
+    items={$filesStore.files.map((file) => ({ id: file.id, text: file.filename }))}
+    direction="top"
+    accept={['.pdf', '.txt', '.text']}
+    bind:selectedIds={$filesStore.selectedAssistantFileIds}
+    {filesForm}
+  />
+</div>
 
 <div class="file-item-list">
-  {#each [...(files || [])]
-    .filter((f) => selectedFileIds.includes(f.id))
-    .sort((a, b) => a.filename.localeCompare(b.filename)) as file}
+  {#each filteredStoreFiles as file}
     <div transition:fade={{ duration: 70 }}>
       <FileUploaderItem
+        data-testid={`${file.filename}-${file.status}-uploader-item`}
+        invalid={file.status === 'error'}
         id={file.id}
         name={file.filename}
         size="small"
-        status="edit"
+        status={file.status === 'uploading' ? 'uploading' : 'edit'}
         style="max-width: 100%"
         on:delete={() => {
-          selectedFileIds = selectedFileIds.filter((id) => id !== file.id);
+          filesStore.setSelectedAssistantFileIds(
+            $filesStore.selectedAssistantFileIds.filter((id) => id !== file.id)
+          );
         }}
       />
     </div>
   {/each}
 </div>
 
-<input type="hidden" name="data_sources" bind:value={selectedFileIds} />
+<input type="hidden" name="data_sources" bind:value={fileIdsWithoutErrors} />
 
 <style lang="scss">
+  #multi-select-container {
+    // remove border from first item so button outline shows instead
+    :global(.bx--list-box__menu-item__option:nth-of-type(1)) {
+      border-top: none;
+    }
+  }
+
   .file-item-list {
     display: flex;
     flex-direction: column;

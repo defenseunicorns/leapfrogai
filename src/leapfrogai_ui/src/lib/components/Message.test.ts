@@ -2,72 +2,34 @@ import { render, screen } from '@testing-library/svelte';
 import { afterAll, afterEach, type MockInstance, vi } from 'vitest';
 import { Message } from '$components/index';
 import userEvent from '@testing-library/user-event';
-import { fakeThreads, getFakeAssistant, getFakeMessage } from '$testUtils/fakeData';
+import { fakeAssistants, fakeThreads, getFakeMessage } from '$testUtils/fakeData';
 import MessageWithToast from '$components/MessageWithToast.test.svelte';
-import { convertMessageToAiMessage, getMessageText } from '$helpers/threads';
-import { type Message as AIMessage } from 'ai/svelte';
-import * as chatHelpers from '$helpers/chatHelpers';
+import { convertMessageToVercelAiMessage, getMessageText } from '$helpers/threads';
+import { type Message as VercelAIMessage } from 'ai/svelte';
+import { chatHelpers } from '$helpers';
 import { threadsStore } from '$stores';
 import { NO_SELECTED_ASSISTANT_ID } from '$constants';
-import stores from '$app/stores';
-
-const { getStores } = await vi.hoisted(() => import('$lib/mocks/svelte'));
 
 const fakeAppend = vi.fn();
 const fakeReload = vi.fn();
-const assistant = getFakeAssistant();
 
 const getDefaultMessageProps = () => {
-  let messages: AIMessage[] = [];
-  const setMessages = (newMessages: AIMessage[]) => {
+  let messages: VercelAIMessage[] = [];
+  const setMessages = (newMessages: VercelAIMessage[]) => {
     messages = [...newMessages];
   };
   return {
-    message: convertMessageToAiMessage(getFakeMessage()),
+    allStreamedMessages: [],
+    message: convertMessageToVercelAiMessage(getFakeMessage()),
     messages,
     setMessages,
     isLastMessage: false,
-    isLoading: false,
     append: fakeAppend,
     reload: fakeReload
   };
 };
 
 describe('Message component', () => {
-  beforeAll(() => {
-    vi.mock('$app/stores', (): typeof stores => {
-      const page: typeof stores.page = {
-        subscribe(fn) {
-          return getStores({
-            url: `http://localhost/chat/${fakeThreads[0].id}`,
-            params: { thread_id: fakeThreads[0].id },
-            data: {
-              assistants: [assistant]
-            }
-          }).page.subscribe(fn);
-        }
-      };
-      const navigating: typeof stores.navigating = {
-        subscribe(fn) {
-          return getStores().navigating.subscribe(fn);
-        }
-      };
-      const updated: typeof stores.updated = {
-        subscribe(fn) {
-          return getStores().updated.subscribe(fn);
-        },
-        check: () => Promise.resolve(false)
-      };
-
-      return {
-        getStores,
-        navigating,
-        page,
-        updated
-      };
-    });
-  });
-
   afterEach(() => {
     fakeAppend.mockReset();
     fakeReload.mockReset();
@@ -89,7 +51,7 @@ describe('Message component', () => {
     const fakeMessage = getFakeMessage();
     render(Message, {
       ...getDefaultMessageProps(),
-      message: convertMessageToAiMessage(fakeMessage)
+      message: convertMessageToVercelAiMessage(fakeMessage)
     });
     const editPromptBtn = screen.getByLabelText('edit prompt');
     expect(screen.queryByText('edit message input')).not.toBeInTheDocument();
@@ -105,13 +67,13 @@ describe('Message component', () => {
   });
   it('submits message edit when submit is clicked', async () => {
     const handleEditSpy = vi
-      .spyOn(chatHelpers, 'handleChatMessageEdit')
+      .spyOn(chatHelpers, 'handleMessageEdit')
       .mockImplementationOnce(vi.fn());
 
     const fakeMessage = getFakeMessage();
     render(Message, {
       ...getDefaultMessageProps(),
-      message: convertMessageToAiMessage(fakeMessage)
+      message: convertMessageToVercelAiMessage(fakeMessage)
     });
     const editPromptBtn = screen.getByLabelText('edit prompt');
     expect(screen.queryByText('edit message input')).not.toBeInTheDocument();
@@ -125,7 +87,7 @@ describe('Message component', () => {
     const fakeAssistantMessage = getFakeMessage({ role: 'assistant' });
     render(Message, {
       ...getDefaultMessageProps(),
-      message: convertMessageToAiMessage(fakeAssistantMessage)
+      message: convertMessageToVercelAiMessage(fakeAssistantMessage)
     });
     expect(screen.queryByLabelText('edit prompt')).not.toBeInTheDocument();
   });
@@ -146,7 +108,7 @@ describe('Message component', () => {
       const fakeAssistantMessage = getFakeMessage({ role: 'assistant' });
       render(MessageWithToast, {
         ...getDefaultMessageProps(),
-        message: convertMessageToAiMessage(fakeAssistantMessage)
+        message: convertMessageToVercelAiMessage(fakeAssistantMessage)
       });
 
       await userEvent.click(screen.getByLabelText('copy message'));
@@ -164,7 +126,7 @@ describe('Message component', () => {
       const fakeAssistantMessage = getFakeMessage({ role: 'assistant' });
       render(MessageWithToast, {
         ...getDefaultMessageProps(),
-        message: convertMessageToAiMessage(fakeAssistantMessage)
+        message: convertMessageToVercelAiMessage(fakeAssistantMessage)
       });
 
       await userEvent.click(screen.getByLabelText('copy message'));
@@ -176,7 +138,8 @@ describe('Message component', () => {
       threadsStore.set({
         threads: fakeThreads,
         selectedAssistantId: NO_SELECTED_ASSISTANT_ID,
-        sendingBlocked: true
+        sendingBlocked: true,
+        lastVisitedThreadId: ''
       });
       render(MessageWithToast, {
         ...getDefaultMessageProps()
@@ -192,11 +155,12 @@ describe('Message component', () => {
       threadsStore.set({
         threads: fakeThreads,
         selectedAssistantId: NO_SELECTED_ASSISTANT_ID,
-        sendingBlocked: false
+        sendingBlocked: false,
+        lastVisitedThreadId: ''
       });
       render(MessageWithToast, {
         ...getDefaultMessageProps(),
-        message: convertMessageToAiMessage(getFakeMessage({ role: 'assistant' })),
+        message: convertMessageToVercelAiMessage(getFakeMessage({ role: 'assistant' })),
         isLastMessage: true
       });
 
@@ -206,7 +170,7 @@ describe('Message component', () => {
     it('does not have regenerate buttons for user messages', () => {
       render(MessageWithToast, {
         ...getDefaultMessageProps(),
-        message: convertMessageToAiMessage(getFakeMessage({ role: 'user' })),
+        message: convertMessageToVercelAiMessage(getFakeMessage({ role: 'user' })),
         isLastMessage: true
       });
 
@@ -215,7 +179,7 @@ describe('Message component', () => {
     it('does not have regenerate buttons for AI responses that are not the last response', () => {
       render(MessageWithToast, {
         ...getDefaultMessageProps(),
-        message: convertMessageToAiMessage(getFakeMessage({ role: 'assistant' })),
+        message: convertMessageToVercelAiMessage(getFakeMessage({ role: 'assistant' })),
         isLastMessage: false
       });
 
@@ -224,7 +188,7 @@ describe('Message component', () => {
     it('does not have a copy button for user messages', () => {
       render(MessageWithToast, {
         ...getDefaultMessageProps(),
-        message: convertMessageToAiMessage(getFakeMessage({ role: 'user' }))
+        message: convertMessageToVercelAiMessage(getFakeMessage({ role: 'user' }))
       });
 
       expect(screen.queryByLabelText('copy message')).not.toBeInTheDocument();
@@ -233,11 +197,12 @@ describe('Message component', () => {
       threadsStore.set({
         threads: fakeThreads,
         selectedAssistantId: NO_SELECTED_ASSISTANT_ID,
-        sendingBlocked: true
+        sendingBlocked: true,
+        lastVisitedThreadId: ''
       });
       render(MessageWithToast, {
         ...getDefaultMessageProps(),
-        message: convertMessageToAiMessage(getFakeMessage({ role: 'assistant' })),
+        message: convertMessageToVercelAiMessage(getFakeMessage({ role: 'assistant' })),
         isLastMessage: true
       });
       expect(screen.queryByLabelText('copy message')).toBeInTheDocument();
@@ -247,11 +212,12 @@ describe('Message component', () => {
       threadsStore.set({
         threads: fakeThreads,
         selectedAssistantId: NO_SELECTED_ASSISTANT_ID,
-        sendingBlocked: true
+        sendingBlocked: true,
+        lastVisitedThreadId: ''
       });
       render(MessageWithToast, {
         ...getDefaultMessageProps(),
-        message: convertMessageToAiMessage(getFakeMessage({ role: 'assistant' })),
+        message: convertMessageToVercelAiMessage(getFakeMessage({ role: 'assistant' })),
         isLastMessage: false
       });
       expect(screen.getByLabelText('copy message')).toBeInTheDocument();
@@ -260,11 +226,12 @@ describe('Message component', () => {
       threadsStore.set({
         threads: fakeThreads,
         selectedAssistantId: NO_SELECTED_ASSISTANT_ID,
-        sendingBlocked: true
+        sendingBlocked: true,
+        lastVisitedThreadId: ''
       });
       render(MessageWithToast, {
         ...getDefaultMessageProps(),
-        message: convertMessageToAiMessage(getFakeMessage({ role: 'user' })),
+        message: convertMessageToVercelAiMessage(getFakeMessage({ role: 'user' })),
         isLastMessage: false
       });
       screen.getByLabelText('edit prompt');
@@ -286,9 +253,9 @@ describe('Message component', () => {
     it('Has the title of the assistant name for regular AI responses', () => {
       render(Message, {
         ...getDefaultMessageProps(),
-        message: getFakeMessage({ role: 'assistant', assistant_id: assistant.id })
+        message: getFakeMessage({ role: 'assistant', assistant_id: fakeAssistants[0].id })
       });
-      screen.getByText(assistant.name!);
+      screen.getByText(fakeAssistants[0].name!);
     });
   });
 });

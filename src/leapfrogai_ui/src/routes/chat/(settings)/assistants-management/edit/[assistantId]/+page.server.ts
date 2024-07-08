@@ -4,34 +4,35 @@ import { yup } from 'sveltekit-superforms/adapters';
 import { editAssistantInputSchema } from '$lib/schemas/assistants';
 import { env } from '$env/dynamic/private';
 import { assistantDefaults, DEFAULT_ASSISTANT_TEMP } from '$lib/constants';
-import { openai } from '$lib/server/constants';
 import type { EditAssistantInput, LFAssistant } from '$lib/types/assistants';
 import { getAssistantAvatarUrl } from '$helpers/assistants';
 import type { AssistantCreateParams } from 'openai/resources/beta/assistants';
+import { filesSchema } from '$schemas/files';
 import type { APIPromise } from 'openai/core';
-import type { VectorStoreFile, VectorStoreFileDeleted } from 'openai/resources/beta/vector-stores';
+import type {
+  VectorStoreFile,
+  VectorStoreFileDeleted
+} from 'openai/resources/beta/vector-stores/files';
+import { getOpenAiClient } from '$lib/server/constants';
 
-export const load = async ({ fetch, depends, params, locals: { safeGetSession } }) => {
-  depends('lf:files');
-
+export const load = async ({ params, locals: { safeGetSession } }) => {
   const { session } = await safeGetSession();
 
   if (!session) {
     throw redirect(303, '/');
   }
 
-  const promises: [Promise<LFAssistant>, Promise<Response>] = [
-    openai.beta.assistants.retrieve(params.assistantId) as Promise<LFAssistant>,
-    fetch('/api/files')
-  ];
+  const openai = getOpenAiClient(session.access_token);
 
-  const [assistant, filesRes] = await Promise.all(promises);
-  const files = await filesRes.json();
+  const assistant = (await openai.beta.assistants.retrieve(params.assistantId)) as LFAssistant;
 
   if (!assistant) {
     error(404, { message: 'Assistant not found.' });
   }
-  const vectorStoreId = assistant.tool_resources?.file_search?.vector_store_ids[0];
+
+  const vectorStoreId =
+    assistant.tool_resources?.file_search?.vector_store_ids &&
+    assistant.tool_resources?.file_search?.vector_store_ids[0];
   let file_ids: string[] = [];
   if (vectorStoreId) {
     try {
@@ -55,8 +56,9 @@ export const load = async ({ fetch, depends, params, locals: { safeGetSession } 
   };
 
   const form = await superValidate(assistantFormData, yup(editAssistantInputSchema));
+  const filesForm = await superValidate({}, yup(filesSchema), { errors: false });
 
-  return { title: 'LeapfrogAI - Edit Assistant', form, assistant, files };
+  return { title: 'LeapfrogAI - Edit Assistant', form, filesForm, assistant };
 };
 
 export const actions = {
@@ -73,6 +75,7 @@ export const actions = {
       return fail(400, { form });
     }
 
+    const openai = getOpenAiClient(session.access_token);
     const deleteAvatar = !form.data.avatar && !form.data.avatarFile;
     const filePath = form.data.id;
 
@@ -104,12 +107,17 @@ export const actions = {
         ? form.data.data_sources[0].split(',')
         : [];
 
-    let vectorStoreId: string = form.data.vectorStoreId;
+    let vectorStoreId = form.data.vectorStoreId;
     if (data_sources.length > 0 && (!vectorStoreId || vectorStoreId === 'undefined')) {
-      const vectorStore = await openai.beta.vectorStores.create({
-        name: `${form.data.name}-vector-store`
-      });
-      vectorStoreId = vectorStore.id;
+      try {
+        const vectorStore = await openai.beta.vectorStores.create({
+          name: `${form.data.name}-vector-store`
+        });
+        vectorStoreId = vectorStore.id;
+      } catch (e) {
+        console.error('Error creating vector store', e);
+        return fail(500, { message: 'Error creating vector store.' });
+      }
     }
 
     // undefined vector store id from form is passed as a string
@@ -127,20 +135,30 @@ export const actions = {
           const promises: APIPromise<VectorStoreFileDeleted | VectorStoreFile>[] = [];
 
           for (const file_id of filesToDelete) {
-            promises.push(openai.beta.vectorStores.files.del(vectorStoreId, file_id));
+            await openai.beta.vectorStores.files.del(vectorStoreId, file_id);
           }
           for (const file_id of filesToAdd) {
-            promises.push(
-              openai.beta.vectorStores.files.create(vectorStoreId, {
-                file_id
-              })
-            );
+            await openai.beta.vectorStores.files.create(vectorStoreId, {
+              file_id
+            });
           }
           await Promise.all(promises);
         }
       } catch (e) {
         console.error('Error updating vector store', e);
         return fail(500, { message: 'Error updating assistant.' });
+      }
+    }
+
+    if (data_sources && data_sources.length > 0 && !vectorStoreId) {
+      try {
+        const vectorStore = await openai.beta.vectorStores.create({
+          name: `${form.data.name}-vector-store`,
+          file_ids: data_sources
+        });
+        vectorStoreId = vectorStore.id;
+      } catch (e) {
+        console.error('Error creating vector store', e);
       }
     }
 
@@ -152,14 +170,13 @@ export const actions = {
       temperature: form.data.temperature,
       model: env.DEFAULT_MODEL,
       tools: data_sources && data_sources.length > 0 ? [{ type: 'file_search' }] : [],
-      tool_resources:
-        data_sources && data_sources.length > 0
-          ? {
-              file_search: {
-                vector_store_ids: [vectorStoreId]
-              }
+      tool_resources: vectorStoreId
+        ? {
+            file_search: {
+              vector_store_ids: [vectorStoreId]
             }
-          : null,
+          }
+        : null,
       metadata: {
         ...assistantDefaults.metadata,
         avatar: deleteAvatar ? '' : getAssistantAvatarUrl(filePath),

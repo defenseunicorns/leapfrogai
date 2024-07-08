@@ -12,6 +12,9 @@ import { getUnixSeconds } from '../../src/lib/helpers/dates';
 import type { FileObject } from 'openai/resources/files';
 import type { Profile } from '$lib/types/profile';
 import type { Session } from '@supabase/supabase-js';
+import type { Assistant } from 'openai/resources/beta/assistants';
+import type { VectorStore } from 'openai/resources/beta/vector-stores/index';
+import type { VectorStoreFile } from 'openai/resources/beta/vector-stores/files';
 
 const todayOverride = new Date('2024-03-20T00:00');
 
@@ -101,6 +104,33 @@ export const getFakeThread = (options: FakeThreadOptions = {}): LFThread => {
   };
 };
 
+type GetFakeAssistantOptions = {
+  vectorStoreId?: string;
+};
+export const getFakeAssistant = (options: GetFakeAssistantOptions = {}): LFAssistant => {
+  const { vectorStoreId = undefined } = options;
+  let tool_resources: Assistant.ToolResources = {};
+  if (vectorStoreId) {
+    tool_resources = { file_search: { vector_store_ids: [vectorStoreId] } };
+  }
+  return {
+    id: faker.string.uuid(),
+    ...assistantDefaults,
+    name: faker.person.fullName(),
+    description: faker.lorem.sentence(),
+    instructions: faker.lorem.paragraph(),
+    temperature: DEFAULT_ASSISTANT_TEMP,
+    tools: vectorStoreId ? [{ type: 'file_search' }] : [],
+    tool_resources: tool_resources ?? undefined,
+    metadata: {
+      user_id: faker.string.uuid(),
+      pictogram: 'default',
+      avatar: undefined
+    },
+    created_at: Date.now()
+  };
+};
+
 export const fakeThreads: LFThread[] = [
   // today
   getFakeThread({ numMessages: 2, created_at: getUnixSeconds(todayOverride) }),
@@ -117,23 +147,7 @@ export const fakeThreads: LFThread[] = [
     created_at: getUnixSeconds(new Date(todayOverride.getFullYear(), todayOverride.getMonth(), 10))
   })
 ];
-
-export const getFakeAssistant = (): LFAssistant => {
-  return {
-    id: faker.string.uuid(),
-    ...assistantDefaults,
-    name: faker.person.fullName(),
-    description: faker.lorem.sentence(),
-    instructions: faker.lorem.paragraph(),
-    temperature: DEFAULT_ASSISTANT_TEMP,
-    metadata: {
-      user_id: faker.string.uuid(),
-      pictogram: 'default',
-      avatar: undefined
-    },
-    created_at: Date.now()
-  };
-};
+export const fakeAssistants: LFAssistant[] = [getFakeAssistant(), getFakeAssistant()];
 
 export const getFakeAssistantInput = (): AssistantInput => {
   return {
@@ -156,7 +170,7 @@ export const getFakeFiles = (options: GetFakeFilesOptions = {}) => {
   const files: FileObject[] = [];
   for (let i = 0; i < numFiles; i++) {
     files.push({
-      id: faker.string.uuid(),
+      id: `file-${faker.string.uuid()}`,
       bytes: 32,
       created_at: getUnixSeconds(created_at),
       filename: `${faker.word.noun()}.pdf`,
@@ -255,3 +269,47 @@ export const getFakeFileObject = (): FileObject => ({
   object: 'file',
   purpose: 'assistants'
 });
+
+type GetFakeVectorStoreOptions = {
+  id?: string;
+  name?: string;
+};
+export const getFakeVectorStore = (options: GetFakeVectorStoreOptions = {}): VectorStore => {
+  const { id = `vs_${faker.string.uuid()}`, name = faker.word.noun() } = options;
+  return {
+    id,
+    object: 'vector_store',
+    created_at: getUnixSeconds(new Date()),
+    usage_bytes: 123456,
+    last_active_at: 1698107661,
+    name,
+    status: 'completed',
+    file_counts: {
+      in_progress: 0,
+      completed: 100,
+      cancelled: 0,
+      failed: 0,
+      total: 100
+    },
+    metadata: {}
+  };
+};
+type GetFakeVectorStoreFileOptions = {
+  id?: string;
+  vector_store_id?: string;
+};
+export const getFakeVectorStoreFile = (
+  options: GetFakeVectorStoreFileOptions = {}
+): VectorStoreFile => {
+  const { id = `file-${faker.string.uuid()}`, vector_store_id = `vs_${faker.string.uuid()}` } =
+    options;
+  return {
+    id,
+    object: 'vector_store.file',
+    usage_bytes: 1234,
+    created_at: getUnixSeconds(new Date()),
+    vector_store_id,
+    status: 'completed',
+    last_error: null
+  };
+};

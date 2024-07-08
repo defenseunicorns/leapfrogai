@@ -16,10 +16,10 @@ variables:
     default: http://api.leapfrogai.svc.cluster.local:8080/openai/v1
     prompt: true
     sensitive: true
-  - name: LEAPFROGAI_API_KEY
-    description: The api key the LeapfrogAI API (can be left default for local development)
-    default: my-test-key
+  - name: OPENAI_API_KEY
+    description: OpenAI API Key. If specified, app will use OpenAI instead of Leapfrog
     prompt: true
+    default: ""
     sensitive: true
   - name: SUBDOMAIN
     description: The subdomain for the application, Istio-ingress configuration
@@ -75,7 +75,7 @@ components:
         valuesFiles:
           - 'chart/ui-values.yaml'
         # x-release-please-start-version
-        version: 0.7.2
+        version: 0.8.0
         # x-release-please-end
     images:
       - ghcr.io/defenseunicorns/leapfrogai/leapfrogai-ui:###ZARF_PKG_TMPL_IMAGE_VERSION###

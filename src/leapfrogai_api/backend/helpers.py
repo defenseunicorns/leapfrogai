@@ -1,6 +1,8 @@
 """Helper functions for the OpenAI backend."""
 
-from typing import BinaryIO, Iterator
+import time
+import uuid
+from typing import BinaryIO, Iterator, AsyncGenerator, Any
 import grpc
 import leapfrogai_sdk as lfai
 from leapfrogai_api.backend.types import (
@@ -15,15 +17,16 @@ from leapfrogai_api.backend.types import (
 
 async def recv_completion(
     stream: grpc.aio.UnaryStreamCall[lfai.CompletionRequest, lfai.CompletionResponse],
+    model: str,
 ):
     async for c in stream:
         yield (
             "data: "
             + CompletionResponse(
-                id="foo",
+                id=str(uuid.uuid4()),
                 object="completion.chunk",
-                created=55,
-                model="mpt-7b-8k-chat",
+                created=int(time.time()),
+                model=model,
                 choices=[
                     CompletionChoice(
                         index=0,
@@ -48,16 +51,17 @@ async def recv_chat(
     stream: grpc.aio.UnaryStreamCall[
         lfai.ChatCompletionRequest, lfai.ChatCompletionResponse
     ],
-):
+    model: str,
+) -> AsyncGenerator[str, Any]:
     """Generator that yields chat completion responses as Server-Sent Events."""
     async for c in stream:
         yield (
             "data: "
             + ChatCompletionResponse(
-                id="foo",
+                id=str(uuid.uuid4()),
                 object="chat.completion.chunk",
-                created=55,
-                model="mpt-7b-8k-chat",
+                created=int(time.time()),
+                model=model,
                 choices=[
                     ChatStreamChoice(
                         index=0,
@@ -102,3 +106,10 @@ def read_chunks(file: BinaryIO, chunk_size: int) -> Iterator[lfai.AudioRequest]:
         if not chunk:
             break
         yield lfai.AudioRequest(chunk_data=chunk)
+
+
+def object_or_default(obj: Any | None, _default: Any) -> Any:
+    if obj:
+        return obj
+    else:
+        return _default

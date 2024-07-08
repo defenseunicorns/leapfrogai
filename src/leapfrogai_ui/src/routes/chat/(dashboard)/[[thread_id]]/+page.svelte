@@ -4,9 +4,9 @@
   import { afterUpdate, onMount, tick } from 'svelte';
   import { threadsStore, toastStore } from '$stores';
   import { ArrowRight, Checkmark, StopFilledAlt, UserProfile } from 'carbon-icons-svelte';
-  import { type Message as AIMessage, useAssistant, useChat } from 'ai/svelte';
+  import { type Message as VercelAIMessage, useAssistant, useChat } from 'ai/svelte';
   import { page } from '$app/stores';
-  import { afterNavigate, beforeNavigate, goto } from '$app/navigation';
+  import { beforeNavigate, goto } from '$app/navigation';
   import Message from '$components/Message.svelte';
   import { getMessageText } from '$helpers/threads';
   import { getUnixSeconds } from '$helpers/dates.js';
@@ -26,11 +26,10 @@
     ERROR_GETTING_ASSISTANT_MSG_TEXT,
     ERROR_SAVING_MSG_TEXT
   } from '$constants/errorMessages';
-  import type { PageServerLoad } from './$types';
-  import { convertMessageToAiMessage } from '$helpers/threads.js';
 
-  // TODO - this data is not receiving correct type inference, see issue: (https://github.com/defenseunicorns/leapfrogai/issues/587)
-  export let data: PageServerLoad;
+  import { convertMessageToVercelAiMessage } from '$helpers/threads.js';
+
+  export let data;
 
   /** LOCAL VARS **/
   let messageThreadDiv: HTMLDivElement;
@@ -41,14 +40,15 @@
 
   /** REACTIVE STATE **/
 
-  $: activeThread = $threadsStore.threads.find((t) => t.id === $page.params.thread_id);
+  $: $page.params.thread_id, threadsStore.setLastVisitedThreadId($page.params.thread_id);
+  $: $page.params.thread_id,
+    resetMessages({
+      activeThread: data.thread,
+      setChatMessages,
+      setAssistantMessages,
+      files: data.files
+    });
 
-  $: assistantsList = [...(data.assistants || [])].map((assistant) => ({
-    id: assistant.id,
-    text: assistant.name || 'unknown'
-  }));
-  $: assistantsList.unshift({ id: NO_SELECTED_ASSISTANT_ID, text: 'Select assistant...' }); // add dropdown item for no assistant selected
-  $: assistantsList.unshift({ id: `manage-assistants`, text: 'Manage assistants' }); // add dropdown item for manage assistants button
   $: assistantMode =
     $threadsStore.selectedAssistantId !== NO_SELECTED_ASSISTANT_ID &&
     $threadsStore.selectedAssistantId !== 'manage-assistants';
@@ -56,21 +56,18 @@
   $: if ($isLoading || $status === 'in_progress') threadsStore.setSendingBlocked(true);
 
   // new streamed assistant message received (add in assistant_id and ensure it has a created_at timestamp)
-  $: if (
-    $assistantMessages.length > 0 &&
-    !$assistantMessages[$assistantMessages.length - 1].assistant_id
-  )
-    modifyAndSaveAssistantMessage();
-
-  $: sortedMessages = sortMessages([...$chatMessages, ...$assistantMessages]);
+  $: $assistantMessages, modifyStreamedAssistantResponse();
 
   // assistant stream has completed
   $: if (hasSentAssistantMessage && $status === 'awaiting_message') {
     fetchAndParseCompletedAssistantResponse();
   }
 
+  $: sortedMessages = sortMessages([...$chatMessages, ...$assistantMessages]);
+
   /** END REACTIVE STATE **/
 
+  // Annotations are stored after the run completes, so we re-fetch the last message to get them
   const fetchAndParseCompletedAssistantResponse = async () => {
     try {
       const messageRes = await fetch(
@@ -80,29 +77,33 @@
       const parsedMessage = processAnnotations(message, data.files);
       const assistantMessagesCopy = [...$assistantMessages];
       assistantMessagesCopy[assistantMessagesCopy.length - 1] =
-        convertMessageToAiMessage(parsedMessage);
+        convertMessageToVercelAiMessage(parsedMessage);
       setAssistantMessages(assistantMessagesCopy);
-      await threadsStore.updateMessages($page.params.thread_id, [
-        ...$chatMessages,
-        ...assistantMessagesCopy
-      ]);
-    } catch (error) {
-      console.log('error fetching message', error);
+      threadsStore.updateMessage(
+        $page.params.thread_id,
+        $assistantMessages[$assistantMessages.length - 1].id,
+        parsedMessage
+      );
+    } catch {
+      // Fail Silently - error notification would not be useful to user, on failure, just show unparsed message
     }
   };
 
-  const modifyAndSaveAssistantMessage = async () => {
+  const modifyStreamedAssistantResponse = async () => {
     // Streamed assistant responses don't contain an assistant_id, so we add it here
     // and also add a createdAt date if not present
     const assistantMessagesCopy = [...$assistantMessages];
     const latestMessage = assistantMessagesCopy[assistantMessagesCopy.length - 1];
+    if (latestMessage) {
+      if (!latestMessage.assistant_id) {
+        latestMessage.assistant_id = $threadsStore.selectedAssistantId;
+      }
 
-    latestMessage.assistant_id = $threadsStore.selectedAssistantId;
-    if (!latestMessage.createdAt)
-      latestMessage.createdAt = latestMessage.created_at || getUnixSeconds(new Date());
+      if (!latestMessage.createdAt)
+        latestMessage.createdAt = latestMessage.created_at || getUnixSeconds(new Date());
 
-    setAssistantMessages(assistantMessagesCopy);
-
+      setAssistantMessages(assistantMessagesCopy);
+    }
     threadsStore.setSendingBlocked(false);
   };
 
@@ -118,7 +119,7 @@
     reload
   } = useChat({
     // Handle completed AI Responses
-    onFinish: async (message: AIMessage) => {
+    onFinish: async (message: VercelAIMessage) => {
       // OpenAI returns the creation timestamp in seconds instead of milliseconds.
       // If a response comes in quickly, we need to delay 1 second to ensure the timestamps of the user message
       // and AI response are not exactly the same. This is important for sorting messages when they are initially loaded
@@ -127,10 +128,10 @@
       try {
         if (process.env.NODE_ENV !== 'test') await delay(1000);
 
-        if (!assistantMode && activeThread?.id) {
+        if (!assistantMode && data.thread?.id) {
           // Save with API to db
           const newMessage = await saveMessage({
-            thread_id: activeThread.id,
+            thread_id: data.thread.id,
             content: getMessageText(message),
             role: 'assistant'
           });
@@ -168,11 +169,11 @@
     append: assistantAppend
   } = useAssistant({
     api: '/api/chat/assistants',
-    threadId: activeThread?.id,
+    threadId: data.thread?.id,
     onError: (e) => {
       threadsStore.setSendingBlocked(false);
       // ignore this error b/c it is expected on cancel
-      if (e.toString() !== 'DOMException: BodyStreamBuffer was aborted') {
+      if (e.message !== 'BodyStreamBuffer was aborted') {
         toastStore.addToast({
           kind: 'error',
           title: ERROR_GETTING_ASSISTANT_MSG_TEXT.title,
@@ -185,7 +186,7 @@
   const sendAssistantMessage = async (e: SubmitEvent | KeyboardEvent) => {
     hasSentAssistantMessage = true;
     threadsStore.setSendingBlocked(true);
-    if (activeThread?.id) {
+    if (data.thread?.id) {
       // assistant mode
       $assistantInput = $chatInput;
       $chatInput = ''; // clear chat input
@@ -195,7 +196,7 @@
         data: {
           message: $chatInput,
           assistantId: $threadsStore.selectedAssistantId,
-          threadId: activeThread.id
+          threadId: data.thread.id
         }
       });
       $assistantInput = '';
@@ -205,11 +206,11 @@
 
   const sendChatMessage = async (e: SubmitEvent | KeyboardEvent) => {
     threadsStore.setSendingBlocked(true);
-    if (activeThread?.id) {
+    if (data.thread?.id) {
       // Save with API
       try {
         const newMessage = await saveMessage({
-          thread_id: activeThread.id,
+          thread_id: data.thread.id,
           content: $chatInput,
           role: 'user'
         });
@@ -229,11 +230,12 @@
 
   const onSubmit = async (e: SubmitEvent | KeyboardEvent) => {
     e.preventDefault();
-    if ($threadsStore.sendingBlocked && activeThread?.id) {
+    if (($isLoading || $status === 'in_progress') && data.thread?.id) {
+      const isAssistantChat = $status === 'in_progress';
       // message still sending
       await stopThenSave({
-        activeThreadId: activeThread.id,
-        messages: $chatMessages,
+        activeThreadId: data.thread.id,
+        messages: isAssistantChat ? $assistantMessages : $chatMessages,
         status: $status,
         isLoading: $isLoading || false,
         assistantStop,
@@ -242,7 +244,7 @@
       threadsStore.setSendingBlocked(false);
       return;
     } else {
-      if (!activeThread?.id) {
+      if (!data.thread?.id) {
         // create new thread
         await threadsStore.newThread($chatInput);
         await tick(); // allow store to update
@@ -253,14 +255,12 @@
   };
 
   onMount(async () => {
-    threadsStore.setThreads(data.threads || []);
-    await tick();
-    resetMessages({
-      activeThread,
-      setChatMessages,
-      setAssistantMessages,
-      files: data.files
-    });
+    assistantsList = [...(data.assistants || [])].map((assistant) => ({
+      id: assistant.id,
+      text: assistant.name || 'unknown'
+    }));
+    assistantsList.unshift({ id: NO_SELECTED_ASSISTANT_ID, text: 'Select assistant...' }); // add dropdown item for no assistant selected
+    assistantsList.unshift({ id: `manage-assistants`, text: 'Manage assistants' }); // add dropdown item for manage assistants button
   });
 
   afterUpdate(() => {
@@ -269,25 +269,17 @@
   });
 
   beforeNavigate(async () => {
-    if ($threadsStore.sendingBlocked && activeThread?.id) {
+    if (($isLoading || $status === 'in_progress') && data.thread?.id) {
+      const isAssistantChat = $status === 'in_progress';
       await stopThenSave({
-        activeThreadId: activeThread.id,
-        messages: $chatMessages,
+        activeThreadId: data.thread.id,
+        messages: isAssistantChat ? $assistantMessages : $chatMessages,
         status: $status,
         isLoading: $isLoading || false,
         assistantStop,
         chatStop
       });
     }
-  });
-
-  afterNavigate(() => {
-    resetMessages({
-      activeThread,
-      setChatMessages,
-      setAssistantMessages,
-      files: data.files
-    });
   });
 </script>
 

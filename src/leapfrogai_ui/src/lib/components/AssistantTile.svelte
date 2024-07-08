@@ -84,23 +84,23 @@
       ? `${assistant.description?.slice(0, 75)}...`
       : assistant.description}
   </p>
-
-  <Modal
-    danger
-    bind:open={deleteModalOpen}
-    modalHeading="Delete Assistant"
-    primaryButtonText="Delete"
-    secondaryButtonText="Cancel"
-    on:click:button--secondary={() => (deleteModalOpen = false)}
-    on:submit={() => handleDelete()}
-  >
-    <p>
-      Are you sure you want to delete your
-      <span style="font-weight: bold">{assistant.name}</span>
-      assistant?
-    </p>
-  </Modal>
 </div>
+
+<Modal
+  danger
+  bind:open={deleteModalOpen}
+  modalHeading="Delete Assistant"
+  primaryButtonText="Delete"
+  secondaryButtonText="Cancel"
+  on:click:button--secondary={() => (deleteModalOpen = false)}
+  on:submit={() => handleDelete()}
+>
+  <p>
+    Are you sure you want to delete your
+    <span style="font-weight: bold">{assistant.name}</span>
+    assistant?
+  </p>
+</Modal>
 
 <style lang="scss">
   .assistant-tile {

@@ -1,5 +1,5 @@
 import { error } from '@sveltejs/kit';
-import { openai } from '$lib/server/constants';
+import { getOpenAiClient } from '$lib/server/constants';
 import { stringIdArraySchema } from '$schemas/chat';
 
 export async function DELETE({ request, locals: { safeGetSession } }) {
@@ -21,6 +21,8 @@ export async function DELETE({ request, locals: { safeGetSession } }) {
   for (const id of requestData.ids) {
     let fileDeleted;
     try {
+      const openai = getOpenAiClient(session.access_token);
+
       fileDeleted = await openai.files.del(id);
       if (!fileDeleted.deleted) {
         console.error(`Unable to delete file: ${JSON.stringify(fileDeleted)}`);

@@ -30,8 +30,8 @@ spec:
               value: '###ZARF_VAR_SYSTEM_PROMPT###'
             - name: DEFAULT_TEMPERATURE
               value: '###ZARF_VAR_TEMPERATURE###'
-            - name: LEAPFROGAI_API_KEY
-              value: '###ZARF_VAR_LEAPFROGAI_API_KEY###'
+            - name: OPENAI_API_KEY
+              value: '###ZARF_VAR_OPENAI_API_KEY###'
             - name: PUBLIC_SUPABASE_URL
               value: {{ .Values.package.supabase_url }}
             - name: PUBLIC_SUPABASE_ANON_KEY

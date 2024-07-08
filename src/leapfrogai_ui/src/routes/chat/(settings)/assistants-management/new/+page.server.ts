@@ -4,21 +4,14 @@ import { yup } from 'sveltekit-superforms/adapters';
 import { assistantDefaults, DEFAULT_ASSISTANT_TEMP } from '$lib/constants';
 import { env } from '$env/dynamic/private';
 import { assistantInputSchema } from '$lib/schemas/assistants';
-import { openai } from '$lib/server/constants';
 import type { LFAssistant } from '$lib/types/assistants';
 import { getAssistantAvatarUrl } from '$helpers/assistants';
 import type { AssistantCreateParams } from 'openai/resources/beta/assistants';
+import { getOpenAiClient } from '$lib/server/constants';
+import { filesSchema } from '$schemas/files';
+import type { VectorStore } from 'openai/resources/beta/vector-stores/index';
 
-export const load = async ({ fetch, depends }) => {
-  depends('lf:files');
-  depends('lf:assistants');
-
-  const promises = [fetch('/api/assistants'), fetch('/api/files')];
-  const [assistantsRes, filesRes] = await Promise.all(promises);
-
-  const assistants = await assistantsRes.json();
-  const files = await filesRes.json();
-
+export const load = async () => {
   // Populate form with default temperature
   const form = await superValidate(
     { temperature: DEFAULT_ASSISTANT_TEMP },
@@ -26,7 +19,9 @@ export const load = async ({ fetch, depends }) => {
     { errors: false } // turn off errors for new assistant b/c providing default data turns them on
   );
 
-  return { title: 'LeapfrogAI - New Assistant', form, assistants, files };
+  const filesForm = await superValidate({}, yup(filesSchema), { errors: false });
+
+  return { title: 'LeapfrogAI - New Assistant', form, filesForm };
 };
 
 export const actions = {
@@ -49,6 +44,21 @@ export const actions = {
         ? form.data.data_sources[0].split(',')
         : [];
 
+    const openai = getOpenAiClient(session.access_token);
+
+    let vectorStore: VectorStore | undefined = undefined;
+    if (data_sources && data_sources.length > 0) {
+      try {
+        vectorStore = await openai.beta.vectorStores.create({
+          name: `${form.data.name}-vector-store`,
+          file_ids: data_sources
+        });
+      } catch (e) {
+        console.error('Error creating vector store', e);
+        return fail(500, { message: 'Error creating vector store.' });
+      }
+    }
+
     // Create assistant object, we can't spread the form data here because we need to re-nest some of the values
     const assistant: AssistantCreateParams = {
       name: form.data.name,
@@ -56,19 +66,14 @@ export const actions = {
       instructions: form.data.instructions,
       temperature: form.data.temperature,
       model: env.DEFAULT_MODEL,
-      tools: data_sources.length > 0 ? [{ type: 'file_search' }] : [],
-      tool_resources:
-        data_sources.length > 0
-          ? {
-              file_search: {
-                vector_stores: [
-                  {
-                    file_ids: data_sources
-                  }
-                ]
-              }
+      tools: data_sources && data_sources.length > 0 ? [{ type: 'file_search' }] : [],
+      tool_resources: vectorStore
+        ? {
+            file_search: {
+              vector_store_ids: [vectorStore.id]
             }
-          : null,
+          }
+        : null,
       metadata: {
         ...assistantDefaults.metadata,
         pictogram: form.data.pictogram,

@@ -22,15 +22,18 @@ class CRUDBase(Generic[ModelType]):
             "id"
         ):  # There are cases where the id is provided
             del dict_["id"]
-        if "created_at" in dict_:
+        # Only delete created_at if it is <= 0, the db time is not adequate for message ordering
+        if "created_at" in dict_ and not (
+            isinstance(dict_["created_at"], int) and dict_["created_at"] > 0
+        ):
             del dict_["created_at"]
-        data, _count = await self.db.table(self.table_name).insert(dict_).execute()
 
-        _, response = data
+        result = await self.db.table(self.table_name).insert(dict_).execute()
 
-        if response:
-            return self.model(**response[0])
-        return None
+        try:
+            return self.model(**result.data[0])
+        except Exception:
+            return None
 
     async def get(self, filters: dict | None = None) -> ModelType | None:
         """Get row by filters."""
@@ -40,13 +43,12 @@ class CRUDBase(Generic[ModelType]):
             for key, value in filters.items():
                 query = query.eq(key, value)
 
-        data, _count = await query.execute()
+        result = await query.execute()
 
-        _, response = data
-
-        if response:
-            return self.model(**response[0])
-        return None
+        try:
+            return self.model(**result.data[0])
+        except Exception:
+            return None
 
     async def list(self, filters: dict | None = None) -> list[ModelType] | None:
         """List all rows."""
@@ -56,28 +58,26 @@ class CRUDBase(Generic[ModelType]):
             for key, value in filters.items():
                 query = query.eq(key, value)
 
-        data, _count = await query.execute()
+        result = await query.execute()
 
-        _, response = data
-
-        if response:
-            return [self.model(**item) for item in response]
-        return None
+        try:
+            return [self.model(**item) for item in result.data] or None
+        except Exception:
+            return None
 
     async def update(self, id_: str, object_: ModelType) -> ModelType | None:
         """Update a row by its ID."""
-        data, _count = (
+        result = (
             await self.db.table(self.table_name)
             .update(object_.model_dump())
             .eq("id", id_)
             .execute()
         )
 
-        _, response = data
-
-        if response:
-            return self.model(**response[0])
-        return None
+        try:
+            return self.model(**result.data[0])
+        except Exception:
+            return None
 
     async def delete(self, filters: dict | None = None) -> bool:
         """Delete a row by filters."""
@@ -87,10 +87,9 @@ class CRUDBase(Generic[ModelType]):
             for key, value in filters.items():
                 query = query.eq(key, value)
 
-        data, _count = await query.execute()
+        result = await query.execute()
 
-        _, response = data
-
-        if response:
-            return True
-        return False
+        try:
+            return True if result.data else None
+        except Exception:
+            return None

@@ -1,6 +1,8 @@
 import { render, screen } from '@testing-library/svelte';
 import { LFHeader } from '$components/index';
 import userEvent from '@testing-library/user-event';
+import { threadsStore } from '$stores';
+import { getFakeThread } from '$testUtils/fakeData';
 
 describe('LFHeader', () => {
   it('closes the other header actions when one is opened', async () => {
@@ -19,5 +21,15 @@ describe('LFHeader', () => {
 
     expect(settingsActionBtn).toHaveClass('bx--header__action--active');
     expect(userActionBtn).not.toHaveClass('bx--header__action--active');
+  });
+  it('has a link on the logo that navigates to the last visited thread id', () => {
+    const thread = getFakeThread();
+
+    threadsStore.set({
+      threads: [thread],
+      lastVisitedThreadId: thread.id
+    });
+    render(LFHeader);
+    expect(screen.getByTestId('header-logo-link')).toHaveAttribute('href', `/chat/${thread.id}`);
   });
 });

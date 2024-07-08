@@ -10,7 +10,7 @@
   import { Button, Modal, Slider, TextArea, TextInput } from 'carbon-components-svelte';
   import AssistantAvatar from '$components/AssistantAvatar.svelte';
   import { yup } from 'sveltekit-superforms/adapters';
-  import { toastStore } from '$stores';
+  import { filesStore, toastStore } from '$stores';
   import InputTooltip from '$components/InputTooltip.svelte';
   import { assistantInputSchema, editAssistantInputSchema } from '$lib/schemas/assistants';
   import type { NavigationTarget } from '@sveltejs/kit';
@@ -21,9 +21,8 @@
 
   let isEditMode = $page.url.pathname.includes('edit');
   let bypassCancelWarning = false;
-  let selectedFileIds: string[] = data.form.data.data_sources || [];
 
-  const { form, errors, enhance, submitting, isTainted } = superForm(data.form, {
+  const { form, errors, enhance, submitting, isTainted, delayed } = superForm(data.form, {
     invalidateAll: false,
     validators: yup(isEditMode ? editAssistantInputSchema : assistantInputSchema),
     onResult({ result }) {
@@ -86,6 +85,7 @@
       });
       goto('/chat/assistants-management');
     }
+    filesStore.setSelectedAssistantFileIds($form.data_sources || []);
   });
 </script>
 
@@ -170,14 +170,14 @@
         labelText="Data Sources"
         tooltipText="Specific files your assistant can search and reference"
       />
-      <AssistantFileSelect files={data?.files} bind:selectedFileIds />
+      <AssistantFileSelect filesForm={data.filesForm} />
       <input
         type="hidden"
         name="vectorStoreId"
         value={data?.assistant?.tool_resources?.file_search?.vector_store_ids[0] || undefined}
       />
 
-      <div>
+      <div class="btns-container">
         <Button
           kind="secondary"
           size="small"
@@ -186,7 +186,16 @@
             goto('/chat/assistants-management');
           }}>Cancel</Button
         >
-        <Button kind="primary" size="small" type="submit" disabled={$submitting}>Save</Button>
+
+        <Button
+          kind="primary"
+          size="small"
+          type="submit"
+          disabled={$submitting || $filesStore.uploading}>Save</Button
+        >
+        {#if $delayed}
+          <span>Processing, please wait...</span>
+        {/if}
       </div>
     </div>
   </div>
@@ -238,6 +247,12 @@
         position: absolute;
         top: 25%;
       }
+    }
+
+    .btns-container {
+      display: flex;
+      align-items: center;
+      gap: 0.2rem;
     }
   }
 </style>

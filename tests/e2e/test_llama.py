@@ -3,9 +3,10 @@ from pathlib import Path
 import pytest
 from openai import InternalServerError, OpenAI
 
+from .utils import create_test_user
+
 client = OpenAI(
-    base_url="https://leapfrogai-api.uds.dev/openai/v1",
-    api_key="Free the models",
+    base_url="https://leapfrogai-api.uds.dev/openai/v1", api_key=create_test_user()
 )
 
 model_name = "llama-cpp-python"

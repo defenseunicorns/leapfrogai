@@ -2,8 +2,6 @@
   import {
     Button,
     Modal,
-    OverflowMenu,
-    OverflowMenuItem,
     SideNav,
     SideNavItems,
     SideNavMenu,
@@ -15,50 +13,46 @@
   import { MAX_LABEL_SIZE } from '$lib/constants';
   import { threadsStore, uiStore } from '$stores';
   import { page } from '$app/stores';
-  import { browser } from '$app/environment';
   import ImportExport from '$components/ImportExport.svelte';
   import Fuse, { type FuseResult, type IFuseOptions } from 'fuse.js';
   import { onMount } from 'svelte';
   import type { LFThread } from '$lib/types/threads';
   import { getMessageText } from '$helpers/threads';
   import { goto } from '$app/navigation';
+  import ThreadOverflowMenu from '$components/ThreadOverflowMenu.svelte';
 
   let deleteModalOpen = false;
-  let editMode = false;
-  let editThreadId: string | null = null;
-  let editLabelText: string | undefined = undefined;
   let editLabelInputDisabled = false;
-  let disableScroll = false;
-  let overflowMenuOpen = false;
-  let menuOffset = 0;
   let scrollOffset = 0;
-  let activeThreadRef: HTMLElement | null;
   let scrollBoxRef: HTMLElement;
   let searchText = '';
   let searchResults: FuseResult<LFThread>[];
   let filteredThreads: LFThread[] = [];
+  let editLabelText: string | undefined;
+  let sideNavItemRefs: { [id: string]: HTMLAnchorElement } = {};
+  let editMode = false;
 
-  $: activeThread = $threadsStore.threads.find((thread) => thread.id === $page.params.thread_id);
-
-  $: editMode = !!activeThread?.id && editThreadId === activeThread.id;
-
+  $: activeThread = $page.data.thread;
   $: organizedThreads = dates.organizeThreadsByDate(
     searchText !== '' ? filteredThreads : $threadsStore.threads
   );
+  $: selectedThread = $threadsStore.threads.find(
+    (thread) => thread.id === $uiStore.selectedThreadOverflowMenuId
+  );
 
   const resetEditMode = () => {
-    disableScroll = false;
-    editThreadId = null;
+    uiStore.setSelectedThreadOverflowMenuId('');
     editLabelText = undefined;
     editLabelInputDisabled = false;
+    editMode = false;
   };
 
   const saveNewLabel = async () => {
-    if (editThreadId && editLabelText) {
+    if ($uiStore.selectedThreadOverflowMenuId && editLabelText) {
       editLabelInputDisabled = true;
-      await threadsStore.updateThreadLabel(editThreadId, editLabelText);
-      resetEditMode();
+      await threadsStore.updateThreadLabel($uiStore.selectedThreadOverflowMenuId, editLabelText);
     }
+    resetEditMode();
   };
 
   const handleEdit = async (e: KeyboardEvent | FocusEvent) => {
@@ -79,29 +73,17 @@
   };
 
   const handleDelete = async () => {
+    delete sideNavItemRefs[$uiStore.selectedThreadOverflowMenuId];
     deleteModalOpen = false;
-    if (activeThread?.id) {
-      await threadsStore.deleteThread(activeThread.id);
+    if ($uiStore.selectedThreadOverflowMenuId) {
+      await threadsStore.deleteThread($uiStore.selectedThreadOverflowMenuId);
     }
     await goto('/chat');
   };
 
   const handleActiveThreadChange = (id: string) => {
     threadsStore.changeThread(id);
-    activeThreadRef = document.getElementById(`side-nav-menu-item-${id}`);
   };
-
-  // To properly display the overflow menu items for each thread, we have to calculate the height they
-  // should be displayed at due to the carbon override for allowing overflow
-  $: if (browser && activeThreadRef) {
-    menuOffset = activeThreadRef?.offsetTop;
-    scrollOffset = scrollBoxRef?.scrollTop;
-  } else {
-    if (!activeThreadRef) {
-      menuOffset = 0;
-      scrollOffset = 0;
-    }
-  }
 
   const options: IFuseOptions<unknown> = {
     keys: ['metadata.label', 'messages.content'],
@@ -166,10 +148,11 @@
             </div>
 
             <div
-              class:noScroll={disableScroll || editMode}
+              class:noScroll={$uiStore.selectedThreadOverflowMenuId !== '' || editMode}
               bind:this={scrollBoxRef}
               class="threads"
               data-testid="threads"
+              on:scroll={() => (scrollOffset = scrollBoxRef.scrollTop)}
             >
               {#each organizedThreads as category}
                 {#if category.threads.length > 0}
@@ -178,18 +161,29 @@
                       <SideNavMenuItem
                         data-testid="side-nav-menu-item-{thread.metadata.label}"
                         id="side-nav-menu-item-{thread.id}"
+                        bind:ref={sideNavItemRefs[thread.id]}
                         isSelected={activeThread?.id === thread.id}
-                        on:click={() => handleActiveThreadChange(thread.id)}
+                        on:click={() => {
+                          uiStore.setSelectedThreadOverflowMenuId('');
+                          handleActiveThreadChange(thread.id);
+                        }}
                       >
                         <div class="menu-content">
-                          {#if editMode && activeThread?.id === thread.id}
+                          {#if editMode && $uiStore.selectedThreadOverflowMenuId === thread.id}
                             <TextInput
                               bind:value={editLabelText}
                               size="sm"
                               class="edit-thread"
-                              on:keydown={(e) => handleEdit(e)}
-                              on:blur={(e) => {
+                              on:keydown={(e) => {
+                                e.stopPropagation();
                                 handleEdit(e);
+                              }}
+                              on:blur={(e) => {
+                                e.stopPropagation();
+                                handleEdit(e);
+                              }}
+                              on:click={(e) => {
+                                e.stopPropagation();
                               }}
                               autofocus
                               maxlength={MAX_LABEL_SIZE}
@@ -201,39 +195,14 @@
                               {thread.metadata.label}
                             </div>
                             <div>
-                              <OverflowMenu
-                                id={`overflow-menu-${thread.id}`}
-                                on:close={() => {
-                                  overflowMenuOpen = false;
-                                  disableScroll = false;
-                                }}
-                                on:click={(e) => {
-                                  e.stopPropagation();
-                                  overflowMenuOpen = true;
-                                  handleActiveThreadChange(thread.id);
-                                  disableScroll = true;
-                                }}
-                                data-testid="overflow-menu-{thread.metadata.label}"
-                                style={overflowMenuOpen && activeThread?.id === thread.id
-                                  ? `position: fixed; top: 0; left: 0; transform: translate(224px, ${menuOffset - scrollOffset + 48}px)`
-                                  : ''}
-                              >
-                                <OverflowMenuItem
-                                  text="Edit"
-                                  on:click={() => {
-                                    editThreadId = thread.id;
-                                    editLabelText = thread.metadata.label;
-                                  }}
-                                />
-
-                                <OverflowMenuItem
-                                  data-testid="overflow-menu-delete-{thread.metadata.label}"
-                                  text="Delete"
-                                  on:click={() => {
-                                    deleteModalOpen = true;
-                                  }}
-                                />
-                              </OverflowMenu>
+                              <ThreadOverflowMenu
+                                {thread}
+                                {scrollOffset}
+                                parentSideNavRef={sideNavItemRefs[thread.id]}
+                                bind:editLabelText
+                                bind:editMode
+                                bind:deleteModalOpen
+                              />
                             </div>
                           {/if}
                         </div>
@@ -263,7 +232,7 @@
       on:close
       on:submit={handleDelete}
       >Are you sure you want to delete your <strong
-        >{activeThread?.metadata.label.substring(0, MAX_LABEL_SIZE)}</strong
+        >{selectedThread?.metadata.label.substring(0, MAX_LABEL_SIZE)}</strong
       > chat?</Modal
     >
   </div></SideNav
@@ -301,7 +270,6 @@ https://github.com/carbon-design-system/carbon-components-svelte/issues/892
     display: flex;
     flex-direction: column;
     justify-content: space-between;
-    padding: 0 0 layout.$spacing-05 0;
 
     :global(.bx--side-nav__divider) {
       margin: layout.$spacing-03 0 0 0;
@@ -326,7 +294,6 @@ https://github.com/carbon-design-system/carbon-components-svelte/issues/892
     display: flex;
     align-items: center;
     justify-content: space-between;
-    width: 208px;
 
     .menu-text {
       width: 192px;
