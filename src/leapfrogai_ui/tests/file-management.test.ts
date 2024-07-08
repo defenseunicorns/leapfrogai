@@ -1,6 +1,6 @@
 import { expect, test } from './fixtures';
 import { faker } from '@faker-js/faker';
-import {getTableRow, getSimpleMathQuestion, loadChatPage} from './helpers/helpers';
+import { getTableRow, getSimpleMathQuestion, loadChatPage } from './helpers/helpers';
 import {
   confirmDeletion,
   createPDF,

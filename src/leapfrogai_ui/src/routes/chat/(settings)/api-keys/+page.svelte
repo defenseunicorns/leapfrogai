@@ -1,12 +1,8 @@
 <script lang="ts">
   import {
     Button,
-    ContentSwitcher,
     DataTable,
     Loading,
-    Modal,
-    Switch,
-    TextInput,
     Toolbar,
     ToolbarBatchActions,
     ToolbarContent,
@@ -15,13 +11,16 @@
   import { fade } from 'svelte/transition';
   import { superForm } from 'sveltekit-superforms';
   import { yup } from 'sveltekit-superforms/adapters';
-  import { calculateDays, formatDate } from '$helpers/dates';
+  import { formatDate } from '$helpers/dates';
   import { Add, Copy, TrashCan } from 'carbon-icons-svelte';
   import { toastStore } from '$stores';
   import { newAPIKeySchema } from '$schemas/apiKey.js';
   import { invalidate } from '$app/navigation';
   import type { APIKeyRow } from '$lib/types/apiKeys';
-  import { formatKeyLong, formatKeyShort } from '$helpers/apiKeyHelpers';
+  import { formatKeyShort } from '$helpers/apiKeyHelpers';
+  import CreateApiKeyModal from '$components/modals/CreateApiKeyModal.svelte';
+  import DeleteApiKeyModal from '$components/modals/DeleteApiKeyModal.svelte';
+  import SaveApiKeyModal from '$components/modals/SaveApiKeyModal.svelte';
 
   export let data;
 
@@ -34,7 +33,6 @@
   let selectedExpirationIndex = 1;
   let selectedExpirationDate: number;
   let createdKey: APIKeyRow | null = null;
-  let saveKeyModalRef: HTMLDivElement;
 
   // Set actual expiration date based on selected Switch
   $: {
@@ -89,6 +87,7 @@
     invalidate('lf:api-keys');
   };
 
+  $: console.log('errors', $errors);
   const { form, errors, enhance, submit, reset } = superForm(data.form, {
     invalidateAll: false,
     validators: yup(newAPIKeySchema),
@@ -106,8 +105,6 @@
           subtitle: `${result.data?.form.data.name} created successfully.`
         });
         invalidate('lf:api-keys');
-      } else if (result.type === 'failure') {
-        handleError();
       }
     }
   });
@@ -115,10 +112,6 @@
   const handleCancel = () => {
     modalOpen = false;
     reset();
-  };
-
-  const handleSubmit = () => {
-    submit();
   };
 
   const handleDelete = async () => {
@@ -260,98 +253,25 @@
         </ToolbarContent>
       </Toolbar>
     </DataTable>
-    <Modal
-      bind:open={modalOpen}
-      modalHeading="Create new secret key"
-      primaryButtonText="Create"
-      secondaryButtonText="Cancel"
-      hasForm
-      on:click:button--secondary={handleCancel}
-      on:close={handleCancel}
-      on:submit={() => handleSubmit()}
-    >
-      <div class="modal-inner-content">
-        <p style="width: 70%;">
-          This API key is linked to your user account and gives full access to it. Please be careful
-          and keep it secret.
-        </p>
-
-        <TextInput
-          id="name"
-          name="name"
-          labelText="Name"
-          placeholder="Test Key"
-          size="sm"
-          autocomplete="off"
-          bind:value={$form.name}
-          invalid={!!$errors.name}
-          invalidText={$errors.name?.toString()}
-        />
-        <div>
-          <label for="expiration" class:bx--label={true}>Expiration</label>
-          <ContentSwitcher
-            id="expiration"
-            size="xl"
-            style="width: 60%"
-            bind:selectedIndex={selectedExpirationIndex}
-          >
-            <Switch text="7 Days" />
-            <Switch text="30 Days" />
-            <Switch text="60 Days" />
-            <Switch text="90 Days" />
-          </ContentSwitcher>
-        </div>
-        <input type="hidden" name="expires_at" value={selectedExpirationDate} />
-      </div>
-    </Modal>
+    <CreateApiKeyModal
+      {modalOpen}
+      {handleCancel}
+      {submit}
+      bind:name={$form.name}
+      invalidText={$errors.name?.toString()}
+      {selectedExpirationIndex}
+      {selectedExpirationDate}
+    />
   </form>
 
-  <Modal
-    danger
-    bind:open={confirmDeleteModalOpen}
-    modalHeading={`Delete API ${keyNames.length > 0 ? 'Keys' : 'Key'}`}
-    primaryButtonText="Delete"
-    secondaryButtonText="Cancel"
-    primaryButtonDisabled={deleting}
-    on:click:button--secondary={() => handleCancelConfirmDelete()}
-    on:close={() => handleCancelConfirmDelete()}
-    on:submit={() => handleDelete()}
-  >
-    <p>Are you sure you want to delete <span style="font-weight: bold">{keyNames}</span>?</p>
-  </Modal>
-
-  <Modal
-    bind:ref={saveKeyModalRef}
-    bind:open={copyKeyModalOpen}
-    modalHeading="Save secret key"
-    primaryButtonText="Close"
-    on:close={handleCloseCopyKeyModal}
-    on:submit={handleCloseCopyKeyModal}
-  >
-    {#if createdKey}
-      <div class="centered-spaced-container" style="flex-direction: column">
-        <p>
-          Please store this secret key in a safe and accessible place. For security purposes, it
-          cannot be viewed again through your LeapfrogAI account. If you lose it, you'll need to
-          create a new one.
-        </p>
-        <div class="centered-spaced-lg-container" style="width: 100%">
-          <TextInput
-            readonly
-            labelText="Key"
-            value={formatKeyLong(createdKey.api_key, saveKeyModalRef?.offsetWidth || 200)}
-          />
-          <Button kind="tertiary" icon={Copy} size="small" on:click={handleCopyKey}>Copy</Button>
-        </div>
-        <div style="width: 100%">
-          <label for="saved-expiration" class:bx--label={true}>Expiration</label>
-          <p id="saved-expiration">
-            {`${calculateDays(createdKey.created_at, createdKey.expires_at)} days - ${formatDate(new Date(createdKey.expires_at * 1000))}`}
-          </p>
-        </div>
-      </div>
-    {/if}
-  </Modal>
+  <DeleteApiKeyModal
+    {confirmDeleteModalOpen}
+    {keyNames}
+    {deleting}
+    {handleCancelConfirmDelete}
+    {handleDelete}
+  />
+  <SaveApiKeyModal {copyKeyModalOpen} {handleCloseCopyKeyModal} {handleCopyKey} {createdKey} />
 </div>
 
 <style lang="scss">
@@ -367,14 +287,6 @@
     gap: layout.$spacing-06;
     align-items: center;
   }
-  .centered-spaced-lg-container {
-    display: flex;
-    gap: layout.$spacing-07;
-    align-items: center;
-    :global(.bx--text-input__readonly-icon) {
-      display: none;
-    }
-  }
 
   .key-container {
     display: flex;
@@ -387,12 +299,6 @@
 
   .title {
     @include type.type-style('heading-05');
-  }
-
-  .modal-inner-content {
-    display: flex;
-    flex-direction: column;
-    gap: layout.$spacing-06;
   }
 
   .deleting {
