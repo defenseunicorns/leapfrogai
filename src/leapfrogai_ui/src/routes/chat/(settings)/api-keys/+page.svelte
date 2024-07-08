@@ -86,7 +86,6 @@
     invalidate('lf:api-keys');
   };
 
-  $: console.log('errors', $errors);
   const { form, errors, enhance, submit, reset } = superForm(data.form, {
     invalidateAll: false,
     validators: yup(newAPIKeySchema),
