@@ -14,7 +14,7 @@ mock_data_model = MockModel(id=1, name="mock-data")
 mock_assistant = Assistant(
     id="0",
     created_at=0,
-    model="mock-data",
+    model="mock-model",
     object="assistant",
     tools=[],
     instructions="mock-data",
