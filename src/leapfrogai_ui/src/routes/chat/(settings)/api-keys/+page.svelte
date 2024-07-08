@@ -220,7 +220,7 @@
                 row.api_key.toLowerCase().includes(value.toString().toLowerCase()) ||
                 formattedCreatedAtDate.includes(value.toString().toLowerCase()) ||
                 formattedExpiresAtDate.includes(value.toString().toLowerCase()) ||
-                row.permissions.toLowerCase().includes(value.toString().toLowerCase())
+                row.permissions?.toLowerCase().includes(value.toString().toLowerCase())
               );
             }}
           />
