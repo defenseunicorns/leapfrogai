@@ -138,7 +138,9 @@ async def retrieve_file_content(
         file_object = await crud_file_object.get(filters=FilterFileObject(id=file_id))
 
         if not file_object:
-            raise HTTPException(status_code=404, detail="File not found")
+            raise HTTPException(
+                status_code=status.HTTP_404_NOT_FOUND, detail="File not found"
+            )
 
         # Determine the content type
         content_type = get_mime_type_from_filename(file_object.filename)

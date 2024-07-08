@@ -181,13 +181,13 @@ async def test_excel_file_handling():
             data={"purpose": "assistants"},
         )
 
-    assert response.status_code == 200, f"Failed to upload Excel file: {response.text}"
+    assert response.status_code == status.HTTP_200_OK, f"Failed to upload Excel file: {response.text}"
     file_object = FileObject.model_validate(response.json())
 
     # Test file retrieval
     get_response = client.get(f"/openai/v1/files/{file_object.id}")
     assert (
-        get_response.status_code == 200
+        get_response.status_code == status.HTTP_200_OK
     ), f"Failed to retrieve file: {get_response.text}"
     retrieved_file = FileObject.model_validate(get_response.json())
     assert (
@@ -197,7 +197,7 @@ async def test_excel_file_handling():
     # Test file content retrieval
     content_response = client.get(f"/openai/v1/files/{file_object.id}/content")
     assert (
-        content_response.status_code == 200
+        content_response.status_code == status.HTTP_200_OK
     ), f"Failed to retrieve file content: {content_response.text}"
     assert (
         content_response.headers["Content-Type"]
@@ -212,7 +212,7 @@ async def test_excel_file_handling():
     # Test file deletion
     delete_response = client.delete(f"/openai/v1/files/{file_object.id}")
     assert (
-        delete_response.status_code == 200
+        delete_response.status_code == status.HTTP_200_OK
     ), f"Failed to delete file: {delete_response.text}"
     assert (
         delete_response.json()["deleted"] is True
@@ -220,5 +220,5 @@ async def test_excel_file_handling():
 
     # Verify file is no longer retrievable
     get_deleted_response = client.get(f"/openai/v1/files/{file_object.id}")
-    assert get_deleted_response.status_code == 200
+    assert get_deleted_response.status_code == status.HTTP_200_OK
     assert get_deleted_response.json() is None, "Deleted file should not be retrievable"
