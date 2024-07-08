@@ -78,6 +78,8 @@
     "carbon-pictograms-svelte": "^12.10.0",
     "concurrently": "^8.2.2",
     "fuse.js": "^7.0.0",
+    "highlight.js": "^11.10.0",
+    "markdown-it": "^14.1.0",
     "msw": "^2.2.14",
     "openai": "^4.47.1",
     "playwright": "^1.42.1",

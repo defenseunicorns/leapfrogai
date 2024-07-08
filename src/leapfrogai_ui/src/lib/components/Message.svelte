@@ -3,6 +3,8 @@
   import { Button, Tile } from 'carbon-components-svelte';
   import { Copy, Edit, Reset, UserAvatar } from 'carbon-icons-svelte';
   import { type Message as VercelAIMessage } from 'ai/svelte';
+  import markdownit from 'markdown-it';
+  import hljs from 'highlight.js';
   import { LFTextArea } from '$components';
   import frog from '$assets/frog.png';
   import { writable } from 'svelte/store';
@@ -25,6 +27,23 @@
   export let isLastMessage: boolean;
   export let append: AppendFunction;
   export let reload: ReloadFunction;
+
+  const md = markdownit({
+    highlight: function (str: string, lang: string) {
+      if (lang && hljs.getLanguage(lang)) {
+        try {
+          return (
+            '<pre><code class="hljs">' +
+            hljs.highlight(str, { language: lang, ignoreIllegals: true }).value +
+            '</code></pre>'
+          );
+        } catch (__) {}
+      }
+
+      // You can assign classes here if needed (like hljs)
+      return '<pre><code class="hljs">' + md.utils.escapeHtml(str) + '</code></pre>';
+    }
+  });
 
   let assistantImage = isRunAssistantResponse(message)
     ? getAssistantImage(...[$page.data.assistants || []], message.assistant_id)
@@ -126,7 +145,7 @@
             <div style="font-weight: bold">
               {message.role === 'user' ? 'You' : getAssistantName(message.assistant_id)}
             </div>
-            <div>{getMessageText(message)}</div>
+            <div>{md.renderInline(getMessageText(message))}</div>
           </div></Tile
         >
       {/if}
