@@ -14,6 +14,7 @@ dependencies = [  # Dev dependencies needed for all of lfai
     "openai",
     "pip-tools == 7.3.0",
     "pytest",
+    "pytest-asyncio",
     "httpx",
     "ruff",
 ]
