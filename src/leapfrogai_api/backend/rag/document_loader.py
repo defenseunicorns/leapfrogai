@@ -11,6 +11,7 @@ from langchain_community.document_loaders import (
     TextLoader,
     UnstructuredHTMLLoader,
     UnstructuredMarkdownLoader,
+    UnstructuredPowerPointLoader,
 )
 from langchain_core.documents import Document
 from langchain_text_splitters import RecursiveCharacterTextSplitter
@@ -23,6 +24,8 @@ HANDLERS = {
     "text/markdown": UnstructuredMarkdownLoader,
     "application/msword": Docx2txtLoader,
     "application/vnd.openxmlformats-officedocument.wordprocessingml.document": Docx2txtLoader,
+    "application/vnd.openxmlformats-officedocument.presentationml.presentation": UnstructuredPowerPointLoader,
+    "application/vnd.ms-powerpoint": UnstructuredPowerPointLoader,
 }
 
 
