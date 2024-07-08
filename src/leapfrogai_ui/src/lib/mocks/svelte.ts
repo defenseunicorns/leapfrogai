@@ -1,6 +1,6 @@
 import { type Readable, readable } from 'svelte/store';
 import type { Navigation, Page } from '@sveltejs/kit';
-import { fakeThreads } from '$testUtils/fakeData';
+import { getFakeSession } from '$testUtils/fakeData';
 import { faker } from '@faker-js/faker';
 
 type GetStoresOverrides = {
@@ -13,7 +13,10 @@ export const getStores = (
   options: GetStoresOverrides = { url: 'http://localhost', params: {}, data: {} }
 ) => {
   const id = faker.string.uuid();
+  const user_id = faker.string.uuid();
+  const full_name = faker.person.fullName();
   const navigating = readable<Navigation | null>(null);
+
   const page = readable<Page>({
     url: new URL(options.url),
     params: options.params,
@@ -21,21 +24,8 @@ export const getStores = (
     status: 200,
     error: null,
     data: {
-      threads: fakeThreads,
-      profile: { id, full_name: 'fake user', thread_ids: [] },
-      session: {
-        access_token: '',
-        refresh_token: '',
-        expires_in: 3600,
-        token_type: '',
-        user: {
-          id,
-          app_metadata: {},
-          user_metadata: {},
-          aud: '',
-          created_at: new Date().toISOString()
-        }
-      },
+      profile: { id, full_name: full_name, thread_ids: [] },
+      session: getFakeSession({ user_id, full_name }),
       ...options.data
     },
     state: {},

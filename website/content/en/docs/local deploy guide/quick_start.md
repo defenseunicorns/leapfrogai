@@ -8,10 +8,23 @@ weight: 2
 
 The fastest and easiest way to get started with a deployment of LeapfrogAI is by using [UDS](https://github.com/defenseunicorns/uds-core). These quick start instructions show how to deploy LeapfrogAI in either a CPU or GPU-enabled environment.
 
+## System Requirements
+
+Please review the following table to ensure your system meets the minimum requirements. LFAI can be run with or without GPU-access, but GPU-enabled systems are recommended due to the performance gains. The following assumes a single personal device:
+
+|     | Minimum           | Recommended (Performance) |
+|-----|-------------------|---------------------------|
+| RAM | 32 GB             | 128 GB                    |
+| CPU | 8 Cores @ 3.0 GHz | 32 Cores @ 3.0 GHz        |
+| GPU | N/A               | 2x NVIDIA RTX 4090 GPUs   |
+
+Additionally, please check the list of tested [operating systems](https://docs.leapfrog.ai/docs/local-deploy-guide/requirements/#operating-systems) for compatibility.
+
 ## Prerequisites
 
 - [Docker](https://docs.docker.com/engine/install/)
 - [K3D](https://k3d.io/)
+- [Zarf](https://docs.zarf.dev/getting-started/install/)
 - [UDS CLI](https://github.com/defenseunicorns/uds-cli)
 
 GPU considerations (NVIDIA GPUs only):
@@ -19,6 +32,18 @@ GPU considerations (NVIDIA GPUs only):
 - NVIDIA GPU must have the most up-to-date drivers installed.
 - NVIDIA GPU drivers compatible with CUDA (>=12.2).
 - NVIDIA Container Toolkit is available via internet access, pre-installed, or on a mirrored package repository in the air gap.
+
+## Default Models
+LeapfrogAI deploys with certain default models. The following models were selected to balance portability and performance for a base deployment:
+
+| Backend          | CPU/GPU Support | Default Model                                                                |
+|------------------|-----------------|------------------------------------------------------------------------------|
+| llama-cpp-python | CPU             | [SynthIA-7B-v2.0-GGUF](https://huggingface.co/TheBloke/SynthIA-7B-v2.0-GGUF) |
+| vllm             | GPU             | [Synthia-7B-v2.0-GPTQ](https://huggingface.co/TheBloke/SynthIA-7B-v2.0-GPTQ) |
+| text-embeddings  | CPU/GPU         | [Instructor-XL](https://huggingface.co/hkunlp/instructor-xl)                 |
+| whisper          | CPU/GPU         | [OpenAI whisper-base](https://huggingface.co/openai/whisper-base)            |
+
+**NOTE:** If a user's system specifications are beyond the minimum requirements, advanced users are able to swap out the default model choices with larger or fine-tuned models.
 
 ## Disclaimers
 
@@ -66,18 +91,20 @@ In order to test the GPU deployment locally on K3d, use the following command wh
 ```
 
 ## Checking Deployment
-
-Inspect the cluster using:
+Once the cluster and LFAI have deployed, the cluster and pods can be inspected using uds:
 
 ```bash
 uds zarf tools monitor
 ```
 
+The following URLs should now also be available to view LFAI resources:
+
+**DISCLAIMER**: These URls will only be available *after* both K3D-core and LFAI have been deployed. They will also only be available on the host system that deployed the cluster.
+
 | Tool       | URL                                   |
 | ---------- | ------------------------------------- |
 | UI         | <https://ai.uds.dev>                  |
 | API        | <https://leapfrogai-api.uds.dev/docs> |
-| RAG Server | <https://leapfrogai-rag.uds.dev/docs> |
 
 ## Accessing the UI
 

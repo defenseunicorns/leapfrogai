@@ -14,8 +14,11 @@ dependencies = [  # Dev dependencies needed for all of lfai
     "openai",
     "pip-tools == 7.3.0",
     "pytest",
+    "pytest-asyncio",
     "httpx",
     "ruff",
+    "python-dotenv",
+    "pytest-asyncio"
 ]
 requires-python = "~=3.11"
 
