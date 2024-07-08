@@ -25,6 +25,7 @@ HANDLERS = {
     "application/msword": Docx2txtLoader,
     "application/vnd.openxmlformats-officedocument.wordprocessingml.document": Docx2txtLoader,
     "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet": UnstructuredExcelLoader,
+    "xls:application/vnd.ms-excel": UnstructuredExcelLoader,
 }
 
 # Mapping of file extensions to MIME types
@@ -38,6 +39,7 @@ EXTENSION_TO_MIME_TYPE = {
     ".doc": "application/msword",
     ".docx": "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
     ".xlsx": "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+    ".xls": "xls:application/vnd.ms-excel",
 }
 
 
