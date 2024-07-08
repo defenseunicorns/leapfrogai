@@ -101,6 +101,7 @@
 
   <Modal
     bind:open={modalOpen}
+    preventCloseOnClickOutside
     modalHeading="Avatar Image"
     shouldSubmitOnEnter={false}
     primaryButtonText="Save"

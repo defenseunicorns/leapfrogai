@@ -10,6 +10,7 @@
 
 <Modal
   danger
+  preventCloseOnClickOutside
   bind:open={confirmDeleteModalOpen}
   modalHeading={`Delete API ${keyNames.length > 0 ? 'Keys' : 'Key'}`}
   primaryButtonText="Delete"
