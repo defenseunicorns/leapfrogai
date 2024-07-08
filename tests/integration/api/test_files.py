@@ -223,8 +223,8 @@ async def test_excel_file_handling():
     get_deleted_response = client.get(f"/openai/v1/files/{file_object.id}")
     assert get_deleted_response.status_code == status.HTTP_200_OK
     assert get_deleted_response.json() is None, "Deleted file should not be retrievable"
-    
-    
+
+
 @pytest.mark.asyncio
 async def test_powerpoint_file_handling():
     """Test handling of a PowerPoint file including upload, retrieval, and deletion."""
