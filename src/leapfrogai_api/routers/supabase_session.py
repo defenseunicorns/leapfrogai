@@ -1,5 +1,7 @@
 """Supabase session dependency."""
 
+from base64 import binascii
+import logging
 import os
 from typing import Annotated
 from fastapi import Depends, HTTPException, status
@@ -53,9 +55,9 @@ async def init_supabase_client(
     )
 
     # Try API Key Auth first
-    valid, api_key = validate_and_encode_api_key(auth_creds.credentials)
+    valid_api_key, api_key = validate_and_encode_api_key(auth_creds.credentials)
 
-    if valid and api_key:
+    if valid_api_key and api_key:
         client.options.auto_refresh_token = False
         client.options.headers.update({"x-custom-api-key": api_key})
 
@@ -69,11 +71,31 @@ async def init_supabase_client(
 
     # If API Key Auth fails, try JWT Auth
     if _validate_jwt_token(auth_creds.credentials):
-        await client.auth.set_session(
-            access_token=auth_creds.credentials, refresh_token="dummy"
-        )
+        try:
+            await client.auth.set_session(
+                access_token=auth_creds.credentials, refresh_token="dummy"
+            )
+        except gotrue.errors.AuthApiError as e:
+            logging.exception("\t%s", e)
+            raise HTTPException(
+                detail="Token has expired or is not valid. Generate a new token",
+                status_code=status.HTTP_401_UNAUTHORIZED,
+            ) from e
+        except binascii.Error as e:
+            logging.exception("\t%s", e)
+            raise HTTPException(
+                detail="Failed to validate Authentication Token",
+                status_code=status.HTTP_401_UNAUTHORIZED,
+            ) from e
+        except Exception as e:
+            logging.exception("\t%s", e)
+            raise HTTPException(
+                detail="Failed to create Supabase session",
+                status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            ) from e
 
-        return client
+        if _validate_jwt_authorization(client, auth_creds.credentials):
+            return client
 
     # If both API Key and JWT Auth fail, raise an error
     raise HTTPException(
