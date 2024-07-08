@@ -2,10 +2,7 @@
   import {
     Button,
     Modal,
-    OverflowMenu,
-    OverflowMenuItem,
     SideNav,
-    SideNavDivider,
     SideNavItems,
     SideNavMenu,
     SideNavMenuItem,
@@ -14,51 +11,48 @@
   import { AddComment } from 'carbon-icons-svelte';
   import { dates } from '$helpers';
   import { MAX_LABEL_SIZE } from '$lib/constants';
-  import { conversationsStore, uiStore } from '$stores';
+  import { threadsStore, uiStore } from '$stores';
   import { page } from '$app/stores';
-  import { browser } from '$app/environment';
   import ImportExport from '$components/ImportExport.svelte';
   import Fuse, { type FuseResult, type IFuseOptions } from 'fuse.js';
   import { onMount } from 'svelte';
+  import type { LFThread } from '$lib/types/threads';
+  import { getMessageText } from '$helpers/threads';
+  import { goto } from '$app/navigation';
+  import ThreadOverflowMenu from '$components/ThreadOverflowMenu.svelte';
 
   let deleteModalOpen = false;
-  let editMode = false;
-  let editConversationId: string | null = null;
-  let editLabelText: string | undefined = undefined;
   let editLabelInputDisabled = false;
-  let disableScroll = false;
-  let overflowMenuOpen = false;
-  let menuOffset = 0;
   let scrollOffset = 0;
-  let activeConversationRef: HTMLElement | null;
   let scrollBoxRef: HTMLElement;
   let searchText = '';
-  let searchResults: FuseResult<Conversation>[];
-  let filteredConversations: Conversation[] = [];
+  let searchResults: FuseResult<LFThread>[];
+  let filteredThreads: LFThread[] = [];
+  let editLabelText: string | undefined;
+  let sideNavItemRefs: { [id: string]: HTMLAnchorElement } = {};
+  let editMode = false;
 
-  $: activeConversation = $conversationsStore.conversations.find(
-    (conversation) => conversation.id === $page.params.conversation_id
+  $: activeThread = $page.data.thread;
+  $: organizedThreads = dates.organizeThreadsByDate(
+    searchText !== '' ? filteredThreads : $threadsStore.threads
   );
-
-  $: editMode = !!activeConversation?.id && editConversationId === activeConversation.id;
-
-  $: organizedConversations = dates.organizeConversationsByDate(
-    searchText !== '' ? filteredConversations : $conversationsStore.conversations
+  $: selectedThread = $threadsStore.threads.find(
+    (thread) => thread.id === $uiStore.selectedThreadOverflowMenuId
   );
 
   const resetEditMode = () => {
-    disableScroll = false;
-    editConversationId = null;
+    uiStore.setSelectedThreadOverflowMenuId('');
     editLabelText = undefined;
     editLabelInputDisabled = false;
+    editMode = false;
   };
 
   const saveNewLabel = async () => {
-    if (editConversationId && editLabelText) {
+    if ($uiStore.selectedThreadOverflowMenuId && editLabelText) {
       editLabelInputDisabled = true;
-      await conversationsStore.updateConversationLabel(editConversationId, editLabelText);
-      resetEditMode();
+      await threadsStore.updateThreadLabel($uiStore.selectedThreadOverflowMenuId, editLabelText);
     }
+    resetEditMode();
   };
 
   const handleEdit = async (e: KeyboardEvent | FocusEvent) => {
@@ -79,32 +73,20 @@
   };
 
   const handleDelete = async () => {
-    if (activeConversation?.id) {
-      await conversationsStore.deleteConversation(activeConversation.id);
-    }
-
+    delete sideNavItemRefs[$uiStore.selectedThreadOverflowMenuId];
     deleteModalOpen = false;
-  };
-
-  const handleActiveConversationChange = (id: string) => {
-    conversationsStore.changeConversation(id);
-    activeConversationRef = document.getElementById(`side-nav-menu-item-${id}`);
-  };
-
-  // To properly display the overflow menu items for each conversation, we have to calculate the height they
-  // should be displayed at due to the carbon override for allowing overflow
-  $: if (browser && activeConversationRef) {
-    menuOffset = activeConversationRef?.offsetTop;
-    scrollOffset = scrollBoxRef?.scrollTop;
-  } else {
-    if (!activeConversationRef) {
-      menuOffset = 0;
-      scrollOffset = 0;
+    if ($uiStore.selectedThreadOverflowMenuId) {
+      await threadsStore.deleteThread($uiStore.selectedThreadOverflowMenuId);
     }
-  }
+    await goto('/chat');
+  };
+
+  const handleActiveThreadChange = (id: string) => {
+    threadsStore.changeThread(id);
+  };
 
   const options: IFuseOptions<unknown> = {
-    keys: ['label', 'messages.content'],
+    keys: ['metadata.label', 'messages.content'],
     minMatchCharLength: 3,
     shouldSort: false,
     findAllMatches: true,
@@ -113,9 +95,18 @@
   };
 
   $: if (searchText) {
-    const fuse = new Fuse($conversationsStore.conversations, options);
+    // Remap the message content to be a string instead of string | nested object
+    const threadsWithTextMessages = $threadsStore.threads.map((thread) => ({
+      ...thread,
+      messages: thread.messages?.map((message) => ({
+        ...message,
+        content: getMessageText(message)
+      }))
+    }));
+
+    const fuse = new Fuse(threadsWithTextMessages, options);
     searchResults = fuse.search(searchText);
-    filteredConversations = searchResults.map((result) => result.item);
+    filteredThreads = searchResults.map((result) => result.item);
   }
 
   onMount(() => {
@@ -131,7 +122,7 @@
   aria-label="side navigation"
   style="background-color: g90;"
 >
-  <div style="height: 100%">
+  <div class="inner-side-nav-container">
     <SideNavItems>
       <div class="side-nav-items-container">
         <div style="height: 100%">
@@ -143,8 +134,8 @@
                 icon={AddComment}
                 class="new-chat-btn"
                 id="new-chat-btn"
-                aria-label="new conversation"
-                on:click={() => handleActiveConversationChange('')}>New Chat</Button
+                aria-label="new thread"
+                on:click={() => handleActiveThreadChange('')}>New Chat</Button
               >
               <TextInput
                 light
@@ -153,82 +144,65 @@
                 bind:value={searchText}
                 maxlength={25}
               />
-              <SideNavDivider />
+              <hr id="divider" class="divider" />
             </div>
 
             <div
-              class:noScroll={disableScroll || editMode}
+              class:noScroll={$uiStore.selectedThreadOverflowMenuId !== '' || editMode}
               bind:this={scrollBoxRef}
-              class="conversations"
-              data-testid="conversations"
+              class="threads"
+              data-testid="threads"
+              on:scroll={() => (scrollOffset = scrollBoxRef.scrollTop)}
             >
-              {#each organizedConversations as category}
-                {#if category.conversations.length > 0}
+              {#each organizedThreads as category}
+                {#if category.threads.length > 0}
                   <SideNavMenu text={category.label} expanded data-testid="side-nav-menu">
-                    {#each category.conversations as conversation (conversation.id)}
+                    {#each category.threads as thread (thread.id)}
                       <SideNavMenuItem
-                        data-testid="side-nav-menu-item-{conversation.label}"
-                        id="side-nav-menu-item-{conversation.id}"
-                        isSelected={activeConversation?.id === conversation.id}
-                        on:click={() => handleActiveConversationChange(conversation.id)}
+                        data-testid="side-nav-menu-item-{thread.metadata.label}"
+                        id="side-nav-menu-item-{thread.id}"
+                        bind:ref={sideNavItemRefs[thread.id]}
+                        isSelected={activeThread?.id === thread.id}
+                        on:click={() => {
+                          uiStore.setSelectedThreadOverflowMenuId('');
+                          handleActiveThreadChange(thread.id);
+                        }}
                       >
                         <div class="menu-content">
-                          {#if editMode && activeConversation?.id === conversation.id}
+                          {#if editMode && $uiStore.selectedThreadOverflowMenuId === thread.id}
                             <TextInput
                               bind:value={editLabelText}
                               size="sm"
-                              class="edit-conversation"
-                              on:keydown={(e) => handleEdit(e)}
-                              on:blur={(e) => {
+                              class="edit-thread"
+                              on:keydown={(e) => {
+                                e.stopPropagation();
                                 handleEdit(e);
+                              }}
+                              on:blur={(e) => {
+                                e.stopPropagation();
+                                handleEdit(e);
+                              }}
+                              on:click={(e) => {
+                                e.stopPropagation();
                               }}
                               autofocus
                               maxlength={MAX_LABEL_SIZE}
                               readonly={editLabelInputDisabled}
-                              aria-label="edit conversation"
+                              aria-label="edit thread"
                             />
                           {:else}
-                            <div
-                              data-testid="conversation-label-{conversation.id}"
-                              class="menu-text"
-                            >
-                              {conversation.label}
+                            <div data-testid="thread-label-{thread.id}" class="menu-text">
+                              {thread.metadata.label}
                             </div>
                             <div>
-                              <OverflowMenu
-                                id={`overflow-menu-${conversation.id}`}
-                                on:close={() => {
-                                  overflowMenuOpen = false;
-                                  disableScroll = false;
-                                }}
-                                on:click={(e) => {
-                                  e.stopPropagation();
-                                  overflowMenuOpen = true;
-                                  handleActiveConversationChange(conversation.id);
-                                  disableScroll = true;
-                                }}
-                                data-testid="overflow-menu-{conversation.label}"
-                                style={overflowMenuOpen &&
-                                activeConversation?.id === conversation.id
-                                  ? `position: fixed; top: 0; left: 0; transform: translate(224px, ${menuOffset - scrollOffset + 48}px)`
-                                  : ''}
-                              >
-                                <OverflowMenuItem
-                                  text="Edit"
-                                  on:click={() => {
-                                    editConversationId = conversation.id;
-                                    editLabelText = conversation.label;
-                                  }}
-                                />
-
-                                <OverflowMenuItem
-                                  data-testid="overflow-menu-delete-{conversation.label}"
-                                  text="Delete"
-                                  on:click={() => {
-                                    deleteModalOpen = true;
-                                  }}
-                                />
-                              </OverflowMenu>
+                              <ThreadOverflowMenu
+                                {thread}
+                                {scrollOffset}
+                                parentSideNavRef={sideNavItemRefs[thread.id]}
+                                bind:editLabelText
+                                bind:editMode
+                                bind:deleteModalOpen
+                              />
                             </div>
                           {/if}
                         </div>
@@ -239,7 +213,7 @@
               {/each}
             </div>
             <div>
-              <SideNavDivider />
+              <hr id="divider" class="divider" />
               <ImportExport />
             </div>
           </div>
@@ -258,7 +232,7 @@
       on:close
       on:submit={handleDelete}
       >Are you sure you want to delete your <strong
-        >{activeConversation?.label.substring(0, MAX_LABEL_SIZE)}</strong
+        >{selectedThread?.metadata.label.substring(0, MAX_LABEL_SIZE)}</strong
       > chat?</Modal
     >
   </div></SideNav
@@ -269,6 +243,20 @@ properties had to be manually overridden.
 https://github.com/carbon-design-system/carbon-components-svelte/issues/892
 -->
 <style lang="scss">
+  .inner-side-nav-container {
+    height: 100%;
+
+    :global(.bx--overflow-menu) {
+      width: 16px;
+      height: 32px;
+      z-index: 1;
+    }
+
+    :global(.bx--overflow-menu-options) {
+      left: 20px !important;
+    }
+  }
+
   :global(.bx--side-nav__item) {
     list-style-type: none;
   }
@@ -276,12 +264,13 @@ https://github.com/carbon-design-system/carbon-components-svelte/issues/892
   .noScroll {
     overflow-y: hidden !important;
   }
+
   .side-nav-items-container {
     height: 100%;
     display: flex;
     flex-direction: column;
     justify-content: space-between;
-    padding: 0 0 layout.$spacing-05 0;
+
     :global(.bx--side-nav__divider) {
       margin: layout.$spacing-03 0 0 0;
       background-color: themes.$border-subtle-01;
@@ -293,6 +282,7 @@ https://github.com/carbon-design-system/carbon-components-svelte/issues/892
     flex-direction: column;
     gap: layout.$spacing-03;
     padding: layout.$spacing-05;
+
     :global(button.new-chat-btn) {
       width: 100%;
     }
@@ -304,18 +294,12 @@ https://github.com/carbon-design-system/carbon-components-svelte/issues/892
     display: flex;
     align-items: center;
     justify-content: space-between;
-    width: 208px;
+
     .menu-text {
       width: 192px;
       overflow: hidden;
       text-overflow: ellipsis;
       color: themes.$text-secondary;
-    }
-
-    :global(.bx--overflow-menu) {
-      width: 16px;
-      height: 32px;
-      z-index: 1;
     }
   }
 
@@ -323,20 +307,18 @@ https://github.com/carbon-design-system/carbon-components-svelte/issues/892
   // to display correctly. There may be a better way to do this, but just realize you have
   // to override things at several levels to get results.
   // The !important is necessary for the changes to work in production builds.
-  .conversations {
+  .threads {
     flex-grow: 1;
     scrollbar-width: none;
     overflow-y: auto;
   }
 
-  :global(.bx--overflow-menu-options) {
-    left: 20px !important;
-  }
-
   :global(.bx--side-nav__navigation) {
     overflow: visible !important;
+
     :global(.bx--side-nav__item) {
       overflow: visible !important;
+      cursor: pointer;
     }
   }
 
@@ -375,9 +357,11 @@ https://github.com/carbon-design-system/carbon-components-svelte/issues/892
 
   :global(.bx--side-nav__submenu) {
     color: themes.$text-secondary !important;
+
     :global(svg) {
       stroke: themes.$text-secondary;
     }
+
     &:hover {
       background-color: #4d4d4d !important;
     }
@@ -387,12 +371,15 @@ https://github.com/carbon-design-system/carbon-components-svelte/issues/892
     :global(.bx--side-nav__link) {
       padding: 0 layout.$spacing-05 0 layout.$spacing-07;
     }
+
     :global(.bx--side-nav__link[aria-current='page']) {
       background-color: themes.$layer-01 !important;
     }
+
     :global(input) {
       height: 1.5rem;
     }
+
     :global(.bx--text-input) {
       border-bottom: none;
     }

@@ -4,7 +4,7 @@ description = "ChatGPT type capabilities for secure, local, air-gapped systems."
 authors = [{ name = "LeapfrogAI Team", email = "ai@defenseunicorns.com" }]
 
 # x-release-please-start-version
-version = "0.7.2"
+version = "0.8.0"
 # x-release-please-end
 
 readme = "README.md"
@@ -14,8 +14,11 @@ dependencies = [  # Dev dependencies needed for all of lfai
     "openai",
     "pip-tools == 7.3.0",
     "pytest",
+    "pytest-asyncio",
     "httpx",
     "ruff",
+    "python-dotenv",
+    "pytest-asyncio"
 ]
 requires-python = "~=3.11"
 

@@ -4,6 +4,11 @@ image:
   # Overrides the image tag whose default is the chart appVersion.
   tag: '###ZARF_CONST_IMAGE_VERSION###'
 
+  securityContext:
+    runAsUser: 65532
+    runAsGroup: 65532
+    fsGroup: 65532
+
 package:
   name: leapfrogai-ui
   subdomain: '###ZARF_VAR_SUBDOMAIN###'
@@ -11,3 +16,8 @@ package:
   supabase_url: '###ZARF_VAR_SUPABASE_URL###'
   supabase_anon_key: '###ZARF_VAR_SUPABASE_ANON_KEY###'
   message_length_limit: '###ZARF_VAR_MESSAGE_LENGTH_LIMIT###'
+
+migration:
+  namespace: "leapfrogai"
+  serviceName: "supabase-postgresql"
+  servicePort: "5432"
