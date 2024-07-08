@@ -36,7 +36,7 @@ async def create_assistant(
     """Create an assistant."""
 
     # perform checks for unsupported tools and new vector stores
-    request = await _assistant_request_checks(request, session)
+    request = await _assistant_request_checks_and_modifications(request, session)
 
     try:
         assistant = Assistant(
@@ -142,7 +142,7 @@ async def modify_assistant(
         )
 
     # perform checks for unsupported tools and new vector stores
-    request = await _assistant_request_checks(request, session)
+    request = await _assistant_request_checks_and_modifications(request, session)
 
     try:
         new_assistant = Assistant(
@@ -204,10 +204,19 @@ async def delete_assistant(
 
 
 # helper function to check for unsupported tools/tool resources, and if a new vector store needs to be added
-async def _assistant_request_checks(
+async def _assistant_request_checks_and_modifications(
     request: CreateAssistantRequest | ModifyAssistantRequest, session: Session
 ) -> CreateAssistantRequest | ModifyAssistantRequest:
-    """Performs common checks that occur in both create and modify requests"""
+    """
+    Performs checks and modifications that occur in both create and modify requests
+
+    Checks performed:
+    - unsupported tools
+    - unsupported tool resources
+
+    Modifications performed:
+    - vector store creation
+    """
 
     # check for unsupported tools
     if request.tools:
