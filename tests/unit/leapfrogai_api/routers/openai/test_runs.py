@@ -21,7 +21,6 @@ from tests.mocks.mock_tables import mock_run, mock_thread, mock_assistant, mock_
 
 
 @pytest.mark.asyncio
-# @patch('leapfrogai_api.utils.Config')
 @patch.object(CRUDMessage, "list")
 @patch.object(CRUDAssistant, "get")
 @patch.object(CRUDRun, "create")
@@ -31,7 +30,6 @@ async def test_create_run(
     mock_run_create,
     mock_assistant_get,
     mock_message_list,
-    # mock_model_config,
     mock_session,
 ):
     # to test: tools, tool_choice
