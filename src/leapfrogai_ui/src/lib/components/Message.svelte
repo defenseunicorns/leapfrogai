@@ -229,6 +229,7 @@
     flex-direction: column;
     width: 100%;
     gap: layout.$spacing-02;
+    overflow: hidden;
   }
 
   .hide {
@@ -236,7 +237,6 @@
     transition: opacity 0.2s;
   }
   .message {
-    display: flex;
     white-space: pre-line;
   }
 

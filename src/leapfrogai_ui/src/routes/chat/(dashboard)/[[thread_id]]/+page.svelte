@@ -267,17 +267,17 @@
     assistantsList.unshift({ id: `manage-assistants`, text: 'Manage assistants' }); // add dropdown item for manage assistants button
   });
 
-  let updateDelay = 0;
+  // let updateDelay = 0;
 
   // scroll the window down periodically as the message is streamed
-  afterUpdate(() => {
-    updateDelay += 1;
-    if (updateDelay === 5) {
-      // Scroll to bottom
-      messageThreadDiv.scrollTop = messageThreadDiv.scrollHeight;
-      updateDelay = 0;
-    }
-  });
+  // afterUpdate(() => {
+  //   updateDelay += 1;
+  //   if (updateDelay === 15) {
+  //     // Scroll to bottom
+  //     messageThreadDiv.scrollTop = messageThreadDiv.scrollHeight;
+  //     updateDelay = 0;
+  //   }
+  // });
 
   beforeNavigate(async () => {
     if (($isLoading || $status === 'in_progress') && data.thread?.id) {
@@ -294,27 +294,28 @@
   });
 </script>
 
-<div class="chat-inner-content">
-  <div class="messages" bind:this={messageThreadDiv}>
-    {#each sortedMessages as message, index (message.id)}
-      <Message
-        allStreamedMessages={sortedMessages}
-        {message}
-        messages={isRunAssistantResponse(message) ? $assistantMessages : $chatMessages}
-        setMessages={isRunAssistantResponse(message) ? setAssistantMessages : setChatMessages}
-        isLastMessage={index === sortedMessages.length - 1}
-        append={isRunAssistantResponse(message) ? assistantAppend : chatAppend}
-        {reload}
-      />
-    {/each}
-  </div>
-
-  <hr id="divider" class="divider" />
-  <div
-    class="chat-form-container"
-    class:noAssistant={$threadsStore.selectedAssistantId === NO_SELECTED_ASSISTANT_ID}
-  >
-    <form on:submit={onSubmit}>
+<div class="container">
+  <form on:submit={onSubmit} class="container">
+    <div class="messages-container">
+      <div bind:this={messageThreadDiv}>
+        {#each sortedMessages as message, index (message.id)}
+          <Message
+            allStreamedMessages={sortedMessages}
+            {message}
+            messages={isRunAssistantResponse(message) ? $assistantMessages : $chatMessages}
+            setMessages={isRunAssistantResponse(message) ? setAssistantMessages : setChatMessages}
+            isLastMessage={index === sortedMessages.length - 1}
+            append={isRunAssistantResponse(message) ? assistantAppend : chatAppend}
+            {reload}
+          />
+        {/each}
+      </div>
+    </div>
+    <hr id="divider" class="divider" />
+    <div
+      class="chat-form-container"
+      class:noAssistant={$threadsStore.selectedAssistantId === NO_SELECTED_ASSISTANT_ID}
+    >
       <Dropdown
         data-testid="assistant-dropdown"
         disabled={$isLoading || $status === 'in_progress'}
@@ -358,57 +359,53 @@
           </div>
         {/if}
       </Dropdown>
-      <div class="chat-input">
-        <LFTextArea
-          value={chatInput}
-          {onSubmit}
-          ariaLabel="message input"
-          placeholder="Type your message here..."
-          bind:showLengthError={lengthInvalid}
-        />
+    </div>
+    <div class="chat-input">
+      <LFTextArea
+        value={chatInput}
+        {onSubmit}
+        ariaLabel="message input"
+        placeholder="Type your message here..."
+        bind:showLengthError={lengthInvalid}
+      />
 
-        {#if !$isLoading && $status !== 'in_progress'}
-          <Button
-            data-testid="send message"
-            kind="secondary"
-            icon={ArrowRight}
-            size="field"
-            type="submit"
-            iconDescription="send"
-            disabled={!$chatInput || lengthInvalid || $threadsStore.sendingBlocked}
-          />
-        {:else}
-          <Button
-            data-testid="cancel message"
-            kind="secondary"
-            size="field"
-            type="submit"
-            icon={StopFilledAlt}
-            iconDescription="cancel"
-          />
-        {/if}
-      </div>
-    </form>
+      {#if !$isLoading && $status !== 'in_progress'}
+        <Button
+          data-testid="send message"
+          kind="secondary"
+          icon={ArrowRight}
+          size="field"
+          type="submit"
+          iconDescription="send"
+          disabled={!$chatInput || lengthInvalid || $threadsStore.sendingBlocked}
+        />
+      {:else}
+        <Button
+          data-testid="cancel message"
+          kind="secondary"
+          size="field"
+          type="submit"
+          icon={StopFilledAlt}
+          iconDescription="cancel"
+        />
+      {/if}
+    </div>
     <PoweredByDU />
-  </div>
+  </form>
 </div>
 
 <style lang="scss">
-  .chat-inner-content {
+  .container {
     display: flex;
     flex-direction: column;
-    justify-content: flex-end;
     height: 100%;
   }
-
-  .messages {
+  .messages-container {
     display: flex;
-    flex-direction: column;
-    gap: layout.$spacing-03;
-    margin-bottom: layout.$spacing-05;
-    overflow: scroll;
+    flex-direction: column-reverse;
+    flex-grow: 1;
+    overflow: auto;
     scrollbar-width: none;
-    padding: 0rem layout.$spacing-05;
   }
 
   .chat-form-container {
