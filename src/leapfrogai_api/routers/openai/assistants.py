@@ -1,26 +1,17 @@
 """OpenAI Compliant Assistants API Router."""
 
-import logging
-from contextlib import suppress
-
 from fastapi import HTTPException, APIRouter, status
 from fastapi.security import HTTPBearer
 from openai.types.beta import Assistant, AssistantDeleted
 from leapfrogai_api.backend.helpers import object_or_default
-from leapfrogai_api.backend.rag.index import IndexingService
-from leapfrogai_api.backend.types import (
+from leapfrogai_api.backend.types import ListAssistantsResponse
+from leapfrogai_api.routers.openai.requests.create_modify_assistant_request import (
     CreateAssistantRequest,
-    ListAssistantsResponse,
     ModifyAssistantRequest,
-    CreateVectorStoreRequest,
 )
 from leapfrogai_api.data.crud_assistant import CRUDAssistant, FilterAssistant
-from leapfrogai_api.data.crud_vector_store import CRUDVectorStore, FilterVectorStore
 from leapfrogai_api.routers.supabase_session import Session
-from leapfrogai_api.utils.validate_tools import (
-    validate_assistant_tool,
-    validate_tool_resources,
-)
+
 
 router = APIRouter(prefix="/openai/v1/assistants", tags=["openai/assistants"])
 security = HTTPBearer()
@@ -36,7 +27,7 @@ async def create_assistant(
     """Create an assistant."""
 
     # perform checks for unsupported tools and new vector stores
-    request = await _assistant_request_checks_and_modifications(request, session)
+    await request.request_checks_and_modifications(session)
 
     try:
         assistant = Assistant(
@@ -142,7 +133,7 @@ async def modify_assistant(
         )
 
     # perform checks for unsupported tools and new vector stores
-    request = await _assistant_request_checks_and_modifications(request, session)
+    await request.request_checks_and_modifications(session)
 
     try:
         new_assistant = Assistant(
@@ -201,124 +192,3 @@ async def delete_assistant(
         deleted=bool(assistant_deleted),
         object="assistant.deleted",
     )
-
-
-# helper function to check for unsupported tools/tool resources, and if a new vector store needs to be added
-async def _assistant_request_checks_and_modifications(
-    request: CreateAssistantRequest | ModifyAssistantRequest, session: Session
-) -> CreateAssistantRequest | ModifyAssistantRequest:
-    """
-    Performs checks and modifications that occur in both create and modify requests
-
-    Checks performed:
-    - unsupported tools
-    - unsupported tool resources
-
-    Modifications performed:
-    - vector store creation
-    """
-
-    async def new_vector_store_from_file_ids():
-        logging.debug("Creating vector store for new assistant")
-        indexing_service = IndexingService(db=session)
-        vector_store_params_dict = vector_stores[0]
-
-        if "file_ids" not in vector_store_params_dict:
-            raise HTTPException(
-                status_code=status.HTTP_400_BAD_REQUEST,
-                detail="ToolResourcesFileSearchVectorStores found but no file ids were provided",
-            )
-
-        if not indexing_service.file_ids_are_valid(
-            vector_store_params_dict["file_ids"]
-        ):
-            raise HTTPException(
-                status_code=status.HTTP_400_BAD_REQUEST,
-                detail="Invalid file ids attached to assistants request",
-            )
-
-        vector_store_request = CreateVectorStoreRequest(
-            file_ids=vector_store_params_dict["file_ids"],
-            name="{}_vector_store".format(request.name),
-            expires_after=None,
-            metadata={},
-        )
-
-        vector_store = await indexing_service.create_new_vector_store(
-            vector_store_request
-        )
-
-        request.tool_resources.file_search.vector_store_ids = [vector_store.id]
-
-    async def attach_existing_vector_store_from_id():
-        logging.debug(
-            "Attaching vector store with id: {} to new assistant".format(ids[0])
-        )
-        crud_vector_store = CRUDVectorStore(db=session)
-        try:
-            existing_vector_store = await crud_vector_store.get(
-                filters=FilterVectorStore(id=ids[0])
-            )
-            if existing_vector_store is None:
-                raise HTTPException(
-                    status_code=status.HTTP_400_BAD_REQUEST,
-                    detail="Provided vector store id was not found",
-                )
-        except Exception:
-            raise HTTPException(
-                status_code=status.HTTP_400_BAD_REQUEST,
-                detail="Invalid vector store id was provided",
-            )
-
-    # check for unsupported tools
-    if request.tools:
-        for tool in request.tools:
-            if not validate_assistant_tool(tool):
-                raise HTTPException(
-                    status_code=status.HTTP_400_BAD_REQUEST,
-                    detail=f"Unsupported tool type: {tool.type}",
-                )
-
-    # check for unsupported tool resources
-    if request.tool_resources and not validate_tool_resources(request.tool_resources):
-        raise HTTPException(
-            status_code=status.HTTP_400_BAD_REQUEST,
-            detail=f"Unsupported tool resource: {request.tool_resources}",
-        )
-
-    # check if a vector store needs to be built or added to this assistant
-    if request.tool_resources and request.tool_resources.file_search is not None:
-        ids = request.tool_resources.file_search.vector_store_ids or []
-        vector_stores = (
-            getattr(request.tool_resources.file_search, "vector_stores", []) or []
-        )
-
-        ids_len = len(ids)
-        vector_stores_len = len(list(vector_stores))
-
-        # too many ids or vector_stores provided
-        if (ids_len + vector_stores_len) > 1:
-            raise HTTPException(
-                status_code=status.HTTP_400_BAD_REQUEST,
-                detail="There can be a maximum of 1 vector store attached to the assistant",
-            )
-
-        # new vector store requested from file ids
-        elif vector_stores_len == 1:
-            await new_vector_store_from_file_ids()
-
-        # attach already existing vector store from its id
-        elif ids_len == 1:
-            await attach_existing_vector_store_from_id()
-
-        # nothing provided, no changes made
-        else:
-            logging.debug(
-                "No files or vector store id found; assistant will be created with no vector store"
-            )
-
-        # ensure the vector_stores field is removed regardless, if it exists
-        with suppress(AttributeError):
-            request.tool_resources.file_search.vector_stores = None
-
-    return request
