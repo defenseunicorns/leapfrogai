@@ -22,7 +22,8 @@ dependencies = [
     "pylibmagic >= 0.5.0", # Resolves issue with libmagic not being bundled with OS - https://github.com/ahupp/python-magic/issues/233, may not be needed after this is merged https://github.com/ahupp/python-magic/pull/294
     "python-magic >= 0.4.27",
     "openpyxl >= 3.1.5",
-    "psutil >= 6.0.0"
+    "psutil >= 6.0.0",
+    "aiofiles >= 24.1.0"
 ]
 requires-python = "~=3.11"
 
