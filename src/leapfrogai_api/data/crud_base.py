@@ -78,6 +78,7 @@ class CRUDBase(Generic[ModelType]):
         except Exception as exc:
             raise Exception from exc
 
+
     async def update(self, id_: str, object_: ModelType) -> ModelType | None:
         """Update a row by its ID."""
 
