@@ -313,7 +313,6 @@
     </div>
     <hr id="divider" class="divider" />
     <div
-      class="chat-form-container"
       class:noAssistant={$threadsStore.selectedAssistantId === NO_SELECTED_ASSISTANT_ID}
     >
       <Dropdown
@@ -408,9 +407,7 @@
     scrollbar-width: none;
   }
 
-  .chat-form-container {
-    padding: 0rem layout.$spacing-05;
-  }
+
 
   .chat-input {
     display: flex;
