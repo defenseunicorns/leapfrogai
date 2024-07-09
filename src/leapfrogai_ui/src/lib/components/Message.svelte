@@ -19,6 +19,7 @@
   } from '$helpers/chatHelpers';
   import DynamicPictogram from '$components/DynamicPictogram.svelte';
   import type { AppendFunction, ReloadFunction, VercelOrOpenAIMessage } from '$lib/types/messages';
+  import CodeBlock from '$components/CodeBlock.svelte';
 
   export let allStreamedMessages: VercelOrOpenAIMessage[];
   export let message: VercelOrOpenAIMessage;
@@ -28,20 +29,24 @@
   export let append: AppendFunction;
   export let reload: ReloadFunction;
 
+  // define custom code-block element
+  customElements.get('code-block') || customElements.define('code-block', CodeBlock.element);
+
+  // used for code formatting and handling
   const md = markdownit({
     highlight: function (str: string, lang: string) {
+      let code: string;
       if (lang && hljs.getLanguage(lang)) {
         try {
-          return (
-            '<pre><code class="hljs">' +
-            hljs.highlight(str, { language: lang, ignoreIllegals: true }).value +
-            '</code></pre>'
-          );
-        } catch (__) {}
+          code = md.utils.escapeHtml(hljs.highlight(str, { language: lang }).value);
+        } catch (__) {
+          code = md.utils.escapeHtml(str);
+        }
+      } else {
+        code = md.utils.escapeHtml(str);
       }
 
-      // You can assign classes here if needed (like hljs)
-      return '<pre><code class="hljs">' + md.utils.escapeHtml(str) + '</code></pre>';
+      return `<pre><code ><code-block code="${code}" lang="${lang}"></code></pre>`;
     }
   });
 
@@ -145,7 +150,7 @@
             <div style="font-weight: bold">
               {message.role === 'user' ? 'You' : getAssistantName(message.assistant_id)}
             </div>
-            <div>{md.renderInline(getMessageText(message))}</div>
+            <div>{@html md.render(getMessageText(message))}</div>
           </div></Tile
         >
       {/if}
