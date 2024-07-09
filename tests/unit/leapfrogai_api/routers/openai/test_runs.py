@@ -8,6 +8,7 @@ from leapfrogai_api.routers.openai.runs import (
     # retrieve_run,
     # modify_run,
 )
+from leapfrogai_api.backend.types import ChatCompletionResponse, ChatChoice, ChatMessage
 from leapfrogai_api.data.crud_run import CRUDRun
 from leapfrogai_api.data.crud_thread import CRUDThread
 from leapfrogai_api.data.crud_assistant import CRUDAssistant
@@ -21,6 +22,9 @@ from tests.mocks.mock_tables import mock_run, mock_thread, mock_assistant, mock_
 
 
 @pytest.mark.asyncio
+@patch("leapfrogai_api.routers.openai.chat.chat_completion")
+# @patch('leapfrogai_api.routers.openai.chat.stream_chat_completion')
+# @patch('leapfrogai_api.routers.openai.chat.stream_chat_completion_raw')
 @patch.object(CRUDMessage, "list")
 @patch.object(CRUDAssistant, "get")
 @patch.object(CRUDRun, "create")
@@ -30,6 +34,9 @@ async def test_create_run(
     mock_run_create,
     mock_assistant_get,
     mock_message_list,
+    # mock_stream_chat_completion_raw,
+    # mock_stream_chat_completion,
+    mock_chat_completion,
     mock_session,
 ):
     # to test: tools, tool_choice
@@ -42,6 +49,13 @@ async def test_create_run(
     mock_assistant_get.return_value = mock_assistant
     mock_message_list.return_value = [mock_message]
 
+    mock_complete_data = ChatChoice(
+        message=ChatMessage(role="user", content="mock-data")
+    )
+    mock_chat_completion.return_value = ChatCompletionResponse(
+        choices=[mock_complete_data]
+    )
+
     request = RunCreateParamsRequestBaseRequest(
         assistant_id="mock-assistant-id", instructions="mock-data"
     )
@@ -53,9 +67,3 @@ async def test_create_run(
     assert response == mock_run
     mock_thread_get.assert_called_once_with(filters={"id": "thread_id"})
     mock_run_create.assert_called_once()
-
-
-# Additional test cases can be added here
-
-# Run the tests
-pytest.main()

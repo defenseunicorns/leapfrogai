@@ -97,6 +97,12 @@ class RunCreateParamsRequestBase(BaseModel):
     )
     parallel_tool_calls: bool | None = Field(default=False, examples=[False])
 
+    stream: bool | None = Field(
+        default=None,
+        description="If set to true, the response will be streamed as it's generated.",
+        example=False,
+    )
+
     def __init__(self, **data):
         super().__init__(**data)
         # TODO: Temporary fix to ensure max_completion_tokens and max_prompt_tokens are set

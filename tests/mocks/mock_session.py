@@ -65,7 +65,7 @@ def mock_execute_data(table_name):
         thread=mock_thread,
         run=mock_run,
         assistant=mock_assistant,
-        message=mock_message,
+        message_objects=mock_message,
         dummy_table=mock_data_model,
     )
     if table_name:
