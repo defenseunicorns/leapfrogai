@@ -15,7 +15,7 @@ constants:
     value: "1.23.3"
 
 variables:
-  - name: EXPOSE_API
+  - name: EXPOSE_OPENAPI_SCHEMA
     default: "false"
     description: "Flag to expose the API service"
   - name: HOSTED_DOMAIN

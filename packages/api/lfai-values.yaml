@@ -3,4 +3,4 @@ image:
   kiwigridTag: ###ZARF_CONST_KIWIGRID_VERSION###
 
 api:
-  exposeOpenAPISchema: ###ZARF_VAR_EXPOSE_API###
+  exposeOpenAPISchema: ###ZARF_VAR_EXPOSE_OPENAPI_SCHEMA###

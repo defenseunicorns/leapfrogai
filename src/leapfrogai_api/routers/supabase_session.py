@@ -94,7 +94,7 @@ async def init_supabase_client(
                 status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             ) from e
 
-        if _validate_jwt_authorization(client, auth_creds.credentials):
+        if await _validate_jwt_authorization(client, auth_creds.credentials):
             return client
 
     # If both API Key and JWT Auth fail, raise an error
