@@ -101,6 +101,17 @@ const createThreadsStore = () => {
     changeThread: async (newId: string | null) => {
       await goto(`/chat/${newId}`);
     },
+    updateThread: (newThread: LFThread) => {
+      update((old) => {
+        const threadIndex = old.threads.findIndex((thread) => thread.id === newThread.id);
+        const threadsCopy = [...old.threads];
+        threadsCopy[threadIndex] = newThread;
+        return {
+          ...old,
+          threads: threadsCopy
+        };
+      });
+    },
     newThread: async (label: string) => {
       try {
         const newThread = await createThread({
@@ -124,7 +135,7 @@ const createThreadsStore = () => {
         });
       }
     },
-    updateMessages: async (thread_id: string, messages: LFMessage[]) => {
+    updateMessages: (thread_id: string, messages: LFMessage[]) => {
       update((old) => {
         const updatedThreads = [...old.threads];
         const threadIndex = old.threads.findIndex((c) => c.id === thread_id);
@@ -133,6 +144,28 @@ const createThreadsStore = () => {
           ...oldThread,
           messages
         };
+        return {
+          ...old,
+          threads: updatedThreads
+        };
+      });
+    },
+    updateMessage: (threadId: string, messageId: string, newMessage: LFMessage) => {
+      update((old) => {
+        const threadIndex = old.threads.findIndex((thread) => thread.id === threadId);
+        if (threadIndex === -1) return old;
+
+        const updatedThreads = [...old.threads];
+        const messages = updatedThreads[threadIndex].messages;
+
+        if (messages) {
+          const messageIndex = messages.findIndex((message) => message.id === messageId);
+          if (messageIndex !== -1) {
+            // if message found, update it
+            messages[messageIndex] = newMessage;
+          }
+        }
+
         return {
           ...old,
           threads: updatedThreads
