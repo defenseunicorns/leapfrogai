@@ -272,7 +272,7 @@
   // scroll the window down periodically as the message is streamed
   afterUpdate(() => {
     updateDelay += 1;
-    if (updateDelay === 20) {
+    if (updateDelay === 5) {
       // Scroll to bottom
       messageThreadDiv.scrollTop = messageThreadDiv.scrollHeight;
       updateDelay = 0;
