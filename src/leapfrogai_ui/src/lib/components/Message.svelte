@@ -20,6 +20,7 @@
   import DynamicPictogram from '$components/DynamicPictogram.svelte';
   import type { AppendFunction, ReloadFunction, VercelOrOpenAIMessage } from '$lib/types/messages';
   import CodeBlock from '$components/CodeBlock.svelte';
+  import DOMPurify from 'dompurify';
 
   export let allStreamedMessages: VercelOrOpenAIMessage[];
   export let message: VercelOrOpenAIMessage;
@@ -150,7 +151,8 @@
             <div style="font-weight: bold">
               {message.role === 'user' ? 'You' : getAssistantName(message.assistant_id)}
             </div>
-            <div>{@html md.render(getMessageText(message))}</div>
+            <!--eslint-disable-next-line svelte/no-at-html-tags -- We use DomPurity to sanitize the code snippet-->
+            <div>{@html md.render(DOMPurify.sanitize(getMessageText(message)))}</div>
           </div></Tile
         >
       {/if}

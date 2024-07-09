@@ -153,3 +153,12 @@ test('it can switch between normal chat and chat with an assistant', async ({
   await deleteAssistantWithApi(assistant.id, openAIClient);
   await deleteActiveThread(page, openAIClient);
 });
+
+test('it formats code in a code block', async ({ page }) => {
+  // note - intent is not to test styling, but to ensure code block is created
+  await loadChatPage(page);
+  await expect(page.getByTestId('copy-code-btn')).not.toBeVisible();
+  await sendMessage(page, 'create a javascript function that prints hello world');
+  await waitForResponseToComplete(page);
+  await expect(page.getByTestId('copy-code-btn')).toBeVisible();
+});

@@ -7,6 +7,7 @@
   export let toastTitle = 'Copied';
   export let btnText = 'Copy';
   export let size: 'small' | 'default' | 'field' | 'lg' | 'xl' | undefined = 'small';
+  export let testId: string;
 
   const handleClick = async () => {
     if (value) {
@@ -20,4 +21,6 @@
   };
 </script>
 
-<Button kind="tertiary" icon={Copy} {size} on:click={handleClick}>{btnText}</Button>
+<Button data-testid={testId} kind="tertiary" icon={Copy} {size} on:click={handleClick}
+  >{btnText}</Button
+>

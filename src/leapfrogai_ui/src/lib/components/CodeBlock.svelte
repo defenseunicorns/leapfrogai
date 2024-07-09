@@ -29,7 +29,7 @@ Trying to use the styles from within this component will not work.
   <div class="code-block-header">
     <span>{lang}</span>
     <div class="centered-flexbox">
-      <CopyToClipboardBtn value={copyCode} toastTitle="Code Copied" />
+      <CopyToClipboardBtn testId="copy-code-btn" value={copyCode} toastTitle="Code Copied" />
     </div>
   </div>
   <div class="code-block-inner">
