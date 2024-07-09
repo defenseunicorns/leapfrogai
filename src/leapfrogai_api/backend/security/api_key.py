@@ -4,6 +4,8 @@ import secrets
 import hashlib
 
 KEY_PREFIX = "lfai"
+KEY_BYTES = 32
+CHECKSUM_LENGTH = 4
 
 
 def generate_api_key() -> tuple[str, str]:
@@ -13,12 +15,12 @@ def generate_api_key() -> tuple[str, str]:
         read_once_token: str - in the format: {prefix}_{unique_key}_{checksum}
         hashed_token: str - in the format: {prefix}_{hashed_key}_{checksum}
     """
-    unique_key = secrets.token_bytes(32).hex()
-    hashed_token = encode_unique_key(unique_key)
+    unique_key = secrets.token_bytes(KEY_BYTES).hex()
+    hashed_token = _encode_unique_key(unique_key)
     checksum = parse_api_key(hashed_token)[2]
 
     read_once_token = f"{KEY_PREFIX}_{unique_key}_{checksum}"
-    hashed_token = encode_unique_key(unique_key)
+    hashed_token = _encode_unique_key(unique_key)
 
     return read_once_token, hashed_token
 
@@ -38,25 +40,25 @@ def validate_and_encode_api_key(api_key: str) -> tuple[bool, str]:
     encoded_key = ""
 
     if valid:
-        encoded_key = encode_unique_key(parse_api_key(api_key)[1])
+        encoded_key = _encode_unique_key(parse_api_key(api_key)[1])
 
     return valid, encoded_key
 
 
-def encode_unique_key(unique_key: str):
+def _encode_unique_key(unique_key: str) -> str:
     """Hashes and encodes an API key as a string.
 
     returns:
         api_key: str # in the format {prefix}_{one_way_hash}_{checksum}
     """
     one_way_hash = hashlib.sha256(unique_key.encode()).hexdigest()
-    checksum = hashlib.sha256(unique_key.encode()).hexdigest()[:4]
+    checksum = hashlib.sha256(unique_key.encode()).hexdigest()[:CHECKSUM_LENGTH]
     return f"{KEY_PREFIX}_{one_way_hash}_{checksum}"
 
 
 def _validate_checksum(unique_key: str, checksum: str):
     """Validate the checksum of an API key."""
-    return hashlib.sha256(unique_key.encode()).hexdigest()[:4] == checksum
+    return hashlib.sha256(unique_key.encode()).hexdigest()[:CHECKSUM_LENGTH] == checksum
 
 
 def validate_api_key(api_key: str) -> bool:
