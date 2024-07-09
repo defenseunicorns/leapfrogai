@@ -25,7 +25,7 @@ describe('/api/threads/[thread_id]', () => {
     const thread = getFakeThread();
 
     mockOpenAI.setThreads([thread]);
-    mockOpenAI.setError('retrieveThread');
+    mockOpenAI.setError('listMessages');
 
     await expect(
       GET({
