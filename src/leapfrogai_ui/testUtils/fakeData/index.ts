@@ -323,7 +323,7 @@ export const getFakeApiKeys = (options: GetFakeApiKeysOptions = {}): APIKeyRow[]
   const result: APIKeyRow[] = [];
   for (let i = 0; i < numKeys; i++) {
     const created_at = new Date();
-    created_at.setDate(created_at.getDate() - faker.number.int({ min: 0, max: 60 }));
+    created_at.setDate(created_at.getDate() - i);
     const sevenDays = new Date();
     sevenDays.setDate(created_at.getDate() + 7);
     result.push({
