@@ -33,16 +33,24 @@ async def transcribe(
             detail=f"Model {req.model} not found. Currently supported models are {list(model_config.models.keys())}",
         )
 
+    print("Creating metadata")
+
     # Create a request that contains the metadata for the AudioRequest
     audio_metadata = lfai.AudioMetadata(
         prompt=req.prompt, temperature=req.temperature, inputlanguage=req.language
     )
     audio_metadata_request = lfai.AudioRequest(metadata=audio_metadata)
 
+    print("Beginning chunk reading")
+
     # Read the file and get an iterator of all the data chunks
     chunk_iterator = read_chunks(req.file.file, 1024)
 
+    print("Ending chunk reading")
+
     # combine our metadata and chunk_data iterators
     request_iterator = chain((audio_metadata_request,), chunk_iterator)
+
+    print("Transcription submitting")
 
     return await create_transcription(model, request_iterator)
