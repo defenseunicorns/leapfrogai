@@ -31,7 +31,7 @@
   export let reload: ReloadFunction;
 
   // define custom code-block element
-  customElements.get('code-block') || customElements.define('code-block', CodeBlock.element);
+  // customElements.get('code-block') || customElements.define('code-block', CodeBlock.element);
 
   // used for code formatting and handling
   const md = markdownit({
@@ -47,7 +47,7 @@
         code = md.utils.escapeHtml(str);
       }
 
-      return `<pre><code ><code-block code="${code}" lang="${lang}"></code></pre>`;
+      return `<pre><code><code-block code="${code}" lang="${lang}"></code></pre>`;
     }
   });
 

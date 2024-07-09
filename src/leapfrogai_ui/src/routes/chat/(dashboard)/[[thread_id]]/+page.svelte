@@ -267,9 +267,16 @@
     assistantsList.unshift({ id: `manage-assistants`, text: 'Manage assistants' }); // add dropdown item for manage assistants button
   });
 
+  let updateDelay = 0;
+
+  // scroll the window down periodically as the message is streamed
   afterUpdate(() => {
-    // Scroll to bottom
-    messageThreadDiv.scrollTop = messageThreadDiv.scrollHeight;
+    updateDelay += 1;
+    if (updateDelay === 20) {
+      // Scroll to bottom
+      messageThreadDiv.scrollTop = messageThreadDiv.scrollHeight;
+      updateDelay = 0;
+    }
   });
 
   beforeNavigate(async () => {

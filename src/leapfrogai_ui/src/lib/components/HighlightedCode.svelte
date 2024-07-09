@@ -1,5 +1,4 @@
 <script lang="ts">
-  import 'highlight.js/styles/atom-one-dark-reasonable.css';
   import DOMPurify from 'dompurify';
   export let code: string;
 </script>
