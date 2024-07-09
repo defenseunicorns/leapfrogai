@@ -18,7 +18,7 @@ PROPOSED
 
 ## Context
 
-LeapfrogAI has to be able to handle a large volume of inference, file upload, and embeddings requests. To ensure that we can handle this level of activity without significant performance degradation we need to have systems in place to prevent the system from being overwhelmed or blocked by any one task. 
+LeapfrogAI has to be able to handle a large volume of inference, file upload, and embeddings requests. To ensure that we can handle this level of activity without significant performance degradation we need to have systems in place to prevent the system from being overwhelmed or blocked by a large volume or a single long running task. 
 
 ## Decision
 [Describe the decision made]
