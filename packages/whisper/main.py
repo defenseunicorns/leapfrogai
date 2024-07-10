@@ -66,19 +66,19 @@ async def call_whisper(
 
 
 class Whisper(lfai.AudioServicer):
-    def Translate(
+    async def Translate(
         self,
         request_iterator: AsyncIterator[lfai.AudioRequest],
         context: lfai.GrpcContext,
     ):
-        return asyncio.run(call_whisper(request_iterator, "translate"))
+        return await call_whisper(request_iterator, "translate")
 
-    def Transcribe(
+    async def Transcribe(
         self,
         request_iterator: AsyncIterator[lfai.AudioRequest],
         context: lfai.GrpcContext,
     ):
-        return asyncio.run(call_whisper(request_iterator, "transcribe"))
+        return await call_whisper(request_iterator, "transcribe")
 
     def Name(self, request, context):
         return lfai.NameResponse(name="whisper")
