@@ -90,6 +90,6 @@ class CRUDBase(Generic[ModelType]):
         result = await query.execute()
 
         try:
-            return True if result.data else None
+            return True if result.data else False
         except Exception:
-            return None
+            return False
