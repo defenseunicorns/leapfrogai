@@ -17,7 +17,7 @@ export type APIKeyRow = {
 };
 
 export type NewApiKeyInput = {
-  name: string;
+  name?: string;
   expires_at: number;
 };
 

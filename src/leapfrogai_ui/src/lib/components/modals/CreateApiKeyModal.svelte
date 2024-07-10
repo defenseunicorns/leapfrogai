@@ -4,7 +4,7 @@
   export let modalOpen: boolean;
   export let handleCancel: () => void;
   export let submit: () => void;
-  export let name: string;
+  export let name: string | undefined;
   export let invalidText: string | undefined;
   export let selectedExpirationIndex: number;
   export let selectedExpirationDate: number;

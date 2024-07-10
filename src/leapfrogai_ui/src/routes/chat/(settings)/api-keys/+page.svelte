@@ -158,7 +158,7 @@
     <DataTable
       bind:selectedRowIds
       headers={[
-        { key: 'name', value: 'Name' },
+        { key: 'name', value: 'Name', display: (name) => name || '' },
         { key: 'api_key', value: 'Secret Keys', display: (key) => formatKeyShort(key) },
         {
           key: 'created_at',
@@ -205,7 +205,7 @@
               const formattedCreatedAtDate = formatDate(new Date(row.created_at)).toLowerCase();
               const formattedExpiresAtDate = formatDate(new Date(row.expires_at)).toLowerCase();
               return (
-                row.name.toLowerCase().includes(value.toString().toLowerCase()) ||
+                row.name?.toLowerCase().includes(value.toString().toLowerCase()) ||
                 row.api_key.toLowerCase().includes(value.toString().toLowerCase()) ||
                 formattedCreatedAtDate.includes(value.toString().toLowerCase()) ||
                 formattedExpiresAtDate.includes(value.toString().toLowerCase()) ||
