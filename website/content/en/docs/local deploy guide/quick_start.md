@@ -43,13 +43,13 @@ LeapfrogAI deploys with certain default models. The following models were select
 | text-embeddings  | CPU/GPU         | [Instructor-XL](https://huggingface.co/hkunlp/instructor-xl)                 |
 | whisper          | CPU/GPU         | [OpenAI whisper-base](https://huggingface.co/openai/whisper-base)            |
 
-**NOTE:** If a user's system specifications are beyond the minimum requirements, advanced users are able to swap out the default model choices with larger or fine-tuned models.
+**NOTE:** If a user's system specifications exceed the minimum requirements, advanced users are able to swap out the default model choices with larger or fine-tuned models.
 
 ## Disclaimers
 
-GPU workloads **_WILL NOT_** run if GPU resources are unavailable to the pod(s). You must provide sufficient NVIDIA GPU scheduling or else the pod(s) will go into a crash loop.
+The default configuration when deploying with GPU support assumes a single GPU. `vllm` is assigned the GPU resource. GPU workloads **_WILL NOT_** run if GPU resources are unavailable to the pod(s). You must provide sufficient NVIDIA GPU scheduling or else the pod(s) will go into a crash loop.
 
-`whisper` can run without GPU scheduling - just set the `GPU_LIMIT` value to `0`.
+If you have additional GPU resources, set `gpu_limit: <number of GPUs>` in `uds-config.yaml`. The total number of GPUs in your configuration should be less than or equal to the number of GPUs for your hardware.
 
 If `vllm` is being used with:
 
