@@ -108,7 +108,7 @@ Running Supabase locally:
 ```
 SUPABASE_AUTH_KEYCLOAK_CLIENT_ID=uds-supabase
 SUPABASE_AUTH_KEYCLOAK_SECRET=<secret> #this is the client secret for the client in Keycloak
-SUPABASE_AUTH_EXTERNAL_KEYCLOAK_URL=https://keycloak.admin.uds.dev/realms/uds
+SUPABASE_AUTH_EXTERNAL_KEYCLOAK_URL=https://sso.uds.dev/realms/uds
 ```
 
 After it starts, the Supabase API URL and Anon key are printed to the console. These are used in the .env file to connect to Supabase.

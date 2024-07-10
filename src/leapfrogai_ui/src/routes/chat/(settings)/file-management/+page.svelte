@@ -101,7 +101,7 @@
   const handleUpload = async () => {
     filesStore.setUploading(true);
     filesStore.addUploadingFiles(uploadedFiles);
-    nonSelectableRowIds = $filesStore.files.map((row) =>
+    nonSelectableRowIds = $filesStore.pendingUploads.map((row) =>
       row.status === 'uploading' ? row.id : ''
     );
     submit(); //upload all files

@@ -1,5 +1,5 @@
-import { expect, test } from '@playwright/test';
-import { loadChatPage } from './helpers';
+import { expect, test } from './fixtures';
+import { loadChatPage } from './helpers/helpers';
 import { getFakeThread } from '../testUtils/fakeData';
 import type { LFThread } from '$lib/types/threads';
 
@@ -9,7 +9,7 @@ test('it can import and exports threads', async ({ page }) => {
 
   await loadChatPage(page);
 
-  await page.getByTestId('import data input').setInputFiles({
+  await page.getByTestId('import-chat-history-input').setInputFiles({
     name: 'upload.json',
     mimeType: 'application/JSON',
     buffer: Buffer.from(threadStr)
