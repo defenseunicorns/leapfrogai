@@ -3,6 +3,7 @@ import { filesStore, threadsStore } from '$stores';
 import type { LFAssistant } from '$lib/types/assistants';
 import type { FileObject } from 'openai/resources/files';
 import { convertFileObjectToFileRows } from '$helpers/fileHelpers';
+import type { FileRow } from '$lib/types/files';
 
 // Load the store with the threads fetched by the +layout.server.ts (set store on the client side only)
 // This only runs when the app is first loaded (because it's a higher level layout)
@@ -22,10 +23,13 @@ export const load = async ({ fetch, data, depends }) => {
   const files = (await filesRes.json()) as FileObject[];
 
   if (browser) {
-    const fileRows = convertFileObjectToFileRows(files);
+    let fileRows: FileRow[] = [];
+    if (files && files.length > 0) {
+      fileRows = convertFileObjectToFileRows(files);
+    }
+
     filesStore.setFiles(fileRows);
     threadsStore.setThreads(data?.threads || []);
   }
-
   return { assistants };
 };
