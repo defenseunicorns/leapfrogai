@@ -17,10 +17,10 @@ from leapfrogai_api.routers.supabase_session import Session
 from leapfrogai_api.utils import get_model_config
 from leapfrogai_api.utils.config import Config
 import leapfrogai_sdk as lfai
+from starlette.concurrency import run_in_threadpool
 
 router = APIRouter(prefix="/openai/v1/audio", tags=["openai/audio"])
 security = HTTPBearer()
-thread_pool = ThreadPoolExecutor(max_workers=4)
 
 
 def process_transcription(model, request_iterator) -> CreateTranscriptionResponse:
@@ -53,8 +53,7 @@ async def transcribe(
     # combine our metadata and chunk_data iterators
     request_iterator = chain((audio_metadata_request,), chunk_iterator)
 
-    loop = asyncio.get_running_loop()
-    result = await loop.run_in_executor(thread_pool, process_transcription, model, request_iterator)
+    result = await run_in_threadpool(process_transcription, model, request_iterator)
 
     return result
 
