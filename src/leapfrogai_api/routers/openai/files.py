@@ -1,12 +1,17 @@
 """OpenAI Compliant Files API Router."""
 
 from fastapi import APIRouter, Depends, HTTPException, UploadFile, status
+from fastapi.responses import Response
 from fastapi.security import HTTPBearer
 from openai.types import FileDeleted, FileObject
+
+from leapfrogai_api.backend.rag.document_loader import (
+    is_supported_mime_type,
+    get_mime_type_from_filename,
+)
 from leapfrogai_api.backend.types import ListFilesResponse, UploadFileRequest
-from leapfrogai_api.data.crud_file_object import CRUDFileObject, FilterFileObject
 from leapfrogai_api.data.crud_file_bucket import CRUDFileBucket
-from leapfrogai_api.backend.rag.document_loader import is_supported_mime_type
+from leapfrogai_api.data.crud_file_object import CRUDFileObject, FilterFileObject
 from leapfrogai_api.routers.supabase_session import Session
 
 router = APIRouter(prefix="/openai/v1/files", tags=["openai/files"])
@@ -126,7 +131,32 @@ async def retrieve_file_content(
     """Retrieve the content of a file."""
     try:
         crud_file_bucket = CRUDFileBucket(db=session, model=UploadFile)
-        return await crud_file_bucket.download(id_=file_id)
+        file_content = await crud_file_bucket.download(id_=file_id)
+
+        # Get the file object to retrieve the filename
+        crud_file_object = CRUDFileObject(session)
+        file_object = await crud_file_object.get(filters=FilterFileObject(id=file_id))
+
+        if not file_object:
+            raise HTTPException(
+                status_code=status.HTTP_404_NOT_FOUND, detail="File not found"
+            )
+
+        # Determine the content type
+        content_type = get_mime_type_from_filename(file_object.filename)
+
+        # Ensure the content type is supported
+        if not is_supported_mime_type(content_type):
+            content_type = "application/octet-stream"
+
+        # Return the file content as a downloadable attachment
+        return Response(
+            content=file_content,
+            media_type=content_type,
+            headers={
+                "Content-Disposition": f'attachment; filename="{file_object.filename}"'
+            },
+        )
     except FileNotFoundError as exc:
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST, detail="File not found"
