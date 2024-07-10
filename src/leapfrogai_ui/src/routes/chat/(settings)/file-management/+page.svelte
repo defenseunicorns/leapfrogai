@@ -18,6 +18,7 @@
   import { afterNavigate, invalidate } from '$app/navigation';
   import type { Assistant } from 'openai/resources/beta/assistants';
   import ConfirmAssistantDeleteModal from '$components/ConfirmAssistantDeleteModal.svelte';
+  import { ACCEPTED_FILE_TYPES } from '$constants';
 
   export let data;
 
@@ -181,7 +182,7 @@
             disableLabelChanges
             disabled={$submitting}
             labelText="Upload"
-            accept={['.pdf', '.txt', '.text']}
+            accept={ACCEPTED_FILE_TYPES}
           />
         </ToolbarContent>
       </Toolbar>

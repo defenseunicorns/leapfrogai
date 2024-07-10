@@ -3,6 +3,7 @@ import fs from 'node:fs';
 import type { Page } from '@playwright/test';
 import { PDFDocument } from 'pdf-lib';
 import { expect } from '../fixtures';
+import { Packer, Paragraph, Document } from 'docx';
 
 export const uploadFileWithApi = async (filename = 'test.pdf', openAIClient: OpenAI) => {
   const filePath = `./tests/fixtures/${filename}`;
@@ -39,6 +40,19 @@ export const createPDF = async (filename = `${new Date().toISOString()}-test.pdf
   const pdfBytes = await pdfDoc.save();
   fs.writeFileSync(`./tests/fixtures/${filename}`, pdfBytes);
 };
+
+// TODO - add this file type to the cleanup call
+// TODO - write test using this
+// TODO - create doc and docx?
+export const createWordFile = async (filename = `${new Date().toISOString()}-test.docx`) => {
+  const doc = new Document({
+    sections: [{ children: [new Paragraph({ text: 'LeapfrogAI' })] }]
+  });
+  Packer.toBuffer(doc).then((buffer) => {
+    fs.writeFileSync(`./tests/fixtures/${filename}`, buffer);
+  });
+};
+
 export const deleteFixtureFile = (filename: string) => {
   if (fs.existsSync(`./tests/fixtures/${filename}`)) {
     fs.unlinkSync(`./tests/fixtures/${filename}`);

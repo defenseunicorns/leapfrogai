@@ -77,6 +77,7 @@
     "ai": "^3.1.11",
     "carbon-pictograms-svelte": "^12.10.0",
     "concurrently": "^8.2.2",
+    "docx": "^8.5.0",
     "fuse.js": "^7.0.0",
     "msw": "^2.2.14",
     "openai": "^4.47.1",
