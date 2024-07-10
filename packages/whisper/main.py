@@ -30,7 +30,7 @@ def make_transcribe_request(filename, task, language, temperature, prompt):
     return {"text": output}
 
 
-def call_whisper(
+async def call_whisper(
     request_iterator: AsyncIterator[lfai.AudioRequest], task: str
 ) -> lfai.AudioResponse:
     data = bytearray()
@@ -71,14 +71,14 @@ class Whisper(lfai.AudioServicer):
         request_iterator: AsyncIterator[lfai.AudioRequest],
         context: lfai.GrpcContext,
     ):
-        return call_whisper(request_iterator, "translate")
+        return asyncio.run(call_whisper(request_iterator, "translate"))
 
     def Transcribe(
         self,
         request_iterator: AsyncIterator[lfai.AudioRequest],
         context: lfai.GrpcContext,
     ):
-        return call_whisper(request_iterator, "transcribe")
+        return asyncio.run(call_whisper(request_iterator, "transcribe"))
 
     def Name(self, request, context):
         return lfai.NameResponse(name="whisper")
