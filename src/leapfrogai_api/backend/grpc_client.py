@@ -1,6 +1,6 @@
 """gRPC client for OpenAI models."""
 
-from typing import Iterator, AsyncGenerator, Any, AsyncIterator
+from typing import Iterator, AsyncGenerator, Any
 import grpc
 from fastapi.responses import StreamingResponse
 import leapfrogai_sdk as lfai
@@ -73,7 +73,7 @@ async def stream_chat_completion(model: Model, request: lfai.ChatCompletionReque
 
 
 async def stream_chat_completion_raw(
-        model: Model, request: lfai.ChatCompletionRequest
+    model: Model, request: lfai.ChatCompletionRequest
 ) -> AsyncGenerator[ProtobufChatCompletionResponse, Any]:
     """Stream chat completion using the specified model."""
     async with grpc.aio.insecure_channel(model.backend) as channel:
@@ -133,7 +133,7 @@ async def create_embeddings(model: Model, request: lfai.EmbeddingRequest):
         )
 
 
-async def create_transcription(model: Model, request: AsyncIterator[lfai.AudioRequest]):
+async def create_transcription(model: Model, request: Iterator[lfai.AudioRequest]):
     """Transcribe audio using the specified model."""
     async with grpc.aio.insecure_channel(model.backend) as channel:
         stub = lfai.AudioStub(channel)
@@ -142,7 +142,7 @@ async def create_transcription(model: Model, request: AsyncIterator[lfai.AudioRe
         return CreateTranscriptionResponse(text=response.text)
 
 
-async def create_translation(model: Model, request: AsyncIterator[lfai.AudioRequest]):
+async def create_translation(model: Model, request: Iterator[lfai.AudioRequest]):
     """Translate audio using the specified model."""
     async with grpc.aio.insecure_channel(model.backend) as channel:
         stub = lfai.AudioStub(channel)
