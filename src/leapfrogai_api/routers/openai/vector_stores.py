@@ -4,7 +4,6 @@ import logging
 import time
 import traceback
 from fastapi import APIRouter, HTTPException, status
-from fastapi.security import HTTPBearer
 from openai.pagination import SyncCursorPage
 from openai.types.beta import VectorStore, VectorStoreDeleted
 from openai.types.beta.vector_store import FileCounts
@@ -26,7 +25,6 @@ from leapfrogai_api.data.crud_vector_store_file import (
 from leapfrogai_api.routers.supabase_session import Session
 
 router = APIRouter(prefix="/openai/v1/vector_stores", tags=["openai/vector_stores"])
-security = HTTPBearer()
 
 
 @router.post("")
