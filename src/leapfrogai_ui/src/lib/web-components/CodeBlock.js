@@ -1,7 +1,7 @@
 import { LitElement, css, html } from 'lit';
+import {unsafeHTML} from 'lit/directives/unsafe-html.js';
 import DOMPurify from 'dompurify';
 import { highlightJsStyles, buttonStyles } from './styles.js';
-import { unsafeHTML } from 'lit-html/directives/unsafe-html.js';
 import { toastStore } from '$stores';
 
 /*
@@ -126,4 +126,4 @@ export class CodeBlock extends LitElement {
   }
 }
 
-customElements.define('code-block', CodeBlock);
+customElements.get('code-block') || customElements.define('code-block', CodeBlock);
