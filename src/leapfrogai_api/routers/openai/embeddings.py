@@ -3,7 +3,6 @@
 from typing import Annotated
 
 from fastapi import APIRouter, Depends, HTTPException, status
-from fastapi.security import HTTPBearer
 import leapfrogai_sdk as lfai
 from leapfrogai_api.backend.grpc_client import create_embeddings
 from leapfrogai_api.backend.types import CreateEmbeddingRequest, CreateEmbeddingResponse
@@ -12,7 +11,6 @@ from leapfrogai_api.utils import get_model_config
 from leapfrogai_api.utils.config import Config
 
 router = APIRouter(prefix="/openai/v1/embeddings", tags=["openai/embeddings"])
-security = HTTPBearer()
 
 
 @router.post("")

@@ -1,14 +1,12 @@
 """LeapfrogAI endpoints for RAG."""
 
 from fastapi import APIRouter
-from fastapi.security import HTTPBearer
 from postgrest.base_request_builder import SingleAPIResponse
 from leapfrogai_api.backend.rag.query import QueryService
 from leapfrogai_api.backend.types import RAGResponse
 from leapfrogai_api.routers.supabase_session import Session
 
 router = APIRouter(prefix="/leapfrogai/v1/rag", tags=["leapfrogai/rag"])
-security = HTTPBearer()
 
 
 @router.post("")

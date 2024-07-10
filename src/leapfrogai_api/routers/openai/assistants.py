@@ -1,7 +1,6 @@
 """OpenAI Compliant Assistants API Router."""
 
 from fastapi import HTTPException, APIRouter, status
-from fastapi.security import HTTPBearer
 from openai.types.beta import Assistant, AssistantDeleted
 from openai.types.beta.assistant import ToolResourcesCodeInterpreter
 
@@ -19,7 +18,6 @@ from leapfrogai_api.utils.validate_tools import (
 )
 
 router = APIRouter(prefix="/openai/v1/assistants", tags=["openai/assistants"])
-security = HTTPBearer()
 
 supported_tools = ["file_search"]
 

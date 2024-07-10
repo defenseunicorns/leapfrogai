@@ -2,7 +2,6 @@
 
 from fastapi import APIRouter, Depends, HTTPException, UploadFile, status
 from fastapi.responses import Response
-from fastapi.security import HTTPBearer
 from openai.types import FileDeleted, FileObject
 
 from leapfrogai_api.backend.rag.document_loader import (
@@ -15,7 +14,6 @@ from leapfrogai_api.data.crud_file_object import CRUDFileObject, FilterFileObjec
 from leapfrogai_api.routers.supabase_session import Session
 
 router = APIRouter(prefix="/openai/v1/files", tags=["openai/files"])
-security = HTTPBearer()
 
 
 @router.post("")

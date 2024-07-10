@@ -2,7 +2,6 @@
 
 from typing import Annotated
 from fastapi import HTTPException, APIRouter, Depends
-from fastapi.security import HTTPBearer
 from leapfrogai_api.backend.grpc_client import (
     completion,
     stream_completion,
@@ -16,7 +15,6 @@ from leapfrogai_api.utils.config import Config
 import leapfrogai_sdk as lfai
 
 router = APIRouter(prefix="/openai/v1/completions", tags=["openai/completions"])
-security = HTTPBearer()
 
 
 @router.post("")

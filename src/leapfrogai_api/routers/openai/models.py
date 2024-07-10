@@ -2,7 +2,6 @@
 
 from typing import Annotated
 from fastapi import APIRouter, Depends
-from fastapi.security import HTTPBearer
 from leapfrogai_api.backend.types import (
     ModelResponse,
     ModelResponseModel,
@@ -12,7 +11,6 @@ from leapfrogai_api.utils import get_model_config
 from leapfrogai_api.utils.config import Config
 
 router = APIRouter(prefix="/openai/v1/models", tags=["openai/models"])
-security = HTTPBearer()
 
 
 @router.get("")
