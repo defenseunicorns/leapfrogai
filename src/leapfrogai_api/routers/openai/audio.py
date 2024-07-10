@@ -1,7 +1,7 @@
 """This module contains the audio router for the OpenAI API."""
 import asyncio
 import multiprocessing
-from concurrent.futures import ThreadPoolExecutor, ProcessPoolExecutor
+from concurrent.futures import ThreadPoolExecutor
 from itertools import chain
 from typing import Annotated
 from fastapi import HTTPException, APIRouter, Depends
@@ -20,7 +20,7 @@ import leapfrogai_sdk as lfai
 
 router = APIRouter(prefix="/openai/v1/audio", tags=["openai/audio"])
 security = HTTPBearer()
-process_pool = ProcessPoolExecutor(max_workers=4)
+thread_pool = ThreadPoolExecutor(max_workers=4)
 
 
 def process_transcription(model, request_iterator) -> CreateTranscriptionResponse:
@@ -54,7 +54,7 @@ async def transcribe(
     request_iterator = chain((audio_metadata_request,), chunk_iterator)
 
     loop = asyncio.get_running_loop()
-    result = await loop.run_in_executor(process_pool, process_transcription, model, request_iterator)
+    result = await loop.run_in_executor(thread_pool, process_transcription, model, request_iterator)
 
     return result
 
