@@ -1,5 +1,5 @@
 """Helper functions for the OpenAI backend."""
-
+import asyncio
 import time
 import uuid
 from typing import BinaryIO, Iterator, AsyncGenerator, Any, AsyncIterator
@@ -101,15 +101,13 @@ def grpc_chat_role(role: str) -> lfai.ChatRole:
 
 
 # read_chunks is a helper method that chunks the bytes of a file (audio file) into a iterator of AudioRequests
-async def read_chunks(
-    file: BinaryIO, chunk_size: int
-) -> AsyncIterator[lfai.AudioRequest]:
-    async with aiofiles.open(file.fileno(), mode="rb") as async_file:
-        while True:
-            chunk = await async_file.read(chunk_size)
-            if not chunk:
-                break
-            yield lfai.AudioRequest(chunk_data=chunk)
+async def read_chunks(file: BinaryIO, chunk_size: int) -> AsyncIterator[lfai.AudioRequest]:
+    loop = asyncio.get_event_loop()
+    while True:
+        chunk = await loop.run_in_executor(None, file.read, chunk_size)
+        if not chunk:
+            break
+        yield lfai.AudioRequest(chunk_data=chunk)
 
 
 def object_or_default(obj: Any | None, _default: Any) -> Any:
