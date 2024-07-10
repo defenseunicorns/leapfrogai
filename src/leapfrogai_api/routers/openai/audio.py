@@ -19,6 +19,14 @@ import leapfrogai_sdk as lfai
 router = APIRouter(prefix="/openai/v1/audio", tags=["openai/audio"])
 security = HTTPBearer()
 
+async def stream_requests(
+    audio_metadata_request: lfai.AudioRequest,
+    chunk_iterator: AsyncIterator[lfai.AudioRequest],
+) -> AsyncIterator[lfai.AudioRequest]:
+    """Combine metadata and chunk data iterators."""
+    yield audio_metadata_request
+    async for chunk in chunk_iterator:
+        yield chunk
 
 @router.post("/transcriptions")
 async def transcribe(
@@ -43,13 +51,7 @@ async def transcribe(
     # Read the file and get an iterator of all the data chunks
     chunk_iterator: AsyncIterator[lfai.AudioRequest] = read_chunks(req.file.file, 1024)
 
-    # combine our metadata and chunk_data async iterators
-    async def stream_requests() -> AsyncIterator[lfai.AudioRequest]:
-        yield audio_metadata_request
-        async for chunk in chunk_iterator:
-            yield chunk
-
-    return await create_transcription(model, stream_requests())
+    return await create_transcription(model, stream_requests(audio_metadata_request, chunk_iterator))
 
 
 @router.post("/translations")
