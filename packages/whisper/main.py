@@ -2,7 +2,7 @@ import asyncio
 import logging
 import os
 import tempfile
-from typing import Iterator
+from typing import Iterator, AsyncIterator
 
 import leapfrogai_sdk as lfai
 from faster_whisper import WhisperModel
@@ -31,14 +31,14 @@ def make_transcribe_request(filename, task, language, temperature, prompt):
 
 
 def call_whisper(
-    request_iterator: Iterator[lfai.AudioRequest], task: str
+    request_iterator: AsyncIterator[lfai.AudioRequest], task: str
 ) -> lfai.AudioResponse:
     data = bytearray()
     prompt = ""
     temperature = 0.0
     inputLanguage = "en"
 
-    for request in request_iterator:
+    async for request in request_iterator:
         if (
             request.metadata.prompt
             and request.metadata.temperature
@@ -68,14 +68,14 @@ def call_whisper(
 class Whisper(lfai.AudioServicer):
     def Translate(
         self,
-        request_iterator: Iterator[lfai.AudioRequest],
+        request_iterator: AsyncIterator[lfai.AudioRequest],
         context: lfai.GrpcContext,
     ):
         return call_whisper(request_iterator, "translate")
 
     def Transcribe(
         self,
-        request_iterator: Iterator[lfai.AudioRequest],
+        request_iterator: AsyncIterator[lfai.AudioRequest],
         context: lfai.GrpcContext,
     ):
         return call_whisper(request_iterator, "transcribe")
