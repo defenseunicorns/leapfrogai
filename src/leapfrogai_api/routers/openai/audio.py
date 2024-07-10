@@ -1,5 +1,7 @@
 """This module contains the audio router for the OpenAI API."""
-
+import asyncio
+import multiprocessing
+from concurrent.futures import ThreadPoolExecutor
 from itertools import chain
 from typing import Annotated
 from fastapi import HTTPException, APIRouter, Depends
@@ -18,13 +20,18 @@ import leapfrogai_sdk as lfai
 
 router = APIRouter(prefix="/openai/v1/audio", tags=["openai/audio"])
 security = HTTPBearer()
+thread_pool = ThreadPoolExecutor(max_workers=4)
+
+
+def process_transcription(model, request_iterator) -> CreateTranscriptionResponse:
+    return asyncio.run(create_transcription(model, request_iterator))
 
 
 @router.post("/transcriptions")
 async def transcribe(
-    session: Session,
-    model_config: Annotated[Config, Depends(get_model_config)],
-    req: CreateTranscriptionRequest = Depends(CreateTranscriptionRequest.as_form),
+        session: Session,
+        model_config: Annotated[Config, Depends(get_model_config)],
+        req: CreateTranscriptionRequest = Depends(CreateTranscriptionRequest.as_form),
 ) -> CreateTranscriptionResponse:
     """Create a transcription from the given audio file."""
     model = model_config.get_model_backend(req.model)
@@ -46,14 +53,17 @@ async def transcribe(
     # combine our metadata and chunk_data iterators
     request_iterator = chain((audio_metadata_request,), chunk_iterator)
 
-    return await create_transcription(model, request_iterator)
+    loop = asyncio.get_running_loop()
+    result = await loop.run_in_executor(thread_pool, process_transcription, model, request_iterator)
+
+    return result
 
 
 @router.post("/translations")
 async def translate(
-    session: Session,
-    model_config: Annotated[Config, Depends(get_model_config)],
-    req: CreateTranslationRequest = Depends(CreateTranslationRequest.as_form),
+        session: Session,
+        model_config: Annotated[Config, Depends(get_model_config)],
+        req: CreateTranslationRequest = Depends(CreateTranslationRequest.as_form),
 ) -> CreateTranscriptionResponse:
     """Create a translation to english from the given audio file."""
     model = model_config.get_model_backend(req.model)
