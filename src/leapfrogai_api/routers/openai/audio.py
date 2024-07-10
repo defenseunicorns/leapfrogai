@@ -44,7 +44,7 @@ async def transcribe(
     chunk_iterator: AsyncIterator[lfai.AudioRequest] = read_chunks(req.file.file, 1024)
 
     # combine our metadata and chunk_data async iterators
-    async def stream_requests():
+    async def stream_requests() -> AsyncIterator[lfai.AudioRequest]:
         yield audio_metadata_request
         async for chunk in chunk_iterator:
             yield chunk
