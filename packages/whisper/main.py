@@ -57,7 +57,11 @@ def call_whisper(
             f.name, task, inputLanguage, temperature, prompt
         )
         text = str(result["text"])
-        logger.info("Transcription complete!")
+
+        if task == "transcribe":
+            logger.info("Transcription complete!")
+        elif task == "translate":
+            logger.info("Translation complete!")
         return lfai.AudioResponse(text=text)
 
 
