@@ -2,7 +2,9 @@
 
 import time
 import uuid
-from typing import BinaryIO, Iterator, AsyncGenerator, Any
+from typing import BinaryIO, AsyncGenerator, Any
+import aiofiles
+from typing import AsyncIterator
 import grpc
 import leapfrogai_sdk as lfai
 from leapfrogai_api.backend.types import (
@@ -99,13 +101,15 @@ def grpc_chat_role(role: str) -> lfai.ChatRole:
 
 
 # read_chunks is a helper method that chunks the bytes of a file (audio file) into a iterator of AudioRequests
-def read_chunks(file: BinaryIO, chunk_size: int) -> Iterator[lfai.AudioRequest]:
-    """Reads a file in chunks and yields AudioRequests."""
-    while True:
-        chunk = file.read(chunk_size)
-        if not chunk:
-            break
-        yield lfai.AudioRequest(chunk_data=chunk)
+async def read_chunks(
+    file: BinaryIO, chunk_size: int
+) -> AsyncIterator[lfai.AudioRequest]:
+    async with aiofiles.open(file.fileno(), mode="rb") as async_file:
+        while True:
+            chunk = await async_file.read(chunk_size)
+            if not chunk:
+                break
+            yield lfai.AudioRequest(chunk_data=chunk)
 
 
 def object_or_default(obj: Any | None, _default: Any) -> Any:
