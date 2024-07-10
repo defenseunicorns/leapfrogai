@@ -99,6 +99,7 @@ const createFilesStore = () => {
         // Remove the error files after 1.5 seconds
         new Promise((resolve) => setTimeout(resolve, 1500)).then(() => {
           update((old) => {
+            old.files.forEach((row) => (row.status = 'hide'));
             return {
               ...old,
               pendingUploads: [...old.pendingUploads.filter((row) => row.status !== 'error')]
@@ -115,16 +116,25 @@ const createFilesStore = () => {
     },
     setAllUploadingToError: () => {
       update((old) => {
-        const modifiedFiles = old.files.map((file) => {
-          if (file.status === 'uploading') {
-            file.status = 'error';
-          }
+        const modifiedFiles = old.pendingUploads.map((file) => {
+          file.status = 'error';
+
           return file;
+        });
+
+        // Remove the error files after 1.5 seconds
+        new Promise((resolve) => setTimeout(resolve, 1500)).then(() => {
+          update((old) => {
+            return {
+              ...old,
+              pendingUploads: []
+            };
+          });
         });
 
         return {
           ...old,
-          files: modifiedFiles,
+          pendingUploads: modifiedFiles,
           uploading: false
         };
       });
