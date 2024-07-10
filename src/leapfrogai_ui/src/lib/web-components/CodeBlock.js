@@ -8,6 +8,8 @@ import { toastStore } from '$stores';
   The markdown-it highlight option used in Message.svelte does not allow us to insert normal Svelte components in the
   <pre><code>... block that it returns. This Web Component is instead used within that
   function to properly render the code blocks with highlighting and a copy button.
+  Attempts to use svelte's customElements to compile a Svelte component into a Web Component caused
+  Flash of Unstyled Content (FUOC) issues so we built the component from scratch instead.
  */
 export class CodeBlock extends LitElement {
   static styles = [
@@ -51,23 +53,23 @@ export class CodeBlock extends LitElement {
     `
   ];
 
+  constructor() {
+    super();
+    this.code = '';
+    this.language = '';
+  }
+
   static get properties() {
     return {
       code: {
         type: String,
         reflect: true
       },
-      lang: {
+      language: {
         type: String,
         reflect: true
       }
     };
-  }
-
-  constructor() {
-    super();
-    this.code = '';
-    this.lang = '';
   }
 
   removeHtml = () => {
@@ -86,14 +88,14 @@ export class CodeBlock extends LitElement {
   };
 
   render() {
-    const { code, lang } = this;
+    const { code, language } = this;
     return html`
       <div class="code-block">
         <div class="code-block-header">
-          <span>${lang}</span>
+          <span>${language}</span>
           <div class="centered-flexbox">
             <button
-              data-testid="code-copy-btn"
+              data-testid="copy-code-btn"
               class="bx--btn bx--btn--tertiary bx--btn--sm "
               @click=${this.handleClick}
             >

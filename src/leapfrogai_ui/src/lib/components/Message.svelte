@@ -31,11 +31,11 @@
 
   // used for code formatting and handling
   const md = markdownit({
-    highlight: function (str: string, lang: string) {
+    highlight: function (str: string, language: string) {
       let code: string;
-      if (lang && hljs.getLanguage(lang)) {
+      if (language && hljs.getLanguage(language)) {
         try {
-          code = md.utils.escapeHtml(hljs.highlight(str, { language: lang }).value);
+          code = md.utils.escapeHtml(hljs.highlight(str, { language }).value);
         } catch (__) {
           code = md.utils.escapeHtml(str);
         }
@@ -43,7 +43,7 @@
         code = md.utils.escapeHtml(str);
       }
 
-      return `<pre><code><code-block code="${code}" lang="${lang}"></code></pre>`;
+      return `<pre><code><code-block code="${code}" language="${language}"></code></pre>`;
     }
   });
 
