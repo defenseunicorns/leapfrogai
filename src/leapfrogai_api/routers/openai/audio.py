@@ -1,7 +1,7 @@
 """This module contains the audio router for the OpenAI API."""
 
 from itertools import chain
-from typing import Annotated
+from typing import Annotated, AsyncIterator
 from fastapi import HTTPException, APIRouter, Depends
 from fastapi.security import HTTPBearer
 from leapfrogai_api.backend.grpc_client import create_transcription, create_translation
@@ -41,12 +41,15 @@ async def transcribe(
     audio_metadata_request = lfai.AudioRequest(metadata=audio_metadata)
 
     # Read the file and get an iterator of all the data chunks
-    chunk_iterator = read_chunks(req.file.file, 1024)
+    chunk_iterator: AsyncIterator[lfai.AudioRequest] = read_chunks(req.file.file, 1024)
 
-    # combine our metadata and chunk_data iterators
-    request_iterator = chain((audio_metadata_request,), chunk_iterator)
+    # combine our metadata and chunk_data async iterators
+    async def stream_requests():
+        yield audio_metadata_request
+        async for chunk in chunk_iterator:
+            yield chunk
 
-    return await create_transcription(model, request_iterator)
+    return await create_transcription(model, stream_requests())
 
 
 @router.post("/translations")
