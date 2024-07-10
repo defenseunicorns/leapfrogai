@@ -3,18 +3,41 @@ create table api_keys (
     name text,
     id uuid primary key default uuid_generate_v4(),
     user_id uuid references auth.users not null,
-    api_key text not null unique,
+    api_key_hash text not null unique,
+    api_key_digest text not null,
     created_at bigint default extract(epoch from now()) not null,
-    expires_at bigint
+    expires_at bigint default null
 );
-
---- RLS for api_keys table
 
 alter table api_keys enable row level security;
 
+-- Hash the api key and store it in the table
+create or replace function insert_api_key(
+    p_name text,
+    p_user_id uuid,
+    p_api_key text,
+    p_expires_at bigint default null
+) returns table (
+    id uuid,
+    api_key_hash text,
+    created_at bigint
+) security definer as $$
+declare
+    v_id uuid;
+    v_api_key_hash text;
+    v_created_at bigint;
+begin
+    v_api_key_hash := crypt(p_api_key, gen_salt('bf'));
+    insert into api_keys (name, user_id, api_key_hash, expires_at)
+    values (p_name, p_user_id, v_api_key_hash, v_api_key_digest, p_expires_at)
+    returning api_keys.id, api_keys.api_key_hash, api_keys.created_at 
+    into v_id, v_api_key_hash, v_created_at;
+end;
+$$ language plpgsql;
+
 create policy "Read only if API key matches and is current" ON api_keys for
     select using (
-        api_key = current_setting('request.headers')::json->>'x-custom-api-key'
+        api_key_hash = crypt(current_setting('request.headers')::json->>'x-custom-api-key', api_key_hash)
         and (expires_at is null or expires_at > extract(epoch from now()))
     );
 
@@ -35,7 +58,7 @@ create policy "Individuals can CRUD their own assistant_objects via API key."
         exists (
             select 1
             from api_keys
-            where api_keys.api_key = current_setting('request.headers')::json->>'x-custom-api-key'
+            where api_keys.api_key_hash = crypt(current_setting('request.headers')::json->>'x-custom-api-key', api_keys.api_key_hash)
             and api_keys.user_id = assistant_objects.user_id
         )
     );
@@ -48,7 +71,7 @@ create policy "Individuals can CRUD their own thread_objects via API key."
         exists (
             select 1
             from api_keys
-            where api_keys.api_key = current_setting('request.headers')::json->>'x-custom-api-key'
+            where api_keys.api_key_hash = crypt(current_setting('request.headers')::json->>'x-custom-api-key', api_keys.api_key_hash)
             and api_keys.user_id = thread_objects.user_id
         )
     );
@@ -61,7 +84,7 @@ create policy "Individuals can CRUD their own message_objects via API key."
         exists (
             select 1
             from api_keys
-            where api_keys.api_key = current_setting('request.headers')::json->>'x-custom-api-key'
+            where api_keys.api_key_hash = crypt(current_setting('request.headers')::json->>'x-custom-api-key', api_keys.api_key_hash)
             and api_keys.user_id = message_objects.user_id
         )
     );
@@ -74,7 +97,7 @@ create policy "Individuals can CRUD their own file_objects via API key."
         exists (
             select 1
             from api_keys
-            where api_keys.api_key = current_setting('request.headers')::json->>'x-custom-api-key'
+            where api_keys.api_key_hash = crypt(current_setting('request.headers')::json->>'x-custom-api-key', api_keys.api_key_hash)
             and api_keys.user_id = file_objects.user_id
         )
     );
@@ -87,7 +110,7 @@ create policy "Individuals can CRUD file_bucket via API key."
         exists (
             select 1
             from api_keys
-            where api_keys.api_key = current_setting('request.headers')::json->>'x-custom-api-key'
+            where api_keys.api_key_hash = crypt(current_setting('request.headers')::json->>'x-custom-api-key', api_keys.api_key_hash)
         )
     );
 
@@ -99,7 +122,7 @@ create policy "Individuals can CRUD their own run_objects via API key."
         exists (
             select 1
             from api_keys
-            where api_keys.api_key = current_setting('request.headers')::json->>'x-custom-api-key'
+            where api_keys.api_key_hash = crypt(current_setting('request.headers')::json->>'x-custom-api-key', api_keys.api_key_hash)
             and api_keys.user_id = run_objects.user_id
         )
     );
@@ -112,7 +135,7 @@ create policy "Individuals can CRUD their own vector_store via API key."
         exists (
             select 1
             from api_keys
-            where api_keys.api_key = current_setting('request.headers')::json->>'x-custom-api-key'
+            where api_keys.api_key_hash = crypt(current_setting('request.headers')::json->>'x-custom-api-key', api_keys.api_key_hash)
             and api_keys.user_id = vector_store.user_id
         )
     );
@@ -125,7 +148,7 @@ create policy "Individuals can CRUD their own vector_store_file via API key."
         exists (
             select 1
             from api_keys
-            where api_keys.api_key = current_setting('request.headers')::json->>'x-custom-api-key'
+            where api_keys.api_key_hash = crypt(current_setting('request.headers')::json->>'x-custom-api-key', api_keys.api_key_hash)
             and api_keys.user_id = vector_store_file.user_id
         )
     );
@@ -138,7 +161,7 @@ create policy "Individuals can CRUD their own vector_content via API key."
         exists (
             select 1
             from api_keys
-            where api_keys.api_key = current_setting('request.headers')::json->>'x-custom-api-key'
+            where api_keys.api_key_hash = crypt(current_setting('request.headers')::json->>'x-custom-api-key', api_keys.api_key_hash)
             and api_keys.user_id = vector_content.user_id
         )
     );
