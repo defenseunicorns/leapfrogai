@@ -19,7 +19,6 @@
   } from '$helpers/chatHelpers';
   import DynamicPictogram from '$components/DynamicPictogram.svelte';
   import type { AppendFunction, ReloadFunction, VercelOrOpenAIMessage } from '$lib/types/messages';
-  import CodeBlock from '$components/CodeBlock.svelte';
   import DOMPurify from 'dompurify';
 
   export let allStreamedMessages: VercelOrOpenAIMessage[];
@@ -29,9 +28,6 @@
   export let isLastMessage: boolean;
   export let append: AppendFunction;
   export let reload: ReloadFunction;
-
-  // define custom code-block element
-  // customElements.get('code-block') || customElements.define('code-block', CodeBlock.element);
 
   // used for code formatting and handling
   const md = markdownit({

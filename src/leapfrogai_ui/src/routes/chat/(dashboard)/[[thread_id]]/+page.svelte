@@ -1,7 +1,7 @@
 <script lang="ts">
   import { LFTextArea, PoweredByDU } from '$components';
   import { Button, Dropdown } from 'carbon-components-svelte';
-  import { afterUpdate, onMount, tick } from 'svelte';
+  import { onMount, tick } from 'svelte';
   import { threadsStore, toastStore } from '$stores';
   import { ArrowRight, Checkmark, StopFilledAlt, UserProfile } from 'carbon-icons-svelte';
   import { type Message as VercelAIMessage, useAssistant, useChat } from 'ai/svelte';
@@ -267,18 +267,6 @@
     assistantsList.unshift({ id: `manage-assistants`, text: 'Manage assistants' }); // add dropdown item for manage assistants button
   });
 
-  // let updateDelay = 0;
-
-  // scroll the window down periodically as the message is streamed
-  // afterUpdate(() => {
-  //   updateDelay += 1;
-  //   if (updateDelay === 15) {
-  //     // Scroll to bottom
-  //     messageThreadDiv.scrollTop = messageThreadDiv.scrollHeight;
-  //     updateDelay = 0;
-  //   }
-  // });
-
   beforeNavigate(async () => {
     if (($isLoading || $status === 'in_progress') && data.thread?.id) {
       const isAssistantChat = $status === 'in_progress';
@@ -312,9 +300,7 @@
       </div>
     </div>
     <hr id="divider" class="divider" />
-    <div
-      class:noAssistant={$threadsStore.selectedAssistantId === NO_SELECTED_ASSISTANT_ID}
-    >
+    <div class:noAssistant={$threadsStore.selectedAssistantId === NO_SELECTED_ASSISTANT_ID}>
       <Dropdown
         data-testid="assistant-dropdown"
         disabled={$isLoading || $status === 'in_progress'}
@@ -406,8 +392,6 @@
     overflow: auto;
     scrollbar-width: none;
   }
-
-
 
   .chat-input {
     display: flex;
