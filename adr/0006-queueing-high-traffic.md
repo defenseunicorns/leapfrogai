@@ -37,6 +37,7 @@ Queueing
 * RabbitMQ
 * Supabase Realtime
 * Kafka
+* Celery
 * Custom Python solution
 
 ## Related ADRs
