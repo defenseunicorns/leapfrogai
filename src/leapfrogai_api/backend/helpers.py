@@ -2,8 +2,8 @@
 
 import time
 import uuid
-from typing import BinaryIO, Iterator, AsyncGenerator, Any
 import grpc
+from typing import BinaryIO, Iterator, AsyncGenerator, Any
 import leapfrogai_sdk as lfai
 from leapfrogai_api.backend.types import (
     ChatCompletionResponse,
@@ -108,8 +108,10 @@ def read_chunks(file: BinaryIO, chunk_size: int) -> Iterator[lfai.AudioRequest]:
         yield lfai.AudioRequest(chunk_data=chunk)
 
 
+# helper function used to modify objects unless certain fields are missing
 def object_or_default(obj: Any | None, _default: Any) -> Any:
-    if obj:
+    """Returns the given object unless it is a None type, otherwise a given default is returned"""
+    if obj is not None:
         return obj
     else:
         return _default
