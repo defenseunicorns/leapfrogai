@@ -1,6 +1,6 @@
 import pytest
-from pydantic import BaseModel
-from tests.utils.crud_utils import execute_response_format
+from pydantic import BaseModel, ValidationError
+from tests.utils.crud_utils import MockAPIResponse
 from tests.mocks.mock_tables import mock_data_model, MockModel
 
 from src.leapfrogai_api.data.crud_base import CRUDBase
@@ -83,7 +83,9 @@ async def test_create(
         db=mock_session, model=MockModel, table_name="dummy_table"
     )
     mock_table = mock_session.table(mock_crud_base.table_name)
-    mock_table.insert().execute.return_value = execute_response_format(mock_response)
+    mock_table.insert.return_value.execute.return_value = MockAPIResponse(
+        data=mock_response
+    )
 
     result = await mock_crud_base.create(mock_data_object)
 
@@ -103,25 +105,30 @@ async def test_create_fail(mock_session, mock_response):
         db=mock_session, model=MockModel, table_name="dummy_table"
     )
     mock_table = mock_session.table(mock_crud_base.table_name)
-    mock_table.insert().execute.return_value = execute_response_format(mock_response)
+    mock_table.insert.return_value.execute.return_value = MockAPIResponse(
+        data=mock_response
+    )
 
-    with pytest.raises(AttributeError):
+    with pytest.raises(Exception):
         await mock_crud_base.create(mock_data_model)
 
 
 @pytest.mark.asyncio
 @pytest.mark.parametrize(
-    "filters, mock_response, expected_result",
-    [({"id": 1}, [dict(id=1, name="mock-data")], MockModel(id=1, name="mock-data"))],
+    "mock_response, expected_result",
+    [([dict(id=1, name="mock-data")], MockModel(id=1, name="mock-data")), ([], None)],
 )
-async def test_get(mock_session, filters, mock_response, expected_result):
+async def test_get(mock_session, mock_response, expected_result):
     mock_crud_base = CRUDBase(
         db=mock_session, model=MockModel, table_name="dummy_table"
     )
     mock_table = mock_session.table(mock_crud_base.table_name)
-    mock_table.select().execute.return_value = execute_response_format(mock_response)
+    mock_table.select.return_value.execute.return_value = MockAPIResponse(
+        data=mock_response
+    )
 
-    result = await mock_crud_base.get(filters)
+    mock_filters = {"id": 1}
+    result = await mock_crud_base.get(mock_filters)
 
     if expected_result:
         assert result == expected_result
@@ -131,17 +138,24 @@ async def test_get(mock_session, filters, mock_response, expected_result):
 
 @pytest.mark.asyncio
 @pytest.mark.parametrize(
-    "filters, mock_response",
-    [({"id": 1}, []), ({"id": 1}, {}), ({"id": 1}, None), ({}, None), (None, None)],
+    "filters, mock_response, expected_error",
+    [
+        ({"id": 1}, {}, ValidationError),
+        (None, {}, ValidationError),
+        ({"id": 1}, None, TypeError),
+        (None, None, TypeError),
+    ],
 )
-async def test_get_fail(mock_session, filters, mock_response):
+async def test_get_fail(mock_session, filters, mock_response, expected_error):
     mock_crud_base = CRUDBase(
         db=mock_session, model=MockModel, table_name="dummy_table"
     )
     mock_table = mock_session.table(mock_crud_base.table_name)
-    mock_table.select().execute.return_value = execute_response_format(mock_response)
+    mock_table.select.return_value.execute.return_value = MockAPIResponse(
+        data=mock_response
+    )
 
-    with pytest.raises(AttributeError):
+    with pytest.raises(expected_error):
         await mock_crud_base.get(filters)
 
 
@@ -157,6 +171,7 @@ async def test_get_fail(mock_session, filters, mock_response):
             [dict(id=1, name="mock-data"), dict(id=2, name="mock-data")],
             [MockModel(id=1, name="mock-data"), MockModel(id=2, name="mock-data")],
         ),
+        ([], None),
     ],
 )
 async def test_list(mock_session, mock_response, expected_result):
@@ -164,7 +179,9 @@ async def test_list(mock_session, mock_response, expected_result):
         db=mock_session, model=MockModel, table_name="dummy_table"
     )
     mock_table = mock_session.table(mock_crud_base.table_name)
-    mock_table.select().execute.return_value = execute_response_format(mock_response)
+    mock_table.select.return_value.execute.return_value = MockAPIResponse(
+        data=mock_response
+    )
 
     result = await mock_crud_base.list({"id": 1})
 
@@ -173,31 +190,38 @@ async def test_list(mock_session, mock_response, expected_result):
 
 @pytest.mark.asyncio
 @pytest.mark.parametrize(
-    "filters, mock_response",
-    [({"id": 1}, {}), ({"id": 1}, None), ({}, None), (None, None)],
+    "filters, mock_response, expected_error",
+    [
+        ({"id": 1}, {}, ValidationError),
+        ({"id": 1}, None, TypeError),
+        ({}, None, TypeError),
+        (None, None, TypeError),
+    ],
 )
-async def test_list_fail(mock_session, filters, mock_response):
+async def test_list_fail(mock_session, filters, mock_response, expected_error):
     mock_crud_base = CRUDBase(
         db=mock_session, model=MockModel, table_name="dummy_table"
     )
     mock_table = mock_session.table(mock_crud_base.table_name)
-    mock_table.select().execute.return_value = execute_response_format(mock_response)
+    mock_table.select.return_value.execute.return_value = MockAPIResponse(
+        data=mock_response
+    )
 
-    with pytest.raises(AttributeError):
+    with pytest.raises(expected_error):
         await mock_crud_base.get(filters)
 
 
 @pytest.mark.asyncio
 @pytest.mark.parametrize(
-    "mock_response, expected_result", [(mock_data_model, mock_data_model)]
+    "mock_response, expected_result", [(mock_data_model, mock_data_model), ([], None)]
 )
 async def test_update(mock_session, mock_response, expected_result):
     mock_crud_base = CRUDBase(
         db=mock_session, model=MockModel, table_name="dummy_table"
     )
     mock_table = mock_session.table(mock_crud_base.table_name)
-    mock_table.update().execute.return_value = execute_response_format(
-        mock_response.model_dump()
+    mock_table.update.return_value.execute.return_value = MockAPIResponse(
+        data=mock_response.model_dump() if mock_response else mock_response
     )
 
     result = await mock_crud_base.update("1", mock_data_model)
@@ -206,15 +230,17 @@ async def test_update(mock_session, mock_response, expected_result):
 
 
 @pytest.mark.asyncio
-@pytest.mark.parametrize("mock_response", [({}), ([]), (None)])
+@pytest.mark.parametrize("mock_response", [(None)])
 async def test_update_fail(mock_session, mock_response):
     mock_crud_base = CRUDBase(
         db=mock_session, model=MockModel, table_name="dummy_table"
     )
     mock_table = mock_session.table(mock_crud_base.table_name)
-    mock_table.update().execute.return_value = execute_response_format(mock_response)
+    mock_table.update.return_value.execute.return_value = MockAPIResponse(
+        data=mock_response
+    )
 
-    with pytest.raises(AttributeError):
+    with pytest.raises(TypeError):
         await mock_crud_base.update("1", mock_data_model)
 
 
@@ -230,13 +256,15 @@ async def test_delete(mock_session):
 
 
 @pytest.mark.asyncio
-@pytest.mark.parametrize("mock_response", [({}), ([]), (None)])
+@pytest.mark.parametrize("mock_response", [([]), (None)])
 async def test_delete_fail(mock_session, mock_response):
     mock_crud_base = CRUDBase(
         db=mock_session, model=MockModel, table_name="dummy_table"
     )
     mock_table = mock_session.table(mock_crud_base.table_name)
-    mock_table.delete().execute.return_value = execute_response_format(mock_response)
+    mock_table.delete.return_value.execute.return_value = MockAPIResponse(
+        data=mock_response
+    )
 
-    with pytest.raises(AttributeError):
-        await mock_crud_base.delete({"id": 1})
+    result = await mock_crud_base.delete({"id": 1})
+    assert result is False

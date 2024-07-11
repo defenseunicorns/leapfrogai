@@ -56,8 +56,10 @@ class CRUDBase(Generic[ModelType]):
             if "user_id" in response[0]:
                 del response[0]["user_id"]
             return self.model(**response[0])
-        except Exception:
+        except IndexError:
             return None
+        except Exception as e:
+            raise e
 
     async def list(self, filters: dict | None = None) -> list[ModelType]:
         """List all rows."""
@@ -75,9 +77,10 @@ class CRUDBase(Generic[ModelType]):
                 if "user_id" in item:
                     del item["user_id"]
             return [self.model(**item) for item in response]
-        except Exception as exc:
-            raise Exception from exc
-
+        except IndexError:
+            return None
+        except Exception as e:
+            raise e
 
     async def update(self, id_: str, object_: ModelType) -> ModelType | None:
         """Update a row by its ID."""
@@ -94,8 +97,10 @@ class CRUDBase(Generic[ModelType]):
             if "user_id" in response[0]:
                 del response[0]["user_id"]
             return self.model(**response[0])
-        except Exception:
+        except IndexError:
             return None
+        except Exception as e:
+            raise e
 
     async def delete(self, filters: dict | None = None) -> bool:
         """Delete a row by filters."""
