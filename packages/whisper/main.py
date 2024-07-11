@@ -18,7 +18,8 @@ def make_transcribe_request(filename, task, language, temperature, prompt):
     device = "cuda" if GPU_ENABLED else "cpu"
     model = WhisperModel(model_path, device=device, compute_type="float32")
 
-    segments, info = model.transcribe(filename, task=task, beam_size=5)
+    segments, info = model.transcribe(filename, language=language, temperature=temperature, initial_prompt=prompt,
+                                      task=task, beam_size=5)
 
     output = ""
 
@@ -31,7 +32,7 @@ def make_transcribe_request(filename, task, language, temperature, prompt):
 
 
 def call_whisper(
-    request_iterator: Iterator[lfai.AudioRequest], task: str
+        request_iterator: Iterator[lfai.AudioRequest], task: str
 ) -> lfai.AudioResponse:
     data = bytearray()
     prompt = ""
@@ -40,9 +41,9 @@ def call_whisper(
 
     for request in request_iterator:
         if (
-            request.metadata.prompt
-            and request.metadata.temperature
-            and request.metadata.inputlanguage
+                request.metadata.prompt
+                and request.metadata.temperature
+                and request.metadata.inputlanguage
         ):
             prompt = request.metadata.prompt
             temperature = request.metadata.temperature
@@ -67,16 +68,16 @@ def call_whisper(
 
 class Whisper(lfai.AudioServicer):
     def Translate(
-        self,
-        request_iterator: Iterator[lfai.AudioRequest],
-        context: lfai.GrpcContext,
+            self,
+            request_iterator: Iterator[lfai.AudioRequest],
+            context: lfai.GrpcContext,
     ):
         return call_whisper(request_iterator, "translate")
 
     def Transcribe(
-        self,
-        request_iterator: Iterator[lfai.AudioRequest],
-        context: lfai.GrpcContext,
+            self,
+            request_iterator: Iterator[lfai.AudioRequest],
+            context: lfai.GrpcContext,
     ):
         return call_whisper(request_iterator, "transcribe")
 
