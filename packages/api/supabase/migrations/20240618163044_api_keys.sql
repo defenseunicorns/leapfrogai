@@ -1,3 +1,5 @@
+create extension if not exists pgcrypto;
+
 -- Initialize api_keys table
 create table api_keys (
     name text,
@@ -34,7 +36,7 @@ declare
     v_hash text;
 begin
     -- Calculate the one-way hash of the api key
-    v_hash := crypt(p_api_key, gen_salt('bf'));
+    v_hash := extensions.crypt(p_api_key, extensions.gen_salt('bf'));
 
     insert into api_keys (name, user_id, api_key_hash, expires_at, checksum)
     values (p_name, p_user_id, v_hash, p_expires_at, p_checksum)
