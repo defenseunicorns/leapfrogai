@@ -1,6 +1,6 @@
 import { array, mixed, object, string, ValidationError } from 'yup';
 import {
-  ACCEPTED_FILE_TYPES,
+  ACCEPTED_MIME_TYPES,
   FILE_SIZE_ERROR_TEXT,
   INVALID_FILE_TYPE_ERROR_TEXT,
   MAX_FILE_SIZE
@@ -24,7 +24,7 @@ export const filesSchema = object({
         if (value == null) {
           return true;
         }
-        if (!ACCEPTED_FILE_TYPES.includes(value.type)) {
+        if (!ACCEPTED_MIME_TYPES.includes(value.type)) {
           return new ValidationError(INVALID_FILE_TYPE_ERROR_TEXT);
         }
         return true;

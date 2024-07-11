@@ -1,5 +1,4 @@
-import { fail } from '@sveltejs/kit';
-import { superValidate, withFiles } from 'sveltekit-superforms';
+import { superValidate, withFiles, fail } from 'sveltekit-superforms';
 import { yup } from 'sveltekit-superforms/adapters';
 import type { FileObject } from 'openai/resources/files';
 import { filesSchema } from '$schemas/files';
@@ -17,6 +16,13 @@ export const actions = {
     const form = await superValidate(request, yup(filesSchema));
 
     if (!form.valid) {
+      console.log(
+        'Files form action: Invalid form submission.',
+        'id:',
+        form.id,
+        'errors:',
+        form.errors
+      );
       return fail(400, { form });
     }
 
