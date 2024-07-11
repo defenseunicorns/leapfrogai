@@ -38,6 +38,19 @@ class APIKeyItem(BaseModel):
 class CRUDAPIKey(CRUDBase[APIKeyItem]):
     """CRUD Operations for API Key"""
 
+    class InsertAPIKeyParams(BaseModel):
+        """Model for the parameters to insert an API key."""
+
+        p_api_key: str = Field(..., description="The unique key of the API key.")
+        p_user_id: str = Field(
+            ..., description="The user ID associated with the API key."
+        )
+        p_expires_at: int = Field(
+            ..., description="The expiration time of the API key."
+        )
+        p_name: str | None = Field(None, description="The name of the API key.")
+        p_checksum: str = Field(..., description="The checksum of the API key.")
+
     def __init__(self, db: AsyncClient):
         super().__init__(db=db, model=APIKeyItem, table_name="api_keys")
 
@@ -54,15 +67,17 @@ class CRUDAPIKey(CRUDBase[APIKeyItem]):
 
         api_key = APIKey.generate()
 
-        params = {
-            "p_api_key": api_key.unique_key,
-            "p_user_id": user_id,
-            "p_expires_at": object_.expires_at,
-            "p_name": object_.name,
-            "p_checksum": api_key.checksum,
-        }
+        insert_params = self.InsertAPIKeyParams(
+            p_api_key=api_key.unique_key,
+            p_user_id=user_id,
+            p_expires_at=object_.expires_at,
+            p_name=object_.name,
+            p_checksum=api_key.checksum,
+        )
 
-        result = await self.db.rpc("insert_api_key", params=params).execute()
+        result = await self.db.rpc(
+            "insert_api_key", params=insert_params.model_dump()
+        ).execute()
 
         response = result.data
 
