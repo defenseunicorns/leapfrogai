@@ -3,7 +3,6 @@
 from itertools import chain
 from typing import Annotated
 from fastapi import HTTPException, APIRouter, Depends
-from fastapi.security import HTTPBearer
 from leapfrogai_api.backend.grpc_client import create_transcription, create_translation
 from leapfrogai_api.backend.helpers import read_chunks
 from leapfrogai_api.backend.types import (
