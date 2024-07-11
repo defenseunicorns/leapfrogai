@@ -5,12 +5,9 @@ from typing import Annotated
 from fastapi import APIRouter, HTTPException, status
 from pydantic import BaseModel, Field
 from leapfrogai_api.routers.supabase_session import Session
-import leapfrogai_api.backend.security.api_key as security
+from leapfrogai_api.data.crud_api_key import APIKeyItem, CRUDAPIKey, THIRTY_DAYS
 
 router = APIRouter(prefix="/leapfrogai/v1/auth", tags=["leapfrogai/auth"])
-
-KEY_PREFIX = "lfai"
-THIRTY_DAYS = 60 * 60 * 24 * 30  # in seconds
 
 
 class CreateAPIKeyRequest(BaseModel):
@@ -29,31 +26,6 @@ class CreateAPIKeyRequest(BaseModel):
     )
 
 
-class APIKeyItem(BaseModel):
-    """Response body for an API key."""
-
-    name: str | None = Field(
-        description="The name of the API key.",
-        examples=["API Key 1"],
-    )
-    id: str = Field(
-        description="The UUID of the API key.",
-        examples=["12345678-1234-1234-1234-1234567890ab"],
-    )
-    api_key: str = Field(
-        description="The API key.",
-        examples=["lfai_1234567890abcdef1234567890abcdef_1234"],
-    )
-    created_at: int = Field(
-        description="The time at which the API key was created, in seconds since the Unix epoch.",
-        examples=[int(time.time())],
-    )
-    expires_at: int = Field(
-        description="The time at which the API key expires, in seconds since the Unix epoch.",
-        examples=[int(time.time()) + THIRTY_DAYS],
-    )
-
-
 @router.post("/create-api-key")
 async def create_api_key(
     session: Session,
@@ -65,27 +37,22 @@ async def create_api_key(
     WARNING: The API key is only returned once. Store it securely.
     """
 
-    user_id: str = (await session.auth.get_user()).user.id
-
     if request.expires_at <= int(time.time()):
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST, detail="Invalid expiration time."
         )
 
-    try:
-        api_key_item = await _generate_and_store_api_key(
-            session=session,
-            name=request.name,
-            expires_at=request.expires_at,
-            user_id=user_id,
-        )
-    except HTTPException as exc:
-        raise HTTPException(
-            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            detail="Failed to create API key.",
-        ) from exc
+    new_api_key = APIKeyItem(
+        name=request.name,
+        id="",  # This is set by the database
+        api_key="",  # This is generated during the create operation
+        created_at=0,  # This is set by the database
+        expires_at=request.expires_at,
+    )
 
-    return api_key_item
+    crud_api_key = CRUDAPIKey(session)
+
+    return await crud_api_key.create(new_api_key)
 
 
 @router.delete("/revoke-api-key/{api_key_id}", status_code=status.HTTP_204_NO_CONTENT)
@@ -95,13 +62,12 @@ async def revoke_api_key(
 ):
     """Revoke an API key."""
 
-    data, _count = (
-        await session.table("api_keys").delete().eq("id", api_key_id).execute()
-    )
+    crud_api_key = CRUDAPIKey(session)
 
-    if not data[1]:
+    if not await crud_api_key.delete(filters={"id": api_key_id}):
         raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND, detail="API key not found."
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="API key not found.",
         )
 
 
@@ -110,57 +76,7 @@ async def list_api_keys(
     session: Session,
 ) -> list[APIKeyItem]:
     """List all API keys."""
-    user_id: str = (await session.auth.get_user()).user.id
 
-    result = (
-        await session.table("api_keys").select("*").eq("user_id", user_id).execute()
-    )
+    crud_api_key = CRUDAPIKey(session)
 
-    response = result.data
-
-    return [
-        APIKeyItem(
-            name=item["name"],
-            id=item["id"],
-            api_key=f"{security.KEY_PREFIX}_****_{item['checksum']}",
-            created_at=item["created_at"],
-            expires_at=item["expires_at"],
-        )
-        for item in response
-    ]
-
-
-async def _generate_and_store_api_key(
-    session: Session, user_id: str, expires_at: int, name: str | None = None
-) -> APIKeyItem:
-    """Generate and store an API key."""
-    read_once_token = security.generate_new_api_key()
-
-    # We only care about the unique key for the database
-    api_key = security.parse_api_key(read_once_token)
-
-    params = {
-        "p_api_key": api_key.unique_key,
-        "p_user_id": user_id,
-        "p_expires_at": expires_at,
-        "p_name": name,
-        "p_checksum": api_key.checksum,
-    }
-
-    result = await session.rpc("insert_api_key", params=params).execute()
-
-    response = result.data
-
-    if response:
-        return APIKeyItem(
-            name=name,
-            id=response[0]["id"],  # This is set by the database
-            api_key=read_once_token,
-            created_at=response[0]["created_at"],  # This is set by the database
-            expires_at=response[0]["expires_at"],
-        )
-
-    raise HTTPException(
-        status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-        detail="Failed to create API key.",
-    )
+    return await crud_api_key.list()

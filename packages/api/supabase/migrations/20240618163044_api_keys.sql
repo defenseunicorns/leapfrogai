@@ -19,12 +19,14 @@ create or replace function insert_api_key(
     p_checksum text,
     p_expires_at bigint default null
 ) returns table (
+    name text,
     id uuid,
     created_at bigint,
     expires_at bigint,
     checksum text
 ) language plpgsql as $$
 declare
+    v_name text;
     v_id uuid;
     v_created_at bigint;
     v_expires_at bigint;
@@ -33,10 +35,10 @@ begin
     insert into api_keys (name, user_id, api_key_hash, expires_at, checksum)
     -- Storing the one-way hash of the api key
     values (p_name, p_user_id, crypt(p_api_key, gen_salt('bf')), p_expires_at, p_checksum)
-    returning api_keys.id, api_keys.created_at, api_keys.expires_at, api_keys.checksum
-    into v_id, v_created_at, v_expires_at, v_checksum;
+    returning api_keys.name, api_keys.id, api_keys.created_at, api_keys.expires_at, api_keys.checksum
+    into v_name, v_id, v_created_at, v_expires_at, v_checksum;
 
-    return query select v_id, v_created_at, v_expires_at, v_checksum;
+    return query select v_name, v_id, v_created_at, v_expires_at, v_checksum;
 end;
 $$;
 

@@ -59,7 +59,7 @@ class CRUDBase(Generic[ModelType]):
         except Exception:
             return None
 
-    async def list(self, filters: dict | None = None) -> list[ModelType] | None:
+    async def list(self, filters: dict | None = None) -> list[ModelType]:
         """List all rows."""
         query = self.db.table(self.table_name).select("*")
 
@@ -74,9 +74,9 @@ class CRUDBase(Generic[ModelType]):
             for item in response:
                 if "user_id" in item:
                     del item["user_id"]
-            return [self.model(**item) for item in response] or None
-        except Exception:
-            return None
+            return [self.model(**item) for item in response]
+        except Exception as exc:
+            raise Exception from exc
 
     async def update(self, id_: str, object_: ModelType) -> ModelType | None:
         """Update a row by its ID."""
