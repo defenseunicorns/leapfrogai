@@ -2,8 +2,10 @@ import OpenAI from 'openai';
 import fs from 'node:fs';
 import type { Page } from '@playwright/test';
 import { PDFDocument } from 'pdf-lib';
+import XLSX from 'xlsx';
+import { Document, Packer, Paragraph } from 'docx';
+import pptxgen from 'pptxgenjs';
 import { expect } from '../fixtures';
-import { Packer, Paragraph, Document } from 'docx';
 import type { FileObject } from 'openai/resources/files';
 import { getTableRow } from './helpers';
 
@@ -26,6 +28,8 @@ export const uploadFileWithApi = async (filename = 'test.pdf', openAIClient: Ope
 export const deleteFileWithApi = async (id: string, openAIClient: OpenAI) => {
   return openAIClient.files.del(id);
 };
+
+/* ------ FILE CREATORS ------ */
 export const createPDF = async (filename = `${new Date().toISOString()}-test.pdf`) => {
   const pdfDoc = await PDFDocument.create();
   const page = pdfDoc.addPage();
@@ -44,20 +48,20 @@ export const createPDF = async (filename = `${new Date().toISOString()}-test.pdf
   return filename;
 };
 
-export const createTextFile = (
-  filename = `${new Date().toISOString()}-test.txt`,
-  content = 'hop'
-) => {
-  fs.writeFileSync(`./tests/fixtures/${filename}`, content);
-  return filename;
-};
-
-type CreateWordFileOptions = {
+type CreateFileOptions = {
   filename?: string;
   extension?: string;
 };
 
-export const createWordFile = (options: CreateWordFileOptions = {}) => {
+export const createTextFile = (options: CreateFileOptions = {}) => {
+  const { filename = `${new Date().toISOString()}-test`, extension = '.txt' } = options;
+  const filenameWithExtension = `${filename}${extension}`;
+  const content = 'hop';
+  fs.writeFileSync(`./tests/fixtures/${filenameWithExtension}`, content);
+  return filenameWithExtension;
+};
+
+export const createWordFile = (options: CreateFileOptions = {}) => {
   const { filename = `${new Date().toISOString()}-test`, extension = '.docx' } = options;
   const filenameWithExtension = `${filename}${extension}`;
   const doc = new Document({
@@ -68,6 +72,33 @@ export const createWordFile = (options: CreateWordFileOptions = {}) => {
   });
   return filenameWithExtension;
 };
+
+export const createExcelFile = (options: CreateFileOptions = {}) => {
+  const { filename = `${new Date().toISOString()}-test`, extension = '.xlsx' } = options;
+  const filenameWithExtension = `${filename}${extension}`;
+
+  const workbook = XLSX.utils.book_new();
+  const worksheet = XLSX.utils.json_to_sheet([{ Name: 'Leapfrog', Age: 1, Type: 'AI' }]);
+  XLSX.utils.book_append_sheet(workbook, worksheet, 'Sheet1');
+  XLSX.writeFile(workbook, `./tests/fixtures/${filenameWithExtension}`);
+
+  return filenameWithExtension;
+};
+
+export const createPowerpointFile = async (options: { filename?: string } = {}) => {
+  const { filename = `${new Date().toISOString()}-test` } = options;
+
+  const presentation = new pptxgen();
+  const slide = presentation.addSlide();
+  const textboxText = 'Hello from LeapfrogAI';
+  const textboxOpts = { x: 1, y: 1, color: '363636' };
+  slide.addText(textboxText, textboxOpts);
+  await presentation.writeFile({ fileName: `./tests/fixtures/${filename}` });
+
+  return filename;
+};
+
+/* ------ END FILE CREATORS ------ */
 
 export const deleteFixtureFile = (filename: string) => {
   if (fs.existsSync(`./tests/fixtures/${filename}`)) {
@@ -185,6 +216,6 @@ export const testFileUpload = async (filename: string, page: Page, openAIClient:
   await expect(fileUploadedIcon).not.toBeVisible();
 
   // cleanup
-  // deleteFixtureFile(filename);
-  // await deleteFileByName(filename, openAIClient);
+  deleteFixtureFile(filename);
+  await deleteFileByName(filename, openAIClient);
 };

@@ -1,9 +1,10 @@
 import { expect, test } from './fixtures';
-import { faker } from '@faker-js/faker';
-import { getTableRow, getSimpleMathQuestion, loadChatPage } from './helpers/helpers';
+import { getSimpleMathQuestion, getTableRow, loadChatPage } from './helpers/helpers';
 import {
   confirmDeletion,
+  createExcelFile,
   createPDF,
+  createPowerpointFile,
   createTextFile,
   createWordFile,
   deleteFileByName,
@@ -50,8 +51,13 @@ test('it can upload a pdf file', async ({ page, openAIClient }) => {
   await testFileUpload(filename, page, openAIClient);
 });
 
-test('it can upload a txt file', async ({ page, openAIClient }) => {
+test('it can upload a .txt file', async ({ page, openAIClient }) => {
   const filename = createTextFile();
+  await testFileUpload(filename, page, openAIClient);
+});
+
+test('it can upload a .text file', async ({ page, openAIClient }) => {
+  const filename = createTextFile({ extension: '.text' });
   await testFileUpload(filename, page, openAIClient);
 });
 
@@ -59,8 +65,25 @@ test('it can upload a .docx word file', async ({ page, openAIClient }) => {
   const filename = createWordFile();
   await testFileUpload(filename, page, openAIClient);
 });
+
 test('it can upload a .doc word file', async ({ page, openAIClient }) => {
   const filename = createWordFile({ extension: '.doc' });
+  await testFileUpload(filename, page, openAIClient);
+});
+
+test('it can upload a .xlsx excel file', async ({ page, openAIClient }) => {
+  const filename = createExcelFile();
+  await testFileUpload(filename, page, openAIClient);
+});
+
+test('it can upload a .xls excel file', async ({ page, openAIClient }) => {
+  const filename = createExcelFile({ extension: '.xls' });
+  await testFileUpload(filename, page, openAIClient);
+});
+
+// pptxgenjs library not capable of creating .ppt files, so only testing .pptx
+test('it can upload a .pptx powerpoint file', async ({ page, openAIClient }) => {
+  const filename = await createPowerpointFile();
   await testFileUpload(filename, page, openAIClient);
 });
 
