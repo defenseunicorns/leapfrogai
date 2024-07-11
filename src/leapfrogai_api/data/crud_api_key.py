@@ -5,7 +5,7 @@ from fastapi import HTTPException, status
 from pydantic import BaseModel, Field
 from supabase import AClient as AsyncClient
 from leapfrogai_api.data.crud_base import CRUDBase
-import leapfrogai_api.backend.security.api_key as security
+from leapfrogai_api.backend.security.api_key import APIKey, KEY_PREFIX
 
 THIRTY_DAYS = 60 * 60 * 24 * 30  # in seconds
 
@@ -52,10 +52,7 @@ class CRUDAPIKey(CRUDBase[APIKeyItem]):
 
         user_id = await self._get_user_id()
 
-        read_once_token = security.generate_new_api_key()
-
-        # We only care about the unique key for the database
-        api_key = security.parse_api_key(read_once_token)
+        api_key = APIKey.generate()
 
         params = {
             "p_api_key": api_key.unique_key,
@@ -73,7 +70,7 @@ class CRUDAPIKey(CRUDBase[APIKeyItem]):
             return APIKeyItem(
                 name=response[0]["name"],
                 id=response[0]["id"],  # This is set by the database
-                api_key=read_once_token,
+                api_key=str(api_key),
                 created_at=response[0]["created_at"],  # This is set by the database
                 expires_at=response[0]["expires_at"],
             )
@@ -100,7 +97,7 @@ class CRUDAPIKey(CRUDBase[APIKeyItem]):
             return APIKeyItem(
                 name=response[0]["name"],
                 id=response[0]["id"],
-                api_key=f"{security.KEY_PREFIX}_****_{response[0]['checksum']}",
+                api_key=f"{KEY_PREFIX}_****_{response[0]['checksum']}",
                 created_at=response[0]["created_at"],
                 expires_at=response[0]["expires_at"],
             )
@@ -125,7 +122,7 @@ class CRUDAPIKey(CRUDBase[APIKeyItem]):
                 APIKeyItem(
                     name=item["name"],
                     id=item["id"],
-                    api_key=f"{security.KEY_PREFIX}_****_{item['checksum']}",
+                    api_key=f"{KEY_PREFIX}_****_{item['checksum']}",
                     created_at=item["created_at"],
                     expires_at=item["expires_at"],
                 )
@@ -158,7 +155,7 @@ class CRUDAPIKey(CRUDBase[APIKeyItem]):
             return APIKeyItem(
                 name=response[0]["name"],
                 id=response[0]["id"],
-                api_key=f"{security.KEY_PREFIX}_****_{response[0]['checksum']}",
+                api_key=f"{KEY_PREFIX}_****_{response[0]['checksum']}",
                 created_at=response[0]["created_at"],
                 expires_at=response[0]["expires_at"],
             )

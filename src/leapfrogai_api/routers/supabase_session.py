@@ -10,7 +10,7 @@ from httpx import HTTPStatusError
 from supabase import AClient as AsyncClient
 from supabase import acreate_client
 import gotrue
-from leapfrogai_api.backend.security.api_key import validate_api_key, parse_api_key
+from leapfrogai_api.backend.security.api_key import APIKey
 
 security = HTTPBearer()
 
@@ -54,23 +54,7 @@ async def init_supabase_client(
         supabase_url=supabase_url,
     )
 
-    # Try API Key Auth first
-
-    if validate_api_key(auth_creds.credentials):
-        api_key = parse_api_key(auth_creds.credentials).unique_key
-
-        client.options.auto_refresh_token = False
-        client.options.headers.update({"x-custom-api-key": api_key})
-
-        if not await _validate_api_authorization(client):
-            raise HTTPException(
-                detail="API Key has expired or is not valid. Generate a new token",
-                status_code=status.HTTP_401_UNAUTHORIZED,
-            )
-
-        return client
-
-    # If API Key Auth fails, try JWT Auth
+    # Try JWT Auth first
     if _validate_jwt_token(auth_creds.credentials):
         try:
             await client.auth.set_session(
@@ -98,11 +82,26 @@ async def init_supabase_client(
         if await _validate_jwt_authorization(client, auth_creds.credentials):
             return client
 
-    # If both API Key and JWT Auth fail, raise an error
-    raise HTTPException(
-        detail="Invalid credentials provided",
-        status_code=status.HTTP_401_UNAUTHORIZED,
-    )
+    # Try API Key Auth first
+    try:
+        api_key = APIKey.parse(auth_creds.credentials)
+
+        client.options.auto_refresh_token = False
+        client.options.headers.update({"x-custom-api-key": api_key.unique_key})
+
+        if not await _validate_api_authorization(client):
+            raise HTTPException(
+                detail="API Key has expired or is not valid. Generate a new token",
+                status_code=status.HTTP_401_UNAUTHORIZED,
+            )
+
+        return client
+    except ValueError as e:
+        logging.exception("\t%s", e)
+        raise HTTPException(
+            detail="Failed to validate API Key",
+            status_code=status.HTTP_401_UNAUTHORIZED,
+        ) from e
 
 
 # This variable needs to be added to each endpoint even if it's not used to ensure auth is required for the endpoint

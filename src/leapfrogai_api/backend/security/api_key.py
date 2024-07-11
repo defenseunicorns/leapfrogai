@@ -1,14 +1,12 @@
-"""Basic API key security functions."""
+"""API key pydantic model."""
 
 import secrets
 import hashlib
-from pydantic import BaseModel
+from pydantic import BaseModel, field_validator, ValidationInfo
 
 KEY_PREFIX = "lfai"
 KEY_BYTES = 32
 CHECKSUM_LENGTH = 8
-
-### KEEP ###
 
 
 class APIKey(BaseModel):
@@ -18,81 +16,56 @@ class APIKey(BaseModel):
     unique_key: str
     checksum: str
 
+    @classmethod
+    def generate(cls) -> "APIKey":
+        """Generate a new API key."""
+        unique_key: str = secrets.token_bytes(KEY_BYTES).hex()
+        checksum: str = cls._calculate_checksum(unique_key)
+        return cls(prefix=KEY_PREFIX, unique_key=unique_key, checksum=checksum)
 
-def generate_new_api_key() -> str:
-    """Generate a new API key.
+    @classmethod
+    def parse(cls, key_string: str) -> "APIKey":
+        """Parse a string representation of an API key."""
+        parts: list[str] = key_string.split("_")
+        if len(parts) != 3:
+            raise ValueError("Invalid API key format")
+        return cls(prefix=parts[0], unique_key=parts[1], checksum=parts[2])
 
-    key format: {prefix}_{unique_key}_{checksum}
+    @field_validator("prefix")
+    @classmethod
+    def validate_prefix(cls, prefix: str) -> str:
+        """Validate the key prefix."""
+        if prefix != KEY_PREFIX:
+            raise ValueError(f"Invalid prefix. Expected {KEY_PREFIX}")
+        return prefix
 
-    returns:
-        api_key: str
-    """
-    unique_key = _generate_unique_key()
-    checksum = _calculate_checksum(unique_key)
-    return f"{KEY_PREFIX}_{unique_key}_{checksum}"
+    @field_validator("unique_key")
+    @classmethod
+    def validate_unique_key(cls, unique_key: str) -> str:
+        """Validate the unique key."""
+        if len(unique_key) != KEY_BYTES * 2:  # hex representation is twice as long
+            raise ValueError(
+                f"Invalid unique key length. Expected {KEY_BYTES * 2} characters"
+            )
+        return unique_key
 
+    @field_validator("checksum")
+    @classmethod
+    def validate_checksum(cls, checksum: str, info: ValidationInfo) -> str:
+        """Validate the checksum."""
+        if "unique_key" in info.data:
+            expected_checksum: str = cls._calculate_checksum(info.data["unique_key"])
+            if checksum != expected_checksum:
+                raise ValueError("Invalid checksum")
+        return checksum
 
-def validate_api_key(api_key: str) -> bool:
-    """Validate an API key.
+    def __str__(self) -> str:
+        return f"{self.prefix}_{self.unique_key}_{self.checksum}"
 
-    returns:
-        bool: True if the key is valid, False otherwise
-    """
-    try:
-        parsed_key = parse_api_key(api_key)
-        prefix = parsed_key.prefix
-        key = parsed_key.unique_key
-        checksum = parsed_key.checksum
-    except ValueError:
-        return False
-    if not prefix or not key or not checksum:
-        return False
-    if prefix != KEY_PREFIX:
-        return False
-    if not secrets.compare_digest(checksum, _calculate_checksum(key)):
-        return False
+    def __repr__(self) -> str:
+        return f"APIKey(prefix='{self.prefix}', unique_key='{self.unique_key}', checksum='{self.checksum}')"
 
-    return True
-
-
-def _generate_unique_key() -> str:
-    """Generate a unique key.
-
-    returns:
-        unique_key: str
-    """
-    return secrets.token_bytes(KEY_BYTES).hex()
-
-
-def _calculate_checksum(unique_key: str) -> str:
-    """Calculate a checksum for a unique key.
-
-    returns:
-        checksum: str
-    """
-    return hashlib.sha256(unique_key.encode()).hexdigest()[:CHECKSUM_LENGTH]
-
-
-def parse_api_key(api_key: str) -> APIKey:
-    """Parse an API key into its components.
-
-    key format: {prefix}_{unique_key}_{checksum}
-
-    Note: Does not validate prefix, checksum, or key.
-
-    returns:
-        prefix: str
-        key: str
-        checksum: str
-    """
-
-    prefix, key, checksum = (
-        api_key.split("_")[0],
-        "_".join(api_key.split("_")[1:-1]),
-        api_key.split("_")[-1],
-    )
-
-    if not prefix or not key or not checksum:
-        raise ValueError("Invalid API key format")
-
-    return APIKey(prefix=prefix, unique_key=key, checksum=checksum)
+    @staticmethod
+    def _calculate_checksum(unique_key: str) -> str:
+        """Calculate a checksum for a unique key."""
+        return hashlib.sha256(unique_key.encode()).hexdigest()[:CHECKSUM_LENGTH]
