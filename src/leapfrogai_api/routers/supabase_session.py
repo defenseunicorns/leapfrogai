@@ -127,7 +127,7 @@ async def _validate_api_authorization(session: AsyncClient) -> bool:
     return True
 
 
-async def _validate_jwt_authorization(session, authorization: str) -> bool:
+async def _validate_jwt_authorization(session: AsyncClient, authorization: str) -> bool:
     """
     Check if the provided user's JWT token is valid, raises a 403 if not
 
@@ -136,24 +136,24 @@ async def _validate_jwt_authorization(session, authorization: str) -> bool:
         authorization (str): the JWT token for the user
     """
 
-    authorized = True
+    authorized: bool = False
 
     if authorization:
-        api_key: str = authorization.replace("Bearer ", "")
-
         try:
             user_response: gotrue.types.UserResponse = await session.auth.get_user(
-                api_key
+                authorization.replace("Bearer ", "")
             )
 
-            if user_response is None:
-                authorized = False
+            if user_response:
+                authorized = True
+
         except HTTPStatusError:
             authorized = False
         except gotrue.errors.AuthApiError:
             authorized = False
-    else:
-        authorized = False
+
+    if not authorized:
+        raise HTTPException(status_code=status.HTTP_403_FORBIDDEN)
 
     return authorized
 
