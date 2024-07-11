@@ -144,17 +144,6 @@
     active = false;
   };
 
-  const handleCopyKey = async () => {
-    if (createdKey) {
-      await navigator.clipboard.writeText(createdKey.api_key);
-      toastStore.addToast({
-        kind: 'info',
-        title: 'API Key Copied',
-        subtitle: ''
-      });
-    }
-  };
-
   const handleCloseCopyKeyModal = () => {
     copyKeyModalOpen = false;
     createdKey = null;
@@ -251,7 +240,7 @@
     {handleCancelConfirmDelete}
     {handleDelete}
   />
-  <SaveApiKeyModal {copyKeyModalOpen} {handleCloseCopyKeyModal} {handleCopyKey} {createdKey} />
+  <SaveApiKeyModal {copyKeyModalOpen} {handleCloseCopyKeyModal} {createdKey} />
 </div>
 
 <style lang="scss">

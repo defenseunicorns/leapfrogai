@@ -1,13 +1,12 @@
 <script lang="ts">
   import { formatKeyLong } from '$helpers/apiKeyHelpers.js';
-  import { Copy } from 'carbon-icons-svelte';
   import { calculateDays, formatDate } from '$helpers/dates.js';
-  import { Button, Modal, TextInput } from 'carbon-components-svelte';
+  import { Modal, TextInput } from 'carbon-components-svelte';
   import type { APIKeyRow } from '$lib/types/apiKeys';
+  import CopyToClipboardBtn from '$components/CopyToClipboardBtn.svelte';
 
   export let copyKeyModalOpen: boolean;
   export let handleCloseCopyKeyModal: () => void;
-  export let handleCopyKey: () => void;
   export let createdKey: APIKeyRow | null;
 
   let saveKeyModalRef: HTMLDivElement;
@@ -35,7 +34,7 @@
           labelText="Key"
           value={formatKeyLong(createdKey.api_key, saveKeyModalRef?.offsetWidth || 200)}
         />
-        <Button kind="tertiary" icon={Copy} size="small" on:click={handleCopyKey}>Copy</Button>
+        <CopyToClipboardBtn value={createdKey.api_key} toastTitle="API Key Copied" />
       </div>
       <div style="width: 100%">
         <label for="saved-expiration" class:bx--label={true}>Expiration</label>

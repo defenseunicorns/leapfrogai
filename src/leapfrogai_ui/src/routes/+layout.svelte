@@ -7,6 +7,7 @@
   import '../styles/main.scss';
   import { Theme } from 'carbon-components-svelte';
   import type { CarbonTheme } from 'carbon-components-svelte/src/Theme/Theme.svelte';
+  import '$webComponents/CodeBlock';
 
   export let data;
 
