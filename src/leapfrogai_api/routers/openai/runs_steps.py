@@ -1,13 +1,11 @@
 """OpenAI Compliant Threads API Router."""
 
 from fastapi import HTTPException, APIRouter
-from fastapi.security import HTTPBearer
 from openai.types.beta.threads import Run
 from openai.types.beta.threads.runs import RunStep
 from leapfrogai_api.routers.supabase_session import Session
 
 router = APIRouter(prefix="/openai/v1/threads", tags=["openai/threads/run-steps"])
-security = HTTPBearer()
 
 
 @router.post("/{thread_id}/runs/{run_id}/submit_tool_outputs")
