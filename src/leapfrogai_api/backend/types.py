@@ -8,13 +8,9 @@ from typing import Literal
 
 from fastapi import UploadFile, Form, File
 from openai.types import FileObject
-from openai.types.beta import Assistant, AssistantTool
+from openai.types.beta import Assistant
 from openai.types.beta import VectorStore
-from openai.types.beta.assistant import (
-    ToolResources as BetaAssistantToolResources,
-    ToolResourcesFileSearch,
-)
-from openai.types.beta.assistant_tool import FileSearchTool
+
 from openai.types.beta.thread import ToolResources as BetaThreadToolResources
 from openai.types.beta.thread_create_params import (
     ToolResourcesFileSearchVectorStoreChunkingStrategy,
@@ -523,72 +519,6 @@ class ListFilesResponse(BaseModel):
 #############
 # ASSISTANTS
 #############
-
-
-class CreateAssistantRequest(BaseModel):
-    """Request object for creating an assistant."""
-
-    model: str = Field(
-        default="llama-cpp-python",
-        examples=["llama-cpp-python"],
-        description="The model to be used by the assistant. Default is 'llama-cpp-python'.",
-    )
-    name: str | None = Field(
-        default=None,
-        examples=["Froggy Assistant"],
-        description="The name of the assistant. Optional.",
-    )
-    description: str | None = Field(
-        default=None,
-        examples=["A helpful assistant."],
-        description="A description of the assistant's purpose. Optional.",
-    )
-    instructions: str | None = Field(
-        default=None,
-        examples=["You are a helpful assistant."],
-        description="Instructions that the assistant should follow. Optional.",
-    )
-    tools: list[AssistantTool] | None = Field(
-        default=None,
-        examples=[[FileSearchTool(type="file_search")]],
-        description="List of tools the assistant can use. Optional.",
-    )
-    tool_resources: BetaAssistantToolResources | None = Field(
-        default=None,
-        examples=[
-            BetaAssistantToolResources(
-                file_search=ToolResourcesFileSearch(vector_store_ids=[])
-            )
-        ],
-        description="Resources for the tools used by the assistant. Optional.",
-    )
-    metadata: dict | None = Field(
-        default={},
-        examples=[{}],
-        description="Additional metadata for the assistant. Optional.",
-    )
-    temperature: float | None = Field(
-        default=None,
-        examples=[1.0],
-        description="Sampling temperature for the model. Optional.",
-    )
-    top_p: float | None = Field(
-        default=None,
-        examples=[1.0],
-        description="Nucleus sampling parameter. Optional.",
-    )
-    response_format: Literal["auto"] | None = Field(
-        default=None,
-        examples=["auto"],
-        description="The format of the assistant's responses. Currently only 'auto' is supported. Optional.",
-    )
-
-
-class ModifyAssistantRequest(CreateAssistantRequest):
-    """Request object for modifying an assistant."""
-
-    # Inherits all fields from CreateAssistantRequest
-    # All fields are optional for modification
 
 
 class ListAssistantsResponse(BaseModel):
