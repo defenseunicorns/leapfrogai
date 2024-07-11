@@ -193,4 +193,4 @@ postgresql:
   ## @param postgresql.postgresqlSharedPreloadLibraries Set the shared_preload_libraries parameter in postgresql.conf
   ## Setting an empty value in order to force the default extensions of supabase-postgres
   ##
-  postgresqlSharedPreloadLibraries: "pg_stat_statements, pg_stat_monitor, pgaudit, plpgsql, plpgsql_check, pg_cron, pg_net, pgsodium, timescaledb, auto_explain, vector, pgcrypto"
+  postgresqlSharedPreloadLibraries: "pg_stat_statements, pg_stat_monitor, pgaudit, plpgsql, plpgsql_check, pg_cron, pg_net, pgsodium, timescaledb, auto_explain, vector"
