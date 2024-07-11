@@ -6,6 +6,7 @@ import pytest
 from fastapi import status, HTTPException
 from fastapi.testclient import TestClient
 from leapfrogai_api.routers.leapfrogai.auth import router, THIRTY_DAYS, APIKeyItem
+from leapfrogai_api.backend.security.api_key import validate_api_key
 
 
 class MissingEnvironmentVariable(Exception):
@@ -49,6 +50,9 @@ def test_create_api_key(create_api_key):
     assert "id" in create_api_key.json(), "Create should return an ID."
     assert "created_at" in create_api_key.json(), "Create should return a created_at."
     assert "expires_at" in create_api_key.json(), "Create should return an expires_at."
+    assert validate_api_key(
+        create_api_key.json()["api_key"]
+    ), "API key should be valid."
 
 
 def test_list_api_keys(create_api_key):
