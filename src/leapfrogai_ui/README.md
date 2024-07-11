@@ -41,7 +41,7 @@ If running the UI locally and utilizing LeapfrogAPI, <ins>**you must use the sam
 PUBLIC_SUPABASE_URL=https://supabase-kong.uds.dev
 PUBLIC_SUPABASE_ANON_KEY=<anon_key>
 ...
-LEAPFROGAI_API_BASE_URL=https://leapfrogai-api.uds.dev/openai/v1
+LEAPFROGAI_API_BASE_URL=https://leapfrogai-api.uds.dev
 DEFAULT_MODEL=llama-cpp-python # or vllm
 ```
 
@@ -61,7 +61,8 @@ run the UI outside of UDS on localhost (e.g. for development work), there are so
 
 1. Modify the "GOTRUE_URI_ALLOW_LIST" within Supabase.  
    The Supabase UDS package has a ConfigMap called "supabase-auth-default".  
-   Add these variables to the "GOTRUE_URI_ALLOW_LIST" (no spaces!):
+   Add these values to the "GOTRUE_URI_ALLOW_LIST" (no spaces!). This variable may not exist and you will need to add it.
+   Restart the supabase-auth pod after updating the config:
    `http://localhost:5173/auth/callback,http://localhost:5173,http://localhost:4173/auth/callback,http://localhost:4173`  
    Note - Port 4173 is utilized by Playwright for E2E tests. You do not need this if you are not concerned about Playwright.
 

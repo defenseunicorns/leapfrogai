@@ -20,9 +20,13 @@ export const createAssistant = async (assistantInput: AssistantInput, page: Page
   await saveButtons.click();
 };
 export const deleteAllAssistants = async (openAIClient: OpenAI) => {
-  const myAssistants = await openAIClient.beta.assistants.list();
-  for (const assistant of myAssistants.data) {
-    await deleteAssistantWithApi(assistant.id, openAIClient);
+  try {
+    const myAssistants = await openAIClient.beta.assistants.list();
+    for (const assistant of myAssistants.data) {
+      await deleteAssistantWithApi(assistant.id, openAIClient);
+    }
+  } catch (e) {
+    console.error(`Error deleting test assistants`, e);
   }
 };
 export const attachAvatarImage = async (page: Page, imageName: string) => {

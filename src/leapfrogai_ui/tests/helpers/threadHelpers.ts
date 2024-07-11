@@ -62,29 +62,33 @@ export const waitForResponseToComplete = async (page: Page) => {
 };
 
 export const deleteAllTestThreadsWithApi = async (openAIClient: OpenAI) => {
-  const userId = await getUserId();
-  const threadIds = await getUserThreadIds(userId);
-  for (const id of threadIds) {
-    let thread: LFThread | undefined = undefined;
-    try {
-      thread = (await openAIClient.beta.threads.retrieve(id)) as LFThread;
-    } catch (e) {
-      console.error(`Error fetching thread: ${id}`);
-      console.error(`Error: ${e}`);
-    }
-
-    if (
-      thread?.metadata?.label.includes(SHORT_RESPONSE_PROMPT) ||
-      thread?.metadata?.label.includes(LONG_RESPONSE_PROMPT)
-    ) {
+  try {
+    const userId = await getUserId();
+    const threadIds = await getUserThreadIds(userId);
+    for (const id of threadIds) {
+      let thread: LFThread | undefined = undefined;
       try {
-        await openAIClient.beta.threads.del(id);
-        const updatedThreadIds = threadIds?.filter((existingId) => existingId !== id);
-        await supabase.from('profiles').update({ thread_ids: updatedThreadIds }).eq('id', userId);
+        thread = (await openAIClient.beta.threads.retrieve(id)) as LFThread;
       } catch (e) {
-        console.error(`Error deleting thread: ${threadIds}`);
+        console.error(`Error fetching thread: ${id}`);
         console.error(`Error: ${e}`);
       }
+
+      if (
+        thread?.metadata?.label.includes(SHORT_RESPONSE_PROMPT) ||
+        thread?.metadata?.label.includes(LONG_RESPONSE_PROMPT)
+      ) {
+        try {
+          await openAIClient.beta.threads.del(id);
+          const updatedThreadIds = threadIds?.filter((existingId) => existingId !== id);
+          await supabase.from('profiles').update({ thread_ids: updatedThreadIds }).eq('id', userId);
+        } catch (e) {
+          console.error(`Error deleting thread: ${threadIds}`);
+          console.error(`Error: ${e}`);
+        }
+      }
     }
+  } catch (e) {
+    console.error(`Error deleting test threads`, e);
   }
 };

@@ -24,7 +24,7 @@
     ERROR_GETTING_AI_RESPONSE_TEXT,
     ERROR_GETTING_ASSISTANT_MSG_TEXT,
     ERROR_SAVING_MSG_TEXT
-  } from '$constants/errorMessages';
+  } from '$constants/toastMessages';
 
   import { convertMessageToVercelAiMessage } from '$helpers/threads.js';
 

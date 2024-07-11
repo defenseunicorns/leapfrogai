@@ -19,7 +19,7 @@ import {
 import { getMessageText } from '$helpers/threads';
 import { load } from './+page';
 import { mockOpenAI } from '../../../../../vitest-setup';
-import { ERROR_GETTING_AI_RESPONSE_TEXT, ERROR_SAVING_MSG_TEXT } from '$constants/errorMessages';
+import { ERROR_GETTING_AI_RESPONSE_TEXT, ERROR_SAVING_MSG_TEXT } from '$constants/toastMessages';
 
 import { faker } from '@faker-js/faker';
 import type { LFThread } from '$lib/types/threads';
