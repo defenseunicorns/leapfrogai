@@ -25,6 +25,11 @@ class MockModelFields(BaseModel):
 mock_data_dict = dict(id=1, name="mock-data")
 
 
+@pytest.fixture
+def mock_crud_base(mock_session):
+    return CRUDBase(db=mock_session, model=MockModel, table_name="dummy_table")
+
+
 @pytest.mark.asyncio
 @pytest.mark.parametrize(
     "mock_data_object, mock_response, expected_result, expected_call",
@@ -77,11 +82,13 @@ mock_data_dict = dict(id=1, name="mock-data")
     ],
 )
 async def test_create(
-    mock_session, mock_data_object, mock_response, expected_result, expected_call
+    mock_data_object,
+    mock_response,
+    expected_result,
+    expected_call,
+    mock_session,
+    mock_crud_base,
 ):
-    mock_crud_base = CRUDBase(
-        db=mock_session, model=MockModel, table_name="dummy_table"
-    )
     mock_table = mock_session.table(mock_crud_base.table_name)
     mock_table.insert.return_value.execute.return_value = MockAPIResponse(
         data=mock_response
@@ -100,10 +107,7 @@ async def test_create(
     "mock_response",
     [({}), ([]), (None)],
 )
-async def test_create_fail(mock_session, mock_response):
-    mock_crud_base = CRUDBase(
-        db=mock_session, model=MockModel, table_name="dummy_table"
-    )
+async def test_create_fail(mock_response, mock_session, mock_crud_base):
     mock_table = mock_session.table(mock_crud_base.table_name)
     mock_table.insert.return_value.execute.return_value = MockAPIResponse(
         data=mock_response
@@ -118,10 +122,7 @@ async def test_create_fail(mock_session, mock_response):
     "mock_response, expected_result",
     [([dict(id=1, name="mock-data")], MockModel(id=1, name="mock-data")), ([], None)],
 )
-async def test_get(mock_session, mock_response, expected_result):
-    mock_crud_base = CRUDBase(
-        db=mock_session, model=MockModel, table_name="dummy_table"
-    )
+async def test_get(mock_response, expected_result, mock_session, mock_crud_base):
     mock_table = mock_session.table(mock_crud_base.table_name)
     mock_table.select.return_value.execute.return_value = MockAPIResponse(
         data=mock_response
@@ -146,10 +147,9 @@ async def test_get(mock_session, mock_response, expected_result):
         (None, None, TypeError),
     ],
 )
-async def test_get_fail(mock_session, filters, mock_response, expected_error):
-    mock_crud_base = CRUDBase(
-        db=mock_session, model=MockModel, table_name="dummy_table"
-    )
+async def test_get_fail(
+    filters, mock_response, expected_error, mock_session, mock_crud_base
+):
     mock_table = mock_session.table(mock_crud_base.table_name)
     mock_table.select.return_value.execute.return_value = MockAPIResponse(
         data=mock_response
@@ -174,10 +174,7 @@ async def test_get_fail(mock_session, filters, mock_response, expected_error):
         ([], None),
     ],
 )
-async def test_list(mock_session, mock_response, expected_result):
-    mock_crud_base = CRUDBase(
-        db=mock_session, model=MockModel, table_name="dummy_table"
-    )
+async def test_list(mock_response, expected_result, mock_session, mock_crud_base):
     mock_table = mock_session.table(mock_crud_base.table_name)
     mock_table.select.return_value.execute.return_value = MockAPIResponse(
         data=mock_response
@@ -198,10 +195,9 @@ async def test_list(mock_session, mock_response, expected_result):
         (None, None, TypeError),
     ],
 )
-async def test_list_fail(mock_session, filters, mock_response, expected_error):
-    mock_crud_base = CRUDBase(
-        db=mock_session, model=MockModel, table_name="dummy_table"
-    )
+async def test_list_fail(
+    filters, mock_response, expected_error, mock_session, mock_crud_base
+):
     mock_table = mock_session.table(mock_crud_base.table_name)
     mock_table.select.return_value.execute.return_value = MockAPIResponse(
         data=mock_response
@@ -215,10 +211,7 @@ async def test_list_fail(mock_session, filters, mock_response, expected_error):
 @pytest.mark.parametrize(
     "mock_response, expected_result", [(mock_data_model, mock_data_model), ([], None)]
 )
-async def test_update(mock_session, mock_response, expected_result):
-    mock_crud_base = CRUDBase(
-        db=mock_session, model=MockModel, table_name="dummy_table"
-    )
+async def test_update(mock_response, expected_result, mock_session, mock_crud_base):
     mock_table = mock_session.table(mock_crud_base.table_name)
     mock_table.update.return_value.execute.return_value = MockAPIResponse(
         data=mock_response.model_dump() if mock_response else mock_response
@@ -231,10 +224,7 @@ async def test_update(mock_session, mock_response, expected_result):
 
 @pytest.mark.asyncio
 @pytest.mark.parametrize("mock_response", [(None)])
-async def test_update_fail(mock_session, mock_response):
-    mock_crud_base = CRUDBase(
-        db=mock_session, model=MockModel, table_name="dummy_table"
-    )
+async def test_update_fail(mock_response, mock_session, mock_crud_base):
     mock_table = mock_session.table(mock_crud_base.table_name)
     mock_table.update.return_value.execute.return_value = MockAPIResponse(
         data=mock_response
@@ -245,11 +235,7 @@ async def test_update_fail(mock_session, mock_response):
 
 
 @pytest.mark.asyncio
-async def test_delete(mock_session):
-    mock_crud_base = CRUDBase(
-        db=mock_session, model=MockModel, table_name="dummy_table"
-    )
-
+async def test_delete(mock_crud_base):
     result = await mock_crud_base.delete({"id": 1})
 
     assert result is True
@@ -257,10 +243,7 @@ async def test_delete(mock_session):
 
 @pytest.mark.asyncio
 @pytest.mark.parametrize("mock_response", [([]), (None)])
-async def test_delete_fail(mock_session, mock_response):
-    mock_crud_base = CRUDBase(
-        db=mock_session, model=MockModel, table_name="dummy_table"
-    )
+async def test_delete_fail(mock_response, mock_session, mock_crud_base):
     mock_table = mock_session.table(mock_crud_base.table_name)
     mock_table.delete.return_value.execute.return_value = MockAPIResponse(
         data=mock_response
