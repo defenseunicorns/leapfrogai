@@ -18,7 +18,7 @@ def make_transcribe_request(filename, task, language, temperature, prompt):
     device = "cuda" if GPU_ENABLED else "cpu"
     model = WhisperModel(model_path, device=device, compute_type="float32")
 
-    segments, info = model.transcribe(filename, beam_size=5)
+    segments, info = model.transcribe(filename, task=task, beam_size=5)
 
     output = ""
 
@@ -57,7 +57,11 @@ def call_whisper(
             f.name, task, inputLanguage, temperature, prompt
         )
         text = str(result["text"])
-        logger.info("Transcription complete!")
+
+        if task == "transcribe":
+            logger.info("Transcription complete!")
+        elif task == "translate":
+            logger.info("Translation complete!")
         return lfai.AudioResponse(text=text)
 
 
