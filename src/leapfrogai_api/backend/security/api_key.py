@@ -49,7 +49,7 @@ def validate_api_key(api_key: str) -> bool:
         return False
     if prefix != KEY_PREFIX:
         return False
-    if checksum != _calculate_checksum(key):
+    if not secrets.compare_digest(checksum, _calculate_checksum(key)):
         return False
 
     return True
@@ -96,59 +96,3 @@ def parse_api_key(api_key: str) -> APIKey:
         raise ValueError("Invalid API key format")
 
     return APIKey(prefix=prefix, unique_key=key, checksum=checksum)
-
-
-### TRASH ###
-
-
-# def generate_api_key() -> tuple[str, str]:
-#     """Generate an API key.
-
-#     returns:
-#         read_once_token: str - in the format: {prefix}_{unique_key}_{checksum}
-#         hashed_token: str - in the format: {prefix}_{hashed_key}_{checksum}
-#     """
-#     unique_key = secrets.token_bytes(KEY_BYTES).hex()
-#     hashed_token = _encode_unique_key(unique_key)
-#     checksum = parse_api_key(hashed_token)[2]
-
-#     read_once_token = f"{KEY_PREFIX}_{unique_key}_{checksum}"
-#     hashed_token = _encode_unique_key(unique_key)
-
-#     return read_once_token, hashed_token
-
-
-# def validate_and_encode_api_key(api_key: str) -> tuple[bool, str]:
-#     """
-#     Validate and encode an API key.
-
-#     Should be in the form: `{prefix}_{unique_key}_{checksum}`
-
-#     returns:
-#         valid: bool
-#         encoded_key: str
-#     """
-
-#     valid = validate_api_key(api_key)
-#     encoded_key = ""
-
-#     if valid:
-#         encoded_key = _encode_unique_key(parse_api_key(api_key)[1])
-
-#     return valid, encoded_key
-
-
-# def _encode_unique_key(unique_key: str) -> str:
-#     """Hashes and encodes an API key as a string.
-
-#     returns:
-#         api_key: str # in the format {prefix}_{one_way_hash}_{checksum}
-#     """
-#     one_way_hash = hashlib.sha256(unique_key.encode()).hexdigest()
-#     checksum = hashlib.sha256(unique_key.encode()).hexdigest()[:CHECKSUM_LENGTH]
-#     return f"{KEY_PREFIX}_{one_way_hash}_{checksum}"
-
-
-# def _validate_checksum(unique_key: str, checksum: str):
-#     """Validate the checksum of an API key."""
-#     return hashlib.sha256(unique_key.encode()).hexdigest()[:CHECKSUM_LENGTH] == checksum
