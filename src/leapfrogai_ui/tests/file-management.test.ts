@@ -1,5 +1,5 @@
 import { expect, test } from './fixtures';
-import { getSimpleMathQuestion, getTableRow, loadChatPage } from './helpers/helpers';
+import { getTableRow, getSimpleMathQuestion, getTableRow, loadChatPage } from './helpers/helpers';
 import {
   confirmDeletion,
   createExcelFile,
