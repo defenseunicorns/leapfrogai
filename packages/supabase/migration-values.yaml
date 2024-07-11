@@ -1,0 +1,11 @@
+leapfrogai:
+  securityContext:
+    runAsUser: 65532
+    runAsGroup: 65532
+    fsGroup: 65532
+
+  migration:
+    imageTag: "###ZARF_CONST_IMAGE_VERSION###"
+    namespace: "leapfrogai"
+    serviceName: "supabase-postgresql"
+    servicePort: "5432"

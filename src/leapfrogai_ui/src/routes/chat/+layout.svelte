@@ -1,13 +1,10 @@
 <script lang="ts">
   import { LFHeader } from '$components';
+  import type { LayoutData } from './$types';
+
+  export let data: LayoutData;
 </script>
 
-<LFHeader />
+<LFHeader isUsingOpenAI={data.isUsingOpenAI} />
 
 <slot />
-
-<style lang="scss">
-  :global(.bx--content) {
-    padding: 1rem !important;
-  }
-</style>

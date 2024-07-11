@@ -4,12 +4,13 @@
   import { Add } from 'carbon-icons-svelte';
   import Fuse, { type FuseResult, type IFuseOptions } from 'fuse.js';
   import AssistantTile from '$components/AssistantTile.svelte';
+  import type { LFAssistant } from '$lib/types/assistants';
 
   export let data;
 
   let searchText = '';
-  let searchResults: FuseResult<Assistant>[];
-  let filteredAssistants: Assistant[] = [];
+  let searchResults: FuseResult<LFAssistant>[];
+  let filteredAssistants: LFAssistant[] = [];
   $: assistantsToDisplay = searchText ? filteredAssistants : data.assistants;
 
   const options: IFuseOptions<unknown> = {
@@ -34,9 +35,6 @@
 
 <div class="container">
   <div class="inner-container">
-    <div class="preview-banner">
-      Assistants Management is a preview only. It is not yet fully functional.
-    </div>
     <div class="title">Assistants Management</div>
 
     <div class="utils">
@@ -94,10 +92,5 @@
 
   .title {
     @include type.type-style('heading-05');
-  }
-
-  .preview-banner {
-    text-align: center;
-    color: $red-30;
   }
 </style>

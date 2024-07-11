@@ -1,69 +1,48 @@
 import { array, object, ObjectSchema, string } from 'yup';
 import { MAX_LABEL_SIZE } from '$lib/constants';
 import { env } from '$env/dynamic/public';
+import type { NewMessageInput } from '$lib/types/messages';
+
+export const stringIdSchema = object({
+  id: string().required()
+})
+  .noUnknown(true)
+  .strict();
+
+export const stringIdArraySchema = object({
+  ids: array().of(string().required()).required()
+})
+  .noUnknown(true)
+  .strict();
 
 const contentInputSchema = string().max(Number(env.PUBLIC_MESSAGE_LENGTH_LIMIT)).required();
 
-export const messageSchema: ObjectSchema<Message> = object({
-  id: string().uuid().required(),
-  user_id: string().uuid().required(),
-  conversation_id: string().uuid().required(),
-  content: string().required(),
-  role: string<Roles>().required(),
-  inserted_at: string().required()
-})
-  .noUnknown(true)
-  .strict();
-
-export const conversationSchema: ObjectSchema<Conversation> = object({
-  id: string().uuid().required(),
-  user_id: string().uuid().required(),
-  messages: array().of(messageSchema).required(),
-  label: string().required(),
-  inserted_at: string().required()
-})
-  .noUnknown(true)
-  .strict();
-
-export const conversationsSchema = array().of(conversationSchema);
-
-export const messageInputSchema = object({
+export const messageInputSchema: ObjectSchema<NewMessageInput> = object({
+  thread_id: string().required(),
   content: contentInputSchema,
-  role: string<Roles>().required()
+  role: string<'user' | 'assistant'>().required(),
+  assistantId: string().optional()
 })
   .noUnknown(true)
   .strict();
 
-export const messagesInputSchema = object({ messages: array().of(messageInputSchema).strict() })
-  .noUnknown(true)
-  .strict();
-
-export const supabaseMessagesInputSchema = messageInputSchema
-  .shape({
-    id: string().uuid().optional(),
-    conversation_id: string().uuid().required(),
-    inserted_at: string().optional()
-  })
-  .noUnknown(true)
-  .strict();
-
-export const uuidSchema = object({
-  id: string().uuid().required()
+export const deleteMessageSchema = object({
+  thread_id: string().required(),
+  message_id: string().required()
 })
   .noUnknown(true)
   .strict();
 
 const labelSchema = string().min(1).max(MAX_LABEL_SIZE).required();
 
-export const newConversationInputSchema = object({
-  label: labelSchema,
-  inserted_at: string().optional()
+export const newThreadInputSchema = object({
+  label: labelSchema
 })
   .noUnknown(true)
   .strict();
 
-export const updateConversationSchema = object({
-  id: string().uuid().required(),
+export const updateThreadLabelSchema = object({
+  id: string().required(),
   label: labelSchema
 })
   .noUnknown(true)

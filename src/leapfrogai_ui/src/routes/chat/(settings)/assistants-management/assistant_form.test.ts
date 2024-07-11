@@ -6,24 +6,20 @@ import { ASSISTANTS_DESCRIPTION_MAX_LENGTH, ASSISTANTS_NAME_MAX_LENGTH } from '$
 import { actions as editActions } from './edit/[assistantId]/+page.server';
 import { actions as newActions, load as newLoad } from './new/+page.server';
 import {
-  editAssistantSupabaseInsertErrorMock,
-  editAssistantSupabaseMock,
-  selectErrorMock,
   sessionMock,
   sessionNullMock,
-  supabaseFromMockWrapper,
-  supabaseInsertSingleErrorMock,
-  supabaseInsertSingleMock
+  storageRemoveMock,
+  supabaseInsertSingleMock,
+  supabaseStorageMockWrapper
 } from '$lib/mocks/supabase-mocks';
-import { getFakeAssistant, getFakeAssistantInput } from '../../../../../testUtils/fakeData';
-import type { PageServerLoad } from './$types';
+import { getFakeAssistant, getFakeAssistantInput, getFakeFileObject } from '$testUtils/fakeData';
 import AssistantForm from '$components/AssistantForm.svelte';
-import { faker } from '@faker-js/faker';
+import { mockOpenAI } from '../../../../../vitest-setup';
+import { mockGetAssistants } from '$lib/mocks/chat-mocks';
+import { mockGetFiles } from '$lib/mocks/file-mocks';
 
 describe('Assistant Form', () => {
   let goToSpy: MockInstance;
-
-  let data: PageServerLoad;
 
   beforeAll(async () => {
     goToSpy = vi.spyOn(navigation, 'goto');
@@ -37,7 +33,9 @@ describe('Assistant Form', () => {
   });
 
   it('has a modal that navigates back to the management page', async () => {
-    data = await newLoad({ locals: { getSession: sessionMock } });
+    mockGetAssistants([]);
+    mockGetFiles([]);
+    const data = await newLoad();
     render(AssistantForm, { data });
 
     const cancelBtn = screen.getAllByRole('button', { name: /cancel/i })[1];
@@ -47,7 +45,9 @@ describe('Assistant Form', () => {
   });
 
   it('limits the name input length', async () => {
-    data = await newLoad({ locals: { getSession: sessionMock } });
+    mockGetAssistants([]);
+    mockGetFiles([]);
+    const data = await newLoad();
     render(AssistantForm, { data });
     const nameField = screen.getByRole('textbox', { name: /name/i });
     await userEvent.type(nameField, 'a'.repeat(ASSISTANTS_NAME_MAX_LENGTH + 1));
@@ -55,7 +55,9 @@ describe('Assistant Form', () => {
   });
 
   it('limits the description input length', async () => {
-    data = await newLoad({ locals: { getSession: sessionMock } });
+    mockGetAssistants([]);
+    mockGetFiles([]);
+    const data = await newLoad();
     render(AssistantForm, { data });
     const descriptionField = screen.getByRole('textbox', { name: /description/i });
     await userEvent.type(descriptionField, 'a'.repeat(ASSISTANTS_DESCRIPTION_MAX_LENGTH + 1));
@@ -68,14 +70,18 @@ describe('Assistant Form', () => {
     */
 
   describe('the new assistant server side form action', () => {
-    it('redirects on success', async () => {
+    it('redirects on success (with data sources)', async () => {
+      const fakeFile1 = getFakeFileObject();
+      const fakeFile2 = getFakeFileObject();
+
       const assistant = getFakeAssistantInput();
 
       const formData = new FormData();
       formData.append('name', assistant.name!);
       formData.append('description', assistant.description!);
       formData.append('instructions', assistant.instructions!);
-      formData.append('data_sources', '');
+      formData.append('data_sources', `${fakeFile1.filename},${fakeFile2.filename}`);
+
       formData.append('pictogram', 'User');
 
       const request = new Request('http://localhost:5173/chat/assistants-management/new', {
@@ -87,7 +93,7 @@ describe('Assistant Form', () => {
       try {
         await newActions.default({
           request,
-          locals: { supabase: supabaseInsertSingleMock(assistant), getSession: sessionMock }
+          locals: { supabase: supabaseInsertSingleMock(assistant), safeGetSession: sessionMock }
         });
       } catch (redirect) {
         expect(redirect?.status).toEqual(303);
@@ -101,7 +107,7 @@ describe('Assistant Form', () => {
       });
       const res = await newActions.default({
         request,
-        locals: { supabase: {}, getSession: sessionNullMock }
+        locals: { supabase: {}, safeGetSession: sessionNullMock }
       });
 
       expect(res.status).toEqual(401);
@@ -117,34 +123,16 @@ describe('Assistant Form', () => {
     });
     const res = await newActions.default({
       request,
-      locals: { supabase: {}, getSession: sessionMock }
+      locals: { supabase: {}, safeGetSession: sessionMock }
     });
 
     expect(res.status).toEqual(400);
   });
 
-  it('returns a 500 when there is a supabase error saving the assistant', async () => {
-    const formData = new FormData();
-    formData.append('name', 'My Assistant');
-    formData.append('description', 'This is an assistant');
-    formData.append('instructions', 'Be a helpful assistant');
-    formData.append('data_sources', '');
-    formData.append('pictogram', 'User');
-
-    const request = new Request('http://localhost:5173/chat/assistants-management/new', {
-      method: 'POST',
-      body: formData
-    });
-    const res = await newActions.default({
-      request,
-      locals: { supabase: supabaseInsertSingleErrorMock(), getSession: sessionMock }
-    });
-
-    expect(res.status).toEqual(500);
-  });
-
-  describe('the edit assistant server side form action', () => {
+  describe('the edit assistant server side form action (with data sources)', () => {
     it('redirects on success', async () => {
+      const fakeFile1 = getFakeFileObject();
+      const fakeFile2 = getFakeFileObject();
       const assistant = getFakeAssistant();
 
       const formData = new FormData();
@@ -152,8 +140,9 @@ describe('Assistant Form', () => {
       formData.append('name', assistant.name!);
       formData.append('description', assistant.description!);
       formData.append('instructions', assistant.instructions!);
-      formData.append('data_sources', '');
+      formData.append('data_sources', `${fakeFile1.filename},${fakeFile2.filename}`);
       formData.append('pictogram', 'User');
+      // No avatar or avatarFile included to ensure we test the deletion call and mock for the avatar
 
       const request = new Request(
         `http://localhost:5173/chat/assistants-management/edit/${assistant.id}`,
@@ -168,8 +157,10 @@ describe('Assistant Form', () => {
         await editActions.default({
           request,
           locals: {
-            supabase: editAssistantSupabaseMock(assistant),
-            getSession: sessionMock
+            supabase: supabaseStorageMockWrapper({
+              ...storageRemoveMock()
+            }),
+            safeGetSession: sessionMock
           }
         });
       } catch (redirect) {
@@ -178,43 +169,13 @@ describe('Assistant Form', () => {
       }
     });
 
-    it('returns a 404 if there is an error finding an assistant', async () => {
-      const assistant = getFakeAssistant();
-
-      const formData = new FormData();
-      formData.append('id', faker.string.uuid());
-      formData.append('name', assistant.name!);
-      formData.append('description', assistant.description!);
-      formData.append('instructions', assistant.instructions!);
-      formData.append('data_sources', '');
-      formData.append('pictogram', 'User');
-
-      const request = new Request(
-        `http://localhost:5173/chat/assistants-management/edit/${assistant.id}`,
-        {
-          method: 'POST',
-          body: formData
-        }
-      );
-
-      const res = await editActions.default({
-        request,
-        locals: {
-          supabase: supabaseFromMockWrapper(selectErrorMock()),
-          getSession: sessionMock
-        }
-      });
-
-      expect(res.status).toEqual(404);
-    });
-
     it('returns a 401 if the request is unauthenticated', async () => {
       const request = new Request(`http://localhost:5173/chat/assistants-management/edit/123`, {
         method: 'POST'
       });
       const res = await editActions.default({
         request,
-        locals: { supabase: {}, getSession: sessionNullMock }
+        locals: { supabase: {}, safeGetSession: sessionNullMock }
       });
 
       expect(res.status).toEqual(401);
@@ -236,13 +197,14 @@ describe('Assistant Form', () => {
 
       const res = await editActions.default({
         request,
-        locals: { supabase: {}, getSession: sessionMock }
+        locals: { supabase: {}, safeGetSession: sessionMock }
       });
 
       expect(res.status).toEqual(400);
     });
 
-    it('returns a 500 when there is a supabase error saving the assistant', async () => {
+    it('returns a 500 when there is a openai error saving the assistant', async () => {
+      mockOpenAI.setError('updateAssistant');
       const assistant = getFakeAssistant();
 
       const formData = new FormData();
@@ -251,6 +213,7 @@ describe('Assistant Form', () => {
       formData.append('description', 'This is an assistant');
       formData.append('instructions', 'Be a helpful assistant');
       formData.append('data_sources', '');
+      formData.append('avatar', 'fakeUploadUrl');
       formData.append('pictogram', 'User');
 
       const request = new Request(
@@ -263,8 +226,8 @@ describe('Assistant Form', () => {
       const res = await editActions.default({
         request,
         locals: {
-          supabase: editAssistantSupabaseInsertErrorMock(assistant),
-          getSession: sessionMock
+          supabase: {},
+          safeGetSession: sessionMock
         }
       });
 

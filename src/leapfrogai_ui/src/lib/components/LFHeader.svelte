@@ -1,8 +1,10 @@
 <script lang="ts">
-  import { uiStore } from '$stores';
+  import { threadsStore, uiStore } from '$stores';
   import logo from '$assets/LeapfrogAI.png';
   import { Settings, UserAvatar } from 'carbon-icons-svelte';
   import { Header, HeaderAction, HeaderUtilities } from 'carbon-components-svelte';
+
+  export let isUsingOpenAI: boolean;
 
   let loading = false;
   let signOutForm: HTMLFormElement;
@@ -36,7 +38,14 @@
   persistentHamburgerMenu={innerWidth ? innerWidth < 1056 : false}
   bind:isSideNavOpen={$uiStore.isSideNavOpen}
 >
-  <span slot="platform"><img alt="LeapfrogAI Logo" src={logo} class="logo" /></span>
+  <span slot="platform"
+    ><a
+      data-testid="header-logo-link"
+      href={$threadsStore.lastVisitedThreadId
+        ? `/chat/${$threadsStore.lastVisitedThreadId}`
+        : '/chat'}><img alt="LeapfrogAI Logo" src={logo} class="logo" /></a
+    ></span
+  >
   <HeaderUtilities>
     <HeaderAction
       data-testid="settings header action button"
@@ -47,12 +56,23 @@
       isOpen={activeHeaderAction.settings}
       on:open={() => setActiveHeaderAction('settings')}
     >
-      <div class="link-container">
+      <div class="links-container">
         <a
           href="/chat/assistants-management"
           class="header-link"
           on:click={() => setActiveHeaderAction('')}>Assistants Management</a
         >
+
+        <a
+          href="/chat/file-management"
+          class="header-link"
+          on:click={() => setActiveHeaderAction('')}>File Management</a
+        >
+        {#if !isUsingOpenAI}
+          <a href="/chat/api-keys" class="header-link" on:click={() => setActiveHeaderAction('')}
+            >API Keys</a
+          >
+        {/if}
       </div>
     </HeaderAction>
     <HeaderAction
@@ -64,7 +84,7 @@
       isOpen={activeHeaderAction.user}
       on:open={() => setActiveHeaderAction('user')}
     >
-      <div class="link-container">
+      <div class="links-container">
         <form bind:this={signOutForm} method="post" action="/auth?/signout">
           <button
             class="header-link"
@@ -84,8 +104,11 @@
     height: 36px;
   }
 
-  .link-container {
-    padding: layout.$spacing-05;
+  .links-container {
+    display: flex;
+    padding: 1rem;
+    flex-direction: column;
+    gap: 0.88rem;
   }
 
   .header-link {

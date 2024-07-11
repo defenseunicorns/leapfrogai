@@ -1,40 +1,24 @@
+import type { Assistant } from 'openai/resources/beta/assistants';
+
 type AssistantInput = {
   name: string;
   description: string;
   instructions: string;
   temperature: number;
-  data_sources?: string;
-  avatar?: File | null;
+  data_sources?: Array<string | undefined>;
+  vectorStoreId?: string;
+  avatar?: string;
+  avatarFile?: File | null;
   pictogram?: string;
 };
 
 type EditAssistantInput = AssistantInput & { id: string };
 
-type ToolResources = {
-  code_interpreter: string[];
-  file_search: string[];
-};
-
-type Tools = 'code_interpreter' | 'file_search' | 'function';
-
-type Assistant = {
-  id: string;
-  object: string;
-  name: string | null;
-  description: string | null;
-  model: string;
-  instructions: string | null;
-  tools: { type: Tools }[];
-  tool_resources: ToolResources | null;
+export type LFAssistant = Assistant & {
   metadata: {
-    created_by: string | null; //user id
-    data_sources?: string; // vector store ids, array as string
+    user_id: string;
     avatar?: string;
     pictogram?: string;
     [key: string]: unknown;
   };
-  temperature: number | null;
-  top_p: number | null;
-  response_format: string | { type: string };
-  created_at: number;
 };

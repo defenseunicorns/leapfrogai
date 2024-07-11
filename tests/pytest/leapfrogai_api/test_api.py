@@ -2,12 +2,19 @@ import json
 import os
 import shutil
 import time
+from typing import Optional
 
 import pytest
+from fastapi.applications import BaseHTTPMiddleware
+from fastapi.security import HTTPBearer
 from fastapi.testclient import TestClient
-
+from starlette.middleware.base import _CachedRequest
+from supabase_py_async.lib.client_options import ClientOptions
 import leapfrogai_api.backend.types as lfai_types
 from leapfrogai_api.main import app
+from leapfrogai_api.routers.supabase_session import init_supabase_client
+
+security = HTTPBearer()
 
 # Set environment variables that the TestClient will use
 LFAI_CONFIG_FILENAME = os.environ["LFAI_CONFIG_FILENAME"] = "repeater-test-config.yaml"
@@ -19,6 +26,45 @@ LFAI_CONFIG_FILEPATH = os.path.join(LFAI_CONFIG_PATH, LFAI_CONFIG_FILENAME)
 
 #########################
 #########################
+
+
+class AsyncClient:
+    """Supabase client class."""
+
+    def __init__(
+        self,
+        supabase_url: str,
+        supabase_key: str,
+        access_token: Optional[str] = None,
+        options: ClientOptions = ClientOptions(),
+    ):
+        self.supabase_url = supabase_url
+        self.supabase_key = supabase_key
+        self.access_token = access_token
+        self.options = options
+
+
+async def mock_init_supabase_client() -> AsyncClient:
+    return AsyncClient("", "", "", ClientOptions())
+
+
+async def pack_dummy_bearer_token(request: _CachedRequest, call_next):
+    request.headers._list.append(
+        (
+            "authorization".encode(),
+            "Bearer dummy".encode(),
+        )
+    )
+    return await call_next(request)
+
+
+@pytest.fixture
+def dummy_auth_middleware():
+    app.dependency_overrides[init_supabase_client] = mock_init_supabase_client
+    app.user_middleware.clear()
+    app.middleware_stack = None
+    app.add_middleware(BaseHTTPMiddleware, dispatch=pack_dummy_bearer_token)
+    app.middleware_stack = app.build_middleware_stack()
 
 
 def test_config_load():
@@ -77,12 +123,50 @@ def test_routes():
         "/openai/v1/assistants": ["POST"],
     }
 
-    assistants_routes = [
+    openai_routes = [
+        ("/openai/v1/files", "upload_file", ["POST"]),
+        ("/openai/v1/files", "list_files", ["GET"]),
+        ("/openai/v1/files/{file_id}", "retrieve_file", ["GET"]),
+        ("/openai/v1/files/{file_id}", "delete_file", ["DELETE"]),
+        ("/openai/v1/files/{file_id}/content", "retrieve_file_content", ["GET"]),
         ("/openai/v1/assistants", "create_assistant", ["POST"]),
         ("/openai/v1/assistants", "list_assistants", ["GET"]),
         ("/openai/v1/assistants/{assistant_id}", "retrieve_assistant", ["GET"]),
         ("/openai/v1/assistants/{assistant_id}", "modify_assistant", ["POST"]),
         ("/openai/v1/assistants/{assistant_id}", "delete_assistant", ["DELETE"]),
+        ("/openai/v1/vector_stores", "create_vector_store", ["POST"]),
+        ("/openai/v1/vector_stores", "list_vector_stores", ["GET"]),
+        (
+            "/openai/v1/vector_stores/{vector_store_id}",
+            "retrieve_vector_store",
+            ["GET"],
+        ),
+        ("/openai/v1/vector_stores/{vector_store_id}", "modify_vector_store", ["POST"]),
+        (
+            "/openai/v1/vector_stores/{vector_store_id}",
+            "delete_vector_store",
+            ["DELETE"],
+        ),
+        (
+            "/openai/v1/vector_stores/{vector_store_id}/files",
+            "create_vector_store_file",
+            ["POST"],
+        ),
+        (
+            "/openai/v1/vector_stores/{vector_store_id}/files",
+            "list_vector_store_files",
+            ["GET"],
+        ),
+        (
+            "/openai/v1/vector_stores/{vector_store_id}/files/{file_id}",
+            "retrieve_vector_store_file",
+            ["GET"],
+        ),
+        (
+            "/openai/v1/vector_stores/{vector_store_id}/files/{file_id}",
+            "delete_vector_store_file",
+            ["DELETE"],
+        ),
     ]
 
     actual_routes = app.routes
@@ -91,7 +175,7 @@ def test_routes():
             assert route.methods == set(expected_routes[route.path])
             del expected_routes[route.path]
 
-    for route, name, methods in assistants_routes:
+    for route, name, methods in openai_routes:
         found = False
         for actual_route in actual_routes:
             if (
@@ -119,7 +203,7 @@ def test_healthz():
     os.environ.get("LFAI_RUN_REPEATER_TESTS") != "true",
     reason="LFAI_RUN_REPEATER_TESTS envvar was not set to true",
 )
-def test_embedding():
+def test_embedding(dummy_auth_middleware):
     """Test the embedding endpoint."""
     expected_embedding = [0.0 for _ in range(10)]
 
@@ -149,7 +233,7 @@ def test_embedding():
     os.environ.get("LFAI_RUN_REPEATER_TESTS") != "true",
     reason="LFAI_RUN_REPEATER_TESTS envvar was not set to true",
 )
-def test_chat_completion():
+def test_chat_completion(dummy_auth_middleware):
     """Test the chat completion endpoint."""
     with TestClient(app) as client:
         input_content = "this is the chat completion input."
@@ -174,6 +258,19 @@ def test_chat_completion():
         assert "message" in response_choices[0]
         assert "content" in response_choices[0].get("message")
 
+        # parse finish reason
+        assert "finish_reason" in response_choices[0]
+        assert "stop" == response_choices[0].get("finish_reason")
+
+        # parse usage data
+        response_usage = response_obj.get("usage")
+        prompt_tokens = response_usage.get("prompt_tokens")
+        completion_tokens = response_usage.get("completion_tokens")
+        total_tokens = response_usage.get("total_tokens")
+        assert prompt_tokens == len(input_content)
+        assert completion_tokens == len(input_content)
+        assert total_tokens == len(input_content) * 2
+
         # validate that the repeater repeated
         assert response_choices[0].get("message").get("content") == input_content
 
@@ -182,7 +279,7 @@ def test_chat_completion():
     os.environ.get("LFAI_RUN_REPEATER_TESTS") != "true",
     reason="LFAI_RUN_REPEATER_TESTS envvar was not set to true",
 )
-def test_stream_chat_completion():
+def test_stream_chat_completion(dummy_auth_middleware):
     """Test the stream chat completion endpoint."""
     with TestClient(app) as client:
         input_content = "this is the stream chat completion input."
@@ -219,6 +316,17 @@ def test_stream_chat_completion():
                     assert "content" in choices[0].get("delta")
                     assert choices[0].get("delta").get("content") == input_content
                     iter_length += 1
+                    # parse finish reason
+                    assert "finish_reason" in choices[0]
+                    assert "stop" == choices[0].get("finish_reason")
+                    # parse usage data
+                    response_usage = stream_response.get("usage")
+                    prompt_tokens = response_usage.get("prompt_tokens")
+                    completion_tokens = response_usage.get("completion_tokens")
+                    total_tokens = response_usage.get("total_tokens")
+                    assert prompt_tokens == len(input_content)
+                    assert completion_tokens == len(input_content)
+                    assert total_tokens == len(input_content) * 2
 
         # The repeater only response with 5 messages
         assert iter_length == 5

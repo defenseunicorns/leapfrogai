@@ -1,6 +1,6 @@
 """gRPC client for OpenAI models."""
 
-from typing import Iterator
+from typing import Iterator, AsyncGenerator, Any
 import grpc
 from fastapi.responses import StreamingResponse
 import leapfrogai_sdk as lfai
@@ -16,6 +16,9 @@ from leapfrogai_api.backend.types import (
     EmbeddingResponseData,
     Usage,
 )
+from leapfrogai_sdk.chat.chat_pb2 import (
+    ChatCompletionResponse as ProtobufChatCompletionResponse,
+)
 from leapfrogai_api.utils.config import Model
 
 
@@ -27,7 +30,7 @@ async def stream_completion(model: Model, request: lfai.CompletionRequest):
 
         await stream.wait_for_connection()
         return StreamingResponse(
-            recv_completion(stream), media_type="text/event-stream"
+            recv_completion(stream, model.name), media_type="text/event-stream"
         )
 
 
@@ -48,7 +51,11 @@ async def completion(model: Model, request: lfai.CompletionRequest):
                     logprobs=None,
                 )
             ],
-            usage=Usage(total_tokens=0, prompt_tokens=0),
+            usage=Usage(
+                prompt_tokens=response.usage.prompt_tokens,
+                completion_tokens=response.usage.completion_tokens,
+                total_tokens=response.usage.total_tokens,
+            ),
         )
 
 
@@ -59,7 +66,25 @@ async def stream_chat_completion(model: Model, request: lfai.ChatCompletionReque
         stream = stub.ChatCompleteStream(request)
 
         await stream.wait_for_connection()
-        return StreamingResponse(recv_chat(stream), media_type="text/event-stream")
+        return StreamingResponse(
+            recv_chat(stream, model.name), media_type="text/event-stream"
+        )
+
+
+async def stream_chat_completion_raw(
+    model: Model, request: lfai.ChatCompletionRequest
+) -> AsyncGenerator[ProtobufChatCompletionResponse, Any]:
+    """Stream chat completion using the specified model."""
+    async with grpc.aio.insecure_channel(model.backend) as channel:
+        stub = lfai.ChatCompletionStreamServiceStub(channel)
+        stream: grpc.aio.UnaryStreamCall[
+            lfai.ChatCompletionRequest, lfai.ChatCompletionResponse
+        ] = stub.ChatCompleteStream(request)
+
+        await stream.wait_for_connection()
+
+        async for response in stream:
+            yield response
 
 
 # TODO: Clean up completion() and stream_completion() to reduce code duplication
@@ -79,10 +104,14 @@ async def chat_completion(model: Model, request: lfai.ChatCompletionRequest):
                         ).lower(),
                         content=response.choices[0].chat_item.content,
                     ),
-                    finish_reason="",
+                    finish_reason=response.choices[0].finish_reason,
                 )
             ],
-            usage=Usage(total_tokens=0, prompt_tokens=0),
+            usage=Usage(
+                prompt_tokens=response.usage.prompt_tokens,
+                completion_tokens=response.usage.completion_tokens,
+                total_tokens=response.usage.total_tokens,
+            ),
         )
 
 

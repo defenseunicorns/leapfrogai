@@ -1,7 +1,12 @@
 import type { LayoutServerLoad } from './$types';
+import { env } from '$env/dynamic/private';
 
-export const load: LayoutServerLoad = async ({ locals: { getSession } }) => {
+export const load = (async ({ locals: { safeGetSession } }) => {
+  const { session, user } = await safeGetSession();
+
   return {
-    session: await getSession()
+    session,
+    user,
+    isUsingOpenAI: !!env.OPENAI_API_KEY
   };
-};
+}) satisfies LayoutServerLoad;

@@ -1,33 +1,36 @@
-import { http, HttpResponse, delay } from 'msw';
-import { faker } from '@faker-js/faker';
+import { delay, http, HttpResponse } from 'msw';
 import { server } from '../../../vitest-setup';
+import { getFakeOpenAIMessage } from '$testUtils/fakeData';
+import type { LFMessage, NewMessageInput } from '$lib/types/messages';
+import type { LFAssistant } from '$lib/types/assistants';
+import { createStreamDataTransformer, StreamingTextResponse } from 'ai';
+import type { LFThread } from '$lib/types/threads';
 
 type MockChatCompletionOptions = {
   responseMsg?: string[];
-  withDelay?: boolean;
   delayTime?: number;
 };
-export const mockChatCompletion = (
-  options: MockChatCompletionOptions = {
-    responseMsg: ['Fake', 'AI', 'Response'],
-    withDelay: false,
-    delayTime: 0
-  }
-) => {
-  const encoder = new TextEncoder();
 
+export const fakeAiTextResponse = 'Fake AI Response';
+
+const returnStreamResponse = (responseMsg: string[]) => {
+  const encoder = new TextEncoder();
+  const stream = new ReadableStream({
+    start(controller) {
+      responseMsg?.forEach((msg) => controller.enqueue(encoder.encode(`${msg} `)));
+      controller.close();
+    }
+  });
+  return new StreamingTextResponse(stream.pipeThrough(createStreamDataTransformer()));
+};
+export const mockChatCompletion = (options: MockChatCompletionOptions = {}) => {
+  const { delayTime = 0, responseMsg = ['Fake', 'AI', 'Response'] } = options;
   server.use(
     http.post('/api/chat', async () => {
-      if (options.withDelay) {
-        await delay(options.delayTime);
+      if (delayTime) {
+        await delay(delayTime);
       }
-      const stream = new ReadableStream({
-        start(controller) {
-          options.responseMsg?.forEach((msg) => controller.enqueue(encoder.encode(msg)));
-          controller.close();
-        }
-      });
-      return new HttpResponse(stream, { headers: { 'Content-Type': 'text/plain' } });
+      return returnStreamResponse(responseMsg!);
     })
   );
 };
@@ -40,54 +43,58 @@ export const mockChatCompletionError = () => {
   );
 };
 
-export const mockNewConversation = () => {
+export const mockNewMessage = () => {
   server.use(
-    http.post('/api/conversations/new', () => {
-      return HttpResponse.json({
-        id: faker.string.uuid(),
-        user_id: faker.string.uuid(),
-        label: faker.lorem.words(5),
-        inserted_at: new Date().toLocaleString()
-      });
+    http.post('/api/messages/new', async ({ request }) => {
+      const reqJson = (await request.json()) as NewMessageInput;
+      return HttpResponse.json(getFakeOpenAIMessage(reqJson));
     })
   );
 };
 
-export const mockNewMessage = (fakeMessage: Message) => {
-  server.use(
-    http.post('/api/messages/new', () => {
-      return HttpResponse.json({ message: fakeMessage });
-    })
-  );
-};
-
-export const mockNewConversationError = () => {
-  server.use(http.post('/api/conversations/new', () => new HttpResponse(null, { status: 500 })));
+export const mockNewThreadError = () => {
+  server.use(http.post('/api/threads/new', () => new HttpResponse(null, { status: 500 })));
 };
 export const mockNewMessageError = () => {
   server.use(http.post('/api/messages/new', () => new HttpResponse(null, { status: 500 })));
 };
 
-export const mockDeleteConversation = () => {
+export const mockDeleteThread = () => {
+  server.use(http.delete('/api/threads/delete', () => new HttpResponse(null, { status: 204 })));
+};
+
+export const mockDeleteThreadError = () => {
+  server.use(http.delete('/api/threads/delete', () => new HttpResponse(null, { status: 500 })));
+};
+
+export const mockEditThreadLabel = () => {
+  server.use(http.put('/api/threads/update/label', () => new HttpResponse(null, { status: 204 })));
+};
+
+export const mockEditThreadLabelError = () => {
+  server.use(http.put('/api/threads/update/label', () => new HttpResponse(null, { status: 500 })));
+};
+
+export const mockGetAssistants = (assistants: LFAssistant[] = []) => {
   server.use(
-    http.delete('/api/conversations/delete', () => new HttpResponse(null, { status: 204 }))
+    http.get('/api/assistants', () => {
+      return HttpResponse.json(assistants);
+    })
   );
 };
 
-export const mockDeleteConversationError = () => {
+export const mockGetMessages = (thread_id: string, messages: LFMessage[]) => {
   server.use(
-    http.delete('/api/conversations/delete', () => new HttpResponse(null, { status: 500 }))
+    http.get(`/api/messages/${thread_id}`, () => {
+      return HttpResponse.json(messages);
+    })
   );
 };
 
-export const mockEditConversationLabel = () => {
+export const mockGetThread = (thread: LFThread) => {
   server.use(
-    http.put('/api/conversations/update/label', () => new HttpResponse(null, { status: 204 }))
-  );
-};
-
-export const mockEditConversationLabelError = () => {
-  server.use(
-    http.put('/api/conversations/update/label', () => new HttpResponse(null, { status: 500 }))
+    http.get(`/api/threads/${thread.id}`, () => {
+      return HttpResponse.json(thread);
+    })
   );
 };

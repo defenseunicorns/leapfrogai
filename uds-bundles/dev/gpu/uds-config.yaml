@@ -1,26 +1,14 @@
 # see individual zarf packaging configuration for more variables and variable descriptions
 variables:
   text-embeddings:
-    gpu_limit: 1
+    gpu_limit: 0
 
   whisper:
-    gpu_limit: 1
+    gpu_limit: 0
 
   vllm:
     gpu_limit: 1
     #tensor_parallel_size: 1   # TODO: reintroduce when vllm changes get pulled in
-
-  rag:
-    model: vllm
-    ssl_verification: "false" # if certs exist in-cluster, make true
-    response_mode: "raw" # default mode for query endpoint
-    temperature: 0 # refine method temperature for vllm
-    max_output: 2048
-    context_window: 9216 # 55% of synthia-7b max window filled with RAG context
-    chunk_size: 1024
-    overlap_size: 128
-    embedding_model_name: text-embeddings
-    top_k: 20
 
   supabase:
     keycloak_redirect_uris:

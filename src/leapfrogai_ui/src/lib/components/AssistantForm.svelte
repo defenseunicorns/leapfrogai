@@ -5,26 +5,26 @@
     ASSISTANTS_NAME_MAX_LENGTH
   } from '$lib/constants';
   import { superForm } from 'sveltekit-superforms';
-  import { Add } from 'carbon-icons-svelte';
   import { page } from '$app/stores';
   import { beforeNavigate, goto } from '$app/navigation';
   import { Button, Modal, Slider, TextArea, TextInput } from 'carbon-components-svelte';
   import AssistantAvatar from '$components/AssistantAvatar.svelte';
   import { yup } from 'sveltekit-superforms/adapters';
-
-  import { toastStore } from '$stores';
+  import { filesStore, toastStore } from '$stores';
   import InputTooltip from '$components/InputTooltip.svelte';
-  import { env } from '$env/dynamic/public';
-  import { editAssistantInputSchema, supabaseAssistantInputSchema } from '$lib/schemas/assistants';
+  import { assistantInputSchema, editAssistantInputSchema } from '$lib/schemas/assistants';
   import type { NavigationTarget } from '@sveltejs/kit';
+  import { onMount } from 'svelte';
+  import AssistantFileSelect from '$components/AssistantFileSelect.svelte';
 
   export let data;
 
   let isEditMode = $page.url.pathname.includes('edit');
   let bypassCancelWarning = false;
 
-  const { form, errors, enhance, submitting, isTainted } = superForm(data.form, {
-    validators: yup(isEditMode ? editAssistantInputSchema : supabaseAssistantInputSchema),
+  const { form, errors, enhance, submitting, isTainted, delayed } = superForm(data.form, {
+    invalidateAll: false,
+    validators: yup(isEditMode ? editAssistantInputSchema : assistantInputSchema),
     onResult({ result }) {
       if (result.type === 'redirect') {
         toastStore.addToast({
@@ -55,16 +55,10 @@
 
   let cancelModalOpen = false;
   let files: File[] = [];
-  let selectedPictogramName = isEditMode ? data.assistant.metadata.pictogram : 'default';
-  let avatarPath = isEditMode ? data.assistant.metadata.avatar : '';
+  let selectedPictogramName = isEditMode ? $form.pictogram : 'default';
 
   let navigateTo: NavigationTarget;
   let leavePageConfirmed = false;
-
-  // Get image url for Avatar if the assistant has an avatar
-  $: avatarUrl = avatarPath
-    ? `${env.PUBLIC_SUPABASE_URL}/storage/v1/object/public/assistant_avatars/${avatarPath}`
-    : '';
 
   // Show cancel modal if form is tainted and user attempts to navigate away
   beforeNavigate(({ cancel, to, type }) => {
@@ -80,6 +74,18 @@
       }
     }
   });
+
+  onMount(() => {
+    if (isEditMode && Object.keys($errors).length > 0) {
+      toastStore.addToast({
+        kind: 'error',
+        title: 'Error importing assistant',
+        subtitle: ''
+      });
+      goto('/chat/assistants-management');
+    }
+    filesStore.setSelectedAssistantFileIds($form.data_sources || []);
+  });
 </script>
 
 <form method="POST" enctype="multipart/form-data" use:enhance class="assistant-form">
@@ -87,7 +93,7 @@
     <div class="inner-container">
       <div class="top-row">
         <div class="title">{`${isEditMode ? 'Edit' : 'New'} Assistant`}</div>
-        <AssistantAvatar bind:files bind:selectedPictogramName {avatarUrl} />
+        <AssistantAvatar bind:files bind:selectedPictogramName {form} />
       </div>
       <input type="hidden" name="id" value={$form.id} />
       <TextInput
@@ -163,13 +169,14 @@
         labelText="Data Sources"
         tooltipText="Specific files your assistant can search and reference"
       />
-      <div>
-        <Button icon={Add} kind="secondary" size="small"
-          >Add <input name="data_sources" type="hidden" /></Button
-        >
-      </div>
+      <AssistantFileSelect filesForm={data.filesForm} />
+      <input
+        type="hidden"
+        name="vectorStoreId"
+        value={data?.assistant?.tool_resources?.file_search?.vector_store_ids[0] || undefined}
+      />
 
-      <div>
+      <div class="btns-container">
         <Button
           kind="secondary"
           size="small"
@@ -178,7 +185,16 @@
             goto('/chat/assistants-management');
           }}>Cancel</Button
         >
-        <Button kind="primary" size="small" type="submit" disabled={$submitting}>Save</Button>
+
+        <Button
+          kind="primary"
+          size="small"
+          type="submit"
+          disabled={$submitting || $filesStore.uploading}>Save</Button
+        >
+        {#if $delayed}
+          <span>Processing, please wait...</span>
+        {/if}
       </div>
     </div>
   </div>
@@ -187,6 +203,7 @@
 <div class="cancel-modal">
   <Modal
     bind:open={cancelModalOpen}
+    preventCloseOnClickOutside
     modalHeading="Unsaved Changes"
     primaryButtonText="Leave this page"
     secondaryButtonText="Stay on page"
@@ -230,6 +247,12 @@
         position: absolute;
         top: 25%;
       }
+    }
+
+    .btns-container {
+      display: flex;
+      align-items: center;
+      gap: 0.2rem;
     }
   }
 </style>
