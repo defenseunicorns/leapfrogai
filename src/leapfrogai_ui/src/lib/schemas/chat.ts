@@ -10,7 +10,7 @@ export const stringIdSchema = object({
   .strict();
 
 export const stringIdArraySchema = object({
-  ids: array().of(string().required())
+  ids: array().of(string().required()).required()
 })
   .noUnknown(true)
   .strict();

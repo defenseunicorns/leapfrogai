@@ -1,4 +1,4 @@
-import { expect, test } from '@playwright/test';
+import { expect, test } from './fixtures';
 
 // Note - testing that the sidenav is hidden when on small screens and not expanded by the menu button was deemed not possible with
 // playwright because Carbon doesn't actually hide it in a way that playwright can detect, https://playwright.dev/docs/actionability#visible
