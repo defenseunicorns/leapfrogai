@@ -14,6 +14,7 @@ const config = {
     adapter: adapter(),
     alias: {
       $components: 'src/lib/components',
+      $webComponents: 'src/lib/web-components',
       $stores: 'src/lib/stores',
       $helpers: 'src/lib/helpers',
       $assets: 'src/lib/assets',
