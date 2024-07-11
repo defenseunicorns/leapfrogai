@@ -28,7 +28,7 @@ export const sessionMock = vi.fn(() => {
       email,
       email_verified: true,
       full_name,
-      iss: 'https://keycloak.admin.uds.dev/realms/uds',
+      iss: process.env.SUPABASE_AUTH_EXTERNAL_KEYCLOAK_URL,
       name: full_name,
       phone_verified: false,
       provider_id: faker.string.uuid(),

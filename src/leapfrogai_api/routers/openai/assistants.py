@@ -2,20 +2,15 @@
 
 from fastapi import HTTPException, APIRouter, status
 from openai.types.beta import Assistant, AssistantDeleted
-from openai.types.beta.assistant import ToolResourcesCodeInterpreter
-
 from leapfrogai_api.backend.helpers import object_or_default
-from leapfrogai_api.backend.types import (
+from leapfrogai_api.backend.types import ListAssistantsResponse
+from leapfrogai_api.routers.openai.requests.create_modify_assistant_request import (
     CreateAssistantRequest,
-    ListAssistantsResponse,
     ModifyAssistantRequest,
 )
 from leapfrogai_api.data.crud_assistant import CRUDAssistant, FilterAssistant
 from leapfrogai_api.routers.supabase_session import Session
-from leapfrogai_api.utils.validate_tools import (
-    validate_assistant_tool,
-    validate_tool_resources,
-)
+
 
 router = APIRouter(prefix="/openai/v1/assistants", tags=["openai/assistants"])
 
@@ -29,19 +24,8 @@ async def create_assistant(
 ) -> Assistant:
     """Create an assistant."""
 
-    if request.tools:
-        for tool in request.tools:
-            if not validate_assistant_tool(tool):
-                raise HTTPException(
-                    status_code=status.HTTP_400_BAD_REQUEST,
-                    detail=f"Unsupported tool type: {tool.type}",
-                )
-
-    if request.tool_resources and not validate_tool_resources(request.tool_resources):
-        raise HTTPException(
-            status_code=status.HTTP_400_BAD_REQUEST,
-            detail=f"Unsupported tool resource: {request.tool_resources}",
-        )
+    # perform checks for unsupported tools and new vector stores
+    await request.request_checks_and_modifications(session)
 
     try:
         assistant = Assistant(
@@ -134,28 +118,9 @@ async def modify_assistant(
         - response_format
     """
 
-    if request.tools and (
-        unsupported_tool := next(
-            (tool for tool in request.tools if tool.type not in supported_tools), None
-        )
-    ):
-        raise HTTPException(
-            status_code=status.HTTP_400_BAD_REQUEST,
-            detail=f"Unsupported tool type: {unsupported_tool.type}",
-        )
-
-    if request.tool_resources and any(
-        isinstance(tool_resource, ToolResourcesCodeInterpreter)
-        and tool_resource.get("file_ids")
-        for tool_resource in request.tool_resources
-    ):
-        raise HTTPException(
-            status_code=status.HTTP_400_BAD_REQUEST,
-            detail="Code interpreter tool is not supported",
-        )
-
     crud_assistant = CRUDAssistant(session)
 
+    # check assistant id is valid
     if not (
         old_assistant := await crud_assistant.get(
             filters=FilterAssistant(id=assistant_id)
@@ -164,6 +129,9 @@ async def modify_assistant(
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST, detail="Assistant not found"
         )
+
+    # perform checks for unsupported tools and new vector stores
+    await request.request_checks_and_modifications(session)
 
     try:
         new_assistant = Assistant(

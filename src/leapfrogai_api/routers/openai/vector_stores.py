@@ -1,21 +1,18 @@
 """OpenAI Compliant Vector Store API Router."""
 
 import logging
-import time
 import traceback
+
 from fastapi import APIRouter, HTTPException, status
 from openai.pagination import SyncCursorPage
 from openai.types.beta import VectorStore, VectorStoreDeleted
-from openai.types.beta.vector_store import FileCounts
 from openai.types.beta.vector_stores import VectorStoreFile, VectorStoreFileDeleted
-from leapfrogai_api.backend.rag.index import FileAlreadyIndexedError, IndexingService
+from leapfrogai_api.backend.rag.index import IndexingService
 from leapfrogai_api.backend.types import (
     CreateVectorStoreFileRequest,
     CreateVectorStoreRequest,
     ListVectorStoresResponse,
     ModifyVectorStoreRequest,
-    VectorStoreFileStatus,
-    VectorStoreStatus,
 )
 from leapfrogai_api.data.crud_vector_store import CRUDVectorStore, FilterVectorStore
 from leapfrogai_api.data.crud_vector_store_file import (
@@ -25,66 +22,6 @@ from leapfrogai_api.data.crud_vector_store_file import (
 from leapfrogai_api.routers.supabase_session import Session
 
 router = APIRouter(prefix="/openai/v1/vector_stores", tags=["openai/vector_stores"])
-
-
-@router.post("")
-async def create_vector_store(
-    request: CreateVectorStoreRequest,
-    session: Session,
-) -> VectorStore:
-    """Create a vector store."""
-    crud_vector_store = CRUDVectorStore(db=session)
-
-    last_active_at = int(time.time())
-
-    expires_after, expires_at = request.get_expiry(last_active_at)
-
-    vector_store = VectorStore(
-        id="",  # Leave blank to have Postgres generate a UUID
-        usage_bytes=0,  # Automatically calculated by DB
-        created_at=0,  # Leave blank to have Postgres generate a timestamp
-        file_counts=FileCounts(
-            cancelled=0, completed=0, failed=0, in_progress=0, total=0
-        ),
-        last_active_at=last_active_at,  # Set to current time
-        metadata=request.metadata,
-        name=request.name,
-        object="vector_store",
-        status=VectorStoreStatus.IN_PROGRESS.value,
-        expires_after=expires_after,
-        expires_at=expires_at,
-    )
-    try:
-        new_vector_store = await crud_vector_store.create(object_=vector_store)
-        if request.file_ids != []:
-            indexing_service = IndexingService(db=session)
-            for file_id in request.file_ids:
-                response = await indexing_service.index_file(
-                    vector_store_id=new_vector_store.id, file_id=file_id
-                )
-
-                if response.status == VectorStoreFileStatus.COMPLETED.value:
-                    new_vector_store.file_counts.completed += 1
-                elif response.status == VectorStoreFileStatus.FAILED.value:
-                    new_vector_store.file_counts.failed += 1
-                elif response.status == VectorStoreFileStatus.IN_PROGRESS.value:
-                    new_vector_store.file_counts.in_progress += 1
-                elif response.status == VectorStoreFileStatus.CANCELLED.value:
-                    new_vector_store.file_counts.cancelled += 1
-                new_vector_store.file_counts.total += 1
-
-        new_vector_store.status = VectorStoreStatus.COMPLETED.value
-
-        return await crud_vector_store.update(
-            id_=new_vector_store.id,
-            object_=new_vector_store,
-        )
-    except Exception as exc:
-        traceback.print_exc()
-        raise HTTPException(
-            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            detail="Unable to create vector store",
-        ) from exc
 
 
 @router.get("")
@@ -102,15 +39,23 @@ async def list_vector_stores(
     )
 
 
-@router.get("/{vector_store_id}")
-async def retrieve_vector_store(
-    vector_store_id: str,
+@router.post("")
+async def create_vector_store(
+    request: CreateVectorStoreRequest,
     session: Session,
-) -> VectorStore | None:
-    """Retrieve a vector store."""
+) -> VectorStore:
+    """Create a vector store."""
 
-    crud_vector_store = CRUDVectorStore(db=session)
-    return await crud_vector_store.get(filters=FilterVectorStore(id=vector_store_id))
+    indexing_service = IndexingService(db=session)
+    try:
+        new_vector_store = await indexing_service.create_new_vector_store(request)
+    except Exception as exc:
+        traceback.print_exc()
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail="Unable to create vector store",
+        ) from exc
+    return new_vector_store
 
 
 @router.post("/{vector_store_id}")
@@ -120,89 +65,32 @@ async def modify_vector_store(
     session: Session,
 ) -> VectorStore:
     """Modify a vector store."""
-    crud_vector_store = CRUDVectorStore(db=session)
 
-    if not (
-        old_vector_store := await crud_vector_store.get(
-            filters=FilterVectorStore(id=vector_store_id)
-        )
-    ):
-        raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND,
-            detail="Vector store not found",
-        )
-
+    indexing_service = IndexingService(db=session)
     try:
-        new_vector_store = VectorStore(
-            id=vector_store_id,
-            usage_bytes=old_vector_store.usage_bytes,  # Automatically calculated by DB
-            created_at=old_vector_store.created_at,
-            file_counts=old_vector_store.file_counts,
-            last_active_at=old_vector_store.last_active_at,  # Update after indexing files
-            metadata=getattr(request, "metadata", old_vector_store.metadata),
-            name=getattr(request, "name", old_vector_store.name),
-            object="vector_store",
-            status=VectorStoreStatus.IN_PROGRESS.value,
-            expires_after=old_vector_store.expires_after,
-            expires_at=old_vector_store.expires_at,
+        modified_vector_store = await indexing_service.modify_existing_vector_store(
+            vector_store_id=vector_store_id, request=request
         )
-
-        await crud_vector_store.update(
-            id_=vector_store_id,
-            object_=new_vector_store,
-        )  # Sets status to in_progress for the duration of this function
+    except HTTPException as exc:
+        raise exc
     except Exception as exc:
-        raise HTTPException(
-            status_code=status.HTTP_400_BAD_REQUEST,
-            detail="Unable to parse vector store request",
-        ) from exc
-
-    try:
-        if request.file_ids:
-            indexing_service = IndexingService(db=session)
-
-            for file_id in request.file_ids:
-                try:
-                    response = await indexing_service.index_file(
-                        vector_store_id=vector_store_id, file_id=file_id
-                    )
-                except FileAlreadyIndexedError:
-                    logging.info(
-                        "File %s already exists and cannot be re-indexed", file_id
-                    )
-                    continue
-                except Exception as exc:
-                    raise exc
-
-                if response.status == VectorStoreFileStatus.COMPLETED.value:
-                    new_vector_store.file_counts.completed += 1
-                elif response.status == VectorStoreFileStatus.FAILED.value:
-                    new_vector_store.file_counts.failed += 1
-                elif response.status == VectorStoreFileStatus.IN_PROGRESS.value:
-                    new_vector_store.file_counts.in_progress += 1
-                elif response.status == VectorStoreFileStatus.CANCELLED.value:
-                    new_vector_store.file_counts.cancelled += 1
-                new_vector_store.file_counts.total += 1
-
-        new_vector_store.status = VectorStoreStatus.COMPLETED.value
-
-        last_active_at = int(time.time())
-        new_vector_store.last_active_at = last_active_at  # Update after indexing files
-        expires_after, expires_at = request.get_expiry(last_active_at)
-
-        if expires_at and expires_at:
-            new_vector_store.expires_after = expires_after
-            new_vector_store.expires_at = expires_at
-
-        return await crud_vector_store.update(
-            id_=vector_store_id,
-            object_=new_vector_store,
-        )
-    except Exception as exc:
+        traceback.print_exc()
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            detail="Unable to update vector store",
+            detail="Unable to modify vector store",
         ) from exc
+    return modified_vector_store
+
+
+@router.get("/{vector_store_id}")
+async def retrieve_vector_store(
+    vector_store_id: str,
+    session: Session,
+) -> VectorStore | None:
+    """Retrieve a vector store."""
+
+    crud_vector_store = CRUDVectorStore(db=session)
+    return await crud_vector_store.get(filters=FilterVectorStore(id=vector_store_id))
 
 
 @router.delete("/{vector_store_id}")

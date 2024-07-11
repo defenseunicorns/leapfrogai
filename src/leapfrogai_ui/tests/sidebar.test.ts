@@ -1,13 +1,11 @@
-import { faker } from '@faker-js/faker';
-import { expect, test } from '@playwright/test';
+import { expect, test } from './fixtures';
+import { getSimpleMathQuestion, loadChatPage } from './helpers/helpers';
 import {
   clickToDeleteThread,
   deleteActiveThread,
-  getSimpleMathQuestion,
-  loadChatPage,
   sendMessage,
   waitForResponseToComplete
-} from './helpers';
+} from './helpers/threadHelpers';
 
 const newMessage1 = getSimpleMathQuestion();
 const newMessage2 = getSimpleMathQuestion();
@@ -23,8 +21,8 @@ test('it can delete threads', async ({ page }) => {
   await expect(threadLocator).toHaveCount(0);
 });
 
-test('can edit thread labels', async ({ page }) => {
-  const newLabel = faker.lorem.words(3);
+test('can edit thread labels', async ({ page, openAIClient }) => {
+  const newLabel = getSimpleMathQuestion();
 
   await loadChatPage(page);
 
@@ -47,10 +45,10 @@ test('can edit thread labels', async ({ page }) => {
 
   expect(page.getByTestId(`thread-label-${threadId}`).getByText(newLabel));
 
-  await deleteActiveThread(page);
+  await deleteActiveThread(page, openAIClient);
 });
 
-test('Can switch threads', async ({ page }) => {
+test('Can switch threads', async ({ page, openAIClient }) => {
   await loadChatPage(page);
   await sendMessage(page, newMessage1);
   await waitForResponseToComplete(page);
@@ -62,6 +60,7 @@ test('Can switch threads', async ({ page }) => {
   await expect(messages).toHaveCount(4);
 
   await page.getByText('New Chat').click();
+  await expect(messages).toHaveCount(0);
   await sendMessage(page, newMessage3);
   await waitForResponseToComplete(page);
   await expect(messages).toHaveCount(2);
@@ -71,8 +70,8 @@ test('Can switch threads', async ({ page }) => {
   await expect(messages).toHaveCount(4);
 
   // cleanup
-  await deleteActiveThread(page); // delete thread 1
+  await deleteActiveThread(page, openAIClient); // delete thread 1
   await page.getByText(newMessage3).click(); //switch to thread 2
   await expect(messages).toHaveCount(2); // confirm thread 2
-  await deleteActiveThread(page); // delete thread 2
+  await deleteActiveThread(page, openAIClient); // delete thread 2
 });

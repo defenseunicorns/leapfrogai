@@ -95,8 +95,15 @@ const createThreadsStore = () => {
         return { ...old, selectedAssistantId };
       });
     },
-    setSendingBlocked: (status: boolean) => {
-      update((old) => ({ ...old, sendingBlocked: status }));
+    // Important - this method has a built in delay to ensure next user message has a different timestamp when setting to false (unblocking)
+    setSendingBlocked: async (status: boolean) => {
+      if (!status && process.env.NODE_ENV !== 'test') {
+        new Promise((resolve) => setTimeout(resolve, 1000)).then(() => {
+          update((old) => ({ ...old, sendingBlocked: status }));
+        });
+      } else {
+        update((old) => ({ ...old, sendingBlocked: status }));
+      }
     },
     changeThread: async (newId: string | null) => {
       await goto(`/chat/${newId}`);
