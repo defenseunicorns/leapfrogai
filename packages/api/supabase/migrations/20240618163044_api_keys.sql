@@ -4,9 +4,9 @@ create table api_keys (
     id uuid primary key default uuid_generate_v4(),
     user_id uuid references auth.users not null,
     api_key_hash text not null unique,
-    api_key_digest text not null,
     created_at bigint default extract(epoch from now()) not null,
-    expires_at bigint default null
+    expires_at bigint default null,
+    checksum text not null
 );
 
 alter table api_keys enable row level security;
@@ -16,24 +16,29 @@ create or replace function insert_api_key(
     p_name text,
     p_user_id uuid,
     p_api_key text,
+    p_checksum text,
     p_expires_at bigint default null
 ) returns table (
     id uuid,
-    api_key_hash text,
-    created_at bigint
-) security definer as $$
+    created_at bigint,
+    expires_at bigint,
+    checksum text
+) language plpgsql as $$
 declare
     v_id uuid;
-    v_api_key_hash text;
     v_created_at bigint;
+    v_expires_at bigint;
+    v_checksum text;
 begin
-    v_api_key_hash := crypt(p_api_key, gen_salt('bf'));
-    insert into api_keys (name, user_id, api_key_hash, expires_at)
-    values (p_name, p_user_id, v_api_key_hash, v_api_key_digest, p_expires_at)
-    returning api_keys.id, api_keys.api_key_hash, api_keys.created_at 
-    into v_id, v_api_key_hash, v_created_at;
+    insert into api_keys (name, user_id, api_key_hash, expires_at, checksum)
+    -- Storing the one-way hash of the api key
+    values (p_name, p_user_id, crypt(p_api_key, gen_salt('bf')), p_expires_at, p_checksum)
+    returning api_keys.id, api_keys.created_at, api_keys.expires_at, api_keys.checksum
+    into v_id, v_created_at, v_expires_at, v_checksum;
+
+    return query select v_id, v_created_at, v_expires_at, v_checksum;
 end;
-$$ language plpgsql;
+$$;
 
 create policy "Read only if API key matches and is current" ON api_keys for
     select using (

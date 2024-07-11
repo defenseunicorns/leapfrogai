@@ -10,7 +10,7 @@ from httpx import HTTPStatusError
 from supabase import AClient as AsyncClient
 from supabase import acreate_client
 import gotrue
-from leapfrogai_api.backend.security.api_key import validate_and_encode_api_key
+from leapfrogai_api.backend.security.api_key import validate_api_key, parse_api_key
 
 security = HTTPBearer()
 
@@ -55,9 +55,10 @@ async def init_supabase_client(
     )
 
     # Try API Key Auth first
-    valid_api_key, api_key = validate_and_encode_api_key(auth_creds.credentials)
 
-    if valid_api_key and api_key:
+    if validate_api_key(auth_creds.credentials):
+        api_key = parse_api_key(auth_creds.credentials).unique_key
+
         client.options.auto_refresh_token = False
         client.options.headers.update({"x-custom-api-key": api_key})
 

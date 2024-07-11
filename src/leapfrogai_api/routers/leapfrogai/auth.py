@@ -112,47 +112,44 @@ async def list_api_keys(
     """List all API keys."""
     user_id: str = (await session.auth.get_user()).user.id
 
-    data, _ = (
+    result = (
         await session.table("api_keys").select("*").eq("user_id", user_id).execute()
     )
-    _, db_response = data
 
-    endpoint_response = []
+    response = result.data
 
-    for entry in db_response:
-        prefix, _, checksum = security.parse_api_key(entry["api_key"])
-        endpoint_response.append(
-            APIKeyItem(
-                name=entry["name"],
-                id=entry["id"],
-                api_key=f"{prefix}_****_{checksum}",
-                created_at=entry["created_at"],
-                expires_at=entry["expires_at"],
-            )
+    return [
+        APIKeyItem(
+            name=item["name"],
+            id=item["id"],
+            api_key=f"{security.KEY_PREFIX}_****_{item['checksum']}",
+            created_at=item["created_at"],
+            expires_at=item["expires_at"],
         )
-
-    return endpoint_response
+        for item in response
+    ]
 
 
 async def _generate_and_store_api_key(
     session: Session, user_id: str, expires_at: int, name: str | None = None
 ) -> APIKeyItem:
     """Generate and store an API key."""
-    read_once_token, hashed_token = security.generate_api_key()
+    read_once_token = security.generate_new_api_key()
 
-    data, _ = (
-        await session.table("api_keys")
-        .insert(
-            {
-                "name": name,
-                "user_id": user_id,
-                "api_key": hashed_token,
-                "expires_at": expires_at,
-            }
-        )
-        .execute()
-    )
-    _, response = data
+    # We only care about the unique key for the database
+    api_key = security.parse_api_key(read_once_token)
+
+    params = {
+        "p_api_key": api_key.unique_key,
+        "p_user_id": user_id,
+        "p_expires_at": expires_at,
+        "p_name": name,
+        "p_checksum": api_key.checksum,
+    }
+
+    result = await session.rpc("insert_api_key", params=params).execute()
+
+    response = result.data
 
     if response:
         return APIKeyItem(
