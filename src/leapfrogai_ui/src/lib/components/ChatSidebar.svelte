@@ -223,6 +223,7 @@
 
     <Modal
       danger
+      preventCloseOnClickOutside
       bind:open={deleteModalOpen}
       modalHeading="Delete Chat"
       primaryButtonText="Delete"

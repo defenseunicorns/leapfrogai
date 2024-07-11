@@ -7,8 +7,10 @@ from fastapi.testclient import TestClient
 from openai.types.beta import Assistant, Thread, AssistantDeleted, ThreadDeleted
 from openai.types.beta.thread import ToolResources, ToolResourcesFileSearch
 from openai.types.beta.threads import Message, Text, TextContentBlock, Run
-from leapfrogai_api.backend.types import CreateAssistantRequest
 from leapfrogai_api.main import app
+from leapfrogai_api.routers.openai.requests.create_modify_assistant_request import (
+    CreateAssistantRequest,
+)
 from leapfrogai_api.routers.openai.requests.create_message_request import (
     CreateMessageRequest,
 )
@@ -16,10 +18,10 @@ from leapfrogai_api.routers.openai.requests.create_thread_request import (
     CreateThreadRequest,
 )
 from leapfrogai_api.routers.openai.requests.run_create_params_request import (
-    RunCreateParamsRequestBaseRequest,
+    RunCreateParamsRequest,
 )
 from leapfrogai_api.routers.openai.requests.thread_run_create_params_request import (
-    ThreadRunCreateParamsRequestBaseRequest,
+    ThreadRunCreateParamsRequest,
 )
 
 CHAT_MODEL = "test-chat"
@@ -125,7 +127,7 @@ def create_run(app_client, create_assistant, create_thread):
     assistant_id = create_assistant.json()["id"]
     thread_id = create_thread.json()["id"]
 
-    request = RunCreateParamsRequestBaseRequest(
+    request = RunCreateParamsRequest(
         assistant_id=assistant_id,
         instructions="You are a conversational assistant.",
         additional_instructions="Respond as a Unicorn assistant named Doug.",
@@ -165,7 +167,7 @@ def test_create_thread_and_run(app_client, create_assistant):
     """Test running an assistant. Requires a running Supabase instance."""
     assistant_id = create_assistant.json()["id"]
 
-    request = ThreadRunCreateParamsRequestBaseRequest(
+    request = ThreadRunCreateParamsRequest(
         assistant_id=assistant_id,
         instructions="You are a conversational assistant.",
         additional_instructions="Respond as a Unicorn assistant named Doug.",

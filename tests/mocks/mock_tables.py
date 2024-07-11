@@ -20,7 +20,7 @@ mock_assistant = Assistant(
     instructions="mock-data",
 )
 
-mock_thread = Thread(id="", created_at=0, object="thread")
+mock_thread = Thread(id="1", created_at=0, object="thread")
 
 mock_run = Run(
     id="0",

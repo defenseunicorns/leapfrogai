@@ -17,7 +17,7 @@
   import { filesStore, toastStore } from '$stores';
   import { afterNavigate, invalidate } from '$app/navigation';
   import type { Assistant } from 'openai/resources/beta/assistants';
-  import ConfirmAssistantDeleteModal from '$components/ConfirmAssistantDeleteModal.svelte';
+  import ConfirmAssistantDeleteModal from '$components/modals/ConfirmAssistantDeleteModal.svelte';
 
   export let data;
 
@@ -101,7 +101,7 @@
   const handleUpload = async () => {
     filesStore.setUploading(true);
     filesStore.addUploadingFiles(uploadedFiles);
-    nonSelectableRowIds = $filesStore.files.map((row) =>
+    nonSelectableRowIds = $filesStore.pendingUploads.map((row) =>
       row.status === 'uploading' ? row.id : ''
     );
     submit(); //upload all files

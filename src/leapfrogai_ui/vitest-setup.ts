@@ -7,6 +7,9 @@ import * as navigation from '$app/navigation';
 import * as stores from '$app/stores';
 import { fakeAssistants, fakeThreads } from '$testUtils/fakeData';
 import OpenAIMock from '$lib/mocks/openai';
+import dotenv from 'dotenv';
+
+dotenv.config();
 
 //Calls to vi.mock are hoisted to the top of the file, so you don't have access to variables declared in the global file scope unless they are defined with vi.hoisted before the call.
 const { getStores } = await vi.hoisted(() => import('$lib/mocks/svelte'));
