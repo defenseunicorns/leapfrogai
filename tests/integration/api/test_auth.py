@@ -67,6 +67,22 @@ def test_list_api_keys(create_api_key):
     ), "List should return the created API key."
 
 
+def test_update_api_key(create_api_key):
+    """Test updating an API key. Requires a running Supabase instance."""
+
+    id_ = create_api_key.json()["id"]
+
+    request = {
+        "name": "API Keys Are Still Cool!",
+        "expires_at": int(time.time()) + 100,
+    }
+
+    response = client.post(f"/leapfrogai/v1/auth/update-api-key/{id_}", json=request)
+    assert response.status_code is status.HTTP_200_OK
+    assert APIKeyItem.model_validate(response.json()), "API key should be valid."
+    assert response.json()["id"] == id_, "Update should return the created API key."
+
+
 def test_revoke_api_key(create_api_key):
     """Test revoking an API key. Requires a running Supabase instance."""
 

@@ -48,12 +48,8 @@ create policy "Read only if API key matches and is current" ON api_keys for
         and (expires_at is null or expires_at > extract(epoch from now()))
     );
 
-create policy "Individuals can view their own api_keys." on api_keys for
-    select using (auth.uid() = user_id);
-create policy "Individuals can create api_keys." on api_keys for
-    insert with check (auth.uid() = user_id);
-create policy "Individuals can delete their own api_keys." on api_keys for
-    delete using (auth.uid() = user_id);
+create policy "Individuals can crud their own api_keys." on api_keys for
+    all using (auth.uid() = user_id);
 
 -- API Key Policies
 

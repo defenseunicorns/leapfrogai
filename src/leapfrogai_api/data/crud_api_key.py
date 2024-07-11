@@ -41,6 +41,12 @@ class CRUDAPIKey(CRUDBase[APIKeyItem]):
     def __init__(self, db: AsyncClient):
         super().__init__(db=db, model=APIKeyItem, table_name="api_keys")
 
+        if db.options.headers.get("x-custom-api-key"):
+            raise HTTPException(
+                status_code=status.HTTP_401_UNAUTHORIZED,
+                detail="API Keys are not authorized to perform this action.",
+            )
+
     async def create(self, object_: APIKeyItem) -> APIKeyItem:
         """Create new API key."""
 
@@ -77,6 +83,30 @@ class CRUDAPIKey(CRUDBase[APIKeyItem]):
             detail="Failed to create API key.",
         )
 
+    async def get(self, filters: dict | None = None) -> APIKeyItem:
+        """Get API key by filters."""
+
+        query = self.db.table(self.table_name).select("*")
+
+        if filters:
+            for key, value in filters.items():
+                query = query.eq(key, value)
+
+        result = await query.execute()
+
+        response = result.data
+
+        try:
+            return APIKeyItem(
+                name=response[0]["name"],
+                id=response[0]["id"],
+                api_key=f"{security.KEY_PREFIX}_****_{response[0]['checksum']}",
+                created_at=response[0]["created_at"],
+                expires_at=response[0]["expires_at"],
+            )
+        except Exception as exc:
+            raise exc
+
     async def list(self, filters: dict | None = None) -> list[APIKeyItem]:
         """List API keys."""
 
@@ -103,3 +133,37 @@ class CRUDAPIKey(CRUDBase[APIKeyItem]):
             ]
         except Exception as exc:
             raise exc
+
+    async def update(self, id_: str, object_: APIKeyItem) -> APIKeyItem:
+        """Update API key."""
+
+        user_id = await self._get_user_id()
+
+        dict_: dict[str, str | int] = {
+            "user_id": user_id,
+        }
+
+        if object_.name:
+            dict_["name"] = object_.name
+        if object_.expires_at:
+            dict_["expires_at"] = object_.expires_at
+
+        result = (
+            await self.db.table(self.table_name).update(dict_).eq("id", id_).execute()
+        )
+
+        response = result.data
+
+        if response:
+            return APIKeyItem(
+                name=response[0]["name"],
+                id=response[0]["id"],
+                api_key=f"{security.KEY_PREFIX}_****_{response[0]['checksum']}",
+                created_at=response[0]["created_at"],
+                expires_at=response[0]["expires_at"],
+            )
+
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="API key not found.",
+        )
