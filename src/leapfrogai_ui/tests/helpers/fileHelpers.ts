@@ -5,7 +5,7 @@ import { PDFDocument } from 'pdf-lib';
 import { expect } from '../fixtures';
 import { Packer, Paragraph, Document } from 'docx';
 import type { FileObject } from 'openai/resources/files';
-
+import { getTableRow } from './helpers';
 
 export const uploadFileWithApi = async (filename = 'test.pdf', openAIClient: OpenAI) => {
   const filePath = `./tests/fixtures/${filename}`;
@@ -41,18 +41,32 @@ export const createPDF = async (filename = `${new Date().toISOString()}-test.pdf
 
   const pdfBytes = await pdfDoc.save();
   fs.writeFileSync(`./tests/fixtures/${filename}`, pdfBytes);
+  return filename;
 };
 
-// TODO - add this file type to the cleanup call
-// TODO - write test using this
-// TODO - create doc and docx?
-export const createWordFile = async (filename = `${new Date().toISOString()}-test.docx`) => {
+export const createTextFile = (
+  filename = `${new Date().toISOString()}-test.txt`,
+  content = 'hop'
+) => {
+  fs.writeFileSync(`./tests/fixtures/${filename}`, content);
+  return filename;
+};
+
+type CreateWordFileOptions = {
+  filename?: string;
+  extension?: string;
+};
+
+export const createWordFile = (options: CreateWordFileOptions = {}) => {
+  const { filename = `${new Date().toISOString()}-test`, extension = '.docx' } = options;
+  const filenameWithExtension = `${filename}${extension}`;
   const doc = new Document({
     sections: [{ children: [new Paragraph({ text: 'LeapfrogAI' })] }]
   });
   Packer.toBuffer(doc).then((buffer) => {
-    fs.writeFileSync(`./tests/fixtures/${filename}`, buffer);
+    fs.writeFileSync(`./tests/fixtures/${filenameWithExtension}`, buffer);
   });
+  return filenameWithExtension;
 };
 
 export const deleteFixtureFile = (filename: string) => {
@@ -85,9 +99,7 @@ export const uploadFile = async (page: Page, filename = 'test.pdf', btnName = 'u
   const fileChooser = await fileChooserPromise;
   await fileChooser.setFiles(`./tests/fixtures/${filename}`);
 };
-export const createTextFile = (filename: string, content = 'hop') => {
-  fs.writeFileSync(`./tests/fixtures/${filename}`, content);
-};
+
 export const deleteTestFilesWithApi = async (openAIClient: OpenAI) => {
   const list = await openAIClient.files.list();
   const idsToDelete: string[] = [];
@@ -142,4 +154,37 @@ export const deleteAllTestFilesWithApi = async (openAIClient: OpenAI) => {
   } catch (e) {
     console.error(`Error deleting test files`, e);
   }
+};
+
+export const testFileUpload = async (filename: string, page: Page, openAIClient: OpenAI) => {
+  await loadFileManagementPage(page);
+  await uploadFile(page, filename);
+
+  const row = await getTableRow(page, filename);
+  expect(row).not.toBeNull();
+
+  const uploadingFileIcon = row!.getByTestId('uploading-file-icon');
+  const fileUploadedIcon = row!.getByTestId('file-uploaded-icon');
+
+  // test loading icon shows then disappears
+  await expect(uploadingFileIcon).toBeVisible();
+  // Ensure an additional checkbox is not added during upload (it should not have one on that row. row is in nonSelectableRowIds)
+  const rowCheckboxesBefore = await row!.getByRole('checkbox').all();
+  expect(rowCheckboxesBefore.length).toEqual(0);
+  await expect(fileUploadedIcon).toBeVisible();
+  await expect(uploadingFileIcon).not.toBeVisible();
+
+  // Checkbox should now be present
+  const rowCheckboxesAfter = await row!.getByRole('checkbox').all();
+  expect(rowCheckboxesAfter.length).toEqual(1);
+
+  // test toast
+  await expect(page.getByText(`${filename} imported successfully`)).toBeVisible();
+
+  // test complete icon disappears
+  await expect(fileUploadedIcon).not.toBeVisible();
+
+  // cleanup
+  // deleteFixtureFile(filename);
+  // await deleteFileByName(filename, openAIClient);
 };
