@@ -4,6 +4,8 @@
   import { Settings, UserAvatar } from 'carbon-icons-svelte';
   import { Header, HeaderAction, HeaderUtilities } from 'carbon-components-svelte';
 
+  export let isUsingOpenAI: boolean;
+
   let loading = false;
   let signOutForm: HTMLFormElement;
 
@@ -66,6 +68,11 @@
           class="header-link"
           on:click={() => setActiveHeaderAction('')}>File Management</a
         >
+        {#if !isUsingOpenAI}
+          <a href="/chat/api-keys" class="header-link" on:click={() => setActiveHeaderAction('')}
+            >API Keys</a
+          >
+        {/if}
       </div>
     </HeaderAction>
     <HeaderAction

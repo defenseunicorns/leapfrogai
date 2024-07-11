@@ -29,3 +29,22 @@ export const loadChatPage = async (page: Page) => {
   await page.waitForURL('/chat');
   await expect(page).toHaveTitle('LeapfrogAI - Chat');
 };
+
+export const loadApiKeyPage = async (page: Page) => {
+  await page.goto('/chat/api-keys');
+  await page.waitForURL('/chat/api-keys');
+  await expect(page).toHaveTitle('LeapfrogAI - API Keys');
+};
+export const getTableRow = async (page: Page, textToSearchWith: string) => {
+  const rows = page.locator('table tr');
+  let targetRow;
+  for (let i = 0; i < (await rows.count()); i++) {
+    const row = rows.nth(i);
+    const rowText = await row.textContent();
+    if (rowText?.includes(textToSearchWith)) {
+      targetRow = row;
+      break;
+    }
+  }
+  return targetRow;
+};

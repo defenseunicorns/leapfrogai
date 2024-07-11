@@ -1,6 +1,6 @@
 import { expect, test } from './fixtures';
 import { faker } from '@faker-js/faker';
-import { getSimpleMathQuestion, loadChatPage } from './helpers/helpers';
+import { getTableRow, getSimpleMathQuestion, loadChatPage } from './helpers/helpers';
 import {
   confirmDeletion,
   createPDF,
@@ -8,7 +8,6 @@ import {
   deleteFileByName,
   deleteFixtureFile,
   deleteTestFilesWithApi,
-  getFileTableRow,
   initiateDeletion,
   loadFileManagementPage,
   uploadFile
@@ -50,7 +49,7 @@ test('it can upload a pdf file', async ({ page, openAIClient }) => {
   await loadFileManagementPage(page);
   await uploadFile(page, filename);
 
-  const row = await getFileTableRow(page, filename);
+  const row = await getTableRow(page, filename);
   expect(row).not.toBeNull();
 
   const uploadingFileIcon = row!.getByTestId('uploading-file-icon');
@@ -85,7 +84,7 @@ test('it can upload a txt file', async ({ page, openAIClient }) => {
   await loadFileManagementPage(page);
   await uploadFile(page, filename);
 
-  const row = await getFileTableRow(page, filename);
+  const row = await getTableRow(page, filename);
   expect(row).not.toBeNull();
 
   const uploadingFileIcon = row!.getByTestId('uploading-file-icon');
@@ -132,8 +131,8 @@ test('confirms any affected assistants then deletes multiple files', async ({
   await expect(page.getByText(`${filename2} imported successfully`)).toBeVisible();
   await expect(page.getByText(`${filename2} imported successfully`)).not.toBeVisible();
 
-  const row1 = await getFileTableRow(page, filename1);
-  const row2 = await getFileTableRow(page, filename2);
+  const row1 = await getTableRow(page, filename1);
+  const row2 = await getTableRow(page, filename2);
   expect(row1).not.toBeNull();
   expect(row2).not.toBeNull();
 
@@ -161,7 +160,7 @@ test('it cancels the delete confirmation modal', async ({ page, openAIClient }) 
   await expect(page.getByText(`${filename} imported successfully`)).toBeVisible();
   await expect(page.getByText(`${filename} imported successfully`)).not.toBeVisible(); // wait for upload to finish
 
-  const row = await getFileTableRow(page, filename);
+  const row = await getTableRow(page, filename);
   expect(row).not.toBeNull();
   await row!.getByRole('checkbox').check({ force: true });
 
@@ -201,7 +200,7 @@ test('shows an error toast when there is an error deleting a file', async ({
   await expect(page.getByText(`${filename} imported successfully`)).toBeVisible();
   await expect(page.getByText(`${filename} imported successfully`)).not.toBeVisible(); // wait for upload to finish
 
-  const row = await getFileTableRow(page, filename);
+  const row = await getTableRow(page, filename);
   expect(row).not.toBeNull();
   await row!.getByRole('checkbox').check({ force: true });
 

@@ -15,6 +15,7 @@ from leapfrogai_api.backend.types import (
     CreateTranscriptionResponse,
     EmbeddingResponseData,
     Usage,
+    CreateTranslationResponse,
 )
 from leapfrogai_sdk.chat.chat_pb2 import (
     ChatCompletionResponse as ProtobufChatCompletionResponse,
@@ -139,3 +140,12 @@ async def create_transcription(model: Model, request: Iterator[lfai.AudioRequest
         response: lfai.AudioResponse = await stub.Transcribe(request)
 
         return CreateTranscriptionResponse(text=response.text)
+
+
+async def create_translation(model: Model, request: Iterator[lfai.AudioRequest]):
+    """Translate audio using the specified model."""
+    async with grpc.aio.insecure_channel(model.backend) as channel:
+        stub = lfai.AudioStub(channel)
+        response: lfai.AudioResponse = await stub.Translate(request)
+
+        return CreateTranslationResponse(text=response.text)

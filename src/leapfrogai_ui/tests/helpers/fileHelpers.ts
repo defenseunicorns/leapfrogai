@@ -3,6 +3,7 @@ import fs from 'node:fs';
 import type { Page } from '@playwright/test';
 import { PDFDocument } from 'pdf-lib';
 import { expect } from '../fixtures';
+import type { FileObject } from 'openai/resources/files';
 
 export const uploadFileWithApi = async (filename = 'test.pdf', openAIClient: OpenAI) => {
   const filePath = `./tests/fixtures/${filename}`;
@@ -51,7 +52,7 @@ export const deleteAllGeneratedFixtureFiles = () => {
     if (err) {
       return;
     } else {
-      const testPdfFiles = files.filter((file) => file.endsWith('-test.pdf'));
+      const testPdfFiles = files.filter((file) => file.includes('test'));
       const testTextFiles = files.filter((file) => file.endsWith('-test.pdf'));
       testPdfFiles.forEach((file) => {
         deleteFixtureFile(file);
@@ -68,19 +69,6 @@ export const uploadFile = async (page: Page, filename = 'test.pdf', btnName = 'u
   await page.getByRole('button', { name: btnName }).click();
   const fileChooser = await fileChooserPromise;
   await fileChooser.setFiles(`./tests/fixtures/${filename}`);
-};
-export const getFileTableRow = async (page: Page, filename: string) => {
-  const rows = page.locator('table tr');
-  let targetRow;
-  for (let i = 0; i < (await rows.count()); i++) {
-    const row = rows.nth(i);
-    const rowText = await row.textContent();
-    if (rowText?.includes(filename)) {
-      targetRow = row;
-      break;
-    }
-  }
-  return targetRow;
 };
 export const createTextFile = (filename: string, content = 'hop') => {
   fs.writeFileSync(`./tests/fixtures/${filename}`, content);
@@ -127,11 +115,16 @@ export const deleteFileByName = async (filename: string, openAIClient: OpenAI) =
 };
 
 export const deleteAllTestFilesWithApi = async (openAIClient: OpenAI) => {
-  const list = await openAIClient.files.list();
+  try {
+    const list = await openAIClient.files.list();
+    const files = list.data as FileObject[];
 
-  for await (const file of list) {
-    if (file.filename.endsWith('-test.pdf') || file.filename.endsWith('-test.txt')) {
-      openAIClient.files.del(file.id);
+    for (const file of files) {
+      if (file.filename.includes('test')) {
+        openAIClient.files.del(file.id);
+      }
     }
+  } catch (e) {
+    console.error(`Error deleting test files`, e);
   }
 };

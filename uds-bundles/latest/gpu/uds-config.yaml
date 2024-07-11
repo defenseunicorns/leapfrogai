@@ -1,10 +1,10 @@
 # see individual zarf packaging configuration for more variables and variable descriptions
 variables:
   text-embeddings:
-    gpu_limit: 1
+    gpu_limit: 0
 
   whisper:
-    gpu_limit: 1
+    gpu_limit: 0
 
   vllm:
     gpu_limit: 1

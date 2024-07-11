@@ -26,6 +26,7 @@
 
 <Modal
   danger
+  preventCloseOnClickOutside
   bind:open
   modalHeading="Delete File"
   shouldSubmitOnEnter={false}

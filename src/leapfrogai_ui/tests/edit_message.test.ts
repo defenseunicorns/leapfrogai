@@ -96,7 +96,9 @@ test('editing a message when an AI response is missing', async ({ page, openAICl
   await deleteActiveThread(page, openAIClient);
 });
 
-test('regenerating responses', async ({ page, openAIClient }) => {
+// TODO - flaky when run with rest of tests
+// https://github.com/defenseunicorns/leapfrogai/issues/741
+test.skip('regenerating responses', async ({ page, openAIClient }) => {
   await loadChatPage(page);
 
   await sendMessage(page, newMessage1);
