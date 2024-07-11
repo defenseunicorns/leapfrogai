@@ -1,7 +1,6 @@
 <script lang="ts">
-  import { Breadcrumb, BreadcrumbItem, Content } from 'carbon-components-svelte';
   import { page } from '$app/stores';
-  import { PoweredByDU } from '$components';
+  import { Breadcrumb, BreadcrumbItem, Content } from 'carbon-components-svelte';
   import { threadsStore } from '$stores';
 
   const paths = [
@@ -10,24 +9,12 @@
       name: 'Chat'
     },
     {
-      path: '/chat/assistants-management',
-      name: 'Assistants Management'
-    },
-    {
-      path: '/chat/assistants-management/new',
-      name: 'New Assistant'
-    },
-    {
-      path: '/chat/assistants-management/edit',
-      name: 'Edit Assistant'
+      path: '/chat/api-keys',
+      name: 'API Keys'
     }
   ];
 
-  $: isCurrentPage = (path: string) =>
-    $page.url.pathname === path ||
-    // Handle edit route with assistant id as path parameter
-    ($page.url.pathname.startsWith('/chat/assistants-management/edit/') &&
-      path === '/chat/assistants-management/edit');
+  $: isCurrentPage = (path: string) => $page.url.pathname === path;
 
   const getPath = (path: string) => {
     if (path === '/chat')
@@ -53,7 +40,5 @@
       </Breadcrumb>
       <slot />
     </div>
-
-    <PoweredByDU />
   </div>
 </Content>

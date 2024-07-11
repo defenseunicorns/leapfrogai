@@ -227,3 +227,13 @@ export const formatDate = (date: Date) => {
   // Return the formatted date string
   return `${day} ${month} ${year}`;
 };
+
+// Calculate the number of days between two dates (dates are in seconds)
+export const calculateDays = (beginDate: number, endDate: number) => {
+  const differenceInSeconds = Math.abs(endDate - beginDate);
+  // Convert seconds to days
+  const secondsPerDay = 60 * 60 * 24;
+  const differenceInDays = differenceInSeconds / secondsPerDay;
+
+  return Math.round(differenceInDays);
+};

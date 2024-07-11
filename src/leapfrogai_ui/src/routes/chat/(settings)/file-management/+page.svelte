@@ -17,7 +17,7 @@
   import { filesStore, toastStore } from '$stores';
   import { afterNavigate, invalidate } from '$app/navigation';
   import type { Assistant } from 'openai/resources/beta/assistants';
-  import ConfirmAssistantDeleteModal from '$components/ConfirmAssistantDeleteModal.svelte';
+  import ConfirmAssistantDeleteModal from '$components/modals/ConfirmAssistantDeleteModal.svelte';
   import { ACCEPTED_FILE_TYPES } from '$constants';
 
   export let data;

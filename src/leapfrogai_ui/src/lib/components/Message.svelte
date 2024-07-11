@@ -238,15 +238,6 @@
     padding-left: layout.$spacing-05;
   }
 
-  .highlight-icon :global(svg) {
-    cursor: pointer;
-    fill: themes.$icon-secondary;
-    transition: fill 70ms ease;
-    &:hover {
-      fill: themes.$icon-primary;
-    }
-  }
-
   .edit-prompt :global(.lf-text-area.bx--text-area) {
     background: themes.$background;
     outline: 1px solid themes.$layer-02;

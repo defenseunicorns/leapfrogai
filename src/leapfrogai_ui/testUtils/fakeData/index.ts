@@ -15,6 +15,7 @@ import type { Session } from '@supabase/supabase-js';
 import type { Assistant } from 'openai/resources/beta/assistants';
 import type { VectorStore } from 'openai/resources/beta/vector-stores/index';
 import type { VectorStoreFile } from 'openai/resources/beta/vector-stores/files';
+import { type APIKeyRow, PERMISSIONS } from '$lib/types/apiKeys';
 
 const todayOverride = new Date('2024-03-20T00:00');
 
@@ -312,4 +313,32 @@ export const getFakeVectorStoreFile = (
     status: 'completed',
     last_error: null
   };
+};
+
+type GetFakeApiKeysOptions = {
+  numKeys?: number;
+};
+export const getFakeApiKeys = (options: GetFakeApiKeysOptions = {}): APIKeyRow[] => {
+  const { numKeys = 4 } = options;
+  const result: APIKeyRow[] = [];
+  for (let i = 0; i < numKeys; i++) {
+    const created_at = new Date();
+    created_at.setDate(created_at.getDate() - i);
+    const sevenDays = new Date();
+    sevenDays.setDate(created_at.getDate() + 7);
+    result.push({
+      id: faker.string.uuid(),
+      name: faker.word.noun(),
+      api_key: `lfai_${faker.string.uuid()}`,
+      created_at: created_at.getTime() / 1000,
+      expires_at: sevenDays.getTime() / 1000,
+      permissions: faker.helpers.arrayElement([
+        PERMISSIONS.ALL,
+        PERMISSIONS.READ,
+        PERMISSIONS.WRITE,
+        PERMISSIONS.READ_WRITE
+      ])
+    });
+  }
+  return result;
 };

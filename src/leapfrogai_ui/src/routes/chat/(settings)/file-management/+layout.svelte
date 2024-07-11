@@ -44,15 +44,3 @@
     <PoweredByDU />
   </div>
 </Content>
-
-<style lang="scss">
-  .slot-wrapper {
-    height: 100%;
-  }
-  .lf-content-container {
-    display: flex;
-    height: 100%;
-    flex-direction: column;
-    justify-content: space-between;
-  }
-</style>
