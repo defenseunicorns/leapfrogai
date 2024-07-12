@@ -175,7 +175,6 @@
   });
 
   const sendAssistantMessage = async (e: SubmitEvent | KeyboardEvent) => {
-    hasSentAssistantMessage = true;
     await threadsStore.setSendingBlocked(true);
     if (data.thread?.id) {
       // assistant mode
@@ -193,6 +192,7 @@
       $assistantInput = '';
     }
     await threadsStore.setSendingBlocked(false);
+    hasSentAssistantMessage = true;
   };
 
   const sendChatMessage = async (e: SubmitEvent | KeyboardEvent) => {
