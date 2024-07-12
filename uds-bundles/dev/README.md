@@ -13,7 +13,7 @@ source .venv/bin/activate
 
 Each component is built into its own Zarf package.
 
-| ***Note:*** You need to build with `make build-* LOCAL_VERSION=dev` to set the tag to `dev` instead of the commit hash locally.  
+> ***Note:*** You need to build with `make build-* LOCAL_VERSION=dev` to set the tag to `dev` instead of the commit hash locally.  
 
 You can build all of the packages you need at once with the following `Make` targets:
 
