@@ -44,11 +44,6 @@ variables:
     default: '0.1'
     prompt: true
     sensitive: false
-  - name: SUPABASE_URL
-    description: URL for supabase
-    prompt: true
-    default: https://supabase-kong.uds.dev
-    sensitive: false
   - name: SUPABASE_ANON_KEY
     default: ''
     description: Public key for Supabase
