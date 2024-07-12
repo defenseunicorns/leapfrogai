@@ -43,6 +43,7 @@
     "carbon-components-svelte": "^0.85.0",
     "carbon-icons-svelte": "^12.6.0",
     "carbon-preprocess-svelte": "^0.11.3",
+    "docx": "^8.5.0",
     "dotenv": "^16.4.5",
     "eslint": "^8.56.0",
     "eslint-config-prettier": "^9.1.0",
@@ -52,15 +53,18 @@
     "lodash": "^4.17.21",
     "otpauth": "^9.2.2",
     "pdf-lib": "^1.17.1",
+    "pptxgenjs": "^3.12.0",
     "prettier": "^3.1.1",
     "prettier-plugin-svelte": "^3.1.2",
     "sass": "^1.71.1",
     "svelte": "^4.2.15",
     "svelte-check": "^3.7.1",
+    "@testing-library/user-event": "^14.5.2",
     "tslib": "^2.4.1",
     "typescript": "^5.4.5",
     "vite": "^5.2.10",
-    "vitest": "^1.2.0"
+    "vitest": "^1.2.0",
+    "xlsx": "^0.18.5"
   },
   "type": "module",
   "dependencies": {
@@ -74,11 +78,9 @@
     "@supabase/ssr": "^0.3.0",
     "@supabase/supabase-js": "^2.39.8",
     "@sveltejs/vite-plugin-svelte": "^3.1.0",
-    "@testing-library/user-event": "^14.5.2",
     "ai": "^3.1.11",
     "carbon-pictograms-svelte": "^12.10.0",
     "concurrently": "^8.2.2",
-    "docx": "^8.5.0",
     "dompurify": "^3.1.6",
     "fuse.js": "^7.0.0",
     "highlight.js": "^11.10.0",
@@ -88,10 +90,8 @@
     "msw": "^2.2.14",
     "openai": "^4.47.1",
     "playwright": "^1.42.1",
-    "pptxgenjs": "^3.12.0",
     "sveltekit-superforms": "^2.13.1",
     "uuid": "^9.0.1",
-    "xlsx": "^0.18.5",
     "yup": "^1.4.0"
   }
 }
