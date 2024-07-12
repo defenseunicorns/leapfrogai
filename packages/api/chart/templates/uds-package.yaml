@@ -1,4 +1,4 @@
-{{- if .Values.api.exposeOpenAPISchema }}
+{{- if .Values.api.exposeAPI }}
 apiVersion: uds.dev/v1alpha1
 kind: Package
 metadata:
