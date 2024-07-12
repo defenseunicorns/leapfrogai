@@ -11,6 +11,9 @@ test('it can log out', async ({ page }) => {
   if (process.env.PUBLIC_DISABLE_KEYCLOAK === 'true') {
     await expect(page.getByText('Sign In')).toBeVisible();
   } else {
-    await expect(page.getByText('Log In')).toBeVisible();
+    const loginBtn = page.getByText('Log In');
+    await expect(loginBtn).toBeVisible();
+    await loginBtn.click();
+    await page.waitForURL(`${process.env.SUPABASE_AUTH_EXTERNAL_KEYCLOAK_URL!}/**/*`);
   }
 });

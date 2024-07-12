@@ -4,13 +4,9 @@ import { env } from '$env/dynamic/private';
 
 // TODO - test keycloak full logout with e2e
 export const actions: Actions = {
-  signout: async ({ locals: { supabase, safeGetSession }, cookies }) => {
+  signout: async ({ locals: { supabase, safeGetSession } }) => {
     const { session } = await safeGetSession();
     if (session) {
-      const url = new URL(
-        `${env.SUPABASE_AUTH_EXTERNAL_KEYCLOAK_URL}/protocol/openid-connect/logout`
-      );
-
       if (session.provider_refresh_token) {
         // Append query parameters
         const params = new URLSearchParams();
