@@ -95,7 +95,7 @@ export const createPowerpointFile = async (options: { filename?: string } = {}) 
   slide.addText(textboxText, textboxOpts);
   await presentation.writeFile({ fileName: `./tests/fixtures/${filename}` });
 
-  return filename;
+  return `${filename}.pptx`;
 };
 
 /* ------ END FILE CREATORS ------ */

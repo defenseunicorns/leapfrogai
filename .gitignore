@@ -26,6 +26,9 @@ build/
 src/leapfrogai_api/config.yaml
 .idea/
 /.python-version
+node_modules
+package.json
+package-lock.json
 
 # local model and tokenizer files
 *.bin
