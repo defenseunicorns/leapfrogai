@@ -7,7 +7,6 @@ export const actions: Actions = {
     const { session } = await safeGetSession();
     if (session) {
       if (session.provider_refresh_token) {
-
         const params = new URLSearchParams();
         params.append('client_id', env.SUPABASE_AUTH_KEYCLOAK_CLIENT_ID);
         params.append('client_secret', env.SUPABASE_AUTH_KEYCLOAK_SECRET);
