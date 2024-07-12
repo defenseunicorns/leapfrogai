@@ -120,8 +120,6 @@ class CRUDBase(Generic[ModelType]):
 
         if self.db.options.headers.get("x-custom-api-key"):
             result = await self.db.table("api_keys").select("user_id").execute()
-            # _, tmp = data
-            # user_id: str = tmp[0]["user_id"]
             user_id: str = result.data[0]["user_id"]
         else:
             user_id = (await self.db.auth.get_user()).user.id
