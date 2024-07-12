@@ -1,10 +1,7 @@
 """OpenAI Chat API router."""
 
 from typing import Annotated, AsyncGenerator, Any
-
 from fastapi import HTTPException, APIRouter, Depends
-from fastapi.security import HTTPBearer
-
 import leapfrogai_sdk as lfai
 from leapfrogai_api.backend.grpc_client import (
     chat_completion,
@@ -21,14 +18,13 @@ from leapfrogai_sdk.chat.chat_pb2 import (
 )
 
 router = APIRouter(prefix="/openai/v1/chat", tags=["openai/chat"])
-security = HTTPBearer()
 
 
 @router.post("/completions")
 async def chat_complete(
     req: ChatCompletionRequest,
     model_config: Annotated[Config, Depends(get_model_config)],
-    session: Session,
+    session: Session,  # pylint: disable=unused-argument # required for authorizing endpoint
 ):
     """Complete a chat conversation with the given model."""
 

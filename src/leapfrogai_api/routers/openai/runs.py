@@ -3,7 +3,6 @@
 import traceback
 from fastapi import HTTPException, APIRouter, status
 from fastapi.responses import StreamingResponse
-from fastapi.security import HTTPBearer
 from openai.types.beta.threads import Run
 from openai.pagination import SyncCursorPage
 from leapfrogai_api.backend.types import (
@@ -24,7 +23,6 @@ from leapfrogai_api.utils.validate_tools import (
 )
 
 router = APIRouter(prefix="/openai/v1/threads", tags=["openai/threads/runs"])
-security = HTTPBearer()
 
 
 @router.post("/{thread_id}/runs", response_model=None)
