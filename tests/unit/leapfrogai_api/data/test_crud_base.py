@@ -25,6 +25,10 @@ class MockModelFields(BaseModel):
 mock_data_dict = dict(id=1, name="mock-data")
 
 
+def _mock_authed(data):
+    return dict(**data, user_id="mock-api-key")
+
+
 @pytest.fixture
 def mock_crud_base(mock_session):
     return CRUDBase(db=mock_session, model=MockModel, table_name="dummy_table")
@@ -34,42 +38,47 @@ def mock_crud_base(mock_session):
 @pytest.mark.parametrize(
     "mock_data_object, mock_response, expected_result, expected_call",
     [
-        (mock_data_model, mock_data_dict, mock_data_model, mock_data_dict),
+        (
+            mock_data_model,
+            mock_data_dict,
+            mock_data_model,
+            _mock_authed(mock_data_dict),
+        ),
         (
             MockModelNoID(name="mock-data"),
             mock_data_dict,
             mock_data_model,
-            dict(name="mock-data"),
+            _mock_authed(dict(name="mock-data")),
         ),
         (
             MockModelStrID(id="", name="mock-data"),
             mock_data_dict,
             mock_data_model,
-            dict(name="mock-data"),
+            _mock_authed(dict(name="mock-data")),
         ),
         (
             MockModelFields(id=1, name="mock-data", created_at=0),
             mock_data_dict,
             mock_data_model,
-            dict(id=1, name="mock-data", field_name=None),
+            _mock_authed(dict(id=1, name="mock-data", field_name=None)),
         ),
         (
             MockModelFields(id=1, name="mock-data", created_at=1),
             mock_data_dict,
             mock_data_model,
-            dict(id=1, name="mock-data", created_at=1, field_name=None),
+            _mock_authed(dict(id=1, name="mock-data", created_at=1, field_name=None)),
         ),
         (
             MockModelFields(id=1, name="mock-data", created_at="mock-data"),
             mock_data_dict,
             mock_data_model,
-            dict(id=1, name="mock-data", field_name=None),
+            _mock_authed(dict(id=1, name="mock-data", field_name=None)),
         ),
         (
             MockModelFields(id=1, name="mock-data", field_name="mock-data"),
             mock_data_dict,
             mock_data_model,
-            dict(id=1, name="mock-data", field_name="mock-data"),
+            _mock_authed(dict(id=1, name="mock-data", field_name="mock-data")),
         ),
         (
             MockModelFields(
@@ -77,7 +86,7 @@ def mock_crud_base(mock_session):
             ),
             mock_data_dict,
             mock_data_model,
-            dict(id=1, name="mock-data", field_name="mock-data"),
+            _mock_authed(dict(id=1, name="mock-data", field_name="mock-data")),
         ),
     ],
 )
@@ -171,7 +180,7 @@ async def test_get_fail(
             [dict(id=1, name="mock-data"), dict(id=2, name="mock-data")],
             [MockModel(id=1, name="mock-data"), MockModel(id=2, name="mock-data")],
         ),
-        ([], None),
+        ([], []),
     ],
 )
 async def test_list(mock_response, expected_result, mock_session, mock_crud_base):
@@ -235,10 +244,14 @@ async def test_update_fail(mock_response, mock_session, mock_crud_base):
 
 
 @pytest.mark.asyncio
-async def test_delete(mock_crud_base):
+async def test_delete(mock_crud_base, mock_session):
+    mock_table = mock_session.table(mock_crud_base.table_name)
+
     result = await mock_crud_base.delete({"id": 1})
 
     assert result is True
+
+    mock_table.delete().eq.assert_called_with("id", 1)
 
 
 @pytest.mark.asyncio

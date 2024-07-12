@@ -38,8 +38,8 @@ class CRUDBase(Generic[ModelType]):
             if "user_id" in response[0]:
                 del response[0]["user_id"]
             return self.model(**response[0])
-        except Exception:
-            return None
+        except Exception as e:
+            raise e
 
     async def get(self, filters: dict | None = None) -> ModelType | None:
         """Get row by filters."""
@@ -77,8 +77,6 @@ class CRUDBase(Generic[ModelType]):
                 if "user_id" in item:
                     del item["user_id"]
             return [self.model(**item) for item in response]
-        except IndexError:
-            return None
         except Exception as e:
             raise e
 
@@ -121,9 +119,10 @@ class CRUDBase(Generic[ModelType]):
         """Get the user_id from the API key."""
 
         if self.db.options.headers.get("x-custom-api-key"):
-            data, _count = await self.db.table("api_keys").select("user_id").execute()
-            _, tmp = data
-            user_id: str = tmp[0]["user_id"]
+            result = await self.db.table("api_keys").select("user_id").execute()
+            # _, tmp = data
+            # user_id: str = tmp[0]["user_id"]
+            user_id: str = result.data[0]["user_id"]
         else:
             user_id = (await self.db.auth.get_user()).user.id
 
