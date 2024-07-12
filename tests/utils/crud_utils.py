@@ -3,6 +3,9 @@ class MockAPIResponse:
         if isinstance(data, list):
             self.data = data
             self.count = len(data)
+        elif data is None:
+            self.data = None
+            self.count = 0
         else:
             self.data = [data]
             self.count = 1
