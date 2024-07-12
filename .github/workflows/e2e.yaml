@@ -81,9 +81,9 @@ jobs:
           run: |
             uds deploy k3d-core-slim-dev:0.22.2 --confirm
 
-          ##########
-          # Supabase
-          ##########
+        ##########
+        # Supabase
+        ##########
         - name: Deploy Supabase
           run: |
             make build-supabase LOCAL_VERSION=e2e-test
@@ -116,7 +116,9 @@ jobs:
         - name: UI and Supabase test
           run: |
             cp src/leapfrogai_ui/.env.example src/leapfrogai_ui/.env
-            TEST_ENV=CI PUBLIC_DISABLE_KEYCLOAK=true PUBLIC_SUPABASE_URL=https://supabase-kong.uds.dev PUBLIC_SUPABASE_ANON_KEY=$API_KEY npm --prefix src/leapfrogai_ui run test:integration
+            npm --prefix src/leapfrogai_ui ci
+            npx --prefix src/leapfrogai_ui install
+            TEST_ENV=CI PUBLIC_DISABLE_KEYCLOAK=true PUBLIC_SUPABASE_URL=https://supabase-kong.uds.dev PUBLIC_SUPABASE_ANON_KEY=$ANON_KEY npm --prefix src/leapfrogai_ui run test:integration
 
         - name: Cleanup UI
           run: |
