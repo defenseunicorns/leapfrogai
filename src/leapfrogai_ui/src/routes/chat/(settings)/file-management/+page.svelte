@@ -18,6 +18,7 @@
   import { afterNavigate, invalidate } from '$app/navigation';
   import type { Assistant } from 'openai/resources/beta/assistants';
   import ConfirmAssistantDeleteModal from '$components/modals/ConfirmAssistantDeleteModal.svelte';
+  import { ACCEPTED_FILE_TYPES } from '$constants';
 
   export let data;
 
@@ -33,15 +34,24 @@
   $: affectedAssistants = [];
   $: if ($filesStore.selectedFileManagementFileIds.length === 0) active = false;
 
-  const { enhance, submit, submitting } = superForm(data.form, {
+  // Form error in form action (e.g. validation failure)
+  $: $errors._errors && $errors._errors.length > 0 && handleFormError();
+
+  const handleFormError = () => {
+    filesStore.setAllUploadingToError();
+    toastStore.addToast({
+      kind: 'error',
+      title: 'Import Failed',
+      subtitle: `${$errors._errors?.join(', ') || 'Please try again or contact support'}`
+    });
+  };
+
+  const { enhance, submit, submitting, errors } = superForm(data.form, {
     validators: yup(filesSchema),
     invalidateAll: false,
     onError() {
-      toastStore.addToast({
-        kind: 'error',
-        title: 'Import Failed',
-        subtitle: `Please try again or contact support`
-      });
+      // Non-handled error in form action
+      handleFormError();
     },
     onResult: async ({ result }) => {
       if (result.type === 'success') {
@@ -181,7 +191,7 @@
             disableLabelChanges
             disabled={$submitting}
             labelText="Upload"
-            accept={['.pdf', '.txt', '.text']}
+            accept={ACCEPTED_FILE_TYPES}
           />
         </ToolbarContent>
       </Toolbar>

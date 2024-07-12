@@ -4,6 +4,7 @@
   import LFMultiSelect from '$components/LFMultiSelect.svelte';
   import { filesStore } from '$stores';
   import type { FilesForm } from '$lib/types/files';
+  import { ACCEPTED_FILE_TYPES } from '$constants';
 
   export let filesForm: FilesForm;
 
@@ -21,7 +22,7 @@
     label="Choose data sources"
     items={$filesStore.files.map((file) => ({ id: file.id, text: file.filename }))}
     direction="top"
-    accept={['.pdf', '.txt', '.text']}
+    accept={ACCEPTED_FILE_TYPES}
     bind:selectedIds={$filesStore.selectedAssistantFileIds}
     {filesForm}
   />
