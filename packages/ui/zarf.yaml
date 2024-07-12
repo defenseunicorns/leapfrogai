@@ -12,7 +12,7 @@ constants:
 variables:
   - name: LEAPFROGAI_API_BASE_URL #LEAPFROGAI_API_BASE_URL
     description: The base URL for the LeapfrogAI API
-    default: http://api.leapfrogai.svc.cluster.local:8080/openai/v1
+    default: http://api.leapfrogai.svc.cluster.local:8080
     prompt: true
     sensitive: true
   - name: OPENAI_API_KEY
@@ -42,11 +42,6 @@ variables:
     description: The default temperature for the LLM
     default: '0.1'
     prompt: true
-    sensitive: false
-  - name: SUPABASE_URL
-    description: URL for supabase
-    prompt: true
-    default: https://supabase-kong.uds.dev
     sensitive: false
   - name: SUPABASE_ANON_KEY
     default: ''

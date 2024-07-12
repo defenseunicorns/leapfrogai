@@ -23,7 +23,7 @@ from leapfrogai_api.backend.converters import (
 from leapfrogai_api.routers.supabase_session import Session
 
 
-class RunCreateParamsRequestBaseRequest(RunCreateParamsRequestBase):
+class RunCreateParamsRequest(RunCreateParamsRequestBase):
     additional_instructions: str | None = Field(
         default=None,
         examples=["Please provide a summary of the conversation so far."],

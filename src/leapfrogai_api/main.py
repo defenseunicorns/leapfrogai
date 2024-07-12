@@ -6,7 +6,10 @@ from contextlib import asynccontextmanager
 from fastapi import FastAPI
 
 from leapfrogai_api.routers.base import router as base_router
-from leapfrogai_api.routers.leapfrogai import rag
+from leapfrogai_api.routers.leapfrogai import (
+    auth,
+    rag,
+)
 from leapfrogai_api.routers.openai import (
     audio,
     completions,
@@ -56,6 +59,7 @@ handler.setFormatter(logging.Formatter("%(asctime)s - %(levelname)s - %(message)
 logger.addHandler(handler)
 
 app.include_router(base_router)
+app.include_router(auth.router)
 app.include_router(models.router)
 app.include_router(completions.router)
 app.include_router(chat.router)

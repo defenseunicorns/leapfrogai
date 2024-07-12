@@ -19,8 +19,10 @@ clean: ## Clean up all the things (packages, build dirs, compiled .whl files, py
 	-rm -rf build/*
 	-rm -rf src/**/build/*
 	-rm -rf packages/**/build/*
+	find . -name 'uds-bundle-*-*.tar.zst' -delete
+	find . -type d -name 'zarf-sbom' -exec rm -rf {} +
 	find . -name '*.whl' -delete
-	find . -name '*.egg-info' -type d -exec rm -rf {} +
+	find . -type d -name '*.egg-info' -exec rm -rf {} +
 
 
 gen-python: ## Generate the protobufs for the OpenAI typing within the leapfrogai_api module

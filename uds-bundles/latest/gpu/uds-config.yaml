@@ -1,29 +1,21 @@
 # see individual zarf packaging configuration for more variables and variable descriptions
 variables:
   text-embeddings:
-    gpu_limit: 1
+    gpu_limit: 0
 
   whisper:
-    gpu_limit: 1
+    gpu_limit: 0
 
   vllm:
     gpu_limit: 1
     #tensor_parallel_size: 1   # TODO: reintroduce when vllm changes get pulled in
 
   supabase:
-    keycloak_redirect_uris:
-      - "https://supabase-kong.uds.dev/auth/v1/callback"
-    webOrigins:
-      - "https://ai.uds.dev"
-    hosted_domain: "uds.dev"
-
-  leapfrogai-api:
-    hosted_domain: "uds.dev"
+    domain: "uds.dev"
 
   leapfrogai-ui:
     subdomain: ai
     domain: uds.dev
     model: vllm
-    supabase_url: https://supabase-kong.uds.dev
     disable_keycloak: false # If this package is deployed as a bundle, keycloak is assumed default
     supabase_anon_key: ''

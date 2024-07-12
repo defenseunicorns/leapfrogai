@@ -2,7 +2,6 @@
 
 from fastapi import APIRouter, Depends, HTTPException, UploadFile, status
 from fastapi.responses import Response
-from fastapi.security import HTTPBearer
 from openai.types import FileDeleted, FileObject
 
 from leapfrogai_api.backend.rag.document_loader import (
@@ -15,7 +14,6 @@ from leapfrogai_api.data.crud_file_object import CRUDFileObject, FilterFileObjec
 from leapfrogai_api.routers.supabase_session import Session
 
 router = APIRouter(prefix="/openai/v1/files", tags=["openai/files"])
-security = HTTPBearer()
 
 
 @router.post("")
@@ -40,7 +38,7 @@ async def upload_file(
         )
 
     try:
-        file_object = FileObject(
+        empty_file_object = FileObject(
             id="",  # This is set by the database to prevent conflicts
             bytes=request.file.size if request.file.size else 0,
             created_at=0,  # This is set by the database to prevent conflicts
@@ -57,7 +55,7 @@ async def upload_file(
 
     crud_file_object = CRUDFileObject(session)
 
-    if not (file_object := await crud_file_object.create(object_=file_object)):
+    if not (file_object := await crud_file_object.create(object_=empty_file_object)):
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail="Failed to store file",

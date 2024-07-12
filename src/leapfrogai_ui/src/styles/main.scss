@@ -30,3 +30,19 @@
   border: none;
   background: themes.$border-subtle-00;
 }
+
+.lf-content-container {
+  display: flex;
+  height: 100%;
+  flex-direction: column;
+  justify-content: space-between;
+}
+
+.highlight-icon :global(svg) {
+  cursor: pointer;
+  fill: themes.$icon-secondary;
+  transition: fill 70ms ease;
+  &:hover {
+    fill: themes.$icon-primary;
+  }
+}

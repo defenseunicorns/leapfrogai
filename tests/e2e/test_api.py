@@ -107,7 +107,7 @@ def test_api_row_level_security():
     verify_request(post_urls, "post", jwt_token, True)
     verify_request(delete_urls, "delete", jwt_token, True)
 
-    # Confirm that illegitimate requests are not
+    # Confirm that illegitimate requests are not allowed
     verify_request(get_urls, "get", jwt_token, False)
     verify_request(post_urls, "post", jwt_token, False)
     verify_request(delete_urls, "delete", jwt_token, False)

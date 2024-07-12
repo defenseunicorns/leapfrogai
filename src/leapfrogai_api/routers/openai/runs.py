@@ -3,17 +3,16 @@
 import traceback
 from fastapi import HTTPException, APIRouter, status
 from fastapi.responses import StreamingResponse
-from fastapi.security import HTTPBearer
 from openai.types.beta.threads import Run
 from openai.pagination import SyncCursorPage
 from leapfrogai_api.backend.types import (
     ModifyRunRequest,
 )
 from leapfrogai_api.routers.openai.requests.thread_run_create_params_request import (
-    ThreadRunCreateParamsRequestBaseRequest,
+    ThreadRunCreateParamsRequest,
 )
 from leapfrogai_api.routers.openai.requests.run_create_params_request import (
-    RunCreateParamsRequestBaseRequest,
+    RunCreateParamsRequest,
 )
 from leapfrogai_api.data.crud_run import CRUDRun
 from leapfrogai_api.data.crud_thread import CRUDThread
@@ -24,12 +23,11 @@ from leapfrogai_api.utils.validate_tools import (
 )
 
 router = APIRouter(prefix="/openai/v1/threads", tags=["openai/threads/runs"])
-security = HTTPBearer()
 
 
 @router.post("/{thread_id}/runs", response_model=None)
 async def create_run(
-    thread_id: str, session: Session, request: RunCreateParamsRequestBaseRequest
+    thread_id: str, session: Session, request: RunCreateParamsRequest
 ) -> Run | StreamingResponse:
     """Create a run."""
 
@@ -73,7 +71,7 @@ async def create_run(
 
 @router.post("/runs", response_model=None)
 async def create_thread_and_run(
-    session: Session, request: ThreadRunCreateParamsRequestBaseRequest
+    session: Session, request: ThreadRunCreateParamsRequest
 ) -> Run | StreamingResponse:
     """Create a thread and run."""
 

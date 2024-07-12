@@ -120,6 +120,7 @@ def test_create():
     assert VectorStore.model_validate(
         vector_store_response.json()
     ), "Create should create a VectorStore."
+
     assert (
         "user_id" not in vector_store_response.json()
     ), "Create should not return a user_id."
@@ -142,6 +143,11 @@ def test_get():
     assert VectorStore.model_validate(
         get_response.json()
     ), f"Get should return VectorStore {vector_store_id}. Instead returned {get_response.json()}."
+
+    assert get_response.json()["file_counts"]["completed"] == 1
+    assert (
+        get_response.json()["file_counts"]["total"] == 1
+    ), "Should have an accurate file count"
 
 
 def test_get_expired():

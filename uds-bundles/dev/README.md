@@ -14,6 +14,9 @@ source .venv/bin/activate
 #### Linux and Windows (via WSL2)
 
 Each component is built into its own Zarf package. You can build all of the packages you need at once with the following `Make` targets:
+> ***Note:*** You need to build with `make build-* LOCAL_VERSION=dev` to set the tag to `dev` instead of the commit hash locally.  
+
+You can build all of the packages you need at once with the following `Make` targets:
 
 ```shell
 LOCAL_VERSION=dev make build-cpu    # api, llama-cpp-python, text-embeddings, whisper, supabase
@@ -97,6 +100,15 @@ uds deploy {k3d-cluster-name} --set K3D_EXTRA_ARGS="--gpus=all --image=ghcr.io/j
 Deploy the LeapfrogAI bundle:
 ```shell
 uds deploy uds-bundle-leapfrogai-*.tar.zst --confirm
+```
+
+Once running you can access the various components, if deployed and exposed, at the following URLS:
+
+```shell
+https://ai.uds.dev              # UI
+https://leapfrogai-api.uds.dev  # API
+https://supabase-kong.uds.dev   # Supabase Kong
+https://keycloak.uds.dev        # Keycloak
 ```
 
 ## Checking and Managing the Deployment

@@ -108,7 +108,8 @@ export const actions = {
         : [];
 
     let vectorStoreId = form.data.vectorStoreId;
-    if (data_sources.length > 0 && (!vectorStoreId || vectorStoreId === 'undefined')) {
+    if (vectorStoreId === 'undefined') vectorStoreId = undefined;
+    if (data_sources.length > 0 && !vectorStoreId) {
       try {
         const vectorStore = await openai.beta.vectorStores.create({
           name: `${form.data.name}-vector-store`
@@ -121,7 +122,7 @@ export const actions = {
     }
 
     // undefined vector store id from form is passed as a string
-    if (vectorStoreId && vectorStoreId !== 'undefined') {
+    if (vectorStoreId) {
       try {
         const vectorStoreFilesPage = await openai.beta.vectorStores.files.list(vectorStoreId);
         const vectorStoreFiles = vectorStoreFilesPage.data;
@@ -169,7 +170,7 @@ export const actions = {
       instructions: form.data.instructions,
       temperature: form.data.temperature,
       model: env.DEFAULT_MODEL,
-      tools: data_sources && data_sources.length > 0 ? [{ type: 'file_search' }] : [],
+      tools: data_sources && data_sources.length > 0 ? [{ type: 'file_search' }] : undefined,
       tool_resources: vectorStoreId
         ? {
             file_search: {

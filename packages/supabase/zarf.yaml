@@ -17,7 +17,7 @@ constants:
     value: '###ZARF_PKG_TMPL_IMAGE_VERSION###'
 
 variables:
-  - name: HOSTED_DOMAIN
+  - name: DOMAIN
     default: "uds.dev"
   - name: ENABLE_AUTH
     description: 'Enable Supabases built-in authentication and authorization parts'

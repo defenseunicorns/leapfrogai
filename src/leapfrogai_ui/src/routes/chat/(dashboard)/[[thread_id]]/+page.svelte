@@ -1,7 +1,7 @@
 <script lang="ts">
   import { LFTextArea, PoweredByDU } from '$components';
   import { Button, Dropdown } from 'carbon-components-svelte';
-  import { afterUpdate, onMount, tick } from 'svelte';
+  import { onMount, tick } from 'svelte';
   import { threadsStore, toastStore } from '$stores';
   import { ArrowRight, Checkmark, StopFilledAlt, UserProfile } from 'carbon-icons-svelte';
   import { type Message as VercelAIMessage, useAssistant, useChat } from 'ai/svelte';
@@ -13,7 +13,6 @@
   import { NO_SELECTED_ASSISTANT_ID } from '$constants';
 
   import {
-    delay,
     isRunAssistantResponse,
     processAnnotations,
     resetMessages,
@@ -25,7 +24,7 @@
     ERROR_GETTING_AI_RESPONSE_TEXT,
     ERROR_GETTING_ASSISTANT_MSG_TEXT,
     ERROR_SAVING_MSG_TEXT
-  } from '$constants/errorMessages';
+  } from '$constants/toastMessages';
 
   import { convertMessageToVercelAiMessage } from '$helpers/threads.js';
 
@@ -104,7 +103,7 @@
 
       setAssistantMessages(assistantMessagesCopy);
     }
-    threadsStore.setSendingBlocked(false);
+    await threadsStore.setSendingBlocked(false);
   };
 
   /** useChat - streams messages with the /api/chat route**/
@@ -120,14 +119,7 @@
   } = useChat({
     // Handle completed AI Responses
     onFinish: async (message: VercelAIMessage) => {
-      // OpenAI returns the creation timestamp in seconds instead of milliseconds.
-      // If a response comes in quickly, we need to delay 1 second to ensure the timestamps of the user message
-      // and AI response are not exactly the same. This is important for sorting messages when they are initially loaded
-      // from the db/API (ex. browser refresh). Streamed messages are sorted realtime and we modify the timestamps to
-      // ensure we have millisecond precision.
       try {
-        if (process.env.NODE_ENV !== 'test') await delay(1000);
-
         if (!assistantMode && data.thread?.id) {
           // Save with API to db
           const newMessage = await saveMessage({
@@ -138,7 +130,6 @@
 
           await threadsStore.addMessageToStore(newMessage);
         }
-        if (process.env.NODE_ENV !== 'test') await delay(1000); // ensure next user message has a different timestamp
       } catch {
         toastStore.addToast({
           kind: 'error',
@@ -146,15 +137,15 @@
           subtitle: 'Error saving AI Response'
         });
       }
-      threadsStore.setSendingBlocked(false);
+      await threadsStore.setSendingBlocked(false);
     },
-    onError: () => {
-      threadsStore.setSendingBlocked(false);
+    onError: async () => {
       toastStore.addToast({
         kind: 'error',
         title: ERROR_GETTING_AI_RESPONSE_TEXT.title,
         subtitle: ERROR_GETTING_AI_RESPONSE_TEXT.subtitle
       });
+      await threadsStore.setSendingBlocked(false);
     }
   });
 
@@ -170,8 +161,7 @@
   } = useAssistant({
     api: '/api/chat/assistants',
     threadId: data.thread?.id,
-    onError: (e) => {
-      threadsStore.setSendingBlocked(false);
+    onError: async (e) => {
       // ignore this error b/c it is expected on cancel
       if (e.message !== 'BodyStreamBuffer was aborted') {
         toastStore.addToast({
@@ -180,12 +170,13 @@
           subtitle: ERROR_GETTING_ASSISTANT_MSG_TEXT.subtitle
         });
       }
+      await threadsStore.setSendingBlocked(false);
     }
   });
 
   const sendAssistantMessage = async (e: SubmitEvent | KeyboardEvent) => {
     hasSentAssistantMessage = true;
-    threadsStore.setSendingBlocked(true);
+    await threadsStore.setSendingBlocked(true);
     if (data.thread?.id) {
       // assistant mode
       $assistantInput = $chatInput;
@@ -201,11 +192,11 @@
       });
       $assistantInput = '';
     }
-    threadsStore.setSendingBlocked(false);
+    await threadsStore.setSendingBlocked(false);
   };
 
   const sendChatMessage = async (e: SubmitEvent | KeyboardEvent) => {
-    threadsStore.setSendingBlocked(true);
+    await threadsStore.setSendingBlocked(true);
     if (data.thread?.id) {
       // Save with API
       try {
@@ -218,16 +209,22 @@
         await threadsStore.addMessageToStore(newMessage);
         submitChatMessage(e); // submit to AI (/api/chat)
       } catch {
-        threadsStore.setSendingBlocked(false);
         toastStore.addToast({
           kind: 'error',
           title: ERROR_SAVING_MSG_TEXT.title,
           subtitle: ERROR_SAVING_MSG_TEXT.subtitle
         });
+        await threadsStore.setSendingBlocked(false);
       }
     }
   };
 
+  // OpenAI returns the creation timestamp in seconds instead of milliseconds.
+  // If a response comes in quickly, we need to delay 1 second to ensure the timestamps of the user message
+  // and AI response are not exactly the same. This is important for sorting messages when they are initially loaded
+  // from the db/API (ex. browser refresh). Streamed messages are sorted realtime and we modify the timestamps to
+  // ensure we have millisecond precision.
+  // setSendingBlocked (when called with the value 'false') automatically handles this delay
   const onSubmit = async (e: SubmitEvent | KeyboardEvent) => {
     e.preventDefault();
     if (($isLoading || $status === 'in_progress') && data.thread?.id) {
@@ -241,7 +238,7 @@
         assistantStop,
         chatStop
       });
-      threadsStore.setSendingBlocked(false);
+      await threadsStore.setSendingBlocked(false);
       return;
     } else {
       if (!data.thread?.id) {
@@ -249,7 +246,14 @@
         await threadsStore.newThread($chatInput);
         await tick(); // allow store to update
       }
-
+      if ($threadsStore.sendingBlocked) {
+        toastStore.addToast({
+          kind: 'warning',
+          title: 'Rate limiting',
+          subtitle: 'Please wait a moment before sending another message'
+        });
+        return;
+      }
       assistantMode ? await sendAssistantMessage(e) : await sendChatMessage(e);
     }
   };
@@ -261,11 +265,6 @@
     }));
     assistantsList.unshift({ id: NO_SELECTED_ASSISTANT_ID, text: 'Select assistant...' }); // add dropdown item for no assistant selected
     assistantsList.unshift({ id: `manage-assistants`, text: 'Manage assistants' }); // add dropdown item for manage assistants button
-  });
-
-  afterUpdate(() => {
-    // Scroll to bottom
-    messageThreadDiv.scrollTop = messageThreadDiv.scrollHeight;
   });
 
   beforeNavigate(async () => {
@@ -283,27 +282,25 @@
   });
 </script>
 
-<div class="chat-inner-content">
-  <div class="messages" bind:this={messageThreadDiv}>
-    {#each sortedMessages as message, index (message.id)}
-      <Message
-        allStreamedMessages={sortedMessages}
-        {message}
-        messages={isRunAssistantResponse(message) ? $assistantMessages : $chatMessages}
-        setMessages={isRunAssistantResponse(message) ? setAssistantMessages : setChatMessages}
-        isLastMessage={index === sortedMessages.length - 1}
-        append={isRunAssistantResponse(message) ? assistantAppend : chatAppend}
-        {reload}
-      />
-    {/each}
-  </div>
-
-  <hr id="divider" class="divider" />
-  <div
-    class="chat-form-container"
-    class:noAssistant={$threadsStore.selectedAssistantId === NO_SELECTED_ASSISTANT_ID}
-  >
-    <form on:submit={onSubmit}>
+<div class="container">
+  <form on:submit={onSubmit} class="container">
+    <div class="messages-container">
+      <div bind:this={messageThreadDiv}>
+        {#each sortedMessages as message, index (message.id)}
+          <Message
+            allStreamedMessages={sortedMessages}
+            {message}
+            messages={isRunAssistantResponse(message) ? $assistantMessages : $chatMessages}
+            setMessages={isRunAssistantResponse(message) ? setAssistantMessages : setChatMessages}
+            isLastMessage={index === sortedMessages.length - 1}
+            append={isRunAssistantResponse(message) ? assistantAppend : chatAppend}
+            {reload}
+          />
+        {/each}
+      </div>
+    </div>
+    <hr id="divider" class="divider" />
+    <div class:noAssistant={$threadsStore.selectedAssistantId === NO_SELECTED_ASSISTANT_ID}>
       <Dropdown
         data-testid="assistant-dropdown"
         disabled={$isLoading || $status === 'in_progress'}
@@ -347,61 +344,53 @@
           </div>
         {/if}
       </Dropdown>
-      <div class="chat-input">
-        <LFTextArea
-          value={chatInput}
-          {onSubmit}
-          ariaLabel="message input"
-          placeholder="Type your message here..."
-          bind:showLengthError={lengthInvalid}
-        />
+    </div>
+    <div class="chat-input">
+      <LFTextArea
+        value={chatInput}
+        {onSubmit}
+        ariaLabel="message input"
+        placeholder="Type your message here..."
+        bind:showLengthError={lengthInvalid}
+      />
 
-        {#if !$isLoading && $status !== 'in_progress'}
-          <Button
-            data-testid="send message"
-            kind="secondary"
-            icon={ArrowRight}
-            size="field"
-            type="submit"
-            iconDescription="send"
-            disabled={!$chatInput || lengthInvalid || $threadsStore.sendingBlocked}
-          />
-        {:else}
-          <Button
-            data-testid="cancel message"
-            kind="secondary"
-            size="field"
-            type="submit"
-            icon={StopFilledAlt}
-            iconDescription="cancel"
-          />
-        {/if}
-      </div>
-    </form>
+      {#if !$isLoading && $status !== 'in_progress'}
+        <Button
+          data-testid="send message"
+          kind="secondary"
+          icon={ArrowRight}
+          size="field"
+          type="submit"
+          iconDescription="send"
+          disabled={!$chatInput || lengthInvalid || $threadsStore.sendingBlocked}
+        />
+      {:else}
+        <Button
+          data-testid="cancel message"
+          kind="secondary"
+          size="field"
+          type="submit"
+          icon={StopFilledAlt}
+          iconDescription="cancel"
+        />
+      {/if}
+    </div>
     <PoweredByDU />
-  </div>
+  </form>
 </div>
 
 <style lang="scss">
-  .chat-inner-content {
+  .container {
     display: flex;
     flex-direction: column;
-    justify-content: flex-end;
     height: 100%;
   }
-
-  .messages {
+  .messages-container {
     display: flex;
-    flex-direction: column;
-    gap: layout.$spacing-03;
-    margin-bottom: layout.$spacing-05;
-    overflow: scroll;
+    flex-direction: column-reverse;
+    flex-grow: 1;
+    overflow: auto;
     scrollbar-width: none;
-    padding: 0rem layout.$spacing-05;
-  }
-
-  .chat-form-container {
-    padding: 0rem layout.$spacing-05;
   }
 
   .chat-input {

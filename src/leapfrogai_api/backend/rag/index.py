@@ -2,19 +2,27 @@
 
 import logging
 import tempfile
+import time
 
-from fastapi import UploadFile
+
+from fastapi import HTTPException, UploadFile, status
 from langchain_core.documents import Document
 from langchain_core.embeddings import Embeddings
+from openai.types.beta.vector_store import FileCounts, VectorStore
 from openai.types.beta.vector_stores import VectorStoreFile
 from openai.types.beta.vector_stores.vector_store_file import LastError
-from supabase_py_async import AsyncClient
+from supabase import AClient as AsyncClient
 from leapfrogai_api.backend.rag.document_loader import load_file, split
 from leapfrogai_api.backend.rag.leapfrogai_embeddings import LeapfrogAIEmbeddings
-from leapfrogai_api.backend.types import VectorStoreFileStatus
 from leapfrogai_api.data.crud_file_bucket import CRUDFileBucket
 from leapfrogai_api.data.crud_file_object import CRUDFileObject, FilterFileObject
 from leapfrogai_api.data.crud_vector_store import CRUDVectorStore, FilterVectorStore
+from leapfrogai_api.backend.types import (
+    VectorStoreStatus,
+    VectorStoreFileStatus,
+    CreateVectorStoreRequest,
+    ModifyVectorStoreRequest,
+)
 from leapfrogai_api.data.crud_vector_store_file import (
     CRUDVectorStoreFile,
     FilterVectorStoreFile,
@@ -117,16 +125,171 @@ class IndexingService:
             await crud_vector_store_file.update(
                 id_=vector_store_file.id, object_=vector_store_file
             )
-        except Exception as e:
+        except Exception as exc:
             vector_store_file.status = VectorStoreFileStatus.FAILED.value
             await crud_vector_store_file.update(
                 id_=vector_store_file.id, object_=vector_store_file
             )
-            raise e
+            raise exc
 
         return await crud_vector_store_file.get(
             filters=FilterVectorStoreFile(vector_store_id=vector_store_id, id=file_id)
         )
+
+    async def index_files(
+        self, vector_store_id: str, file_ids: list[str]
+    ) -> list[VectorStoreFile]:
+        """Index a list of files into a vector store."""
+        responses = []
+        for file_id in file_ids:
+            try:
+                response = await self.index_file(
+                    vector_store_id=vector_store_id, file_id=file_id
+                )
+                responses.append(response)
+            except FileAlreadyIndexedError:
+                logging.info("File %s already exists and cannot be re-indexed", file_id)
+                continue
+            except Exception as exc:
+                raise exc
+
+        return responses
+
+    async def create_new_vector_store(
+        self, request: CreateVectorStoreRequest
+    ) -> VectorStore:
+        """Create a new vector store given a set of file ids"""
+        crud_vector_store = CRUDVectorStore(db=self.db)
+
+        last_active_at = int(time.time())
+
+        expires_after, expires_at = request.get_expiry(last_active_at)
+
+        try:
+            vector_store = VectorStore(
+                id="",  # Leave blank to have Postgres generate a UUID
+                usage_bytes=0,  # Automatically calculated by DB
+                created_at=0,  # Leave blank to have Postgres generate a timestamp
+                file_counts=FileCounts(
+                    cancelled=0, completed=0, failed=0, in_progress=0, total=0
+                ),
+                last_active_at=last_active_at,  # Set to current time
+                metadata=request.metadata,
+                name=request.name,
+                object="vector_store",
+                status=VectorStoreStatus.IN_PROGRESS.value,
+                expires_after=expires_after,
+                expires_at=expires_at,
+            )
+            new_vector_store = await crud_vector_store.create(object_=vector_store)
+
+            if request.file_ids != []:
+                responses = await self.index_files(
+                    new_vector_store.id, request.file_ids
+                )
+
+                for response in responses:
+                    await self._increment_vector_store_file_status(
+                        new_vector_store, response
+                    )
+
+            new_vector_store.status = VectorStoreStatus.COMPLETED.value
+
+            return await crud_vector_store.update(
+                id_=new_vector_store.id,
+                object_=new_vector_store,
+            )
+        except Exception as exc:
+            logging.error(exc)
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail="Unable to parse vector store request",
+            ) from exc
+
+    async def modify_existing_vector_store(
+        self,
+        vector_store_id: str,
+        request: ModifyVectorStoreRequest,
+    ) -> VectorStore:
+        """Modify an existing vector store given its id."""
+        crud_vector_store = CRUDVectorStore(db=self.db)
+
+        if not (
+            old_vector_store := await crud_vector_store.get(
+                filters=FilterVectorStore(id=vector_store_id)
+            )
+        ):
+            raise HTTPException(
+                status_code=status.HTTP_404_NOT_FOUND,
+                detail="Vector store not found",
+            )
+
+        try:
+            new_vector_store = VectorStore(
+                id=vector_store_id,
+                usage_bytes=old_vector_store.usage_bytes,  # Automatically calculated by DB
+                created_at=old_vector_store.created_at,
+                file_counts=old_vector_store.file_counts,
+                last_active_at=old_vector_store.last_active_at,  # Update after indexing files
+                metadata=getattr(request, "metadata", old_vector_store.metadata),
+                name=getattr(request, "name", old_vector_store.name),
+                object="vector_store",
+                status=VectorStoreStatus.IN_PROGRESS.value,
+                expires_after=old_vector_store.expires_after,
+                expires_at=old_vector_store.expires_at,
+            )
+
+            await crud_vector_store.update(
+                id_=vector_store_id,
+                object_=new_vector_store,
+            )  # Sets status to in_progress for the duration of this function
+
+            if request.file_ids:
+                responses = await self.index_files(
+                    new_vector_store.id, request.file_ids
+                )
+                for response in responses:
+                    await self._increment_vector_store_file_status(
+                        new_vector_store, response
+                    )
+
+            new_vector_store.status = VectorStoreStatus.COMPLETED.value
+
+            last_active_at = int(time.time())
+            new_vector_store.last_active_at = (
+                last_active_at  # Update after indexing files
+            )
+            expires_after, expires_at = request.get_expiry(last_active_at)
+
+            if expires_at and expires_at:
+                new_vector_store.expires_after = expires_after
+                new_vector_store.expires_at = expires_at
+
+            return await crud_vector_store.update(
+                id_=vector_store_id,
+                object_=new_vector_store,
+            )
+        except Exception as exc:
+            logging.error(exc)
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail="Unable to parse vector store request",
+            ) from exc
+
+    async def file_ids_are_valid(self, file_ids: str | list[str]) -> bool:
+        """Check if the provided file ids exist"""
+        crud_file_object = CRUDFileObject(db=self.db)
+
+        if not isinstance(file_ids, list):
+            file_ids = [file_ids]
+
+        try:
+            for file_id in file_ids:
+                await crud_file_object.get(filters=FilterFileObject(id=file_id))
+        except Exception:
+            return False
+
+        return True
 
     async def adelete_file(self, vector_store_id: str, file_id: str) -> bool:
         """Delete a file from the vector store.
@@ -184,7 +347,7 @@ class IndexingService:
                 metadata=document.metadata,
                 embedding=embedding,
             )
-            ids.append(response.data[0]["id"])
+            ids.append(response[0]["id"])
 
         return ids
 
@@ -216,6 +379,20 @@ class IndexingService:
         response = await query_builder.execute()
 
         return response
+
+    async def _increment_vector_store_file_status(
+        self, vector_store: VectorStore, file_response: VectorStoreFile
+    ):
+        """Increment the file count of a given vector store based on the file response"""
+        if file_response.status == VectorStoreFileStatus.COMPLETED.value:
+            vector_store.file_counts.completed += 1
+        elif file_response.status == VectorStoreFileStatus.FAILED.value:
+            vector_store.file_counts.failed += 1
+        elif file_response.status == VectorStoreFileStatus.IN_PROGRESS.value:
+            vector_store.file_counts.in_progress += 1
+        elif file_response.status == VectorStoreFileStatus.CANCELLED.value:
+            vector_store.file_counts.cancelled += 1
+        vector_store.file_counts.total += 1
 
     async def _adelete_vector(
         self,
@@ -273,5 +450,12 @@ class IndexingService:
             "metadata": metadata,
             "embedding": embedding,
         }
-        response = await self.db.from_(self.table_name).insert(row).execute()
+        data, _count = await self.db.from_(self.table_name).insert(row).execute()
+
+        _, response = data
+
+        for item in response:
+            if "user_id" in item:
+                del item["user_id"]
+
         return response
