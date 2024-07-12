@@ -2,7 +2,6 @@ import type { Actions } from './$types';
 import { redirect } from '@sveltejs/kit';
 import { env } from '$env/dynamic/private';
 
-// TODO - test keycloak full logout with e2e
 export const actions: Actions = {
   signout: async ({ locals: { supabase, safeGetSession } }) => {
     const { session } = await safeGetSession();
