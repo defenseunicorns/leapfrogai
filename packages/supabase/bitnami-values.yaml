@@ -103,7 +103,7 @@ storage:
     sidecar.istio.io/inject: "false"
   extraEnvVars:
     - name: FILE_SIZE_LIMIT
-      value: "###ZARF_VAR_MAX_FILE_UPLOAD_SIZE###"
+      value: "###ZARF_VAR_MAX_FILE_UPLOAD_SIZE_IN_BYTES###"
 
 studio:
   enabled: ###ZARF_VAR_ENABLE_STUDIO###
