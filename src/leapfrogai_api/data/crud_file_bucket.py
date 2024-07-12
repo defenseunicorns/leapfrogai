@@ -1,6 +1,6 @@
 """CRUD Operations for the Files Bucket."""
 
-from supabase_py_async import AsyncClient
+from supabase import AClient as AsyncClient
 from fastapi import UploadFile
 
 

@@ -120,6 +120,7 @@ def test_create():
     assert VectorStore.model_validate(
         vector_store_response.json()
     ), "Create should create a VectorStore."
+
     assert (
         "user_id" not in vector_store_response.json()
     ), "Create should not return a user_id."

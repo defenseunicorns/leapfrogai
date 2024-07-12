@@ -1,7 +1,6 @@
 """OpenAI Compliant Threads API Router."""
 
 from fastapi import HTTPException, APIRouter, status
-from fastapi.security import HTTPBearer
 from openai.types.beta.threads import Message, MessageDeleted
 from openai.pagination import SyncCursorPage
 from leapfrogai_api.backend.types import (
@@ -14,7 +13,6 @@ from leapfrogai_api.data.crud_message import CRUDMessage
 from leapfrogai_api.routers.supabase_session import Session
 
 router = APIRouter(prefix="/openai/v1/threads", tags=["openai/threads/messages"])
-security = HTTPBearer()
 
 
 @router.post("/{thread_id}/messages")

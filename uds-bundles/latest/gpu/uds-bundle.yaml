@@ -15,18 +15,6 @@ packages:
     # x-release-please-start-version
     ref: 0.8.0
     # x-release-please-end
-    overrides:
-      supabase:
-        supabase-secrets-generator:
-          variables:
-            - path: "leapfrogai.sso.redirectUris"
-              name: "KEYCLOAK_REDIRECT_URIS"
-              default:
-                - "https://supabase-kong.uds.dev/auth/v1/callback"
-            - path: "leapfrogai.sso.webOrigins"
-              name: KEYCLOAK_WEB_ORIGINS
-              default:
-                - "https://ai.uds.dev"
 
   # OpenAI-like API
   - name: leapfrogai-api
