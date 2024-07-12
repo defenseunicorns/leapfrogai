@@ -29,8 +29,8 @@ async def embeddings(
 
     if isinstance(req.input, str):
         request = lfai.EmbeddingRequest(inputs=[req.input])
-    elif isinstance(req.input, list[str]):
-        request = lfai.EmbeddingRequest(inputs=req.input)
+    elif list_str := _to_list_of_strs(req.input):
+        request = lfai.EmbeddingRequest(inputs=list_str)
     else:
         raise HTTPException(
             status_code=status.HTTP_405_METHOD_NOT_ALLOWED,
@@ -38,3 +38,16 @@ async def embeddings(
         )
 
     return await create_embeddings(model, request)
+
+
+def _to_list_of_strs(v: list) -> list[str]:
+    new_list: list[str] = []
+    for item in v:
+        if not isinstance(item, str):
+            raise HTTPException(
+                status_code=status.HTTP_405_METHOD_NOT_ALLOWED,
+                detail=f"Invalid input type {type(item)}. Currently supported types are str and list[str]",
+            )
+
+        new_list.append(item)
+    return new_list
