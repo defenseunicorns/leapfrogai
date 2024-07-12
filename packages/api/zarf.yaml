@@ -5,7 +5,6 @@ metadata:
   description: "LeapfrogAI"
   name: leapfrogai-api
   version: "###ZARF_PKG_TMPL_LEAPFROGAI_IMAGE_VERSION###"
-  architecture: amd64
 
 constants:
   - name: LEAPFROGAI_API_VERSION

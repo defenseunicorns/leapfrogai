@@ -1,6 +1,6 @@
 # temporary deployment and development artifacts
 data/*
-*.tar.zst
+**/*.tar.zst
 __pycache__
 .venv
 .ipynb_checkpoints
@@ -16,7 +16,7 @@ zarf-sbom/
 *egg-info
 egg-info/
 build/
-*.whl
+**/*.whl
 .model/
 *.gguf
 .env
@@ -24,6 +24,8 @@ build/
 .branches
 .temp
 src/leapfrogai_api/config.yaml
+.idea/
+/.python-version
 node_modules
 package.json
 package-lock.json
