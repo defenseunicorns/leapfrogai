@@ -101,10 +101,9 @@ storage:
   resourcesPreset: "none"
   podLabels:
     sidecar.istio.io/inject: "false"
-  storage:
-    extraEnvVars:
-      - name: FILE_SIZE_LIMIT
-        value: ###ZARF_VAR_MAX_FILE_UPLOAD_SIZE###
+  extraEnvVars:
+    - name: FILE_SIZE_LIMIT
+      value: ###ZARF_VAR_MAX_FILE_UPLOAD_SIZE###
 
 studio:
   enabled: ###ZARF_VAR_ENABLE_STUDIO###
