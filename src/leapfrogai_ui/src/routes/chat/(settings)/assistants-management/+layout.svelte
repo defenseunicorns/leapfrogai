@@ -39,20 +39,18 @@
 </script>
 
 <Content>
+  <Breadcrumb noTrailingSlash>
+    {#each paths as { path, name } (path)}
+      {#if $page.url.pathname.includes(path)}
+        <BreadcrumbItem
+          href={isCurrentPage(path) ? '' : getPath(path)}
+          isCurrentPage={isCurrentPage(path)}>{name}</BreadcrumbItem
+        >
+      {/if}
+    {/each}
+  </Breadcrumb>
   <div class="lf-content-container">
-    <div class="slot-wrapper">
-      <Breadcrumb noTrailingSlash>
-        {#each paths as { path, name } (path)}
-          {#if $page.url.pathname.includes(path)}
-            <BreadcrumbItem
-              href={isCurrentPage(path) ? '' : getPath(path)}
-              isCurrentPage={isCurrentPage(path)}>{name}</BreadcrumbItem
-            >
-          {/if}
-        {/each}
-      </Breadcrumb>
-      <slot />
-    </div>
+    <slot />
 
     <PoweredByDU />
   </div>
