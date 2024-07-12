@@ -15,7 +15,7 @@ constants:
     value: "1.23.3"
 
 variables:
-  - name: EXPOSE_OPENAPI_SCHEMA
+  - name: EXPOSE_API
     default: "false"
     description: "Flag to expose the OpenAPI schema for debugging."
   - name: HOSTED_DOMAIN
