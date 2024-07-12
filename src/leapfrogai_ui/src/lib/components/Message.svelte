@@ -19,7 +19,7 @@
   } from '$helpers/chatHelpers';
   import DynamicPictogram from '$components/DynamicPictogram.svelte';
   import type { AppendFunction, ReloadFunction, VercelOrOpenAIMessage } from '$lib/types/messages';
-  import DOMPurify from 'dompurify';
+  import DOMPurify from 'isomorphic-dompurify';
 
   export let allStreamedMessages: VercelOrOpenAIMessage[];
   export let message: VercelOrOpenAIMessage;
