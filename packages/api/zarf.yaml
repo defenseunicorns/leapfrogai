@@ -16,7 +16,7 @@ constants:
 
 variables:
   - name: EXPOSE_API
-    default: "false"
+    default: "true"
     description: "Flag to expose the OpenAPI schema for debugging."
   - name: HOSTED_DOMAIN
     default: "uds.dev"
