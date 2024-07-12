@@ -99,7 +99,7 @@ jobs:
           run: |
             make build-api LOCAL_VERSION=e2e-test
             docker image prune -af
-            uds zarf package deploy packages/api/zarf-package-leapfrogai-api-amd64-e2e-test.tar.zst --set=EXPOSE_OPENAPI_SCHEMA=true --confirm
+            uds zarf package deploy packages/api/zarf-package-leapfrogai-api-amd64-e2e-test.tar.zst --confirm
             rm packages/api/zarf-package-leapfrogai-api-amd64-e2e-test.tar.zst
 
         - name: Test API

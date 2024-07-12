@@ -15,7 +15,7 @@ supabase:
 api:
   replicas: 1
   port: 8080
-  exposeOpenAPISchema: false
+  exposeAPI: true
   defaultEmbeddingsModel: "###ZARF_VAR_DEFAULT_EMBEDDINGS_MODEL###"
 
   migration:
