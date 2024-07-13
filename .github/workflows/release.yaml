@@ -63,7 +63,7 @@ jobs:
 
       - name: Build and Publish UI
         run: |
-          docker buildx build --platform amd64,arm64 -t ghcr.io/defenseunicorns/leapfrogai/leapfrogai-ui:${{ steps.get_version.outputs.version-without-v }} --push -f src/leapfrogai_ui/Dockerfile .
+          docker buildx build --platform amd64,arm64 -t ghcr.io/defenseunicorns/leapfrogai/leapfrogai-ui:${{ steps.get_version.outputs.version-without-v }} --push src/leapfrogai_ui
           docker buildx build --platform amd64,arm64 -t ghcr.io/defenseunicorns/leapfrogai/ui-migrations:${{ steps.get_version.outputs.version-without-v }} --push -f Dockerfile.migrations --build-arg="MIGRATIONS_DIR=src/leapfrogai_ui/supabase/migrations" .
 
           zarf package create packages/ui --set=IMAGE_VERSION=${{ steps.get_version.outputs.version-without-v }} --architecture amd64 --confirm
