@@ -1,9 +1,8 @@
-ARG ARCH
 ARG LOCAL_VERSION
-FROM ghcr.io/defenseunicorns/leapfrogai/leapfrogai-sdk:${LOCAL_VERSION} as sdk
+FROM ghcr.io/defenseunicorns/leapfrogai/leapfrogai-sdk:${LOCAL_VERSION} AS sdk
 
 # hardened and slim python w/ developer tools image
-FROM --platform=$BUILDPLATFORM ghcr.io/defenseunicorns/leapfrogai/python:3.11-dev as builder
+FROM ghcr.io/defenseunicorns/leapfrogai/python:3.11-dev AS builder
 ARG SDK_DEST=src/leapfrogai_sdk/build
 USER root
 WORKDIR /leapfrogai
@@ -36,7 +35,7 @@ RUN python -m pip wheel packages/llama-cpp-python -w packages/llama-cpp-python/b
 RUN pip install packages/llama-cpp-python/build/lfai_llama_cpp_python*.whl --no-index --find-links=packages/llama-cpp-python/build/
 
 # hardened and slim python image
-FROM --platform=$BUILDPLATFORM ghcr.io/defenseunicorns/leapfrogai/python:3.11
+FROM ghcr.io/defenseunicorns/leapfrogai/python:3.11
 
 ENV PATH="/leapfrogai/.venv/bin:$PATH"
 
