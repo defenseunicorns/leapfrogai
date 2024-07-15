@@ -1,8 +1,7 @@
-ARG ARCH
 ARG LOCAL_VERSION
 FROM ghcr.io/defenseunicorns/leapfrogai/leapfrogai-sdk:${LOCAL_VERSION} AS sdk
 
-FROM --platform=$BUILDPLATFORM ghcr.io/defenseunicorns/leapfrogai/python:3.11-dev AS builder
+FROM ghcr.io/defenseunicorns/leapfrogai/python:3.11-dev AS builder
 USER root
 ARG SDK_DEST=src/leapfrogai_sdk/build
 
@@ -30,7 +29,7 @@ RUN pip install packages/whisper/build/lfai_whisper*.whl --no-index --find-links
 FROM cgr.dev/chainguard/ffmpeg:latest as ffmpeg
 
 # hardened and slim python image
-FROM --platform=$BUILDPLATFORM ghcr.io/defenseunicorns/leapfrogai/python:3.11
+FROM ghcr.io/defenseunicorns/leapfrogai/python:3.11
 
 ENV PATH="/leapfrogai/.venv/bin:$PATH"
 
