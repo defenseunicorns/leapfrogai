@@ -1,7 +1,6 @@
 """OpenAI compliant models router."""
 
-from typing import Annotated
-from fastapi import APIRouter, Depends
+from fastapi import APIRouter
 from leapfrogai_api.backend.types import (
     ModelResponse,
     ModelResponseModel,
