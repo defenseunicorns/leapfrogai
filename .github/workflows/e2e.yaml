@@ -117,7 +117,6 @@ jobs:
           run: |
             cp src/leapfrogai_ui/.env.example src/leapfrogai_ui/.env
             npm --prefix src/leapfrogai_ui ci
-            npm --prefix src/leapfrogai_ui run build
             TEST_ENV=CI PUBLIC_DISABLE_KEYCLOAK=true PUBLIC_SUPABASE_URL=https://supabase-kong.uds.dev PUBLIC_SUPABASE_ANON_KEY=$ANON_KEY npm --prefix src/leapfrogai_ui run test:integration
 
         - name: Cleanup UI
