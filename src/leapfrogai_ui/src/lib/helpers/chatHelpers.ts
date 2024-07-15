@@ -3,13 +3,19 @@ import { convertMessageToVercelAiMessage, getMessageText } from '$helpers/thread
 import type { AssistantStatus, ChatRequestOptions, CreateMessage } from 'ai';
 import { type Message as VercelAIMessage } from 'ai/svelte';
 import type { LFAssistant } from '$lib/types/assistants';
-import type { Message as OpenAIMessage } from 'openai/resources/beta/threads/messages';
+import type {
+  Message,
+  Message as OpenAIMessage,
+  MessageContent,
+  TextContentBlock
+} from 'openai/resources/beta/threads/messages';
 import { NO_SELECTED_ASSISTANT_ID } from '$constants';
 import type { LFMessage, NewMessageInput, VercelOrOpenAIMessage } from '$lib/types/messages';
 import { error } from '@sveltejs/kit';
 import type { LFThread } from '$lib/types/threads';
-import { tick } from 'svelte';
+import { type SvelteComponent, tick } from 'svelte';
 import type { FileObject } from 'openai/resources/files';
+import AnnotationLink from '$components/Citation.svelte';
 
 export const sortMessages = (messages: VercelOrOpenAIMessage[]): VercelOrOpenAIMessage[] => {
   return messages.sort((a, b) => {
@@ -143,7 +149,10 @@ export const handleMessageEdit = async ({
     let savedMessageResponseId: string | undefined = undefined;
 
     savedMessageId = savedMessages[allStreamedMessagesIndex].id;
-    savedMessageResponseId = savedMessages[allStreamedMessagesResponseIndex].id;
+
+    savedMessageResponseId = savedMessages[allStreamedMessagesResponseIndex]
+      ? savedMessages[allStreamedMessagesResponseIndex].id
+      : null;
 
     // Ensure the message after the user's message exists and is a response from the AI
     const numToSplice =
@@ -181,6 +190,7 @@ export const handleMessageEdit = async ({
         }
       });
     } else {
+
       await append(cMessage);
       // Save with API
       const newMessage = await saveMessage({
@@ -196,7 +206,10 @@ export const handleMessageEdit = async ({
 
 export const isRunAssistantResponse = (
   message: Partial<VercelAIMessage> | Partial<OpenAIMessage>
-) => ('assistant_id') in message && message.assistant_id && message.assistant_id !== NO_SELECTED_ASSISTANT_ID;
+) =>
+  'assistant_id' in message &&
+  message.assistant_id &&
+  message.assistant_id !== NO_SELECTED_ASSISTANT_ID;
 
 type HandleRegenerateArgs = {
   messages: VercelAIMessage[];
@@ -305,12 +318,8 @@ export const resetMessages = ({
   files
 }: ResetMessagesArgs) => {
   if (activeThread?.messages && activeThread.messages.length > 0) {
-    const parsedAssistantMessages = activeThread.messages
-      .filter((m) => m.run_id)
-      .map((m) => convertMessageToVercelAiMessage(processAnnotations(m, files)));
-    const chatMessages = activeThread.messages
-      .filter((m) => !m.run_id)
-      .map(convertMessageToVercelAiMessage);
+    const parsedAssistantMessages = activeThread.messages.filter((m) => m.run_id);
+    const chatMessages = activeThread.messages.filter((m) => !m.run_id);
 
     setAssistantMessages(parsedAssistantMessages);
     setChatMessages(chatMessages);
@@ -341,7 +350,25 @@ export const delay = (ms: number): Promise<void> => {
   return new Promise((resolve) => setTimeout(resolve, ms));
 };
 
-export const processAnnotations = (message: OpenAIMessage, files: FileObject[]) => {
+export const isTextContentBlock = (content: MessageContent[]): content is TextContentBlock[] => {
+  return Array.isArray(content) && content[0] !== undefined && content[0].type === 'text';
+};
+
+export const processAnnotations = (textContent: TextContentBlock[]) => {
+  const textContentCopy = [...textContent];
+  const messageContent = textContentCopy[0].text;
+  const annotations = messageContent.annotations;
+  annotations.forEach(async (annotation, index) => {
+    const hasBeenProcessed = !messageContent.value.includes(annotation.text);
+    if (!hasBeenProcessed) {
+      // Replace the id with a footnote
+      messageContent.value = messageContent.value.replace(annotation.text, ` [${index + 1}]`);
+    }
+  });
+  return textContentCopy[0].text.value;
+};
+
+export const getCitations = (message: OpenAIMessage, files: FileObject[]) => {
   const messageCopy = { ...message };
   if (
     Array.isArray(messageCopy.content) &&
@@ -350,36 +377,21 @@ export const processAnnotations = (message: OpenAIMessage, files: FileObject[]) 
   ) {
     const messageContent = messageCopy.content[0].text;
     const annotations = messageContent.annotations;
-    console.log('annotations', messageContent.annotations)
-    const citations: string[] = [];
+    const citations: { component: typeof SvelteComponent; props: { [key: string]: any } }[] = [];
     // Iterate over the annotations and add footnotes
     annotations.forEach(async (annotation, index) => {
-      const hasBeenProcessed = !messageContent.value.includes(annotation.text);
-
-      if (!hasBeenProcessed) {
-        // Replace the text with a footnote
-        messageContent.value = messageContent.value.replace(annotation.text, ` [${index + 1}]`);
-        // Gather citations based on annotation attributes
-        if (annotation.type === 'file_citation') {
-          const citedFile = files.find((file) => file.id === annotation.file_citation.file_id);
-          if (citedFile) {
-            citations.push(`[${index + 1}] ${citedFile.filename} &uarr;`);
-          }
-        } else if (annotation.type === 'file_path') {
-          const citedFile = files.find((file) => file.id === annotation.file_path.file_id);
-
-          if (citedFile) {
-            citations.push(`[${index + 1}] Click <here> to download ${citedFile.filename}`);
-          }
-          // TODO - file download (future story)
+      // Gather citations based on annotation attributes
+      if (annotation.type === 'file_citation') {
+        const citedFile = files.find((file) => file.id === annotation.file_citation.file_id);
+        if (citedFile) {
+          citations.push({
+            component: AnnotationLink,
+            props: { file: citedFile, index: index + 1 }
+          });
         }
       }
     });
-
-    // Add footnotes to the end of the message before displaying to user
-    if (citations.length > 0) {
-      messageContent.value += '\n\n' + citations.join('\n');
-    }
+    return citations;
   }
-  return messageCopy;
+  return [];
 };

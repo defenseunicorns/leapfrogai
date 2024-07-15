@@ -14,7 +14,6 @@
 
   import {
     isRunAssistantResponse,
-    processAnnotations,
     resetMessages,
     saveMessage,
     sortMessages,
@@ -48,6 +47,7 @@
       files: data.files
     });
 
+
   $: assistantMode =
     $threadsStore.selectedAssistantId !== NO_SELECTED_ASSISTANT_ID &&
     $threadsStore.selectedAssistantId !== 'manage-assistants';
@@ -73,15 +73,15 @@
         `/api/messages?thread_id=${$page.params.thread_id}&message_id=${$assistantMessages[$assistantMessages.length - 1].id}`
       );
       const message = await messageRes.json();
-      const parsedMessage = processAnnotations(message, data.files);
       const assistantMessagesCopy = [...$assistantMessages];
-      assistantMessagesCopy[assistantMessagesCopy.length - 1] =
-        convertMessageToVercelAiMessage(parsedMessage);
+
+      assistantMessagesCopy[assistantMessagesCopy.length - 1] = message;
+
       setAssistantMessages(assistantMessagesCopy);
       threadsStore.updateMessage(
         $page.params.thread_id,
         $assistantMessages[$assistantMessages.length - 1].id,
-        parsedMessage
+        message
       );
     } catch {
       // Fail Silently - error notification would not be useful to user, on failure, just show unparsed message
@@ -120,7 +120,7 @@
     // Handle completed AI Responses
     onFinish: async (message: VercelAIMessage) => {
       try {
-        if (!assistantMode && data.thread?.id) {
+        if (data.thread?.id) {
           // Save with API to db
           const newMessage = await saveMessage({
             thread_id: data.thread.id,

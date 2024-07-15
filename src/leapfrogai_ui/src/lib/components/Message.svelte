@@ -12,10 +12,12 @@
   import { convertTextToMessageContentArr, getMessageText } from '$helpers/threads';
   import {
     getAssistantImage,
+    getCitations,
     handleAssistantRegenerate,
     handleChatRegenerate,
     handleMessageEdit,
-    isRunAssistantResponse
+    isRunAssistantResponse,
+    processAnnotations
   } from '$helpers/chatHelpers';
   import DynamicPictogram from '$components/DynamicPictogram.svelte';
   import type { AppendFunction, ReloadFunction, VercelOrOpenAIMessage } from '$lib/types/messages';
@@ -101,6 +103,7 @@
       });
     }
   };
+
 </script>
 
 <div
@@ -143,15 +146,20 @@
           </div>
         </div>
       {:else}
-        <Tile style="line-height: 20px;"
-          ><div class="message-content">
+        <Tile style="line-height: 20px;">
+          <div class="message-content">
             <div style="font-weight: bold">
               {message.role === 'user' ? 'You' : getAssistantName(message.assistant_id)}
             </div>
             <!--eslint-disable-next-line svelte/no-at-html-tags -- We use DomPurity to sanitize the code snippet-->
-            <div>{@html md.render(DOMPurify.sanitize(getMessageText(message)))}</div>
-          </div></Tile
-        >
+            {@html md.render(DOMPurify.sanitize(getMessageText(message)))}
+            <div class="citations">
+              {#each getCitations(message, $page.data.files) as { component: Component, props }}
+                <svelte:component this={Component} {...props} />
+              {/each}
+            </div>
+          </div>
+        </Tile>
       {/if}
 
       <div class="utils">
@@ -227,6 +235,7 @@
     width: 100%;
     gap: layout.$spacing-02;
     overflow: hidden;
+    padding-bottom: layout.$spacing-02;
   }
 
   .hide {
@@ -272,5 +281,11 @@
     display: flex;
     flex-direction: column;
     gap: layout.$spacing-03;
+  }
+
+  .citations {
+    display: flex;
+    align-items: flex-start;
+    flex-direction: column;
   }
 </style>
