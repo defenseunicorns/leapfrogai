@@ -1,8 +1,8 @@
 ARG ARCH
 ARG LOCAL_VERSION
-FROM ghcr.io/defenseunicorns/leapfrogai/leapfrogai-sdk:${LOCAL_VERSION} as sdk
+FROM ghcr.io/defenseunicorns/leapfrogai/leapfrogai-sdk:${LOCAL_VERSION} AS sdk
 
-FROM ghcr.io/defenseunicorns/leapfrogai/python:3.11-dev-${ARCH} as builder
+FROM ghcr.io/defenseunicorns/leapfrogai/python:3.11-dev-${ARCH} AS builder
 ARG SDK_DEST=src/leapfrogai_sdk/build
 USER root
 WORKDIR /leapfrogai

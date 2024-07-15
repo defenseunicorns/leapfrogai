@@ -1,5 +1,5 @@
 ARG ARCH=amd64
-FROM ghcr.io/defenseunicorns/leapfrogai/python:3.11-dev-${ARCH} as builder
+FROM ghcr.io/defenseunicorns/leapfrogai/python:3.11-dev-${ARCH} AS builder
 
 ARG SDK_DEST=src/leapfrogai_sdk/build
 USER root
