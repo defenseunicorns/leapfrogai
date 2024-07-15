@@ -5,7 +5,6 @@ metadata:
   description: "LeapfrogAI"
   name: leapfrogai-api
   version: "###ZARF_PKG_TMPL_LEAPFROGAI_IMAGE_VERSION###"
-  architecture: amd64
 
 constants:
   - name: LEAPFROGAI_API_VERSION
@@ -15,11 +14,9 @@ constants:
     value: "1.23.3"
 
 variables:
-  - name: EXPOSE_OPENAPI_SCHEMA
-    default: "false"
+  - name: EXPOSE_API
+    default: "true"
     description: "Flag to expose the OpenAPI schema for debugging."
-  - name: HOSTED_DOMAIN
-    default: "uds.dev"
   - name: DEFAULT_EMBEDDINGS_MODEL
     default: "text-embeddings"
 
@@ -31,7 +28,7 @@ components:
       namespace: leapfrogai
       localPath: chart
       # x-release-please-start-version
-      version: 0.8.0
+      version: 0.9.1
       # x-release-please-end
       valuesFiles:
         - "lfai-values.yaml"

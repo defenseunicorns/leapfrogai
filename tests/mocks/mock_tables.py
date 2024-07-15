@@ -20,7 +20,7 @@ mock_assistant = Assistant(
     instructions="mock-data",
 )
 
-mock_thread = Thread(id="", created_at=0, object="thread")
+mock_thread = Thread(id="1", created_at=0, object="thread")
 
 mock_run = Run(
     id="0",
@@ -46,3 +46,10 @@ mock_message = Message(
         TextContentBlock(text=Text(value="mock-data", annotations=[]), type="text")
     ],
 )
+
+
+class MockApiKey(BaseModel):
+    user_id: str
+
+
+mock_api_key = MockApiKey(user_id="mock-api-key")

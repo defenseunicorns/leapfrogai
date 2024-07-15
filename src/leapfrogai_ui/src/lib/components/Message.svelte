@@ -3,6 +3,8 @@
   import { Button, Tile } from 'carbon-components-svelte';
   import { Copy, Edit, Reset, UserAvatar } from 'carbon-icons-svelte';
   import { type Message as VercelAIMessage } from 'ai/svelte';
+  import markdownit from 'markdown-it';
+  import hljs from 'highlight.js';
   import { LFTextArea } from '$components';
   import frog from '$assets/frog.png';
   import { writable } from 'svelte/store';
@@ -17,6 +19,7 @@
   } from '$helpers/chatHelpers';
   import DynamicPictogram from '$components/DynamicPictogram.svelte';
   import type { AppendFunction, ReloadFunction, VercelOrOpenAIMessage } from '$lib/types/messages';
+  import DOMPurify from 'isomorphic-dompurify';
 
   export let allStreamedMessages: VercelOrOpenAIMessage[];
   export let message: VercelOrOpenAIMessage;
@@ -25,6 +28,24 @@
   export let isLastMessage: boolean;
   export let append: AppendFunction;
   export let reload: ReloadFunction;
+
+  // used for code formatting and handling
+  const md = markdownit({
+    highlight: function (str: string, language: string) {
+      let code: string;
+      if (language && hljs.getLanguage(language)) {
+        try {
+          code = md.utils.escapeHtml(hljs.highlight(str, { language }).value);
+        } catch (__) {
+          code = md.utils.escapeHtml(str);
+        }
+      } else {
+        code = md.utils.escapeHtml(str);
+      }
+
+      return `<pre><code><code-block code="${code}" language="${language}"></code></pre>`;
+    }
+  });
 
   let assistantImage = isRunAssistantResponse(message)
     ? getAssistantImage(...[$page.data.assistants || []], message.assistant_id)
@@ -126,7 +147,8 @@
             <div style="font-weight: bold">
               {message.role === 'user' ? 'You' : getAssistantName(message.assistant_id)}
             </div>
-            <div>{getMessageText(message)}</div>
+            <!--eslint-disable-next-line svelte/no-at-html-tags -- We use DomPurity to sanitize the code snippet-->
+            <div>{@html md.render(DOMPurify.sanitize(getMessageText(message)))}</div>
           </div></Tile
         >
       {/if}
@@ -203,6 +225,7 @@
     flex-direction: column;
     width: 100%;
     gap: layout.$spacing-02;
+    overflow: hidden;
   }
 
   .hide {
@@ -210,7 +233,6 @@
     transition: opacity 0.2s;
   }
   .message {
-    display: flex;
     white-space: pre-line;
   }
 

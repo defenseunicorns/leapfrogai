@@ -8,6 +8,7 @@ from .mock_tables import (
     mock_run,
     mock_message,
     mock_data_model,
+    mock_api_key,
 )
 
 _mocks_cache = {}
@@ -67,6 +68,7 @@ def mock_execute_data(table_name):
         assistant=mock_assistant,
         message=mock_message,
         dummy_table=mock_data_model,
+        api_keys=mock_api_key,
     )
     if table_name:
         return mock_map[table_name]

@@ -1,6 +1,6 @@
 image:
   # x-release-please-start-version
-  lfaiAPITag: 0.8.0
+  lfaiAPITag: 0.9.1
   # x-release-please-end
   kiwigridTag: 1.23.3
 
@@ -15,7 +15,7 @@ supabase:
 api:
   replicas: 1
   port: 8080
-  exposeOpenAPISchema: false
+  exposeAPI: true
   defaultEmbeddingsModel: "###ZARF_VAR_DEFAULT_EMBEDDINGS_MODEL###"
 
   migration:

@@ -1,5 +1,42 @@
 # Changelog
 
+## [0.9.1](https://github.com/defenseunicorns/leapfrogai/compare/v0.9.0...v0.9.1) (2024-07-15)
+
+
+### Bug Fixes
+
+* fix references to architectures across various Dockerfiles ([#779](https://github.com/defenseunicorns/leapfrogai/issues/779)) ([eb3b77d](https://github.com/defenseunicorns/leapfrogai/commit/eb3b77d46cde82734628a45f548748537ced555c))
+
+## [0.9.0](https://github.com/defenseunicorns/leapfrogai/compare/v0.8.0...v0.9.0) (2024-07-12)
+
+
+### Features
+
+* **api:** long lived api keys ([#658](https://github.com/defenseunicorns/leapfrogai/issues/658)) ([8de7de5](https://github.com/defenseunicorns/leapfrogai/commit/8de7de571d58b52683615860388fb848ebd0acb7))
+* **api:** set api variable to expose by default ([#768](https://github.com/defenseunicorns/leapfrogai/issues/768)) ([310a735](https://github.com/defenseunicorns/leapfrogai/commit/310a7352bcf8f5933cc3b5dac775333bc31b78b7))
+* **api:** Support Uploading PowerPoint Files for RAG ([#733](https://github.com/defenseunicorns/leapfrogai/issues/733)) ([612126d](https://github.com/defenseunicorns/leapfrogai/commit/612126d0541a6ad0cc2215bf57227a89663ab648))
+* **api:** transcription/translation endpoints ([#726](https://github.com/defenseunicorns/leapfrogai/issues/726)) ([a62b07e](https://github.com/defenseunicorns/leapfrogai/commit/a62b07e7e053cce92302286722ba26373214d5cc))
+* **ui:** API Keys ([#729](https://github.com/defenseunicorns/leapfrogai/issues/729)) ([1fa59ee](https://github.com/defenseunicorns/leapfrogai/commit/1fa59ee3465f0b6aaa4be7271965def9fba9820d))
+
+
+### Bug Fixes
+
+* **api:** bump max tokens to maximum for Synthia-7B to prevent chopping ([#699](https://github.com/defenseunicorns/leapfrogai/issues/699)) ([ef7e098](https://github.com/defenseunicorns/leapfrogai/commit/ef7e09802b00cc46b6fe350ed4d701ee710a9433))
+* **api:** type-checking embedding list[str] ([#773](https://github.com/defenseunicorns/leapfrogai/issues/773)) ([a7030ad](https://github.com/defenseunicorns/leapfrogai/commit/a7030ad4f7abf6a2e902e4dca45f3e04f24c6fc7))
+
+
+### Miscellaneous
+
+* [#491](https://github.com/defenseunicorns/leapfrogai/issues/491) support arm64 (Apple Silicon) ([#659](https://github.com/defenseunicorns/leapfrogai/issues/659)) ([adf3334](https://github.com/defenseunicorns/leapfrogai/commit/adf3334e1fa0bc3f62895de25e60ebf2e8e3a27a))
+* **api:** raise exception on CRUD base fails ([#748](https://github.com/defenseunicorns/leapfrogai/issues/748)) ([4d8ff03](https://github.com/defenseunicorns/leapfrogai/commit/4d8ff03a2efb7326e02a02bc915d95d684a39859))
+* **deps-dev:** bump braces from 3.0.2 to 3.0.3 in /website ([#612](https://github.com/defenseunicorns/leapfrogai/issues/612)) ([ead5d49](https://github.com/defenseunicorns/leapfrogai/commit/ead5d49d9d1e88c9594fbfe852f815d909a69429))
+* **deps:** bump llama-cpp-python in /packages/llama-cpp-python ([#574](https://github.com/defenseunicorns/leapfrogai/issues/574)) ([10b288e](https://github.com/defenseunicorns/leapfrogai/commit/10b288e3739cfc6ac8b993210de8931ed54067ea))
+* **deps:** bump tqdm in /packages/text-embeddings ([#470](https://github.com/defenseunicorns/leapfrogai/issues/470)) ([d1e42d9](https://github.com/defenseunicorns/leapfrogai/commit/d1e42d9296f6e014ffbbcec2ba295443b1675567))
+* **docs:** Add documentation to types ([#680](https://github.com/defenseunicorns/leapfrogai/issues/680)) ([9f7f68b](https://github.com/defenseunicorns/leapfrogai/commit/9f7f68b5e55579fefa4b5ee278b3401d564de19a))
+* Fill in package READMEs and update docs ([#660](https://github.com/defenseunicorns/leapfrogai/issues/660)) ([7dab8bd](https://github.com/defenseunicorns/leapfrogai/commit/7dab8bd7934b573a77c6fed2be5d6b1d0417a246))
+* Standardize package vars relating to domain names ([#770](https://github.com/defenseunicorns/leapfrogai/issues/770)) ([19ce48a](https://github.com/defenseunicorns/leapfrogai/commit/19ce48aa6ddabe39d95c25a58c85eafd2b4ee4ce))
+* **test:** Create Testing Strategy ADR ([#586](https://github.com/defenseunicorns/leapfrogai/issues/586)) ([4e8fb18](https://github.com/defenseunicorns/leapfrogai/commit/4e8fb18d955d5bdcf0a03eeaefd27ebfed30a93b))
+
 ## [0.8.0](https://github.com/defenseunicorns/leapfrogai/compare/v0.7.2...v0.8.0) (2024-06-18)
 
 
