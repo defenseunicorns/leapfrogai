@@ -1,6 +1,6 @@
 import { LitElement, css, html } from 'lit';
 import { unsafeHTML } from 'lit/directives/unsafe-html.js';
-import DOMPurify from 'dompurify';
+import DOMPurify from 'isomorphic-dompurify';
 import { highlightJsStyles, buttonStyles } from './styles.js';
 import { toastStore } from '$stores';
 

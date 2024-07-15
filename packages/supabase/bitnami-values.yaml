@@ -21,10 +21,6 @@ commonLabels:
 
 jwt:
   autoGenerate:
-    image:
-      tag: 6.0.0-debian-12-r19
-    kubectlImage:
-      tag: 1.29.3-debian-12-r4
     resourcesPreset: "none"
     podLabels:
       sidecar.istio.io/inject: "false"
@@ -59,8 +55,6 @@ auth:
     GOTRUE_EXTERNAL_KEYCLOAK_CLIENT_ID: "{{ .Values.leapfrogai.sso.clientId }}"
     GOTRUE_EXTERNAL_KEYCLOAK_REDIRECT_URI: "https://{{ .Values.leapfrogai.package.host }}.###ZARF_VAR_DOMAIN###/auth/v1/callback"
     GOTRUE_EXTERNAL_KEYCLOAK_URL: "https://sso.###ZARF_VAR_DOMAIN###/realms/uds"
-  image:
-    tag: 2.149.0-debian-12-r0
   resourcesPreset: "none"
   podLabels:
     sidecar.istio.io/inject: "false"
@@ -72,32 +66,24 @@ auth:
           key: secret
 meta:
   enabled: ###ZARF_VAR_ENABLE_META###
-  image:
-    tag: 0.80.0-debian-12-r1
   resourcesPreset: "none"
   podLabels:
     sidecar.istio.io/inject: "false"
 
 realtime:
   enabled: ###ZARF_VAR_ENABLE_REALTIME###
-  image:
-    tag: 2.28.22-debian-12-r0
   resourcesPreset: "none"
   podLabels:
     sidecar.istio.io/inject: "false"
 
 rest:
   enabled: ###ZARF_VAR_ENABLE_REST###
-  image:
-    tag: 11.2.2-debian-12-r14
   resourcesPreset: "none"
   podLabels:
     sidecar.istio.io/inject: "false"
 
 storage:
   enabled: ###ZARF_VAR_ENABLE_STORAGE###
-  image:
-    tag: 0.48.4-debian-12-r0
   resourcesPreset: "none"
   podLabels:
     sidecar.istio.io/inject: "false"
@@ -108,20 +94,16 @@ storage:
 studio:
   enabled: ###ZARF_VAR_ENABLE_STUDIO###
   publicURL: "https://ai.###ZARF_VAR_DOMAIN###"
-  image:
-    tag: 0.24.3-debian-12-r0
   resourcesPreset: "none"
   podLabels:
     sidecar.istio.io/inject: "false"
 
 volumePermissions:
   enabled: ###ZARF_VAR_ENABLE_VOLUME_PERMISSIONS###
-  image:
-    tag: 12-debian-12-r18
   resourcesPreset: "none"
 
 psqlImage:
-  tag: 15.1.1-debian-12-r24
+  tag: 15.1.1-debian-12-r69
 
 kong:
   enabled: ###ZARF_VAR_ENABLE_KONG###
@@ -184,7 +166,7 @@ kong:
 postgresql:
   enabled: ###ZARF_VAR_ENABLE_POSTGRES###
   image:
-    tag: 15.1.1-debian-12-r24
+    tag: 15.1.1-debian-12-r69
     debug: true
   primary:
     resourcesPreset: "none"

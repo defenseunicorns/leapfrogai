@@ -1,9 +1,10 @@
 <script lang="ts">
   import { Attachment } from 'carbon-icons-svelte';
   import { Button } from 'carbon-components-svelte';
+  import { ACCEPTED_FILE_TYPES } from '$constants';
 
   export let disabled = false;
-  export let accept = ['.pdf', '.txt', '.text'];
+  export let accept = ACCEPTED_FILE_TYPES;
   export let multiple = false;
   export let files: File[] = [];
   export let handleAttach: () => void;
