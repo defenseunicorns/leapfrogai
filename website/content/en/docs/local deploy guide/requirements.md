@@ -1,5 +1,5 @@
 ---
-title: Requirements 
+title: Requirements
 type: docs
 weight: 4
 ---
@@ -18,6 +18,7 @@ The following operating systems, hardware, architectures, and system specificati
   - 22.04.4
   - 22.04.5
 - Pop!_OS 22.04 LTS
+- MacOS Sonoma 14.x / ARM64 (CPU-based deployments only)
 
 ### Hardware
 
@@ -44,7 +45,7 @@ The following operating systems, hardware, architectures, and system specificati
   - For all "Isolated Network" installs, `wget`, `git` `clone` and `zarf package create` commands are assumed to have been completed prior to entering the isolated network.
   - For "Isolated Network" installs, ensure files and binaries from these commands are stored on a removable media device and subsequently uploaded to the isolated machine.
   - For specific tool versions, it is recommended to follow the "Isolated Network" instructions.
-  
+
 ## System Requirements
 
 - Standard Unix-based operating system installed.
@@ -65,7 +66,7 @@ Additional considerations are necessary for GPU deployments:
 - Presently, these instructions do not support time-slicing or configuring multi-instance GPU setups.
 - Over-scheduling GPU resources beyond their availability may result in the crash of backend pods.
 - To prevent crashing, install backends as CPU-only if all available GPU devices are already allocated.
-  
+
 ## Additional User Information
 
 - All `cd` commands should be executed with respect to your project's working directory (PWD) within the development environment. Each new step should be considered as initiating from the root of that directory.

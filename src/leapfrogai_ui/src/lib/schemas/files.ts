@@ -1,5 +1,10 @@
 import { array, mixed, object, string, ValidationError } from 'yup';
-import { FILE_SIZE_ERROR_TEXT, MAX_FILE_SIZE } from '$constants';
+import {
+  ACCEPTED_MIME_TYPES,
+  FILE_SIZE_ERROR_TEXT,
+  INVALID_FILE_TYPE_ERROR_TEXT,
+  MAX_FILE_SIZE
+} from '$constants';
 
 export const filesSchema = object({
   files: array().of(
@@ -15,12 +20,12 @@ export const filesSchema = object({
         }
         return true;
       })
-      .test('type', 'Invalid file type, accepted types are: pdf and txt', (value) => {
+      .test('type', INVALID_FILE_TYPE_ERROR_TEXT, (value) => {
         if (value == null) {
           return true;
         }
-        if (value.type !== 'application/pdf' && value.type !== 'text/plain') {
-          return new ValidationError('Invalid file type, accepted types are: pdf and txt');
+        if (!ACCEPTED_MIME_TYPES.includes(value.type)) {
+          return new ValidationError(INVALID_FILE_TYPE_ERROR_TEXT);
         }
         return true;
       })

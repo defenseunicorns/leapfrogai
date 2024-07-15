@@ -1,7 +1,5 @@
-.DS_Store
 node_modules
 /.svelte-kit
-/build
 /package
 **/.env
 !.env.public
@@ -13,22 +11,62 @@ Dockerfile
 .git
 .gitignore
 .gitattributes
+.github/
+adr/
+tests/
 README.md
 .npmrc
 .prettierrc
 .eslintrc.cjs
 .editorconfig
-.vscode
 .idea
-build
-package
-
 
 *.tar.zst
-zarf-sbom/
-
 
 playwright/.auth
 
-
 supabase/
+
+# Copied from .gitignore
+# temporary deployment and development artifacts
+data/*
+**/*.tar.zst
+__pycache__
+.venv
+.ipynb_checkpoints
+.vscode/
+venv
+.DS_Store
+dist/
+tmp/
+temp/
+zarf-sbom/
+/values.yaml
+.pytest_cache
+*egg-info
+egg-info/
+build/
+**/*.whl
+.model/
+*.gguf
+.env
+.ruff_cache
+.branches
+.temp
+src/leapfrogai_api/config.yaml
+.idea/
+/.python-version
+
+# local model and tokenizer files
+*.bin
+pytorch_model.bin.index.json
+special_tokens_map.json
+tokenizer_config.json
+tokenizer.json
+config.json
+generation_config.json
+vocabulary.json
+.model/
+
+# go binaries
+api/main

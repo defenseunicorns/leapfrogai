@@ -46,3 +46,10 @@ mock_message = Message(
         TextContentBlock(text=Text(value="mock-data", annotations=[]), type="text")
     ],
 )
+
+
+class MockApiKey(BaseModel):
+    user_id: str
+
+
+mock_api_key = MockApiKey(user_id="mock-api-key")
