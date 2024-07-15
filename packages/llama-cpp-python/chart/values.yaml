@@ -18,7 +18,7 @@ fullnameOverride: ""
 podAnnotations: {}
 
 podSecurityContext:
-  runAsNonRoot: true
+  runAsNonRoot: false #TODO: @JPERRY the dataInjection init-container to run as non-root
 
 securityContext:
   runAsUser: 65532

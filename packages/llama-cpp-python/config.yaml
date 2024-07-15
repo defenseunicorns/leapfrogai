@@ -1,5 +1,5 @@
 model:
-  source: ".model/model.gguf"
+  source: "/data/.model/model.gguf"
 max_context_length: 16384
 stop_tokens:
   - "<|im_end|>"

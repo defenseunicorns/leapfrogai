@@ -26,3 +26,12 @@ components:
           - "llama-cpp-python-values.yaml"
     images:
       - ghcr.io/defenseunicorns/leapfrogai/llama-cpp-python:###ZARF_PKG_TMPL_IMAGE_VERSION###
+      - alpine:3.18
+    dataInjections:
+      - source: .model/
+        target:
+          namespace: leapfrogai
+          selector: app=lfai-llama
+          container: data-loader
+          path: /data/.model
+        compress: true
