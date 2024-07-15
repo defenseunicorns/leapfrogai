@@ -196,7 +196,7 @@ export const handleMessageEdit = async ({
 
 export const isRunAssistantResponse = (
   message: Partial<VercelAIMessage> | Partial<OpenAIMessage>
-) => message.assistant_id && message.assistant_id !== NO_SELECTED_ASSISTANT_ID;
+) => ('assistant_id') in message && message.assistant_id && message.assistant_id !== NO_SELECTED_ASSISTANT_ID;
 
 type HandleRegenerateArgs = {
   messages: VercelAIMessage[];
@@ -350,6 +350,7 @@ export const processAnnotations = (message: OpenAIMessage, files: FileObject[]) 
   ) {
     const messageContent = messageCopy.content[0].text;
     const annotations = messageContent.annotations;
+    console.log('annotations', messageContent.annotations)
     const citations: string[] = [];
     // Iterate over the annotations and add footnotes
     annotations.forEach(async (annotation, index) => {
@@ -362,7 +363,7 @@ export const processAnnotations = (message: OpenAIMessage, files: FileObject[]) 
         if (annotation.type === 'file_citation') {
           const citedFile = files.find((file) => file.id === annotation.file_citation.file_id);
           if (citedFile) {
-            citations.push(`[${index + 1}] ${citedFile.filename}`);
+            citations.push(`[${index + 1}] ${citedFile.filename} &uarr;`);
           }
         } else if (annotation.type === 'file_path') {
           const citedFile = files.find((file) => file.id === annotation.file_path.file_id);

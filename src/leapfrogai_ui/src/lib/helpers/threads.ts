@@ -7,7 +7,7 @@ export const getMessageText = (
 ) => {
   if (typeof message.content === 'string') return message.content;
   if (message.content && message.content[0] && message.content[0].type === 'text') {
-    return message.content[0].text.value;
+    return message.content[0].text.value as string;
   }
   return '';
 };

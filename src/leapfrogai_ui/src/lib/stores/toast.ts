@@ -16,7 +16,7 @@ const createToastsStore = () => {
 
   return {
     subscribe,
-    addToast: (toast: RequiredToastFields & OptionalToastFields) => {
+    addToast: (toast: ToastNotificationProps) => {
       const id = uuidv4();
       const newToast: ToastNotificationProps = {
         id,

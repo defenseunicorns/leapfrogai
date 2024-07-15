@@ -48,8 +48,9 @@
   });
 
   let assistantImage = isRunAssistantResponse(message)
-    ? getAssistantImage(...[$page.data.assistants || []], message.assistant_id)
+    ? getAssistantImage($page.data.assistants || [], message.assistant_id)
     : null;
+
   let messageIsHovered = false;
   let editMode = false;
   let value = writable(getMessageText(message));
