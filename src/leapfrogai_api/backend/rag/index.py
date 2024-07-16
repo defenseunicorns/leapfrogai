@@ -315,39 +315,35 @@ class IndexingService:
         return bool(response)
 
     async def aadd_documents(
-        self,
-        documents: list[Document],
-        vector_store_id: str,
-        file_id: str,
+            self,
+            documents: list[Document],
+            vector_store_id: str,
+            file_id: str,
     ) -> list[str]:
-        """Adds documents to the vector store.
-
-        Args:
-            documents (list[Document]): A list of Langchain Document objects to be added.
-            vector_store_id (str): The ID of the vector store where the documents will be added.
-            file_id (str): The ID of the file associated with the documents.
-
-        Returns:
-            List[str]: A list of IDs assigned to the added documents.
-
-        Raises:
-            Any exceptions that may occur during the execution of the method.
-
-        """
-        ids = []  # Initialize the ids list
+        """Adds documents to the vector store in batches."""
+        ids = []
         embeddings = await self.embeddings.aembed_documents(
             texts=[document.page_content for document in documents]
         )
 
+        vectors = []
         for document, embedding in zip(documents, embeddings):
-            response = await self._aadd_vector(
+            vector = {
+                'content': document.page_content,
+                'metadata': document.metadata,
+                'embedding': embedding
+            }
+            vectors.append(vector)
+
+        batch_size = 100
+        for i in range(0, len(vectors), batch_size):
+            batch = vectors[i:i + batch_size]
+            response = await self._aadd_vectors(
                 vector_store_id=vector_store_id,
                 file_id=file_id,
-                content=document.page_content,
-                metadata=document.metadata,
-                embedding=embedding,
+                vectors=batch
             )
-            ids.append(response[0]["id"])
+            ids.extend([item["id"] for item in response])
 
         return ids
 
@@ -418,39 +414,37 @@ class IndexingService:
         )
         return response
 
-    async def _aadd_vector(
-        self,
-        vector_store_id: str,
-        file_id: str,
-        content: str,
-        metadata: str,
-        embedding: list[float],
+    async def _aadd_vectors(
+            self,
+            vector_store_id: str,
+            file_id: str,
+            vectors: list[dict[str, any]]
     ) -> dict:
-        """Add a vector to the vector store.
+        """Add multiple vectors to the vector store in a batch.
 
         Args:
             vector_store_id (str): The ID of the vector store.
-            file_id (str): The ID of the file associated with the vector.
-            content (str): The content of the vector.
-            metadata (str): The metadata associated with the vector.
-            embedding (list[float]): The embedding of the vector.
+            file_id (str): The ID of the file associated with the vectors.
+            vectors (list[dict]): A list of dictionaries containing vector data.
 
         Returns:
-            dict: The response from the database after inserting the vector.
-
+            dict: The response from the database after inserting the vectors.
         """
-
         user_id: str = (await self.db.auth.get_user()).user.id
 
-        row: dict[str, any] = {
-            "user_id": user_id,
-            "vector_store_id": vector_store_id,
-            "file_id": file_id,
-            "content": content,
-            "metadata": metadata,
-            "embedding": embedding,
-        }
-        data, _count = await self.db.from_(self.table_name).insert(row).execute()
+        rows = []
+        for vector in vectors:
+            row = {
+                "user_id": user_id,
+                "vector_store_id": vector_store_id,
+                "file_id": file_id,
+                "content": vector['content'],
+                "metadata": vector['metadata'],
+                "embedding": vector['embedding'],
+            }
+            rows.append(row)
+
+        data, _count = await self.db.from_(self.table_name).insert(rows).execute()
 
         _, response = data
 
@@ -459,3 +453,4 @@ class IndexingService:
                 del item["user_id"]
 
         return response
+
