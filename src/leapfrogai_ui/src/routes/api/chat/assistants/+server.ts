@@ -21,8 +21,6 @@ export async function POST({ request, locals: { safeGetSession } }) {
 
   const openai = getOpenAiClient(session.access_token);
 
-
-
   const threadId = input.data.threadId ?? (await openai.beta.threads.create({ metadata: {} })).id;
 
   // Add a message to the thread

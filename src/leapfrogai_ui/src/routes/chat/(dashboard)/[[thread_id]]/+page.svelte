@@ -39,8 +39,7 @@
     resetMessages({
       activeThread: data.thread,
       setChatMessages,
-      setAssistantMessages,
-      files: data.files
+      setAssistantMessages
     });
 
   $: activeThreadMessages =
@@ -125,8 +124,7 @@
     setMessages: setChatMessages,
     isLoading,
     stop: chatStop,
-    append: chatAppend,
-    reload
+    append: chatAppend
   } = useChat({
     // Handle completed AI Responses
     onFinish: async (message: VercelAIMessage) => {

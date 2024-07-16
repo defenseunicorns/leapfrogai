@@ -1,5 +1,3 @@
 type ToastStore = {
   toasts: ToastNotificationProps[];
 };
-
-

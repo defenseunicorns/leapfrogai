@@ -37,10 +37,16 @@
   };
 </script>
 
-<div class="centered-flexbox citation-container" on:click={handleClick}>
+<button
+  class="centered-flexbox citation-container remove-btn-style"
+  on:click={(e) => {
+    e.preventDefault();
+    handleClick();
+  }}
+>
   <span class="link">{`[${index}] ${file.filename}`}</span>
   <ArrowUp class="link" color="#78a9ff" style="cursor: pointer;" />
-</div>
+</button>
 
 <style lang="scss">
   .citation-container {

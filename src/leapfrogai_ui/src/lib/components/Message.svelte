@@ -20,7 +20,6 @@
   import DynamicPictogram from '$components/DynamicPictogram.svelte';
   import type { AppendFunction } from '$lib/types/messages';
   import DOMPurify from 'isomorphic-dompurify';
-  import { NO_SELECTED_ASSISTANT_ID } from '$constants';
 
   export let message: OpenAIMessage;
   export let messages: OpenAIMessage[] = [];
@@ -28,10 +27,6 @@
   export let setMessages: ((messages: VercelAIMessage[]) => void) | undefined = undefined;
   export let isLastMessage: boolean;
   export let append: AppendFunction | undefined = undefined;
-
-  $: assistantMode =
-    $threadsStore.selectedAssistantId !== NO_SELECTED_ASSISTANT_ID &&
-    $threadsStore.selectedAssistantId !== 'manage-assistants';
 
   // used for code formatting and handling
   const md = markdownit({

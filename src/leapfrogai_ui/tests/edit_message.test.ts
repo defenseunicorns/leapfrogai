@@ -96,9 +96,7 @@ test('editing a message when an AI response is missing', async ({ page, openAICl
   await deleteActiveThread(page, openAIClient);
 });
 
-// TODO - flaky when run with rest of tests
-// https://github.com/defenseunicorns/leapfrogai/issues/741
-test.skip('regenerating responses', async ({ page, openAIClient }) => {
+test('regenerating responses', async ({ page, openAIClient }) => {
   await loadChatPage(page);
 
   await sendMessage(page, newMessage1);
@@ -109,7 +107,7 @@ test.skip('regenerating responses', async ({ page, openAIClient }) => {
 
   await expect(page.getByLabel('regenerate message')).not.toBeDisabled(); // wait for message to finish saving
   await page.getByLabel('regenerate message').click();
-  await expect(messages).toHaveCount(1);
+  await expect(messages).toHaveCount(0);
   await waitForResponseToComplete(page);
   await expect(messages).toHaveCount(2);
   await deleteActiveThread(page, openAIClient);
@@ -131,7 +129,7 @@ test('it can regenerate the last assistant response', async ({ page, openAIClien
 
   await expect(page.getByLabel('regenerate message')).not.toBeDisabled(); // wait for message to finish saving
   await page.getByLabel('regenerate message').click();
-  await expect(messages).toHaveCount(1);
+  await expect(messages).toHaveCount(0);
   await waitForResponseToComplete(page);
   await expect(messages).toHaveCount(2);
 

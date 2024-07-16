@@ -2,8 +2,7 @@ import { type Message as VercelAIMessage } from '@ai-sdk/svelte';
 import type { Message as OpenAIMessage } from 'openai/resources/beta/threads/messages';
 import { normalizeTimestamp } from '$helpers/chatHelpers';
 import { getFakeOpenAIMessage } from '$testUtils/fakeData';
-import type { LFMessage, VercelOrOpenAIMessage } from '$lib/types/messages';
-import { getUnixSeconds } from '$helpers/dates';
+import type { LFMessage } from '$lib/types/messages';
 
 describe('chat helpers', () => {
   describe('normalizeTimestamp', () => {
@@ -59,5 +58,4 @@ describe('chat helpers', () => {
       expect(timestamp).toBe(new Date().getTime());
     });
   });
-
 });

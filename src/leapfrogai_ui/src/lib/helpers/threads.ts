@@ -1,11 +1,9 @@
 import { type Message as VercelAIMessage } from '@ai-sdk/svelte';
-import type { Message, MessageContent } from 'openai/resources/beta/threads/messages';
-import type {LFMessage, VercelOrOpenAIMessage} from '$lib/types/messages';
+import type { MessageContent } from 'openai/resources/beta/threads/messages';
+import type { LFMessage, VercelOrOpenAIMessage } from '$lib/types/messages';
 import { isTextContentBlock, processAnnotations } from '$helpers/chatHelpers';
 
-export const getMessageText = (
-  message: Partial<LFMessage> | Partial<VercelOrOpenAIMessage>
-) => {
+export const getMessageText = (message: Partial<LFMessage> | Partial<VercelOrOpenAIMessage>) => {
   if (typeof message.content === 'string') return message.content;
   if (isTextContentBlock(message.content)) {
     return processAnnotations(message.content);

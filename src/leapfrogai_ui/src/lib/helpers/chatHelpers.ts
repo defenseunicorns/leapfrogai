@@ -28,15 +28,6 @@ export const saveMessage = async (input: NewMessageInput) => {
   });
 
   if (res.ok) return res.json();
-  console.log(res.statusText);
-  return error(500, 'Error saving message');
-};
-
-export const getMessages = async (thread_id: string) => {
-  const res = await fetch(`/api/messages/${thread_id}`);
-
-  if (res.ok) return res.json();
-
   return error(500, 'Error saving message');
 };
 
@@ -180,16 +171,14 @@ export const handleMessageEdit = async ({
 
 type ResetMessagesArgs = {
   activeThread?: LFThread;
-  setAssistantMessages: (messages: LFMessage[]) => void;
-  setChatMessages: (messages: LFMessage[]) => void;
-  files: FileObject[];
+  setAssistantMessages: (messages: VercelAIMessage[]) => void;
+  setChatMessages: (messages: VercelAIMessage[]) => void;
 };
 // Used to reset messages when thread id changes
 export const resetMessages = ({
   activeThread,
   setAssistantMessages,
-  setChatMessages,
-  files
+  setChatMessages
 }: ResetMessagesArgs) => {
   if (activeThread?.messages && activeThread.messages.length > 0) {
     const parsedAssistantMessages = activeThread.messages
@@ -255,7 +244,7 @@ export const getCitations = (message: OpenAIMessage, files: FileObject[]) => {
   ) {
     const messageContent = messageCopy.content[0].text;
     const annotations = messageContent.annotations;
-    const citations: { component: typeof SvelteComponent; props: { [key: string]: any } }[] = [];
+    const citations: { component: typeof SvelteComponent; props: object }[] = [];
     // Iterate over the annotations and add footnotes
     annotations.forEach(async (annotation, index) => {
       // Gather citations based on annotation attributes
