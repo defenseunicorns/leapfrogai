@@ -38,7 +38,10 @@ components:
     actions:
       onCreate:
         before:
-          # TODO: Lets see if this can check the checksum of the model.gguf to shortcut this download..
-          - cmd: |
-              mkdir -p .model
-              wget https://huggingface.co/TheBloke/SynthIA-7B-v2.0-GGUF/resolve/main/synthia-7b-v2.0.Q4_K_M.gguf -q -O .model/model.gguf
+          # NOTE: This assumes python is installed and in $PATH
+          - cmd: python scripts/model_download.py
+            env:
+              - REPO_ID=TheBloke/SynthIA-7B-v2.0-GGUF
+              - FILENAME=synthia-7b-v2.0.Q4_K_M.gguf
+              - REVISION=3f65d882253d1f15a113dabf473a7c02a004d2b5
+              - SHA256_CHECKSUM=5d6369d456446c40a9fd149525747d8dc494196686861c43b00f9230a166ba82
