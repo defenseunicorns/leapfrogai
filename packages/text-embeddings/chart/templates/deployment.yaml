@@ -25,6 +25,7 @@ spec:
       labels:
         {{- include "chart.selectorLabels" . | nindent 8 }}
     spec:
+      runtimeClassName: {{ .Values.runtimeClassName }}
       securityContext:
         {{- toYaml .Values.podSecurityContext | nindent 8 }}
       containers:

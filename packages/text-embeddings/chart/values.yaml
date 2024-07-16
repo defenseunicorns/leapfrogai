@@ -17,6 +17,7 @@ fullnameOverride: ""
 
 podAnnotations: {}
 
+runtimeClassName: nvidia
 podSecurityContext:
   runAsNonRoot: true
 
