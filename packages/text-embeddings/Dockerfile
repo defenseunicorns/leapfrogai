@@ -1,9 +1,8 @@
-ARG ARCH
 ARG LOCAL_VERSION
-FROM ghcr.io/defenseunicorns/leapfrogai/leapfrogai-sdk:${LOCAL_VERSION} as sdk
+FROM ghcr.io/defenseunicorns/leapfrogai/leapfrogai-sdk:${LOCAL_VERSION} AS sdk
 
 # hardened and slim python w/ developer tools image
-FROM ghcr.io/defenseunicorns/leapfrogai/python:3.11-dev-${ARCH} as builder
+FROM ghcr.io/defenseunicorns/leapfrogai/python:3.11-dev AS builder
 ARG SDK_DEST=src/leapfrogai_sdk/build
 USER root
 WORKDIR /leapfrogai
@@ -32,7 +31,7 @@ COPY packages/text-embeddings/scripts/model_download.py scripts/model_download.p
 RUN REPO_ID=${REPO_ID} REVISION=${REVISION} python scripts/model_download.py
 
 # hardened and slim python image
-FROM ghcr.io/defenseunicorns/leapfrogai/python:3.11-${ARCH}
+FROM ghcr.io/defenseunicorns/leapfrogai/python:3.11
 
 ENV PATH="/leapfrogai/.venv/bin:$PATH"
 
