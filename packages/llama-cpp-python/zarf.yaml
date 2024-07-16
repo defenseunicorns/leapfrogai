@@ -35,3 +35,10 @@ components:
           container: data-loader
           path: /data/.model
         compress: true
+    actions:
+      onCreate:
+        before:
+          # TODO: Lets see if this can check the checksum of the model.gguf to shortcut this download..
+          - cmd: |
+              mkdir -p .model
+              wget https://huggingface.co/TheBloke/SynthIA-7B-v2.0-GGUF/resolve/main/synthia-7b-v2.0.Q4_K_M.gguf -q -O .model/model.gguf
