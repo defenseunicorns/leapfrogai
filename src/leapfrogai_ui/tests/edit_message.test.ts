@@ -114,7 +114,7 @@ test('regenerating responses', async ({ page, openAIClient }) => {
 });
 
 test('it can regenerate the last assistant response', async ({ page, openAIClient }) => {
-  const assistant = await createAssistantWithApi(openAIClient);
+  const assistant = await createAssistantWithApi({ openAIClient });
 
   await loadChatPage(page);
   const messages = page.getByTestId('message');
@@ -139,7 +139,7 @@ test('it can regenerate the last assistant response', async ({ page, openAIClien
 });
 
 test('editing an assistant message', async ({ page, openAIClient }) => {
-  const assistant = await createAssistantWithApi(openAIClient);
+  const assistant = await createAssistantWithApi({ openAIClient });
 
   await loadChatPage(page);
 

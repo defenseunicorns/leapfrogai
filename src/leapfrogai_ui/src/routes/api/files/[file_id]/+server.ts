@@ -6,9 +6,9 @@ export async function GET({ params, locals: { safeGetSession } }) {
   if (!session) {
     error(401, 'Unauthorized');
   }
+  const file_id = params.file_id;
+  if (!file_id) error(400, 'Bad Request');
   try {
-    const file_id = params.file_id;
-    if (!file_id) error(400, 'Bad Request');
     const openai = getOpenAiClient(session.access_token);
     const res = await openai.files.content(params.file_id);
     return new Response(res.body, {

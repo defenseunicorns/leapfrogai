@@ -17,6 +17,8 @@ import {
   deleteAssistant,
   deleteAssistantWithApi
 } from './helpers/assistantHelpers';
+import { getSimpleMathQuestion, loadChatPage } from './helpers/helpers';
+import { sendMessage, waitForResponseToComplete } from './helpers/threadHelpers';
 
 test.afterAll(() => {
   deleteAllGeneratedFixtureFiles(); // cleanup any files that were not deleted during tests (e.g. due to test failure)
@@ -30,7 +32,7 @@ test('can edit an assistant and attach files to it', async ({ page, openAIClient
 
   const uploadedFile1 = await uploadFileWithApi(filename1, openAIClient);
   const uploadedFile2 = await uploadFileWithApi(filename2, openAIClient);
-  const assistant = await createAssistantWithApi(openAIClient);
+  const assistant = await createAssistantWithApi({ openAIClient });
 
   await page.goto(`/chat/assistants-management/edit/${assistant.id}`);
 
@@ -84,7 +86,7 @@ test('it can edit an assistant and remove a file', async ({ page, openAIClient }
   await createPDF(filename2);
   const uploadedFile1 = await uploadFileWithApi(filename1, openAIClient);
   const uploadedFile2 = await uploadFileWithApi(filename2, openAIClient);
-  const assistant = await createAssistantWithApi(openAIClient);
+  const assistant = await createAssistantWithApi({ openAIClient });
   await page.goto(`/chat/assistants-management/edit/${assistant.id}`);
 
   // Create assistant with files
@@ -151,7 +153,7 @@ test('while editing an assistant, it can upload new files and save the assistant
   const filename = `${faker.word.noun()}-test.pdf`;
   await createPDF(filename);
 
-  const assistant = await createAssistantWithApi(openAIClient);
+  const assistant = await createAssistantWithApi({ openAIClient });
   await page.goto(`/chat/assistants-management/edit/${assistant.id}`);
 
   await page.getByRole('button', { name: 'Open menu' }).click();
@@ -217,4 +219,29 @@ test('it displays an uploading indicator temporarily when uploading a file', asy
   // Cleanup
   deleteFixtureFile(filename);
   await deleteFileByName(filename, openAIClient);
+});
+
+test('can download a file with the citation', async ({ page, openAIClient }) => {
+  const filename = await createPDF();
+  const uploadedFile = await uploadFileWithApi(filename, openAIClient);
+  const fakeAssistantInput = getFakeAssistantInput([uploadedFile.id]);
+  const assistant = await createAssistantWithApi({
+    assistantInput: fakeAssistantInput,
+    openAIClient
+  });
+  const newMessage = getSimpleMathQuestion();
+  await loadChatPage(page);
+  const messages = page.getByTestId('message');
+
+  const assistantDropdown = page.getByTestId('assistant-dropdown');
+  await assistantDropdown.click();
+  await page.getByText(assistant.name!).click();
+  await sendMessage(page, newMessage);
+  await waitForResponseToComplete(page);
+  await expect(messages).toHaveCount(2);
+  const downloadPromise = page.waitForEvent('download');
+  await page.getByText(filename).click();
+  const download = await downloadPromise;
+  // suggested name has underscores instead of colons
+  expect(download.suggestedFilename()).toEqual(filename.replace(/:/g, '_'));
 });

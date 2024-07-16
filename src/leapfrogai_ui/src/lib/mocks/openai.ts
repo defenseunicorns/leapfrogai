@@ -125,6 +125,11 @@ class OpenAI {
         return Promise.resolve({ id, object: 'file', deleted: false });
       }
       return Promise.resolve({ id, object: 'file', deleted: true });
+    }),
+    content: vi.fn().mockImplementation(() => {
+      return new Response(JSON.stringify({ content: 'file content' }), {
+        headers: { 'Content-Type': 'application/pdf' }
+      });
     })
   };
 
