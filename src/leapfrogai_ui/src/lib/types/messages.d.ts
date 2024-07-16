@@ -3,7 +3,7 @@ import type {
   MessageContent
 } from 'openai/resources/beta/threads/messages';
 import type { Roles } from '$lib/types/threads';
-import type { Message as VercelAIMessage } from 'ai/svelte';
+import type { Message as VercelAIMessage } from '@ai-sdk/svelte';
 import type { ChatRequestOptions, CreateMessage } from 'ai';
 
 export type NewMessageInput = {

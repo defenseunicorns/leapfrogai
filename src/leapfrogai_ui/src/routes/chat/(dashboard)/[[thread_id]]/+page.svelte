@@ -4,7 +4,7 @@
   import { onMount, tick } from 'svelte';
   import { threadsStore, toastStore } from '$stores';
   import { ArrowRight, Checkmark, StopFilledAlt, UserProfile } from 'carbon-icons-svelte';
-  import { type Message as VercelAIMessage, useAssistant, useChat } from 'ai/svelte';
+  import { type Message as VercelAIMessage, useAssistant, useChat } from '@ai-sdk/svelte';
   import { page } from '$app/stores';
   import { beforeNavigate, goto } from '$app/navigation';
   import Message from '$components/Message.svelte';
@@ -16,7 +16,6 @@
     isRunAssistantResponse,
     resetMessages,
     saveMessage,
-    sortMessages,
     stopThenSave
   } from '$helpers/chatHelpers';
   import {
@@ -24,8 +23,6 @@
     ERROR_GETTING_ASSISTANT_MSG_TEXT,
     ERROR_SAVING_MSG_TEXT
   } from '$constants/toastMessages';
-
-  import { convertMessageToVercelAiMessage } from '$helpers/threads.js';
 
   export let data;
 
@@ -37,7 +34,6 @@
   /** END LOCAL VARS **/
 
   /** REACTIVE STATE **/
-
   $: $page.params.thread_id, threadsStore.setLastVisitedThreadId($page.params.thread_id);
   $: $page.params.thread_id,
     resetMessages({
@@ -47,63 +43,69 @@
       files: data.files
     });
 
-
+  $: activeThreadMessages =
+    $threadsStore.threads.find((thread) => thread.id === $page.params.thread_id)?.messages || [];
+  $: messageStreaming = $isLoading || $status === 'in_progress';
+  $: latestChatMessage = $chatMessages[$chatMessages.length - 1];
+  $: latestAssistantMessage = $assistantMessages[$assistantMessages.length - 1];
   $: assistantMode =
     $threadsStore.selectedAssistantId !== NO_SELECTED_ASSISTANT_ID &&
     $threadsStore.selectedAssistantId !== 'manage-assistants';
 
-  $: if ($isLoading || $status === 'in_progress') threadsStore.setSendingBlocked(true);
+  $: if (messageStreaming) threadsStore.setSendingBlocked(true);
 
-  // new streamed assistant message received (add in assistant_id and ensure it has a created_at timestamp)
-  $: $assistantMessages, modifyStreamedAssistantResponse();
+  // Handle streaming chat completion messages
+  $: if (isLoading)
+    latestChatMessage?.role !== 'user' && threadsStore.setStreamingMessage(latestChatMessage);
+
+  // Handle streaming assistant messages
+  $: $assistantMessages, handleAssistantMessage();
 
   // assistant stream has completed
-  $: if (hasSentAssistantMessage && $status === 'awaiting_message') {
-    fetchAndParseCompletedAssistantResponse();
-  }
-
-  $: sortedMessages = sortMessages([...$chatMessages, ...$assistantMessages]);
+  $: $status, handleCompletedAssistantResponse();
 
   /** END REACTIVE STATE **/
 
-  // Annotations are stored after the run completes, so we re-fetch the last message to get them
-  const fetchAndParseCompletedAssistantResponse = async () => {
-    try {
-      const messageRes = await fetch(
-        `/api/messages?thread_id=${$page.params.thread_id}&message_id=${$assistantMessages[$assistantMessages.length - 1].id}`
-      );
-      const message = await messageRes.json();
-      const assistantMessagesCopy = [...$assistantMessages];
+  const handleAssistantMessage = async () => {
+    if ($status === 'in_progress') {
+      console.log('latest assistant msg', latestAssistantMessage);
+      // The initial user message is stored with a short temp id by @ai-sdk/svelte, we need to wait for the
+      // user message to be saved to the DB so we have the real id. Temp IDs appear to be 7 chars long, setting the
+      // length check here higher for safety
+      if (latestAssistantMessage?.role === 'user' && latestAssistantMessage.id.length > 15) {
+        const userMessageId = $assistantMessages[$assistantMessages.length - 1].id;
+        const messageRes = await fetch(
+          `/api/messages?thread_id=${$page.params.thread_id}&message_id=${userMessageId}`
+        );
+        const message = await messageRes.json();
+        await threadsStore.addMessageToStore(message);
+      } else if (latestAssistantMessage?.role !== 'user') {
+        // Streamed assistant responses don't contain an assistant_id, so we add it here
+        // and also add a createdAt date if not present
+        if (!latestAssistantMessage.assistant_id) {
+          latestAssistantMessage.assistant_id = $threadsStore.selectedAssistantId;
+        }
 
-      assistantMessagesCopy[assistantMessagesCopy.length - 1] = message;
+        if (!latestAssistantMessage.createdAt)
+          latestAssistantMessage.createdAt =
+            latestAssistantMessage.created_at || getUnixSeconds(new Date());
 
-      setAssistantMessages(assistantMessagesCopy);
-      threadsStore.updateMessage(
-        $page.params.thread_id,
-        $assistantMessages[$assistantMessages.length - 1].id,
-        message
-      );
-    } catch {
-      // Fail Silently - error notification would not be useful to user, on failure, just show unparsed message
+        threadsStore.setStreamingMessage(latestAssistantMessage);
+        await threadsStore.setSendingBlocked(false);
+      }
     }
   };
 
-  const modifyStreamedAssistantResponse = async () => {
-    // Streamed assistant responses don't contain an assistant_id, so we add it here
-    // and also add a createdAt date if not present
-    const assistantMessagesCopy = [...$assistantMessages];
-    const latestMessage = assistantMessagesCopy[assistantMessagesCopy.length - 1];
-    if (latestMessage) {
-      if (!latestMessage.assistant_id) {
-        latestMessage.assistant_id = $threadsStore.selectedAssistantId;
-      }
-
-      if (!latestMessage.createdAt)
-        latestMessage.createdAt = latestMessage.created_at || getUnixSeconds(new Date());
-
-      setAssistantMessages(assistantMessagesCopy);
+  const handleCompletedAssistantResponse = async () => {
+    if (hasSentAssistantMessage && $status === 'awaiting_message') {
+      const assistantResponseId = $assistantMessages[$assistantMessages.length - 1].id;
+      const messageRes = await fetch(
+        `/api/messages?thread_id=${$page.params.thread_id}&message_id=${assistantResponseId}`
+      );
+      const message = await messageRes.json();
+      await threadsStore.addMessageToStore(message);
+      threadsStore.setStreamingMessage(null);
     }
-    await threadsStore.setSendingBlocked(false);
   };
 
   /** useChat - streams messages with the /api/chat route**/
@@ -129,6 +131,7 @@
           });
 
           await threadsStore.addMessageToStore(newMessage);
+          threadsStore.setStreamingMessage(null);
         }
       } catch {
         toastStore.addToast({
@@ -176,6 +179,7 @@
 
   const sendAssistantMessage = async (e: SubmitEvent | KeyboardEvent) => {
     await threadsStore.setSendingBlocked(true);
+    hasSentAssistantMessage = true;
     if (data.thread?.id) {
       // assistant mode
       $assistantInput = $chatInput;
@@ -192,7 +196,6 @@
       $assistantInput = '';
     }
     await threadsStore.setSendingBlocked(false);
-    hasSentAssistantMessage = true;
   };
 
   const sendChatMessage = async (e: SubmitEvent | KeyboardEvent) => {
@@ -286,17 +289,29 @@
   <form on:submit={onSubmit} class="container">
     <div class="messages-container">
       <div bind:this={messageThreadDiv}>
-        {#each sortedMessages as message, index (message.id)}
+        {#each activeThreadMessages as message, index (message.id)}
           <Message
-            allStreamedMessages={sortedMessages}
+            messages={activeThreadMessages}
+            streamedMessages={isRunAssistantResponse(message) ? $assistantMessages : $chatMessages}
             {message}
-            messages={isRunAssistantResponse(message) ? $assistantMessages : $chatMessages}
-            setMessages={isRunAssistantResponse(message) ? setAssistantMessages : setChatMessages}
-            isLastMessage={index === sortedMessages.length - 1}
+            isLastMessage={!$threadsStore.streamingMessage &&
+              index === activeThreadMessages.length - 1}
             append={isRunAssistantResponse(message) ? assistantAppend : chatAppend}
-            {reload}
+            setMessages={isRunAssistantResponse(message) ? setAssistantMessages : setChatMessages}
           />
         {/each}
+        {#if $threadsStore.streamingMessage}
+          <Message
+            messages={activeThreadMessages}
+            streamedMessages={assistantMode ? $assistantMessages : $chatMessages}
+            message={$threadsStore.streamingMessage}
+            setMessages={assistantMode ? setAssistantMessages : setChatMessages}
+            isLastMessage
+            append={isRunAssistantResponse($threadsStore.streamingMessage)
+              ? assistantAppend
+              : chatAppend}
+          />
+        {/if}
       </div>
     </div>
     <hr id="divider" class="divider" />

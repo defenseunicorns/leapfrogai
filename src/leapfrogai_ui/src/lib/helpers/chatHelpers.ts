@@ -1,10 +1,9 @@
 import { threadsStore, toastStore } from '$stores';
 import { convertMessageToVercelAiMessage, getMessageText } from '$helpers/threads';
 import type { AssistantStatus, ChatRequestOptions, CreateMessage } from 'ai';
-import { type Message as VercelAIMessage } from 'ai/svelte';
+import { type Message as VercelAIMessage } from '@ai-sdk/svelte';
 import type { LFAssistant } from '$lib/types/assistants';
 import type {
-  Message,
   Message as OpenAIMessage,
   MessageContent,
   TextContentBlock
@@ -16,21 +15,6 @@ import type { LFThread } from '$lib/types/threads';
 import { type SvelteComponent, tick } from 'svelte';
 import type { FileObject } from 'openai/resources/files';
 import AnnotationLink from '$components/Citation.svelte';
-
-export const sortMessages = (messages: VercelOrOpenAIMessage[]): VercelOrOpenAIMessage[] => {
-  return messages.sort((a, b) => {
-    const timeA = normalizeTimestamp(a);
-    const timeB = normalizeTimestamp(b);
-
-    if (timeA === timeB) {
-      if (a.role === b.role) {
-        return 0; // same created_at and role
-      }
-      return a.role === 'user' ? -1 : 1; // user comes before assistant
-    }
-    return timeA - timeB; // sort by created_at
-  });
-};
 
 export const saveMessage = async (input: NewMessageInput) => {
   const res = await fetch('/api/messages/new', {
@@ -112,11 +96,18 @@ export const getAssistantImage = (assistants: LFAssistant[], assistant_id: strin
   return null;
 };
 
+export const isRunAssistantResponse = (
+  message: Partial<VercelAIMessage> | Partial<OpenAIMessage>
+) =>
+  'assistant_id' in message &&
+  message.assistant_id &&
+  message.assistant_id !== NO_SELECTED_ASSISTANT_ID;
+
 type EditMessageArgs = {
-  allStreamedMessages: VercelOrOpenAIMessage[];
-  message: Partial<OpenAIMessage>;
-  messages: VercelAIMessage[];
   thread_id: string;
+  messages: OpenAIMessage[];
+  streamedMessages: VercelOrOpenAIMessage[];
+  message: OpenAIMessage;
   setMessages: (messages: VercelAIMessage[]) => void;
   append: (
     message: VercelAIMessage | CreateMessage,
@@ -125,91 +116,64 @@ type EditMessageArgs = {
 };
 
 export const handleMessageEdit = async ({
-  allStreamedMessages,
-  message,
-  messages,
   thread_id,
+  messages,
+  streamedMessages,
+  message,
   setMessages,
   append
 }: EditMessageArgs) => {
-  if (message.id) {
-    // Saved message are the completed messages returned from the API (have actual ids, not temp streamed ids)
-    // Streamed chat messages will have temp ids, not actual ids. Assistant messages (even the streamed ones) have actual ids
-    // When editing a streamed chat message, we have to fetch the saved messages and find the actual ids of the messages we want to delete
-    // First get the index of the messages from all the streamed messages, then find the actual id using that index
-    // from the saved messages
-    const savedMessages = (await getMessages(thread_id)) as LFMessage[];
-    sortMessages(savedMessages);
+  const messageIndex = messages.findIndex((m) => m.id === message.id);
+  const messageResponseIndex = messageIndex + 1;
+  const messageResponseId = messages[messageResponseIndex].id;
+  const numToSplice =
+    messages[messageResponseIndex] && messages[messageResponseIndex].role !== 'user' ? 2 : 1;
 
-    const messagesStreamedIndex = messages.findIndex((m) => m.id === message.id);
-    const allStreamedMessagesIndex = allStreamedMessages.findIndex((m) => m.id === message.id);
-    const allStreamedMessagesResponseIndex = allStreamedMessagesIndex + 1;
+  const promises = [threadsStore.deleteMessage(thread_id, message.id)];
+  if (numToSplice === 2) {
+    // also delete that message's response
+    promises.push(threadsStore.deleteMessage(thread_id, messageResponseId));
+  }
+  await Promise.all(promises).catch(() => {
+    toastStore.addToast({
+      kind: 'error',
+      title: 'Error Editing Messages',
+      subtitle: 'Message could not be edited'
+    });
+    return;
+  });
 
-    let savedMessageId: string | undefined = undefined;
-    let savedMessageResponseId: string | undefined = undefined;
+  const indexToSplice = streamedMessages.findIndex((m) => m.id === message.id);
+  setMessages(streamedMessages.toSpliced(indexToSplice, numToSplice));
+  await tick();
 
-    savedMessageId = savedMessages[allStreamedMessagesIndex].id;
+  const cMessage: CreateMessage = {
+    content: getMessageText(message),
+    role: 'user',
+    createdAt: new Date()
+  };
 
-    savedMessageResponseId = savedMessages[allStreamedMessagesResponseIndex]
-      ? savedMessages[allStreamedMessagesResponseIndex].id
-      : null;
-
-    // Ensure the message after the user's message exists and is a response from the AI
-    const numToSplice =
-      allStreamedMessages[allStreamedMessagesResponseIndex] &&
-      allStreamedMessages[allStreamedMessagesResponseIndex].role !== 'user'
-        ? 2
-        : 1;
-
-    // delete old message from DB
-    if (savedMessageId) {
-      await threadsStore.deleteMessage(thread_id, savedMessageId);
-    }
-    if (numToSplice === 2 && savedMessageResponseId) {
-      // also delete that message's response
-      await threadsStore.deleteMessage(thread_id, savedMessageResponseId);
-    }
-    // Update the streamed messages (subset of the streamed messages, not all the streamed messages, eg. chat or assistants)
-    setMessages(messages.toSpliced(messagesStreamedIndex, numToSplice)); // remove original message and response
-    await tick();
-
-    // send to /api/chat or /api/chat/assistants
-    const cMessage: CreateMessage = {
+  if (isRunAssistantResponse(message)) {
+    cMessage.assistant_id = message.assistant_id;
+    await append(cMessage, {
+      data: {
+        message: getMessageText(message),
+        assistantId: message.assistant_id!,
+        threadId: thread_id
+      }
+    });
+  } else {
+    // Save with API
+    const newMessage = await saveMessage({
+      thread_id,
       content: getMessageText(message),
-      role: 'user',
-      createdAt: new Date()
-    };
+      role: 'user'
+    });
+    await threadsStore.addMessageToStore(newMessage);
 
-    if (isRunAssistantResponse(message)) {
-      cMessage.assistant_id = message.assistant_id;
-      await append(cMessage, {
-        data: {
-          message: getMessageText(message),
-          assistantId: message.assistant_id!,
-          threadId: thread_id
-        }
-      });
-    } else {
-
-      await append(cMessage);
-      // Save with API
-      const newMessage = await saveMessage({
-        thread_id,
-        content: getMessageText(message),
-        role: 'user'
-      });
-
-      await threadsStore.addMessageToStore(newMessage);
-    }
+    await append(cMessage);
   }
 };
-
-export const isRunAssistantResponse = (
-  message: Partial<VercelAIMessage> | Partial<OpenAIMessage>
-) =>
-  'assistant_id' in message &&
-  message.assistant_id &&
-  message.assistant_id !== NO_SELECTED_ASSISTANT_ID;
 
 type HandleRegenerateArgs = {
   messages: VercelAIMessage[];
@@ -318,8 +282,12 @@ export const resetMessages = ({
   files
 }: ResetMessagesArgs) => {
   if (activeThread?.messages && activeThread.messages.length > 0) {
-    const parsedAssistantMessages = activeThread.messages.filter((m) => m.run_id);
-    const chatMessages = activeThread.messages.filter((m) => !m.run_id);
+    const parsedAssistantMessages = activeThread.messages
+      .filter((m) => m.run_id)
+      .map((m) => convertMessageToVercelAiMessage(m));
+    const chatMessages = activeThread.messages
+      .filter((m) => !m.run_id)
+      .map((m) => convertMessageToVercelAiMessage(m));
 
     setAssistantMessages(parsedAssistantMessages);
     setChatMessages(chatMessages);

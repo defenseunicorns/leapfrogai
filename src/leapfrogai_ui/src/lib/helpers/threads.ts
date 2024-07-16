@@ -1,4 +1,4 @@
-import { type Message as VercelAIMessage } from 'ai/svelte';
+import { type Message as VercelAIMessage } from '@ai-sdk/svelte';
 import type { Message, MessageContent } from 'openai/resources/beta/threads/messages';
 import type {LFMessage, VercelOrOpenAIMessage} from '$lib/types/messages';
 import { isTextContentBlock, processAnnotations } from '$helpers/chatHelpers';

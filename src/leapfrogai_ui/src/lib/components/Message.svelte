@@ -2,7 +2,7 @@
   import { page } from '$app/stores';
   import { Button, Tile } from 'carbon-components-svelte';
   import { Copy, Edit, Reset, UserAvatar } from 'carbon-icons-svelte';
-  import { type Message as VercelAIMessage } from 'ai/svelte';
+  import { type Message as VercelAIMessage } from '@ai-sdk/svelte';
   import markdownit from 'markdown-it';
   import hljs from 'highlight.js';
   import { LFTextArea } from '$components';
@@ -10,6 +10,7 @@
   import { writable } from 'svelte/store';
   import { threadsStore, toastStore } from '$stores';
   import { convertTextToMessageContentArr, getMessageText } from '$helpers/threads';
+  import type { Message as OpenAIMessage } from 'openai/resources/beta/threads/messages';
   import {
     getAssistantImage,
     getCitations,
@@ -23,13 +24,13 @@
   import type { AppendFunction, ReloadFunction, VercelOrOpenAIMessage } from '$lib/types/messages';
   import DOMPurify from 'isomorphic-dompurify';
 
-  export let allStreamedMessages: VercelOrOpenAIMessage[];
-  export let message: VercelOrOpenAIMessage;
-  export let messages: VercelAIMessage[] = [];
+  export let message: OpenAIMessage;
+  export let messages: OpenAIMessage[];
+  export let streamedMessages: VercelAIMessage[];
   export let setMessages: (messages: VercelAIMessage[]) => void;
   export let isLastMessage: boolean;
   export let append: AppendFunction;
-  export let reload: ReloadFunction;
+  // export let reload: ReloadFunction;
 
   // used for code formatting and handling
   const md = markdownit({
@@ -50,12 +51,12 @@
   });
 
   let assistantImage = isRunAssistantResponse(message)
-    ? getAssistantImage($page.data.assistants || [], message.assistant_id)
+    ? getAssistantImage($page.data.assistants || [], message.assistant_id!)
     : null;
 
   let messageIsHovered = false;
   let editMode = false;
-  let value = writable(getMessageText(message));
+  let value = writable<string>(getMessageText(message));
 
   const getAssistantName = (id?: string) => {
     if (!id) return 'LeapfrogAI Bot';
@@ -69,14 +70,14 @@
     editMode = false;
 
     if (isRunAssistantResponse(message)) {
-      threadsStore.setSelectedAssistantId(message.assistant_id);
+      threadsStore.setSelectedAssistantId(message.assistant_id!);
     }
 
     await handleMessageEdit({
-      allStreamedMessages,
-      message: { ...message, content: convertTextToMessageContentArr($value) },
       thread_id: $page.params.thread_id,
       messages,
+      streamedMessages,
+      message: { ...message, content: convertTextToMessageContentArr($value) },
       setMessages,
       append
     });
@@ -87,7 +88,8 @@
     value.set(getMessageText(message)); // restore original value
   };
 
-  const handleCopy = async () => {
+  const handleCopy = async (e) => {
+    e.preventDefault();
     try {
       await navigator.clipboard.writeText($value);
       toastStore.addToast({
@@ -103,7 +105,6 @@
       });
     }
   };
-
 </script>
 
 <div
@@ -193,24 +194,25 @@
             on:click={() => {
               if (isRunAssistantResponse(message)) {
                 threadsStore.setSelectedAssistantId(message.assistant_id);
-                handleAssistantRegenerate({
-                  messages,
-                  setMessages,
-                  thread_id: $page.params.thread_id,
-                  append
-                });
-              } else {
-                const savedMessages =
-                  $threadsStore.threads.find((t) => t.id === $page.params.thread_id)?.messages ||
-                  [];
-                handleChatRegenerate({
-                  savedMessages,
-                  message,
-                  messages,
-                  setMessages,
-                  thread_id: $page.params.thread_id,
-                  reload
-                });
+                // TODO - re-factor and re-enable regeneration
+                //   handleAssistantRegenerate({
+                //     messages,
+                //     setMessages,
+                //     thread_id: $page.params.thread_id,
+                //     append
+                //   });
+                // } else {
+                //   const savedMessages =
+                //     $threadsStore.threads.find((t) => t.id === $page.params.thread_id)?.messages ||
+                //     [];
+                //   handleChatRegenerate({
+                //     savedMessages,
+                //     message,
+                //     messages,
+                //     setMessages,
+                //     thread_id: $page.params.thread_id,
+                //     reload
+                //   });
               }
             }}
             aria-label="regenerate message"
