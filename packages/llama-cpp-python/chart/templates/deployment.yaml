@@ -29,7 +29,11 @@ spec:
       # It's necessary to include the ###ZARF_DATA_INJECTION_MARKER### somewhere in the podspec, otherwise data injections will not occur.
       initContainers:
         - name: data-loader
-          image: alpine:3.18
+          image: cgr.dev/chainguard/bash:latest
+          securityContext:
+            runAsUser: 65532
+            runAsGroup: 65532
+            fsGroup: 65532
           # This command looks for the Zarf "data injection marker" which is a timestamped file that is injected after everything else and marks the injection as complete.
           command:
             [
@@ -39,11 +43,11 @@ spec:
             ]
           resources:
             requests:
-              memory: "16Mi"
-              cpu: "50m"
-            limits:
               memory: "64Mi"
-              cpu: "100m"
+              cpu: "200m"
+            limits:
+              memory: "128Mi"
+              cpu: "500m"
           volumeMounts:
             - name: leapfrogai-pv-storage
               mountPath: /data
