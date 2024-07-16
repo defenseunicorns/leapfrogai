@@ -36,14 +36,14 @@ local-registry: ## Start up a local container registry. Errors in this target ar
 	-docker run -d -p ${REG_PORT}:5000 --restart=always --name registry registry:2
 
 sdk-wheel: ## build wheels for the leapfrogai_sdk package as a dependency for other lfai components
-	docker build --platform=linux/${ARCH} --build-arg ARCH=${ARCH} -t ghcr.io/defenseunicorns/leapfrogai/leapfrogai-sdk:${LOCAL_VERSION} -f src/leapfrogai_sdk/Dockerfile .
+	docker build --platform=linux/${ARCH} -t ghcr.io/defenseunicorns/leapfrogai/leapfrogai-sdk:${LOCAL_VERSION} -f src/leapfrogai_sdk/Dockerfile .
 
-docker-supabase: local-registry
+docker-supabase:
 	## Build the migration container for this version of the supabase package
 	docker build -t ghcr.io/defenseunicorns/leapfrogai/supabase-migrations:${LOCAL_VERSION} -f Dockerfile.migrations --build-arg="MIGRATIONS_DIR=packages/supabase/migrations" .
 	docker tag ghcr.io/defenseunicorns/leapfrogai/supabase-migrations:${LOCAL_VERSION} localhost:${REG_PORT}/defenseunicorns/leapfrogai/supabase-migrations:${LOCAL_VERSION}
 
-build-supabase: docker-supabase
+build-supabase: local-registry docker-supabase
 	docker push localhost:${REG_PORT}/defenseunicorns/leapfrogai/supabase-migrations:${LOCAL_VERSION}
 
 	## Build the Zarf package
@@ -51,98 +51,98 @@ build-supabase: docker-supabase
 
 docker-api: local-registry sdk-wheel
 	## Build the API image (and tag it for the local registry)
-	docker build --platform=linux/${ARCH} --build-arg ARCH=${ARCH} --build-arg LOCAL_VERSION=${LOCAL_VERSION} -t ghcr.io/defenseunicorns/leapfrogai/leapfrogai-api:${LOCAL_VERSION} -f packages/api/Dockerfile .
+	docker build --platform=linux/${ARCH} --build-arg LOCAL_VERSION=${LOCAL_VERSION} -t ghcr.io/defenseunicorns/leapfrogai/leapfrogai-api:${LOCAL_VERSION} -f packages/api/Dockerfile .
 	docker tag ghcr.io/defenseunicorns/leapfrogai/leapfrogai-api:${LOCAL_VERSION} localhost:${REG_PORT}/defenseunicorns/leapfrogai/leapfrogai-api:${LOCAL_VERSION}
 
 	## Build the migration container for this version of the API
-	docker build --platform=linux/${ARCH} --build-arg ARCH=${ARCH} -t ghcr.io/defenseunicorns/leapfrogai/api-migrations:${LOCAL_VERSION} -f Dockerfile.migrations --build-arg="MIGRATIONS_DIR=packages/api/supabase/migrations" .
+	docker build --platform=linux/${ARCH} -t ghcr.io/defenseunicorns/leapfrogai/api-migrations:${LOCAL_VERSION} -f Dockerfile.migrations --build-arg="MIGRATIONS_DIR=packages/api/supabase/migrations" .
 	docker tag ghcr.io/defenseunicorns/leapfrogai/api-migrations:${LOCAL_VERSION} localhost:${REG_PORT}/defenseunicorns/leapfrogai/api-migrations:${LOCAL_VERSION}
 
-build-api: docker-api ## Build the leapfrogai_api container and Zarf package
+build-api: local-registry docker-api ## Build the leapfrogai_api container and Zarf package
 	## Push the images to the local registry (Zarf is super slow if the image is only in the local daemon)
 	docker push localhost:${REG_PORT}/defenseunicorns/leapfrogai/leapfrogai-api:${LOCAL_VERSION}
 	docker push localhost:${REG_PORT}/defenseunicorns/leapfrogai/api-migrations:${LOCAL_VERSION}
 
 	## Build the Zarf package
-	uds zarf package create packages/api -o packages/api --registry-override=ghcr.io=localhost:${REG_PORT} --insecure --set LEAPFROGAI_IMAGE_VERSION=${LOCAL_VERSION} --confirm
+	uds zarf package create packages/api -a ${ARCH} -o packages/api --registry-override=ghcr.io=localhost:${REG_PORT} --insecure --set LEAPFROGAI_IMAGE_VERSION=${LOCAL_VERSION} --confirm
 
-docker-ui: local-registry
+docker-ui:
 	## Build the UI image (and tag it for the local registry)
-	docker build --platform=linux/${ARCH} --build-arg ARCH=${ARCH} -t ghcr.io/defenseunicorns/leapfrogai/leapfrogai-ui:${LOCAL_VERSION} src/leapfrogai_ui
+	docker build --platform=linux/${ARCH} -t ghcr.io/defenseunicorns/leapfrogai/leapfrogai-ui:${LOCAL_VERSION} src/leapfrogai_ui
 	docker tag ghcr.io/defenseunicorns/leapfrogai/leapfrogai-ui:${LOCAL_VERSION} localhost:${REG_PORT}/defenseunicorns/leapfrogai/leapfrogai-ui:${LOCAL_VERSION}
 
 	## Build the migration container for the version of the UI
-	docker build --platform=linux/${ARCH} --build-arg ARCH=${ARCH} -t ghcr.io/defenseunicorns/leapfrogai/ui-migrations:${LOCAL_VERSION} -f Dockerfile.migrations --build-arg="MIGRATIONS_DIR=src/leapfrogai_ui/supabase/migrations" .
+	docker build --platform=linux/${ARCH} -t ghcr.io/defenseunicorns/leapfrogai/ui-migrations:${LOCAL_VERSION} -f Dockerfile.migrations --build-arg="MIGRATIONS_DIR=src/leapfrogai_ui/supabase/migrations" .
 	docker tag ghcr.io/defenseunicorns/leapfrogai/ui-migrations:${LOCAL_VERSION} localhost:${REG_PORT}/defenseunicorns/leapfrogai/ui-migrations:${LOCAL_VERSION}
 
-build-ui: docker-ui ## Build the leapfrogai_ui container and Zarf package
+build-ui: local-registry docker-ui ## Build the leapfrogai_ui container and Zarf package
 	## Push the image to the local registry (Zarf is super slow if the image is only in the local daemon)
 	docker push localhost:${REG_PORT}/defenseunicorns/leapfrogai/leapfrogai-ui:${LOCAL_VERSION}
 	docker push localhost:${REG_PORT}/defenseunicorns/leapfrogai/ui-migrations:${LOCAL_VERSION}
 
 	## Build the Zarf package
-	uds zarf package create packages/ui -o packages/ui --registry-override=ghcr.io=localhost:${REG_PORT} --insecure --set IMAGE_VERSION=${LOCAL_VERSION} --confirm
+	uds zarf package create packages/ui -a ${ARCH} -o packages/ui --registry-override=ghcr.io=localhost:${REG_PORT} --insecure --set IMAGE_VERSION=${LOCAL_VERSION} --confirm
 
-docker-llama-cpp-python: local-registry sdk-wheel
+docker-llama-cpp-python: sdk-wheel
 	## Build the image (and tag it for the local registry)
-	docker build  --platform=linux/${ARCH} --build-arg ARCH=${ARCH} --build-arg LOCAL_VERSION=${LOCAL_VERSION} -t ghcr.io/defenseunicorns/leapfrogai/llama-cpp-python:${LOCAL_VERSION} -f packages/llama-cpp-python/Dockerfile .
+	docker build  --platform=linux/${ARCH} --build-arg LOCAL_VERSION=${LOCAL_VERSION} -t ghcr.io/defenseunicorns/leapfrogai/llama-cpp-python:${LOCAL_VERSION} -f packages/llama-cpp-python/Dockerfile .
 	docker tag ghcr.io/defenseunicorns/leapfrogai/llama-cpp-python:${LOCAL_VERSION} localhost:${REG_PORT}/defenseunicorns/leapfrogai/llama-cpp-python:${LOCAL_VERSION}
 
-build-llama-cpp-python: docker-llama-cpp-python ## Build the llama-cpp-python (cpu) container and Zarf package
+build-llama-cpp-python: local-registry docker-llama-cpp-python ## Build the llama-cpp-python (cpu) container and Zarf package
 	## Push the image to the local registry (Zarf is super slow if the image is only in the local daemon)
 	docker push localhost:${REG_PORT}/defenseunicorns/leapfrogai/llama-cpp-python:${LOCAL_VERSION}
 
 	## Build the Zarf package
-	uds zarf package create packages/llama-cpp-python -o packages/llama-cpp-python --registry-override=ghcr.io=localhost:${REG_PORT} --insecure --set IMAGE_VERSION=${LOCAL_VERSION} --confirm
+	uds zarf package create packages/llama-cpp-python -a ${ARCH} -o packages/llama-cpp-python --registry-override=ghcr.io=localhost:${REG_PORT} --insecure --set IMAGE_VERSION=${LOCAL_VERSION} --confirm
 
-docker-vllm: local-registry sdk-wheel
+docker-vllm: sdk-wheel
 	## Build the image (and tag it for the local registry)
-	docker build --platform=linux/${ARCH} --build-arg ARCH=${ARCH} --build-arg LOCAL_VERSION=${LOCAL_VERSION} -t ghcr.io/defenseunicorns/leapfrogai/vllm:${LOCAL_VERSION} -f packages/vllm/Dockerfile .
+	docker build --platform=linux/${ARCH} --build-arg LOCAL_VERSION=${LOCAL_VERSION} -t ghcr.io/defenseunicorns/leapfrogai/vllm:${LOCAL_VERSION} -f packages/vllm/Dockerfile .
 	docker tag ghcr.io/defenseunicorns/leapfrogai/vllm:${LOCAL_VERSION} localhost:${REG_PORT}/defenseunicorns/leapfrogai/vllm:${LOCAL_VERSION}
 
-build-vllm: docker-vllm ## Build the vllm container and Zarf package
+build-vllm: local-registry docker-vllm ## Build the vllm container and Zarf package
 	## Push the image to the local registry (Zarf is super slow if the image is only in the local daemon)
 	docker push localhost:${REG_PORT}/defenseunicorns/leapfrogai/vllm:${LOCAL_VERSION}
 
 	## Build the Zarf package
-	uds zarf package create packages/vllm -o packages/vllm --registry-override=ghcr.io=localhost:${REG_PORT} --insecure --set IMAGE_VERSION=${LOCAL_VERSION} --confirm
+	uds zarf package create packages/vllm -a ${ARCH} -o packages/vllm --registry-override=ghcr.io=localhost:${REG_PORT} --insecure --set IMAGE_VERSION=${LOCAL_VERSION} --confirm
 
-docker-text-embeddings: local-registry sdk-wheel
+docker-text-embeddings: sdk-wheel
 	## Build the image (and tag it for the local registry)
-	docker build --platform=linux/${ARCH} --build-arg ARCH=${ARCH} --build-arg LOCAL_VERSION=${LOCAL_VERSION} -t ghcr.io/defenseunicorns/leapfrogai/text-embeddings:${LOCAL_VERSION} -f packages/text-embeddings/Dockerfile .
+	docker build --platform=linux/${ARCH} --build-arg LOCAL_VERSION=${LOCAL_VERSION} -t ghcr.io/defenseunicorns/leapfrogai/text-embeddings:${LOCAL_VERSION} -f packages/text-embeddings/Dockerfile .
 	docker tag ghcr.io/defenseunicorns/leapfrogai/text-embeddings:${LOCAL_VERSION} localhost:${REG_PORT}/defenseunicorns/leapfrogai/text-embeddings:${LOCAL_VERSION}
 
-build-text-embeddings: docker-text-embeddings ## Build the text-embeddings container and Zarf package
+build-text-embeddings: local-registry docker-text-embeddings ## Build the text-embeddings container and Zarf package
 	## Push the image to the local registry (Zarf is super slow if the image is only in the local daemon)
 	docker push localhost:${REG_PORT}/defenseunicorns/leapfrogai/text-embeddings:${LOCAL_VERSION}
 
 	## Build the Zarf package
-	uds zarf package create packages/text-embeddings -o packages/text-embeddings --registry-override=ghcr.io=localhost:${REG_PORT} --insecure --set IMAGE_VERSION=${LOCAL_VERSION} --confirm
+	uds zarf package create packages/text-embeddings -a ${ARCH} -o packages/text-embeddings --registry-override=ghcr.io=localhost:${REG_PORT} --insecure --set IMAGE_VERSION=${LOCAL_VERSION} --confirm
 
 
-docker-whisper: local-registry sdk-wheel
+docker-whisper: sdk-wheel
 	## Build the image (and tag it for the local registry)
-	docker build --platform=linux/${ARCH} --build-arg ARCH=${ARCH} --build-arg LOCAL_VERSION=${LOCAL_VERSION} -t ghcr.io/defenseunicorns/leapfrogai/whisper:${LOCAL_VERSION} -f packages/whisper/Dockerfile .
+	docker build --platform=linux/${ARCH} --build-arg LOCAL_VERSION=${LOCAL_VERSION} -t ghcr.io/defenseunicorns/leapfrogai/whisper:${LOCAL_VERSION} -f packages/whisper/Dockerfile .
 	docker tag ghcr.io/defenseunicorns/leapfrogai/whisper:${LOCAL_VERSION} localhost:${REG_PORT}/defenseunicorns/leapfrogai/whisper:${LOCAL_VERSION}
 
-build-whisper: docker-whisper ## Build the whisper container and zarf package
+build-whisper: local-registry docker-whisper ## Build the whisper container and zarf package
 	## Push the image to the local registry (Zarf is super slow if the image is only in the local daemon)
 	docker push localhost:${REG_PORT}/defenseunicorns/leapfrogai/whisper:${LOCAL_VERSION}
 
 	## Build the Zarf package
-	uds zarf package create packages/whisper -o packages/whisper --registry-override=ghcr.io=localhost:${REG_PORT} --insecure --set IMAGE_VERSION=${LOCAL_VERSION} --confirm
+	uds zarf package create packages/whisper -a ${ARCH} -o packages/whisper --registry-override=ghcr.io=localhost:${REG_PORT} --insecure --set IMAGE_VERSION=${LOCAL_VERSION} --confirm
 
-docker-repeater: local-registry sdk-wheel
+docker-repeater: sdk-wheel
 	## Build the image (and tag it for the local registry)
-	docker build --platform=linux/${ARCH} --build-arg ARCH=${ARCH} --build-arg LOCAL_VERSION=${LOCAL_VERSION} -t ghcr.io/defenseunicorns/leapfrogai/repeater:${LOCAL_VERSION} -f packages/repeater/Dockerfile .
+	docker build --platform=linux/${ARCH} --build-arg LOCAL_VERSION=${LOCAL_VERSION} -t ghcr.io/defenseunicorns/leapfrogai/repeater:${LOCAL_VERSION} -f packages/repeater/Dockerfile .
 	docker tag ghcr.io/defenseunicorns/leapfrogai/repeater:${LOCAL_VERSION} localhost:${REG_PORT}/defenseunicorns/leapfrogai/repeater:${LOCAL_VERSION}
 
-build-repeater: docker-repeater ## Build the repeater container and zarf package
+build-repeater: local-registry docker-repeater ## Build the repeater container and zarf package
 	## Push the image to the local registry (Zarf is super slow if the image is only in the local daemon)
 	docker push localhost:${REG_PORT}/defenseunicorns/leapfrogai/repeater:${LOCAL_VERSION}
 
 	## Build the Zarf package
-	uds zarf package create packages/repeater -o packages/repeater --registry-override=ghcr.io=localhost:${REG_PORT} --insecure --set IMAGE_VERSION=${LOCAL_VERSION} --confirm
+	uds zarf package create packages/repeater -a ${ARCH} -o packages/repeater --registry-override=ghcr.io=localhost:${REG_PORT} --insecure --set IMAGE_VERSION=${LOCAL_VERSION} --confirm
 
 build-cpu: build-supabase build-api build-ui build-llama-cpp-python build-text-embeddings build-whisper ## Build all zarf packages for a cpu-enabled deployment of LFAI
 

@@ -1,8 +1,7 @@
-ARG ARCH
 ARG LOCAL_VERSION
-FROM ghcr.io/defenseunicorns/leapfrogai/leapfrogai-sdk:${LOCAL_VERSION} as sdk
+FROM ghcr.io/defenseunicorns/leapfrogai/leapfrogai-sdk:${LOCAL_VERSION} AS sdk
 
-FROM ghcr.io/defenseunicorns/leapfrogai/python:3.11-dev-${ARCH} as builder
+FROM ghcr.io/defenseunicorns/leapfrogai/python:3.11-dev AS builder
 ARG SDK_DEST=src/leapfrogai_sdk/build
 USER root
 WORKDIR /leapfrogai
@@ -18,7 +17,7 @@ RUN rm -f packages/api/build/*.whl
 RUN python -m pip wheel src/leapfrogai_api -w packages/api/build --find-links=${SDK_DEST}
 RUN pip install packages/api/build/leapfrogai_api*.whl --no-index --find-links=packages/api/build/
 
-FROM ghcr.io/defenseunicorns/leapfrogai/python:3.11-${ARCH}
+FROM ghcr.io/defenseunicorns/leapfrogai/python:3.11
 ENV PATH="/leapfrogai/.venv/bin:$PATH"
 WORKDIR /leapfrogai
 

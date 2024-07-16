@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.9.1](https://github.com/defenseunicorns/leapfrogai/compare/v0.9.0...v0.9.1) (2024-07-15)
+
+
+### Bug Fixes
+
+* fix references to architectures across various Dockerfiles ([#779](https://github.com/defenseunicorns/leapfrogai/issues/779)) ([eb3b77d](https://github.com/defenseunicorns/leapfrogai/commit/eb3b77d46cde82734628a45f548748537ced555c))
+
 ## [0.9.0](https://github.com/defenseunicorns/leapfrogai/compare/v0.8.0...v0.9.0) (2024-07-12)
 
 
