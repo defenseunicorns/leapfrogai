@@ -20,6 +20,7 @@
   import DynamicPictogram from '$components/DynamicPictogram.svelte';
   import type { AppendFunction } from '$lib/types/messages';
   import DOMPurify from 'isomorphic-dompurify';
+  import { NO_SELECTED_ASSISTANT_ID } from '$constants';
 
   export let message: OpenAIMessage;
   export let messages: OpenAIMessage[] = [];
@@ -28,7 +29,9 @@
   export let isLastMessage: boolean;
   export let append: AppendFunction | undefined = undefined;
 
-  // export let reload: ReloadFunction;
+  $: assistantMode =
+    $threadsStore.selectedAssistantId !== NO_SELECTED_ASSISTANT_ID &&
+    $threadsStore.selectedAssistantId !== 'manage-assistants';
 
   // used for code formatting and handling
   const md = markdownit({
@@ -66,10 +69,6 @@
   const onSubmit = async (e: SubmitEvent | KeyboardEvent | MouseEvent) => {
     e.preventDefault();
     editMode = false;
-
-    // if (isRunAssistantMessage(message)) {
-    //   threadsStore.setSelectedAssistantId(message.assistant_id || message.metadata?.assistant_id);
-    // }
 
     await handleMessageEdit({
       messages,
@@ -189,30 +188,15 @@
             class="remove-btn-style"
             class:highlight-icon={!$threadsStore.sendingBlocked}
             class:hide={!messageIsHovered}
-            on:click={() => {
-              if (isRunAssistantMessage(message)) {
-                threadsStore.setSelectedAssistantId(message.assistant_id);
-                // TODO - re-factor and re-enable regeneration
-                //   handleAssistantRegenerate({
-                //     messages,
-                //     setMessages,
-                //     thread_id: $page.params.thread_id,
-                //     append
-                //   });
-                // } else {
-                //   const savedMessages =
-                //     $threadsStore.threads.find((t) => t.id === $page.params.thread_id)?.messages ||
-                //     [];
-                //   handleChatRegenerate({
-                //     savedMessages,
-                //     message,
-                //     messages,
-                //     setMessages,
-                //     thread_id: $page.params.thread_id,
-                //     reload
-                //   });
-              }
-            }}
+            on:click={async () =>
+              await handleMessageEdit({
+                messages,
+                streamedMessages,
+                message: messages[messages.length - 2],
+                setMessages,
+                append: append,
+                selectedAssistantId: $threadsStore.selectedAssistantId
+              })}
             aria-label="regenerate message"
             tabindex="0"><Reset /></button
           >

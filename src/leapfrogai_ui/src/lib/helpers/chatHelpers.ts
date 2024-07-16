@@ -1,6 +1,6 @@
 import { threadsStore, toastStore } from '$stores';
 import { convertMessageToVercelAiMessage, getMessageText } from '$helpers/threads';
-import type { AssistantStatus, ChatRequestOptions, CreateMessage } from 'ai';
+import type { AssistantStatus, CreateMessage } from 'ai';
 import { type Message as VercelAIMessage } from '@ai-sdk/svelte';
 import type { LFAssistant } from '$lib/types/assistants';
 import type {
@@ -28,7 +28,7 @@ export const saveMessage = async (input: NewMessageInput) => {
   });
 
   if (res.ok) return res.json();
-
+  console.log(res.statusText);
   return error(500, 'Error saving message');
 };
 
@@ -75,6 +75,7 @@ export const stopThenSave = async ({
         });
 
         await threadsStore.addMessageToStore(newMessage);
+        threadsStore.setStreamingMessage(null);
       }
     }
   }
@@ -84,7 +85,7 @@ export const stopThenSave = async ({
     title: 'Response Canceled',
     subtitle: 'Response generation canceled.'
   });
-  threadsStore.setSendingBlocked(false);
+  await threadsStore.setSendingBlocked(false);
 };
 
 export const getAssistantImage = (assistants: LFAssistant[], assistant_id: string) => {
@@ -152,7 +153,6 @@ export const handleMessageEdit = async ({
     createdAt: new Date()
   };
 
-
   if (
     selectedAssistantId &&
     selectedAssistantId !== NO_SELECTED_ASSISTANT_ID &&
@@ -176,99 +176,6 @@ export const handleMessageEdit = async ({
 
     await append(cMessage);
   }
-};
-
-type HandleRegenerateArgs = {
-  messages: VercelAIMessage[];
-  thread_id: string;
-  setMessages: (messages: VercelAIMessage[]) => void;
-  append: (
-    message: VercelAIMessage | CreateMessage,
-    requestOptions?: { data?: Record<string, string> }
-  ) => Promise<void>;
-};
-export const handleAssistantRegenerate = async ({
-  messages,
-  setMessages,
-  thread_id,
-  append
-}: HandleRegenerateArgs) => {
-  const lastMessageIndex = messages.length - 1;
-  const userMessage = messages[lastMessageIndex - 1];
-  const response = messages[lastMessageIndex];
-
-  // useAssistant doesn't have a reload function, so we delete both the user message and the assistant response,
-  // then manually append
-  const deleteRes1 = await fetch('/api/messages/delete', {
-    method: 'DELETE',
-    body: JSON.stringify({ thread_id, message_id: response.id }),
-    headers: {
-      'Content-Type': 'application/json'
-    }
-  });
-  if (!deleteRes1.ok) {
-    toastStore.addToast({
-      kind: 'error',
-      title: 'Error Regenerating Message',
-      subtitle: 'Regeneration cancelled'
-    });
-    return;
-  }
-  const deleteRes2 = await fetch('/api/messages/delete', {
-    method: 'DELETE',
-    body: JSON.stringify({ thread_id, message_id: userMessage.id }),
-    headers: {
-      'Content-Type': 'application/json'
-    }
-  });
-  if (!deleteRes2.ok) {
-    toastStore.addToast({
-      kind: 'error',
-      title: 'Error Regenerating Message',
-      subtitle: 'Regeneration cancelled'
-    });
-    return;
-  }
-  const updatedMessages = messages.filter((m) => m.id !== response.id && m.id !== userMessage.id);
-  setMessages(updatedMessages);
-
-  const createMessage: CreateMessage = {
-    content: getMessageText(userMessage),
-    role: 'user',
-    createdAt: new Date()
-  };
-
-  await append(createMessage, {
-    data: {
-      message: getMessageText(userMessage),
-      assistantId: response.assistant_id,
-      threadId: thread_id || ''
-    }
-  });
-};
-
-type HandleChatRegenerateArgs = {
-  savedMessages: LFMessage[];
-  thread_id: string;
-  message: VercelOrOpenAIMessage;
-  messages: VercelAIMessage[];
-  setMessages: (messages: VercelAIMessage[]) => void;
-  reload: (
-    chatRequestOptions?: ChatRequestOptions | undefined
-  ) => Promise<string | null | undefined>;
-};
-export const handleChatRegenerate = async ({
-  savedMessages,
-  thread_id,
-  message,
-  messages,
-  setMessages,
-  reload
-}: HandleChatRegenerateArgs) => {
-  const streamedMessageIndex = messages.findIndex((m) => m.id === message.id);
-  await threadsStore.deleteMessage(thread_id, savedMessages[streamedMessageIndex].id);
-  setMessages(messages.toSpliced(-2, 2));
-  await reload();
 };
 
 type ResetMessagesArgs = {
