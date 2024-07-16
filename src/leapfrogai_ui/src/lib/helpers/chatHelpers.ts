@@ -96,15 +96,14 @@ export const getAssistantImage = (assistants: LFAssistant[], assistant_id: strin
   return null;
 };
 
-export const isRunAssistantResponse = (
+export const isRunAssistantMessage = (
   message: Partial<VercelAIMessage> | Partial<OpenAIMessage>
-) =>
-  'assistant_id' in message &&
-  message.assistant_id &&
-  message.assistant_id !== NO_SELECTED_ASSISTANT_ID;
+) => {
+  const assistantId = message.assistant_id || message.metadata?.assistant_id;
+  return !assistantId ? false : assistantId !== NO_SELECTED_ASSISTANT_ID;
+};
 
 type EditMessageArgs = {
-  thread_id: string;
   messages: OpenAIMessage[];
   streamedMessages: VercelOrOpenAIMessage[];
   message: OpenAIMessage;
@@ -113,15 +112,16 @@ type EditMessageArgs = {
     message: VercelAIMessage | CreateMessage,
     requestOptions?: { data?: Record<string, string> }
   ) => Promise<void>;
+  selectedAssistantId?: string;
 };
 
 export const handleMessageEdit = async ({
-  thread_id,
   messages,
   streamedMessages,
   message,
   setMessages,
-  append
+  append,
+  selectedAssistantId
 }: EditMessageArgs) => {
   const messageIndex = messages.findIndex((m) => m.id === message.id);
   const messageResponseIndex = messageIndex + 1;
@@ -129,16 +129,15 @@ export const handleMessageEdit = async ({
   const numToSplice =
     messages[messageResponseIndex] && messages[messageResponseIndex].role !== 'user' ? 2 : 1;
 
-  const promises = [threadsStore.deleteMessage(thread_id, message.id)];
+  const promises = [threadsStore.deleteMessage(message.thread_id, message.id)];
   if (numToSplice === 2) {
     // also delete that message's response
-    promises.push(threadsStore.deleteMessage(thread_id, messageResponseId));
+    promises.push(threadsStore.deleteMessage(message.thread_id, messageResponseId));
   }
   await Promise.all(promises).catch(() => {
     toastStore.addToast({
       kind: 'error',
-      title: 'Error Editing Messages',
-      subtitle: 'Message could not be edited'
+      title: 'Error Editing Messages'
     });
     return;
   });
@@ -153,19 +152,23 @@ export const handleMessageEdit = async ({
     createdAt: new Date()
   };
 
-  if (isRunAssistantResponse(message)) {
-    cMessage.assistant_id = message.assistant_id;
+
+  if (
+    selectedAssistantId &&
+    selectedAssistantId !== NO_SELECTED_ASSISTANT_ID &&
+    selectedAssistantId !== 'manage-assistants'
+  ) {
     await append(cMessage, {
       data: {
         message: getMessageText(message),
-        assistantId: message.assistant_id!,
-        threadId: thread_id
+        assistantId: selectedAssistantId,
+        threadId: message.thread_id
       }
     });
   } else {
     // Save with API
     const newMessage = await saveMessage({
-      thread_id,
+      thread_id: message.thread_id,
       content: getMessageText(message),
       role: 'user'
     });
@@ -283,10 +286,10 @@ export const resetMessages = ({
 }: ResetMessagesArgs) => {
   if (activeThread?.messages && activeThread.messages.length > 0) {
     const parsedAssistantMessages = activeThread.messages
-      .filter((m) => m.run_id)
+      .filter((m) => isRunAssistantMessage(m))
       .map((m) => convertMessageToVercelAiMessage(m));
     const chatMessages = activeThread.messages
-      .filter((m) => !m.run_id)
+      .filter((m) => !isRunAssistantMessage(m))
       .map((m) => convertMessageToVercelAiMessage(m));
 
     setAssistantMessages(parsedAssistantMessages);

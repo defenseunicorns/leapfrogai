@@ -21,12 +21,18 @@ export async function POST({ request, locals: { safeGetSession } }) {
 
   const openai = getOpenAiClient(session.access_token);
 
+
+
   const threadId = input.data.threadId ?? (await openai.beta.threads.create({ metadata: {} })).id;
 
   // Add a message to the thread
+  // assistant_id stored on message metadata to figure out which user messages were associated with an assistant,
+  // and which were chat completion. User messages sent with useAssistant don't store a run_id or assistant_id by
+  // default
   const createdMessage = await openai.beta.threads.messages.create(threadId, {
     role: 'user',
-    content: input.message
+    content: input.message,
+    metadata: { assistant_id: input.data.assistantId }
   });
 
   return AssistantResponse(

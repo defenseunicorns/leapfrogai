@@ -14,22 +14,20 @@
   import {
     getAssistantImage,
     getCitations,
-    handleAssistantRegenerate,
-    handleChatRegenerate,
     handleMessageEdit,
-    isRunAssistantResponse,
-    processAnnotations
+    isRunAssistantMessage
   } from '$helpers/chatHelpers';
   import DynamicPictogram from '$components/DynamicPictogram.svelte';
-  import type { AppendFunction, ReloadFunction, VercelOrOpenAIMessage } from '$lib/types/messages';
+  import type { AppendFunction } from '$lib/types/messages';
   import DOMPurify from 'isomorphic-dompurify';
 
   export let message: OpenAIMessage;
-  export let messages: OpenAIMessage[];
-  export let streamedMessages: VercelAIMessage[];
-  export let setMessages: (messages: VercelAIMessage[]) => void;
+  export let messages: OpenAIMessage[] = [];
+  export let streamedMessages: VercelAIMessage[] = [];
+  export let setMessages: ((messages: VercelAIMessage[]) => void) | undefined = undefined;
   export let isLastMessage: boolean;
-  export let append: AppendFunction;
+  export let append: AppendFunction | undefined = undefined;
+
   // export let reload: ReloadFunction;
 
   // used for code formatting and handling
@@ -50,7 +48,7 @@
     }
   });
 
-  let assistantImage = isRunAssistantResponse(message)
+  let assistantImage = isRunAssistantMessage(message)
     ? getAssistantImage($page.data.assistants || [], message.assistant_id!)
     : null;
 
@@ -69,17 +67,17 @@
     e.preventDefault();
     editMode = false;
 
-    if (isRunAssistantResponse(message)) {
-      threadsStore.setSelectedAssistantId(message.assistant_id!);
-    }
+    // if (isRunAssistantMessage(message)) {
+    //   threadsStore.setSelectedAssistantId(message.assistant_id || message.metadata?.assistant_id);
+    // }
 
     await handleMessageEdit({
-      thread_id: $page.params.thread_id,
       messages,
       streamedMessages,
       message: { ...message, content: convertTextToMessageContentArr($value) },
-      setMessages,
-      append
+      setMessages: setMessages!,
+      append: append!,
+      selectedAssistantId: $threadsStore.selectedAssistantId
     });
   };
 
@@ -192,7 +190,7 @@
             class:highlight-icon={!$threadsStore.sendingBlocked}
             class:hide={!messageIsHovered}
             on:click={() => {
-              if (isRunAssistantResponse(message)) {
+              if (isRunAssistantMessage(message)) {
                 threadsStore.setSelectedAssistantId(message.assistant_id);
                 // TODO - re-factor and re-enable regeneration
                 //   handleAssistantRegenerate({
