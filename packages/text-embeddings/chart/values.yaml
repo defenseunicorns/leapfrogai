@@ -17,7 +17,10 @@ fullnameOverride: ""
 
 podAnnotations: {}
 
-runtimeClassName: nvidia
+gpu:
+  enabled: false # override to true for gpu deployment
+  runtimeClassName: nvidia
+
 podSecurityContext:
   runAsNonRoot: true
 
