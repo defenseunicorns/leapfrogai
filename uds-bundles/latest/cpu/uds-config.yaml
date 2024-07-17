@@ -1,8 +1,10 @@
 variables:
   text-embeddings:
+    gpu_enabled: false
     gpu_limit: 0
 
   whisper:
+    gpu_enabled: false
     gpu_limit: 0
 
   supabase:

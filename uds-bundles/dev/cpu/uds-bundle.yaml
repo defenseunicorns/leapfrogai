@@ -26,11 +26,23 @@ packages:
   - name: text-embeddings
     path: ../../../packages/text-embeddings/
     ref: dev
+    overrides:
+      text-embeddings-model:
+        text-embeddings-model:
+          variables:
+            - name: gpu_enabled
+              path: gpu.enabled
 
   # Transcription Model
   - name: whisper
     path: ../../../packages/whisper/
     ref: dev
+    overrides:
+      whisper-model:
+        whisper-model:
+          variables:
+            - name: gpu_enabled
+              path: gpu.enabled
 
   # UI
   - name: leapfrogai-ui
