@@ -128,21 +128,16 @@ jobs:
             python -m pytest ./tests/e2e/test_api.py -v
 
         # Run the playwright UI tests using the deployed Supabase endpoint
-        - name: UI and Supabase test
+        - name: UI/API/Supabase E2E Playwright Tests
           run: |
             cp src/leapfrogai_ui/.env.example src/leapfrogai_ui/.env
             npm --prefix src/leapfrogai_ui ci
             TEST_ENV=CI PUBLIC_DISABLE_KEYCLOAK=true PUBLIC_SUPABASE_URL=https://supabase-kong.uds.dev PUBLIC_SUPABASE_ANON_KEY=$ANON_KEY npm --prefix src/leapfrogai_ui run test:integration:ci
 
+        # The UI can be removed after the Playwright tests are finished
         - name: Cleanup UI
           run: |
             uds zarf package remove leapfrogai-ui --confirm
-
-        # Supabase can now be removed since we're done testing it
-        - name: Cleanup Supabase
-          run: |
-            uds zarf package remove supabase -l=trace --confirm
-
 
         ##########
         # llama
