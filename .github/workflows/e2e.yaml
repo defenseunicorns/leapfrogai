@@ -92,7 +92,7 @@ jobs:
             uds zarf package deploy packages/supabase/zarf-package-supabase-amd64-e2e-test.tar.zst --confirm
             rm packages/supabase/zarf-package-supabase-amd64-e2e-test.tar.zst
 
-        - name: Set environment variables
+        - name: Set environment variable
           id: set-env-var
           run: |
             echo "ANON_KEY=$(uds zarf tools kubectl get secret supabase-bootstrap-jwt -n leapfrogai -o jsonpath='{.data.anon-key}' | base64 -d)" >> "$GITHUB_ENV"
