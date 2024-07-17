@@ -17,10 +17,6 @@ fullnameOverride: ""
 
 podAnnotations: {}
 
-gpu:
-  enabled: true # if set to false vllm won't work
-  runtimeClassName: nvidia
-
 podSecurityContext:
   runAsNonRoot: true
 

@@ -16,6 +16,10 @@ variables:
     description: The GPU limit for the model inferencing.
     default: "0"
     pattern: "^[0-9]+$"
+  - name: GPU_ENABLED
+    description: Whether to enable GPU driver for the model inferencing.
+    default: "false"
+    pattern: "^(true|false)$"
 
 components:
   - name: whisper-model

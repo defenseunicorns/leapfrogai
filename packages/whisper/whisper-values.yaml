@@ -1,6 +1,10 @@
 image:
   tag: "###ZARF_CONST_IMAGE_VERSION###"
 
+gpu:
+  enabled: "###ZARF_VAR_GPU_ENABLED###"
+  runtimeClassName: nvidia
+
 resources:
   limits:
     nvidia.com/gpu: "###ZARF_VAR_GPU_LIMIT###"

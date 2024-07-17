@@ -36,6 +36,12 @@ packages:
     # x-release-please-start-version
     ref: 0.9.1
     # x-release-please-end
+    overrides:
+      text-embeddings-model:
+        text-embeddings-model:
+          variables:
+            - name: gpu_enabled
+              path: gpu.enabled
 
   # Model for converting audio to text
   - name: whisper
@@ -43,6 +49,12 @@ packages:
     # x-release-please-start-version
     ref: 0.9.1
     # x-release-please-end
+    overrides:
+      whisper-model:
+        whisper-model:
+          variables:
+            - name: gpu_enabled
+              path: gpu.enabled
 
   # UI - new UI TODO - point to ghcr image after Sprint 0.7.0
   - name: leapfrogai-ui

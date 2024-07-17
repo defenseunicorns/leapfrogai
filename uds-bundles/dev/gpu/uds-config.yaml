@@ -1,13 +1,15 @@
 # see individual zarf packaging configuration for more variables and variable descriptions
 variables:
   text-embeddings:
-    gpu_limit: 0
+    gpu_enabled: true
+    gpu_limit: 0 # 0 to use cpu, 1+ to use gpu
 
   whisper:
-    gpu_limit: 0
+    gpu_enabled: true
+    gpu_limit: 0 # 0 to use cpu, 1+ to use gpu
 
   vllm:
-    gpu_limit: 1
+    gpu_limit: 1 # if <1, vllm won't work
     #tensor_parallel_size: 1   # TODO: reintroduce when vllm changes get pulled in
 
   supabase:

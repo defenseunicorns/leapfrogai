@@ -16,9 +16,6 @@ nameOverride: whisper
 fullnameOverride: ""
 
 podAnnotations: {}
-gpu:
-  enabled: false # override to true for gpu deployment
-  runtimeClassName: nvidia
 
 podSecurityContext:
   runAsNonRoot: true
