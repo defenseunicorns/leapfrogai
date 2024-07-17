@@ -1,10 +1,9 @@
+import type { RequestHandler } from './$types';
 import { getOpenAiClient } from '$lib/server/constants';
 import { AssistantResponse } from 'ai';
 import { error } from '@sveltejs/kit';
 
-export async function POST({ request, locals: { safeGetSession } }) {
-  const { session } = await safeGetSession();
-
+export const POST: RequestHandler = async ({ request, locals: { session } }) => {
   if (!session) {
     error(401, 'Unauthorized');
   }
@@ -75,4 +74,4 @@ export async function POST({ request, locals: { safeGetSession } }) {
       }
     }
   );
-}
+};

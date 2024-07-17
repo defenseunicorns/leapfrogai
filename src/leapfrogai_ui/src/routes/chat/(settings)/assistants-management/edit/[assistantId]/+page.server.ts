@@ -14,10 +14,9 @@ import type {
   VectorStoreFileDeleted
 } from 'openai/resources/beta/vector-stores/files';
 import { getOpenAiClient } from '$lib/server/constants';
+import type { Actions, PageServerLoad } from './$types';
 
-export const load = async ({ params, locals: { safeGetSession } }) => {
-  const { session } = await safeGetSession();
-
+export const load: PageServerLoad = async ({ params, locals: { session } }) => {
   if (!session) {
     throw redirect(303, '/');
   }
@@ -61,7 +60,7 @@ export const load = async ({ params, locals: { safeGetSession } }) => {
   return { title: 'LeapfrogAI - Edit Assistant', form, filesForm, assistant };
 };
 
-export const actions = {
+export const actions: Actions = {
   default: async ({ request, locals: { supabase, safeGetSession } }) => {
     // Validate session
     const { session } = await safeGetSession();

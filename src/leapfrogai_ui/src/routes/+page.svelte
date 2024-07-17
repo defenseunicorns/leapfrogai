@@ -1,28 +1,24 @@
 <script lang="ts">
   import logo from '$assets/LeapfrogAI.png';
-  import { goto } from '$app/navigation';
   import { Button } from 'carbon-components-svelte';
   import { Auth } from '@supabase/auth-ui-svelte';
   import { env } from '$env/dynamic/public';
   import { ThemeSupa } from '@supabase/auth-ui-shared';
+  import { page } from '$app/stores';
 
   export let data;
   export let queryParams: { [key: string]: string } | undefined = undefined;
 
   let isSignup = true;
-  let { session } = data;
-  $: ({ session } = data);
-
-  $: if (session?.user) {
-    goto('/chat');
-  }
+  let { supabase } = data;
+  $: ({ supabase } = data);
 
   async function signInWithKeycloak() {
-    await data.supabase.auth.signInWithOAuth({
+    await supabase.auth.signInWithOAuth({
       provider: 'keycloak',
       options: {
         scopes: 'openid',
-        redirectTo: `${data.url}/auth/callback`,
+        redirectTo: `${$page.url.pathname}/auth/callback`,
         queryParams
       }
     });
