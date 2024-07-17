@@ -4,21 +4,20 @@
   import { Auth } from '@supabase/auth-ui-svelte';
   import { env } from '$env/dynamic/public';
   import { ThemeSupa } from '@supabase/auth-ui-shared';
-  import { page } from '$app/stores';
 
   export let data;
   export let queryParams: { [key: string]: string } | undefined = undefined;
 
   let isSignup = true;
-  let { supabase } = data;
-  $: ({ supabase } = data);
+  let { supabase, url } = data;
+  $: ({ supabase, url } = data);
 
   async function signInWithKeycloak() {
     await supabase.auth.signInWithOAuth({
       provider: 'keycloak',
       options: {
         scopes: 'openid',
-        redirectTo: `${$page.url.pathname}/auth/callback`,
+        redirectTo: `${url}/auth/callback`,
         queryParams
       }
     });

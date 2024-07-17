@@ -24,6 +24,8 @@ export const GET: RequestHandler = async ({ params, locals: { session } }) => {
     error(401, 'Unauthorized');
   }
 
+  if (!params?.thread_id) error(400, 'Bad Request');
+
   try {
     const thread = await getThreadWithMessages(params.thread_id, session.access_token);
     return json(thread);

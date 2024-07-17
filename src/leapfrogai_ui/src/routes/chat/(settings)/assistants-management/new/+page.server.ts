@@ -26,8 +26,7 @@ export const load: PageServerLoad = async () => {
 };
 
 export const actions: Actions = {
-  default: async ({ request, locals: { supabase, safeGetSession } }) => {
-    const { session } = await safeGetSession();
+  default: async ({ request, locals: { supabase, session } }) => {
     if (!session) {
       return fail(401, { message: 'Unauthorized' });
     }

@@ -70,11 +70,13 @@ const authGuard: Handle = async ({ event, resolve }) => {
   event.locals.session = session;
   event.locals.user = user;
 
+  // protect all routes under /chat
   if (!event.locals.session && event.url.pathname.startsWith('/chat')) {
     redirect(303, '/');
   }
 
-  if (event.locals.session && event.url.pathname === '/auth') {
+  // if already authenticated, redirect to /chat
+  if (event.locals.session && event.url.pathname === '/') {
     redirect(303, '/chat');
   }
 
