@@ -1,5 +1,5 @@
 import { expect, test } from './fixtures';
-import { getFakeAssistantInput } from '$testUtils/fakeData';
+import { getFakeAssistantInput } from '../testUtils/fakeData';
 import { delay } from 'msw';
 import {
   createPDF,

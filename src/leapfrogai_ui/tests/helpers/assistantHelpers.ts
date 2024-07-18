@@ -1,8 +1,8 @@
 import OpenAI from 'openai';
 import { expect, type Page } from '@playwright/test';
-import { getFakeAssistantInput } from '$testUtils/fakeData';
+import { getFakeAssistantInput } from '../../testUtils/fakeData';
 import type { AssistantCreateParams } from 'openai/resources/beta/assistants';
-import type { AssistantInput, LFAssistant } from '$lib/types/assistants';
+import type { AssistantInput, LFAssistant } from '../../src/lib/types/assistants';
 import { supabase } from './helpers';
 
 // Note - this will not apply the temperature slider value provided, it only clicks on the 0.5 increment
