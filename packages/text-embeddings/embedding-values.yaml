@@ -3,7 +3,7 @@ image:
 
 gpu:
   enabled: "###ZARF_VAR_GPU_ENABLED###"
-  runtimeClassName: nvidia
+  classname: nvidia
 
 resources:
   limits:
