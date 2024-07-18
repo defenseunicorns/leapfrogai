@@ -1,4 +1,5 @@
 
+MAKEFILE_DIR := $(dir $(abspath $(lastword $(MAKEFILE_LIST))))
 REGISTRY_NAME := registry
 REGISTRY_PORT := 5000
 SHELL_SCRIPT := build.sh
@@ -14,7 +15,7 @@ local-registry:
 	@echo "Local registry created at localhost:${REGISTRY_PORT}"
 
 build-k3d-gpu: local-registry
-	@docker build --platform=${PLATFORM} -t ghcr.io/${ORGANIZATION}/k3d-gpu-support:${TAG} .
+	@docker build --platform=${PLATFORM} -t ghcr.io/${ORGANIZATION}/k3d-gpu-support:${TAG} -f ${MAKEFILE_DIR}/Dockerfile ${MAKEFILE_DIR}
 	@docker tag ghcr.io/${ORGANIZATION}/k3d-gpu-support:${TAG} localhost:${REGISTRY_PORT}/${ORGANIZATION}/k3d-gpu-support:${TAG}
 
 push-k3d-gpu: local-registry build-k3d-gpu
@@ -24,7 +25,7 @@ uds-gpu-cluster: local-registry build-k3d-gpu push-k3d-gpu
 	uds deploy ${K3D_CLUSTER_NAME} --set K3D_EXTRA_ARGS="--gpus=all --image=localhost:${REGISTRY_PORT}/${ORGANIZATION}/k3d-gpu-support:${TAG}" --confirm
 
 test-k3d-gpu:
-	@kubectl apply -f test/cuda-vector-add.yaml
+	@kubectl apply -f ${MAKEFILE_DIR}/test/cuda-vector-add.yaml
 	@kubectl wait --for=jsonpath='{.status.phase}'=Succeeded --timeout=15s pod -l app=gpu-pod
 	@kubectl logs -l app=gpu-pod
 
