@@ -2,7 +2,7 @@ image:
   tag: "###ZARF_CONST_IMAGE_VERSION###"
 
 gpu:
-  enabled: "###ZARF_VAR_GPU_ENABLED###"
+  className: "###ZARF_VAR_CLASS_NAME###"
   className: nvidia
 
 resources:

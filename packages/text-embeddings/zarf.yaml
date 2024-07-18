@@ -16,10 +16,11 @@ variables:
     description: The GPU limit for the model inferencing.
     default: "0"
     pattern: "^[0-9]+$"
-  - name: GPU_ENABLED
-    description: Whether to enable GPU driver for the model inferencing.
-    default: "false"
-    pattern: "^(true|false)$"
+  - name: CLASS_NAME
+    description: The GPU class name for the model inferencing.
+    default: ""
+    pattern: "^(nvidia)?$"
+    prompt: true
 
 components:
   - name: text-embeddings-model
