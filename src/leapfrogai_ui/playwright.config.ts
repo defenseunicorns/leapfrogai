@@ -52,9 +52,7 @@ const defaultConfig: PlaywrightTestConfig = {
       testMatch: /global\.teardown\.ts/
     },
     { ...chromeConfig }
-  ],
-  testDir: 'tests',
-  testMatch: /(.+\.)?(test|spec)\.[jt]s/
+  ]
 };
 
 // when in dev, create a local webserver
@@ -77,7 +75,7 @@ const CI_Config: PlaywrightTestConfig = {
 };
 
 // get the environment type from command line. If none, set it to dev
-const environment = process.env.TEST_ENV || 'dev';
+const environment = process.env.TEST_ENV || 'development';
 
 // config object with default configuration and environment specific configuration
 const config: PlaywrightTestConfig = {
