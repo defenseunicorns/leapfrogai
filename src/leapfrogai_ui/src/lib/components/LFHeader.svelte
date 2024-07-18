@@ -1,4 +1,5 @@
 <script lang="ts">
+  import { threadsStore } from '$stores';
   import logo from '$assets/LeapfrogAI.png';
   import { Drawer, Navbar, NavBrand } from 'flowbite-svelte';
   import { CogOutline, UserCircleOutline } from 'flowbite-svelte-icons';
@@ -40,7 +41,12 @@
     fluid
     class="fixed start-0 top-0 z-20 h-header py-1 dark:border-b dark:border-primary-400 dark:bg-secondary-500"
   >
-    <NavBrand href="/chat">
+    <NavBrand
+      href={$threadsStore.lastVisitedThreadId
+        ? `/chat/${$threadsStore.lastVisitedThreadId}`
+        : '/chat'}
+      data-testid="logo-link"
+    >
       <img src={logo} class="w-[7.875rem]] h-[2.25rem]" alt="LeapfrogAI Logo" />
     </NavBrand>
     <div class="flex items-center gap-x-2">
@@ -62,6 +68,7 @@
     backdrop={false}
     class={drawerStyle}
     id="settings-drawer"
+    data-testid="settings-drawer"
   >
     <div class={linkStyle}>
       <a
@@ -88,6 +95,7 @@
     backdrop={false}
     class={drawerStyle}
     id="user-drawer"
+    data-testid="user-drawer"
   >
     <div class={linkStyle}>
       <form bind:this={signOutForm} method="post" action="/auth?/signout">
