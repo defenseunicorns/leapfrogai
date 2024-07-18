@@ -49,13 +49,13 @@
 <style lang="scss">
   .centered-spaced-container {
     display: flex;
-    gap: layout.$spacing-06;
+    gap: 1.5rem;
     align-items: center;
   }
 
   .centered-spaced-lg-container {
     display: flex;
-    gap: layout.$spacing-07;
+    gap: 2rem;
     align-items: center;
     :global(.bx--text-input__readonly-icon) {
       display: none;

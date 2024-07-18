@@ -273,16 +273,16 @@ https://github.com/carbon-design-system/carbon-components-svelte/issues/892
     justify-content: space-between;
 
     :global(.bx--side-nav__divider) {
-      margin: layout.$spacing-03 0 0 0;
-      background-color: themes.$border-subtle-01;
+      margin: 0.5rem 0 0 0;
+      background-color: #525252;
     }
   }
 
   .new-chat-container {
     display: flex;
     flex-direction: column;
-    gap: layout.$spacing-03;
-    padding: layout.$spacing-05;
+    gap: 0.5rem;
+    padding: 1rem;
 
     :global(button.new-chat-btn) {
       width: 100%;
@@ -300,7 +300,7 @@ https://github.com/carbon-design-system/carbon-components-svelte/issues/892
       width: 192px;
       overflow: hidden;
       text-overflow: ellipsis;
-      color: themes.$text-secondary;
+      color: #c6c6c6;
     }
   }
 
@@ -340,14 +340,14 @@ https://github.com/carbon-design-system/carbon-components-svelte/issues/892
     justify-content: space-between;
     text-align: left;
     overflow: visible !important;
-    color: themes.$text-secondary !important;
+    color: #c6c6c6 !important;
   }
 
   :global(.bx--side-nav__navigation) {
-    background-color: themes.$layer-01 !important;
+    background-color: #393939 !important;
     list-style: none;
     height: calc(100vh - var(--header-height)) !important;
-    color: themes.$text-secondary !important;
+    color: #c6c6c6 !important;
   }
 
   :global(.bx--side-nav__items) {
@@ -357,10 +357,10 @@ https://github.com/carbon-design-system/carbon-components-svelte/issues/892
   }
 
   :global(.bx--side-nav__submenu) {
-    color: themes.$text-secondary !important;
+    color: #c6c6c6 !important;
 
     :global(svg) {
-      stroke: themes.$text-secondary;
+      stroke: #c6c6c6;
     }
 
     &:hover {
@@ -370,11 +370,11 @@ https://github.com/carbon-design-system/carbon-components-svelte/issues/892
 
   .label-edit-mode {
     :global(.bx--side-nav__link) {
-      padding: 0 layout.$spacing-05 0 layout.$spacing-07;
+      padding: 0 1rem 0 2rem;
     }
 
     :global(.bx--side-nav__link[aria-current='page']) {
-      background-color: themes.$layer-01 !important;
+      background-color: #393939 !important;
     }
 
     :global(input) {

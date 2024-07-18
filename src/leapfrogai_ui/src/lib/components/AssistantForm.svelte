@@ -239,7 +239,10 @@
     }
 
     .title {
-      @include type.type-style('heading-05');
+      font-size: 2rem;
+      line-height: 2.5rem;
+      font-weight: 400;
+      letter-spacing: 0px;
     }
 
     .cancel-modal {

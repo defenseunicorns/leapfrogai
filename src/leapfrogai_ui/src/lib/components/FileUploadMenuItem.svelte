@@ -145,7 +145,7 @@
 
 <style lang="scss">
   .file-upload-container {
-    outline: 1px solid themes.$border-subtle-03;
+    outline: 1px solid #8d8d8d;
   }
 
   .upload-item {

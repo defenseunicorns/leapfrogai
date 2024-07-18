@@ -183,13 +183,13 @@
   .avatar-upload-container {
     display: flex;
     flex-direction: column;
-    gap: layout.$spacing-03;
+    gap: 0.5rem;
   }
 
   .avatar-modal {
     display: flex;
     flex-direction: column;
-    gap: layout.$spacing-05;
+    gap: 1rem;
     height: calc(100% - 3rem); // 3 rem is default modal margin-bottom, prevents extra scrollbar
   }
 
@@ -200,10 +200,10 @@
     width: 3rem;
     height: 3rem;
     border-radius: 50%;
-    background-color: themes.$layer-active-03;
+    background-color: #393939;
     transition: background-color 70ms ease;
     &:hover {
-      background-color: themes.$layer-selected-hover-03;
+      background-color: #656565;
     }
     .mini-avatar-image {
       width: 100%;
@@ -222,7 +222,7 @@
     width: 12rem;
     height: 12rem;
     border-radius: 50%;
-    background-color: themes.$layer-active-03;
+    background-color: #393939;
     .avatar-image {
       width: 100%;
       height: 100%;
@@ -236,19 +236,19 @@
   .image-uploader {
     display: flex;
     flex-direction: column;
-    gap: layout.$spacing-03;
+    gap: 0.5rem;
   }
 
   .edit-btns {
     display: flex;
-    gap: layout.$spacing-03;
+    gap: 0.5rem;
   }
 
   .error-box {
     border: 2px solid $red-30;
-    color: $red-30;
+    color: #ffb3b8;
     max-width: 20rem;
-    padding: layout.$spacing-02;
-    margin-top: layout.$spacing-05;
+    padding: 0.25rem;
+    margin-top: 1rem;
   }
 </style>

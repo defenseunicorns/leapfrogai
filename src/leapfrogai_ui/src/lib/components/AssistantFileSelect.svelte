@@ -62,7 +62,7 @@
   .file-item-list {
     display: flex;
     flex-direction: column;
-    gap: layout.$spacing-03;
+    gap: 0.5rem;
   }
 
   :global(.bx--tag) {

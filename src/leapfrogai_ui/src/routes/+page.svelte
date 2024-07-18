@@ -61,8 +61,8 @@
     display: flex;
     flex-direction: column;
     align-items: center;
-    gap: layout.$spacing-08;
+    gap: 2.5rem;
     width: 100%;
-    padding-top: layout.$spacing-04;
+    padding-top: 0.75rem;
   }
 </style>

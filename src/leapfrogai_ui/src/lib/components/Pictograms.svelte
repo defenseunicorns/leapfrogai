@@ -76,12 +76,12 @@
   .pictogram-container {
     display: flex;
     flex-direction: column;
-    gap: layout.$spacing-05;
+    gap: 1rem;
     height: 100%;
   }
   .search {
     :global(.bx--search-input) {
-      background-color: themes.$layer-01;
+      background-color: #393939;
     }
   }
   .gallery {
@@ -101,7 +101,7 @@
     cursor: pointer;
     transition: fill 70ms ease;
     &:hover {
-      background-color: themes.$layer-hover-01;
+      background-color: #474747;
     }
   }
   .clicked {

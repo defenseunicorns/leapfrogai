@@ -6,10 +6,9 @@
   import { page } from '$app/stores';
   import 'carbon-components-svelte/css/g90.css';
   import '../styles/main.scss';
-  import { Theme } from 'carbon-components-svelte';
   import '$webComponents/CodeBlock';
   export let data;
-  let theme = 'g90';
+
 
   let { supabase, session } = data;
 
@@ -30,7 +29,6 @@
   <title>{$page.data.title || ''}</title>
 </svelte:head>
 
-<Theme bind:theme></Theme>
 
 <Toasts></Toasts>
 

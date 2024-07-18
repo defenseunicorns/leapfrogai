@@ -403,7 +403,7 @@
   .manage-assistants-btn {
     display: flex;
     align-items: center;
-    gap: layout.$spacing-03;
+    gap: 0.5rem;
   }
 
   .assistant-dropdown-item {
@@ -414,16 +414,16 @@
 
   :global(#manage-assistants) {
     z-index: 2; // ensures outline is on top of border of item below
-    outline: 1px solid themes.$border-subtle-03;
+    outline: 1px solid #8d8d8d;
     :global(.bx--list-box__menu_item__option) {
       padding-right: 0.25rem;
     }
   }
 
   .noAssistant {
-    color: $gray-50;
+    color: #8d8d8d;
     :global(.bx--list-box__label) {
-      color: $gray-50;
+      color: #8d8d8d;
     }
   }
 </style>

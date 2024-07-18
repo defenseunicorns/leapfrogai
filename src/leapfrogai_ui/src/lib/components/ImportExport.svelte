@@ -91,10 +91,10 @@
     display: flex;
     flex-direction: column;
     justify-content: space-between;
-    padding: layout.$spacing-03 0 layout.$spacing-03 0;
+    padding: 0.5rem 0 0.5rem 0;
     :global(.bx--btn) {
       width: 100%;
-      color: themes.$text-secondary;
+      color: #c6c6c6;
       font-weight: bold;
     }
   }

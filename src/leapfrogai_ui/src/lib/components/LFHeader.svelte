@@ -11,7 +11,7 @@
   let loading = false;
   let signOutForm: HTMLFormElement;
 
-  let navClass = 'px-4 lg:px-6 py-0';
+  let navClass = 'py-0';
   let navDivClass = 'flex flex-wrap justify-between items-center w-full';
 
   $: innerWidth = 0;

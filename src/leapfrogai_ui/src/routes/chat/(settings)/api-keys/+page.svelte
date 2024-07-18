@@ -253,15 +253,18 @@
 
   .centered-spaced-container {
     display: flex;
-    gap: layout.$spacing-06;
+    gap: 1.5rem;
     align-items: center;
   }
 
   .title {
-    @include type.type-style('heading-05');
+    font-size: 2rem;
+    line-height: 2.5rem;
+    font-weight: 400;
+    letter-spacing: 0px;
   }
 
   .deleting {
-    margin-right: layout.$spacing-05;
+    margin-right: 1rem;
   }
 </style>
