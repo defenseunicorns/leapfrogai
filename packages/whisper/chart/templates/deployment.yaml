@@ -26,7 +26,7 @@ spec:
         {{- include "chart.selectorLabels" . | nindent 8 }}
     spec:
       {{- if .Values.gpu.enabled }}
-      runtimeClassName: {{ .Values.gpu.runtimeClassName }}
+      runtimeClassName: {{ .Values.gpu.className }}
       {{- end }}
       securityContext:
         {{- toYaml .Values.podSecurityContext | nindent 8 }}
