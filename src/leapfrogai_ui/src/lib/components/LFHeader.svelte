@@ -2,12 +2,17 @@
   import { threadsStore, uiStore } from '$stores';
   import logo from '$assets/LeapfrogAI.png';
   import { Settings, UserAvatar } from 'carbon-icons-svelte';
-  import { Header, HeaderAction, HeaderUtilities } from 'carbon-components-svelte';
+  import { Button, Header, HeaderAction, HeaderUtilities } from 'carbon-components-svelte';
+  import { Navbar, NavBrand, NavHamburger } from 'flowbite-svelte';
+  import { CogOutline, UserCircleOutline } from 'flowbite-svelte-icons';
 
   export let isUsingOpenAI: boolean;
 
   let loading = false;
   let signOutForm: HTMLFormElement;
+
+  let navClass = 'px-4 lg:px-6 py-0';
+  let navDivClass = 'flex flex-wrap justify-between items-center w-full';
 
   $: innerWidth = 0;
 
@@ -34,94 +39,23 @@
 
 <svelte:window bind:innerWidth />
 
-<Header
-  persistentHamburgerMenu={innerWidth ? innerWidth < 1056 : false}
-  bind:isSideNavOpen={$uiStore.isSideNavOpen}
->
-  <span slot="platform"
-    ><a
-      data-testid="header-logo-link"
-      href={$threadsStore.lastVisitedThreadId
-        ? `/chat/${$threadsStore.lastVisitedThreadId}`
-        : '/chat'}><img alt="LeapfrogAI Logo" src={logo} class="logo" /></a
-    ></span
-  >
-  <HeaderUtilities>
-    <HeaderAction
-      data-testid="settings header action button"
-      aria-label="Settings"
-      title="Settings"
-      icon={Settings}
-      transition={false}
-      isOpen={activeHeaderAction.settings}
-      on:open={() => setActiveHeaderAction('settings')}
-    >
-      <div class="links-container">
-        <a
-          href="/chat/assistants-management"
-          class="header-link"
-          on:click={() => setActiveHeaderAction('')}>Assistants Management</a
-        >
+<header>
+  <Navbar {navClass} {navDivClass} class="dark:bg-secondary-500">
+    <NavBrand href="/chat">
+      <img src={logo} class="w-[7.875rem]] h-[2.25rem]" alt="LeapfrogAI Logo" />
+    </NavBrand>
+    <div class="flex items-center lg:order-2">
+      <Button>
+        <CogOutline data-testid="header-settings-btn" />
+      </Button>
+      <Button>
+        <UserCircleOutline data-testid="header-profile-btn" />
+      </Button>
 
-        <a
-          href="/chat/file-management"
-          class="header-link"
-          on:click={() => setActiveHeaderAction('')}>File Management</a
-        >
-        {#if !isUsingOpenAI}
-          <a href="/chat/api-keys" class="header-link" on:click={() => setActiveHeaderAction('')}
-            >API Keys</a
-          >
-        {/if}
-      </div>
-    </HeaderAction>
-    <HeaderAction
-      data-testid="user header action button"
-      aria-label="User"
-      title="User"
-      icon={UserAvatar}
-      transition={false}
-      isOpen={activeHeaderAction.user}
-      on:open={() => setActiveHeaderAction('user')}
-    >
-      <div class="links-container">
-        <form bind:this={signOutForm} method="post" action="/auth?/signout">
-          <button
-            class="header-link"
-            aria-label="Log Out"
-            disabled={loading}
-            on:click={handleLogOut}>Log Out</button
-          >
-        </form>
-      </div>
-    </HeaderAction>
-  </HeaderUtilities>
-</Header>
-
-<style lang="scss">
-  .logo {
-    width: 126px;
-    height: 36px;
-  }
-
-  .links-container {
-    display: flex;
-    padding: 1rem;
-    flex-direction: column;
-    gap: 0.88rem;
-  }
-
-  .header-link {
-    @include type.type-style('heading-compact-01');
-    cursor: pointer;
-    background: none;
-    color: inherit;
-    border: none;
-    padding: 0;
-    outline: inherit;
-    text-decoration: none;
-    &:hover {
-      color: themes.$text-on-color;
-    }
-  }
-</style>
+      <NavHamburger
+        on:click={toggle}
+        btnClass="inline-flex items-center p-2 ml-1 text-sm text-gray-500 rounded-lg lg:hidden hover:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-gray-200 dark:text-gray-400 dark:hover:bg-gray-700 dark:focus:ring-gray-600"
+      />
+    </div>
+  </Navbar>
+</header>

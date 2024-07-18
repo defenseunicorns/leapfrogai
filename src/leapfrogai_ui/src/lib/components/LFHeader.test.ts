@@ -16,7 +16,7 @@ describe('LFHeader', () => {
 
     expect(userActionBtn).toHaveClass('bx--header__action--active');
 
-    const settingsActionBtn = screen.getByTestId('settings header action button');
+    const settingsActionBtn = screen.getByTestId('header-settings-btn');
     await userEvent.click(settingsActionBtn);
 
     expect(settingsActionBtn).toHaveClass('bx--header__action--active');
