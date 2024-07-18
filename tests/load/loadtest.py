@@ -1,0 +1,203 @@
+import mimetypes
+from requests_toolbelt.multipart.encoder import MultipartEncoder
+import os
+from locust import HttpUser, task, between, SequentialTaskSet
+import warnings
+import uuid
+
+# Suppress SSL-related warnings
+warnings.filterwarnings("ignore", category=Warning)
+
+API_KEY = os.environ["API_KEY"]
+API_URL = os.environ["API_URL"]
+
+
+def load_pdf_file():
+    file_path = os.path.join(os.getcwd(), "../data/book.pdf")
+    return file_path
+
+
+def load_audio_file():
+    file_path = os.path.join(os.getcwd(), "../data/russian.mp3")
+    with open(file_path, "rb") as file:
+        return file.read()
+
+
+class RAGTasks(SequentialTaskSet):
+    """Run these tasks in order to simulate full RAG flow"""
+
+    file_id = None
+    vector_store_id = None
+    assistant_id = None
+    thread_id = None
+
+    @task
+    def upload_file(self):
+        pdf_path = load_pdf_file()
+        mime_type, _ = mimetypes.guess_type(pdf_path)
+        if mime_type is None:
+            mime_type = "application/octet-stream"
+
+        m = MultipartEncoder(
+            fields={
+                "file": ("Combined.pdf", open(pdf_path, "rb"), mime_type),
+                "purpose": "assistants",
+            }
+        )
+
+        headers = {"Content-Type": m.content_type}
+        response = self.client.post("/openai/v1/files", data=m, headers=headers)
+
+        if response.status_code == 200:
+            self.file_id = response.json()["id"]
+            print(f"Uploaded file ID: {self.file_id}")
+
+    @task
+    def create_vector_store(self):
+        payload = {
+            "name": f"Test Vector Store {uuid.uuid4()}",
+            "file_ids": [self.file_id],
+            "metadata": {"test": "data"},
+        }
+        response = self.client.post("/openai/v1/vector_stores", json=payload)
+        if response.status_code == 200:
+            self.vector_store_id = response.json()["id"]
+            print(f"Created vector store ID: {self.vector_store_id}")
+
+    @task
+    def create_assistant(self):
+        payload = {
+            "model": "vllm",
+            "name": f"RAG Assistant {uuid.uuid4()}",
+            "instructions": "You are a helpful assistant with access to a knowledge base. Use the file_search tool to find relevant information.",
+            "tools": [{"type": "file_search"}],
+            "tool_resources": {
+                "file_search": {"vector_store_ids": [self.vector_store_id]}
+            },
+        }
+        response = self.client.post("/openai/v1/assistants", json=payload)
+        if response.status_code == 200:
+            self.assistant_id = response.json()["id"]
+            print(f"Created assistant with ID: {self.assistant_id}")
+
+    @task
+    def create_thread_and_run(self):
+        # Create a thread
+        thread_payload = {
+            "messages": [
+                {
+                    "role": "user",
+                    "content": "What information can you provide about the capital of France?",
+                }
+            ]
+        }
+        thread_response = self.client.post("/openai/v1/threads", json=thread_payload)
+
+        if thread_response.status_code == 200:
+            self.thread_id = thread_response.json()["id"]
+
+            # Create a run using the thread and assistant
+            run_payload = {
+                "assistant_id": self.assistant_id,
+                "instructions": "Please use the file_search tool to find information about the capital of France and provide a detailed response.",
+            }
+            run_response = self.client.post(
+                f"/openai/v1/threads/{self.thread_id}/runs", json=run_payload
+            )
+
+            if run_response.status_code == 200:
+                run_id = run_response.json()["id"]
+                print(f"Created run with ID: {run_id}")
+
+                # Check run status
+                status_response = self.client.get(
+                    f"/openai/v1/threads/{self.thread_id}/runs/{run_id}"
+                )
+                print(f"Run status: {status_response.json()['status']}")
+
+    @task
+    def stop(self):
+        self.interrupt()
+
+
+class LeapfrogAIUser(HttpUser):
+    """This class represents a user that will kick off tasks over the life of the test"""
+
+    # Root url to use for all client requests
+    host = API_URL
+    # Add some wait time in-between kicking off tasks
+    wait_time = between(1, 3)
+
+    def on_start(self):
+        # Turn off SSL verification to get rid of unnecessary TLS version issues
+        self.client.verify = False
+        self.client.headers.update({"Authorization": f"Bearer {API_KEY}"})
+
+    @task
+    def perform_rag_tasks(self):
+        rag_tasks = RAGTasks(self)
+        rag_tasks.run()
+
+    @task
+    def test_list_api_keys(self):
+        self.client.get("/leapfrogai/v1/auth/list-api-keys")
+
+    @task
+    def test_openai_models(self):
+        self.client.get("/openai/v1/models")
+
+    @task
+    def test_chat_completions(self):
+        payload = {
+            "model": "vllm",
+            "messages": [{"role": "user", "content": "Hello, how are you?"}],
+            "max_tokens": 50,
+        }
+        self.client.post("/openai/v1/chat/completions", json=payload)
+
+    @task
+    def test_embeddings(self):
+        payload = {
+            "model": "text-embeddings",
+            "input": "The quick brown fox jumps over the lazy dog",
+        }
+        self.client.post("/openai/v1/embeddings", json=payload)
+
+    @task
+    def test_transcribe(self):
+        audio_content = load_audio_file()
+        files = {"file": ("russian.mp3", audio_content, "audio/mpeg")}
+        data = {"model": "whisper", "language": "ru"}
+        self.client.post("/openai/v1/audio/transcriptions", files=files, data=data)
+
+    @task
+    def test_translate(self):
+        audio_content = load_audio_file()
+        files = {"file": ("russian.mp3", audio_content, "audio/mpeg")}
+        data = {"model": "whisper"}
+        self.client.post("/openai/v1/audio/translations", files=files, data=data)
+
+    @task
+    def test_list_files(self):
+        self.client.get("/openai/v1/files")
+
+    @task
+    def test_list_vector_stores(self):
+        self.client.get("/openai/v1/vector_stores")
+
+    @task
+    def test_list_assistants(self):
+        self.client.get("/openai/v1/assistants")
+
+    @task
+    def test_healthz(self):
+        self.client.get("/healthz")
+
+    @task
+    def test_models(self):
+        self.client.get("/models")
+
+    @task
+    def test_create_api_key(self):
+        payload = {"name": "Test API Key"}
+        self.client.post("/leapfrogai/v1/auth/create-api-key", json=payload)
