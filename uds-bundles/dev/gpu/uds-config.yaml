@@ -1,15 +1,15 @@
 # see individual zarf packaging configuration for more variables and variable descriptions
 variables:
   text-embeddings:
-    gpu_enabled: true
-    gpu_limit: 0 # 0 to use cpu, 1+ to use gpu
+    gpu_class_name: "nvidia"  # Set to ensure the nvidia runtimeClass is present in case GPU limit is increased
+    gpu_limit: 0  # runs on CPU until GPU limit is increased
 
   whisper:
-    gpu_enabled: true
-    gpu_limit: 0 # 0 to use cpu, 1+ to use gpu
+    gpu_class_name: "nvidia"  # Set to ensure the nvidia runtimeClass is present in case GPU limit is increased
+    gpu_limit: 0  # runs on CPU until GPU limit is increased
 
   vllm:
-    gpu_limit: 1 # if <1, vllm won't work
+    gpu_limit: 1 # if <1, vllm won't work, VLLM is GPU only
     #tensor_parallel_size: 1   # TODO: reintroduce when vllm changes get pulled in
 
   supabase:

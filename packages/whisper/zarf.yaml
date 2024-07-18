@@ -16,8 +16,8 @@ variables:
     description: The GPU limit for the model inferencing.
     default: "0"
     pattern: "^[0-9]+$"
-  - name: CLASS_NAME
-    description: The GPU class name for the model inferencing.
+  - name: GPU_CLASS_NAME
+    description: The GPU class name for the model inferencing. Leave blank for CPU-only.
     default: ""
     pattern: "^(nvidia)?$"
     prompt: true
