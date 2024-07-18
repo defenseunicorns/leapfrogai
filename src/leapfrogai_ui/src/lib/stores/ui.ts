@@ -3,7 +3,7 @@ import { writable } from 'svelte/store';
 type UIStore = {
   isSideNavOpen: boolean;
   overflowMenuOpen: boolean;
-  selectedThreadOverflowMenuId: string;
+  selectedThreadOverflowMenuId: string; // TODO - don't need this anymore
 };
 
 const defaultValues: UIStore = {

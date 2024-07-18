@@ -2,8 +2,7 @@
   import { page } from '$app/stores';
   import threadsStore from '$stores/threads';
   import '../../../../styles/main.scss';
-  import { ChatSidebar } from '$components';
-  import { Content } from 'carbon-components-svelte';
+  import Sidebar from '$components/Sidebar.svelte';
 
   $: innerWidth = 0;
 
@@ -17,8 +16,11 @@
 
 <svelte:window bind:innerWidth />
 
-<ChatSidebar />
+<div class="flex h-full">
+  <Sidebar  />
 
-<Content>
-  <slot />
-</Content>
+  <main class="w-full p-8">
+    <slot />
+  </main>
+</div>
+

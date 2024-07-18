@@ -29,18 +29,14 @@
     else activeDrawer = name;
   };
 
-  let drawerStyle = 'top-header dark:bg-primary-500';
+  let drawerStyle = 'top-header';
   let linkStyle = 'flex p-4 flex-col gap-3.5';
   let headerLinkStyle =
     'text-sm leading-5 font-semibold tracking-tight cursor-pointer bg-none text-inherit border-none p-0 outline-none hover:text-white';
 </script>
 
-<!-- TODO - border-bottom is not showing for the nav-->
 <header>
-  <Navbar
-    fluid
-    class="fixed start-0 top-0 z-20 h-header py-1 dark:border-b dark:border-primary-400 dark:bg-secondary-500"
-  >
+  <Navbar fluid class="h-header py-1">
     <NavBrand
       href={$threadsStore.lastVisitedThreadId
         ? `/chat/${$threadsStore.lastVisitedThreadId}`

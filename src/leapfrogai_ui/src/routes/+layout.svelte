@@ -9,7 +9,6 @@
   import '$webComponents/CodeBlock';
   export let data;
 
-
   let { supabase, session } = data;
 
   $: ({ supabase, session } = data);
@@ -29,14 +28,14 @@
   <title>{$page.data.title || ''}</title>
 </svelte:head>
 
-
 <Toasts></Toasts>
 
-<slot></slot>
+<div class="content">
+  <slot />
+</div>
 
-<style>
-  :global(.bx--content) {
+<style lang="scss">
+  .content {
     height: calc(100vh - var(--header-height));
-    padding-bottom: 1rem;
   }
 </style>
