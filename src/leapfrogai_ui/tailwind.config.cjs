@@ -8,6 +8,12 @@ export default {
   darkMode: 'class',
   theme: {
     extend: {
+      height: {
+        header: '3rem'
+      },
+      inset: {
+        header: '3rem' // Extend the `top` utility to include the header height
+      },
       colors: {
         // flowbite-svelte
         primary: {
