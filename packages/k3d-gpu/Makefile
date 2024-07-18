@@ -25,8 +25,9 @@ uds-gpu-cluster: local-registry build-k3d-gpu push-k3d-gpu
 	uds deploy ${K3D_CLUSTER_NAME} --set K3D_EXTRA_ARGS="--gpus=all --image=localhost:${REGISTRY_PORT}/${ORGANIZATION}/k3d-gpu-support:${TAG}" --confirm
 
 test-k3d-gpu:
-	@kubectl apply -f ${MAKEFILE_DIR}/test/cuda-vector-add.yaml
-	@kubectl wait --for=jsonpath='{.status.phase}'=Succeeded --timeout=15s pod -l app=gpu-pod
-	@kubectl logs -l app=gpu-pod
+	@uds zarf tools kubectl apply -f ${MAKEFILE_DIR}/test/cuda-vector-add.yaml
+	@uds zarf tools kubectl wait --for=jsonpath='{.status.phase}'=Succeeded --timeout=15s pod -l app=gpu-pod
+	@uds zarf tools kubectl logs -l app=gpu-pod
+	@uds zarf tools kubectl delete -f ${MAKEFILE_DIR}/test/cuda-vector-add.yaml
 
 .PHONY: all local-registry build-k3d-gpu push-k3d-gpu test-k3d-gpu
