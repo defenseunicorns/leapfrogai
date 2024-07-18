@@ -35,6 +35,12 @@ gen-python: ## Generate the protobufs for the OpenAI typing within the leapfroga
 local-registry: ## Start up a local container registry. Errors in this target are ignored.
 	-docker run -d -p ${REG_PORT}:5000 --restart=always --name registry registry:2
 
+# Clean up: Stop and remove the local registry
+clean-registry:
+	@echo "Cleaning up..."
+	@docker stop ${REGISTRY_NAME} || true
+	@docker rm ${REGISTRY_NAME} || true
+
 sdk-wheel: ## build wheels for the leapfrogai_sdk package as a dependency for other lfai components
 	docker build --platform=linux/${ARCH} -t ghcr.io/defenseunicorns/leapfrogai/leapfrogai-sdk:${LOCAL_VERSION} -f src/leapfrogai_sdk/Dockerfile .
 
@@ -151,3 +157,5 @@ build-gpu: build-supabase build-api build-ui build-vllm build-text-embeddings bu
 build-all: build-cpu build-gpu ## Build all of the LFAI packages
 
 include tests/make-tests.mk
+
+include packages/k3d-gpu/Makefile
