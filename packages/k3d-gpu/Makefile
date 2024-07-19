@@ -2,11 +2,12 @@
 MAKEFILE_DIR := $(dir $(abspath $(lastword $(MAKEFILE_LIST))))
 REGISTRY_NAME := registry
 REGISTRY_PORT := 5000
-SHELL_SCRIPT := build.sh
 ORGANIZATION := defenseunicorns
 PLATFORM := linux/amd64
 TAG := latest
 K3D_CLUSTER_NAME := k3d-core-slim-dev:0.24.0
+K3S_TAG := v1.28.8-k3s1
+CUDA_TAG := 12.4.1-base-ubuntu22.04
 
 # Create local Docker registry
 local-registry:
@@ -15,7 +16,12 @@ local-registry:
 	@echo "Local registry created at localhost:${REGISTRY_PORT}"
 
 build-k3d-gpu: local-registry
-	@docker build --platform=${PLATFORM} -t ghcr.io/${ORGANIZATION}/k3d-gpu-support:${TAG} -f ${MAKEFILE_DIR}/Dockerfile ${MAKEFILE_DIR}
+	@docker build \
+	 --platform=${PLATFORM} \
+	 --build-arg K3S_TAG=${K3S_TAG} \
+	 --build-arg CUDA_TAG=${CUDA_TAG} \
+	 -t ghcr.io/${ORGANIZATION}/k3d-gpu-support:${TAG} \
+	 -f ${MAKEFILE_DIR}/Dockerfile ${MAKEFILE_DIR}
 	@docker tag ghcr.io/${ORGANIZATION}/k3d-gpu-support:${TAG} localhost:${REGISTRY_PORT}/${ORGANIZATION}/k3d-gpu-support:${TAG}
 
 push-k3d-gpu: local-registry build-k3d-gpu
