@@ -7,8 +7,8 @@ ORGANIZATION := defenseunicorns
 PLATFORM := linux/amd64
 TAG := latest
 K3D_CLUSTER_NAME := k3d-core-slim-dev:0.24.0
-K3S_TAG := v1.28.8-k3s1
-CUDA_TAG := 12.4.1-base-ubuntu22.04
+K3S_TAG := $(shell jq -r .k3s_tag ${MAKEFILE_DIR}/config.json)
+CUDA_TAG := $(shell jq -r .cuda_tag ${MAKEFILE_DIR}/config.json)
 
 local-registry: ## Start up a local container registry. Errors in this target are ignored.
 	@echo "Creating local Docker registry..."

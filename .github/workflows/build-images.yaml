@@ -20,6 +20,15 @@ jobs:
       - name: Checkout Repo
         uses: actions/checkout@b4ffde65f46336ab88eb53be808477a3936bae11 # v4.1.1
 
+      - name: Install jq
+        run: sudo apt-get install jq
+
+      - name: Read tags from config
+        id: read_tags
+        run: |
+          echo "K3S_TAG=$(jq -r .k3s_tag packages/k3d-gpu/config.json)" >> $GITHUB_OUTPUT
+          echo "CUDA_TAG=$(jq -r .cuda_tag packages/k3d-gpu/config.json)" >> $GITHUB_OUTPUT
+
       - name: Login to GitHub Container Registry
         uses: docker/login-action@343f7c4344506bcbf9b4de18042ae17996df046d # v3.0.0
         with:
@@ -31,8 +40,8 @@ jobs:
         run: |
           docker build \
             --platform linux/amd64 \
-            --build-arg K3S_TAG=v1.28.8-k3s1 \
-            --build-arg CUDA_TAG=12.4.1-base-ubuntu22.04 \
+            --build-arg K3S_TAG=${{ steps.read_tags.outputs.K3S_TAG }} \
+            --build-arg CUDA_TAG=${{ steps.read_tags.outputs.CUDA_TAG }} \
             -t ghcr.io/defenseunicorns/leapfrogai/k3d-gpu:latest \
             -f packages/k3d-gpu/Dockerfile .
           docker push ghcr.io/defenseunicorns/leapfrogai/k3d-gpu:latest
