@@ -24,27 +24,11 @@ jobs:
       - name: Checkout Repo
         uses: actions/checkout@b4ffde65f46336ab88eb53be808477a3936bae11 # v4.1.1
 
-      - name: Display directory structure and find config.json
-        run: |
-          echo "Directory structure:"
-          tree ${{ github.workspace }}
-
-          echo -e "\nSearching for config.json:"
-          CONFIG_PATH=$(find ${{ github.workspace }} -name config.json)
-          if [ -z "$CONFIG_PATH" ]; then
-            echo "Error: config.json not found"
-            exit 1
-          fi
-          echo "Config file found at: $CONFIG_PATH"
-          echo "CONFIG_PATH=$CONFIG_PATH" >> $GITHUB_ENV
-
       - name: Read tags from config
         id: read_tags
         run: |
-          echo "K3S_TAG=$(jq -r .k3s_tag packages/k3d-gpu/config.json)" >> $GITHUB_ENV
-          echo "CUDA_TAG=$(jq -r .cuda_tag packages/k3d-gpu/config.json)" >> $GITHUB_ENV
-
-
+          echo "K3S_TAG=$(jq -r .k3s_tag packages/k3d-gpu/version_config.json)" >> $GITHUB_ENV
+          echo "CUDA_TAG=$(jq -r .cuda_tag packages/k3d-gpu/version_config.json)" >> $GITHUB_ENV
 
       - name: Login to GitHub Container Registry
         uses: docker/login-action@343f7c4344506bcbf9b4de18042ae17996df046d # v3.0.0
