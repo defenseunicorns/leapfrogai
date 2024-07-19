@@ -198,23 +198,21 @@
   </div>
 </form>
 
-<div class="cancel-modal">
-  <Modal
-    bind:open={cancelModalOpen}
-    preventCloseOnClickOutside
-    modalHeading="Unsaved Changes"
-    primaryButtonText="Leave this page"
-    secondaryButtonText="Stay on page"
-    on:click:button--secondary={() => (cancelModalOpen = false)}
-    on:submit={() => {
-      leavePageConfirmed = true;
-      if (navigateTo) goto(navigateTo.url.href);
-    }}
-    ><p>
-      You have unsaved changes. Do you want to leave this page? Unsaved changes will be deleted.
-    </p></Modal
-  >
-</div>
+<Modal
+  bind:open={cancelModalOpen}
+  preventCloseOnClickOutside
+  modalHeading="Unsaved Changes"
+  primaryButtonText="Leave this page"
+  secondaryButtonText="Stay on page"
+  on:click:button--secondary={() => (cancelModalOpen = false)}
+  on:submit={() => {
+    leavePageConfirmed = true;
+    if (navigateTo) goto(navigateTo.url.href);
+  }}
+  ><p>
+    You have unsaved changes. Do you want to leave this page? Unsaved changes will be deleted.
+  </p></Modal
+>
 
 <style lang="scss">
   .assistant-form {
@@ -241,13 +239,6 @@
       line-height: 2.5rem;
       font-weight: 400;
       letter-spacing: 0px;
-    }
-
-    .cancel-modal {
-      :global(.bx--modal-container) {
-        position: absolute;
-        top: 25%;
-      }
     }
 
     .btns-container {

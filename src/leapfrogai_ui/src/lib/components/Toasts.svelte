@@ -1,7 +1,7 @@
 <script lang="ts">
   import { toastStore } from '$stores';
   import { slide } from 'svelte/transition';
-  import LFToast from '$components/Toasts/LFToast.svelte';
+  import LFToast from '$components/LFToast.svelte';
 </script>
 
 {#if $toastStore.toasts}

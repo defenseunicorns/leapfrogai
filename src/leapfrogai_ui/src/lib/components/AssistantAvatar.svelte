@@ -245,7 +245,7 @@
   }
 
   .error-box {
-    border: 2px solid $red-30;
+    border: 2px solid #ffb3b8;
     color: #ffb3b8;
     max-width: 20rem;
     padding: 0.25rem;
