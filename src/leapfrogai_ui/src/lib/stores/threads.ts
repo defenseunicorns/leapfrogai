@@ -1,7 +1,8 @@
 import { writable } from 'svelte/store';
 import { MAX_LABEL_SIZE, NO_SELECTED_ASSISTANT_ID } from '$lib/constants';
-import { goto } from '$app/navigation';
+import { goto, invalidate } from '$app/navigation';
 import { error } from '@sveltejs/kit';
+import { type Message as VercelAIMessage } from '@ai-sdk/svelte';
 import { toastStore } from '$stores';
 import type { LFThread, NewThreadInput } from '$lib/types/threads';
 import type { LFMessage } from '$lib/types/messages';
@@ -13,13 +14,15 @@ type ThreadsStore = {
   selectedAssistantId: string;
   sendingBlocked: boolean;
   lastVisitedThreadId: string;
+  streamingMessage: VercelAIMessage | null;
 };
 
 const defaultValues: ThreadsStore = {
   threads: [],
   selectedAssistantId: NO_SELECTED_ASSISTANT_ID,
   sendingBlocked: false,
-  lastVisitedThreadId: ''
+  lastVisitedThreadId: '',
+  streamingMessage: null
 };
 
 const createThread = async (input: NewThreadInput) => {
@@ -84,6 +87,9 @@ const createThreadsStore = () => {
     subscribe,
     set,
     update,
+    setStreamingMessage: (message: VercelAIMessage | null) => {
+      update((old) => ({ ...old, streamingMessage: message }));
+    },
     setThreads: (threads: LFThread[]) => {
       update((old) => ({ ...old, threads }));
     },
@@ -219,8 +225,6 @@ const createThreadsStore = () => {
     },
     deleteMessage: async (threadId: string, messageId: string) => {
       try {
-        await deleteMessage(threadId, messageId);
-
         update((old) => {
           const threadIndex = old.threads.findIndex((c) => c.id === threadId);
           const thread = { ...old.threads[threadIndex] };
@@ -234,12 +238,14 @@ const createThreadsStore = () => {
             threads: updatedThreads
           };
         });
+        await deleteMessage(threadId, messageId);
       } catch {
         toastStore.addToast({
           kind: 'error',
           title: 'Error',
           subtitle: `Error deleting message.`
         });
+        await invalidate('lf:threads');
       }
     },
     updateThreadLabel: async (id: string, newLabel: string) => {

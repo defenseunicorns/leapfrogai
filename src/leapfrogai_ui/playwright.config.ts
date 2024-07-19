@@ -39,7 +39,7 @@ const chromeConfig = {
 //   dependencies: ['setup']
 // };
 
-const config: PlaywrightTestConfig = {
+const defaultConfig: PlaywrightTestConfig = {
   // running more than 1 worker can cause flakiness due to test files being run at the same time in different browsers
   // (e.x. navigation history is incorrect)
   // Additionally, Leapfrog API is slow when attaching files to assistants, resulting in flaky tests
@@ -52,14 +52,35 @@ const config: PlaywrightTestConfig = {
       testMatch: /global\.teardown\.ts/
     },
     { ...chromeConfig }
-  ],
+  ]
+};
+
+// when in dev, create a local webserver
+const devConfig: PlaywrightTestConfig = {
   webServer: {
     command: 'npm run build && npm run preview',
     port: 4173,
     stderr: 'pipe'
   },
-  testDir: 'tests',
-  testMatch: /(.+\.)?(test|spec)\.[jt]s/
+  use: {
+    baseURL: 'http://localhost:4173'
+  }
+};
+
+// when e2e testing, use the deployed instance
+const CI_Config: PlaywrightTestConfig = {
+  use: {
+    baseURL: 'https://ai.uds.dev'
+  }
+};
+
+// get the environment type from command line. If none, set it to dev
+const environment = process.env.TEST_ENV || 'development';
+
+// config object with default configuration and environment specific configuration
+const config: PlaywrightTestConfig = {
+  ...defaultConfig,
+  ...(environment === 'CI' ? CI_Config : devConfig)
 };
 
 export default config;

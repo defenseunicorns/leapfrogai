@@ -29,8 +29,7 @@
       if (result.type === 'redirect') {
         toastStore.addToast({
           kind: 'success',
-          title: `Assistant ${isEditMode ? 'Updated' : 'Created'}.`,
-          subtitle: ''
+          title: `Assistant ${isEditMode ? 'Updated' : 'Created'}.`
         });
         bypassCancelWarning = true;
         goto(result.location);
@@ -79,8 +78,7 @@
     if (isEditMode && Object.keys($errors).length > 0) {
       toastStore.addToast({
         kind: 'error',
-        title: 'Error importing assistant',
-        subtitle: ''
+        title: 'Error importing assistant'
       });
       goto('/chat/assistants-management');
     }

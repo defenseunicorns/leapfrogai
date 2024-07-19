@@ -94,14 +94,12 @@
     if (res.ok) {
       toastStore.addToast({
         kind: 'success',
-        title: `${isMultipleFiles ? 'Files' : 'File'} Deleted`,
-        subtitle: ''
+        title: `${isMultipleFiles ? 'Files' : 'File'} Deleted`
       });
     } else {
       toastStore.addToast({
         kind: 'error',
-        title: `Error Deleting ${isMultipleFiles ? 'Files' : 'File'}`,
-        subtitle: ''
+        title: `Error Deleting ${isMultipleFiles ? 'Files' : 'File'}`
       });
     }
     filesStore.setSelectedFileManagementFileIds([]);

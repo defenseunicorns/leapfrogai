@@ -80,8 +80,7 @@
     modalOpen = false;
     toastStore.addToast({
       kind: 'error',
-      title: 'Creation Failed',
-      subtitle: ''
+      title: 'Creation Failed'
     });
     invalidate('lf:api-keys');
   };
@@ -125,14 +124,12 @@
     if (res.ok) {
       toastStore.addToast({
         kind: 'success',
-        title: `${isMultiple ? 'Keys' : 'Key'} Deleted`,
-        subtitle: ''
+        title: `${isMultiple ? 'Keys' : 'Key'} Deleted`
       });
     } else {
       toastStore.addToast({
         kind: 'error',
-        title: `Error Deleting ${isMultiple ? 'Keys' : 'Key'}`,
-        subtitle: ''
+        title: `Error Deleting ${isMultiple ? 'Keys' : 'Key'}`
       });
     }
     await invalidate('lf:api-keys');
