@@ -10,18 +10,26 @@ K3D_CLUSTER_NAME := k3d-core-slim-dev:0.24.0
 K3S_TAG := $(shell jq -r .k3s_tag ${MAKEFILE_DIR}/config.json)
 CUDA_TAG := $(shell jq -r .cuda_tag ${MAKEFILE_DIR}/config.json)
 
+echo-config:
+	@echo "DIR: ${MAKEFILE_DIR}"
+	@echo "K3S_TAG: ${K3S_TAG}"
+	@echo "CUDA_TAG: ${CUDA_TAG}"
+
 local-registry: ## Start up a local container registry. Errors in this target are ignored.
 	@echo "Creating local Docker registry..."
 	-@docker run -d -p ${REG_PORT}:5000 --restart=always --name ${REG_NAME} registry:2
 	@echo "Local registry created at localhost:${REG_PORT}"
 
-build-k3d-gpu: local-registry
-	@docker build \
+build-k3d-gpu: local-registry echo-config ## Build the k3d-gpu-support image
+# Change to the root of the repository and build the image
+	@cd ${MAKEFILE_DIR}/../.. && \ 
+	docker build \
 	 --platform=${PLATFORM} \
 	 --build-arg K3S_TAG=${K3S_TAG} \
 	 --build-arg CUDA_TAG=${CUDA_TAG} \
 	 -t ghcr.io/${ORGANIZATION}/k3d-gpu-support:${TAG} \
-	 -f ${MAKEFILE_DIR}/Dockerfile ${MAKEFILE_DIR}
+	 -f ${MAKEFILE_DIR}/Dockerfile .
+# Tag the image for the local registry
 	@docker tag ghcr.io/${ORGANIZATION}/k3d-gpu-support:${TAG} localhost:${REG_PORT}/${ORGANIZATION}/k3d-gpu-support:${TAG}
 
 push-k3d-gpu: local-registry build-k3d-gpu

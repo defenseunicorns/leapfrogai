@@ -27,8 +27,8 @@ jobs:
       - name: Read tags from config
         id: read_tags
         run: |
-          echo "K3S_TAG=$(jq -r .k3s_tag ./packages/k3d-gpu/config.json)" >> $GITHUB_ENV
-          echo "CUDA_TAG=$(jq -r .cuda_tag ./packages/k3d-gpu/config.json)" >> $GITHUB_ENV
+          echo "K3S_TAG=$(jq -r .k3s_tag packages/k3d-gpu/config.json)" >> $GITHUB_ENV
+          echo "CUDA_TAG=$(jq -r .cuda_tag packages/k3d-gpu/config.json)" >> $GITHUB_ENV
 
       - name: Login to GitHub Container Registry
         uses: docker/login-action@343f7c4344506bcbf9b4de18042ae17996df046d # v3.0.0
