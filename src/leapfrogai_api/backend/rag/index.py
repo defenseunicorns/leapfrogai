@@ -326,7 +326,8 @@ class IndexingService:
             documents (list[Document]): A list of Langchain Document objects to be added.
             vector_store_id (str): The ID of the vector store where the documents will be added.
             file_id (str): The ID of the file associated with the documents.
-            batch_size (int): The size of the batches that will be pushed to the db.
+            batch_size (int): The size of the batches that will be pushed to the db. This value defaults to 100
+                as a balance between the memory impact of large files and performance improvements from batching.
         Returns:
             List[str]: A list of IDs assigned to the added documents.
         Raises:
