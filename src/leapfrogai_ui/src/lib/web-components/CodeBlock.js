@@ -82,8 +82,7 @@ export class CodeBlock extends LitElement {
     await navigator.clipboard.writeText(this.removeHtml());
     toastStore.addToast({
       kind: 'info',
-      title: 'Code Copied',
-      subtitle: ''
+      title: 'Code Copied'
     });
   };
 
