@@ -10,12 +10,12 @@ import type {
 } from 'openai/resources/beta/threads/messages';
 import { getUnixSeconds } from '../../src/lib/helpers/dates';
 import type { FileObject } from 'openai/resources/files';
-import type { Profile } from '$lib/types/profile';
+import type { Profile } from '../../src/lib/types/profile';
 import type { Session } from '@supabase/supabase-js';
 import type { Assistant } from 'openai/resources/beta/assistants';
 import type { VectorStore } from 'openai/resources/beta/vector-stores/index';
 import type { VectorStoreFile } from 'openai/resources/beta/vector-stores/files';
-import { type APIKeyRow, PERMISSIONS } from '$lib/types/apiKeys';
+import { type APIKeyRow, PERMISSIONS } from '../../src/lib/types/apiKeys';
 
 const todayOverride = new Date('2024-03-20T00:00');
 
@@ -150,14 +150,15 @@ export const fakeThreads: LFThread[] = [
 ];
 export const fakeAssistants: LFAssistant[] = [getFakeAssistant(), getFakeAssistant()];
 
-export const getFakeAssistantInput = (): AssistantInput => {
+export const getFakeAssistantInput = (data_sources?: string[]): AssistantInput => {
   return {
     name: faker.person.fullName(),
     description: faker.lorem.sentence(),
     instructions: faker.lorem.paragraph(),
     temperature: DEFAULT_ASSISTANT_TEMP,
     pictogram: 'default',
-    avatar: ''
+    avatar: '',
+    data_sources: data_sources ?? undefined
   };
 };
 

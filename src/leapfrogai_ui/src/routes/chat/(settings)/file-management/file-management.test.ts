@@ -118,8 +118,7 @@ describe('file management', () => {
 
     expect(toastSpy).toHaveBeenCalledWith({
       kind: 'success',
-      title: 'Files Deleted',
-      subtitle: ''
+      title: 'Files Deleted'
     });
   });
 

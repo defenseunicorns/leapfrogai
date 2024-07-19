@@ -5,7 +5,7 @@ import userEvent from '@testing-library/user-event';
 import { fakeAssistants, fakeThreads, getFakeMessage } from '$testUtils/fakeData';
 import MessageWithToast from '$components/MessageWithToast.test.svelte';
 import { convertMessageToVercelAiMessage, getMessageText } from '$helpers/threads';
-import { type Message as VercelAIMessage } from 'ai/svelte';
+import { type Message as VercelAIMessage } from '@ai-sdk/svelte';
 import { chatHelpers } from '$helpers';
 import { threadsStore } from '$stores';
 import { NO_SELECTED_ASSISTANT_ID } from '$constants';
