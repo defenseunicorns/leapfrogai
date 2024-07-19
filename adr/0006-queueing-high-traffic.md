@@ -63,7 +63,7 @@ We chose this approach over alternatives for a few reasons:
 - This tiered approach allows us to start with a simple solution while preparing for future growth.
 - Some alternatives are viable but would likely require significant additional setup and mx work to bring to the current environment.
   - The additional setup includes but is not limited to: new Zarf packages, updates to uds bundles, spikes to integrate with current app, resolving any permissions/hardening issues, more containers to add to ironbank/chainguard.
-- When performing load testing on the system, the primary bottleneck seemed to be around the vectordb file indexing.
+- When performing load testing on the system, the primary bottlenecks seem to be around the vectordb file indexing.
   - The issues related to this process should be able to be resolved by optimizations, a light amount of queueing, and background tasks.
   - Issues not related to indexing were primarily scalability issues. Which can be resolved via resource limits, throttling, improving horizontal and vertical scaling within the cluster.
 
