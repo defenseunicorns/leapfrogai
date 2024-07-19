@@ -2,11 +2,11 @@
   import { twMerge } from 'tailwind-merge';
   import { Button, Input, P, Popover } from 'flowbite-svelte';
   import { DotsVerticalOutline } from 'flowbite-svelte-icons';
-  import { threadsStore, uiStore } from '$stores';
+  import { threadsStore } from '$stores';
   import { goto } from '$app/navigation';
   import { page } from '$app/stores';
   import { MAX_LABEL_SIZE } from '$constants';
-  import { Modal, OverflowMenuItem } from 'carbon-components-svelte';
+  import { Modal } from 'carbon-components-svelte';
 
   export let sClass: string =
     'flex items-center p-2 ps-11 w-full text-base font-normal text-gray-900 rounded-lg transition duration-75 group hover:bg-gray-100 dark:text-white dark:hover:bg-gray-700';
@@ -24,15 +24,10 @@
   $: popperOpen = false;
   $: editMode = false;
 
-  const handleMenuClick = (e) => {
-    e.preventDefault();
-    popperOpen = !popperOpen;
-  };
-
   const handleEditClick = (e) => {
     e.preventDefault();
-    popperOpen = !popperOpen;
     editMode = true;
+    popperOpen = false;
   };
 
   const resetEditMode = () => {
@@ -67,6 +62,7 @@
   };
 
   const handleDelete = async () => {
+    resetEditMode();
     deleteModalOpen = false;
     await threadsStore.deleteThread(threadId);
     if (threadId === $page.params.thread_id) await goto('/chat');
@@ -92,9 +88,7 @@
       on:click={(e) => {
         e.stopPropagation();
       }}
-      on:focus={() => {
-        popperOpen = false;
-      }}
+      on:focus={() => {}}
     />
   {:else}
     <span
@@ -107,8 +101,8 @@
       on:mouseenter
       on:mouseleave
       on:mouseover
-      on:click={() => {
-        threadsStore.changeThread(threadId);
+      on:click={async () => {
+        await threadsStore.changeThread(threadId);
       }}
       class={twMerge(
         active ? activeClass : sClass,
@@ -122,32 +116,37 @@
         {label}
       </P>
     </span>
-    <button on:click={handleMenuClick}>
+    <button id={`btn-${threadId}`} class={popperOpen && 'focus:rounded focus:bg-gray-400'}>
       <DotsVerticalOutline />
-      <span class="sr-only">Manage Thread</span>
     </button>
+    <Popover
+      class="w-32 text-sm font-light"
+      defaultClass="p-0"
+      placement="right"
+      trigger="click"
+      triggeredBy={`#btn-${threadId}`}
+      arrow={false}
+      on:show={() => {
+        console.log('on show');
+        popperOpen = !popperOpen;
+      }}
+      ><div class="flex flex-col items-center gap-1">
+        <Button color="alternative" size="xs" class="w-full" on:click={handleEditClick}>Edit</Button
+        >
+        <Button
+          color="alternative"
+          size="xs"
+          class="w-full"
+          on:click={(e) => {
+            e.stopPropagation();
+            deleteModalOpen = true;
+          }}>Delete</Button
+        >
+      </div></Popover
+    >
   {/if}
 </li>
-<Popover
-  class="w-32 text-sm font-light"
-  defaultClass="p-0"
-  placement="right"
-  trigger="click"
-  open={popperOpen}
-  ><div class="flex flex-col items-center gap-1">
-    <Button color="alternative" size="xs" class="w-full" on:click={handleEditClick}>Edit</Button>
-    <Button
-      color="alternative"
-      size="xs"
-      class="w-full"
-      on:click={(e) => {
-        e.stopPropagation();
-        deleteModalOpen = true;
-        popperOpen = false;
-      }}>Delete</Button
-    >
-  </div></Popover
->
+
 <Modal
   danger
   preventCloseOnClickOutside

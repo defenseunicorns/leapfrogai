@@ -1,6 +1,7 @@
 <script lang="ts">
   import {
     Button,
+    Hr,
     Input,
     Sidebar,
     SidebarDropdownWrapper,
@@ -9,18 +10,46 @@
   } from 'flowbite-svelte';
   import { PlusOutline } from 'flowbite-svelte-icons';
   import { dates } from '$helpers';
-  import { threadsStore, uiStore } from '$stores';
+  import { threadsStore } from '$stores';
   import type { LFThread } from '$lib/types/threads';
   import LFSidebarDropdownItem from '$components/LFSidebarDropdownItem.svelte';
   import { page } from '$app/stores';
+  import { getMessageText } from '$helpers/threads';
+  import Fuse, { type FuseResult, type IFuseOptions } from 'fuse.js';
+  import ImportExport from '$components/ImportExport.svelte';
 
   let searchText = '';
   let filteredThreads: LFThread[] = [];
+  let searchResults: FuseResult<LFThread>[];
+
+  const options: IFuseOptions<unknown> = {
+    keys: ['metadata.label', 'messages.content'],
+    minMatchCharLength: 3,
+    shouldSort: false,
+    findAllMatches: true,
+    threshold: 0, // perfect matches only
+    ignoreLocation: true
+  };
 
   $: activeThreadId = $page.params.thread_id;
   $: organizedThreads = dates.organizeThreadsByDate(
     searchText !== '' ? filteredThreads : $threadsStore.threads
   );
+
+  $: if (searchText) {
+    // Remap the message content to be a string instead of string | nested object
+    const threadsWithTextMessages = $threadsStore.threads.map((thread) => ({
+      ...thread,
+      messages: thread.messages?.map((message) => ({
+        ...message,
+        content: getMessageText(message)
+      }))
+    }));
+
+    const fuse = new Fuse(threadsWithTextMessages, options);
+    searchResults = fuse.search(searchText);
+    filteredThreads = searchResults.map((result) => result.item);
+  }
 </script>
 
 <Sidebar class=" w-full max-w-64 overflow-y-auto">
@@ -33,11 +62,12 @@
         <Input type="txt" placeholder="Search..." bind:value={searchText} maxlength={25}></Input>
       </div>
     </SidebarGroup>
-    <SidebarGroup border>
+    <Hr classHr="my-2" />
+    <SidebarGroup>
       {#each organizedThreads as category}
         {#if category.threads.length > 0}
           <SidebarDropdownWrapper label={category.label} isOpen={true}>
-            {#each category.threads as thread, index (thread.id)}
+            {#each category.threads as thread (thread.id)}
               <LFSidebarDropdownItem
                 threadId={thread.id}
                 label={thread.metadata.label}
@@ -47,6 +77,10 @@
           </SidebarDropdownWrapper>
         {/if}
       {/each}
+    </SidebarGroup>
+    <SidebarGroup>
+      <Hr classHr="my-2" />
+      <ImportExport />
     </SidebarGroup>
   </SidebarWrapper>
 </Sidebar>
