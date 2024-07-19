@@ -8,8 +8,19 @@ import uuid
 # Suppress SSL-related warnings
 warnings.filterwarnings("ignore", category=Warning)
 
-API_KEY = os.environ["API_KEY"]
-API_URL = os.environ["API_URL"]
+
+class MissingEnvironmentVariable(Exception):
+    pass
+
+
+try:
+    API_KEY = os.environ["API_KEY"]
+    API_URL = os.environ["API_URL"]
+except KeyError:
+    raise MissingEnvironmentVariable(
+        "API_KEY and API_URL must be defined for the test to run. "
+        "Please check the loadtest README at /tests/load/README.md for instructions on setting these values."
+    )
 
 
 def load_pdf_file():
