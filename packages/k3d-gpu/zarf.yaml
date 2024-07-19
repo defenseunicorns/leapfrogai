@@ -32,7 +32,6 @@ components:
               docker run -d --name ###ZARF_PKG_TMPL_REG_NAME### -p ${ZARF_VAR_REG_PORT}:5000 registry:2
               set -e
             description: "Start the local registry"
-            mute: true
       onRemove:
         before:
           - cmd: |
@@ -41,7 +40,6 @@ components:
               docker rm ###ZARF_PKG_TMPL_REG_NAME###
               set -e
             description: "Stop and remove the local registry"
-            mute: true
 
   - name: build-image
     required: true
@@ -65,12 +63,10 @@ components:
                 ghcr.io/defenseunicorns/leapfrogai/k3d-gpu:###ZARF_PKG_TMPL_VERSION### \
                 localhost:${ZARF_VAR_REG_PORT}/defenseunicorns/leapfrogai/k3d-gpu:###ZARF_PKG_TMPL_VERSION###
             description: "Build the k3d-gpu image"
-            # mute: true
         after:
           - cmd:
               docker push localhost:${ZARF_VAR_REG_PORT}/defenseunicorns/leapfrogai/k3d-gpu:###ZARF_PKG_TMPL_VERSION###
             description: "Push the image to the local registry"
-            mute: true
 
   - name: create-cluster
     required: true
@@ -88,4 +84,21 @@ components:
           - cmd: |
               k3d cluster delete uds
             description: "Delete the k3d cluster"
-            mute: true
+
+  - name: test-cluster
+    required: true
+    files:
+      - source: test/cuda-vector-add.yaml
+        target: test/cuda-vector-add.yaml
+    actions:
+      onDeploy:
+        before:
+          - cmd: |
+              uds zarf tools kubectl apply -f ./test/cuda-vector-add.yaml
+              uds zarf tools kubectl wait --for=jsonpath='{.status.phase}'=Succeeded --timeout=15s pod -l app=gpu-pod
+              uds zarf tools kubectl logs -l app=gpu-pod
+            description: "Run the test pod"
+        after:
+          - cmd: |
+              uds zarf tools kubectl delete -f ./test/cuda-vector-add.yaml
+            description: "Delete the test pod"
