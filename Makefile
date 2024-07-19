@@ -42,7 +42,7 @@ local-registry: ## Start up a local container registry. Errors in this target ar
 # Clean up: Stop and remove the local registry
 clean-registry:
 	@echo "Cleaning up..."
-	@docker stop registry
+	@docker stop ${REG_NAME}
 	@docker rm ${REG_NAME}
 
 sdk-wheel: ## build wheels for the leapfrogai_sdk package as a dependency for other lfai components

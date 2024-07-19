@@ -6,7 +6,7 @@ MAKEFILE_DIR := $(dir $(abspath $(lastword $(MAKEFILE_LIST))))
 ORGANIZATION := defenseunicorns
 PLATFORM := linux/amd64
 TAG := latest
-K3D_CLUSTER_NAME := k3d-core-slim-dev:0.24.0
+UDS_CORE := k3d-core-slim-dev:0.24.0
 K3S_TAG := $(shell jq -r .k3s_tag ${MAKEFILE_DIR}/version_config.json)
 CUDA_TAG := $(shell jq -r .cuda_tag ${MAKEFILE_DIR}/version_config.json)
 
@@ -36,7 +36,7 @@ push-k3d-gpu: local-registry build-k3d-gpu
 	@docker push localhost:${REG_PORT}/${ORGANIZATION}/k3d-gpu-support:${TAG}
 
 uds-gpu-cluster: local-registry build-k3d-gpu push-k3d-gpu
-	uds deploy ${K3D_CLUSTER_NAME} --set K3D_EXTRA_ARGS="--gpus=all --image=localhost:${REG_PORT}/${ORGANIZATION}/k3d-gpu-support:${TAG}" --confirm
+	uds deploy ${UDS_CORE} --set K3D_EXTRA_ARGS="--gpus=all --image=localhost:${REG_PORT}/${ORGANIZATION}/k3d-gpu-support:${TAG}" --confirm
 
 test-k3d-gpu:
 	@uds zarf tools kubectl apply -f ${MAKEFILE_DIR}/test/cuda-vector-add.yaml

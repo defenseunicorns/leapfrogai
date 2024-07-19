@@ -17,7 +17,7 @@ COPY --from=k3s / / --exclude=/bin/
 COPY --from=k3s /bin /bin
 
 # Deploy the nvidia driver plugin on startup
-COPY packages/k3d-gpu/plugin/device-plugin-daemonset.yaml /var/lib/rancher/k3s/server/manifests/nvidia-device-plugin-daemonset.yaml
+COPY ./plugin/device-plugin-daemonset.yaml /var/lib/rancher/k3s/server/manifests/nvidia-device-plugin-daemonset.yaml
 
 VOLUME /var/lib/kubelet
 VOLUME /var/lib/rancher/k3s

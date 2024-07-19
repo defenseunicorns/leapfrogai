@@ -1,0 +1,91 @@
+# yaml-language-server: $schema=https://raw.githubusercontent.com/defenseunicorns/zarf/main/zarf.schema.json
+
+kind: ZarfPackageConfig
+metadata:
+  name: "k3d-gpu"
+  version: '###ZARF_PKG_TMPL_VERSION###'
+  description: >
+    k3d base image with GPU support
+
+variables:
+  - name: REG_PORT
+    description: "Local registry port"
+    default: "5000"
+  - name: UDS_CORE
+    description: "UDS Core version to use"
+    default: "k3d-core-slim-dev:0.24.0"
+  - name: K3S_TAG
+    description: "K3s version to use"
+    default: "v1.28.8-k3s1"
+  - name: CUDA_TAG
+    description: "CUDA version to use"
+    default: "12.4.1-base-ubuntu22.04"
+
+components:
+  - name: create-local-registry
+    required: true
+    actions:
+      onDeploy:
+        before:
+          - cmd: |
+              set +e
+              docker run -d --name ###ZARF_PKG_TMPL_REG_NAME### -p ${ZARF_VAR_REG_PORT}:5000 registry:2
+              set -e
+            description: "Start the local registry"
+            mute: true
+      onRemove:
+        before:
+          - cmd: |
+              set +e
+              docker stop ###ZARF_PKG_TMPL_REG_NAME###
+              docker rm ###ZARF_PKG_TMPL_REG_NAME###
+              set -e
+            description: "Stop and remove the local registry"
+            mute: true
+
+  - name: build-image
+    required: true
+    files:
+      - source: Dockerfile
+        target: Dockerfile
+      - source: plugin/device-plugin-daemonset.yaml
+        target: plugin/device-plugin-daemonset.yaml
+    actions:
+      onDeploy:
+        before:
+          - cmd: |
+              docker build \
+                --platform linux/amd64 \
+                --build-arg K3S_TAG=${ZARF_VAR_K3S_TAG} \
+                --build-arg CUDA_TAG=${ZARF_VAR_CUDA_TAG} \
+                -t ghcr.io/defenseunicorns/leapfrogai/k3d-gpu:###ZARF_PKG_TMPL_VERSION### \
+                -f ./Dockerfile .
+
+              docker tag \
+                ghcr.io/defenseunicorns/leapfrogai/k3d-gpu:###ZARF_PKG_TMPL_VERSION### \
+                localhost:${ZARF_VAR_REG_PORT}/defenseunicorns/leapfrogai/k3d-gpu:###ZARF_PKG_TMPL_VERSION###
+            description: "Build the k3d-gpu image"
+            # mute: true
+        after:
+          - cmd:
+              docker push localhost:${ZARF_VAR_REG_PORT}/defenseunicorns/leapfrogai/k3d-gpu:###ZARF_PKG_TMPL_VERSION###
+            description: "Push the image to the local registry"
+            mute: true
+
+  - name: create-cluster
+    required: true
+    actions:
+      onDeploy:
+        before:
+          - cmd: |
+              uds deploy ${ZARF_VAR_UDS_CORE} \
+                --set K3D_EXTRA_ARGS="--gpus=all \
+                --image=localhost:${ZARF_VAR_REG_PORT}/defenseunicorns/leapfrogai/k3d-gpu:###ZARF_PKG_TMPL_VERSION###" \
+                --no-progress --insecure --confirm
+            description: "Create a k3d cluster with GPU support"
+      onRemove:
+        before:
+          - cmd: |
+              k3d cluster delete uds
+            description: "Delete the k3d cluster"
+            mute: true
