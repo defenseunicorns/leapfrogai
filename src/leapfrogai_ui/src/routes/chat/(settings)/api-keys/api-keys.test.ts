@@ -99,8 +99,7 @@ describe('api keys', () => {
 
     expect(toastSpy).toHaveBeenCalledWith({
       kind: 'success',
-      title: 'Keys Deleted',
-      subtitle: ''
+      title: 'Keys Deleted'
     });
   });
   it('disables the delete button when there are no rows selected', async () => {

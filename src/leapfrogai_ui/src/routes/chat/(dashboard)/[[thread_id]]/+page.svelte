@@ -4,7 +4,7 @@
   import { onMount, tick } from 'svelte';
   import { threadsStore, toastStore } from '$stores';
   import { ArrowRight, Checkmark, StopFilledAlt, UserProfile } from 'carbon-icons-svelte';
-  import { type Message as VercelAIMessage, useAssistant, useChat } from 'ai/svelte';
+  import { type Message as VercelAIMessage, useAssistant, useChat } from '@ai-sdk/svelte';
   import { page } from '$app/stores';
   import { beforeNavigate, goto } from '$app/navigation';
   import Message from '$components/Message.svelte';
@@ -13,11 +13,9 @@
   import { NO_SELECTED_ASSISTANT_ID } from '$constants';
 
   import {
-    isRunAssistantResponse,
-    processAnnotations,
+    isRunAssistantMessage,
     resetMessages,
     saveMessage,
-    sortMessages,
     stopThenSave
   } from '$helpers/chatHelpers';
   import {
@@ -26,84 +24,96 @@
     ERROR_SAVING_MSG_TEXT
   } from '$constants/toastMessages';
 
-  import { convertMessageToVercelAiMessage } from '$helpers/threads.js';
-
   export let data;
 
   /** LOCAL VARS **/
   let messageThreadDiv: HTMLDivElement;
   let lengthInvalid: boolean; // bound to child LFTextArea
   let assistantsList: Array<{ id: string; text: string }>;
-  let hasSentAssistantMessage = false;
   /** END LOCAL VARS **/
 
   /** REACTIVE STATE **/
-
+  $: componentHasMounted = false;
   $: $page.params.thread_id, threadsStore.setLastVisitedThreadId($page.params.thread_id);
   $: $page.params.thread_id,
     resetMessages({
       activeThread: data.thread,
       setChatMessages,
-      setAssistantMessages,
-      files: data.files
+      setAssistantMessages
     });
 
+  $: activeThreadMessages =
+    $threadsStore.threads.find((thread) => thread.id === $page.params.thread_id)?.messages || [];
+  $: messageStreaming = $isLoading || $status === 'in_progress';
+  $: latestChatMessage = $chatMessages[$chatMessages.length - 1];
+  $: latestAssistantMessage = $assistantMessages[$assistantMessages.length - 1];
   $: assistantMode =
     $threadsStore.selectedAssistantId !== NO_SELECTED_ASSISTANT_ID &&
     $threadsStore.selectedAssistantId !== 'manage-assistants';
 
-  $: if ($isLoading || $status === 'in_progress') threadsStore.setSendingBlocked(true);
+  $: if (messageStreaming) threadsStore.setSendingBlocked(true);
 
-  // new streamed assistant message received (add in assistant_id and ensure it has a created_at timestamp)
-  $: $assistantMessages, modifyStreamedAssistantResponse();
+  // Handle streaming chat completion messages
+  $: $chatMessages.length, updateStreamingChatMessage();
+
+  // Handle streaming assistant messages
+  $: $assistantMessages, handleAssistantMessage();
 
   // assistant stream has completed
-  $: if (hasSentAssistantMessage && $status === 'awaiting_message') {
-    fetchAndParseCompletedAssistantResponse();
-  }
-
-  $: sortedMessages = sortMessages([...$chatMessages, ...$assistantMessages]);
+  $: $status, handleCompletedAssistantResponse();
 
   /** END REACTIVE STATE **/
 
-  // Annotations are stored after the run completes, so we re-fetch the last message to get them
-  const fetchAndParseCompletedAssistantResponse = async () => {
-    try {
-      const messageRes = await fetch(
-        `/api/messages?thread_id=${$page.params.thread_id}&message_id=${$assistantMessages[$assistantMessages.length - 1].id}`
-      );
-      const message = await messageRes.json();
-      const parsedMessage = processAnnotations(message, data.files);
-      const assistantMessagesCopy = [...$assistantMessages];
-      assistantMessagesCopy[assistantMessagesCopy.length - 1] =
-        convertMessageToVercelAiMessage(parsedMessage);
-      setAssistantMessages(assistantMessagesCopy);
-      threadsStore.updateMessage(
-        $page.params.thread_id,
-        $assistantMessages[$assistantMessages.length - 1].id,
-        parsedMessage
-      );
-    } catch {
-      // Fail Silently - error notification would not be useful to user, on failure, just show unparsed message
+  onMount(() => {
+    componentHasMounted = true;
+  });
+
+  const updateStreamingChatMessage = () => {
+    if ($isLoading && latestChatMessage?.role !== 'user')
+      threadsStore.setStreamingMessage(latestChatMessage);
+  };
+
+  const handleAssistantMessage = async () => {
+    if ($status === 'in_progress') {
+      // The initial user message is stored with a short temp id by @ai-sdk/svelte, we need to wait for the
+      // user message to be saved to the DB so we have the real id. Temp IDs appear to be 7 chars long, setting the
+      // length check here higher for safety
+      if (latestAssistantMessage?.role === 'user' && latestAssistantMessage.id.length > 15) {
+        const userMessageId = $assistantMessages[$assistantMessages.length - 1].id;
+        const messageRes = await fetch(
+          `/api/messages?thread_id=${$page.params.thread_id}&message_id=${userMessageId}`
+        );
+        const message = await messageRes.json();
+        // store the assistant id on the user msg to know it's associated with an assistant
+        message.metadata.assistant_id = $threadsStore.selectedAssistantId;
+        await threadsStore.addMessageToStore(message);
+      } else if (latestAssistantMessage?.role !== 'user') {
+        // Streamed assistant responses don't contain an assistant_id, so we add it here
+        // and also add a createdAt date if not present
+        if (!latestAssistantMessage.assistant_id) {
+          latestAssistantMessage.assistant_id = $threadsStore.selectedAssistantId;
+        }
+
+        if (!latestAssistantMessage.createdAt)
+          latestAssistantMessage.createdAt =
+            latestAssistantMessage.created_at || getUnixSeconds(new Date());
+
+        threadsStore.setStreamingMessage(latestAssistantMessage);
+        await threadsStore.setSendingBlocked(false);
+      }
     }
   };
 
-  const modifyStreamedAssistantResponse = async () => {
-    // Streamed assistant responses don't contain an assistant_id, so we add it here
-    // and also add a createdAt date if not present
-    const assistantMessagesCopy = [...$assistantMessages];
-    const latestMessage = assistantMessagesCopy[assistantMessagesCopy.length - 1];
-    if (latestMessage) {
-      if (!latestMessage.assistant_id) {
-        latestMessage.assistant_id = $threadsStore.selectedAssistantId;
-      }
-
-      if (!latestMessage.createdAt)
-        latestMessage.createdAt = latestMessage.created_at || getUnixSeconds(new Date());
-
-      setAssistantMessages(assistantMessagesCopy);
+  const handleCompletedAssistantResponse = async () => {
+    if (componentHasMounted && $status === 'awaiting_message') {
+      const assistantResponseId = $assistantMessages[$assistantMessages.length - 1].id;
+      const messageRes = await fetch(
+        `/api/messages?thread_id=${$page.params.thread_id}&message_id=${assistantResponseId}`
+      );
+      const message = await messageRes.json();
+      await threadsStore.addMessageToStore(message);
+      threadsStore.setStreamingMessage(null);
     }
-    await threadsStore.setSendingBlocked(false);
   };
 
   /** useChat - streams messages with the /api/chat route**/
@@ -114,13 +124,12 @@
     setMessages: setChatMessages,
     isLoading,
     stop: chatStop,
-    append: chatAppend,
-    reload
+    append: chatAppend
   } = useChat({
     // Handle completed AI Responses
     onFinish: async (message: VercelAIMessage) => {
       try {
-        if (!assistantMode && data.thread?.id) {
+        if (data.thread?.id) {
           // Save with API to db
           const newMessage = await saveMessage({
             thread_id: data.thread.id,
@@ -129,6 +138,7 @@
           });
 
           await threadsStore.addMessageToStore(newMessage);
+          threadsStore.setStreamingMessage(null);
         }
       } catch {
         toastStore.addToast({
@@ -192,7 +202,6 @@
       $assistantInput = '';
     }
     await threadsStore.setSendingBlocked(false);
-    hasSentAssistantMessage = true;
   };
 
   const sendChatMessage = async (e: SubmitEvent | KeyboardEvent) => {
@@ -286,17 +295,20 @@
   <form on:submit={onSubmit} class="container">
     <div class="messages-container">
       <div bind:this={messageThreadDiv}>
-        {#each sortedMessages as message, index (message.id)}
+        {#each activeThreadMessages as message, index (message.id)}
           <Message
-            allStreamedMessages={sortedMessages}
+            messages={activeThreadMessages}
+            streamedMessages={isRunAssistantMessage(message) ? $assistantMessages : $chatMessages}
             {message}
-            messages={isRunAssistantResponse(message) ? $assistantMessages : $chatMessages}
-            setMessages={isRunAssistantResponse(message) ? setAssistantMessages : setChatMessages}
-            isLastMessage={index === sortedMessages.length - 1}
-            append={isRunAssistantResponse(message) ? assistantAppend : chatAppend}
-            {reload}
+            isLastMessage={!$threadsStore.streamingMessage &&
+              index === activeThreadMessages.length - 1}
+            append={assistantMode ? assistantAppend : chatAppend}
+            setMessages={isRunAssistantMessage(message) ? setAssistantMessages : setChatMessages}
           />
         {/each}
+        {#if $threadsStore.streamingMessage}
+          <Message message={$threadsStore.streamingMessage} isLastMessage />
+        {/if}
       </div>
     </div>
     <hr id="divider" class="divider" />

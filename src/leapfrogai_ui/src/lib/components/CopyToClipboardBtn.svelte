@@ -14,8 +14,7 @@
       await navigator.clipboard.writeText(value);
       toastStore.addToast({
         kind: 'info',
-        title: toastTitle,
-        subtitle: ''
+        title: toastTitle
       });
     }
   };
