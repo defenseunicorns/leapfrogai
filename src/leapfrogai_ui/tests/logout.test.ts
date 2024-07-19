@@ -6,7 +6,7 @@ test('it can log out', async ({ page }) => {
   await page.getByLabel('User').click();
   await page.getByLabel('Log Out').click();
 
-  await page.waitForURL('http://localhost:4173');
+  await page.waitForURL('/');
 
   if (process.env.PUBLIC_DISABLE_KEYCLOAK === 'true') {
     await expect(page.getByText('Sign In')).toBeVisible();

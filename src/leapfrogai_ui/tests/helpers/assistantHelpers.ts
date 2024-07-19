@@ -1,8 +1,8 @@
 import OpenAI from 'openai';
 import { expect, type Page } from '@playwright/test';
-import { getFakeAssistantInput } from '$testUtils/fakeData';
+import { getFakeAssistantInput } from '../../testUtils/fakeData';
 import type { AssistantCreateParams } from 'openai/resources/beta/assistants';
-import type { AssistantInput, LFAssistant } from '$lib/types/assistants';
+import type { AssistantInput, LFAssistant } from '../../src/lib/types/assistants';
 import { supabase } from './helpers';
 
 // Note - this will not apply the temperature slider value provided, it only clicks on the 0.5 increment
@@ -46,20 +46,36 @@ export const uploadAvatar = async (page: Page, imageName = 'Doug') => {
   });
   expect(hasImage).toBeDefined();
 };
-export const createAssistantWithApi = async (openAIClient: OpenAI) => {
-  const fakeAssistantInput = getFakeAssistantInput();
-  const assistantInput: AssistantCreateParams = {
-    name: fakeAssistantInput.name,
-    description: fakeAssistantInput.description,
-    instructions: fakeAssistantInput.instructions,
-    temperature: fakeAssistantInput.temperature,
+
+type CreateAssistantWithApiParams = {
+  assistantInput?: AssistantInput;
+  openAIClient: OpenAI;
+};
+export const createAssistantWithApi = async (params: CreateAssistantWithApiParams) => {
+  const { assistantInput = getFakeAssistantInput(), openAIClient } = params;
+
+  const withFiles = assistantInput.data_sources && assistantInput.data_sources.length > 0;
+
+  const assistantCreateParams: AssistantCreateParams = {
+    name: assistantInput.name,
+    description: assistantInput.description,
+    instructions: assistantInput.instructions,
+    temperature: assistantInput.temperature,
     model: process.env.DEFAULT_MODEL!,
     metadata: {
       pictogram: 'Default'
-    }
+    },
+    ...(withFiles && {
+      tools: [{ type: 'file_search' }],
+      tool_resources: {
+        file_search: {
+          vector_stores: [{ file_ids: assistantInput.data_sources as string[] }]
+        }
+      }
+    })
   };
 
-  return (await openAIClient.beta.assistants.create(assistantInput)) as LFAssistant;
+  return (await openAIClient.beta.assistants.create(assistantCreateParams)) as LFAssistant;
 };
 export const deleteAssistantWithApi = async (id: string, openAIClient: OpenAI) => {
   await openAIClient.beta.assistants.del(id);
