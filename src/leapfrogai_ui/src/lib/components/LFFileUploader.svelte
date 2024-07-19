@@ -1,11 +1,10 @@
 <!--This is a custom version of Carbon Components Svelte's FileUploaderButton to support usage of an inline icon-->
 
 <script lang="ts">
-  import { Download } from 'carbon-icons-svelte';
-  import { Button } from 'carbon-components-svelte';
+  import { Button } from 'flowbite-svelte';
+  import { UploadOutline } from 'flowbite-svelte-icons';
 
   export let importing: boolean;
-
   /** Obtain a reference to the input HTML element */
   export let ref: HTMLInputElement | null = null;
   export let accept: string[] = [];
@@ -33,16 +32,19 @@
       }
     }}
     bind:files
-    class:bx--visually-hidden={true}
+    class="sr-only"
   />
 
   <Button
     id="import-btn"
-    kind="ghost"
+    outline
+    size="sm"
     disabled={importing}
-    size="small"
-    icon={Download}
-    iconDescription="Import conversations"
-    on:click={() => ref?.click()}>Import chat history</Button
+    on:click={() => ref?.click()}
+    class="w-full"
   >
+    <div class="flex w-full justify-between">
+      Import chat history <UploadOutline />
+    </div>
+  </Button>
 </div>

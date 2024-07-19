@@ -214,7 +214,7 @@
     width: 100%;
     gap: 0.25rem;
     overflow: hidden;
-    padding-bottom: layout.$spacing-02;
+    padding-bottom: 0.25rem;
   }
 
   .hide {

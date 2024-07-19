@@ -1,12 +1,12 @@
 <script lang="ts">
   import { twMerge } from 'tailwind-merge';
   import { Button, Input, P, Popover } from 'flowbite-svelte';
-  import { DotsVerticalOutline } from 'flowbite-svelte-icons';
+  import { DotsVerticalOutline, ExclamationCircleOutline } from 'flowbite-svelte-icons';
   import { threadsStore } from '$stores';
   import { goto } from '$app/navigation';
   import { page } from '$app/stores';
   import { MAX_LABEL_SIZE } from '$constants';
-  import { Modal } from 'carbon-components-svelte';
+  import { Modal } from 'flowbite-svelte';
 
   export let sClass: string =
     'flex items-center p-2 ps-11 w-full text-base font-normal text-gray-900 rounded-lg transition duration-75 group hover:bg-gray-100 dark:text-white dark:hover:bg-gray-700';
@@ -16,7 +16,7 @@
     'flex items-center p-2 ps-11 text-base font-normal text-gray-900 bg-gray-200 dark:bg-gray-700 rounded-lg dark:text-white hover:bg-gray-100 dark:hover:bg-gray-700';
   export let active: boolean = false;
   let deleteModalOpen = false;
-  let editLabelText: string | undefined;
+  let editLabelText: string | undefined = label;
   let editLabelInputDisabled = false;
 
   let lengthOverride = 'overflow-hidden text-ellipsis whitespace-nowrap';
@@ -72,6 +72,7 @@
 <li class="flex flex-grow justify-between">
   {#if editMode}
     <Input
+      data-testid="edit-thread-input"
       bind:value={editLabelText}
       type="text"
       size="sm"
@@ -89,9 +90,10 @@
         e.stopPropagation();
       }}
       on:focus={() => {}}
+      maxlength={MAX_LABEL_SIZE}
     />
   {:else}
-    <span
+    <button
       {...$$restProps}
       on:blur
       on:focus
@@ -112,14 +114,19 @@
         $$props.class
       )}
     >
-      <P class="overflow-hidden text-ellipsis whitespace-nowrap">
+      <P size="sm" class="overflow-hidden text-ellipsis whitespace-nowrap">
         {label}
       </P>
-    </span>
-    <button id={`btn-${threadId}`} class={popperOpen && 'focus:rounded focus:bg-gray-400'}>
+    </button>
+    <button
+      data-testid={`sidebar-btn-${threadId}`}
+      id={`btn-${threadId}`}
+      class={popperOpen && 'focus:rounded focus:bg-gray-400'}
+    >
       <DotsVerticalOutline />
     </button>
     <Popover
+      data-testid={'sidebar-popover'}
       class="w-32 text-sm font-light"
       defaultClass="p-0"
       placement="right"
@@ -127,7 +134,6 @@
       triggeredBy={`#btn-${threadId}`}
       arrow={false}
       on:show={() => {
-        console.log('on show');
         popperOpen = !popperOpen;
       }}
       ><div class="flex flex-col items-center gap-1">
@@ -147,19 +153,16 @@
   {/if}
 </li>
 
-<Modal
-  danger
-  preventCloseOnClickOutside
-  bind:open={deleteModalOpen}
-  modalHeading="Delete Chat"
-  primaryButtonText="Delete"
-  secondaryButtonText="Cancel"
-  on:click:button--secondary={() => (deleteModalOpen = false)}
-  on:open
-  on:close
-  on:submit={handleDelete}
-  >Are you sure you want to delete your <strong>{label.substring(0, MAX_LABEL_SIZE)}</strong> chat?</Modal
->
+<Modal data-testid="delete-thread-modal" bind:open={deleteModalOpen} autoclose title="Delete Chat">
+  <div class="text-center">
+    <ExclamationCircleOutline class="mx-auto mb-4 h-12 w-12 text-gray-400 dark:text-gray-200" />
+    <h3 class="mb-5 text-lg font-normal text-gray-500 dark:text-gray-400">
+      Are you sure you want to delete your <strong>{label.substring(0, MAX_LABEL_SIZE)}</strong> chat?
+    </h3>
+    <Button color="red" class="me-2" on:click={handleDelete}>Delete</Button>
+    <Button color="alternative">Cancel</Button>
+  </div>
+</Modal>
 
 <!--
 @component

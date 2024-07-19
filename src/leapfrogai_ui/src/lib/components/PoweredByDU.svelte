@@ -21,7 +21,7 @@
     font-size: 0.75rem;
     line-height: 1rem;
     font-weight: 400;
-    letter-spacing: .32px;
+    letter-spacing: 0.32px;
   }
   .icon {
     height: var(--footer-height);

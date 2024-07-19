@@ -1,34 +1,15 @@
 <script lang="ts">
-  import { ToastNotification } from 'carbon-components-svelte';
-  import { slide } from 'svelte/transition';
   import { toastStore } from '$stores';
+  import { slide } from 'svelte/transition';
+  import LFToast from '$components/Toasts/LFToast.svelte';
 </script>
 
 {#if $toastStore.toasts}
-  <section>
+  <section class="absolute right-0 top-header z-50 flex flex-col justify-center gap-1">
     {#each $toastStore.toasts as toast (toast.id)}
       <div transition:slide>
-        <ToastNotification
-          timeout={toast.timeout}
-          kind={toast.kind}
-          title={toast.title}
-          subtitle={toast.subtitle}
-          caption={`Time stamp [${new Date().toLocaleTimeString()}]`}
-          on:click={() => toastStore.dismissToast(toast.id)}
-        />
+        <LFToast {toast} />
       </div>
     {/each}
   </section>
 {/if}
-
-<style lang="scss">
-  section {
-    position: absolute;
-    top: 0 + var(--header-height);
-    right: 0;
-    display: flex;
-    justify-content: center;
-    flex-direction: column;
-    z-index: 100000;
-  }
-</style>

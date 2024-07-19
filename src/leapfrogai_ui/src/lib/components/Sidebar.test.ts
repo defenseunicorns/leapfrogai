@@ -1,4 +1,4 @@
-import { ChatSidebar } from '$components';
+import Sidebar from '$components/Sidebar.svelte';
 import {
   mockDeleteThread,
   mockDeleteThreadError,
@@ -16,19 +16,34 @@ import * as navigation from '$app/navigation';
 import { getMessageText } from '$helpers/threads';
 import { NO_SELECTED_ASSISTANT_ID } from '$constants';
 
-const editThreadsLabel = async (oldLabel: string, newLabel: string, keyToPress = '{enter}') => {
-  const overflowMenu = within(screen.getByTestId(`side-nav-menu-item-${oldLabel}`)).getByRole(
-    'button',
-    { name: /menu/i }
-  );
-  await userEvent.click(overflowMenu);
-  const editBtn = within(overflowMenu).getByRole('menuitem', { name: /edit/i });
-  await userEvent.click(editBtn);
+const openThreadEditDeleteMenu = async (threadId: string) => {
+  const sidebarThreadMenuBtn = screen.getByTestId(`sidebar-btn-${threadId}`);
+  await userEvent.click(sidebarThreadMenuBtn);
+};
 
-  const editInput = await screen.findByLabelText('edit thread');
+const clickEditThreadBtn = async () => {
+  const editDeletePopover = screen.getByTestId('sidebar-popover');
+  await userEvent.click(within(editDeletePopover).getByRole('button', { name: /edit/i }));
+  expect(screen.getByTestId('edit-thread-input')).toBeInTheDocument();
+};
+
+const clickDeleteThreadBtn = async () => {
+  const editDeletePopover = screen.getByTestId('sidebar-popover');
+  await userEvent.click(within(editDeletePopover).getByRole('button', { name: /delete/i }));
+};
+
+const renameThread = async (oldLabel: string, newLabel: string, keyToPress = '{enter}') => {
+  expect(screen.getByTestId('edit-thread-input')).toBeInTheDocument();
+  const editInput = screen.getByDisplayValue(oldLabel); // also test input has original label
   await userEvent.clear(editInput);
   await userEvent.type(editInput, newLabel);
   await userEvent.keyboard(keyToPress);
+};
+
+const editThreadsLabel = async (oldLabel: string, newLabel: string, keyToPress = '{enter}') => {
+  await openThreadEditDeleteMenu(fakeThreads[0].id);
+  await clickEditThreadBtn();
+  await renameThread(oldLabel, newLabel, keyToPress);
 };
 
 describe('ChatSidebar', () => {
@@ -37,15 +52,18 @@ describe('ChatSidebar', () => {
       threads: fakeThreads,
       sendingBlocked: false,
       selectedAssistantId: NO_SELECTED_ASSISTANT_ID,
-      lastVisitedThreadId: fakeThreads[0].id
+      lastVisitedThreadId: fakeThreads[0].id,
+      streamingMessage: null
     });
 
-    render(ChatSidebar);
+    render(Sidebar);
 
     const threadsSection = screen.getByTestId('threads');
 
     fakeThreads.forEach((thread) => {
-      expect(within(threadsSection).getByText(thread.metadata.label)).toBeInTheDocument();
+      expect(
+        within(threadsSection).getByRole('button', { name: thread.metadata.label })
+      ).toBeInTheDocument();
     });
   });
 
@@ -62,15 +80,18 @@ describe('ChatSidebar', () => {
       threads: [fakeTodayThread, fakeYesterdayThread], // uses date override starting in March
       sendingBlocked: false,
       selectedAssistantId: NO_SELECTED_ASSISTANT_ID,
-      lastVisitedThreadId: ''
+      lastVisitedThreadId: '',
+      streamingMessage: null
     });
 
-    render(ChatSidebar);
+    render(Sidebar);
     const threadsSection = screen.getByTestId('threads');
 
-    expect(within(threadsSection).getByText(fakeTodayThread.metadata.label)).toBeInTheDocument();
     expect(
-      within(threadsSection).getByText(fakeYesterdayThread.metadata.label)
+      within(threadsSection).getByRole('button', { name: fakeTodayThread.metadata.label })
+    ).toBeInTheDocument();
+    expect(
+      within(threadsSection).getByRole('button', { name: fakeYesterdayThread.metadata.label })
     ).toBeInTheDocument();
 
     expect(screen.getByText('Today')).toBeInTheDocument();
@@ -87,34 +108,37 @@ describe('ChatSidebar', () => {
       threads: fakeThreads,
       sendingBlocked: false,
       selectedAssistantId: NO_SELECTED_ASSISTANT_ID,
-      lastVisitedThreadId: fakeThreads[0].id
+      lastVisitedThreadId: fakeThreads[0].id,
+      streamingMessage: null
     });
 
-    render(ChatSidebar);
+    render(Sidebar);
 
     const threadsSection = screen.getByTestId('threads');
 
-    expect(within(threadsSection).getByText(fakeThreads[0].metadata.label)).toBeInTheDocument();
-    expect(within(threadsSection).getByText(fakeThreads[1].metadata.label)).toBeInTheDocument();
+    expect(
+      within(threadsSection).getByRole('button', { name: fakeThreads[0].metadata.label })
+    ).toBeInTheDocument();
+    expect(
+      within(threadsSection).getByRole('button', { name: fakeThreads[1].metadata.label })
+    ).toBeInTheDocument();
 
-    const overflowMenu = screen.getAllByLabelText('menu')[0];
-    await userEvent.click(overflowMenu);
+    await openThreadEditDeleteMenu(fakeThreads[0].id);
+    await clickDeleteThreadBtn();
 
-    const deleteBtn = within(overflowMenu).getByText('Delete');
-    await userEvent.click(deleteBtn);
-
-    const modal = screen.getByRole('presentation');
-
+    const modal = screen.getByTestId('delete-thread-modal');
     expect(modal).toBeVisible();
 
-    const confirmDeleteBtn = within(modal).getByText('Delete');
+    const confirmDeleteBtn = within(modal).getByRole('button', { name: /delete/i });
     await userEvent.click(confirmDeleteBtn);
     expect(modal).not.toBeVisible;
 
     expect(
-      within(threadsSection).queryByText(fakeThreads[0].metadata.label)
+      within(threadsSection).queryByRole('button', { name: fakeThreads[0].metadata.label })
     ).not.toBeInTheDocument();
-    expect(within(threadsSection).getByText(fakeThreads[1].metadata.label)).toBeInTheDocument();
+    expect(
+      within(threadsSection).getByRole('button', { name: fakeThreads[1].metadata.label })
+    ).toBeInTheDocument();
   });
   it('dispatches a toast when there is an error deleting a thread and it does not delete the thread from the screen', async () => {
     mockDeleteThreadError();
@@ -125,29 +149,31 @@ describe('ChatSidebar', () => {
       threads: fakeThreads,
       sendingBlocked: false,
       selectedAssistantId: NO_SELECTED_ASSISTANT_ID,
-      lastVisitedThreadId: fakeThreads[0].id
+      lastVisitedThreadId: fakeThreads[0].id,
+      streamingMessage: null
     });
 
-    render(ChatSidebar);
+    render(Sidebar);
 
     const threadsSection = screen.getByTestId('threads');
 
-    expect(within(threadsSection).getByText(fakeThreads[0].metadata.label)).toBeInTheDocument();
+    expect(
+      within(threadsSection).getByRole('button', { name: fakeThreads[0].metadata.label })
+    ).toBeInTheDocument();
 
-    const overflowMenu = screen.getAllByLabelText('menu')[0];
-    await userEvent.click(overflowMenu);
+    await openThreadEditDeleteMenu(fakeThreads[0].id);
+    await clickDeleteThreadBtn();
 
-    const deleteBtn = within(overflowMenu).getByText('Delete');
-    await userEvent.click(deleteBtn);
+    const modal = screen.getByTestId('delete-thread-modal');
 
-    const modal = screen.getByRole('presentation');
+    expect(modal).toBeVisible();
 
-    expect(modal).toBeInTheDocument();
-
-    const confirmDeleteBtn = within(modal).getByText('Delete');
+    const confirmDeleteBtn = within(modal).getByRole('button', { name: /delete/i });
     await userEvent.click(confirmDeleteBtn);
 
-    expect(within(threadsSection).getByText(fakeThreads[0].metadata.label)).toBeInTheDocument();
+    expect(
+      within(threadsSection).getByRole('button', { name: fakeThreads[0].metadata.label })
+    ).toBeInTheDocument();
     expect(toastSpy).toHaveBeenCalledTimes(1);
   });
 
@@ -159,17 +185,20 @@ describe('ChatSidebar', () => {
       threads: fakeThreads,
       sendingBlocked: false,
       selectedAssistantId: NO_SELECTED_ASSISTANT_ID,
-      lastVisitedThreadId: fakeThreads[0].id
+      lastVisitedThreadId: fakeThreads[0].id,
+      streamingMessage: null
     });
 
-    render(ChatSidebar);
+    render(Sidebar);
 
     const threadsSection = screen.getByTestId('threads');
 
-    expect(within(threadsSection).getByText(fakeThreads[0].metadata.label)).toBeInTheDocument();
+    expect(
+      within(threadsSection).getByRole('button', { name: fakeThreads[0].metadata.label })
+    ).toBeInTheDocument();
 
     await editThreadsLabel(fakeThreads[0].metadata.label, newLabelText);
-    expect(within(threadsSection).getByText(newLabelText)).toBeInTheDocument();
+    expect(within(threadsSection).getByRole('button', { name: newLabelText })).toBeInTheDocument();
   });
 
   it('edits thread labels when tab is pressed instead of enter', async () => {
@@ -180,17 +209,20 @@ describe('ChatSidebar', () => {
       threads: fakeThreads,
       sendingBlocked: false,
       selectedAssistantId: NO_SELECTED_ASSISTANT_ID,
-      lastVisitedThreadId: fakeThreads[0].id
+      lastVisitedThreadId: fakeThreads[0].id,
+      streamingMessage: null
     });
 
-    render(ChatSidebar);
+    render(Sidebar);
 
     const threadsSection = screen.getByTestId('threads');
 
-    expect(within(threadsSection).getByText(fakeThreads[0].metadata.label)).toBeInTheDocument();
+    expect(
+      within(threadsSection).getByRole('button', { name: fakeThreads[0].metadata.label })
+    ).toBeInTheDocument();
 
     await editThreadsLabel(fakeThreads[0].metadata.label, newLabelText, '{Tab}');
-    expect(within(threadsSection).getByText(newLabelText)).toBeInTheDocument();
+    expect(within(threadsSection).getByRole('button', { name: newLabelText })).toBeInTheDocument();
   });
 
   it('edits thread labels when the user clicks away from the input (onBlur)', async () => {
@@ -201,27 +233,27 @@ describe('ChatSidebar', () => {
       threads: fakeThreads,
       sendingBlocked: false,
       selectedAssistantId: NO_SELECTED_ASSISTANT_ID,
-      lastVisitedThreadId: fakeThreads[0].id
+      lastVisitedThreadId: fakeThreads[0].id,
+      streamingMessage: null
     });
 
-    render(ChatSidebar);
+    render(Sidebar);
 
     const threadsSection = screen.getByTestId('threads');
 
-    expect(within(threadsSection).getByText(fakeThreads[0].metadata.label)).toBeInTheDocument();
+    expect(
+      within(threadsSection).getByRole('button', { name: fakeThreads[0].metadata.label })
+    ).toBeInTheDocument();
 
-    const overflowMenu = within(
-      screen.getByTestId(`side-nav-menu-item-${fakeThreads[0].metadata.label}`)
-    ).getByRole('button', { name: /menu/i });
-    await userEvent.click(overflowMenu);
-    const editBtn = within(overflowMenu).getByRole('menuitem', { name: /edit/i });
-    await userEvent.click(editBtn);
-    const editInput = screen.getByLabelText('edit thread');
+    await openThreadEditDeleteMenu(fakeThreads[0].id);
+    await clickEditThreadBtn();
+
+    const editInput = screen.getByDisplayValue(fakeThreads[0].metadata.label);
     await userEvent.clear(editInput);
     await userEvent.type(editInput, newLabelText);
 
     await fireEvent.blur(editInput);
-    await within(threadsSection).findByText(newLabelText);
+    await screen.findByRole('button', { name: newLabelText });
   });
 
   it('dispatches a toast when there is an error editing a threads label and it does not update the label on the screen', async () => {
@@ -233,18 +265,23 @@ describe('ChatSidebar', () => {
       threads: fakeThreads,
       sendingBlocked: false,
       selectedAssistantId: NO_SELECTED_ASSISTANT_ID,
-      lastVisitedThreadId: fakeThreads[0].id
+      lastVisitedThreadId: fakeThreads[0].id,
+      streamingMessage: null
     });
 
-    render(ChatSidebar);
+    render(Sidebar);
 
     const threadsSection = screen.getByTestId('threads');
 
-    expect(within(threadsSection).getByText(fakeThreads[0].metadata.label)).toBeInTheDocument();
+    expect(
+      within(threadsSection).getByRole('button', { name: fakeThreads[0].metadata.label })
+    ).toBeInTheDocument();
 
     await editThreadsLabel(fakeThreads[0].metadata.label, newLabelText);
-    await userEvent.keyboard('{enter}');
-    expect(within(threadsSection).getByText(fakeThreads[0].metadata.label)).toBeInTheDocument();
+
+    expect(
+      within(threadsSection).getByRole('button', { name: fakeThreads[0].metadata.label })
+    ).toBeInTheDocument();
     expect(toastSpy).toHaveBeenCalledTimes(1);
   });
 
@@ -254,19 +291,24 @@ describe('ChatSidebar', () => {
       threads: fakeThreads,
       sendingBlocked: false,
       selectedAssistantId: NO_SELECTED_ASSISTANT_ID,
-      lastVisitedThreadId: fakeThreads[0].id
+      lastVisitedThreadId: fakeThreads[0].id,
+      streamingMessage: null
     });
 
-    render(ChatSidebar);
+    render(Sidebar);
 
     const threadsSection = screen.getByTestId('threads');
 
-    expect(within(threadsSection).getByText(fakeThreads[0].metadata.label)).toBeInTheDocument();
+    expect(
+      within(threadsSection).getByRole('button', { name: fakeThreads[0].metadata.label })
+    ).toBeInTheDocument();
 
     await editThreadsLabel(fakeThreads[0].metadata.label, newLabelText, '{escape}');
 
-    expect(screen.queryByLabelText('edit thread')).not.toBeInTheDocument();
-    expect(within(threadsSection).getByText(fakeThreads[0].metadata.label)).toBeInTheDocument();
+    expect(screen.queryByTestId('edit-thread-input')).not.toBeInTheDocument();
+    expect(
+      within(threadsSection).getByRole('button', { name: fakeThreads[0].metadata.label })
+    ).toBeInTheDocument();
   });
 
   it('disables the input when enter is pressed', async () => {
@@ -277,21 +319,20 @@ describe('ChatSidebar', () => {
       threads: fakeThreads,
       sendingBlocked: false,
       selectedAssistantId: NO_SELECTED_ASSISTANT_ID,
-      lastVisitedThreadId: fakeThreads[0].id
+      lastVisitedThreadId: fakeThreads[0].id,
+      streamingMessage: null
     });
 
-    render(ChatSidebar);
+    render(Sidebar);
 
-    // Not using the helper function b/c we need to reference the editInput at the end
-    const overflowMenu = screen.getAllByLabelText('menu')[0];
-    await userEvent.click(overflowMenu);
-    const editBtn = within(overflowMenu).getByText('Edit');
-    await userEvent.click(editBtn);
-    const editInput = screen.getByLabelText('edit thread');
+    // Not using the helper function b/c we need to reference the editInput before it is removed from the dom
+    await openThreadEditDeleteMenu(fakeThreads[0].id);
+    await clickEditThreadBtn();
+    const editInput = screen.getByTestId('edit-thread-input');
     await userEvent.clear(editInput);
     await userEvent.type(editInput, newLabelText);
     await userEvent.keyboard('{enter}');
-    expect(editInput).toHaveProperty('readOnly', true);
+    expect(editInput).toBeDisabled();
   });
 
   it('removes the edit input when the focus on the input is lost', async () => {
@@ -302,14 +343,14 @@ describe('ChatSidebar', () => {
       threads: fakeThreads,
       sendingBlocked: false,
       selectedAssistantId: NO_SELECTED_ASSISTANT_ID,
-      lastVisitedThreadId: fakeThreads[0].id
+      lastVisitedThreadId: fakeThreads[0].id,
+      streamingMessage: null
     });
 
-    render(ChatSidebar);
+    render(Sidebar);
 
     await editThreadsLabel(fakeThreads[0].metadata.label, newLabelText, '{tab}');
-    const editInput = screen.queryByText('edit thread');
-    expect(editInput).not.toBeInTheDocument();
+    expect(screen.queryByTestId('edit-thread-input')).not.toBeInTheDocument();
   });
   it('changes the active chat thread', async () => {
     const goToSpy = vi.spyOn(navigation, 'goto');
@@ -320,14 +361,17 @@ describe('ChatSidebar', () => {
       threads: [fakeThread],
       sendingBlocked: false,
       selectedAssistantId: NO_SELECTED_ASSISTANT_ID,
-      lastVisitedThreadId: fakeThreads[0].id
+      lastVisitedThreadId: fakeThreads[0].id,
+      streamingMessage: null
     });
 
-    render(ChatSidebar);
+    render(Sidebar);
 
-    expect(screen.queryByText(getMessageText(fakeThread.messages![0]))).not.toBeInTheDocument();
+    expect(
+      screen.queryByRole('button', { name: getMessageText(fakeThread.messages![0]) })
+    ).not.toBeInTheDocument();
 
-    await userEvent.click(screen.getByText(fakeThread.metadata.label));
+    await userEvent.click(screen.getByRole('button', { name: fakeThread.metadata.label }));
 
     expect(goToSpy).toHaveBeenCalledTimes(1);
     expect(goToSpy).toHaveBeenCalledWith(`/chat/${fakeThread.id}`);
@@ -341,21 +385,28 @@ describe('ChatSidebar', () => {
       threads: [fakeThread1, fakeThread2, fakeThread3],
       sendingBlocked: false,
       selectedAssistantId: NO_SELECTED_ASSISTANT_ID,
-      lastVisitedThreadId: ''
+      lastVisitedThreadId: '',
+      streamingMessage: null
     });
 
-    render(ChatSidebar);
+    render(Sidebar);
 
-    expect(screen.queryByText(fakeThread1.metadata.label)).toBeInTheDocument();
-    expect(screen.queryByText(fakeThread2.metadata.label)).toBeInTheDocument();
-    expect(screen.queryByText(fakeThread3.metadata.label)).toBeInTheDocument();
+    screen.getByRole('button', { name: fakeThread1.metadata.label });
+    screen.getByRole('button', { name: fakeThread2.metadata.label });
+    screen.getByRole('button', { name: fakeThread3.metadata.label });
 
     const searchBox = screen.getByPlaceholderText('Search...');
     await userEvent.type(searchBox, fakeThread2.metadata.label);
 
-    expect(screen.queryByText(fakeThread1.metadata.label)).not.toBeInTheDocument();
-    expect(screen.queryByText(fakeThread2.metadata.label)).toBeInTheDocument();
-    expect(screen.queryByText(fakeThread3.metadata.label)).not.toBeInTheDocument();
+    expect(
+      screen.queryByRole('button', { name: fakeThread1.metadata.label })
+    ).not.toBeInTheDocument();
+
+    expect(screen.queryByRole('button', { name: fakeThread2.metadata.label })).toBeInTheDocument();
+
+    expect(
+      screen.queryByRole('button', { name: fakeThread3.metadata.label })
+    ).not.toBeInTheDocument();
   });
 
   it('search finds threads by messages', async () => {
@@ -367,21 +418,28 @@ describe('ChatSidebar', () => {
       threads: [fakeThread1, fakeThread2, fakeThread3],
       sendingBlocked: false,
       selectedAssistantId: NO_SELECTED_ASSISTANT_ID,
-      lastVisitedThreadId: ''
+      lastVisitedThreadId: '',
+      streamingMessage: null
     });
 
-    render(ChatSidebar);
+    render(Sidebar);
 
-    expect(screen.queryByText(fakeThread1.metadata.label)).toBeInTheDocument();
-    expect(screen.queryByText(fakeThread2.metadata.label)).toBeInTheDocument();
-    expect(screen.queryByText(fakeThread3.metadata.label)).toBeInTheDocument();
+    screen.getByRole('button', { name: fakeThread1.metadata.label });
+    screen.getByRole('button', { name: fakeThread2.metadata.label });
+    screen.getByRole('button', { name: fakeThread3.metadata.label });
 
     const searchBox = screen.getByPlaceholderText('Search...');
 
     await userEvent.type(searchBox, getMessageText(fakeThread1.messages![0]));
 
-    expect(screen.queryByText(fakeThread1.metadata.label)).toBeInTheDocument();
-    expect(screen.queryByText(fakeThread2.metadata.label)).not.toBeInTheDocument();
-    expect(screen.queryByText(fakeThread3.metadata.label)).not.toBeInTheDocument();
+    expect(screen.queryByRole('button', { name: fakeThread1.metadata.label })).toBeInTheDocument();
+
+    expect(
+      screen.queryByRole('button', { name: fakeThread2.metadata.label })
+    ).not.toBeInTheDocument();
+
+    expect(
+      screen.queryByRole('button', { name: fakeThread3.metadata.label })
+    ).not.toBeInTheDocument();
   });
 });

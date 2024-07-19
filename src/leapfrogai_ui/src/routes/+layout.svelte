@@ -28,7 +28,7 @@
   <title>{$page.data.title || ''}</title>
 </svelte:head>
 
-<Toasts></Toasts>
+<Toasts />
 
 <div class="content">
   <slot />

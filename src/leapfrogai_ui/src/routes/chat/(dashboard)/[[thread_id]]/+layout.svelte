@@ -17,10 +17,9 @@
 <svelte:window bind:innerWidth />
 
 <div class="flex h-full">
-  <Sidebar  />
+  <Sidebar />
 
   <main class="w-full p-8">
     <slot />
   </main>
 </div>
-

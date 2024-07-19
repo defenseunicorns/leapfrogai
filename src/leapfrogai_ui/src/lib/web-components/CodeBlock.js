@@ -95,7 +95,7 @@ export class CodeBlock extends LitElement {
           <div class="centered-flexbox">
             <button
               data-testid="copy-code-btn"
-              class="bx--btn bx--btn--tertiary bx--btn--sm "
+              class="bx--btn bx--btn--tertiary bx--btn--sm"
               @click=${this.handleClick}
             >
               <div style="display: flex; width: 100%;">

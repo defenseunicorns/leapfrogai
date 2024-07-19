@@ -52,8 +52,9 @@
   }
 </script>
 
-<Sidebar class=" w-full max-w-64 overflow-y-auto">
-  <SidebarWrapper class="no-scrollbar h-full">
+<!--Custom styling allows center SidebarGroup (chat threads) to scroll-->
+<Sidebar class=" w-full max-w-64">
+  <SidebarWrapper class=" flex h-full flex-col">
     <SidebarGroup>
       <div class="flex flex-col gap-2">
         <Button on:click={() => threadsStore.changeThread('')}>
@@ -63,7 +64,7 @@
       </div>
     </SidebarGroup>
     <Hr classHr="my-2" />
-    <SidebarGroup>
+    <SidebarGroup class="no-scrollbar flex-grow overflow-y-scroll" data-testid="threads">
       {#each organizedThreads as category}
         {#if category.threads.length > 0}
           <SidebarDropdownWrapper label={category.label} isOpen={true}>
