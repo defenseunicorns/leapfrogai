@@ -16,8 +16,8 @@ import * as navigation from '$app/navigation';
 import { getMessageText } from '$helpers/threads';
 import { NO_SELECTED_ASSISTANT_ID } from '$constants';
 
-const openThreadEditDeleteMenu = async (threadId: string) => {
-  const sidebarThreadMenuBtn = screen.getByTestId(`sidebar-btn-${threadId}`);
+const openThreadEditDeleteMenu = async (label: string) => {
+  const sidebarThreadMenuBtn = screen.getByTestId(`thread-menu-btn-${label}`);
   await userEvent.click(sidebarThreadMenuBtn);
 };
 
@@ -41,7 +41,7 @@ const renameThread = async (oldLabel: string, newLabel: string, keyToPress = '{e
 };
 
 const editThreadsLabel = async (oldLabel: string, newLabel: string, keyToPress = '{enter}') => {
-  await openThreadEditDeleteMenu(fakeThreads[0].id);
+  await openThreadEditDeleteMenu(fakeThreads[0].metadata.label);
   await clickEditThreadBtn();
   await renameThread(oldLabel, newLabel, keyToPress);
 };
@@ -123,7 +123,7 @@ describe('ChatSidebar', () => {
       within(threadsSection).getByRole('button', { name: fakeThreads[1].metadata.label })
     ).toBeInTheDocument();
 
-    await openThreadEditDeleteMenu(fakeThreads[0].id);
+    await openThreadEditDeleteMenu(fakeThreads[0].metadata.label);
     await clickDeleteThreadBtn();
 
     const modal = screen.getByTestId('delete-thread-modal');
@@ -161,7 +161,7 @@ describe('ChatSidebar', () => {
       within(threadsSection).getByRole('button', { name: fakeThreads[0].metadata.label })
     ).toBeInTheDocument();
 
-    await openThreadEditDeleteMenu(fakeThreads[0].id);
+    await openThreadEditDeleteMenu(fakeThreads[0].metadata.label);
     await clickDeleteThreadBtn();
 
     const modal = screen.getByTestId('delete-thread-modal');
@@ -245,7 +245,7 @@ describe('ChatSidebar', () => {
       within(threadsSection).getByRole('button', { name: fakeThreads[0].metadata.label })
     ).toBeInTheDocument();
 
-    await openThreadEditDeleteMenu(fakeThreads[0].id);
+    await openThreadEditDeleteMenu(fakeThreads[0].metadata.label);
     await clickEditThreadBtn();
 
     const editInput = screen.getByDisplayValue(fakeThreads[0].metadata.label);
@@ -326,7 +326,7 @@ describe('ChatSidebar', () => {
     render(Sidebar);
 
     // Not using the helper function b/c we need to reference the editInput before it is removed from the dom
-    await openThreadEditDeleteMenu(fakeThreads[0].id);
+    await openThreadEditDeleteMenu(fakeThreads[0].metadata.label);
     await clickEditThreadBtn();
     const editInput = screen.getByTestId('edit-thread-input');
     await userEvent.clear(editInput);

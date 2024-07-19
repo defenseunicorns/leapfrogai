@@ -119,7 +119,7 @@
       </P>
     </button>
     <button
-      data-testid={`sidebar-btn-${threadId}`}
+      data-testid={`thread-menu-btn-${label}`}
       id={`btn-${threadId}`}
       class={popperOpen && 'focus:rounded focus:bg-gray-400'}
     >
