@@ -1,7 +1,8 @@
 
+REG_PORT ?= 5000
+REG_NAME ?= registry
+
 MAKEFILE_DIR := $(dir $(abspath $(lastword $(MAKEFILE_LIST))))
-REGISTRY_NAME := registry
-REGISTRY_PORT := 5000
 ORGANIZATION := defenseunicorns
 PLATFORM := linux/amd64
 TAG := latest
@@ -9,11 +10,10 @@ K3D_CLUSTER_NAME := k3d-core-slim-dev:0.24.0
 K3S_TAG := v1.28.8-k3s1
 CUDA_TAG := 12.4.1-base-ubuntu22.04
 
-# Create local Docker registry
-local-registry:
+local-registry: ## Start up a local container registry. Errors in this target are ignored.
 	@echo "Creating local Docker registry..."
-	-@docker run -d -p ${REGISTRY_PORT}:5000 --name ${REGISTRY_NAME} registry:2
-	@echo "Local registry created at localhost:${REGISTRY_PORT}"
+	-@docker run -d -p ${REG_PORT}:5000 --restart=always --name ${REG_NAME} registry:2
+	@echo "Local registry created at localhost:${REG_PORT}"
 
 build-k3d-gpu: local-registry
 	@docker build \
@@ -22,13 +22,13 @@ build-k3d-gpu: local-registry
 	 --build-arg CUDA_TAG=${CUDA_TAG} \
 	 -t ghcr.io/${ORGANIZATION}/k3d-gpu-support:${TAG} \
 	 -f ${MAKEFILE_DIR}/Dockerfile ${MAKEFILE_DIR}
-	@docker tag ghcr.io/${ORGANIZATION}/k3d-gpu-support:${TAG} localhost:${REGISTRY_PORT}/${ORGANIZATION}/k3d-gpu-support:${TAG}
+	@docker tag ghcr.io/${ORGANIZATION}/k3d-gpu-support:${TAG} localhost:${REG_PORT}/${ORGANIZATION}/k3d-gpu-support:${TAG}
 
 push-k3d-gpu: local-registry build-k3d-gpu
-	@docker push localhost:${REGISTRY_PORT}/${ORGANIZATION}/k3d-gpu-support:${TAG}
+	@docker push localhost:${REG_PORT}/${ORGANIZATION}/k3d-gpu-support:${TAG}
 
 uds-gpu-cluster: local-registry build-k3d-gpu push-k3d-gpu
-	uds deploy ${K3D_CLUSTER_NAME} --set K3D_EXTRA_ARGS="--gpus=all --image=localhost:${REGISTRY_PORT}/${ORGANIZATION}/k3d-gpu-support:${TAG}" --confirm
+	uds deploy ${K3D_CLUSTER_NAME} --set K3D_EXTRA_ARGS="--gpus=all --image=localhost:${REG_PORT}/${ORGANIZATION}/k3d-gpu-support:${TAG}" --confirm
 
 test-k3d-gpu:
 	@uds zarf tools kubectl apply -f ${MAKEFILE_DIR}/test/cuda-vector-add.yaml
