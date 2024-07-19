@@ -86,7 +86,7 @@ Set the following .env variables:
 
 ```
 DEFAULT_MODEL=gpt-3.5-turbo
-LEAPFROGAI_API_BASE_URL=https://api.openai.com/v1
+LEAPFROGAI_API_BASE_URL=https://api.openai.com
 #If specified, app will use OpenAI instead of Leapfrog
 OPENAI_API_KEY=<your_openai_api_key>
 ```

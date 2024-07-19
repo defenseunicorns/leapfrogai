@@ -1,30 +1,20 @@
 import { threadsStore, toastStore } from '$stores';
 import { convertMessageToVercelAiMessage, getMessageText } from '$helpers/threads';
-import type { AssistantStatus, ChatRequestOptions, CreateMessage } from 'ai';
-import { type Message as VercelAIMessage } from 'ai/svelte';
+import type { AssistantStatus, CreateMessage } from 'ai';
+import { type Message as VercelAIMessage } from '@ai-sdk/svelte';
 import type { LFAssistant } from '$lib/types/assistants';
-import type { Message as OpenAIMessage } from 'openai/resources/beta/threads/messages';
+import type {
+  Message as OpenAIMessage,
+  MessageContent,
+  TextContentBlock
+} from 'openai/resources/beta/threads/messages';
 import { NO_SELECTED_ASSISTANT_ID } from '$constants';
 import type { LFMessage, NewMessageInput, VercelOrOpenAIMessage } from '$lib/types/messages';
 import { error } from '@sveltejs/kit';
 import type { LFThread } from '$lib/types/threads';
-import { tick } from 'svelte';
+import { type SvelteComponent, tick } from 'svelte';
 import type { FileObject } from 'openai/resources/files';
-
-export const sortMessages = (messages: VercelOrOpenAIMessage[]): VercelOrOpenAIMessage[] => {
-  return messages.sort((a, b) => {
-    const timeA = normalizeTimestamp(a);
-    const timeB = normalizeTimestamp(b);
-
-    if (timeA === timeB) {
-      if (a.role === b.role) {
-        return 0; // same created_at and role
-      }
-      return a.role === 'user' ? -1 : 1; // user comes before assistant
-    }
-    return timeA - timeB; // sort by created_at
-  });
-};
+import AnnotationLink from '$components/Citation.svelte';
 
 export const saveMessage = async (input: NewMessageInput) => {
   const res = await fetch('/api/messages/new', {
@@ -38,15 +28,6 @@ export const saveMessage = async (input: NewMessageInput) => {
   });
 
   if (res.ok) return res.json();
-
-  return error(500, 'Error saving message');
-};
-
-export const getMessages = async (thread_id: string) => {
-  const res = await fetch(`/api/messages/${thread_id}`);
-
-  if (res.ok) return res.json();
-
   return error(500, 'Error saving message');
 };
 
@@ -85,6 +66,7 @@ export const stopThenSave = async ({
         });
 
         await threadsStore.addMessageToStore(newMessage);
+        threadsStore.setStreamingMessage(null);
       }
     }
   }
@@ -94,7 +76,7 @@ export const stopThenSave = async ({
     title: 'Response Canceled',
     subtitle: 'Response generation canceled.'
   });
-  threadsStore.setSendingBlocked(false);
+  await threadsStore.setSendingBlocked(false);
 };
 
 export const getAssistantImage = (assistants: LFAssistant[], assistant_id: string) => {
@@ -106,211 +88,105 @@ export const getAssistantImage = (assistants: LFAssistant[], assistant_id: strin
   return null;
 };
 
+export const isRunAssistantMessage = (
+  message: Partial<VercelAIMessage> | Partial<OpenAIMessage>
+) => {
+  const assistantId = message.assistant_id || message.metadata?.assistant_id;
+  return !assistantId ? false : assistantId !== NO_SELECTED_ASSISTANT_ID;
+};
+
 type EditMessageArgs = {
-  allStreamedMessages: VercelOrOpenAIMessage[];
-  message: Partial<OpenAIMessage>;
-  messages: VercelAIMessage[];
-  thread_id: string;
+  messages: OpenAIMessage[];
+  streamedMessages: VercelOrOpenAIMessage[];
+  message: OpenAIMessage;
   setMessages: (messages: VercelAIMessage[]) => void;
   append: (
     message: VercelAIMessage | CreateMessage,
     requestOptions?: { data?: Record<string, string> }
   ) => Promise<void>;
+  selectedAssistantId?: string;
 };
 
 export const handleMessageEdit = async ({
-  allStreamedMessages,
+  messages,
+  streamedMessages,
   message,
-  messages,
-  thread_id,
   setMessages,
-  append
+  append,
+  selectedAssistantId
 }: EditMessageArgs) => {
-  if (message.id) {
-    // Saved message are the completed messages returned from the API (have actual ids, not temp streamed ids)
-    // Streamed chat messages will have temp ids, not actual ids. Assistant messages (even the streamed ones) have actual ids
-    // When editing a streamed chat message, we have to fetch the saved messages and find the actual ids of the messages we want to delete
-    // First get the index of the messages from all the streamed messages, then find the actual id using that index
-    // from the saved messages
-    const savedMessages = (await getMessages(thread_id)) as LFMessage[];
-    sortMessages(savedMessages);
+  const messageIndex = messages.findIndex((m) => m.id === message.id);
+  const messageResponseIndex = messageIndex + 1;
+  const messageResponseId = messages[messageResponseIndex].id;
+  const numToSplice =
+    messages[messageResponseIndex] && messages[messageResponseIndex].role !== 'user' ? 2 : 1;
 
-    const messagesStreamedIndex = messages.findIndex((m) => m.id === message.id);
-    const allStreamedMessagesIndex = allStreamedMessages.findIndex((m) => m.id === message.id);
-    const allStreamedMessagesResponseIndex = allStreamedMessagesIndex + 1;
-
-    let savedMessageId: string | undefined = undefined;
-    let savedMessageResponseId: string | undefined = undefined;
-
-    savedMessageId = savedMessages[allStreamedMessagesIndex].id;
-    savedMessageResponseId = savedMessages[allStreamedMessagesResponseIndex].id;
-
-    // Ensure the message after the user's message exists and is a response from the AI
-    const numToSplice =
-      allStreamedMessages[allStreamedMessagesResponseIndex] &&
-      allStreamedMessages[allStreamedMessagesResponseIndex].role !== 'user'
-        ? 2
-        : 1;
-
-    // delete old message from DB
-    if (savedMessageId) {
-      await threadsStore.deleteMessage(thread_id, savedMessageId);
-    }
-    if (numToSplice === 2 && savedMessageResponseId) {
-      // also delete that message's response
-      await threadsStore.deleteMessage(thread_id, savedMessageResponseId);
-    }
-    // Update the streamed messages (subset of the streamed messages, not all the streamed messages, eg. chat or assistants)
-    setMessages(messages.toSpliced(messagesStreamedIndex, numToSplice)); // remove original message and response
-    await tick();
-
-    // send to /api/chat or /api/chat/assistants
-    const cMessage: CreateMessage = {
-      content: getMessageText(message),
-      role: 'user',
-      createdAt: new Date()
-    };
-
-    if (isRunAssistantResponse(message)) {
-      cMessage.assistant_id = message.assistant_id;
-      await append(cMessage, {
-        data: {
-          message: getMessageText(message),
-          assistantId: message.assistant_id!,
-          threadId: thread_id
-        }
-      });
-    } else {
-      await append(cMessage);
-      // Save with API
-      const newMessage = await saveMessage({
-        thread_id,
-        content: getMessageText(message),
-        role: 'user'
-      });
-
-      await threadsStore.addMessageToStore(newMessage);
-    }
+  const promises = [threadsStore.deleteMessage(message.thread_id, message.id)];
+  if (numToSplice === 2) {
+    // also delete that message's response
+    promises.push(threadsStore.deleteMessage(message.thread_id, messageResponseId));
   }
-};
-
-export const isRunAssistantResponse = (
-  message: Partial<VercelAIMessage> | Partial<OpenAIMessage>
-) => message.assistant_id && message.assistant_id !== NO_SELECTED_ASSISTANT_ID;
-
-type HandleRegenerateArgs = {
-  messages: VercelAIMessage[];
-  thread_id: string;
-  setMessages: (messages: VercelAIMessage[]) => void;
-  append: (
-    message: VercelAIMessage | CreateMessage,
-    requestOptions?: { data?: Record<string, string> }
-  ) => Promise<void>;
-};
-export const handleAssistantRegenerate = async ({
-  messages,
-  setMessages,
-  thread_id,
-  append
-}: HandleRegenerateArgs) => {
-  const lastMessageIndex = messages.length - 1;
-  const userMessage = messages[lastMessageIndex - 1];
-  const response = messages[lastMessageIndex];
-
-  // useAssistant doesn't have a reload function, so we delete both the user message and the assistant response,
-  // then manually append
-  const deleteRes1 = await fetch('/api/messages/delete', {
-    method: 'DELETE',
-    body: JSON.stringify({ thread_id, message_id: response.id }),
-    headers: {
-      'Content-Type': 'application/json'
-    }
-  });
-  if (!deleteRes1.ok) {
+  await Promise.all(promises).catch(() => {
     toastStore.addToast({
       kind: 'error',
-      title: 'Error Regenerating Message',
-      subtitle: 'Regeneration cancelled'
+      title: 'Error Editing Messages'
     });
     return;
-  }
-  const deleteRes2 = await fetch('/api/messages/delete', {
-    method: 'DELETE',
-    body: JSON.stringify({ thread_id, message_id: userMessage.id }),
-    headers: {
-      'Content-Type': 'application/json'
-    }
   });
-  if (!deleteRes2.ok) {
-    toastStore.addToast({
-      kind: 'error',
-      title: 'Error Regenerating Message',
-      subtitle: 'Regeneration cancelled'
-    });
-    return;
-  }
-  const updatedMessages = messages.filter((m) => m.id !== response.id && m.id !== userMessage.id);
-  setMessages(updatedMessages);
 
-  const createMessage: CreateMessage = {
-    content: getMessageText(userMessage),
+  const indexToSplice = streamedMessages.findIndex((m) => m.id === message.id);
+  setMessages(streamedMessages.toSpliced(indexToSplice, numToSplice));
+  await tick();
+
+  const cMessage: CreateMessage = {
+    content: getMessageText(message),
     role: 'user',
     createdAt: new Date()
   };
 
-  await append(createMessage, {
-    data: {
-      message: getMessageText(userMessage),
-      assistantId: response.assistant_id,
-      threadId: thread_id || ''
-    }
-  });
-};
+  if (
+    selectedAssistantId &&
+    selectedAssistantId !== NO_SELECTED_ASSISTANT_ID &&
+    selectedAssistantId !== 'manage-assistants'
+  ) {
+    await append(cMessage, {
+      data: {
+        message: getMessageText(message),
+        assistantId: selectedAssistantId,
+        threadId: message.thread_id
+      }
+    });
+  } else {
+    // Save with API
+    const newMessage = await saveMessage({
+      thread_id: message.thread_id,
+      content: getMessageText(message),
+      role: 'user'
+    });
+    await threadsStore.addMessageToStore(newMessage);
 
-type HandleChatRegenerateArgs = {
-  savedMessages: LFMessage[];
-  thread_id: string;
-  message: VercelOrOpenAIMessage;
-  messages: VercelAIMessage[];
-  setMessages: (messages: VercelAIMessage[]) => void;
-  reload: (
-    chatRequestOptions?: ChatRequestOptions | undefined
-  ) => Promise<string | null | undefined>;
-};
-export const handleChatRegenerate = async ({
-  savedMessages,
-  thread_id,
-  message,
-  messages,
-  setMessages,
-  reload
-}: HandleChatRegenerateArgs) => {
-  const streamedMessageIndex = messages.findIndex((m) => m.id === message.id);
-  await threadsStore.deleteMessage(thread_id, savedMessages[streamedMessageIndex].id);
-  setMessages(messages.toSpliced(-2, 2));
-  await reload();
+    await append(cMessage);
+  }
 };
 
 type ResetMessagesArgs = {
   activeThread?: LFThread;
-  setAssistantMessages: (messages: LFMessage[]) => void;
-  setChatMessages: (messages: LFMessage[]) => void;
-  files: FileObject[];
+  setAssistantMessages: (messages: VercelAIMessage[]) => void;
+  setChatMessages: (messages: VercelAIMessage[]) => void;
 };
 // Used to reset messages when thread id changes
 export const resetMessages = ({
   activeThread,
   setAssistantMessages,
-  setChatMessages,
-  files
+  setChatMessages
 }: ResetMessagesArgs) => {
   if (activeThread?.messages && activeThread.messages.length > 0) {
     const parsedAssistantMessages = activeThread.messages
-      .filter((m) => m.run_id)
-      .map((m) => convertMessageToVercelAiMessage(processAnnotations(m, files)));
+      .filter((m) => isRunAssistantMessage(m))
+      .map((m) => convertMessageToVercelAiMessage(m));
     const chatMessages = activeThread.messages
-      .filter((m) => !m.run_id)
-      .map(convertMessageToVercelAiMessage);
+      .filter((m) => !isRunAssistantMessage(m))
+      .map((m) => convertMessageToVercelAiMessage(m));
 
     setAssistantMessages(parsedAssistantMessages);
     setChatMessages(chatMessages);
@@ -341,7 +217,25 @@ export const delay = (ms: number): Promise<void> => {
   return new Promise((resolve) => setTimeout(resolve, ms));
 };
 
-export const processAnnotations = (message: OpenAIMessage, files: FileObject[]) => {
+export const isTextContentBlock = (content: MessageContent[]): content is TextContentBlock[] => {
+  return Array.isArray(content) && content[0] !== undefined && content[0].type === 'text';
+};
+
+export const processAnnotations = (textContent: TextContentBlock[]) => {
+  const textContentCopy = [...textContent];
+  const messageContent = textContentCopy[0].text;
+  const annotations = messageContent.annotations;
+  annotations.forEach(async (annotation, index) => {
+    const hasBeenProcessed = !messageContent.value.includes(annotation.text);
+    if (!hasBeenProcessed) {
+      // Replace the id with a footnote
+      messageContent.value = messageContent.value.replace(annotation.text, ` [${index + 1}]`);
+    }
+  });
+  return textContentCopy[0].text.value;
+};
+
+export const getCitations = (message: OpenAIMessage, files: FileObject[]) => {
   const messageCopy = { ...message };
   if (
     Array.isArray(messageCopy.content) &&
@@ -350,35 +244,21 @@ export const processAnnotations = (message: OpenAIMessage, files: FileObject[]) 
   ) {
     const messageContent = messageCopy.content[0].text;
     const annotations = messageContent.annotations;
-    const citations: string[] = [];
+    const citations: { component: typeof SvelteComponent; props: object }[] = [];
     // Iterate over the annotations and add footnotes
     annotations.forEach(async (annotation, index) => {
-      const hasBeenProcessed = !messageContent.value.includes(annotation.text);
-
-      if (!hasBeenProcessed) {
-        // Replace the text with a footnote
-        messageContent.value = messageContent.value.replace(annotation.text, ` [${index + 1}]`);
-        // Gather citations based on annotation attributes
-        if (annotation.type === 'file_citation') {
-          const citedFile = files.find((file) => file.id === annotation.file_citation.file_id);
-          if (citedFile) {
-            citations.push(`[${index + 1}] ${citedFile.filename}`);
-          }
-        } else if (annotation.type === 'file_path') {
-          const citedFile = files.find((file) => file.id === annotation.file_path.file_id);
-
-          if (citedFile) {
-            citations.push(`[${index + 1}] Click <here> to download ${citedFile.filename}`);
-          }
-          // TODO - file download (future story)
+      // Gather citations based on annotation attributes
+      if (annotation.type === 'file_citation') {
+        const citedFile = files.find((file) => file.id === annotation.file_citation.file_id);
+        if (citedFile) {
+          citations.push({
+            component: AnnotationLink,
+            props: { file: citedFile, index: index + 1 }
+          });
         }
       }
     });
-
-    // Add footnotes to the end of the message before displaying to user
-    if (citations.length > 0) {
-      messageContent.value += '\n\n' + citations.join('\n');
-    }
+    return citations;
   }
-  return messageCopy;
+  return [];
 };

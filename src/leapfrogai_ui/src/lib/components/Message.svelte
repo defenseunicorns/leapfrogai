@@ -2,7 +2,7 @@
   import { page } from '$app/stores';
   import { Button, Tile } from 'carbon-components-svelte';
   import { Copy, Edit, Reset, UserAvatar } from 'carbon-icons-svelte';
-  import { type Message as VercelAIMessage } from 'ai/svelte';
+  import { type Message as VercelAIMessage } from '@ai-sdk/svelte';
   import markdownit from 'markdown-it';
   import hljs from 'highlight.js';
   import { LFTextArea } from '$components';
@@ -10,24 +10,23 @@
   import { writable } from 'svelte/store';
   import { threadsStore, toastStore } from '$stores';
   import { convertTextToMessageContentArr, getMessageText } from '$helpers/threads';
+  import type { Message as OpenAIMessage } from 'openai/resources/beta/threads/messages';
   import {
     getAssistantImage,
-    handleAssistantRegenerate,
-    handleChatRegenerate,
+    getCitations,
     handleMessageEdit,
-    isRunAssistantResponse
+    isRunAssistantMessage
   } from '$helpers/chatHelpers';
   import DynamicPictogram from '$components/DynamicPictogram.svelte';
-  import type { AppendFunction, ReloadFunction, VercelOrOpenAIMessage } from '$lib/types/messages';
+  import type { AppendFunction } from '$lib/types/messages';
   import DOMPurify from 'isomorphic-dompurify';
 
-  export let allStreamedMessages: VercelOrOpenAIMessage[];
-  export let message: VercelOrOpenAIMessage;
-  export let messages: VercelAIMessage[] = [];
-  export let setMessages: (messages: VercelAIMessage[]) => void;
+  export let message: OpenAIMessage;
+  export let messages: OpenAIMessage[] = [];
+  export let streamedMessages: VercelAIMessage[] = [];
+  export let setMessages: ((messages: VercelAIMessage[]) => void) | undefined = undefined;
   export let isLastMessage: boolean;
-  export let append: AppendFunction;
-  export let reload: ReloadFunction;
+  export let append: AppendFunction | undefined = undefined;
 
   // used for code formatting and handling
   const md = markdownit({
@@ -47,12 +46,13 @@
     }
   });
 
-  let assistantImage = isRunAssistantResponse(message)
-    ? getAssistantImage(...[$page.data.assistants || []], message.assistant_id)
+  let assistantImage = isRunAssistantMessage(message)
+    ? getAssistantImage($page.data.assistants || [], message.assistant_id!)
     : null;
+
   let messageIsHovered = false;
   let editMode = false;
-  let value = writable(getMessageText(message));
+  let value = writable<string>(getMessageText(message));
 
   const getAssistantName = (id?: string) => {
     if (!id) return 'LeapfrogAI Bot';
@@ -65,17 +65,13 @@
     e.preventDefault();
     editMode = false;
 
-    if (isRunAssistantResponse(message)) {
-      threadsStore.setSelectedAssistantId(message.assistant_id);
-    }
-
     await handleMessageEdit({
-      allStreamedMessages,
-      message: { ...message, content: convertTextToMessageContentArr($value) },
-      thread_id: $page.params.thread_id,
       messages,
-      setMessages,
-      append
+      streamedMessages,
+      message: { ...message, content: convertTextToMessageContentArr($value) },
+      setMessages: setMessages!,
+      append: append!,
+      selectedAssistantId: $threadsStore.selectedAssistantId
     });
   };
 
@@ -84,7 +80,8 @@
     value.set(getMessageText(message)); // restore original value
   };
 
-  const handleCopy = async () => {
+  const handleCopy = async (e) => {
+    e.preventDefault();
     try {
       await navigator.clipboard.writeText($value);
       toastStore.addToast({
@@ -142,15 +139,20 @@
           </div>
         </div>
       {:else}
-        <Tile style="line-height: 20px;"
-          ><div class="message-content">
+        <Tile style="line-height: 20px;">
+          <div class="message-content">
             <div style="font-weight: bold">
               {message.role === 'user' ? 'You' : getAssistantName(message.assistant_id)}
             </div>
             <!--eslint-disable-next-line svelte/no-at-html-tags -- We use DomPurity to sanitize the code snippet-->
-            <div>{@html md.render(DOMPurify.sanitize(getMessageText(message)))}</div>
-          </div></Tile
-        >
+            {@html md.render(DOMPurify.sanitize(getMessageText(message)))}
+            <div class="citations">
+              {#each getCitations(message, $page.data.files) as { component: Component, props }}
+                <svelte:component this={Component} {...props} />
+              {/each}
+            </div>
+          </div>
+        </Tile>
       {/if}
 
       <div class="utils">
@@ -181,29 +183,15 @@
             class="remove-btn-style"
             class:highlight-icon={!$threadsStore.sendingBlocked}
             class:hide={!messageIsHovered}
-            on:click={() => {
-              if (isRunAssistantResponse(message)) {
-                threadsStore.setSelectedAssistantId(message.assistant_id);
-                handleAssistantRegenerate({
-                  messages,
-                  setMessages,
-                  thread_id: $page.params.thread_id,
-                  append
-                });
-              } else {
-                const savedMessages =
-                  $threadsStore.threads.find((t) => t.id === $page.params.thread_id)?.messages ||
-                  [];
-                handleChatRegenerate({
-                  savedMessages,
-                  message,
-                  messages,
-                  setMessages,
-                  thread_id: $page.params.thread_id,
-                  reload
-                });
-              }
-            }}
+            on:click={async () =>
+              await handleMessageEdit({
+                messages,
+                streamedMessages,
+                message: messages[messages.length - 2],
+                setMessages,
+                append: append,
+                selectedAssistantId: $threadsStore.selectedAssistantId
+              })}
             aria-label="regenerate message"
             tabindex="0"><Reset /></button
           >
@@ -226,6 +214,7 @@
     width: 100%;
     gap: layout.$spacing-02;
     overflow: hidden;
+    padding-bottom: layout.$spacing-02;
   }
 
   .hide {
@@ -271,5 +260,11 @@
     display: flex;
     flex-direction: column;
     gap: layout.$spacing-03;
+  }
+
+  .citations {
+    display: flex;
+    align-items: flex-start;
+    flex-direction: column;
   }
 </style>

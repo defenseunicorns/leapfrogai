@@ -1,6 +1,6 @@
 <script lang="ts">
   import { Message, Toasts } from '$components';
-  import { type Message as VercelAIMessage } from 'ai/svelte';
+  import { type Message as VercelAIMessage } from '@ai-sdk/svelte';
 
   import type { AppendFunction, ReloadFunction, VercelOrOpenAIMessage } from '$lib/types/messages';
 

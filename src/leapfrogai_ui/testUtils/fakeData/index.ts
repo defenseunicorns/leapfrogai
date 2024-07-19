@@ -150,14 +150,15 @@ export const fakeThreads: LFThread[] = [
 ];
 export const fakeAssistants: LFAssistant[] = [getFakeAssistant(), getFakeAssistant()];
 
-export const getFakeAssistantInput = (): AssistantInput => {
+export const getFakeAssistantInput = (data_sources?: string[]): AssistantInput => {
   return {
     name: faker.person.fullName(),
     description: faker.lorem.sentence(),
     instructions: faker.lorem.paragraph(),
     temperature: DEFAULT_ASSISTANT_TEMP,
     pictogram: 'default',
-    avatar: ''
+    avatar: '',
+    data_sources: data_sources ?? undefined
   };
 };
 

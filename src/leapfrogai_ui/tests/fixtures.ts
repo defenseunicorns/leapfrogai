@@ -32,7 +32,9 @@ export const getOpenAIClient = () => {
   const token = getToken();
   return new OpenAI({
     apiKey: process.env.OPENAI_API_KEY || token,
-    baseURL: `${process.env.LEAPFROGAI_API_BASE_URL}/openai/v1`
+    baseURL: process.env.OPENAI_API_KEY
+      ? `${process.env.LEAPFROGAI_API_BASE_URL}/v1`
+      : `${process.env.LEAPFROGAI_API_BASE_URL}/openai/v1`
   });
 };
 
