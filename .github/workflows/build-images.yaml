@@ -1,0 +1,48 @@
+name: Build Images
+
+on:
+  workflow_dispatch:
+  pull_request:
+    types:
+      - ready_for_review
+      - review_requested
+      - synchronize
+
+permissions:
+  contents: read
+  packages: write
+
+env:
+  K3S_TAG: ""
+  CUDA_TAG: ""
+
+jobs:
+  build-and-publish-images:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout Repo
+        uses: actions/checkout@b4ffde65f46336ab88eb53be808477a3936bae11 # v4.1.1
+
+      - name: Read tags from config
+        id: read_tags
+        run: |
+          echo "K3S_TAG=$(jq -r .k3s_tag packages/k3d-gpu/version_config.json)" >> $GITHUB_ENV
+          echo "CUDA_TAG=$(jq -r .cuda_tag packages/k3d-gpu/version_config.json)" >> $GITHUB_ENV
+
+      - name: Login to GitHub Container Registry
+        uses: docker/login-action@343f7c4344506bcbf9b4de18042ae17996df046d # v3.0.0
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Build and Publish k3d-gpu
+        run: |
+          docker build \
+            --platform linux/amd64 \
+            --build-arg K3S_TAG=${{ env.K3S_TAG }} \
+            --build-arg CUDA_TAG=${{ env.CUDA_TAG }} \
+            -t ghcr.io/defenseunicorns/leapfrogai/k3d-gpu:latest \
+            -f packages/k3d-gpu/Dockerfile .
+          docker push ghcr.io/defenseunicorns/leapfrogai/k3d-gpu:latest
