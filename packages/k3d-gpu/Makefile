@@ -1,6 +1,6 @@
 MAKEFILE_DIR := $(dir $(abspath $(lastword $(MAKEFILE_LIST))))
 
-k3d-gpu-package:
+build-k3d-gpu:
 	@cd ${MAKEFILE_DIR} && \
 	uds zarf package create
 

@@ -4,4 +4,6 @@ package:
       # x-release-please-start-version
       version: 0.9.1
       # x-release-please-end
-      reg_name: registry
+      uds_flavor: k3d-core-slim-dev
+      uds_version: 0.24.0
+      arch: amd64
