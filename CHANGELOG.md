@@ -1,5 +1,18 @@
 # Changelog
 
+## [0.9.2](https://github.com/defenseunicorns/leapfrogai/compare/v0.9.1...v0.9.2) (2024-07-19)
+
+
+### Bug Fixes
+
+* address Docker warning about case mismatch between 'as' and 'from'. ([#780](https://github.com/defenseunicorns/leapfrogai/issues/780)) ([a72bc94](https://github.com/defenseunicorns/leapfrogai/commit/a72bc94d96a975ca40687cf76cd525d293076102))
+* disable forceRun for supabase jwt generation ([#806](https://github.com/defenseunicorns/leapfrogai/issues/806)) ([eb9b1e0](https://github.com/defenseunicorns/leapfrogai/commit/eb9b1e034eeb65b78f32263e92a1e99c421a01e2))
+
+
+### Miscellaneous
+
+* **supabase:** Increases supabase-storage file size and makes it configurable ([#775](https://github.com/defenseunicorns/leapfrogai/issues/775)) ([0c01f36](https://github.com/defenseunicorns/leapfrogai/commit/0c01f3628aa770dcd29b2254138f92e7dee537d9))
+
 ## [0.9.1](https://github.com/defenseunicorns/leapfrogai/compare/v0.9.0...v0.9.1) (2024-07-15)
 
 

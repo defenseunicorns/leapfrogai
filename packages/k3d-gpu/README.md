@@ -16,11 +16,11 @@ Check out the Make targets for the various options.
 ### Local
 
 ```shell
-make push-k3d-gpu # build and push image to a local registry
+make build-k3d-gpu # build the image
 
-make uds-gpu-cluster # create a uds cluster equipped with the k3d-gpu image
+make create-uds-gpu-cluster # create a uds cluster equipped with the k3d-gpu image
 
-make test-k3d-gpu # deploy a test gpu pod to see if everything is working
+make test-uds-gpu-cluster # deploy a test gpu pod to see if everything is working
 ```
 
 ## References

@@ -1,5 +1,5 @@
-ARG K3S_TAG
-ARG CUDA_TAG
+ARG K3S_TAG=v1.28.8-k3s1
+ARG CUDA_TAG=12.4.1-base-ubuntu22.04
 
 FROM rancher/k3s:$K3S_TAG AS k3s
 FROM nvidia/cuda:$CUDA_TAG
@@ -17,7 +17,7 @@ COPY --from=k3s / / --exclude=/bin/
 COPY --from=k3s /bin /bin
 
 # Deploy the nvidia driver plugin on startup
-COPY ./plugin/device-plugin-daemonset.yaml /var/lib/rancher/k3s/server/manifests/nvidia-device-plugin-daemonset.yaml
+COPY plugin/device-plugin-daemonset.yaml /var/lib/rancher/k3s/server/manifests/nvidia-device-plugin-daemonset.yaml
 
 VOLUME /var/lib/kubelet
 VOLUME /var/lib/rancher/k3s
