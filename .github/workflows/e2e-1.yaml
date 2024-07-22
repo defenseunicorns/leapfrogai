@@ -1,4 +1,4 @@
-name: e2e_tests_1
+name: e2e-1
 on:
   pull_request:
     types:
@@ -137,3 +137,12 @@ jobs:
         - name: Cleanup UI
           run: |
             uds zarf package remove leapfrogai-ui --confirm
+
+        ##########
+        # vLLM
+        # NOTE: We are not deploying and testing vLLM in this workflow because it requires a GPU
+        #     : This workflow simply verifies that the vLLM package can be built
+        ##########
+        - name: Build vLLM
+          run: |
+            make build-vllm LOCAL_VERSION=e2e-test

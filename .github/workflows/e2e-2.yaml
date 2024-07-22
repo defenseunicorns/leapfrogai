@@ -1,4 +1,4 @@
-name: e2e_tests_2
+name: e2e-2
 on:
   pull_request:
     types:
@@ -67,27 +67,21 @@ jobs:
           run: |
             uds deploy k3d-core-slim-dev:0.23.0 --confirm
 
-        # ##########
-        # # Supabase
-        # ##########
-        # - name: Deploy Supabase
-        #   run: |
-        #     make build-supabase LOCAL_VERSION=e2e-test
-        #     docker image prune -af
-        #     uds zarf tools kubectl create namespace leapfrogai
-        #     uds zarf package deploy packages/supabase/zarf-package-supabase-amd64-e2e-test.tar.zst --confirm
-        #     rm packages/supabase/zarf-package-supabase-amd64-e2e-test.tar.zst
+        ##########
+        # Supabase
+        ##########
+        - name: Deploy Supabase
+          run: |
+            make build-supabase LOCAL_VERSION=e2e-test
+            docker image prune -af
+            uds zarf tools kubectl create namespace leapfrogai
+            uds zarf package deploy packages/supabase/zarf-package-supabase-amd64-e2e-test.tar.zst --confirm
+            rm packages/supabase/zarf-package-supabase-amd64-e2e-test.tar.zst
 
-        # - name: Set environment variable
-        #   id: set-env-var
-        #   run: |
-        #     echo "ANON_KEY=$(uds zarf tools kubectl get secret supabase-bootstrap-jwt -n leapfrogai -o jsonpath='{.data.anon-key}' | base64 -d)" >> "$GITHUB_ENV"
-
-        # - name: Test Supabase
-        #   run: |
-        #     python -m pip install requests
-        #     python -m pytest ./tests/e2e/test_supabase.py -v
-
+        - name: Set environment variable
+          id: set-env-var
+          run: |
+            echo "ANON_KEY=$(uds zarf tools kubectl get secret supabase-bootstrap-jwt -n leapfrogai -o jsonpath='{.data.anon-key}' | base64 -d)" >> "$GITHUB_ENV"
 
         ##########
         # API
@@ -153,16 +147,7 @@ jobs:
           run: |
             uds zarf package remove whisper -l=trace --confirm
 
-        # # This cleanup may need to be moved/removed when other packages depend on Supabase
-        # - name: Cleanup Supabase
-        #   run: |
-        #     uds zarf package remove supabase -l=trace --confirm
-
-        ##########
-        # vLLM
-        # NOTE: We are not deploying and testing vLLM in this workflow because it requires a GPU
-        #     : This workflow simply verifies that the vLLM package can be built
-        ##########
-        - name: Build vLLM
+        # This cleanup may need to be moved/removed when other packages depend on Supabase
+        - name: Cleanup Supabase
           run: |
-            make build-vllm LOCAL_VERSION=e2e-test
+            uds zarf package remove supabase -l=trace --confirm
