@@ -87,6 +87,13 @@ storage:
   resourcesPreset: "none"
   podLabels:
     sidecar.istio.io/inject: "false"
+  extraEnvVars:
+    # FILE_SIZE_LIMIT and UPLOAD_FILE_SIZE_LIMIT do the same thing, Supabase has a primary and fallback variable,
+    # so we have opted to set both of the variables to the same value.
+    - name: FILE_SIZE_LIMIT
+      value: "###ZARF_VAR_MAX_FILE_UPLOAD_SIZE_IN_BYTES###"
+    - name: UPLOAD_FILE_SIZE_LIMIT
+      value: "###ZARF_VAR_MAX_FILE_UPLOAD_SIZE_IN_BYTES###"
 
 studio:
   enabled: ###ZARF_VAR_ENABLE_STUDIO###
