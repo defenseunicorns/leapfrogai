@@ -18,8 +18,8 @@ class MissingEnvironmentVariable(Exception):
 
 
 try:
-    # The default backend is set to vllm, this can be changed but llama-cpp-python may have concurrency issues
-    DEFAULT_MODEL = os.getenv("DEFAULT_BACKEND", "vllm")
+    # The default model backend is set to vllm, this can be changed but llama-cpp-python may have concurrency issues
+    DEFAULT_MODEL = os.getenv("DEFAULT_MODEL", "vllm")
     BEARER_TOKEN = os.environ["BEARER_TOKEN"]
     API_URL = os.environ["API_URL"]
 except KeyError:

@@ -22,9 +22,9 @@ Before running the tests, ensure that your API URL and bearer token are properly
 
    **Note:** The bearer token should be your Supabase user JWT. For information on generating a JWT, please refer to the [Supabase README.md](../../packages/supabase/README.md). While an API key generated from the LeapfrogAI API endpoint can be used, it will cause the token generation load tests to fail.
 
-3. (Optional) - Set the backend, this will default to `vllm` if unset:
+3. (Optional) - Set the model backend, this will default to `vllm` if unset:
       ```bash
-   export DEFAULT_BACKEND="llama-cpp-python"
+   export DEFAULT_MODEL="llama-cpp-python"
    ```
 
 ## Running the Tests
