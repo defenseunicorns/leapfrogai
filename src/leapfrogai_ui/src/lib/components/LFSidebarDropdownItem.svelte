@@ -1,3 +1,7 @@
+<!--
+This is a modified version of Flowbite Svelte's SidebarDropdownItem.svelte component
+It adds a "three-dot" menu button with Popover, and delete confirmation Modal
+-->
 <script lang="ts">
   import { twMerge } from 'tailwind-merge';
   import { Button, Input, P, Popover } from 'flowbite-svelte';

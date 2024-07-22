@@ -34,7 +34,7 @@ test('can edit thread labels', async ({ page, openAIClient }) => {
   const threadMenuBtn = page.getByTestId(`thread-menu-btn-${newMessage1}`);
   await threadMenuBtn.click();
 
-  await threadMenuBtn.getByRole('button', { name: /edit/i }).click();
+  await page.getByTestId('sidebar-popover').getByRole('button', { name: /edit/i }).click();
 
   await page.getByTestId('edit-thread-input').fill(newLabel);
 
@@ -64,7 +64,7 @@ test('Can switch threads', async ({ page, openAIClient }) => {
   await waitForResponseToComplete(page);
   await expect(messages).toHaveCount(2);
 
-  await page.getByText(newMessage1).click(); // switch threads by clicking thread label
+  await page.getByRole('button', { name: newMessage1 }).click(); // switch threads by clicking thread label
 
   await expect(messages).toHaveCount(4);
 

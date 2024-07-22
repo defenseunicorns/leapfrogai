@@ -39,7 +39,7 @@
 </script>
 
 <Content>
-  <Breadcrumb noTrailingSlash>
+  <Breadcrumb noTrailingSlash data-testid="breadcrumbs">
     {#each paths as { path, name } (path)}
       {#if $page.url.pathname.includes(path)}
         <BreadcrumbItem

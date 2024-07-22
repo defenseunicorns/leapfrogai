@@ -53,7 +53,8 @@
 </script>
 
 <!--Custom styling allows center SidebarGroup (chat threads) to scroll-->
-<Sidebar class=" w-full max-w-64">
+
+<Sidebar class="w-full max-w-64" data-testid="sidebar">
   <SidebarWrapper class=" flex h-full flex-col">
     <SidebarGroup>
       <div class="flex flex-col gap-2">

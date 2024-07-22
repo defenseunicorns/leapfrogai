@@ -4,7 +4,7 @@ import { getTableRow, loadApiKeyPage, loadChatPage } from './helpers/helpers';
 test('it can navigate to the API key page', async ({ page }) => {
   await loadChatPage(page);
 
-  await page.getByLabel('Settings').click();
+  await page.getByTestId('header-settings-btn').click();
   await page.getByText('API Keys').click();
 
   await expect(page).toHaveTitle('LeapfrogAI - API Keys');

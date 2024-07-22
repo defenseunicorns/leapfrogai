@@ -1,8 +1,8 @@
 <script lang="ts">
-  import { threadsStore } from '$stores';
+  import { threadsStore, uiStore } from '$stores';
   import logo from '$assets/LeapfrogAI.png';
-  import { Drawer, Navbar, NavBrand } from 'flowbite-svelte';
-  import { CogOutline, UserCircleOutline } from 'flowbite-svelte-icons';
+  import { Button, Drawer, Navbar, NavBrand } from 'flowbite-svelte';
+  import { BarsOutline, CloseOutline, CogOutline, UserCircleOutline } from 'flowbite-svelte-icons';
   import IconButton from '$components/IconButton.svelte';
   import { sineIn } from 'svelte/easing';
 
@@ -33,7 +33,10 @@
   let linkStyle = 'flex p-4 flex-col gap-3.5';
   let headerLinkStyle =
     'text-sm leading-5 font-semibold tracking-tight cursor-pointer bg-none text-inherit border-none p-0 outline-none hover:text-white';
+  $: innerWidth = 0;
 </script>
+
+<svelte:window bind:innerWidth />
 
 <header>
   <Navbar fluid class="h-header py-1">
@@ -43,6 +46,22 @@
         : '/chat'}
       data-testid="logo-link"
     >
+      {#if innerWidth < 1056}
+        <Button
+          outline={true}
+          class="mr-2 !p-2"
+          on:click={(e) => {
+            e.preventDefault();
+            uiStore.setOpenSidebar(!$uiStore.openSidebar);
+          }}
+        >
+          {#if $uiStore.openSidebar}
+            <CloseOutline data-testid="close-sidebar-btn" />
+          {:else}
+            <BarsOutline data-testid="open-sidebar-btn" />
+          {/if}
+        </Button>
+      {/if}
       <img src={logo} class="w-[7.875rem]] h-[2.25rem]" alt="LeapfrogAI Logo" />
     </NavBrand>
     <div class="flex items-center gap-x-2">
