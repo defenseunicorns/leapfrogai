@@ -39,7 +39,7 @@
     "@types/dompurify": "^3.0.5",
     "@types/eslint": "^8.56.0",
     "@types/lodash": "^4.17.4",
-    "@types/uuid": "^9.0.8",
+    "@types/uuid": "^10.0.0",
     "@typescript-eslint/eslint-plugin": "^7.0.0",
     "@typescript-eslint/parser": "^7.7.1",
     "carbon-components-svelte": "^0.85.0",
@@ -93,7 +93,7 @@
     "openai": "^4.47.1",
     "playwright": "^1.42.1",
     "sveltekit-superforms": "^2.13.1",
-    "uuid": "^9.0.1",
+    "uuid": "^10.0.0",
     "yup": "^1.4.0"
   }
 }
