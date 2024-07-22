@@ -42,7 +42,7 @@ class ModifyAPIKeyRequest(BaseModel):
     )
 
 
-@router.post("/create-api-key")
+@router.post("/api-keys")
 async def create_api_key(
     session: Session,
     request: CreateAPIKeyRequest,
@@ -71,7 +71,7 @@ async def create_api_key(
     return await crud_api_key.create(new_api_key)
 
 
-@router.get("/list-api-keys")
+@router.get("/api-keys")
 async def list_api_keys(
     session: Session,
 ) -> list[APIKeyItem]:
@@ -82,7 +82,7 @@ async def list_api_keys(
     return await crud_api_key.list()
 
 
-@router.post("/update-api-key/{api_key_id}")
+@router.post("/api-keys/{api_key_id}")
 async def update_api_key(
     session: Session,
     api_key_id: Annotated[str, Field(description="The UUID of the API key.")],
@@ -113,7 +113,7 @@ async def update_api_key(
     return await crud_api_key.update(api_key_id, updated_api_key)
 
 
-@router.delete("/revoke-api-key/{api_key_id}", status_code=status.HTTP_204_NO_CONTENT)
+@router.delete("/api-keys/{api_key_id}", status_code=status.HTTP_204_NO_CONTENT)
 async def revoke_api_key(
     session: Session,
     api_key_id: Annotated[str, Field(description="The UUID of the API key.")],
