@@ -23,4 +23,4 @@ test-uds-gpu-cluster:
 	@cd ${MAKEFILE_DIR} && \
 	uds zarf tools kubectl delete -f ./test/cuda-vector-add.yaml
 
-.PHONY: k3d-gpu-package create-uds-gpu-cluster
+.PHONY: build-k3d-gpu create-uds-gpu-cluster test-uds-gpu-cluster
