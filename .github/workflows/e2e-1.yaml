@@ -1,4 +1,5 @@
 name: e2e-1
+description: End-to-end testing that deploys and tests Supabase, API, UI, and VLLM
 on:
   pull_request:
     types:
