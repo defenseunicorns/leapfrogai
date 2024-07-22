@@ -37,11 +37,11 @@ on:
 
 
 concurrency:
-  group: e2e-${{ github.ref }}
+  group: e2e-1-${{ github.ref }}
   cancel-in-progress: true
 
 jobs:
-  e2e:
+  e2e_2:
     runs-on: ai-ubuntu-big-boy-8-core
     if: ${{ !github.event.pull_request.draft }}
 
