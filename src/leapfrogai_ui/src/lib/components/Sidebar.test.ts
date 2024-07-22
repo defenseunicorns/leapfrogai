@@ -1,4 +1,4 @@
-import Sidebar from '$components/Sidebar.svelte';
+import Sidebar from '$components/LFSidebar.svelte';
 import {
   mockDeleteThread,
   mockDeleteThreadError,

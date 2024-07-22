@@ -1,7 +1,7 @@
 <script lang="ts">
   import { sineIn } from 'svelte/easing';
   import { uiStore } from '$stores';
-  import Sidebar from '$components/Sidebar.svelte';
+  import Sidebar from '$components/LFSidebar.svelte';
   import LFDrawer from '$components/LFDrawer.svelte';
 
   let transitionParams = {
