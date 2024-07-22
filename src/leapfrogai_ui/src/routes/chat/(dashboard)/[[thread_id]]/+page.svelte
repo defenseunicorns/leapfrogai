@@ -1,16 +1,16 @@
 <script lang="ts">
   import { beforeNavigate } from '$app/navigation';
-  import { LFTextArea, PoweredByDU } from '$components';
-  import { Button, Hr } from 'flowbite-svelte';
+  import { PoweredByDU } from '$components';
+  import { Hr, ToolbarButton } from 'flowbite-svelte';
   import { onMount, tick } from 'svelte';
   import { threadsStore, toastStore } from '$stores';
-  import { ArrowRight, StopFilledAlt } from 'carbon-icons-svelte';
   import { type Message as VercelAIMessage, useAssistant, useChat } from '@ai-sdk/svelte';
   import { page } from '$app/stores';
   import Message from '$components/Message.svelte';
   import { getMessageText } from '$helpers/threads';
   import { getUnixSeconds } from '$helpers/dates.js';
   import { NO_SELECTED_ASSISTANT_ID } from '$constants';
+  import { env } from '$env/dynamic/public';
 
   import {
     isRunAssistantMessage,
@@ -24,6 +24,8 @@
     ERROR_SAVING_MSG_TEXT
   } from '$constants/toastMessages';
   import SelectAssistantDropdown from '$components/SelectAssistantDropdown.svelte';
+  import { PaperClipOutline, PaperPlaneOutline, StopOutline } from 'flowbite-svelte-icons';
+  import TextareaV2 from '$components/LFTextArea.svelte';
 
   export let data;
 
@@ -316,34 +318,42 @@
     <SelectAssistantDropdown assistants={data?.assistants || []} />
 
     <div class="flex items-end justify-around gap-2">
-      <LFTextArea
-        value={chatInput}
-        {onSubmit}
-        ariaLabel="message input"
-        placeholder="Type your message here..."
-        bind:showLengthError={lengthInvalid}
-      />
-
-      {#if !$isLoading && $status !== 'in_progress'}
-        <Button
-          data-testid="send message"
-          kind="secondary"
-          icon={ArrowRight}
-          size="field"
-          type="submit"
-          iconDescription="send"
-          disabled={!$chatInput || lengthInvalid || $threadsStore.sendingBlocked}
+      <div class="flex w-full items-center rounded-lg bg-gray-50 px-3 py-2 dark:bg-gray-700">
+        <ToolbarButton color="dark" class="text-gray-500 dark:text-gray-400">
+          <PaperClipOutline class="h-6 w-6" />
+          <span class="sr-only">Attach file</span>
+        </ToolbarButton>
+        <TextareaV2
+          id="chat"
+          class="mx-4 resize-none bg-white dark:bg-gray-800"
+          placeholder="Type your message here..."
+          value={chatInput}
+          invalid={lengthInvalid}
+          {onSubmit}
+          maxRows={10}
         />
-      {:else}
-        <Button
-          data-testid="cancel message"
-          kind="secondary"
-          size="field"
-          type="submit"
-          icon={StopFilledAlt}
-          iconDescription="cancel"
-        />
-      {/if}
+        {#if !$isLoading && $status !== 'in_progress'}
+          <ToolbarButton
+            data-testid="send message"
+            type="submit"
+            color="blue"
+            class="rounded-full text-primary-600 dark:text-primary-500"
+            disabled={!$chatInput || lengthInvalid || $threadsStore.sendingBlocked}
+          >
+            <PaperPlaneOutline class="h-6 w-6 rotate-45" />
+            <span class="sr-only">Send message</span>
+          </ToolbarButton>
+        {:else}
+          <ToolbarButton
+            data-testid="cancel message"
+            type="submit"
+            color="gray"
+            class="rounded-full text-primary-600 dark:text-primary-500"
+            ><StopOutline class="h-6 w-6" color="red" /><span class="sr-only">Cancel message</span
+            ></ToolbarButton
+          >
+        {/if}
+      </div>
     </div>
   </div>
   <PoweredByDU />

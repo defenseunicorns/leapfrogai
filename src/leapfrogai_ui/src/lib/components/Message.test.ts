@@ -42,10 +42,10 @@ describe('Message component', () => {
 
   it('displays edit text area when edit btn is clicked', async () => {
     render(Message, { ...getDefaultMessageProps() });
-    expect(screen.queryByText('edit message input')).not.toBeInTheDocument();
+    expect(screen.queryByTestId('edit-message-input')).not.toBeInTheDocument();
     const editPromptBtn = screen.getByLabelText('edit prompt');
     await userEvent.click(editPromptBtn);
-    await screen.findByLabelText('edit message input');
+    await screen.findByTestId('edit-message-input');
   });
   it('removes the edit textarea and restores original text on close', async () => {
     const fakeMessage = getFakeMessage();
@@ -54,11 +54,11 @@ describe('Message component', () => {
       message: convertMessageToVercelAiMessage(fakeMessage)
     });
     const editPromptBtn = screen.getByLabelText('edit prompt');
-    expect(screen.queryByText('edit message input')).not.toBeInTheDocument();
+    expect(screen.queryByTestId('edit-message-input')).not.toBeInTheDocument();
     expect(screen.getByText(getMessageText(fakeMessage))).toBeInTheDocument();
     await userEvent.click(editPromptBtn);
 
-    const input = screen.getByRole('textbox', { name: /edit message input/i });
+    const input = screen.getByTestId('edit-message-input');
     await userEvent.clear(input);
     expect(screen.queryByText(getMessageText(fakeMessage))).not.toBeInTheDocument();
 
@@ -76,7 +76,7 @@ describe('Message component', () => {
       message: convertMessageToVercelAiMessage(fakeMessage)
     });
     const editPromptBtn = screen.getByLabelText('edit prompt');
-    expect(screen.queryByText('edit message input')).not.toBeInTheDocument();
+    expect(screen.queryByTestId('edit-message-input')).not.toBeInTheDocument();
     expect(screen.getByText(getMessageText(fakeMessage))).toBeInTheDocument();
     await userEvent.click(editPromptBtn);
 

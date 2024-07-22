@@ -20,6 +20,7 @@
   import DynamicPictogram from '$components/DynamicPictogram.svelte';
   import type { AppendFunction } from '$lib/types/messages';
   import DOMPurify from 'isomorphic-dompurify';
+  import TextareaV2 from '$components/LFTextArea.svelte';
 
   export let message: OpenAIMessage;
   export let messages: OpenAIMessage[] = [];
@@ -127,7 +128,12 @@
     <div class="message-and-utils">
       {#if editMode}
         <div class="edit-prompt">
-          <LFTextArea {value} {onSubmit} ariaLabel="edit message input" />
+          <TextareaV2
+            data-testid="edit-message-input"
+            {value}
+            {onSubmit}
+            class="mx-4 resize-none bg-white dark:bg-gray-800"
+          />
           <div class="cancel-save">
             <Button size="small" kind="secondary" on:click={handleCancel}>Cancel</Button>
             <Button

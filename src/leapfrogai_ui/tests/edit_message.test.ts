@@ -23,7 +23,7 @@ test('editing a message', async ({ page, openAIClient }) => {
   await page.getByTestId('message').first().click();
   await expect(page.getByLabel('edit prompt').first()).not.toBeDisabled(); // wait for message to finish saving
   await page.getByLabel('edit prompt').first().click();
-  await page.getByLabel('edit message input').fill('edited message');
+  await page.getByTestId('edit-message-input').fill('edited message');
   await page.getByLabel('submit edited message').click();
   await delay(3000);
   const messages = page.getByTestId('message');
@@ -77,7 +77,7 @@ test('editing a message when an AI response is missing', async ({ page, openAICl
 
   await page.getByTestId('message').first().click();
   await page.getByLabel('edit prompt').first().click();
-  await page.getByLabel('edit message input').fill('edited message');
+  await page.getByTestId('edit-message-input').fill('edited message');
   await page.getByLabel('submit edited message').click();
   await delay(3000);
 
@@ -158,7 +158,7 @@ test('editing an assistant message', async ({ page, openAIClient }) => {
   await page.getByTestId('message').first().click();
   await expect(page.getByLabel('edit prompt').first()).not.toBeDisabled(); // wait for message to finish saving
   await page.getByLabel('edit prompt').first().click();
-  await page.getByLabel('edit message input').fill('edited message');
+  await page.getByTestId('edit-message-input').fill('edited message');
   await page.getByLabel('submit edited message').click();
   await delay(3000);
   const messages = page.getByTestId('message');
