@@ -15,7 +15,7 @@
 <div class="flex h-full">
   <SidebarWrapper />
 
-  <main class="w-full p-8">
+  <main class="flex-grow p-8 dark:bg-gray-900">
     <slot />
   </main>
 </div>

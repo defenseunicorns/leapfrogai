@@ -1,6 +1,6 @@
 <script lang="ts">
   import { page } from '$app/stores';
-  import { Button, Tile } from 'carbon-components-svelte';
+  import { Button, Card } from 'flowbite-svelte';
   import { Copy, Edit, Reset, UserAvatar } from 'carbon-icons-svelte';
   import { type Message as VercelAIMessage } from '@ai-sdk/svelte';
   import markdownit from 'markdown-it';
@@ -20,7 +20,10 @@
   import type { AppendFunction } from '$lib/types/messages';
   import DOMPurify from 'isomorphic-dompurify';
   import TextareaV2 from '$components/LFTextArea.svelte';
+  import { UserCircleOutline } from 'flowbite-svelte-icons';
 
+  // TODO - text inside card should wrap, long messages are extending to right side
+  // TODO - finish replacing carbon components and update buttons, left off at utility buttons
   export let message: OpenAIMessage;
   export let messages: OpenAIMessage[] = [];
   export let streamedMessages: VercelAIMessage[] = [];
@@ -101,7 +104,7 @@
 
 <div
   data-testid="message"
-  class="message"
+  class="whitespace-pre-line"
   role="toolbar"
   class:transparent={message.role === 'user'}
   on:mouseover={() => (messageIsHovered = true)}
@@ -109,10 +112,10 @@
   on:focus={() => (messageIsHovered = true)}
   tabindex="0"
 >
-  <div class="message-and-avatar">
+  <div class="flex flex-1 items-start">
     {#if message.role === 'user'}
       <div class="icon">
-        <UserAvatar style="width: 24px; height: 24px;" data-testid="user-icon" />
+        <UserCircleOutline class="h-6 w-6" data-testid="user-icon" />
       </div>
     {:else if assistantImage && assistantImage.startsWith('http')}
       <img alt="Assistant" src={assistantImage} class="icon" data-testid="assistant-icon" />
@@ -124,43 +127,41 @@
       <img alt="LeapfrogAI" src={frog} class="icon" data-testid="leapfrog-icon" />
     {/if}
 
-    <div class="message-and-utils">
+    <div class="flex flex-grow flex-col gap-1 overflow-hidden pb-1">
       {#if editMode}
-        <div class="edit-prompt">
-          <TextareaV2
-            data-testid="edit-message-input"
-            {value}
-            {onSubmit}
-            class="mx-4 resize-none bg-white dark:bg-gray-800"
-          />
-          <div class="cancel-save">
-            <Button size="small" kind="secondary" on:click={handleCancel}>Cancel</Button>
-            <Button
-              size="small"
-              disabled={$threadsStore.sendingBlocked}
-              on:click={onSubmit}
-              aria-label="submit edited message">Submit</Button
-            >
-          </div>
+        <TextareaV2
+          data-testid="edit-message-input"
+          {value}
+          {onSubmit}
+          class="mx-4 mt-[22px] resize-none bg-white dark:bg-gray-800"
+        />
+        <div class="flex justify-end gap-1">
+          <Button size="sm" color="alternative" on:click={handleCancel}>Cancel</Button>
+          <Button
+            size="sm"
+            disabled={$threadsStore.sendingBlocked}
+            on:click={onSubmit}
+            aria-label="submit edited message">Submit</Button
+          >
         </div>
       {:else}
-        <Tile style="line-height: 20px;">
-          <div class="message-content">
-            <div style="font-weight: bold">
+        <Card class="max-w-full dark:bg-gray-700 dark:text-white">
+          <div class="flex flex-col gap-2">
+            <div class="font-bold">
               {message.role === 'user' ? 'You' : getAssistantName(message.assistant_id)}
             </div>
             <!--eslint-disable-next-line svelte/no-at-html-tags -- We use DomPurity to sanitize the code snippet-->
             {@html md.render(DOMPurify.sanitize(getMessageText(message)))}
-            <div class="citations">
+            <div class="flex flex-col items-start">
               {#each getCitations(message, $page.data.files) as { component: Component, props }}
                 <svelte:component this={Component} {...props} />
               {/each}
             </div>
           </div>
-        </Tile>
+        </Card>
       {/if}
 
-      <div class="utils">
+      <div class="flex gap-1 pl-4">
         {#if message.role === 'user' && !editMode}
           <button
             data-testid="edit prompt btn"
@@ -206,70 +207,3 @@
   </div>
 </div>
 
-<style lang="scss">
-  .message-and-avatar {
-    display: flex;
-    flex: 1;
-    align-items: flex-start;
-  }
-
-  .message-and-utils {
-    display: flex;
-    flex-direction: column;
-    width: 100%;
-    gap: 0.25rem;
-    overflow: hidden;
-    padding-bottom: 0.25rem;
-  }
-
-  .hide {
-    opacity: 0;
-    transition: opacity 0.2s;
-  }
-  .message {
-    white-space: pre-line;
-  }
-
-  .transparent {
-    :global(.bx--tile) {
-      background-color: transparent;
-    }
-  }
-  .icon {
-    width: 32px;
-    height: 52px;
-    padding: 14px 0.25rem;
-  }
-
-  .cancel-save {
-    display: flex;
-    justify-content: flex-end;
-    gap: 0.25rem;
-    margin-top: 1px; // prevents text in editable text area from slightly jumping
-  }
-
-  .utils {
-    display: flex;
-    gap: 0.5rem;
-    padding-left: 1rem;
-  }
-
-  .edit-prompt :global(.lf-text-area.bx--text-area) {
-    background: #262626;
-    outline: 1px solid #525252;
-    border-bottom: 0;
-    margin-top: 7px; // prevents edit box from jumping up on editMode
-  }
-
-  .message-content {
-    display: flex;
-    flex-direction: column;
-    gap: 0.5rem;
-  }
-
-  .citations {
-    display: flex;
-    align-items: flex-start;
-    flex-direction: column;
-  }
-</style>

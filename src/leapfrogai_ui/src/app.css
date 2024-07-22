@@ -2,8 +2,52 @@
 @tailwind components;
 @tailwind utilities;
 
+
+/*TODO - can we get rid of some of these?*/
 @layer utilities {
   .no-scrollbar {
     scrollbar-width: none;
+  }
+  .icon {
+    width: 32px;
+    height: 52px;
+    padding: 14px 0.25rem;
+  }
+
+  .highlight-icon :global(svg) {
+    cursor: pointer;
+    fill: #c6c6c6;
+    transition: fill 70ms ease;
+    &:hover {
+      fill: #f4f4f4;
+    }
+  }
+
+  .hide {
+    opacity: 0;
+    transition: opacity 0.2s;
+  }
+
+  .lf-content-container {
+    display: flex;
+    height: 100%;
+    flex-direction: column;
+    justify-content: space-between;
+  }
+
+  .centered-flexbox {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+  }
+
+  .remove-btn-style {
+    background: none;
+    color: inherit;
+    border: none;
+    padding: 0;
+    font: inherit;
+    cursor: pointer;
+    outline: inherit;
   }
 }

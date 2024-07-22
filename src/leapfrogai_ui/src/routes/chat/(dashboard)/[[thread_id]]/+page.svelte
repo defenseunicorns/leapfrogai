@@ -317,7 +317,7 @@
     <SelectAssistantDropdown assistants={data?.assistants || []} />
 
     <div class="flex items-end justify-around gap-2">
-      <div class="flex w-full items-center rounded-lg bg-gray-50 px-3 py-2 dark:bg-gray-700">
+      <div class="flex flex-grow items-center rounded-lg bg-gray-50 px-3 py-2 dark:bg-gray-700">
         <ToolbarButton color="dark" class="text-gray-500 dark:text-gray-400">
           <PaperClipOutline class="h-6 w-6" />
           <span class="sr-only">Attach file</span>
@@ -325,7 +325,7 @@
         <TextareaV2
           id="chat"
           data-testid="chat-input"
-          class="mx-4 resize-none bg-white dark:bg-gray-800"
+          class="mx-4 flex-grow resize-none bg-white dark:bg-gray-800"
           placeholder="Type your message here..."
           value={chatInput}
           bind:showLengthError={lengthInvalid}
