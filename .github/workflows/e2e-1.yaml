@@ -12,7 +12,7 @@ on:
 
       # Ignore updates to the .github directory, unless it's this current file
       - "!.github/**"
-      - ".github/workflows/e2e_test_1.yaml"
+      - ".github/workflows/e2e-1.yaml"
 
       # Ignore docs and website things
       - "!**.md"
