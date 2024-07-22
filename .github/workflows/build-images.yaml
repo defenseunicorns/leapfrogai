@@ -36,18 +36,8 @@ jobs:
 
       - name: Build and Publish k3d-gpu image
         run: |
+          cd packages/k3d-gpu
           docker build \
             --platform linux/amd64 \
-            -t ghcr.io/defenseunicorns/leapfrogai/k3d-gpu:${{ steps.get_version.outputs.version-without-v }} \
-            -f packages/k3d-gpu/Dockerfile .
+            -t ghcr.io/defenseunicorns/leapfrogai/k3d-gpu:${{ steps.get_version.outputs.version-without-v }} .
           docker push ghcr.io/defenseunicorns/leapfrogai/k3d-gpu:${{ steps.get_version.outputs.version-without-v }}
-
-      - name: Build and Publish k3d-gpu package
-        run: |
-          cd packages/k3d-gpu
-          wget https://github.com/defenseunicorns/uds-cli/releases/download/v0.13.1/uds-cli_v0.13.1_Linux_amd64
-          sudo chmod +x uds-cli_v0.13.1_Linux_amd64
-          sudo mv uds-cli_v0.13.1_Linux_amd64 /usr/local/bin/uds
-          zarf package create --set=VERSION=${{ steps.get_version.outputs.version-without-v }} --confirm
-          zarf package publish zarf-package-k3d-gpu-amd64-${{ steps.get_version.outputs.version-without-v }}.tar.zst \
-            oci://ghcr.io/defenseunicorns/packages/leapfrogai

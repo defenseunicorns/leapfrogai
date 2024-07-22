@@ -1,9 +1,0 @@
-package:
-  create:
-    set:
-      # x-release-please-start-version
-      version: 0.9.1
-      # x-release-please-end
-      uds_flavor: k3d-core-slim-dev
-      uds_version: 0.24.0
-      arch: amd64
