@@ -3,32 +3,30 @@
 import asyncio
 import logging
 from contextlib import asynccontextmanager
+
 from fastapi import FastAPI
+from fastapi.exception_handlers import request_validation_exception_handler
+from fastapi.exceptions import RequestValidationError
 
 from leapfrogai_api.routers.base import router as base_router
-from leapfrogai_api.routers.leapfrogai import (
-    auth,
-    rag,
-)
+from leapfrogai_api.routers.leapfrogai import auth
+from leapfrogai_api.routers.leapfrogai import models as lfai_models
+from leapfrogai_api.routers.leapfrogai import rag
 from leapfrogai_api.routers.openai import (
-    audio,
-    completions,
-    chat,
-    embeddings,
-    models,
     assistants,
+    audio,
+    chat,
+    completions,
+    embeddings,
     files,
-    threads,
     messages,
+    models,
     runs,
     runs_steps,
+    threads,
     vector_stores,
 )
 from leapfrogai_api.utils import get_model_config
-from fastapi.exception_handlers import (
-    request_validation_exception_handler,
-)
-from fastapi.exceptions import RequestValidationError
 
 
 # handle startup & shutdown tasks
@@ -72,6 +70,7 @@ app.include_router(runs.router)
 app.include_router(messages.router)
 app.include_router(runs_steps.router)
 app.include_router(rag.router)
+app.include_router(lfai_models.router)
 # This should be at the bottom to prevent it preempting more specific runs endpoints
 # https://fastapi.tiangolo.com/tutorial/path-params/#order-matters
 app.include_router(threads.router)
