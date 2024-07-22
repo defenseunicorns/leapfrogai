@@ -26,16 +26,21 @@ Before running the tests, ensure that your API URL and key are properly configur
 
 To start the Locust web interface and run the tests:
 
-1. Navigate to the directory containing `loadtest.py`.
+1. Install dependencies from the project root.
+   ```bash
+   pip install ".[dev]"
+   ```
 
-2. Execute the following command:
+2. Navigate to the directory containing `loadtest.py`.
+
+3. Execute the following command:
    ```bash
    locust -f loadtest.py --web-port 8089
    ```
 
-3. Open your web browser and go to `http://0.0.0.0:8089`.
+4. Open your web browser and go to `http://0.0.0.0:8089`.
 
-4. Use the Locust web interface to configure and run your tests:
+5. Use the Locust web interface to configure and run your tests:
    - Set the number of users to simulate
    - Set the spawn rate (users per second)
    - Choose the host to test against (should match your `API_URL`)
