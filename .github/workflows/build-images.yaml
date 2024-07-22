@@ -44,6 +44,7 @@ jobs:
 
       - name: Build and Publish k3d-gpu package
         run: |
-          zarf package create packages/k3d-gpu --set=VERSION=${{ steps.get_version.outputs.version-without-v }} --confirm
+          cd packages/k3d-gpu
+          zarf package create --set=VERSION=${{ steps.get_version.outputs.version-without-v }} --confirm
           zarf package publish zarf-package-leapfrogai-k3d-gpu-amd64-${{ steps.get_version.outputs.version-without-v }}.tar.zst \
             oci://ghcr.io/defenseunicorns/packages/leapfrogai
