@@ -1,8 +1,12 @@
 import mimetypes
+import threading
+
+import requests
 from requests_toolbelt.multipart.encoder import MultipartEncoder
 import os
 from locust import HttpUser, task, between, SequentialTaskSet
 import warnings
+import tempfile
 import uuid
 
 # Suppress SSL-related warnings
@@ -23,13 +27,38 @@ except KeyError:
     )
 
 
-def load_pdf_file():
-    file_path = os.path.join(os.getcwd(), "../data/book.pdf")
-    return file_path
+class SharedResources:
+    pdf_path = None
+    pdf_lock = threading.Lock()
+
+
+def download_arxiv_pdf():
+    with SharedResources.pdf_lock:
+        if SharedResources.pdf_path is None or not os.path.exists(
+            SharedResources.pdf_path
+        ):
+            url = "https://arxiv.org/pdf/2305.16291.pdf"
+            with tempfile.NamedTemporaryFile(delete=False, suffix=".pdf") as temp_file:
+                SharedResources.pdf_path = temp_file.name
+
+            response = requests.get(url)
+            if response.status_code == 200:
+                with open(SharedResources.pdf_path, "wb") as file:
+                    file.write(response.content)
+                print("ArXiv PDF downloaded successfully.")
+            else:
+                raise Exception(
+                    f"Failed to download PDF from ArXiv. Status code: {response.status_code}"
+                )
+        else:
+            print("Using existing ArXiv PDF.")
+
+    return SharedResources.pdf_path
 
 
 def load_audio_file():
-    file_path = os.path.join(os.getcwd(), "../data/russian.mp3")
+    script_dir = os.path.dirname(os.path.abspath(__file__))
+    file_path = os.path.join(script_dir, "..", "data", "russian.mp3")
     with open(file_path, "rb") as file:
         return file.read()
 
@@ -41,17 +70,20 @@ class RAGTasks(SequentialTaskSet):
     vector_store_id = None
     assistant_id = None
     thread_id = None
+    pdf_path = None
+
+    def on_start(self):
+        self.pdf_path = download_arxiv_pdf()
 
     @task
     def upload_file(self):
-        pdf_path = load_pdf_file()
-        mime_type, _ = mimetypes.guess_type(pdf_path)
+        mime_type, _ = mimetypes.guess_type(self.pdf_path)
         if mime_type is None:
             mime_type = "application/octet-stream"
 
         m = MultipartEncoder(
             fields={
-                "file": ("Combined.pdf", open(pdf_path, "rb"), mime_type),
+                "file": ("arxiv_2305.16291.pdf", open(self.pdf_path, "rb"), mime_type),
                 "purpose": "assistants",
             }
         )
@@ -144,10 +176,10 @@ class LeapfrogAIUser(HttpUser):
         self.client.verify = False
         self.client.headers.update({"Authorization": f"Bearer {API_KEY}"})
 
-    @task
-    def perform_rag_tasks(self):
-        rag_tasks = RAGTasks(self)
-        rag_tasks.run()
+    # @task
+    # def perform_rag_tasks(self):
+    #     rag_tasks = RAGTasks(self)
+    #     rag_tasks.run()
 
     @task
     def test_list_api_keys(self):
