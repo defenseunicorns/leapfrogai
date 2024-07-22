@@ -49,5 +49,5 @@ jobs:
           sudo chmod +x uds-cli_v0.13.1_Linux_amd64
           sudo mv uds-cli_v0.13.1_Linux_amd64 /usr/local/bin/uds
           zarf package create --set=VERSION=${{ steps.get_version.outputs.version-without-v }} --confirm
-          zarf package publish zarf-package-leapfrogai-k3d-gpu-amd64-${{ steps.get_version.outputs.version-without-v }}.tar.zst \
+          zarf package publish zarf-package-k3d-gpu-amd64-${{ steps.get_version.outputs.version-without-v }}.tar.zst \
             oci://ghcr.io/defenseunicorns/packages/leapfrogai
