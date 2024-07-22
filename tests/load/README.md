@@ -8,19 +8,24 @@ These tests check the API's ability to handle different amounts of load. The tes
 
 ### Environment Setup
 
-Before running the tests, ensure that your API URL and key are properly configured in your environment variables. Follow these steps:
+Before running the tests, ensure that your API URL and bearer token are properly configured in your environment variables. Follow these steps:
 
 1. Set the API URL:
    ```bash
    export API_URL="https://leapfrogai-api.uds.dev"
    ```
 
-2. Set the API key:
+2. Set the API token:
    ```bash
-   export API_KEY="<your-supabase-api-key-here>"
+   export BEARER_TOKEN="<your-supabase-jwt-here>"
    ```
 
-   **Note:** The API key should be your Supabase API key. For information on generating a key, please refer to the [Supabase README.md](../../packages/supabase/README.md). While an API key generated from the LeapfrogAI API endpoint can be used, it will cause the key generation load tests to fail.
+   **Note:** The bearer token should be your Supabase user JWT. For information on generating a JWT, please refer to the [Supabase README.md](../../packages/supabase/README.md). While an API key generated from the LeapfrogAI API endpoint can be used, it will cause the token generation load tests to fail.
+
+3. (Optional) - Set the backend, this will default to `vllm` if unset:
+      ```bash
+   export DEFAULT_BACKEND="llama-cpp-python"
+   ```
 
 ## Running the Tests
 
