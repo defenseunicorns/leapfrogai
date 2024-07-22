@@ -28,6 +28,7 @@
 <Button class="w-48 justify-between"
   >{selectedAssistantName}<ChevronDownOutline
     class="ms-2 h-6 w-6 text-white dark:text-white"
+    data-testid="assistants-select-btn"
   /></Button
 >
 <Dropdown bind:open={assistantSelectDropdownOpen} class="h-44 overflow-y-auto px-3 pb-3 text-sm">

@@ -10,7 +10,6 @@
   import { getMessageText } from '$helpers/threads';
   import { getUnixSeconds } from '$helpers/dates.js';
   import { NO_SELECTED_ASSISTANT_ID } from '$constants';
-  import { env } from '$env/dynamic/public';
 
   import {
     isRunAssistantMessage,
@@ -325,10 +324,11 @@
         </ToolbarButton>
         <TextareaV2
           id="chat"
+          data-testid="chat-input"
           class="mx-4 resize-none bg-white dark:bg-gray-800"
           placeholder="Type your message here..."
           value={chatInput}
-          invalid={lengthInvalid}
+          bind:showLengthError={lengthInvalid}
           {onSubmit}
           maxRows={10}
         />

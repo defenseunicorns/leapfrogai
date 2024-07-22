@@ -5,7 +5,6 @@
   import { type Message as VercelAIMessage } from '@ai-sdk/svelte';
   import markdownit from 'markdown-it';
   import hljs from 'highlight.js';
-  import { LFTextArea } from '$components';
   import frog from '$assets/frog.png';
   import { writable } from 'svelte/store';
   import { threadsStore, toastStore } from '$stores';

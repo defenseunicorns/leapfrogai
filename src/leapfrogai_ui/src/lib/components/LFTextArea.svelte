@@ -20,7 +20,6 @@
 
   export let showLengthError = false;
   export let onSubmit: (e: SubmitEvent | KeyboardEvent) => Promise<void>;
-  export let maxLength = Number(env.PUBLIC_MESSAGE_LENGTH_LIMIT);
   export let invalid = false;
   export let invalidText = '';
   export let id = 'ccs-' + Math.random().toString(36);
@@ -28,6 +27,7 @@
   export let rows = '1';
 
   let wrapped: boolean;
+  let maxLength = Number(env.PUBLIC_MESSAGE_LENGTH_LIMIT);
   let lengthInvalidText = 'Character limit reached';
   $: wrapped = $$slots.header || $$slots.footer;
   $: errorId = `error-${id}`;

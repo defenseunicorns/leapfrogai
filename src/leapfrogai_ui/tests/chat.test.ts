@@ -87,7 +87,7 @@ test('it cancels responses when clicking enter instead of pause button and does 
   const messages = page.getByTestId('message');
   await sendMessage(page, LONG_RESPONSE_PROMPT); // response must take a long time for this test to work
   await expect(messages).toHaveCount(2); // ensure new response is being received
-  await page.getByLabel('message input').fill('new question');
+  await page.getByTestId('chat-input').fill('new question');
   await page.waitForTimeout(25); // let it partially complete
   await page.keyboard.down('Enter'); // pause response
   await page.waitForTimeout(200); // wait to ensure new question was not sent
