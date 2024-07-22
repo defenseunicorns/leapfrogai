@@ -1,0 +1,168 @@
+name: e2e_tests_2
+on:
+  pull_request:
+    types:
+      - ready_for_review
+      - review_requested
+      - synchronize
+      - milestoned
+    paths:
+      # Catch-all
+      - "**"
+
+      # Ignore updates to the .github directory, unless it's this current file
+      - "!.github/**"
+      - ".github/workflows/e2e_tests_2.yaml"
+
+      # Ignore docs and website things
+      - "!**.md"
+      - "!docs/**"
+      - "!adr/**"
+      - "!website/**"
+      - "!netlify.toml"
+
+      # Ignore updates to generic github metadata files
+      - "!CODEOWNERS"
+      - "!.gitignore"
+      - "!LICENSE"
+
+      # Ignore local development files
+      - "!.pre-commit-config.yaml"
+
+      # Ignore non e2e tests
+      - "!tests/pytest/**"
+
+      # Ignore changes to the repeater model
+      - "!packages/repeater/**"
+
+
+concurrency:
+  group: e2e-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  e2e:
+    runs-on: ai-ubuntu-big-boy-8-core
+    if: ${{ !github.event.pull_request.draft }}
+
+    steps:
+        - name: Checkout Repo
+          uses: actions/checkout@b4ffde65f46336ab88eb53be808477a3936bae11 # v4.1.1
+
+        - name: Setup Python
+          uses: actions/setup-python@0a5c61591373683505ea898e09a3ea4f39ef2b9c #v5.0.0
+          with:
+            python-version-file: 'pyproject.toml'
+
+        - name: Install Python Deps
+          run: python -m pip install "."
+
+        - name: Setup UDS Environment
+          uses: defenseunicorns/uds-common/.github/actions/setup@05f42bb3117b66ebef8c72ae050b34bce19385f5
+          with:
+            username: ${{ secrets.IRON_BANK_ROBOT_USERNAME }}
+            password: ${{ secrets.IRON_BANK_ROBOT_PASSWORD }}
+
+        - name: Create UDS Cluster
+          run: |
+            uds deploy k3d-core-slim-dev:0.23.0 --confirm
+
+        # ##########
+        # # Supabase
+        # ##########
+        # - name: Deploy Supabase
+        #   run: |
+        #     make build-supabase LOCAL_VERSION=e2e-test
+        #     docker image prune -af
+        #     uds zarf tools kubectl create namespace leapfrogai
+        #     uds zarf package deploy packages/supabase/zarf-package-supabase-amd64-e2e-test.tar.zst --confirm
+        #     rm packages/supabase/zarf-package-supabase-amd64-e2e-test.tar.zst
+
+        # - name: Set environment variable
+        #   id: set-env-var
+        #   run: |
+        #     echo "ANON_KEY=$(uds zarf tools kubectl get secret supabase-bootstrap-jwt -n leapfrogai -o jsonpath='{.data.anon-key}' | base64 -d)" >> "$GITHUB_ENV"
+
+        # - name: Test Supabase
+        #   run: |
+        #     python -m pip install requests
+        #     python -m pytest ./tests/e2e/test_supabase.py -v
+
+
+        ##########
+        # API
+        ##########
+        - name: Deploy LFAI-API
+          run: |
+            make build-api LOCAL_VERSION=e2e-test
+            docker image prune -af
+            uds zarf package deploy packages/api/zarf-package-leapfrogai-api-amd64-e2e-test.tar.zst --confirm
+            rm packages/api/zarf-package-leapfrogai-api-amd64-e2e-test.tar.zst
+
+        ##########
+        # llama
+        ##########
+        - name: Deploy llama-cpp-python
+          run: |
+            make build-llama-cpp-python LOCAL_VERSION=e2e-test
+            docker image prune -af
+            uds zarf package deploy packages/llama-cpp-python/zarf-package-llama-cpp-python-amd64-e2e-test.tar.zst -l=trace --confirm
+            rm packages/llama-cpp-python/zarf-package-llama-cpp-python-amd64-e2e-test.tar.zst
+
+        - name: Test llama-cpp-python
+          run: |
+            python -m pytest ./tests/e2e/test_llama.py -v
+
+        - name: Cleanup llama-cpp-python
+          run: |
+            uds zarf package remove llama-cpp-python -l=trace --confirm
+
+        ##########
+        # text-embeddings
+        ##########
+        - name: Deploy text-embeddings
+          run: |
+            make build-text-embeddings LOCAL_VERSION=e2e-test
+            docker image prune -af
+            uds zarf package deploy packages/text-embeddings/zarf-package-text-embeddings-amd64-e2e-test.tar.zst -l=trace --confirm
+            rm packages/text-embeddings/zarf-package-text-embeddings-amd64-e2e-test.tar.zst
+
+        - name: Test text-embeddings
+          run: |
+            python -m pytest ./tests/e2e/test_text_embeddings.py -v
+
+        - name: Cleanup text-embeddings
+          run: |
+            uds zarf package remove text-embeddings -l=trace --confirm
+
+        ##########
+        # whisper
+        ##########
+        - name: Deploy whisper
+          run: |
+            make build-whisper LOCAL_VERSION=e2e-test
+            docker image prune -af
+            uds zarf package deploy packages/whisper/zarf-package-whisper-amd64-e2e-test.tar.zst -l=trace --confirm
+            rm packages/whisper/zarf-package-whisper-amd64-e2e-test.tar.zst
+
+        - name: Test whisper
+          run: |
+            python -m pytest ./tests/e2e/test_whisper.py -v
+
+        - name: Cleanup whisper
+          run: |
+            uds zarf package remove whisper -l=trace --confirm
+
+        # # This cleanup may need to be moved/removed when other packages depend on Supabase
+        # - name: Cleanup Supabase
+        #   run: |
+        #     uds zarf package remove supabase -l=trace --confirm
+
+        ##########
+        # vLLM
+        # NOTE: We are not deploying and testing vLLM in this workflow because it requires a GPU
+        #     : This workflow simply verifies that the vLLM package can be built
+        ##########
+        - name: Build vLLM
+          run: |
+            make build-vllm LOCAL_VERSION=e2e-test
