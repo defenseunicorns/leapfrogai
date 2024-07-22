@@ -176,10 +176,10 @@ class LeapfrogAIUser(HttpUser):
         self.client.verify = False
         self.client.headers.update({"Authorization": f"Bearer {API_KEY}"})
 
-    # @task
-    # def perform_rag_tasks(self):
-    #     rag_tasks = RAGTasks(self)
-    #     rag_tasks.run()
+    @task
+    def perform_rag_tasks(self):
+        rag_tasks = RAGTasks(self)
+        rag_tasks.run()
 
     @task
     def test_list_api_keys(self):
