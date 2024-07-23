@@ -6,9 +6,6 @@ import { getFakeThread } from '$testUtils/fakeData';
 
 describe('LFHeader', () => {
   it('closes the other header actions when one is opened', async () => {
-    // We cannot test by visibility because carbon components svelte does not give us a way to grab the panel
-    // in our test. The best we can do is check that the bx--header__action--active class is correctly
-    // applied or not applied to the button that controls the panel
     render(LFHeader, { isUsingOpenAI: false });
     // both closed
     expect(screen.queryByText('settings-drawer')).not.toBeInTheDocument();

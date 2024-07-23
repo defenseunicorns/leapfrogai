@@ -1,3 +1,4 @@
+import type { RequestHandler } from './$types';
 import { StreamingTextResponse, streamText } from 'ai';
 import { createOpenAI } from '@ai-sdk/openai';
 import { env } from '$env/dynamic/private';
@@ -6,9 +7,7 @@ import { getMessageText } from '$helpers/threads';
 import type { LFMessage } from '$lib/types/messages';
 import { AIMessagesInputSchema } from '$schemas/messageSchema';
 
-export async function POST({ request, locals: { safeGetSession } }) {
-  const { session } = await safeGetSession();
-
+export const POST: RequestHandler = async ({ request, locals: { session } }) => {
   if (!session) {
     error(401, 'Unauthorized');
   }
@@ -45,4 +44,4 @@ export async function POST({ request, locals: { safeGetSession } }) {
   });
 
   return new StreamingTextResponse(result.toAIStream());
-}
+};

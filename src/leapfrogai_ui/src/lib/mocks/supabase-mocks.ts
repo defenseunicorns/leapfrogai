@@ -1,5 +1,5 @@
 import { faker } from '@faker-js/faker';
-import type { PostgrestError, Session, User } from '@supabase/supabase-js';
+import type { PostgrestError, User } from '@supabase/supabase-js';
 
 const internalPostgresError: PostgrestError = {
   code: '500',
@@ -36,7 +36,7 @@ export const sessionMock = vi.fn(() => {
     },
     created_at: yesterday.toISOString()
   };
-  return Promise.resolve<{ session: Session | null; user: User | null }>({
+  return {
     session: {
       access_token: 'abc',
       refresh_token: 'abc',
@@ -45,7 +45,7 @@ export const sessionMock = vi.fn(() => {
       user
     },
     user
-  });
+  };
 });
 export const sessionNullMock = vi.fn(() => Promise.resolve({ session: null, user: null }));
 
@@ -94,13 +94,13 @@ export const storageRemoveMock = () => ({
 
 /* --- Standalone mocks ----- */
 
-export const supabaseFromMockWrapper = (mock: object) => ({
+export const supabaseFromMockWrapper = <T>(mock: T) => ({
   from: vi.fn(() => ({
     ...mock
   }))
 });
 
-export const supabaseStorageMockWrapper = (mock: object) => ({
+export const supabaseStorageMockWrapper = <T>(mock: T) => ({
   storage: {
     ...mock
   }

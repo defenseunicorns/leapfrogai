@@ -4,8 +4,6 @@ import { MAX_LABEL_SIZE } from '$lib/constants';
 import { getFakeThread } from '$testUtils/fakeData';
 import {
   selectSingleReturnsMockError,
-  sessionMock,
-  sessionNullMock,
   supabaseFromMockWrapper,
   supabaseInsertMock,
   supabaseSelectSingleByIdMock,
@@ -13,6 +11,9 @@ import {
   updateSingleReturnsMock
 } from '$lib/mocks/supabase-mocks';
 import { mockOpenAI } from '../../../../../vitest-setup';
+import { getLocalsMock } from '$lib/mocks/misc';
+import type { RequestEvent } from '@sveltejs/kit';
+import type { RouteParams } from '../../../../../.svelte-kit/types/src/routes/api/messages/new/$types';
 
 const thread = getFakeThread();
 const validLabel = faker.string.alpha({ length: MAX_LABEL_SIZE - 1 });
@@ -32,20 +33,20 @@ describe('/api/threads/new', () => {
 
     const res = await POST({
       request,
-      locals: {
-        safeGetSession: sessionMock,
+      locals: getLocalsMock({
         supabase: supabaseFromMockWrapper({
           ...supabaseSelectSingleByIdMock(fakeProfile),
           ...updateMock
         })
-      }
-    });
+      })
+    } as RequestEvent<RouteParams, '/api/threads/new'>);
 
     const resData = await res.json();
     expect(res.status).toEqual(200);
     expect(resData).toEqual(thread);
 
     const updateCallArgs = updateMock.update.mock.calls[0];
+    // @ts-expect-error: confirmed updateCallArgs is array and test is behaving properly
     expect(updateCallArgs[0]!.thread_ids).toHaveLength(2);
   });
 
@@ -58,11 +59,8 @@ describe('/api/threads/new', () => {
     await expect(
       POST({
         request,
-        locals: {
-          supabase: supabaseInsertMock([thread]),
-          safeGetSession: sessionNullMock
-        }
-      })
+        locals: getLocalsMock({ nullSession: true })
+      } as RequestEvent<RouteParams, '/api/threads/new'>)
     ).rejects.toMatchObject({
       status: 401
     });
@@ -77,8 +75,8 @@ describe('/api/threads/new', () => {
     await expect(
       POST({
         request,
-        locals: { supabase: supabaseInsertMock([thread]), safeGetSession: sessionMock }
-      })
+        locals: getLocalsMock({ supabase: supabaseInsertMock([thread]) })
+      } as RequestEvent<RouteParams, '/api/threads/new'>)
     ).rejects.toMatchObject({
       status: 400
     });
@@ -91,8 +89,8 @@ describe('/api/threads/new', () => {
     await expect(
       POST({
         request,
-        locals: { supabase: supabaseInsertMock([thread]), safeGetSession: sessionMock }
-      })
+        locals: getLocalsMock({ supabase: supabaseInsertMock([thread]) })
+      } as RequestEvent<RouteParams, '/api/threads/new'>)
     ).rejects.toMatchObject({
       status: 400
     });
@@ -106,8 +104,8 @@ describe('/api/threads/new', () => {
     await expect(
       POST({
         request,
-        locals: { supabase: supabaseInsertMock([thread]), safeGetSession: sessionMock }
-      })
+        locals: getLocalsMock({ supabase: supabaseInsertMock([thread]) })
+      } as RequestEvent<RouteParams, '/api/threads/new'>)
     ).rejects.toMatchObject({
       status: 400
     });
@@ -122,14 +120,13 @@ describe('/api/threads/new', () => {
     await expect(
       POST({
         request,
-        locals: {
+        locals: getLocalsMock({
           supabase: supabaseFromMockWrapper({
             ...supabaseSelectSingleByIdMock(fakeProfile),
             ...supabaseUpdateErrorMock()
-          }),
-          safeGetSession: sessionMock
-        }
-      })
+          })
+        })
+      } as RequestEvent<RouteParams, '/api/threads/new'>)
     ).rejects.toMatchObject({
       status: 500
     });
@@ -143,14 +140,13 @@ describe('/api/threads/new', () => {
     await expect(
       POST({
         request,
-        locals: {
+        locals: getLocalsMock({
           supabase: supabaseFromMockWrapper({
             ...supabaseSelectSingleByIdMock(fakeProfile),
             ...selectSingleReturnsMockError()
-          }),
-          safeGetSession: sessionMock
-        }
-      })
+          })
+        })
+      } as RequestEvent<RouteParams, '/api/threads/new'>)
     ).rejects.toMatchObject({
       status: 500
     });
@@ -164,14 +160,13 @@ describe('/api/threads/new', () => {
     await expect(
       POST({
         request,
-        locals: {
+        locals: getLocalsMock({
           supabase: supabaseFromMockWrapper({
             ...supabaseSelectSingleByIdMock(fakeProfile),
             ...updateSingleReturnsMock()
-          }),
-          safeGetSession: sessionMock
-        }
-      })
+          })
+        })
+      } as RequestEvent<RouteParams, '/api/threads/new'>)
     ).rejects.toMatchObject({
       status: 500
     });
