@@ -67,7 +67,7 @@ test('editing a message when an AI response is missing', async ({ page, openAICl
   await page.reload();
 
   const messages = page.getByTestId('message');
-  await expect(messages).toHaveCount(1, { timeout: 30000 });
+  await expect(messages).toHaveCount(1);
 
   // Send a second message that gets a successful response
   await sendMessage(page, newMessage2);

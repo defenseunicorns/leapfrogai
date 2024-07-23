@@ -160,6 +160,6 @@ test('it formats code in a code block and can copy the code', async ({ page }) =
   await expect(page.getByTestId('copy-code-btn')).not.toBeVisible();
   await sendMessage(page, 'create a javascript function that prints hello world');
   await waitForResponseToComplete(page);
-  const copyBtn = page.getByTestId('copy-code-btn');
-  await expect(copyBtn).toBeVisible();
+  const copyBtns = await page.getByTestId('copy-code-btn').all();
+  expect(copyBtns.length).toBeGreaterThan(0);
 });

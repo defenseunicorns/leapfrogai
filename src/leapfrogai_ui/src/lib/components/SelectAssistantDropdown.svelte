@@ -19,7 +19,11 @@
     const item = e.target.closest('button, [data-value]');
     if (item) {
       const selectedAssistantId = item.dataset.value;
-      threadsStore.setSelectedAssistantId(selectedAssistantId);
+      if ($threadsStore.selectedAssistantId === selectedAssistantId) {
+        threadsStore.setSelectedAssistantId(NO_SELECTED_ASSISTANT_ID);
+      } else {
+        threadsStore.setSelectedAssistantId(selectedAssistantId);
+      }
     }
     assistantSelectDropdownOpen = false;
   };
@@ -53,7 +57,7 @@
     >
       {assistant.name}
       {#if $threadsStore.selectedAssistantId === assistant.id}
-        <CheckOutline />
+        <CheckOutline data-testid="checked" />
       {/if}
     </DropdownItem>
   {/each}
