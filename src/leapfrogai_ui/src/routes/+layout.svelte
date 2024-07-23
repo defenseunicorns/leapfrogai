@@ -28,12 +28,6 @@
 
 <Toasts />
 
-<div class="content-height dark:bg-gray-900">
+<div class="flex flex-col h-screen max-h-screen dark:bg-gray-900">
   <slot />
 </div>
-
-<style lang="scss">
-  .content-height {
-    height: calc(100vh - var(--header-height));
-  }
-</style>

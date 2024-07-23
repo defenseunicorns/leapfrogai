@@ -8,6 +8,7 @@
   import type { LFAssistant } from '$lib/types/assistants';
   import { NO_SELECTED_ASSISTANT_ID } from '$constants';
 
+  // TODO - refactor to flowbite
   export let assistant: LFAssistant;
 
   let deleteModalOpen = false;

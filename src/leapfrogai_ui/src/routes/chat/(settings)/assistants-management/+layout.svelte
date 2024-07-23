@@ -23,12 +23,6 @@
     }
   ];
 
-  $: isCurrentPage = (path: string) =>
-    $page.url.pathname === path ||
-    // Handle edit route with assistant id as path parameter
-    ($page.url.pathname.startsWith('/chat/assistants-management/edit/') &&
-      path === '/chat/assistants-management/edit');
-
   const getPath = (path: string) => {
     if (path === '/chat')
       return $threadsStore.lastVisitedThreadId
@@ -39,19 +33,17 @@
 </script>
 
 <main class="content">
-  <Breadcrumb noTrailingSlash data-testid="breadcrumbs">
+  <Breadcrumb data-testid="breadcrumbs" aria-label="breadcrumbs">
     {#each paths as { path, name } (path)}
       {#if $page.url.pathname.includes(path)}
-        <BreadcrumbItem
-          href={isCurrentPage(path) ? '' : getPath(path)}
-          isCurrentPage={isCurrentPage(path)}>{name}</BreadcrumbItem
-        >
+        <BreadcrumbItem home={name === 'Chat'} href={getPath(path)}>{name}</BreadcrumbItem>
       {/if}
     {/each}
   </Breadcrumb>
-  <div class="lf-content-container">
-    <slot />
-
+  <div class="flex flex-grow flex-col">
+    <div class="flex flex-grow flex-col">
+      <slot />
+    </div>
     <PoweredByDU />
   </div>
 </main>

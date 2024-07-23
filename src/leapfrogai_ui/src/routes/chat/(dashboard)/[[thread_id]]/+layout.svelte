@@ -11,7 +11,7 @@
   <title>{threadLabel || 'LeapfrogAI - Chat'}</title>
 </svelte:head>
 
-<div class="flex h-full">
+<div class="flex ">
   <SidebarWrapper />
 
   <main class="flex-grow p-8 dark:bg-gray-900">

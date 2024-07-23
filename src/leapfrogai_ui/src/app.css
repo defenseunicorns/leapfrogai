@@ -9,11 +9,18 @@
 
 /*TODO - can we get rid of some of these?*/
 @layer utilities {
-  .lf-content {
+
+  .sidebar {
     display: flex;
+    height: calc(100vh - var(--header-height));
+  }
+  .content {
+    display: flex;
+    flex-direction: column;
     flex-grow: 1;
     padding: 2rem;
   }
+
   .no-scrollbar {
     scrollbar-width: none;
   }
