@@ -4,7 +4,7 @@
 </script>
 
 <div class="flex">
-  <img alt="Doug" src={doug} class="icon" />
+  <img alt="Doug" src={doug} class="h-6" />
   <span class="legal">Powered By</span>
   <img alt="Defense Unicorns" src={DefenseUnicorns} class="wordmark" />
 </div>
@@ -23,9 +23,7 @@
     font-weight: 400;
     letter-spacing: 0.32px;
   }
-  .icon {
-    height: var(--footer-height);
-  }
+
   .wordmark {
     width: 6.75rem;
   }

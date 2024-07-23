@@ -1,26 +1,22 @@
 <script lang="ts">
-  import { page } from '$app/stores';
-  import { Button, Card } from 'flowbite-svelte';
-  import { Copy, Edit, Reset, UserAvatar } from 'carbon-icons-svelte';
-  import { type Message as VercelAIMessage } from '@ai-sdk/svelte';
+  import {page} from '$app/stores';
+  import {Button, Card} from 'flowbite-svelte';
+  import {Copy, Reset} from 'carbon-icons-svelte';
+  import {type Message as VercelAIMessage} from '@ai-sdk/svelte';
   import markdownit from 'markdown-it';
   import hljs from 'highlight.js';
   import frog from '$assets/frog.png';
-  import { writable } from 'svelte/store';
-  import { threadsStore, toastStore } from '$stores';
-  import { convertTextToMessageContentArr, getMessageText } from '$helpers/threads';
-  import type { Message as OpenAIMessage } from 'openai/resources/beta/threads/messages';
-  import {
-    getAssistantImage,
-    getCitations,
-    handleMessageEdit,
-    isRunAssistantMessage
-  } from '$helpers/chatHelpers';
+  import {writable} from 'svelte/store';
+  import {EditOutline, UserCircleOutline} from 'flowbite-svelte-icons';
+  import {twMerge} from 'tailwind-merge';
+  import {threadsStore, toastStore} from '$stores';
+  import {convertTextToMessageContentArr, getMessageText} from '$helpers/threads';
+  import type {Message as OpenAIMessage} from 'openai/resources/beta/threads/messages';
+  import {getAssistantImage, getCitations, handleMessageEdit, isRunAssistantMessage} from '$helpers/chatHelpers';
   import DynamicPictogram from '$components/DynamicPictogram.svelte';
-  import type { AppendFunction } from '$lib/types/messages';
+  import type {AppendFunction} from '$lib/types/messages';
   import DOMPurify from 'isomorphic-dompurify';
   import TextareaV2 from '$components/LFTextArea.svelte';
-  import { UserCircleOutline } from 'flowbite-svelte-icons';
 
   // TODO - text inside card should wrap, long messages are extending to right side
   // TODO - finish replacing carbon components and update buttons, left off at utility buttons
@@ -106,7 +102,6 @@
   data-testid="message"
   class="whitespace-pre-line"
   role="toolbar"
-  class:transparent={message.role === 'user'}
   on:mouseover={() => (messageIsHovered = true)}
   on:mouseleave={() => (messageIsHovered = false)}
   on:focus={() => (messageIsHovered = true)}
@@ -145,7 +140,12 @@
           >
         </div>
       {:else}
-        <Card class="max-w-full dark:bg-gray-700 dark:text-white">
+        <Card
+          class={twMerge(
+            'max-w-full break-all dark:bg-gray-700 dark:text-white',
+            message.role === 'user' && 'bg-transparent shadow-none dark:bg-transparent'
+          )}
+        >
           <div class="flex flex-col gap-2">
             <div class="font-bold">
               {message.role === 'user' ? 'You' : getAssistantName(message.assistant_id)}
@@ -165,12 +165,14 @@
         {#if message.role === 'user' && !editMode}
           <button
             data-testid="edit prompt btn"
-            class="remove-btn-style"
-            class:highlight-icon={!$threadsStore.sendingBlocked}
-            class:hide={!messageIsHovered}
+            class={twMerge(
+              'remove-btn-style',
+              !messageIsHovered && 'hide',
+              !$threadsStore.sendingBlocked && 'highlight-icon'
+            )}
             on:click={() => (editMode = true)}
             aria-label="edit prompt"
-            tabindex="0"><Edit /></button
+            tabindex="0"><EditOutline /></button
           >
         {/if}
         {#if message.role !== 'user'}
@@ -186,9 +188,8 @@
         {#if message.role !== 'user' && isLastMessage && !$threadsStore.sendingBlocked}
           <button
             data-testid="regenerate btn"
-            class="remove-btn-style"
-            class:highlight-icon={!$threadsStore.sendingBlocked}
-            class:hide={!messageIsHovered}
+            class={twMerge("remove-btn-style",  !messageIsHovered && 'hide', !$threadsStore.sendingBlocked && "highlight-icon")}
+
             on:click={async () =>
               await handleMessageEdit({
                 messages,
@@ -207,3 +208,16 @@
   </div>
 </div>
 
+<style lang="scss">
+        .highlight-icon :global(svg) {
+                cursor: pointer;
+                fill: #c6c6c6;
+                transition: fill 70ms ease;
+                &:hover {
+                fill: #f4f4f4;
+                }
+                }
+
+
+
+</style>

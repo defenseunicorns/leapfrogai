@@ -8,19 +8,11 @@
   .no-scrollbar {
     scrollbar-width: none;
   }
+
   .icon {
     width: 32px;
     height: 52px;
     padding: 14px 0.25rem;
-  }
-
-  .highlight-icon :global(svg) {
-    cursor: pointer;
-    fill: #c6c6c6;
-    transition: fill 70ms ease;
-    &:hover {
-      fill: #f4f4f4;
-    }
   }
 
   .hide {

@@ -29,7 +29,6 @@
   export let data;
 
   /** LOCAL VARS **/
-  let messageThreadDiv: HTMLDivElement;
   let lengthInvalid: boolean; // bound to child LFTextArea
   let assistantsList: Array<{ id: string; text: string }>;
   /** END LOCAL VARS **/
@@ -294,8 +293,8 @@
 </script>
 
 <form on:submit={onSubmit} class="flex h-full flex-col">
-  <div class="scrollbar-none flex flex-grow flex-col-reverse overflow-auto">
-    <div bind:this={messageThreadDiv}>
+  <div class="no-scrollbar flex flex-grow flex-col-reverse overflow-auto">
+    <div id="messages-container">
       {#each activeThreadMessages as message, index (message.id)}
         <Message
           messages={activeThreadMessages}
@@ -307,6 +306,7 @@
           setMessages={isRunAssistantMessage(message) ? setAssistantMessages : setChatMessages}
         />
       {/each}
+
       {#if $threadsStore.streamingMessage}
         <Message message={$threadsStore.streamingMessage} isLastMessage />
       {/if}
