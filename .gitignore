@@ -1,4 +1,5 @@
 # temporary deployment and development artifacts
+.build/
 data/*
 **/*.tar.zst
 __pycache__
