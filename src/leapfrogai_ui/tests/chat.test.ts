@@ -65,9 +65,8 @@ function countWords(str: string) {
 test('it cancels responses', async ({ page, openAIClient }) => {
   await loadChatPage(page);
   const messages = page.getByTestId('message');
-  await sendMessage(page, newMessage1);
+  await sendMessage(page, LONG_RESPONSE_PROMPT);
   await expect(messages).toHaveCount(2); // ensure new response is being received
-  await page.waitForTimeout(25); // let it partially complete
   await page.getByTestId('cancel message').click();
   await page.waitForTimeout(200); // wait to ensure new question was not sent
   await expect(messages).toHaveCount(2);

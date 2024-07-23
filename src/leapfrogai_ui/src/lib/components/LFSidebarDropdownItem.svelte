@@ -131,7 +131,7 @@ It adds a "three-dot" menu button with Popover, and delete confirmation Modal
     </button>
     <Popover
       data-testid={'sidebar-popover'}
-      class="w-32 text-sm font-light border-none"
+      class="w-32 border-none text-sm font-light border-none"
       defaultClass="p-0"
       placement="right"
       trigger="click"

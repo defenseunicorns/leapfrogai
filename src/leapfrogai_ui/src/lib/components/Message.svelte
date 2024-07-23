@@ -144,7 +144,8 @@
             size="sm"
             disabled={$threadsStore.sendingBlocked}
             on:click={onSubmit}
-            aria-label="submit edited message">Submit</Button
+            aria-label="submit edited message"
+            data-testid="submit-edit-message">Submit</Button
           >
         </div>
       {:else}
@@ -175,7 +176,7 @@
             class={!messageIsHovered && 'hide'}
             on:click={() => (editMode = true)}
             aria-label="edit prompt"
-            disabled={$threadsStore.sendingBlocked}
+            data-testid="edit-message"
             tabindex="0"
           >
             <EditOutline />
