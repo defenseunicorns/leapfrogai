@@ -1,10 +1,10 @@
+import type { RequestHandler } from './$types';
 import { error } from '@sveltejs/kit';
 import type { Profile } from '$lib/types/profile';
 import { getOpenAiClient } from '$lib/server/constants';
 import { stringIdSchema } from '$schemas/chat';
 
-export async function DELETE({ request, locals: { supabase, safeGetSession } }) {
-  const { session } = await safeGetSession();
+export const DELETE: RequestHandler = async ({ request, locals: { supabase, session } }) => {
   if (!session) {
     error(401, 'Unauthorized');
   }
@@ -53,4 +53,4 @@ export async function DELETE({ request, locals: { supabase, safeGetSession } }) 
     error(500, 'Error deleting thread');
   }
   return new Response(undefined, { status: 204 });
-}
+};

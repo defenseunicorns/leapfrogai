@@ -1,8 +1,10 @@
 import { GET } from './+server';
-import { sessionMock, sessionNullMock } from '$lib/mocks/supabase-mocks';
 
 import { fakeThreads, getFakeMessage } from '$testUtils/fakeData';
 import { mockOpenAI } from '../../../../../vitest-setup';
+import { getLocalsMock } from '$lib/mocks/misc';
+import type { RequestEvent } from '@sveltejs/kit';
+import type { RouteParams } from './$types';
 
 const message = getFakeMessage();
 
@@ -11,10 +13,8 @@ describe('/api/messages/[thread_id]', () => {
     await expect(
       GET({
         params: { thread_id: 'thread_123' },
-        locals: {
-          safeGetSession: sessionNullMock
-        }
-      })
+        locals: getLocalsMock({ nullSession: true })
+      } as RequestEvent<RouteParams, '/api/messages/[thread_id]'>)
     ).rejects.toMatchObject({
       status: 401
     });
@@ -23,10 +23,8 @@ describe('/api/messages/[thread_id]', () => {
     await expect(
       GET({
         params: {},
-        locals: {
-          safeGetSession: sessionMock
-        }
-      })
+        locals: getLocalsMock()
+      } as RequestEvent<RouteParams, '/api/messages/[thread_id]'>)
     ).rejects.toMatchObject({
       status: 400
     });
@@ -38,10 +36,9 @@ describe('/api/messages/[thread_id]', () => {
 
     const res = await GET({
       params: { thread_id: fakeThreads[0].id },
-      locals: {
-        safeGetSession: sessionMock
-      }
-    });
+      locals: getLocalsMock()
+    } as RequestEvent<RouteParams, '/api/messages/[thread_id]'>);
+
     expect(res.status).toEqual(200);
     const resJson = await res.json();
 
@@ -56,8 +53,8 @@ describe('/api/messages/[thread_id]', () => {
     await expect(
       GET({
         params: { thread_id: fakeThreads[0].id },
-        locals: { safeGetSession: sessionMock }
-      })
+        locals: getLocalsMock()
+      } as RequestEvent<RouteParams, '/api/messages/[thread_id]'>)
     ).rejects.toMatchObject({
       status: 500
     });

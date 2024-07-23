@@ -1,3 +1,4 @@
+import type { LayoutLoad } from './$types';
 import { browser } from '$app/environment';
 import { filesStore, threadsStore } from '$stores';
 import type { LFAssistant } from '$lib/types/assistants';
@@ -10,7 +11,7 @@ import type { FileRow } from '$lib/types/files';
 // After this load, the app keeps the store in sync with data changes and we don't
 // re-fetch all that data from the server
 // The same applies to files, we keep track of them in a store
-export const load = async ({ fetch, data, depends }) => {
+export const load: LayoutLoad = async ({ fetch, data, depends }) => {
   depends('lf:assistants');
   depends('lf:files');
 

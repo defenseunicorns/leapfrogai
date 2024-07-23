@@ -10,15 +10,14 @@
   import '$webComponents/CodeBlock';
 
   export let data;
-
-  let theme: CarbonTheme | undefined = 'g90';
-
   let { supabase, session } = data;
   $: ({ supabase, session } = data);
 
+  let theme: CarbonTheme | undefined = 'g90';
+
   onMount(() => {
-    const { data } = supabase.auth.onAuthStateChange((event, _session) => {
-      if (_session?.expires_at !== session?.expires_at) {
+    const { data } = supabase.auth.onAuthStateChange((_, newSession) => {
+      if (newSession?.expires_at !== session?.expires_at) {
         invalidate('supabase:auth');
       }
     });

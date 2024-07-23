@@ -3,8 +3,7 @@ import { redirect } from '@sveltejs/kit';
 import { env } from '$env/dynamic/private';
 
 export const actions: Actions = {
-  signout: async ({ locals: { supabase, safeGetSession } }) => {
-    const { session } = await safeGetSession();
+  signout: async ({ locals: { supabase, session } }) => {
     if (session) {
       if (session.provider_refresh_token) {
         const params = new URLSearchParams();
