@@ -25,7 +25,7 @@ export async function DELETE({ request, locals: { safeGetSession } }) {
   const promises: Promise<Response>[] = [];
   for (const id of requestData.ids) {
     promises.push(
-      fetch(`${env.LEAPFROGAI_API_BASE_URL}/leapfrogai/v1/auth/revoke-api-key/${id}`, {
+      fetch(`${env.LEAPFROGAI_API_BASE_URL}/leapfrogai/v1/auth/api-keys/${id}`, {
         method: 'DELETE',
         headers: {
           Authorization: `Bearer ${session.access_token}`,
