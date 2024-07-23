@@ -38,7 +38,7 @@
 
   /**
    * Override the item name, title, labelText, or value passed to the user-selectable checkbox input as well as the hidden inputs.
-   
+
    */
   // Copied from Svelte Carbon components, seems like this doesn't do what it is supposed to
   // so leaving as is and ignoring the eslint error
@@ -280,7 +280,7 @@
   $: filteredItems = sortedItems.filter((item) => filterItem(item, value));
   $: highlightedId =
     highlightedIndex > -1
-      ? (filterable ? filteredItems : sortedItems)[highlightedIndex]?.id ?? null
+      ? ((filterable ? filteredItems : sortedItems)[highlightedIndex]?.id ?? null)
       : null;
 </script>
 
