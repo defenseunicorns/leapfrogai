@@ -120,7 +120,7 @@ test('it can regenerate the last assistant response', async ({ page, openAIClien
   const messages = page.getByTestId('message');
   await expect(messages).toHaveCount(0);
 
-  const assistantDropdown = page.getByTestId('assistant-dropdown');
+  const assistantDropdown = page.getByTestId('assistants-select-btn');
   await assistantDropdown.click();
   await page.getByText(assistant!.name!).click();
 
@@ -144,7 +144,7 @@ test('editing an assistant message', async ({ page, openAIClient }) => {
   await loadChatPage(page);
 
   // Select assistant
-  const assistantDropdown = page.getByTestId('assistant-dropdown');
+  const assistantDropdown = page.getByTestId('assistants-select-btn');
   await assistantDropdown.click();
   await page.getByText(assistant!.name!).click();
 

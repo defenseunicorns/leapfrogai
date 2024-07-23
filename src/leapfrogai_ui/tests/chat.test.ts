@@ -119,8 +119,8 @@ test('it can switch between normal chat and chat with an assistant', async ({
   await expect(messages).toHaveCount(2);
 
   // Select assistant
-  await expect(page.getByTestId('assistant-dropdown')).not.toBeDisabled();
-  const assistantDropdown = page.getByTestId('assistant-dropdown');
+  await expect(page.getByTestId('assistants-select-btn')).not.toBeDisabled();
+  const assistantDropdown = page.getByTestId('assistants-select-btn');
   await assistantDropdown.click();
   await page.getByText(assistant!.name!).click();
 
@@ -135,7 +135,7 @@ test('it can switch between normal chat and chat with an assistant', async ({
   await expect(page.getByTestId('assistant-icon')).toHaveCount(1);
 
   // Test selected assistant has a checkmark and clicking it again de-selects the assistant
-  await expect(page.getByTestId('assistant-dropdown')).not.toBeDisabled();
+  await expect(page.getByTestId('assistants-select-btn')).not.toBeDisabled();
   await assistantDropdown.click();
   await page.getByTestId('checked').click();
 

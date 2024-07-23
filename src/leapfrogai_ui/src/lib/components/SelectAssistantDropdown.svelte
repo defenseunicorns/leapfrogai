@@ -68,7 +68,7 @@
       }}
       class="flex justify-between"
       >None {#if $threadsStore.selectedAssistantId === NO_SELECTED_ASSISTANT_ID}
-        <CheckOutline />
+        <CheckOutline data-testid="checked" />
       {/if}</DropdownItem
     >
   </div>
