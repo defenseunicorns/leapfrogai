@@ -1,5 +1,4 @@
 import { POST } from './+server';
-import { sessionMock, sessionNullMock } from '$lib/mocks/supabase-mocks';
 import { mockOpenAI } from '../../../../../vitest-setup';
 import {
   getFakeAssistant,
@@ -7,6 +6,9 @@ import {
   getFakeVectorStore,
   getFakeVectorStoreFile
 } from '$testUtils/fakeData';
+import type { RequestEvent } from '@sveltejs/kit';
+import type { RouteParams } from '../../../../../.svelte-kit/types/src/routes/api/messages/new/$types';
+import { getLocalsMock } from '$lib/mocks/misc';
 
 const validMessageBody = { fileIds: ['file1', 'file2'] };
 describe('/api/files/delete-check', () => {
@@ -19,8 +21,8 @@ describe('/api/files/delete-check', () => {
     await expect(
       POST({
         request,
-        locals: { safeGetSession: sessionNullMock }
-      })
+        locals: getLocalsMock({ nullSession: true })
+      } as RequestEvent<RouteParams, '/api/files/delete-check'>)
     ).rejects.toMatchObject({
       status: 401
     });
@@ -36,8 +38,8 @@ describe('/api/files/delete-check', () => {
     await expect(
       POST({
         request,
-        locals: { safeGetSession: sessionMock }
-      })
+        locals: getLocalsMock()
+      } as RequestEvent<RouteParams, '/api/files/delete-check'>)
     ).rejects.toMatchObject({
       status: 400
     });
@@ -51,8 +53,8 @@ describe('/api/files/delete-check', () => {
     await expect(
       POST({
         request,
-        locals: { safeGetSession: sessionMock }
-      })
+        locals: getLocalsMock()
+      } as RequestEvent<RouteParams, '/api/files/delete-check'>)
     ).rejects.toMatchObject({
       status: 400
     });
@@ -66,8 +68,8 @@ describe('/api/files/delete-check', () => {
     await expect(
       POST({
         request,
-        locals: { safeGetSession: sessionMock }
-      })
+        locals: getLocalsMock()
+      } as RequestEvent<RouteParams, '/api/files/delete-check'>)
     ).rejects.toMatchObject({
       status: 400
     });
@@ -81,8 +83,8 @@ describe('/api/files/delete-check', () => {
     await expect(
       POST({
         request,
-        locals: { safeGetSession: sessionMock }
-      })
+        locals: getLocalsMock()
+      } as RequestEvent<RouteParams, '/api/files/delete-check'>)
     ).rejects.toMatchObject({
       status: 400
     });
@@ -134,8 +136,8 @@ describe('/api/files/delete-check', () => {
 
     const res = await POST({
       request,
-      locals: { safeGetSession: sessionMock }
-    });
+      locals: getLocalsMock()
+    } as RequestEvent<RouteParams, '/api/files/delete-check'>);
 
     const resData = await res.json();
     expect(res.status).toEqual(200);
@@ -150,8 +152,8 @@ describe('/api/files/delete-check', () => {
 
     const res2 = await POST({
       request: request2,
-      locals: { safeGetSession: sessionMock }
-    });
+      locals: getLocalsMock()
+    } as RequestEvent<RouteParams, '/api/files/delete-check'>);
 
     const resData2 = await res2.json();
     expect(res2.status).toEqual(200);
@@ -170,8 +172,8 @@ describe('/api/files/delete-check', () => {
     await expect(
       POST({
         request,
-        locals: { safeGetSession: sessionMock }
-      })
+        locals: getLocalsMock()
+      } as RequestEvent<RouteParams, '/api/files/delete-check'>)
     ).rejects.toMatchObject({
       status: 500
     });

@@ -79,7 +79,7 @@ jobs:
 
         - name: Create UDS Cluster
           run: |
-            uds deploy k3d-core-slim-dev:0.22.2 --confirm
+            uds deploy k3d-core-slim-dev:0.23.0 --confirm
 
         ##########
         # Supabase

@@ -1,4 +1,5 @@
 import { superValidate } from 'sveltekit-superforms';
+import type { Actions, PageServerLoad } from './$types';
 import { fail, redirect } from '@sveltejs/kit';
 import { yup } from 'sveltekit-superforms/adapters';
 import { assistantDefaults, DEFAULT_ASSISTANT_TEMP } from '$lib/constants';
@@ -11,7 +12,7 @@ import { getOpenAiClient } from '$lib/server/constants';
 import { filesSchema } from '$schemas/files';
 import type { VectorStore } from 'openai/resources/beta/vector-stores/index';
 
-export const load = async () => {
+export const load: PageServerLoad = async () => {
   // Populate form with default temperature
   const form = await superValidate(
     { temperature: DEFAULT_ASSISTANT_TEMP },
@@ -24,9 +25,8 @@ export const load = async () => {
   return { title: 'LeapfrogAI - New Assistant', form, filesForm };
 };
 
-export const actions = {
-  default: async ({ request, locals: { supabase, safeGetSession } }) => {
-    const { session } = await safeGetSession();
+export const actions: Actions = {
+  default: async ({ request, locals: { supabase, session } }) => {
     if (!session) {
       return fail(401, { message: 'Unauthorized' });
     }

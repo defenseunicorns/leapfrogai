@@ -1,12 +1,10 @@
 import { faker } from '@faker-js/faker';
 import { DELETE } from './+server';
-import {
-  sessionMock,
-  sessionNullMock,
-  storageRemoveMock,
-  supabaseStorageMockWrapper
-} from '$lib/mocks/supabase-mocks';
+import { storageRemoveMock, supabaseStorageMockWrapper } from '$lib/mocks/supabase-mocks';
 import { mockOpenAI } from '../../../../../vitest-setup';
+import { getLocalsMock } from '$lib/mocks/misc';
+import type { RequestEvent } from '@sveltejs/kit';
+import type { RouteParams } from '../../../../../.svelte-kit/types/src/routes/api/messages/new/$types';
 
 describe('/api/assistants/delete', () => {
   it('returns a 204 when the request completes and deletes the assistant avatar', async () => {
@@ -18,8 +16,8 @@ describe('/api/assistants/delete', () => {
 
     const res = await DELETE({
       request,
-      locals: { safeGetSession: sessionMock, supabase: storageMock }
-    });
+      locals: getLocalsMock({ supabase: storageMock })
+    } as RequestEvent<RouteParams, '/api/assistants/delete'>);
     expect(res.status).toEqual(204);
 
     expect(storageMock.storage.from.mock.calls[0]).toEqual(['assistant_avatars']);
@@ -33,11 +31,8 @@ describe('/api/assistants/delete', () => {
     await expect(
       DELETE({
         request,
-        locals: {
-          safeGetSession: sessionNullMock,
-          supabase: supabaseStorageMockWrapper(storageRemoveMock())
-        }
-      })
+        locals: getLocalsMock({ nullSession: true })
+      } as RequestEvent<RouteParams, '/api/assistants/delete'>)
     ).rejects.toMatchObject({
       status: 401
     });
@@ -52,11 +47,8 @@ describe('/api/assistants/delete', () => {
     await expect(
       DELETE({
         request,
-        locals: {
-          safeGetSession: sessionMock,
-          supabase: supabaseStorageMockWrapper(storageRemoveMock())
-        }
-      })
+        locals: getLocalsMock({ supabase: supabaseStorageMockWrapper(storageRemoveMock()) })
+      } as RequestEvent<RouteParams, '/api/assistants/delete'>)
     ).rejects.toMatchObject({
       status: 400
     });
@@ -69,11 +61,8 @@ describe('/api/assistants/delete', () => {
     await expect(
       DELETE({
         request,
-        locals: {
-          safeGetSession: sessionMock,
-          supabase: supabaseStorageMockWrapper(storageRemoveMock())
-        }
-      })
+        locals: getLocalsMock({ supabase: supabaseStorageMockWrapper(storageRemoveMock()) })
+      } as RequestEvent<RouteParams, '/api/assistants/delete'>)
     ).rejects.toMatchObject({
       status: 400
     });
@@ -89,11 +78,8 @@ describe('/api/assistants/delete', () => {
     await expect(
       DELETE({
         request,
-        locals: {
-          safeGetSession: sessionMock,
-          supabase: supabaseStorageMockWrapper(storageRemoveMock())
-        }
-      })
+        locals: getLocalsMock({ supabase: supabaseStorageMockWrapper(storageRemoveMock()) })
+      } as RequestEvent<RouteParams, '/api/assistants/delete'>)
     ).rejects.toMatchObject({
       status: 400
     });
@@ -108,11 +94,8 @@ describe('/api/assistants/delete', () => {
     await expect(
       DELETE({
         request,
-        locals: {
-          safeGetSession: sessionMock,
-          supabase: supabaseStorageMockWrapper(storageRemoveMock())
-        }
-      })
+        locals: getLocalsMock({ supabase: supabaseStorageMockWrapper(storageRemoveMock()) })
+      } as RequestEvent<RouteParams, '/api/assistants/delete'>)
     ).rejects.toMatchObject({
       status: 500
     });

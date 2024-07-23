@@ -40,6 +40,15 @@ jobs:
         with:
           python-version-file: 'pyproject.toml'
 
+      - name: Build and Publish k3d-gpu image
+        run: |
+          cd packages/k3d-gpu
+          docker build \
+            --platform linux/amd64 \
+            -t ghcr.io/defenseunicorns/leapfrogai/k3d-gpu:${{ steps.get_version.outputs.version-without-v }} .
+          docker push ghcr.io/defenseunicorns/leapfrogai/k3d-gpu:${{ steps.get_version.outputs.version-without-v }}
+          cd ../..
+
       - name: Download Python Wheels and Publish Builder Image
         run: |
           docker buildx build --platform amd64,arm64 -t ghcr.io/defenseunicorns/leapfrogai/leapfrogai-sdk:${{ steps.get_version.outputs.version-without-v }} --push -f src/leapfrogai_sdk/Dockerfile .

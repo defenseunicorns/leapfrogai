@@ -1,6 +1,5 @@
 <script lang="ts">
   import logo from '$assets/LeapfrogAI.png';
-  import { goto } from '$app/navigation';
   import { Button } from 'carbon-components-svelte';
   import { Auth } from '@supabase/auth-ui-svelte';
   import { env } from '$env/dynamic/public';
@@ -10,19 +9,15 @@
   export let queryParams: { [key: string]: string } | undefined = undefined;
 
   let isSignup = true;
-  let { session } = data;
-  $: ({ session } = data);
-
-  $: if (session?.user) {
-    goto('/chat');
-  }
+  let { supabase, url } = data;
+  $: ({ supabase, url } = data);
 
   async function signInWithKeycloak() {
-    await data.supabase.auth.signInWithOAuth({
+    await supabase.auth.signInWithOAuth({
       provider: 'keycloak',
       options: {
         scopes: 'openid',
-        redirectTo: `${data.url}/auth/callback`,
+        redirectTo: `${url}/auth/callback`,
         queryParams
       }
     });

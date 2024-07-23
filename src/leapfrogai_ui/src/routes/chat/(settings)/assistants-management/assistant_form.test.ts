@@ -6,8 +6,6 @@ import { ASSISTANTS_DESCRIPTION_MAX_LENGTH, ASSISTANTS_NAME_MAX_LENGTH } from '$
 import { actions as editActions } from './edit/[assistantId]/+page.server';
 import { actions as newActions, load as newLoad } from './new/+page.server';
 import {
-  sessionMock,
-  sessionNullMock,
   storageRemoveMock,
   supabaseInsertSingleMock,
   supabaseStorageMockWrapper
@@ -17,6 +15,9 @@ import AssistantForm from '$components/AssistantForm.svelte';
 import { mockOpenAI } from '../../../../../vitest-setup';
 import { mockGetAssistants } from '$lib/mocks/chat-mocks';
 import { mockGetFiles } from '$lib/mocks/file-mocks';
+import { getLocalsMock } from '$lib/mocks/misc';
+import type { ActionFailure, RequestEvent } from '@sveltejs/kit';
+import type { RouteParams } from './$types';
 
 describe('Assistant Form', () => {
   let goToSpy: MockInstance;
@@ -35,6 +36,8 @@ describe('Assistant Form', () => {
   it('has a modal that navigates back to the management page', async () => {
     mockGetAssistants([]);
     mockGetFiles([]);
+
+    // @ts-expect-error: overcomplicated to mock out load function arguments and they are not used
     const data = await newLoad();
     render(AssistantForm, { data });
 
@@ -47,6 +50,7 @@ describe('Assistant Form', () => {
   it('limits the name input length', async () => {
     mockGetAssistants([]);
     mockGetFiles([]);
+    // @ts-expect-error: overcomplicated to mock out load function arguments and they are not used
     const data = await newLoad();
     render(AssistantForm, { data });
     const nameField = screen.getByRole('textbox', { name: /name/i });
@@ -57,6 +61,7 @@ describe('Assistant Form', () => {
   it('limits the description input length', async () => {
     mockGetAssistants([]);
     mockGetFiles([]);
+    // @ts-expect-error: overcomplicated to mock out load function arguments and they are not used
     const data = await newLoad();
     render(AssistantForm, { data });
     const descriptionField = screen.getByRole('textbox', { name: /description/i });
@@ -93,9 +98,10 @@ describe('Assistant Form', () => {
       try {
         await newActions.default({
           request,
-          locals: { supabase: supabaseInsertSingleMock(assistant), safeGetSession: sessionMock }
-        });
-      } catch (redirect) {
+          locals: getLocalsMock({ supabase: supabaseInsertSingleMock(assistant) })
+        } as RequestEvent<RouteParams, '/chat/(settings)/assistants-management/new'>);
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      } catch (redirect: any) {
         expect(redirect?.status).toEqual(303);
         expect(redirect?.location).toBe('/chat/assistants-management');
       }
@@ -105,10 +111,13 @@ describe('Assistant Form', () => {
       const request = new Request('http://localhost:5173/chat/assistants-management/new', {
         method: 'POST'
       });
-      const res = await newActions.default({
+      const res = (await newActions.default({
         request,
-        locals: { supabase: {}, safeGetSession: sessionNullMock }
-      });
+        locals: getLocalsMock({ nullSession: true })
+      } as RequestEvent<
+        RouteParams,
+        '/chat/(settings)/assistants-management/new'
+      >)) as ActionFailure;
 
       expect(res.status).toEqual(401);
     });
@@ -121,10 +130,10 @@ describe('Assistant Form', () => {
       method: 'POST',
       body: formData
     });
-    const res = await newActions.default({
+    const res = (await newActions.default({
       request,
-      locals: { supabase: {}, safeGetSession: sessionMock }
-    });
+      locals: getLocalsMock()
+    } as RequestEvent<RouteParams, '/chat/(settings)/assistants-management/new'>)) as ActionFailure;
 
     expect(res.status).toEqual(400);
   });
@@ -156,14 +165,17 @@ describe('Assistant Form', () => {
       try {
         await editActions.default({
           request,
-          locals: {
+          locals: getLocalsMock({
             supabase: supabaseStorageMockWrapper({
               ...storageRemoveMock()
-            }),
-            safeGetSession: sessionMock
-          }
-        });
-      } catch (redirect) {
+            })
+          })
+        } as RequestEvent<
+          RouteParams & { assistantId: string },
+          '/chat/(settings)/assistants-management/edit/[assistantId]'
+        >);
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      } catch (redirect: any) {
         expect(redirect?.status).toEqual(303);
         expect(redirect?.location).toBe('/chat/assistants-management');
       }
@@ -173,10 +185,13 @@ describe('Assistant Form', () => {
       const request = new Request(`http://localhost:5173/chat/assistants-management/edit/123`, {
         method: 'POST'
       });
-      const res = await editActions.default({
+      const res = (await editActions.default({
         request,
-        locals: { supabase: {}, safeGetSession: sessionNullMock }
-      });
+        locals: getLocalsMock({ nullSession: true })
+      } as RequestEvent<
+        RouteParams & { assistantId: string },
+        '/chat/(settings)/assistants-management/edit/[assistantId]'
+      >)) as ActionFailure;
 
       expect(res.status).toEqual(401);
     });
@@ -195,10 +210,13 @@ describe('Assistant Form', () => {
         }
       );
 
-      const res = await editActions.default({
+      const res = (await editActions.default({
         request,
-        locals: { supabase: {}, safeGetSession: sessionMock }
-      });
+        locals: getLocalsMock()
+      } as RequestEvent<
+        RouteParams & { assistantId: string },
+        '/chat/(settings)/assistants-management/edit/[assistantId]'
+      >)) as ActionFailure;
 
       expect(res.status).toEqual(400);
     });
@@ -223,13 +241,13 @@ describe('Assistant Form', () => {
           body: formData
         }
       );
-      const res = await editActions.default({
+      const res = (await editActions.default({
         request,
-        locals: {
-          supabase: {},
-          safeGetSession: sessionMock
-        }
-      });
+        locals: getLocalsMock()
+      } as RequestEvent<
+        RouteParams & { assistantId: string },
+        '/chat/(settings)/assistants-management/edit/[assistantId]'
+      >)) as ActionFailure;
 
       expect(res.status).toEqual(500);
     });
