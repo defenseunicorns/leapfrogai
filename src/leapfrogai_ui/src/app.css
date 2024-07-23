@@ -2,16 +2,24 @@
 @tailwind components;
 @tailwind utilities;
 
+
+:root {
+  --header-height: 3rem;
+  --message-input-height: 2.5rem;
+}
+
+
 /*TODO - can we get rid of some of these?*/
 @layer utilities {
+
+
+  .lf-content {
+    display: flex;
+    flex-grow: 1;
+    padding: 2rem;
+  }
   .no-scrollbar {
     scrollbar-width: none;
-  }
-
-  .icon {
-    width: 32px;
-    height: 52px;
-    padding: 14px 0.25rem;
   }
 
   .hide {
@@ -51,4 +59,14 @@
     color: #78a9ff;
     cursor: pointer;
   }
+}
+
+@layer components {
+  .chat-icon {
+    width: 32px;
+    height: 52px;
+    padding: 14px 0.25rem;
+    color: white;
+  }
+
 }

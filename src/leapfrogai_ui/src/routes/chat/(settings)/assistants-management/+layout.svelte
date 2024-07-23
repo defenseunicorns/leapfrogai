@@ -1,5 +1,5 @@
 <script lang="ts">
-  import { Breadcrumb, BreadcrumbItem, Content } from 'carbon-components-svelte';
+  import { Breadcrumb, BreadcrumbItem } from 'flowbite-svelte';
   import { page } from '$app/stores';
   import { PoweredByDU } from '$components';
   import { threadsStore } from '$stores';
@@ -38,7 +38,7 @@
   };
 </script>
 
-<Content>
+<main class="content">
   <Breadcrumb noTrailingSlash data-testid="breadcrumbs">
     {#each paths as { path, name } (path)}
       {#if $page.url.pathname.includes(path)}
@@ -54,4 +54,4 @@
 
     <PoweredByDU />
   </div>
-</Content>
+</main>

@@ -4,8 +4,6 @@
   import { onMount } from 'svelte';
   import { Toasts } from '$components';
   import { page } from '$app/stores';
-  import 'carbon-components-svelte/css/g90.css';
-  import '../styles/main.scss';
   import '$webComponents/CodeBlock';
   export let data;
 
@@ -30,12 +28,12 @@
 
 <Toasts />
 
-<div class="content">
+<div class="content-height dark:bg-gray-900">
   <slot />
 </div>
 
 <style lang="scss">
-  .content {
+  .content-height {
     height: calc(100vh - var(--header-height));
   }
 </style>

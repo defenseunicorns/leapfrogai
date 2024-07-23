@@ -53,9 +53,8 @@
 </script>
 
 <!--Custom styling allows center SidebarGroup (chat threads) to scroll-->
-
-<Sidebar class="w-full max-w-64 " data-testid="sidebar">
-  <SidebarWrapper class=" flex h-full flex-col">
+<Sidebar data-testid="sidebar" class="dark:bg-gray-800">
+  <SidebarWrapper class="flex h-full flex-col">
     <SidebarGroup>
       <div class="flex flex-col gap-2">
         <Button on:click={() => threadsStore.changeThread('')}>

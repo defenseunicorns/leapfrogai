@@ -33,7 +33,7 @@
   };
 </script>
 
-<div class="container">
+<div class="flex center">
   <div class="inner-container">
     <div class="title">Assistants Management</div>
 
@@ -64,11 +64,6 @@
 </div>
 
 <style lang="scss">
-  .container {
-    display: flex;
-    justify-content: center;
-    max-height: 90%;
-  }
   .inner-container {
     display: flex;
     flex-direction: column;
