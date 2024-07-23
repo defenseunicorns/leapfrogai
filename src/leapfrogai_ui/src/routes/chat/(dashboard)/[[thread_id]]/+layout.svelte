@@ -1,7 +1,6 @@
 <script lang="ts">
   import { page } from '$app/stores';
   import threadsStore from '$stores/threads';
-  import '../../../../styles/main.scss';
   import SidebarWrapper from '$components/SidebarWrapper.svelte';
 
   $: threadLabel = $threadsStore.threads.find((thread) => thread.id === $page.params.thread_id)

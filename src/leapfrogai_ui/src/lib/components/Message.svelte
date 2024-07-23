@@ -26,6 +26,7 @@
   import type { AppendFunction } from '$lib/types/messages';
   import DOMPurify from 'isomorphic-dompurify';
   import TextareaV2 from '$components/LFTextArea.svelte';
+  import IconButton from '$components/IconButton.svelte';
 
   export let message: OpenAIMessage;
   export let messages: OpenAIMessage[] = [];
@@ -116,17 +117,17 @@
 >
   <div class="flex flex-1 items-start">
     {#if message.role === 'user'}
-      <div class="icon">
+      <div class="chat-icon">
         <UserCircleOutline class="h-6 w-6" data-testid="user-icon" />
       </div>
     {:else if assistantImage && assistantImage.startsWith('http')}
-      <img alt="Assistant" src={assistantImage} class="icon" data-testid="assistant-icon" />
+      <img alt="Assistant" src={assistantImage} class="chat-icon" data-testid="assistant-icon" />
     {:else if assistantImage}
-      <div class="icon" data-testid="assistant-icon">
+      <div class="chat-icon" data-testid="assistant-icon">
         <DynamicPictogram iconName={assistantImage} width="24px" height="24px" />
       </div>
     {:else}
-      <img alt="LeapfrogAI" src={frog} class="icon" data-testid="leapfrog-icon" />
+      <img alt="LeapfrogAI" src={frog} class="chat-icon" data-testid="leapfrog-icon" />
     {/if}
 
     <div class="flex flex-grow flex-col gap-1 overflow-hidden pb-1">
@@ -135,7 +136,7 @@
           data-testid="edit-message-input"
           {value}
           {onSubmit}
-          class="mx-4 mt-9 resize-none bg-white dark:bg-gray-800"
+          class="mx-4 mt-[54px] resize-none bg-white dark:bg-gray-800"
         />
         <div class="flex justify-end gap-1">
           <Button size="sm" color="alternative" on:click={handleCancel}>Cancel</Button>
@@ -143,13 +144,14 @@
             size="sm"
             disabled={$threadsStore.sendingBlocked}
             on:click={onSubmit}
-            aria-label="submit edited message">Submit</Button
+            aria-label="submit edited message"
+            data-testid="submit-edit-message">Submit</Button
           >
         </div>
       {:else}
         <Card
           class={twMerge(
-            'max-w-full break-all dark:bg-gray-700 dark:text-white',
+            'max-w-full break-all border-none dark:bg-gray-700 dark:text-white',
             message.role === 'user' && 'bg-transparent shadow-none dark:bg-transparent'
           )}
         >
@@ -170,36 +172,32 @@
 
       <div class="flex gap-1 pl-4">
         {#if message.role === 'user' && !editMode}
-          <button
-            data-testid="edit prompt btn"
-            class={twMerge(
-              'remove-btn-style',
-              !messageIsHovered && 'hide',
-              !$threadsStore.sendingBlocked && 'highlight-icon'
-            )}
+          <IconButton
+            class={!messageIsHovered && 'hide'}
             on:click={() => (editMode = true)}
             aria-label="edit prompt"
-            tabindex="0"><EditOutline /></button
+            data-testid="edit-message"
+            tabindex="0"
           >
+            <EditOutline />
+          </IconButton>
         {/if}
         {#if message.role !== 'user'}
-          <button
+          <IconButton
             data-testid="copy btn"
-            class="highlight-icon remove-btn-style"
-            class:hide={!messageIsHovered}
+            class={!messageIsHovered && 'hide'}
             on:click={handleCopy}
             tabindex="0"
-            aria-label="copy message"><FileCopyOutline /></button
+            aria-label="copy message"
           >
+            <FileCopyOutline />
+          </IconButton>
         {/if}
         {#if message.role !== 'user' && isLastMessage && !$threadsStore.sendingBlocked}
-          <button
+          <IconButton
             data-testid="regenerate btn"
-            class={twMerge(
-              'remove-btn-style',
-              !messageIsHovered && 'hide',
-              !$threadsStore.sendingBlocked && 'highlight-icon'
-            )}
+            class={!messageIsHovered && 'hide'}
+            disabled={$threadsStore.sendingBlocked}
             on:click={async () =>
               await handleMessageEdit({
                 messages,
@@ -210,19 +208,12 @@
                 selectedAssistantId: $threadsStore.selectedAssistantId
               })}
             aria-label="regenerate message"
-            tabindex="0"><RedoOutline /></button
+            tabindex="0"
           >
+            <RedoOutline />
+          </IconButton>
         {/if}
       </div>
     </div>
   </div>
 </div>
-
-<style lang="scss">
-  .highlight-icon :global(svg) {
-    transition: color 70ms ease-in-out;
-    &:hover {
-      color: #ffffff;
-    }
-  }
-</style>
