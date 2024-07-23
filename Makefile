@@ -15,7 +15,7 @@ help: ## Display this help information
 
 silent-flags:
     $(eval DOCKER_FLAGS := $(DOCKER_FLAGS) --quiet)
-    $(eval ZARF_FLAGS := $(ZARF_FLAGS) --no-progress -l warn)
+    $(eval ZARF_FLAGS := $(ZARF_FLAGS) --no-progress -l warn --no-color)
 
 clean: ## Clean up all the things (packages, build dirs, compiled .whl files, python eggs)
 	-rm zarf-package-*.tar.zst
