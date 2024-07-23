@@ -2,7 +2,6 @@
 @tailwind components;
 @tailwind utilities;
 
-
 /*TODO - can we get rid of some of these?*/
 @layer utilities {
   .no-scrollbar {
@@ -52,5 +51,4 @@
     color: #78a9ff;
     cursor: pointer;
   }
-
 }

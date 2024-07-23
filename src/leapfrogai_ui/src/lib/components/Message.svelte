@@ -27,7 +27,6 @@
   import DOMPurify from 'isomorphic-dompurify';
   import TextareaV2 from '$components/LFTextArea.svelte';
 
-
   export let message: OpenAIMessage;
   export let messages: OpenAIMessage[] = [];
   export let streamedMessages: VercelAIMessage[] = [];
@@ -213,7 +212,6 @@
             aria-label="regenerate message"
             tabindex="0"><RedoOutline /></button
           >
-
         {/if}
       </div>
     </div>
