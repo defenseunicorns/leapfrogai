@@ -1,25 +1,33 @@
 <script lang="ts">
-  import {page} from '$app/stores';
-  import {Button, Card} from 'flowbite-svelte';
-  import {Copy, Reset} from 'carbon-icons-svelte';
-  import {type Message as VercelAIMessage} from '@ai-sdk/svelte';
+  import { page } from '$app/stores';
+  import { Button, Card } from 'flowbite-svelte';
+  import { type Message as VercelAIMessage } from '@ai-sdk/svelte';
   import markdownit from 'markdown-it';
   import hljs from 'highlight.js';
   import frog from '$assets/frog.png';
-  import {writable} from 'svelte/store';
-  import {EditOutline, UserCircleOutline} from 'flowbite-svelte-icons';
-  import {twMerge} from 'tailwind-merge';
-  import {threadsStore, toastStore} from '$stores';
-  import {convertTextToMessageContentArr, getMessageText} from '$helpers/threads';
-  import type {Message as OpenAIMessage} from 'openai/resources/beta/threads/messages';
-  import {getAssistantImage, getCitations, handleMessageEdit, isRunAssistantMessage} from '$helpers/chatHelpers';
+  import { writable } from 'svelte/store';
+  import {
+    EditOutline,
+    FileCopyOutline,
+    RedoOutline,
+    UserCircleOutline
+  } from 'flowbite-svelte-icons';
+  import { twMerge } from 'tailwind-merge';
+  import { threadsStore, toastStore } from '$stores';
+  import { convertTextToMessageContentArr, getMessageText } from '$helpers/threads';
+  import type { Message as OpenAIMessage } from 'openai/resources/beta/threads/messages';
+  import {
+    getAssistantImage,
+    getCitations,
+    handleMessageEdit,
+    isRunAssistantMessage
+  } from '$helpers/chatHelpers';
   import DynamicPictogram from '$components/DynamicPictogram.svelte';
-  import type {AppendFunction} from '$lib/types/messages';
+  import type { AppendFunction } from '$lib/types/messages';
   import DOMPurify from 'isomorphic-dompurify';
   import TextareaV2 from '$components/LFTextArea.svelte';
 
-  // TODO - text inside card should wrap, long messages are extending to right side
-  // TODO - finish replacing carbon components and update buttons, left off at utility buttons
+
   export let message: OpenAIMessage;
   export let messages: OpenAIMessage[] = [];
   export let streamedMessages: VercelAIMessage[] = [];
@@ -128,7 +136,7 @@
           data-testid="edit-message-input"
           {value}
           {onSubmit}
-          class="mx-4 mt-[22px] resize-none bg-white dark:bg-gray-800"
+          class="mx-4 mt-9 resize-none bg-white dark:bg-gray-800"
         />
         <div class="flex justify-end gap-1">
           <Button size="sm" color="alternative" on:click={handleCancel}>Cancel</Button>
@@ -182,14 +190,17 @@
             class:hide={!messageIsHovered}
             on:click={handleCopy}
             tabindex="0"
-            aria-label="copy message"><Copy /></button
+            aria-label="copy message"><FileCopyOutline /></button
           >
         {/if}
         {#if message.role !== 'user' && isLastMessage && !$threadsStore.sendingBlocked}
           <button
             data-testid="regenerate btn"
-            class={twMerge("remove-btn-style",  !messageIsHovered && 'hide', !$threadsStore.sendingBlocked && "highlight-icon")}
-
+            class={twMerge(
+              'remove-btn-style',
+              !messageIsHovered && 'hide',
+              !$threadsStore.sendingBlocked && 'highlight-icon'
+            )}
             on:click={async () =>
               await handleMessageEdit({
                 messages,
@@ -200,8 +211,9 @@
                 selectedAssistantId: $threadsStore.selectedAssistantId
               })}
             aria-label="regenerate message"
-            tabindex="0"><Reset /></button
+            tabindex="0"><RedoOutline /></button
           >
+
         {/if}
       </div>
     </div>
@@ -209,15 +221,10 @@
 </div>
 
 <style lang="scss">
-        .highlight-icon :global(svg) {
-                cursor: pointer;
-                fill: #c6c6c6;
-                transition: fill 70ms ease;
-                &:hover {
-                fill: #f4f4f4;
-                }
-                }
-
-
-
+  .highlight-icon :global(svg) {
+    transition: color 70ms ease-in-out;
+    &:hover {
+      color: #ffffff;
+    }
+  }
 </style>

@@ -1,3 +1,8 @@
+<!--
+This component creates a custom version of Flowbite Svelte's Textarea component that auto grows and shrinks in height up
+to a limit of maxRows. It can also show error text.
+-->
+
 <script lang="ts">
   import { twMerge } from 'tailwind-merge';
   import { getContext, onMount } from 'svelte';
