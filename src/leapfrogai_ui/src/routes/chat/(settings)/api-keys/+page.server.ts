@@ -21,7 +21,7 @@ export const load: PageServerLoad = async ({ depends, locals: { session } }) => 
 
   let keys: APIKeyRow[] = [];
 
-  const res = await fetch(`${env.LEAPFROGAI_API_BASE_URL}/leapfrogai/v1/auth/list-api-keys`, {
+  const res = await fetch(`${env.LEAPFROGAI_API_BASE_URL}/leapfrogai/v1/auth/api-keys`, {
     headers: {
       Authorization: `Bearer ${session.access_token}`
     }
@@ -53,7 +53,7 @@ export const actions: Actions = {
       return fail(400, { form });
     }
 
-    const res = await fetch(`${env.LEAPFROGAI_API_BASE_URL}/leapfrogai/v1/auth/create-api-key`, {
+    const res = await fetch(`${env.LEAPFROGAI_API_BASE_URL}/leapfrogai/v1/auth/api-keys`, {
       headers: {
         Authorization: `Bearer ${session.access_token}`,
         'Content-Type': 'application/json'

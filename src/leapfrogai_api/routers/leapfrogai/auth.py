@@ -42,13 +42,15 @@ class ModifyAPIKeyRequest(BaseModel):
     )
 
 
-@router.post("/create-api-key")
+@router.post("/api-keys")
 async def create_api_key(
     session: Session,
     request: CreateAPIKeyRequest,
 ) -> APIKeyItem:
     """
     Create an API key.
+
+    Accessible only with a valid JWT, not an API key.
 
     WARNING: The API key is only returned once. Store it securely.
     """
@@ -71,24 +73,32 @@ async def create_api_key(
     return await crud_api_key.create(new_api_key)
 
 
-@router.get("/list-api-keys")
+@router.get("/api-keys")
 async def list_api_keys(
     session: Session,
 ) -> list[APIKeyItem]:
-    """List all API keys."""
+    """
+    List all API keys.
+
+    Accessible only with a valid JWT, not an API key.
+    """
 
     crud_api_key = CRUDAPIKey(session)
 
     return await crud_api_key.list()
 
 
-@router.post("/update-api-key/{api_key_id}")
+@router.patch("/api-keys/{api_key_id}")
 async def update_api_key(
     session: Session,
     api_key_id: Annotated[str, Field(description="The UUID of the API key.")],
     request: ModifyAPIKeyRequest,
 ) -> APIKeyItem:
-    """Update an API key."""
+    """
+    Update an API key.
+
+    Accessible only with a valid JWT, not an API key.
+    """
 
     crud_api_key = CRUDAPIKey(session)
 
@@ -98,6 +108,15 @@ async def update_api_key(
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
             detail="API key not found.",
+        )
+
+    if request.expires_at and (
+        request.expires_at > api_key.expires_at
+        or request.expires_at <= int(time.time())
+    ):
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="Invalid expiration time. New expiration must be in the future but less than the current expiration.",
         )
 
     updated_api_key = APIKeyItem(
@@ -113,12 +132,16 @@ async def update_api_key(
     return await crud_api_key.update(api_key_id, updated_api_key)
 
 
-@router.delete("/revoke-api-key/{api_key_id}", status_code=status.HTTP_204_NO_CONTENT)
+@router.delete("/api-keys/{api_key_id}", status_code=status.HTTP_204_NO_CONTENT)
 async def revoke_api_key(
     session: Session,
     api_key_id: Annotated[str, Field(description="The UUID of the API key.")],
 ):
-    """Revoke an API key."""
+    """
+    Revoke an API key.
+
+    Accessible only with a valid JWT, not an API key.
+    """
 
     crud_api_key = CRUDAPIKey(session)
 
