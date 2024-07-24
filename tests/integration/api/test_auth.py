@@ -79,7 +79,7 @@ def test_update_api_key(create_api_key):
         "expires_at": int(time.time()) + 100,
     }
 
-    response = client.post(f"/leapfrogai/v1/auth/api-keys/{id_}", json=request)
+    response = client.patch(f"/leapfrogai/v1/auth/api-keys/{id_}", json=request)
     assert response.status_code is status.HTTP_200_OK
     assert APIKeyItem.model_validate(response.json()), "API key should be valid."
     assert response.json()["id"] == id_, "Update should return the created API key."

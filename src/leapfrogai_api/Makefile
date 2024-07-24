@@ -1,14 +1,18 @@
+MAKEFILE_DIR := $(dir $(abspath $(lastword $(MAKEFILE_LIST))))
 SHELL := /bin/bash
 
 
 export SUPABASE_URL=$(shell supabase status | grep -oP '(?<=API URL: ).*')
 export SUPABASE_ANON_KEY=$(shell supabase status | grep -oP '(?<=anon key: ).*')
 
-install:
+install-api:
+	@cd ${MAKEFILE_DIR} && \
 	python -m pip install ../../src/leapfrogai_sdk
+	@cd ${MAKEFILE_DIR} && \
 	python -m pip install -e .
 
-dev:
+dev-run-api:
+	@cd ${MAKEFILE_DIR} && \
 	python -m uvicorn main:app --port 3000 --reload --log-level info
 
 define get_jwt_token
@@ -36,4 +40,4 @@ env:
 	$(call get_jwt_token,"${SUPABASE_URL}/auth/v1/token?grant_type=password")
 
 test-integration:
-	cd ../../ && python -m pytest tests/integration/api/ -vv -s
+	@cd ${MAKEFILE_DIR} && python -m pytest ../../tests/integration/api/test_auth.py -vv -s
