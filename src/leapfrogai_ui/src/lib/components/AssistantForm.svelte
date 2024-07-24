@@ -20,6 +20,7 @@
 
   export let data;
 
+  // TODO - refactor avatar, fix tests, figure out why loom chrome plugin shows white line and undefined at bottom of screen
   let isEditMode = $page.url.pathname.includes('edit');
   let bypassCancelWarning = false;
 
