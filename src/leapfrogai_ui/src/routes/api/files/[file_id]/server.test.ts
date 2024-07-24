@@ -1,16 +1,20 @@
 import { GET } from './+server';
 import { mockOpenAI } from '../../../../../vitest-setup';
-import { sessionMock, sessionNullMock } from '$lib/mocks/supabase-mocks';
+import { getLocalsMock } from '$lib/mocks/misc';
+import type { RequestEvent } from '@sveltejs/kit';
+import type { RouteParams } from './$types';
+
+const request = new Request('http://thisurlhasnoeffect', {
+  method: 'GET'
+});
 
 describe('/api/files/[file_id]', () => {
   it('returns a 401 when there is no session', async () => {
     await expect(
-      GET({
-        params: { file_id: 'file_123' },
-        locals: {
-          safeGetSession: sessionNullMock
-        }
-      })
+      GET({ request, params: {}, locals: getLocalsMock({ nullSession: true }) } as RequestEvent<
+        RouteParams,
+        '/api/files/[file_id]'
+      >)
     ).rejects.toMatchObject({
       status: 401
     });
@@ -18,24 +22,21 @@ describe('/api/files/[file_id]', () => {
 
   it('should return 400 if file_id is missing', async () => {
     await expect(
-      GET({
-        params: {},
-        locals: {
-          safeGetSession: sessionMock
-        }
-      })
+      GET({ request, params: {}, locals: getLocalsMock() } as RequestEvent<
+        RouteParams,
+        '/api/files/[file_id]'
+      >)
     ).rejects.toMatchObject({
       status: 400
     });
   });
 
   it('request the file from the API', async () => {
-    await GET({
-      params: { file_id: 'file_123' },
-      locals: {
-        safeGetSession: sessionMock
-      }
-    });
+    await GET({ request, params: { file_id: 'file_123' }, locals: getLocalsMock() } as RequestEvent<
+      RouteParams,
+      '/api/files/[file_id]'
+    >);
+
     expect(mockOpenAI.files.content).toHaveBeenCalledTimes(1);
     expect(mockOpenAI.files.content).toHaveBeenCalledWith('file_123');
   });

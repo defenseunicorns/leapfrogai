@@ -1,7 +1,9 @@
 import { GET } from './+server';
-import { sessionMock, sessionNullMock } from '$lib/mocks/supabase-mocks';
 import { mockOpenAI } from '../../../../vitest-setup';
 import { getFakeMessage } from '$testUtils/fakeData';
+import { getLocalsMock } from '$lib/mocks/misc';
+import type { RouteParams } from './$types';
+import type { RequestEvent } from '@sveltejs/kit';
 
 const url = new URL('http://localhost');
 
@@ -12,10 +14,8 @@ describe('/api/messages', () => {
     await expect(
       GET({
         url,
-        locals: {
-          safeGetSession: sessionNullMock
-        }
-      })
+        locals: getLocalsMock({ nullSession: true })
+      } as RequestEvent<RouteParams, '/api/messages'>)
     ).rejects.toMatchObject({
       status: 401
     });
@@ -24,10 +24,8 @@ describe('/api/messages', () => {
     await expect(
       GET({
         url,
-        locals: {
-          safeGetSession: sessionMock
-        }
-      })
+        locals: getLocalsMock()
+      } as RequestEvent<RouteParams, '/api/messages'>)
     ).rejects.toMatchObject({
       status: 400
     });
@@ -41,10 +39,8 @@ describe('/api/messages', () => {
 
     const res = await GET({
       url: myUrl,
-      locals: {
-        safeGetSession: sessionMock
-      }
-    });
+      locals: getLocalsMock()
+    } as RequestEvent<RouteParams, '/api/messages'>);
     expect(res.status).toEqual(200);
     const resJson = await res.json();
 
@@ -61,8 +57,8 @@ describe('/api/messages', () => {
     await expect(
       GET({
         url: myUrl,
-        locals: { safeGetSession: sessionMock }
-      })
+        locals: getLocalsMock()
+      } as RequestEvent<RouteParams, '/api/messages'>)
     ).rejects.toMatchObject({
       status: 500
     });

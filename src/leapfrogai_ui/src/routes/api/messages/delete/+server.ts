@@ -1,9 +1,9 @@
+import type { RequestHandler } from './$types';
 import { error } from '@sveltejs/kit';
 import { deleteMessageSchema } from '$lib/schemas/chat';
 import { getOpenAiClient } from '$lib/server/constants';
 
-export async function DELETE({ request, locals: { safeGetSession } }) {
-  const { session } = await safeGetSession();
+export const DELETE: RequestHandler = async ({ request, locals: { session } }) => {
   if (!session) {
     error(401, 'Unauthorized');
   }
@@ -32,4 +32,4 @@ export async function DELETE({ request, locals: { safeGetSession } }) {
   }
 
   return new Response(undefined, { status: 204 });
-}
+};
