@@ -7,8 +7,8 @@
   import { superForm } from 'sveltekit-superforms';
   import { page } from '$app/stores';
   import { beforeNavigate, goto } from '$app/navigation';
-  import { Button, Modal, Slider, TextArea, TextInput } from 'carbon-components-svelte';
-  import AssistantAvatar from '$components/AssistantAvatar.svelte';
+  import { Button } from 'flowbite-svelte';
+  import Slider from '$components/Slider.svelte';
   import { yup } from 'sveltekit-superforms/adapters';
   import { filesStore, toastStore } from '$stores';
   import InputTooltip from '$components/InputTooltip.svelte';
@@ -16,6 +16,7 @@
   import type { NavigationTarget } from '@sveltejs/kit';
   import { onMount } from 'svelte';
   import AssistantFileSelect from '$components/AssistantFileSelect.svelte';
+  import LFInput from '$components/LFInput.svelte';
 
   export let data;
 
@@ -84,81 +85,64 @@
     }
     filesStore.setSelectedAssistantFileIds($form.data_sources || []);
   });
+
+  $: console.log($form);
 </script>
 
-<form method="POST" enctype="multipart/form-data" use:enhance class="assistant-form">
-  <div class="container">
-    <div class="inner-container">
-      <div class="top-row">
-        <div class="title">{`${isEditMode ? 'Edit' : 'New'} Assistant`}</div>
-        <AssistantAvatar bind:files bind:selectedPictogramName {form} />
+<form method="POST" enctype="multipart/form-data" use:enhance>
+  <div class="flex justify-center">
+    <div class="flex w-1/2 flex-col gap-6 py-2">
+      <div class="flex items-center justify-between">
+        <h5 class="text-xl font-medium text-gray-900 dark:text-white">
+          {`${isEditMode ? 'Edit' : 'New'} Assistant`}
+        </h5>
+
+        <!--        <AssistantAvatar bind:files bind:selectedPictogramName {form} />-->
       </div>
       <input type="hidden" name="id" value={$form.id} />
-      <TextInput
+      <LFInput
+        id="name"
         name="name"
-        autocomplete="off"
-        labelText="Name"
+        label="Name"
         placeholder="Assistant name"
+        autocomplete="off"
         bind:value={$form.name}
         maxlength={ASSISTANTS_NAME_MAX_LENGTH}
-        invalid={!!$errors.name}
-        invalidText={$errors.name?.toString()}
+        errorText={!!$errors.name && $errors.name.toString()}
       />
 
-      <InputTooltip
+      <LFInput
+        id="description"
         name="description"
-        labelText="Tagline"
-        tooltipText="Taglines display on assistant tiles"
-      />
-
-      <TextInput
-        name="description"
-        autocomplete="off"
+        label="Tagline"
         placeholder="Here to help..."
-        labelText="Description"
-        hideLabel
+        autocomplete="off"
         bind:value={$form.description}
         maxlength={ASSISTANTS_DESCRIPTION_MAX_LENGTH}
-        invalid={!!$errors.description}
-        invalidText={$errors.description?.toString()}
+        tooltipText="Taglines display on assistant tiles"
+        errorText={!!$errors.description && $errors.description.toString()}
       />
 
-      <InputTooltip
+      <LFInput
+        id="instructions"
         name="instructions"
-        labelText="Instructions"
-        tooltipText="Detailed instructions to guide your assistant's responses and behavior"
-      />
-
-      <TextArea
-        name="instructions"
-        autocomplete="off"
-        labelText="Instructions"
-        bind:value={$form.instructions}
-        rows={6}
+        label="Instructions"
         placeholder="You'll act as..."
-        hideLabel
-        invalid={!!$errors.instructions}
-        invalidText={$errors.instructions?.toString()}
+        autocomplete="off"
+        textArea
+        bind:value={$form.instructions}
         maxlength={ASSISTANTS_INSTRUCTIONS_MAX_LENGTH}
+        tooltipText="Detailed instructions to guide your assistant's responses and behavior"
+        errorText={!!$errors.instructions && $errors.instructions.toString()}
       />
 
-      <InputTooltip
-        name="temperature"
-        labelText="Temperature"
-        tooltipText="Adjust the slider to set the creativity level of your assistant's responses"
-      />
       <Slider
+        id="temperature"
         name="temperature"
+        label="Temperature"
         bind:value={$form.temperature}
-        hideLabel
-        hideTextInput
-        fullWidth
-        min={0}
-        max={1}
-        step={0.1}
-        minLabel="Min"
-        maxLabel="Max"
-        invalid={!!$errors.temperature}
+        tooltipText="Adjust the slider to set the creativity level of your assistant's responses"
+        showThumb={false}
       />
 
       <!--Note - Data Sources is a placeholder and will be completed in a future story-->
@@ -176,20 +160,13 @@
 
       <div class="btns-container">
         <Button
-          kind="secondary"
-          size="small"
           on:click={() => {
             bypassCancelWarning = true;
             goto('/chat/assistants-management');
           }}>Cancel</Button
         >
 
-        <Button
-          kind="primary"
-          size="small"
-          type="submit"
-          disabled={$submitting || $filesStore.uploading}>Save</Button
-        >
+        <Button type="submit" disabled={$submitting || $filesStore.uploading}>Save</Button>
         {#if $delayed}
           <span>Processing, please wait...</span>
         {/if}
@@ -198,49 +175,24 @@
   </div>
 </form>
 
-<Modal
-  bind:open={cancelModalOpen}
-  preventCloseOnClickOutside
-  modalHeading="Unsaved Changes"
-  primaryButtonText="Leave this page"
-  secondaryButtonText="Stay on page"
-  on:click:button--secondary={() => (cancelModalOpen = false)}
-  on:submit={() => {
-    leavePageConfirmed = true;
-    if (navigateTo) goto(navigateTo.url.href);
-  }}
-  ><p>
-    You have unsaved changes. Do you want to leave this page? Unsaved changes will be deleted.
-  </p></Modal
->
+<!--<Modal-->
+<!--  bind:open={cancelModalOpen}-->
+<!--  preventCloseOnClickOutside-->
+<!--  modalHeading="Unsaved Changes"-->
+<!--  primaryButtonText="Leave this page"-->
+<!--  secondaryButtonText="Stay on page"-->
+<!--  on:click:button&#45;&#45;secondary={() => (cancelModalOpen = false)}-->
+<!--  on:submit={() => {-->
+<!--    leavePageConfirmed = true;-->
+<!--    if (navigateTo) goto(navigateTo.url.href);-->
+<!--  }}-->
+<!--  ><p>-->
+<!--    You have unsaved changes. Do you want to leave this page? Unsaved changes will be deleted.-->
+<!--  </p></Modal-->
+<!--&gt;-->
 
 <style lang="scss">
   .assistant-form {
-    .container {
-      display: flex;
-      justify-content: center;
-    }
-    .inner-container {
-      display: flex;
-      flex-direction: column;
-      gap: 1.5rem;
-      width: 50%;
-      padding-top: 0.5rem;
-      padding-bottom: 0.5rem;
-    }
-    .top-row {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-    }
-
-    .title {
-      font-size: 2rem;
-      line-height: 2.5rem;
-      font-weight: 400;
-      letter-spacing: 0px;
-    }
-
     .btns-container {
       display: flex;
       align-items: center;

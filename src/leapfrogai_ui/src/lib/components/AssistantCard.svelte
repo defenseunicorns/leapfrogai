@@ -43,7 +43,7 @@
   };
 </script>
 
-<div transition:fade={{ duration: 70 }}>
+<div transition:fade={{ duration: 150 }}>
   <Card data-testid={`assistant-tile-${assistant.name}`} padding="md" class="h-full">
     <div class="flex justify-end">
       <DotsHorizontalOutline />
