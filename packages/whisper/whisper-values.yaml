@@ -2,7 +2,7 @@ image:
   tag: "###ZARF_CONST_IMAGE_VERSION###"
 
 gpu:
-  className: "###ZARF_VAR_GPU_CLASS_NAME###"
+  runtimeClassName: "###ZARF_VAR_GPU_CLASS_NAME###"
 
 resources:
   limits:
