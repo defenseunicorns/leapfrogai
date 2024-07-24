@@ -4,3 +4,6 @@ image:
 resources:
   limits:
     nvidia.com/gpu: ###ZARF_VAR_GPU_LIMIT###
+
+runtime:
+  classNameOverride: "###ZARF_VAR_GPU_RUNTIME_OVERRIDE###"

@@ -17,6 +17,9 @@ variables:
     default: "0"
     pattern: "^[0-9]+$"
 
+  - name: GPU_RUNTIME_OVERRIDE
+    default: ""
+
 components:
   - name: whisper-model
     required: true

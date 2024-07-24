@@ -42,8 +42,9 @@ resources:
     cpu: 0
     memory: 0
 
-gpu:
+runtime:
   className: "nvidia"
+  classNameOverride: ""
 
 autoscaling:
   enabled: false
