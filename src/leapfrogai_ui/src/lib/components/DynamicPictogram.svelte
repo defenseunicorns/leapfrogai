@@ -3,8 +3,6 @@
   import { twMerge } from 'tailwind-merge';
 
   export let iconName = 'default';
-  export let width = '40px';
-  export let height = '2.5rem';
   export let size: 'xs' | 'sm' | 'md' | 'lg' | 'xl' | 'none' = 'md';
 
   let Pictogram = iconMap.default;

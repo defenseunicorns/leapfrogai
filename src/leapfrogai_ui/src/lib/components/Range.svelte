@@ -56,10 +56,6 @@
     onDragStart(e);
   }
 
-  function onHover(e) {
-    thumbHover = thumbHover ? false : true;
-  }
-
   function onDragStart(e) {
     // If mouse event add a pointer events shield
     if (e.type === 'mousedown') document.body.append(mouseEventShield);
@@ -187,6 +183,8 @@
     <div class="range__track" bind:this={container}>
       <div class="range__track--highlighted" bind:this={progressBar} />
       <div
+        role="button"
+        tabindex="0"
         class="range__thumb"
         class:range__thumb--holding={holding}
         bind:this={thumb}
@@ -194,6 +192,8 @@
         on:mousedown={onDragStart}
         on:mouseover={() => (thumbHover = true)}
         on:mouseout={() => (thumbHover = false)}
+        on:focus
+        on:blur
       >
         {#if holding || thumbHover}
           {#if showThumb}

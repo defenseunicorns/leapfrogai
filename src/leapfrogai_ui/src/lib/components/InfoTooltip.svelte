@@ -8,6 +8,6 @@
 </script>
 
 <div class={$$props.class}>
-  <InfoCircleOutline  class={twMerge('text-gray-900 dark:text-gray-300', iconClass)} />
+  <InfoCircleOutline class={twMerge('text-gray-900 dark:text-gray-300', iconClass)} />
   <Tooltip placement="right" class={tooltipClass} {...$$restProps}><slot /></Tooltip>
 </div>

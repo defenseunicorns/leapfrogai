@@ -29,7 +29,7 @@
   }
 </script>
 
-<div class="no-scrollbar w-3/4 flex flex-col gap-4 overflow-y-scroll py-2">
+<div class="no-scrollbar flex w-3/4 flex-col gap-4 overflow-y-scroll py-2">
   <Heading tag="h3">Assistants Management</Heading>
 
   <div class="flex items-center justify-between">
@@ -47,7 +47,7 @@
 
   <div
     data-testid="assistants grid"
-    class="no-scrollbar 3xl:grid-cols-6 grid grid-cols-3 gap-8 overflow-y-auto"
+    class="no-scrollbar grid grid-cols-3 gap-8 overflow-y-auto 3xl:grid-cols-6"
   >
     {#each assistantsToDisplay as assistant (assistant.id)}
       <AssistantCard {assistant} />

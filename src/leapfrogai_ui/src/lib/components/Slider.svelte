@@ -4,6 +4,7 @@
 <script lang="ts">
   import Range from '$components/Range.svelte';
   import LFLabel from '$components/LFLabel.svelte';
+  import { twMerge } from 'tailwind-merge';
 
   export let id: string;
   export let label: string | undefined = undefined;
@@ -18,7 +19,7 @@
   }
 </script>
 
-<div class="theme">
+<div class={twMerge('theme', 'mb-6', $$props.class)}>
   {#if label}
     <LFLabel {id} {tooltipText}>{label}</LFLabel>
   {/if}

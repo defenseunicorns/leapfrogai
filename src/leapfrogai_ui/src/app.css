@@ -6,6 +6,7 @@
   --header-height: 3rem;
   --message-input-height: 2.5rem;
   --background-color: #111827;
+  scrollbar-color: #4b5563 #1f2937;
 }
 
 /*TODO - can we get rid of some of these?*/
@@ -67,6 +68,16 @@
     text-decoration: none;
     color: #78a9ff;
     cursor: pointer;
+  }
+
+  /* TODO adjust colors*/
+  .file-invalid {
+    outline: 2px solid #ff8389;
+    outline-offset: -2px;
+    max-width: 20rem;
+    margin-bottom: 0.5rem;
+    background-color: #393939;
+    outline-width: 1px;
   }
 }
 
