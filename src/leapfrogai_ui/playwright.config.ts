@@ -71,7 +71,8 @@ const devConfig: PlaywrightTestConfig = {
 const CI_Config: PlaywrightTestConfig = {
   use: {
     baseURL: 'https://ai.uds.dev'
-  }
+  },
+  reporter: [['html', { outputFolder: 'e2e-report' }]]
 };
 
 // get the environment type from command line. If none, set it to dev

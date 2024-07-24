@@ -135,7 +135,7 @@ jobs:
           if: ${{ !cancelled() }}
           with:
             name: playwright-report
-            path: src/leapfrogai_ui/test-results/
+            path: src/leapfrogai_ui/e2e-report/
             retention-days: 30
 
         # The UI can be removed after the Playwright tests are finished
