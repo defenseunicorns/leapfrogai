@@ -25,11 +25,12 @@ spec:
       labels:
         {{- include "chart.selectorLabels" . | nindent 8 }}
     spec:
-      {{- if gt (index .Values.resources.limits "nvidia.com/gpu") 0.0 -}}
-      runtimeClassName: nvidia
-      {{- else if .Values.gpu.runtimeClassName -}}
       runtimeClassName: {{ .Values.runtimeClassName }}
-      {{- end -}}
+      # {{- if gt (index .Values.resources.limits "nvidia.com/gpu") 0.0 -}}
+      # runtimeClassName: nvidia
+      # {{- else if .Values.gpu.runtimeClassName -}}
+      # runtimeClassName: {{ .Values.runtimeClassName }}
+      # {{- end -}}
       securityContext:
         {{- toYaml .Values.podSecurityContext | nindent 8 }}
       containers:
