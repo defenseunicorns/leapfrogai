@@ -29,7 +29,7 @@
   }
 </script>
 
-<div class="no-scrollbar flex flex-col gap-4 overflow-y-scroll py-2">
+<div class="no-scrollbar w-3/4 flex flex-col gap-4 overflow-y-scroll py-2">
   <Heading tag="h3">Assistants Management</Heading>
 
   <div class="flex items-center justify-between">

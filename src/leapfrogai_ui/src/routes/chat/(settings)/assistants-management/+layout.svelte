@@ -33,15 +33,15 @@
 </script>
 
 <main class="content">
+  <Breadcrumb data-testid="breadcrumbs" aria-label="breadcrumbs" class="mb-4">
+    {#each paths as { path, name } (path)}
+      {#if $page.url.pathname.includes(path)}
+        <BreadcrumbItem home={name === 'Chat'} href={getPath(path)}>{name}</BreadcrumbItem>
+      {/if}
+    {/each}
+  </Breadcrumb>
   <div class="flex h-full justify-center overflow-auto">
-    <div class="flex w-3/4 flex-col">
-      <Breadcrumb data-testid="breadcrumbs" aria-label="breadcrumbs">
-        {#each paths as { path, name } (path)}
-          {#if $page.url.pathname.includes(path)}
-            <BreadcrumbItem home={name === 'Chat'} href={getPath(path)}>{name}</BreadcrumbItem>
-          {/if}
-        {/each}
-      </Breadcrumb>
+    <div class="flex w-full flex-col items-center">
       <slot />
     </div>
   </div>

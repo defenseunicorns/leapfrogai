@@ -17,6 +17,7 @@
   import { onMount } from 'svelte';
   import AssistantFileSelect from '$components/AssistantFileSelect.svelte';
   import LFInput from '$components/LFInput.svelte';
+  import LFLabel from '$components/LFLabel.svelte';
 
   export let data;
 
@@ -89,9 +90,8 @@
   $: console.log($form);
 </script>
 
-<form method="POST" enctype="multipart/form-data" use:enhance>
-  <div class="flex justify-center">
-    <div class="flex w-1/2 flex-col gap-6 py-2">
+<form method="POST" enctype="multipart/form-data" use:enhance class="w-1/2">
+    <div class="flex flex-col gap-6 py-2 ">
       <div class="flex items-center justify-between">
         <h5 class="text-xl font-medium text-gray-900 dark:text-white">
           {`${isEditMode ? 'Edit' : 'New'} Assistant`}
@@ -145,12 +145,10 @@
         showThumb={false}
       />
 
-      <!--Note - Data Sources is a placeholder and will be completed in a future story-->
-      <InputTooltip
-        name="data_sources"
-        labelText="Data Sources"
-        tooltipText="Specific files your assistant can search and reference"
-      />
+      <LFLabel
+        id="data_sources"
+        tooltipText="Specific files your assistant can search and reference">Data Sources</LFLabel
+      >
       <AssistantFileSelect filesForm={data.filesForm} />
       <input
         type="hidden"
@@ -158,8 +156,9 @@
         value={data?.assistant?.tool_resources?.file_search?.vector_store_ids[0] || undefined}
       />
 
-      <div class="btns-container">
+      <div>
         <Button
+          color="alternative"
           on:click={() => {
             bypassCancelWarning = true;
             goto('/chat/assistants-management');
@@ -172,7 +171,6 @@
         {/if}
       </div>
     </div>
-  </div>
 </form>
 
 <!--<Modal-->

@@ -17,7 +17,7 @@
     .filter((id) => $filesStore.selectedAssistantFileIds.includes(id));
 </script>
 
-<div id="multi-select-container">
+
   <LFMultiSelect
     label="Choose data sources"
     items={$filesStore.files.map((file) => ({ id: file.id, text: file.filename }))}
@@ -26,7 +26,7 @@
     bind:selectedIds={$filesStore.selectedAssistantFileIds}
     {filesForm}
   />
-</div>
+
 
 <div class="file-item-list">
   {#each filteredStoreFiles as file}
@@ -52,12 +52,6 @@
 <input type="hidden" name="data_sources" bind:value={fileIdsWithoutErrors} />
 
 <style lang="scss">
-  #multi-select-container {
-    // remove border from first item so button outline shows instead
-    :global(.bx--list-box__menu-item__option:nth-of-type(1)) {
-      border-top: none;
-    }
-  }
 
   .file-item-list {
     display: flex;
