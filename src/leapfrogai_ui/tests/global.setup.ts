@@ -3,7 +3,7 @@ import * as OTPAuth from 'otpauth';
 
 const authFile = 'playwright/.auth/user.json';
 
-setup('authenticate', async ({ page }, testInfo) => {
+setup('authenticate', async ({ page }) => {
   await page.goto('/'); // go to the home page
   if (process.env.PUBLIC_DISABLE_KEYCLOAK === 'true') {
     // when running in Github CI, create a new account because we don't have seed migrations
@@ -42,15 +42,6 @@ setup('authenticate', async ({ page }, testInfo) => {
     await page.getByRole('button', { name: 'Log In' }).click();
   }
 
-  // Take a screenshot for debugging login attempts in CI
-  if (process.env.TEST_ENV === 'CI') {
-    const screenshot = await page.screenshot();
-
-    await testInfo.attach('login_auth_attempt', {
-      body: screenshot,
-      contentType: 'image/png'
-    });
-  }
   // Wait until the page receives the cookies.
   //
   // Login flow sets cookies in the process of several redirects.
