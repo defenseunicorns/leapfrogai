@@ -6,4 +6,4 @@ gpu:
 
 resources:
   limits:
-    nvidia.com/gpu: "###ZARF_VAR_GPU_LIMIT###"
+    nvidia.com/gpu: ###ZARF_VAR_GPU_LIMIT###
