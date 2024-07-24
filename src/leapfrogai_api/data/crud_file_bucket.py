@@ -15,7 +15,7 @@ class CRUDFileBucket:
         """Upload a file to the file bucket."""
 
         return await self.client.storage.from_("file_bucket").upload(
-            file=file.file.read(), path=f"{id_}"
+            file=await file.read(), path=f"{id_}"
         )
 
     async def download(self, id_: str):
