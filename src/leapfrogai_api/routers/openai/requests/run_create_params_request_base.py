@@ -50,7 +50,7 @@ from leapfrogai_api.backend.converters import (
 from leapfrogai_api.backend.rag.query import QueryService
 from leapfrogai_api.backend.types import (
     ChatMessage,
-    RAGResponse,
+    SearchResponse,
     ChatCompletionResponse,
     ChatCompletionRequest,
     ChatChoice,
@@ -263,12 +263,14 @@ class RunCreateParamsRequestBase(BaseModel):
 
             for vector_store_id in vector_store_ids:
                 rag_results_raw: SingleAPIResponse[
-                    RAGResponse
+                    SearchResponse
                 ] = await query_service.query_rag(
                     query=first_message.content,
                     vector_store_id=vector_store_id,
                 )
-                rag_responses: RAGResponse = RAGResponse(data=rag_results_raw.data)
+                rag_responses: SearchResponse = SearchResponse(
+                    data=rag_results_raw.data
+                )
 
                 # Insert the RAG response messages just before the user's query
                 for count, rag_response in enumerate(rag_responses.data):
