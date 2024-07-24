@@ -1,11 +1,11 @@
+import type { RequestHandler } from './$types';
 import { error, json } from '@sveltejs/kit';
 import { newThreadInputSchema } from '$lib/schemas/chat';
 import type { Profile } from '$lib/types/profile';
 import { getOpenAiClient } from '$lib/server/constants';
 import type { Thread } from 'openai/resources/beta/threads/threads';
 
-export async function POST({ request, locals: { supabase, safeGetSession } }) {
-  const { session } = await safeGetSession();
+export const POST: RequestHandler = async ({ request, locals: { supabase, session } }) => {
   if (!session) {
     error(401, 'Unauthorized');
   }
@@ -59,4 +59,4 @@ export async function POST({ request, locals: { supabase, safeGetSession } }) {
   }
 
   return json(newThread);
-}
+};

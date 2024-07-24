@@ -75,7 +75,7 @@ From within the cloned repository, deploy K3D and the LeapfrogAI bundle:
 ``` bash
 cd uds-bundles/latest/cpu/
 uds create .
-uds deploy k3d-core-slim-dev:0.22.2      # be sure to check if a newer version exists
+uds deploy k3d-core-slim-dev:0.23.0      # be sure to check if a newer version exists
 uds deploy uds-bundle-leapfrogai-*.tar.zst --confirm
 ```
 
@@ -86,7 +86,7 @@ In order to test the GPU deployment locally on K3d, use the following command wh
 ```bash
  cd uds-bundles/latest/gpu/
  uds create .
- uds deploy k3d-core-slim-dev:0.22.2 --set K3D_EXTRA_ARGS="--gpus=all --image=ghcr.io/justinthelaw/k3d-gpu-support:v1.27.4-k3s1-cuda"     # be sure to check if a newer version exists
+ uds deploy k3d-core-slim-dev:0.23.0 --set K3D_EXTRA_ARGS="--gpus=all --image=ghcr.io/justinthelaw/k3d-gpu-support:v1.27.4-k3s1-cuda"     # be sure to check if a newer version exists
  uds deploy uds-bundle-leapfrogai-*.tar.zst --confirm
 ```
 

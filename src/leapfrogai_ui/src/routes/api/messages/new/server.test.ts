@@ -1,9 +1,11 @@
-import { sessionMock, sessionNullMock } from '$lib/mocks/supabase-mocks';
 import { getFakeMessage } from '$testUtils/fakeData';
 import { POST } from './+server';
 import { mockOpenAI } from '../../../../../vitest-setup';
 import type { NewMessageInput } from '$lib/types/messages';
 import { getMessageText } from '$helpers/threads';
+import { getLocalsMock } from '$lib/mocks/misc';
+import type { RequestEvent } from '@sveltejs/kit';
+import type { RouteParams } from './$types';
 
 const message = getFakeMessage({});
 
@@ -24,8 +26,8 @@ describe('/api/messages/new', () => {
 
     const res = await POST({
       request,
-      locals: { safeGetSession: sessionMock }
-    });
+      locals: getLocalsMock()
+    } as RequestEvent<RouteParams, '/api/messages/new'>);
 
     const resData = await res.json();
     expect(res.status).toEqual(200);
@@ -41,8 +43,8 @@ describe('/api/messages/new', () => {
     await expect(
       POST({
         request,
-        locals: { safeGetSession: sessionNullMock }
-      })
+        locals: getLocalsMock({ nullSession: true })
+      } as RequestEvent<RouteParams, '/api/messages/new'>)
     ).rejects.toMatchObject({
       status: 401
     });
@@ -56,8 +58,8 @@ describe('/api/messages/new', () => {
     await expect(
       POST({
         request,
-        locals: { safeGetSession: sessionMock }
-      })
+        locals: getLocalsMock()
+      } as RequestEvent<RouteParams, '/api/messages/new'>)
     ).rejects.toMatchObject({
       status: 400
     });
@@ -71,8 +73,8 @@ describe('/api/messages/new', () => {
     await expect(
       POST({
         request,
-        locals: { safeGetSession: sessionMock }
-      })
+        locals: getLocalsMock()
+      } as RequestEvent<RouteParams, '/api/messages/new'>)
     ).rejects.toMatchObject({
       status: 400
     });
@@ -86,8 +88,8 @@ describe('/api/messages/new', () => {
     await expect(
       POST({
         request,
-        locals: { safeGetSession: sessionMock }
-      })
+        locals: getLocalsMock()
+      } as RequestEvent<RouteParams, '/api/messages/new'>)
     ).rejects.toMatchObject({
       status: 400
     });
@@ -102,8 +104,8 @@ describe('/api/messages/new', () => {
     await expect(
       POST({
         request,
-        locals: { safeGetSession: sessionMock }
-      })
+        locals: getLocalsMock()
+      } as RequestEvent<RouteParams, '/api/messages/new'>)
     ).rejects.toMatchObject({
       status: 500
     });

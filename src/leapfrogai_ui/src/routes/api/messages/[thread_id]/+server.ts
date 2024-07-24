@@ -1,8 +1,8 @@
+import type { RequestHandler } from './$types';
 import { error, json } from '@sveltejs/kit';
 import { getOpenAiClient } from '$lib/server/constants';
 
-export async function GET({ params, locals: { safeGetSession } }) {
-  const { session } = await safeGetSession();
+export const GET: RequestHandler = async ({ params, locals: { session } }) => {
   if (!session) {
     error(401, 'Unauthorized');
   }
@@ -16,4 +16,4 @@ export async function GET({ params, locals: { safeGetSession } }) {
     console.error(`Error getting messages: ${e}`);
     error(500, 'Error getting messages');
   }
-}
+};

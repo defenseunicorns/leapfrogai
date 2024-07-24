@@ -12,12 +12,13 @@ declare global {
     // interface Error {}
     interface Locals {
       supabase: SupabaseClient;
-      safeGetSession(): Promise<{ session: Session | null; user: User | null }>;
+      safeGetSession: () => Promise<{ session: Session | null; user: User | null }>;
+      session: Session | null;
+      user: User | null;
     }
     interface PageData {
+      session: Session | null;
       title?: string | null;
-      session?: Session | null;
-      user?: User | null;
       profile?: Profile;
       threads?: LFThread[];
       assistants?: LFAssistant[];

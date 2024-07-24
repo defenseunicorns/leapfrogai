@@ -1,8 +1,9 @@
+import type { PageLoad } from './$types';
 import { browser } from '$app/environment';
 import type { LFThread } from '$lib/types/threads';
 import { threadsStore } from '$stores';
 
-export const load = async ({ params, fetch }) => {
+export const load: PageLoad = async ({ params, fetch }) => {
   const promises = [fetch('/api/assistants'), fetch('/api/files')];
 
   if (params.thread_id) promises.push(fetch(`/api/threads/${params.thread_id}`));

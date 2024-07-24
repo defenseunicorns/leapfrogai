@@ -1,7 +1,9 @@
 import { faker } from '@faker-js/faker';
 import { DELETE } from './+server';
-import { sessionMock, sessionNullMock } from '$lib/mocks/supabase-mocks';
 import { mockOpenAI } from '../../../../../vitest-setup';
+import type { RequestEvent } from '@sveltejs/kit';
+import type { RouteParams } from '../../../../../.svelte-kit/types/src/routes/api/messages/new/$types';
+import { getLocalsMock } from '$lib/mocks/misc';
 
 describe('/api/files/delete', () => {
   it('returns a 204 when the request completes', async () => {
@@ -12,10 +14,8 @@ describe('/api/files/delete', () => {
 
     const res = await DELETE({
       request,
-      locals: {
-        safeGetSession: sessionMock
-      }
-    });
+      locals: getLocalsMock()
+    } as RequestEvent<RouteParams, '/api/files/delete'>);
 
     expect(res.status).toEqual(204);
   });
@@ -28,8 +28,8 @@ describe('/api/files/delete', () => {
     await expect(
       DELETE({
         request,
-        locals: { safeGetSession: sessionNullMock }
-      })
+        locals: getLocalsMock({ nullSession: true })
+      } as RequestEvent<RouteParams, '/api/files/delete'>)
     ).rejects.toMatchObject({
       status: 401
     });
@@ -42,7 +42,10 @@ describe('/api/files/delete', () => {
     });
 
     await expect(
-      DELETE({ request, locals: { safeGetSession: sessionMock } })
+      DELETE({
+        request,
+        locals: getLocalsMock()
+      } as RequestEvent<RouteParams, '/api/files/delete'>)
     ).rejects.toMatchObject({
       status: 400
     });
@@ -53,7 +56,10 @@ describe('/api/files/delete', () => {
     });
 
     await expect(
-      DELETE({ request, locals: { safeGetSession: sessionMock } })
+      DELETE({
+        request,
+        locals: getLocalsMock()
+      } as RequestEvent<RouteParams, '/api/files/delete'>)
     ).rejects.toMatchObject({
       status: 400
     });
@@ -65,7 +71,10 @@ describe('/api/files/delete', () => {
     });
 
     await expect(
-      DELETE({ request, locals: { safeGetSession: sessionMock } })
+      DELETE({
+        request,
+        locals: getLocalsMock()
+      } as RequestEvent<RouteParams, '/api/files/delete'>)
     ).rejects.toMatchObject({
       status: 400
     });
@@ -81,10 +90,8 @@ describe('/api/files/delete', () => {
     await expect(
       DELETE({
         request,
-        locals: {
-          safeGetSession: sessionMock
-        }
-      })
+        locals: getLocalsMock()
+      } as RequestEvent<RouteParams, '/api/files/delete'>)
     ).rejects.toMatchObject({
       status: 500
     });

@@ -1,4 +1,5 @@
 import { superValidate, withFiles, fail } from 'sveltekit-superforms';
+import type { Actions } from './$types';
 import { yup } from 'sveltekit-superforms/adapters';
 import type { FileObject } from 'openai/resources/files';
 import { filesSchema } from '$schemas/files';
@@ -6,9 +7,8 @@ import type { FileRow } from '$lib/types/files';
 import { getUnixSeconds } from '$helpers/dates';
 import { getOpenAiClient } from '$lib/server/constants';
 
-export const actions = {
-  default: async ({ request, locals: { safeGetSession } }) => {
-    const { session } = await safeGetSession();
+export const actions: Actions = {
+  default: async ({ request, locals: { session } }) => {
     if (!session) {
       return fail(401, { message: 'Unauthorized' });
     }
