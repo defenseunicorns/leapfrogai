@@ -2,7 +2,7 @@
 CREATE TABLE vector_store_file_status (
     id VARCHAR PRIMARY KEY,
     user_id uuid references auth.users not null,
-    status VARCHAR CHECK (status IN ('processing', 'complete', 'error')),
+    status varchar default 'in_progress' not null,
     created_at bigint default extract(epoch from now()) not null,
     updated_at bigint default extract(epoch from now()) not null
 );
