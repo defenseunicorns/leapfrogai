@@ -7,7 +7,7 @@ export SUPABASE_ANON_KEY=$(shell supabase status | grep -oP '(?<=anon key: ).*')
 install:
 	python -m pip install ../../src/leapfrogai_sdk
 	python -m pip install -e .
-	python -m pip install ../../[dev]
+	python -m pip install "../../.[dev]"
 
 dev:
 	python -m uvicorn main:app --port 3000 --reload --log-level info
