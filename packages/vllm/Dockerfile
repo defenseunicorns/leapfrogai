@@ -28,8 +28,6 @@ RUN groupadd -g 65532 vglusers && \
     useradd -ms /bin/bash nonroot -u 65532 -g 65532 && \
     usermod -a -G video,sudo nonroot
 
-WORKDIR /home/leapfrogai
-
 # grab necesary python dependencies
 # TODO @JPERRY: Get context as to why we are doing this for this Dockerfile but not our other ones
 RUN apt-get -y update \
@@ -41,11 +39,11 @@ RUN apt-get -y update \
 # get deps for vllm compilation, model download, and pyenv
 RUN apt-get -y install git python3-venv make build-essential libssl-dev zlib1g-dev libbz2-dev libreadline-dev libsqlite3-dev wget curl llvm libncurses5-dev libncursesw5-dev tk-dev libffi-dev
 
-COPY --from=sdk /leapfrogai/${SDK_DEST} ./${SDK_DEST}
-COPY packages/vllm packages/vllm
-RUN chown -R nonroot /home/leapfrogai/
-
 USER nonroot
+WORKDIR /home/leapfrogai
+
+COPY --from=sdk --chown=nonroot:nonroot /leapfrogai/${SDK_DEST} ./${SDK_DEST}
+COPY --chown=nonroot:nonroot packages/vllm packages/vllm
 
 # # create virtual environment for light-weight portability and minimal libraries
 RUN git clone --depth=1 https://github.com/pyenv/pyenv.git .pyenv
@@ -87,17 +85,16 @@ RUN groupadd -g 65532 vglusers && \
     useradd -ms /bin/bash nonroot -u 65532 -g 65532 && \
     usermod -a -G video,sudo nonroot
 
-WORKDIR /home/leapfrogai
-
-COPY --from=sdk /leapfrogai/${SDK_DEST} ./${SDK_DEST}
-COPY --from=builder /home/leapfrogai/.venv /home/leapfrogai/.venv
-COPY --from=builder /home/leapfrogai/packages/vllm/src /home/leapfrogai/packages/vllm/src
-RUN chown -R nonroot /home/leapfrogai/
-
 RUN apt-get -y update
 RUN apt-get -y install git wget build-essential libssl-dev zlib1g-dev libffi-dev
 
 USER nonroot
+
+WORKDIR /home/leapfrogai
+
+COPY --from=sdk --chown=nonroot:nonroot /leapfrogai/${SDK_DEST} ./${SDK_DEST}
+COPY --from=builder --chown=nonroot:nonroot /home/leapfrogai/.venv /home/leapfrogai/.venv
+COPY --from=builder --chown=nonroot:nonroot /home/leapfrogai/packages/vllm/src /home/leapfrogai/packages/vllm/src
 
 # # create virtual environment for light-weight portability and minimal libraries
 RUN git clone --depth=1 https://github.com/pyenv/pyenv.git .pyenv
