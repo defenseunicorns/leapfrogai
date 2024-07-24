@@ -73,7 +73,7 @@ test('displays an error toast when there is an error editing an assistant and re
 
   await page
     .getByTestId(`assistant-tile-${assistantInput1.name}`)
-    .getByTestId('overflow-menu')
+    .getByTestId('assistant-card-dropdown')
     .click();
   await page.getByRole('menuitem', { name: 'Edit' }).click();
 
@@ -235,7 +235,7 @@ test('it allows you to edit an assistant', async ({ page }) => {
 
   await page
     .getByTestId(`assistant-tile-${assistantInput1.name}`)
-    .getByTestId('overflow-menu')
+    .getByTestId('assistant-card-dropdown')
     .click();
   await page.getByRole('menuitem', { name: 'Edit' }).click();
 
@@ -266,7 +266,7 @@ test("it populates the assistants values when editing an assistant's details", a
 
   await page
     .getByTestId(`assistant-tile-${assistantInput.name}`)
-    .getByTestId('overflow-menu')
+    .getByTestId('assistant-card-dropdown')
     .click();
   await page.getByRole('menuitem', { name: 'Edit' }).click();
 
@@ -284,7 +284,7 @@ test('it can delete assistants', async ({ page }) => {
 
   await page
     .getByTestId(`assistant-tile-${assistantInput.name}`)
-    .getByTestId('overflow-menu')
+    .getByTestId('assistant-card-dropdown')
     .click();
 
   // click overflow menu delete btn

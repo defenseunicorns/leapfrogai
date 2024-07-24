@@ -14,7 +14,7 @@
 <div class="flex ">
   <SidebarWrapper />
 
-  <main class="flex-grow p-8 dark:bg-gray-900">
+  <main class="content">
     <slot />
   </main>
 </div>

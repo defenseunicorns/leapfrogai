@@ -96,7 +96,7 @@ test('it can edit an assistant and remove a file', async ({ page, openAIClient }
   await page.getByRole('button', { name: 'Save' }).click();
   await expect(page.getByText('Assistant Updated')).toBeVisible();
 
-  await page.getByTestId(`assistant-tile-${assistant.name}`).getByTestId('overflow-menu').click();
+  await page.getByTestId(`assistant-tile-${assistant.name}`).getByTestId('assistant-card-dropdown').click();
   await page.getByRole('menuitem', { name: 'Edit' }).click();
   await page.waitForURL('/chat/assistants-management/edit/**/*');
 
