@@ -3,7 +3,7 @@ import * as OTPAuth from 'otpauth';
 
 const authFile = 'playwright/.auth/user.json';
 
-setup('authenticate', async ({ page }) => {
+setup('authenticate', async ({ page }, testInfo) => {
   await page.goto('/'); // go to the home page
   if (process.env.PUBLIC_DISABLE_KEYCLOAK === 'true') {
     // when running in Github CI, create a new account because we don't have seed migrations
@@ -44,7 +44,12 @@ setup('authenticate', async ({ page }) => {
 
   // Take a screenshot for debugging login attempts in CI
   if (process.env.TEST_ENV === 'CI') {
-    await page.screenshot({ path: 'e2e-report/auth_login_attempt.png' });
+    const screenshot = await page.screenshot();
+
+    await testInfo.attach('login_auth_attempt', {
+      body: screenshot,
+      contentType: 'image/png'
+    });
   }
   // Wait until the page receives the cookies.
   //
