@@ -42,6 +42,10 @@ setup('authenticate', async ({ page }) => {
     await page.getByRole('button', { name: 'Log In' }).click();
   }
 
+  // Take a screenshot for debugging login attempts in CI
+  if (process.env.TEST_ENV === 'CI') {
+    await page.screenshot({ path: 'e2e-report/auth_login_attempt.png' });
+  }
   // Wait until the page receives the cookies.
   //
   // Login flow sets cookies in the process of several redirects.
