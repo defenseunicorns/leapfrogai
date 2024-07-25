@@ -1,15 +1,22 @@
 <script lang="ts">
   import { threadsStore, uiStore } from '$stores';
   import logo from '$assets/LeapfrogAI.png';
-  import { Settings, UserAvatar } from 'carbon-icons-svelte';
-  import { Header, HeaderAction, HeaderUtilities } from 'carbon-components-svelte';
+  import { Button, Drawer, Navbar, NavBrand } from 'flowbite-svelte';
+  import { BarsOutline, CloseOutline, CogOutline, UserCircleOutline } from 'flowbite-svelte-icons';
+  import IconButton from '$components/IconButton.svelte';
+  import { sineIn } from 'svelte/easing';
 
   export let isUsingOpenAI: boolean;
 
   let loading = false;
   let signOutForm: HTMLFormElement;
+  let transitionParams = {
+    x: 320,
+    duration: 200,
+    easing: sineIn
+  };
 
-  $: innerWidth = 0;
+  $: activeDrawer = '';
 
   const handleLogOut = () => {
     loading = true;
@@ -17,111 +24,103 @@
     loading = false;
   };
 
-  // We override the default behavior of the HeaderAction component to close other actions
-  // when a new one is opened
-  let activeHeaderAction: { [key: string]: boolean };
-  $: activeHeaderAction = {
-    user: false,
-    settings: false
+  const toggleDrawer = (name: string) => {
+    if (activeDrawer === name) activeDrawer = '';
+    else activeDrawer = name;
   };
 
-  const setActiveHeaderAction = (headerActionName: keyof typeof activeHeaderAction) => {
-    Object.keys(activeHeaderAction).forEach((key) => {
-      activeHeaderAction[key] = key === headerActionName;
-    });
-  };
+  let drawerStyle = 'top-header';
+  let linkStyle = 'flex p-4 flex-col gap-3.5';
+  let headerLinkStyle =
+    'text-sm leading-5 font-semibold tracking-tight cursor-pointer bg-none text-inherit border-none p-0 outline-none hover:text-white';
+  $: innerWidth = 0;
 </script>
 
 <svelte:window bind:innerWidth />
 
-<Header
-  persistentHamburgerMenu={innerWidth ? innerWidth < 1056 : false}
-  bind:isSideNavOpen={$uiStore.isSideNavOpen}
->
-  <span slot="platform"
-    ><a
-      data-testid="header-logo-link"
+<header>
+  <Navbar fluid class="h-header py-1">
+    <NavBrand
       href={$threadsStore.lastVisitedThreadId
         ? `/chat/${$threadsStore.lastVisitedThreadId}`
-        : '/chat'}><img alt="LeapfrogAI Logo" src={logo} class="logo" /></a
-    ></span
+        : '/chat'}
+      data-testid="logo-link"
+    >
+      {#if innerWidth < 1056}
+        <Button
+          outline={true}
+          class="mr-2 !p-2"
+          on:click={(e) => {
+            e.preventDefault();
+            uiStore.setOpenSidebar(!$uiStore.openSidebar);
+          }}
+        >
+          {#if $uiStore.openSidebar}
+            <CloseOutline data-testid="close-sidebar-btn" />
+          {:else}
+            <BarsOutline data-testid="open-sidebar-btn" />
+          {/if}
+        </Button>
+      {/if}
+      <img src={logo} class="w-[7.875rem]] h-[2.25rem]" alt="LeapfrogAI Logo" />
+    </NavBrand>
+    <div class="flex items-center gap-x-2">
+      <IconButton on:click={() => toggleDrawer('settings')}>
+        <CogOutline data-testid="header-settings-btn" />
+      </IconButton>
+
+      <IconButton on:click={() => toggleDrawer('user')}>
+        <UserCircleOutline data-testid="header-user-btn" />
+      </IconButton>
+    </div>
+  </Navbar>
+
+  <Drawer
+    transitionType="fly"
+    {transitionParams}
+    hidden={activeDrawer !== 'settings'}
+    placement="right"
+    backdrop={false}
+    class={drawerStyle}
+    id="settings-drawer"
+    data-testid="settings-drawer"
   >
-  <HeaderUtilities>
-    <HeaderAction
-      data-testid="settings header action button"
-      aria-label="Settings"
-      title="Settings"
-      icon={Settings}
-      transition={false}
-      isOpen={activeHeaderAction.settings}
-      on:open={() => setActiveHeaderAction('settings')}
-    >
-      <div class="links-container">
-        <a
-          href="/chat/assistants-management"
-          class="header-link"
-          on:click={() => setActiveHeaderAction('')}>Assistants Management</a
+    <div class={linkStyle}>
+      <a
+        href="/chat/assistants-management"
+        class={headerLinkStyle}
+        on:click={() => toggleDrawer('')}>Assistants Management</a
+      >
+
+      <a href="/chat/file-management" class={headerLinkStyle} on:click={() => toggleDrawer('')}
+        >File Management</a
+      >
+      {#if !isUsingOpenAI}
+        <a href="/chat/api-keys" class={headerLinkStyle} on:click={() => toggleDrawer('')}
+          >API Keys</a
         >
-
-        <a
-          href="/chat/file-management"
-          class="header-link"
-          on:click={() => setActiveHeaderAction('')}>File Management</a
+      {/if}
+    </div>
+  </Drawer>
+  <Drawer
+    transitionType="fly"
+    {transitionParams}
+    hidden={activeDrawer !== 'user'}
+    placement="right"
+    backdrop={false}
+    class={drawerStyle}
+    id="user-drawer"
+    data-testid="user-drawer"
+  >
+    <div class={linkStyle}>
+      <form bind:this={signOutForm} method="post" action="/auth?/signout">
+        <button
+          class={headerLinkStyle}
+          aria-label="Log Out"
+          disabled={loading}
+          on:click={handleLogOut}>Log Out</button
         >
-        {#if !isUsingOpenAI}
-          <a href="/chat/api-keys" class="header-link" on:click={() => setActiveHeaderAction('')}
-            >API Keys</a
-          >
-        {/if}
-      </div>
-    </HeaderAction>
-    <HeaderAction
-      data-testid="user header action button"
-      aria-label="User"
-      title="User"
-      icon={UserAvatar}
-      transition={false}
-      isOpen={activeHeaderAction.user}
-      on:open={() => setActiveHeaderAction('user')}
-    >
-      <div class="links-container">
-        <form bind:this={signOutForm} method="post" action="/auth?/signout">
-          <button
-            class="header-link"
-            aria-label="Log Out"
-            disabled={loading}
-            on:click={handleLogOut}>Log Out</button
-          >
-        </form>
-      </div>
-    </HeaderAction>
-  </HeaderUtilities>
-</Header>
-
-<style lang="scss">
-  .logo {
-    width: 126px;
-    height: 36px;
-  }
-
-  .links-container {
-    display: flex;
-    padding: 1rem;
-    flex-direction: column;
-    gap: 0.88rem;
-  }
-
-  .header-link {
-    @include type.type-style('heading-compact-01');
-    cursor: pointer;
-    background: none;
-    color: inherit;
-    border: none;
-    padding: 0;
-    outline: inherit;
-    text-decoration: none;
-    &:hover {
-      color: themes.$text-on-color;
-    }
-  }
-</style>
+      </form>
+    </div>
+  </Drawer>
+</header>

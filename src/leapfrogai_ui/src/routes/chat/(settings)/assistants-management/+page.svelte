@@ -86,11 +86,14 @@
   .assistants-grid {
     display: grid;
     grid-template-columns: repeat(3, 1fr);
-    gap: layout.$spacing-07;
+    gap: 2rem;
     overflow-y: auto;
   }
 
   .title {
-    @include type.type-style('heading-05');
+    font-size: 2rem;
+    line-height: 2.5rem;
+    font-weight: 400;
+    letter-spacing: 0px;
   }
 </style>

@@ -1,14 +1,16 @@
 import { faker } from '@faker-js/faker';
-import { sessionMock, sessionNullMock } from '$lib/mocks/supabase-mocks';
 import { MAX_LABEL_SIZE } from '$lib/constants';
 import { PUT } from './+server';
 import { mockOpenAI } from '../../../../../../vitest-setup';
 import { getFakeThread } from '$testUtils/fakeData';
+import { getLocalsMock } from '$lib/mocks/misc';
+import type { RequestEvent } from '@sveltejs/kit';
+import type { RouteParams } from '../../../../../../.svelte-kit/types/src/routes/api/messages/new/$types';
 
 const validLabel = faker.string.alpha({ length: MAX_LABEL_SIZE - 1 });
 const invalidLongLabel = faker.string.alpha({ length: MAX_LABEL_SIZE + 1 });
 
-describe('/api/threads/update', () => {
+describe('/api/threads/update/label', () => {
   it('returns the updated thread when successful', async () => {
     const fakeThread = getFakeThread();
     mockOpenAI.setThreads([fakeThread]);
@@ -19,8 +21,8 @@ describe('/api/threads/update', () => {
     });
     const res = await PUT({
       request,
-      locals: { safeGetSession: sessionMock }
-    });
+      locals: getLocalsMock()
+    } as RequestEvent<RouteParams, '/api/threads/update/label'>);
 
     const updatedThread = await res.json();
 
@@ -40,8 +42,8 @@ describe('/api/threads/update', () => {
     await expect(
       PUT({
         request,
-        locals: { safeGetSession: sessionNullMock }
-      })
+        locals: getLocalsMock({ nullSession: true })
+      } as RequestEvent<RouteParams, '/api/threads/update/label'>)
     ).rejects.toMatchObject({
       status: 401
     });
@@ -53,7 +55,12 @@ describe('/api/threads/update', () => {
       body: JSON.stringify({ id: 123, label: validLabel })
     });
 
-    await expect(PUT({ request, locals: { safeGetSession: sessionMock } })).rejects.toMatchObject({
+    await expect(
+      PUT({
+        request,
+        locals: getLocalsMock()
+      } as RequestEvent<RouteParams, '/api/threads/update/label'>)
+    ).rejects.toMatchObject({
       status: 400
     });
   });
@@ -64,7 +71,12 @@ describe('/api/threads/update', () => {
       body: JSON.stringify({ label: validLabel })
     });
 
-    await expect(PUT({ request, locals: { safeGetSession: sessionMock } })).rejects.toMatchObject({
+    await expect(
+      PUT({
+        request,
+        locals: getLocalsMock()
+      } as RequestEvent<RouteParams, '/api/threads/update/label'>)
+    ).rejects.toMatchObject({
       status: 400
     });
   });
@@ -75,7 +87,12 @@ describe('/api/threads/update', () => {
       body: JSON.stringify({ id: faker.string.uuid(), label: invalidLongLabel })
     });
 
-    await expect(PUT({ request, locals: { safeGetSession: sessionMock } })).rejects.toMatchObject({
+    await expect(
+      PUT({
+        request,
+        locals: getLocalsMock()
+      } as RequestEvent<RouteParams, '/api/threads/update/label'>)
+    ).rejects.toMatchObject({
       status: 400
     });
   });
@@ -85,7 +102,12 @@ describe('/api/threads/update', () => {
       body: JSON.stringify({ id: faker.string.uuid() })
     });
 
-    await expect(PUT({ request, locals: { safeGetSession: sessionMock } })).rejects.toMatchObject({
+    await expect(
+      PUT({
+        request,
+        locals: getLocalsMock()
+      } as RequestEvent<RouteParams, '/api/threads/update/label'>)
+    ).rejects.toMatchObject({
       status: 400
     });
   });
@@ -95,7 +117,12 @@ describe('/api/threads/update', () => {
       body: JSON.stringify({ id: faker.string.uuid(), label: validLabel, break: 'me' })
     });
 
-    await expect(PUT({ request, locals: { safeGetSession: sessionMock } })).rejects.toMatchObject({
+    await expect(
+      PUT({
+        request,
+        locals: getLocalsMock()
+      } as RequestEvent<RouteParams, '/api/threads/update/label'>)
+    ).rejects.toMatchObject({
       status: 400
     });
   });
@@ -110,10 +137,8 @@ describe('/api/threads/update', () => {
     await expect(
       PUT({
         request,
-        locals: {
-          safeGetSession: sessionMock
-        }
-      })
+        locals: getLocalsMock()
+      } as RequestEvent<RouteParams, '/api/threads/update/label'>)
     ).rejects.toMatchObject({
       status: 500
     });

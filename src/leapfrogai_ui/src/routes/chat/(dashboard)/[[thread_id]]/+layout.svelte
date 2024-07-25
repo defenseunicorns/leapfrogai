@@ -2,10 +2,7 @@
   import { page } from '$app/stores';
   import threadsStore from '$stores/threads';
   import '../../../../styles/main.scss';
-  import { ChatSidebar } from '$components';
-  import { Content } from 'carbon-components-svelte';
-
-  $: innerWidth = 0;
+  import SidebarWrapper from '$components/SidebarWrapper.svelte';
 
   $: threadLabel = $threadsStore.threads.find((thread) => thread.id === $page.params.thread_id)
     ?.metadata.label;
@@ -15,10 +12,10 @@
   <title>{threadLabel || 'LeapfrogAI - Chat'}</title>
 </svelte:head>
 
-<svelte:window bind:innerWidth />
+<div class="flex h-full">
+  <SidebarWrapper />
 
-<ChatSidebar />
-
-<Content>
-  <slot />
-</Content>
+  <main class="w-full p-8">
+    <slot />
+  </main>
+</div>

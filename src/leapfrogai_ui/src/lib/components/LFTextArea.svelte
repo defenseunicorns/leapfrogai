@@ -197,7 +197,7 @@ The invalid prop can still be passed to this component to validate for other con
       overflow-y: scroll;
       min-height: var(--message-input-height);
       max-height: calc(var(--maxRows) * 22px); // each row is 22px
-      scrollbar-color: themes.$layer-03 themes.$layer-01;
+      scrollbar-color: #6f6f6f #393939;
       padding: 0.6rem 1rem; // need to slightly reduce padding to avoid having scroll bar initially
       resize: none;
     }

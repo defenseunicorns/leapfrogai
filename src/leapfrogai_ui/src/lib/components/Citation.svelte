@@ -50,10 +50,13 @@
 
 <style lang="scss">
   .citation-container {
-    gap: layout.$spacing-02;
+    gap: 0.25rem;
   }
   .link {
-    @include type.type-style('body-01');
+    font-size: 0.875rem;
+    line-height: 1.25rem;
+    font-weight: 400;
+    letter-spacing: 0.16px;
     text-decoration: none;
     color: #78a9ff;
     cursor: pointer;

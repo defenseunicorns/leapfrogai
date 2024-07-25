@@ -2,7 +2,6 @@
   --header-height: 3rem;
   --footer-height: 1.5rem;
   --message-input-height: 2.5rem;
-  scrollbar-color: themes.$layer-03 themes.$background;
 }
 
 .centered-flexbox {
@@ -28,7 +27,7 @@
   height: 1px;
   margin: 0.5rem 0;
   border: none;
-  background: themes.$border-subtle-00;
+  background: #525252;
 }
 
 .lf-content-container {
@@ -40,9 +39,9 @@
 
 .highlight-icon :global(svg) {
   cursor: pointer;
-  fill: themes.$icon-secondary;
+  fill: #c6c6c6;
   transition: fill 70ms ease;
   &:hover {
-    fill: themes.$icon-primary;
+    fill: #f4f4f4;
   }
 }

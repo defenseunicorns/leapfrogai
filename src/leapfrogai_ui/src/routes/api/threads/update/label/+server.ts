@@ -1,9 +1,9 @@
+import type { RequestHandler } from './$types';
 import { error, json } from '@sveltejs/kit';
 import { updateThreadLabelSchema } from '$lib/schemas/chat';
 import { getOpenAiClient } from '$lib/server/constants';
 
-export async function PUT({ request, locals: { safeGetSession } }) {
-  const { session } = await safeGetSession();
+export const PUT: RequestHandler = async ({ request, locals: { session } }) => {
   if (!session) {
     error(401, 'Unauthorized');
   }
@@ -29,4 +29,4 @@ export async function PUT({ request, locals: { safeGetSession } }) {
     console.error(`Error updating thread label: ${e}`);
     error(500, 'Error updating thread label');
   }
-}
+};

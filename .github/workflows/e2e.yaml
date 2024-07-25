@@ -32,10 +32,6 @@ on:
       # Ignore non e2e tests
       - "!tests/pytest/**"
 
-      # Ignore LFAI-UI things (for now?)
-      - "!src/leapfrogai_ui/**"
-      - "!packages/ui/**"
-
       # Ignore changes to the repeater model
       - "!packages/repeater/**"
 
@@ -79,7 +75,7 @@ jobs:
 
         - name: Create UDS Cluster
           run: |
-            uds deploy k3d-core-slim-dev:0.22.2 --confirm
+            uds deploy k3d-core-slim-dev:0.23.0 --confirm
 
         ##########
         # Supabase

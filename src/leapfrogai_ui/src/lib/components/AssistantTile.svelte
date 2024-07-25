@@ -105,7 +105,7 @@
 
 <style lang="scss">
   .assistant-tile {
-    background-color: themes.$layer-active-03;
+    background-color: #393939;
     position: relative;
     display: flex;
     flex-direction: column;
@@ -115,15 +115,21 @@
     width: 288px;
     height: 172px;
     padding: 1rem;
-    gap: layout.$spacing-05;
+    gap: 1rem;
 
     .name {
-      @include type.type-style('heading-03');
+      font-size: 1.25rem;
+      line-height: 2.5rem;
+      font-weight: 400;
+      letter-spacing: 0px;
       height: 1.75rem;
     }
 
     .description {
-      @include type.type-style('body-01');
+      font-size: 0.875rem;
+      line-height: 1.25rem;
+      font-weight: 400;
+      letter-spacing: 0.16px;
       width: 256px;
       height: 2.5rem;
       word-wrap: break-word;

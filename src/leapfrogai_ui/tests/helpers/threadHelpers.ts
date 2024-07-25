@@ -1,16 +1,17 @@
 import { expect, type Page } from '@playwright/test';
 import OpenAI from 'openai';
 import type { Profile } from '$lib/types/profile';
-import { LONG_RESPONSE_PROMPT, supabase, SHORT_RESPONSE_PROMPT } from './helpers';
+import { LONG_RESPONSE_PROMPT, SHORT_RESPONSE_PROMPT, supabase } from './helpers';
 import type { LFThread } from '$lib/types/threads';
 
 export const clickToDeleteThread = async (page: Page, label: string) => {
-  await page.getByTestId(`overflow-menu-${label}`).click();
-  await page.getByTestId(`overflow-menu-delete-${label}`).click();
-
-  await page.locator('button:text("Delete")').click();
-  await expect(page.getByTestId(`overflow-menu-${label}`)).toHaveCount(0);
+  await page.getByTestId(`thread-menu-btn-${label}`).click();
+  await page.getByRole('button', { name: /delete/i }).click();
+  const deleteBtns = await page.getByRole('button', { name: /delete/i }).all();
+  await deleteBtns[1].click(); // confirm delete in modal
+  await expect(page.getByTestId(`thread-menu-btn-${label}`)).toHaveCount(0);
 };
+
 export const sendMessage = async (page: Page, message = 'Who are Defense Unicorns?') => {
   await page.getByLabel('message input').fill(message);
   await page.click('button[type="submit"]');

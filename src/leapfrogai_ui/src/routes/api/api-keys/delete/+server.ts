@@ -1,3 +1,4 @@
+import type { RequestHandler } from './$types';
 import { error } from '@sveltejs/kit';
 import { stringIdArraySchema } from '$schemas/chat';
 import { env } from '$env/dynamic/private';
@@ -5,8 +6,7 @@ import { env } from '$env/dynamic/private';
 /**
  * Handles the DELETE request to revoke one or more API keys.
  */
-export async function DELETE({ request, locals: { safeGetSession } }) {
-  const { session } = await safeGetSession();
+export const DELETE: RequestHandler = async ({ request, locals: { session } }) => {
   if (!session) {
     error(401, 'Unauthorized');
   }
@@ -25,7 +25,7 @@ export async function DELETE({ request, locals: { safeGetSession } }) {
   const promises: Promise<Response>[] = [];
   for (const id of requestData.ids) {
     promises.push(
-      fetch(`${env.LEAPFROGAI_API_BASE_URL}/leapfrogai/v1/auth/revoke-api-key/${id}`, {
+      fetch(`${env.LEAPFROGAI_API_BASE_URL}/leapfrogai/v1/auth/api-keys/${id}`, {
         method: 'DELETE',
         headers: {
           Authorization: `Bearer ${session.access_token}`,
@@ -46,4 +46,4 @@ export async function DELETE({ request, locals: { safeGetSession } }) {
     }
   });
   return new Response(undefined, { status: 204 });
-}
+};

@@ -60,6 +60,6 @@
   .modal-inner-content {
     display: flex;
     flex-direction: column;
-    gap: layout.$spacing-06;
+    gap: 1.5rem;
   }
 </style>

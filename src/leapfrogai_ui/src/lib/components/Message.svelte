@@ -212,9 +212,9 @@
     display: flex;
     flex-direction: column;
     width: 100%;
-    gap: layout.$spacing-02;
+    gap: 0.25rem;
     overflow: hidden;
-    padding-bottom: layout.$spacing-02;
+    padding-bottom: 0.25rem;
   }
 
   .hide {
@@ -233,25 +233,25 @@
   .icon {
     width: 32px;
     height: 52px;
-    padding: 14px layout.$spacing-02;
+    padding: 14px 0.25rem;
   }
 
   .cancel-save {
     display: flex;
     justify-content: flex-end;
-    gap: layout.$spacing-02;
+    gap: 0.25rem;
     margin-top: 1px; // prevents text in editable text area from slightly jumping
   }
 
   .utils {
     display: flex;
-    gap: layout.$spacing-03;
-    padding-left: layout.$spacing-05;
+    gap: 0.5rem;
+    padding-left: 1rem;
   }
 
   .edit-prompt :global(.lf-text-area.bx--text-area) {
-    background: themes.$background;
-    outline: 1px solid themes.$layer-02;
+    background: #262626;
+    outline: 1px solid #525252;
     border-bottom: 0;
     margin-top: 7px; // prevents edit box from jumping up on editMode
   }
@@ -259,7 +259,7 @@
   .message-content {
     display: flex;
     flex-direction: column;
-    gap: layout.$spacing-03;
+    gap: 0.5rem;
   }
 
   .citations {

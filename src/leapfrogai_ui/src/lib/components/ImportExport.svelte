@@ -1,6 +1,6 @@
 <script lang="ts">
-  import { Export } from 'carbon-icons-svelte';
-  import { Button } from 'carbon-components-svelte';
+  import { Button } from 'flowbite-svelte';
+  import { DownloadOutline } from 'flowbite-svelte-icons';
   import LFFileUploader from '$components/LFFileUploader.svelte';
   import { threadsStore, toastStore } from '$stores';
   import { threadsSchema } from '$schemas/threadSchema';
@@ -44,7 +44,8 @@
       toastStore.addToast({
         kind: 'error',
         title: 'Error',
-        subtitle: `Threads are incorrectly formatted.`
+        subtitle: `Threads are incorrectly formatted.`,
+        timeout: 5000
       });
       return;
     }
@@ -74,28 +75,12 @@
   };
 </script>
 
-<div class="import-export-btns-container">
+<div class="flex flex-col gap-2">
   <LFFileUploader accept={['application/json']} {importing} {onUpload} />
-  <Button
-    id="export-btn"
-    kind="ghost"
-    icon={Export}
-    size="small"
-    iconDescription="Export conversations"
-    on:click={onExport}>Export chat history</Button
-  >
-</div>
 
-<style lang="scss">
-  .import-export-btns-container {
-    display: flex;
-    flex-direction: column;
-    justify-content: space-between;
-    padding: layout.$spacing-03 0 layout.$spacing-03 0;
-    :global(.bx--btn) {
-      width: 100%;
-      color: themes.$text-secondary;
-      font-weight: bold;
-    }
-  }
-</style>
+  <Button id="export-btn" outline size="sm" on:click={onExport} class="w-full">
+    <div class="flex w-full justify-between">
+      Export chat history <DownloadOutline />
+    </div>
+  </Button>
+</div>

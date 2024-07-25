@@ -1,7 +1,9 @@
 import { afterAll } from 'vitest';
 import type { ChatCompletionMessageParam } from 'ai/prompts';
 import { POST } from './+server';
-import { sessionMock, sessionNullMock } from '$lib/mocks/supabase-mocks';
+import { getLocalsMock } from '$lib/mocks/misc';
+import type { RequestEvent } from '@sveltejs/kit';
+import type { RouteParams } from '../../../../.svelte-kit/types/src/routes/api/messages/new/$types';
 
 describe('/api/chat', () => {
   beforeAll(() => {
@@ -22,8 +24,8 @@ describe('/api/chat', () => {
     await expect(
       POST({
         request,
-        locals: { safeGetSession: sessionNullMock }
-      })
+        locals: getLocalsMock({ nullSession: true })
+      } as RequestEvent<RouteParams, '/api/chat'>)
     ).rejects.toMatchObject({
       status: 401
     });
@@ -35,7 +37,12 @@ describe('/api/chat', () => {
       body: JSON.stringify({ messages: [{ break: 'me' }] })
     });
 
-    await expect(POST({ request, locals: { safeGetSession: sessionMock } })).rejects.toMatchObject({
+    await expect(
+      POST({
+        request,
+        locals: getLocalsMock()
+      } as RequestEvent<RouteParams, '/api/chat'>)
+    ).rejects.toMatchObject({
       status: 400
     });
   });
@@ -44,7 +51,12 @@ describe('/api/chat', () => {
       method: 'POST'
     });
 
-    await expect(POST({ request, locals: { safeGetSession: sessionMock } })).rejects.toMatchObject({
+    await expect(
+      POST({
+        request,
+        locals: getLocalsMock()
+      } as RequestEvent<RouteParams, '/api/chat'>)
+    ).rejects.toMatchObject({
       status: 400
     });
   });
@@ -55,7 +67,12 @@ describe('/api/chat', () => {
       body: JSON.stringify({ messages: [validMessage], wrong: 'key' })
     });
 
-    await expect(POST({ request, locals: { safeGetSession: sessionMock } })).rejects.toMatchObject({
+    await expect(
+      POST({
+        request,
+        locals: getLocalsMock()
+      } as RequestEvent<RouteParams, '/api/chat'>)
+    ).rejects.toMatchObject({
       status: 400
     });
   });

@@ -237,12 +237,15 @@
     padding: 0 12rem 0 12rem;
   }
   .title {
-    @include type.type-style('heading-05');
+    font-size: 2rem;
+    line-height: 2.5rem;
+    font-weight: 400;
+    letter-spacing: 0px;
   }
 
   .item-with-status {
     display: flex;
-    gap: layout.$spacing-03;
+    gap: 0.5rem;
   }
 
   .uploading {
@@ -252,6 +255,6 @@
     opacity: 50%;
   }
   .deleting {
-    margin-right: layout.$spacing-05;
+    margin-right: 1rem;
   }
 </style>

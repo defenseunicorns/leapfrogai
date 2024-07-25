@@ -14,11 +14,14 @@
     display: flex;
     justify-content: center;
     align-items: center;
-    gap: layout.$spacing-02;
+    gap: 0.25rem;
     margin-top: 1rem;
   }
   .legal {
-    @include type.type-style('legal-01');
+    font-size: 0.75rem;
+    line-height: 1rem;
+    font-weight: 400;
+    letter-spacing: 0.32px;
   }
   .icon {
     height: var(--footer-height);

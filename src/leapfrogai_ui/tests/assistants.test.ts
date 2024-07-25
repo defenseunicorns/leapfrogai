@@ -12,7 +12,7 @@ import { deleteActiveThread, sendMessage } from './helpers/threadHelpers';
 test('it navigates to the assistants page', async ({ page }) => {
   await loadChatPage(page);
 
-  await page.getByLabel('Settings').click();
+  await page.getByTestId('header-settings-btn').click();
   await page.getByText('Assistants Management').click();
 
   await expect(page).toHaveTitle('LeapfrogAI - Assistants Management');
@@ -157,13 +157,16 @@ test('it can navigate to the last visited thread with breadcrumbs', async ({
   const urlParts = new URL(page.url()).pathname.split('/');
   const threadId = urlParts[urlParts.length - 1];
 
-  await page.getByLabel('Settings').click();
+  await page.getByTestId('header-settings-btn').click();
   await page.getByText('Assistants Management').click();
   await page.getByRole('button', { name: 'New Assistant' }).click();
   await page.waitForURL('/chat/assistants-management/new');
-  await page.getByRole('link', { name: 'Assistants Management' }).click();
+  await page
+    .getByTestId('breadcrumbs')
+    .getByRole('link', { name: 'Assistants Management' })
+    .click();
   await page.waitForURL('/chat/assistants-management');
-  await page.getByRole('link', { name: 'Chat' }).click();
+  await page.getByTestId('breadcrumbs').getByRole('link', { name: 'Chat' }).click();
   await page.waitForURL(`/chat/${threadId}`);
 
   // Cleanup
