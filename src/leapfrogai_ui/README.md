@@ -63,7 +63,7 @@ run the UI outside of UDS on localhost (e.g. for development work), there are so
    The Supabase UDS package has a ConfigMap called "supabase-auth-default".  
    Add these values to the "GOTRUE_URI_ALLOW_LIST" (no spaces!). This variable may not exist and you will need to add it.
    Restart the supabase-auth pod after updating the config:
-   `http://localhost:5173,http://localhost:4173`  
+   `http://localhost:5173/auth/callback,http://localhost:4173,http://localhost:4173/auth/callback`  
    Note - Port 4173 is utilized by Playwright for E2E tests. You do not need this if you are not concerned about Playwright.
 
 ###### With Keycloak authentication
@@ -72,8 +72,8 @@ run the UI outside of UDS on localhost (e.g. for development work), there are so
    localhost URIs.  
    Within Keycloak, under the UDS Realm, edit the uds-supabase client.  
    Under "Valid redirect URIs" add:  
-   http://localhost:5173  
-   http://localhost:4173 (for Playwright tests)
+   http://localhost:5173/auth/callback  
+   http://localhost:4173/auth/callback (for Playwright tests)
 2. If you want to connect Keycloak to a locally running Supabase instance (non UDS deployed), see the "Running Supabase locally" section below.
 
 ###### Without Keycloak authentication
@@ -196,9 +196,8 @@ Under a realm in Keycloak that is not the master realm (if using UDS, its "uds")
 1. Create a new client (the client ID you use will be used in the env variables below)
 2. Turn on "Client Authentication"
 3. For "Valid redirect URLs", you need to put:
-   1. `http://localhost:5173` (or the URL for the frontend app callback)
-   2. `http://127.0.0.1:54321/auth/v1/callback` (or the URL for the Supabase callback, for locally running Supabase, DO NOT USE LOCALHOST, use 127.0.0.1)
-   3. Put the same two URLs in for "Web Origins"
+   1. `http://127.0.0.1:54321/auth/v1/callback` (or the URL for the Supabase callback, for locally running Supabase, DO NOT USE LOCALHOST, use 127.0.0.1)
+   2. Put the same two URLs in for "Web Origins"
 4. Copy the Client Secret under the Clients -> Credentials tab and use in the env variables below
 5. You can create users under the "Users" tab and either have them verify their email (if you setup SMTP), or manually mark them as verified.
 
