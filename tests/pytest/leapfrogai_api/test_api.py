@@ -70,7 +70,7 @@ def dummy_auth_middleware():
 def test_config_load():
     """Test that the config is loaded correctly."""
     with TestClient(app) as client:
-        response = client.get("/models")
+        response = client.get("/leapfrogai/v1/models")
 
         assert response.status_code == 200
         assert response.json() == {
@@ -89,7 +89,7 @@ def test_config_delete(tmp_path):
 
     with TestClient(app) as client:
         # ensure the API loads the temp config
-        response = client.get("/models")
+        response = client.get("/leapfrogai/v1/models")
         assert response.status_code == 200
 
         assert response.json() == {
@@ -102,7 +102,7 @@ def test_config_delete(tmp_path):
         # wait for the api to be able to detect the change
         time.sleep(0.5)
         # assert response is now empty
-        response = client.get("/models")
+        response = client.get("/leapfrogai/v1/models")
         assert response.status_code == 200
         assert response.json() == {"config_sources": {}, "models": {}}
 
@@ -114,7 +114,7 @@ def test_routes():
     expected_routes = {
         "/docs": ["GET", "HEAD"],
         "/healthz": ["GET"],
-        "/models": ["GET"],
+        "/leapfrogai/v1/models": ["GET"],
         "/openai/v1/models": ["GET"],
         "/openai/v1/chat/completions": ["POST"],
         "/openai/v1/embeddings": ["POST"],
