@@ -39,7 +39,7 @@ on:
 
 
 concurrency:
-  group: e2e-2-${{ github.ref }}
+  group: e2e-text-embeddings-${{ github.ref }}
   cancel-in-progress: true
 
 jobs:

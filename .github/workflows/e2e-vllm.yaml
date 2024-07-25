@@ -43,7 +43,7 @@ on:
 
 
 concurrency:
-  group: e2e-1-${{ github.ref }}
+  group: e2e-vllm-${{ github.ref }}
   cancel-in-progress: true
 
 jobs:
