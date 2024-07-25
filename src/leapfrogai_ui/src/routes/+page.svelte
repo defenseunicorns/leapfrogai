@@ -16,7 +16,7 @@
       provider: 'keycloak',
       options: {
         scopes: 'openid',
-        redirectTo: `${url}/chat`,
+        redirectTo: `${url}/auth/callback`,
         queryParams
       }
     });
