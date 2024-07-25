@@ -18,17 +18,21 @@ def make_transcribe_request(filename, task, language, temperature, prompt):
     device = "cuda" if GPU_ENABLED else "cpu"
     model = WhisperModel(model_path, device=device, compute_type="float32")
 
-    segments, info = model.transcribe(
-        filename,
-        task=task,
-        beam_size=5,
-        temperature=temperature,
-        initial_prompt=prompt,
-        language=language,
-    )
+    # Prepare kwargs with non-None values
+    kwargs = {}
+    if task is not None:
+        kwargs["task"] = task
+    if language is not None:
+        kwargs["language"] = language
+    if temperature is not None:
+        kwargs["temperature"] = temperature
+    if prompt is not None:
+        kwargs["initial_prompt"] = prompt
+
+    # Call transcribe with only non-None parameters
+    segments, info = model.transcribe(filename, beam_size=5, **kwargs)
 
     output = ""
-
     for segment in segments:
         output += segment.text
 
