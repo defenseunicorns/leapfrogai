@@ -114,5 +114,4 @@ jobs:
 
         - name: Test llama-cpp-python
           run: |
-            python -m pip install requests
             python -m pytest ./tests/e2e/test_llama.py -v
