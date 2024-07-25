@@ -52,7 +52,7 @@ concurrency:
   cancel-in-progress: true
 
 jobs:
-  e2e_1:
+  e2e_vllm:
     runs-on: ai-ubuntu-big-boy-8-core
     if: ${{ !github.event.pull_request.draft }}
 

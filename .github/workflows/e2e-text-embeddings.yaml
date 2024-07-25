@@ -52,7 +52,7 @@ concurrency:
   cancel-in-progress: true
 
 jobs:
-  e2e_2:
+  e2e_text_embeddings:
     runs-on: ai-ubuntu-big-boy-8-core
     if: ${{ !github.event.pull_request.draft }}
 
