@@ -36,3 +36,20 @@ components:
           - "embedding-values.yaml"
     images:
       - ghcr.io/defenseunicorns/leapfrogai/text-embeddings:###ZARF_PKG_TMPL_IMAGE_VERSION###
+      - cgr.dev/chainguard/bash:latest
+    dataInjections:
+      - source: .model/
+        target:
+          namespace: leapfrogai
+          selector: app=lfai-text-embeddings
+          container: data-loader
+          path: /data/.model
+        compress: true
+    actions:
+      onCreate:
+        before:
+          # NOTE: This assumes python is installed and in $PATH
+          - cmd: python scripts/model_download.py
+            env:
+              - REPO_ID=hkunlp/instructor-xl
+              - REVISION=ce48b213095e647a6c3536364b9fa00daf57f436
