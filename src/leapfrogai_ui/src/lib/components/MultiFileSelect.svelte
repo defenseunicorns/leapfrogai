@@ -39,7 +39,7 @@
         open={true}
       />
     </div>
-    <div class="max-h-64 overflow-y-scroll">
+    <div class="max-h-64 overflow-y-scroll no-scrollbar">
       {#each files as file (file.id)}
         <li>
           <Checkbox
