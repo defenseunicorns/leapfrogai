@@ -75,6 +75,9 @@ realtime:
   resourcesPreset: "none"
   podLabels:
     sidecar.istio.io/inject: "false"
+  image:
+    repository: supabase/realtime
+    tag: latest
 
 rest:
   enabled: ###ZARF_VAR_ENABLE_REST###
