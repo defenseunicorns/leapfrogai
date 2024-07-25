@@ -27,6 +27,6 @@
 </svelte:head>
 
 <Toasts />
-<div class="flex h-screen max-h-screen flex-col bg-gray-900">
+<div class="flex h-screen flex-col bg-gray-900">
   <slot />
 </div>
