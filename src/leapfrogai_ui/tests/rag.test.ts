@@ -97,7 +97,7 @@ test('it can edit an assistant and remove a file', async ({ page, openAIClient }
   await expect(page.getByText('Assistant Updated')).toBeVisible();
 
   await page
-    .getByTestId(`assistant-tile-${assistant.name}`)
+    .getByTestId(`assistant-card-${assistant.name}`)
     .getByTestId('assistant-card-dropdown')
     .click();
   await page.getByRole('menuitem', { name: 'Edit' }).click();

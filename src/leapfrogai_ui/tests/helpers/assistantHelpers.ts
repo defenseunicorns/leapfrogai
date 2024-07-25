@@ -9,9 +9,21 @@ import { supabase } from './helpers';
 export const createAssistant = async (assistantInput: AssistantInput, page: Page) => {
   await page.goto('/chat/assistants-management/new');
   await page.getByLabel('name').fill(assistantInput.name);
-  await page.getByLabel('description').fill(assistantInput.description);
+  await page.getByLabel('tagline').fill(assistantInput.description);
   await page.getByPlaceholder("You'll act as...").fill(assistantInput.instructions);
-  await page.locator('.bx--slider__track').click();
+
+  const slider = page.getByRole('slider');
+  const sliderButton = slider.getByRole('button');
+  const box = await sliderButton.boundingBox();
+  if (box) {
+    const startX = box.x + box.width / 2;
+    const startY = box.y + box.height / 2;
+    const endX = startX + 100; // adjust as needed
+    await page.mouse.move(startX, startY);
+    await page.mouse.down();
+    await page.mouse.move(endX, startY, { steps: 10 }); // Drag to the new position
+    await page.mouse.up();
+  }
 
   // Wait for modal save button to disappear if avatar modal was open
   const saveButtons = page.getByRole('button', { name: 'Save' });
@@ -81,11 +93,15 @@ export const deleteAssistantWithApi = async (id: string, openAIClient: OpenAI) =
   await openAIClient.beta.assistants.del(id);
 };
 export const deleteAssistant = async (name: string, page: Page) => {
-  await page.getByTestId(`assistant-tile-${name}`).getByTestId('assistant-card-dropdown').click();
-  // click overflow menu delete btn
-  await page.getByRole('menuitem', { name: 'Delete' }).click();
-  // click modal actual delete btn
-  await page.getByRole('button', { name: 'Delete' }).click();
+  const assistantCard = await page.getByTestId(`assistant-card-${name}`);
+  await assistantCard.getByTestId('assistant-edit-icon').click();
+  // click edit menu delete btn
+  await assistantCard.getByTestId('assistant-card-dropdown').getByRole('button', { name: /delete/i }).click();
+  // click modal confirmation delete btn
+  await page
+    .getByTestId('delete-assistant-modal')
+    .getByRole('button', { name: /delete/i })
+    .click();
 };
 
 export const deleteAssistantAvatars = async () => {

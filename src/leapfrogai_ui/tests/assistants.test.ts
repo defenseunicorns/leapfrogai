@@ -9,6 +9,7 @@ import {
 } from './helpers/assistantHelpers';
 import { deleteActiveThread, sendMessage } from './helpers/threadHelpers';
 
+
 test('it navigates to the assistants page', async ({ page }) => {
   await loadChatPage(page);
 
@@ -31,9 +32,9 @@ test('it creates an assistant and navigates back to the management page', async 
 
   await createAssistant(assistantInput, page);
 
-  await page.waitForURL('/chat/assistants-management');
   await expect(page.getByText('Assistant Created')).toBeVisible();
-  await expect(page.getByTestId(`assistant-tile-${assistantInput.name}`)).toBeVisible();
+  await page.waitForURL('/chat/assistants-management');
+  await expect(page.getByTestId(`assistant-card-${assistantInput.name}`)).toBeVisible();
 
   // cleanup
   await deleteAssistant(assistantInput.name, page);
@@ -72,10 +73,10 @@ test('displays an error toast when there is an error editing an assistant and re
   await createAssistant(assistantInput1, page);
 
   await page
-    .getByTestId(`assistant-tile-${assistantInput1.name}`)
+    .getByTestId(`assistant-card-${assistantInput1.name}`)
     .getByTestId('assistant-card-dropdown')
     .click();
-  await page.getByRole('menuitem', { name: 'Edit' }).click();
+  await page.getByRole('button', { name: /edit/i }).click();
 
   await page.waitForURL('/chat/assistants-management/edit/**/*');
 
@@ -122,21 +123,21 @@ test('it can search for assistants', async ({ page }) => {
   await page.waitForURL('/chat/assistants-management');
   await page.getByRole('searchbox').fill(assistantInput1.name);
 
-  await expect(page.getByTestId(`assistant-tile-${assistantInput2.name}`)).not.toBeVisible();
-  await expect(page.getByTestId(`assistant-tile-${assistantInput1.name}`)).toBeVisible();
+  await expect(page.getByTestId(`assistant-card-${assistantInput2.name}`)).not.toBeVisible();
+  await expect(page.getByTestId(`assistant-card-${assistantInput1.name}`)).toBeVisible();
 
   // search by description
   await page.getByRole('searchbox').clear();
   await page.getByRole('searchbox').fill(assistantInput2.description);
 
-  await expect(page.getByTestId(`assistant-tile-${assistantInput2.name}`)).toBeVisible();
-  await expect(page.getByTestId(`assistant-tile-${assistantInput1.name}`)).not.toBeVisible();
+  await expect(page.getByTestId(`assistant-card-${assistantInput2.name}`)).toBeVisible();
+  await expect(page.getByTestId(`assistant-card-${assistantInput1.name}`)).not.toBeVisible();
 
   // Search by instructions
   await page.getByRole('searchbox').fill(assistantInput1.instructions);
 
-  await expect(page.getByTestId(`assistant-tile-${assistantInput2.name}`)).not.toBeVisible();
-  await expect(page.getByTestId(`assistant-tile-${assistantInput1.name}`)).toBeVisible();
+  await expect(page.getByTestId(`assistant-card-${assistantInput2.name}`)).not.toBeVisible();
+  await expect(page.getByTestId(`assistant-card-${assistantInput1.name}`)).toBeVisible();
 
   // cleanup
   await page.getByRole('searchbox').clear();
@@ -234,10 +235,10 @@ test('it allows you to edit an assistant', async ({ page }) => {
   await page.waitForURL('/chat/assistants-management');
 
   await page
-    .getByTestId(`assistant-tile-${assistantInput1.name}`)
-    .getByTestId('assistant-card-dropdown')
-    .click();
-  await page.getByRole('menuitem', { name: 'Edit' }).click();
+      .getByTestId(`assistant-card-${assistantInput1.name}`)
+      .getByTestId('assistant-card-dropdown')
+      .click();
+  await page.getByRole('button', { name: /edit/i }).click();
 
   await page.getByLabel('name').fill(assistantInput2.name);
   await page.getByLabel('description').fill(assistantInput2.description);
@@ -254,7 +255,7 @@ test('it allows you to edit an assistant', async ({ page }) => {
   await page.getByRole('button', { name: 'Save' }).click();
 
   await expect(page.getByText('Assistant Updated')).toBeVisible();
-  await expect(page.getByTestId(`assistant-tile-${assistantInput2.name}`)).toBeVisible();
+  await expect(page.getByTestId(`assistant-card-${assistantInput2.name}`)).toBeVisible();
 });
 
 test("it populates the assistants values when editing an assistant's details", async ({ page }) => {
@@ -265,10 +266,10 @@ test("it populates the assistants values when editing an assistant's details", a
   await page.waitForURL('/chat/assistants-management');
 
   await page
-    .getByTestId(`assistant-tile-${assistantInput.name}`)
-    .getByTestId('assistant-card-dropdown')
-    .click();
-  await page.getByRole('menuitem', { name: 'Edit' }).click();
+      .getByTestId(`assistant-card-${assistantInput1.name}`)
+      .getByTestId('assistant-card-dropdown')
+      .click();
+  await page.getByRole('button', { name: /edit/i }).click();
 
   await expect(page.getByLabel('name')).toHaveValue(assistantInput.name);
   await expect(page.getByLabel('description')).toHaveValue(assistantInput.description);
@@ -283,12 +284,12 @@ test('it can delete assistants', async ({ page }) => {
   await page.goto('/chat/assistants-management');
 
   await page
-    .getByTestId(`assistant-tile-${assistantInput.name}`)
+    .getByTestId(`assistant-card-${assistantInput.name}`)
     .getByTestId('assistant-card-dropdown')
     .click();
 
   // click overflow menu delete btn
-  await page.getByRole('menuitem', { name: 'Delete' }).click();
+  await page.getByRole('button', { name: /delete/i }).click();
 
   // click modal actual delete btn
   await page.getByRole('button', { name: 'Delete' }).click();

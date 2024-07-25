@@ -159,6 +159,7 @@
 
     <div>
       <Button
+        data-testid="assistant-form-cancel-btn"
         color="alternative"
         on:click={() => {
           bypassCancelWarning = true;

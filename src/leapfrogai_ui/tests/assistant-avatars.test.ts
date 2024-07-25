@@ -87,7 +87,7 @@ test('it can upload an image as an avatar', async ({ page }) => {
 
   await page.waitForURL('/chat/assistants-management');
   await expect(page.getByText('Assistant Created')).toBeVisible();
-  await expect(page.getByTestId(`assistant-tile-${assistantInput.name}`)).toBeVisible();
+  await expect(page.getByTestId(`assistant-card-${assistantInput.name}`)).toBeVisible();
 });
 
 test('it can change an image uploaded as an avatar', async ({ page }) => {

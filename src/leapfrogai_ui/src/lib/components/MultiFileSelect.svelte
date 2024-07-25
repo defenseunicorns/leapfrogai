@@ -24,7 +24,7 @@
 </script>
 
 <div class={$$props.class}>
-  <Button>
+  <Button data-testid="file-select-dropdown-btn">
     Choose data sources<ChevronDownOutline class="ms-2 h-6 w-8 text-white dark:text-white" />
   </Button>
   <Dropdown class="w-64 space-y-3 p-3 text-sm" bind:open {placement}>

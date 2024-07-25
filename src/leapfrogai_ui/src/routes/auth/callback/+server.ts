@@ -2,7 +2,9 @@ import type { RequestHandler } from './$types';
 import { redirect } from '@sveltejs/kit';
 
 export const GET: RequestHandler = async ({ url, locals: { supabase } }) => {
+  console.log('here');
   const code = url.searchParams.get('code');
+  console.log('code', code);
 
   if (code) {
     await supabase.auth.exchangeCodeForSession(code);

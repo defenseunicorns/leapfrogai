@@ -44,9 +44,9 @@
 </script>
 
 <div transition:fade={{ duration: 150 }}>
-  <Card data-testid={`assistant-tile-${assistant.name}`} padding="md" class="h-full">
+  <Card data-testid={`assistant-card-${assistant.name}`} padding="md" class="h-full">
     <div class="flex justify-end">
-      <DotsHorizontalOutline />
+      <DotsHorizontalOutline data-testid="assistant-edit-icon" />
       <Dropdown class="w-36" data-testid="assistant-card-dropdown">
         <DropdownItem on:click={() => goto(`/chat/assistants-management/edit/${assistant.id}`)}
           >Edit</DropdownItem
@@ -75,7 +75,12 @@
     </div>
   </Card>
 </div>
-<Modal bind:open={deleteModalOpen} autoclose title="Delete Assistant">
+<Modal
+  bind:open={deleteModalOpen}
+  autoclose
+  title="Delete Assistant"
+  data-testid="delete-assistant-modal"
+>
   <div class="text-center">
     <ExclamationCircleOutline class="mx-auto mb-4 h-12 w-12 text-gray-400 dark:text-gray-200" />
     <h3 class="mb-5 text-lg font-normal text-gray-500 dark:text-gray-400">
