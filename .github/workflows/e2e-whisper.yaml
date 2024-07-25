@@ -14,7 +14,7 @@ on:
 
       # Ignore updates to the .github directory, unless it's this current file
       - "!.github/**"
-      - ".github/workflows/e2e-2.yaml"
+      - ".github/workflows/e2e-whisper.yaml"
 
       # Ignore docs and website things
       - "!**.md"
@@ -31,16 +31,19 @@ on:
       # Ignore local development files
       - "!.pre-commit-config.yaml"
 
-      # Ignore non e2e tests
+      # Ignore non e2e tests changes
       - "!tests/pytest/**"
 
-      # Ignore LFAI-UI things (for now?)
+      # Ignore LFAI-UI source code changes
       - "!src/leapfrogai_ui/**"
-      - "!packages/ui/**"
 
-      # Ignore changes to the repeater model
+      # Ignore changes to unrelated packages
+      - "!packages/k3d-gpu/**"
+      - "!packages/llama-cpp-python/**"
       - "!packages/repeater/**"
-
+      - "!packages/text-embeddings/**"
+      - "!packages/ui/**"
+      - "!packages/vllm/**"
 
 concurrency:
   group: e2e-whisper-${{ github.ref }}

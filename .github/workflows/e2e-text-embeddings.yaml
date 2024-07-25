@@ -14,7 +14,7 @@ on:
 
       # Ignore updates to the .github directory, unless it's this current file
       - "!.github/**"
-      - ".github/workflows/e2e-2.yaml"
+      - ".github/workflows/e2e-text-embeddings.yaml"
 
       # Ignore docs and website things
       - "!**.md"
@@ -31,11 +31,20 @@ on:
       # Ignore local development files
       - "!.pre-commit-config.yaml"
 
-      # Ignore non e2e tests
+      # Ignore non e2e tests changes
       - "!tests/pytest/**"
 
-      # Ignore changes to the repeater model
+      # Ignore LFAI-UI source code changes
+      - "!src/leapfrogai_ui/**"
+
+      # Ignore changes to unrelated packages
+      - "!packages/k3d-gpu/**"
+      - "!packages/llama-cpp-python/**"
       - "!packages/repeater/**"
+      - "!packages/ui/**"
+      - "!packages/vllm/**"
+      - "!packages/whisper/**"
+
 
 
 concurrency:
