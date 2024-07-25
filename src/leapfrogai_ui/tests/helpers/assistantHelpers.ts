@@ -92,11 +92,22 @@ export const createAssistantWithApi = async (params: CreateAssistantWithApiParam
 export const deleteAssistantWithApi = async (id: string, openAIClient: OpenAI) => {
   await openAIClient.beta.assistants.del(id);
 };
-export const deleteAssistant = async (name: string, page: Page) => {
-  const assistantCard = await page.getByTestId(`assistant-card-${name}`);
+
+export const editAssistantCard = async (name: string, page: Page) => {
+  const assistantCard = page.getByTestId(`assistant-card-${name}`);
   await assistantCard.getByTestId('assistant-edit-icon').click();
   // click edit menu delete btn
-  await assistantCard.getByTestId('assistant-card-dropdown').getByRole('button', { name: /delete/i }).click();
+  await assistantCard
+    .getByTestId('assistant-card-dropdown')
+    .getByRole('button', { name: /edit/i })
+    .click();
+};
+
+export const deleteAssistantCard = async (name: string, page: Page) => {
+  const assistantCard = page.getByTestId(`assistant-card-${name}`);
+  await assistantCard.getByTestId('assistant-edit-icon').click();
+  // click edit menu delete btn
+  await assistantCard.getByRole('button', { name: /delete/i }).click();
   // click modal confirmation delete btn
   await page
     .getByTestId('delete-assistant-modal')

@@ -4,11 +4,12 @@ import { getFakeAssistantInput } from '../testUtils/fakeData';
 import type { ActionResult } from '@sveltejs/kit';
 import {
   createAssistant,
-  deleteAssistant,
-  deleteAssistantWithApi
+  createAssistantWithApi,
+  deleteAssistantCard,
+  deleteAssistantWithApi,
+  editAssistantCard
 } from './helpers/assistantHelpers';
 import { deleteActiveThread, sendMessage } from './helpers/threadHelpers';
-
 
 test('it navigates to the assistants page', async ({ page }) => {
   await loadChatPage(page);
@@ -37,7 +38,7 @@ test('it creates an assistant and navigates back to the management page', async 
   await expect(page.getByTestId(`assistant-card-${assistantInput.name}`)).toBeVisible();
 
   // cleanup
-  await deleteAssistant(assistantInput.name, page);
+  await deleteAssistantCard(assistantInput.name, page);
 });
 
 test('displays an error toast when there is an error creating an assistant and remains on the assistant page', async ({
@@ -67,22 +68,16 @@ test('displays an error toast when there is an error editing an assistant and re
   page,
   openAIClient
 }) => {
-  const assistantInput1 = getFakeAssistantInput();
-  const assistantInput2 = getFakeAssistantInput();
+  const assistant = await createAssistantWithApi({ openAIClient });
+  const newAssistantAttributes = getFakeAssistantInput();
 
-  await createAssistant(assistantInput1, page);
+  await page.goto('/chat/assistants-management');
 
-  await page
-    .getByTestId(`assistant-card-${assistantInput1.name}`)
-    .getByTestId('assistant-card-dropdown')
-    .click();
-  await page.getByRole('button', { name: /edit/i }).click();
+  await editAssistantCard(assistant.name!, page);
 
   await page.waitForURL('/chat/assistants-management/edit/**/*');
 
-  const assistantId = page.url().substring(page.url().lastIndexOf('/') + 1);
-
-  await page.route(`*/**/chat/assistants-management/edit/${assistantId}`, async (route) => {
+  await page.route(`*/**/chat/assistants-management/edit/${assistant.id}`, async (route) => {
     if (route.request().method() === 'POST') {
       const result: ActionResult = {
         type: 'failure',
@@ -96,7 +91,7 @@ test('displays an error toast when there is an error editing an assistant and re
     }
   });
 
-  await page.getByLabel('name').fill(assistantInput2.name);
+  await page.getByLabel('name').fill(newAssistantAttributes.name);
 
   // Wait for modal save button to disappear if avatar modal was open
   const saveButtons = page.getByRole('button', { name: 'Save' });
@@ -106,43 +101,47 @@ test('displays an error toast when there is an error editing an assistant and re
 
   await expect(page.getByText('Error Editing Assistant')).toBeVisible();
 
-  await page.waitForURL(`/chat/assistants-management/edit/${assistantId}`);
+  await page.waitForURL(`/chat/assistants-management/edit/${assistant.id}`);
 
   // cleanup
-  await deleteAssistantWithApi(assistantId, openAIClient);
+  await deleteAssistantWithApi(assistant.id, openAIClient);
 });
 
-test('it can search for assistants', async ({ page }) => {
-  const assistantInput1 = getFakeAssistantInput();
-  const assistantInput2 = getFakeAssistantInput();
+test('it can search for assistants', async ({ page, openAIClient }) => {
+  const assistant1 = await createAssistantWithApi({ openAIClient });
+  const assistant2 = await createAssistantWithApi({ openAIClient });
 
-  await createAssistant(assistantInput1, page);
-  await createAssistant(assistantInput2, page);
-
+  await page.goto('/chat/assistants-management');
   // Search by name
-  await page.waitForURL('/chat/assistants-management');
-  await page.getByRole('searchbox').fill(assistantInput1.name);
+  await page
+    .getByRole('textbox', {
+      name: /search/i
+    })
+    .fill(assistant1.name!);
 
-  await expect(page.getByTestId(`assistant-card-${assistantInput2.name}`)).not.toBeVisible();
-  await expect(page.getByTestId(`assistant-card-${assistantInput1.name}`)).toBeVisible();
+  await expect(page.getByTestId(`assistant-card-${assistant2.name}`)).not.toBeVisible();
+  await expect(page.getByTestId(`assistant-card-${assistant1.name}`)).toBeVisible();
 
   // search by description
-  await page.getByRole('searchbox').clear();
-  await page.getByRole('searchbox').fill(assistantInput2.description);
+  const searchBox = page.getByRole('textbox', {
+    name: /search/i
+  });
+  await searchBox.clear();
+  await searchBox.fill(assistant2.description!);
 
-  await expect(page.getByTestId(`assistant-card-${assistantInput2.name}`)).toBeVisible();
-  await expect(page.getByTestId(`assistant-card-${assistantInput1.name}`)).not.toBeVisible();
+  await expect(page.getByTestId(`assistant-card-${assistant2.name!}`)).toBeVisible();
+  await expect(page.getByTestId(`assistant-card-${assistant1.name!}`)).not.toBeVisible();
 
   // Search by instructions
-  await page.getByRole('searchbox').fill(assistantInput1.instructions);
+  await searchBox.fill(assistant1.instructions!);
 
-  await expect(page.getByTestId(`assistant-card-${assistantInput2.name}`)).not.toBeVisible();
-  await expect(page.getByTestId(`assistant-card-${assistantInput1.name}`)).toBeVisible();
+  await expect(page.getByTestId(`assistant-card-${assistant2.name}`)).not.toBeVisible();
+  await expect(page.getByTestId(`assistant-card-${assistant1.name}`)).toBeVisible();
 
   // cleanup
-  await page.getByRole('searchbox').clear();
-  await deleteAssistant(assistantInput1.name, page);
-  await deleteAssistant(assistantInput2.name, page);
+  await searchBox.clear();
+  await deleteAssistantWithApi(assistant1.id, openAIClient);
+  await deleteAssistantWithApi(assistant2.id, openAIClient);
 });
 
 test('it can navigate to the last visited thread with breadcrumbs', async ({
@@ -185,7 +184,7 @@ test('it validates input', async ({ page }) => {
   await expect(page.getByText('This field is required. Please enter instructions.')).toHaveCount(1);
 
   // Test client side validation - errors disappear live without have to click save
-  await page.getByLabel('description').fill('my description');
+  await page.getByLabel('tagline').fill('my description');
 
   await page.getByPlaceholder("You'll act as...").fill('my instructions');
   await expect(page.getByText('This field is required. Please enter a tagline.')).toHaveCount(0);
@@ -225,28 +224,23 @@ test('it DOES NOT confirm you want to navigate away if you click the cancel butt
   await page.waitForURL('/chat/assistants-management');
 });
 
-test('it allows you to edit an assistant', async ({ page }) => {
-  const pictogramName = 'Analytics';
-  const assistantInput1 = getFakeAssistantInput();
-  const assistantInput2 = getFakeAssistantInput();
+test('it allows you to edit an assistant', async ({ page, openAIClient }) => {
+  // const pictogramName = 'Analytics';
+  const assistant1 = await createAssistantWithApi({ openAIClient });
+  const newAssistantAttributes = getFakeAssistantInput();
 
-  await createAssistant(assistantInput1, page);
+  await page.goto('/chat/assistants-management');
 
-  await page.waitForURL('/chat/assistants-management');
+  await editAssistantCard(assistant1.name!, page);
 
-  await page
-      .getByTestId(`assistant-card-${assistantInput1.name}`)
-      .getByTestId('assistant-card-dropdown')
-      .click();
-  await page.getByRole('button', { name: /edit/i }).click();
+  await page.getByLabel('name').fill(newAssistantAttributes.name);
+  await page.getByLabel('tagline').fill(newAssistantAttributes.description);
+  await page.getByPlaceholder("You'll act as...").fill(newAssistantAttributes.instructions);
 
-  await page.getByLabel('name').fill(assistantInput2.name);
-  await page.getByLabel('description').fill(assistantInput2.description);
-  await page.getByPlaceholder("You'll act as...").fill(assistantInput2.instructions);
-
-  await page.locator('.mini-avatar-container').click();
-  await page.getByTestId(`pictogram-${pictogramName}`).click();
-  await page.getByRole('dialog').getByRole('button', { name: 'Save' }).click();
+  // TODO - re-enable after avatar flowbite refactor
+  // await page.locator('.mini-avatar-container').click();
+  // await page.getByTestId(`pictogram-${pictogramName}`).click();
+  // await page.getByRole('dialog').getByRole('button', { name: 'Save' }).click();
 
   // Wait for modal save button to disappear if avatar modal was open
   const saveButtons = page.getByRole('button', { name: 'Save' });
@@ -255,44 +249,36 @@ test('it allows you to edit an assistant', async ({ page }) => {
   await page.getByRole('button', { name: 'Save' }).click();
 
   await expect(page.getByText('Assistant Updated')).toBeVisible();
-  await expect(page.getByTestId(`assistant-card-${assistantInput2.name}`)).toBeVisible();
+  await expect(page.getByTestId(`assistant-card-${newAssistantAttributes.name}`)).toBeVisible();
+
+  //cleanup
+  await deleteAssistantWithApi(assistant1.id, openAIClient);
 });
 
-test("it populates the assistants values when editing an assistant's details", async ({ page }) => {
-  const assistantInput = getFakeAssistantInput();
-
-  await createAssistant(assistantInput, page);
-
-  await page.waitForURL('/chat/assistants-management');
-
-  await page
-      .getByTestId(`assistant-card-${assistantInput1.name}`)
-      .getByTestId('assistant-card-dropdown')
-      .click();
-  await page.getByRole('button', { name: /edit/i }).click();
-
-  await expect(page.getByLabel('name')).toHaveValue(assistantInput.name);
-  await expect(page.getByLabel('description')).toHaveValue(assistantInput.description);
-  await expect(page.getByPlaceholder("You'll act as...")).toHaveValue(assistantInput.instructions);
-});
-
-test('it can delete assistants', async ({ page }) => {
-  const assistantInput = getFakeAssistantInput();
-
-  await createAssistant(assistantInput, page);
+test("it populates the assistants values when editing an assistant's details", async ({
+  page,
+  openAIClient
+}) => {
+  const assistant = await createAssistantWithApi({ openAIClient });
 
   await page.goto('/chat/assistants-management');
 
-  await page
-    .getByTestId(`assistant-card-${assistantInput.name}`)
-    .getByTestId('assistant-card-dropdown')
-    .click();
+  await editAssistantCard(assistant.name!, page);
 
-  // click overflow menu delete btn
-  await page.getByRole('button', { name: /delete/i }).click();
+  await expect(page.getByLabel('name')).toHaveValue(assistant.name!);
+  await expect(page.getByLabel('tagline')).toHaveValue(assistant.description!);
+  await expect(page.getByPlaceholder("You'll act as...")).toHaveValue(assistant.instructions!);
 
-  // click modal actual delete btn
-  await page.getByRole('button', { name: 'Delete' }).click();
+  //cleanup
+  await deleteAssistantWithApi(assistant.id, openAIClient);
+});
 
-  await expect(page.getByText(`${assistantInput.name} Assistant deleted.`)).toBeVisible();
+test('it can delete assistants', async ({ page, openAIClient }) => {
+  const assistant = await createAssistantWithApi({ openAIClient });
+
+  await page.goto('/chat/assistants-management');
+
+  await deleteAssistantCard(assistant.name!, page);
+
+  await expect(page.getByText(`${assistant.name} Assistant deleted.`)).toBeVisible();
 });

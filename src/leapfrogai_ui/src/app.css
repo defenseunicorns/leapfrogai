@@ -13,10 +13,7 @@
   .full-height-minus-header {
     height: calc(100vh - var(--header-height));
   }
-  .sidebar {
-    display: flex;
-    height: calc(100vh - var(--header-height));
-  }
+
   .content {
     display: flex;
     flex-grow: 1;

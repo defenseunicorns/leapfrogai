@@ -22,7 +22,6 @@
     });
   }
   const { form, errors, enhance } = superForm(data.form);
-
 </script>
 
 <div class="flex w-full flex-col items-center gap-10 pt-3">

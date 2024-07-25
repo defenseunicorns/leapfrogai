@@ -39,7 +39,7 @@ test('it can search for and choose a pictogram as an avatar', async ({ page }) =
   await page.goto('/chat/assistants-management/new');
 
   await page.getByLabel('name').fill(assistantInput.name);
-  await page.getByLabel('description').fill(assistantInput.description);
+  await page.getByLabel('tagline').fill(assistantInput.description);
   await page.getByPlaceholder("You'll act as...").fill(assistantInput.instructions);
 
   await page.locator('.mini-avatar-container').click();
@@ -71,7 +71,7 @@ test('it can upload an image as an avatar', async ({ page }) => {
   await page.goto('/chat/assistants-management/new');
 
   await page.getByLabel('name').fill(assistantInput.name);
-  await page.getByLabel('description').fill(assistantInput.description);
+  await page.getByLabel('tagline').fill(assistantInput.description);
   await page.getByPlaceholder("You'll act as...").fill(assistantInput.instructions);
 
   await page.locator('.mini-avatar-container').click();
@@ -125,7 +125,7 @@ test('it shows an error when clicking save on the upload tab if no image is uplo
   await page.goto('/chat/assistants-management/new');
 
   await page.getByLabel('name').fill(assistantInput.name);
-  await page.getByLabel('description').fill(assistantInput.description);
+  await page.getByLabel('tagline').fill(assistantInput.description);
   await page.getByPlaceholder("You'll act as...").fill(assistantInput.instructions);
 
   await page.locator('.mini-avatar-container').click();
