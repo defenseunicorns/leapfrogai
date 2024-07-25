@@ -1,6 +1,6 @@
 # End-to-end testing that deploys Supabase and the API, and deploy/tests llama-cpp-python, text-embeddings, and whisper
 
-name: e2e-2
+name: e2e-text-embeddings
 on:
   pull_request:
     types:
