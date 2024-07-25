@@ -4,21 +4,8 @@ FROM ghcr.io/defenseunicorns/leapfrogai/leapfrogai-sdk:${LOCAL_VERSION} AS sdk
 FROM nvidia/cuda:12.2.2-devel-ubuntu22.04 AS builder
 ARG SDK_DEST=src/leapfrogai_sdk/build
 
-# Set the config file defaults
+# Set the python version
 ARG PYTHON_VERSION=3.11.6
-ARG HF_HUB_ENABLE_HF_TRANSFER="1"
-ARG REPO_ID="TheBloke/Synthia-7B-v2.0-GPTQ"
-ARG REVISION="gptq-4bit-32g-actorder_True"
-ARG QUANTIZATION="gptq"
-ARG MODEL_SOURCE=".model/"
-ARG MAX_CONTEXT_LENGTH=32768
-ARG STOP_TOKENS='["</s>","<|endoftext|>","<|im_end|>"]'
-ARG PROMPT_FORMAT_CHAT_SYSTEM="SYSTEM: {}\n"
-ARG PROMPT_FORMAT_CHAT_ASSISTANT="ASSISTANT: {}\n"
-ARG PROMPT_FORMAT_CHAT_USER="USER: {}\n"
-ARG PROMPT_FORMAT_DEFAULTS_TOP_P=1.0
-ARG PROMPT_FORMAT_DEFAULTS_TOP_K=0
-ARG TENSOR_PARALLEL_SIZE=1
 
 ENV DEBIAN_FRONTEND=noninteractive
 
@@ -59,10 +46,13 @@ RUN python -m pip wheel packages/vllm -w packages/vllm/build --find-links=${SDK_
 RUN pip install packages/vllm/build/lfai_vllm*.whl --no-index --find-links=packages/vllm/build/
 
 FROM nvidia/cuda:12.2.2-runtime-ubuntu22.04
-## COPIED FROM ABOVE ##
+
 ARG SDK_DEST=src/leapfrogai_sdk/build
-# Set the config file defaults
+
+# Set the python version
 ARG PYTHON_VERSION=3.11.6
+
+# Model-specific arguments
 ARG HF_HUB_ENABLE_HF_TRANSFER="1"
 ARG REPO_ID="TheBloke/Synthia-7B-v2.0-GPTQ"
 ARG REVISION="gptq-4bit-32g-actorder_True"
