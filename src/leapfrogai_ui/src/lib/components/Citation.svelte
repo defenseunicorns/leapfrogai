@@ -2,7 +2,7 @@
   import { browser } from '$app/environment';
   import { toastStore } from '$stores';
   import type { FileObject } from 'openai/resources/files';
-  import { ArrowUp } from 'carbon-icons-svelte';
+  import { ArrowUpOutline } from 'flowbite-svelte-icons';
   export let file: FileObject;
   export let index: string;
 
@@ -38,27 +38,12 @@
 </script>
 
 <button
-  class="centered-flexbox citation-container remove-btn-style"
+  class="flex items-center justify-center gap-1"
   on:click={(e) => {
     e.preventDefault();
     handleClick();
   }}
 >
   <span class="link">{`[${index}] ${file.filename}`}</span>
-  <ArrowUp class="link" color="#78a9ff" style="cursor: pointer;" />
+  <ArrowUpOutline class="link cursor-pointer" color="#78a9ff" />
 </button>
-
-<style lang="scss">
-  .citation-container {
-    gap: 0.25rem;
-  }
-  .link {
-    font-size: 0.875rem;
-    line-height: 1.25rem;
-    font-weight: 400;
-    letter-spacing: 0.16px;
-    text-decoration: none;
-    color: #78a9ff;
-    cursor: pointer;
-  }
-</style>

@@ -1,7 +1,6 @@
 <script lang="ts">
   import { page } from '$app/stores';
   import threadsStore from '$stores/threads';
-  import '../../../../styles/main.scss';
   import SidebarWrapper from '$components/SidebarWrapper.svelte';
 
   $: threadLabel = $threadsStore.threads.find((thread) => thread.id === $page.params.thread_id)
@@ -15,7 +14,7 @@
 <div class="flex h-full">
   <SidebarWrapper />
 
-  <main class="w-full p-8">
+  <main class="flex-grow p-8 dark:bg-gray-900">
     <slot />
   </main>
 </div>

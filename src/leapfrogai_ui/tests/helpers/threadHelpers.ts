@@ -13,7 +13,7 @@ export const clickToDeleteThread = async (page: Page, label: string) => {
 };
 
 export const sendMessage = async (page: Page, message = 'Who are Defense Unicorns?') => {
-  await page.getByLabel('message input').fill(message);
+  await page.getByTestId('chat-input').fill(message);
   await page.click('button[type="submit"]');
 };
 export const deleteActiveThread = async (page: Page, openAIClient: OpenAI) => {

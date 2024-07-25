@@ -3,30 +3,8 @@
   import DefenseUnicorns from '$assets/DefenseUnicorns.png';
 </script>
 
-<div class="flex">
-  <img alt="Doug" src={doug} class="icon" />
-  <span class="legal">Powered By</span>
-  <img alt="Defense Unicorns" src={DefenseUnicorns} class="wordmark" />
+<div class="mt-4 flex items-center justify-center gap-1 text-white">
+  <img alt="Doug" src={doug} class="h-6" />
+  <span class="tracking-custom text-xs leading-4">Powered By</span>
+  <img alt="Defense Unicorns" src={DefenseUnicorns} class="w-[6.75rem]" />
 </div>
-
-<style lang="scss">
-  .flex {
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    gap: 0.25rem;
-    margin-top: 1rem;
-  }
-  .legal {
-    font-size: 0.75rem;
-    line-height: 1rem;
-    font-weight: 400;
-    letter-spacing: 0.32px;
-  }
-  .icon {
-    height: var(--footer-height);
-  }
-  .wordmark {
-    width: 6.75rem;
-  }
-</style>

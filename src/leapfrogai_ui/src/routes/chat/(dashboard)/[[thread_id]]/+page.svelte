@@ -1,12 +1,11 @@
 <script lang="ts">
-  import { LFTextArea, PoweredByDU } from '$components';
-  import { Button, Dropdown } from 'carbon-components-svelte';
+  import { beforeNavigate } from '$app/navigation';
+  import { PoweredByDU } from '$components';
+  import { Hr, ToolbarButton } from 'flowbite-svelte';
   import { onMount, tick } from 'svelte';
   import { threadsStore, toastStore } from '$stores';
-  import { ArrowRight, Checkmark, StopFilledAlt, UserProfile } from 'carbon-icons-svelte';
   import { type Message as VercelAIMessage, useAssistant, useChat } from '@ai-sdk/svelte';
   import { page } from '$app/stores';
-  import { beforeNavigate, goto } from '$app/navigation';
   import Message from '$components/Message.svelte';
   import { getMessageText } from '$helpers/threads';
   import { getUnixSeconds } from '$helpers/dates.js';
@@ -23,11 +22,13 @@
     ERROR_GETTING_ASSISTANT_MSG_TEXT,
     ERROR_SAVING_MSG_TEXT
   } from '$constants/toastMessages';
+  import SelectAssistantDropdown from '$components/SelectAssistantDropdown.svelte';
+  import { PaperPlaneOutline, StopOutline } from 'flowbite-svelte-icons';
+  import TextareaV2 from '$components/LFTextArea.svelte';
 
   export let data;
 
   /** LOCAL VARS **/
-  let messageThreadDiv: HTMLDivElement;
   let lengthInvalid: boolean; // bound to child LFTextArea
   let assistantsList: Array<{ id: string; text: string }>;
   /** END LOCAL VARS **/
@@ -291,151 +292,65 @@
   });
 </script>
 
-<div class="container">
-  <form on:submit={onSubmit} class="container">
-    <div class="messages-container">
-      <div bind:this={messageThreadDiv}>
-        {#each activeThreadMessages as message, index (message.id)}
-          <Message
-            messages={activeThreadMessages}
-            streamedMessages={isRunAssistantMessage(message) ? $assistantMessages : $chatMessages}
-            {message}
-            isLastMessage={!$threadsStore.streamingMessage &&
-              index === activeThreadMessages.length - 1}
-            append={assistantMode ? assistantAppend : chatAppend}
-            setMessages={isRunAssistantMessage(message) ? setAssistantMessages : setChatMessages}
-          />
-        {/each}
-        {#if $threadsStore.streamingMessage}
-          <Message message={$threadsStore.streamingMessage} isLastMessage />
+<form on:submit={onSubmit} class="flex h-full flex-col">
+  <div class="no-scrollbar flex flex-grow flex-col-reverse overflow-auto">
+    <div id="messages-container">
+      {#each activeThreadMessages as message, index (message.id)}
+        <Message
+          messages={activeThreadMessages}
+          streamedMessages={isRunAssistantMessage(message) ? $assistantMessages : $chatMessages}
+          {message}
+          isLastMessage={!$threadsStore.streamingMessage &&
+            index === activeThreadMessages.length - 1}
+          append={assistantMode ? assistantAppend : chatAppend}
+          setMessages={isRunAssistantMessage(message) ? setAssistantMessages : setChatMessages}
+        />
+      {/each}
+
+      {#if $threadsStore.streamingMessage}
+        <Message message={$threadsStore.streamingMessage} isLastMessage />
+      {/if}
+    </div>
+  </div>
+  <Hr classHr="my-2" />
+  <div id="chat-tools" class="flex flex-col gap-2">
+    <SelectAssistantDropdown assistants={data?.assistants || []} />
+
+    <div class="flex items-end justify-around gap-2">
+      <div class="flex flex-grow items-center rounded-lg bg-gray-50 px-3 py-2 dark:bg-gray-700">
+        <TextareaV2
+          id="chat"
+          data-testid="chat-input"
+          class="mx-4 flex-grow resize-none bg-white dark:bg-gray-800"
+          placeholder="Type your message here..."
+          value={chatInput}
+          bind:showLengthError={lengthInvalid}
+          {onSubmit}
+          maxRows={10}
+        />
+        {#if !$isLoading && $status !== 'in_progress'}
+          <ToolbarButton
+            data-testid="send message"
+            type="submit"
+            color="blue"
+            class="rounded-full text-primary-600 dark:text-primary-500"
+            disabled={!$chatInput || lengthInvalid || $threadsStore.sendingBlocked}
+          >
+            <PaperPlaneOutline class="h-6 w-6 rotate-45" />
+            <span class="sr-only">Send message</span>
+          </ToolbarButton>
+        {:else}
+          <ToolbarButton
+            data-testid="cancel message"
+            type="submit"
+            color="gray"
+            class="rounded-full text-primary-600 dark:text-primary-500"
+            ><StopOutline class="h-6 w-6" color="red" /><span class="sr-only">Cancel message</span
+            ></ToolbarButton
+          >
         {/if}
       </div>
     </div>
-    <hr id="divider" class="divider" />
-    <div class:noAssistant={$threadsStore.selectedAssistantId === NO_SELECTED_ASSISTANT_ID}>
-      <Dropdown
-        data-testid="assistant-dropdown"
-        disabled={$isLoading || $status === 'in_progress'}
-        hideLabel
-        direction="top"
-        selectedId={$threadsStore.selectedAssistantId}
-        on:select={async (e) => {
-          if (e.detail.selectedId === 'manage-assistants') {
-            await goto('/chat/assistants-management');
-          } else {
-            if ($threadsStore.selectedAssistantId === e.detail.selectedId)
-              threadsStore.setSelectedAssistantId(NO_SELECTED_ASSISTANT_ID); //deselect
-            else {
-              threadsStore.setSelectedAssistantId(e.detail.selectedId);
-            }
-          }
-        }}
-        items={assistantsList}
-        style="width: 25%; margin-bottom: 0.5rem"
-        let:item
-      >
-        {#if item.id === `manage-assistants`}
-          <button
-            id="manage assistants"
-            data-testid="assistants-management-btn"
-            class="manage-assistants-btn remove-btn-style"
-          >
-            <UserProfile />
-            {item.text}
-          </button>
-        {:else if item.id === NO_SELECTED_ASSISTANT_ID}
-          <div class="noAssistant">
-            {item.text}
-          </div>
-        {:else}
-          <div class="assistant-dropdown-item">
-            {item.text}
-            {#if item.id !== NO_SELECTED_ASSISTANT_ID && $threadsStore.selectedAssistantId === item.id}
-              <Checkmark data-testid="checked" />
-            {/if}
-          </div>
-        {/if}
-      </Dropdown>
-    </div>
-    <div class="chat-input">
-      <LFTextArea
-        value={chatInput}
-        {onSubmit}
-        ariaLabel="message input"
-        placeholder="Type your message here..."
-        bind:showLengthError={lengthInvalid}
-      />
-
-      {#if !$isLoading && $status !== 'in_progress'}
-        <Button
-          data-testid="send message"
-          kind="secondary"
-          icon={ArrowRight}
-          size="field"
-          type="submit"
-          iconDescription="send"
-          disabled={!$chatInput || lengthInvalid || $threadsStore.sendingBlocked}
-        />
-      {:else}
-        <Button
-          data-testid="cancel message"
-          kind="secondary"
-          size="field"
-          type="submit"
-          icon={StopFilledAlt}
-          iconDescription="cancel"
-        />
-      {/if}
-    </div>
-    <PoweredByDU />
-  </form>
-</div>
-
-<style lang="scss">
-  .container {
-    display: flex;
-    flex-direction: column;
-    height: 100%;
-  }
-  .messages-container {
-    display: flex;
-    flex-direction: column-reverse;
-    flex-grow: 1;
-    overflow: auto;
-    scrollbar-width: none;
-  }
-
-  .chat-input {
-    display: flex;
-    justify-content: space-around;
-    align-items: flex-end;
-    gap: 0.5rem;
-  }
-
-  .manage-assistants-btn {
-    display: flex;
-    align-items: center;
-    gap: 0.5rem;
-  }
-
-  .assistant-dropdown-item {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-  }
-
-  :global(#manage-assistants) {
-    z-index: 2; // ensures outline is on top of border of item below
-    outline: 1px solid #8d8d8d;
-    :global(.bx--list-box__menu_item__option) {
-      padding-right: 0.25rem;
-    }
-  }
-
-  .noAssistant {
-    color: #8d8d8d;
-    :global(.bx--list-box__label) {
-      color: #8d8d8d;
-    }
-  }
-</style>
+  </div>
+  <PoweredByDU />
+</form>

@@ -127,11 +127,11 @@ It adds a "three-dot" menu button with Popover, and delete confirmation Modal
       id={`btn-${threadId}`}
       class={popperOpen && 'focus:rounded focus:bg-gray-400'}
     >
-      <DotsVerticalOutline />
+      <DotsVerticalOutline color="white" />
     </button>
     <Popover
       data-testid={'sidebar-popover'}
-      class="w-32 text-sm font-light"
+      class="w-32 border-none text-sm font-light"
       defaultClass="p-0"
       placement="right"
       trigger="click"
@@ -141,10 +141,8 @@ It adds a "three-dot" menu button with Popover, and delete confirmation Modal
         popperOpen = !popperOpen;
       }}
       ><div class="flex flex-col items-center gap-1">
-        <Button color="alternative" size="xs" class="w-full" on:click={handleEditClick}>Edit</Button
-        >
+        <Button size="xs" class="w-full" on:click={handleEditClick}>Edit</Button>
         <Button
-          color="alternative"
           size="xs"
           class="w-full"
           on:click={(e) => {

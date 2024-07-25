@@ -3,7 +3,7 @@
   import logo from '$assets/LeapfrogAI.png';
   import { Button, Drawer, Navbar, NavBrand } from 'flowbite-svelte';
   import { BarsOutline, CloseOutline, CogOutline, UserCircleOutline } from 'flowbite-svelte-icons';
-  import IconButton from '$components/IconButton.svelte';
+  import HeaderButton from '$components/HeaderButton.svelte';
   import { sineIn } from 'svelte/easing';
 
   export let isUsingOpenAI: boolean;
@@ -29,7 +29,7 @@
     else activeDrawer = name;
   };
 
-  let drawerStyle = 'top-header';
+  let drawerStyle = 'top-header text-white';
   let linkStyle = 'flex p-4 flex-col gap-3.5';
   let headerLinkStyle =
     'text-sm leading-5 font-semibold tracking-tight cursor-pointer bg-none text-inherit border-none p-0 outline-none hover:text-white';
@@ -39,7 +39,7 @@
 <svelte:window bind:innerWidth />
 
 <header>
-  <Navbar fluid class="h-header py-1">
+  <Navbar fluid class="h-header py-1 dark:bg-black">
     <NavBrand
       href={$threadsStore.lastVisitedThreadId
         ? `/chat/${$threadsStore.lastVisitedThreadId}`
@@ -65,13 +65,13 @@
       <img src={logo} class="w-[7.875rem]] h-[2.25rem]" alt="LeapfrogAI Logo" />
     </NavBrand>
     <div class="flex items-center gap-x-2">
-      <IconButton on:click={() => toggleDrawer('settings')}>
+      <HeaderButton on:click={() => toggleDrawer('settings')}>
         <CogOutline data-testid="header-settings-btn" />
-      </IconButton>
+      </HeaderButton>
 
-      <IconButton on:click={() => toggleDrawer('user')}>
+      <HeaderButton on:click={() => toggleDrawer('user')}>
         <UserCircleOutline data-testid="header-user-btn" />
-      </IconButton>
+      </HeaderButton>
     </div>
   </Navbar>
 
