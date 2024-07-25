@@ -1,30 +1,7 @@
 # Catch all the things we ignore in the e2e workflow
 name: e2e Skip Shim
 on:
-  pull_request:
-    paths:
-      # Catch updates to the .github directory, unless it is the e2e.yaml files
-      - ".github/**"
-      - "!.github/workflows/e2e.yaml"
-
-      # Catch docs and website things
-      - "**.md"
-      - "adr/**"
-      - "docs/**"
-      - "website/**"
-      - "netlify.toml"
-
-      # Catch generic github metadata files
-      - "CODEOWNERS"
-      - ".gitignore"
-      - "LICENSE"
-      - ".pre-commit-config.yaml"
-
-      # Catch pytests
-      - "tests/pytest/**"
-
-      # Catch changes to the repeater model
-      - "packages/repeater/**"
+  pull_request
 
 
 permissions:
@@ -47,7 +24,31 @@ concurrency:
 
 
 jobs:
-  e2e:
+  e2e_llama:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Skipped
+        run: |
+          echo skipped
+  e2e_playright:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Skipped
+        run: |
+          echo skipped
+  e2e_text_embeddings:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Skipped
+        run: |
+          echo skipped
+  e2e_vllm:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Skipped
+        run: |
+          echo skipped
+  e2e_whisper:
     runs-on: ubuntu-latest
     steps:
       - name: Skipped
