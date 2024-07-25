@@ -92,7 +92,7 @@ components:
       - docker.io/bitnami/postgrest:11.2.2-debian-12-r15
       - docker.io/bitnami/supabase-postgres:15.1.1-debian-12-r69
       - docker.io/bitnami/supabase-postgres-meta:0.80.0-debian-12-r3
-      - docker.io/supabase/realtime:latest
+      - docker.io/bitnami/supabase-realtime:2.28.32-debian-12-r2
       - docker.io/bitnami/supabase-storage:0.48.4-debian-12-r2
       - docker.io/bitnami/supabase-studio:0.24.3-debian-12-r3
       - docker.io/bitnami/kong:3.6.1-debian-12-r18
