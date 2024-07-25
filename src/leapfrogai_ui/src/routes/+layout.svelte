@@ -28,6 +28,6 @@
 
 <Toasts />
 
-<div class="flex h-screen max-h-screen flex-col">
+<main class="content">
   <slot />
-</div>
+</main>
