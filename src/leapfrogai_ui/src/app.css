@@ -10,10 +10,6 @@
 
 /*TODO - can we get rid of some of these?*/
 @layer utilities {
-  .full-height-minus-header {
-    height: calc(100vh - var(--header-height));
-  }
-
   .content {
     display: flex;
     flex-grow: 1;
