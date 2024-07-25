@@ -25,3 +25,19 @@ components:
           - "vllm-values.yaml"
     images:
       - ghcr.io/defenseunicorns/leapfrogai/vllm:###ZARF_PKG_TMPL_IMAGE_VERSION###
+    dataInjections:
+      - source: .model/
+        target:
+          namespace: leapfrogai
+          selector: app=lfai-vllm
+          container: data-loader
+          path: /data/.model
+        compress: true
+    actions:
+      onCreate:
+        before:
+          # NOTE: This assumes python is installed and in $PATH
+          - cmd: python src/model_download.py
+            env:
+              - LAI_REPO_ID=TheBloke/Synthia-7B-v2.0-GPTQ
+              - LAI_REVISION=gptq-4bit-32g-actorder_True
