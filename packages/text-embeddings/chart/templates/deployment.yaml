@@ -78,7 +78,7 @@ spec:
             - name: leapfrogai-pv-storage
               mountPath: "/data"
           env:
-            - name: LFAI_MODEL_DIR
+            - name: LFAI_MODEL_PATH
               value: '/data/.model'
       {{- with .Values.nodeSelector }}
       nodeSelector:
