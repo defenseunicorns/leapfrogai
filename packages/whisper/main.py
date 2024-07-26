@@ -27,7 +27,7 @@ def make_transcribe_request(filename, task, language, temperature, prompt):
             logger.error(f"Task {task} is not supported")
             return {"text": ""}
     if language:
-        if language in WhisperModel.supported_languages:
+        if language in WhisperModel.supported_languages():
             kwargs["language"] = language
         else:
             logger.error(f"Language {language} is not supported")
