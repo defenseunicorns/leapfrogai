@@ -17,6 +17,7 @@
   import AssistantFileSelect from '$components/AssistantFileSelect.svelte';
   import LFInput from '$components/LFInput.svelte';
   import LFLabel from '$components/LFLabel.svelte';
+  import AssistantAvatar from '$components/AssistantAvatar.svelte';
 
   export let data;
 
@@ -55,8 +56,8 @@
   });
 
   let cancelModalOpen = false;
-  // let files: File[] = [];
-  // let selectedPictogramName = isEditMode ? $form.pictogram : 'default';
+  let files: File[] = [];
+  let selectedPictogramName = isEditMode ? $form.pictogram : 'default';
 
   let navigateTo: NavigationTarget;
   let leavePageConfirmed = false;
@@ -95,7 +96,7 @@
         {`${isEditMode ? 'Edit' : 'New'} Assistant`}
       </h5>
 
-      <!--        <AssistantAvatar bind:files bind:selectedPictogramName {form} />-->
+      <AssistantAvatar bind:files bind:selectedPictogramName {form} />
     </div>
     <input type="hidden" name="id" value={$form.id} />
     <LFInput

@@ -1,15 +1,11 @@
 <script lang="ts">
-  import { Edit, TrashCan } from 'carbon-icons-svelte';
-  import {
-    Button,
-    FileUploaderButton,
-    Modal,
-    RadioButton,
-    RadioButtonGroup
-  } from 'carbon-components-svelte';
+  import { FileUploaderButton } from 'carbon-components-svelte';
   import Pictograms from '$components/Pictograms.svelte';
   import DynamicPictogram from '$components/DynamicPictogram.svelte';
   import { AVATAR_FILE_SIZE_ERROR_TEXT, MAX_AVATAR_SIZE, NO_FILE_ERROR_TEXT } from '$lib/constants';
+  import { Avatar, Button, Modal, P, Radio } from 'flowbite-svelte';
+  import { twMerge } from 'tailwind-merge';
+  import { EditOutline, TrashBinOutline } from 'flowbite-svelte-icons';
 
   export let form;
   export let files: File[];
@@ -85,56 +81,51 @@
   };
 </script>
 
-<div class="container">
+<div>
   <button
-    class="mini-avatar-container remove-btn-style"
     tabindex="0"
     on:click|preventDefault={() => (modalOpen = true)}
     data-testid="mini-avatar-container"
   >
     {#if avatarToShow}
-      <div class="mini-avatar-image" style={`background-image: url(${avatarToShow});`} />
+      <Avatar src={avatarToShow} />
     {:else}
-      <DynamicPictogram iconName={tempPictogram} width="32px" height="32px" />
+      <DynamicPictogram iconName={tempPictogram} size="md" />
     {/if}
   </button>
-
   <Modal
     bind:open={modalOpen}
-    preventCloseOnClickOutside
-    modalHeading="Avatar Image"
-    shouldSubmitOnEnter={false}
-    primaryButtonText="Save"
-    secondaryButtonText="Cancel"
+    autoclose
     on:close={handleClose}
-    on:click:button--secondary={handleClose}
     on:submit={handleSubmit}
-    style="--modal-height:{tempPictogram === 'pictogram' ? '100%' : 'auto'};"
-    class="avatar-modal"
+    title="Avatar Image"
+    class="overflow-hidden"
   >
-    <div class="avatar-modal">
-      <RadioButtonGroup bind:selected={selectedRadioButton}>
-        <RadioButton labelText="Pictogram" value="pictogram" />
-        <RadioButton labelText="Upload" value="upload" />
-      </RadioButtonGroup>
-      <span class:hidden={selectedRadioButton === 'upload'} style="height: 100%;">
+    <div class="flex flex-col gap-2">
+      <div class="flex gap-4">
+        <Radio
+          name="Pictogram"
+          checked={selectedRadioButton === 'pictogram'}
+          on:click={() => (selectedRadioButton = 'pictogram')}>Pictogram</Radio
+        >
+        <Radio
+          name="Upload"
+          checked={selectedRadioButton === 'upload'}
+          on:click={() => (selectedRadioButton = 'upload')}>Upload</Radio
+        >
+      </div>
+      <span class={twMerge(selectedRadioButton === 'upload' && 'hidden')}>
         <Pictograms bind:selectedPictogramName={tempPictogram} />
       </span>
 
-      <div class="avatar-upload-container" class:hidden={selectedRadioButton === 'pictogram'}>
+      <div class={twMerge('flex flex-col gap-2', selectedRadioButton === 'pictogram' && 'hidden')}>
         {#if avatarToShow}
-          <div class="avatar-container">
-            <div
-              data-testid="image-upload-avatar"
-              class="avatar-image"
-              style={`background-image: url(${avatarToShow});`}
-            />
-          </div>
+          <Avatar src={avatarToShow} />
         {/if}
 
-        <div class="image-uploader" style={hideUploader ? 'display: none' : 'display: block'}>
-          <div class:bx--file--label={true}>Upload image</div>
-          <div class:bx--label-description={true}>Supported file types are .jpg and .png.</div>
+        <div class={twMerge('flex flex-col gap-2', hideUploader ? 'hidden' : 'block')}>
+          <P>Upload image</P>
+          <P size="sm">Supported file types are .jpg and .png.</P>
           <FileUploaderButton
             bind:ref={fileUploaderRef}
             bind:files={tempFiles}
@@ -147,14 +138,8 @@
         </div>
 
         {#if hideUploader}
-          <div class="edit-btns">
-            <Button size="small" kind="tertiary" icon={Edit} on:click={handleChangeAvatar}
-              >Change</Button
-            >
-            <Button size="small" kind="tertiary" icon={TrashCan} on:click={handleRemove}
-              >Remove</Button
-            >
-          </div>
+          <Button on:click={handleChangeAvatar}>Change <EditOutline /></Button>
+          <Button on:click={handleRemove}>Remove <TrashBinOutline /></Button>
         {/if}
 
         {#if shouldValidate && (fileNotUploaded || fileTooBig)}
@@ -163,92 +148,6 @@
           </div>
         {/if}
       </div>
-    </div></Modal
-  >
+    </div>
+  </Modal>
 </div>
-
-<style lang="scss">
-  .hidden {
-    display: none !important;
-  }
-
-  .container {
-    :global(.bx--modal-container) {
-      height: var(
-        --modal-height
-      ); // keeps height fixed when searching pictograms, but not that size for avatar upload
-      width: 80%;
-    }
-  }
-  .avatar-upload-container {
-    display: flex;
-    flex-direction: column;
-    gap: 0.5rem;
-  }
-
-  .avatar-modal {
-    display: flex;
-    flex-direction: column;
-    gap: 1rem;
-    height: calc(100% - 3rem); // 3 rem is default modal margin-bottom, prevents extra scrollbar
-  }
-
-  .mini-avatar-container {
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    width: 3rem;
-    height: 3rem;
-    border-radius: 50%;
-    background-color: #393939;
-    transition: background-color 70ms ease;
-    &:hover {
-      background-color: #656565;
-    }
-    .mini-avatar-image {
-      width: 100%;
-      height: 100%;
-      border-radius: 50%;
-      background-size: cover;
-      background-position: center;
-      background-repeat: no-repeat;
-    }
-  }
-
-  .avatar-container {
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    width: 12rem;
-    height: 12rem;
-    border-radius: 50%;
-    background-color: #393939;
-    .avatar-image {
-      width: 100%;
-      height: 100%;
-      border-radius: 50%;
-      background-size: cover;
-      background-position: center;
-      background-repeat: no-repeat;
-    }
-  }
-
-  .image-uploader {
-    display: flex;
-    flex-direction: column;
-    gap: 0.5rem;
-  }
-
-  .edit-btns {
-    display: flex;
-    gap: 0.5rem;
-  }
-
-  .error-box {
-    border: 2px solid #ffb3b8;
-    color: #ffb3b8;
-    max-width: 20rem;
-    padding: 0.25rem;
-    margin-top: 1rem;
-  }
-</style>

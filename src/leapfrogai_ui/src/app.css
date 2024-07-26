@@ -68,4 +68,15 @@
     padding: 14px 0.25rem;
     color: white;
   }
+
+  .pictogram {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    cursor: pointer;
+    transition: fill 70ms ease;
+    &:hover {
+      background-color: gray;
+    }
+  }
 }
