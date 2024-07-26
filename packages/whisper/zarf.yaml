@@ -36,3 +36,25 @@ components:
           - "whisper-values.yaml"
     images:
       - ghcr.io/defenseunicorns/leapfrogai/whisper:###ZARF_PKG_TMPL_IMAGE_VERSION###
+      - cgr.dev/chainguard/bash:latest
+    dataInjections:
+      - source: .model/
+        target:
+          namespace: leapfrogai
+          selector: app=lfai-whisper
+          container: data-loader
+          path: /data/.model
+        compress: true
+    actions:
+      onCreate:
+        before:
+          # NOTE: This assumes python is installed and in $PATH
+          # TODO: add ctrnaslate2 and transformers[torch] to the pyproject dev deps
+          - cmd: |
+              ct2-transformers-converter --model ${MODEL_NAME} \
+                --output_dir .model \
+                --copy_files tokenizer.json special_tokens_map.json preprocessor_config.json normalizer.json tokenizer_config.json vocab.json \
+                --quantization float32 \
+                --force
+            env:
+              - MODEL_NAME=openai/whisper-base
