@@ -21,7 +21,11 @@ def make_transcribe_request(filename, task, language, temperature, prompt):
     # Prepare kwargs with non-None values
     kwargs = {}
     if task:
-        kwargs["task"] = task
+        if task in ["transcribe", "translate"]:
+            kwargs["task"] = task
+        else:
+            logger.error(f"Task {task} is not supported")
+            return {"text": ""}
     if language:
         if language in WhisperModel.supported_languages:
             kwargs["language"] = language
