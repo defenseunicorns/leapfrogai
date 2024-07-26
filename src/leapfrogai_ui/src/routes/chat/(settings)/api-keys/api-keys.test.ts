@@ -18,8 +18,8 @@ import { vi } from 'vitest';
 import { faker } from '@faker-js/faker';
 import { getLocalsMock } from '$lib/mocks/misc';
 
-// TODO - these will not work until we refactor them to flowbite in next PR
-describe.skip('api keys', () => {
+
+describe('api keys', () => {
   let form: APIKeysForm;
   const keys = getFakeApiKeys({ numKeys: 4 });
 
