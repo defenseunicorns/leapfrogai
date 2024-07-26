@@ -1,8 +1,16 @@
+import type { LayoutServerLoad } from './$types';
 import { redirect } from '@sveltejs/kit';
 import type { Profile } from '$lib/types/profile';
 import type { LFThread } from '$lib/types/threads';
 import type { LFMessage } from '$lib/types/messages';
 import { getOpenAiClient } from '$lib/server/constants';
+
+/**
+ * This file is necessary to ensure protection of all routes in the `chat`
+ * directory. It makes the routes in this directory _dynamic_ routes, which
+ * send a server request, and thus trigger `hooks.server.ts`.
+ * Keep it even if there is no code in it.
+ **/
 
 const getThreadWithMessages = async (
   thread_id: string,
@@ -24,9 +32,7 @@ const getThreadWithMessages = async (
   }
 };
 
-export const load = async ({ locals: { supabase, safeGetSession } }) => {
-  const { session } = await safeGetSession();
-
+export const load: LayoutServerLoad = async ({ locals: { supabase, session, user } }) => {
   if (!session) {
     throw redirect(303, '/');
   }
@@ -34,13 +40,13 @@ export const load = async ({ locals: { supabase, safeGetSession } }) => {
   const { data: profile, error: profileError } = await supabase
     .from('profiles')
     .select(`*`)
-    .eq('id', session.user?.id)
+    .eq('id', user?.id)
     .returns<Profile[]>()
     .single();
 
   if (profileError) {
     console.error(
-      `error getting user profile for user_id: ${session.user?.id}. ${JSON.stringify(profileError)}`
+      `error getting user profile for user_id: ${user?.id}. ${JSON.stringify(profileError)}`
     );
     throw redirect(303, '/');
   }

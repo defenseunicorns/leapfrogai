@@ -1,3 +1,4 @@
+import type { Actions, PageServerLoad } from './$types';
 import { error, fail, redirect } from '@sveltejs/kit';
 import { superValidate } from 'sveltekit-superforms';
 import { yup } from 'sveltekit-superforms/adapters';
@@ -5,11 +6,10 @@ import { newAPIKeySchema } from '$schemas/apiKey';
 import { type APIKeyRow } from '$lib/types/apiKeys';
 import { env } from '$env/dynamic/private';
 
-export const load = async ({ depends, locals: { safeGetSession } }) => {
+export const load: PageServerLoad = async ({ depends, locals: { session } }) => {
   depends('lf:api-keys');
   const form = await superValidate(yup(newAPIKeySchema));
 
-  const { session } = await safeGetSession();
   if (!session) {
     error(401, { message: 'Unauthorized' });
   }
@@ -21,7 +21,7 @@ export const load = async ({ depends, locals: { safeGetSession } }) => {
 
   let keys: APIKeyRow[] = [];
 
-  const res = await fetch(`${env.LEAPFROGAI_API_BASE_URL}/leapfrogai/v1/auth/list-api-keys`, {
+  const res = await fetch(`${env.LEAPFROGAI_API_BASE_URL}/leapfrogai/v1/auth/api-keys`, {
     headers: {
       Authorization: `Bearer ${session.access_token}`
     }
@@ -41,9 +41,8 @@ export const load = async ({ depends, locals: { safeGetSession } }) => {
   return { title: 'LeapfrogAI - API Keys', form, keys };
 };
 
-export const actions = {
-  default: async ({ request, locals: { safeGetSession } }) => {
-    const { session } = await safeGetSession();
+export const actions: Actions = {
+  default: async ({ request, locals: { session } }) => {
     if (!session) {
       return fail(401, { message: 'Unauthorized' });
     }
@@ -54,7 +53,7 @@ export const actions = {
       return fail(400, { form });
     }
 
-    const res = await fetch(`${env.LEAPFROGAI_API_BASE_URL}/leapfrogai/v1/auth/create-api-key`, {
+    const res = await fetch(`${env.LEAPFROGAI_API_BASE_URL}/leapfrogai/v1/auth/api-keys`, {
       headers: {
         Authorization: `Bearer ${session.access_token}`,
         'Content-Type': 'application/json'

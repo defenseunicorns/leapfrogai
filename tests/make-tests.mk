@@ -1,5 +1,7 @@
-SUPABASE_URL := $(shell cd src/leapfrogai_api; supabase status | awk '/API URL:/ {print $$3}')
-SUPABASE_ANON_KEY := $(shell cd src/leapfrogai_api; supabase status | awk '/anon key:/ {print $$3}')
+
+set-supabase:
+	SUPABASE_URL := $(shell cd src/leapfrogai_api; supabase status | awk '/API URL:/ {print $$3}')
+	SUPABASE_ANON_KEY := $(shell cd src/leapfrogai_api; supabase status | awk '/anon key:/ {print $$3}')
 
 define get_jwt_token
 	echo "Getting JWT token from ${SUPABASE_URL}..."; \
@@ -15,24 +17,24 @@ define get_jwt_token
 	echo "DONE - variables exported to .env file"
 endef
 
-test-user:
+test-user: set-supabase
 	@read -s -p "Enter a new DEV API password: " SUPABASE_PASS; echo; \
 	echo "Creating new supabase user..."; \
 	$(call get_jwt_token,"${SUPABASE_URL}/auth/v1/signup")
 
-test-env:
+test-env: set-supabase
 	@read -s -p "Enter your DEV API password: " SUPABASE_PASS; echo; \
 	$(call get_jwt_token,"${SUPABASE_URL}/auth/v1/token?grant_type=password")
 
-test-int-api:
-	source .env; PYTHONPATH=$$(pwd) pytest -vv -s tests/integration/api 
+test-int-api: set-supabase
+	source .env; PYTHONPATH=$$(pwd) pytest -vv -s tests/integration/api
 
-test-unit:
+test-unit: set-supabase
 	PYTHONPATH=$$(pwd) pytest -vv -s tests/unit
 
 test-load:
 	locust -f ${PWD}/tests/load/loadtest.py --web-port 8089
 
-debug:
+debug: set-supabase
 	@echo ${SUPABASE_URL}
 	@echo ${SUPABASE_ANON_KEY}

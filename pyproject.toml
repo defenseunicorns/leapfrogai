@@ -15,7 +15,7 @@ dependencies = [  # Dev dependencies needed for all of lfai
     "pip-tools == 7.3.0",
     "httpx",
     "ruff",
-    "python-dotenv",
+    "python-dotenv"
 ]
 requires-python = "~=3.11"
 

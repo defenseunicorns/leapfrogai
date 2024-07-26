@@ -1,10 +1,9 @@
+import type { RequestHandler } from './$types';
 import { error, json } from '@sveltejs/kit';
 import { getOpenAiClient } from '$lib/server/constants';
 import type { FileObject } from 'openai/resources/files';
 
-export async function GET({ locals: { safeGetSession } }) {
-  const { session } = await safeGetSession();
-
+export const GET: RequestHandler = async ({ locals: { session } }) => {
   if (!session) {
     error(401, 'Unauthorized');
   }
@@ -16,4 +15,4 @@ export async function GET({ locals: { safeGetSession } }) {
   const files = list.data as FileObject[];
 
   return json(files ?? []);
-}
+};

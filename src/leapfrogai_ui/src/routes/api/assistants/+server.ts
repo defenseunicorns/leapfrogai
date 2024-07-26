@@ -1,10 +1,9 @@
+import type { RequestHandler } from './$types';
 import { error, json } from '@sveltejs/kit';
 import { getOpenAiClient } from '$lib/server/constants';
 import type { LFAssistant } from '$lib/types/assistants';
 
-export async function GET({ locals: { safeGetSession } }) {
-  const { session } = await safeGetSession();
-
+export const GET: RequestHandler = async ({ locals: { session } }) => {
   if (!session) {
     error(401, 'Unauthorized');
   }
@@ -18,4 +17,4 @@ export async function GET({ locals: { safeGetSession } }) {
     console.error('Error fetching assistants', e);
     return json([]);
   }
-}
+};

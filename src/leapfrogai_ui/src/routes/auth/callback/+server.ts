@@ -1,7 +1,7 @@
-// src/routes/auth/callback/++server.ts
+import type { RequestHandler } from './$types';
 import { redirect } from '@sveltejs/kit';
 
-export const GET = async ({ url, locals: { supabase } }) => {
+export const GET: RequestHandler = async ({ url, locals: { supabase } }) => {
   const code = url.searchParams.get('code');
 
   if (code) {

@@ -18,11 +18,13 @@ class MissingEnvironmentVariable(Exception):
 
 
 try:
-    API_KEY = os.environ["API_KEY"]
+    # The default model backend is set to vllm, this can be changed but llama-cpp-python may have concurrency issues
+    DEFAULT_MODEL = os.getenv("DEFAULT_MODEL", "vllm")
+    BEARER_TOKEN = os.environ["BEARER_TOKEN"]
     API_URL = os.environ["API_URL"]
 except KeyError:
     raise MissingEnvironmentVariable(
-        "API_KEY and API_URL must be defined for the test to run. "
+        "BEARER_TOKEN and API_URL must be defined for the test to run. "
         "Please check the loadtest README at /tests/load/README.md for instructions on setting these values."
     )
 
@@ -110,7 +112,7 @@ class RAGTasks(SequentialTaskSet):
     @task
     def create_assistant(self):
         payload = {
-            "model": "vllm",
+            "model": DEFAULT_MODEL,
             "name": f"RAG Assistant {uuid.uuid4()}",
             "instructions": "You are a helpful assistant with access to a knowledge base. Use the file_search tool to find relevant information.",
             "tools": [{"type": "file_search"}],
@@ -174,7 +176,7 @@ class LeapfrogAIUser(HttpUser):
     def on_start(self):
         # Turn off SSL verification to get rid of unnecessary TLS version issues
         self.client.verify = False
-        self.client.headers.update({"Authorization": f"Bearer {API_KEY}"})
+        self.client.headers.update({"Authorization": f"Bearer {BEARER_TOKEN}"})
 
     @task
     def perform_rag_tasks(self):
@@ -192,7 +194,7 @@ class LeapfrogAIUser(HttpUser):
     @task
     def test_chat_completions(self):
         payload = {
-            "model": "vllm",
+            "model": DEFAULT_MODEL,
             "messages": [{"role": "user", "content": "Hello, how are you?"}],
             "max_tokens": 50,
         }

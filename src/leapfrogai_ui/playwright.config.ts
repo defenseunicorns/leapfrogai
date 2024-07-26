@@ -62,6 +62,8 @@ const devConfig: PlaywrightTestConfig = {
     port: 4173,
     stderr: 'pipe'
   },
+  testDir: 'tests',
+  testMatch: /(.+\.)?(test|spec)\.[jt]s/,
   use: {
     baseURL: 'http://localhost:4173'
   }
