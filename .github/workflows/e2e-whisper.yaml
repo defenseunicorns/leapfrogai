@@ -69,6 +69,8 @@ jobs:
 
         - name: Setup LFAI-API and Supabase
           uses: ./.github/actions/lfai-core
+          with:
+            additionalOptionalDep: "dev-whisper"
 
         ##########
         # whisper
