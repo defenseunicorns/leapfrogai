@@ -23,14 +23,21 @@ def make_transcribe_request(filename, task, language, temperature, prompt):
     if task:
         kwargs["task"] = task
     if language:
-        kwargs["language"] = language
+        if language in WhisperModel.supported_languages:
+            kwargs["language"] = language
+        else:
+            logger.error(f"Language {language} is not supported")
     if temperature:
         kwargs["temperature"] = temperature
     if prompt:
         kwargs["initial_prompt"] = prompt
 
-    # Call transcribe with only non-None parameters
-    segments, info = model.transcribe(filename, beam_size=5, **kwargs)
+    try:
+        # Call transcribe with only non-None parameters
+        segments, info = model.transcribe(filename, beam_size=5, **kwargs)
+    except Exception as e:
+        logger.error(f"Error transcribing audio: {e}")
+        return {"text": ""}
 
     output = ""
     for segment in segments:
