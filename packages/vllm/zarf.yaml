@@ -25,6 +25,7 @@ components:
           - "vllm-values.yaml"
     images:
       - ghcr.io/defenseunicorns/leapfrogai/vllm:###ZARF_PKG_TMPL_IMAGE_VERSION###
+      - cgr.dev/chainguard/bash:latest
     dataInjections:
       - source: .model/
         target:
@@ -41,3 +42,5 @@ components:
             env:
               - LAI_REPO_ID=TheBloke/Synthia-7B-v2.0-GPTQ
               - LAI_REVISION=gptq-4bit-32g-actorder_True
+              - LAI_QUANTIZATION=gptq
+              - LAI_HF_HUB_ENABLE_HF_TRANSFER=1
