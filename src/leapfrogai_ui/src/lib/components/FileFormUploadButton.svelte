@@ -1,4 +1,3 @@
-<!--TODO - refactor to re-use the FileUploaderButton -->
 <script lang="ts">
   import { createEventDispatcher } from 'svelte';
   import type { ActionResult } from '@sveltejs/kit';

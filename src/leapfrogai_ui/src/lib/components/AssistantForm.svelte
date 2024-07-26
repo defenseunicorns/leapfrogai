@@ -21,7 +21,6 @@
 
   export let data;
 
-  // TODO - refactor avatar, fix tests, figure out why loom chrome plugin shows white line and undefined at bottom of screen
   let isEditMode = $page.url.pathname.includes('edit');
   let bypassCancelWarning = false;
 
@@ -56,7 +55,6 @@
   });
 
   let cancelModalOpen = false;
-  let files: File[] = [];
   let selectedPictogramName = isEditMode ? $form.pictogram : 'default';
 
   let navigateTo: NavigationTarget;
@@ -88,10 +86,10 @@
     filesStore.setSelectedAssistantFileIds($form.data_sources || []);
   });
 
-  $: console.log('$form', $form)
-  $: console.log('files', files)
+  console.log('form', $form);
 </script>
 
+<!--TODO - save no longer submitting-->
 <form method="POST" enctype="multipart/form-data" use:enhance class="w-1/2">
   <div class="flex flex-col py-2">
     <div class="flex items-center justify-between">
@@ -99,7 +97,7 @@
         {`${isEditMode ? 'Edit' : 'New'} Assistant`}
       </h5>
 
-      <AssistantAvatar bind:files bind:selectedPictogramName {form} />
+      <AssistantAvatar bind:selectedPictogramName {form} />
     </div>
     <input type="hidden" name="id" value={$form.id} />
     <LFInput

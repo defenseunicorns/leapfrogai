@@ -8,21 +8,17 @@
   import Fuse, { type FuseResult, type IFuseOptions } from 'fuse.js';
   import { iconMap } from '$constants/iconMap';
   import LFRadio from '$components/LFRadio.svelte';
-  import FileUploaderButton from '$components/FileUploaderButton.svelte';
 
   export let form;
-  export let files: File[];
   export let selectedPictogramName: string;
 
   let originalAvatar = $form.avatar;
-  let tempFiles: File[] = [];
   let tempPictogram = selectedPictogramName || 'default';
   let modalOpen = false;
   let selectedRadioButton: 'upload' | 'pictogram' = originalAvatar ? 'upload' : 'pictogram';
   let shouldValidate = false;
   let fileUploaderRef: HTMLInputElement;
   let errorMsg = '';
-  let skipCloseActions = false;
   let searchText = '';
   let searchResults: FuseResult<(keyof typeof iconMap)[]>[];
   let filteredPictograms: (keyof typeof iconMap)[] = [];
@@ -36,10 +32,18 @@
     ignoreLocation: true
   };
 
-  $: avatarToShow = tempFiles?.length > 0 ? URL.createObjectURL(tempFiles[0]) : $form.avatar;
-  $: fileNotUploaded = !tempFiles[0]; // if on upload tab, you must upload a file to enable save
-  $: fileTooBig = tempFiles[0]?.size > MAX_AVATAR_SIZE;
-  $: hideUploader = avatarToShow ? true : tempFiles.length > 0;
+  $: fileNotUploaded =
+    !$form.avatarFile || (Array.isArray($form.avatarFile) && $form.avatarFile.length === 0); // if on upload tab, you must upload a file to enable save
+
+  $: avatarToShow =
+    Array.isArray($form.avatarFile) && $form.avatarFile.length > 0
+      ? URL.createObjectURL($form.avatarFile[0])
+      : $form.avatar;
+
+  $: fileTooBig = Array.isArray($form.avatarFile) && $form.avatarFile[0]?.size > MAX_AVATAR_SIZE;
+  $: hideUploader = avatarToShow
+    ? true
+    : Array.isArray($form.avatarFile) && $form.avatarFile.length > 0;
 
   $: if (searchText) {
     const fuse = new Fuse(pictogramNames, options);
@@ -51,26 +55,25 @@
 
   const handleRemove = (e) => {
     e.stopPropagation();
-    tempFiles = [];
+    clearFileInput();
     $form.avatar = '';
     tempPictogram = selectedPictogramName || 'default';
     shouldValidate = false;
   };
 
-  const handleClose = (e) => {
+  const handleCancel = (e) => {
     e.stopPropagation();
-    if (!skipCloseActions) {
-      shouldValidate = false;
-      modalOpen = false;
-      $form.avatar = originalAvatar;
-      tempPictogram = selectedPictogramName; // reset to original pictogram
-      if (files?.length > 0) {
-        tempFiles = [...files]; // reset to original file
-      } else {
-        tempFiles = [];
-      }
+
+    shouldValidate = false;
+    modalOpen = false;
+    $form.avatar = originalAvatar;
+    tempPictogram = selectedPictogramName; // reset to original pictogram
+    if ($form.avatar) {
+      $form.avatarFile = [$form.avatar]; // reset to original file
+    } else {
+      clearFileInput();
     }
-    skipCloseActions = false;
+    fileUploaderRef.value = ''; // Reset the file input value to ensure input event detection
   };
 
   const handleChangeAvatar = (e) => {
@@ -78,10 +81,13 @@
     fileUploaderRef.click(); // re-open upload dialog
   };
 
+  const clearFileInput = () => {
+    $form.avatarFile = [];
+  };
+
   const handleSubmit = (e) => {
     e.stopPropagation();
 
-    skipCloseActions = true;
     shouldValidate = true;
 
     if (selectedRadioButton === 'upload') {
@@ -93,19 +99,15 @@
         errorMsg = AVATAR_FILE_SIZE_ERROR_TEXT;
         return;
       }
-      files = [...tempFiles];
-      modalOpen = false;
-      shouldValidate = false;
     } else {
       // pictogram tab
       selectedPictogramName = tempPictogram;
-      files = []; // remove saved avatar
-      tempFiles = [];
-      $form.avatar = '';
-
-      modalOpen = false;
-      shouldValidate = false;
+      clearFileInput();
+      $form.avatar = ''; // remove saved avatar
     }
+
+    modalOpen = false;
+    shouldValidate = false;
   };
 </script>
 
@@ -175,15 +177,17 @@
           <div class={twMerge('flex flex-col gap-2', hideUploader && 'hidden')}>
             <P color="text-gray-400">Upload image</P>
             <P size="sm" color="text-gray-500">Supported file types are .jpg and .png.</P>
-            <FileUploaderButton
-              bind:ref={fileUploaderRef}
-              bind:files={tempFiles}
-              name="avatarFile"
-              kind="tertiary"
-              labelText="Upload from computer"
-              accept={['.jpg', '.jpeg', '.png']}
+            <Button
+              on:click={(e) => {
+                e.stopPropagation();
+                fileUploaderRef?.click();
+              }}
+              tabindex={0}
               class="w-1/2"
-            />
+            >
+              Upload from computer
+            </Button>
+
             <input type="hidden" name="avatar" bind:value={$form.avatar} />
           </div>
 
@@ -203,9 +207,23 @@
       </div>
 
       <div id="child-flexbox-footer" class="flex justify-center">
-        <Button color="red" class="me-2" on:click={handleClose}>Cancel</Button>
+        <Button color="red" class="me-2" on:click={handleCancel}>Cancel</Button>
         <Button on:click={handleSubmit}>Save</Button>
       </div>
     </div>
   </Modal>
+  <!--    Important! This input must be outside of the modal or the image will be lost when the modal closes-->
+  <input
+    bind:this={fileUploaderRef}
+    on:input={(e) => {
+      // TODO - upload an image, click cancel, re-upload image and this on:input is not detected
+      console.log('input detected');
+      $form.avatarFile = Array.from(e.currentTarget.files ?? []);
+    }}
+    type="file"
+    tabindex="-1"
+    accept={['.jpg', '.jpeg', '.png']}
+    name="avatarFile"
+    class="sr-only"
+  />
 </div>
