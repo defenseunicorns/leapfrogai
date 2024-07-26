@@ -20,7 +20,6 @@ variables:
     description: The GPU class name for the model inferencing. Leave blank for CPU-only.
     default: ""
     pattern: "^(nvidia)?$"
-    prompt: true
 
 components:
   - name: whisper-model
