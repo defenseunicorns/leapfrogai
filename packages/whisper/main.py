@@ -20,13 +20,13 @@ def make_transcribe_request(filename, task, language, temperature, prompt):
 
     # Prepare kwargs with non-None values
     kwargs = {}
-    if task is not None:
+    if task:
         kwargs["task"] = task
-    if language is not None:
+    if language:
         kwargs["language"] = language
-    if temperature is not None:
+    if temperature:
         kwargs["temperature"] = temperature
-    if prompt is not None:
+    if prompt:
         kwargs["initial_prompt"] = prompt
 
     # Call transcribe with only non-None parameters
