@@ -39,11 +39,12 @@ We have decided to implement a multi-tiered approach to address the queueing and
 
 2. Implement a lightweight queueing solution using Supabase Realtime and FastAPI background tasks:
    - Utilize Supabase Realtime for task status updates (in-progress, complete, etc...) and basic queueing.
+    - In the event of issues with Supabase Realtime, fallback to RedPanda.
    - Leverage FastAPI's background tasks to handle long running operations asynchronously in the background.
 
 3. Prepare for future scaling by designing the system to easily integrate with a more robust queueing solution:
    - Design interfaces that can work with both our current lightweight solution and future, more robust options.
-   - Do not attempt to push Supabase Realtime beyond its designed limits, instead plan to use RabbitMQ if those needs surface.
+   - Do not attempt to push Supabase Realtime beyond its designed limits, instead plan to use RedPanda or RabbitMQ if those needs surface.
 
 ## Rationale
 1. Addressing underlying bottlenecks:
@@ -66,6 +67,7 @@ We chose this approach over alternatives for a few reasons:
 - When performing load testing on the system, the primary bottlenecks seem to be around the vectordb file indexing.
   - The issues related to this process should be able to be resolved by optimizations, a light amount of queueing, and background tasks.
   - Issues not related to indexing were primarily scalability issues. Which can be resolved via resource limits, throttling, improving horizontal and vertical scaling within the cluster.
+- Authentication will be an issue for every solution except Supabase Realtime.
 
 ## Alternatives
 Queueing Solutions Considered:
@@ -75,11 +77,15 @@ Queueing Solutions Considered:
 * Supabase Realtime: Lightweight and already integrated, but may not meet all future queuing needs.
   * Well maintained JS and Python libraries.
   * Can listen directly to db transactions.
+  * Already integrated with Supabase auth.
 * Kafka: Powerful but too heavy for our current requirements.
   * Well maintained JS and Python libraries.
   * Requires additional, potentially significant integration work to bring into the k8s cluster.
 * Celery: Good option for Python-based systems, but introduces additional dependencies.
   * Python library well maintained. JS library not well maintained.
+* RedPanda: Accessible internally and provides a scalable solution.
+  * Well maintained JS and Python libraries as it supports the same tooling as Kafka.
+  * Zarf/UDS bundle already available.
 * Custom Python solution: Flexible but requires significant unnecessary development effort given the tools already available.
 
 ## Related ADRs
@@ -91,3 +97,4 @@ Queueing Solutions Considered:
 3. Celery Documentation: https://docs.celeryq.dev/en/stable/
 4. Kafka Documentation: https://kafka.apache.org/
 5. RabbitMQ Documentation: https://www.rabbitmq.com/docs
+6. RedPanda: https://docs.redpanda.com/docs/
