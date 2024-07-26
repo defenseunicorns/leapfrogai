@@ -18,7 +18,6 @@ import { vi } from 'vitest';
 import { faker } from '@faker-js/faker';
 import { getLocalsMock } from '$lib/mocks/misc';
 
-
 describe('api keys', () => {
   let form: APIKeysForm;
   const keys = getFakeApiKeys({ numKeys: 4 });
