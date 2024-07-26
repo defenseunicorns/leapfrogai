@@ -32,10 +32,6 @@ on:
       # Ignore non e2e tests
       - "!tests/pytest/**"
 
-      # Ignore LFAI-UI things (for now?)
-      - "!src/leapfrogai_ui/**"
-      - "!packages/ui/**"
-
       # Ignore changes to the repeater model
       - "!packages/repeater/**"
 
@@ -129,11 +125,9 @@ jobs:
 
         # Run the playwright UI tests using the deployed Supabase endpoint
         - name: UI/API/Supabase E2E Playwright Tests
-          run: | 
-            echo "skip"
-#          run: |
-#            cp src/leapfrogai_ui/.env.example src/leapfrogai_ui/.env
-#            TEST_ENV=CI PUBLIC_DISABLE_KEYCLOAK=true PUBLIC_SUPABASE_ANON_KEY=$ANON_KEY npm --prefix src/leapfrogai_ui run test:integration:ci
+          run: |
+            cp src/leapfrogai_ui/.env.example src/leapfrogai_ui/.env
+            TEST_ENV=CI PUBLIC_DISABLE_KEYCLOAK=true PUBLIC_SUPABASE_ANON_KEY=$ANON_KEY npm --prefix src/leapfrogai_ui run test:integration:ci
 
         # The UI can be removed after the Playwright tests are finished
         - name: Cleanup UI
