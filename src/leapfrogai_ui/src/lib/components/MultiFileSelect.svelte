@@ -3,7 +3,7 @@
   import { ChevronDownOutline } from 'flowbite-svelte-icons';
   import type { FileRow, FilesForm } from '$lib/types/files';
   import { filesStore } from '$stores';
-  import FileUploadButton from '$components/FileUploadButton.svelte';
+  import FileUploadButton from '$components/FileFormUploadButton.svelte';
 
   export let files: Pick<FileRow, 'id' | 'text'>[] = [];
   export let accept: ReadonlyArray<string> = [];

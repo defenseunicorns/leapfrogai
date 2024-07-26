@@ -87,6 +87,9 @@
     }
     filesStore.setSelectedAssistantFileIds($form.data_sources || []);
   });
+
+  $: console.log('$form', $form)
+  $: console.log('files', files)
 </script>
 
 <form method="POST" enctype="multipart/form-data" use:enhance class="w-1/2">

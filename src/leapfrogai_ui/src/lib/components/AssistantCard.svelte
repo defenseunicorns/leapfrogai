@@ -41,6 +41,7 @@
       subtitle: 'Error deleting Assistant.'
     });
   };
+  $: console.log(`${assistant.metadata.avatar}?v=${new Date().getTime()}`)
 </script>
 
 <div transition:fade={{ duration: 150 }}>
