@@ -29,7 +29,6 @@ RUN groupadd -g 65532 vglusers && \
     usermod -a -G video,sudo nonroot
 
 # grab necesary python dependencies
-# TODO @JPERRY: Get context as to why we are doing this for this Dockerfile but not our other ones
 RUN apt-get -y update \
     && apt-get install -y software-properties-common \
     && add-apt-repository universe \
@@ -39,13 +38,16 @@ RUN apt-get -y update \
 # get deps for vllm compilation, model download, and pyenv
 RUN apt-get -y install git python3-venv make build-essential libssl-dev zlib1g-dev libbz2-dev libreadline-dev libsqlite3-dev wget curl llvm libncurses5-dev libncursesw5-dev tk-dev libffi-dev
 
-USER nonroot
 WORKDIR /home/leapfrogai
 
-COPY --from=sdk --chown=nonroot:nonroot /leapfrogai/${SDK_DEST} ./${SDK_DEST}
-COPY --chown=nonroot:nonroot packages/vllm packages/vllm
+COPY --from=sdk /leapfrogai/${SDK_DEST} ./${SDK_DEST}
+COPY packages/vllm packages/vllm
 
-# # create virtual environment for light-weight portability and minimal libraries
+RUN chown -R 65532:65532 /home/leapfrogai
+
+USER 65532
+
+# create virtual environment for light-weight portability and minimal libraries
 RUN git clone --depth=1 https://github.com/pyenv/pyenv.git .pyenv
 ENV PYENV_ROOT="/home/leapfrogai/.pyenv"
 ENV PATH="$PYENV_ROOT/shims:$PYENV_ROOT/bin:$PATH"
@@ -88,15 +90,18 @@ RUN groupadd -g 65532 vglusers && \
 RUN apt-get -y update
 RUN apt-get -y install git wget build-essential libssl-dev zlib1g-dev libffi-dev
 
-USER nonroot
-
 WORKDIR /home/leapfrogai
 
-COPY --from=sdk --chown=nonroot:nonroot /leapfrogai/${SDK_DEST} ./${SDK_DEST}
-COPY --from=builder --chown=nonroot:nonroot /home/leapfrogai/.venv /home/leapfrogai/.venv
-COPY --from=builder --chown=nonroot:nonroot /home/leapfrogai/packages/vllm/src /home/leapfrogai/packages/vllm/src
+COPY --from=sdk /leapfrogai/${SDK_DEST} ./${SDK_DEST}
+COPY --from=builder /home/leapfrogai/.venv /home/leapfrogai/.venv
+COPY --from=builder /home/leapfrogai/packages/vllm/src /home/leapfrogai/packages/vllm/src
 
-# # create virtual environment for light-weight portability and minimal libraries
+# NOTE: hangs here for a bit but eventually continues
+RUN chown -R 65532:65532 /home/leapfrogai
+
+USER 65532
+
+# create virtual environment for light-weight portability and minimal libraries
 RUN git clone --depth=1 https://github.com/pyenv/pyenv.git .pyenv
 ENV PYENV_ROOT="/home/leapfrogai/.pyenv"
 ENV PATH="$PYENV_ROOT/shims:$PYENV_ROOT/bin:$PATH"

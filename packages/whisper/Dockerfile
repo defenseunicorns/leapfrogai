@@ -37,7 +37,7 @@ WORKDIR /leapfrogai
 
 COPY --from=ffmpeg /usr/bin/ffmpeg /usr/bin
 COPY --from=ffmpeg /usr/bin/ffprobe /usr/bin
-COPY --from=ffmpeg /usr/lib/lib* /usr/lib
+COPY --from=ffmpeg /usr/lib/lib* /usr/lib/
 
 COPY --from=builder /leapfrogai/.venv/ /leapfrogai/.venv/
 COPY --from=builder /leapfrogai/.model/ /leapfrogai/.model/
