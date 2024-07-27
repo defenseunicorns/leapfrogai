@@ -18,7 +18,9 @@ dependencies = [  # Dev dependencies needed for all of lfai
     "httpx",
     "ruff",
     "python-dotenv",
-    "pytest-asyncio"
+    "pytest-asyncio",
+    "locust",
+    "requests-toolbelt"
 ]
 requires-python = "~=3.11"
 
