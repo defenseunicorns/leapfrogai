@@ -9,7 +9,7 @@ SILENT_ZARF_FLAGS := --no-progress -l warn --no-color
 MAX_JOBS := 4
 ######################################################################################
 
-.PHONY: help silent-flags
+.PHONY: help
 help: ## Display this help information
 	@grep -E '^[a-zA-Z0-9_-]+:.*?## .*$$' $(MAKEFILE_LIST) \
 		| sort | awk 'BEGIN {FS = ":.*?## "}; \
