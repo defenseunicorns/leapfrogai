@@ -4,18 +4,16 @@ REG_NAME ?= registry
 LOCAL_VERSION ?= $(shell git rev-parse --short HEAD)
 DOCKER_FLAGS :=
 ZARF_FLAGS :=
+SILENT_DOCKER_FLAGS := --quiet
+SILENT_ZARF_FLAGS := --no-progress -l warn --no-color
 MAX_JOBS := 4
 ######################################################################################
 
-.PHONY: help
+.PHONY: help silent-flags
 help: ## Display this help information
 	@grep -E '^[a-zA-Z0-9_-]+:.*?## .*$$' $(MAKEFILE_LIST) \
 		| sort | awk 'BEGIN {FS = ":.*?## "}; \
 		{printf "\033[36m%-30s\033[0m %s\n", $$1, $$2}'
-
-silent-flags:
-    $(eval DOCKER_FLAGS := $(DOCKER_FLAGS) --quiet)
-    $(eval ZARF_FLAGS := $(ZARF_FLAGS) --no-progress -l warn --no-color)
 
 clean: ## Clean up all the things (packages, build dirs, compiled .whl files, python eggs)
 	-rm zarf-package-*.tar.zst
@@ -63,6 +61,8 @@ build-supabase: local-registry docker-supabase
 	uds zarf package create packages/supabase -a ${ARCH} -o packages/supabase --registry-override=ghcr.io=localhost:${REG_PORT} --set IMAGE_VERSION=${LOCAL_VERSION} ${ZARF_FLAGS} --confirm
 
 docker-api: local-registry sdk-wheel
+	@echo $(DOCKER_FLAGS)
+	@echo $(ZARF_FLAGS)
 	## Build the API image (and tag it for the local registry)
 	docker build ${DOCKER_FLAGS} --platform=linux/${ARCH} --build-arg LOCAL_VERSION=${LOCAL_VERSION} -t ghcr.io/defenseunicorns/leapfrogai/leapfrogai-api:${LOCAL_VERSION} -f packages/api/Dockerfile .
 	docker tag ghcr.io/defenseunicorns/leapfrogai/leapfrogai-api:${LOCAL_VERSION} localhost:${REG_PORT}/defenseunicorns/leapfrogai/leapfrogai-api:${LOCAL_VERSION}
@@ -167,51 +167,49 @@ include tests/make-tests.mk
 
 include packages/k3d-gpu/Makefile
 
-
-
-silent-build-api-parallel: silent-flags
+silent-build-api-parallel:
 	@echo "API build started"
 	@touch .build/api.log
-	@$(MAKE) build-api > .build/api.log 2>&1
+	@$(MAKE) build-api DOCKER_FLAGS="$(DOCKER_FLAGS) $(SILENT_DOCKER_FLAGS)" ZARF_FLAGS="$(ZARF_FLAGS) $(SILENT_ZARF_FLAGS)" > .build/api.log 2>&1
 	@echo "API build completed"
 
-silent-build-supabase-parallel: silent-flags
+silent-build-supabase-parallel:
 	@echo "Supabase build started"
 	@touch .build/supabase.log
 	@$(MAKE) build-supabase > .build/supabase.log 2>&1
 	@echo "Supabase build completed"
 
-silent-build-ui-parallel: silent-flags
+silent-build-ui-parallel:
 	@echo "UI build started"
 	@touch .build/ui.log
-	@$(MAKE) build-ui > .build/ui.log 2>&1
+	@$(MAKE) build-ui DOCKER_FLAGS="$(DOCKER_FLAGS) $(SILENT_DOCKER_FLAGS)" ZARF_FLAGS="$(ZARF_FLAGS) $(SILENT_ZARF_FLAGS)" > .build/ui.log 2>&1
 	@echo "UI build completed"
 
-silent-build-vllm-parallel: silent-flags
+silent-build-vllm-parallel:
 	@echo "VLLM build started"
 	@touch .build/vllm.log
-	@$(MAKE) build-vllm > .build/vllm.log 2>&1
+	@$(MAKE) build-vllm DOCKER_FLAGS="$(DOCKER_FLAGS) $(SILENT_DOCKER_FLAGS)" ZARF_FLAGS="$(ZARF_FLAGS) $(SILENT_ZARF_FLAGS)" > .build/vllm.log 2>&1
 	@echo "VLLM build completed"
 
-silent-build-llama-cpp-python-parallel: silent-flags
+silent-build-llama-cpp-python-parallel:
 	@echo "llama-cpp-python build started"
 	@touch .build/llama-cpp-python.log
-	@$(MAKE) build-llama-cpp-python > .build/llama-cpp-python.log 2>&1
+	@$(MAKE) build-llama-cpp-python DOCKER_FLAGS="$(DOCKER_FLAGS) $(SILENT_DOCKER_FLAGS)" ZARF_FLAGS="$(ZARF_FLAGS) $(SILENT_ZARF_FLAGS)" > .build/llama-cpp-python.log 2>&1
 	@echo "llama-cpp-python build completed"
 
-silent-build-text-embeddings-parallel: silent-flags
+silent-build-text-embeddings-parallel:
 	@echo "text-embeddings build started"
 	@touch .build/text-embeddings.log
-	@$(MAKE) build-text-embeddings > .build/text-embeddings.log 2>&1
+	@$(MAKE) build-text-embeddings DOCKER_FLAGS="$(DOCKER_FLAGS) $(SILENT_DOCKER_FLAGS)" ZARF_FLAGS="$(ZARF_FLAGS) $(SILENT_ZARF_FLAGS)" > .build/text-embeddings.log 2>&1
 	@echo "text-embeddings build completed"
 
-silent-build-whisper-parallel: silent-flags
+silent-build-whisper-parallel:
 	@echo "whisper build started"
 	@touch .build/whisper.log
-	@$(MAKE) build-whisper > .build/whisper.log 2>&1
+	@$(MAKE) build-whisper DOCKER_FLAGS="$(DOCKER_FLAGS) $(SILENT_DOCKER_FLAGS)" ZARF_FLAGS="$(ZARF_FLAGS) $(SILENT_ZARF_FLAGS)" > .build/whisper.log 2>&1
 	@echo "whisper build completed"
 
-silent-build-all: silent-flags
+silent-build-all:
 	@mkdir -p .build
 	@echo "Starting parallel builds..."
 	@echo "Logs at .build/*.log"
