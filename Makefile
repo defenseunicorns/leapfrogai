@@ -170,88 +170,109 @@ include packages/k3d-gpu/Makefile
 
 silent-build-api-parallel:
 	@echo "API build started"
-	@touch .logs/api.log
+	@mkdir -p .logs
 	@$(MAKE) build-api DOCKER_FLAGS="$(DOCKER_FLAGS) $(SILENT_DOCKER_FLAGS)" ZARF_FLAGS="$(ZARF_FLAGS) $(SILENT_ZARF_FLAGS)" > .logs/build-api.log 2>&1
 	@echo "API build completed"
 
 silent-build-supabase-parallel:
 	@echo "Supabase build started"
-	@touch .logs/supabase.log
+	@mkdir -p .logs
 	@$(MAKE) build-supabase DOCKER_FLAGS="$(DOCKER_FLAGS) $(SILENT_DOCKER_FLAGS)" ZARF_FLAGS="$(ZARF_FLAGS) $(SILENT_ZARF_FLAGS)" > .logs/build-supabase.log 2>&1
 	@echo "Supabase build completed"
 
 silent-build-ui-parallel:
 	@echo "UI build started"
-	@touch .logs/ui.log
+	@mkdir -p .logs
 	@$(MAKE) build-ui DOCKER_FLAGS="$(DOCKER_FLAGS) $(SILENT_DOCKER_FLAGS)" ZARF_FLAGS="$(ZARF_FLAGS) $(SILENT_ZARF_FLAGS)" > .logs/build-ui.log 2>&1
 	@echo "UI build completed"
 
 silent-build-vllm-parallel:
 	@echo "VLLM build started"
-	@touch .logs/vllm.log
+	@mkdir -p .logs
 	@$(MAKE) build-vllm DOCKER_FLAGS="$(DOCKER_FLAGS) $(SILENT_DOCKER_FLAGS)" ZARF_FLAGS="$(ZARF_FLAGS) $(SILENT_ZARF_FLAGS)" > .logs/build-vllm.log 2>&1
 	@echo "VLLM build completed"
 
 silent-build-llama-cpp-python-parallel:
 	@echo "llama-cpp-python build started"
-	@touch .logs/llama-cpp-python.log
+	@mkdir -p .logs
 	@$(MAKE) build-llama-cpp-python DOCKER_FLAGS="$(DOCKER_FLAGS) $(SILENT_DOCKER_FLAGS)" ZARF_FLAGS="$(ZARF_FLAGS) $(SILENT_ZARF_FLAGS)" > .logs/build-llama-cpp-python.log 2>&1
 	@echo "llama-cpp-python build completed"
 
 silent-build-text-embeddings-parallel:
 	@echo "text-embeddings build started"
-	@touch .logs/text-embeddings.log
+	@mkdir -p .logs
 	@$(MAKE) build-text-embeddings DOCKER_FLAGS="$(DOCKER_FLAGS) $(SILENT_DOCKER_FLAGS)" ZARF_FLAGS="$(ZARF_FLAGS) $(SILENT_ZARF_FLAGS)" > .logs/build-text-embeddings.log 2>&1
 	@echo "text-embeddings build completed"
 
 silent-build-whisper-parallel:
 	@echo "whisper build started"
-	@touch .logs/whisper.log
+	@mkdir -p .logs
 	@$(MAKE) build-whisper DOCKER_FLAGS="$(DOCKER_FLAGS) $(SILENT_DOCKER_FLAGS)" ZARF_FLAGS="$(ZARF_FLAGS) $(SILENT_ZARF_FLAGS)" > .logs/build-whisper.log 2>&1
 	@echo "whisper build completed"
 
 silent-build-all:
-	@mkdir -p .logs
 	@echo "Starting parallel builds..."
 	@echo "Logs at .logs/*.log"
+	@mkdir -p .logs
 	@$(MAKE) -j${MAX_JOBS} silent-build-api-parallel silent-build-supabase-parallel silent-build-ui-parallel silent-build-vllm-parallel silent-build-llama-cpp-python-parallel silent-build-text-embeddings-parallel silent-build-whisper-parallel
 	@echo "All builds completed"
 
 silent-build-gpu:
-	@mkdir -p .logs
 	@echo "Starting parallel builds..."
 	@echo "Logs at .logs/*.log"
+	@mkdir -p .logs
 	@$(MAKE) -j${MAX_JOBS} silent-build-api-parallel silent-build-supabase-parallel silent-build-ui-parallel silent-build-vllm-parallel silent-build-text-embeddings-parallel silent-build-whisper-parallel
 	@echo "All builds completed"
 
 silent-build-cpu:
-	@mkdir -p .logs
 	@echo "Starting parallel builds..."
 	@echo "Logs at .logs/*.log"
+	@mkdir -p .logs
 	@$(MAKE) -j${MAX_JOBS} silent-build-api-parallel silent-build-supabase-parallel silent-build-ui-parallel silent-build-llama-cpp-python-parallel silent-build-text-embeddings-parallel silent-build-whisper-parallel
 	@echo "All builds completed"
 
 # Define individual deployment targets
 silent-deploy-supabase-package:
+	@echo "Starting Supabase deployment..."
+	@mkdir -p .logs
 	@uds zarf package deploy packages/supabase/zarf-package-supabase-${ARCH}-${LOCAL_VERSION}.tar.zst ${ZARF_FLAGS} --confirm > .logs/deploy-supabase.log 2>&1
+	@echo "Supabase deployment completed"
 
 silent-deploy-api-package:
+	@echo "Starting API deployment..."
+	@mkdir -p .logs
 	@uds zarf package deploy packages/api/zarf-package-leapfrogai-api-${ARCH}-${LOCAL_VERSION}.tar.zst ${ZARF_FLAGS} --confirm > .logs/deploy-api.log 2>&1
+	@echo "API deployment completed"
 
 silent-deploy-ui-package:
+	@echo "Starting UI deployment..."
+	@mkdir -p .logs
 	@uds zarf package deploy packages/ui/zarf-package-leapfrogai-ui-${ARCH}-${LOCAL_VERSION}.tar.zst ${ZARF_FLAGS} --confirm > .logs/deploy-ui.log 2>&1
+	@echo "UI deployment completed"
 
 silent-deploy-llama-cpp-python-package:
+	@echo "Starting llama-cpp-python deployment..."
+	@mkdir -p .logs
 	@uds zarf package deploy packages/llama-cpp-python/zarf-package-llama-cpp-python-${ARCH}-${LOCAL_VERSION}.tar.zst ${ZARF_FLAGS} --confirm > .logs/deploy-llama-cpp-python.log 2>&1
+	@echo "llama-cpp-python deployment completed"
 
 silent-deploy-vllm-package:
+	@echo "Starting VLLM deployment..."
+	@mkdir -p .logs
 	@uds zarf package deploy packages/vllm/zarf-package-vllm-${ARCH}-${LOCAL_VERSION}.tar.zst ${ZARF_FLAGS} --confirm > .logs/deploy-vllm.log 2>&1
+	@echo "VLLM deployment completed"
 
 silent-deploy-text-embeddings-package:
+	@echo "Starting text-embeddings deployment..."
+	@mkdir -p .logs
 	@uds zarf package deploy packages/text-embeddings/zarf-package-text-embeddings-${ARCH}-${LOCAL_VERSION}.tar.zst ${ZARF_FLAGS} --confirm > .logs/deploy-text-embeddings.log 2>&1
+	@echo "text-embeddings deployment completed"
 
 silent-deploy-whisper-package:
-	@uds zarf package deploy packages/whisper/zarf-package-whisper-${ARCH}-${LOCAL_VERSION}.tar.zst --set=GPU_CLASS_NAME="nvidia" ${ZARF_FLAGS} --confirm > .logs/deploy-whisper.log 2>&1
+	@echo "Starting whisper deployment..."
+	@mkdir -p .logs
+	@uds zarf package deploy packages/whisper/zarf-package-whisper-${ARCH}-${LOCAL_VERSION}.tar.zst ${ZARF_FLAGS} --confirm > .logs/deploy-whisper.log 2>&1
+	@echo "whisper deployment completed"
 
 silent-deploy-cpu:
 	@echo "Logs at .logs/*.log"
@@ -304,7 +325,7 @@ silent-fresh-leapfrogai-cpu:
 	@echo "Logs at .logs/*.log"
 	@mkdir -p .logs
 	@echo "Creating a uds cpu-only cluster..."
-	@$(MAKE) create-uds-cpu-cluster DOCKER_FLAGS="${SILENT_DOCKER_FLAGS}" ZARF_FLAGS="${SILENT_ZARF_FLAGS}" > .logs/create-uds-gpu-cluster.log 2>&1
+	@$(MAKE) create-uds-cpu-cluster DOCKER_FLAGS="${SILENT_DOCKER_FLAGS}" ZARF_FLAGS="${SILENT_ZARF_FLAGS}" > .logs/create-uds-cpu-cluster.log 2>&1
 	@echo "Building all packages..."
 	@$(MAKE) silent-build-cpu
 	@echo "Deploying all packages..."
