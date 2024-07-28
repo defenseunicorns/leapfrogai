@@ -277,7 +277,7 @@ silent-deploy-whisper-package:
 silent-deploy-cpu:
 	@echo "Logs at .logs/*.log"
 	@echo "Starting parallel deployments..."
-	@echo "Deploying Supabase first..."
+	@echo "Deploying Supabase first to avoid migration issues."
 	@$(MAKE) silent-deploy-supabase-package ZARF_FLAGS="$(ZARF_FLAGS) $(SILENT_ZARF_FLAGS)"
 	@echo "Deploying the rest of the packages..."
 	@$(MAKE) -j${MAX_JOBS} \
@@ -291,7 +291,7 @@ silent-deploy-cpu:
 silent-deploy-gpu:
 	@echo "Logs at .logs/*.log"
 	@echo "Starting parallel deployments..."
-	@echo "Deploying Supabase first..."
+	@echo "Deploying Supabase first to avoid migration issues."
 	@$(MAKE) silent-deploy-supabase-package ZARF_FLAGS="$(ZARF_FLAGS) $(SILENT_ZARF_FLAGS)"
 	@echo "Deploying the rest of the packages..."
 	@$(MAKE) -j${MAX_JOBS} \
