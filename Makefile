@@ -176,7 +176,7 @@ silent-build-api-parallel:
 silent-build-supabase-parallel:
 	@echo "Supabase build started"
 	@touch .build/supabase.log
-	@$(MAKE) build-supabase > .build/supabase.log 2>&1
+	@$(MAKE) build-supabase DOCKER_FLAGS="$(DOCKER_FLAGS) $(SILENT_DOCKER_FLAGS)" ZARF_FLAGS="$(ZARF_FLAGS) $(SILENT_ZARF_FLAGS)" > .build/supabase.log 2>&1
 	@echo "Supabase build completed"
 
 silent-build-ui-parallel:
