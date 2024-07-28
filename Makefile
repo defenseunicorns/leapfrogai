@@ -16,6 +16,7 @@ help: ## Display this help information
 		{printf "\033[36m%-30s\033[0m %s\n", $$1, $$2}'
 
 clean: ## Clean up all the things (packages, build dirs, compiled .whl files, python eggs)
+	-rm -rf .logs
 	-rm zarf-package-*.tar.zst
 	-rm packages/**/zarf-package-*.tar.zst
 	-rm -rf build/*
@@ -169,49 +170,99 @@ include packages/k3d-gpu/Makefile
 
 silent-build-api-parallel:
 	@echo "API build started"
-	@touch .build/api.log
-	@$(MAKE) build-api DOCKER_FLAGS="$(DOCKER_FLAGS) $(SILENT_DOCKER_FLAGS)" ZARF_FLAGS="$(ZARF_FLAGS) $(SILENT_ZARF_FLAGS)" > .build/api.log 2>&1
+	@touch .logs/api.log
+	@$(MAKE) build-api DOCKER_FLAGS="$(DOCKER_FLAGS) $(SILENT_DOCKER_FLAGS)" ZARF_FLAGS="$(ZARF_FLAGS) $(SILENT_ZARF_FLAGS)" > .logs/build-api.log 2>&1
 	@echo "API build completed"
 
 silent-build-supabase-parallel:
 	@echo "Supabase build started"
-	@touch .build/supabase.log
-	@$(MAKE) build-supabase DOCKER_FLAGS="$(DOCKER_FLAGS) $(SILENT_DOCKER_FLAGS)" ZARF_FLAGS="$(ZARF_FLAGS) $(SILENT_ZARF_FLAGS)" > .build/supabase.log 2>&1
+	@touch .logs/supabase.log
+	@$(MAKE) build-supabase DOCKER_FLAGS="$(DOCKER_FLAGS) $(SILENT_DOCKER_FLAGS)" ZARF_FLAGS="$(ZARF_FLAGS) $(SILENT_ZARF_FLAGS)" > .logs/build-supabase.log 2>&1
 	@echo "Supabase build completed"
 
 silent-build-ui-parallel:
 	@echo "UI build started"
-	@touch .build/ui.log
-	@$(MAKE) build-ui DOCKER_FLAGS="$(DOCKER_FLAGS) $(SILENT_DOCKER_FLAGS)" ZARF_FLAGS="$(ZARF_FLAGS) $(SILENT_ZARF_FLAGS)" > .build/ui.log 2>&1
+	@touch .logs/ui.log
+	@$(MAKE) build-ui DOCKER_FLAGS="$(DOCKER_FLAGS) $(SILENT_DOCKER_FLAGS)" ZARF_FLAGS="$(ZARF_FLAGS) $(SILENT_ZARF_FLAGS)" > .logs/build-ui.log 2>&1
 	@echo "UI build completed"
 
 silent-build-vllm-parallel:
 	@echo "VLLM build started"
-	@touch .build/vllm.log
-	@$(MAKE) build-vllm DOCKER_FLAGS="$(DOCKER_FLAGS) $(SILENT_DOCKER_FLAGS)" ZARF_FLAGS="$(ZARF_FLAGS) $(SILENT_ZARF_FLAGS)" > .build/vllm.log 2>&1
+	@touch .logs/vllm.log
+	@$(MAKE) build-vllm DOCKER_FLAGS="$(DOCKER_FLAGS) $(SILENT_DOCKER_FLAGS)" ZARF_FLAGS="$(ZARF_FLAGS) $(SILENT_ZARF_FLAGS)" > .logs/build-vllm.log 2>&1
 	@echo "VLLM build completed"
 
 silent-build-llama-cpp-python-parallel:
 	@echo "llama-cpp-python build started"
-	@touch .build/llama-cpp-python.log
-	@$(MAKE) build-llama-cpp-python DOCKER_FLAGS="$(DOCKER_FLAGS) $(SILENT_DOCKER_FLAGS)" ZARF_FLAGS="$(ZARF_FLAGS) $(SILENT_ZARF_FLAGS)" > .build/llama-cpp-python.log 2>&1
+	@touch .logs/llama-cpp-python.log
+	@$(MAKE) build-llama-cpp-python DOCKER_FLAGS="$(DOCKER_FLAGS) $(SILENT_DOCKER_FLAGS)" ZARF_FLAGS="$(ZARF_FLAGS) $(SILENT_ZARF_FLAGS)" > .logs/build-llama-cpp-python.log 2>&1
 	@echo "llama-cpp-python build completed"
 
 silent-build-text-embeddings-parallel:
 	@echo "text-embeddings build started"
-	@touch .build/text-embeddings.log
-	@$(MAKE) build-text-embeddings DOCKER_FLAGS="$(DOCKER_FLAGS) $(SILENT_DOCKER_FLAGS)" ZARF_FLAGS="$(ZARF_FLAGS) $(SILENT_ZARF_FLAGS)" > .build/text-embeddings.log 2>&1
+	@touch .logs/text-embeddings.log
+	@$(MAKE) build-text-embeddings DOCKER_FLAGS="$(DOCKER_FLAGS) $(SILENT_DOCKER_FLAGS)" ZARF_FLAGS="$(ZARF_FLAGS) $(SILENT_ZARF_FLAGS)" > .logs/build-text-embeddings.log 2>&1
 	@echo "text-embeddings build completed"
 
 silent-build-whisper-parallel:
 	@echo "whisper build started"
-	@touch .build/whisper.log
-	@$(MAKE) build-whisper DOCKER_FLAGS="$(DOCKER_FLAGS) $(SILENT_DOCKER_FLAGS)" ZARF_FLAGS="$(ZARF_FLAGS) $(SILENT_ZARF_FLAGS)" > .build/whisper.log 2>&1
+	@touch .logs/whisper.log
+	@$(MAKE) build-whisper DOCKER_FLAGS="$(DOCKER_FLAGS) $(SILENT_DOCKER_FLAGS)" ZARF_FLAGS="$(ZARF_FLAGS) $(SILENT_ZARF_FLAGS)" > .logs/build-whisper.log 2>&1
 	@echo "whisper build completed"
 
 silent-build-all:
-	@mkdir -p .build
+	@mkdir -p .logs
 	@echo "Starting parallel builds..."
-	@echo "Logs at .build/*.log"
+	@echo "Logs at .logs/*.log"
 	@$(MAKE) -j${MAX_JOBS} silent-build-api-parallel silent-build-supabase-parallel silent-build-ui-parallel silent-build-vllm-parallel silent-build-llama-cpp-python-parallel silent-build-text-embeddings-parallel silent-build-whisper-parallel
 	@echo "All builds completed"
+
+# Define individual deployment targets
+silent-deploy-supabase-package:
+	@uds zarf package deploy packages/supabase/zarf-package-supabase-${ARCH}-${LOCAL_VERSION}.tar.zst ${ZARF_FLAGS} --confirm > .logs/deploy-supabase.log 2>&1
+
+silent-deploy-api-package:
+	@uds zarf package deploy packages/api/zarf-package-leapfrogai-api-${ARCH}-${LOCAL_VERSION}.tar.zst ${ZARF_FLAGS} --confirm > .logs/deploy-api.log 2>&1
+
+silent-deploy-ui-package:
+	@uds zarf package deploy packages/ui/zarf-package-leapfrogai-ui-${ARCH}-${LOCAL_VERSION}.tar.zst ${ZARF_FLAGS} --confirm > .logs/deploy-ui.log 2>&1
+
+silent-deploy-vllm-package:
+	@uds zarf package deploy packages/vllm/zarf-package-vllm-${ARCH}-${LOCAL_VERSION}.tar.zst ${ZARF_FLAGS} --confirm > .logs/deploy-vllm.log 2>&1
+
+silent-deploy-text-embeddings-package:
+	@uds zarf package deploy packages/text-embeddings/zarf-package-text-embeddings-${ARCH}-${LOCAL_VERSION}.tar.zst ${ZARF_FLAGS} --confirm > .logs/deploy-text-embeddings.log 2>&1
+
+silent-deploy-whisper-package:
+	@uds zarf package deploy packages/whisper/zarf-package-whisper-${ARCH}-${LOCAL_VERSION}.tar.zst --set=GPU_CLASS_NAME="nvidia" ${ZARF_FLAGS} --confirm > .logs/deploy-whisper.log 2>&1
+
+silent-deploy-gpu:
+	@echo "Logs at .logs/*.log"
+	@echo "Starting parallel deployments..."
+	@echo "Deploying Supabase first..."
+	@$(MAKE) silent-deploy-supabase-package ZARF_FLAGS="$(ZARF_FLAGS) $(SILENT_ZARF_FLAGS)"
+	@echo "Deploying the rest of the packages..."
+	@$(MAKE) -j${MAX_JOBS} \
+		silent-deploy-api-package ZARF_FLAGS="$(ZARF_FLAGS) $(SILENT_ZARF_FLAGS)" \
+		silent-deploy-ui-package ZARF_FLAGS="$(ZARF_FLAGS) $(SILENT_ZARF_FLAGS)" \
+		silent-deploy-vllm-package ZARF_FLAGS="$(ZARF_FLAGS) $(SILENT_ZARF_FLAGS)" \
+		silent-deploy-text-embeddings-package ZARF_FLAGS="$(ZARF_FLAGS) $(SILENT_ZARF_FLAGS) --set=GPU_CLASS_NAME='nvidia'" \
+		silent-deploy-whisper-package ZARF_FLAGS="$(ZARF_FLAGS) $(SILENT_ZARF_FLAGS) --set=GPU_CLASS_NAME='nvidia'"
+	@echo "All deployments completed"
+
+silent-fresh-leapfrogai:
+	@echo "Cleaning up previous artifacts..."
+	@$(MAKE) clean > /dev/null 2>&1
+	@echo "Logs at .logs/*.log"
+	@mkdir -p .logs
+	@echo "Creating a uds gpu cluster..."
+	@$(MAKE) create-uds-gpu-cluster DOCKER_FLAGS="${SILENT_DOCKER_FLAGS}" ZARF_FLAGS="${SILENT_ZARF_FLAGS}" > .logs/create-uds-gpu-cluster.log 2>&1
+	@echo "Testing the uds gpu cluster..."
+	@$(MAKE) test-uds-gpu-cluster > .logs/test-uds-gpu-cluster.log 2>&1
+	@echo "Building all packages..."
+	@$(MAKE) silent-build-all
+	@echo "Deploying all packages..."
+	@$(MAKE) silent-deploy-gpu
+	@echo "Done!
+	@echo "UI is available at https://ai.uds.dev"
+	@echo "API is available at https://leapfrogai-api.uds.dev"

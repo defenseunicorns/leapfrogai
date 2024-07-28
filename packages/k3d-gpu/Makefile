@@ -2,16 +2,19 @@ MAKEFILE_DIR := $(dir $(abspath $(lastword $(MAKEFILE_LIST))))
 
 UDS_VERSION := 0.24.1
 LOCAL_VERSION ?= $(shell git rev-parse --short HEAD)
-
+DOCKER_FLAGS :=
+ZARF_FLAGS :=
 
 build-k3d-gpu:
 	@cd ${MAKEFILE_DIR} && \
 	docker build \
+	${DOCKER_FLAGS} \
 	--platform linux/amd64 \
 	-t ghcr.io/defenseunicorns/leapfrogai/k3d-gpu:${LOCAL_VERSION} .
 
 create-uds-gpu-cluster: build-k3d-gpu
 	@uds deploy k3d-core-slim-dev:${UDS_VERSION} \
+	${ZARF_FLAGS} \
 	--set K3D_EXTRA_ARGS="--gpus=all \
 	--image=ghcr.io/defenseunicorns/leapfrogai/k3d-gpu:${LOCAL_VERSION}" --confirm
 
