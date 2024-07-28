@@ -32,6 +32,9 @@ test-int-api: set-supabase
 test-unit: set-supabase
 	PYTHONPATH=$$(pwd) pytest -vv -s tests/unit
 
+test-load:
+	locust -f ${PWD}/tests/load/loadtest.py --web-port 8089
+
 debug: set-supabase
 	@echo ${SUPABASE_URL}
 	@echo ${SUPABASE_ANON_KEY}

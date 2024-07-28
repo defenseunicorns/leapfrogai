@@ -1,8 +1,51 @@
 import type { Actions } from './$types';
-import { redirect } from '@sveltejs/kit';
+import { fail, redirect } from '@sveltejs/kit';
 import { env } from '$env/dynamic/private';
+import { setError, superValidate } from 'sveltekit-superforms';
+import { yup } from 'sveltekit-superforms/adapters';
+import { emailPasswordSchema } from '$schemas/auth';
 
 export const actions: Actions = {
+  signup: async ({ request, locals: { supabase } }) => {
+    const form = await superValidate(request, yup(emailPasswordSchema));
+
+    if (!form.valid) {
+      return fail(400, { form });
+    }
+
+    const email = form.data.email;
+    const password = form.data.password;
+
+    const { error } = await supabase.auth.signUp({ email, password });
+    if (error) {
+      if (error.code === 'user_already_exists') {
+        console.log('user already exists');
+        return setError(form, 'email', 'User already exists');
+      }
+      console.error(error);
+      return setError(form, 'email', 'Unknown error');
+    } else {
+      redirect(303, '/chat');
+    }
+  },
+  login: async ({ request, locals: { supabase } }) => {
+    const form = await superValidate(request, yup(emailPasswordSchema));
+
+    if (!form.valid) {
+      return fail(400, { form });
+    }
+
+    const email = form.data.email;
+    const password = form.data.password;
+
+    const { error } = await supabase.auth.signInWithPassword({ email, password });
+    if (error) {
+      console.error(error);
+      return setError(form, 'email', 'Login error');
+    } else {
+      redirect(303, '/chat');
+    }
+  },
   signout: async ({ locals: { supabase, session } }) => {
     if (session) {
       if (session.provider_refresh_token) {
