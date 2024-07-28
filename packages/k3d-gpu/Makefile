@@ -18,6 +18,11 @@ create-uds-gpu-cluster: build-k3d-gpu
 	--set K3D_EXTRA_ARGS="--gpus=all \
 	--image=ghcr.io/defenseunicorns/leapfrogai/k3d-gpu:${LOCAL_VERSION}" --confirm
 
+create-uds-cpu-cluster: build-k3d-gpu
+	@uds deploy k3d-core-slim-dev:${UDS_VERSION} \
+	${ZARF_FLAGS} \
+	--confirm
+
 test-uds-gpu-cluster:
 	@cd ${MAKEFILE_DIR} && \
 	uds zarf tools kubectl apply -f ./test/cuda-vector-add.yaml

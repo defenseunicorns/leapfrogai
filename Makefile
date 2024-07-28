@@ -217,6 +217,20 @@ silent-build-all:
 	@$(MAKE) -j${MAX_JOBS} silent-build-api-parallel silent-build-supabase-parallel silent-build-ui-parallel silent-build-vllm-parallel silent-build-llama-cpp-python-parallel silent-build-text-embeddings-parallel silent-build-whisper-parallel
 	@echo "All builds completed"
 
+silent-build-gpu:
+	@mkdir -p .logs
+	@echo "Starting parallel builds..."
+	@echo "Logs at .logs/*.log"
+	@$(MAKE) -j${MAX_JOBS} silent-build-api-parallel silent-build-supabase-parallel silent-build-ui-parallel silent-build-vllm-parallel silent-build-text-embeddings-parallel silent-build-whisper-parallel
+	@echo "All builds completed"
+
+silent-build-cpu:
+	@mkdir -p .logs
+	@echo "Starting parallel builds..."
+	@echo "Logs at .logs/*.log"
+	@$(MAKE) -j${MAX_JOBS} silent-build-api-parallel silent-build-supabase-parallel silent-build-ui-parallel silent-build-llama-cpp-python-parallel silent-build-text-embeddings-parallel silent-build-whisper-parallel
+	@echo "All builds completed"
+
 # Define individual deployment targets
 silent-deploy-supabase-package:
 	@uds zarf package deploy packages/supabase/zarf-package-supabase-${ARCH}-${LOCAL_VERSION}.tar.zst ${ZARF_FLAGS} --confirm > .logs/deploy-supabase.log 2>&1
@@ -227,6 +241,9 @@ silent-deploy-api-package:
 silent-deploy-ui-package:
 	@uds zarf package deploy packages/ui/zarf-package-leapfrogai-ui-${ARCH}-${LOCAL_VERSION}.tar.zst ${ZARF_FLAGS} --confirm > .logs/deploy-ui.log 2>&1
 
+silent-deploy-llama-cpp-python-package:
+	@uds zarf package deploy packages/llama-cpp-python/zarf-package-llama-cpp-python-${ARCH}-${LOCAL_VERSION}.tar.zst ${ZARF_FLAGS} --confirm > .logs/deploy-llama-cpp-python.log 2>&1
+
 silent-deploy-vllm-package:
 	@uds zarf package deploy packages/vllm/zarf-package-vllm-${ARCH}-${LOCAL_VERSION}.tar.zst ${ZARF_FLAGS} --confirm > .logs/deploy-vllm.log 2>&1
 
@@ -235,6 +252,20 @@ silent-deploy-text-embeddings-package:
 
 silent-deploy-whisper-package:
 	@uds zarf package deploy packages/whisper/zarf-package-whisper-${ARCH}-${LOCAL_VERSION}.tar.zst --set=GPU_CLASS_NAME="nvidia" ${ZARF_FLAGS} --confirm > .logs/deploy-whisper.log 2>&1
+
+silent-deploy-cpu:
+	@echo "Logs at .logs/*.log"
+	@echo "Starting parallel deployments..."
+	@echo "Deploying Supabase first..."
+	@$(MAKE) silent-deploy-supabase-package ZARF_FLAGS="$(ZARF_FLAGS) $(SILENT_ZARF_FLAGS)"
+	@echo "Deploying the rest of the packages..."
+	@$(MAKE) -j${MAX_JOBS} \
+		silent-deploy-api-package ZARF_FLAGS="$(ZARF_FLAGS) $(SILENT_ZARF_FLAGS)" \
+		silent-deploy-ui-package ZARF_FLAGS="$(ZARF_FLAGS) $(SILENT_ZARF_FLAGS)" \
+		silent-deploy-llama-cpp-python-package ZARF_FLAGS="$(ZARF_FLAGS) $(SILENT_ZARF_FLAGS)" \
+		silent-deploy-text-embeddings-package ZARF_FLAGS="$(ZARF_FLAGS) $(SILENT_ZARF_FLAGS)" \
+		silent-deploy-whisper-package ZARF_FLAGS="$(ZARF_FLAGS) $(SILENT_ZARF_FLAGS)"
+	@echo "All deployments completed"
 
 silent-deploy-gpu:
 	@echo "Logs at .logs/*.log"
@@ -250,19 +281,34 @@ silent-deploy-gpu:
 		silent-deploy-whisper-package ZARF_FLAGS="$(ZARF_FLAGS) $(SILENT_ZARF_FLAGS) --set=GPU_CLASS_NAME='nvidia'"
 	@echo "All deployments completed"
 
-silent-fresh-leapfrogai:
+silent-fresh-leapfrogai-gpu:
 	@echo "Cleaning up previous artifacts..."
 	@$(MAKE) clean > /dev/null 2>&1
 	@echo "Logs at .logs/*.log"
 	@mkdir -p .logs
-	@echo "Creating a uds gpu cluster..."
+	@echo "Creating a uds gpu enabled cluster..."
 	@$(MAKE) create-uds-gpu-cluster DOCKER_FLAGS="${SILENT_DOCKER_FLAGS}" ZARF_FLAGS="${SILENT_ZARF_FLAGS}" > .logs/create-uds-gpu-cluster.log 2>&1
 	@echo "Testing the uds gpu cluster..."
 	@$(MAKE) test-uds-gpu-cluster > .logs/test-uds-gpu-cluster.log 2>&1
 	@echo "Building all packages..."
-	@$(MAKE) silent-build-all
+	@$(MAKE) silent-build-gpu
 	@echo "Deploying all packages..."
 	@$(MAKE) silent-deploy-gpu
-	@echo "Done!
+	@echo "Done!"
+	@echo "UI is available at https://ai.uds.dev"
+	@echo "API is available at https://leapfrogai-api.uds.dev"
+
+silent-fresh-leapfrogai-cpu:
+	@echo "Cleaning up previous artifacts..."
+	@$(MAKE) clean > /dev/null 2>&1
+	@echo "Logs at .logs/*.log"
+	@mkdir -p .logs
+	@echo "Creating a uds cpu-only cluster..."
+	@$(MAKE) create-uds-cpu-cluster DOCKER_FLAGS="${SILENT_DOCKER_FLAGS}" ZARF_FLAGS="${SILENT_ZARF_FLAGS}" > .logs/create-uds-gpu-cluster.log 2>&1
+	@echo "Building all packages..."
+	@$(MAKE) silent-build-cpu
+	@echo "Deploying all packages..."
+	@$(MAKE) silent-deploy-cpu
+	@echo "Done!"
 	@echo "UI is available at https://ai.uds.dev"
 	@echo "API is available at https://leapfrogai-api.uds.dev"
