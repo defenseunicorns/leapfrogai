@@ -11,9 +11,9 @@ test('it can log out', async ({ page }) => {
   if (process.env.PUBLIC_DISABLE_KEYCLOAK === 'true') {
     await expect(page.getByText('Sign In')).toBeVisible();
   } else {
-    const loginBtn = page.getByText('Log In');
+    const loginBtn = page.getByRole('button', { name: /Log In with UDS SSO/i });
     await expect(loginBtn).toBeVisible();
     await loginBtn.click();
-    await expect(page.getByText('Log In with UDS SSO')).toBeVisible();
+    await page.waitForURL(`**/*/realms/uds/**/*`); // ensure full logout of keycloak (not just supabase)
   }
 });
