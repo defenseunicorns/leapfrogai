@@ -1,12 +1,12 @@
 <script lang="ts">
   import Pictograms from '$components/Pictograms.svelte';
   import DynamicPictogram from '$components/DynamicPictogram.svelte';
-  import { AVATAR_FILE_SIZE_ERROR_TEXT, MAX_AVATAR_SIZE, NO_FILE_ERROR_TEXT } from '$lib/constants';
-  import { Avatar, Button, Modal, P, TableSearch } from 'flowbite-svelte';
-  import { twMerge } from 'tailwind-merge';
-  import { EditOutline, TrashBinOutline } from 'flowbite-svelte-icons';
-  import Fuse, { type FuseResult, type IFuseOptions } from 'fuse.js';
-  import { iconMap } from '$constants/iconMap';
+  import {AVATAR_FILE_SIZE_ERROR_TEXT, MAX_AVATAR_SIZE, NO_FILE_ERROR_TEXT} from '$lib/constants';
+  import {Avatar, Button, Modal, P, TableSearch} from 'flowbite-svelte';
+  import {twMerge} from 'tailwind-merge';
+  import {EditOutline, TrashBinOutline} from 'flowbite-svelte-icons';
+  import Fuse, {type FuseResult, type IFuseOptions} from 'fuse.js';
+  import {iconMap} from '$constants/iconMap';
   import LFRadio from '$components/LFRadio.svelte';
 
   export let form;
@@ -32,18 +32,12 @@
     ignoreLocation: true
   };
 
-  $: fileNotUploaded =
-    !$form.avatarFile || (Array.isArray($form.avatarFile) && $form.avatarFile.length === 0); // if on upload tab, you must upload a file to enable save
+  $: fileNotUploaded = !$form.avatarFile; // if on upload tab, you must upload a file to enable save
 
-  $: avatarToShow =
-    Array.isArray($form.avatarFile) && $form.avatarFile.length > 0
-      ? URL.createObjectURL($form.avatarFile[0])
-      : $form.avatar;
+  $: avatarToShow = $form.avatarFile ? URL.createObjectURL($form.avatarFile) : $form.avatar;
 
-  $: fileTooBig = Array.isArray($form.avatarFile) && $form.avatarFile[0]?.size > MAX_AVATAR_SIZE;
-  $: hideUploader = avatarToShow
-    ? true
-    : Array.isArray($form.avatarFile) && $form.avatarFile.length > 0;
+  $: fileTooBig = $form.avatarFile?.size > MAX_AVATAR_SIZE;
+  $: hideUploader = avatarToShow ? true : $form.avatarFile;
 
   $: if (searchText) {
     const fuse = new Fuse(pictogramNames, options);
@@ -69,7 +63,7 @@
     $form.avatar = originalAvatar;
     tempPictogram = selectedPictogramName; // reset to original pictogram
     if ($form.avatar) {
-      $form.avatarFile = [$form.avatar]; // reset to original file
+      $form.avatarFile = $form.avatar; // reset to original file
     } else {
       clearFileInput();
     }
@@ -82,7 +76,7 @@
   };
 
   const clearFileInput = () => {
-    $form.avatarFile = [];
+    $form.avatarFile = null;
   };
 
   const handleSubmit = (e) => {
@@ -216,10 +210,10 @@
   <input
     bind:this={fileUploaderRef}
     on:input={(e) => {
-      // TODO - upload an image, click cancel, re-upload image and this on:input is not detected
-      console.log('input detected');
-      $form.avatarFile = Array.from(e.currentTarget.files ?? []);
+      const file = e.currentTarget.files[0];
+      $form.avatarFile = file ?? null;
     }}
+    multiple={false}
     type="file"
     tabindex="-1"
     accept={['.jpg', '.jpeg', '.png']}

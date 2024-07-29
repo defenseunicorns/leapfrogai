@@ -24,7 +24,7 @@
   let isEditMode = $page.url.pathname.includes('edit');
   let bypassCancelWarning = false;
 
-  const { form, errors, enhance, submitting, isTainted, delayed } = superForm(data.form, {
+  const { form, errors, enhance, submit, submitting, isTainted, delayed } = superForm(data.form, {
     invalidateAll: false,
     validators: yup(isEditMode ? editAssistantInputSchema : assistantInputSchema),
     onResult({ result }) {
@@ -86,10 +86,10 @@
     filesStore.setSelectedAssistantFileIds($form.data_sources || []);
   });
 
-  console.log('form', $form);
+  $: console.log('errors', $errors);
+
 </script>
 
-<!--TODO - save no longer submitting-->
 <form method="POST" enctype="multipart/form-data" use:enhance class="w-1/2">
   <div class="flex flex-col py-2">
     <div class="flex items-center justify-between">

@@ -24,7 +24,11 @@ export const assistantInputSchema: ObjectSchema<AssistantInput> = object({
   avatar: string(),
   avatarFile: mixed<File>()
     .nullable()
-    .test('fileType', 'Please upload an image.', (value) => value == null || value instanceof File)
+    .test(
+      'fileType',
+      'Please upload an image.',
+      (value) => value == null || value instanceof File
+    )
     .test('fileSize', AVATAR_FILE_SIZE_ERROR_TEXT, (value) => {
       if (value == null) {
         return true;

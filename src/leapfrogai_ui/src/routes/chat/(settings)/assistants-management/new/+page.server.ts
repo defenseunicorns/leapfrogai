@@ -27,13 +27,15 @@ export const load: PageServerLoad = async () => {
 
 export const actions: Actions = {
   default: async ({ request, locals: { supabase, session } }) => {
+    console.log("in submit")
     if (!session) {
       return fail(401, { message: 'Unauthorized' });
     }
 
     const form = await superValidate(request, yup(assistantInputSchema));
-    console.log('form data', form.data);
+
     if (!form.valid) {
+      console.log("invalid form", form);
       return fail(400, { form });
     }
 
