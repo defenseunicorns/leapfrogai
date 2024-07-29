@@ -1,6 +1,6 @@
 # End-to-end testing that deploys and tests Supabase, API, UI, and VLLM
 
-name: e2e-playright
+name: e2e-playwright
 on:
   pull_request:
     types:
@@ -14,7 +14,7 @@ on:
 
       # Ignore updates to the .github directory, unless it's this current file
       - "!.github/**"
-      - ".github/workflows/e2e-playright.yaml"
+      - ".github/workflows/e2e-playwright.yaml"
 
       # Ignore docs and website things
       - "!**.md"
@@ -45,11 +45,11 @@ on:
 
 
 concurrency:
-  group: e2e-playright-${{ github.ref }}
+  group: e2e-playwright-${{ github.ref }}
   cancel-in-progress: true
 
 jobs:
-  e2e_playright:
+  e2e_playwright:
     runs-on: ai-ubuntu-big-boy-8-core
     if: ${{ !github.event.pull_request.draft }}
 

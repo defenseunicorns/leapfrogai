@@ -30,7 +30,7 @@ jobs:
       - name: Skipped
         run: |
           echo skipped
-  e2e_playright:
+  e2e_playwright:
     runs-on: ubuntu-latest
     steps:
       - name: Skipped
