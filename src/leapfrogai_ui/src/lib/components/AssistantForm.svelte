@@ -16,7 +16,7 @@
   import type { NavigationTarget } from '@sveltejs/kit';
   import { onMount } from 'svelte';
   import AssistantFileSelect from '$components/AssistantFileSelect.svelte';
-
+4
   export let data;
 
   let isEditMode = $page.url.pathname.includes('edit');
