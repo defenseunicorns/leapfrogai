@@ -8,8 +8,6 @@ metadata:
 constants:
   - name: IMAGE_VERSION
     value: '###ZARF_PKG_TMPL_IMAGE_VERSION###'
-  - name: EXTERNAL_KEYCLOAK_CLIENT_ID
-    description: 'External keycloak client value'
 
 variables:
   - name: LEAPFROGAI_API_BASE_URL #LEAPFROGAI_API_BASE_URL
