@@ -50,6 +50,13 @@ spec:
               value: '###ZARF_VAR_MESSAGE_LENGTH_LIMIT###'
             - name: SUPABASE_AUTH_EXTERNAL_KEYCLOAK_URL
               value: "https://sso.{{ .Values.package.domain }}/realms/uds"
+            - name: SUPABASE_AUTH_KEYCLOAK_CLIENT_ID
+              value: {{ .Values.leapfrogai.sso.clientId }}
+            - name: SUPABASE_AUTH_KEYCLOAK_SECRET
+              valueFrom:
+                secretKeyRef:
+                  name: supabase-bootstrap-jwt
+                  key: secret
           resources:
             requests:
               memory: '0'
