@@ -74,8 +74,7 @@ RUN rm -f packages/vllm/build/*.whl && \
 # load ARG values into env variables for pickup by confz
 ENV LAI_HF_HUB_ENABLE_HF_TRANSFER=${HF_HUB_ENABLE_HF_TRANSFER} \
     LAI_REPO_ID=${REPO_ID} \
-    LAI_REVISION=${REVISION} \
-    HF_HOME=/home/leapfrogai/.cache/huggingface
+    LAI_REVISION=${REVISION}
 
 # download model with script, then remove script
 RUN pip install -U huggingface_hub[cli,hf_transfer] && \
