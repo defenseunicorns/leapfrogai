@@ -15,8 +15,8 @@ class ConfigOptions(BaseConfig):
     trust_remote_code: bool = Field(
         default=True,
         title="Trust Downloaded Model Code",
-        description="Whether to trust code downloaded as part of the model download."
-        "Please review the Python scripts in the .model/ directory before trusting custom model code.",
+        description="Whether to trust inferencing code downloaded as part of the model download."
+        "Please review the Python code in the .model/ directory before trusting custom model code.",
         examples=[True, False],
     )
 

@@ -2,7 +2,6 @@
 
 A LeapfrogAI API-compatible [vLLM](https://github.com/vllm-project/vllm) wrapper for quantized and un-quantized model inferencing across GPU infrastructures.
 
-
 ## Usage
 
 See [instructions](#instructions) to get the backend up and running. Then, use the [LeapfrogAI API server](https://github.com/defenseunicorns/leapfrogai-api) to interact with the backend.
@@ -30,6 +29,7 @@ You can optionally specify different models or quantization types using the foll
 - `--build-arg REVISION="gptq-4bit-32g-actorder_True"`: Revision or commit hash for the model
 - `--build-arg QUANTIZATION="gptq"`: Quantization type (e.g., gptq, awq, or empty for un-quantized)
 - `--build-arg TENSOR_PARALLEL_SIZE="1"`: The number of gpus to spread the tensor processing across
+- `--build-arg TRUST_REMOTE_CODE="True"`: Whether to trust inferencing code downloaded as part of the model download
 
 ## Zarf Package Deployment
 
@@ -45,6 +45,7 @@ uds zarf package deploy packages/vllm/zarf-package-vllm-*-dev.tar.zst --confirm
 ## Run Locally
 
 To run the vllm backend locally (starting from the root directory of the repository):
+
 ```bash
 # Setup Virtual Environment if you haven't done so already
 python -m venv .venv
