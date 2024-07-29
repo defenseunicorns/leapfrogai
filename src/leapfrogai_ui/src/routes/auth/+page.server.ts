@@ -54,8 +54,6 @@ export const actions: Actions = {
         params.append('client_secret', env.SUPABASE_AUTH_KEYCLOAK_SECRET);
         params.append('refresh_token', session.provider_refresh_token!);
 
-        console.log("refresh token", session.provider_refresh_token);
-        console.log("req url", `${env.SUPABASE_AUTH_EXTERNAL_KEYCLOAK_URL}/protocol/openid-connect/logout`);
         const res = await fetch(
           `${env.SUPABASE_AUTH_EXTERNAL_KEYCLOAK_URL}/protocol/openid-connect/logout`,
           {

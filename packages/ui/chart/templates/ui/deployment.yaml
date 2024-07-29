@@ -58,7 +58,7 @@ spec:
             - name: SUPABASE_AUTH_KEYCLOAK_SECRET
               valueFrom:
                 secretKeyRef:
-                  name: supabase-bootstrap-jwt
+                  name: sso-client-uds-supabase
                   key: secret
           resources:
             requests:
