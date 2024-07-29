@@ -14,6 +14,6 @@ test('it can log out', async ({ page }) => {
     const loginBtn = page.getByText('Log In');
     await expect(loginBtn).toBeVisible();
     await loginBtn.click();
-    await page.waitForURL(`${process.env.SUPABASE_AUTH_EXTERNAL_KEYCLOAK_URL!}/**/*`);
+    await expect(page.getByText('Log In with UDS SSO')).toBeVisible();
   }
 });
