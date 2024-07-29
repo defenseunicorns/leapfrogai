@@ -59,48 +59,16 @@ jobs:
           uses: actions/checkout@b4ffde65f46336ab88eb53be808477a3936bae11 # v4.1.1
 
         - name: Setup Python
-          uses: actions/setup-python@0a5c61591373683505ea898e09a3ea4f39ef2b9c #v5.0.0
+          uses: ./.github/actions/python
+
+        - name: Setup UDS Cluster
+          uses: ./.github/actions/uds-cluster
           with:
-            python-version-file: 'pyproject.toml'
+            registry1Username: ${{ secrets.IRON_BANK_ROBOT_USERNAME }}
+            registry1Password: ${{ secrets.IRON_BANK_ROBOT_PASSWORD }}
 
-        - name: Install Python Deps
-          run: python -m pip install "."
-
-        - name: Setup UDS Environment
-          uses: defenseunicorns/uds-common/.github/actions/setup@05f42bb3117b66ebef8c72ae050b34bce19385f5
-          with:
-            username: ${{ secrets.IRON_BANK_ROBOT_USERNAME }}
-            password: ${{ secrets.IRON_BANK_ROBOT_PASSWORD }}
-
-        - name: Create UDS Cluster
-          run: |
-            uds deploy k3d-core-slim-dev:0.22.2 --confirm
-
-        ##########
-        # Supabase
-        ##########
-        - name: Deploy Supabase
-          run: |
-            make build-supabase LOCAL_VERSION=e2e-test
-            docker image prune -af
-            uds zarf tools kubectl create namespace leapfrogai
-            uds zarf package deploy packages/supabase/zarf-package-supabase-amd64-e2e-test.tar.zst --confirm
-            rm packages/supabase/zarf-package-supabase-amd64-e2e-test.tar.zst
-
-        - name: Set environment variable
-          id: set-env-var
-          run: |
-            echo "ANON_KEY=$(uds zarf tools kubectl get secret supabase-bootstrap-jwt -n leapfrogai -o jsonpath='{.data.anon-key}' | base64 -d)" >> "$GITHUB_ENV"
-
-        ##########
-        # API
-        ##########
-        - name: Deploy LFAI-API
-          run: |
-            make build-api LOCAL_VERSION=e2e-test
-            docker image prune -af
-            uds zarf package deploy packages/api/zarf-package-leapfrogai-api-amd64-e2e-test.tar.zst --confirm
-            rm packages/api/zarf-package-leapfrogai-api-amd64-e2e-test.tar.zst
+        - name: Setup LFAI-API and Supabase
+          uses: ./.github/actions/lfai-core
 
         ##########
         # whisper
