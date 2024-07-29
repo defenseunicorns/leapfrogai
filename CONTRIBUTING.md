@@ -26,8 +26,8 @@ Specifically:
 3. :key: Set up your Git config to GPG sign all commits. [Here's some documentation on how to set it up](https://docs.github.com/en/authentication/managing-commit-signature-verification/signing-commits). You won't be able to merge your PR if you have any unverified commits.
 4. Create a Draft Pull Request as soon as you can, even if it is just 5 minutes after you started working on it. We lean towards working in the open as much as we can. If you're not sure what to put in the PR description, just put a link to the issue you're working on. If you're not sure what to put in the PR title, just put "WIP" (Work In Progress) and we'll help you out with the rest.
 5. :key: Automated tests will begin based on the paths you have edited in your Pull Request.
-   > ⚠️ **NOTE:** _If you are an external third-party contributor, the pipelines won't run until a [CODEOWNER](https://github.com/defenseunicorns/zarf/blob/main/CODEOWNERS) approves the pipeline run._
-6. :key: Be sure to use the [needs-adr,needs-docs,needs-tests](https://github.com/defenseunicorns/zarf/labels?q=needs) labels as appropriate for the PR. Once you have addressed all of the needs, remove the label.
+   > ⚠️ **NOTE:** _If you are an external third-party contributor, the pipelines won't run until a [CODEOWNER](https://github.com/zarf-dev/zarf/blob/main/CODEOWNERS) approves the pipeline run._
+6. :key: Be sure to use the [needs-adr,needs-docs,needs-tests](https://github.com/zarf-dev/zarf/labels?q=needs) labels as appropriate for the PR. Once you have addressed all of the needs, remove the label.
 7. Once the review is complete and approved, a core member of the LeapfrogAI project will merge your PR. If you are an external third-party contributor, two core members of the zarf project will be required to approve the PR.
 8. Close the issue if it is fully resolved by your PR. _Hint: You can add "Fixes #XX" to the PR description to automatically close an issue when the PR is merged._
 

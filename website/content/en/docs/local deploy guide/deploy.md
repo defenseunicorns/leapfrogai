@@ -30,7 +30,7 @@ Isolated Network:
 
 ```bash
 # download and store on removable media
-wget https://github.com/defenseunicorns/zarf/releases/download/v0.31.0/zarf_v0.31.0_Linux_amd64
+wget https://github.com/zarf-dev/zarf/releases/download/v0.31.0/zarf_v0.31.0_Linux_amd64
 
 # upload from removable media and install
 mv zarf_v0.31.0_Linux_amd64 /usr/local/bin/zarf
@@ -69,7 +69,7 @@ The following commands are divided into three parts: download, create, and deplo
 
 ```git
 # download
-git clone https://github.com/defenseunicorns/zarf-package-k3d-airgap.git
+git clone https://github.com/zarf-dev/zarf-package-k3d-airgap.git
 cd zarf-package-k3d-airgap
 
 # create
