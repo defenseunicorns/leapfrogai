@@ -1,0 +1,22 @@
+name: setup-uds
+description: "Setup UDS Cluster"
+
+inputs:
+  registry1Username:
+    description: Registry1 Username
+  registry1Password:
+    description: Registry1 Password
+
+runs:
+  using: composite
+  steps:
+    - name: Setup UDS Environment
+      uses: defenseunicorns/uds-common/.github/actions/setup@05f42bb3117b66ebef8c72ae050b34bce19385f5
+      with:
+        username: ${{ inputs.registry1Username }}
+        password: ${{ inputs.registry1Password }}
+
+    - name: Create UDS Cluster
+      shell: bash
+      run: |
+        uds deploy k3d-core-slim-dev:0.22.2 --confirm
