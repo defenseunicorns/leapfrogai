@@ -10,7 +10,10 @@ ARG SDK_DEST=src/leapfrogai_sdk/build \
 # use root user for deps installation and nonroot user creation
 USER root
 # get deps for vllm compilation, model download, and pyenv + python
-RUN apt-get -y install \
+ENV DEBIAN_FRONTEND=noninteractive
+RUN apt-get update && \
+    apt-get -y install \
+    git \
     make \
     build-essential \
     libssl-dev \
@@ -38,9 +41,11 @@ COPY --from=sdk --chown=nonroot:nonroot /leapfrogai/${SDK_DEST} ./${SDK_DEST}
 COPY --chown=nonroot:nonroot packages/vllm packages/vllm
 
 # create virtual environment for light-weight portability and minimal libraries
-RUN git clone --depth=1 https://github.com/pyenv/pyenv.git .pyenv --branch v2.4.8 --single-branch
-ENV PYENV_ROOT="/home/leapfrogai/.pyenv" \
-    PATH="$PYENV_ROOT/shims:$PYENV_ROOT/bin:$PATH"
+ENV PYENV_GIT_TAG=v2.4.8
+RUN curl https://pyenv.run | bash
+
+ENV PYENV_ROOT="$HOME/.pyenv" \
+    PATH="$PYENV_ROOT/bin:$PATH"
 RUN pyenv install ${PYTHON_VERSION} && \
     pyenv global ${PYTHON_VERSION} && \
     python3 -m venv .venv
