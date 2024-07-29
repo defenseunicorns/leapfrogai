@@ -296,7 +296,7 @@ silent-deploy-gpu:
 	@echo "Deploying the rest of the packages..."
 	@$(MAKE) -j${MAX_JOBS} \
 		silent-deploy-api-package ZARF_FLAGS="$(ZARF_FLAGS) $(SILENT_ZARF_FLAGS)" \
-		silent-deploy-ui-package ZARF_FLAGS="$(ZARF_FLAGS) $(SILENT_ZARF_FLAGS)" \
+		silent-deploy-ui-package ZARF_FLAGS="$(ZARF_FLAGS) $(SILENT_ZARF_FLAGS) --set=MODEL='vllm'" \
 		silent-deploy-vllm-package ZARF_FLAGS="$(ZARF_FLAGS) $(SILENT_ZARF_FLAGS)" \
 		silent-deploy-text-embeddings-package ZARF_FLAGS="$(ZARF_FLAGS) $(SILENT_ZARF_FLAGS) --set=GPU_CLASS_NAME='nvidia'" \
 		silent-deploy-whisper-package ZARF_FLAGS="$(ZARF_FLAGS) $(SILENT_ZARF_FLAGS) --set=GPU_CLASS_NAME='nvidia'"
