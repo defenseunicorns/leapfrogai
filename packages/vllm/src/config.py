@@ -5,16 +5,19 @@ from pydantic import Field
 
 
 class ConfigOptions(BaseConfig):
-    quantization: Literal[None, "awq", "gptq", "squeezellm"] = Field(
-        default=None,
-        description="Type of quantization, for un-quantized models omit this field",
-    )
     tensor_parallel_size: int = Field(
         default=1,
         title="GPU Utilization Count",
         description="The number of gpus to spread the tensor processing across."
         "This must be divisible to the number of attention heads in the model",
         examples=[1, 2, 3],
+    )
+    trust_remote_code: bool = Field(
+        default=True,
+        title="Trust Downloaded Model Code",
+        description="Whether to trust code downloaded as part of the model download."
+        "Please review the Python scripts in the .model/ directory before trusting custom model code.",
+        examples=[True, False],
     )
 
 
@@ -47,7 +50,6 @@ class AppConfig(BaseConfig):
                 "hf_hub_enable_hf_transfer": "download_options.hf_hub_enable_hf_transfer",
                 "repo_id": "download_options.repo_id",
                 "revision": "download_options.revision",
-                "quantization": "backend_options.quantization",
                 "tensor_parallel_size": "backend_options.tensor_parallel_size",
             },
         )
