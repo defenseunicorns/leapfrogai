@@ -51,7 +51,7 @@ spec:
             - name: SUPABASE_AUTH_EXTERNAL_KEYCLOAK_URL
               value: "https://sso.{{ .Values.package.domain }}/realms/uds"
             - name: SUPABASE_AUTH_KEYCLOAK_CLIENT_ID
-              value: {{ .Values.leapfrogai.sso.clientId }}
+              value: {{ .Values.package.sso.clientId }}
             - name: SUPABASE_AUTH_KEYCLOAK_SECRET
               valueFrom:
                 secretKeyRef:
