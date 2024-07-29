@@ -42,7 +42,7 @@ test('it can search for and choose a pictogram as an avatar', async ({ page }) =
   await page.getByLabel('tagline').fill(assistantInput.description);
   await page.getByPlaceholder("You'll act as...").fill(assistantInput.instructions);
 
-  await page.locator('.mini-avatar-container').click();
+  await page.getByTestId('mini-avatar-container').click();
 
   await page.getByPlaceholder('Search').click();
   await page.getByPlaceholder('Search').fill(pictogramName);
@@ -74,7 +74,7 @@ test('it can upload an image as an avatar', async ({ page }) => {
   await page.getByLabel('tagline').fill(assistantInput.description);
   await page.getByPlaceholder("You'll act as...").fill(assistantInput.instructions);
 
-  await page.locator('.mini-avatar-container').click();
+  await page.getByTestId('mini-avatar-container').click();
   await uploadAvatar(page);
 
   await page.getByRole('dialog').getByRole('button', { name: 'Save' }).click();
@@ -93,7 +93,7 @@ test('it can upload an image as an avatar', async ({ page }) => {
 test('it can change an image uploaded as an avatar', async ({ page }) => {
   await page.goto('/chat/assistants-management/new');
 
-  await page.locator('.mini-avatar-container').click();
+  await page.getByTestId('mini-avatar-container').click();
   await uploadAvatar(page);
 
   const imageUploadContainer = page.getByTestId('image-upload-avatar');
@@ -103,7 +103,7 @@ test('it can change an image uploaded as an avatar', async ({ page }) => {
 
   await page.getByRole('dialog').getByRole('button', { name: 'Save' }).click();
 
-  await page.locator('.mini-avatar-container').click();
+  await page.getByTestId('mini-avatar-container').click();
 
   const fileChooserPromise = page.waitForEvent('filechooser');
   await page.getByText('Change', { exact: true }).click();
@@ -128,7 +128,7 @@ test('it shows an error when clicking save on the upload tab if no image is uplo
   await page.getByLabel('tagline').fill(assistantInput.description);
   await page.getByPlaceholder("You'll act as...").fill(assistantInput.instructions);
 
-  await page.locator('.mini-avatar-container').click();
+  await page.getByTestId('mini-avatar-container').click();
   await page.getByText('Upload', { exact: true }).click();
 
   const saveButton = page.getByRole('button', { name: 'Save' }).nth(0);
@@ -142,7 +142,7 @@ test('it shows an error when clicking save on the upload tab if no image is uplo
 
 test('it removes an uploaded image and keeps the original pictogram on save', async ({ page }) => {
   await page.goto('/chat/assistants-management/new');
-  await page.locator('.mini-avatar-container').click();
+  await page.getByTestId('mini-avatar-container').click();
 
   await uploadAvatar(page);
 
@@ -163,7 +163,7 @@ test('it keeps the original pictogram on cancel after uploading an image but not
   page
 }) => {
   await page.goto('/chat/assistants-management/new');
-  await page.locator('.mini-avatar-container').click();
+  await page.getByTestId('mini-avatar-container').click();
 
   await uploadAvatar(page);
 
@@ -179,7 +179,7 @@ test('it keeps the original pictogram on cancel after changing the pictogram but
 }) => {
   const pictogramName = 'Analytics';
   await page.goto('/chat/assistants-management/new');
-  await page.locator('.mini-avatar-container').click();
+  await page.getByTestId('mini-avatar-container').click();
 
   await page.getByPlaceholder('Search').click();
   await page.getByPlaceholder('Search').fill(pictogramName);
@@ -199,7 +199,7 @@ test('it keeps the original pictogram on close (not cancel) after changing the p
 }) => {
   const pictogramName = 'Analytics';
   await page.goto('/chat/assistants-management/new');
-  await page.locator('.mini-avatar-container').click();
+  await page.getByTestId('mini-avatar-container').click();
 
   await page.getByPlaceholder('Search').click();
   await page.getByPlaceholder('Search').fill(pictogramName);
@@ -219,7 +219,7 @@ test('it saves the pictogram if the save button is clicked on the pictogram tab 
   const pictogramName = 'Analytics';
 
   await page.goto('/chat/assistants-management/new');
-  await page.locator('.mini-avatar-container').click();
+  await page.getByTestId('mini-avatar-container').click();
 
   await uploadAvatar(page);
 

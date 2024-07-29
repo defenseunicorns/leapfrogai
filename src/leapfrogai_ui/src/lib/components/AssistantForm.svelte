@@ -24,7 +24,7 @@
   let isEditMode = $page.url.pathname.includes('edit');
   let bypassCancelWarning = false;
 
-  const { form, errors, enhance, submit, submitting, isTainted, delayed } = superForm(data.form, {
+  const { form, errors, enhance, submitting, isTainted, delayed } = superForm(data.form, {
     invalidateAll: false,
     validators: yup(isEditMode ? editAssistantInputSchema : assistantInputSchema),
     onResult({ result }) {
@@ -55,7 +55,6 @@
   });
 
   let cancelModalOpen = false;
-  let selectedPictogramName = isEditMode ? $form.pictogram : 'default';
 
   let navigateTo: NavigationTarget;
   let leavePageConfirmed = false;
@@ -86,8 +85,7 @@
     filesStore.setSelectedAssistantFileIds($form.data_sources || []);
   });
 
-  $: console.log('errors', $errors);
-
+  $: console.log("form", $form)
 </script>
 
 <form method="POST" enctype="multipart/form-data" use:enhance class="w-1/2">
@@ -97,7 +95,7 @@
         {`${isEditMode ? 'Edit' : 'New'} Assistant`}
       </h5>
 
-      <AssistantAvatar bind:selectedPictogramName {form} />
+      <AssistantAvatar {form} />
     </div>
     <input type="hidden" name="id" value={$form.id} />
     <LFInput

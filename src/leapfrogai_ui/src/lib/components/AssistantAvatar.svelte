@@ -1,19 +1,20 @@
 <script lang="ts">
   import Pictograms from '$components/Pictograms.svelte';
   import DynamicPictogram from '$components/DynamicPictogram.svelte';
-  import {AVATAR_FILE_SIZE_ERROR_TEXT, MAX_AVATAR_SIZE, NO_FILE_ERROR_TEXT} from '$lib/constants';
-  import {Avatar, Button, Modal, P, TableSearch} from 'flowbite-svelte';
-  import {twMerge} from 'tailwind-merge';
-  import {EditOutline, TrashBinOutline} from 'flowbite-svelte-icons';
-  import Fuse, {type FuseResult, type IFuseOptions} from 'fuse.js';
-  import {iconMap} from '$constants/iconMap';
+  import { AVATAR_FILE_SIZE_ERROR_TEXT, MAX_AVATAR_SIZE, NO_FILE_ERROR_TEXT } from '$lib/constants';
+  import { Avatar, Button, Modal, P, TableSearch } from 'flowbite-svelte';
+  import { twMerge } from 'tailwind-merge';
+  import { EditOutline, TrashBinOutline } from 'flowbite-svelte-icons';
+  import Fuse, { type FuseResult, type IFuseOptions } from 'fuse.js';
+  import { iconMap } from '$constants/iconMap';
   import LFRadio from '$components/LFRadio.svelte';
 
   export let form;
-  export let selectedPictogramName: string;
+
 
   let originalAvatar = $form.avatar;
-  let tempPictogram = selectedPictogramName || 'default';
+  let selectedPictogramName = $form.pictogram || "default";
+  let tempPictogram = selectedPictogramName;
   let modalOpen = false;
   let selectedRadioButton: 'upload' | 'pictogram' = originalAvatar ? 'upload' : 'pictogram';
   let shouldValidate = false;
@@ -51,7 +52,7 @@
     e.stopPropagation();
     clearFileInput();
     $form.avatar = '';
-    tempPictogram = selectedPictogramName || 'default';
+    tempPictogram = selectedPictogramName;
     shouldValidate = false;
   };
 
@@ -95,7 +96,8 @@
       }
     } else {
       // pictogram tab
-      selectedPictogramName = tempPictogram;
+      selectedPictogramName = tempPictogram; // TODO - can we remove this line
+      $form.pictogram = tempPictogram;
       clearFileInput();
       $form.avatar = ''; // remove saved avatar
     }

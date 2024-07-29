@@ -41,7 +41,6 @@
       subtitle: 'Error deleting Assistant.'
     });
   };
-
 </script>
 
 <div transition:fade={{ duration: 150 }}>
