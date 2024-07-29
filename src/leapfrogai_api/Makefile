@@ -10,6 +10,7 @@ install-api:
 	python -m pip install ../../src/leapfrogai_sdk
 	@cd ${MAKEFILE_DIR} && \
 	python -m pip install -e .
+	python -m pip install "../../.[dev]"
 
 dev-run-api:
 	@cd ${MAKEFILE_DIR} && \

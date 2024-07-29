@@ -30,7 +30,7 @@ make build-llama-cpp-python
 uds zarf package deploy zarf-package-llama-cpp-python-*.tar.zst
 
 # Install the python dependencies
-python -m pip install "."
+python -m pip install ".[dev]"
 
 # Run the tests!
 # NOTE: Each model backend has its own e2e test files
