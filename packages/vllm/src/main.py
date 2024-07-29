@@ -8,7 +8,6 @@ import sys
 import threading
 import time
 from typing import Any, Dict, AsyncGenerator
-from distutils.util import strtobool
 
 from confz import EnvSource
 from dotenv import load_dotenv
@@ -154,7 +153,7 @@ class Model:
         self.engine_args = AsyncEngineArgs(
             engine_use_ray=True,
             model=self.model,
-            trust_remote_code=strtobool(AppConfig().backend_options.trust_remote_code),
+            trust_remote_code=AppConfig().backend_options.trust_remote_code,
             max_seq_len_to_capture=self.backend_config.max_context_length,
             max_model_len=self.backend_config.max_context_length,
             dtype="auto",

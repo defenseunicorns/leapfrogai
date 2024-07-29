@@ -26,7 +26,7 @@ class DownloadOptions(BaseConfig):
         description="Option (0 - Disable, 1 - Enable) for faster transfers, tradeoff stability for faster speeds"
     )
     repo_id: str = Field(
-        description="HuggingFace repo id",
+        description="The HuggingFace git repository ID",
         examples=[
             "TheBloke/Synthia-7B-v2.0-GPTQ",
             "migtissera/Synthia-MoE-v3-Mixtral-8x7B",
@@ -34,13 +34,26 @@ class DownloadOptions(BaseConfig):
         ],
     )
     revision: str = Field(
-        description="The model branch to use",
+        description="The HuggingFace repository git branch to use",
         examples=["main", "gptq-4bit-64g-actorder_True"],
     )
 
 
 class AppConfig(BaseConfig):
     backend_options: ConfigOptions
+    CONFIG_SOURCES = [
+        EnvSource(
+            allow_all=True,
+            prefix="LAI_",
+            remap={
+                "tensor_parallel_size": "backend_options.tensor_parallel_size",
+                "trust_remote_code": "backend_options.trust_remote_code",
+            },
+        )
+    ]
+
+
+class DownloadConfig(BaseConfig):
     download_options: Optional[DownloadOptions]
     CONFIG_SOURCES = [
         EnvSource(
@@ -50,7 +63,6 @@ class AppConfig(BaseConfig):
                 "hf_hub_enable_hf_transfer": "download_options.hf_hub_enable_hf_transfer",
                 "repo_id": "download_options.repo_id",
                 "revision": "download_options.revision",
-                "tensor_parallel_size": "backend_options.tensor_parallel_size",
             },
         )
     ]

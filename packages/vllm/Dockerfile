@@ -3,13 +3,19 @@ FROM ghcr.io/defenseunicorns/leapfrogai/leapfrogai-sdk:${LOCAL_VERSION} AS sdk
 
 FROM nvidia/cuda:12.2.2-devel-ubuntu22.04 AS builder
 
-# set SDK location and Python version
+# set SDK location
+# set the pyenv and Python versions
+# set model download args
 ARG SDK_DEST=src/leapfrogai_sdk/build \
-    PYTHON_VERSION=3.11.6
+    PYTHON_VERSION=3.11.6 \
+    PYENV_GIT_TAG=v2.4.8 \
+    HF_HUB_ENABLE_HF_TRANSFER="1" \
+    REPO_ID="TheBloke/Synthia-7B-v2.0-GPTQ" \
+    REVISION="gptq-4bit-32g-actorder_True"
 
 # use root user for deps installation and nonroot user creation
 USER root
-# get deps for vllm compilation, model download, and pyenv + python
+# get deps for vllm compilation, pyenv, python and model downloading
 ENV DEBIAN_FRONTEND=noninteractive
 RUN apt-get update && \
     apt-get -y install \
@@ -27,7 +33,8 @@ RUN apt-get update && \
     libncurses5-dev \
     libncursesw5-dev \
     tk-dev \
-    libffi-dev
+    libffi-dev \
+    liblzma-dev
 
 # setup nonroot user and permissions
 RUN groupadd -g 65532 vglusers && \
@@ -41,14 +48,21 @@ COPY --from=sdk --chown=nonroot:nonroot /leapfrogai/${SDK_DEST} ./${SDK_DEST}
 COPY --chown=nonroot:nonroot packages/vllm packages/vllm
 
 # create virtual environment for light-weight portability and minimal libraries
-ENV PYENV_GIT_TAG=v2.4.8
-RUN curl https://pyenv.run | bash
+RUN curl https://pyenv.run | bash && \
+    echo 'export PYENV_ROOT="$HOME/.pyenv"' >> ~/.bashrc && \
+    echo 'export PATH="$PYENV_ROOT/bin:$PATH"' >> ~/.bashrc && \
+    echo 'eval "$(pyenv init -)"' >> ~/.bashrc && \
+    echo 'eval "$(pyenv virtualenv-init -)"' >> ~/.bashrc
 
-ENV PYENV_ROOT="$HOME/.pyenv" \
-    PATH="$PYENV_ROOT/bin:$PATH"
-RUN pyenv install ${PYTHON_VERSION} && \
-    pyenv global ${PYTHON_VERSION} && \
-    python3 -m venv .venv
+# Set environment variables
+ENV PYENV_ROOT="/home/nonroot/.pyenv" \
+    PATH="/home/nonroot/.pyenv/bin:$PATH"
+
+# Install Python 3.11.6, set it as global, and create a venv
+RUN . ~/.bashrc && \
+    PYTHON_CONFIGURE_OPTS="--enable-shared" pyenv install 3.11.6 && \
+    pyenv global 3.11.6 && \
+    pyenv exec python -m venv .venv
 
 # set path to venv python
 ENV PATH="/home/leapfrogai/.venv/bin:$PATH"
@@ -57,13 +71,16 @@ RUN rm -f packages/vllm/build/*.whl && \
     python -m pip wheel packages/vllm -w packages/vllm/build --find-links=${SDK_DEST} && \
     pip install packages/vllm/build/lfai_vllm*.whl --no-index --find-links=packages/vllm/build/
 
-# Model download arguments
-ARG HF_HUB_ENABLE_HF_TRANSFER="1" \
-    REPO_ID="TheBloke/Synthia-7B-v2.0-GPTQ" \
-    REVISION="gptq-4bit-32g-actorder_True"
+# load ARG values into env variables for pickup by confz
+ENV LAI_HF_HUB_ENABLE_HF_TRANSFER=${HF_HUB_ENABLE_HF_TRANSFER} \
+    LAI_REPO_ID=${REPO_ID} \
+    LAI_REVISION=${REVISION} \
+    HF_HOME=/home/leapfrogai/.cache/huggingface
 
+# download model with script, then remove script
 RUN pip install -U huggingface_hub[cli,hf_transfer] && \
     python3 packages/vllm/src/model_download.py
+RUN rm -rf packages/vllm/src/model_download.py
 
 #################
 # FINAL CONTAINER
@@ -74,7 +91,7 @@ FROM nvidia/cuda:12.2.2-runtime-ubuntu22.04
 # set SDK location
 ARG SDK_DEST=src/leapfrogai_sdk/build
 
-# Model-specific arguments
+# model-specific arguments
 ARG TRUST_REMOTE_CODE="True" \
     MODEL_SOURCE=".model/" \
     MAX_CONTEXT_LENGTH=32768 \
@@ -99,16 +116,10 @@ COPY --from=sdk --chown=nonroot:nonroot /leapfrogai/${SDK_DEST} ./${SDK_DEST}
 COPY --from=builder --chown=nonroot:nonroot /home/leapfrogai/.venv /home/leapfrogai/.venv
 COPY --from=builder --chown=nonroot:nonroot /home/leapfrogai/packages/vllm/src /home/leapfrogai/packages/vllm/src
 COPY --from=builder --chown=nonroot:nonroot /home/leapfrogai/.model /home/leapfrogai/.model
+COPY --from=builder --chown=nonroot:nonroot /home/nonroot/.pyenv/versions/3.11.6/ /home/nonroot/.pyenv/versions/3.11.6/
 
-# activate python virtual environment
-ENV PATH="/home/leapfrogai/.venv/bin:$PATH"
-
-# Load ARG values into env variables for pickup by confz
-ENV LAI_HF_HUB_ENABLE_HF_TRANSFER=${HF_HUB_ENABLE_HF_TRANSFER} \
-    LAI_REPO_ID=${REPO_ID} \
-    LAI_REVISION=${REVISION} \
-    LAI_TRUST_REMOTE_CODE=${TRUST_REMOTE_CODE} \
-    LAI_TENSOR_PARALLEL_SIZE=${TENSOR_PARALLEL_SIZE} \
+# load ARG values into env variables for pickup by confz
+ENV LAI_TRUST_REMOTE_CODE=${TRUST_REMOTE_CODE} \
     LAI_MODEL_SOURCE=${MODEL_SOURCE} \
     LAI_MAX_CONTEXT_LENGTH=${MAX_CONTEXT_LENGTH} \
     LAI_STOP_TOKENS=${STOP_TOKENS} \
@@ -116,7 +127,10 @@ ENV LAI_HF_HUB_ENABLE_HF_TRANSFER=${HF_HUB_ENABLE_HF_TRANSFER} \
     LAI_PROMPT_FORMAT_CHAT_ASSISTANT=${PROMPT_FORMAT_CHAT_ASSISTANT} \
     LAI_PROMPT_FORMAT_CHAT_USER=${PROMPT_FORMAT_CHAT_USER} \
     LAI_PROMPT_FORMAT_DEFAULTS_TOP_P=${PROMPT_FORMAT_DEFAULTS_TOP_P} \
-    LAI_PROMPT_FORMAT_DEFAULTS_TOP_K=${PROMPT_FORMAT_DEFAULTS_TOP_K}
+    LAI_PROMPT_FORMAT_DEFAULTS_TOP_K=${PROMPT_FORMAT_DEFAULTS_TOP_K} \
+    LAI_TENSOR_PARALLEL_SIZE=${TENSOR_PARALLEL_SIZE}
+
+ENV PATH="/home/leapfrogai/.venv/bin:$PATH"
 
 EXPOSE 50051:50051
 
