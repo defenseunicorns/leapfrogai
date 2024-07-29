@@ -13,14 +13,14 @@ license = {file = "LICENSE"}
 dependencies = [  # Dev dependencies needed for all of lfai
     "openai",
     "pip-tools == 7.3.0",
-    "pytest",
-    "pytest-asyncio",
     "httpx",
     "ruff",
-    "python-dotenv",
-    "pytest-asyncio"
+    "python-dotenv"
 ]
 requires-python = "~=3.11"
+
+[project.optional-dependencies]
+dev = ["locust", "pytest-asyncio", "requests-toolbelt", "pytest"]
 
 [tool.pip-tools]
 generate-hashes = true

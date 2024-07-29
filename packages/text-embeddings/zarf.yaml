@@ -1,4 +1,4 @@
-# yaml-language-server: $schema=https://raw.githubusercontent.com/defenseunicorns/zarf/main/zarf.schema.json
+# yaml-language-server: $schema=https://raw.githubusercontent.com/zarf-dev/zarf/main/zarf.schema.json
 
 kind: ZarfPackageConfig
 metadata:
@@ -16,6 +16,10 @@ variables:
     description: The GPU limit for the model inferencing.
     default: "0"
     pattern: "^[0-9]+$"
+  - name: GPU_CLASS_NAME
+    description: The GPU class name for the model inferencing. Leave blank for CPU-only.
+    default: ""
+    pattern: "^(nvidia)?$"
 
 components:
   - name: text-embeddings-model
