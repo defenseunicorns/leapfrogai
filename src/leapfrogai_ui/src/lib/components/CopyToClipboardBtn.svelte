@@ -1,15 +1,16 @@
 <script lang="ts">
-  import { Copy } from 'carbon-icons-svelte';
-  import { Button } from 'carbon-components-svelte';
+  import { Button } from 'flowbite-svelte';
   import { toastStore } from '$stores';
+  import { FileCopyOutline } from 'flowbite-svelte-icons';
 
   export let value: string;
   export let toastTitle = 'Copied';
-  export let btnText = 'Copy';
-  export let size: 'small' | 'default' | 'field' | 'lg' | 'xl' | undefined = 'small';
+  export let btnText = '';
+  export let size: 'xs' | 'sm' | 'md' | 'lg' | 'xl' | undefined = 'sm';
   export let testId: string;
 
-  const handleClick = async () => {
+  const handleClick = async (e) => {
+    e.stopPropagation();
     if (value) {
       await navigator.clipboard.writeText(value);
       toastStore.addToast({
@@ -20,6 +21,6 @@
   };
 </script>
 
-<Button data-testid={testId} kind="tertiary" icon={Copy} {size} on:click={handleClick}
-  >{btnText}</Button
+<Button data-testid={testId} color="alternative" {size} on:click={handleClick}
+  >{btnText}<FileCopyOutline /></Button
 >

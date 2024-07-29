@@ -1,10 +1,5 @@
 <script lang="ts">
-  import { superForm } from 'sveltekit-superforms';
-  import { yup } from 'sveltekit-superforms/adapters';
   import { formatDate } from '$helpers/dates.js';
-  import { toastStore } from '$stores';
-  import { newAPIKeySchema } from '$schemas/apiKey.js';
-  import { invalidate } from '$app/navigation';
   import type { APIKeyRow } from '$lib/types/apiKeys';
   import {
     Button,
@@ -31,6 +26,8 @@
   import { formatKeyShort } from '$helpers/apiKeyHelpers';
   import DeleteApiKeyModal from '$components/modals/DeleteApiKeyModal.svelte';
   import { onMount } from 'svelte';
+  import Section from '$components/Section.svelte';
+  import CreateApiKeyModal from '$components/modals/CreateApiKeyModal.svelte';
 
   export let data: PageServerData;
 
@@ -45,15 +42,14 @@
   let endPage;
 
   let actionsOpen = false;
-  let modalOpen = false;
+  let createApiKeyModalOpen = false;
   let confirmDeleteModalOpen = false;
   let copyKeyModalOpen = false;
   let allItemsChecked = false;
 
   let selectedRowIds: string[] = [];
   let deleting = false;
-  let selectedExpirationIndex = 1;
-  let selectedExpirationDate: number;
+
   let createdKey: APIKeyRow | null = null;
 
   let divClass = 'bg-white dark:bg-gray-800 relative shadow-md sm:rounded-lg overflow-hidden';
@@ -77,105 +73,24 @@
   $: endRange = Math.min(currentPosition + itemsPerPage, totalItems);
   $: editMode = false;
 
-  // Set actual expiration date based on selected Switch
-  $: {
-    switch (selectedExpirationIndex) {
-      case 0: {
-        const sevenDays = new Date();
-        sevenDays.setDate(sevenDays.getDate() + 7);
-        selectedExpirationDate = Math.floor(sevenDays.getTime() / 1000);
-        break;
-      }
-      case 1: {
-        const thirtyDays = new Date();
-        thirtyDays.setDate(thirtyDays.getDate() + 30);
-        selectedExpirationDate = Math.floor(thirtyDays.getTime() / 1000);
-        break;
-      }
-      case 2: {
-        const sixtyDays = new Date();
-        sixtyDays.setDate(sixtyDays.getDate() + 60);
-        selectedExpirationDate = Math.floor(sixtyDays.getTime() / 1000);
-        break;
-      }
-      case 3: {
-        const ninetyDays = new Date();
-        ninetyDays.setDate(ninetyDays.getDate() + 90);
-        selectedExpirationDate = Math.floor(ninetyDays.getTime() / 1000);
-        break;
-      }
-      default: {
-        selectedExpirationDate = Math.floor(new Date().getTime() / 1000);
-        break;
-      }
-    }
-  }
-
-  const handleError = () => {
-    modalOpen = false;
-    toastStore.addToast({
-      kind: 'error',
-      title: 'Creation Failed'
-    });
-    invalidate('lf:api-keys');
-  };
-
-  const { form, errors, enhance, submit, reset } = superForm(data.form, {
-    invalidateAll: false,
-    validators: yup(newAPIKeySchema),
-    onError() {
-      handleError();
-    },
-    onResult({ result }) {
-      if (result.type === 'success') {
-        createdKey = result.data?.key;
-        modalOpen = false;
-        copyKeyModalOpen = true;
-        toastStore.addToast({
-          kind: 'success',
-          title: 'Created Successfully',
-          subtitle: `${result.data?.form.data.name} created successfully.`
-        });
-        invalidate('lf:api-keys');
-      }
-    }
-  });
-
-  const handleCancel = () => {
-    modalOpen = false;
-    reset();
-  };
-
   const closeEditMode = () => {
     editMode = false;
     selectedRowIds = [];
   };
 
-  const handleCloseCopyKeyModal = () => {
-    copyKeyModalOpen = false;
-    createdKey = null;
-  };
-
   /****** Page Handlers ******/
-
-  const updateDataAndPagination = () => {
-    const currentPageItems = data.keys.slice(currentPosition, currentPosition + itemsPerPage);
-    renderPagination(currentPageItems.length);
-  };
-
   const loadNextPage = () => {
     if (currentPosition + itemsPerPage < data.keys.length) {
       currentPosition += itemsPerPage;
-      updateDataAndPagination();
+      renderPagination();
     }
   };
   const loadPreviousPage = () => {
     if (currentPosition - itemsPerPage >= 0) {
       currentPosition -= itemsPerPage;
-      updateDataAndPagination();
+      renderPagination();
     }
   };
-
   const renderPagination = () => {
     totalPages = Math.ceil(data.keys.length / itemsPerPage);
     const currentPage = Math.ceil((currentPosition + 1) / itemsPerPage);
@@ -186,12 +101,10 @@
 
     pagesToShow = Array.from({ length: endPage - startPage + 1 }, (_, i) => startPage + i);
   };
-
   const goToPage = (pageNumber) => {
     currentPosition = (pageNumber - 1) * itemsPerPage;
-    updateDataAndPagination();
+    renderPagination();
   };
-
   /****** End Page Handlers ******/
 
   const handleEditItem = (id: string) => {
@@ -215,11 +128,13 @@
   onMount(() => {
     renderPagination();
   });
+
+  // TODO - fix styling of table, then test
 </script>
 
 <Heading tag="h3">API Keys</Heading>
 
-<div id="api-keys-table" class="bg-gray-50 p-3 dark:bg-gray-900 sm:p-5">
+<Section name="api-keys-table" class="bg-gray-50 p-3 dark:bg-gray-900 sm:p-5">
   <TableSearch
     placeholder="Search"
     hoverable={true}
@@ -241,7 +156,7 @@
         >
         <Button color="alternative" on:click={() => closeEditMode()}>Cancel</Button>
       {:else}
-        <Button>
+        <Button on:click={() => (createApiKeyModalOpen = true)}>
           <PlusOutline class="mr-2 h-3.5 w-3.5" />Create new
         </Button>
         <Button color="alternative">Actions<ChevronDownOutline class="ml-2 h-3 w-3 " /></Button>
@@ -304,7 +219,7 @@
       >
     </ButtonGroup>
   </div>
-</div>
+</Section>
 
 <DeleteApiKeyModal
   bind:confirmDeleteModalOpen
@@ -316,3 +231,5 @@
     editMode = false;
   }}
 />
+
+<CreateApiKeyModal form={data.form} bind:createApiKeyModalOpen />

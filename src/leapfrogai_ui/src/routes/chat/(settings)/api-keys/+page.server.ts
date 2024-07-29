@@ -48,7 +48,7 @@ export const actions: Actions = {
     }
 
     const form = await superValidate(request, yup(newAPIKeySchema));
-
+    console.log('form data', form.data);
     if (!form.valid) {
       return fail(400, { form });
     }
