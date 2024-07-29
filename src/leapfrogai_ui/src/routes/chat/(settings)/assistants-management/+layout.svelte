@@ -1,8 +1,6 @@
 <script lang="ts">
-  import { Breadcrumb, BreadcrumbItem } from 'flowbite-svelte';
-  import { page } from '$app/stores';
-  import { PoweredByDU } from '$components';
   import { threadsStore } from '$stores';
+  import LayoutWithBreadcrumb from '$components/LayoutWithBreadcrumb.svelte';
 
   const paths = [
     {
@@ -32,18 +30,4 @@
   };
 </script>
 
-<main class="content">
-  <Breadcrumb data-testid="breadcrumbs" aria-label="breadcrumbs" class="mb-4">
-    {#each paths as { path, name } (path)}
-      {#if $page.url.pathname.includes(path)}
-        <BreadcrumbItem home={name === 'Chat'} href={getPath(path)}>{name}</BreadcrumbItem>
-      {/if}
-    {/each}
-  </Breadcrumb>
-  <div class="flex h-full justify-center overflow-auto">
-    <div class="flex w-full flex-col items-center">
-      <slot />
-    </div>
-  </div>
-  <PoweredByDU />
-</main>
+<LayoutWithBreadcrumb {paths} {getPath}><slot /></LayoutWithBreadcrumb>

@@ -31,14 +31,14 @@ export const load: PageServerLoad = async ({ depends, locals: { session } }) => 
     return error(500, { message: 'Error fetching API keys' });
   }
 
-  keys = await res.json();
+  keys = (await res.json()) as APIKeyRow[];
   // convert from seconds to milliseconds
   keys.forEach((key) => {
     key.created_at = key.created_at * 1000;
     key.expires_at = key.expires_at * 1000;
   });
 
-  return { title: 'LeapfrogAI - API Keys', form, keys };
+  return { title: 'LeapfrogAI - API Keys', form, keys: keys ?? [] };
 };
 
 export const actions: Actions = {
