@@ -11,9 +11,8 @@
 
   export let form;
 
-
   let originalAvatar = $form.avatar;
-  let selectedPictogramName = $form.pictogram || "default";
+  let selectedPictogramName = $form.pictogram || 'default';
   let tempPictogram = selectedPictogramName;
   let modalOpen = false;
   let selectedRadioButton: 'upload' | 'pictogram' = originalAvatar ? 'upload' : 'pictogram';
@@ -23,6 +22,7 @@
   let searchText = '';
   let searchResults: FuseResult<(keyof typeof iconMap)[]>[];
   let filteredPictograms: (keyof typeof iconMap)[] = [];
+  let skipCloseActions = false;
 
   const pictogramNames = Object.keys(iconMap);
   const options: IFuseOptions<unknown> = {
@@ -59,16 +59,21 @@
   const handleCancel = (e) => {
     e.stopPropagation();
 
-    shouldValidate = false;
-    modalOpen = false;
-    $form.avatar = originalAvatar;
-    tempPictogram = selectedPictogramName; // reset to original pictogram
-    if ($form.avatar) {
-      $form.avatarFile = $form.avatar; // reset to original file
-    } else {
-      clearFileInput();
+    // clicking on save will trigger this function via on:close for modal
+    // if submitting, this block should not run, only when cancelling should it run
+    if (!skipCloseActions) {
+      shouldValidate = false;
+      modalOpen = false;
+      $form.avatar = originalAvatar;
+      tempPictogram = selectedPictogramName; // reset to original pictogram
+      if ($form.avatar) {
+        $form.avatarFile = $form.avatar; // reset to original file
+      } else {
+        clearFileInput();
+      }
+      fileUploaderRef.value = ''; // Reset the file input value to ensure input event detection
     }
-    fileUploaderRef.value = ''; // Reset the file input value to ensure input event detection
+    skipCloseActions = false;
   };
 
   const handleChangeAvatar = (e) => {
@@ -77,12 +82,13 @@
   };
 
   const clearFileInput = () => {
+    fileUploaderRef.value = '';
     $form.avatarFile = null;
   };
 
   const handleSubmit = (e) => {
     e.stopPropagation();
-
+    skipCloseActions = true;
     shouldValidate = true;
 
     if (selectedRadioButton === 'upload') {
@@ -98,8 +104,8 @@
       // pictogram tab
       selectedPictogramName = tempPictogram; // TODO - can we remove this line
       $form.pictogram = tempPictogram;
-      clearFileInput();
       $form.avatar = ''; // remove saved avatar
+      clearFileInput();
     }
 
     modalOpen = false;
@@ -119,18 +125,20 @@
       <DynamicPictogram iconName={tempPictogram} size="md" class="text-white" />
     {/if}
   </button>
-  <Modal bind:open={modalOpen} autoclose title="Avatar Image">
+  <Modal bind:open={modalOpen} autoclose title="Avatar Image" on:close={handleCancel}>
     <div id="parent-flexbox" class="flex h-full flex-col gap-4">
       <div id="child-flexbox-header" class="p-2">
         <div class="flex flex-col gap-2">
           <div class="flex gap-2">
             <LFRadio
+              data-testid="pictogram-radio-btn"
               name="Pictogram"
               checked={selectedRadioButton === 'pictogram'}
               on:click={() => (selectedRadioButton = 'pictogram')}
               class="dark:text-gray-400">Pictogram</LFRadio
             >
             <LFRadio
+              data-testid="upload-radio-btn"
               name="Upload"
               checked={selectedRadioButton === 'upload'}
               on:click={() => (selectedRadioButton = 'upload')}
@@ -167,7 +175,7 @@
           class={twMerge('flex flex-col gap-2', selectedRadioButton === 'pictogram' && 'hidden')}
         >
           {#if avatarToShow}
-            <Avatar src={avatarToShow} size="xl" />
+            <Avatar src={avatarToShow} size="xl" data-testid="image-upload-avatar" />
           {/if}
 
           <div class={twMerge('flex flex-col gap-2', hideUploader && 'hidden')}>
@@ -208,7 +216,7 @@
       </div>
     </div>
   </Modal>
-  <!--    Important! This input must be outside of the modal or the image will be lost when the modal closes-->
+  <!--    Important! These inputs must be outside of the modal or the image will be lost when the modal closes-->
   <input
     bind:this={fileUploaderRef}
     on:input={(e) => {
@@ -222,4 +230,5 @@
     name="avatarFile"
     class="sr-only"
   />
+  <input type="hidden" name="pictogram" value={selectedPictogramName} />
 </div>

@@ -1,8 +1,15 @@
 import { expect, test } from './fixtures';
-import { faker } from '@faker-js/faker';
 import { getFakeAssistantInput } from '../testUtils/fakeData';
 import { NO_FILE_ERROR_TEXT } from '../src/lib/constants/index';
-import { deleteAllAssistants, uploadAvatar } from './helpers/assistantHelpers';
+import {
+  deleteAllAssistants,
+  fillOutRequiredAssistantFields,
+  getRandomPictogramName,
+  saveAssistant,
+  saveAvatarImage,
+  savePictogram,
+  uploadAvatar
+} from './helpers/assistantHelpers';
 
 test.afterEach(async ({ openAIClient }) => {
   await deleteAllAssistants(openAIClient);
@@ -14,33 +21,11 @@ test('it can search for and choose a pictogram as an avatar', async ({ page }) =
   // Attempts to import the iconMap and pick random pictograms failed, the import breaks this test file and it won't
   // show up in playwright
   const assistantInput = getFakeAssistantInput();
-  const pictogramName = faker.helpers.arrayElement([
-    'Agriculture',
-    'Airplane',
-    'AmsterdamWindmill',
-    'Analytics',
-    'Analyze',
-    'AnalyzeCode',
-    'AnalyzesData',
-    'AnalyzingContainers',
-    'AppDeveloper',
-    'AppModernization',
-    'ApplicationIntegration',
-    'ApplicationPlatform',
-    'ApplicationSecurity',
-    'ArtTools_01',
-    'AsiaAustralia',
-    'AudioData',
-    'AuditTrail',
-    'AugmentedReality',
-    'Automobile'
-  ]);
+  const pictogramName = getRandomPictogramName();
 
   await page.goto('/chat/assistants-management/new');
 
-  await page.getByLabel('name').fill(assistantInput.name);
-  await page.getByLabel('tagline').fill(assistantInput.description);
-  await page.getByPlaceholder("You'll act as...").fill(assistantInput.instructions);
+  await fillOutRequiredAssistantFields(assistantInput, page);
 
   await page.getByTestId('mini-avatar-container').click();
 
@@ -57,10 +42,8 @@ test('it can search for and choose a pictogram as an avatar', async ({ page }) =
   const miniAvatarContainer = page.getByTestId('mini-avatar-container');
   const pictogram = miniAvatarContainer.getByTestId(`pictogram-${pictogramName}`);
   await expect(pictogram).toBeVisible();
-  await saveButton.click();
-  await expect(page.getByText('Assistant Created')).toBeVisible();
+  await saveAssistant(assistantInput.name, page);
 
-  await page.waitForURL('**/chat/assistants-management');
   await expect(page.getByTestId(`pictogram-${pictogramName}`)).toBeVisible();
 });
 
@@ -70,24 +53,19 @@ test('it can upload an image as an avatar', async ({ page }) => {
 
   await page.goto('/chat/assistants-management/new');
 
-  await page.getByLabel('name').fill(assistantInput.name);
-  await page.getByLabel('tagline').fill(assistantInput.description);
-  await page.getByPlaceholder("You'll act as...").fill(assistantInput.instructions);
+  await fillOutRequiredAssistantFields(assistantInput, page);
 
   await page.getByTestId('mini-avatar-container').click();
   await uploadAvatar(page);
 
   await page.getByRole('dialog').getByRole('button', { name: 'Save' }).click();
 
-  // Wait for modal save button to disappear
-  const saveButtons = page.getByRole('button', { name: 'Save' });
-  await expect(saveButtons).toHaveCount(1);
+  await saveAssistant(assistantInput.name, page);
+  const card = page.getByTestId(`assistant-card-${assistantInput.name}`);
+  const avatar = card.getByTestId('assistant-card-avatar');
+  const avatarSrc = await avatar.getAttribute('src');
 
-  await saveButtons.click();
-
-  await page.waitForURL('/chat/assistants-management');
-  await expect(page.getByText('Assistant Created')).toBeVisible();
-  await expect(page.getByTestId(`assistant-card-${assistantInput.name}`)).toBeVisible();
+  expect(avatarSrc).toBeDefined();
 });
 
 test('it can change an image uploaded as an avatar', async ({ page }) => {
@@ -96,10 +74,8 @@ test('it can change an image uploaded as an avatar', async ({ page }) => {
   await page.getByTestId('mini-avatar-container').click();
   await uploadAvatar(page);
 
-  const imageUploadContainer = page.getByTestId('image-upload-avatar');
-  const backgroundImage = await imageUploadContainer.evaluate((node) => {
-    return window.getComputedStyle(node).backgroundImage;
-  });
+  const avatarUploadContainer = page.getByTestId('image-upload-avatar');
+  const originalImageSource = await avatarUploadContainer.getAttribute('src');
 
   await page.getByRole('dialog').getByRole('button', { name: 'Save' }).click();
 
@@ -110,11 +86,8 @@ test('it can change an image uploaded as an avatar', async ({ page }) => {
   const fileChooser = await fileChooserPromise;
   await fileChooser.setFiles('./tests/fixtures/frog.png');
 
-  const newBackgroundImage = await imageUploadContainer.evaluate((node) => {
-    return window.getComputedStyle(node).backgroundImage;
-  });
-
-  expect(backgroundImage).not.toEqual(newBackgroundImage);
+  const newImageSource = await avatarUploadContainer.getAttribute('src');
+  expect(originalImageSource).not.toEqual(newImageSource);
 });
 
 test('it shows an error when clicking save on the upload tab if no image is uploaded', async ({
@@ -124,12 +97,10 @@ test('it shows an error when clicking save on the upload tab if no image is uplo
 
   await page.goto('/chat/assistants-management/new');
 
-  await page.getByLabel('name').fill(assistantInput.name);
-  await page.getByLabel('tagline').fill(assistantInput.description);
-  await page.getByPlaceholder("You'll act as...").fill(assistantInput.instructions);
+  await fillOutRequiredAssistantFields(assistantInput, page);
 
   await page.getByTestId('mini-avatar-container').click();
-  await page.getByText('Upload', { exact: true }).click();
+  await page.getByTestId('upload-radio-btn').check();
 
   const saveButton = page.getByRole('button', { name: 'Save' }).nth(0);
 
@@ -150,7 +121,7 @@ test('it removes an uploaded image and keeps the original pictogram on save', as
 
   await expect(page.getByTestId('image-upload-avatar')).toHaveCount(0);
 
-  await page.getByText('Pictogram', { exact: true }).click();
+  await page.getByTestId('pictogram-radio-btn').check();
 
   await page.getByRole('dialog').getByRole('button', { name: 'Save' }).click();
 
@@ -206,7 +177,7 @@ test('it keeps the original pictogram on close (not cancel) after changing the p
 
   await page.getByTestId(`pictogram-${pictogramName}`).click();
 
-  await page.getByLabel('Close the modal').nth(0).click();
+  await page.getByLabel('Close modal').click();
 
   const miniAvatarContainer = page.getByTestId('mini-avatar-container');
   const pictogram = miniAvatarContainer.getByTestId(`pictogram-default`);
@@ -222,8 +193,7 @@ test('it saves the pictogram if the save button is clicked on the pictogram tab 
   await page.getByTestId('mini-avatar-container').click();
 
   await uploadAvatar(page);
-
-  await page.getByText('Pictogram', { exact: true }).click();
+  await page.getByTestId('pictogram-radio-btn').check();
 
   await page.getByTestId(`pictogram-${pictogramName}`).click();
   await page.getByRole('dialog').getByRole('button', { name: 'Save' }).click();
@@ -231,4 +201,29 @@ test('it saves the pictogram if the save button is clicked on the pictogram tab 
   const miniAvatarContainer = page.getByTestId('mini-avatar-container');
   const pictogram = miniAvatarContainer.getByTestId(`pictogram-${pictogramName}`);
   await expect(pictogram).toBeVisible();
+});
+
+test('it can upload an image, then change to a pictogram, then change to an image', async ({
+  page
+}) => {
+  // There are lots of edge cases for the avatar/pictogram upload flow, this tests a couple of them
+  const assistantInput = getFakeAssistantInput();
+  const pictogramName = getRandomPictogramName();
+
+  await page.goto('/chat/assistants-management/new');
+
+  await fillOutRequiredAssistantFields(assistantInput, page);
+
+  await saveAvatarImage(page);
+  await savePictogram(pictogramName, page);
+  await saveAvatarImage(page);
+
+  // create assistant
+  await saveAssistant(assistantInput.name, page);
+
+  const card = page.getByTestId(`assistant-card-${assistantInput.name}`);
+  const avatar = card.getByTestId('assistant-card-avatar');
+  const avatarSrc = await avatar.getAttribute('src');
+
+  expect(avatarSrc).toBeDefined();
 });

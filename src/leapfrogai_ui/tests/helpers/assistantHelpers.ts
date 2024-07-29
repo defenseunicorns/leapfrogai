@@ -4,6 +4,7 @@ import { getFakeAssistantInput } from '../../testUtils/fakeData';
 import type { AssistantCreateParams } from 'openai/resources/beta/assistants';
 import type { AssistantInput, LFAssistant } from '../../src/lib/types/assistants';
 import { supabase } from './helpers';
+import { faker } from '@faker-js/faker';
 
 // Note - this will not apply the temperature slider value provided, it only clicks on the 0.5 increment
 export const createAssistant = async (assistantInput: AssistantInput, page: Page) => {
@@ -43,20 +44,19 @@ export const deleteAllAssistants = async (openAIClient: OpenAI) => {
 };
 export const attachAvatarImage = async (page: Page, imageName: string) => {
   const fileChooserPromise = page.waitForEvent('filechooser');
-  await page.locator('label').filter({ hasText: 'Upload from computer' }).click();
+  await page.getByText('Upload from computer').click();
   const fileChooser = await fileChooserPromise;
   await fileChooser.setFiles(`./tests/fixtures/${imageName}.png`);
 };
 export const uploadAvatar = async (page: Page, imageName = 'Doug') => {
-  await page.getByText('Upload', { exact: true }).click();
+  await page.getByTestId('upload-radio-btn').check();
 
   await attachAvatarImage(page, imageName);
 
-  const imageUploadContainer = page.getByTestId('image-upload-avatar');
-  const hasImage = await imageUploadContainer.evaluate((node) => {
-    return window.getComputedStyle(node).backgroundImage;
-  });
-  expect(hasImage).toBeDefined();
+  const imageUploadContainerSource = await page
+    .getByTestId('image-upload-avatar')
+    .getAttribute('src');
+  expect(imageUploadContainerSource).toBeDefined();
 };
 
 type CreateAssistantWithApiParams = {
@@ -117,4 +117,61 @@ export const deleteAssistantCard = async (name: string, page: Page) => {
 
 export const deleteAssistantAvatars = async () => {
   await supabase.storage.emptyBucket('assistant_avatars');
+};
+
+export const savePictogram = async (pictogramName: string, page: Page) => {
+  await page.getByTestId('mini-avatar-container').click();
+  await page.getByTestId('pictogram-radio-btn').check();
+  await page.getByPlaceholder('Search').click();
+  await page.getByPlaceholder('Search').fill(pictogramName);
+  await page.getByTestId(`pictogram-${pictogramName}`).click();
+  await page.getByRole('dialog').getByRole('button', { name: 'Save' }).click();
+};
+
+export const saveAvatarImage = async (page: Page) => {
+  await page.getByTestId('mini-avatar-container').click();
+  await uploadAvatar(page);
+  await page.getByRole('dialog').getByRole('button', { name: 'Save' }).click();
+};
+
+export const getRandomPictogramName = () =>
+  faker.helpers.arrayElement([
+    'Agriculture',
+    'Airplane',
+    'AmsterdamWindmill',
+    'Analytics',
+    'Analyze',
+    'AnalyzeCode',
+    'AnalyzesData',
+    'AnalyzingContainers',
+    'AppDeveloper',
+    'AppModernization',
+    'ApplicationIntegration',
+    'ApplicationPlatform',
+    'ApplicationSecurity',
+    'ArtTools_01',
+    'AsiaAustralia',
+    'AudioData',
+    'AuditTrail',
+    'AugmentedReality',
+    'Automobile'
+  ]);
+
+export const fillOutRequiredAssistantFields = async (
+  assistantInput: AssistantInput,
+  page: Page
+) => {
+  await page.getByLabel('name').fill(assistantInput.name);
+  await page.getByLabel('tagline').fill(assistantInput.description);
+  await page.getByPlaceholder("You'll act as...").fill(assistantInput.instructions);
+};
+
+export const saveAssistant = async (assistantName: string, page: Page) => {
+  const saveButtons = page.getByRole('button', { name: 'Save' });
+  await expect(saveButtons).toHaveCount(1);
+  await saveButtons.click();
+
+  await expect(page.getByText('Assistant Created')).toBeVisible();
+  await page.waitForURL('/chat/assistants-management');
+  await expect(page.getByTestId(`assistant-card-${assistantName}`)).toBeVisible();
 };

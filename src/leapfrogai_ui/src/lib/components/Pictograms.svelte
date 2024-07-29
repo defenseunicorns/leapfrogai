@@ -39,6 +39,4 @@
       </button>
     {/each}
   </div>
-
-  <input type="hidden" name="pictogram" value={selectedPictogramName} />
 </div>

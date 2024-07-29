@@ -57,7 +57,11 @@
 
     <div class="flex flex-col items-center gap-2 pb-4">
       {#if assistant.metadata.avatar}
-        <Avatar size="md" src={`${assistant.metadata.avatar}?v=${new Date().getTime()}`} />
+        <Avatar
+          data-testid="assistant-card-avatar"
+          size="md"
+          src={`${assistant.metadata.avatar}?v=${new Date().getTime()}`}
+        />
       {:else}
         <DynamicPictogram iconName={assistant.metadata.pictogram || 'default'} size="md" />
       {/if}
