@@ -31,7 +31,7 @@ dev = [
 
 dev-whisper = [
     "ctranslate2",
-    "transofmers[torch]"
+    "transformers[torch]"
 ]
 
 [tool.pip-tools]
