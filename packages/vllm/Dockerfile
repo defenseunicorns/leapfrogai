@@ -10,8 +10,8 @@ ARG SDK_DEST=src/leapfrogai_sdk/build \
     PYTHON_VERSION=3.11.6 \
     PYENV_GIT_TAG=v2.4.8 \
     HF_HUB_ENABLE_HF_TRANSFER="1" \
-    REPO_ID="bsmit1659/Phi-3-mini-128k-instruct-0.2-awq" \
-    REVISION="dba0b7533d342fac3988393fa1d817e4013c09d0"
+    REPO_ID="justinthelaw/Phi-3-mini-128k-instruct-4bit-128g" \
+    REVISION="main"
 
 # use root user for deps installation and nonroot user creation
 USER root
@@ -137,7 +137,9 @@ ENV LAI_TRUST_REMOTE_CODE=${TRUST_REMOTE_CODE} \
     LAI_ENFORCE_EAGER=${ENFORCE_EAGER} \
     LAI_GPU_MEMORY_UTILIZATION=${GPU_MEMORY_UTILIZATION} \
     LAI_WORKER_USE_RAY=${WORKER_USE_RAY} \
-    LAI_ENGINE_USE_RAY=${ENGINE_USE_RAY}
+    LAI_ENGINE_USE_RAY=${ENGINE_USE_RAY} \
+    # remove vLLM callback to stats server
+    VLLM_NO_USAGE_STATS=1
 
 ENV PATH="/home/leapfrogai/.venv/bin:$PATH"
 
