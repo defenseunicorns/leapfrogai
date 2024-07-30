@@ -129,12 +129,11 @@
     renderPagination();
   });
 
-  // TODO - fix styling of table, then test
 </script>
 
 <Heading tag="h3">API Keys</Heading>
 
-<Section name="api-keys-table" class="bg-gray-50 p-3 dark:bg-gray-900 sm:p-5">
+<div class="bg-gray-50 p-3 dark:bg-gray-900 w-3/4">
   <TableSearch
     placeholder="Search"
     hoverable={true}
@@ -219,7 +218,8 @@
       >
     </ButtonGroup>
   </div>
-</Section>
+</div>
+>
 
 <DeleteApiKeyModal
   bind:confirmDeleteModalOpen
