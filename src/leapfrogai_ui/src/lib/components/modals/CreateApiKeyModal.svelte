@@ -58,7 +58,6 @@
 
   const {
     form: sForm,
-    errors,
     enhance,
     submit,
     reset
@@ -101,47 +100,43 @@
     autoclose
     title="Create new secret key"
     on:close={handleClose}
+    color="primary"
   >
     <div class="flex flex-col gap-4">
       <div>
-        <P size="xl" class="text-center">
-          This API key is linked to your user account and gives full access to it.
+        <P class="dark:text-gray-400">
+          This API key is linked to your user account and gives full access to it. Please be careful
+          and keep it secret.
         </P>
-        <P size="xl" class="text-center">Please be careful and keep it secret.</P>
       </div>
       <div>
         <Label for="name" class="mb-2">Name</Label>
         <Input
           name="name"
           type="text"
-          size="sm"
-          placeholder="Test Key"
+          placeholder="Test key"
           autocomplete="off"
-          invalid={$errors.name}
           bind:value={$sForm.name}
         />
-        {#if $errors.name}
-          <span style="color: red">{$errors.name}</span>
-        {/if}
       </div>
       <div>
         <Label for="expiration" class="mb-2">Expiration</Label>
         <ButtonGroup>
           <Button
-            checked={selectedExpirationIndex === 0}
+            class={selectedExpirationIndex === 0 && 'z-10 ring-2 !ring-primary-700'}
             on:click={(e) => handleExpirationClick(0, e)}>7 Days</Button
           >
           <Button
-            checked={selectedExpirationIndex === 1}
+            class={selectedExpirationIndex === 1 && 'z-10 ring-2 !ring-primary-700'}
             on:click={(e) => handleExpirationClick(1, e)}>30 Days</Button
           >
           <Button
-            checked={selectedExpirationIndex === 2}
-            on:click={(e) => handleExpirationClick(2, e)}>60 Days</Button
+            on:click={(e) => handleExpirationClick(2, e)}
+            class={selectedExpirationIndex === 2 && 'z-10 ring-2 !ring-primary-700'}>60 Days</Button
           >
           <Button
-            checked={selectedExpirationIndex === 3}
-            on:click={(e) => handleExpirationClick(3, e)}>90 Days</Button
+            on:click={(e) => handleExpirationClick(3, e)}
+            class={selectedExpirationIndex === 3 && 'z-10 ring-2 !ring-primary-700'}>90 Days</Button
           >
         </ButtonGroup>
       </div>
@@ -149,8 +144,8 @@
       <input type="hidden" name="expires_at" value={selectedExpirationDate} />
     </div>
     <div class="flex justify-end gap-2">
-      <Button color="alternative" on:click={handleClose}>Cancel</Button>
-      <Button on:click={submit}>Create</Button>
+      <Button color="alternative" on:click={handleClose} size="sm">Cancel</Button>
+      <Button on:click={submit} size="sm">Create</Button>
     </div>
   </Modal>
 </form>

@@ -125,7 +125,13 @@
       <DynamicPictogram iconName={tempPictogram} size="md" class="text-white" />
     {/if}
   </button>
-  <Modal bind:open={modalOpen} autoclose title="Avatar Image" on:close={handleCancel}>
+  <Modal
+    bind:open={modalOpen}
+    autoclose
+    title="Avatar Image"
+    on:close={handleCancel}
+    color="primary"
+  >
     <div id="parent-flexbox" class="flex h-full flex-col gap-4">
       <div id="child-flexbox-header" class="p-2">
         <div class="flex flex-col gap-2">
@@ -179,8 +185,8 @@
           {/if}
 
           <div class={twMerge('flex flex-col gap-2', hideUploader && 'hidden')}>
-            <P color="text-gray-400">Upload image</P>
-            <P size="sm" color="text-gray-500">Supported file types are .jpg and .png.</P>
+            <P>Upload image</P>
+            <P size="sm" color="dark:text-gray-400">Supported file types are .jpg and .png.</P>
             <Button
               on:click={(e) => {
                 e.stopPropagation();

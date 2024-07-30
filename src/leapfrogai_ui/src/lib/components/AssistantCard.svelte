@@ -1,7 +1,7 @@
 <script lang="ts">
   import { fade } from 'svelte/transition';
   import { goto, invalidate } from '$app/navigation';
-  import { Avatar, Button, Card, Dropdown, DropdownItem, Modal } from 'flowbite-svelte';
+  import { Avatar, Button, Card, Dropdown, DropdownItem, Modal, P } from 'flowbite-svelte';
   import { DotsHorizontalOutline, ExclamationCircleOutline } from 'flowbite-svelte-icons';
   import DynamicPictogram from '$components/DynamicPictogram.svelte';
   import { threadsStore, toastStore } from '$stores';
@@ -80,19 +80,22 @@
   </Card>
 </div>
 <Modal
+  data-testid="delete-assistant-modal"
   bind:open={deleteModalOpen}
   autoclose
   title="Delete Assistant"
-  data-testid="delete-assistant-modal"
+  color="primary"
 >
-  <div class="text-center">
-    <ExclamationCircleOutline class="mx-auto mb-4 h-12 w-12 text-gray-400 dark:text-gray-200" />
-    <h3 class="mb-5 text-lg font-normal text-gray-500 dark:text-gray-400">
+  <div class="flex flex-col gap-4">
+    <ExclamationCircleOutline class="mx-auto h-12 w-12 text-gray-400 dark:text-white" />
+    <P size="xl" class="text-center dark:text-gray-400">
       Are you sure you want to delete your
       <strong>{assistant.name}</strong>
       assistant?
-    </h3>
-    <Button color="red" class="me-2" on:click={handleDelete}>Delete</Button>
-    <Button color="alternative">Cancel</Button>
+    </P>
+    <div class="flex justify-end gap-2">
+      <Button color="alternative" size="sm">Cancel</Button>
+      <Button color="red" on:click={handleDelete} size="sm">Delete</Button>
+    </div>
   </div></Modal
 >

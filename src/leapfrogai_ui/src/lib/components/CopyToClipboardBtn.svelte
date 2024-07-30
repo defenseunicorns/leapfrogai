@@ -2,6 +2,7 @@
   import { Button } from 'flowbite-svelte';
   import { toastStore } from '$stores';
   import { FileCopyOutline } from 'flowbite-svelte-icons';
+  import { twMerge } from 'tailwind-merge';
 
   export let value: string;
   export let toastTitle = 'Copied';
@@ -21,6 +22,10 @@
   };
 </script>
 
-<Button data-testid={testId} color="alternative" {size} on:click={handleClick}
-  >{btnText}<FileCopyOutline /></Button
+<Button
+  data-testid={testId}
+  color="alternative"
+  {size}
+  on:click={handleClick}
+  class={twMerge('dark:text-white', $$props.class)}>{btnText}<FileCopyOutline /></Button
 >
