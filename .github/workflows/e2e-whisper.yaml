@@ -60,6 +60,8 @@ jobs:
 
         - name: Setup Python
           uses: ./.github/actions/python
+          with:
+            additionalOptionalDep: dev-whisper
 
         - name: Setup UDS Cluster
           uses: ./.github/actions/uds-cluster
@@ -69,8 +71,6 @@ jobs:
 
         - name: Setup LFAI-API and Supabase
           uses: ./.github/actions/lfai-core
-          with:
-            additionalOptionalDep: "dev-whisper"
 
         ##########
         # whisper
