@@ -1,0 +1,28 @@
+name: setup-lfai-core
+description: "Setup Supabase and LFAI-API"
+
+runs:
+  using: composite
+  steps:
+    - name: Deploy Supabase
+      shell: bash
+      run: |
+        make build-supabase LOCAL_VERSION=e2e-test
+        docker image prune -af
+        uds zarf tools kubectl create namespace leapfrogai
+        uds zarf package deploy packages/supabase/zarf-package-supabase-amd64-e2e-test.tar.zst --confirm
+        rm packages/supabase/zarf-package-supabase-amd64-e2e-test.tar.zst
+
+    - name: Set environment variable
+      shell: bash
+      id: set-env-var
+      run: |
+        echo "ANON_KEY=$(uds zarf tools kubectl get secret supabase-bootstrap-jwt -n leapfrogai -o jsonpath='{.data.anon-key}' | base64 -d)" >> "$GITHUB_ENV"
+
+    - name: Deploy LFAI-API
+      shell: bash
+      run: |
+        make build-api LOCAL_VERSION=e2e-test
+        docker image prune -af
+        uds zarf package deploy packages/api/zarf-package-leapfrogai-api-amd64-e2e-test.tar.zst --confirm
+        rm packages/api/zarf-package-leapfrogai-api-amd64-e2e-test.tar.zst
