@@ -3,3 +3,8 @@ image:
 
 gpu:
   runtimeClassName: nvidia
+
+persistence:
+  size: 15Gi
+  accessModes: ReadWriteOnce
+  storageClass: "local-path"

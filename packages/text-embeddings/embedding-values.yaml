@@ -7,3 +7,8 @@ gpu:
 resources:
   limits:
     nvidia.com/gpu: ###ZARF_VAR_GPU_LIMIT###
+
+persistence:
+  size: 15Gi
+  accessModes: ReadWriteOnce
+  storageClass: "local-path"

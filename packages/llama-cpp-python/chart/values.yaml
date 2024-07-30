@@ -54,3 +54,8 @@ nodeSelector: {}
 tolerations: []
 
 affinity: {}
+
+persistence:
+  size: 15Gi
+  accessModes: ReadWriteOnce
+  storageClass: "local-path"

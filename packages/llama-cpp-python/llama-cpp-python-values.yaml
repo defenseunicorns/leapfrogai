@@ -1,2 +1,8 @@
 image:
   tag: "###ZARF_CONST_IMAGE_VERSION###"
+
+storage:
+  size: 15Gi
+  accessModes:
+    - ReadWriteOnce
+  storageClassName: "local-path"

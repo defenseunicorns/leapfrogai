@@ -1,7 +1,7 @@
 apiVersion: v1
 kind: PersistentVolumeClaim
 metadata:
-    name: lfai-whisper-pv-claim
+    name: lfai-llama-pv-claim
     namespace: leapfrogai
 spec:
   {{- if .Values.persistence.storageClass }}

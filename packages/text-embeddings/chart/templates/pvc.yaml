@@ -4,9 +4,11 @@ metadata:
     name: lfai-text-embeddings-pv-claim
     namespace: leapfrogai
 spec:
-  storageClassName: "local-path"
+  {{- if .Values.persistence.storageClass }}
+  storageClassName: {{ .Values.persistence.storageClass  }}
+  {{- end }}
   accessModes:
-    - ReadWriteOnce
+    - {{ .Values.persistence.accessModes | quote }}
   resources:
     requests:
-      storage: 15Gi
+      storage: {{ .Values.persistence.size | quote }}
