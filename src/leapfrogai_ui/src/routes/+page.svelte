@@ -1,32 +1,27 @@
 <script lang="ts">
   import logo from '$assets/LeapfrogAI.png';
-  import { goto } from '$app/navigation';
+  import { superForm } from 'sveltekit-superforms';
   import { Button } from 'carbon-components-svelte';
-  import { Auth } from '@supabase/auth-ui-svelte';
   import { env } from '$env/dynamic/public';
-  import { ThemeSupa } from '@supabase/auth-ui-shared';
 
   export let data;
   export let queryParams: { [key: string]: string } | undefined = undefined;
 
   let isSignup = true;
-  let { session } = data;
-  $: ({ session } = data);
-
-  $: if (session?.user) {
-    goto('/chat');
-  }
+  let { supabase, url } = data;
+  $: ({ supabase, url } = data);
 
   async function signInWithKeycloak() {
-    await data.supabase.auth.signInWithOAuth({
+    await supabase.auth.signInWithOAuth({
       provider: 'keycloak',
       options: {
         scopes: 'openid',
-        redirectTo: `${data.url}/auth/callback`,
+        redirectTo: `${url}/auth/callback`,
         queryParams
       }
     });
   }
+  const { form, errors, enhance } = superForm(data.form);
 </script>
 
 <div class="login-container">
@@ -34,13 +29,33 @@
     <img alt="LeapfrogAI Logo" src={logo} class="logo" />
   </div>
   {#if env.PUBLIC_DISABLE_KEYCLOAK === 'true'}
-    <Auth
-      supabaseClient={data.supabase}
-      view={isSignup ? 'sign_up' : 'sign_in'}
-      redirectTo={`${data.url}/auth/callback`}
-      showLinks={false}
-      appearance={{ theme: ThemeSupa, style: { input: 'color: #fff' } }}
-    />
+    <form method="POST" action={isSignup ? '/auth?/signup' : '/auth?/login'} use:enhance>
+      <div class="form">
+        <label for="email"> Email </label>
+        <input
+          id="email"
+          name="email"
+          type="email"
+          bind:value={$form.email}
+          placeholder="Your email address"
+        />
+
+        <label for="password"> Password</label>
+        <input
+          id="password"
+          name="password"
+          type="password"
+          placeholder="Your password"
+          bind:value={$form.password}
+        />
+
+        <Button type="submit">{isSignup ? 'Sign Up' : 'Sign In'}</Button>
+        {#if $errors.email}
+          <span style="color: red">{$errors.email}</span>
+        {/if}
+      </div>
+    </form>
+
     <Button
       kind="ghost"
       on:click={() => {
@@ -61,8 +76,13 @@
     display: flex;
     flex-direction: column;
     align-items: center;
-    gap: layout.$spacing-08;
+    gap: 1rem;
     width: 100%;
     padding-top: layout.$spacing-04;
+  }
+  .form {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
   }
 </style>

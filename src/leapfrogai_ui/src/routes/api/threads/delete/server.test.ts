@@ -1,16 +1,18 @@
 import { faker } from '@faker-js/faker';
 import { DELETE } from './+server';
 import {
-  sessionMock,
-  sessionNullMock,
   supabaseFromMockWrapper,
   supabaseSelectSingleByIdMock,
   supabaseUpdateErrorMock,
   updateSingleReturnsMock
 } from '$lib/mocks/supabase-mocks';
 import { mockOpenAI } from '../../../../../vitest-setup';
+import { getLocalsMock } from '$lib/mocks/misc';
+import type { RequestEvent } from '@sveltejs/kit';
+import type { RouteParams } from '../../../../../.svelte-kit/types/src/routes/api/messages/new/$types';
+import type { Profile } from '$lib/types/profile';
 
-const fakeProfile = { thread_ids: ['thread_1'] };
+const fakeProfile: Profile = { id: '123', full_name: 'fake name', thread_ids: ['thread_1'] };
 
 describe('/api/threads/delete', () => {
   it('returns a 204 when the request completes and removes the id from the users profile', async () => {
@@ -23,18 +25,18 @@ describe('/api/threads/delete', () => {
 
     const res = await DELETE({
       request,
-      locals: {
+      locals: getLocalsMock({
         supabase: supabaseFromMockWrapper({
           ...supabaseSelectSingleByIdMock(fakeProfile),
           ...updateMock
-        }),
-        safeGetSession: sessionMock
-      }
-    });
+        })
+      })
+    } as RequestEvent<RouteParams, '/api/threads/delete'>);
 
     expect(res.status).toEqual(204);
 
-    const updateCallArgs = updateMock.update.mock.calls[0];
+    const updateCallArgs = updateMock.update.mock.calls[0] as unknown as [{ thread_ids: string[] }];
+
     expect(updateCallArgs[0]!.thread_ids).toHaveLength(0);
   });
   it('returns a 401 when there is no session', async () => {
@@ -46,8 +48,10 @@ describe('/api/threads/delete', () => {
     await expect(
       DELETE({
         request,
-        locals: { supabase: {}, safeGetSession: sessionNullMock }
-      })
+        locals: getLocalsMock({
+          nullSession: true
+        })
+      } as RequestEvent<RouteParams, '/api/threads/delete'>)
     ).rejects.toMatchObject({
       status: 401
     });
@@ -60,7 +64,10 @@ describe('/api/threads/delete', () => {
     });
 
     await expect(
-      DELETE({ request, locals: { supabase: {}, safeGetSession: sessionMock } })
+      DELETE({
+        request,
+        locals: getLocalsMock()
+      } as RequestEvent<RouteParams, '/api/threads/delete'>)
     ).rejects.toMatchObject({
       status: 400
     });
@@ -71,7 +78,10 @@ describe('/api/threads/delete', () => {
     });
 
     await expect(
-      DELETE({ request, locals: { supabase: {}, safeGetSession: sessionMock } })
+      DELETE({
+        request,
+        locals: getLocalsMock()
+      } as RequestEvent<RouteParams, '/api/threads/delete'>)
     ).rejects.toMatchObject({
       status: 400
     });
@@ -83,7 +93,10 @@ describe('/api/threads/delete', () => {
     });
 
     await expect(
-      DELETE({ request, locals: { supabase: {}, safeGetSession: sessionMock } })
+      DELETE({
+        request,
+        locals: getLocalsMock()
+      } as RequestEvent<RouteParams, '/api/threads/delete'>)
     ).rejects.toMatchObject({
       status: 400
     });
@@ -98,14 +111,13 @@ describe('/api/threads/delete', () => {
     await expect(
       DELETE({
         request,
-        locals: {
+        locals: getLocalsMock({
           supabase: supabaseFromMockWrapper({
             ...supabaseSelectSingleByIdMock(fakeProfile),
             ...supabaseUpdateErrorMock()
-          }),
-          safeGetSession: sessionMock
-        }
-      })
+          })
+        })
+      } as RequestEvent<RouteParams, '/api/threads/delete'>)
     ).rejects.toMatchObject({
       status: 500
     });
@@ -120,14 +132,13 @@ describe('/api/threads/delete', () => {
     await expect(
       DELETE({
         request,
-        locals: {
+        locals: getLocalsMock({
           supabase: supabaseFromMockWrapper({
             ...supabaseSelectSingleByIdMock(fakeProfile),
             ...updateSingleReturnsMock()
-          }),
-          safeGetSession: sessionMock
-        }
-      })
+          })
+        })
+      } as RequestEvent<RouteParams, '/api/threads/delete'>)
     ).rejects.toMatchObject({
       status: 500
     });

@@ -1,10 +1,10 @@
+import type { RequestHandler } from './$types';
 import { error, json } from '@sveltejs/kit';
 import { messageInputSchema } from '$lib/schemas/chat';
 import type { NewMessageInput } from '$lib/types/messages';
 import { getOpenAiClient } from '$lib/server/constants';
 
-export async function POST({ request, locals: { safeGetSession } }) {
-  const { session } = await safeGetSession();
+export const POST: RequestHandler = async ({ request, locals: { session } }) => {
   if (!session) {
     error(401, 'Unauthorized');
   }
@@ -33,4 +33,4 @@ export async function POST({ request, locals: { safeGetSession } }) {
     console.error(`Error creating message: ${e}`);
     error(500, 'Error creating message');
   }
-}
+};

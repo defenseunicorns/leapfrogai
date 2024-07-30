@@ -32,10 +32,6 @@ on:
       # Ignore non e2e tests
       - "!tests/pytest/**"
 
-      # Ignore LFAI-UI things (for now?)
-      - "!src/leapfrogai_ui/**"
-      - "!packages/ui/**"
-
       # Ignore changes to the repeater model
       - "!packages/repeater/**"
 
@@ -59,7 +55,7 @@ jobs:
             python-version-file: 'pyproject.toml'
 
         - name: Install Python Deps
-          run: python -m pip install "."
+          run: python -m pip install ".[dev]"
 
         - name: Setup Node
           uses: actions/setup-node@60edb5dd545a775178f52524783378180af0d1f8 # v4.0.2
@@ -79,7 +75,7 @@ jobs:
 
         - name: Create UDS Cluster
           run: |
-            uds deploy k3d-core-slim-dev:0.22.2 --confirm
+            uds deploy k3d-core-slim-dev:0.23.0 --confirm
 
         ##########
         # Supabase
@@ -103,16 +99,6 @@ jobs:
             python -m pytest ./tests/e2e/test_supabase.py -v
 
         ##########
-        # UI
-        ##########
-        - name: Deploy LFAI-UI
-          run: |
-            make build-ui LOCAL_VERSION=e2e-test
-            docker image prune -af
-            uds zarf package deploy packages/ui/zarf-package-leapfrogai-ui-amd64-e2e-test.tar.zst --confirm
-            rm packages/ui/zarf-package-leapfrogai-ui-amd64-e2e-test.tar.zst
-
-        ##########
         # API
         ##########
         - name: Deploy LFAI-API
@@ -127,11 +113,30 @@ jobs:
             python -m pip install requests
             python -m pytest ./tests/e2e/test_api.py -v
 
-        # Run the playwright UI tests using the deployed Supabase endpoint
+        ##########
+        # UI
+        ##########
+        - name: Deploy LFAI-UI
+          run: |
+            make build-ui LOCAL_VERSION=e2e-test
+            docker image prune -af
+            uds zarf package deploy packages/ui/zarf-package-leapfrogai-ui-amd64-e2e-test.tar.zst --confirm
+            rm packages/ui/zarf-package-leapfrogai-ui-amd64-e2e-test.tar.zst
+
+        # Run the playwright UI tests using the deployed Supabase endpoint and upload report as an artifact
         - name: UI/API/Supabase E2E Playwright Tests
           run: |
             cp src/leapfrogai_ui/.env.example src/leapfrogai_ui/.env
             TEST_ENV=CI PUBLIC_DISABLE_KEYCLOAK=true PUBLIC_SUPABASE_ANON_KEY=$ANON_KEY npm --prefix src/leapfrogai_ui run test:integration:ci
+
+        # Upload the Playwright report as an artifact
+        - name: Archive Playwright Report
+          uses: actions/upload-artifact@v4
+          if: ${{ !cancelled() }}
+          with:
+            name: playwright-report
+            path: src/leapfrogai_ui/e2e-report/
+            retention-days: 30
 
         # The UI can be removed after the Playwright tests are finished
         - name: Cleanup UI

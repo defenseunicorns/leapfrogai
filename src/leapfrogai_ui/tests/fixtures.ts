@@ -23,16 +23,19 @@ export const getToken = () => {
     (cookie: Cookie) => cookie.name === 'sb-supabase-kong-auth-token.0'
   );
 
-  const decodedValue = decodeURIComponent(cookie.value);
-  // The cookie value is missing ending " and }, so we append it
-  const parsedValue = JSON.parse(`${decodedValue}"}`);
+  const cookieStripped = cookie.value.split('base64-')[1];
+  const decodedValue = Buffer.from(cookieStripped, 'base64').toString('utf-8');
+  // The cookie value is missing ending " and }}, so we append it
+  const parsedValue = JSON.parse(`${decodedValue}"}}`);
   return parsedValue.access_token;
 };
 export const getOpenAIClient = () => {
   const token = getToken();
   return new OpenAI({
     apiKey: process.env.OPENAI_API_KEY || token,
-    baseURL: `${process.env.LEAPFROGAI_API_BASE_URL}/openai/v1`
+    baseURL: process.env.OPENAI_API_KEY
+      ? `${process.env.LEAPFROGAI_API_BASE_URL}/v1`
+      : `${process.env.LEAPFROGAI_API_BASE_URL}/openai/v1`
   });
 };
 

@@ -16,7 +16,7 @@ import { toastStore } from '$stores';
 import { formatDate } from '$helpers/dates';
 import { vi } from 'vitest';
 import { faker } from '@faker-js/faker';
-import { sessionMock } from '$lib/mocks/supabase-mocks';
+import { getLocalsMock } from '$lib/mocks/misc';
 
 describe('api keys', () => {
   let form: APIKeysForm;
@@ -29,7 +29,8 @@ describe('api keys', () => {
     keys[2].permissions = PERMISSIONS.WRITE;
     keys[3].permissions = PERMISSIONS.READ_WRITE;
 
-    const data = await load({ depends: vi.fn(), locals: { safeGetSession: sessionMock } });
+    // @ts-expect-error: full mocking of load function params not necessary and is overcomplicated
+    const data = await load({ depends: vi.fn(), locals: getLocalsMock() });
     form = await superValidate(yup(newAPIKeySchema));
     render(ApiKeyPage, {
       data: { ...data, form }
@@ -99,8 +100,7 @@ describe('api keys', () => {
 
     expect(toastSpy).toHaveBeenCalledWith({
       kind: 'success',
-      title: 'Keys Deleted',
-      subtitle: ''
+      title: 'Keys Deleted'
     });
   });
   it('disables the delete button when there are no rows selected', async () => {

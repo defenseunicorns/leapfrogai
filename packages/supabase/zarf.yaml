@@ -49,6 +49,9 @@ variables:
   - name: ENABLE_EXTERNAL_KEYCLOAK
     description: 'Enable the integration between Supabase and an external keycloak instance be enabled'
     default: "true"
+  - name: MAX_FILE_UPLOAD_SIZE_IN_BYTES
+    description: 'The maximum upload file size for Supabase storage in bytes, default is equivalent to 512Mb'
+    default: "536870912"
 
 components:
   - name: supabase

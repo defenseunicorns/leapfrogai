@@ -280,7 +280,7 @@
   $: filteredItems = sortedItems.filter((item) => filterItem(item, value));
   $: highlightedId =
     highlightedIndex > -1
-      ? (filterable ? filteredItems : sortedItems)[highlightedIndex]?.id ?? null
+      ? ((filterable ? filteredItems : sortedItems)[highlightedIndex]?.id ?? null)
       : null;
 </script>
 

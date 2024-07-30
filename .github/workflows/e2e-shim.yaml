@@ -23,10 +23,6 @@ on:
       # Catch pytests
       - "tests/pytest/**"
 
-      # Catch LFAI-UI things
-      - "src/leapfrogai_ui/**"
-      - "packages/ui/**"
-
       # Catch changes to the repeater model
       - "packages/repeater/**"
 

@@ -1,12 +1,10 @@
-import { redirect } from '@sveltejs/kit';
+import type { PageServerLoad } from './$types';
+import { superValidate } from 'sveltekit-superforms';
+import { yup } from 'sveltekit-superforms/adapters';
+import { emailPasswordSchema } from '$schemas/auth';
 
-export const load = async ({ url, locals: { safeGetSession } }) => {
-  const { session } = await safeGetSession();
+export const load: PageServerLoad = async ({ url }) => {
+  const form = await superValidate(yup(emailPasswordSchema));
 
-  // if the user is already logged in return them to the chat page
-  if (session) {
-    throw redirect(303, '/chat');
-  }
-
-  return { url: url.origin };
+  return { url: url.origin, form };
 };

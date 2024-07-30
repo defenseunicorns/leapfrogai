@@ -107,7 +107,7 @@ test('it can switch between normal chat and chat with an assistant', async ({
   page,
   openAIClient
 }) => {
-  const assistant = await createAssistantWithApi(openAIClient);
+  const assistant = await createAssistantWithApi({ openAIClient });
 
   await loadChatPage(page);
   const messages = page.getByTestId('message');
