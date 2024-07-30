@@ -1,4 +1,4 @@
-import { fireEvent, render, screen, waitFor, within } from '@testing-library/svelte';
+import { render, screen, within } from '@testing-library/svelte';
 import { load } from './+page.server';
 import { superValidate } from 'sveltekit-superforms';
 import { yup } from 'sveltekit-superforms/adapters';
@@ -10,18 +10,60 @@ import {
   mockGetKeys
 } from '$lib/mocks/api-key-mocks';
 import { type APIKeyRow, type APIKeysForm, PERMISSIONS } from '$lib/types/apiKeys';
-import { getFakeApiKeys } from '$testUtils/fakeData';
+import { fakeAssistants, fakeThreads, getFakeApiKeys } from '$testUtils/fakeData';
 import userEvent from '@testing-library/user-event';
 import { toastStore } from '$stores';
 import { formatDate } from '$helpers/dates';
 import { vi } from 'vitest';
 import { faker } from '@faker-js/faker';
 import { getLocalsMock } from '$lib/mocks/misc';
+import stores from '$app/stores';
 
-// TODO - these will not work until we refactor them to flowbite in next PR
-describe.skip('api keys', () => {
+const { getStores } = await vi.hoisted(() => import('$lib/mocks/svelte'));
+const keys = getFakeApiKeys({ numKeys: 4 });
+
+// The DeleteApiKeyModal access $page.data so we re-mock it out here with the keys set to a static value we can
+// use throughout the tests when mocking the server load data as well
+vi.mock('$app/stores', (): typeof stores => {
+  const page: typeof stores.page = {
+    subscribe(fn) {
+      return getStores({
+        url: `http://localhost/chat/${fakeThreads[0].id}`,
+        params: { thread_id: fakeThreads[0].id },
+        data: {
+          threads: fakeThreads,
+          assistants: fakeAssistants,
+          assistant: undefined,
+          files: [],
+          keys
+        }
+      }).page.subscribe(fn);
+    }
+  };
+  const navigating: typeof stores.navigating = {
+    subscribe(fn) {
+      return getStores().navigating.subscribe(fn);
+    }
+  };
+  const updated: typeof stores.updated = {
+    subscribe(fn) {
+      return getStores().updated.subscribe(fn);
+    },
+    check: () => Promise.resolve(false)
+  };
+
+  return {
+    getStores,
+    navigating,
+    page,
+    updated
+  };
+});
+
+describe('api keys', () => {
   let form: APIKeysForm;
-  const keys = getFakeApiKeys({ numKeys: 4 });
+
+  let searchbox: HTMLElement;
 
   beforeEach(async () => {
     mockGetKeys(keys);
@@ -36,6 +78,9 @@ describe.skip('api keys', () => {
     render(ApiKeyPage, {
       data: { ...data, form }
     });
+    searchbox = screen.getByRole('textbox', {
+      name: /search/i
+    });
   });
   it('lists all the keys', () => {
     keys.forEach((key) => {
@@ -44,37 +89,31 @@ describe.skip('api keys', () => {
   });
   it('searches by name', async () => {
     expect(screen.getByText(keys[1].name)).toBeInTheDocument();
-    await userEvent.type(screen.getByRole('searchbox'), keys[0].name);
+    await userEvent.type(searchbox, keys[0].name);
     expect(screen.queryByText(keys[1].name)).not.toBeInTheDocument();
     expect(screen.getByText(keys[0].name)).toBeInTheDocument();
   });
   it('searches for keys by created date', async () => {
     expect(screen.getByText(keys[0].name)).toBeInTheDocument();
-    await userEvent.type(
-      screen.getByRole('searchbox'),
-      formatDate(new Date(keys[0].created_at * 1000))
-    );
+    await userEvent.type(searchbox, formatDate(new Date(keys[0].created_at * 1000)));
     expect(screen.queryByText(keys[1].name)).not.toBeInTheDocument();
     expect(screen.getByText(keys[0].name)).toBeInTheDocument();
   });
   it('searches for keys by expiration date', async () => {
     expect(screen.getByText(keys[0].name)).toBeInTheDocument();
-    await userEvent.type(
-      screen.getByRole('searchbox'),
-      formatDate(new Date(keys[0].expires_at * 1000))
-    );
+    await userEvent.type(searchbox, formatDate(new Date(keys[0].expires_at * 1000)));
     expect(screen.queryByText(keys[1].name)).not.toBeInTheDocument();
     expect(screen.getByText(keys[0].name)).toBeInTheDocument();
   });
   it('searches for keys by secret', async () => {
     expect(screen.getByText(keys[0].name)).toBeInTheDocument();
-    await userEvent.type(screen.getByRole('searchbox'), keys[0].api_key.slice(-4));
+    await userEvent.type(searchbox, keys[0].api_key.slice(-4));
     expect(screen.queryByText(keys[1].name)).not.toBeInTheDocument();
     expect(screen.getByText(keys[0].name)).toBeInTheDocument();
   });
   it('searches for keys by permissions', async () => {
     expect(screen.getByText(keys[0].name)).toBeInTheDocument();
-    await userEvent.type(screen.getByRole('searchbox'), keys[0].permissions);
+    await userEvent.type(searchbox, keys[0].permissions);
     expect(screen.queryByText(keys[1].name)).not.toBeInTheDocument();
     expect(screen.getByText(keys[0].name)).toBeInTheDocument();
   });
@@ -83,21 +122,20 @@ describe.skip('api keys', () => {
     mockDeleteApiKey();
     const toastSpy = vi.spyOn(toastStore, 'addToast');
 
+    const actionsMenu = screen.getByRole('button', { name: /actions/i });
+    await userEvent.click(actionsMenu);
+    await userEvent.click(screen.getByRole('button', { name: /edit/i }));
+
     const checkbox = screen.getByRole('checkbox', {
       name: /select all rows/i
     });
-    await fireEvent.click(checkbox);
+    await userEvent.click(checkbox);
+    await userEvent.click(screen.getByRole('button', { name: /delete/i }));
 
-    for (const key of keys) {
-      expect(screen.getByText(key.name)).toBeInTheDocument();
-    }
-
-    const deleteBtns = screen.getAllByRole('button', { name: /delete/i });
-    await userEvent.click(deleteBtns[0]);
-
-    screen.getByText(/are you sure you want to delete \?/i);
-    screen.getByText(`${keys.map((key) => key.name).join(', ')}`); // check modal has all selected key names
-    await userEvent.click(deleteBtns[1]);
+    const modal = screen.getByTestId('delete-api-key-modal');
+    expect(modal).toBeInTheDocument();
+    screen.getByText(keys.map((key) => key.name).join(', '));
+    await userEvent.click(within(modal).getByRole('button', { name: /delete/i }));
 
     expect(toastSpy).toHaveBeenCalledWith({
       kind: 'success',
@@ -105,29 +143,32 @@ describe.skip('api keys', () => {
     });
   });
   it('disables the delete button when there are no rows selected', async () => {
-    // Note - the delete button is hidden when there are no rows selected, but still on the page so it needs to be
-    // disabled
-
-    const deleteBtn = screen.getAllByRole('button', { name: /delete/i })[0];
+    const actionsMenu = screen.getByRole('button', { name: /actions/i });
+    await userEvent.click(actionsMenu);
+    await userEvent.click(screen.getByRole('button', { name: /edit/i }));
+    const deleteBtn = screen.getByRole('button', { name: /delete/i });
     expect(deleteBtn).toBeDisabled();
   });
-  it('replaces the delete button with a loading spinner while deleting', async () => {
+  it('replaces the delete button with a disabled loading spinner button while deleting', async () => {
     mockDeleteApiKey({ withDelay: true });
-    const deleteBtns = screen.getAllByRole('button', { name: /delete/i });
 
-    const checkboxes = screen.getAllByRole('checkbox');
+    const actionsMenu = screen.getByRole('button', { name: /actions/i });
+    await userEvent.click(actionsMenu);
+    await userEvent.click(screen.getByRole('button', { name: /edit/i }));
+    const checkbox = screen.getByRole('checkbox', {
+      name: /select all rows/i
+    });
+    await userEvent.click(checkbox);
+    const deleteBtn = screen.getByRole('button', { name: /delete/i });
+    await userEvent.click(deleteBtn);
+    const modal = screen.getByTestId('delete-api-key-modal');
+    await userEvent.click(within(modal).getByRole('button', { name: /delete/i }));
 
-    await fireEvent.click(checkboxes[1]); // select key
-    expect(screen.queryByTestId('delete-pending')).not.toBeInTheDocument(); // no loading spinner yet
-    await userEvent.click(deleteBtns[0]);
-    await waitFor(() => expect(deleteBtns[1]).not.toBeDisabled());
-    // Deletion check completed
-    screen.getByText(/are you sure you want to delete \?/i);
-
-    await userEvent.click(deleteBtns[1]); // confirm delete
-    const deleteBtns2 = screen.getAllByRole('button', { name: /delete/i });
-    expect(deleteBtns2).toHaveLength(1); // only modal delete btn remains in document
-    expect(screen.queryByTestId('delete-pending')).toBeInTheDocument();
+    expect(deleteBtn).not.toBeInTheDocument();
+    const deleteSpinnerBtn = screen.getByRole('button', { name: /deleting/i });
+    expect(deleteSpinnerBtn).toBeInTheDocument();
+    expect(deleteSpinnerBtn).toBeDisabled();
+    screen.getByText('Deleting...');
   });
 
   // This test passes but is throwing a type error:
@@ -151,14 +192,11 @@ describe.skip('api keys', () => {
     mockCreateApiKeyFormAction(key);
 
     await userEvent.click(screen.getByRole('button', { name: /create new/i }));
-    await userEvent.type(screen.getByLabelText(/name/i), keyName);
+    const modal = screen.getByTestId('create-api-key-modal');
+    await userEvent.type(within(modal).getByRole('textbox'), keyName);
     await userEvent.click(screen.getByText('60 Days'));
 
-    const dialog = screen.getByRole('dialog', {
-      name: /create new secret key/i
-    });
-
-    await userEvent.click(within(dialog).getByRole('button', { name: /create/i }));
+    await userEvent.click(within(modal).getByRole('button', { name: /create/i }));
 
     expect(toastSpy).toHaveBeenCalledWith({
       kind: 'success',

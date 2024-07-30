@@ -8,6 +8,7 @@
     Dropdown,
     DropdownItem,
     Heading,
+    Spinner,
     TableBody,
     TableBodyCell,
     TableBodyRow,
@@ -26,15 +27,14 @@
   import { formatKeyShort } from '$helpers/apiKeyHelpers';
   import DeleteApiKeyModal from '$components/modals/DeleteApiKeyModal.svelte';
   import { onMount } from 'svelte';
-  import Section from '$components/Section.svelte';
   import CreateApiKeyModal from '$components/modals/CreateApiKeyModal.svelte';
 
   export let data: PageServerData;
 
-  let searchTerm = '';
-  let currentPosition = 0;
   const itemsPerPage = 10;
   const showPage = 5;
+  let searchTerm = '';
+  let currentPosition = 0;
   let totalPages = 0;
   let pagesToShow = [];
   let totalItems = data.keys.length;
@@ -44,13 +44,10 @@
   let actionsOpen = false;
   let createApiKeyModalOpen = false;
   let confirmDeleteModalOpen = false;
-  let copyKeyModalOpen = false;
   let allItemsChecked = false;
 
   let selectedRowIds: string[] = [];
   let deleting = false;
-
-  let createdKey: APIKeyRow | null = null;
 
   let divClass = 'bg-white dark:bg-gray-800 relative shadow-md sm:rounded-lg overflow-hidden';
   let innerDivClass =
@@ -67,7 +64,7 @@
     'permissions'
   ];
   // TODO - data.keys not getting type inference
-  $: filteredItems = filterTable(data.keys, FILTER_KEYS, searchTerm);
+  $: filteredItems = filterTable(data.keys, FILTER_KEYS, searchTerm.toLowerCase());
   $: currentPageItems = data.keys.slice(currentPosition, currentPosition + itemsPerPage);
   $: startRange = currentPosition + 1;
   $: endRange = Math.min(currentPosition + itemsPerPage, totalItems);
@@ -128,12 +125,11 @@
   onMount(() => {
     renderPagination();
   });
-
 </script>
 
 <Heading tag="h3">API Keys</Heading>
 
-<div class="bg-gray-50 p-3 dark:bg-gray-900 w-3/4">
+<div class="w-3/4 bg-gray-50 p-3 dark:bg-gray-900">
   <TableSearch
     placeholder="Search"
     hoverable={true}
@@ -148,11 +144,18 @@
       class="flex w-full flex-shrink-0 flex-col items-stretch justify-end space-y-2 md:w-auto md:flex-row md:items-center md:space-x-3 md:space-y-0"
     >
       {#if editMode}
-        <Button
-          color="red"
-          on:click={() => (confirmDeleteModalOpen = true)}
-          disabled={deleting || selectedRowIds.length === 0}>Delete</Button
-        >
+        {#if deleting}
+          <Button color="red" disabled>
+            <Spinner class="me-3" size="4" color="white" />Deleting...
+          </Button>
+        {:else}
+          <Button
+            color="red"
+            on:click={() => (confirmDeleteModalOpen = true)}
+            disabled={deleting || selectedRowIds.length === 0}>Delete</Button
+          >
+        {/if}
+
         <Button color="alternative" on:click={() => closeEditMode()}>Cancel</Button>
       {:else}
         <Button on:click={() => (createApiKeyModalOpen = true)}>
@@ -167,7 +170,12 @@
     <TableHead>
       {#if editMode}
         <TableHeadCell class="!p-4">
-          <Checkbox on:click={checkAllItems} bind:checked={allItemsChecked} />
+          <Checkbox
+            data-testid="select-all-rows-checkbox"
+            on:click={checkAllItems}
+            bind:checked={allItemsChecked}
+            aria-label="select all rows"
+          />
         </TableHeadCell>
       {/if}
       <TableHeadCell padding="px-4 py-3" scope="col">Name</TableHeadCell>
@@ -176,7 +184,7 @@
       <TableHeadCell padding="px-4 py-3" scope="col">Expires</TableHeadCell>
       <TableHeadCell padding="px-4 py-3" scope="col">Permissions</TableHeadCell>
     </TableHead>
-    <TableBody class="divide-y">
+    <TableBody>
       {#each searchTerm !== '' ? filteredItems : currentPageItems as item (item.id)}
         <TableBodyRow>
           {#if editMode}
@@ -191,7 +199,9 @@
           <TableBodyCell tdClass="px-4 py-3">{formatKeyShort(item.api_key)}</TableBodyCell>
           <TableBodyCell tdClass="px-4 py-3">{formatDate(new Date(item.created_at))}</TableBodyCell>
           <TableBodyCell tdClass="px-4 py-3">{formatDate(new Date(item.expires_at))}</TableBodyCell>
-          <TableBodyCell tdClass="px-4 py-3">{item.permissions?.join(', ') || ''}</TableBodyCell>
+          <TableBodyCell tdClass="px-4 py-3"
+            >{(Array.isArray(item.permissions) && item.permissions.join(', ')) || ''}</TableBodyCell
+          >
         </TableBodyRow>
       {/each}
     </TableBody>

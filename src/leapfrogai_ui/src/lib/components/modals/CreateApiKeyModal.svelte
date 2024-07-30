@@ -96,6 +96,7 @@
 
 <form method="POST" enctype="multipart/form-data" action={'/chat/api-keys'} use:enhance>
   <Modal
+    data-testid="create-api-key-modal"
     bind:open={createApiKeyModalOpen}
     autoclose
     title="Create new secret key"
