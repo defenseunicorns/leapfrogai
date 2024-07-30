@@ -12,6 +12,32 @@ class ConfigOptions(BaseConfig):
         "This must be divisible to the number of attention heads in the model",
         examples=[1, 2, 3],
     )
+    enforce_eager: bool = Field(
+        default=True,
+        title="Enable Eager Mode",
+        description="Enable eager mode to start token generation immediately after prompt processing."
+        "Potentially reduces initial latency at the cost of slightly higher memory usage."
+        "Should be set to False in production environments with higher GPU memory.",
+        examples=[True, False],
+    )
+    gpu_memory_utilization: float = Field(
+        default=0.99,
+        title="GPU Memory Limit",
+        description="Maximum amount of GPU vRAM allocated to the vLLM engine and worker(s)",
+        examples=[0.50, 0.90, 0.99],
+    )
+    engine_use_ray: bool = Field(
+        default=True,
+        title="Use Ray for Engine",
+        description="Enable distributed inferencing for multi-node situations.",
+        examples=[True, False],
+    )
+    worker_use_ray: bool = Field(
+        default=True,
+        title="Use Ray for Worker",
+        description="Enable distributed inferencing for multi-node situations.",
+        examples=[True, False],
+    )
     trust_remote_code: bool = Field(
         default=True,
         title="Trust Downloaded Model Code",
@@ -48,6 +74,10 @@ class AppConfig(BaseConfig):
             remap={
                 "tensor_parallel_size": "backend_options.tensor_parallel_size",
                 "trust_remote_code": "backend_options.trust_remote_code",
+                "enforce_eager": "backend_options.enforce_eager",
+                "gpu_memory_utilization": "backend_options.gpu_memory_utilization",
+                "worker_use_ray": "backend_options.worker_use_ray",
+                "engine_use_ray": "backend_options.engine_use_ray",
             },
         )
     ]

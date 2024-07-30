@@ -151,15 +151,16 @@ class Model:
         self.backend_config = get_backend_configs()
         self.model = self.backend_config.model.source
         self.engine_args = AsyncEngineArgs(
-            engine_use_ray=True,
             model=self.model,
-            trust_remote_code=AppConfig().backend_options.trust_remote_code,
-            max_seq_len_to_capture=self.backend_config.max_context_length,
-            max_model_len=self.backend_config.max_context_length,
             dtype="auto",
-            worker_use_ray=True,
-            gpu_memory_utilization=0.90,
+            engine_use_ray=AppConfig().backend_options.engine_use_ray,
+            worker_use_ray=AppConfig().backend_options.worker_use_ray,
+            gpu_memory_utilization=AppConfig().backend_options.gpu_memory_utilization,
+            enforce_eager=AppConfig().backend_options.enforce_eager,
             tensor_parallel_size=AppConfig().backend_options.tensor_parallel_size,
+            max_model_len=self.backend_config.max_context_length,
+            max_seq_len_to_capture=self.backend_config.max_context_length,
+            trust_remote_code=AppConfig().backend_options.trust_remote_code,
         )
         self.engine = AsyncLLMEngine.from_engine_args(self.engine_args)
         print(self.engine_args)
