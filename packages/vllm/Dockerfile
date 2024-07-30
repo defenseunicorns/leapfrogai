@@ -10,8 +10,8 @@ ARG SDK_DEST=src/leapfrogai_sdk/build \
     PYTHON_VERSION=3.11.6 \
     PYENV_GIT_TAG=v2.4.8 \
     HF_HUB_ENABLE_HF_TRANSFER="1" \
-    REPO_ID="TheBloke/Synthia-7B-v2.0-GPTQ" \
-    REVISION="gptq-4bit-32g-actorder_True"
+    REPO_ID="bsmit1659/Phi-3-mini-128k-instruct-0.2-awq" \
+    REVISION="dba0b7533d342fac3988393fa1d817e4013c09d0"
 
 # use root user for deps installation and nonroot user creation
 USER root
