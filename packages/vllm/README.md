@@ -20,7 +20,7 @@ The following are additional assumptions for GPU inferencing:
 
 ### Model Selection
 
-The default model that comes with this backend in this repository's officially released images is a [4-bit quantization of the Synthia-7b model](https://huggingface.co/TheBloke/SynthIA-7B-v2.0-GPTQ).
+The default model that comes with this backend in this repository's officially released images is a [4-bit quantization of the Phi-3-Mini-128k-Instruct model](https://huggingface.co/bsmit1659/Phi-3-mini-128k-instruct-0.2-awq).
 
 You can optionally specify different models or quantization types using the following Docker build arguments:
 
@@ -30,6 +30,10 @@ You can optionally specify different models or quantization types using the foll
 - `--build-arg QUANTIZATION="gptq"`: Quantization type (e.g., gptq, awq, or empty for un-quantized)
 - `--build-arg TENSOR_PARALLEL_SIZE="1"`: The number of gpus to spread the tensor processing across
 - `--build-arg TRUST_REMOTE_CODE="True"`: Whether to trust inferencing code downloaded as part of the model download
+- `--build-arg ENGINE_USE_RAY="FALSE"`: Distributed, multi-node inferencing mode for the engine
+- `--build-arg WORKER_USE_RAY="FALSE"`: Distributed, multi-node inferencing mode for the worker(s)
+- `--build-arg GPU_MEMORY_UTILIZATION="0.99"`: Max memory utilization (fraction, out of 1.0) for the vLLM process
+- `--build-arg ENFORCE_EAGER="True"`: Disable CUDA graphs for faster token first-inferencing at the cost of more GPU memory (set to False for production)
 
 ## Zarf Package Deployment
 
