@@ -28,6 +28,7 @@
   import DeleteApiKeyModal from '$components/modals/DeleteApiKeyModal.svelte';
   import { onMount } from 'svelte';
   import CreateApiKeyModal from '$components/modals/CreateApiKeyModal.svelte';
+  import { tableStyles } from '$lib/styles/tables';
 
   export let data: PageServerData;
 
@@ -49,12 +50,7 @@
   let selectedRowIds: string[] = [];
   let deleting = false;
 
-  let divClass = 'bg-white dark:bg-gray-800 relative shadow-md sm:rounded-lg overflow-hidden';
-  let innerDivClass =
-    'flex flex-col md:flex-row items-center justify-between space-y-3 md:space-y-0 md:space-x-4 p-4';
-  let searchClass = 'w-full md:w-1/2 relative';
-  let classInput =
-    'text-gray-900 text-sm rounded-lg focus:ring-primary-500 focus:border-primary-500 block w-full p-2  pl-10';
+  const { divClass, innerDivClass, searchClass, classInput } = tableStyles;
 
   const FILTER_KEYS: Array<keyof APIKeyRow> = [
     'name',

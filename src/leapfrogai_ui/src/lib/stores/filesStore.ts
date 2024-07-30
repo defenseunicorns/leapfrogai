@@ -36,6 +36,25 @@ const createFilesStore = () => {
     setSelectedFileManagementFileIds: (newIds: string[]) => {
       update((old) => ({ ...old, selectedFileManagementFileIds: newIds }));
     },
+    addSelectedFileManagementFileId: (id: string) => {
+      update((old) => ({
+        ...old,
+        selectedFileManagementFileIds: [...old.selectedFileManagementFileIds, id]
+      }));
+    },
+    removeSelectedFileManagementFileId: (id: string) => {
+      update((old) => {
+        const copy = [...old.selectedFileManagementFileIds];
+        const index = copy.indexOf(id);
+        if (index > -1) {
+          copy.splice(index, 1);
+        }
+        return {
+          ...old,
+          selectedFileManagementFileIds: [...copy]
+        };
+      });
+    },
     addSelectedAssistantFileIds: (newIds: string[]) =>
       update((old) => ({
         ...old,
