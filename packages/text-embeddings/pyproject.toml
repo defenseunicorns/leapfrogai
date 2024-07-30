@@ -8,7 +8,7 @@ version = "0.9.2"
 
 dependencies = [
     "InstructorEmbedding >= 1.0.1",
-    "torch == 2.1.2",
+    "torch == 2.2.0",
     "numpy == 1.26.3",
     "tqdm == 4.66.3",
     "sentence-transformers == 2.2.2",
