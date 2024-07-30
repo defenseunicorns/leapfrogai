@@ -15,7 +15,6 @@ GPU_ENABLED = True if int(os.environ.get("GPU_REQUEST", 0)) > 0 else False
 
 
 def make_transcribe_request(filename, task, language, temperature, prompt):
-    print(f"model_path: {model_path}")
     device = "cuda" if GPU_ENABLED else "cpu"
     model = WhisperModel(model_path, device=device, compute_type="float32")
 

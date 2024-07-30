@@ -48,8 +48,7 @@ components:
     actions:
       onCreate:
         before:
-          # NOTE: This assumes python is installed and in $PATH
-          # TODO: add ctrnaslate2 and transformers[torch] to the pyproject dev deps
+          # NOTE: This assumes python is installed and in $PATH and 'ctranslate2' and 'transformers[torch]' has been installed
           - cmd: |
               ct2-transformers-converter --model ${MODEL_NAME} \
                 --output_dir .model \

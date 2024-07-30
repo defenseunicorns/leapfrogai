@@ -48,7 +48,7 @@ components:
     actions:
       onCreate:
         before:
-          # NOTE: This assumes python is installed and in $PATH
+          # NOTE: This assumes python is installed and in $PATH and 'huggingface_hub[cli,hf_transfer]' has been installed
           - cmd: python scripts/model_download.py
             env:
               - REPO_ID=hkunlp/instructor-xl

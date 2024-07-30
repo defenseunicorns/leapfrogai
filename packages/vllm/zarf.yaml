@@ -37,7 +37,7 @@ components:
     actions:
       onCreate:
         before:
-          # NOTE: This assumes python is installed and in $PATH
+          # NOTE: This assumes python is installed and in $PATH and 'huggingface_hub[cli,hf_transfer]' has been installed
           - cmd: python src/model_download.py
             env:
               - LAI_REPO_ID=TheBloke/Synthia-7B-v2.0-GPTQ
