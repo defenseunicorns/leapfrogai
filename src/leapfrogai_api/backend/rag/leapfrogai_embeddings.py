@@ -4,6 +4,7 @@ import os
 import leapfrogai_sdk as lfai
 from leapfrogai_api.utils import get_model_config
 from leapfrogai_api.backend.grpc_client import create_embeddings
+import logging
 
 
 # Partially implements the Langchain Core Embeddings interface
@@ -44,7 +45,10 @@ class LeapfrogAIEmbeddings:
 
         return list_of_embeddings[0]
 
-    async def _get_model(self, model_name: str = os.getenv("DEFAULT_EMBEDDINGS_MODEL")):
+    async def _get_model(
+        self,
+        model_name: str = os.getenv("DEFAULT_EMBEDDINGS_MODEL") or "text-embeddings",
+    ):
         """Gets the embeddings model.
 
         Args:
@@ -58,6 +62,7 @@ class LeapfrogAIEmbeddings:
         """
 
         if not (model := get_model_config().get_model_backend(model=model_name)):
+            logging.error(f"Embeddings model {model_name} not found.")
             raise ValueError("Embeddings model not found.")
 
         return model

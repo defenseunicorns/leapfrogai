@@ -3,8 +3,6 @@
 import logging
 import tempfile
 import time
-
-
 from fastapi import HTTPException, UploadFile, status
 from langchain_core.documents import Document
 from langchain_core.embeddings import Embeddings
@@ -27,6 +25,8 @@ from leapfrogai_api.data.crud_vector_store_file import (
     CRUDVectorStoreFile,
     FilterVectorStoreFile,
 )
+
+from leapfrogai_api.data.crud_vector_content import CRUDVectorContent, Vector
 
 # Allows for overwriting type of embeddings that will be instantiated
 embeddings_type: type[Embeddings] | type[LeapfrogAIEmbeddings] | None = (
@@ -56,14 +56,12 @@ class IndexingService:
         if await crud_vector_store_file.get(
             filters=FilterVectorStoreFile(vector_store_id=vector_store_id, id=file_id)
         ):
-            print("File already indexed: %s", file_id)
             logging.error("File already indexed: %s", file_id)
             raise FileAlreadyIndexedError("File already indexed")
 
         if not (
             await crud_vector_store.get(filters=FilterVectorStore(id=vector_store_id))
         ):
-            print("Vector store doesn't exist: %s", vector_store_id)
             logging.error("Vector store doesn't exist: %s", vector_store_id)
             raise ValueError("Vector store not found")
 
@@ -175,7 +173,7 @@ class IndexingService:
                 ),
                 last_active_at=last_active_at,  # Set to current time
                 metadata=request.metadata,
-                name=request.name,
+                name=request.name or "",
                 object="vector_store",
                 status=VectorStoreStatus.IN_PROGRESS.value,
                 expires_after=expires_after,
@@ -200,7 +198,6 @@ class IndexingService:
                 object_=new_vector_store,
             )
         except Exception as exc:
-            logging.error(exc)
             raise HTTPException(
                 status_code=status.HTTP_400_BAD_REQUEST,
                 detail="Unable to parse vector store request",
@@ -291,29 +288,6 @@ class IndexingService:
 
         return True
 
-    async def adelete_file(self, vector_store_id: str, file_id: str) -> bool:
-        """Delete a file from the vector store.
-
-        Args:
-            vector_store_id (str): The ID of the vector store.
-            file_id (str): The ID of the file to be deleted.
-
-        Returns:
-            dict: The response from the database after deleting the file.
-
-        """
-        data, _count = (
-            await self.db.from_(self.table_name)
-            .delete()
-            .eq("vector_store_id", vector_store_id)
-            .eq("file_id", file_id)
-            .execute()
-        )
-
-        _, response = data
-
-        return bool(response)
-
     async def aadd_documents(
         self,
         documents: list[Document],
@@ -326,7 +300,8 @@ class IndexingService:
             documents (list[Document]): A list of Langchain Document objects to be added.
             vector_store_id (str): The ID of the vector store where the documents will be added.
             file_id (str): The ID of the file associated with the documents.
-            batch_size (int): The size of the batches that will be pushed to the db. This value defaults to 100
+            batch_size (int): The size of the batches that will
+            be pushed to the db. This value defaults to 100
                 as a balance between the memory impact of large files and performance improvements from batching.
         Returns:
             List[str]: A list of IDs assigned to the added documents.
@@ -338,22 +313,25 @@ class IndexingService:
             texts=[document.page_content for document in documents]
         )
 
-        vectors = []
+        vectors: list[Vector] = []
         for document, embedding in zip(documents, embeddings):
-            vector = {
-                "content": document.page_content,
-                "metadata": document.metadata,
-                "embedding": embedding,
-            }
+            vector = Vector(
+                id="",
+                vector_store_id=vector_store_id,
+                file_id=file_id,
+                content=document.page_content,
+                metadata=document.metadata,
+                embedding=embedding,
+            )
             vectors.append(vector)
+
+        crud_vector_content = CRUDVectorContent(db=self.db)
 
         for i in range(0, len(vectors), batch_size):
             batch = vectors[i : i + batch_size]
-            response = await self._aadd_vectors(
-                vector_store_id=vector_store_id, file_id=file_id, vectors=batch
-            )
-            ids.extend([item["id"] for item in response])
 
+            response = await crud_vector_content.add_vectors(batch)
+            ids.extend([item.id for item in response])
         return ids
 
     async def asimilarity_search(self, query: str, vector_store_id: str, k: int = 4):
@@ -370,20 +348,10 @@ class IndexingService:
         """
         vector = await self.embeddings.aembed_query(query)
 
-        user_id: str = (await self.db.auth.get_user()).user.id
-
-        params = {
-            "query_embedding": vector,
-            "match_limit": k,
-            "vs_id": vector_store_id,
-            "user_id": user_id,
-        }
-
-        query_builder = self.db.rpc(self.query_name, params=params)
-
-        response = await query_builder.execute()
-
-        return response
+        crud_vector_content = CRUDVectorContent(db=self.db)
+        return await crud_vector_content.similarity_search(
+            query=vector, vector_store_id=vector_store_id, k=k
+        )
 
     async def _increment_vector_store_file_status(
         self, vector_store: VectorStore, file_response: VectorStoreFile
@@ -398,64 +366,3 @@ class IndexingService:
         elif file_response.status == VectorStoreFileStatus.CANCELLED.value:
             vector_store.file_counts.cancelled += 1
         vector_store.file_counts.total += 1
-
-    async def _adelete_vector(
-        self,
-        vector_store_id: str,
-        file_id: str,
-    ) -> dict:
-        """Delete a vector from the vector store.
-
-        Args:
-            vector_store_id (str): The ID of the vector store.
-            file_id (str): The ID of the file associated with the vector.
-
-        Returns:
-            dict: The response from the database after deleting the vector.
-
-        """
-        response = (
-            await self.db.from_(self.table_name)
-            .delete()
-            .eq("vector_store_id", vector_store_id)
-            .eq("file_id", file_id)
-            .execute()
-        )
-        return response
-
-    async def _aadd_vectors(
-        self, vector_store_id: str, file_id: str, vectors: list[dict[str, any]]
-    ) -> dict:
-        """Add multiple vectors to the vector store in a batch.
-
-        Args:
-            vector_store_id (str): The ID of the vector store.
-            file_id (str): The ID of the file associated with the vectors.
-            vectors (list[dict]): A list of dictionaries containing vector data.
-
-        Returns:
-            dict: The response from the database after inserting the vectors.
-        """
-        user_id: str = (await self.db.auth.get_user()).user.id
-
-        rows = []
-        for vector in vectors:
-            row = {
-                "user_id": user_id,
-                "vector_store_id": vector_store_id,
-                "file_id": file_id,
-                "content": vector["content"],
-                "metadata": vector["metadata"],
-                "embedding": vector["embedding"],
-            }
-            rows.append(row)
-
-        data, _count = await self.db.from_(self.table_name).insert(rows).execute()
-
-        _, response = data
-
-        for item in response:
-            if "user_id" in item:
-                del item["user_id"]
-
-        return response
