@@ -93,7 +93,7 @@ ARG SDK_DEST=src/leapfrogai_sdk/build
 # model-specific arguments
 ARG TRUST_REMOTE_CODE="True" \
     MODEL_SOURCE=".model/" \
-    MAX_CONTEXT_LENGTH=32768 \
+    MAX_CONTEXT_LENGTH=131072 \
     STOP_TOKENS='["</s>"]' \
     PROMPT_FORMAT_CHAT_SYSTEM="<|system|>\n{}<|end|>\n" \
     PROMPT_FORMAT_CHAT_USER="<|user|>\n{}<|end|>\n" \
