@@ -158,7 +158,7 @@
 
         <Button color="alternative" on:click={() => closeEditMode()}>Cancel</Button>
       {:else}
-        <Button on:click={() => (createApiKeyModalOpen = true)}>
+        <Button on:click={() => (createApiKeyModalOpen = true)} aria-label="create new">
           <PlusOutline class="mr-2 h-3.5 w-3.5" />Create new
         </Button>
         <Button color="alternative">Actions<ChevronDownOutline class="ml-2 h-3 w-3 " /></Button>

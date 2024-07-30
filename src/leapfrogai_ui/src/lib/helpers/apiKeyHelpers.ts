@@ -10,7 +10,7 @@ export const formatKeyShort = (key: string) => {
 // This is used to ensure the "copy key" text input is filled with text regardless of the
 // actual key length
 export const formatKeyLong = (key: string, width: number) => {
-  const approxNumStars = (width) / 4;
+  const approxNumStars = width / 4;
   const firstTwo = key.slice(0, 5);
   const lastFour = key.slice(-4);
   return `${firstTwo}${'*'.repeat(approxNumStars)}${lastFour}`;

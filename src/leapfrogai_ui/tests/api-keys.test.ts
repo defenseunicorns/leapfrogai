@@ -10,24 +10,27 @@ test('it can navigate to the API key page', async ({ page }) => {
   await expect(page).toHaveTitle('LeapfrogAI - API Keys');
 });
 
-// TODO - re-enable after refactor to flowbite
-test.skip('it can create and delete an API key', async ({ page }) => {
+test('it can create and delete an API key', async ({ page }) => {
   await loadApiKeyPage(page);
   const keyName = 'new test key';
-  await page.getByRole('button', { name: 'Create new', exact: true }).click();
-  await page.getByLabel('name').fill(keyName);
+  await page.getByLabel('create new').click();
+  const createModal = page.getByTestId('create-api-key-modal');
+  await createModal.getByRole('textbox').fill(keyName);
   await page.getByText('60 Days').click();
   await page.getByRole('button', { name: 'Create', exact: true }).click();
   await expect(page.getByText(`${keyName} created successfully`)).toBeVisible();
   await page.getByRole('button', { name: 'Close', exact: true }).click({ force: true });
   await expect(page.getByText('Save secret key')).not.toBeVisible();
+  await page.getByRole('button', { name: /actions/i }).click();
+  await page.getByRole('button', { name: /edit/i }).click();
   const row = await getTableRow(page, keyName);
   expect(row).not.toBeNull();
   await row!.getByRole('checkbox').check({ force: true });
   const deleteBtn = page.getByRole('button', { name: 'delete' });
   await deleteBtn.click();
-  await expect(page.getByText(`Are you sure you want to delete ${keyName}?`)).toBeVisible();
-  const deleteBtns = await page.getByRole('button', { name: 'delete' }).all();
-  await deleteBtns[1].click();
+  const deleteModal = page.getByTestId('delete-api-key-modal');
+  await expect(deleteModal.getByText(`Are you sure you want to delete`)).toBeVisible();
+  const confirmDeleteBtn = deleteModal.getByRole('button', { name: 'delete' });
+  await confirmDeleteBtn.click();
   await expect(page.getByText('Key Deleted')).toBeVisible();
 });

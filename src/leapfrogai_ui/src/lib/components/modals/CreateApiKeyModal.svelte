@@ -1,5 +1,5 @@
 <script lang="ts">
-  import { Button, ButtonGroup, Heading, Input, Label, Modal, P } from 'flowbite-svelte';
+  import { Button, ButtonGroup, Input, Label, Modal, P } from 'flowbite-svelte';
   import { superForm } from 'sveltekit-superforms';
   import { yup } from 'sveltekit-superforms/adapters';
   import { newAPIKeySchema } from '$schemas/apiKey';

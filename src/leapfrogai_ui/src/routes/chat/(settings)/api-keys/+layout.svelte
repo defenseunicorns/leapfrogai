@@ -1,8 +1,5 @@
 <script lang="ts">
-  import { page } from '$app/stores';
-  import { Breadcrumb, BreadcrumbItem, Content } from 'carbon-components-svelte';
   import { threadsStore } from '$stores';
-  import { PoweredByDU } from '$components';
   import LayoutWithBreadcrumb from '$components/LayoutWithBreadcrumb.svelte';
 
   const paths = [
@@ -15,8 +12,6 @@
       name: 'API Keys'
     }
   ];
-
-  $: isCurrentPage = (path: string) => $page.url.pathname === path;
 
   const getPath = (path: string) => {
     if (path === '/chat')
