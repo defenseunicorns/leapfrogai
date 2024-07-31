@@ -20,6 +20,17 @@ variables:
     description: The GPU class name for the model inferencing. Leave blank for CPU-only.
     default: ""
     pattern: "^(nvidia)?$"
+  - name: PVC_SIZE
+    description: Size of the PVC used for model storage.
+    default: "15Gi"
+    pattern: "^[0-9]+[a-zA-Z]+$"
+  - name: PVC_ACCESS_MODE
+    description: Access mode of the PVC used for model storage.
+    default: "ReadWriteOnce"
+    pattern: "^(ReadWriteOnce|ReadOnlyMany|ReadWriteMany)$"
+  - name: PVC_STORAGE_CLASS
+    description: Storage class of the PVC used for model storage.
+    default: "local-path"
 
 components:
   - name: text-embeddings-model

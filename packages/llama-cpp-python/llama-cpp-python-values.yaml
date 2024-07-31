@@ -1,8 +1,7 @@
 image:
   tag: "###ZARF_CONST_IMAGE_VERSION###"
 
-storage:
-  size: 15Gi
-  accessModes:
-    - ReadWriteOnce
-  storageClassName: "local-path"
+persistence:
+  size: ###ZARF_VAR_PVC_SIZE###
+  accessModes: ###ZARF_VAR_PVC_ACCESS_MODE###
+  storageClass: ###ZARF_VAR_PVC_STORAGE_CLASS###
