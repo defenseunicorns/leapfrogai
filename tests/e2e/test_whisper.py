@@ -52,8 +52,8 @@ def test_transcriptions():
         timestamp_granularities=["word", "segment"],
     )
 
-    assert len(transcription.text) > 0  # The transcription should not be empty
-    assert len(transcription.text) < 500  # The transcription should not be too long
+    assert len(transcription.text) > 0, "The transcription should not be empty"
+    assert len(transcription.text) < 500, "The transcription should not be too long"
 
 
 def test_translations():
@@ -65,8 +65,8 @@ def test_translations():
         temperature=0.3,
     )
 
-    assert len(translation.text) > 0  # The translation should not be empty
-    assert len(translation.text) < 500  # The translation should not be too long
+    assert len(translation.text) > 0, "The translation should not be empty"
+    assert len(translation.text) < 500, "The translation should not be too long"
 
     def is_english_or_punctuation(c):
         if c in string.punctuation or c.isspace():
@@ -78,4 +78,4 @@ def test_translations():
 
     english_chars = [is_english_or_punctuation(c) for c in translation.text]
 
-    assert all(english_chars)  # Check that only English characters are returned
+    assert all(english_chars), "Non-English characters have been returned"
