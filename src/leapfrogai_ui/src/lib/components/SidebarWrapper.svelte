@@ -1,7 +1,7 @@
 <script lang="ts">
   import { sineIn } from 'svelte/easing';
   import { uiStore } from '$stores';
-  import Sidebar from '$components/LFSidebar.svelte';
+  import LFSidebar from '$components/LFSidebar.svelte';
   import LFDrawer from '$components/LFDrawer.svelte';
 
   let transitionParams = {
@@ -25,8 +25,8 @@
     class="no-scrollbar top-header flex max-w-64 overflow-y-hidden"
     backdropCustomClass="top-header"
   >
-    <Sidebar />
+    <LFSidebar />
   </LFDrawer>
 {:else}
-  <Sidebar />
+  <LFSidebar />
 {/if}

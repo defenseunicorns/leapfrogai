@@ -18,6 +18,10 @@
     padding-top: 2rem;
   }
 
+  .sidebar-height {
+    height: calc(100vh - var(--header-height));
+  }
+
   .no-scrollbar {
     scrollbar-width: none;
   }

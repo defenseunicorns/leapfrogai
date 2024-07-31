@@ -53,7 +53,10 @@
 </script>
 
 <!--Custom styling allows center SidebarGroup (chat threads) to scroll-->
-<Sidebar data-testid="sidebar" class="flex border-r border-gray-700 dark:bg-gray-800">
+<Sidebar
+  data-testid="sidebar"
+  class="sidebar-height flex border-r border-gray-700 dark:bg-gray-800"
+>
   <SidebarWrapper class="flex w-full flex-col px-0">
     <SidebarGroup>
       <div class="flex flex-col gap-2 px-3">
