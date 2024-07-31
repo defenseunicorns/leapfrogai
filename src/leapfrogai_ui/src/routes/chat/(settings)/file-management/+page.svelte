@@ -270,7 +270,7 @@
       <TableBody>
         {#each pageItems as item (item.id)}
           <TableBodyRow>
-            <TableHeadCell class="!p-4">
+            <TableHeadCell class="!p-4 w-0">
               {#if item.status !== 'uploading'}
                 <Checkbox
                   on:click={() => handleEditItem(item.id)}
@@ -281,8 +281,10 @@
             </TableHeadCell>
             {#if item.status === 'uploading'}
               <TableBodyCell tdClass="px-4 py-3">
-                <Spinner data-testid="uploading-file-spinner" size={6} />
-                {item.filename}
+                <div class="flex gap-2">
+                  <Spinner data-testid="uploading-file-spinner" size={6} />
+                  {item.filename}
+                </div>
               </TableBodyCell>
             {:else if item.status === 'complete'}
               <TableBodyCell tdClass="px-4 py-3">
@@ -294,8 +296,10 @@
             {:else if item.status === 'error'}
               <TableBodyCell tdClass="px-4 py-3">
                 <div class="flex gap-2">
-                  <CloseCircleOutline data-testid="file-uploaded-error-icon" color="red" />
-                  {item.filename}
+                  <div class="flex gap-2">
+                    <CloseCircleOutline data-testid="file-uploaded-error-icon" color="red" />
+                    {item.filename}
+                  </div>
                 </div>
               </TableBodyCell>
             {:else}
@@ -332,19 +336,11 @@
       {/if}
     </div>
     <Pagination table on:previous={previous} on:next={next}>
-      <div
-        slot="prev"
-        class="flex items-center gap-2 bg-gray-800 text-white"
-        data-testid="prev-btn"
-      >
+      <div slot="prev" class="flex items-center gap-2 text-white" data-testid="prev-btn">
         <ArrowLeftOutline class="me-2 h-3.5 w-3.5" />
         Prev
       </div>
-      <div
-        slot="next"
-        class="flex items-center gap-2 bg-gray-800 text-white"
-        data-testid="next-btn"
-      >
+      <div slot="next" class="flex items-center gap-2 text-white" data-testid="next-btn">
         Next
         <ArrowRightOutline class="ms-2 h-6 w-6" />
       </div>

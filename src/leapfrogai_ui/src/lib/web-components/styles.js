@@ -109,3 +109,12 @@ Original One Dark Syntax theme from https://github.com/atom/one-dark-syntax
     text-decoration: underline;
   }
 `;
+
+export const buttonStyles = css`
+  .alternative {
+      color: #111827;
+      background-color: white;
+      border: #e5e7eb;
+      hover:bg-gray-100 dark:bg-gray-800 dark:text-gray-400 hover:text-primary-700 focus-within:text-primary-700 dark:focus-within:text-white dark:hover:text-white dark:hover:bg-gray-700
+  }
+`;

@@ -7,7 +7,7 @@
   export let getPath: (path: string) => string;
 </script>
 
-<main class="content">
+<main class="content px-8">
   <Breadcrumb data-testid="breadcrumbs" aria-label="breadcrumbs">
     {#each paths as { path, name } (path)}
       {#if $page.url.pathname.includes(path)}

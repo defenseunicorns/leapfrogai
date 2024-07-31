@@ -54,9 +54,9 @@
 
 <!--Custom styling allows center SidebarGroup (chat threads) to scroll-->
 <Sidebar data-testid="sidebar" class="flex border-r border-gray-700 dark:bg-gray-800">
-  <SidebarWrapper class="flex w-full flex-col">
+  <SidebarWrapper class="flex w-full flex-col px-0">
     <SidebarGroup>
-      <div class="flex flex-col gap-2">
+      <div class="flex flex-col gap-2 px-3">
         <Button on:click={() => threadsStore.changeThread('')}>
           <PlusOutline />New Chat
         </Button>
@@ -64,7 +64,7 @@
       </div>
     </SidebarGroup>
     <Hr classHr="my-2" />
-    <SidebarGroup class="no-scrollbar flex-grow overflow-y-scroll" data-testid="threads">
+    <SidebarGroup class="no-scrollbar flex-grow overflow-y-scroll px-3" data-testid="threads">
       {#each organizedThreads as category}
         {#if category.threads.length > 0}
           <SidebarDropdownWrapper label={category.label} isOpen={true}>
@@ -79,8 +79,8 @@
         {/if}
       {/each}
     </SidebarGroup>
-    <SidebarGroup>
-      <Hr classHr="my-2" />
+    <Hr classHr="my-2" />
+    <SidebarGroup class="px-3">
       <ImportExport />
     </SidebarGroup>
   </SidebarWrapper>

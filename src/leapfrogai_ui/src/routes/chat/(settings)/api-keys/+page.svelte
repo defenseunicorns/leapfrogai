@@ -158,7 +158,7 @@
       </div>
     </div>
     <TableHead>
-      <TableHeadCell class="!p-4">
+      <TableHeadCell class="!p-4 w-0">
         <Checkbox
           data-testid="select-all-rows-checkbox"
           on:click={checkAllItems}
@@ -213,11 +213,11 @@
     </div>
 
     <Pagination table on:previous={previous} on:next={next}>
-      <div slot="prev" class="flex items-center gap-2 bg-gray-800 text-white">
+      <div slot="prev" class="flex items-center gap-2 text-white">
         <ArrowLeftOutline class="me-2 h-3.5 w-3.5" />
         Prev
       </div>
-      <div slot="next" class="flex items-center gap-2 bg-gray-800 text-white">
+      <div slot="next" class="flex items-center gap-2 text-white">
         Next
         <ArrowRightOutline class="ms-2 h-6 w-6" />
       </div>

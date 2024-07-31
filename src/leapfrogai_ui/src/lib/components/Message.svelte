@@ -27,6 +27,7 @@
   import DOMPurify from 'isomorphic-dompurify';
   import TextareaV2 from '$components/LFTextArea.svelte';
   import IconButton from '$components/IconButton.svelte';
+  import CodeBlock from "$components/CodeBlock.svelte";
 
   export let message: OpenAIMessage;
   export let messages: OpenAIMessage[] = [];
@@ -35,6 +36,7 @@
   export let isLastMessage: boolean;
   export let append: AppendFunction | undefined = undefined;
 
+  customElements.define('code-block-2', CodeBlock.element);
   // used for code formatting and handling
   const md = markdownit({
     highlight: function (str: string, language: string) {
@@ -49,7 +51,7 @@
         code = md.utils.escapeHtml(str);
       }
 
-      return `<pre><code><code-block code="${code}" language="${language}"></code></pre>`;
+      return `<pre><code><code-block-2 code="${code}" language="${language}"></code></pre>`;
     }
   });
 

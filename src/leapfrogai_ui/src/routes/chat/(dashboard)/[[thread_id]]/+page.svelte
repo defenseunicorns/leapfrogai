@@ -293,7 +293,7 @@
 </script>
 
 <form on:submit={onSubmit} class="flex h-full flex-col">
-  <div class="no-scrollbar flex flex-grow flex-col-reverse overflow-auto">
+  <div class="no-scrollbar flex flex-grow flex-col-reverse overflow-auto px-8">
     <div id="messages-container">
       {#each activeThreadMessages as message, index (message.id)}
         <Message
@@ -313,7 +313,7 @@
     </div>
   </div>
   <Hr classHr="my-2" />
-  <div id="chat-tools" class="flex flex-col gap-2">
+  <div id="chat-tools" class="flex flex-col gap-2 px-8">
     <SelectAssistantDropdown assistants={data?.assistants || []} />
 
     <div class="flex items-end justify-around gap-2">
