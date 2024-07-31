@@ -25,15 +25,15 @@ The default model that comes with this backend in this repository's officially r
 You can optionally specify different models or quantization types using the following Docker build arguments:
 
 - `--build-arg HF_HUB_ENABLE_HF_TRANSFER="1"`: Enable or disable HuggingFace Hub transfer (default: 1)
-- `--build-arg REPO_ID="TheBloke/Synthia-7B-v2.0-GPTQ"`: HuggingFace repository ID for the model
-- `--build-arg REVISION="gptq-4bit-32g-actorder_True"`: Revision or commit hash for the model
+- `--build-arg REPO_ID="neuralmagic/Phi-3-mini-128k-instruct-quantized.w8a8"`: HuggingFace repository ID for the model
+- `--build-arg REVISION="main"`: Revision or commit hash for the model
 - `--build-arg QUANTIZATION="gptq"`: Quantization type (e.g., gptq, awq, or empty for un-quantized)
 - `--build-arg TENSOR_PARALLEL_SIZE="1"`: The number of gpus to spread the tensor processing across
 - `--build-arg TRUST_REMOTE_CODE="True"`: Whether to trust inferencing code downloaded as part of the model download
-- `--build-arg ENGINE_USE_RAY="FALSE"`: Distributed, multi-node inferencing mode for the engine
-- `--build-arg WORKER_USE_RAY="FALSE"`: Distributed, multi-node inferencing mode for the worker(s)
-- `--build-arg GPU_MEMORY_UTILIZATION="0.99"`: Max memory utilization (fraction, out of 1.0) for the vLLM process
-- `--build-arg ENFORCE_EAGER="True"`: Disable CUDA graphs for faster token first-inferencing at the cost of more GPU memory (set to False for production)
+- `--build-arg ENGINE_USE_RAY="True"`: Distributed, multi-node inferencing mode for the engine
+- `--build-arg WORKER_USE_RAY="True"`: Distributed, multi-node inferencing mode for the worker(s)
+- `--build-arg GPU_MEMORY_UTILIZATION="0.90"`: Max memory utilization (fraction, out of 1.0) for the vLLM process
+- `--build-arg ENFORCE_EAGER="False"`: Disable CUDA graphs for faster token first-inferencing at the cost of more GPU memory (set to False for production)
 
 ## Zarf Package Deployment
 
