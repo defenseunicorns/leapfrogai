@@ -30,7 +30,7 @@
 </script>
 
 <div class="no-scrollbar flex w-3/4 flex-col gap-4 overflow-y-scroll py-2">
-  <Heading tag="h3">Assistants Management</Heading>
+  <Heading tag="h3" class="mb-4">Assistants Management</Heading>
 
   <div class="flex items-center justify-between">
     <TableSearch

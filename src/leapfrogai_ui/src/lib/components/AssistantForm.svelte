@@ -173,15 +173,23 @@
   </div>
 </form>
 
-<Modal bind:open={cancelModalOpen} title="Unsaved Changes"
-  ><p>You have unsaved changes. Do you want to leave this page? Unsaved changes will be deleted.</p>
-  <Button
-    color="red"
-    class="me-2"
-    on:click={() => {
-      leavePageConfirmed = true;
-      if (navigateTo) goto(navigateTo.url.href);
-    }}>Leave this page</Button
+<Modal bind:open={cancelModalOpen} title="Unsaved Changes" color="primary"
+  ><P class="dark:text-gray-400"
+    >You have unsaved changes. Do you want to leave this page? Unsaved changes will be deleted.</P
   >
-  <Button color="alternative" on:click={() => (cancelModalOpen = false)}>Stay on page</Button>
-</Modal>
+  <div class="flex justify-end gap-2">
+    <Button color="alternative" on:click={() => (cancelModalOpen = false)} size="sm"
+      >Stay on page</Button
+    >
+    <Button
+      color="red"
+      on:click={() => {
+        leavePageConfirmed = true;
+        if (navigateTo) goto(navigateTo.url.href);
+      }}
+      size="sm">Leave this page</Button
+    >
+
+    <div class="flex justify-end gap-2"></div>
+  </div></Modal
+>

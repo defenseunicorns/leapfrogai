@@ -8,7 +8,7 @@
 </script>
 
 <main class="content">
-  <Breadcrumb data-testid="breadcrumbs" aria-label="breadcrumbs" class="mb-4">
+  <Breadcrumb data-testid="breadcrumbs" aria-label="breadcrumbs">
     {#each paths as { path, name } (path)}
       {#if $page.url.pathname.includes(path)}
         <BreadcrumbItem home={name === 'Chat'} href={getPath(path)}>{name}</BreadcrumbItem>

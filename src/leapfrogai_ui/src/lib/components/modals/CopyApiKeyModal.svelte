@@ -15,10 +15,16 @@
   };
 </script>
 
-<Modal bind:open={copyKeyModalOpen} autoclose title="Save secret key" on:close={handleClose}>
+<Modal
+  bind:open={copyKeyModalOpen}
+  autoclose
+  title="Save secret key"
+  on:close={handleClose}
+  color="primary"
+>
   {#if createdKey}
     <div class="flex flex-col gap-4">
-      <P size="xl">
+      <P size="xl" class="text-center dark:text-gray-400">
         Please store this secret key in a safe and accessible place. For security purposes, it
         cannot be viewed again through your LeapfrogAI account. If you lose it, you'll need to
         create a new one.
@@ -31,13 +37,13 @@
       </div>
       <div>
         <Label for="saved-expiration" class="mb-2 block">Expiration</Label>
-        <P size="lg">
+        <P size="lg" class=" dark:text-gray-400">
           {`${calculateDays(createdKey.created_at, createdKey.expires_at)} days - ${formatDate(new Date(createdKey.expires_at * 1000))}`}
         </P>
       </div>
     </div>
   {/if}
   <div class="flex justify-end">
-    <Button on:click={handleClose}>Close</Button>
+    <Button on:click={handleClose} size="sm">Close</Button>
   </div>
 </Modal>

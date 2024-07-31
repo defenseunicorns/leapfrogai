@@ -21,8 +21,7 @@ test('it can create and delete an API key', async ({ page }) => {
   await expect(page.getByText(`${keyName} created successfully`)).toBeVisible();
   await page.getByRole('button', { name: 'Close', exact: true }).click({ force: true });
   await expect(page.getByText('Save secret key')).not.toBeVisible();
-  await page.getByRole('button', { name: /actions/i }).click();
-  await page.getByRole('button', { name: /edit/i }).click();
+
   const row = await getTableRow(page, keyName);
   expect(row).not.toBeNull();
   await row!.getByRole('checkbox').check({ force: true });

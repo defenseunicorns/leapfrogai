@@ -2,7 +2,6 @@
   import { twMerge } from 'tailwind-merge';
   import { Button } from 'flowbite-svelte';
 
-  export let value: string = '';
   export let files: FileList | undefined = undefined;
   export let ref: HTMLInputElement | null = null;
   export let accept: string[] = [];
@@ -22,6 +21,7 @@
     }
   }}
   bind:files
+  on:change
   class="sr-only"
   {...$$restProps}
 />

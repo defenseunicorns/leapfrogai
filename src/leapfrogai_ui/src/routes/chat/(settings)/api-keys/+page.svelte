@@ -1,13 +1,10 @@
 <script lang="ts">
-  import { formatDate } from '$helpers/dates.js';
-  import type { APIKeyRow } from '$lib/types/apiKeys';
+  import { fade } from 'svelte/transition';
   import {
     Button,
-    ButtonGroup,
     Checkbox,
-    Dropdown,
-    DropdownItem,
     Heading,
+    Pagination,
     Spinner,
     TableBody,
     TableBodyCell,
@@ -16,89 +13,96 @@
     TableHeadCell,
     TableSearch
   } from 'flowbite-svelte';
-  import {
-    ChevronDownOutline,
-    ChevronLeftOutline,
-    ChevronRightOutline,
-    PlusOutline
-  } from 'flowbite-svelte-icons';
-  import { filterTable } from '$lib/utils/tables';
-  import type { PageServerData } from './$types';
+  import { ArrowLeftOutline, ArrowRightOutline, PlusOutline } from 'flowbite-svelte-icons';
+  import { formatDate } from '$helpers/dates.js';
   import { formatKeyShort } from '$helpers/apiKeyHelpers';
-  import DeleteApiKeyModal from '$components/modals/DeleteApiKeyModal.svelte';
-  import { onMount } from 'svelte';
-  import CreateApiKeyModal from '$components/modals/CreateApiKeyModal.svelte';
+  import type { APIKeyRow } from '$lib/types/apiKeys';
+  import type { PageServerData } from './$types';
+  import { filterTable } from '$lib/utils/tables';
   import { tableStyles } from '$lib/styles/tables';
+  import DeleteApiKeyModal from '$components/modals/DeleteApiKeyModal.svelte';
+  import CreateApiKeyModal from '$components/modals/CreateApiKeyModal.svelte';
 
   export let data: PageServerData;
 
+  // TODO - data.keys not getting type inference - https://github.com/defenseunicorns/leapfrogai/issues/856
+  $: filteredItems =
+    searchTerm !== ''
+      ? filterTable(data.keys, FILTER_KEYS, searchTerm.toLowerCase())
+      : [...data.keys];
+  $: totalItems = filteredItems.length;
+  $: startRange = currentPosition + 1;
+  $: endRange = Math.min(currentPosition + itemsPerPage, totalItems);
+  $: editMode = selectedRowIds.length > 0;
+
+  const FILTER_KEYS: Array<keyof APIKeyRow> = ['name', 'api_key', 'created_at', 'expires_at'];
+  const { divClass, innerDivClass, searchClass, classInput, headerClass } = tableStyles;
   const itemsPerPage = 10;
-  const showPage = 5;
+  let pageItems;
   let searchTerm = '';
   let currentPosition = 0;
-  let totalPages = 0;
-  let pagesToShow = [];
-  let totalItems = data.keys.length;
-  let startPage;
-  let endPage;
-
-  let actionsOpen = false;
   let createApiKeyModalOpen = false;
   let confirmDeleteModalOpen = false;
   let allItemsChecked = false;
-
   let selectedRowIds: string[] = [];
   let deleting = false;
 
-  const { divClass, innerDivClass, searchClass, classInput } = tableStyles;
-
-  const FILTER_KEYS: Array<keyof APIKeyRow> = [
-    'name',
-    'api_key',
-    'created_at',
-    'expires_at',
-    'permissions'
-  ];
-  // TODO - data.keys not getting type inference
-  $: filteredItems = filterTable(data.keys, FILTER_KEYS, searchTerm.toLowerCase());
-  $: currentPageItems = data.keys.slice(currentPosition, currentPosition + itemsPerPage);
-  $: startRange = currentPosition + 1;
-  $: endRange = Math.min(currentPosition + itemsPerPage, totalItems);
-  $: editMode = false;
-
-  const closeEditMode = () => {
-    editMode = false;
-    selectedRowIds = [];
-  };
-
-  /****** Page Handlers ******/
-  const loadNextPage = () => {
-    if (currentPosition + itemsPerPage < data.keys.length) {
+  /****** Pagination Handlers ******/
+  const next = () => {
+    if (currentPosition + itemsPerPage < filteredItems.length) {
       currentPosition += itemsPerPage;
-      renderPagination();
     }
   };
-  const loadPreviousPage = () => {
+  const previous = () => {
     if (currentPosition - itemsPerPage >= 0) {
       currentPosition -= itemsPerPage;
-      renderPagination();
     }
   };
-  const renderPagination = () => {
-    totalPages = Math.ceil(data.keys.length / itemsPerPage);
-    const currentPage = Math.ceil((currentPosition + 1) / itemsPerPage);
 
-    startPage = currentPage - Math.floor(showPage / 2);
-    startPage = Math.max(1, startPage);
-    endPage = Math.min(startPage + showPage - 1, totalPages);
+  /****** End Pagination Handlers ******/
 
-    pagesToShow = Array.from({ length: endPage - startPage + 1 }, (_, i) => startPage + i);
+  /****** Sorting Handlers ******/
+
+  let sortKey = 'created_at'; // default sort key
+  let sortDirection = 1; // default sort direction (ascending)
+
+  // Define a function to sort the items
+  const sortTable = (key) => {
+    // If the same key is clicked, reverse the sort direction
+    if (sortKey === key) {
+      sortDirection = -sortDirection;
+    } else {
+      sortKey = key;
+      sortDirection = 1;
+    }
   };
-  const goToPage = (pageNumber) => {
-    currentPosition = (pageNumber - 1) * itemsPerPage;
-    renderPagination();
+
+  // When search term changes, reset to first page
+  $: searchTerm, (currentPosition = 0);
+
+  // Sort page items based on the sort key and direction
+  $: {
+    const tempPageItems = filteredItems.slice(currentPosition, currentPosition + itemsPerPage);
+    const sorted = tempPageItems.sort((a, b) => {
+      const aVal = a[sortKey];
+      const bVal = b[sortKey];
+      if (aVal < bVal) {
+        return -sortDirection;
+      } else if (aVal > bVal) {
+        return sortDirection;
+      }
+      return 0;
+    });
+    pageItems = [...sorted];
+  }
+
+  /****** End Sorting Handlers ******/
+
+  const handleClose = () => {
+    editMode = false;
+    allItemsChecked = false;
+    selectedRowIds = [];
   };
-  /****** End Page Handlers ******/
 
   const handleEditItem = (id: string) => {
     const index = selectedRowIds.indexOf(id);
@@ -113,19 +117,13 @@
     if (allItemsChecked) {
       selectedRowIds = [];
     } else {
-      const items = searchTerm !== '' ? filteredItems : data.keys;
-      selectedRowIds = items.map((item) => item.id);
+      selectedRowIds = filteredItems.map((item) => item.id);
     }
   };
-
-  onMount(() => {
-    renderPagination();
-  });
 </script>
 
-<Heading tag="h3">API Keys</Heading>
-
 <div class="w-3/4 bg-gray-50 p-3 dark:bg-gray-900">
+  <Heading tag="h3" class="mb-4">API Keys</Heading>
   <TableSearch
     placeholder="Search"
     hoverable={true}
@@ -135,97 +133,97 @@
     {searchClass}
     {classInput}
   >
-    <div
-      slot="header"
-      class="flex w-full flex-shrink-0 flex-col items-stretch justify-end space-y-2 md:w-auto md:flex-row md:items-center md:space-x-3 md:space-y-0"
-    >
-      {#if editMode}
-        {#if deleting}
-          <Button color="red" disabled>
-            <Spinner class="me-3" size="4" color="white" />Deleting...
-          </Button>
-        {:else}
-          <Button
-            color="red"
-            on:click={() => (confirmDeleteModalOpen = true)}
-            disabled={deleting || selectedRowIds.length === 0}>Delete</Button
-          >
-        {/if}
+    <div slot="header" class={headerClass}>
+      <!-- Button with color="alternative" adds two pixels to btn height, border-box does not prevent this. h-[42px] prevents slight screen jump-->
+      <div class="h-[42px]">
+        {#if editMode}
+          <div in:fade={{ duration: 150 }} class="flex items-center gap-2">
+            {#if deleting}
+              <Button color="red" disabled>
+                <Spinner class="me-3" size="4" color="white" />Deleting...
+              </Button>
+            {:else}
+              <Button color="red" on:click={() => (confirmDeleteModalOpen = true)}>Delete</Button>
+            {/if}
 
-        <Button color="alternative" on:click={() => closeEditMode()}>Cancel</Button>
-      {:else}
-        <Button on:click={() => (createApiKeyModalOpen = true)} aria-label="create new">
-          <PlusOutline class="mr-2 h-3.5 w-3.5" />Create new
-        </Button>
-        <Button color="alternative">Actions<ChevronDownOutline class="ml-2 h-3 w-3 " /></Button>
-        <Dropdown bind:open={actionsOpen} class="w-44 divide-y divide-gray-100">
-          <DropdownItem on:click={() => (editMode = true)}>Edit</DropdownItem>
-        </Dropdown>
-      {/if}
+            <Button color="alternative" on:click={handleClose}>Cancel</Button>
+          </div>
+        {:else}
+          <div in:fade={{ duration: 150 }}>
+            <Button on:click={() => (createApiKeyModalOpen = true)} aria-label="create new">
+              <PlusOutline class="mr-2 h-3.5 w-3.5" />Create new
+            </Button>
+          </div>
+        {/if}
+      </div>
     </div>
     <TableHead>
-      {#if editMode}
-        <TableHeadCell class="!p-4">
-          <Checkbox
-            data-testid="select-all-rows-checkbox"
-            on:click={checkAllItems}
-            bind:checked={allItemsChecked}
-            aria-label="select all rows"
-          />
-        </TableHeadCell>
-      {/if}
-      <TableHeadCell padding="px-4 py-3" scope="col">Name</TableHeadCell>
-      <TableHeadCell padding="px-4 py-3" scope="col">Secret Keys</TableHeadCell>
-      <TableHeadCell padding="px-4 py-3" scope="col">Created</TableHeadCell>
-      <TableHeadCell padding="px-4 py-3" scope="col">Expires</TableHeadCell>
-      <TableHeadCell padding="px-4 py-3" scope="col">Permissions</TableHeadCell>
+      <TableHeadCell class="!p-4">
+        <Checkbox
+          data-testid="select-all-rows-checkbox"
+          on:click={checkAllItems}
+          bind:checked={allItemsChecked}
+          aria-label="select all rows"
+        />
+      </TableHeadCell>
+
+      <TableHeadCell on:click={() => sortTable('name')} padding="px-4 py-3" scope="col"
+        >Name</TableHeadCell
+      >
+      <TableHeadCell on:click={() => sortTable('api_key')} padding="px-4 py-3" scope="col"
+        >Secret Keys</TableHeadCell
+      >
+      <TableHeadCell on:click={() => sortTable('created_at')} padding="px-4 py-3" scope="col"
+        >Created</TableHeadCell
+      >
+      <TableHeadCell on:click={() => sortTable('expires_at')} padding="px-4 py-3" scope="col"
+        >Expires</TableHeadCell
+      >
     </TableHead>
     <TableBody>
-      {#each searchTerm !== '' ? filteredItems : currentPageItems as item (item.id)}
+      {#each pageItems as item (item.id)}
         <TableBodyRow>
-          {#if editMode}
-            <TableHeadCell class="!p-4">
-              <Checkbox
-                on:click={() => handleEditItem(item.id)}
-                checked={selectedRowIds.includes(item.id)}
-              />
-            </TableHeadCell>
-          {/if}
+          <TableHeadCell class="!p-4">
+            <Checkbox
+              on:click={() => handleEditItem(item.id)}
+              checked={selectedRowIds.includes(item.id)}
+            />
+          </TableHeadCell>
+
           <TableBodyCell tdClass="px-4 py-3">{item.name}</TableBodyCell>
           <TableBodyCell tdClass="px-4 py-3">{formatKeyShort(item.api_key)}</TableBodyCell>
           <TableBodyCell tdClass="px-4 py-3">{formatDate(new Date(item.created_at))}</TableBodyCell>
           <TableBodyCell tdClass="px-4 py-3">{formatDate(new Date(item.expires_at))}</TableBodyCell>
-          <TableBodyCell tdClass="px-4 py-3"
-            >{(Array.isArray(item.permissions) && item.permissions.join(', ')) || ''}</TableBodyCell
-          >
         </TableBodyRow>
       {/each}
     </TableBody>
   </TableSearch>
-  <div
-    class="flex flex-col items-start justify-between space-y-3 p-4 md:flex-row md:items-center md:space-y-0"
-    aria-label="Table navigation"
-  >
-    <span class="text-sm font-normal text-gray-500 dark:text-gray-400">
-      Showing
-      <span class="font-semibold text-gray-900 dark:text-white">{startRange}-{endRange}</span>
-      of
-      <span class="font-semibold text-gray-900 dark:text-white">{totalItems}</span>
-    </span>
-    <ButtonGroup>
-      <Button on:click={loadPreviousPage} disabled={currentPosition === 0}
-        ><ChevronLeftOutline size="xs" class="m-1.5" /></Button
-      >
-      {#each pagesToShow as pageNumber}
-        <Button on:click={() => goToPage(pageNumber)}>{pageNumber}</Button>
-      {/each}
-      <Button on:click={loadNextPage} disabled={totalPages === endPage}
-        ><ChevronRightOutline size="xs" class="m-1.5" /></Button
-      >
-    </ButtonGroup>
+  <div class="mt-2 flex items-center justify-between gap-2">
+    <div class="text-sm text-gray-700 dark:text-gray-400">
+      {#if endRange === 0}
+        Showing <span class="font-semibold text-gray-900 dark:text-white">0</span> Entries
+      {:else}
+        Showing <span class="font-semibold text-gray-900 dark:text-white"
+          >{startRange}-{endRange}</span
+        >
+        of
+        <span class="font-semibold text-gray-900 dark:text-white">{totalItems}</span>
+        Entries
+      {/if}
+    </div>
+
+    <Pagination table on:previous={previous} on:next={next}>
+      <div slot="prev" class="flex items-center gap-2 bg-gray-800 text-white">
+        <ArrowLeftOutline class="me-2 h-3.5 w-3.5" />
+        Prev
+      </div>
+      <div slot="next" class="flex items-center gap-2 bg-gray-800 text-white">
+        Next
+        <ArrowRightOutline class="ms-2 h-6 w-6" />
+      </div>
+    </Pagination>
   </div>
 </div>
->
 
 <DeleteApiKeyModal
   bind:confirmDeleteModalOpen
@@ -233,8 +231,7 @@
   bind:deleting
   on:delete={() => {
     confirmDeleteModalOpen = false;
-    selectedRowIds = [];
-    editMode = false;
+    handleClose();
   }}
 />
 

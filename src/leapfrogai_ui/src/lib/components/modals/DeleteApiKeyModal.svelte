@@ -1,5 +1,5 @@
 <script lang="ts">
-  import { Button, Modal } from 'flowbite-svelte';
+  import { Button, Modal, P } from 'flowbite-svelte';
   import { ExclamationCircleOutline } from 'flowbite-svelte-icons';
   import { toastStore } from '$stores';
   import { page } from '$app/stores';
@@ -55,14 +55,16 @@
   autoclose
   title={`Delete API ${keyNames.length > 0 ? 'Keys' : 'Key'}`}
   on:close={handleCancel}
+  color="primary"
 >
-  <div class="text-center">
-    <ExclamationCircleOutline class="mx-auto mb-4 h-12 w-12 text-gray-400 dark:text-gray-200" />
-    <h3 class="mb-5 text-lg font-normal text-gray-500 dark:text-gray-400">
-      Are you sure you want to delete <span class="font-bold">{keyNames}</span>
-    </h3>
-    <Button color="red" class="me-2" on:click={handleDelete} disabled={deleting}>Delete</Button>
-
-    <Button color="alternative" on:click={handleCancel}>Cancel</Button>
+  <div class="flex flex-col gap-4">
+    <ExclamationCircleOutline class="mx-auto  h-12 w-12 text-gray-400 dark:text-white" />
+    <P size="xl" class="text-center dark:text-gray-400">
+      Are you sure you want to delete <strong>{keyNames}</strong>
+    </P>
+    <div class="flex justify-end gap-2">
+      <Button color="alternative" on:click={handleCancel} size="sm">Cancel</Button>
+      <Button color="red" on:click={handleDelete} disabled={deleting} size="sm">Delete</Button>
+    </div>
   </div></Modal
 >

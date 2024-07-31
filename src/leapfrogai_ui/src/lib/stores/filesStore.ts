@@ -1,4 +1,4 @@
-import { writable } from 'svelte/store';
+import { derived, writable } from 'svelte/store';
 import type { FileObject } from 'openai/resources/files';
 import type { FileRow } from '$lib/types/files';
 import { toastStore } from '$stores/index';
@@ -133,6 +133,15 @@ const createFilesStore = () => {
         };
       });
     },
+    updateFiles: () => {
+      update((old) => {
+        old.files.forEach((row) => (row.status = 'hide'));
+        return {
+          ...old,
+          pendingUploads: [...old.pendingUploads.filter((row) => row.status !== 'error')]
+        };
+      });
+    },
     setAllUploadingToError: () => {
       update((old) => {
         const modifiedFiles = old.pendingUploads.map((file) => {
@@ -161,4 +170,11 @@ const createFilesStore = () => {
   };
 };
 
-export default createFilesStore();
+const filesStore = createFilesStore();
+export default filesStore;
+
+const allFilesAndPendingUploads = derived(filesStore, ($filesStore) => [
+  ...$filesStore.files,
+  ...$filesStore.pendingUploads
+]);
+export { allFilesAndPendingUploads };

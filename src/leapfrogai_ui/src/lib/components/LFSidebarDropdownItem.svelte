@@ -155,24 +155,21 @@ It adds a "three-dot" menu button with Popover, and delete confirmation Modal
   {/if}
 </li>
 
-<Modal data-testid="delete-thread-modal" bind:open={deleteModalOpen} autoclose title="Delete Chat">
-  <div class="text-center">
-    <ExclamationCircleOutline class="mx-auto mb-4 h-12 w-12 text-gray-400 dark:text-gray-200" />
-    <h3 class="mb-5 text-lg font-normal text-gray-500 dark:text-gray-400">
+<Modal
+  data-testid="delete-thread-modal"
+  bind:open={deleteModalOpen}
+  autoclose
+  title="Delete Chat"
+  color="primary"
+>
+  <div class="flex flex-col gap-4">
+    <ExclamationCircleOutline class="mx-auto  h-12 w-12 text-gray-400 dark:text-white" />
+    <P size="xl" class="text-center dark:text-gray-400">
       Are you sure you want to delete your <strong>{label.substring(0, MAX_LABEL_SIZE)}</strong> chat?
-    </h3>
-    <Button color="red" class="me-2" on:click={handleDelete}>Delete</Button>
-    <Button color="alternative">Cancel</Button>
+    </P>
+    <div class="flex justify-end gap-2">
+      <Button color="alternative" size="sm">Cancel</Button>
+      <Button color="red" on:click={handleDelete} size="sm">Delete</Button>
+    </div>
   </div>
 </Modal>
-
-<!--
-@component
-[Go to docs](https://flowbite-svelte.com/)
-## Props
-@prop export let sClass: string = 'flex items-center p-2 ps-11 w-full text-base font-normal text-gray-900 rounded-lg transition duration-75 group hover:bg-gray-100 dark:text-white dark:hover:bg-gray-700';
-@prop export let href: string = '';
-@prop export let label: string = '';
-@prop export let activeClass: string = 'flex items-center p-2 ps-11 text-base font-normal text-gray-900 bg-gray-200 dark:bg-gray-700 rounded-lg dark:text-white hover:bg-gray-100 dark:hover:bg-gray-700';
-@prop export let active: boolean = false;
--->
