@@ -217,7 +217,7 @@
       </div>
 
       <div id="child-flexbox-footer" class="flex justify-center">
-        <Button color="red" class="me-2" on:click={handleCancel}>Cancel</Button>
+        <Button color="alternative" class="me-2" on:click={handleCancel}>Cancel</Button>
         <Button on:click={handleSubmit}>Save</Button>
       </div>
     </div>

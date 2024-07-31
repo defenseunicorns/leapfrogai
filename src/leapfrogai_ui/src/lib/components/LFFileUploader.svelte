@@ -1,5 +1,3 @@
-<!--This is a custom version of Carbon Components Svelte's FileUploaderButton to support usage of an inline icon-->
-
 <script lang="ts">
   import { Button } from 'flowbite-svelte';
   import { UploadOutline } from 'flowbite-svelte-icons';

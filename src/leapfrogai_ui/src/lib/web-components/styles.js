@@ -111,10 +111,37 @@ Original One Dark Syntax theme from https://github.com/atom/one-dark-syntax
 `;
 
 export const buttonStyles = css`
-  .alternative {
-      color: #111827;
-      background-color: white;
-      border: #e5e7eb;
-      hover:bg-gray-100 dark:bg-gray-800 dark:text-gray-400 hover:text-primary-700 focus-within:text-primary-700 dark:focus-within:text-white dark:hover:text-white dark:hover:bg-gray-700
+  .copy-btn-base {
+    display: inline-flex;
+    justify-content: center;
+    align-items: center;
+    border-radius: 0.5rem;
+    border: 1px solid #e5e7eb;
+    background-color: white;
+    padding: 0.25rem 0.5rem;
+    text-align: center;
+    font-size: 0.875rem;
+    line-height: 1.25rem;
+    font-weight: 500;
+    color: #111827;
+    cursor: pointer;
+  }
+
+  .dark,
+  copy-btn-base {
+    background: transparent;
+    color: #f3f4f6;
+    border: 1px solid white;
+  }
+
+  .copy-btn-base:hover {
+    color: #1d4ed8;
+    background-color: #f3f4f6;
+  }
+
+  .dark:hover {
+    background-color: #374151;
+    color: white;
+    border: 1px solid #4b5563;
   }
 `;

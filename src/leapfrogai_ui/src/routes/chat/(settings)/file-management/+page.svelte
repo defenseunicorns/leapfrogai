@@ -270,7 +270,7 @@
       <TableBody>
         {#each pageItems as item (item.id)}
           <TableBodyRow>
-            <TableHeadCell class="!p-4 w-0">
+            <TableHeadCell class="w-0 !p-4">
               {#if item.status !== 'uploading'}
                 <Checkbox
                   on:click={() => handleEditItem(item.id)}

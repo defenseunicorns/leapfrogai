@@ -10,8 +10,5 @@ export default defineConfig(() => ({
     setupFiles: ['./vitest-setup.ts'],
     include: ['src/**/*.{test,spec}.{js,ts}'],
     globals: true
-  },
-  compilerOptions: {
-    customElement: true
   }
 }));

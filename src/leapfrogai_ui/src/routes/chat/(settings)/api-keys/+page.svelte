@@ -158,7 +158,7 @@
       </div>
     </div>
     <TableHead>
-      <TableHeadCell class="!p-4 w-0">
+      <TableHeadCell class="w-0 !p-4">
         <Checkbox
           data-testid="select-all-rows-checkbox"
           on:click={checkAllItems}

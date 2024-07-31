@@ -1,7 +1,7 @@
 import { LitElement, css, html } from 'lit';
 import { unsafeHTML } from 'lit/directives/unsafe-html.js';
 import DOMPurify from 'isomorphic-dompurify';
-import {highlightJsStyles, buttonStyles} from './styles.js';
+import { highlightJsStyles, buttonStyles } from './styles.js';
 import { toastStore } from '$stores';
 
 /*
@@ -98,10 +98,14 @@ export class CodeBlock extends LitElement {
         <div class="code-block-header">
           <span>${language}</span>
           <div class="centered-flexbox">
-            <button data-testid="copy-code-btn" @click=${this.handleClick} class="alternative">
+            <button
+              id="copy-btn"
+              data-testid="copy-code-btn"
+              @click=${this.handleClick}
+              class="copy-btn-base dark"
+            >
               <span>Copy</span>
               <svg
-                class="h-6 w-6 text-gray-800 dark:text-white"
                 aria-hidden="true"
                 xmlns="http://www.w3.org/2000/svg"
                 width="24"
