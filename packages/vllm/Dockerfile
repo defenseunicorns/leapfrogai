@@ -10,7 +10,7 @@ ARG SDK_DEST=src/leapfrogai_sdk/build \
     PYTHON_VERSION=3.11.6 \
     PYENV_GIT_TAG=v2.4.8 \
     HF_HUB_ENABLE_HF_TRANSFER="1" \
-    REPO_ID="neuralmagic/Phi-3-mini-128k-instruct-quantized.w8a8" \
+    REPO_ID="justinthelaw/Phi-3-mini-128k-instruct-4bit-128g" \
     REVISION="main"
 
 # use root user for deps installation and nonroot user creation
@@ -102,9 +102,9 @@ ARG TRUST_REMOTE_CODE="True" \
     PROMPT_FORMAT_DEFAULTS_TOP_K=0 \
     TENSOR_PARALLEL_SIZE=1 \
     ENFORCE_EAGER=False \
-    GPU_MEMORY_UTILIZATION=0.90 \
-    WORKER_USE_RAY=True \
-    ENGINE_USE_RAY=True
+    GPU_MEMORY_UTILIZATION=0.99 \
+    WORKER_USE_RAY=False \
+    ENGINE_USE_RAY=False
 
 # setup nonroot user and permissions
 USER root
