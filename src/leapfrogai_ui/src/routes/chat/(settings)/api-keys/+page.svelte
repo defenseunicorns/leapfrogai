@@ -1,13 +1,10 @@
 <script lang="ts">
   import { fade } from 'svelte/transition';
-  import { writable } from 'svelte/store';
-  import { formatDate } from '$helpers/dates.js';
-  import type { APIKeyRow } from '$lib/types/apiKeys';
   import {
     Button,
-    ButtonGroup,
     Checkbox,
     Heading,
+    Pagination,
     Spinner,
     TableBody,
     TableBodyCell,
@@ -16,110 +13,87 @@
     TableHeadCell,
     TableSearch
   } from 'flowbite-svelte';
-  import { ChevronLeftOutline, ChevronRightOutline, PlusOutline } from 'flowbite-svelte-icons';
-  import { filterTable } from '$lib/utils/tables';
-  import type { PageServerData } from './$types';
+  import { ArrowLeftOutline, ArrowRightOutline, PlusOutline } from 'flowbite-svelte-icons';
+  import { formatDate } from '$helpers/dates.js';
   import { formatKeyShort } from '$helpers/apiKeyHelpers';
+  import type { APIKeyRow } from '$lib/types/apiKeys';
+  import type { PageServerData } from './$types';
+  import { filterTable } from '$lib/utils/tables';
+  import { tableStyles } from '$lib/styles/tables';
   import DeleteApiKeyModal from '$components/modals/DeleteApiKeyModal.svelte';
-  import { onMount } from 'svelte';
   import CreateApiKeyModal from '$components/modals/CreateApiKeyModal.svelte';
 
   export let data: PageServerData;
 
-  const itemsPerPage = 10;
-  const showPage = 5;
-  let searchTerm = '';
-  let currentPosition = 0;
-  let totalPages = 0;
-  let pagesToShow = [];
-  let totalItems = data.keys.length;
-  let startPage;
-  let endPage;
-
-  let createApiKeyModalOpen = false;
-  let confirmDeleteModalOpen = false;
-  let allItemsChecked = false;
-
-  let selectedRowIds: string[] = [];
-  let deleting = false;
-
-  let divClass = 'bg-white dark:bg-gray-800 relative shadow-md sm:rounded-lg overflow-hidden';
-  let innerDivClass =
-    'flex flex-col md:flex-row items-center justify-between space-y-3 md:space-y-0 md:space-x-4 p-4';
-  let searchClass = 'w-full md:w-1/2 relative';
-  let classInput =
-    'text-gray-900 text-sm rounded-lg focus:ring-primary-500 focus:border-primary-500 block w-full p-2  pl-10';
-
-  const FILTER_KEYS: Array<keyof APIKeyRow> = ['name', 'api_key', 'created_at', 'expires_at'];
-  // TODO - data.keys not getting type inference
-  $: filteredItems = filterTable(data.keys, FILTER_KEYS, searchTerm.toLowerCase());
-  $: currentPageItems = data.keys.slice(currentPosition, currentPosition + itemsPerPage);
+  // TODO - data.keys not getting type inference - https://github.com/defenseunicorns/leapfrogai/issues/856
+  $: filteredItems =
+    searchTerm !== ''
+      ? filterTable(data.keys, FILTER_KEYS, searchTerm.toLowerCase())
+      : [...data.keys];
+  $: totalItems = filteredItems.length;
   $: startRange = currentPosition + 1;
   $: endRange = Math.min(currentPosition + itemsPerPage, totalItems);
   $: editMode = selectedRowIds.length > 0;
 
+  const FILTER_KEYS: Array<keyof APIKeyRow> = ['name', 'api_key', 'created_at', 'expires_at'];
+  const { divClass, innerDivClass, searchClass, classInput } = tableStyles;
+  const itemsPerPage = 10;
+  let pageItems;
+  let searchTerm = '';
+  let currentPosition = 0;
+  let createApiKeyModalOpen = false;
+  let confirmDeleteModalOpen = false;
+  let allItemsChecked = false;
+  let selectedRowIds: string[] = [];
+  let deleting = false;
+
   /****** Pagination Handlers ******/
-  const loadNextPage = () => {
-    if (currentPosition + itemsPerPage < data.keys.length) {
+  const next = () => {
+    if (currentPosition + itemsPerPage < filteredItems.length) {
       currentPosition += itemsPerPage;
-      renderPagination();
     }
   };
-  const loadPreviousPage = () => {
+  const previous = () => {
     if (currentPosition - itemsPerPage >= 0) {
       currentPosition -= itemsPerPage;
-      renderPagination();
     }
-  };
-  const renderPagination = () => {
-    totalPages = Math.ceil(data.keys.length / itemsPerPage);
-    const currentPage = Math.ceil((currentPosition + 1) / itemsPerPage);
-
-    startPage = currentPage - Math.floor(showPage / 2);
-    startPage = Math.max(1, startPage);
-    endPage = Math.min(startPage + showPage - 1, totalPages);
-
-    pagesToShow = Array.from({ length: endPage - startPage + 1 }, (_, i) => startPage + i);
-  };
-  const goToPage = (pageNumber) => {
-    currentPosition = (pageNumber - 1) * itemsPerPage;
-    renderPagination();
   };
 
   /****** End Pagination Handlers ******/
 
   /****** Sorting Handlers ******/
 
-  const sortKey = writable('created_at'); // default sort key
-  const sortDirection = writable(1); // default sort direction (ascending)
-  const sortItems = writable([...data.keys]);
+  let sortKey = 'created_at'; // default sort key
+  let sortDirection = 1; // default sort direction (ascending)
 
   // Define a function to sort the items
   const sortTable = (key) => {
     // If the same key is clicked, reverse the sort direction
-    if ($sortKey === key) {
-      sortDirection.update((val) => -val);
+    if (sortKey === key) {
+      sortDirection = -sortDirection;
     } else {
-      sortKey.set(key);
-      sortDirection.set(1);
+      sortKey = key;
+      sortDirection = 1;
     }
   };
 
+  // When search term changes, reset to first page
+  $: searchTerm, (currentPosition = 0);
+
+  // Sort page items based on the sort key and direction
   $: {
-    const key = $sortKey;
-    const direction = $sortDirection;
-    const items = searchTerm !== '' ? filteredItems : currentPageItems;
-    const sorted = items.sort((a, b) => {
-      const aVal = a[key];
-      const bVal = b[key];
+    const tempPageItems = filteredItems.slice(currentPosition, currentPosition + itemsPerPage);
+    const sorted = tempPageItems.sort((a, b) => {
+      const aVal = a[sortKey];
+      const bVal = b[sortKey];
       if (aVal < bVal) {
-        return -direction;
+        return -sortDirection;
       } else if (aVal > bVal) {
-        return direction;
+        return sortDirection;
       }
       return 0;
     });
-    sortItems.set(sorted);
+    pageItems = [...sorted];
   }
 
   /****** End Sorting Handlers ******/
@@ -143,14 +117,9 @@
     if (allItemsChecked) {
       selectedRowIds = [];
     } else {
-      const items = searchTerm !== '' ? filteredItems : data.keys;
-      selectedRowIds = items.map((item) => item.id);
+      selectedRowIds = filteredItems.map((item) => item.id);
     }
   };
-
-  onMount(() => {
-    renderPagination();
-  });
 </script>
 
 <div class="w-3/4 bg-gray-50 p-3 dark:bg-gray-900">
@@ -215,7 +184,7 @@
       >
     </TableHead>
     <TableBody>
-      {#each $sortItems as item (item.id)}
+      {#each pageItems as item (item.id)}
         <TableBodyRow>
           <TableHeadCell class="!p-4">
             <Checkbox
@@ -232,27 +201,30 @@
       {/each}
     </TableBody>
   </TableSearch>
-  <div
-    class="flex flex-col items-start justify-between space-y-3 p-4 md:flex-row md:items-center md:space-y-0"
-    aria-label="Table navigation"
-  >
-    <span class="text-sm font-normal text-gray-500 dark:text-gray-400">
-      Showing
-      <span class="font-semibold text-gray-900 dark:text-white">{startRange}-{endRange}</span>
-      of
-      <span class="font-semibold text-gray-900 dark:text-white">{totalItems}</span>
-    </span>
-    <ButtonGroup>
-      <Button on:click={loadPreviousPage} disabled={currentPosition === 0}
-        ><ChevronLeftOutline size="xs" class="m-1.5" /></Button
-      >
-      {#each pagesToShow as pageNumber}
-        <Button on:click={() => goToPage(pageNumber)}>{pageNumber}</Button>
-      {/each}
-      <Button on:click={loadNextPage} disabled={totalPages === endPage}
-        ><ChevronRightOutline size="xs" class="m-1.5" /></Button
-      >
-    </ButtonGroup>
+  <div class="mt-2 flex items-center justify-between gap-2">
+    <div class="text-sm text-gray-700 dark:text-gray-400">
+      {#if endRange === 0}
+        Showing <span class="font-semibold text-gray-900 dark:text-white">0</span> Entries
+      {:else}
+        Showing <span class="font-semibold text-gray-900 dark:text-white"
+          >{startRange}-{endRange}</span
+        >
+        of
+        <span class="font-semibold text-gray-900 dark:text-white">{totalItems}</span>
+        Entries
+      {/if}
+    </div>
+
+    <Pagination table on:previous={previous} on:next={next}>
+      <div slot="prev" class="flex items-center gap-2 bg-gray-800 text-white">
+        <ArrowLeftOutline class="me-2 h-3.5 w-3.5" />
+        Prev
+      </div>
+      <div slot="next" class="flex items-center gap-2 bg-gray-800 text-white">
+        Next
+        <ArrowRightOutline class="ms-2 h-6 w-6" />
+      </div>
+    </Pagination>
   </div>
 </div>
 
