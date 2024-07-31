@@ -167,6 +167,8 @@ kong:
       timeoutSeconds: 40
     readinessProbe:
       timeoutSeconds: 40
+  service:
+    type: ClusterIP
 postgresql:
   enabled: ###ZARF_VAR_ENABLE_POSTGRES###
   image:
