@@ -167,17 +167,29 @@
         />
       </TableHeadCell>
 
-      <TableHeadCell on:click={() => sortTable('name')} padding="px-4 py-3" scope="col"
-        >Name</TableHeadCell
+      <TableHeadCell
+        on:click={() => sortTable('name')}
+        padding="px-4 py-3"
+        scope="col"
+        class="cursor-pointer">Name</TableHeadCell
       >
-      <TableHeadCell on:click={() => sortTable('api_key')} padding="px-4 py-3" scope="col"
-        >Secret Keys</TableHeadCell
+      <TableHeadCell
+        on:click={() => sortTable('api_key')}
+        padding="px-4 py-3"
+        scope="col"
+        class="cursor-pointer">Secret Keys</TableHeadCell
       >
-      <TableHeadCell on:click={() => sortTable('created_at')} padding="px-4 py-3" scope="col"
-        >Created</TableHeadCell
+      <TableHeadCell
+        on:click={() => sortTable('created_at')}
+        padding="px-4 py-3"
+        scope="col"
+        class="cursor-pointer">Created</TableHeadCell
       >
-      <TableHeadCell on:click={() => sortTable('expires_at')} padding="px-4 py-3" scope="col"
-        >Expires</TableHeadCell
+      <TableHeadCell
+        on:click={() => sortTable('expires_at')}
+        padding="px-4 py-3"
+        scope="col"
+        class="cursor-pointer">Expires</TableHeadCell
       >
     </TableHead>
     <TableBody>

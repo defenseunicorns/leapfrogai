@@ -260,11 +260,17 @@
           />
         </TableHeadCell>
 
-        <TableHeadCell padding="px-4 py-3" scope="col" on:click={() => sortTable('filename')}
-          >Name</TableHeadCell
+        <TableHeadCell
+          padding="px-4 py-3"
+          scope="col"
+          on:click={() => sortTable('filename')}
+          class="cursor-pointer">Name</TableHeadCell
         >
-        <TableHeadCell padding="px-4 py-3" scope="col" on:click={() => sortTable('created_at')}
-          >Date Added</TableHeadCell
+        <TableHeadCell
+          padding="px-4 py-3"
+          scope="col"
+          on:click={() => sortTable('created_at')}
+          class="cursor-pointer">Date Added</TableHeadCell
         >
       </TableHead>
       <TableBody>
