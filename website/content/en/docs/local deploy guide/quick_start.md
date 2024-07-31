@@ -22,6 +22,8 @@ Additionally, please check the list of tested [operating systems](https://docs.l
 
 ## Prerequisites
 
+- [Python 3.11](https://www.python.org/downloads/release/python-3116/)
+    - NOTE: Different model packages will require different Python libraries. The libraries required will be listed in the `dev` optional dependencies in each projects `pyproject.toml` file.
 - [Docker](https://docs.docker.com/engine/install/)
 - [K3D](https://k3d.io/)
 - [Zarf](https://docs.zarf.dev/getting-started/install/)
