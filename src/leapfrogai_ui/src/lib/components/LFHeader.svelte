@@ -39,7 +39,7 @@
 <svelte:window bind:innerWidth />
 
 <header>
-  <Navbar fluid class="h-header py-1 dark:bg-black">
+  <Navbar fluid class="h-header border-b border-gray-700 py-1 dark:bg-gray-800">
     <NavBrand
       href={$threadsStore.lastVisitedThreadId
         ? `/chat/${$threadsStore.lastVisitedThreadId}`
