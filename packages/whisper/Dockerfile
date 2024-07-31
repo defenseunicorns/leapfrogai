@@ -20,7 +20,7 @@ RUN python -m pip wheel "packages/whisper[dev]" -w packages/whisper/build --find
 # download and covnert OpenAI's whisper base
 ARG MODEL_NAME=openai/whisper-base
 RUN pip install ctranslate2 transformers[torch] --no-index --find-links=packages/whisper/build/
-RUN ct2-transformers-converter --model ${MODEL_NAME} --output_dir .model --copy_files tokenizer.json --quantization float32
+RUN ct2-transformers-converter --model ${MODEL_NAME} --output_dir .model --copy_files tokenizer.json special_tokens_map.json preprocessor_config.json normalizer.json tokenizer_config.json vocab.json --quantization float32
 RUN pip uninstall -y ctranslate2 transformers[torch]
 
 RUN pip install packages/whisper/build/lfai_whisper*.whl --no-index --find-links=packages/whisper/build/
