@@ -36,10 +36,9 @@
         multiple
         disableLabelChanges
         {filesForm}
-        open={true}
       />
     </div>
-    <div class="no-scrollbar max-h-64 overflow-y-scroll">
+    <div class="max-h-64 overflow-y-auto">
       {#each files as file (file.id)}
         <li>
           <Checkbox

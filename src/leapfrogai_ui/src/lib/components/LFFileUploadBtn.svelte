@@ -25,13 +25,7 @@
   class="sr-only"
   {...$$restProps}
 />
-<Button
-  outline
-  {size}
-  {disabled}
-  on:click={() => ref?.click()}
-  class={twMerge('w-full', $$props.class)}
->
+<Button {size} {disabled} on:click={() => ref?.click()} class={twMerge('w-full', $$props.class)}>
   <div class="flex w-full justify-between">
     <slot />
   </div>

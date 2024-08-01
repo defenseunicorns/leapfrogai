@@ -18,7 +18,6 @@
   export let disableLabelChanges = false;
 
   export let filesForm: FilesForm; // for the form
-  export let open: boolean; //Parent MultiFileSelect open reactive variable
 
   let initialLabelText = labelText;
 
@@ -29,12 +28,7 @@
     ref.value = '';
   }
 
-  $: if (files.length > 0) {
-    handleUpload();
-  }
-
   const handleUpload = () => {
-    open = false; // close parent multi select
     filesStore.setUploading(true);
     filesStore.addUploadingFiles(files, { autoSelectUploadedFiles: true });
     submit();
@@ -97,6 +91,7 @@
           labelText = files.length > 1 ? `${files.length} files` : files[0].name;
         }
         dispatch('change', files);
+        handleUpload();
       }
     }}
     on:click
