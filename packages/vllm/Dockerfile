@@ -8,10 +8,7 @@ FROM nvidia/cuda:12.2.2-devel-ubuntu22.04 AS builder
 # set model download args
 ARG SDK_DEST=src/leapfrogai_sdk/build \
     PYTHON_VERSION=3.11.6 \
-    PYENV_GIT_TAG=v2.4.8 \
-    HF_HUB_ENABLE_HF_TRANSFER="1" \
-    REPO_ID="justinthelaw/Phi-3-mini-128k-instruct-4bit-128g" \
-    REVISION="main"
+    PYENV_GIT_TAG=v2.4.8
 
 # use root user for deps installation and nonroot user creation
 USER root
@@ -70,16 +67,6 @@ ENV PATH="/home/leapfrogai/.venv/bin:$PATH"
 RUN rm -f packages/vllm/build/*.whl && \
     python -m pip wheel packages/vllm -w packages/vllm/build --find-links=${SDK_DEST} && \
     pip install packages/vllm/build/lfai_vllm*.whl --no-index --find-links=packages/vllm/build/
-
-# load ARG values into env variables for pickup by confz
-ENV LAI_HF_HUB_ENABLE_HF_TRANSFER=${HF_HUB_ENABLE_HF_TRANSFER} \
-    LAI_REPO_ID=${REPO_ID} \
-    LAI_REVISION=${REVISION}
-
-# download model with script, then remove script
-RUN pip install -U huggingface_hub[cli,hf_transfer] && \
-    python3 packages/vllm/src/model_download.py
-RUN rm -rf packages/vllm/src/model_download.py
 
 #################
 # FINAL CONTAINER

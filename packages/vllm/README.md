@@ -24,9 +24,6 @@ The default model that comes with this backend in this repository's officially r
 
 You can optionally specify different models or quantization types using the following Docker build arguments:
 
-- `--build-arg HF_HUB_ENABLE_HF_TRANSFER="1"`: Enable or disable HuggingFace Hub transfer (default: 1)
-- `--build-arg REPO_ID="justinthelaw/Phi-3-mini-128k-instruct-4bit-128g"`: HuggingFace repository ID for the model
-- `--build-arg REVISION="main"`: Revision or commit hash for the model
 - `--build-arg MAX_CONTEXT_LENGTH="32768"`: Max context length, cannot exceed model's max length - the greater length the greater the vRAM requirements
 - `--build-arg TENSOR_PARALLEL_SIZE="1"`: The number of gpus to spread the tensor processing across
 - `--build-arg TRUST_REMOTE_CODE="True"`: Whether to trust inferencing code downloaded as part of the model download
