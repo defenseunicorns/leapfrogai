@@ -27,7 +27,7 @@ You can optionally specify different models or quantization types using the foll
 - `--build-arg HF_HUB_ENABLE_HF_TRANSFER="1"`: Enable or disable HuggingFace Hub transfer (default: 1)
 - `--build-arg REPO_ID="justinthelaw/Phi-3-mini-128k-instruct-4bit-128g"`: HuggingFace repository ID for the model
 - `--build-arg REVISION="main"`: Revision or commit hash for the model
-- `--build-arg QUANTIZATION="gptq"`: Quantization type (e.g., gptq, awq, or empty for un-quantized)
+- `--build-arg MAX_CONTEXT_LENGTH="32768"`: Max context length, cannot exceed model's max length - the greater length the greater the vRAM requirements
 - `--build-arg TENSOR_PARALLEL_SIZE="1"`: The number of gpus to spread the tensor processing across
 - `--build-arg TRUST_REMOTE_CODE="True"`: Whether to trust inferencing code downloaded as part of the model download
 - `--build-arg ENGINE_USE_RAY="False"`: Distributed, multi-node inferencing mode for the engine
