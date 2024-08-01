@@ -9,7 +9,7 @@ from faster_whisper import WhisperModel
 
 logger = logging.getLogger(__name__)
 
-model_path = ".model"
+model_path = os.environ.get("LFAI_MODEL_PATH", ".model")
 
 GPU_ENABLED = True if int(os.environ.get("GPU_REQUEST", 0)) > 0 else False
 

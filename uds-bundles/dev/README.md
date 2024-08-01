@@ -16,6 +16,8 @@ source .venv/bin/activate
 Each component is built into its own Zarf package. You can build all of the packages you need at once with the following `Make` targets:
 > ***Note:*** You need to build with `make build-* LOCAL_VERSION=dev` to set the tag to `dev` instead of the commit hash locally.  
 
+> ***NOTE:*** Some of the packages have Python dev dependencies that need to be installed when building them locally. These dependencies are used to download the model weights that will be included in the final Zarf package. These dependencies are listed as `dev` in the `project.optional-dependencies` section of each models `pyproject.toml`.
+
 You can build all of the packages you need at once with the following `Make` targets:
 
 ```shell
