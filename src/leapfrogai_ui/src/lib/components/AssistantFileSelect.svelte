@@ -3,7 +3,7 @@
   import { filesStore } from '$stores';
   import type { FilesForm } from '$lib/types/files';
   import { ACCEPTED_FILE_TYPES } from '$constants';
-  import MultiFileSelect from '$components/MultiFileSelect.svelte';
+  import AssistantFileDropdown from '$components/AssistantFileDropdown.svelte';
   import FileUploaderItem from '$components/FileUploaderItem.svelte';
 
   export let filesForm: FilesForm;
@@ -17,12 +17,7 @@
     .filter((id) => $filesStore.selectedAssistantFileIds.includes(id));
 </script>
 
-<MultiFileSelect
-  files={$filesStore.files.map((file) => ({ id: file.id, text: file.filename }))}
-  accept={ACCEPTED_FILE_TYPES}
-  {filesForm}
-  class="mb-6"
-/>
+<AssistantFileDropdown accept={ACCEPTED_FILE_TYPES} {filesForm} class="mb-6" />
 
 <div class="grid grid-cols-2 gap-4">
   {#each filteredStoreFiles as file}

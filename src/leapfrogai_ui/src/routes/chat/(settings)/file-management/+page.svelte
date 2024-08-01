@@ -58,7 +58,6 @@
   let totalItems = $allFilesAndPendingUploads?.length || 0;
   let confirmDeleteModalOpen = false;
   let allItemsChecked = false;
-  let uploadedFiles: File[] = [];
   let nonSelectableRowIds: string[] = [];
   let affectedAssistants: Assistant[];
   let affectedAssistantsLoading = false;
@@ -182,9 +181,9 @@
     affectedAssistantsLoading = false;
   };
 
-  const handleUpload = async () => {
+  const handleUpload = async (files: File[]) => {
     filesStore.setUploading(true);
-    filesStore.addUploadingFiles(uploadedFiles);
+    filesStore.addUploadingFiles(files);
     nonSelectableRowIds = $filesStore.pendingUploads.map((row) =>
       row.status === 'uploading' ? row.id : ''
     );
@@ -238,10 +237,12 @@
               {:else}
                 <LFFileUploadBtn
                   name="files"
-                  bind:files={uploadedFiles}
                   multiple
                   accept={ACCEPTED_FILE_TYPES}
-                  on:change={handleUpload}
+                  on:change={(e) => {
+                    const fileList = e.detail;
+                    handleUpload(fileList);
+                  }}
                 >
                   Upload <UploadOutline class="ml-2" />
                 </LFFileUploadBtn>

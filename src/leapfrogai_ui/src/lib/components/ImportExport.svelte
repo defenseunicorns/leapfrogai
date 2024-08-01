@@ -1,10 +1,10 @@
 <script lang="ts">
-  import { Button } from 'flowbite-svelte';
+  import { Button, Spinner } from 'flowbite-svelte';
   import { DownloadOutline } from 'flowbite-svelte-icons';
-  import LFFileUploader from '$components/LFFileUploader.svelte';
   import { threadsStore, toastStore } from '$stores';
   import { threadsSchema } from '$schemas/threadSchema';
   import type { LFThread } from '$lib/types/threads';
+  import LFFileUploadBtn from '$components/LFFileUploadBtn.svelte';
 
   let importing = false;
 
@@ -76,7 +76,20 @@
 </script>
 
 <div class="flex flex-col gap-2">
-  <LFFileUploader accept={['application/json']} {importing} {onUpload} />
+  {#if importing}
+    <Button outline disabled size="sm">
+      <Spinner class="me-3" size="4" color="white" />Importing...
+    </Button>
+  {:else}
+    <LFFileUploadBtn
+      data-testid="import-chat-history-input"
+      outline
+      size="sm"
+      on:change={(e) => onUpload(e.detail)}
+      accept={['application/json']}
+      disabled={importing}>Import chat history</LFFileUploadBtn
+    >
+  {/if}
 
   <Button id="export-btn" outline size="sm" on:click={onExport} class="w-full">
     <div class="flex w-full justify-between">
