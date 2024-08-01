@@ -103,8 +103,8 @@ ARG TRUST_REMOTE_CODE="True" \
     TENSOR_PARALLEL_SIZE=1 \
     ENFORCE_EAGER=False \
     GPU_MEMORY_UTILIZATION=0.99 \
-    WORKER_USE_RAY=False \
-    ENGINE_USE_RAY=False
+    WORKER_USE_RAY=True \
+    ENGINE_USE_RAY=True
 
 # setup nonroot user and permissions
 USER root
