@@ -11,9 +11,13 @@
   const dispatch = createEventDispatcher();
 </script>
 
-<Card {id} class="w-full" padding="xs" {...$$restProps}>
+<Card {id} class="w-full " padding="xs" {...$$restProps}>
   <div class="flex items-center justify-between">
-    <p class="font-normal leading-tight text-gray-700 dark:text-gray-400">{name}</p>
+    <p
+      class="overflow-hidden text-ellipsis whitespace-nowrap font-normal leading-tight text-gray-700 dark:text-gray-400"
+    >
+      {name}
+    </p>
 
     <Filename
       on:keydown={({ key }) => {

@@ -124,7 +124,7 @@
       <img alt="Assistant" src={assistantImage} class="chat-icon" data-testid="assistant-icon" />
     {:else if assistantImage}
       <div class="chat-icon" data-testid="assistant-icon">
-        <DynamicPictogram iconName={assistantImage} width="24px" height="24px" />
+        <DynamicPictogram size="xs" iconName={assistantImage} />
       </div>
     {:else}
       <img alt="LeapfrogAI" src={frog} class="chat-icon" data-testid="leapfrog-icon" />

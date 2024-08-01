@@ -5,7 +5,7 @@
 </script>
 
 {#if $toastStore.toasts}
-  <section class="absolute right-0 top-header z-50 flex flex-col justify-center gap-1">
+  <section class="max-z absolute right-0 top-header flex flex-col justify-center gap-1">
     {#each $toastStore.toasts as toast (toast.id)}
       <div transition:slide>
         <LFToast {toast} />
@@ -13,3 +13,9 @@
     {/each}
   </section>
 {/if}
+
+<style>
+  .max-z {
+    z-index: 9999; /* Flowbite uses z-50 for modals, we want toasts above that */
+  }
+</style>

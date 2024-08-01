@@ -53,9 +53,9 @@
     <DropdownItem
       on:click={handleSelectAssistant}
       data-value={assistant.id}
-      class="flex justify-between"
+      class="flex justify-between "
     >
-      {assistant.name}
+      {`${assistant.name.slice(0, 20)}...`}
       {#if $threadsStore.selectedAssistantId === assistant.id}
         <CheckOutline data-testid="checked" />
       {/if}

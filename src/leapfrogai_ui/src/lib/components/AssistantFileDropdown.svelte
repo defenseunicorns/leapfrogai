@@ -86,7 +86,8 @@
         <li>
           <Checkbox
             on:click={() => handleClick(file.id)}
-            checked={$filesStore.selectedAssistantFileIds.includes(file.id)}>{file.text}</Checkbox
+            checked={$filesStore.selectedAssistantFileIds.includes(file.id)}
+            class="overflow-hidden text-ellipsis whitespace-nowrap">{file.text}</Checkbox
           >
         </li>
       {/each}

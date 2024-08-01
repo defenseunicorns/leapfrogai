@@ -99,7 +99,7 @@
     <LFInput
       id="name"
       name="name"
-      label="Name"
+      label="Name *"
       placeholder="Assistant name"
       autocomplete="off"
       bind:value={$form.name}
@@ -110,7 +110,7 @@
     <LFInput
       id="description"
       name="description"
-      label="Tagline"
+      label="Tagline *"
       placeholder="Here to help..."
       autocomplete="off"
       bind:value={$form.description}
@@ -122,7 +122,7 @@
     <LFInput
       id="instructions"
       name="instructions"
-      label="Instructions"
+      label="Instructions *"
       placeholder="You'll act as..."
       autocomplete="off"
       textArea
