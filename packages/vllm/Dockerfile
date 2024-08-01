@@ -106,7 +106,6 @@ WORKDIR /home/leapfrogai
 COPY --from=sdk --chown=nonroot:nonroot /leapfrogai/${SDK_DEST} ./${SDK_DEST}
 COPY --from=builder --chown=nonroot:nonroot /home/leapfrogai/.venv /home/leapfrogai/.venv
 COPY --from=builder --chown=nonroot:nonroot /home/leapfrogai/packages/vllm/src /home/leapfrogai/packages/vllm/src
-COPY --from=builder --chown=nonroot:nonroot /home/leapfrogai/.model /home/leapfrogai/.model
 # copy-in python binaries
 COPY --from=builder --chown=nonroot:nonroot /home/nonroot/.pyenv/versions/3.11.6/ /home/nonroot/.pyenv/versions/3.11.6/
 
