@@ -60,6 +60,8 @@ jobs:
 
         - name: Setup Python
           uses: ./.github/actions/python
+          with:
+            additionalOptionalDep: dev-whisper
 
         - name: Setup UDS Cluster
           uses: ./.github/actions/uds-cluster

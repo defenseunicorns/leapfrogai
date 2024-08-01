@@ -61,12 +61,9 @@ jobs:
           uses: actions/checkout@b4ffde65f46336ab88eb53be808477a3936bae11 # v4.1.1
 
         - name: Setup Python
-          uses: actions/setup-python@0a5c61591373683505ea898e09a3ea4f39ef2b9c #v5.0.0
+          uses: ./.github/actions/python
           with:
-            python-version-file: 'pyproject.toml'
-
-        - name: Install Python Deps
-          run: python -m pip install "."
+            additionalOptionalDep: dev-vllm
 
         - name: Setup UDS Environment
           uses: defenseunicorns/uds-common/.github/actions/setup@05f42bb3117b66ebef8c72ae050b34bce19385f5

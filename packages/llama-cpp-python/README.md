@@ -37,6 +37,7 @@ To build and deploy just the llama-cpp-python Zarf package (from the root of the
 > Deploy a [UDS cluster](/README.md#uds) if one isn't deployed already
 
 ```shell
+pip install 'huggingface_hub[cli,hf_transfer]'  # Used to download the model weights from huggingface
 make build-llama-cpp-python LOCAL_VERSION=dev
 uds zarf package deploy packages/llama-cpp-python/zarf-package-llama-cpp-python-*-dev.tar.zst --confirm
 ```

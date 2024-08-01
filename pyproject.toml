@@ -20,7 +20,23 @@ dependencies = [  # Dev dependencies needed for all of lfai
 requires-python = "~=3.11"
 
 [project.optional-dependencies]
-dev = ["locust", "pytest-asyncio", "requests", "requests-toolbelt", "pytest"]
+dev = [
+    "locust",
+    "pytest-asyncio",
+    "requests",
+    "requests-toolbelt",
+    "pytest",
+    "huggingface_hub[cli,hf_transfer]"
+]
+
+dev-whisper = [
+    "ctranslate2",
+    "transformers[torch]"
+]
+
+dev-vllm = [
+    "confz"
+]
 
 [tool.pip-tools]
 generate-hashes = true
