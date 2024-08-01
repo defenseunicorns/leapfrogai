@@ -46,8 +46,7 @@ class LeapfrogAIEmbeddings:
         return list_of_embeddings[0]
 
     async def _get_model(
-        self,
-        model_name: str = os.getenv("DEFAULT_EMBEDDINGS_MODEL") or "text-embeddings",
+        self, model_name: str = os.getenv("DEFAULT_EMBEDDINGS_MODEL", "text-embeddings")
     ):
         """Gets the embeddings model.
 
