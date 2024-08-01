@@ -55,14 +55,18 @@ source .venv/bin/activate
 
 ```bash
 # Install dependencies
-make install-llama-cpp-python
+python -m pip install src/leapfrogai_sdk
+cd packages/llama-cpp-python
+python -m pip install ".[dev]"
 ```
 
 ```bash
 # Clone Model
 # Supply a REPO_ID, FILENAME and REVISION if a different model is desired
-make setup-llama-cpp-python-model
+python scripts/model_download.py
+
+mv .model/*.gguf .model/model.gguf
 
 # Start Model Backend
-make dev-run-llama-cpp-python
+lfai-cli --app-dir=. main:Model
 ```
