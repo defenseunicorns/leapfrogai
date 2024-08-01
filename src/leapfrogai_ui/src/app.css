@@ -16,6 +16,7 @@
     flex-direction: column;
     overflow: auto;
     padding-top: 2rem;
+    height: calc(100vh - var(--header-height));
   }
 
   .sidebar-height {
