@@ -3,7 +3,7 @@
   import { Button } from 'flowbite-svelte';
   import { createEventDispatcher } from 'svelte';
 
-  export let files;
+  export let files = null;
   export let name: string = '';
   export let ref: HTMLInputElement | null = null;
   export let accept: string[] = [];

@@ -66,7 +66,7 @@
         <DynamicPictogram iconName={assistant.metadata.pictogram || 'default'} size="md" />
       {/if}
       <!--With fixed width and font sizes, there isn't a simple solution for multi line text ellipses, so doing it manually at specific character length instead-->
-      <h5 class="mb-1 break-all text-xl font-medium text-gray-900 dark:text-white">
+      <h5 class="mb-1 break-words text-xl font-medium text-gray-900 dark:text-white">
         {assistant.name && assistant.name.length > 20
           ? `${assistant.name.slice(0, 20)}...`
           : assistant.name}

@@ -151,7 +151,7 @@
       {:else}
         <Card
           class={twMerge(
-            'max-w-full break-all border-none dark:bg-gray-700 dark:text-white',
+            'max-w-full break-words border-none dark:bg-gray-700 dark:text-white',
             message.role === 'user' && 'bg-transparent shadow-none dark:bg-transparent'
           )}
         >
