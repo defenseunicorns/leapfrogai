@@ -56,7 +56,7 @@
       data-value={assistant.id}
       class="flex justify-between "
     >
-      {`${assistant.name.slice(0, 20)}...`}
+      {assistant.name.length > 20 ? `${assistant.name.slice(0, 20)}...` : assistant.name}
       {#if $threadsStore.selectedAssistantId === assistant.id}
         <CheckOutline data-testid="checked" />
       {/if}
