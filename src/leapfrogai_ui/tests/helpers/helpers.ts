@@ -46,5 +46,8 @@ export const getTableRow = async (page: Page, textToSearchWith: string) => {
       break;
     }
   }
+  if (!targetRow) {
+    throw new Error('error getting row');
+  }
   return targetRow;
 };

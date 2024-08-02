@@ -51,10 +51,10 @@ describe('when there is NO active thread selected', () => {
     mockNewThreadError();
     mockNewMessage();
 
-    const { getByLabelText } = render(ChatPageWithToast, { data });
+    const { getByTestId } = render(ChatPageWithToast, { data });
 
-    const input = getByLabelText('message input') as HTMLInputElement;
-    const submitBtn = getByLabelText('send');
+    const input = getByTestId('chat-input') as HTMLInputElement;
+    const submitBtn = getByTestId('send message');
 
     await userEvent.type(input, question);
     await userEvent.click(submitBtn);

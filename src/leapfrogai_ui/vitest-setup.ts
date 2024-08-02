@@ -5,7 +5,7 @@ import { afterAll, afterEach, beforeAll, vi } from 'vitest';
 import * as environment from '$app/environment';
 import * as navigation from '$app/navigation';
 import * as stores from '$app/stores';
-import { fakeAssistants, fakeThreads } from '$testUtils/fakeData';
+import { fakeAssistants, fakeThreads, getFakeApiKeys } from '$testUtils/fakeData';
 import OpenAIMock from '$lib/mocks/openai';
 import dotenv from 'dotenv';
 
@@ -60,6 +60,8 @@ vi.mock('$app/navigation', (): typeof navigation => ({
 vi.mock('$app/stores', (): typeof stores => {
   const page: typeof stores.page = {
     subscribe(fn) {
+      const keys = getFakeApiKeys({ numKeys: 4 });
+
       return getStores({
         url: `http://localhost/chat/${fakeThreads[0].id}`,
         params: { thread_id: fakeThreads[0].id },
@@ -67,7 +69,8 @@ vi.mock('$app/stores', (): typeof stores => {
           threads: fakeThreads,
           assistants: fakeAssistants,
           assistant: undefined,
-          files: []
+          files: [],
+          keys
         }
       }).page.subscribe(fn);
     }

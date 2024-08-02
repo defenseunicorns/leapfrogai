@@ -31,16 +31,16 @@ test('it can navigate to the last visited thread with breadcrumbs', async ({ pag
   const urlParts = new URL(page.url()).pathname.split('/');
   const threadId = urlParts[urlParts.length - 1];
 
-  await page.getByLabel('Settings').click();
+  await page.getByTestId('header-settings-btn').click();
   await page.getByText('File Management').click();
-  await page.getByRole('link', { name: 'Chat' }).click();
+  await page.getByTestId('breadcrumbs').getByRole('link', { name: 'Chat' }).click();
   await page.waitForURL(`/chat/${threadId}`);
 });
 
 test('it can navigate to the file management page', async ({ page }) => {
   await loadChatPage(page);
 
-  await page.getByLabel('Settings').click();
+  await page.getByTestId('header-settings-btn').click();
   await page.getByText('File Management').click();
 
   await expect(page).toHaveTitle('LeapfrogAI - File Management');
@@ -132,8 +132,7 @@ test('it cancels the delete confirmation modal', async ({ page, openAIClient }) 
   await expect(page.getByText(`${filename} imported successfully`)).not.toBeVisible(); // wait for upload to finish
 
   const row = await getTableRow(page, filename);
-  expect(row).not.toBeNull();
-  await row!.getByRole('checkbox').check({ force: true });
+  await row.getByRole('checkbox').check();
 
   await initiateDeletion(page, filename);
 
@@ -171,8 +170,7 @@ test('shows an error toast when there is an error deleting a file', async ({
   await expect(page.getByText(`${filename} imported successfully`)).not.toBeVisible(); // wait for upload to finish
 
   const row = await getTableRow(page, filename);
-  expect(row).not.toBeNull();
-  await row!.getByRole('checkbox').check({ force: true });
+  await row.getByRole('checkbox').check();
 
   await initiateDeletion(page, filename);
   await confirmDeletion(page);
