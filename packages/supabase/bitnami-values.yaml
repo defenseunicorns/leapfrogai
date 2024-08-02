@@ -76,7 +76,7 @@ realtime:
   podLabels:
     sidecar.istio.io/inject: "false"
   extraEnvVars:
-    - name: ALLOC_ID
+    - name: FLY_ALLOC_ID
       value: "supabase-realtime"
     - name: FLY_APP_NAME
       value: "supabase-realtime"
