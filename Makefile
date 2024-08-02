@@ -73,7 +73,7 @@ docker-api: local-registry sdk-wheel
 	docker tag ghcr.io/defenseunicorns/leapfrogai/api-migrations:${LOCAL_VERSION} localhost:${REG_PORT}/defenseunicorns/leapfrogai/api-migrations:${LOCAL_VERSION}
 
 build-api: local-registry docker-api ## Build the leapfrogai_api container and Zarf package
-	## Push the images to the local registry (Zarf is super sl7ow if the image is only in the local daemon)
+	## Push the images to the local registry (Zarf is super slow if the image is only in the local daemon)
 	docker push ${DOCKER_FLAGS} localhost:${REG_PORT}/defenseunicorns/leapfrogai/leapfrogai-api:${LOCAL_VERSION}
 	docker push ${DOCKER_FLAGS} localhost:${REG_PORT}/defenseunicorns/leapfrogai/api-migrations:${LOCAL_VERSION}
 
