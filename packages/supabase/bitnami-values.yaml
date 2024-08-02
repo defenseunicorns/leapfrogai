@@ -99,7 +99,7 @@ realtime:
           secretKeyRef:
             name: supabase-postgresql
             key: postgres-password
-     command: ['sh', '-c', 'scripts/setup-db.sh']
+     command: ['sh', '-c', 'setup-db.sh']
 
 rest:
   enabled: ###ZARF_VAR_ENABLE_REST###
