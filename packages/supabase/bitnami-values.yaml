@@ -76,7 +76,8 @@ realtime:
   podLabels:
     sidecar.istio.io/inject: "false"
   extraConfig: |
-    APP_NAME: "supabase-realtime"
+    ALLOC_ID: "supabase-realtime"
+    FLY_APP_NAME: "supabase-realtime"
     DB_ENC_KEY: "testenckeychaangethisforsuresure"
     DNS_NODES: "''"
   initContainers:
