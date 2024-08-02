@@ -103,8 +103,8 @@ test('confirms any affected assistants then deletes multiple files', async ({
   await expect(page.getByText(`${filename2} imported successfully`)).toBeVisible();
   await expect(page.getByText(`${filename2} imported successfully`)).not.toBeVisible();
 
-  const row1 = await getTableRow(page, filename1);
-  const row2 = await getTableRow(page, filename2);
+  const row1 = await getTableRow(page, filename1, 'file-management-table');
+  const row2 = await getTableRow(page, filename2, 'file-management-table');
   expect(row1).not.toBeNull();
   expect(row2).not.toBeNull();
 
@@ -131,7 +131,7 @@ test('it cancels the delete confirmation modal', async ({ page, openAIClient }) 
   await expect(page.getByText(`${filename} imported successfully`)).toBeVisible();
   await expect(page.getByText(`${filename} imported successfully`)).not.toBeVisible(); // wait for upload to finish
 
-  const row = await getTableRow(page, filename);
+  const row = await getTableRow(page, filename, 'file-management-table');
   await row.getByRole('checkbox').check();
 
   await initiateDeletion(page, filename);
@@ -169,7 +169,7 @@ test('shows an error toast when there is an error deleting a file', async ({
   await expect(page.getByText(`${filename} imported successfully`)).toBeVisible();
   await expect(page.getByText(`${filename} imported successfully`)).not.toBeVisible(); // wait for upload to finish
 
-  const row = await getTableRow(page, filename);
+  const row = await getTableRow(page, filename, 'file-management-table');
   await row.getByRole('checkbox').check();
 
   await initiateDeletion(page, filename);
