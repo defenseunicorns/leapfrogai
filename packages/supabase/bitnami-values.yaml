@@ -75,19 +75,8 @@ realtime:
   resourcesPreset: "none"
   podLabels:
     sidecar.istio.io/inject: "false"
-  defaultConfig: |
-    DB_HOST: {{ include "supabase.database.host" . | quote }}
-    DB_PORT: {{ include "supabase.database.port" . | quote }}
-    DB_NAME: {{ include "supabase.database.name" . | quote }}
-    DB_SSL: {{ .Values.dbSSL | quote }}
-    PORT: {{ .Values.realtime.containerPorts.http | quote }}
+  extraConfig: |
     APP_NAME: "supabase-realtime"
-    ERL_AFLAGS: "-proto_dist inet_tcp"
-    REPLICATION_MODE: "RLS"
-    REPLICATION_POLL_INTERVAL: "100"
-    SECURE_CHANNELS: "true"
-    SLOT_NAME: "supabase_realtime_rls"
-    TEMPORARY_SLOT: "true"
     DB_ENC_KEY: "testenckeychaangethisforsuresure"
     DNS_NODES: "''"
   initContainers:
