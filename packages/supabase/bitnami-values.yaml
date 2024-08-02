@@ -86,7 +86,7 @@ realtime:
       value: "''"
   sidecars:
    - name: realtime-init
-     image: docker.io/busybox:stable
+     image: docker.io/curlimages/curl:latest
      imagePullPolicy: IfNotPresent
      env:
       - name: SUPABASE_SERVICE_KEY
@@ -104,7 +104,7 @@ realtime:
        - -c
        - >-
          echo "Waiting for supabase-realtime to be ready...";
-         until nc -z localhost 4000; do sleep 1; done;
+         until nc -z localhost 9999; do sleep 1; done;
          echo "supabase-realtime is ready. Sending curl request...";
          curl --insecure -L -X POST 
          -H "Content-Type: application/json" 
