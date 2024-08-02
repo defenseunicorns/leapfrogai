@@ -13,6 +13,5 @@ print(f"Downloading model from {REPO_ID} at revision {REVISION}...")
 snapshot_download(
     repo_id=REPO_ID,
     local_dir=".model",
-    local_dir_use_symlinks=False,
     revision=REVISION,
 )
