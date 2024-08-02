@@ -11,18 +11,20 @@
   };
 
   $: innerWidth = 0;
+
+  $: innerWidth < 1024 && uiStore.setOpenSidebar(false);
 </script>
 
 <svelte:window bind:innerWidth />
 
-{#if innerWidth < 1056}
+{#if innerWidth < 1024}
   <LFDrawer
     transitionType="fly"
     {transitionParams}
     activateClickOutside={false}
     placement="left"
     hidden={!$uiStore.openSidebar}
-    class="no-scrollbar top-header flex max-w-64 overflow-y-hidden"
+    class="no-scrollbar top-header flex max-w-64 overflow-y-hidden p-0"
     backdropCustomClass="top-header"
   >
     <LFSidebar />

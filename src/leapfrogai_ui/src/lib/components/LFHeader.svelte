@@ -29,7 +29,7 @@
     else activeDrawer = name;
   };
 
-  let drawerStyle = 'top-header text-white';
+  let drawerStyle = 'top-header text-white max z-max';
   let linkStyle = 'flex p-4 flex-col gap-3.5';
   let headerLinkStyle =
     'text-sm leading-5 font-semibold tracking-tight cursor-pointer bg-none text-inherit border-none p-0 outline-none hover:text-white';
@@ -46,7 +46,7 @@
         : '/chat'}
       data-testid="logo-link"
     >
-      {#if innerWidth < 1056}
+      {#if innerWidth < 1024}
         <Button
           outline={true}
           class="mr-2 !p-2"

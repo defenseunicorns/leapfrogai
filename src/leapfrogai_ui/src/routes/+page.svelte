@@ -59,6 +59,7 @@
     </form>
 
     <Button
+      data-testid="toggle-submit-btn"
       color="alternative"
       on:click={() => {
         isSignup = !isSignup;

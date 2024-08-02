@@ -17,7 +17,7 @@ setup('authenticate', async ({ page }) => {
       await page.getByTestId('submit-btn').click();
     } else {
       // uses local supabase test users, logs in directly with Supabase, no Keycloak
-      await page.getByText('Already have an account? Sign In').click();
+      await page.getByTestId('toggle-submit-btn').click();
       await emailField.click();
       await emailField.fill('user1@test.com');
       await passwordField.click();

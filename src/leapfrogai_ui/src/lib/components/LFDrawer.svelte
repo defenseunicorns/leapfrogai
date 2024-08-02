@@ -22,7 +22,7 @@ It allows adding custom styling to the backdrop (div with role "presentation")
   export let bgColor: string = 'bg-gray-900';
   export let bgOpacity: string = 'bg-opacity-75';
   export let placement: 'left' | 'right' | 'top' | 'bottom' = 'left';
-  export let id: string = 'drawer-example';
+  export let id: string = 'drawer';
   export let divClass: string = 'overflow-y-auto z-50 p-4 bg-white dark:bg-gray-800';
   export let backdropCustomClass: string = '';
   export let transitionParams: drawerTransitionParamTypes = {};

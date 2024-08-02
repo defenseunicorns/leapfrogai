@@ -64,6 +64,10 @@
     color: #78a9ff;
     cursor: pointer;
   }
+
+  .z-max {
+    z-index: 9999;
+  }
 }
 
 @layer components {
