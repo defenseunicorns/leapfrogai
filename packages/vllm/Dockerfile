@@ -5,7 +5,6 @@ FROM nvidia/cuda:12.2.2-devel-ubuntu22.04 AS builder
 
 # set SDK location
 # set the pyenv and Python versions
-# set model download args
 ARG SDK_DEST=src/leapfrogai_sdk/build \
     PYTHON_VERSION=3.11.6 \
     PYENV_GIT_TAG=v2.4.8
@@ -79,7 +78,7 @@ ARG SDK_DEST=src/leapfrogai_sdk/build
 
 # model-specific arguments
 ARG TRUST_REMOTE_CODE="True" \
-    MODEL_SOURCE="/data/.model/" \
+    MODEL_PATH="/data/.model/" \
     MAX_CONTEXT_LENGTH=32768 \
     STOP_TOKENS='["</s>"]' \
     PROMPT_FORMAT_CHAT_SYSTEM="<|im_start|>system\n{}<|im_end|>\n" \
@@ -111,7 +110,7 @@ COPY --from=builder --chown=nonroot:nonroot /home/nonroot/.pyenv/versions/3.11.6
 
 # load ARG values into env variables for pickup by confz
 ENV LAI_TRUST_REMOTE_CODE=${TRUST_REMOTE_CODE} \
-    LAI_MODEL_SOURCE=${MODEL_SOURCE} \
+    LAI_MODEL_PATH=${MODEL_PATH} \
     LAI_MAX_CONTEXT_LENGTH=${MAX_CONTEXT_LENGTH} \
     LAI_STOP_TOKENS=${STOP_TOKENS} \
     LAI_PROMPT_FORMAT_CHAT_SYSTEM=${PROMPT_FORMAT_CHAT_SYSTEM} \

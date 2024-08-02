@@ -91,7 +91,6 @@ def get_backend_configs():
         allow_all=True,
         prefix="LAI_",
         remap={
-            "model_source": "model.source",
             "max_context_length": "max_context_length",
             "stop_tokens": "stop_tokens",
             "prompt_format_chat_system": "prompt_format.chat.system",
@@ -106,7 +105,9 @@ def get_backend_configs():
     # Initialize an immutable config from env variables without stop_tokens list
     backend_configs: BackendConfig = BackendConfig()
     # Updates "processed_stop_tokens" without triggering Pydantic validation errors
-    backend_configs.model_copy(update={"stop_tokens": processed_stop_tokens})
+    backend_configs = backend_configs.model_copy(
+        update={"stop_tokens": processed_stop_tokens}
+    )
 
     return backend_configs
 
@@ -149,17 +150,17 @@ class Model:
         _thread.start()
 
         self.backend_config = get_backend_configs()
-        self.model = self.backend_config.model.source
         self.engine_args = AsyncEngineArgs(
-            model=self.model,
-            dtype="auto",
+            # Taken from the LFAI SDK general LLM configuration
+            max_seq_len_to_capture=self.backend_config.max_context_length,
+            max_model_len=self.backend_config.max_context_length,
+            # Taken from the vLLM-specific configuration
+            model=AppConfig().backend_options.model_path,
             engine_use_ray=AppConfig().backend_options.engine_use_ray,
             worker_use_ray=AppConfig().backend_options.worker_use_ray,
+            tensor_parallel_size=AppConfig().backend_options.tensor_parallel_size,
             gpu_memory_utilization=AppConfig().backend_options.gpu_memory_utilization,
             enforce_eager=AppConfig().backend_options.enforce_eager,
-            tensor_parallel_size=AppConfig().backend_options.tensor_parallel_size,
-            max_model_len=self.backend_config.max_context_length,
-            max_seq_len_to_capture=self.backend_config.max_context_length,
             trust_remote_code=AppConfig().backend_options.trust_remote_code,
         )
         self.engine = AsyncLLMEngine.from_engine_args(self.engine_args)
