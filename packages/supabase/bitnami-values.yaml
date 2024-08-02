@@ -103,6 +103,9 @@ realtime:
        - sh
        - -c
        - >-
+         echo "Waiting for supabase-realtime to be ready...";
+         until nc -z localhost 4000; do sleep 1; done;
+         echo "supabase-realtime is ready. Sending curl request...";
          curl --insecure -L -X POST 
          -H "Content-Type: application/json" 
          -H "Authorization: Bearer $SUPABASE_SERVICE_KEY" 
