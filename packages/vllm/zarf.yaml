@@ -53,6 +53,6 @@ components:
           # NOTE: This assumes python is installed and in $PATH and 'huggingface_hub[cli,hf_transfer]' has been installed
           - cmd: python src/model_download.py
             env:
-              - LAI_REPO_ID=justinthelaw/Hermes-2-Pro-Mistral-7B-4bit-32g
+              - LAI_REPO_ID=defenseunicorns/Hermes-2-Pro-Mistral-7B-4bit-32g
               - LAI_REVISION=main
               - LAI_HF_HUB_ENABLE_HF_TRANSFER=1

@@ -20,7 +20,7 @@ The following are additional assumptions for GPU inferencing:
 
 ### Model Selection
 
-The default model that comes with this backend in this repository's officially released images is a [4-bit quantization of the Phi-3-Mini-128k-Instruct model](https://huggingface.co/bsmit1659/Phi-3-mini-128k-instruct-0.2-awq).
+The default model that comes with this backend in this repository's officially released images is a [4-bit quantization of the Hermes-2-Pro-Mistral-7B model](defenseunicorns/Hermes-2-Pro-Mistral-7B-4bit-32g).
 
 You can optionally specify different models or quantization types using the following Docker build arguments:
 
@@ -31,6 +31,12 @@ You can optionally specify different models or quantization types using the foll
 - `--build-arg WORKER_USE_RAY="False"`: Distributed, multi-node inferencing mode for the worker(s)
 - `--build-arg GPU_MEMORY_UTILIZATION="0.99"`: Max memory utilization (fraction, out of 1.0) for the vLLM process
 - `--build-arg ENFORCE_EAGER="False"`: Disable CUDA graphs for faster token first-inferencing at the cost of more GPU memory (set to False for production)
+
+## Prompt Formats
+
+The pre-packaged model, defenseunicorns/Hermes-2-Pro-Mistral-7B-4bit-32g, contains special prompt templates for activating the function calling and JSON response modes. The default prompt template is the ChatML format.
+
+These are a result of its training data and process. Please refer to [this section of the Hugging Face model card](https://huggingface.co/defenseunicorns/Hermes-2-Pro-Mistral-7B-4bit-32g#prompt-format-for-function-calling) for more details.
 
 ## Zarf Package Deployment
 
