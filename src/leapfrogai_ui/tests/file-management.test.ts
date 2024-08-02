@@ -1,5 +1,5 @@
 import { expect, test } from './fixtures';
-import { getTableRow, getSimpleMathQuestion, loadChatPage } from './helpers/helpers';
+import { getSimpleMathQuestion, getTableRow, loadChatPage } from './helpers/helpers';
 import {
   confirmDeletion,
   createExcelFile,
@@ -105,11 +105,9 @@ test('confirms any affected assistants then deletes multiple files', async ({
 
   const row1 = await getTableRow(page, filename1);
   const row2 = await getTableRow(page, filename2);
-  expect(row1).not.toBeNull();
-  expect(row2).not.toBeNull();
 
-  await row1!.getByRole('checkbox').check({ force: true });
-  await row2!.getByRole('checkbox').check({ force: true });
+  await row1.getByRole('checkbox').check();
+  await row2.getByRole('checkbox').check();
   await initiateDeletion(page, `${filename1}, ${filename2}`);
   await confirmDeletion(page);
 

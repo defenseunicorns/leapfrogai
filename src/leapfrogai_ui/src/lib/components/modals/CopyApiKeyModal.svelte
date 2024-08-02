@@ -44,6 +44,6 @@
     </div>
   {/if}
   <div class="flex justify-end">
-    <Button on:click={handleClose} size="sm">Close</Button>
+    <Button data-testid="close-copy-api-key-modal" on:click={handleClose} size="sm">Close</Button>
   </div>
 </Modal>
