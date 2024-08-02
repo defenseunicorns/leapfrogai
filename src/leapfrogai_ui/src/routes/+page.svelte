@@ -1,7 +1,7 @@
 <script lang="ts">
   import logo from '$assets/LeapfrogAI.png';
+  import { Button, Input, Label } from 'flowbite-svelte';
   import { superForm } from 'sveltekit-superforms';
-  import { Button } from 'carbon-components-svelte';
   import { env } from '$env/dynamic/public';
 
   export let data;
@@ -24,32 +24,34 @@
   const { form, errors, enhance } = superForm(data.form);
 </script>
 
-<div class="login-container">
-  <div class="logo">
+<div class="flex w-full flex-col items-center gap-10 pt-3">
+  <div class="h-[72px] w-[252px]">
     <img alt="LeapfrogAI Logo" src={logo} class="logo" />
   </div>
   {#if env.PUBLIC_DISABLE_KEYCLOAK === 'true'}
     <form method="POST" action={isSignup ? '/auth?/signup' : '/auth?/login'} use:enhance>
-      <div class="form">
-        <label for="email"> Email </label>
-        <input
+      <div class="flex flex-col gap-2">
+        <Label for="email">Email</Label>
+        <Input
           id="email"
+          data-testid="email-input"
           name="email"
           type="email"
           bind:value={$form.email}
           placeholder="Your email address"
         />
 
-        <label for="password"> Password</label>
-        <input
+        <Label for="password">Password</Label>
+        <Input
           id="password"
+          data-testid="password-input"
           name="password"
           type="password"
           placeholder="Your password"
           bind:value={$form.password}
         />
 
-        <Button type="submit">{isSignup ? 'Sign Up' : 'Sign In'}</Button>
+        <Button data-testid="submit-btn" type="submit">{isSignup ? 'Sign Up' : 'Sign In'}</Button>
         {#if $errors.email}
           <span style="color: red">{$errors.email}</span>
         {/if}
@@ -57,32 +59,13 @@
     </form>
 
     <Button
-      kind="ghost"
+      data-testid="toggle-submit-btn"
+      color="alternative"
       on:click={() => {
         isSignup = !isSignup;
       }}>{isSignup ? 'Already have an account? Sign In' : 'Need an account? Sign Up'}</Button
     >
   {:else}
-    <Button on:click={signInWithKeycloak} kind="secondary">Log In with UDS SSO</Button>
+    <Button on:click={signInWithKeycloak}>Log In with UDS SSO</Button>
   {/if}
 </div>
-
-<style lang="scss">
-  .logo {
-    width: 252px;
-    height: 72px;
-  }
-  .login-container {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    gap: 1rem;
-    width: 100%;
-    padding-top: layout.$spacing-04;
-  }
-  .form {
-    display: flex;
-    flex-direction: column;
-    gap: 0.5rem;
-  }
-</style>

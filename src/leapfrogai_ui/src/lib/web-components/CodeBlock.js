@@ -50,6 +50,11 @@ export class CodeBlock extends LitElement {
         border-top-left-radius: 0.375rem;
         border-top-right-radius: 0.375rem;
       }
+      button {
+        display: flex;
+        justify-content: center;
+        align-items: center;
+      }
     `
   ];
 
@@ -94,28 +99,27 @@ export class CodeBlock extends LitElement {
           <span>${language}</span>
           <div class="centered-flexbox">
             <button
+              id="copy-btn"
               data-testid="copy-code-btn"
-              class="bx--btn bx--btn--tertiary bx--btn--sm "
               @click=${this.handleClick}
+              class="copy-btn-base dark"
             >
-              <div style="display: flex; width: 100%;">
-                <span>Copy</span>
-                <svg
-                  xmlns="http://www.w3.org/2000/svg"
-                  viewBox="0 0 32 32"
-                  fill="currentColor"
-                  preserveAspectRatio="xMidYMid meet"
-                  width="16"
-                  height="16"
-                  aria-hidden="true"
-                  class="bx--btn__icon"
-                >
-                  <path
-                    d="M28,10V28H10V10H28m0-2H10a2,2,0,0,0-2,2V28a2,2,0,0,0,2,2H28a2,2,0,0,0,2-2V10a2,2,0,0,0-2-2Z"
-                  ></path>
-                  <path d="M4,18H2V4A2,2,0,0,1,4,2H18V4H4Z"></path>
-                </svg>
-              </div>
+              <span>Copy</span>
+              <svg
+                aria-hidden="true"
+                xmlns="http://www.w3.org/2000/svg"
+                width="24"
+                height="24"
+                fill="none"
+                viewBox="0 0 24 24"
+              >
+                <path
+                  stroke="currentColor"
+                  stroke-linejoin="round"
+                  stroke-width="2"
+                  d="M9 8v3a1 1 0 0 1-1 1H5m11 4h2a1 1 0 0 0 1-1V5a1 1 0 0 0-1-1h-7a1 1 0 0 0-1 1v1m4 3v10a1 1 0 0 1-1 1H6a1 1 0 0 1-1-1v-7.13a1 1 0 0 1 .24-.65L7.7 8.35A1 1 0 0 1 8.46 8H13a1 1 0 0 1 1 1Z"
+                />
+              </svg>
             </button>
           </div>
         </div>

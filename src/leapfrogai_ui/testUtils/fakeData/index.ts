@@ -117,7 +117,7 @@ export const getFakeAssistant = (options: GetFakeAssistantOptions = {}): LFAssis
   return {
     id: faker.string.uuid(),
     ...assistantDefaults,
-    name: faker.person.fullName(),
+    name: faker.person.firstName(),
     description: faker.lorem.sentence(),
     instructions: faker.lorem.paragraph(),
     temperature: DEFAULT_ASSISTANT_TEMP,
@@ -152,7 +152,7 @@ export const fakeAssistants: LFAssistant[] = [getFakeAssistant(), getFakeAssista
 
 export const getFakeAssistantInput = (data_sources?: string[]): AssistantInput => {
   return {
-    name: faker.person.fullName(),
+    name: faker.person.firstName(),
     description: faker.lorem.sentence(),
     instructions: faker.lorem.paragraph(),
     temperature: DEFAULT_ASSISTANT_TEMP,

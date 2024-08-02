@@ -19,7 +19,7 @@ describe('Assistants management page', () => {
       }
     });
 
-    screen.getByTestId(`assistant-tile-${assistant1.name!}`);
-    screen.getByTestId(`assistant-tile-${assistant2.name!}`);
+    screen.getByTestId(`assistant-card-${assistant1.name!}`);
+    screen.getByTestId(`assistant-card-${assistant2.name!}`);
   });
 });

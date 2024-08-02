@@ -6,5 +6,4 @@
 </script>
 
 <LFHeader isUsingOpenAI={data.isUsingOpenAI} />
-
 <slot />

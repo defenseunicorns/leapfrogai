@@ -1,8 +1,6 @@
 <script lang="ts">
-  import { Breadcrumb, BreadcrumbItem, Content } from 'carbon-components-svelte';
-  import { page } from '$app/stores';
-  import { PoweredByDU } from '$components';
   import { threadsStore } from '$stores';
+  import LayoutWithBreadcrumb from '$components/LayoutWithBreadcrumb.svelte';
 
   const paths = [
     {
@@ -23,12 +21,6 @@
     }
   ];
 
-  $: isCurrentPage = (path: string) =>
-    $page.url.pathname === path ||
-    // Handle edit route with assistant id as path parameter
-    ($page.url.pathname.startsWith('/chat/assistants-management/edit/') &&
-      path === '/chat/assistants-management/edit');
-
   const getPath = (path: string) => {
     if (path === '/chat')
       return $threadsStore.lastVisitedThreadId
@@ -38,20 +30,4 @@
   };
 </script>
 
-<Content>
-  <Breadcrumb noTrailingSlash>
-    {#each paths as { path, name } (path)}
-      {#if $page.url.pathname.includes(path)}
-        <BreadcrumbItem
-          href={isCurrentPage(path) ? '' : getPath(path)}
-          isCurrentPage={isCurrentPage(path)}>{name}</BreadcrumbItem
-        >
-      {/if}
-    {/each}
-  </Breadcrumb>
-  <div class="lf-content-container">
-    <slot />
-
-    <PoweredByDU />
-  </div>
-</Content>
+<LayoutWithBreadcrumb {paths} {getPath}><slot /></LayoutWithBreadcrumb>

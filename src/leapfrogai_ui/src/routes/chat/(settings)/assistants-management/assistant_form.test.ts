@@ -33,7 +33,7 @@ describe('Assistant Form', () => {
     vi.restoreAllMocks();
   });
 
-  it('has a modal that navigates back to the management page', async () => {
+  it('has a cancel btn that navigates back to the management page', async () => {
     mockGetAssistants([]);
     mockGetFiles([]);
 
@@ -41,7 +41,7 @@ describe('Assistant Form', () => {
     const data = await newLoad();
     render(AssistantForm, { data });
 
-    const cancelBtn = screen.getAllByRole('button', { name: /cancel/i })[1];
+    const cancelBtn = screen.getByTestId('assistant-form-cancel-btn');
     await userEvent.click(cancelBtn);
 
     expect(goToSpy).toHaveBeenCalledWith('/chat/assistants-management');
@@ -64,7 +64,7 @@ describe('Assistant Form', () => {
     // @ts-expect-error: overcomplicated to mock out load function arguments and they are not used
     const data = await newLoad();
     render(AssistantForm, { data });
-    const descriptionField = screen.getByRole('textbox', { name: /description/i });
+    const descriptionField = screen.getByRole('textbox', { name: /tagline/i });
     await userEvent.type(descriptionField, 'a'.repeat(ASSISTANTS_DESCRIPTION_MAX_LENGTH + 1));
     expect(descriptionField).toHaveValue('a'.repeat(ASSISTANTS_DESCRIPTION_MAX_LENGTH));
   });

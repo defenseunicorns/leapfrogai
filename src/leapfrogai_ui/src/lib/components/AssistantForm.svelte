@@ -7,15 +7,17 @@
   import { superForm } from 'sveltekit-superforms';
   import { page } from '$app/stores';
   import { beforeNavigate, goto } from '$app/navigation';
-  import { Button, Modal, Slider, TextArea, TextInput } from 'carbon-components-svelte';
-  import AssistantAvatar from '$components/AssistantAvatar.svelte';
+  import { Button, Modal, P } from 'flowbite-svelte';
+  import Slider from '$components/Slider.svelte';
   import { yup } from 'sveltekit-superforms/adapters';
   import { filesStore, toastStore } from '$stores';
-  import InputTooltip from '$components/InputTooltip.svelte';
   import { assistantInputSchema, editAssistantInputSchema } from '$lib/schemas/assistants';
   import type { NavigationTarget } from '@sveltejs/kit';
   import { onMount } from 'svelte';
   import AssistantFileSelect from '$components/AssistantFileSelect.svelte';
+  import LFInput from '$components/LFInput.svelte';
+  import LFLabel from '$components/LFLabel.svelte';
+  import AssistantAvatar from '$components/AssistantAvatar.svelte';
 
   export let data;
 
@@ -53,8 +55,6 @@
   });
 
   let cancelModalOpen = false;
-  let files: File[] = [];
-  let selectedPictogramName = isEditMode ? $form.pictogram : 'default';
 
   let navigateTo: NavigationTarget;
   let leavePageConfirmed = false;
@@ -86,171 +86,110 @@
   });
 </script>
 
-<form method="POST" enctype="multipart/form-data" use:enhance class="assistant-form">
-  <div class="container">
-    <div class="inner-container">
-      <div class="top-row">
-        <div class="title">{`${isEditMode ? 'Edit' : 'New'} Assistant`}</div>
-        <AssistantAvatar bind:files bind:selectedPictogramName {form} />
-      </div>
-      <input type="hidden" name="id" value={$form.id} />
-      <TextInput
-        name="name"
-        autocomplete="off"
-        labelText="Name"
-        placeholder="Assistant name"
-        bind:value={$form.name}
-        maxlength={ASSISTANTS_NAME_MAX_LENGTH}
-        invalid={!!$errors.name}
-        invalidText={$errors.name?.toString()}
-      />
+<form method="POST" enctype="multipart/form-data" use:enhance class="w-1/2">
+  <div class="flex flex-col py-2">
+    <div class="flex items-center justify-between">
+      <h5 class="mb-4 text-xl font-medium text-gray-900 dark:text-white">
+        {`${isEditMode ? 'Edit' : 'New'} Assistant`}
+      </h5>
 
-      <InputTooltip
-        name="description"
-        labelText="Tagline"
-        tooltipText="Taglines display on assistant tiles"
-      />
+      <AssistantAvatar {form} />
+    </div>
+    <input type="hidden" name="id" value={$form.id} />
+    <LFInput
+      id="name"
+      name="name"
+      label="Name *"
+      placeholder="Assistant name"
+      autocomplete="off"
+      bind:value={$form.name}
+      maxlength={ASSISTANTS_NAME_MAX_LENGTH}
+      errorText={!!$errors.name && $errors.name.toString()}
+    />
 
-      <TextInput
-        name="description"
-        autocomplete="off"
-        placeholder="Here to help..."
-        labelText="Description"
-        hideLabel
-        bind:value={$form.description}
-        maxlength={ASSISTANTS_DESCRIPTION_MAX_LENGTH}
-        invalid={!!$errors.description}
-        invalidText={$errors.description?.toString()}
-      />
+    <LFInput
+      id="description"
+      name="description"
+      label="Tagline *"
+      placeholder="Here to help..."
+      autocomplete="off"
+      bind:value={$form.description}
+      maxlength={ASSISTANTS_DESCRIPTION_MAX_LENGTH}
+      tooltipText="Taglines display on assistant tiles"
+      errorText={!!$errors.description && $errors.description.toString()}
+    />
 
-      <InputTooltip
-        name="instructions"
-        labelText="Instructions"
-        tooltipText="Detailed instructions to guide your assistant's responses and behavior"
-      />
+    <LFInput
+      id="instructions"
+      name="instructions"
+      label="Instructions *"
+      placeholder="You'll act as..."
+      autocomplete="off"
+      textArea
+      bind:value={$form.instructions}
+      maxlength={ASSISTANTS_INSTRUCTIONS_MAX_LENGTH}
+      tooltipText="Detailed instructions to guide your assistant's responses and behavior"
+      errorText={!!$errors.instructions && $errors.instructions.toString()}
+    />
 
-      <TextArea
-        name="instructions"
-        autocomplete="off"
-        labelText="Instructions"
-        bind:value={$form.instructions}
-        rows={6}
-        placeholder="You'll act as..."
-        hideLabel
-        invalid={!!$errors.instructions}
-        invalidText={$errors.instructions?.toString()}
-        maxlength={ASSISTANTS_INSTRUCTIONS_MAX_LENGTH}
-      />
+    <Slider
+      id="temperature"
+      name="temperature"
+      label="Temperature"
+      bind:value={$form.temperature}
+      tooltipText="Adjust the slider to set the creativity level of your assistant's responses"
+      showThumb={false}
+    />
 
-      <InputTooltip
-        name="temperature"
-        labelText="Temperature"
-        tooltipText="Adjust the slider to set the creativity level of your assistant's responses"
-      />
-      <Slider
-        name="temperature"
-        bind:value={$form.temperature}
-        hideLabel
-        hideTextInput
-        fullWidth
-        min={0}
-        max={1}
-        step={0.1}
-        minLabel="Min"
-        maxLabel="Max"
-        invalid={!!$errors.temperature}
-      />
-
-      <!--Note - Data Sources is a placeholder and will be completed in a future story-->
-      <InputTooltip
-        name="data_sources"
-        labelText="Data Sources"
-        tooltipText="Specific files your assistant can search and reference"
-      />
+    <div class="mb-6">
+      <LFLabel
+        id="data_sources"
+        tooltipText="Specific files your assistant can search and reference">Data Sources</LFLabel
+      >
       <AssistantFileSelect filesForm={data.filesForm} />
-      <input
-        type="hidden"
-        name="vectorStoreId"
-        value={data?.assistant?.tool_resources?.file_search?.vector_store_ids[0] || undefined}
-      />
+    </div>
 
-      <div class="btns-container">
-        <Button
-          kind="secondary"
-          size="small"
-          on:click={() => {
-            bypassCancelWarning = true;
-            goto('/chat/assistants-management');
-          }}>Cancel</Button
-        >
+    <input
+      type="hidden"
+      name="vectorStoreId"
+      value={data?.assistant?.tool_resources?.file_search?.vector_store_ids[0] || undefined}
+    />
 
-        <Button
-          kind="primary"
-          size="small"
-          type="submit"
-          disabled={$submitting || $filesStore.uploading}>Save</Button
-        >
-        {#if $delayed}
-          <span>Processing, please wait...</span>
-        {/if}
-      </div>
+    <div>
+      <Button
+        data-testid="assistant-form-cancel-btn"
+        color="alternative"
+        on:click={() => {
+          bypassCancelWarning = true;
+          goto('/chat/assistants-management');
+        }}>Cancel</Button
+      >
+
+      <Button type="submit" disabled={$submitting || $filesStore.uploading}>Save</Button>
+      {#if $delayed}
+        <P class="inline text-gray-700 dark:text-gray-400">Processing, please wait...</P>
+      {/if}
     </div>
   </div>
 </form>
 
-<div class="cancel-modal">
-  <Modal
-    bind:open={cancelModalOpen}
-    preventCloseOnClickOutside
-    modalHeading="Unsaved Changes"
-    primaryButtonText="Leave this page"
-    secondaryButtonText="Stay on page"
-    on:click:button--secondary={() => (cancelModalOpen = false)}
-    on:submit={() => {
-      leavePageConfirmed = true;
-      if (navigateTo) goto(navigateTo.url.href);
-    }}
-    ><p>
-      You have unsaved changes. Do you want to leave this page? Unsaved changes will be deleted.
-    </p></Modal
+<Modal bind:open={cancelModalOpen} title="Unsaved Changes" color="primary"
+  ><P class="dark:text-gray-400"
+    >You have unsaved changes. Do you want to leave this page? Unsaved changes will be deleted.</P
   >
-</div>
+  <div class="flex justify-end gap-2">
+    <Button color="alternative" on:click={() => (cancelModalOpen = false)} size="sm"
+      >Stay on page</Button
+    >
+    <Button
+      color="red"
+      on:click={() => {
+        leavePageConfirmed = true;
+        if (navigateTo) goto(navigateTo.url.href);
+      }}
+      size="sm">Leave this page</Button
+    >
 
-<style lang="scss">
-  .assistant-form {
-    .container {
-      display: flex;
-      justify-content: center;
-    }
-    .inner-container {
-      display: flex;
-      flex-direction: column;
-      gap: 1.5rem;
-      width: 50%;
-      padding-top: 0.5rem;
-      padding-bottom: 0.5rem;
-    }
-    .top-row {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-    }
-
-    .title {
-      @include type.type-style('heading-05');
-    }
-
-    .cancel-modal {
-      :global(.bx--modal-container) {
-        position: absolute;
-        top: 25%;
-      }
-    }
-
-    .btns-container {
-      display: flex;
-      align-items: center;
-      gap: 0.2rem;
-    }
-  }
-</style>
+    <div class="flex justify-end gap-2"></div>
+  </div></Modal
+>
