@@ -56,9 +56,6 @@ variables:
 components:
   - name: supabase
     required: true
-    files:
-      - source: scripts/setup-db.sh
-        target: setup-db.sh
     charts:
       # This exists because the jwt token job fails to run in the main helm chart at the proper time due to its reliance on `helm.sh/hook: post-install`.
       # This annotation causes it to run at the end of the Supabase Zarf component.
