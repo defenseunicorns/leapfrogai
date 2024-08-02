@@ -132,8 +132,7 @@ test('it cancels the delete confirmation modal', async ({ page, openAIClient }) 
   await expect(page.getByText(`${filename} imported successfully`)).not.toBeVisible(); // wait for upload to finish
 
   const row = await getTableRow(page, filename);
-  expect(row).not.toBeNull();
-  await row!.getByRole('checkbox').check({ force: true });
+  await row.getByRole('checkbox').check();
 
   await initiateDeletion(page, filename);
 
@@ -171,8 +170,7 @@ test('shows an error toast when there is an error deleting a file', async ({
   await expect(page.getByText(`${filename} imported successfully`)).not.toBeVisible(); // wait for upload to finish
 
   const row = await getTableRow(page, filename);
-  expect(row).not.toBeNull();
-  await row!.getByRole('checkbox').check({ force: true });
+  await row.getByRole('checkbox').check();
 
   await initiateDeletion(page, filename);
   await confirmDeletion(page);

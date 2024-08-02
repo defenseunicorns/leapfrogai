@@ -1,10 +1,12 @@
 import { test as setup } from './fixtures';
 import * as OTPAuth from 'otpauth';
+import { delay } from 'msw';
 
 const authFile = 'playwright/.auth/user.json';
 
 setup('authenticate', async ({ page }) => {
   await page.goto('/'); // go to the home page
+  await delay(2000); // allow page to fully hydrate
   if (process.env.PUBLIC_DISABLE_KEYCLOAK === 'true') {
     // when running in Github CI, create a new account because we don't have seed migrations
     const emailField = page.getByTestId('email-input');

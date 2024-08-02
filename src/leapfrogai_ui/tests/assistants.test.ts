@@ -225,7 +225,7 @@ test('it DOES NOT confirm you want to navigate away if you click the cancel butt
 });
 
 test('it allows you to edit an assistant', async ({ page, openAIClient }) => {
-  // const pictogramName = 'Analytics';
+  const pictogramName = 'Analytics';
   const assistant1 = await createAssistantWithApi({ openAIClient });
   const newAssistantAttributes = getFakeAssistantInput();
 
@@ -237,10 +237,9 @@ test('it allows you to edit an assistant', async ({ page, openAIClient }) => {
   await page.getByLabel('tagline').fill(newAssistantAttributes.description);
   await page.getByPlaceholder("You'll act as...").fill(newAssistantAttributes.instructions);
 
-  // TODO - re-enable after avatar flowbite refactor
-  // await page.locator('.mini-avatar-container').click();
-  // await page.getByTestId(`pictogram-${pictogramName}`).click();
-  // await page.getByRole('dialog').getByRole('button', { name: 'Save' }).click();
+  await page.getByTestId('mini-avatar-container').click();
+  await page.getByTestId(`pictogram-${pictogramName}`).click();
+  await page.getByRole('dialog').getByRole('button', { name: 'Save' }).click();
 
   // Wait for modal save button to disappear if avatar modal was open
   const saveButtons = page.getByRole('button', { name: 'Save' });
