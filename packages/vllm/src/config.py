@@ -5,7 +5,7 @@ from pydantic import Field
 
 
 class ConfigOptions(BaseConfig):
-    model_path: int = Field(
+    model_path: str = Field(
         title="Model Files Location",
         description="Location of the model files to be loaded into the vLLM engine.",
         examples=["/data/.model"],
