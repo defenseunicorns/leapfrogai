@@ -34,6 +34,7 @@
         <Label for="email">Email</Label>
         <Input
           id="email"
+          data-testid="email-input"
           name="email"
           type="email"
           bind:value={$form.email}
@@ -43,13 +44,14 @@
         <Label for="password">Password</Label>
         <Input
           id="password"
+          data-testid="password-input"
           name="password"
           type="password"
           placeholder="Your password"
           bind:value={$form.password}
         />
 
-        <Button type="submit">{isSignup ? 'Sign Up' : 'Sign In'}</Button>
+        <Button data-testid="submit-btn" type="submit">{isSignup ? 'Sign Up' : 'Sign In'}</Button>
         {#if $errors.email}
           <span style="color: red">{$errors.email}</span>
         {/if}

@@ -7,14 +7,14 @@ setup('authenticate', async ({ page }) => {
   await page.goto('/'); // go to the home page
   if (process.env.PUBLIC_DISABLE_KEYCLOAK === 'true') {
     // when running in Github CI, create a new account because we don't have seed migrations
-    const emailField = page.getByLabel('email');
-    const passwordField = page.getByLabel('password');
+    const emailField = page.getByTestId('email-input');
+    const passwordField = page.getByTestId('password-input');
     if (process.env.TEST_ENV === 'CI') {
       await emailField.click();
       await emailField.fill('ci_user@test.com');
       await passwordField.click();
       await passwordField.fill('password123');
-      await page.getByRole('button', { name: 'Sign Up' }).click();
+      await page.getByTestId('submit-btn').click();
     } else {
       // uses local supabase test users, logs in directly with Supabase, no Keycloak
       await page.getByText('Already have an account? Sign In').click();
@@ -22,7 +22,7 @@ setup('authenticate', async ({ page }) => {
       await emailField.fill('user1@test.com');
       await passwordField.click();
       await passwordField.fill('password123');
-      await page.getByRole('button', { name: 'Sign In' }).click();
+      await page.getByTestId('submit-btn').click();
     }
   } else {
     // With Keycloak
