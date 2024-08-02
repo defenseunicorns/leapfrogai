@@ -10,6 +10,19 @@ constants:
   - name: IMAGE_VERSION
     value: "###ZARF_PKG_TMPL_IMAGE_VERSION###"
 
+variables:
+  - name: PVC_SIZE
+    description: Size of the PVC used for model storage.
+    default: "15Gi"
+    pattern: "^[0-9]+[a-zA-Z]+$"
+  - name: PVC_ACCESS_MODE
+    description: Access mode of the PVC used for model storage.
+    default: "ReadWriteOnce"
+    pattern: "^(ReadWriteOnce|ReadOnlyMany|ReadWriteMany)$"
+  - name: PVC_STORAGE_CLASS
+    description: Storage class of the PVC used for model storage.
+    default: "local-path"
+
 components:
   - name: vllm-model
     required: true
@@ -25,3 +38,22 @@ components:
           - "vllm-values.yaml"
     images:
       - ghcr.io/defenseunicorns/leapfrogai/vllm:###ZARF_PKG_TMPL_IMAGE_VERSION###
+      - cgr.dev/chainguard/bash:latest
+    dataInjections:
+      - source: .model/
+        target:
+          namespace: leapfrogai
+          selector: app=lfai-vllm
+          container: data-loader
+          path: /data/.model
+        compress: true
+    actions:
+      onCreate:
+        before:
+          # NOTE: This assumes python is installed and in $PATH and 'huggingface_hub[cli,hf_transfer]' has been installed
+          - cmd: python src/model_download.py
+            env:
+              - LAI_REPO_ID=TheBloke/Synthia-7B-v2.0-GPTQ
+              - LAI_REVISION=gptq-4bit-32g-actorder_True
+              - LAI_QUANTIZATION=gptq
+              - LAI_HF_HUB_ENABLE_HF_TRANSFER=1

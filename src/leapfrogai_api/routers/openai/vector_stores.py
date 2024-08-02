@@ -14,6 +14,7 @@ from leapfrogai_api.backend.types import (
     ListVectorStoresResponse,
     ModifyVectorStoreRequest,
 )
+from leapfrogai_api.data.crud_vector_content import CRUDVectorContent
 from leapfrogai_api.data.crud_vector_store import CRUDVectorStore, FilterVectorStore
 from leapfrogai_api.data.crud_vector_store_file import (
     CRUDVectorStoreFile,
@@ -180,8 +181,8 @@ async def delete_vector_store_file(
 ) -> VectorStoreFileDeleted:
     """Delete a file in a vector store."""
 
-    vector_store = IndexingService(db=session)
-    vectors_deleted = await vector_store.adelete_file(
+    vector_content = CRUDVectorContent(db=session)
+    vectors_deleted = await vector_content.delete_vectors(
         vector_store_id=vector_store_id, file_id=file_id
     )
 

@@ -7,19 +7,6 @@ ARG SDK_DEST=src/leapfrogai_sdk/build
 USER root
 WORKDIR /leapfrogai
 
-# download model
-RUN python -m pip install -U huggingface_hub[cli,hf_transfer]
-ARG REPO_ID=TheBloke/SynthIA-7B-v2.0-GGUF
-ARG FILENAME=synthia-7b-v2.0.Q4_K_M.gguf
-ARG REVISION=3f65d882253d1f15a113dabf473a7c02a004d2b5
-
-# NOTE: This is checking for a pre-downloaded model file in the local build dir before downloading the model from HuggingFace
-# TODO: Add checksum validation to verify the model in the local build-dir is the model we expect
-COPY packages/llama-cpp-python/scripts/model_download.py scripts/model_download.py
-RUN REPO_ID=${REPO_ID} FILENAME=${FILENAME} REVISION=${REVISION} python3.11 scripts/model_download.py
-RUN mv .model/*.gguf .model/model.gguf
-
-
 # create virtual environment for light-weight portability and minimal libraries
 RUN python3.11 -m venv .venv
 ENV PATH="/leapfrogai/.venv/bin:$PATH"
@@ -42,7 +29,6 @@ ENV PATH="/leapfrogai/.venv/bin:$PATH"
 WORKDIR /leapfrogai
 
 COPY --from=builder /leapfrogai/.venv/ /leapfrogai/.venv/
-COPY --from=builder /leapfrogai/.model/ /leapfrogai/.model/
 
 COPY packages/llama-cpp-python/main.py .
 COPY packages/llama-cpp-python/config.yaml .

@@ -38,6 +38,7 @@ To build and deploy just the VLLM Zarf package (from the root of the repository)
 > Deploy a [UDS cluster](/README.md#uds) if one isn't deployed already
 
 ```shell
+pip install 'huggingface_hub[cli,hf_transfer]'  # Used to download the model weights from huggingface
 make build-vllm LOCAL_VERSION=dev
 uds zarf package deploy packages/vllm/zarf-package-vllm-*-dev.tar.zst --confirm
 ```

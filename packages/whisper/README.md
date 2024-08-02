@@ -12,6 +12,8 @@ To build and deploy just the whisper Zarf package (from the root of the reposito
 > Deploy a [UDS cluster](/README.md#uds) if one isn't deployed already
 
 ```shell
+pip install 'ctranslate2'          # Used to download and convert the model weights
+pip install 'transformers[torch]'  # Used to download and convert the model weights
 make build-whisper LOCAL_VERSION=dev
 uds zarf package deploy packages/whisper/zarf-package-whisper-*-dev.tar.zst --confirm
 ```

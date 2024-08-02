@@ -1,0 +1,87 @@
+# End-to-end testing that deploys Supabase and the API, and deploy/tests llama-cpp-python, text-embeddings, and whisper
+
+name: e2e-text-embeddings
+on:
+  pull_request:
+    types:
+      - ready_for_review
+      - review_requested
+      - synchronize
+      - milestoned
+    paths:
+      # Catch-all
+      - "**"
+
+      # Ignore updates to the .github directory, unless it's this current file
+      - "!.github/**"
+      - ".github/workflows/e2e-text-embeddings.yaml"
+
+      # Ignore docs and website things
+      - "!**.md"
+      - "!docs/**"
+      - "!adr/**"
+      - "!website/**"
+      - "!netlify.toml"
+
+      # Ignore updates to generic github metadata files
+      - "!CODEOWNERS"
+      - "!.gitignore"
+      - "!LICENSE"
+
+      # Ignore local development files
+      - "!.pre-commit-config.yaml"
+
+      # Ignore non e2e tests changes
+      - "!tests/pytest/**"
+
+      # Ignore LFAI-UI source code changes
+      - "!src/leapfrogai_ui/**"
+
+      # Ignore changes to unrelated packages
+      - "!packages/k3d-gpu/**"
+      - "!packages/llama-cpp-python/**"
+      - "!packages/repeater/**"
+      - "!packages/ui/**"
+      - "!packages/vllm/**"
+      - "!packages/whisper/**"
+
+
+
+concurrency:
+  group: e2e-text-embeddings-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  e2e_text_embeddings:
+    runs-on: ai-ubuntu-big-boy-8-core
+    if: ${{ !github.event.pull_request.draft }}
+
+    steps:
+        - name: Checkout Repo
+          uses: actions/checkout@b4ffde65f46336ab88eb53be808477a3936bae11 # v4.1.1
+
+        - name: Setup Python
+          uses: ./.github/actions/python
+
+        - name: Setup UDS Cluster
+          uses: ./.github/actions/uds-cluster
+          with:
+            registry1Username: ${{ secrets.IRON_BANK_ROBOT_USERNAME }}
+            registry1Password: ${{ secrets.IRON_BANK_ROBOT_PASSWORD }}
+
+        - name: Setup LFAI-API and Supabase
+          uses: ./.github/actions/lfai-core
+
+        ##########
+        # text-embeddings
+        ##########
+        - name: Deploy text-embeddings
+          run: |
+            make build-text-embeddings LOCAL_VERSION=e2e-test
+            docker image prune -af
+            uds zarf package deploy packages/text-embeddings/zarf-package-text-embeddings-amd64-e2e-test.tar.zst -l=trace --confirm
+            rm packages/text-embeddings/zarf-package-text-embeddings-amd64-e2e-test.tar.zst
+
+        - name: Test text-embeddings
+          run: |
+            python -m pytest ./tests/e2e/test_text_embeddings.py -v
