@@ -111,7 +111,7 @@ realtime:
            "tenant": {
              "name": "supabase-realtime",
              "external_id": "supabase-realtime",
-             "jwt_secret": "testenckeychaangethisforsuresure",
+             "jwt_secret": "'"$DB_ENC_KEY"'",
              "extensions": [{
                "type": "postgres_cdc_rls",
                "settings": {
@@ -129,7 +129,7 @@ realtime:
              }]
            }
          }' 
-         https://supabase-kong.###ZARF_VAR_DOMAIN###/realtime/v1/api/tenants
+         https://supabase-kong.leapfrogai.svc.cluster.local/realtime/v1/api/tenants
 
 rest:
   enabled: ###ZARF_VAR_ENABLE_REST###
