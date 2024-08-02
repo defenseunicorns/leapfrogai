@@ -88,7 +88,18 @@ realtime:
    - name: realtime-init
      image: docker.io/bitnami/os-shell:12-debian-12-r19
      imagePullPolicy: Always
-     command: ['sh', '-c', 'echo "hello world"']
+     env:
+      - name: SUPABASE_SERVICE_KEY
+        valueFrom:
+          secretKeyRef:
+            name: '{{ include "supabase.jwt.secretName" . }}'
+            key: '{{ include "supabase.jwt.serviceSecretKey" . }}'
+      - name: POSTGRESQL_PASSWORD
+        valueFrom:
+          secretKeyRef:
+            name: supabase-postgresql
+            key: postgres-password
+     command: ['sh', '-c', 'scripts/setup-db.sh']
 
 rest:
   enabled: ###ZARF_VAR_ENABLE_REST###
