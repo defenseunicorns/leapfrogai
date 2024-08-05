@@ -11,13 +11,14 @@ const newMessage1 = getSimpleMathQuestion();
 const newMessage2 = getSimpleMathQuestion();
 const newMessage3 = getSimpleMathQuestion();
 
-// TODO - check all playwright tests passing, then submit PR to a new branch called flowbite-integration
 test('it can delete threads', async ({ page }) => {
   await loadChatPage(page);
 
   const threadLocator = page.getByRole('button', { name: newMessage1 });
 
   await sendMessage(page, newMessage1);
+  await waitForResponseToComplete(page);
+
   await clickToDeleteThread(page, newMessage1);
   await expect(threadLocator).toHaveCount(0);
 });

@@ -77,7 +77,7 @@ to a limit of maxRows. It can also show error text.
         return;
       }
 
-      const scrollHeight = ref.scrollHeight;
+      const scrollHeight = ref.scrollHeight + 2;
       const maxHeight = maxRows * 18; // Rows are 18px in height
       if (scrollHeight > maxHeight) {
         ref.style.height = `${maxHeight}px`;

@@ -14,7 +14,9 @@ test('it can import and exports threads', async ({ page }) => {
     mimeType: 'application/JSON',
     buffer: Buffer.from(threadStr)
   });
+  await expect(page.getByText('Importing...')).toBeVisible();
   await expect(page.getByText(thread.metadata.label)).toHaveCount(1);
+  await expect(page.getByText('Importing...')).not.toBeVisible();
 
   const downloadPromise = page.waitForEvent('download');
   await page.getByText('Export chat history').click();
