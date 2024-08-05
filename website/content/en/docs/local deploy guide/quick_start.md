@@ -86,9 +86,12 @@ uds deploy uds-bundle-leapfrogai-*.tar.zst --confirm
 In order to test the GPU deployment locally on K3d, use the following command when deploying UDS-Core:
 
 ```bash
+ make build-k3d-gpu # build the image
+ make create-uds-gpu-cluster # create a uds cluster equipped with the k3d-gpu image
+ make test-uds-gpu-cluster # deploy a test gpu pod to see if everything is working
+ 
  cd uds-bundles/latest/gpu/
  uds create .
- uds deploy k3d-core-slim-dev:0.25.0 --set K3D_EXTRA_ARGS="--gpus=all --image=ghcr.io/justinthelaw/k3d-gpu-support:v1.27.4-k3s1-cuda"     # be sure to check if a newer version exists
  uds deploy uds-bundle-leapfrogai-*.tar.zst --confirm
 ```
 
