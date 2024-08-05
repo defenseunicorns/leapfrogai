@@ -5,6 +5,7 @@
   import { BarsOutline, CloseOutline, CogOutline, UserCircleOutline } from 'flowbite-svelte-icons';
   import HeaderButton from '$components/HeaderButton.svelte';
   import { sineIn } from 'svelte/easing';
+  import { page } from '$app/stores';
 
   export let isUsingOpenAI: boolean;
 
@@ -34,6 +35,8 @@
   let headerLinkStyle =
     'text-sm leading-5 font-semibold tracking-tight cursor-pointer bg-none text-inherit border-none p-0 outline-none hover:text-white';
   $: innerWidth = 0;
+
+  $: console.log('page', $page.url);
 </script>
 
 <svelte:window bind:innerWidth />
@@ -46,7 +49,7 @@
         : '/chat'}
       data-testid="logo-link"
     >
-      {#if innerWidth < 1024}
+      {#if innerWidth < 1024 && $page.url.pathname === '/chat'}
         <Button
           outline={true}
           class="mr-2 !p-2"
