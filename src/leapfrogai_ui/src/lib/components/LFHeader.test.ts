@@ -5,32 +5,45 @@ import { threadsStore } from '$stores';
 import { getFakeThread } from '$testUtils/fakeData';
 
 describe('LFHeader', () => {
-  it('closes the other header actions when one is opened', async () => {
-    render(LFHeader, { isUsingOpenAI: false });
-    // both closed
-    expect(screen.queryByText('settings-drawer')).not.toBeInTheDocument();
-    expect(screen.queryByText('user-drawer')).not.toBeInTheDocument();
-
-    // open settings
-    await userEvent.click(screen.getByTestId('header-settings-btn'));
-    screen.getByTestId('settings-drawer');
-    expect(screen.queryByText('user-drawer')).not.toBeInTheDocument();
-
-    // open user
-    await userEvent.click(screen.getByTestId('header-user-btn'));
-    expect(screen.queryByText('settings-drawer')).not.toBeInTheDocument();
-    screen.getByTestId('user-drawer');
-  });
   it('has a link on the logo that navigates to the last visited thread id', async () => {
     const thread = getFakeThread();
     threadsStore.set({
       threads: [thread],
       lastVisitedThreadId: thread.id,
       selectedAssistantId: '',
-      sendingBlocked: false
+      sendingBlocked: false,
+      streamingMessage: null
     });
 
     render(LFHeader, { isUsingOpenAI: false });
     expect(screen.getByTestId('logo-link')).toHaveAttribute('href', `/chat/${thread.id}`);
+  });
+  it('has a settings btn dropdown with links to various pages', async () => {
+    render(LFHeader, { isUsingOpenAI: false });
+    await userEvent.click(screen.getByTestId('header-settings-btn'));
+
+    expect(screen.getByRole('link', { name: /assistants management/i })).toHaveAttribute(
+      'href',
+      '/chat/assistants-management'
+    );
+
+    expect(screen.getByRole('link', { name: /file management/i })).toHaveAttribute(
+      'href',
+      '/chat/file-management'
+    );
+
+    expect(screen.getByRole('link', { name: /api keys/i })).toHaveAttribute(
+      'href',
+      '/chat/api-keys'
+    );
+  });
+
+  it('has a profile btn dropdown with a logout btn', async () => {
+    render(LFHeader, { isUsingOpenAI: false });
+    await userEvent.click(screen.getByTestId('header-profile-btn'));
+
+    screen.getByRole('button', {
+      name: /log out/i
+    });
   });
 });
