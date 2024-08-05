@@ -41,7 +41,7 @@ LeapfrogAI deploys with certain default models. The following models were select
 | Backend          | CPU/GPU Support | Default Model                                                                |
 |------------------|-----------------|------------------------------------------------------------------------------|
 | llama-cpp-python | CPU             | [SynthIA-7B-v2.0-GGUF](https://huggingface.co/TheBloke/SynthIA-7B-v2.0-GGUF) |
-| vllm             | GPU             | [Synthia-7B-v2.0-GPTQ](https://huggingface.co/TheBloke/SynthIA-7B-v2.0-GPTQ) |
+| vllm             | GPU             | [Hermes-2-Pro-Mistral-7B-4bit-32g (GPTQ)](https://huggingface.co/defenseunicorns/Hermes-2-Pro-Mistral-7B-4bit-32g) |
 | text-embeddings  | CPU/GPU         | [Instructor-XL](https://huggingface.co/hkunlp/instructor-xl)                 |
 | whisper          | CPU/GPU         | [OpenAI whisper-base](https://huggingface.co/openai/whisper-base)            |
 

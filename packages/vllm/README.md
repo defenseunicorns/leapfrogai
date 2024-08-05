@@ -20,7 +20,7 @@ The following are additional assumptions for GPU inferencing:
 
 ### Model Selection
 
-The default model that comes with this backend in this repository's officially released images is a [4-bit quantization of the Hermes-2-Pro-Mistral-7B model](defenseunicorns/Hermes-2-Pro-Mistral-7B-4bit-32g).
+The default model that comes with this backend in this repository's officially released images is a [4-bit quantization of the Hermes-2-Pro-Mistral-7B model](https://huggingface.co/defenseunicorns/Hermes-2-Pro-Mistral-7B-4bit-32g).
 
 You can optionally specify different models or quantization types using the following Docker build arguments:
 

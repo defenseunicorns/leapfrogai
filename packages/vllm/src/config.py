@@ -53,9 +53,8 @@ class DownloadOptions(BaseConfig):
     repo_id: str = Field(
         description="The HuggingFace git repository ID",
         examples=[
-            "TheBloke/Synthia-7B-v2.0-GPTQ",
-            "migtissera/Synthia-MoE-v3-Mixtral-8x7B",
-            "microsoft/phi-2",
+            "defenseunicorns/Hermes-2-Pro-Mistral-7B-4bit-32g",
+            "justinthelaw/Phi-3-mini-128k-instruct-4bit-128g",
         ],
     )
     revision: str = Field(
