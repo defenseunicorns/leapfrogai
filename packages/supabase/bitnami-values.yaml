@@ -76,17 +76,15 @@ realtime:
   podLabels:
     sidecar.istio.io/inject: "false"
   extraEnvVars:
-    - name: FLY_ALLOC_ID
-      value: "supabase-realtime"
-    - name: FLY_APP_NAME
+    - name: APP_NAME
       value: "supabase-realtime"
     - name: DB_ENC_KEY
       value: "testenckeychaangethisforsuresure"
     - name: DNS_NODES
-      value: "''"
+      value: "supabase-realtime"
   sidecars:
    - name: realtime-init
-     image: docker.io/bitnami/os-shell:12-debian-12-r19
+     image: docker.io/bitnami/os-shell:12-debian-12-r27
      imagePullPolicy: IfNotPresent
      env:
       - name: SUPABASE_SERVICE_KEY
@@ -144,7 +142,7 @@ volumePermissions:
   resourcesPreset: "none"
 
 psqlImage:
-  tag: 15.1.1-debian-12-r69
+  tag: 15.6.1-debian-12-r2
 
 kong:
   enabled: ###ZARF_VAR_ENABLE_KONG###
@@ -209,7 +207,7 @@ kong:
 postgresql:
   enabled: ###ZARF_VAR_ENABLE_POSTGRES###
   image:
-    tag: 15.1.1-debian-12-r69
+    tag: 15.6.1-debian-12-r2
     debug: true
   primary:
     resourcesPreset: "none"
