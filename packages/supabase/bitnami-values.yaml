@@ -79,7 +79,7 @@ realtime:
     - name: APP_NAME
       value: "supabase-realtime"
     - name: DB_ENC_KEY
-      value: "testenckeychaangethisforsuresure"
+      value: "testenckeychange" # This needs to be exactly 16 characters
     - name: DNS_NODES
       value: "supabase-realtime"
   sidecars:
@@ -98,7 +98,7 @@ realtime:
             name: supabase-postgresql
             key: postgres-password
       - name: DB_ENC_KEY
-        value: "testenckeychaangethisforsuresure"
+        value: "testenckeychange" # This needs to be exactly 16 characters
      command:
        - sh
        - -c
