@@ -42,3 +42,20 @@ test('it can import and exports threads', async ({ page }) => {
   // We can't test full equality because the ids and insertedAt dates will be different
   expect(importedThreads).toBeDefined();
 });
+
+test('it displays an error toast and removes the Importing spinner on error when the threads are improperly formatted', async ({
+  page
+}) => {
+  const threadStr = JSON.stringify([{ bad: 'data' }]);
+
+  await loadChatPage(page);
+
+  await page.getByTestId('import-chat-history-input').setInputFiles({
+    name: 'upload.json',
+    mimeType: 'application/JSON',
+    buffer: Buffer.from(threadStr)
+  });
+
+  await expect(page.getByText('Importing...')).not.toBeVisible();
+  await expect(page.getByText('Threads are incorrectly formatted.')).toBeVisible();
+});
