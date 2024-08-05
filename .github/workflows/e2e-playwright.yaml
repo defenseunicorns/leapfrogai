@@ -15,6 +15,7 @@ on:
       # Ignore updates to the .github directory, unless it's this current file
       - "!.github/**"
       - ".github/workflows/e2e-playwright.yaml"
+      - ".github/actions/uds-cluster/action.yaml"
 
       # Ignore docs and website things
       - "!**.md"
