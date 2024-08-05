@@ -1,62 +1,93 @@
 <script lang="ts">
-  import { Edit, TrashCan } from 'carbon-icons-svelte';
-  import {
-    Button,
-    FileUploaderButton,
-    Modal,
-    RadioButton,
-    RadioButtonGroup
-  } from 'carbon-components-svelte';
   import Pictograms from '$components/Pictograms.svelte';
   import DynamicPictogram from '$components/DynamicPictogram.svelte';
   import { AVATAR_FILE_SIZE_ERROR_TEXT, MAX_AVATAR_SIZE, NO_FILE_ERROR_TEXT } from '$lib/constants';
+  import { Avatar, Button, Modal, P, TableSearch } from 'flowbite-svelte';
+  import { twMerge } from 'tailwind-merge';
+  import { EditOutline, TrashBinOutline } from 'flowbite-svelte-icons';
+  import Fuse, { type FuseResult, type IFuseOptions } from 'fuse.js';
+  import { iconMap } from '$constants/iconMap';
+  import LFRadio from '$components/LFRadio.svelte';
 
   export let form;
-  export let files: File[];
-  export let selectedPictogramName: string;
 
   let originalAvatar = $form.avatar;
-  let tempFiles: File[] = [];
-  let tempPictogram = selectedPictogramName || 'default';
+  let selectedPictogramName = $form.pictogram || 'default';
+  let tempPictogram = selectedPictogramName;
   let modalOpen = false;
   let selectedRadioButton: 'upload' | 'pictogram' = originalAvatar ? 'upload' : 'pictogram';
   let shouldValidate = false;
   let fileUploaderRef: HTMLInputElement;
   let errorMsg = '';
+  let searchText = '';
+  let searchResults: FuseResult<(keyof typeof iconMap)[]>[];
+  let filteredPictograms: (keyof typeof iconMap)[] = [];
   let skipCloseActions = false;
 
-  $: avatarToShow = tempFiles?.length > 0 ? URL.createObjectURL(tempFiles[0]) : $form.avatar;
-  $: fileNotUploaded = !tempFiles[0]; // if on upload tab, you must upload a file to enable save
-  $: fileTooBig = tempFiles[0]?.size > MAX_AVATAR_SIZE;
-  $: hideUploader = avatarToShow ? true : tempFiles.length > 0;
+  const pictogramNames = Object.keys(iconMap);
+  const options: IFuseOptions<unknown> = {
+    minMatchCharLength: 3,
+    shouldSort: false,
+    findAllMatches: true,
+    threshold: 0, // perfect matches only
+    ignoreLocation: true
+  };
 
-  const handleRemove = () => {
-    tempFiles = [];
+  $: fileNotUploaded = !$form.avatarFile; // if on upload tab, you must upload a file to enable save
+
+  $: avatarToShow = $form.avatarFile ? URL.createObjectURL($form.avatarFile) : $form.avatar;
+
+  $: fileTooBig = $form.avatarFile?.size > MAX_AVATAR_SIZE;
+  $: hideUploader = avatarToShow ? true : $form.avatarFile;
+
+  $: if (searchText) {
+    const fuse = new Fuse(pictogramNames, options);
+    searchResults = fuse.search(searchText);
+    filteredPictograms = searchResults.map(
+      (result) => result.item
+    ) as unknown as (keyof typeof iconMap)[];
+  }
+
+  const handleRemove = (e) => {
+    e.stopPropagation();
+    clearFileInput();
     $form.avatar = '';
-    tempPictogram = selectedPictogramName || 'default';
+    tempPictogram = selectedPictogramName;
     shouldValidate = false;
   };
 
-  const handleClose = () => {
+  const handleCancel = (e) => {
+    e.stopPropagation();
+
+    // clicking on save will trigger this function via on:close for modal
+    // if submitting, this block should not run, only when cancelling should it run
     if (!skipCloseActions) {
       shouldValidate = false;
       modalOpen = false;
       $form.avatar = originalAvatar;
       tempPictogram = selectedPictogramName; // reset to original pictogram
-      if (files?.length > 0) {
-        tempFiles = [...files]; // reset to original file
+      if ($form.avatar) {
+        $form.avatarFile = $form.avatar; // reset to original file
       } else {
-        tempFiles = [];
+        clearFileInput();
       }
+      fileUploaderRef.value = ''; // Reset the file input value to ensure input event detection
     }
     skipCloseActions = false;
   };
 
-  const handleChangeAvatar = () => {
+  const handleChangeAvatar = (e) => {
+    e.stopPropagation();
     fileUploaderRef.click(); // re-open upload dialog
   };
 
-  const handleSubmit = () => {
+  const clearFileInput = () => {
+    fileUploaderRef.value = '';
+    $form.avatarFile = null;
+  };
+
+  const handleSubmit = (e) => {
+    e.stopPropagation();
     skipCloseActions = true;
     shouldValidate = true;
 
@@ -69,186 +100,141 @@
         errorMsg = AVATAR_FILE_SIZE_ERROR_TEXT;
         return;
       }
-      files = [...tempFiles];
-      modalOpen = false;
-      shouldValidate = false;
     } else {
       // pictogram tab
-      selectedPictogramName = tempPictogram;
-      files = []; // remove saved avatar
-      tempFiles = [];
-      $form.avatar = '';
-
-      modalOpen = false;
-      shouldValidate = false;
+      selectedPictogramName = tempPictogram; // TODO - can we remove this line
+      $form.pictogram = tempPictogram;
+      $form.avatar = ''; // remove saved avatar
+      clearFileInput();
     }
+
+    modalOpen = false;
+    shouldValidate = false;
   };
 </script>
 
-<div class="container">
+<div>
   <button
-    class="mini-avatar-container remove-btn-style"
     tabindex="0"
     on:click|preventDefault={() => (modalOpen = true)}
     data-testid="mini-avatar-container"
   >
     {#if avatarToShow}
-      <div class="mini-avatar-image" style={`background-image: url(${avatarToShow});`} />
+      <Avatar src={avatarToShow} size="lg" />
     {:else}
-      <DynamicPictogram iconName={tempPictogram} width="32px" height="32px" />
+      <DynamicPictogram iconName={tempPictogram} size="md" class="text-white" />
     {/if}
   </button>
-
   <Modal
     bind:open={modalOpen}
-    preventCloseOnClickOutside
-    modalHeading="Avatar Image"
-    shouldSubmitOnEnter={false}
-    primaryButtonText="Save"
-    secondaryButtonText="Cancel"
-    on:close={handleClose}
-    on:click:button--secondary={handleClose}
-    on:submit={handleSubmit}
-    style="--modal-height:{tempPictogram === 'pictogram' ? '100%' : 'auto'};"
-    class="avatar-modal"
+    autoclose
+    title="Avatar Image"
+    on:close={handleCancel}
+    color="primary"
   >
-    <div class="avatar-modal">
-      <RadioButtonGroup bind:selected={selectedRadioButton}>
-        <RadioButton labelText="Pictogram" value="pictogram" />
-        <RadioButton labelText="Upload" value="upload" />
-      </RadioButtonGroup>
-      <span class:hidden={selectedRadioButton === 'upload'} style="height: 100%;">
-        <Pictograms bind:selectedPictogramName={tempPictogram} />
-      </span>
-
-      <div class="avatar-upload-container" class:hidden={selectedRadioButton === 'pictogram'}>
-        {#if avatarToShow}
-          <div class="avatar-container">
-            <div
-              data-testid="image-upload-avatar"
-              class="avatar-image"
-              style={`background-image: url(${avatarToShow});`}
+    <div id="parent-flexbox" class="flex h-full flex-col gap-4">
+      <div id="child-flexbox-header" class="p-2">
+        <div class="flex flex-col gap-2">
+          <div class="flex gap-2">
+            <LFRadio
+              data-testid="pictogram-radio-btn"
+              name="Pictogram"
+              checked={selectedRadioButton === 'pictogram'}
+              on:click={() => (selectedRadioButton = 'pictogram')}
+              class="dark:text-gray-400">Pictogram</LFRadio
+            >
+            <LFRadio
+              data-testid="upload-radio-btn"
+              name="Upload"
+              checked={selectedRadioButton === 'upload'}
+              on:click={() => (selectedRadioButton = 'upload')}
+              class="dark:text-gray-400">Upload</LFRadio
+            >
+          </div>
+          <div class={selectedRadioButton === 'upload' && 'hidden'}>
+            <TableSearch
+              placeholder="Search"
+              hoverable={true}
+              bind:inputValue={searchText}
+              innerDivClass="px-0"
+              divClass="relative overflow-x-auto"
             />
           </div>
-        {/if}
-
-        <div class="image-uploader" style={hideUploader ? 'display: none' : 'display: block'}>
-          <div class:bx--file--label={true}>Upload image</div>
-          <div class:bx--label-description={true}>Supported file types are .jpg and .png.</div>
-          <FileUploaderButton
-            bind:ref={fileUploaderRef}
-            bind:files={tempFiles}
-            name="avatarFile"
-            kind="tertiary"
-            labelText="Upload from computer"
-            accept={['.jpg', '.jpeg', '.png']}
+        </div>
+      </div>
+      <div id="child-flexbox-main" class="flex-1 overflow-y-auto p-2">
+        <div
+          id="pictograms"
+          class={twMerge(
+            selectedRadioButton === 'upload' && 'hidden',
+            'flex-1  flex-col overflow-y-auto'
+          )}
+        >
+          <Pictograms
+            pictograms={filteredPictograms.length > 0 ? filteredPictograms : pictogramNames}
+            bind:selectedPictogramName={tempPictogram}
           />
-          <input type="hidden" name="avatar" bind:value={$form.avatar} />
         </div>
 
-        {#if hideUploader}
-          <div class="edit-btns">
-            <Button size="small" kind="tertiary" icon={Edit} on:click={handleChangeAvatar}
-              >Change</Button
-            >
-            <Button size="small" kind="tertiary" icon={TrashCan} on:click={handleRemove}
-              >Remove</Button
-            >
-          </div>
-        {/if}
+        <div
+          id="upload-components"
+          class={twMerge('flex flex-col gap-2', selectedRadioButton === 'pictogram' && 'hidden')}
+        >
+          {#if avatarToShow}
+            <Avatar src={avatarToShow} size="xl" data-testid="image-upload-avatar" />
+          {/if}
 
-        {#if shouldValidate && (fileNotUploaded || fileTooBig)}
-          <div class="error-box">
-            <div>{errorMsg}</div>
+          <div class={twMerge('flex flex-col gap-2', hideUploader && 'hidden')}>
+            <P>Upload image</P>
+            <P size="sm" color="dark:text-gray-400">Supported file types are .jpg and .png.</P>
+            <Button
+              on:click={(e) => {
+                e.stopPropagation();
+                fileUploaderRef?.click();
+              }}
+              tabindex={0}
+              class="w-1/2"
+            >
+              Upload from computer
+            </Button>
+
+            <input type="hidden" name="avatar" bind:value={$form.avatar} />
           </div>
-        {/if}
+
+          {#if hideUploader}
+            <div>
+              <Button on:click={handleChangeAvatar}>Change <EditOutline /></Button>
+              <Button on:click={handleRemove}>Remove <TrashBinOutline /></Button>
+            </div>
+          {/if}
+
+          {#if shouldValidate && (fileNotUploaded || fileTooBig)}
+            <div class="error-box">
+              <div>{errorMsg}</div>
+            </div>
+          {/if}
+        </div>
       </div>
-    </div></Modal
-  >
+
+      <div id="child-flexbox-footer" class="flex justify-center">
+        <Button color="alternative" class="me-2" on:click={handleCancel}>Cancel</Button>
+        <Button on:click={handleSubmit}>Save</Button>
+      </div>
+    </div>
+  </Modal>
+  <!--    Important! These inputs must be outside of the modal or the image will be lost when the modal closes-->
+  <input
+    bind:this={fileUploaderRef}
+    on:input={(e) => {
+      const file = e.currentTarget.files[0];
+      $form.avatarFile = file ?? null;
+    }}
+    multiple={false}
+    type="file"
+    tabindex="-1"
+    accept={['.jpg', '.jpeg', '.png']}
+    name="avatarFile"
+    class="sr-only"
+  />
+  <input type="hidden" name="pictogram" value={selectedPictogramName} />
 </div>
-
-<style lang="scss">
-  .hidden {
-    display: none !important;
-  }
-
-  .container {
-    :global(.bx--modal-container) {
-      height: var(
-        --modal-height
-      ); // keeps height fixed when searching pictograms, but not that size for avatar upload
-      width: 80%;
-    }
-  }
-  .avatar-upload-container {
-    display: flex;
-    flex-direction: column;
-    gap: layout.$spacing-03;
-  }
-
-  .avatar-modal {
-    display: flex;
-    flex-direction: column;
-    gap: layout.$spacing-05;
-    height: calc(100% - 3rem); // 3 rem is default modal margin-bottom, prevents extra scrollbar
-  }
-
-  .mini-avatar-container {
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    width: 3rem;
-    height: 3rem;
-    border-radius: 50%;
-    background-color: themes.$layer-active-03;
-    transition: background-color 70ms ease;
-    &:hover {
-      background-color: themes.$layer-selected-hover-03;
-    }
-    .mini-avatar-image {
-      width: 100%;
-      height: 100%;
-      border-radius: 50%;
-      background-size: cover;
-      background-position: center;
-      background-repeat: no-repeat;
-    }
-  }
-
-  .avatar-container {
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    width: 12rem;
-    height: 12rem;
-    border-radius: 50%;
-    background-color: themes.$layer-active-03;
-    .avatar-image {
-      width: 100%;
-      height: 100%;
-      border-radius: 50%;
-      background-size: cover;
-      background-position: center;
-      background-repeat: no-repeat;
-    }
-  }
-
-  .image-uploader {
-    display: flex;
-    flex-direction: column;
-    gap: layout.$spacing-03;
-  }
-
-  .edit-btns {
-    display: flex;
-    gap: layout.$spacing-03;
-  }
-
-  .error-box {
-    border: 2px solid $red-30;
-    color: $red-30;
-    max-width: 20rem;
-    padding: layout.$spacing-02;
-    margin-top: layout.$spacing-05;
-  }
-</style>

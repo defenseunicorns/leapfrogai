@@ -3,8 +3,8 @@ import { expect, test } from './fixtures';
 test('it can log out', async ({ page }) => {
   await page.goto('/chat');
   await expect(page).toHaveTitle('LeapfrogAI - Chat');
-  await page.getByLabel('User').click();
-  await page.getByLabel('Log Out').click();
+  await page.getByTestId('header-user-btn').click();
+  await page.getByTestId('user-drawer').getByLabel('Log Out').click();
 
   await page.waitForURL('/');
 

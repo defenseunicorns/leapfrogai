@@ -31,16 +31,16 @@ test('it can navigate to the last visited thread with breadcrumbs', async ({ pag
   const urlParts = new URL(page.url()).pathname.split('/');
   const threadId = urlParts[urlParts.length - 1];
 
-  await page.getByLabel('Settings').click();
+  await page.getByTestId('header-settings-btn').click();
   await page.getByText('File Management').click();
-  await page.getByRole('link', { name: 'Chat' }).click();
+  await page.getByTestId('breadcrumbs').getByRole('link', { name: 'Chat' }).click();
   await page.waitForURL(`/chat/${threadId}`);
 });
 
 test('it can navigate to the file management page', async ({ page }) => {
   await loadChatPage(page);
 
-  await page.getByLabel('Settings').click();
+  await page.getByTestId('header-settings-btn').click();
   await page.getByText('File Management').click();
 
   await expect(page).toHaveTitle('LeapfrogAI - File Management');
@@ -103,8 +103,8 @@ test('confirms any affected assistants then deletes multiple files', async ({
   await expect(page.getByText(`${filename2} imported successfully`)).toBeVisible();
   await expect(page.getByText(`${filename2} imported successfully`)).not.toBeVisible();
 
-  const row1 = await getTableRow(page, filename1);
-  const row2 = await getTableRow(page, filename2);
+  const row1 = await getTableRow(page, filename1, 'file-management-table');
+  const row2 = await getTableRow(page, filename2, 'file-management-table');
   expect(row1).not.toBeNull();
   expect(row2).not.toBeNull();
 
@@ -131,9 +131,8 @@ test('it cancels the delete confirmation modal', async ({ page, openAIClient }) 
   await expect(page.getByText(`${filename} imported successfully`)).toBeVisible();
   await expect(page.getByText(`${filename} imported successfully`)).not.toBeVisible(); // wait for upload to finish
 
-  const row = await getTableRow(page, filename);
-  expect(row).not.toBeNull();
-  await row!.getByRole('checkbox').check({ force: true });
+  const row = await getTableRow(page, filename, 'file-management-table');
+  await row.getByRole('checkbox').check();
 
   await initiateDeletion(page, filename);
 
@@ -170,9 +169,8 @@ test('shows an error toast when there is an error deleting a file', async ({
   await expect(page.getByText(`${filename} imported successfully`)).toBeVisible();
   await expect(page.getByText(`${filename} imported successfully`)).not.toBeVisible(); // wait for upload to finish
 
-  const row = await getTableRow(page, filename);
-  expect(row).not.toBeNull();
-  await row!.getByRole('checkbox').check({ force: true });
+  const row = await getTableRow(page, filename, 'file-management-table');
+  await row.getByRole('checkbox').check();
 
   await initiateDeletion(page, filename);
   await confirmDeletion(page);

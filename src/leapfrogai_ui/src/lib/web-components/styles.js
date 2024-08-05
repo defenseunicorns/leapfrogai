@@ -110,67 +110,38 @@ Original One Dark Syntax theme from https://github.com/atom/one-dark-syntax
   }
 `;
 
-// Styles copied from carbon for use in CodeBlock web component
 export const buttonStyles = css`
-  .bx--btn {
-    font-size: 0.875rem;
-    font-weight: 400;
-    line-height: 1.28572;
-    letter-spacing: 0.16px;
-    position: relative;
+  .copy-btn-base {
     display: inline-flex;
-    max-width: 20rem;
-    min-height: 3rem;
-    flex-shrink: 0;
+    justify-content: center;
     align-items: center;
-    justify-content: space-between;
-    padding: calc(0.875rem - 3px) 63px calc(0.875rem - 3px) 15px;
-    margin: 0;
-    border-radius: 0;
+    border-radius: 0.5rem;
+    border: 1px solid #e5e7eb;
+    background-color: white;
+    padding: 0.25rem 0.5rem;
+    text-align: center;
+    font-size: 0.875rem;
+    line-height: 1.25rem;
+    font-weight: 500;
+    color: #111827;
     cursor: pointer;
-    outline: none;
-    text-align: left;
-    text-decoration: none;
-    transition:
-      background 70ms cubic-bezier(0, 0, 0.38, 0.9),
-      box-shadow 70ms cubic-bezier(0, 0, 0.38, 0.9),
-      border-color 70ms cubic-bezier(0, 0, 0.38, 0.9),
-      outline 70ms cubic-bezier(0, 0, 0.38, 0.9);
-    vertical-align: top;
   }
 
-  .bx--btn--tertiary {
-    border-width: 1px;
-    border-style: solid;
-    border-color: #fff;
-    background-color: #0000;
-    color: #fff;
+  .dark,
+  copy-btn-base {
+    background: transparent;
+    color: #f3f4f6;
+    border: 1px solid white;
   }
 
-  .bx--btn--tertiary:focus {
-    background-color: #fff;
-    color: #161616;
-    border-color: #fff;
-    box-shadow:
-      inset 0 0 0 1px #fff,
-      inset 0 0 0 2px #262626;
+  .copy-btn-base:hover {
+    color: #1d4ed8;
+    background-color: #f3f4f6;
   }
 
-  .bx--btn--tertiary:hover {
-    background-color: #f4f4f4;
-    color: #000000;
-  }
-
-  .bx--btn--sm {
-    min-height: 2rem;
-    padding: calc(0.375rem - 3px) 60px calc(0.375rem - 3px) 12px;
-  }
-
-  .bx--btn__icon {
-    position: absolute;
-    right: 1rem;
-    width: 1rem;
-    height: 1rem;
-    flex-shrink: 0;
+  .dark:hover {
+    background-color: #374151;
+    color: white;
+    border: 1px solid #4b5563;
   }
 `;

@@ -1,264 +1,251 @@
 <script lang="ts">
+  import { fade } from 'svelte/transition';
   import {
     Button,
-    DataTable,
-    Loading,
-    Toolbar,
-    ToolbarBatchActions,
-    ToolbarContent,
-    ToolbarSearch
-  } from 'carbon-components-svelte';
-  import { superForm } from 'sveltekit-superforms';
-  import { yup } from 'sveltekit-superforms/adapters';
-  import { formatDate } from '$helpers/dates';
-  import { Add, TrashCan } from 'carbon-icons-svelte';
-  import { toastStore } from '$stores';
-  import { newAPIKeySchema } from '$schemas/apiKey.js';
-  import { invalidate } from '$app/navigation';
-  import type { APIKeyRow } from '$lib/types/apiKeys';
+    Checkbox,
+    Heading,
+    Pagination,
+    Spinner,
+    TableBody,
+    TableBodyCell,
+    TableBodyRow,
+    TableHead,
+    TableHeadCell,
+    TableSearch
+  } from 'flowbite-svelte';
+  import { ArrowLeftOutline, ArrowRightOutline, PlusOutline } from 'flowbite-svelte-icons';
+  import { formatDate } from '$helpers/dates.js';
   import { formatKeyShort } from '$helpers/apiKeyHelpers';
-  import CreateApiKeyModal from '$components/modals/CreateApiKeyModal.svelte';
+  import type { APIKeyRow } from '$lib/types/apiKeys';
+  import type { PageServerData } from './$types';
+  import { filterTable } from '$lib/utils/tables';
+  import { tableStyles } from '$lib/styles/tables';
   import DeleteApiKeyModal from '$components/modals/DeleteApiKeyModal.svelte';
-  import SaveApiKeyModal from '$components/modals/CopyApiKeyModal.svelte';
+  import CreateApiKeyModal from '$components/modals/CreateApiKeyModal.svelte';
 
-  export let data;
+  export let data: PageServerData;
 
-  let selectedRowIds: string[] = [];
-  let filteredRowIds: string[] = [];
-  let modalOpen = false;
+  // TODO - data.keys not getting type inference - https://github.com/defenseunicorns/leapfrogai/issues/856
+  $: filteredItems =
+    searchTerm !== ''
+      ? filterTable(data.keys, FILTER_KEYS, searchTerm.toLowerCase())
+      : [...data.keys];
+  $: totalItems = filteredItems.length;
+  $: startRange = currentPosition + 1;
+  $: endRange = Math.min(currentPosition + itemsPerPage, totalItems);
+  $: editMode = selectedRowIds.length > 0;
+
+  const FILTER_KEYS: Array<keyof APIKeyRow> = ['name', 'api_key', 'created_at', 'expires_at'];
+  const { divClass, innerDivClass, searchClass, classInput, headerClass } = tableStyles;
+  const itemsPerPage = 10;
+  let pageItems;
+  let searchTerm = '';
+  let currentPosition = 0;
+  let createApiKeyModalOpen = false;
   let confirmDeleteModalOpen = false;
-  let copyKeyModalOpen = false;
+  let allItemsChecked = false;
+  let selectedRowIds: string[] = [];
   let deleting = false;
-  let selectedExpirationIndex = 1;
-  let selectedExpirationDate: number;
-  let createdKey: APIKeyRow | null = null;
 
-  // Set actual expiration date based on selected Switch
-  $: {
-    switch (selectedExpirationIndex) {
-      case 0: {
-        const sevenDays = new Date();
-        sevenDays.setDate(sevenDays.getDate() + 7);
-        selectedExpirationDate = Math.floor(sevenDays.getTime() / 1000);
-        break;
-      }
-      case 1: {
-        const thirtyDays = new Date();
-        thirtyDays.setDate(thirtyDays.getDate() + 30);
-        selectedExpirationDate = Math.floor(thirtyDays.getTime() / 1000);
-        break;
-      }
-      case 2: {
-        const sixtyDays = new Date();
-        sixtyDays.setDate(sixtyDays.getDate() + 60);
-        selectedExpirationDate = Math.floor(sixtyDays.getTime() / 1000);
-        break;
-      }
-      case 3: {
-        const ninetyDays = new Date();
-        ninetyDays.setDate(ninetyDays.getDate() + 90);
-        selectedExpirationDate = Math.floor(ninetyDays.getTime() / 1000);
-        break;
-      }
-      default: {
-        selectedExpirationDate = Math.floor(new Date().getTime() / 1000);
-        break;
-      }
+  /****** Pagination Handlers ******/
+  const next = () => {
+    if (currentPosition + itemsPerPage < filteredItems.length) {
+      currentPosition += itemsPerPage;
     }
-  }
-  $: active = selectedRowIds.length > 0;
-  $: keyNames = data.keys
-    ? data.keys
-        .map((key) => {
-          if (selectedRowIds.includes(key.id)) return key.name;
-        })
-        .filter((key) => key !== undefined)
-        .join(', ')
-    : '';
-
-  const handleError = () => {
-    modalOpen = false;
-    toastStore.addToast({
-      kind: 'error',
-      title: 'Creation Failed'
-    });
-    invalidate('lf:api-keys');
+  };
+  const previous = () => {
+    if (currentPosition - itemsPerPage >= 0) {
+      currentPosition -= itemsPerPage;
+    }
   };
 
-  const { form, errors, enhance, submit, reset } = superForm(data.form, {
-    invalidateAll: false,
-    validators: yup(newAPIKeySchema),
-    onError() {
-      handleError();
-    },
-    onResult({ result }) {
-      if (result.type === 'success') {
-        createdKey = result.data?.key;
-        modalOpen = false;
-        copyKeyModalOpen = true;
-        toastStore.addToast({
-          kind: 'success',
-          title: 'Created Successfully',
-          subtitle: `${result.data?.form.data.name} created successfully.`
-        });
-        invalidate('lf:api-keys');
-      }
-    }
-  });
+  /****** End Pagination Handlers ******/
 
-  const handleCancel = () => {
-    modalOpen = false;
-    reset();
-  };
+  /****** Sorting Handlers ******/
 
-  const handleDelete = async () => {
-    deleting = true;
-    const isMultiple = selectedRowIds.length > 1;
-    const res = await fetch('/api/api-keys/delete', {
-      body: JSON.stringify({ ids: selectedRowIds }),
-      method: 'DELETE'
-    });
-    confirmDeleteModalOpen = false;
-    selectedRowIds = [];
-    deleting = false;
-    if (res.ok) {
-      toastStore.addToast({
-        kind: 'success',
-        title: `${isMultiple ? 'Keys' : 'Key'} Deleted`
-      });
+  let sortKey = 'created_at'; // default sort key
+  let sortDirection = 1; // default sort direction (ascending)
+
+  // Define a function to sort the items
+  const sortTable = (key) => {
+    // If the same key is clicked, reverse the sort direction
+    if (sortKey === key) {
+      sortDirection = -sortDirection;
     } else {
-      toastStore.addToast({
-        kind: 'error',
-        title: `Error Deleting ${isMultiple ? 'Keys' : 'Key'}`
-      });
+      sortKey = key;
+      sortDirection = 1;
     }
-    await invalidate('lf:api-keys');
   };
 
-  const handleCancelConfirmDelete = () => {
-    confirmDeleteModalOpen = false;
+  // When search term changes, reset to first page
+  $: searchTerm, (currentPosition = 0);
+
+  // Sort page items based on the sort key and direction
+  $: {
+    const tempPageItems = filteredItems.slice(currentPosition, currentPosition + itemsPerPage);
+    const sorted = tempPageItems.sort((a, b) => {
+      const aVal = a[sortKey];
+      const bVal = b[sortKey];
+      if (aVal < bVal) {
+        return -sortDirection;
+      } else if (aVal > bVal) {
+        return sortDirection;
+      }
+      return 0;
+    });
+    pageItems = [...sorted];
+  }
+
+  /****** End Sorting Handlers ******/
+
+  const handleClose = () => {
+    editMode = false;
+    allItemsChecked = false;
     selectedRowIds = [];
-    active = false;
   };
 
-  const handleCloseCopyKeyModal = () => {
-    copyKeyModalOpen = false;
-    createdKey = null;
+  const handleEditItem = (id: string) => {
+    const index = selectedRowIds.indexOf(id);
+    if (index > -1) {
+      selectedRowIds = selectedRowIds.toSpliced(index, 1);
+    } else {
+      selectedRowIds = [...selectedRowIds, id];
+    }
+  };
+
+  const checkAllItems = () => {
+    if (allItemsChecked) {
+      selectedRowIds = [];
+    } else {
+      selectedRowIds = filteredItems.map((item) => item.id);
+    }
   };
 </script>
 
-<div class="container">
-  <div class="centered-spaced-container">
-    <div class="title">API Keys</div>
-  </div>
-  <form method="POST" enctype="multipart/form-data" use:enhance>
-    <DataTable
-      bind:selectedRowIds
-      headers={[
-        { key: 'name', value: 'Name', display: (name) => name || '' },
-        { key: 'api_key', value: 'Secret Keys', display: (key) => formatKeyShort(key) },
-        {
-          key: 'created_at',
-          value: 'Created',
-          display: (created_at) => formatDate(new Date(created_at))
-        },
-        {
-          key: 'expires_at',
-          value: 'Expires',
-          display: (created_at) => formatDate(new Date(created_at))
-        },
-        { key: 'permissions', value: 'Permissions', display: (permissions) => permissions || '' }
-      ]}
-      rows={data.keys || []}
-      batchSelection={true}
-      sortable
-    >
-      <Toolbar>
-        <ToolbarBatchActions
-          bind:active
-          on:cancel={(e) => {
-            e.preventDefault();
-            active = false;
-            selectedRowIds = [];
-          }}
-        >
-          {#if deleting}
-            <div class="deleting">
-              <Loading withOverlay={false} small data-testid="delete-pending" />
-            </div>
-          {:else}
-            <Button
-              icon={TrashCan}
-              on:click={() => (confirmDeleteModalOpen = true)}
-              disabled={selectedRowIds.length === 0}>Delete</Button
-            >
-          {/if}</ToolbarBatchActions
-        >
-        <ToolbarContent>
-          <ToolbarSearch
-            bind:filteredRowIds
-            shouldFilterRows={(row, value) => {
-              // filter for name and date
-              const formattedCreatedAtDate = formatDate(new Date(row.created_at)).toLowerCase();
-              const formattedExpiresAtDate = formatDate(new Date(row.expires_at)).toLowerCase();
-              return (
-                row.name?.toLowerCase().includes(value.toString().toLowerCase()) ||
-                row.api_key.toLowerCase().includes(value.toString().toLowerCase()) ||
-                formattedCreatedAtDate.includes(value.toString().toLowerCase()) ||
-                formattedExpiresAtDate.includes(value.toString().toLowerCase()) ||
-                row.permissions?.toLowerCase().includes(value.toString().toLowerCase())
-              );
-            }}
-          />
-          <Button
-            icon={Add}
-            on:click={() => {
-              modalOpen = true;
-            }}>Create new</Button
-          >
-        </ToolbarContent>
-      </Toolbar>
-    </DataTable>
-    <CreateApiKeyModal
-      {modalOpen}
-      {handleCancel}
-      {submit}
-      bind:name={$form.name}
-      bind:selectedExpirationIndex
-      bind:selectedExpirationDate
-      invalidText={$errors.name?.toString()}
-    />
-  </form>
+<div class="w-3/4 bg-gray-50 p-3 dark:bg-gray-900">
+  <Heading tag="h3" class="mb-4">API Keys</Heading>
+  <TableSearch
+    data-testid="api-keys-table"
+    placeholder="Search"
+    hoverable={true}
+    bind:inputValue={searchTerm}
+    {divClass}
+    {innerDivClass}
+    {searchClass}
+    {classInput}
+  >
+    <div slot="header" class={headerClass}>
+      <!-- Button with color="alternative" adds two pixels to btn height, border-box does not prevent this. h-[42px] prevents slight screen jump-->
+      <div class="h-[42px]">
+        {#if editMode}
+          <div in:fade={{ duration: 150 }} class="flex items-center gap-2">
+            {#if deleting}
+              <Button color="red" disabled>
+                <Spinner class="me-3" size="4" color="white" />Deleting...
+              </Button>
+            {:else}
+              <Button color="red" on:click={() => (confirmDeleteModalOpen = true)}>Delete</Button>
+            {/if}
 
-  <DeleteApiKeyModal
-    {confirmDeleteModalOpen}
-    {keyNames}
-    {deleting}
-    {handleCancelConfirmDelete}
-    {handleDelete}
-  />
-  <SaveApiKeyModal {copyKeyModalOpen} {handleCloseCopyKeyModal} {createdKey} />
+            <Button color="alternative" on:click={handleClose}>Cancel</Button>
+          </div>
+        {:else}
+          <div in:fade={{ duration: 150 }}>
+            <Button on:click={() => (createApiKeyModalOpen = true)} aria-label="create new">
+              <PlusOutline class="mr-2 h-3.5 w-3.5" />Create new
+            </Button>
+          </div>
+        {/if}
+      </div>
+    </div>
+    <TableHead>
+      <TableHeadCell class="w-0 !p-4">
+        <Checkbox
+          data-testid="select-all-rows-checkbox"
+          on:click={checkAllItems}
+          bind:checked={allItemsChecked}
+          aria-label="select all rows"
+        />
+      </TableHeadCell>
+
+      <TableHeadCell
+        on:click={() => sortTable('name')}
+        padding="px-4 py-3"
+        scope="col"
+        class="cursor-pointer">Name</TableHeadCell
+      >
+      <TableHeadCell
+        on:click={() => sortTable('api_key')}
+        padding="px-4 py-3"
+        scope="col"
+        class="cursor-pointer">Secret Keys</TableHeadCell
+      >
+      <TableHeadCell
+        on:click={() => sortTable('created_at')}
+        padding="px-4 py-3"
+        scope="col"
+        class="cursor-pointer">Created</TableHeadCell
+      >
+      <TableHeadCell
+        on:click={() => sortTable('expires_at')}
+        padding="px-4 py-3"
+        scope="col"
+        class="cursor-pointer">Expires</TableHeadCell
+      >
+    </TableHead>
+    <TableBody>
+      {#each pageItems as item (item.id)}
+        <TableBodyRow>
+          <TableHeadCell class="!p-4">
+            <Checkbox
+              on:click={() => handleEditItem(item.id)}
+              checked={selectedRowIds.includes(item.id)}
+            />
+          </TableHeadCell>
+
+          <TableBodyCell tdClass="px-4 py-3">{item.name}</TableBodyCell>
+          <TableBodyCell tdClass="px-4 py-3">{formatKeyShort(item.api_key)}</TableBodyCell>
+          <TableBodyCell tdClass="px-4 py-3">{formatDate(new Date(item.created_at))}</TableBodyCell>
+          <TableBodyCell tdClass="px-4 py-3">{formatDate(new Date(item.expires_at))}</TableBodyCell>
+        </TableBodyRow>
+      {/each}
+    </TableBody>
+  </TableSearch>
+  <div class="mt-2 flex items-center justify-between gap-2">
+    <div class="text-sm text-gray-700 dark:text-gray-400">
+      {#if endRange === 0}
+        Showing <span class="font-semibold text-gray-900 dark:text-white">0</span> Entries
+      {:else}
+        Showing <span class="font-semibold text-gray-900 dark:text-white"
+          >{startRange}-{endRange}</span
+        >
+        of
+        <span class="font-semibold text-gray-900 dark:text-white">{totalItems}</span>
+        Entries
+      {/if}
+    </div>
+
+    <Pagination table on:previous={previous} on:next={next}>
+      <div slot="prev" class="flex items-center gap-2 text-white">
+        <ArrowLeftOutline class="me-2 h-3.5 w-3.5" />
+        Prev
+      </div>
+      <div slot="next" class="flex items-center gap-2 text-white">
+        Next
+        <ArrowRightOutline class="ms-2 h-6 w-6" />
+      </div>
+    </Pagination>
+  </div>
 </div>
 
-<style lang="scss">
-  .container {
-    display: flex;
-    flex-direction: column;
-    gap: 1rem;
-    padding: 0 12rem 0 12rem;
-  }
+<DeleteApiKeyModal
+  bind:confirmDeleteModalOpen
+  {selectedRowIds}
+  bind:deleting
+  on:delete={() => {
+    confirmDeleteModalOpen = false;
+    handleClose();
+  }}
+/>
 
-  .centered-spaced-container {
-    display: flex;
-    gap: layout.$spacing-06;
-    align-items: center;
-  }
-
-  .title {
-    @include type.type-style('heading-05');
-  }
-
-  .deleting {
-    margin-right: layout.$spacing-05;
-  }
-</style>
+<CreateApiKeyModal form={data.form} bind:createApiKeyModalOpen />

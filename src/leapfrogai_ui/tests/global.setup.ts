@@ -1,28 +1,36 @@
 import { test as setup } from './fixtures';
 import * as OTPAuth from 'otpauth';
+import { delay } from 'msw';
 
 const authFile = 'playwright/.auth/user.json';
 
 setup('authenticate', async ({ page }) => {
   await page.goto('/'); // go to the home page
+  await delay(2000); // allow page to fully hydrate
   if (process.env.PUBLIC_DISABLE_KEYCLOAK === 'true') {
     // when running in Github CI, create a new account because we don't have seed migrations
-    const emailField = page.getByLabel('email');
-    const passwordField = page.getByLabel('password');
+    const emailField = page.getByTestId('email-input');
+    const passwordField = page.getByTestId('password-input');
     if (process.env.TEST_ENV === 'CI') {
       await emailField.click();
       await emailField.fill('ci_user@test.com');
       await passwordField.click();
       await passwordField.fill('password123');
-      await page.getByRole('button', { name: 'Sign Up' }).click();
+
+      const emailText = await emailField.innerText();
+      const passwordText = await passwordField.innerText();
+      if (emailText !== 'ci_user@test.com') await emailField.fill('ci_user@test.com');
+      if (passwordText !== 'password123') await passwordField.fill('password123');
+
+      await page.getByTestId('submit-btn').click();
     } else {
       // uses local supabase test users, logs in directly with Supabase, no Keycloak
-      await page.getByText('Already have an account? Sign In').click();
+      await page.getByTestId('toggle-submit-btn').click();
       await emailField.click();
       await emailField.fill('user1@test.com');
       await passwordField.click();
       await passwordField.fill('password123');
-      await page.getByRole('button', { name: 'Sign In' }).click();
+      await page.getByTestId('submit-btn').click();
     }
   } else {
     // With Keycloak

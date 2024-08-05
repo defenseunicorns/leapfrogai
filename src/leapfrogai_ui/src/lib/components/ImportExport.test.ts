@@ -36,7 +36,8 @@ describe('Import and Export chat history', () => {
     expect(toastSpy).toHaveBeenNthCalledWith(2, {
       kind: 'error',
       title: 'Error',
-      subtitle: `Threads are incorrectly formatted.`
+      subtitle: `Threads are incorrectly formatted.`,
+      timeout: 5000
     });
   });
 

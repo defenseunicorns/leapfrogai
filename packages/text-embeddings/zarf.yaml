@@ -41,7 +41,7 @@ components:
         localPath: chart
         releaseName: text-embeddings-model
         # x-release-please-start-version
-        version: 0.9.2
+        version: 0.10.0
         # x-release-please-end
         valuesFiles:
           - "embedding-values.yaml"

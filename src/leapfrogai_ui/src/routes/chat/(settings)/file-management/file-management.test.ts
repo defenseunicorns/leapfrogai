@@ -1,4 +1,4 @@
-import { fireEvent, render, screen, waitFor } from '@testing-library/svelte';
+import { fireEvent, render, screen, within } from '@testing-library/svelte';
 import FileManagementPage from './+page.svelte';
 import { getFakeAssistant, getFakeFiles, getFakeSession } from '$testUtils/fakeData';
 import userEvent from '@testing-library/user-event';
@@ -10,7 +10,7 @@ import {
   mockDeleteFileWithDelay,
   mockGetFiles
 } from '$lib/mocks/file-mocks';
-import { vi } from 'vitest';
+import { beforeEach, vi } from 'vitest';
 import { filesStore, toastStore } from '$stores';
 import { convertFileObjectToFileRows } from '$helpers/fileHelpers';
 import { superValidate } from 'sveltekit-superforms';
@@ -23,6 +23,7 @@ import { tick } from 'svelte';
 describe('file management', () => {
   const files = getFakeFiles();
   let form: FilesForm;
+  let searchbox: HTMLElement;
 
   beforeEach(async () => {
     const data = await load();
@@ -40,6 +41,9 @@ describe('file management', () => {
         supabase: {} as unknown as SupabaseClient
       }
     });
+    searchbox = screen.getByRole('textbox', {
+      name: /search/i
+    });
   });
   it('lists all the files', async () => {
     mockGetFiles(files);
@@ -52,7 +56,7 @@ describe('file management', () => {
     mockGetFiles(files);
 
     expect(screen.getByText(files[1].filename)).toBeInTheDocument();
-    await userEvent.type(screen.getByRole('searchbox'), files[0].filename);
+    await userEvent.type(searchbox, files[0].filename);
     expect(screen.queryByText(files[1].filename)).not.toBeInTheDocument();
     expect(screen.getByText(files[0].filename)).toBeInTheDocument();
   });
@@ -73,10 +77,7 @@ describe('file management', () => {
     mockGetFiles([file1, file2]);
 
     expect(screen.getByText(file2.filename)).toBeInTheDocument();
-    await userEvent.type(
-      screen.getByRole('searchbox'),
-      formatDate(new Date(file1.created_at * 1000))
-    );
+    await userEvent.type(searchbox, formatDate(new Date(file1.created_at * 1000)));
     expect(screen.queryByText(file2.filename)).not.toBeInTheDocument();
     expect(screen.getByText(file1.filename)).toBeInTheDocument();
   });
@@ -97,24 +98,25 @@ describe('file management', () => {
     expect(screen.getByText(files[0].filename)).toBeInTheDocument();
     expect(screen.getByText(files[1].filename)).toBeInTheDocument();
 
-    const deleteBtns = screen.getAllByRole('button', { name: /delete/i });
+    const deleteBtn = screen.getByRole('button', { name: /delete/i });
 
-    await userEvent.click(deleteBtns[0]);
+    await userEvent.click(deleteBtn);
 
     // Running deletion check
+    const modal = screen.getByTestId('delete-files-modal');
+    const confirmDeleteBtn = within(modal).getByRole('button', { name: /delete/i });
     expect(screen.getByText('Checking for any assistants affected by deletion...'));
-    expect(deleteBtns[1]).toBeDisabled();
-    await waitFor(() => expect(deleteBtns[1]).not.toBeDisabled());
+    expect(confirmDeleteBtn).toBeDisabled();
 
     // Deletion check completed
-    screen.getByText(/are you sure you want to delete \?/i);
+    await screen.findByText(/are you sure you want to delete \?/i);
 
     // Affected assistants displayed
     expect(screen.queryByText(assistant1.name!));
     expect(screen.queryByText(assistant2.name!));
 
-    await waitFor(() => expect(deleteBtns[1]).not.toBeDisabled());
-    await userEvent.click(deleteBtns[1]);
+    expect(confirmDeleteBtn).not.toBeDisabled();
+    await userEvent.click(confirmDeleteBtn);
 
     expect(toastSpy).toHaveBeenCalledWith({
       kind: 'success',
@@ -122,35 +124,30 @@ describe('file management', () => {
     });
   });
 
-  it('disables the delete button when there are no rows selected', async () => {
-    // Note - the delete button is hidden when there are no rows selected, but still on the page so it needs to be
-    // disabled
+  it('replaces the delete button with a disabled loading spinner button while deleting', async () => {
     mockGetFiles(files);
-
-    const deleteBtn = screen.getAllByRole('button', { name: /delete/i })[0];
-    expect(deleteBtn).toBeDisabled();
-  });
-  it('replaces the delete button with a loading spinner while deleting', async () => {
     mockDeleteCheck([]);
     mockDeleteFileWithDelay();
-    mockGetFiles(files);
 
-    const deleteBtns = screen.getAllByRole('button', { name: /delete/i });
-
-    const checkboxes = screen.getAllByRole('checkbox');
-
-    await fireEvent.click(checkboxes[1]); // select file
-    expect(screen.queryByTestId('delete-pending')).not.toBeInTheDocument(); // no loading spinner yet
-    await userEvent.click(deleteBtns[0]);
-    await waitFor(() => expect(deleteBtns[1]).not.toBeDisabled());
+    const checkbox = screen.getByRole('checkbox', {
+      name: /select all rows/i
+    });
+    await userEvent.click(checkbox);
+    const deleteBtn = screen.getByRole('button', { name: /delete/i });
+    await userEvent.click(deleteBtn);
+    const modal = screen.getByTestId('delete-files-modal');
     // Deletion check completed
-    screen.getByText(/are you sure you want to delete \?/i);
+    await screen.findByText(/are you sure you want to delete \?/i);
 
-    await userEvent.click(deleteBtns[1]); // confirm delete
-    const deleteBtns2 = screen.getAllByRole('button', { name: /delete/i });
-    expect(deleteBtns2).toHaveLength(1); // only modal delete btn remains in document
-    expect(screen.queryByTestId('delete-pending')).toBeInTheDocument();
+    await userEvent.click(within(modal).getByRole('button', { name: /delete/i }));
+
+    expect(deleteBtn).not.toBeInTheDocument();
+    const deleteSpinnerBtn = screen.getByRole('button', { name: /deleting/i });
+    expect(deleteSpinnerBtn).toBeInTheDocument();
+    expect(deleteSpinnerBtn).toBeDisabled();
+    screen.getByText('Deleting...');
   });
+
   it("doesn't display warning about affected assistants when the file doesn't affect any assistants", async () => {
     mockDeleteCheck([]); // no assistants affected
     mockGetFiles(files);
@@ -160,20 +157,111 @@ describe('file management', () => {
     });
     await fireEvent.click(checkbox);
 
-    const deleteBtns = screen.getAllByRole('button', { name: /delete/i });
+    const deleteBtn = screen.getByRole('button', { name: /delete/i });
 
-    await userEvent.click(deleteBtns[0]);
+    await userEvent.click(deleteBtn);
 
     // Running deletion check
     await screen.findByText('Checking for any assistants affected by deletion...');
-    expect(deleteBtns[1]).toBeDisabled();
-    await waitFor(() => expect(deleteBtns[1]).not.toBeDisabled());
 
     // Deletion check completed
-    screen.getByText(/are you sure you want to delete \?/i);
+    await screen.findByText(/are you sure you want to delete \?/i);
 
     expect(
       screen.queryByText(/this will affect the following assistants/i)
     ).not.toBeInTheDocument();
+  });
+});
+
+// TODO - The API Keys table also uses this pagination logic, but we are only testing it here on the files table
+// Eventually we should refactor the table to a re-usable component and test there instead
+// https://github.com/defenseunicorns/leapfrogai/issues/860
+describe('table pagination', () => {
+  const files = getFakeFiles({ numFiles: 15 });
+  let form: FilesForm;
+  let searchbox: HTMLElement;
+
+  beforeEach(async () => {
+    const data = await load();
+
+    form = await superValidate(yup(filesSchema));
+    filesStore.setFiles(convertFileObjectToFileRows(files));
+    filesStore.setSelectedFileManagementFileIds([]);
+
+    render(FileManagementPage, {
+      data: {
+        ...data,
+        form,
+        session: getFakeSession(),
+        assistants: [],
+        supabase: {} as unknown as SupabaseClient
+      }
+    });
+    searchbox = screen.getByRole('textbox', {
+      name: /search/i
+    });
+  });
+  it('renders the correct item ranges', () => {
+    mockGetFiles(files);
+    expect(screen.getByText(/showing of entries/i));
+    expect(screen.getByTestId('pagination-range').textContent).toEqual('1-10');
+    expect(screen.getByTestId('pagination-total').textContent).toEqual('15');
+  });
+
+  it('renders 0 items when none found', async () => {
+    mockGetFiles(files);
+
+    await userEvent.type(searchbox, 'not an existing file');
+    expect(screen.getByText(/showing entries/i));
+    expect(screen.getByTestId('pagination-range').textContent).toEqual('0');
+    expect(screen.queryByTestId('pagination-total')).not.toBeInTheDocument();
+  });
+
+  it('renders the correct item ranges when clicking next and prev', async () => {
+    mockGetFiles(files);
+    await userEvent.click(screen.getByTestId('next-btn'));
+    expect(screen.getByText(/showing of entries/i));
+    expect(screen.getByTestId('pagination-range').textContent).toEqual('11-15');
+    expect(screen.getByTestId('pagination-total').textContent).toEqual('15');
+
+    await userEvent.click(screen.getByTestId('prev-btn'));
+    expect(screen.getByText(/showing of entries/i));
+    expect(screen.getByTestId('pagination-range').textContent).toEqual('1-10');
+    expect(screen.getByTestId('pagination-total').textContent).toEqual('15');
+  });
+  it('updates item counts when searching and switching pages', async () => {
+    const searchTerm = files[0].filename;
+    const filesThatMeetSearchCriteria = files.filter((file) => file.filename.includes(searchTerm));
+
+    const searchbox = screen.getByRole('textbox', {
+      name: /search/i
+    });
+
+    // Regular search
+    await userEvent.type(searchbox, searchTerm);
+    expect(screen.getByText(/showing of entries/i));
+    expect(screen.getByTestId('pagination-range').textContent).toEqual(
+      `1-${filesThatMeetSearchCriteria.length}`
+    );
+    expect(screen.getByTestId('pagination-total').textContent).toEqual(
+      filesThatMeetSearchCriteria.length.toString()
+    );
+
+    // Clear search
+    await userEvent.clear(searchbox);
+    expect(screen.getByText(/showing of entries/i));
+    expect(screen.getByTestId('pagination-range').textContent).toEqual('1-10');
+    expect(screen.getByTestId('pagination-total').textContent).toEqual('15');
+
+    // Search while on page 2
+    await userEvent.click(screen.getByTestId('next-btn'));
+    await userEvent.type(searchbox, searchTerm);
+    expect(screen.getByText(/showing of entries/i));
+    expect(screen.getByTestId('pagination-range').textContent).toEqual(
+      `1-${filesThatMeetSearchCriteria.length}`
+    );
+    expect(screen.getByTestId('pagination-total').textContent).toEqual(
+      filesThatMeetSearchCriteria.length.toString()
+    );
   });
 });

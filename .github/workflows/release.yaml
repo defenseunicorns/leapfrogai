@@ -40,6 +40,10 @@ jobs:
         with:
           python-version-file: 'pyproject.toml'
 
+      - name: Instal Python Deps
+        run: |
+          python -m pip install ".[dev,dev-whisper,dev-vllm]"
+
       - name: Build and Publish k3d-gpu image
         run: |
           cd packages/k3d-gpu

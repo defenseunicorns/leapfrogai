@@ -11,10 +11,11 @@ const newMessage1 = getSimpleMathQuestion();
 const newMessage2 = getSimpleMathQuestion();
 const newMessage3 = getSimpleMathQuestion();
 
+// TODO - check all playwright tests passing, then submit PR to a new branch called flowbite-integration
 test('it can delete threads', async ({ page }) => {
   await loadChatPage(page);
 
-  const threadLocator = page.getByText(newMessage1);
+  const threadLocator = page.getByRole('button', { name: newMessage1 });
 
   await sendMessage(page, newMessage1);
   await clickToDeleteThread(page, newMessage1);
@@ -30,20 +31,18 @@ test('can edit thread labels', async ({ page, openAIClient }) => {
   await sendMessage(page, newMessage1);
   await expect(messages).toHaveCount(2);
 
-  const overflowMenu = page.getByTestId(`overflow-menu-${newMessage1}`);
-  await overflowMenu.click();
+  const threadMenuBtn = page.getByTestId(`thread-menu-btn-${newMessage1}`);
+  await threadMenuBtn.click();
 
-  await overflowMenu.getByText('Edit').click();
+  await page.getByTestId('sidebar-popover').getByRole('button', { name: /edit/i }).click();
 
-  await page.getByLabel('edit thread').fill(newLabel);
+  await page.getByTestId('edit-thread-input').fill(newLabel);
 
   await page.keyboard.down('Enter');
 
   await page.reload();
 
-  const threadId = page.url().split('/chat/')[1];
-
-  expect(page.getByTestId(`thread-label-${threadId}`).getByText(newLabel));
+  expect(page.getByTestId(`thread-menu-btn-${newLabel}`).getByText(newLabel));
 
   await deleteActiveThread(page, openAIClient);
 });
@@ -65,7 +64,7 @@ test('Can switch threads', async ({ page, openAIClient }) => {
   await waitForResponseToComplete(page);
   await expect(messages).toHaveCount(2);
 
-  await page.getByText(newMessage1).click(); // switch threads by clicking thread label
+  await page.getByRole('button', { name: newMessage1 }).click(); // switch threads by clicking thread label
 
   await expect(messages).toHaveCount(4);
 
