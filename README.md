@@ -118,7 +118,7 @@ LeapfrogAI can be deployed and run locally via UDS and Kubernetes, built out usi
 Prior to deploying any LeapfrogAI packages, a UDS Kubernetes cluster must be deployed using the most recent k3d bundle:
 
 ```sh
-uds deploy k3d-core-slim-dev:0.23.0
+uds deploy k3d-core-slim-dev:0.25.0
 ```
 
 #### UDS Latest
