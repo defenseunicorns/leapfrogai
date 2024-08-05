@@ -105,20 +105,39 @@ realtime:
        - sh
        - -c
        - >-
-         echo "Waiting for supabase-realtime to be ready...";
-         until kubectl get pod supabase-realtime -n leapfrogai -o jsonpath='{.status.containerStatuses[?(@.name=="supabase-realtime")].ready}' | grep -q "true"; do
-           echo "Waiting for supabase-realtime container to be ready...";
-           sleep 5;
-         done;
-         echo "supabase-realtime container is ready. Creating job to run curl command...";
-         kubectl create job --from=cronjob/curl-job curl-job-$(date +%s) -n leapfrogai;
-     volumeMounts:
-       - name: curl-job-config
-         mountPath: /etc/config
-  volumes:
-    - name: curl-job-config
-      configMap:
-        name: curl-job-config
+        echo "Waiting for supabase-realtime to be ready...";
+        until kubectl get pod supabase-realtime -n leapfrogai -o jsonpath='{.status.containerStatuses[?(@.name=="supabase-realtime")].ready}' | grep -q "true"; do
+          echo "Waiting for supabase-realtime container to be ready...";
+          sleep 5;
+        done;
+        echo "supabase-realtime container is ready. Running curl command...";
+        curl --insecure -L -X POST 
+            -H "Content-Type: application/json" 
+            -H "Authorization: Bearer $SUPABASE_SERVICE_KEY" 
+            -H "apiKey: $SUPABASE_SERVICE_KEY" 
+            -d '{
+              "tenant": {
+                "name": "supabase-realtime",
+                "external_id": "supabase-realtime",
+                "jwt_secret": "'"$DB_ENC_KEY"'",
+                "extensions": [{
+                  "type": "postgres_cdc_rls",
+                  "settings": {
+                    "db_name": "postgres",
+                    "db_host": "supabase-postgresql",
+                    "db_user": "supabase_admin",
+                    "db_password": "'"$POSTGRESQL_PASSWORD"'",
+                    "db_port": "5432",
+                    "region": "us-east-1",
+                    "publication": "supabase_realtime",
+                    "ssl_enforced": "false",
+                    "poll_interval_ms": "100",
+                    "poll_max_record_bytes": "1048576"
+                  }
+                }]
+              }
+            }' 
+            https://supabase-kong.leapfrogai.svc.cluster.local/realtime/v1/api/tenants
 
 rest:
   enabled: ###ZARF_VAR_ENABLE_REST###
