@@ -1,14 +1,13 @@
 import { writable } from 'svelte/store';
 import { v4 as uuidv4 } from 'uuid';
-import type { ToastNotificationProps } from 'carbon-components-svelte/src/Notification/ToastNotification.svelte';
 
 const defaultValues: ToastStore = {
   toasts: []
 };
 
-const toastDefaults: Pick<ToastNotificationProps, 'kind' | 'caption' | 'timeout'> = {
+const toastDefaults: Pick<ToastNotificationProps, 'kind' | 'title' | 'timeout'> = {
   kind: 'info',
-  caption: new Date().toLocaleString(),
+  title: '',
   timeout: 3000
 };
 const createToastsStore = () => {

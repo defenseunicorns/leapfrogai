@@ -191,10 +191,10 @@ export const testFileUpload = async (filename: string, page: Page, openAIClient:
   await loadFileManagementPage(page);
   await uploadFile(page, filename);
 
-  const row = await getTableRow(page, filename);
+  const row = await getTableRow(page, filename, 'file-management-table');
   expect(row).not.toBeNull();
 
-  const uploadingFileIcon = row!.getByTestId('uploading-file-icon');
+  const uploadingFileIcon = row!.getByTestId('uploading-file-spinner');
   const fileUploadedIcon = row!.getByTestId('file-uploaded-icon');
 
   // test loading icon shows then disappears

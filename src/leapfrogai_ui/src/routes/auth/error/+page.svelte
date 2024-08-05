@@ -1,1 +1,1 @@
-<p>Authentication error</p>
+<p class="dark:text-white">Authentication error</p>

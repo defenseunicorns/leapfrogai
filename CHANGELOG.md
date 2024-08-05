@@ -1,5 +1,47 @@
 # Changelog
 
+## [0.10.0](https://github.com/defenseunicorns/leapfrogai/compare/v0.9.2...v0.10.0) (2024-08-02)
+
+
+### ⚠ BREAKING CHANGES
+
+* **api:** updating api endpoints ([#817](https://github.com/defenseunicorns/leapfrogai/issues/817))
+
+### Features
+
+* **backend:** add k3d gpu image builder ([#797](https://github.com/defenseunicorns/leapfrogai/issues/797)) ([4504085](https://github.com/defenseunicorns/leapfrogai/commit/4504085dc10e9b6cb74115c974ea5e8f8c7fa98c))
+* **backend:** nvidia runtimeclass ([#787](https://github.com/defenseunicorns/leapfrogai/issues/787)) ([106997d](https://github.com/defenseunicorns/leapfrogai/commit/106997d42e750014de94959c939442ac4e23378b))
+* silent parallel make targets for build and deployment ([#824](https://github.com/defenseunicorns/leapfrogai/issues/824)) ([681aafd](https://github.com/defenseunicorns/leapfrogai/commit/681aafdec1b59f00fb8c8deb598a00327ef404b6))
+* **ui:** remove carbon and replace with Flowbite ([#862](https://github.com/defenseunicorns/leapfrogai/issues/862)) ([921a864](https://github.com/defenseunicorns/leapfrogai/commit/921a8642c3e70c4d0dc3d92cd0d7745e45e21524))
+
+
+### Bug Fixes
+
+* **api:** fix indexing files with api key auth ([#852](https://github.com/defenseunicorns/leapfrogai/issues/852)) ([c4d9c3f](https://github.com/defenseunicorns/leapfrogai/commit/c4d9c3f289f8708cd08a82d290fe9ab51ba8cc09))
+* helm template evluation for whisper GPU_REQUEST envvar ([#859](https://github.com/defenseunicorns/leapfrogai/issues/859)) ([5320890](https://github.com/defenseunicorns/leapfrogai/commit/532089087fd520121c64d331716945563509a062))
+* make errors when supabase is unavailable ([#814](https://github.com/defenseunicorns/leapfrogai/issues/814)) ([976635c](https://github.com/defenseunicorns/leapfrogai/commit/976635cd5c5d615cc16adcbf6d6622845ab64eca))
+* **ui:** logout ([#849](https://github.com/defenseunicorns/leapfrogai/issues/849)) ([f71af5d](https://github.com/defenseunicorns/leapfrogai/commit/f71af5d6c0d6432644144f0ad090100969c69c04))
+* **ui:** playwright login without keycloak ([#833](https://github.com/defenseunicorns/leapfrogai/issues/833)) ([fd1e3dd](https://github.com/defenseunicorns/leapfrogai/commit/fd1e3dd3148581307d9ccf021c94d4208d839c56))
+* **whisper:** Including missing cuda dependencies required for GPU runtimes ([2aba4af](https://github.com/defenseunicorns/leapfrogai/commit/2aba4af86b37d32fbb4a8cbe73b6151e2e1c3190))
+
+
+### Miscellaneous
+
+* **api:** Adds API load testing ([#801](https://github.com/defenseunicorns/leapfrogai/issues/801)) ([67b9755](https://github.com/defenseunicorns/leapfrogai/commit/67b9755f8ff8ed2c1197efe9f22d12ace685ef82))
+* **api:** Indexing performance improvements ([#799](https://github.com/defenseunicorns/leapfrogai/issues/799)) ([e679ad2](https://github.com/defenseunicorns/leapfrogai/commit/e679ad22f52cb411e47fcc01f6e3eb3d7191ffcd))
+* **api:** updating api endpoints ([#817](https://github.com/defenseunicorns/leapfrogai/issues/817)) ([6ff292f](https://github.com/defenseunicorns/leapfrogai/commit/6ff292f0d3462b0a12cb0bd032ed9bdaa4077d69))
+* **deps:** bump torch from 2.1.2 to 2.2.0 in /packages/text-embeddings ([#831](https://github.com/defenseunicorns/leapfrogai/issues/831)) ([22c75cb](https://github.com/defenseunicorns/leapfrogai/commit/22c75cbfb662f8f1f53d91875d9bdf5126c31900))
+* make python test dependencies optional ([#815](https://github.com/defenseunicorns/leapfrogai/issues/815)) ([89ff0a6](https://github.com/defenseunicorns/leapfrogai/commit/89ff0a6a34957bbcd788250c10e28312192f0af1))
+* optimize vLLM Dockerfile to reduce layer sizes ([#805](https://github.com/defenseunicorns/leapfrogai/issues/805)) ([0fec864](https://github.com/defenseunicorns/leapfrogai/commit/0fec864f5f870dee560bd60dac74bca11b219442))
+* release 0.10.0 ([#864](https://github.com/defenseunicorns/leapfrogai/issues/864)) ([7e6f574](https://github.com/defenseunicorns/leapfrogai/commit/7e6f57433c0b2ea49f814906d9625f7419baecf3))
+* Remove model weights from container images ([#786](https://github.com/defenseunicorns/leapfrogai/issues/786)) ([33e4efb](https://github.com/defenseunicorns/leapfrogai/commit/33e4efb3031e7fd95333c4f98d47933a8123cb2d))
+* restrict daemonset to cuda compute, utility ([#836](https://github.com/defenseunicorns/leapfrogai/issues/836)) ([4bf9124](https://github.com/defenseunicorns/leapfrogai/commit/4bf9124f2019cd9c20abfc3db717de5fd5c16d95))
+* set kong service to default to cluster IP ([#857](https://github.com/defenseunicorns/leapfrogai/issues/857)) ([08f1d10](https://github.com/defenseunicorns/leapfrogai/commit/08f1d109f571e6c1649261cc99da115e23675b5d))
+* split e2e tests into multiple workflows ([#808](https://github.com/defenseunicorns/leapfrogai/issues/808)) ([c993ad5](https://github.com/defenseunicorns/leapfrogai/commit/c993ad5526e0bf23148e5f9ceef215abadef30fe))
+* Update defenseunicorns/zarf to zarf-dev/zarf ([#832](https://github.com/defenseunicorns/leapfrogai/issues/832)) ([cc18cea](https://github.com/defenseunicorns/leapfrogai/commit/cc18ceabfedf88bf355ec4eb53b436443b9a1f3c))
+* update release workflow to install necessary python deps ([#867](https://github.com/defenseunicorns/leapfrogai/issues/867)) ([1e667a4](https://github.com/defenseunicorns/leapfrogai/commit/1e667a44504e2441549c60951d8f1a1757c81864))
+* **whisper:** Pass through variables down to whisper ([#840](https://github.com/defenseunicorns/leapfrogai/issues/840)) ([4e8092a](https://github.com/defenseunicorns/leapfrogai/commit/4e8092ac4fe2ba9fb369506773074e929a1a1a25))
+
 ## [0.9.2](https://github.com/defenseunicorns/leapfrogai/compare/v0.9.1...v0.9.2) (2024-07-19)
 
 
