@@ -106,7 +106,7 @@ realtime:
        - -c
        - >-
          echo "Waiting for supabase-realtime to be ready...";
-         until curl -s -o /dev/null -w "%{http_code}" http://supabase-realtime.leapfrogai.svc.cluster.local:80/health | grep -q "200"; do
+         until curl -s -o /dev/null -w "%{http_code}" http://supabase-realtime.leapfrogai.svc.cluster.local:80/ | grep -q "200"; do
            echo "Waiting for supabase-realtime to be ready...";
            sleep 5;
          done;
