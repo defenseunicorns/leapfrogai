@@ -125,6 +125,7 @@
 <div class="w-3/4 bg-gray-50 p-3 dark:bg-gray-900">
   <Heading tag="h3" class="mb-4">API Keys</Heading>
   <TableSearch
+    data-testid="api-keys-table"
     placeholder="Search"
     hoverable={true}
     bind:inputValue={searchTerm}

@@ -205,6 +205,7 @@
   <Heading tag="h3" class="mb-4">File Management</Heading>
   <form method="POST" enctype="multipart/form-data" use:enhance>
     <TableSearch
+      data-testid="file-management-table"
       placeholder="Search"
       hoverable={true}
       bind:inputValue={searchTerm}

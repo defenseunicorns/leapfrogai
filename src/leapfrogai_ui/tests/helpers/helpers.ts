@@ -35,7 +35,10 @@ export const loadApiKeyPage = async (page: Page) => {
   await page.waitForURL('/chat/api-keys');
   await expect(page).toHaveTitle('LeapfrogAI - API Keys');
 };
-export const getTableRow = async (page: Page, textToSearchWith: string) => {
+export const getTableRow = async (page: Page, textToSearchWith: string, tableTestId = '') => {
+  if (tableTestId) {
+    await expect(page.getByTestId(tableTestId).getByText(textToSearchWith)).toBeVisible();
+  }
   const rows = page.locator('table tr');
   let targetRow;
   for (let i = 0; i < (await rows.count()); i++) {
