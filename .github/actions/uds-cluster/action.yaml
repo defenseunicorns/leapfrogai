@@ -19,4 +19,4 @@ runs:
     - name: Create UDS Cluster
       shell: bash
       run: |
-        uds deploy k3d-core-slim-dev:0.22.2 --confirm
+        make create-uds-cpu-cluster

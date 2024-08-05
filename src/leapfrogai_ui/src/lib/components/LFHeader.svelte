@@ -1,42 +1,21 @@
 <script lang="ts">
+  import { Button, Dropdown, DropdownItem, Navbar, NavBrand } from 'flowbite-svelte';
+  import { BarsOutline, CloseOutline, CogOutline, UserCircleOutline } from 'flowbite-svelte-icons';
+  import { page } from '$app/stores';
   import { threadsStore, uiStore } from '$stores';
   import logo from '$assets/LeapfrogAI.png';
-  import { Button, Drawer, Navbar, NavBrand } from 'flowbite-svelte';
-  import { BarsOutline, CloseOutline, CogOutline, UserCircleOutline } from 'flowbite-svelte-icons';
-  import HeaderButton from '$components/HeaderButton.svelte';
-  import { sineIn } from 'svelte/easing';
-  import { page } from '$app/stores';
 
   export let isUsingOpenAI: boolean;
 
-  let loading = false;
   let signOutForm: HTMLFormElement;
-  let transitionParams = {
-    x: 320,
-    duration: 200,
-    easing: sineIn
-  };
 
-  $: activeDrawer = '';
-
-  const handleLogOut = () => {
-    loading = true;
-    signOutForm.submit();
-    loading = false;
-  };
-
-  const toggleDrawer = (name: string) => {
-    if (activeDrawer === name) activeDrawer = '';
-    else activeDrawer = name;
-  };
-
-  let drawerStyle = 'top-header text-white max z-max';
-  let linkStyle = 'flex p-4 flex-col gap-3.5';
-  let headerLinkStyle =
-    'text-sm leading-5 font-semibold tracking-tight cursor-pointer bg-none text-inherit border-none p-0 outline-none hover:text-white';
   $: innerWidth = 0;
 
-  $: console.log('page', $page.url);
+  const handleLogOut = (e) => {
+    e.preventDefault();
+
+    signOutForm.submit();
+  };
 </script>
 
 <svelte:window bind:innerWidth />
@@ -67,63 +46,28 @@
       {/if}
       <img src={logo} class="w-[7.875rem]] h-[2.25rem]" alt="LeapfrogAI Logo" />
     </NavBrand>
-    <div class="flex items-center gap-x-2">
-      <HeaderButton on:click={() => toggleDrawer('settings')}>
-        <CogOutline data-testid="header-settings-btn" />
-      </HeaderButton>
+    <div id="header-btns-container" class="flex gap-4">
+      <CogOutline
+        data-testid="header-settings-btn"
+        class="settings-menu cursor-pointer dark:text-white"
+      />
+      <Dropdown triggeredBy=".settings-menu" data-testid="settings-dropdown">
+        <DropdownItem href="/chat/assistants-management">Assistants Management</DropdownItem>
+        <DropdownItem href="/chat/file-management">File Management</DropdownItem>
+        {#if !isUsingOpenAI}
+          <DropdownItem href="/chat/api-keys">API Keys</DropdownItem>
+        {/if}
+      </Dropdown>
 
-      <HeaderButton on:click={() => toggleDrawer('user')}>
-        <UserCircleOutline data-testid="header-user-btn" />
-      </HeaderButton>
+      <UserCircleOutline
+        data-testid="header-profile-btn"
+        class="profile-menu cursor-pointer dark:text-white"
+      />
+      <Dropdown triggeredBy=".profile-menu" data-testid="profile-dropdown">
+        <DropdownItem on:click={handleLogOut}
+          >Log Out <form bind:this={signOutForm} method="post" action="/auth?/signout" />
+        </DropdownItem>
+      </Dropdown>
     </div>
   </Navbar>
-
-  <Drawer
-    transitionType="fly"
-    {transitionParams}
-    hidden={activeDrawer !== 'settings'}
-    placement="right"
-    backdrop={false}
-    class={drawerStyle}
-    id="settings-drawer"
-    data-testid="settings-drawer"
-  >
-    <div class={linkStyle}>
-      <a
-        href="/chat/assistants-management"
-        class={headerLinkStyle}
-        on:click={() => toggleDrawer('')}>Assistants Management</a
-      >
-
-      <a href="/chat/file-management" class={headerLinkStyle} on:click={() => toggleDrawer('')}
-        >File Management</a
-      >
-      {#if !isUsingOpenAI}
-        <a href="/chat/api-keys" class={headerLinkStyle} on:click={() => toggleDrawer('')}
-          >API Keys</a
-        >
-      {/if}
-    </div>
-  </Drawer>
-  <Drawer
-    transitionType="fly"
-    {transitionParams}
-    hidden={activeDrawer !== 'user'}
-    placement="right"
-    backdrop={false}
-    class={drawerStyle}
-    id="user-drawer"
-    data-testid="user-drawer"
-  >
-    <div class={linkStyle}>
-      <form bind:this={signOutForm} method="post" action="/auth?/signout">
-        <button
-          class={headerLinkStyle}
-          aria-label="Log Out"
-          disabled={loading}
-          on:click={handleLogOut}>Log Out</button
-        >
-      </form>
-    </div>
-  </Drawer>
 </header>
