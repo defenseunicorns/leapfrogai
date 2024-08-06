@@ -14,7 +14,7 @@ import {
 import { faker } from '@faker-js/faker';
 import {
   createAssistantWithApi,
-  deleteAssistant,
+  deleteAssistantCard,
   deleteAssistantWithApi
 } from './helpers/assistantHelpers';
 import { getSimpleMathQuestion, loadChatPage } from './helpers/helpers';
@@ -143,7 +143,7 @@ test('while creating an assistant, it can upload new files and save the assistan
 
   // Cleanup
   expect(page.waitForURL('/chat/assistants-management'));
-  await deleteAssistant(assistantInput.name, page);
+  await deleteAssistantCard(assistantInput.name, page);
   await deleteTestFilesWithApi(openAIClient);
   deleteFixtureFile(filename);
   await deleteFileByName(filename, openAIClient);
