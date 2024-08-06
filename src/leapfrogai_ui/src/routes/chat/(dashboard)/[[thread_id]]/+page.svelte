@@ -1,6 +1,6 @@
 <script lang="ts">
   import { beforeNavigate } from '$app/navigation';
-  import { PoweredByDU } from '$components';
+  import { LFTextArea, PoweredByDU } from '$components';
   import { Hr, ToolbarButton } from 'flowbite-svelte';
   import { onMount, tick } from 'svelte';
   import { threadsStore, toastStore } from '$stores';
@@ -24,7 +24,6 @@
   } from '$constants/toastMessages';
   import SelectAssistantDropdown from '$components/SelectAssistantDropdown.svelte';
   import { PaperPlaneOutline, StopOutline } from 'flowbite-svelte-icons';
-  import TextareaV2 from '$components/LFTextArea.svelte';
 
   export let data;
 
@@ -318,7 +317,7 @@
 
     <div class="flex items-end justify-around gap-2">
       <div class="flex flex-grow items-center rounded-lg bg-gray-50 px-3 py-2 dark:bg-gray-700">
-        <TextareaV2
+        <LFTextArea
           id="chat"
           data-testid="chat-input"
           class="mx-4 flex-grow resize-none bg-white dark:bg-gray-800"
