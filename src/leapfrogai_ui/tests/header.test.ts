@@ -21,3 +21,16 @@ test('it opens the sidebar when the open/close sidebar button is clicked', async
   await page.getByTestId('open-sidebar-btn').click();
   await expect(page.getByTestId('sidebar')).toBeVisible();
 });
+
+test('only shows the menu open/close btn on the main chat page', async ({ page }) => {
+  await page.setViewportSize({ width: 600, height: 600 });
+  await page.goto('/chat');
+
+  await page.getByTestId('open-sidebar-btn').click();
+  await expect(page.getByTestId('sidebar')).toBeVisible();
+
+  await page.goto('/chat/api-keys');
+
+  await expect(page.getByTestId('open-sidebar-btn')).not.toBeVisible();
+  await expect(page.getByTestId('close-sidebar-btn')).not.toBeVisible();
+});

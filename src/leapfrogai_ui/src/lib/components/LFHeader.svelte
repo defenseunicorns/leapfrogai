@@ -1,6 +1,7 @@
 <script lang="ts">
   import { Button, Dropdown, DropdownItem, Navbar, NavBrand } from 'flowbite-svelte';
   import { BarsOutline, CloseOutline, CogOutline, UserCircleOutline } from 'flowbite-svelte-icons';
+  import { page } from '$app/stores';
   import { threadsStore, uiStore } from '$stores';
   import logo from '$assets/LeapfrogAI.png';
 
@@ -27,7 +28,7 @@
         : '/chat'}
       data-testid="logo-link"
     >
-      {#if innerWidth < 1024}
+      {#if innerWidth < 1024 && $page.url.pathname === '/chat'}
         <Button
           outline={true}
           class="mr-2 !p-2"
