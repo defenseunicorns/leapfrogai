@@ -25,6 +25,7 @@ async def models(
             type=model_data.metadata.type,
             dimensions=model_data.metadata.dimensions,
             precision=model_data.metadata.precision,
+            capabilities=model_data.metadata.capabilities,
         )
         m = ModelResponseModel(
             id=model_name,

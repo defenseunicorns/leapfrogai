@@ -28,7 +28,6 @@ from pydantic import BaseModel, Field
 DEFAULT_MAX_COMPLETION_TOKENS = 4096
 DEFAULT_MAX_PROMPT_TOKENS = 4096
 
-
 ##########
 # GENERIC
 ##########
@@ -61,11 +60,15 @@ class ModelMetadataResponse(BaseModel):
     )
     dimensions: int | None = Field(
         default=None,
-        description="Embedding dimensions (for embeddings models)",\
+        description="Embedding dimensions (for embeddings models)",
     )
     precision: str | None = Field(
         default=None,
         description="Model precision (e.g., 'float16', 'float32')",
+    )
+    capabilities: str | None = Field(
+        default=None,
+        description="Model capabilities (e.g., 'embeddings' or 'chat')",
     )
 
 
@@ -94,7 +97,6 @@ class ModelResponseModel(BaseModel):
         default=None,
         description="Metadata for the model, including type, dimensions (for embeddings), and precision.",
     )
-
 
 
 class ModelResponse(BaseModel):
