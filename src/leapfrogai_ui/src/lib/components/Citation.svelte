@@ -17,6 +17,10 @@
   export let file: FileObject;
   export let index: string;
 
+
+  // TODO - add file annotations for pages, and tests
+  // TODO - if using OpenAI, don't allow file download (OpenAI does not allow downloading files of purpose assistants)
+
   let expanded = false;
   let url: string;
   let processing = false;
@@ -46,7 +50,10 @@
           return;
         }
 
-        const contentType = res.headers.get('content-type');
+        let contentType = res.headers.get('content-type');
+
+        // content type can include charset, removing that here (ex. text.plain; charset=UTF-8)
+        if (contentType?.includes('text/plain')) contentType = 'text/plain';
 
         if (!contentType) {
           handleFileError();
