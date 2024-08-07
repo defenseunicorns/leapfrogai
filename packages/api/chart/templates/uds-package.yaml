@@ -12,7 +12,7 @@ spec:
           app: api
         host: leapfrogai-api
         gateway: tenant
-        port: { { .Values.api.env.port } }
+        port: {{ .Values.api.env.port }}
 
     allow:
       - direction: Ingress

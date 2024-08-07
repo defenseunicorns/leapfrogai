@@ -101,37 +101,38 @@ repos:
         types: [yaml]
         args: ["--schemafile", "uds.schema.json"]
 
+  # TODO: reactivate when UDS Tasks are implemented in this repository
   # UDS TASK CHECK
-  - repo: https://github.com/python-jsonschema/check-jsonschema
-    rev: 0.14.0
-    hooks:
-      - id: check-jsonschema
-        name: "Validate UDS Tasks Against Schema"
-        files: "tasks.yaml"
-        types: [yaml]
-        args: ["--schemafile", "tasks.schema.json"]
-      - id: check-jsonschema
-        name: "Validate Create Tasks Against Schema"
-        files: "create.yaml"
-        types: [yaml]
-        args: ["--schemafile", "tasks.schema.json"]
-      - id: check-jsonschema
-        name: "Validate Publish Tasks Against Schema"
-        files: "publish.yaml"
-        types: [yaml]
-        args: ["--schemafile", "tasks.schema.json"]
-      - id: check-jsonschema
-        name: "Validate Deploy Tasks Against Schema"
-        files: "deploy.yaml"
-        types: [yaml]
-        args: ["--schemafile", "tasks.schema.json"]
-      - id: check-jsonschema
-        name: "Validate Setup Tasks Against Schema"
-        files: "setup.yaml"
-        types: [yaml]
-        args: ["--schemafile", "tasks.schema.json"]
-      - id: check-jsonschema
-        name: "Validate Test Tasks Against Schema"
-        files: "test.yaml"
-        types: [yaml]
-        args: ["--schemafile", "tasks.schema.json"]
+  # - repo: https://github.com/python-jsonschema/check-jsonschema
+  #   rev: 0.14.0
+  #   hooks:
+  #     - id: check-jsonschema
+  #       name: "Validate UDS Tasks Against Schema"
+  #       files: "tasks.yaml"
+  #       types: [yaml]
+  #       args: ["--schemafile", "tasks.schema.json"]
+  #     - id: check-jsonschema
+  #       name: "Validate Create Tasks Against Schema"
+  #       files: "create.yaml"
+  #       types: [yaml]
+  #       args: ["--schemafile", "tasks.schema.json"]
+  #     - id: check-jsonschema
+  #       name: "Validate Publish Tasks Against Schema"
+  #       files: "publish.yaml"
+  #       types: [yaml]
+  #       args: ["--schemafile", "tasks.schema.json"]
+  #     - id: check-jsonschema
+  #       name: "Validate Deploy Tasks Against Schema"
+  #       files: "deploy.yaml"
+  #       types: [yaml]
+  #       args: ["--schemafile", "tasks.schema.json"]
+  #     - id: check-jsonschema
+  #       name: "Validate Setup Tasks Against Schema"
+  #       files: "setup.yaml"
+  #       types: [yaml]
+  #       args: ["--schemafile", "tasks.schema.json"]
+  #     - id: check-jsonschema
+  #       name: "Validate Test Tasks Against Schema"
+  #       files: "test.yaml"
+  #       types: [yaml]
+  #       args: ["--schemafile", "tasks.schema.json"]

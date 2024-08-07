@@ -2,9 +2,9 @@ apiVersion: apps/v1
 kind: Deployment
 metadata:
   name: api-deployment
-  namespace: { { .Release.Namespace } }
+  namespace: {{ .Release.Namespace }}
 spec:
-  replicas: { { .Values.api.replicas } }
+  replicas: {{ .Values.api.replicas }}
   strategy:
     rollingUpdate:
       maxUnavailable: 0
@@ -17,13 +17,13 @@ spec:
       labels:
         app: api
     spec:
-      securityContext:
-      {{- toYaml .Values.podSecurityContext | nindent 8 }}
       serviceAccountName: read-configmaps
+      securityContext:
+        {{- toYaml .Values.podSecurityContext | nindent 8 }}
       containers:
         - name: sidecar
           image: "{{ .Values.kiwigrid.image.repository }}:{{ .Values.kiwigrid.image.tag }}"
-          imagePullPolicy: { { .Values.kiwigrid.image.imagePullPolicy } }
+          imagePullPolicy: {{ .Values.kiwigrid.image.imagePullPolicy }}
           volumeMounts:
             - name: api-model
               mountPath: /config/
@@ -39,21 +39,21 @@ spec:
             - name: NAMESPACE
               value: leapfrogai
           securityContext:
-            { { - toYaml .Values.kiwigrid.securityContext | nindent 12 } }
+            {{- toYaml .Values.kiwigrid.securityContext | nindent 12 }}
         - name: api-container
           image: "{{ .Values.api.image.repository }}:{{ .Values.api.image.tag | default .Chart.AppVersion }}"
-          imagePullPolicy: { { .Values.api.image.imagePullPolicy } }
+          imagePullPolicy: {{ .Values.api.image.imagePullPolicy }}
           env:
             - name: LFAI_CONFIG_PATH
               value: /config/
             - name: LFAI_CONFIG_FILENAME
               value: "*.toml"
             - name: DEFAULT_EMBEDDINGS_MODEL
-              value: { { .Values.api.env.defaultEmbeddingsModel } }
+              value: {{ .Values.api.env.defaultEmbeddingsModel }}
             - name: PORT
-              value: { { .Values.api.env.port } }
+              value: {{ .Values.api.env.port }}
             - name: SUPABASE_URL
-              value: { { .Values.supabase.env.url } }
+              value: {{ .Values.supabase.env.url }}
             - name: SUPABASE_ANON_KEY
               valueFrom:
                 secretKeyRef:
@@ -61,21 +61,21 @@ spec:
                   key: anon-key
                   optional: true
           ports:
-            - containerPort: { { .Values.api.env.port } }
+            - containerPort: {{ .Values.api.env.port }}
           livenessProbe:
             httpGet:
               path: /healthz
-              port: { { .Values.api.env.port } }
+              port: {{ .Values.api.env.port }}
             initialDelaySeconds: 10
             periodSeconds: 10
           readinessProbe:
             httpGet:
               path: /healthz
-              port: { { .Values.api.env.port } }
+              port: {{ .Values.api.env.port }}
             initialDelaySeconds: 10
             periodSeconds: 10
           securityContext:
-            { { - toYaml .Values.api.securityContext | nindent 12 } }
+            {{- toYaml .Values.api.securityContext | nindent 12 }}
           volumeMounts:
             - name: api-model
               mountPath: /config
