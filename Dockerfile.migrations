@@ -1,4 +1,4 @@
-FROM --platform=$TARGETPLATFORM cgr.dev/chainguard/bash:latest
+FROM cgr.dev/chainguard/bash:latest
 ARG TARGETPLATFORM
 ARG version="1.169.8"
 ARG MIGRATIONS_DIR

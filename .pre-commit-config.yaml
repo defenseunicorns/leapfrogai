@@ -1,138 +1,140 @@
+---
 repos:
-  ################
-  # GENERAL CHECKS
-  ################
-  - repo: https://github.com/pre-commit/pre-commit-hooks
-    rev: v4.0.1
-    hooks:
-      - id: check-added-large-files
-        name: Large Files check
-        args: ["--maxkb=1024"]
+################
+# GENERAL CHECKS
+################
+- repo: https://github.com/pre-commit/pre-commit-hooks
+  rev: v4.0.1
+  hooks:
+  - id: check-added-large-files
+    name: Large Files check
+    args: ["--maxkb=1024"]
 
-      - id: detect-aws-credentials
-        name: Check AWS Credentials
-        args:
-          - "--allow-missing-credentials"
+  - id: detect-aws-credentials
+    name: Check AWS Credentials
+    args:
+    - "--allow-missing-credentials"
 
-      - id: detect-private-key
-        name: Check Private Keys
+  - id: detect-private-key
+    name: Check Private Keys
 
-      - id: check-merge-conflict
-        name: Merge Conflict Resolution Check
+  - id: check-merge-conflict
+    name: Merge Conflict Resolution Check
 
-      - id: end-of-file-fixer
-        name: Newline EOF Checker
+  - id: end-of-file-fixer
+    name: Newline EOF Checker
 
-      - id: fix-byte-order-marker
-        name: Fix UTF-8 byte order marker
+  - id: fix-byte-order-marker
+    name: Fix UTF-8 byte order marker
 
-      - id: trailing-whitespace
-        name: Whitespace Cleaning Check
-        args: [--markdown-linebreak-ext=md]
+  - id: trailing-whitespace
+    name: Whitespace Cleaning Check
+    args: [--markdown-linebreak-ext=md]
 
-  - repo: https://github.com/scop/pre-commit-shfmt
-    rev: v3.8.0-1
-    hooks:
-      - id: shfmt
-        name: Shell Script Format
+- repo: https://github.com/scop/pre-commit-shfmt
+  rev: v3.8.0-1
+  hooks:
+  - id: shfmt
+    name: Shell Script Format
 
-  - repo: https://github.com/gitleaks/gitleaks
-    rev: v8.18.0
-    hooks:
-      - id: gitleaks
-        name: GitLeaks Checks
+- repo: https://github.com/gitleaks/gitleaks
+  rev: v8.18.0
+  hooks:
+  - id: gitleaks
+    name: GitLeaks Checks
 
-  - repo: https://github.com/sirosen/fix-smartquotes
-    rev: 0.2.0
-    hooks:
-      - id: fix-smartquotes
+- repo: https://github.com/sirosen/fix-smartquotes
+  rev: 0.2.0
+  hooks:
+  - id: fix-smartquotes
 
-  ############
-  # CODE LINT
-  ############
+############
+# CODE LINT
+############
 
-  - repo: https://github.com/DavidAnson/markdownlint-cli2
-    rev: v0.12.1
-    hooks:
-      - id: markdownlint-cli2
-        name: Markdown Linting
+- repo: https://github.com/DavidAnson/markdownlint-cli2
+  rev: v0.12.1
+  hooks:
+  - id: markdownlint-cli2
+    name: Markdown Linting
 
-  - repo: https://github.com/hadolint/hadolint
-    rev: v2.12.0
-    hooks:
-      - id: hadolint-docker
-        name: Dockerfile Lint
+- repo: https://github.com/hadolint/hadolint
+  rev: v2.12.0
+  hooks:
+  - id: hadolint-docker
+    name: Dockerfile Lint
+    args: ["--failure-threshold", "error"]
 
-  - repo: local
-    hooks:
-      - id: eslint
-        name: eslint
-        language: system
-        entry: sh -c 'npm --prefix src/leapfrogai_ui/ run lint'
-        files: \.(js|jsx|ts|tsx|svelte|cjs|mjs)$ # *.js, *.jsx, *.ts, *.tsx, *.svelte, *.cjs, *.mjs
+- repo: local
+  hooks:
+  - id: eslint
+    name: eslint
+    language: system
+    entry: sh -c 'npm --prefix src/leapfrogai_ui/ run lint'
+    files: \.(js|jsx|ts|tsx|svelte|cjs|mjs)$ # *.js, *.jsx, *.ts, *.tsx, *.svelte, *.cjs, *.mjs
 
-  - repo: https://github.com/astral-sh/ruff-pre-commit
-    rev: v0.3.4
-    hooks:
-      - id: ruff # Run the linter.
-      - id: ruff-format # Run the formatter.
+- repo: https://github.com/astral-sh/ruff-pre-commit
+  rev: v0.3.4
+  hooks:
+  - id: ruff # Run the linter.
+  - id: ruff-format # Run the formatter.
 
-  #############
-  # UDS v0.14.0
-  #############
+#############
+# UDS v0.14.0
+#############
 
-  # ZARF PACKAGE CHECK
-  - repo: https://github.com/python-jsonschema/check-jsonschema
-    rev: 0.14.0
-    hooks:
-      - id: check-jsonschema
-        name: "Validate Zarf Configs Against Schema"
-        files: "zarf.yaml"
-        types: [yaml]
-        args: ["--schemafile", "zarf.schema.json"]
+# ZARF PACKAGE CHECK
+- repo: https://github.com/python-jsonschema/check-jsonschema
+  rev: 0.14.0
+  hooks:
+  - id: check-jsonschema
+    name: "Validate Zarf Configs Against Schema"
+    files: "zarf.yaml"
+    types: [yaml]
+    args: ["--schemafile", "zarf.schema.json"]
 
-  # UDS BUNDLE CHECK
-  - repo: https://github.com/python-jsonschema/check-jsonschema
-    rev: 0.14.0
-    hooks:
-      - id: check-jsonschema
-        name: "Validate UDS Bundles Against Schema"
-        files: "uds-bundle.yaml"
-        types: [yaml]
-        args: ["--schemafile", "uds.schema.json"]
+# UDS BUNDLE CHECK
+- repo: https://github.com/python-jsonschema/check-jsonschema
+  rev: 0.14.0
+  hooks:
+  - id: check-jsonschema
+    name: "Validate UDS Bundles Against Schema"
+    files: "uds-bundle.yaml"
+    types: [yaml]
+    args: ["--schemafile", "uds.schema.json"]
 
-  # TODO: reactivate when UDS Tasks are implemented in this repository
-  # UDS TASK CHECK
-  # - repo: https://github.com/python-jsonschema/check-jsonschema
-  #   rev: 0.14.0
-  #   hooks:
-  #     - id: check-jsonschema
-  #       name: "Validate UDS Tasks Against Schema"
-  #       files: "tasks.yaml"
-  #       types: [yaml]
-  #       args: ["--schemafile", "tasks.schema.json"]
-  #     - id: check-jsonschema
-  #       name: "Validate Create Tasks Against Schema"
-  #       files: "create.yaml"
-  #       types: [yaml]
-  #       args: ["--schemafile", "tasks.schema.json"]
-  #     - id: check-jsonschema
-  #       name: "Validate Publish Tasks Against Schema"
-  #       files: "publish.yaml"
-  #       types: [yaml]
-  #       args: ["--schemafile", "tasks.schema.json"]
-  #     - id: check-jsonschema
-  #       name: "Validate Deploy Tasks Against Schema"
-  #       files: "deploy.yaml"
-  #       types: [yaml]
-  #       args: ["--schemafile", "tasks.schema.json"]
-  #     - id: check-jsonschema
-  #       name: "Validate Setup Tasks Against Schema"
-  #       files: "setup.yaml"
-  #       types: [yaml]
-  #       args: ["--schemafile", "tasks.schema.json"]
-  #     - id: check-jsonschema
-  #       name: "Validate Test Tasks Against Schema"
-  #       files: "test.yaml"
-  #       types: [yaml]
-  #       args: ["--schemafile", "tasks.schema.json"]
+# TODO: reactivate when UDS Tasks are implemented in this repository
+# UDS TASK CHECK
+# - repo: https://github.com/python-jsonschema/check-jsonschema
+#   rev: 0.14.0
+#   hooks:
+#     - id: check-jsonschema
+#       name: "Validate UDS Tasks Against Schema"
+#       files: "tasks.yaml"
+#       types: [yaml]
+#       args: ["--schemafile", "tasks.schema.json"]
+#     - id: check-jsonschema
+#       name: "Validate Create Tasks Against Schema"
+#       files: "create.yaml"
+#       types: [yaml]
+#       args: ["--schemafile", "tasks.schema.json"]
+#     - id: check-jsonschema
+#       name: "Validate Publish Tasks Against Schema"
+#       files: "publish.yaml"
+#       types: [yaml]
+#       args: ["--schemafile", "tasks.schema.json"]
+#     - id: check-jsonschema
+#       name: "Validate Deploy Tasks Against Schema"
+#       files: "deploy.yaml"
+#       types: [yaml]
+#       args: ["--schemafile", "tasks.schema.json"]
+#     - id: check-jsonschema
+#       name: "Validate Setup Tasks Against Schema"
+#       files: "setup.yaml"
+#       types: [yaml]
+#       args: ["--schemafile", "tasks.schema.json"]
+#     - id: check-jsonschema
+#       name: "Validate Test Tasks Against Schema"
+#       files: "test.yaml"
+#       types: [yaml]
+#       args: ["--schemafile", "tasks.schema.json"]

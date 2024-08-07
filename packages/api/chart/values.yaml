@@ -1,3 +1,4 @@
+---
 podSecurityContext:
   fsGroup: 65532
 
@@ -15,7 +16,7 @@ api:
     runAsNonRoot: true
     capabilities:
       drop:
-        - ALL
+      - ALL
   env:
     port: 8080
     exposeAPI: "###ZARF_VAR_EXPOSE_API###"
@@ -34,9 +35,10 @@ api:
       runAsNonRoot: true
       capabilities:
         drop:
-          - ALL
-    serviceName: "supabase-postgresql"
-    servicePort: "5432"
+        - ALL
+    env:
+      serviceName: "supabase-postgresql"
+      servicePort: 5432
 
 supabase:
   env:
@@ -53,4 +55,4 @@ kiwigrid:
     runAsNonRoot: true
     capabilities:
       drop:
-        - ALL
+      - ALL

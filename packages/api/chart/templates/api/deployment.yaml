@@ -49,11 +49,11 @@ spec:
             - name: LFAI_CONFIG_FILENAME
               value: "*.toml"
             - name: DEFAULT_EMBEDDINGS_MODEL
-              value: {{ .Values.api.env.defaultEmbeddingsModel }}
+              value: "{{ .Values.api.env.defaultEmbeddingsModel }}"
             - name: PORT
-              value: {{ .Values.api.env.port }}
+              value: "{{ .Values.api.env.port }}"
             - name: SUPABASE_URL
-              value: {{ .Values.supabase.env.url }}
+              value: "{{ .Values.supabase.env.url }}"
             - name: SUPABASE_ANON_KEY
               valueFrom:
                 secretKeyRef:
