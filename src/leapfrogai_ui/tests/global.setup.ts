@@ -1,10 +1,6 @@
 import { test as setup } from './fixtures';
 import * as OTPAuth from 'otpauth';
 import { delay } from 'msw';
-import { deleteAllGeneratedFixtureFiles, deleteAllTestFilesWithApi } from './helpers/fileHelpers';
-import { deleteAllAssistants, deleteAssistantAvatars } from './helpers/assistantHelpers';
-import { deleteAllTestThreadsWithApi } from './helpers/threadHelpers';
-import { deleteAllTestAPIKeys } from './helpers/apiHelpers';
 
 const authFile = 'playwright/.auth/user.json';
 
@@ -68,13 +64,4 @@ setup('authenticate', async ({ page, openAIClient }) => {
   // End of authentication steps.
 
   await page.context().storageState({ path: authFile });
-
-  console.log('setting up...');
-  deleteAllGeneratedFixtureFiles();
-  await deleteAllTestFilesWithApi(openAIClient);
-  await deleteAllAssistants(openAIClient);
-  await deleteAllTestThreadsWithApi(openAIClient);
-  await deleteAssistantAvatars();
-  await deleteAllTestAPIKeys();
-  console.log('set up complete');
 });
