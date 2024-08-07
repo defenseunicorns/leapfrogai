@@ -54,6 +54,21 @@ class Usage(BaseModel):
 ##########
 
 
+class ModelMetadataResponse(BaseModel):
+    type: Literal["embeddings", "llm"] | None = Field(
+        default=None,
+        description="The type of the model e.g. ('embeddings' or 'llm')",
+    )
+    dimensions: int | None = Field(
+        default=None,
+        description="Embedding dimensions (for embeddings models)",\
+    )
+    precision: str | None = Field(
+        default=None,
+        description="Model precision (e.g., 'float16', 'float32')",
+    )
+
+
 class ModelResponseModel(BaseModel):
     """Represents a single model in the response."""
 
@@ -75,6 +90,11 @@ class ModelResponseModel(BaseModel):
         default="leapfrogai",
         description="The organization that owns the model. Always 'leapfrogai' for LeapfrogAI models.",
     )
+    metadata: ModelMetadataResponse | None = Field(
+        default=None,
+        description="Metadata for the model, including type, dimensions (for embeddings), and precision.",
+    )
+
 
 
 class ModelResponse(BaseModel):

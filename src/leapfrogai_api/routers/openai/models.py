@@ -4,6 +4,7 @@ from fastapi import APIRouter
 from leapfrogai_api.backend.types import (
     ModelResponse,
     ModelResponseModel,
+    ModelMetadataResponse,
 )
 from leapfrogai_api.routers.supabase_session import Session
 from leapfrogai_api.utils import get_model_config
@@ -19,7 +20,15 @@ async def models(
     """List all available models."""
     res = ModelResponse(data=[])
     model_config: Config = get_model_config()
-    for model in model_config.models:
-        m = ModelResponseModel(id=model)
+    for model_name, model_data in model_config.models.items():
+        meta = ModelMetadataResponse(
+            type=model_data.metadata.type,
+            dimensions=model_data.metadata.dimensions,
+            precision=model_data.metadata.precision,
+        )
+        m = ModelResponseModel(
+            id=model_name,
+            metadata=meta,
+        )
         res.data.append(m)
     return res

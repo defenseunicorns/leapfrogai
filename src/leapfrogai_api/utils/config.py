@@ -1,23 +1,49 @@
+from __future__ import annotations
 import fnmatch
 import glob
 import logging
 import os
-from typing import List
+from typing import Any, Literal
 
 import toml
 import yaml
 from watchfiles import Change, awatch
+from dataclasses import dataclass, asdict
 
 logging.basicConfig(level=logging.INFO)
 
 
+@dataclass
+class ModelMetadata:
+    """
+    Initializes a ModelMetadata object with the specified model type, dimensions, and precision.
+
+    Parameters:
+        type (Literal["embeddings", "llm"]): The type of the model.
+        dimensions (Optional[int], optional): Embedding dimensions (for embeddings models). Defaults to None.
+        precision (str, optional): Model precision (e.g., 'float16', 'float32'). Defaults to 'float32'.
+    """
+    type: Literal["embeddings", "llm"] | None = None
+    dimensions: int | None = None
+    precision: str | None = None
+
+    def __bool__(self) -> bool:
+        """
+        Returns True if any of the attributes 'type', 'dimensions', or 'precision' of the object are not None,
+        and False otherwise.
+
+        :return: bool
+        """
+        # retrieve all the public attributes of the object, removing the private ones and methods
+        return any(value is not None for value in asdict(self).values())
+
+
+@dataclass
 class Model:
     name: str
     backend: str
-
-    def __init__(self, name: str, backend: str, capabilities: List[str] | None = None):
-        self.name = name
-        self.backend = backend
+    capabilities: list[str] | None = None
+    metadata: ModelMetadata | None = None
 
 
 class Config:
@@ -128,9 +154,45 @@ class Config:
         else:
             return None
 
+    def _get_model(
+        self,
+        model: dict[str, Any],
+    ) -> Model:
+        """
+        Creates and returns a `Model` object based on the given `model` dictionary.
+
+        Args:
+            model (dict[str, Any]): A dictionary containing the information to create a `Model` object.
+                The dictionary should have the following keys:
+                    - "name" (str): The name of the model.
+                    - "backend" (str): The backend of the model.
+                    - "type" (str, optional): The type of the model.
+                    - "dimensions" (int, optional): The dimensions of the model.
+                    - "precision" (int, optional): The precision of the model.
+
+        Returns:
+            Model: The created `Model` object.
+
+        Raises:
+            KeyError: If the required keys are not present in the `model` dictionary.
+        """
+        model_metadata = ModelMetadata(
+            type=model.get("type"),
+            dimensions=model.get("dimensions"),
+            precision=model.get("precision"),
+        )
+        # default to None if no non-None attributes exist in class
+        if not model_metadata:
+            model_metadata = None
+        return Model(
+            name=model["name"],
+            backend=model["backend"],
+            metadata=model_metadata,  
+        )
+
     def parse_models(self, loaded_artifact, config_file):
         for m in loaded_artifact["models"]:
-            model_config = Model(name=m["name"], backend=m["backend"])
+            model_config = self._get_model(model=m)
 
             self.models[m["name"]] = model_config
             try:
