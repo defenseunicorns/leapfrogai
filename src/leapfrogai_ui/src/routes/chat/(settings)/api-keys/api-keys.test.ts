@@ -10,7 +10,7 @@ import {
   mockGetKeys
 } from '$lib/mocks/api-key-mocks';
 import { type APIKeyRow, type APIKeysForm, PERMISSIONS } from '$lib/types/apiKeys';
-import { fakeAssistants, fakeThreads, getFakeApiKeys } from '$testUtils/fakeData';
+import { fakeKeys } from '$testUtils/fakeData';
 import userEvent from '@testing-library/user-event';
 import { toastStore } from '$stores';
 import { formatDate } from '$helpers/dates';
@@ -19,45 +19,23 @@ import { faker } from '@faker-js/faker';
 import { getLocalsMock } from '$lib/mocks/misc';
 import stores from '$app/stores';
 
-const { getStores } = await vi.hoisted(() => import('$lib/mocks/svelte'));
-const keys = getFakeApiKeys({ numKeys: 4 });
+const { mockSvelteStores } = await vi.hoisted(() => import('$lib/mocks/svelte'));
 
 // The DeleteApiKeyModal access $page.data so we re-mock it out here with the keys set to a static value we can
 // use throughout the tests when mocking the server load data as well
-vi.mock('$app/stores', (): typeof stores => {
-  const page: typeof stores.page = {
-    subscribe(fn) {
-      return getStores({
-        url: `http://localhost/chat/${fakeThreads[0].id}`,
-        params: { thread_id: fakeThreads[0].id },
-        data: {
-          threads: fakeThreads,
-          assistants: fakeAssistants,
-          assistant: undefined,
-          files: [],
-          keys
-        }
-      }).page.subscribe(fn);
+vi.mock('$app/stores', async (): Promise<typeof stores> => {
+  const { fakeThreads, fakeAssistants, fakeKeys } = await import('$testUtils/fakeData');
+  return await mockSvelteStores({
+    url: `http://localhost/chat/${fakeThreads[0].id}`,
+    params: { thread_id: fakeThreads[0].id },
+    data: {
+      threads: fakeThreads,
+      assistants: fakeAssistants,
+      assistant: undefined,
+      files: [],
+      keys: fakeKeys
     }
-  };
-  const navigating: typeof stores.navigating = {
-    subscribe(fn) {
-      return getStores().navigating.subscribe(fn);
-    }
-  };
-  const updated: typeof stores.updated = {
-    subscribe(fn) {
-      return getStores().updated.subscribe(fn);
-    },
-    check: () => Promise.resolve(false)
-  };
-
-  return {
-    getStores,
-    navigating,
-    page,
-    updated
-  };
+  });
 });
 
 describe('api keys', () => {
@@ -65,7 +43,7 @@ describe('api keys', () => {
   let searchbox: HTMLElement;
 
   beforeEach(async () => {
-    mockGetKeys(keys);
+    mockGetKeys(fakeKeys);
 
     // @ts-expect-error: full mocking of load function params not necessary and is overcomplicated
     const data = await load({ depends: vi.fn(), locals: getLocalsMock() });
@@ -78,37 +56,37 @@ describe('api keys', () => {
     });
   });
   it('lists all the keys', () => {
-    keys.forEach((key) => {
+    fakeKeys.forEach((key) => {
       expect(screen.getByText(key.name));
     });
   });
   it('searches by name', async () => {
-    expect(screen.getByText(keys[1].name)).toBeInTheDocument();
-    await userEvent.type(searchbox, keys[0].name);
-    expect(screen.queryByText(keys[1].name)).not.toBeInTheDocument();
-    expect(screen.getByText(keys[0].name)).toBeInTheDocument();
+    expect(screen.getByText(fakeKeys[1].name)).toBeInTheDocument();
+    await userEvent.type(searchbox, fakeKeys[0].name);
+    expect(screen.queryByText(fakeKeys[1].name)).not.toBeInTheDocument();
+    expect(screen.getByText(fakeKeys[0].name)).toBeInTheDocument();
   });
   it('searches for keys by created date', async () => {
-    expect(screen.getByText(keys[0].name)).toBeInTheDocument();
-    await userEvent.type(searchbox, formatDate(new Date(keys[0].created_at * 1000)));
-    expect(screen.queryByText(keys[1].name)).not.toBeInTheDocument();
-    expect(screen.getByText(keys[0].name)).toBeInTheDocument();
+    expect(screen.getByText(fakeKeys[0].name)).toBeInTheDocument();
+    await userEvent.type(searchbox, formatDate(new Date(fakeKeys[0].created_at * 1000)));
+    expect(screen.queryByText(fakeKeys[1].name)).not.toBeInTheDocument();
+    expect(screen.getByText(fakeKeys[0].name)).toBeInTheDocument();
   });
   it('searches for keys by expiration date', async () => {
-    expect(screen.getByText(keys[0].name)).toBeInTheDocument();
-    await userEvent.type(searchbox, formatDate(new Date(keys[0].expires_at * 1000)));
-    expect(screen.queryByText(keys[1].name)).not.toBeInTheDocument();
-    expect(screen.getByText(keys[0].name)).toBeInTheDocument();
+    expect(screen.getByText(fakeKeys[0].name)).toBeInTheDocument();
+    await userEvent.type(searchbox, formatDate(new Date(fakeKeys[0].expires_at * 1000)));
+    expect(screen.queryByText(fakeKeys[1].name)).not.toBeInTheDocument();
+    expect(screen.getByText(fakeKeys[0].name)).toBeInTheDocument();
   });
   it('searches for keys by secret', async () => {
-    expect(screen.getByText(keys[0].name)).toBeInTheDocument();
-    await userEvent.type(searchbox, keys[0].api_key.slice(-4));
-    expect(screen.queryByText(keys[1].name)).not.toBeInTheDocument();
-    expect(screen.getByText(keys[0].name)).toBeInTheDocument();
+    expect(screen.getByText(fakeKeys[0].name)).toBeInTheDocument();
+    await userEvent.type(searchbox, fakeKeys[0].api_key.slice(-4));
+    expect(screen.queryByText(fakeKeys[1].name)).not.toBeInTheDocument();
+    expect(screen.getByText(fakeKeys[0].name)).toBeInTheDocument();
   });
 
   it('sorts by created_at by default', async () => {
-    const keysSortedByCreatedAt = keys.sort((a, b) => a.created_at - b.created_at);
+    const keysSortedByCreatedAt = fakeKeys.sort((a, b) => a.created_at - b.created_at);
     const rows = screen.getAllByRole('row');
     // The first row is the header
     const rowKeyNames = rows.slice(1).map((row) => {
@@ -123,7 +101,7 @@ describe('api keys', () => {
   });
   // Only testing the "Name" column
   it('sorts by column', async () => {
-    const keysSortedByName = keys.sort((a, b) => a.name.localeCompare(b.name));
+    const keysSortedByName = fakeKeys.sort((a, b) => a.name.localeCompare(b.name));
     await userEvent.click(screen.getByText('Name'));
     const rows = screen.getAllByRole('row');
     // The first row is the header
@@ -150,7 +128,7 @@ describe('api keys', () => {
 
     const modal = screen.getByTestId('delete-api-key-modal');
     expect(modal).toBeInTheDocument();
-    screen.getByText(keys.map((key) => key.name).join(', '));
+    screen.getByText(fakeKeys.map((key) => key.name).join(', '));
     await userEvent.click(within(modal).getByRole('button', { name: /delete/i }));
 
     expect(toastSpy).toHaveBeenCalledWith({

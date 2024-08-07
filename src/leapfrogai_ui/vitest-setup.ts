@@ -5,14 +5,13 @@ import { afterAll, afterEach, beforeAll, vi } from 'vitest';
 import * as environment from '$app/environment';
 import * as navigation from '$app/navigation';
 import * as stores from '$app/stores';
-import { fakeAssistants, fakeThreads, getFakeApiKeys } from '$testUtils/fakeData';
 import OpenAIMock from '$lib/mocks/openai';
 import dotenv from 'dotenv';
 
 dotenv.config();
 
 //Calls to vi.mock are hoisted to the top of the file, so you don't have access to variables declared in the global file scope unless they are defined with vi.hoisted before the call.
-const { getStores } = await vi.hoisted(() => import('$lib/mocks/svelte'));
+const { mockSvelteStores } = await vi.hoisted(() => import('$lib/mocks/svelte'));
 
 // Fixes error: node.scrollIntoView is not a function
 window.HTMLElement.prototype.scrollIntoView = function () {};
@@ -57,42 +56,19 @@ vi.mock('$app/navigation', (): typeof navigation => ({
 }));
 
 // Mock SvelteKit runtime module $app/stores
-vi.mock('$app/stores', (): typeof stores => {
-  const page: typeof stores.page = {
-    subscribe(fn) {
-      const keys = getFakeApiKeys({ numKeys: 4 });
-
-      return getStores({
-        url: `http://localhost/chat/${fakeThreads[0].id}`,
-        params: { thread_id: fakeThreads[0].id },
-        data: {
-          threads: fakeThreads,
-          assistants: fakeAssistants,
-          assistant: undefined,
-          files: [],
-          keys
-        }
-      }).page.subscribe(fn);
+vi.mock('$app/stores', async (): Promise<typeof stores> => {
+  const { fakeAssistants, fakeThreads } = await import('$testUtils/fakeData');
+  return await mockSvelteStores({
+    url: `http://localhost/chat/${fakeThreads[0].id}`,
+    params: { thread_id: fakeThreads[0].id },
+    data: {
+      threads: fakeThreads,
+      assistants: fakeAssistants,
+      assistant: undefined,
+      files: [],
+      keys: []
     }
-  };
-  const navigating: typeof stores.navigating = {
-    subscribe(fn) {
-      return getStores().navigating.subscribe(fn);
-    }
-  };
-  const updated: typeof stores.updated = {
-    subscribe(fn) {
-      return getStores().updated.subscribe(fn);
-    },
-    check: () => Promise.resolve(false)
-  };
-
-  return {
-    getStores,
-    navigating,
-    page,
-    updated
-  };
+  });
 });
 
 export const restHandlers = [];
