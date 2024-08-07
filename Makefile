@@ -236,43 +236,43 @@ silent-build-cpu:
 silent-deploy-supabase-package:
 	@echo "Starting Supabase deployment..."
 	@mkdir -p .logs
-	@uds zarf package deploy packages/supabase/zarf-package-supabase-${ARCH}-${LOCAL_VERSION}.tar.zst ${ZARF_FLAGS} --flavor ${FLAVOR} --confirm > .logs/deploy-supabase.log 2>&1
+	@uds zarf package deploy packages/supabase/zarf-package-supabase-${ARCH}-${LOCAL_VERSION}.tar.zst ${ZARF_FLAGS} --confirm > .logs/deploy-supabase.log 2>&1
 	@echo "Supabase deployment completed"
 
 silent-deploy-api-package:
 	@echo "Starting API deployment..."
 	@mkdir -p .logs
-	@uds zarf package deploy packages/api/zarf-package-leapfrogai-api-${ARCH}-${LOCAL_VERSION}.tar.zst ${ZARF_FLAGS} --flavor ${FLAVOR} --confirm > .logs/deploy-api.log 2>&1
+	@uds zarf package deploy packages/api/zarf-package-leapfrogai-api-${ARCH}-${LOCAL_VERSION}.tar.zst ${ZARF_FLAGS} --confirm > .logs/deploy-api.log 2>&1
 	@echo "API deployment completed"
 
 silent-deploy-ui-package:
 	@echo "Starting UI deployment..."
 	@mkdir -p .logs
-	@uds zarf package deploy packages/ui/zarf-package-leapfrogai-ui-${ARCH}-${LOCAL_VERSION}.tar.zst ${ZARF_FLAGS} --flavor ${FLAVOR} --confirm > .logs/deploy-ui.log 2>&1
+	@uds zarf package deploy packages/ui/zarf-package-leapfrogai-ui-${ARCH}-${LOCAL_VERSION}.tar.zst ${ZARF_FLAGS} --confirm > .logs/deploy-ui.log 2>&1
 	@echo "UI deployment completed"
 
 silent-deploy-llama-cpp-python-package:
 	@echo "Starting llama-cpp-python deployment..."
 	@mkdir -p .logs
-	@uds zarf package deploy packages/llama-cpp-python/zarf-package-llama-cpp-python-${ARCH}-${LOCAL_VERSION}.tar.zst ${ZARF_FLAGS} --flavor ${FLAVOR} --confirm > .logs/deploy-llama-cpp-python.log 2>&1
+	@uds zarf package deploy packages/llama-cpp-python/zarf-package-llama-cpp-python-${ARCH}-${LOCAL_VERSION}.tar.zst ${ZARF_FLAGS} --confirm > .logs/deploy-llama-cpp-python.log 2>&1
 	@echo "llama-cpp-python deployment completed"
 
 silent-deploy-vllm-package:
 	@echo "Starting VLLM deployment..."
 	@mkdir -p .logs
-	@uds zarf package deploy packages/vllm/zarf-package-vllm-${ARCH}-${LOCAL_VERSION}.tar.zst ${ZARF_FLAGS} --flavor ${FLAVOR} --confirm > .logs/deploy-vllm.log 2>&1
+	@uds zarf package deploy packages/vllm/zarf-package-vllm-${ARCH}-${LOCAL_VERSION}.tar.zst ${ZARF_FLAGS} --confirm > .logs/deploy-vllm.log 2>&1
 	@echo "VLLM deployment completed"
 
 silent-deploy-text-embeddings-package:
 	@echo "Starting text-embeddings deployment..."
 	@mkdir -p .logs
-	@uds zarf package deploy packages/text-embeddings/zarf-package-text-embeddings-${ARCH}-${LOCAL_VERSION}.tar.zst ${ZARF_FLAGS} --flavor ${FLAVOR} --confirm > .logs/deploy-text-embeddings.log 2>&1
+	@uds zarf package deploy packages/text-embeddings/zarf-package-text-embeddings-${ARCH}-${LOCAL_VERSION}.tar.zst ${ZARF_FLAGS} --confirm > .logs/deploy-text-embeddings.log 2>&1
 	@echo "text-embeddings deployment completed"
 
 silent-deploy-whisper-package:
 	@echo "Starting whisper deployment..."
 	@mkdir -p .logs
-	@uds zarf package deploy packages/whisper/zarf-package-whisper-${ARCH}-${LOCAL_VERSION}.tar.zst ${ZARF_FLAGS} --flavor ${FLAVOR} --confirm > .logs/deploy-whisper.log 2>&1
+	@uds zarf package deploy packages/whisper/zarf-package-whisper-${ARCH}-${LOCAL_VERSION}.tar.zst ${ZARF_FLAGS} --confirm > .logs/deploy-whisper.log 2>&1
 	@echo "whisper deployment completed"
 
 silent-deploy-cpu:
@@ -296,12 +296,12 @@ silent-deploy-gpu:
 	@$(MAKE) silent-deploy-supabase-package ZARF_FLAGS="$(ZARF_FLAGS) $(SILENT_ZARF_FLAGS)"
 	@echo "Deploying API and models..."
 	@$(MAKE) -j${MAX_JOBS} \
-		silent-deploy-api-package ZARF_FLAGS="${ZARF_FLAGS} --flavor ${FLAVOR} ${SILENT_ZARF_FLAGS}" \
-		silent-deploy-vllm-package ZARF_FLAGS="${ZARF_FLAGS} --flavor ${FLAVOR} ${SILENT_ZARF_FLAGS}" \
-		silent-deploy-text-embeddings-package ZARF_FLAGS="${ZARF_FLAGS} --flavor ${FLAVOR} ${SILENT_ZARF_FLAGS} --set=GPU_CLASS_NAME='nvidia'" \
-		silent-deploy-whisper-package ZARF_FLAGS="${ZARF_FLAGS} --flavor ${FLAVOR} ${SILENT_ZARF_FLAGS} --set=GPU_CLASS_NAME='nvidia'"
+		silent-deploy-api-package ZARF_FLAGS="${ZARF_FLAGS} ${SILENT_ZARF_FLAGS}" \
+		silent-deploy-vllm-package ZARF_FLAGS="${ZARF_FLAGS} ${SILENT_ZARF_FLAGS}" \
+		silent-deploy-text-embeddings-package ZARF_FLAGS="${ZARF_FLAGS} ${SILENT_ZARF_FLAGS} --set=GPU_CLASS_NAME='nvidia'" \
+		silent-deploy-whisper-package ZARF_FLAGS="${ZARF_FLAGS} ${SILENT_ZARF_FLAGS} --set=GPU_CLASS_NAME='nvidia'"
 	@echo "Deploying UI..."
-	@$(MAKE) silent-deploy-ui-package ZARF_FLAGS="${ZARF_FLAGS} --flavor ${FLAVOR} ${SILENT_ZARF_FLAGS} --set=MODEL='vllm'"
+	@$(MAKE) silent-deploy-ui-package ZARF_FLAGS="${ZARF_FLAGS} ${SILENT_ZARF_FLAGS} --set=MODEL='vllm'"
 	@echo "All deployments completed"
 
 silent-fresh-leapfrogai-gpu:
