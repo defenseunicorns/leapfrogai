@@ -1,0 +1,13 @@
+[[models]]
+name = "model1"
+backend = "backend1"
+type = "type1"
+dimensions = 768
+precision = 32
+capabilities = [
+    "embeddings",
+]
+
+[[models]]
+name = "model2"
+backend = "backend2"
