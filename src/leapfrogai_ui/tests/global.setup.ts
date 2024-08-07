@@ -77,5 +77,4 @@ setup('authenticate', async ({ page, openAIClient }) => {
   await deleteAssistantAvatars();
   await deleteAllTestAPIKeys();
   console.log('set up complete');
-
 });
