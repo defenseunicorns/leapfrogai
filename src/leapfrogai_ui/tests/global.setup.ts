@@ -1,10 +1,23 @@
 import { test as setup } from './fixtures';
 import * as OTPAuth from 'otpauth';
 import { delay } from 'msw';
+import { deleteAllGeneratedFixtureFiles, deleteAllTestFilesWithApi } from './helpers/fileHelpers';
+import { deleteAllAssistants, deleteAssistantAvatars } from './helpers/assistantHelpers';
+import { deleteAllTestThreadsWithApi } from './helpers/threadHelpers';
+import { deleteAllTestAPIKeys } from './helpers/apiHelpers';
 
 const authFile = 'playwright/.auth/user.json';
 
-setup('authenticate', async ({ page }) => {
+setup('authenticate', async ({ page, openAIClient }) => {
+  console.log('setting up...');
+  deleteAllGeneratedFixtureFiles();
+  await deleteAllTestFilesWithApi(openAIClient);
+  await deleteAllAssistants(openAIClient);
+  await deleteAllTestThreadsWithApi(openAIClient);
+  await deleteAssistantAvatars();
+  await deleteAllTestAPIKeys();
+  console.log('set up complete');
+
   await page.goto('/'); // go to the home page
   await delay(2000); // allow page to fully hydrate
   if (process.env.PUBLIC_DISABLE_KEYCLOAK === 'true') {

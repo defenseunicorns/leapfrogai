@@ -15,7 +15,8 @@ import { faker } from '@faker-js/faker';
 import {
   createAssistantWithApi,
   deleteAssistantCard,
-  deleteAssistantWithApi
+  deleteAssistantWithApi,
+  editAssistantCard
 } from './helpers/assistantHelpers';
 import { getSimpleMathQuestion, loadChatPage } from './helpers/helpers';
 import { sendMessage, waitForResponseToComplete } from './helpers/threadHelpers';
@@ -36,9 +37,10 @@ test('can edit an assistant and attach files to it', async ({ page, openAIClient
 
   await page.goto(`/chat/assistants-management/edit/${assistant.id}`);
 
-  await page.getByRole('button', { name: 'Open menu' }).click();
-  await page.getByLabel('Choose an item').locator('label').nth(1).click();
-  await page.getByLabel('Choose an item').locator('label').nth(2).click();
+  await page.getByTestId('file-select-dropdown-btn').click();
+  const fileSelectContainer = page.getByTestId('file-select-container');
+  await fileSelectContainer.getByTestId(`${uploadedFile1.id}-checkbox`).check();
+  await fileSelectContainer.getByTestId(`${uploadedFile2.id}-checkbox`).check();
   await page.getByRole('button', { name: 'Save' }).click();
   await expect(page.getByText('Assistant Updated')).toBeVisible();
 
@@ -61,18 +63,19 @@ test('can create a new assistant and attach files to it', async ({ page, openAIC
   await page.goto(`/chat/assistants-management/new`);
 
   await page.getByLabel('name').fill(assistantInput.name);
-  await page.getByLabel('description').fill(assistantInput.description);
+  await page.getByLabel('tagline').fill(assistantInput.description);
   await page.getByPlaceholder("You'll act as...").fill(assistantInput.instructions);
 
-  await page.getByRole('button', { name: 'Open menu' }).click();
-  await page.getByLabel('Choose an item').locator('label').nth(1).click();
-  await page.getByLabel('Choose an item').locator('label').nth(2).click();
+  await page.getByTestId('file-select-dropdown-btn').click();
+  const fileSelectContainer = page.getByTestId('file-select-container');
+  await fileSelectContainer.getByTestId(`${uploadedFile1.id}-checkbox`).check();
+  await fileSelectContainer.getByTestId(`${uploadedFile2.id}-checkbox`).check();
   await page.getByRole('button', { name: 'Save' }).click();
   await expect(page.getByText('Assistant Created')).toBeVisible();
 
   // Cleanup
   expect(page.waitForURL('/chat/assistants-management'));
-  await deleteAssistant(assistantInput.name, page);
+  await deleteAssistantCard(assistantInput.name, page);
   await deleteFileWithApi(uploadedFile1.id, openAIClient);
   await deleteFileWithApi(uploadedFile2.id, openAIClient);
   deleteFixtureFile(filename1);
@@ -90,21 +93,20 @@ test('it can edit an assistant and remove a file', async ({ page, openAIClient }
   await page.goto(`/chat/assistants-management/edit/${assistant.id}`);
 
   // Create assistant with files
-  await page.getByRole('button', { name: 'Open menu' }).click();
-  await page.getByLabel('Choose an item').locator('label').nth(1).click();
-  await page.getByLabel('Choose an item').locator('label').nth(2).click();
+  await page.getByTestId('file-select-dropdown-btn').click();
+  const fileSelectContainer = page.getByTestId('file-select-container');
+  await fileSelectContainer.getByTestId(`${uploadedFile1.id}-checkbox`).check();
+  await fileSelectContainer.getByTestId(`${uploadedFile2.id}-checkbox`).check();
   await page.getByRole('button', { name: 'Save' }).click();
   await expect(page.getByText('Assistant Updated')).toBeVisible();
 
-  await page
-    .getByTestId(`assistant-card-${assistant.name}`)
-    .getByTestId('assistant-card-dropdown')
-    .click();
-  await page.getByRole('menuitem', { name: 'Edit' }).click();
+  await editAssistantCard(assistant.name!, page);
+
   await page.waitForURL('/chat/assistants-management/edit/**/*');
 
   // Deselect
-  await page.locator('.bx--file-close').first().click();
+  await page.getByTestId('file-select-dropdown-btn').click();
+  await fileSelectContainer.getByTestId(`${uploadedFile1.id}-checkbox`).uncheck();
   await page.getByRole('button', { name: 'Save' }).click();
   await expect(page.getByText('Assistant Updated')).toBeVisible();
 
@@ -127,10 +129,10 @@ test('while creating an assistant, it can upload new files and save the assistan
   await page.goto('/chat/assistants-management/new');
 
   await page.getByLabel('name').fill(assistantInput.name);
-  await page.getByLabel('description').fill(assistantInput.description);
+  await page.getByLabel('tagline').fill(assistantInput.description);
   await page.getByPlaceholder("You'll act as...").fill(assistantInput.instructions);
 
-  await page.getByRole('button', { name: 'Open menu' }).click();
+  await page.getByTestId('file-select-dropdown-btn').click();
   await uploadFile(page, filename, 'Upload new data source');
 
   const saveBtn = await page.getByRole('button', { name: 'Save' });
@@ -159,7 +161,7 @@ test('while editing an assistant, it can upload new files and save the assistant
   const assistant = await createAssistantWithApi({ openAIClient });
   await page.goto(`/chat/assistants-management/edit/${assistant.id}`);
 
-  await page.getByRole('button', { name: 'Open menu' }).click();
+  await page.getByTestId('file-select-dropdown-btn').click();
   await uploadFile(page, filename, 'Upload new data source');
 
   const saveBtn = await page.getByRole('button', { name: 'Save' });
@@ -191,7 +193,7 @@ test('it displays a failed toast and temporarily failed uploader item when a the
 
   await page.goto('/chat/assistants-management/new');
 
-  await page.getByRole('button', { name: 'Open menu' }).click();
+  await page.getByTestId('file-select-dropdown-btn').click();
   await uploadFile(page, filename, 'Upload new data source');
 
   await expect(page.getByText(`Upload Failed`)).toBeVisible();
@@ -213,7 +215,7 @@ test('it displays an uploading indicator temporarily when uploading a file', asy
 
   await page.goto('/chat/assistants-management/new');
 
-  await page.getByRole('button', { name: 'Open menu' }).click();
+  await page.getByTestId('file-select-dropdown-btn').click();
   await uploadFile(page, filename, 'Upload new data source');
 
   await expect(page.getByTestId(`${filename}-uploading-uploader-item`)).toBeVisible();
