@@ -9,6 +9,14 @@ repos:
         name: Large Files check
         args: ["--maxkb=1024"]
 
+      - id: detect-aws-credentials
+        name: Check AWS Credentials
+        args:
+          - "--allow-missing-credentials"
+
+      - id: detect-private-key
+        name: Check Private Keys
+
       - id: check-merge-conflict
         name: Merge Conflict Resolution Check
 
