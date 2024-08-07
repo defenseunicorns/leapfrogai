@@ -100,8 +100,8 @@ realtime:
       - name: JWT_SECRET
         valueFrom:
           secretKeyRef:
-            name: '{{ include "supabase.jwt.secretName" . }}'
-            key: '{{ include "supabase.realtime.secretKey" . }}'
+            name: supabase-bootstrap-jwt
+            key: secret
      command:
        - sh
        - -c
