@@ -22,6 +22,8 @@ variables:
 
 components:
   - name: leapfrogai
+    only:
+      flavor: upstream
     required: true
     charts:
     - name: leapfrogai
@@ -36,6 +38,33 @@ components:
       - "ghcr.io/defenseunicorns/leapfrogai/leapfrogai-api:###ZARF_PKG_TMPL_LEAPFROGAI_IMAGE_VERSION###"
       - "ghcr.io/defenseunicorns/leapfrogai/api-migrations:###ZARF_PKG_TMPL_LEAPFROGAI_IMAGE_VERSION###"
       - "kiwigrid/k8s-sidecar:1.23.3"
+    actions:
+      onDeploy:
+        after:
+          - wait:
+              cluster:
+                kind: Job
+                name: api-migrations-###ZARF_PKG_TMPL_LEAPFROGAI_IMAGE_VERSION###
+                namespace: leapfrogai
+                condition: complete
+
+  - name: leapfrogai
+    only:
+      flavor: registry1
+    required: true
+    charts:
+    - name: leapfrogai
+      namespace: leapfrogai
+      localPath: chart
+      # x-release-please-start-version
+      version: 0.10.0
+      # x-release-please-end
+      valuesFiles:
+        - "lfai-values.yaml"
+    images:
+      - "registry1.dso.mil/ironbank/opensource/defenseunicorns/leapfrogai/api:###ZARF_PKG_TMPL_LEAPFROGAI_IMAGE_VERSION###"
+      - "ghcr.io/defenseunicorns/leapfrogai/api-migrations:###ZARF_PKG_TMPL_LEAPFROGAI_IMAGE_VERSION###"
+      - "registry1.dso.mil/ironbank/kiwigrid/k8s-sidecar:1.23.3"
     actions:
       onDeploy:
         after:
