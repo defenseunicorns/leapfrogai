@@ -53,14 +53,15 @@ jobs:
           check-jsonschema bundles/latest/gpu/uds-bundle.yaml --schemafile uds.schema.json
           check-jsonschema bundles/latest/cpu/uds-bundle.yaml --schemafile uds.schema.json
 
-      - name: Download UDS Tasks Schema
-        run: curl -o tasks.schema.json https://raw.githubusercontent.com/defenseunicorns/uds-cli/v0.14.0/tasks.schema.json
+      # TODO: reactivate when UDS Tasks are implemented in this repository
+      # - name: Download UDS Tasks Schema
+      #   run: curl -o tasks.schema.json https://raw.githubusercontent.com/defenseunicorns/uds-cli/v0.14.0/tasks.schema.json
 
-      - name: Validate uds-bundle.yaml
-        run: |
-          check-jsonschema tasks/create.yaml --schemafile tasks.schema.json
-          check-jsonschema tasks/publish.yaml --schemafile tasks.schema.json
-          check-jsonschema tasks/deploy.yaml --schemafile tasks.schema.json
-          check-jsonschema tasks/setup.yaml --schemafile tasks.schema.json
-          check-jsonschema tasks/test.yaml --schemafile tasks.schema.json
-          check-jsonschema tasks.yaml --schemafile tasks.schema.json
+      # - name: Validate uds-bundle.yaml
+      #   run: |
+      #     check-jsonschema tasks/create.yaml --schemafile tasks.schema.json
+      #     check-jsonschema tasks/publish.yaml --schemafile tasks.schema.json
+      #     check-jsonschema tasks/deploy.yaml --schemafile tasks.schema.json
+      #     check-jsonschema tasks/setup.yaml --schemafile tasks.schema.json
+      #     check-jsonschema tasks/test.yaml --schemafile tasks.schema.json
+      #     check-jsonschema tasks.yaml --schemafile tasks.schema.json
