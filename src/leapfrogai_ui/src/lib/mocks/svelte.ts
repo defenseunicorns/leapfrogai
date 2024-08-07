@@ -1,40 +1,56 @@
-import { type Readable, readable } from 'svelte/store';
-import type { Navigation, Page } from '@sveltejs/kit';
-import { getFakeSession } from '$testUtils/fakeData';
-import { faker } from '@faker-js/faker';
-
 type GetStoresOverrides = {
-  url: string;
-  params: Record<string, string>;
+  url?: string;
+  params?: Record<string, string>;
   data?: object;
 };
 
-export const getStores = (
-  options: GetStoresOverrides = { url: 'http://localhost', params: {}, data: {} }
-) => {
+export const mockSvelteStores = async (options: GetStoresOverrides = {}) => {
+  const { readable, writable } = await import('svelte/store');
+  const { faker } = await import('@faker-js/faker');
+  const { getFakeSession } = await import('$testUtils/fakeData');
+
+  const { url = 'http://localhost', params = {}, data = {} } = options;
+
   const id = faker.string.uuid();
   const user_id = faker.string.uuid();
   const full_name = faker.person.fullName();
-  const navigating = readable<Navigation | null>(null);
-
-  const page = readable<Page>({
-    url: new URL(options.url),
-    params: options.params,
-    route: { id: null },
-    status: 200,
-    error: null,
-    data: {
-      profile: { id, full_name: full_name, thread_ids: [] },
-      session: getFakeSession({ user_id, full_name }),
-      ...options.data
-    },
-    state: {},
-    form: null
-  });
-  const updated: Readable<boolean> & { check(): Promise<boolean> } = {
+  const updated: typeof import('$app/stores').updated = {
     subscribe: readable(false).subscribe,
     check: () => Promise.resolve(false)
   };
 
-  return { navigating, page, updated };
+  const getStores = () => ({
+    navigating: readable(null),
+    page: readable({
+      url: new URL(url),
+      params,
+      route: { id: null },
+      status: 200,
+      error: null,
+      data: {
+        profile: { id, full_name: full_name, thread_ids: [] },
+        session: getFakeSession({ user_id, full_name }),
+        ...data
+      },
+      state: {},
+      form: null
+    }),
+    session: writable(null),
+    updated
+  });
+
+  const page: typeof import('$app/stores').page = {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    subscribe(fn: any) {
+      return getStores().page.subscribe(fn);
+    }
+  };
+  const navigating: typeof import('$app/stores').navigating = {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    subscribe(fn: any) {
+      return getStores().navigating.subscribe(fn);
+    }
+  };
+
+  return { getStores, page, navigating, updated };
 };

@@ -84,3 +84,7 @@ export const mockRevokeApiKeyError = () => {
     )
   );
 };
+
+export const mockCreateApiKeyFormActionError = () => {
+  server.use(http.post('/chat/api-keys', () => HttpResponse.error()));
+};
