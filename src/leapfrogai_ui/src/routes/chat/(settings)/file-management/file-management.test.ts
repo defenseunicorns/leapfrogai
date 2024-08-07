@@ -26,6 +26,7 @@ describe('file management', () => {
   let searchbox: HTMLElement;
 
   beforeEach(async () => {
+    // @ts-expect-error: full mocking of load function params not necessary and is overcomplicated
     const data = await load();
 
     form = await superValidate(yup(filesSchema));
@@ -182,6 +183,7 @@ describe('table pagination', () => {
   let searchbox: HTMLElement;
 
   beforeEach(async () => {
+    // @ts-expect-error: full mocking of load function params not necessary and is overcomplicated
     const data = await load();
 
     form = await superValidate(yup(filesSchema));

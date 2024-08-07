@@ -46,7 +46,7 @@ export const mockCreateApiKey = (api_key = `lfai_${faker.string.uuid()}`) => {
         const reqJson = (await request.json()) as NewApiKeyInput;
         const key: APIKeyRow = {
           id: faker.string.uuid(),
-          name: reqJson.name,
+          name: reqJson.name!,
           api_key,
           created_at: new Date().getTime(),
           expires_at: reqJson.expires_at,
