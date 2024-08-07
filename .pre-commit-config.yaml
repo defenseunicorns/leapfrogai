@@ -82,12 +82,6 @@ repos:
   #############
 
   # ZARF PACKAGE CHECK
-  - repo: local
-    hooks:
-      - id: download-schema
-        name: "Download Zarf Schema"
-        entry: bash -c 'curl -o zarf.schema.json https://raw.githubusercontent.com/defenseunicorns/uds-cli/v0.14.0/zarf.schema.json'
-        language: system
   - repo: https://github.com/python-jsonschema/check-jsonschema
     rev: 0.14.0
     hooks:
@@ -96,20 +90,8 @@ repos:
         files: "zarf.yaml"
         types: [yaml]
         args: ["--schemafile", "zarf.schema.json"]
-  - repo: local
-    hooks:
-      - id: delete-schema
-        name: "Delete Zarf Schema"
-        entry: bash -c 'rm -f zarf.schema.json'
-        language: system
 
   # UDS BUNDLE CHECK
-  - repo: local
-    hooks:
-      - id: download-schema
-        name: "Download UDS Bundle Schema"
-        entry: bash -c 'curl -o uds.schema.json https://raw.githubusercontent.com/defenseunicorns/uds-cli/v0.14.0/uds.schema.json'
-        language: system
   - repo: https://github.com/python-jsonschema/check-jsonschema
     rev: 0.14.0
     hooks:
@@ -118,20 +100,8 @@ repos:
         files: "uds-bundle.yaml"
         types: [yaml]
         args: ["--schemafile", "uds.schema.json"]
-  - repo: local
-    hooks:
-      - id: delete-schema
-        name: "Delete UDS Bundle Schema"
-        entry: bash -c 'rm -f uds.schema.json'
-        language: system
 
   # UDS TASK CHECK
-  - repo: local
-    hooks:
-      - id: download-schema
-        name: "Download UDS Tasks Schema"
-        entry: bash -c 'curl -o tasks.schema.json https://raw.githubusercontent.com/defenseunicorns/uds-cli/v0.14.0/tasks.schema.json'
-        language: system
   - repo: https://github.com/python-jsonschema/check-jsonschema
     rev: 0.14.0
     hooks:
@@ -165,9 +135,3 @@ repos:
         files: "test.yaml"
         types: [yaml]
         args: ["--schemafile", "tasks.schema.json"]
-  - repo: local
-    hooks:
-      - id: delete-schema
-        name: "Delete UDS Tasks Schema"
-        entry: bash -c 'rm -f tasks.schema.json'
-        language: system

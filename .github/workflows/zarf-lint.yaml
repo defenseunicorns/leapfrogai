@@ -1,0 +1,54 @@
+name: Zarf Lint
+
+on:
+  push:
+    branches:
+      - "main"
+    paths:
+      - "packages"
+      - ".github/workflows/zarf-lint.yaml"
+  pull_request:
+    branches:
+      - "main"
+    paths:
+      - "packages"
+      - ".github/workflows/zarf-lint.yaml"
+
+concurrency:
+  group: zarf-lint-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  zarf-lint:
+    runs-on: ubuntu-latest
+    name: Lint Zarf Manifest
+
+    permissions:
+      contents: read
+
+    steps:
+      - name: Checkout Repo
+        uses: actions/checkout@b4ffde65f46336ab88eb53be808477a3936bae11 # v4.1.1
+
+      - name: Set up Python
+        uses: actions/setup-python@0a5c61591373683505ea898e09a3ea4f39ef2b9c # v5.0.0
+        with:
+          python-version: 3.11.6
+
+      - name: Download Zarf Package Schema
+        # TODO: renovate setup
+        run: curl -o zarf.schema.json https://raw.githubusercontent.com/defenseunicorns/uds-cli/v0.14.0/zarf.schema.json
+
+      - name: Install jsonschema
+        run: pip install check-jsonschema==0.28.0
+
+      - name: Validate zarf.yaml
+        run: |
+          check-jsonschema packages/api/zarf.yaml --schemafile zarf.schema.json
+          check-jsonschema packages/llama-cpp-python/zarf.yaml --schemafile zarf.schema.json
+          check-jsonschema packages/repeater/zarf.yaml --schemafile zarf.schema.json
+          check-jsonschema packages/supabase/zarf.yaml --schemafile zarf.schema.json
+          check-jsonschema packages/text-embeddings/zarf.yaml --schemafile zarf.schema.json
+          check-jsonschema packages/ui/zarf.yaml --schemafile zarf.schema.json
+          check-jsonschema packages/vllm/zarf.yaml --schemafile zarf.schema.json
+          check-jsonschema packages/whisper/zarf.yaml --schemafile zarf.schema.json

@@ -77,7 +77,7 @@ From within the cloned repository, deploy K3D and the LeapfrogAI bundle:
 ``` bash
 make create-uds-cpu-cluster
 
-cd uds-bundles/latest/cpu/
+cd bundles/latest/cpu/
 uds create .
 uds deploy uds-bundle-leapfrogai-*.tar.zst --confirm
 ```
@@ -91,7 +91,7 @@ In order to test the GPU deployment locally on K3d, use the following command wh
  make create-uds-gpu-cluster # create a uds cluster equipped with the k3d-gpu image
  make test-uds-gpu-cluster # deploy a test gpu pod to see if everything is working
 
- cd uds-bundles/latest/gpu/
+ cd bundles/latest/gpu/
  uds create .
  uds deploy uds-bundle-leapfrogai-*.tar.zst --confirm
 ```
