@@ -15,8 +15,8 @@
   - [SDK](#sdk)
   - [User Interface](#user-interface)
   - [Repeater](#repeater)
-  - [Image Hardening](#image-hardening)
 - [Usage](#usage)
+  - [Flavors](#flavors)
   - [UDS](#uds)
     - [UDS Latest](#uds-latest)
     - [UDS Dev](#uds-dev)
@@ -101,15 +101,15 @@ LeapfrogAI provides a [User Interface](src/leapfrogai_ui/) with support for comm
 
 The [repeater](packages/repeater/) "model" is a basic "backend" that parrots all inputs it receives back to the user. It is built out the same way all the actual backends are and it primarily used for testing the API.
 
-### Image Hardening
-
-> GitHub Repo:
->
-> - [leapfrogai-images](https://github.com/defenseunicorns/leapfrogai-images)
-
-LeapfrogAI leverages Chainguard's [apko](https://github.com/chainguard-dev/apko) to harden base python images - pinning Python versions to the latest supported version by the other components of the LeapfrogAI stack.
-
 ## Usage
+
+### Flavors
+
+Each component has different images and values that refer to a specific image registry and/or hardening source. These images are packaged using [Zarf Flavors](https://docs.zarf.dev/ref/examples/package-flavors/):
+
+1. `upstream`: uses upstream vendor images from open source container registries and repositories
+2. (WIP) `registry1`: uses [IronBank hardened images](https://repo1.dso.mil/dsop) from the Repo1 harbor registry
+3. (WIP) `unicorn`: uses [Chainguard hardened images](https://www.chainguard.dev/chainguard-images) from the Chainguard registry
 
 ### UDS
 
@@ -128,7 +128,6 @@ This type of deployment pulls the most recent package images and is the most sta
 #### UDS Dev
 
 If you want to make some changes to LeapfrogAI before deploying via UDS (for example in a dev environment), follow the [UDS Dev Instructions](/uds-bundles/dev/README.md).
-
 
 ### Local Dev
 

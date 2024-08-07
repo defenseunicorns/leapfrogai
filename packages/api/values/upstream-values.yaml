@@ -1,0 +1,18 @@
+api:
+  image:
+    repository: ghcr.io/defenseunicorns/leapfrogai/leapfrogai-api
+    # x-release-please-start-version
+    tag: 0.10.0
+    # x-release-please-end
+
+  migration:
+    image:
+      repository: ghcr.io/defenseunicorns/leapfrogai/api-migrations
+      # x-release-please-start-version
+      tag: 0.10.0
+      # x-release-please-end
+
+kiwigrid:
+  image:
+    repository: kiwigrid/k8s-sidecar
+    tag: 1.23.3

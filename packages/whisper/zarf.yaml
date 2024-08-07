@@ -35,6 +35,9 @@ variables:
 
 components:
   - name: whisper-model
+    description: "A LeapfrogAI inferencing engine backend, Faster Whisper"
+    only:
+      flavor: upstream
     required: true
     charts:
       - name: whisper-model

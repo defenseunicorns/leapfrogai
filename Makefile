@@ -2,6 +2,7 @@ ARCH ?= amd64
 REG_PORT ?= 5000
 REG_NAME ?= registry
 LOCAL_VERSION ?= $(shell git rev-parse --short HEAD)
+FLAVOR ?= "upstream"
 DOCKER_FLAGS :=
 ZARF_FLAGS :=
 SILENT_DOCKER_FLAGS := --quiet
@@ -59,7 +60,7 @@ build-supabase: local-registry docker-supabase
 	docker push ${DOCKER_FLAGS} localhost:${REG_PORT}/defenseunicorns/leapfrogai/supabase-migrations:${LOCAL_VERSION}
 
 	## Build the Zarf package
-	uds zarf package create packages/supabase -a ${ARCH} -o packages/supabase --registry-override=ghcr.io=localhost:${REG_PORT} --set IMAGE_VERSION=${LOCAL_VERSION} ${ZARF_FLAGS} --confirm
+	uds zarf package create packages/supabase -a ${ARCH} -o packages/supabase --registry-override=ghcr.io=localhost:${REG_PORT} --set IMAGE_VERSION=${LOCAL_VERSION} ${ZARF_FLAGS} --flavor ${FLAVOR} --confirm
 
 docker-api: local-registry sdk-wheel
 	@echo $(DOCKER_FLAGS)
@@ -78,7 +79,7 @@ build-api: local-registry docker-api ## Build the leapfrogai_api container and Z
 	docker push ${DOCKER_FLAGS} localhost:${REG_PORT}/defenseunicorns/leapfrogai/api-migrations:${LOCAL_VERSION}
 
 	## Build the Zarf package
-	uds zarf package create packages/api -a ${ARCH} -o packages/api --registry-override=ghcr.io=localhost:${REG_PORT} --insecure --set LEAPFROGAI_IMAGE_VERSION=${LOCAL_VERSION} ${ZARF_FLAGS} --confirm
+	uds zarf package create packages/api -a ${ARCH} -o packages/api --registry-override=ghcr.io=localhost:${REG_PORT} --insecure --set LEAPFROGAI_IMAGE_VERSION=${LOCAL_VERSION} ${ZARF_FLAGS} --flavor ${FLAVOR} --confirm
 
 docker-ui:
 	## Build the UI image (and tag it for the local registry)
@@ -95,7 +96,7 @@ build-ui: local-registry docker-ui ## Build the leapfrogai_ui container and Zarf
 	docker push ${DOCKER_FLAGS} localhost:${REG_PORT}/defenseunicorns/leapfrogai/ui-migrations:${LOCAL_VERSION}
 
 	## Build the Zarf package
-	uds zarf package create packages/ui -a ${ARCH} -o packages/ui --registry-override=ghcr.io=localhost:${REG_PORT} --insecure --set IMAGE_VERSION=${LOCAL_VERSION} ${ZARF_FLAGS} --confirm
+	uds zarf package create packages/ui -a ${ARCH} -o packages/ui --registry-override=ghcr.io=localhost:${REG_PORT} --insecure --set IMAGE_VERSION=${LOCAL_VERSION} ${ZARF_FLAGS} --flavor ${FLAVOR} --confirm
 
 docker-llama-cpp-python: sdk-wheel
 	## Build the image (and tag it for the local registry)
@@ -107,7 +108,7 @@ build-llama-cpp-python: local-registry docker-llama-cpp-python ## Build the llam
 	docker push ${DOCKER_FLAGS} localhost:${REG_PORT}/defenseunicorns/leapfrogai/llama-cpp-python:${LOCAL_VERSION}
 
 	## Build the Zarf package
-	uds zarf package create packages/llama-cpp-python -a ${ARCH} -o packages/llama-cpp-python --registry-override=ghcr.io=localhost:${REG_PORT} --insecure --set IMAGE_VERSION=${LOCAL_VERSION} ${ZARF_FLAGS} --confirm
+	uds zarf package create packages/llama-cpp-python -a ${ARCH} -o packages/llama-cpp-python --registry-override=ghcr.io=localhost:${REG_PORT} --insecure --set IMAGE_VERSION=${LOCAL_VERSION} ${ZARF_FLAGS} --flavor ${FLAVOR} --confirm
 
 docker-vllm: sdk-wheel
 	## Build the image (and tag it for the local registry)
@@ -119,7 +120,7 @@ build-vllm: local-registry docker-vllm ## Build the vllm container and Zarf pack
 	docker push ${DOCKER_FLAGS} localhost:${REG_PORT}/defenseunicorns/leapfrogai/vllm:${LOCAL_VERSION}
 
 	## Build the Zarf package
-	uds zarf package create packages/vllm -a ${ARCH} -o packages/vllm --registry-override=ghcr.io=localhost:${REG_PORT} --insecure --set IMAGE_VERSION=${LOCAL_VERSION} ${ZARF_FLAGS} --confirm
+	uds zarf package create packages/vllm -a ${ARCH} -o packages/vllm --registry-override=ghcr.io=localhost:${REG_PORT} --insecure --set IMAGE_VERSION=${LOCAL_VERSION} ${ZARF_FLAGS} --flavor ${FLAVOR} --confirm
 
 docker-text-embeddings: sdk-wheel
 	## Build the image (and tag it for the local registry)
@@ -131,7 +132,7 @@ build-text-embeddings: local-registry docker-text-embeddings ## Build the text-e
 	docker push ${DOCKER_FLAGS} localhost:${REG_PORT}/defenseunicorns/leapfrogai/text-embeddings:${LOCAL_VERSION}
 
 	## Build the Zarf package
-	uds zarf package create packages/text-embeddings -a ${ARCH} -o packages/text-embeddings --registry-override=ghcr.io=localhost:${REG_PORT} --insecure --set IMAGE_VERSION=${LOCAL_VERSION} ${ZARF_FLAGS} --confirm
+	uds zarf package create packages/text-embeddings -a ${ARCH} -o packages/text-embeddings --registry-override=ghcr.io=localhost:${REG_PORT} --insecure --set IMAGE_VERSION=${LOCAL_VERSION} ${ZARF_FLAGS} --flavor ${FLAVOR} --confirm
 
 
 docker-whisper: sdk-wheel
@@ -144,7 +145,7 @@ build-whisper: local-registry docker-whisper ## Build the whisper container and 
 	docker push ${DOCKER_FLAGS} localhost:${REG_PORT}/defenseunicorns/leapfrogai/whisper:${LOCAL_VERSION}
 
 	## Build the Zarf package
-	uds zarf package create packages/whisper -a ${ARCH} -o packages/whisper --registry-override=ghcr.io=localhost:${REG_PORT} --insecure --set IMAGE_VERSION=${LOCAL_VERSION} ${ZARF_FLAGS} --confirm
+	uds zarf package create packages/whisper -a ${ARCH} -o packages/whisper --registry-override=ghcr.io=localhost:${REG_PORT} --insecure --set IMAGE_VERSION=${LOCAL_VERSION} ${ZARF_FLAGS} --flavor ${FLAVOR} --confirm
 
 docker-repeater: sdk-wheel
 	## Build the image (and tag it for the local registry)
@@ -156,7 +157,7 @@ build-repeater: local-registry docker-repeater ## Build the repeater container a
 	docker push ${DOCKER_FLAGS} localhost:${REG_PORT}/defenseunicorns/leapfrogai/repeater:${LOCAL_VERSION}
 
 	## Build the Zarf package
-	uds zarf package create packages/repeater -a ${ARCH} -o packages/repeater --registry-override=ghcr.io=localhost:${REG_PORT} --insecure --set IMAGE_VERSION=${LOCAL_VERSION} ${ZARF_FLAGS} --confirm
+	uds zarf package create packages/repeater -a ${ARCH} -o packages/repeater --registry-override=ghcr.io=localhost:${REG_PORT} --insecure --set IMAGE_VERSION=${LOCAL_VERSION} ${ZARF_FLAGS} --flavor ${FLAVOR} --confirm
 
 build-cpu: build-supabase build-api build-ui build-llama-cpp-python build-text-embeddings build-whisper ## Build all zarf packages for a cpu-enabled deployment of LFAI
 
@@ -235,43 +236,43 @@ silent-build-cpu:
 silent-deploy-supabase-package:
 	@echo "Starting Supabase deployment..."
 	@mkdir -p .logs
-	@uds zarf package deploy packages/supabase/zarf-package-supabase-${ARCH}-${LOCAL_VERSION}.tar.zst ${ZARF_FLAGS} --confirm > .logs/deploy-supabase.log 2>&1
+	@uds zarf package deploy packages/supabase/zarf-package-supabase-${ARCH}-${LOCAL_VERSION}.tar.zst ${ZARF_FLAGS} --flavor ${FLAVOR} --confirm > .logs/deploy-supabase.log 2>&1
 	@echo "Supabase deployment completed"
 
 silent-deploy-api-package:
 	@echo "Starting API deployment..."
 	@mkdir -p .logs
-	@uds zarf package deploy packages/api/zarf-package-leapfrogai-api-${ARCH}-${LOCAL_VERSION}.tar.zst ${ZARF_FLAGS} --confirm > .logs/deploy-api.log 2>&1
+	@uds zarf package deploy packages/api/zarf-package-leapfrogai-api-${ARCH}-${LOCAL_VERSION}.tar.zst ${ZARF_FLAGS} --flavor ${FLAVOR} --confirm > .logs/deploy-api.log 2>&1
 	@echo "API deployment completed"
 
 silent-deploy-ui-package:
 	@echo "Starting UI deployment..."
 	@mkdir -p .logs
-	@uds zarf package deploy packages/ui/zarf-package-leapfrogai-ui-${ARCH}-${LOCAL_VERSION}.tar.zst ${ZARF_FLAGS} --confirm > .logs/deploy-ui.log 2>&1
+	@uds zarf package deploy packages/ui/zarf-package-leapfrogai-ui-${ARCH}-${LOCAL_VERSION}.tar.zst ${ZARF_FLAGS} --flavor ${FLAVOR} --confirm > .logs/deploy-ui.log 2>&1
 	@echo "UI deployment completed"
 
 silent-deploy-llama-cpp-python-package:
 	@echo "Starting llama-cpp-python deployment..."
 	@mkdir -p .logs
-	@uds zarf package deploy packages/llama-cpp-python/zarf-package-llama-cpp-python-${ARCH}-${LOCAL_VERSION}.tar.zst ${ZARF_FLAGS} --confirm > .logs/deploy-llama-cpp-python.log 2>&1
+	@uds zarf package deploy packages/llama-cpp-python/zarf-package-llama-cpp-python-${ARCH}-${LOCAL_VERSION}.tar.zst ${ZARF_FLAGS} --flavor ${FLAVOR} --confirm > .logs/deploy-llama-cpp-python.log 2>&1
 	@echo "llama-cpp-python deployment completed"
 
 silent-deploy-vllm-package:
 	@echo "Starting VLLM deployment..."
 	@mkdir -p .logs
-	@uds zarf package deploy packages/vllm/zarf-package-vllm-${ARCH}-${LOCAL_VERSION}.tar.zst ${ZARF_FLAGS} --confirm > .logs/deploy-vllm.log 2>&1
+	@uds zarf package deploy packages/vllm/zarf-package-vllm-${ARCH}-${LOCAL_VERSION}.tar.zst ${ZARF_FLAGS} --flavor ${FLAVOR} --confirm > .logs/deploy-vllm.log 2>&1
 	@echo "VLLM deployment completed"
 
 silent-deploy-text-embeddings-package:
 	@echo "Starting text-embeddings deployment..."
 	@mkdir -p .logs
-	@uds zarf package deploy packages/text-embeddings/zarf-package-text-embeddings-${ARCH}-${LOCAL_VERSION}.tar.zst ${ZARF_FLAGS} --confirm > .logs/deploy-text-embeddings.log 2>&1
+	@uds zarf package deploy packages/text-embeddings/zarf-package-text-embeddings-${ARCH}-${LOCAL_VERSION}.tar.zst ${ZARF_FLAGS} --flavor ${FLAVOR} --confirm > .logs/deploy-text-embeddings.log 2>&1
 	@echo "text-embeddings deployment completed"
 
 silent-deploy-whisper-package:
 	@echo "Starting whisper deployment..."
 	@mkdir -p .logs
-	@uds zarf package deploy packages/whisper/zarf-package-whisper-${ARCH}-${LOCAL_VERSION}.tar.zst ${ZARF_FLAGS} --confirm > .logs/deploy-whisper.log 2>&1
+	@uds zarf package deploy packages/whisper/zarf-package-whisper-${ARCH}-${LOCAL_VERSION}.tar.zst ${ZARF_FLAGS} --flavor ${FLAVOR} --confirm > .logs/deploy-whisper.log 2>&1
 	@echo "whisper deployment completed"
 
 silent-deploy-cpu:
@@ -295,12 +296,12 @@ silent-deploy-gpu:
 	@$(MAKE) silent-deploy-supabase-package ZARF_FLAGS="$(ZARF_FLAGS) $(SILENT_ZARF_FLAGS)"
 	@echo "Deploying API and models..."
 	@$(MAKE) -j${MAX_JOBS} \
-		silent-deploy-api-package ZARF_FLAGS="${ZARF_FLAGS} ${SILENT_ZARF_FLAGS}" \
-		silent-deploy-vllm-package ZARF_FLAGS="${ZARF_FLAGS} ${SILENT_ZARF_FLAGS}" \
-		silent-deploy-text-embeddings-package ZARF_FLAGS="${ZARF_FLAGS} ${SILENT_ZARF_FLAGS} --set=GPU_CLASS_NAME='nvidia'" \
-		silent-deploy-whisper-package ZARF_FLAGS="${ZARF_FLAGS} ${SILENT_ZARF_FLAGS} --set=GPU_CLASS_NAME='nvidia'"
+		silent-deploy-api-package ZARF_FLAGS="${ZARF_FLAGS} --flavor ${FLAVOR} ${SILENT_ZARF_FLAGS}" \
+		silent-deploy-vllm-package ZARF_FLAGS="${ZARF_FLAGS} --flavor ${FLAVOR} ${SILENT_ZARF_FLAGS}" \
+		silent-deploy-text-embeddings-package ZARF_FLAGS="${ZARF_FLAGS} --flavor ${FLAVOR} ${SILENT_ZARF_FLAGS} --set=GPU_CLASS_NAME='nvidia'" \
+		silent-deploy-whisper-package ZARF_FLAGS="${ZARF_FLAGS} --flavor ${FLAVOR} ${SILENT_ZARF_FLAGS} --set=GPU_CLASS_NAME='nvidia'"
 	@echo "Deploying UI..."
-	@$(MAKE) silent-deploy-ui-package ZARF_FLAGS="${ZARF_FLAGS} ${SILENT_ZARF_FLAGS} --set=MODEL='vllm'"
+	@$(MAKE) silent-deploy-ui-package ZARF_FLAGS="${ZARF_FLAGS} --flavor ${FLAVOR} ${SILENT_ZARF_FLAGS} --set=MODEL='vllm'"
 	@echo "All deployments completed"
 
 silent-fresh-leapfrogai-gpu:

@@ -22,18 +22,19 @@ variables:
 
 components:
   - name: leapfrogai
+    description: "The LeapfrogAI Python API that shadows the OpenAI API specification"
     only:
       flavor: upstream
     required: true
     charts:
-    - name: leapfrogai
-      namespace: leapfrogai
-      localPath: chart
-      # x-release-please-start-version
-      version: 0.10.0
-      # x-release-please-end
-      valuesFiles:
-        - "lfai-values.yaml"
+      - name: leapfrogai
+        namespace: leapfrogai
+        localPath: chart
+        # x-release-please-start-version
+        version: 0.10.0
+        # x-release-please-end
+        valuesFiles:
+          - "values/upstream-values.yaml"
     images:
       - "ghcr.io/defenseunicorns/leapfrogai/leapfrogai-api:###ZARF_PKG_TMPL_LEAPFROGAI_IMAGE_VERSION###"
       - "ghcr.io/defenseunicorns/leapfrogai/api-migrations:###ZARF_PKG_TMPL_LEAPFROGAI_IMAGE_VERSION###"
@@ -53,16 +54,17 @@ components:
       flavor: registry1
     required: true
     charts:
-    - name: leapfrogai
-      namespace: leapfrogai
-      localPath: chart
-      # x-release-please-start-version
-      version: 0.10.0
-      # x-release-please-end
-      valuesFiles:
-        - "lfai-values.yaml"
+      - name: leapfrogai
+        namespace: leapfrogai
+        localPath: chart
+        # x-release-please-start-version
+        version: 0.10.0
+        # x-release-please-end
+        valuesFiles:
+          - "values/registry1-values.yaml"
     images:
       - "registry1.dso.mil/ironbank/opensource/defenseunicorns/leapfrogai/api:###ZARF_PKG_TMPL_LEAPFROGAI_IMAGE_VERSION###"
+      # TODO: replace with Ironbank image once hardened: registry1.dso.mil/ironbank/opensource/defenseunicorns/leapfrogai/api/migrations
       - "ghcr.io/defenseunicorns/leapfrogai/api-migrations:###ZARF_PKG_TMPL_LEAPFROGAI_IMAGE_VERSION###"
       - "registry1.dso.mil/ironbank/kiwigrid/k8s-sidecar:1.23.3"
     actions:
@@ -74,3 +76,31 @@ components:
                 name: api-migrations-###ZARF_PKG_TMPL_LEAPFROGAI_IMAGE_VERSION###
                 namespace: leapfrogai
                 condition: complete
+
+  # TODO: replace with Chainguard image once hardened
+  # - name: leapfrogai
+  #   only:
+  #     flavor: unicorn
+  #   required: true
+  #   charts:
+  #     - name: leapfrogai
+  #       namespace: leapfrogai
+  #       localPath: chart
+  #       # x-release-please-start-version
+  #       version: 0.10.0
+  #       # x-release-please-end
+  #       valuesFiles:
+  #         - "values/unicorn-values.yaml"
+  #   images:
+  #     - "ghcr.io/defenseunicorns/leapfrogai/leapfrogai-api:###ZARF_PKG_TMPL_LEAPFROGAI_IMAGE_VERSION###"
+  #     - "ghcr.io/defenseunicorns/leapfrogai/api-migrations:###ZARF_PKG_TMPL_LEAPFROGAI_IMAGE_VERSION###"
+  #     - "kiwigrid/k8s-sidecar:1.23.3"
+  #   actions:
+  #     onDeploy:
+  #       after:
+  #         - wait:
+  #             cluster:
+  #               kind: Job
+  #               name: api-migrations-###ZARF_PKG_TMPL_LEAPFROGAI_IMAGE_VERSION###
+  #               namespace: leapfrogai
+  #               condition: complete

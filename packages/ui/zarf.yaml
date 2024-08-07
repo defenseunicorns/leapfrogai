@@ -61,6 +61,8 @@ variables:
 
 components:
   - name: leapfrogai-ui
+    only:
+      flavor: upstream
     required: true
     charts:
       - name: leapfrogai-ui

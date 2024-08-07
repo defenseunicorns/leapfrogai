@@ -11,6 +11,9 @@ constants:
 
 components:
   - name: repeater
+    description: "A LeapfrogAI mock inferencing engine backend"
+    only:
+      flavor: upstream
     required: true
     charts:
       - name: repeater

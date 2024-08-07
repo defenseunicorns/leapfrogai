@@ -10,9 +10,9 @@ spec:
       - service: api
         podLabels:
           app: api
-        host: {{ .Values.package.host }}
+        host: leapfrogai-api
         gateway: tenant
-        port: 8080
+        port: { { .Values.api.env.port } }
 
     allow:
       - direction: Ingress
