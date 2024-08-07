@@ -52,6 +52,17 @@ export const ACCEPTED_MIME_TYPES = [
   'application/msword', // .doc
   'application/vnd.openxmlformats-officedocument.wordprocessingml.document' //.docx,
 ];
+
+export const FILE_MIME_TYPES_FOR_CONVERSION = [
+  'text/plain', // .txt, .text
+  'application/vnd.ms-excel', // .xls
+  'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet', // .xlsx
+  'application/vnd.ms-powerpoint', // .ppt
+  'application/vnd.openxmlformats-officedocument.presentationml.presentation', // .pptx
+  'application/msword', // .doc
+  'application/vnd.openxmlformats-officedocument.wordprocessingml.document' //.docx,
+];
+
 export const NO_FILE_ERROR_TEXT = 'Please upload an image or select a pictogram';
 export const AVATAR_FILE_SIZE_ERROR_TEXT = `File must be less than ${MAX_AVATAR_SIZE / 1000000} MB`;
 export const FILE_SIZE_ERROR_TEXT = `File must be less than ${MAX_FILE_SIZE / 1000000} MB`;

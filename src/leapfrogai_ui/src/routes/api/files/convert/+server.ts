@@ -1,47 +1,53 @@
+import { error } from '@sveltejs/kit';
+import { promisify } from 'util';
+import libre from 'libreoffice-convert';
+import { stringIdSchema } from '$schemas/chat';
+import { getOpenAiClient } from '$lib/server/constants';
 import type { RequestHandler } from './$types';
-import { error, fail } from '@sveltejs/kit';
-import { superValidate } from 'sveltekit-superforms';
-import { yup } from 'sveltekit-superforms/adapters';
-import { fileSchema } from '$schemas/files';
 
-const path = require('path');
-const fs = require('fs').promises;
+// Note - this throws a warning, but it seems erroneous as libre.convert does not return a promise and this is
+// IAW with the documentation:
+// (node:18447) [DEP0174] DeprecationWarning: Calling promisify on a function that returns a Promise is likely a mistake.
+const convertAsync = promisify(libre.convert);
 
-const libre = require('libreoffice-convert');
-libre.convertAsync = require('util').promisify(libre.convert);
-
+/**
+ * Converts a file to PDF.
+ */
 export const POST: RequestHandler = async ({ request, locals: { session } }) => {
   if (!session) {
     error(401, 'Unauthorized');
   }
 
-  const form = await superValidate(request, yup(fileSchema));
-  if (!form.valid) {
-    return fail(400, { form });
+  let requestData: { id: string };
+
+  // Validate request body
+  try {
+    requestData = await request.json();
+    const isValid = await stringIdSchema.isValid(requestData);
+    if (!isValid) error(400, 'Bad Request');
+  } catch {
+    error(400, 'Bad Request');
   }
 
-  const file = form.data.file;
-  console.log('file', file)
+  const openai = getOpenAiClient(session.access_token);
+  const fileMetadata = await openai.files.retrieve(requestData.id);
+  const fileRes = await openai.files.content(requestData.id);
 
-  if (file) {
-    const ext = '.pdf';
-    // const inputPath = path.join(__dirname, '/resources/example.docx');
-    const outputPath = path.join(__dirname, `/conversions/${file.name}${ext}`);
+  const file = await fileRes.arrayBuffer();
 
-    // Read file
-    // const docxBuf = await fs.readFile(inputPath);
-
-    // Convert it to pdf format with undefined filter (see Libreoffice docs about filter)
-    let pdfBuf = await libre.convertAsync(file.arrayBuffer(), ext, undefined);
-
-    // Here in done you have pdf file which you can save or transfer in another stream
-    await fs.writeFile(outputPath, pdfBuf);
-    return new Response(pdfBuf, {
-      headers: {
-        'Content-Type': 'application/pdf',
-        'Content-Disposition': 'attachment; filename="output.pdf"',
-      },
-    });
-    //Should not reach this line, this case should be caught by form validation above
-  } else return fail(400, { form });
+  if (file || fileMetadata) {
+    try {
+      const ext = '.pdf';
+      let pdfBuf = await convertAsync(Buffer.from(file), ext, undefined);
+      return new Response(pdfBuf, {
+        headers: {
+          'Content-Type': 'application/pdf',
+          'Content-Disposition': `attachment; filename="${fileMetadata.filename}${ext}"`
+        }
+      });
+    } catch (e) {
+      console.error('file conversion error', e);
+      error(500, 'Internal Error');
+    }
+  } else error(404, 'File Not Found');
 };
