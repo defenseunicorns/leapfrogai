@@ -123,8 +123,7 @@ volumePermissions:
   resourcesPreset: "none"
 
 psqlImage:
-  repository: supabase/postgres
-  tag: 15.6.1.106
+  tag: 15.6.1-debian-12-r2
 
 kong:
   enabled: ###ZARF_VAR_ENABLE_KONG###
@@ -189,8 +188,7 @@ kong:
 postgresql:
   enabled: ###ZARF_VAR_ENABLE_POSTGRES###
   image:
-    repository: supabase/postgres
-    tag: 15.6.1.106
+    tag: 15.6.1-debian-12-r2
     debug: true
   primary:
     resourcesPreset: "none"

@@ -96,7 +96,6 @@ components:
       - docker.io/bitnami/supabase-storage:1.8.2-debian-12-r2
       - docker.io/bitnami/supabase-studio:1.24.5-debian-12-r4
       - docker.io/bitnami/kong:3.7.1-debian-12-r5
-      - supabase/postgres:15.6.1.106
   - name: supabase-post-process
     description: "Perform necessary post processing here"
     required: true
