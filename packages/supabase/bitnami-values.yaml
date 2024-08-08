@@ -85,7 +85,7 @@ realtime:
   args:
     - -ec
     - |
-      realtime eval Realtime.Release.migrate && realtime eval Realtime.Release.seeds(Realtime.Repo) && realtime start
+      realtime eval Realtime.Release.migrate && realtime eval 'Realtime.Release.seeds(Realtime.Repo)' && realtime start
 
 rest:
   enabled: ###ZARF_VAR_ENABLE_REST###
