@@ -1,33 +1,9 @@
-podSecurityContext:
-  fsGroup: 65532
-
-supabase:
-  securityContext:
-    runAsUser: 65532
-    runAsGroup: 65532
+leapfrogai:
+  podSecurityContext:
     runAsNonRoot: true
-    capabilities:
-      drop:
-      - ALL
+    fsGroup: 65532
 
-  sso:
-    host: supabase-kong
-    name: supabase
-    component: kong
-    clientId: ###ZARF_CONST_EXTERNAL_KEYCLOAK_CLIENT_ID###
-    redirectUris:
-      - "https://supabase-kong.###ZARF_VAR_DOMAIN###/auth/v1/callback"
-    webOrigins:
-      - "https://ai.###ZARF_VAR_DOMAIN###"
-
-  migration:
-    image:
-      repository: ghcr.io/defenseunicorns/leapfrogai/supabase-migrations
-      tag: ###ZARF_CONST_IMAGE_VERSION###
-    env:
-      namespace: "leapfrogai"
-      serviceName: "supabase-postgresql"
-      servicePort: "5432"
+  supabase:
     securityContext:
       runAsUser: 65532
       runAsGroup: 65532
@@ -35,3 +11,29 @@ supabase:
       capabilities:
         drop:
         - ALL
+
+    sso:
+      host: supabase-kong
+      name: supabase
+      component: kong
+      clientId: ###ZARF_CONST_EXTERNAL_KEYCLOAK_CLIENT_ID###
+      redirectUris:
+        - "https://supabase-kong.###ZARF_VAR_DOMAIN###/auth/v1/callback"
+      webOrigins:
+        - "https://ai.###ZARF_VAR_DOMAIN###"
+
+    migration:
+      image:
+        repository: ghcr.io/defenseunicorns/leapfrogai/supabase-migrations
+        tag: ###ZARF_CONST_IMAGE_VERSION###
+      env:
+        namespace: "leapfrogai"
+        serviceName: "supabase-postgresql"
+        servicePort: "5432"
+      securityContext:
+        runAsUser: 65532
+        runAsGroup: 65532
+        runAsNonRoot: true
+        capabilities:
+          drop:
+          - ALL

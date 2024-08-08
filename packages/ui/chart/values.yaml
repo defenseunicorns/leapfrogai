@@ -4,18 +4,30 @@ image:
   # Overrides the image tag whose default is the chart appVersion.
   tag: '###ZARF_CONST_IMAGE_VERSION###'
 
-  securityContext:
-    runAsUser: 65532
-    runAsGroup: 65532
-    fsGroup: 65532
+podSecurityContext:
+  runAsNonRoot: true
+  fsGroup: 65532
+
+securityContext:
+  runAsUser: 65532
+  runAsGroup: 65532
+  runAsNonRoot: true
+  capabilities:
+    drop:
+    - ALL
 
 package:
-  name: leapfrogai-ui
   subdomain: '###ZARF_VAR_SUBDOMAIN###'
   domain: '###ZARF_VAR_DOMAIN###'
-  supabase_url: 'https://supabase-kong.###ZARF_VAR_DOMAIN###'
-  supabase_anon_key: '###ZARF_VAR_SUPABASE_ANON_KEY###'
-  message_length_limit: '###ZARF_VAR_MESSAGE_LENGTH_LIMIT###'
+  supabaseUrl: 'https://supabase-kong.###ZARF_VAR_DOMAIN###'
+  supabaseAnonKey: '###ZARF_VAR_SUPABASE_ANON_KEY###'
+  messageLengthLimit: '###ZARF_VAR_MESSAGE_LENGTH_LIMIT###'
+  publicDisableKeyCloak: '###ZARF_VAR_DISABLE_KEYCLOAK###'
+  leapfrogaiApiBaseUrl: '###ZARF_VAR_LEAPFROGAI_API_BASE_URL###'
+  defaultModel: '###ZARF_VAR_MODEL###'
+  defaultSystemPrompt: '###ZARF_VAR_SYSTEM_PROMPT###'
+  defaultTemperature: '###ZARF_VAR_TEMPERATURE###'
+  openaiApiKey: '###ZARF_VAR_OPENAI_API_KEY###'
 
 migration:
   namespace: "leapfrogai"

@@ -9,8 +9,6 @@ metadata:
 components:
   - name: leapfrogai
     description: "The LeapfrogAI Python API that shadows the OpenAI API specification"
-    only:
-      flavor: upstream
     required: true
     charts:
       - name: leapfrogai

@@ -1,4 +1,5 @@
 podSecurityContext:
+  runAsNonRoot: true
   fsGroup: 65532
 
 api:

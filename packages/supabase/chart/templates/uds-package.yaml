@@ -1,27 +1,27 @@
 apiVersion: uds.dev/v1alpha1
 kind: Package
 metadata:
-  name: {{ .Values.supabase.sso.name }}
+  name: {{ .Values.leapfrogai.supabase.sso.name }}
 spec:
   sso:
     - name: Leapfrog AI
       description: Client for logging into Supabase
-      clientId: {{ .Values.supabase.sso.clientId }}
+      clientId: {{ .Values.leapfrogai.supabase.sso.clientId }}
       redirectUris:
-        {{- range $.Values.supabase.sso.redirectUris }}
+        {{- range $.Values.leapfrogai.supabase.sso.redirectUris }}
         - {{ tpl . $ }}
         {{- end }}
       webOrigins:
-        {{- range $.Values.supabase.sso.webOrigins }}
+        {{- range $.Values.leapfrogai.supabase.sso.webOrigins }}
         - {{ tpl . $ }}
         {{- end }}
   network:
     expose:
       - service: supabase-kong
         podLabels:
-          app.kubernetes.io/name: {{ .Values.supabase.sso.name }}
-          app.kubernetes.io/component: {{ .Values.supabase.sso.component }}
-        host: {{ .Values.supabase.sso.host }}
+          app.kubernetes.io/name: {{ .Values.leapfrogai.supabase.sso.name }}
+          app.kubernetes.io/component: {{ .Values.leapfrogai.supabase.sso.component }}
+        host: {{ .Values.leapfrogai.supabase.sso.host }}
         gateway: tenant
         port: 80
     allow:
@@ -31,6 +31,6 @@ spec:
         remoteGenerated: Anywhere
       - direction: Egress
         podLabels:
-          app.kubernetes.io/name: {{ .Values.supabase.sso.name }}
-          app.kubernetes.io/component: {{ .Values.supabase.sso.component }}
+          app.kubernetes.io/name: {{ .Values.leapfrogai.supabase.sso.name }}
+          app.kubernetes.io/component: {{ .Values.leapfrogai.supabase.sso.component }}
         remoteGenerated: Anywhere

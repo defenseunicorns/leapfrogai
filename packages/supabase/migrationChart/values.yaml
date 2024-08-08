@@ -1,19 +1,20 @@
-podSecurityContext:
-  fsGroup: 65532
+leapfrogai:
+  podSecurityContext:
+    fsGroup: 65532
 
-supabase:
-  migration:
-    image:
-      repository: ghcr.io/defenseunicorns/leapfrogai/supabase-migrations
-      tag: ###ZARF_CONST_IMAGE_VERSION###
-    env:
-      namespace: "leapfrogai"
-      serviceName: "supabase-postgresql"
-      servicePort: "5432"
-    securityContext:
-      runAsUser: 65532
-      runAsGroup: 65532
-      runAsNonRoot: true
-      capabilities:
-        drop:
-        - ALL
+  supabase:
+    migration:
+      image:
+        repository: ghcr.io/defenseunicorns/leapfrogai/supabase-migrations
+        tag: ###ZARF_CONST_IMAGE_VERSION###
+      env:
+        namespace: "leapfrogai"
+        serviceName: "supabase-postgresql"
+        servicePort: "5432"
+      securityContext:
+        runAsUser: 65532
+        runAsGroup: 65532
+        runAsNonRoot: true
+        capabilities:
+          drop:
+          - ALL

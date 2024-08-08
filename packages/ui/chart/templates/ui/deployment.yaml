@@ -1,42 +1,46 @@
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: {{ .Values.package.name }}
+  name: leapfrogai-ui
   namespace: leapfrogai
 spec:
   selector:
     matchLabels:
-      app: {{ .Values.package.name }}
+      app: leapfrogai-ui
   replicas: 1
   template:
     metadata:
       labels:
-        app: {{ .Values.package.name }}
+        app: leapfrogai-ui
     spec:
+      securityContext:
+        {{- toYaml .Values.podSecurityContext | nindent 8 }}
       containers:
-        - name: {{ .Values.package.name }}
+        - name: leapfrogai-ui
+          securityContext:
+            {{- toYaml .Values.securityContext | nindent 12 }}
           image: "{{ .Values.image.repository }}:{{ .Values.image.tag | default .Chart.AppVersion }}"
           imagePullPolicy: {{ .Values.image.pullPolicy }}
           ports:
             - containerPort: 3000
           env:
             - name: LEAPFROGAI_API_BASE_URL
-              value: '###ZARF_VAR_LEAPFROGAI_API_BASE_URL###'
+              value: {{ .Values.package.leapfrogaiApiBaseUrl }}
             - name: ORIGIN
               value: "https://{{ .Values.package.subdomain }}.{{ .Values.package.domain }}"
             - name: DEFAULT_MODEL
-              value: '###ZARF_VAR_MODEL###'
+              value: {{ .Values.package.defaultModel }}
             - name: DEFAULT_SYSTEM_PROMPT
-              value: '###ZARF_VAR_SYSTEM_PROMPT###'
+              value: {{ .Values.package.defaultSystemPrompt }}
             - name: DEFAULT_TEMPERATURE
-              value: '###ZARF_VAR_TEMPERATURE###'
+              value: {{ .Values.package.defaultTemperature }}
             - name: OPENAI_API_KEY
-              value: '###ZARF_VAR_OPENAI_API_KEY###'
+              value: {{ .Values.package.openaiApiKey }}
             - name: PUBLIC_SUPABASE_URL
-              value: {{ .Values.package.supabase_url }}
+              value: {{ .Values.package.supabaseUrl }}
             - name: PUBLIC_SUPABASE_ANON_KEY
-              {{ if .Values.package.supabase_anon_key  }}
-              value: {{ .Values.package.supabase_anon_key }}
+              {{ if .Values.package.supabaseAnonKey  }}
+              value: {{ .Values.package.supabaseAnonKey }}
               {{ else }}
               valueFrom:
                 secretKeyRef:
@@ -45,9 +49,9 @@ spec:
                   optional: true
               {{ end }}
             - name: PUBLIC_DISABLE_KEYCLOAK
-              value: '###ZARF_VAR_DISABLE_KEYCLOAK###'
+              value: {{ .Values.package.publicDisableKeyCloak }}
             - name: PUBLIC_MESSAGE_LENGTH_LIMIT
-              value: '###ZARF_VAR_MESSAGE_LENGTH_LIMIT###'
+              value: {{ .Values.package.messageLengthLimit }}
             - name: SUPABASE_AUTH_EXTERNAL_KEYCLOAK_URL
               value: "https://sso.{{ .Values.package.domain }}/realms/uds"
             - name: SUPABASE_AUTH_KEYCLOAK_CLIENT_ID
