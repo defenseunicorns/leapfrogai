@@ -79,7 +79,7 @@ realtime:
     - name: APP_NAME
       value: "supabase-realtime"
     - name: DB_AFTER_CONNECT_QUERY
-      value: "SET search_path TO _realtime"
+      value: "SET search_path TO public"
     - name: DB_ENC_KEY
       valueFrom:
         secretKeyRef:
