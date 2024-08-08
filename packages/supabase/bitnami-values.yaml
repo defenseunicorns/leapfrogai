@@ -191,6 +191,8 @@ postgresql:
     tag: 15.6.1-debian-12-r2
     debug: true
   primary:
+    extendedConfiguration: |
+      wal_level = logical
     resourcesPreset: "none"
     podLabels:
       sidecar.istio.io/inject: "false"
