@@ -13,9 +13,9 @@ COPY src/leapfrogai_api src/leapfrogai_api
 RUN python -m venv .venv
 ENV PATH="/leapfrogai/.venv/bin:$PATH"
 
-RUN rm -f packages/api/build/*.whl
-RUN python -m pip wheel src/leapfrogai_api -w packages/api/build --find-links=${SDK_DEST}
-RUN pip install packages/api/build/leapfrogai_api*.whl --no-index --find-links=packages/api/build/
+RUN rm -f packages/api/build/*.whl && \
+    python -m pip wheel src/leapfrogai_api -w packages/api/build --find-links=${SDK_DEST} && \
+    pip install packages/api/build/leapfrogai_api*.whl --no-index --find-links=packages/api/build/
 
 FROM ghcr.io/defenseunicorns/leapfrogai/python:3.11
 ENV PATH="/leapfrogai/.venv/bin:$PATH"

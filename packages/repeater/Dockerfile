@@ -3,8 +3,11 @@ FROM ghcr.io/defenseunicorns/leapfrogai/leapfrogai-sdk:${LOCAL_VERSION} AS sdk
 
 # hardened and slim python w/ developer tools image
 FROM ghcr.io/defenseunicorns/leapfrogai/python:3.11-dev AS builder
+
 ARG SDK_DEST=src/leapfrogai_sdk/build
+
 USER root
+
 WORKDIR /leapfrogai
 
 COPY --from=sdk /leapfrogai/${SDK_DEST} ${SDK_DEST}
@@ -14,9 +17,9 @@ COPY packages/repeater packages/repeater
 RUN python -m venv .venv
 ENV PATH="/leapfrogai/.venv/bin:$PATH"
 
-RUN rm -f packages/repeater/build/*.whl
-RUN python -m pip wheel packages/repeater -w packages/repeater/build --find-links=${SDK_DEST}
-RUN pip install packages/repeater/build/lfai_repeater*.whl --no-index --find-links=packages/repeater/build/
+RUN rm -f packages/repeater/build/*.whl && \
+    python -m pip wheel packages/repeater -w packages/repeater/build --find-links=${SDK_DEST} && \
+    pip install packages/repeater/build/lfai_repeater*.whl --no-index --find-links=packages/repeater/build/
 
 # hardened and slim python image
 FROM ghcr.io/defenseunicorns/leapfrogai/python:3.11
