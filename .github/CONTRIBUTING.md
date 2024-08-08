@@ -23,6 +23,16 @@ Specifically:
 1. Drop a comment in any issue to let everyone know you're working on it and submit a Draft PR (step 4) as soon as you are able.
 2. :key: Set up your Git config to GPG sign all commits. [Here's some documentation on how to set it up](https://docs.github.com/en/authentication/managing-commit-signature-verification/signing-commits). You won't be able to merge your PR if you have any unverified commits.
 3. Use the [pre-commit](https://pre-commit.com/) hooks to provide localized checks against your new or modified code to catch mistakes before pushing.
+
+  - Pre-commit must be activated in a Python-enabled environment and installed to the local `.git` repository to activate the commit hooks properly
+  - UDS and Zarf Lints require the [UDS tasks](../tasks.schema.json), [UDS](../uds.schema.json), and [Zarf](<(../zarf.schema.json)>) JSON schemas to be up-to-date with the current UDS CLI version (e.g., v0.14.0)
+
+  ```bash
+  wget https://raw.githubusercontent.com/defenseunicorns/uds-cli/v0.14.0/uds.schema.json
+  wget https://raw.githubusercontent.com/defenseunicorns/uds-cli/v0.14.0/zarf.schema.json
+  wget https://raw.githubusercontent.com/defenseunicorns/uds-cli/v0.14.0/tasks.schema.json
+  ```
+
 4. Create a Draft Pull Request as soon as you can, even if it is just 5 minutes after you started working on it. We lean towards working in the open as much as we can.
 
    > ⚠️ **NOTE:** _:key: We use [Conventional Commit messages](https://www.conventionalcommits.org/) in PR titles so, if you can, use one of `fix:`, `feat:`, `chore:`, `docs:` or similar. If you need help, just use with `wip:` and we'll help with the rest_

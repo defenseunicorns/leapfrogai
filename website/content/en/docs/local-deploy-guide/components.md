@@ -1,5 +1,5 @@
 ---
-title: Components 
+title: Components
 type: docs
 weight: 3
 ---

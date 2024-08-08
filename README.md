@@ -21,6 +21,7 @@
     - [UDS Latest](#uds-latest)
     - [UDS Dev](#uds-dev)
   - [Local Dev](#local-dev)
+- [Contributing](#contributing)
 - [Community](#community)
 
 ## Overview
@@ -43,7 +44,7 @@ Large Language Models (LLMs) are a powerful resource for AI-driven decision maki
 
 The LeapfrogAI repository follows a monorepo structure based around an [API](#api) with each of the [components](#components) included in a dedicated `packages` directory. Each of these package directories contains the source code for each component as well as the deployment infrastructure. The UDS bundles that handle the development and latest deployments of LeapfrogAI are in the `uds-bundles` directory. The structure looks as follows:
 
-```shell
+```bash
 leapfrogai/
 ├── src/
 │   ├── leapfrogai_api/   # source code for the API
@@ -52,7 +53,7 @@ leapfrogai/
 ├── packages/
 │   ├── api/              # deployment infrastructure for the API
 │   ├── llama-cpp-python/ # source code & deployment infrastructure for the llama-cpp-python backend
-│   ├── repeater/         # source code & deployment infrastructure for the repeater model backend  
+│   ├── repeater/         # source code & deployment infrastructure for the repeater model backend
 │   ├── supabase/         # deployment infrastructure for the Supabase backend and postgres database
 │   ├── text-embeddings/  # source code & deployment infrastructure for the text-embeddings backend
 │   ├── ui/               # deployment infrastructure for the UI
@@ -81,17 +82,17 @@ LeapfrogAI provides an API that closely matches that of OpenAI's. This feature a
 
 LeapfrogAI provides several backends for a variety of use cases.
 
-> Available Backends:
-> | Backend | AMD64 Support | ARM64 Support | Cuda Support | Docker Ready | K8s Ready | Zarf Ready |
-> | --- | --- | --- | --- | --- | --- | --- |
-> | [llama-cpp-python](packages/llama-cpp-python/) | ✅ | 🚧 | ✅ | ✅ | ✅ | ✅ |
-> | [whisper](packages/whisper/) | ✅ | 🚧 | ✅ | ✅ | ✅ | ✅ |
-> | [text-embeddings](packages/text-embeddings/) | ✅ | 🚧 | ✅ | ✅ | ✅ | ✅ |
-> | [vllm](packages/vllm/) | ✅ | ❌ | ✅ | ✅ | ✅ | ✅ |
+Available Backends:
+| Backend | AMD64 Support | ARM64 Support | Cuda Support | Docker Ready | K8s Ready | Zarf Ready |
+| --- | --- | --- | --- | --- | --- | --- |
+| [llama-cpp-python](packages/llama-cpp-python/) | ✅ | 🚧 | ✅ | ✅ | ✅ | ✅ |
+| [whisper](packages/whisper/) | ✅ | 🚧 | ✅ | ✅ | ✅ | ✅ |
+| [text-embeddings](packages/text-embeddings/) | ✅ | 🚧 | ✅ | ✅ | ✅ | ✅ |
+| [vllm](packages/vllm/) | ✅ | ❌ | ✅ | ✅ | ✅ | ✅ |
 
 ### SDK
 
-The LeapfrogAI [SDK](src/leapfrogai_sdk/) provides a standard set of protobuff and python utilities for implementing backends and gRPC.
+The LeapfrogAI [SDK](src/leapfrogai_sdk/) provides a standard set of protobufs and Python utilities for implementing backends with gRPC.
 
 ### User Interface
 
@@ -108,12 +109,14 @@ The [repeater](packages/repeater/) "model" is a basic "backend" that parrots all
 Each component has different images and values that refer to a specific image registry and/or hardening source. These images are packaged using [Zarf Flavors](https://docs.zarf.dev/ref/examples/package-flavors/):
 
 1. `upstream`: uses upstream vendor images from open source container registries and repositories
-2. (WIP) `registry1`: uses [IronBank hardened images](https://repo1.dso.mil/dsop) from the Repo1 harbor registry
-3. (WIP) `unicorn`: uses [Chainguard hardened images](https://www.chainguard.dev/chainguard-images) from the Chainguard registry
+2. 🚧 `registry1`: uses [IronBank hardened images](https://repo1.dso.mil/dsop) from the Repo1 harbor registry
+3. 🚧 `unicorn`: uses [Chainguard hardened images](https://www.chainguard.dev/chainguard-images) from the Chainguard registry
 
 ### UDS
 
 LeapfrogAI can be deployed and run locally via UDS and Kubernetes, built out using [Zarf](https://zarf.dev) packages. See the [Quick Start](https://docs.leapfrog.ai/docs/local-deploy-guide/quick_start/#prerequisites) for a list of prerequisite packages that must be installed first.
+
+#### Local Kubernetes Cluster
 
 Prior to deploying any LeapfrogAI packages, a UDS Kubernetes cluster must be deployed using the most recent k3d bundle:
 
@@ -144,6 +147,12 @@ Please refer to the linked READMEs for each individual packages local developmen
 - [vllm](/packages/vllm/README.md)
 - [whisper](/packages/whisper/README.md)
 
+## Contributing
+
+All potential and current contributors must ensure that they have read the [Contributing documentation](.github/CONTRIBUTING.md), [Security Policies](.github/SECURITY.md) and [Code of Conduct](.github/CODE_OF_CONDUCT.md) prior to opening an issue or pull request to this repository.
+
+When submitting an issue or opening a PR, please first ensure that you have searched your potential issue or PR against the existing or closed issues and PRs. Perceived duplicates will be closed, so please reference and differentiate your contributions from tangential or similar issues and PRs.
+
 ## Community
 
 LeapfrogAI is supported by a community of users and contributors, including:
@@ -161,4 +170,4 @@ LeapfrogAI is supported by a community of users and contributors, including:
 
 [![Defense Unicorns logo](/docs/imgs/user-logos/defense-unicorns.png)](https://defenseunicorns.com)[![Beast Code logo](/docs/imgs/user-logos/beast-code.png)](https://beast-code.com)[![Hypergiant logo](/docs/imgs/user-logos/hypergiant.png)](https://hypergiant.com)[![Pulze logo](/docs/imgs/user-logos/pulze.png)](https://pulze.ai)
 
-*Want to add your organization or logo to this list? [Open a PR!](https://github.com/defenseunicorns/leapfrogai/edit/main/README.md)*
+_Want to add your organization or logo to this list? [Open a PR!](https://github.com/defenseunicorns/leapfrogai/edit/main/README.md)_

@@ -6,7 +6,7 @@ Make sure your system has the [required dependencies](https://docs.leapfrog.ai/d
 
 For ease, it's best to create a virtual environment:
 
-```shell
+```bash
 python -m venv .venv
 source .venv/bin/activate
 ```
@@ -23,7 +23,7 @@ Each component is built into its own Zarf package. You can build all of the pack
 
 You can build all of the packages you need at once with the following `Make` targets:
 
-```shell
+```bash
 LOCAL_VERSION=dev make build-cpu    # api, llama-cpp-python, text-embeddings, whisper, supabase
 LOCAL_VERSION=dev make build-gpu    # api, vllm, text-embeddings, whisper, supabase
 LOCAL_VERSION=dev make build-all    # all of the backends
@@ -33,7 +33,7 @@ LOCAL_VERSION=dev make build-all    # all of the backends
 
 You can build components individually using the following `Make` targets:
 
-```shell
+```bash
 LOCAL_VERSION=dev make build-api
 LOCAL_VERSION=dev make build-supabase
 LOCAL_VERSION=dev make build-vllm                 # if you have GPUs (macOS not supported)
@@ -45,7 +45,7 @@ LOCAL_VERSION=dev make build-whisper
 **NOTE: If you do not prepend your commands with `LOCAL_VERSION=dev`, uds will not find the generated zarf packages, as
 they will be tagged with your current git hash instead of `dev` which uds expects**
 
-## macOS
+## MacOS
 
 To run the same commands in macOS, you will need to prepend your command with a couple of env vars like so:
 
@@ -79,7 +79,7 @@ to prepend the env vars detailed above.
 
 Create the uds CPU bundle:
 
-```shell
+```bash
 cd uds-bundles/dev/cpu
 uds create .
 ```
@@ -88,7 +88,7 @@ Deploy a [UDS cluster](/README.md#uds) if one isn't deployed already
 
 Deploy the LeapfrogAI bundle:
 
-```shell
+```bash
 uds deploy uds-bundle-leapfrogai*.tar.zst
 ```
 
@@ -96,26 +96,26 @@ uds deploy uds-bundle-leapfrogai*.tar.zst
 
 Create the uds GPU bundle:
 
-```shell
+```bash
 cd uds-bundles/dev/gpu
 uds create .
 ```
 
 Deploy a [UDS cluster](/README.md#uds) with the following flags, as so:
 
-```shell
+```bash
 uds deploy {k3d-cluster-name} --set K3D_EXTRA_ARGS="--gpus=all --image=ghcr.io/justinthelaw/k3d-gpu-support:v1.27.4-k3s1-cuda"
 ```
 
 Deploy the LeapfrogAI bundle:
 
-```shell
+```bash
 uds deploy uds-bundle-leapfrogai-*.tar.zst --confirm
 ```
 
 Once running you can access the various components, if deployed and exposed, at the following URLS:
 
-```shell
+```bash
 https://ai.uds.dev              # UI
 https://leapfrogai-api.uds.dev  # API
 https://supabase-kong.uds.dev   # Supabase Kong

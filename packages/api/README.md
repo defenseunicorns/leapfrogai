@@ -2,22 +2,47 @@
 
 A Python API that exposes LLM backends, via FastAPI and gRPC, in the [OpenAI API specification](https://platform.openai.com/docs/api-reference).
 
-## UDS Bundle
+## Usage
 
-### Installation
+See [instructions](#instructions) to get the backend up and running.
 
-See the documentation in [the dev UDS bundle](leapfrogai/uds-bundles/dev/README.md).
+### Instructions
 
-### Usage
+The instructions in this section assume the following:
 
-If deployed using the documentation in [the dev UDS bundle](leapfrogai/uds-bundles/dev/README.md), you can access API usage instructions via: <https://leapfrogai-api.uds.dev/docs>.
+1. Properly installed and configured Python 3.11.x, to include its development tools
 
-## Local Development
+### Zarf Package Deployment
 
-### Installation
+To build and deploy just the llama-cpp-python Zarf package (from the root of the repository):
 
-See the documentation in the source code directory: [`src/leapfrogai_api`](leapfrogai/src/leapfrogai_api/README.md)
+> Deploy a [UDS cluster](/README.md#uds) if one isn't deployed already
 
-### Usage
+```bash
+make build-api LOCAL_VERSION=dev
+uds zarf package deploy packages/api/zarf-package-leapfrogai-api-*-dev.tar.zst --confirm
+```
 
-When deployed using any of the quick start or developer documentation, you can access the expected response and request object schemas via the `/docs` endpoints.
+### Local Development
+
+To run the API locally (starting from the root directory of the repository):
+
+From this directory:
+
+```bash
+# Setup Virtual Environment
+python -m venv .venv
+source .venv/bin/activate
+```
+
+```bash
+# Install dependencies
+python -m pip install src/leapfrogai_sdk
+cd packages/api
+python -m pip install ".[dev]"
+```
+
+```bash
+# Run the API application
+cd packages/api && make dev
+```
