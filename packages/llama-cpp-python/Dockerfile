@@ -16,8 +16,8 @@ ENV PATH="/leapfrogai/.venv/bin:$PATH"
 COPY --from=sdk /leapfrogai/${SDK_DEST} ${SDK_DEST}
 COPY packages/llama-cpp-python packages/llama-cpp-python
 
-RUN rm -f packages/llama-cpp-python/build/*.whl
-RUN python -m pip wheel packages/llama-cpp-python -w packages/llama-cpp-python/build --find-links=${SDK_DEST}
+RUN rm -f packages/llama-cpp-python/build/*.whl && \
+    python -m pip wheel packages/llama-cpp-python -w packages/llama-cpp-python/build --find-links=${SDK_DEST}
 
 RUN pip install packages/llama-cpp-python/build/lfai_llama_cpp_python*.whl --no-index --find-links=packages/llama-cpp-python/build/
 
