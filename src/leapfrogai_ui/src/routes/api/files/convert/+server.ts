@@ -38,7 +38,7 @@ export const POST: RequestHandler = async ({ request, locals: { session } }) => 
   if (file || fileMetadata) {
     try {
       const ext = '.pdf';
-      let pdfBuf = await convertAsync(Buffer.from(file), ext, undefined);
+      const pdfBuf = await convertAsync(Buffer.from(file), ext, undefined);
       return new Response(pdfBuf, {
         headers: {
           'Content-Type': 'application/pdf',

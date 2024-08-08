@@ -13,10 +13,10 @@
   import type { FileObject } from 'openai/resources/files';
   import FileProcessingPlaceholder from '$components/FileProcessingPlaceholder.svelte';
   import { FILE_MIME_TYPES_FOR_CONVERSION } from '$constants';
+  import { uiStore } from '$stores';
 
   export let file: FileObject;
   export let index: string;
-
 
   // TODO - add file annotations for pages, and tests
   // TODO - if using OpenAI, don't allow file download (OpenAI does not allow downloading files of purpose assistants)
@@ -99,6 +99,15 @@
 
   const handleDownload = (e) => {
     e.preventDefault();
+
+    if ($uiStore.isUsingOpenAI) {
+      toastStore.addToast({
+        kind: 'error',
+        title: 'File download disabled when using OpenAI',
+        subtitle: `OpenAI does not allow download of files with purpose 'assistants'`
+      });
+      return;
+    }
     if (url) {
       // download only
       const a = document.createElement('a');

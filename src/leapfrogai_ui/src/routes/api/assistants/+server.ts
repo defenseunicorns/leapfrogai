@@ -4,7 +4,6 @@ import { getOpenAiClient } from '$lib/server/constants';
 import type { LFAssistant } from '$lib/types/assistants';
 
 export const GET: RequestHandler = async ({ locals: { session } }) => {
-
   if (!session) {
     error(401, 'Unauthorized');
   }
