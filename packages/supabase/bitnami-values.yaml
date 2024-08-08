@@ -82,7 +82,7 @@ realtime:
       valueFrom:
         secretKeyRef:
           name: supabase-realtime-extra
-          key: db-enc-key
+          key: dbEncKey
     - name: DNS_NODES
       value: "supabase-realtime"
   args:
