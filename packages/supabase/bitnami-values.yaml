@@ -123,7 +123,8 @@ volumePermissions:
   resourcesPreset: "none"
 
 psqlImage:
-  tag: 15.6.1-debian-12-r2
+  repository: betaboon/bitnami-postgresql-wal2json
+  tag: 15.7.0-debian-12-r19
 
 kong:
   enabled: ###ZARF_VAR_ENABLE_KONG###
@@ -188,7 +189,8 @@ kong:
 postgresql:
   enabled: ###ZARF_VAR_ENABLE_POSTGRES###
   image:
-    tag: 15.6.1-debian-12-r2
+    repository: betaboon/bitnami-postgresql-wal2json
+    tag: 15.7.0-debian-12-r19
     debug: true
   primary:
     resourcesPreset: "none"
