@@ -79,7 +79,7 @@ build-api: local-registry docker-api ## Build the leapfrogai_api container and Z
 	docker push ${DOCKER_FLAGS} localhost:${REG_PORT}/defenseunicorns/leapfrogai/api-migrations:${LOCAL_VERSION}
 
 	## Build the Zarf package
-	uds zarf package create packages/api -a ${ARCH} -o packages/api --registry-override=ghcr.io=localhost:${REG_PORT} --insecure --set LEAPFROGAI_IMAGE_VERSION=${LOCAL_VERSION} ${ZARF_FLAGS} --flavor ${FLAVOR} --confirm
+	uds zarf package create packages/api -a ${ARCH} -o packages/api --registry-override=ghcr.io=localhost:${REG_PORT} --insecure --set=IMAGE_VERSION=${LOCAL_VERSION} ${ZARF_FLAGS} --flavor ${FLAVOR} --confirm
 
 docker-ui:
 	## Build the UI image (and tag it for the local registry)

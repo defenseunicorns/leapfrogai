@@ -68,8 +68,6 @@ components:
       - name: leapfrogai-ui
         namespace: leapfrogai
         localPath: chart
-        valuesFiles:
-          - 'chart/ui-values.yaml'
         # x-release-please-start-version
         version: 0.10.0
         # x-release-please-end
@@ -82,7 +80,7 @@ components:
           - wait:
               cluster:
                 kind: Job
-                name: ui-migrations-###ZARF_PKG_TMPL_IMAGE_VERSION###
+                name: ui-migrations
                 namespace: leapfrogai
                 condition: complete
           - wait:

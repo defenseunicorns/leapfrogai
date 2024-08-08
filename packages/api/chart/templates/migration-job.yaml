@@ -1,7 +1,7 @@
 apiVersion: batch/v1
 kind: Job
 metadata:
-  name: api-migrations-{{ .Values.api.migration.image.tag }}
+  name: api-migrations
   namespace: {{ .Release.Namespace }}
 spec:
   template:

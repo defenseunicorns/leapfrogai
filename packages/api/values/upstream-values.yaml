@@ -1,16 +1,12 @@
 api:
   image:
     repository: ghcr.io/defenseunicorns/leapfrogai/leapfrogai-api
-    # x-release-please-start-version
-    tag: 0.10.0
-    # x-release-please-end
+    tag: ###ZARF_CONST_IMAGE_VERSION###
 
   migration:
     image:
       repository: ghcr.io/defenseunicorns/leapfrogai/api-migrations
-      # x-release-please-start-version
-      tag: 0.10.0
-      # x-release-please-end
+      tag: ###ZARF_CONST_IMAGE_VERSION###
 
 kiwigrid:
   image:

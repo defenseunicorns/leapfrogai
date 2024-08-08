@@ -71,22 +71,22 @@ components:
         releaseName: supabase-bootstrap
         version: 4.0.5
         valuesFiles:
-          - "bitnami-values.yaml"
-          - "bitnami-values-bootstrap.yaml"
+          - "chart/values.yaml"
+          - "values/bitnami-values-bootstrap.yaml"
       - name: supabase-secrets-generator
         namespace: leapfrogai
         localPath: chart/
         releaseName: supabase-secrets-generator
-        version: 0.0.1
-        valuesFiles:
-          - "bitnami-values.yaml"
+        # x-release-please-start-version
+        version: 0.10.0
+        # x-release-please-end
       - name: supabase
         namespace: leapfrogai
         url: oci://registry-1.docker.io/bitnamicharts/supabase
         releaseName: supabase
         version: 4.0.5
         valuesFiles:
-          - "bitnami-values.yaml"
+          - "chart/values.yaml"
     images:
       - docker.io/bitnami/gotrue:2.150.1-debian-12-r1
       - docker.io/bitnami/jwt-cli:6.0.0-debian-12-r20
@@ -131,9 +131,9 @@ components:
         namespace: leapfrogai
         localPath: migrationChart/
         releaseName: supabase-migrations
-        version: 0.0.1
-        valuesFiles:
-          - "migration-values.yaml"
+        # x-release-please-start-version
+        version: 0.10.0
+        # x-release-please-end
     images:
       - "ghcr.io/defenseunicorns/leapfrogai/supabase-migrations:###ZARF_PKG_TMPL_IMAGE_VERSION###"
     actions:
@@ -142,6 +142,6 @@ components:
           - wait:
               cluster:
                 kind: Job
-                name: supabase-migrations-###ZARF_PKG_TMPL_IMAGE_VERSION###
+                name: supabase-migrations
                 namespace: leapfrogai
                 condition: complete

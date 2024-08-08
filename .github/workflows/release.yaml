@@ -65,8 +65,8 @@ jobs:
         docker buildx build --platform amd64,arm64 --build-arg LOCAL_VERSION=${{ steps.get_version.outputs.version-without-v }} -t ghcr.io/defenseunicorns/leapfrogai/leapfrogai-api:${{ steps.get_version.outputs.version-without-v }} --push -f packages/api/Dockerfile .
         docker buildx build --platform amd64,arm64 -t ghcr.io/defenseunicorns/leapfrogai/api-migrations:${{ steps.get_version.outputs.version-without-v }} --push -f Dockerfile.migrations --build-arg="MIGRATIONS_DIR=packages/api/supabase/migrations" .
 
-        zarf package create packages/api --set=LEAPFROGAI_IMAGE_VERSION=${{ steps.get_version.outputs.version-without-v }} --architecture amd64 --confirm
-        zarf package create packages/api --set=LEAPFROGAI_IMAGE_VERSION=${{ steps.get_version.outputs.version-without-v }} --architecture arm64 --confirm
+        zarf package create packages/api --set=IMAGE_VERSION=${{ steps.get_version.outputs.version-without-v }} --architecture amd64 --confirm
+        zarf package create packages/api --set=IMAGE_VERSION=${{ steps.get_version.outputs.version-without-v }} --architecture arm64 --confirm
 
         zarf package publish zarf-package-leapfrogai-api-amd64-${{ steps.get_version.outputs.version-without-v }}.tar.zst oci://ghcr.io/defenseunicorns/packages/uds/leapfrogai
         zarf package publish zarf-package-leapfrogai-api-arm64-${{ steps.get_version.outputs.version-without-v }}.tar.zst oci://ghcr.io/defenseunicorns/packages/uds/leapfrogai

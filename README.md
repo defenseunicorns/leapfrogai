@@ -114,6 +114,18 @@ Each component has different images and values that refer to a specific image re
 
 To specify a flavor during the Zarf package build processes while using the Make recipes at the root of this repository, just prepend `FLAVOR="registry1"` or `FLAVOR="unicorn"` to the beginning of the Makefile command.
 
+### Artifact Support
+
+LeapfrogAI contains built-in embeddings for RAG and transcription / translation solutions that can handle many different file types. Many of these capabilities are accessible via the LeapfrogAI API. The support artifact types are as follows:
+
+#### Transcription / Translation
+
+-
+
+#### Embeddings for RAG
+
+-
+
 ### UDS
 
 LeapfrogAI can be deployed and run locally via UDS and Kubernetes, built out using [Zarf](https://zarf.dev) packages. See the [Quick Start](https://docs.leapfrog.ai/docs/local-deploy-guide/quick_start/#prerequisites) for a list of prerequisite packages that must be installed first.

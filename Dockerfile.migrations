@@ -4,7 +4,7 @@ ARG TARGETPLATFORM \
     version="1.169.8" \
     MIGRATIONS_DIR
 
-RUN test -n "$MIGRATIONS_DIR" || (echo "MIGRATIONS_PATH is required" && false)
+RUN test -n "$MIGRATIONS_DIR" || (echo "MIGRATIONS_DIR is required" && false)
 
 # Download the supabase cli
 RUN mkdir -p /usr/local/bin && \
