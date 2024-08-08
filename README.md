@@ -112,6 +112,8 @@ Each component has different images and values that refer to a specific image re
 2. 🚧 `registry1`: uses [IronBank hardened images](https://repo1.dso.mil/dsop) from the Repo1 harbor registry
 3. 🚧 `unicorn`: uses [Chainguard hardened images](https://www.chainguard.dev/chainguard-images) from the Chainguard registry
 
+To specify a flavor during the Zarf package build processes while using the Make recipes at the root of this repository, just prepend `FLAVOR="registry1"` or `FLAVOR="unicorn"` to the beginning of the Makefile command.
+
 ### UDS
 
 LeapfrogAI can be deployed and run locally via UDS and Kubernetes, built out using [Zarf](https://zarf.dev) packages. See the [Quick Start](https://docs.leapfrog.ai/docs/local-deploy-guide/quick_start/#prerequisites) for a list of prerequisite packages that must be installed first.

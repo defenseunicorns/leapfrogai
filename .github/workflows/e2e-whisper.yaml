@@ -1,6 +1,7 @@
 # End-to-end testing that deploys Supabase and the API, and deploy/tests llama-cpp-python, text-embeddings, and whisper
 
-name: e2e-whisper
+name: Whisper E2E Tests
+
 on:
   pull_request:
     types:
@@ -15,6 +16,7 @@ on:
       - "!.github/**"
       - ".github/workflows/e2e-whisper.yaml"
       - ".github/actions/uds-cluster/action.yaml"
+      - ".github/actions/lfai-core/action.yaml"
 
       # Ignore docs and website things
       - "!**.md"
@@ -55,33 +57,33 @@ jobs:
     if: ${{ !github.event.pull_request.draft }}
 
     steps:
-        - name: Checkout Repo
-          uses: actions/checkout@b4ffde65f46336ab88eb53be808477a3936bae11 # v4.1.1
+      - name: Checkout Repo
+        uses: actions/checkout@b4ffde65f46336ab88eb53be808477a3936bae11 # v4.1.1
 
-        - name: Setup Python
-          uses: ./.github/actions/python
-          with:
-            additionalOptionalDep: dev-whisper
+      - name: Setup Python
+        uses: ./.github/actions/python
+        with:
+          additionalOptionalDep: dev-whisper
 
-        - name: Setup UDS Cluster
-          uses: ./.github/actions/uds-cluster
-          with:
-            registry1Username: ${{ secrets.IRON_BANK_ROBOT_USERNAME }}
-            registry1Password: ${{ secrets.IRON_BANK_ROBOT_PASSWORD }}
+      - name: Setup UDS Cluster
+        uses: ./.github/actions/uds-cluster
+        with:
+          registry1Username: ${{ secrets.IRON_BANK_ROBOT_USERNAME }}
+          registry1Password: ${{ secrets.IRON_BANK_ROBOT_PASSWORD }}
 
-        - name: Setup LFAI-API and Supabase
-          uses: ./.github/actions/lfai-core
+      - name: Setup LFAI-API and Supabase
+        uses: ./.github/actions/lfai-core
 
-        ##########
-        # whisper
-        ##########
-        - name: Deploy whisper
-          run: |
-            make build-whisper LOCAL_VERSION=e2e-test
-            docker image prune -af
-            uds zarf package deploy packages/whisper/zarf-package-whisper-amd64-e2e-test.tar.zst -l=trace --confirm
-            rm packages/whisper/zarf-package-whisper-amd64-e2e-test.tar.zst
+      ##########
+      # whisper
+      ##########
+      - name: Deploy whisper
+        run: |
+          make build-whisper LOCAL_VERSION=e2e-test
+          docker image prune -af
+          uds zarf package deploy packages/whisper/zarf-package-whisper-amd64-e2e-test.tar.zst -l=trace --confirm
+          rm packages/whisper/zarf-package-whisper-amd64-e2e-test.tar.zst
 
-        - name: Test whisper
-          run: |
-            python -m pytest ./tests/e2e/test_whisper.py -v
+      - name: Test whisper
+        run: |
+          python -m pytest ./tests/e2e/test_whisper.py -v

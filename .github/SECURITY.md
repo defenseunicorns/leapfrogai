@@ -2,7 +2,7 @@
 
 ## Supported Versions
 
-As the UDS RKE2 Sandbox has not yet reached v1.0.0, only the current latest minor release is supported.
+As the LeapfrogAI has not yet reached v1.0.0, only the current latest minor release is supported.
 
 ## Reporting a Vulnerability
 

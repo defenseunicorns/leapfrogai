@@ -1,6 +1,6 @@
 # End-to-end testing that deploys and tests Supabase, API, UI, and VLLM
 
-name: e2e-vllm
+name: vLLM E2E Tests
 on:
   pull_request:
     types:
@@ -15,6 +15,7 @@ on:
       - "!.github/**"
       - ".github/workflows/e2e-vllm.yaml"
       - ".github/actions/uds-cluster/action.yaml"
+      - ".github/actions/lfai-core/action.yaml"
 
       # Ignore docs and website things
       - "!**.md"
@@ -45,8 +46,6 @@ on:
       - "!packages/ui/**"
       - "!packages/whisper/**"
 
-
-
 concurrency:
   group: e2e-vllm-${{ github.ref }}
   cancel-in-progress: true
@@ -57,25 +56,25 @@ jobs:
     if: ${{ !github.event.pull_request.draft }}
 
     steps:
-        - name: Checkout Repo
-          uses: actions/checkout@b4ffde65f46336ab88eb53be808477a3936bae11 # v4.1.1
+      - name: Checkout Repo
+        uses: actions/checkout@b4ffde65f46336ab88eb53be808477a3936bae11 # v4.1.1
 
-        - name: Setup Python
-          uses: ./.github/actions/python
-          with:
-            additionalOptionalDep: dev-vllm
+      - name: Setup Python
+        uses: ./.github/actions/python
+        with:
+          additionalOptionalDep: dev-vllm
 
-        - name: Setup UDS Environment
-          uses: defenseunicorns/uds-common/.github/actions/setup@05f42bb3117b66ebef8c72ae050b34bce19385f5
-          with:
-            username: ${{ secrets.IRON_BANK_ROBOT_USERNAME }}
-            password: ${{ secrets.IRON_BANK_ROBOT_PASSWORD }}
+      - name: Setup UDS Environment
+        uses: defenseunicorns/uds-common/.github/actions/setup@05f42bb3117b66ebef8c72ae050b34bce19385f5
+        with:
+          username: ${{ secrets.IRON_BANK_ROBOT_USERNAME }}
+          password: ${{ secrets.IRON_BANK_ROBOT_PASSWORD }}
 
-        ########## c
-        # vLLM
-        # NOTE: We are not deploying and testing vLLM in this workflow because it requires a GPU
-        #     : This workflow simply verifies that the vLLM package can be built
-        ##########
-        - name: Build vLLM
-          run: |
-            make build-vllm LOCAL_VERSION=e2e-test
+      ##########
+      # vLLM
+      # NOTE: We are not deploying and testing vLLM in this workflow because it requires a GPU
+      #     : This workflow simply verifies that the vLLM package can be built
+      ##########
+      - name: Build vLLM
+        run: |
+          make build-vllm LOCAL_VERSION=e2e-test

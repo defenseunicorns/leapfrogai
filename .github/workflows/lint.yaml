@@ -1,4 +1,4 @@
-name: lint
+name: Python and UI Lint
 on:
   pull_request:
     types:
@@ -30,7 +30,7 @@ jobs:
       # Javascript & Typescript Linting
       - uses: actions/setup-node@60edb5dd545a775178f52524783378180af0d1f8 # v4.0.2
         with:
-          node-version-file: 'src/leapfrogai_ui/package.json'
+          node-version-file: "src/leapfrogai_ui/package.json"
 
       - name: Install UI Dependencies
         run: npm --prefix src/leapfrogai_ui ci

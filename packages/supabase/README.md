@@ -6,7 +6,7 @@
 
 From `leapfrogai/packages/supabase` run `zarf package create`
 
-### Step 2: Create the uds bundle
+### Step 2: Create the UDS bundle
 
 From `leapfrogai/uds-bundles/dev/<cpu|gpu>/` run `uds create`
 
@@ -34,7 +34,15 @@ Go to `https://supabase-kong.uds.dev`. The login is `supabase-admin` the passwor
 * To obtain a jwt token for testing, create a test user and run the following:
 
 ```bash
-curl -X POST 'https://supabase-kong.uds.dev/auth/v1/token?grant_type=password' \-H "apikey: <anon-key>" \-H "Content-Type: application/json" \-d '{ "email": "<test-email>", "password": "<test-password>"}'
+# Grab the Supabase Key from the JWT Secret
+export ANON_KEY=$(uds zarf tools kubectl get secret -n leapfrogai supabase-bootstrap-jwt -o json | uds zarf tools yq '.data.anon-key' | base64 -d)
+
+# Replace <email> and <password> / <confirmPassword> with your desired credentials
+curl -X POST 'https://supabase-kong.uds.dev/auth/v1/signup' \
+  -H "apikey: <anon-key>" \
+  -H "Content-Type: application/json" \
+  -H "Authorization": f"Bearer $ANON_KEY" \
+  -d '{ "email": "<email>", "password": "<password>", "confirmPassword": "<confirmPassword>"}'
 ```
 
 By following these steps, you'll have successfully set up Keycloak for your application, allowing secure authentication and authorization for your users.

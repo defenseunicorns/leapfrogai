@@ -1,5 +1,7 @@
 # Catch all the things we ignore in the e2e workflow
-name: pytest Skip Shim
+
+name: Skip Python Tests
+
 on:
   pull_request:
     paths:
@@ -41,7 +43,6 @@ permissions:
 concurrency:
   group: pytest-skip-${{ github.ref }}
   cancel-in-progress: true
-
 
 jobs:
   pytest:
