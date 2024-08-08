@@ -26,15 +26,15 @@ spec:
         app: lfai-vllm
         {{- include "chart.selectorLabels" . | nindent 8 }}
     spec:
+      securityContext:
+        {{- toYaml .Values.podSecurityContext | nindent 8 }}
       runtimeClassName: {{ .Values.gpu.runtimeClassName }}
       # It's necessary to include the ###ZARF_DATA_INJECTION_MARKER### somewhere in the podspec, otherwise data injections will not occur.
       initContainers:
         - name: data-loader
           image: cgr.dev/chainguard/bash:latest
           securityContext:
-            runAsUser: 65532
-            runAsGroup: 65532
-            fsGroup: 65532
+            {{- toYaml .Values.securityContext | nindent 12 }}
           # This command looks for the Zarf "data injection marker" which is a timestamped file that is injected after everything else and marks the injection as complete.
           command:
             [

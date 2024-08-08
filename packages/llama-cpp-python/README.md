@@ -1,12 +1,12 @@
-# LeapfrogAI llama-cpp-python Backend
+# LeapfrogAI LLaMA C++ Python Backend
 
 A LeapfrogAI API-compatible [llama-cpp-python](https://github.com/abetlen/llama-cpp-python) w wrapper for quantized and un-quantized model inferencing across CPU infrastructures.
 
-
+## Usage
 
 See [instructions](#instructions) to get the backend up and running. Then, use the [LeapfrogAI API server](https://github.com/defenseunicorns/leapfrogai-api) to interact with the backend.
 
-## Instructions
+### Instructions
 
 The instructions in this section assume the following:
 
@@ -30,24 +30,24 @@ FILENAME  # eg: "synthia-7b-v2.0.Q4_K_M.gguf"
 REVISION  # eg: "3f65d882253d1f15a113dabf473a7c02a004d2b5"
 ```
 
-## Zarf Package Deployment
+### Zarf Package Deployment
 
 To build and deploy just the llama-cpp-python Zarf package (from the root of the repository):
 
 > Deploy a [UDS cluster](/README.md#uds) if one isn't deployed already
 
-```shell
+```bash
 pip install 'huggingface_hub[cli,hf_transfer]'  # Used to download the model weights from huggingface
 make build-llama-cpp-python LOCAL_VERSION=dev
 uds zarf package deploy packages/llama-cpp-python/zarf-package-llama-cpp-python-*-dev.tar.zst --confirm
 ```
 
-## Run Locally
-
+### Local Development
 
 To run the llama-cpp-python backend locally (starting from the root directory of the repository):
 
 From this directory:
+
 ```bash
 # Setup Virtual Environment
 python -m venv .venv

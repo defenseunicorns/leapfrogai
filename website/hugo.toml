@@ -15,8 +15,8 @@ uglyURLs     = false
 #   project-relative or absolute and even a symbolic link. For other modules it must be
 #   project-relative.
 # target
-#   Where it should be mounted into Hugo’s virtual filesystem. It must start with one of
-#   Hugo’s component folders: static, content, layouts, data, assets, i18n, or archetypes.
+#   Where it should be mounted into Hugo's virtual filesystem. It must start with one of
+#   Hugo's component folders: static, content, layouts, data, assets, i18n, or archetypes.
 #   E.g. content/blog.
 
 # [[module.mounts]]
@@ -49,9 +49,9 @@ proxy = "direct"
 
   archived_version    = false
   copyright           = "Defense Unicorns"
-  github_project_repo = "https://github.com/defenseunicorns/leapfrogai-docs"
-  github_repo         = "https://github.com/defenseunicorns/leapfrogai-docs"
-  version             = "v1.0.0"
+  github_project_repo = "https://github.com/defenseunicorns/leapfrogai"
+  github_repo         = "https://github.com/defenseunicorns/leapfrogai"
+  version             = "v0.10.0"
 
   # version_menu = "v1"
   # url_latest_version = "https://latest-version"

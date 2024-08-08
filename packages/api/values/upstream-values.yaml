@@ -1,0 +1,14 @@
+api:
+  image:
+    repository: ghcr.io/defenseunicorns/leapfrogai/leapfrogai-api
+    tag: ###ZARF_CONST_IMAGE_VERSION###
+
+  migration:
+    image:
+      repository: ghcr.io/defenseunicorns/leapfrogai/api-migrations
+      tag: ###ZARF_CONST_IMAGE_VERSION###
+
+kiwigrid:
+  image:
+    repository: kiwigrid/k8s-sidecar
+    tag: 1.23.3

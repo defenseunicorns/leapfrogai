@@ -1,7 +1,7 @@
 # Catch all the things we ignore in the e2e workflow
-name: e2e Skip Shim
-on:
-  pull_request
+
+name: Skip E2E Tests
+on: pull_request
 
 
 permissions:
@@ -27,30 +27,34 @@ jobs:
   e2e_llama:
     runs-on: ubuntu-latest
     steps:
-      - name: Skipped
-        run: |
-          echo skipped
+    - name: Skipped
+      run: |
+        echo skipped
+
   e2e_playwright:
     runs-on: ubuntu-latest
     steps:
-      - name: Skipped
-        run: |
-          echo skipped
+    - name: Skipped
+      run: |
+        echo skipped
+
   e2e_text_embeddings:
     runs-on: ubuntu-latest
     steps:
-      - name: Skipped
-        run: |
-          echo skipped
+    - name: Skipped
+      run: |
+        echo skipped
+
   e2e_vllm:
     runs-on: ubuntu-latest
     steps:
-      - name: Skipped
-        run: |
-          echo skipped
+    - name: Skipped
+      run: |
+        echo skipped
+
   e2e_whisper:
     runs-on: ubuntu-latest
     steps:
-      - name: Skipped
-        run: |
-          echo skipped
+    - name: Skipped
+      run: |
+        echo skipped

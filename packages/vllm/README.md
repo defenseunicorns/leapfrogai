@@ -2,12 +2,11 @@
 
 A LeapfrogAI API-compatible [vLLM](https://github.com/vllm-project/vllm) wrapper for quantized and un-quantized model inferencing across GPU infrastructures.
 
-
 ## Usage
 
 See [instructions](#instructions) to get the backend up and running. Then, use the [LeapfrogAI API server](https://github.com/defenseunicorns/leapfrogai-api) to interact with the backend.
 
-## Instructions
+### Instructions
 
 The instructions in this section assume the following:
 
@@ -31,21 +30,22 @@ You can optionally specify different models or quantization types using the foll
 - `--build-arg QUANTIZATION="gptq"`: Quantization type (e.g., gptq, awq, or empty for un-quantized)
 - `--build-arg TENSOR_PARALLEL_SIZE="1"`: The number of gpus to spread the tensor processing across
 
-## Zarf Package Deployment
+### Zarf Package Deployment
 
 To build and deploy just the VLLM Zarf package (from the root of the repository):
 
 > Deploy a [UDS cluster](/README.md#uds) if one isn't deployed already
 
-```shell
+```bash
 pip install 'huggingface_hub[cli,hf_transfer]'  # Used to download the model weights from huggingface
 make build-vllm LOCAL_VERSION=dev
 uds zarf package deploy packages/vllm/zarf-package-vllm-*-dev.tar.zst --confirm
 ```
 
-## Run Locally
+### Local Development
 
 To run the vllm backend locally (starting from the root directory of the repository):
+
 ```bash
 # Setup Virtual Environment if you haven't done so already
 python -m venv .venv

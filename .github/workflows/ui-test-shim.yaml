@@ -1,15 +1,16 @@
 # Catch all the things we ignore in the ui-test workflow
-name: ui-test-shim
+
+name: Skip UI Tests
 on:
   pull_request:
     paths:
-      # catch all workflows except the ui-test
-      - ".github/workflows/**"
-      - "!.github/workflows/ui-test.yaml"
+    # catch all workflows except the ui-test
+    - ".github/workflows/**"
+    - "!.github/workflows/ui-test.yaml"
 
-      # ignore LFAI-UI things
-      - "!src/leapfrogai_ui/**"
-      - "!packages/ui/**"
+    # ignore LFAI-UI things
+    - "!src/leapfrogai_ui/**"
+    - "!packages/ui/**"
 
 
 permissions:
@@ -35,6 +36,6 @@ jobs:
   ui-test:
     runs-on: ubuntu-latest
     steps:
-      - name: Skipped
-        run: |
-          echo skipped
+    - name: Skipped
+      run: |
+        echo skipped

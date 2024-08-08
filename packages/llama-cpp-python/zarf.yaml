@@ -26,6 +26,9 @@ variables:
 
 components:
   - name: llama-cpp-python-model
+    description: "A LeapfrogAI inferencing engine backend, LLaMA CPP Python"
+    only:
+      flavor: upstream
     required: true
     charts:
       - name: llama-cpp-python-model

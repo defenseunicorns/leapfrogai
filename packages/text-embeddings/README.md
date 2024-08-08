@@ -1,29 +1,27 @@
 
-
 # LeapfrogAI llama-cpp-python Backend
 
 A LeapfrogAI API-compatible [instructor-xl](https://huggingface.co/hkunlp/instructor-xl) model for creating embeddings across CPU and GPU infrastructures.
 
+## Usage
 
-# Usage
-
-## Zarf Package Deployment
+### Zarf Package Deployment
 
 To build and deploy just the text-embeddings Zarf package (from the root of the repository):
 
 > Deploy a [UDS cluster](/README.md#uds) if one isn't deployed already
 
-```shell
+```bash
 pip install 'huggingface_hub[cli,hf_transfer]'  # Used to download the model weights from huggingface
 make build-text-embeddings LOCAL_VERSION=dev
 uds zarf package deploy packages/text-embeddings/zarf-package-text-embeddings-*-dev.tar.zst --confirm
 ```
 
-## Local Development
+### Local Development
 
 To run the text-embeddings backend locally (starting from the root directory of the repository):
 
-```shell
+```bash
 # Setup Virtual Environment if you haven't done so already
 python -m venv .venv
 source .venv/bin/activate

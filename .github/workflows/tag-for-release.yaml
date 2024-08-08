@@ -1,5 +1,4 @@
-
-name: Tag LeapfrogAI
+name: Release Tag
 
 on:
   push:
@@ -11,7 +10,9 @@ jobs:
     permissions:
       contents: write
       pull-requests: write
+
     runs-on: ubuntu-latest
+
     steps:
       - name: Create release tag
         id: tag

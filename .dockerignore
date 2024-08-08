@@ -1,4 +1,11 @@
 **/*.tar.zst
+**/*.log*
+**/__pycache__
+**/.ruff_cache
 **/Dockerfile*
 **/.gitignore
 **/Makefile
+**/node_modules
+**/.svelte-kit
+**/zarf-sbom/
+**/zarf-*.tar.zst

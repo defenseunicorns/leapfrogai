@@ -8,3 +8,15 @@ persistence:
   size: ###ZARF_VAR_PVC_SIZE###
   accessModes: ###ZARF_VAR_PVC_ACCESS_MODE###
   storageClass: ###ZARF_VAR_PVC_STORAGE_CLASS###
+
+podSecurityContext:
+  runAsNonRoot: true
+  fsGroup: 65532
+
+securityContext:
+  runAsUser: 65532
+  runAsGroup: 65532
+  runAsNonRoot: true
+  capabilities:
+    drop:
+    - ALL

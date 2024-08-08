@@ -1,0 +1,8 @@
+failure-threshold: error
+# ignore: use of latest, --no-cache-dir, shell usage warning, apt-get list, --no-install-recommends
+ignored:
+  - "DL3007"
+  - "DL3042"
+  - "DL4006"
+  - "DL3009"
+  - "DL3015"

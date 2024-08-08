@@ -25,6 +25,9 @@ variables:
 
 components:
   - name: vllm-model
+    description: "A LeapfrogAI inferencing engine backend, vLLM"
+    only:
+      flavor: upstream
     required: true
     charts:
       - name: vllm-model

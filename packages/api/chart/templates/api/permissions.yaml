@@ -10,15 +10,15 @@ metadata:
   name: read-configmaps
   namespace: {{ .Release.Namespace }}
 rules:
-- apiGroups:
-  - ""
-  resources:
-  - configmaps
-  - secrets
-  verbs:
-  - get
-  - list
-  - watch
+  - apiGroups:
+      - ""
+    resources:
+      - configmaps
+      - secrets
+    verbs:
+      - get
+      - list
+      - watch
 ---
 apiVersion: rbac.authorization.k8s.io/v1
 kind: RoleBinding
@@ -30,5 +30,5 @@ roleRef:
   kind: Role
   name: read-configmaps
 subjects:
-- kind: ServiceAccount
-  name: read-configmaps
+  - kind: ServiceAccount
+    name: read-configmaps

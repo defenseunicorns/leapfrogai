@@ -2,6 +2,7 @@ ARCH ?= amd64
 REG_PORT ?= 5000
 REG_NAME ?= registry
 LOCAL_VERSION ?= $(shell git rev-parse --short HEAD)
+FLAVOR ?= "upstream"
 DOCKER_FLAGS :=
 ZARF_FLAGS :=
 SILENT_DOCKER_FLAGS := --quiet
@@ -15,10 +16,11 @@ help: ## Display this help information
 		| sort | awk 'BEGIN {FS = ":.*?## "}; \
 		{printf "\033[36m%-30s\033[0m %s\n", $$1, $$2}'
 
-clean: ## Clean up all the things (packages, build dirs, compiled .whl files, python eggs)
+clean: ## Clean up all the things (packages, build dirs, compiled .whl files, models, python eggs)
 	-rm -rf .logs
 	-rm zarf-package-*.tar.zst
 	-rm packages/**/zarf-package-*.tar.zst
+	-rm -rf packages/**/.model
 	-rm -rf build/*
 	-rm -rf src/**/build/*
 	-rm -rf packages/**/build/*
@@ -59,7 +61,7 @@ build-supabase: local-registry docker-supabase
 	docker push ${DOCKER_FLAGS} localhost:${REG_PORT}/defenseunicorns/leapfrogai/supabase-migrations:${LOCAL_VERSION}
 
 	## Build the Zarf package
-	uds zarf package create packages/supabase -a ${ARCH} -o packages/supabase --registry-override=ghcr.io=localhost:${REG_PORT} --set IMAGE_VERSION=${LOCAL_VERSION} ${ZARF_FLAGS} --confirm
+	uds zarf package create packages/supabase -a ${ARCH} -o packages/supabase --registry-override=ghcr.io=localhost:${REG_PORT} --set IMAGE_VERSION=${LOCAL_VERSION} ${ZARF_FLAGS} --flavor ${FLAVOR} --confirm
 
 docker-api: local-registry sdk-wheel
 	@echo $(DOCKER_FLAGS)
@@ -78,7 +80,7 @@ build-api: local-registry docker-api ## Build the leapfrogai_api container and Z
 	docker push ${DOCKER_FLAGS} localhost:${REG_PORT}/defenseunicorns/leapfrogai/api-migrations:${LOCAL_VERSION}
 
 	## Build the Zarf package
-	uds zarf package create packages/api -a ${ARCH} -o packages/api --registry-override=ghcr.io=localhost:${REG_PORT} --insecure --set LEAPFROGAI_IMAGE_VERSION=${LOCAL_VERSION} ${ZARF_FLAGS} --confirm
+	uds zarf package create packages/api -a ${ARCH} -o packages/api --registry-override=ghcr.io=localhost:${REG_PORT} --insecure --set=IMAGE_VERSION=${LOCAL_VERSION} ${ZARF_FLAGS} --flavor ${FLAVOR} --confirm
 
 docker-ui:
 	## Build the UI image (and tag it for the local registry)
@@ -95,7 +97,7 @@ build-ui: local-registry docker-ui ## Build the leapfrogai_ui container and Zarf
 	docker push ${DOCKER_FLAGS} localhost:${REG_PORT}/defenseunicorns/leapfrogai/ui-migrations:${LOCAL_VERSION}
 
 	## Build the Zarf package
-	uds zarf package create packages/ui -a ${ARCH} -o packages/ui --registry-override=ghcr.io=localhost:${REG_PORT} --insecure --set IMAGE_VERSION=${LOCAL_VERSION} ${ZARF_FLAGS} --confirm
+	uds zarf package create packages/ui -a ${ARCH} -o packages/ui --registry-override=ghcr.io=localhost:${REG_PORT} --insecure --set IMAGE_VERSION=${LOCAL_VERSION} ${ZARF_FLAGS} --flavor ${FLAVOR} --confirm
 
 docker-llama-cpp-python: sdk-wheel
 	## Build the image (and tag it for the local registry)
@@ -107,7 +109,7 @@ build-llama-cpp-python: local-registry docker-llama-cpp-python ## Build the llam
 	docker push ${DOCKER_FLAGS} localhost:${REG_PORT}/defenseunicorns/leapfrogai/llama-cpp-python:${LOCAL_VERSION}
 
 	## Build the Zarf package
-	uds zarf package create packages/llama-cpp-python -a ${ARCH} -o packages/llama-cpp-python --registry-override=ghcr.io=localhost:${REG_PORT} --insecure --set IMAGE_VERSION=${LOCAL_VERSION} ${ZARF_FLAGS} --confirm
+	uds zarf package create packages/llama-cpp-python -a ${ARCH} -o packages/llama-cpp-python --registry-override=ghcr.io=localhost:${REG_PORT} --insecure --set IMAGE_VERSION=${LOCAL_VERSION} ${ZARF_FLAGS} --flavor ${FLAVOR} --confirm
 
 docker-vllm: sdk-wheel
 	## Build the image (and tag it for the local registry)
@@ -119,7 +121,7 @@ build-vllm: local-registry docker-vllm ## Build the vllm container and Zarf pack
 	docker push ${DOCKER_FLAGS} localhost:${REG_PORT}/defenseunicorns/leapfrogai/vllm:${LOCAL_VERSION}
 
 	## Build the Zarf package
-	uds zarf package create packages/vllm -a ${ARCH} -o packages/vllm --registry-override=ghcr.io=localhost:${REG_PORT} --insecure --set IMAGE_VERSION=${LOCAL_VERSION} ${ZARF_FLAGS} --confirm
+	uds zarf package create packages/vllm -a ${ARCH} -o packages/vllm --registry-override=ghcr.io=localhost:${REG_PORT} --insecure --set IMAGE_VERSION=${LOCAL_VERSION} ${ZARF_FLAGS} --flavor ${FLAVOR} --confirm
 
 docker-text-embeddings: sdk-wheel
 	## Build the image (and tag it for the local registry)
@@ -131,7 +133,7 @@ build-text-embeddings: local-registry docker-text-embeddings ## Build the text-e
 	docker push ${DOCKER_FLAGS} localhost:${REG_PORT}/defenseunicorns/leapfrogai/text-embeddings:${LOCAL_VERSION}
 
 	## Build the Zarf package
-	uds zarf package create packages/text-embeddings -a ${ARCH} -o packages/text-embeddings --registry-override=ghcr.io=localhost:${REG_PORT} --insecure --set IMAGE_VERSION=${LOCAL_VERSION} ${ZARF_FLAGS} --confirm
+	uds zarf package create packages/text-embeddings -a ${ARCH} -o packages/text-embeddings --registry-override=ghcr.io=localhost:${REG_PORT} --insecure --set IMAGE_VERSION=${LOCAL_VERSION} ${ZARF_FLAGS} --flavor ${FLAVOR} --confirm
 
 
 docker-whisper: sdk-wheel
@@ -144,7 +146,7 @@ build-whisper: local-registry docker-whisper ## Build the whisper container and 
 	docker push ${DOCKER_FLAGS} localhost:${REG_PORT}/defenseunicorns/leapfrogai/whisper:${LOCAL_VERSION}
 
 	## Build the Zarf package
-	uds zarf package create packages/whisper -a ${ARCH} -o packages/whisper --registry-override=ghcr.io=localhost:${REG_PORT} --insecure --set IMAGE_VERSION=${LOCAL_VERSION} ${ZARF_FLAGS} --confirm
+	uds zarf package create packages/whisper -a ${ARCH} -o packages/whisper --registry-override=ghcr.io=localhost:${REG_PORT} --insecure --set IMAGE_VERSION=${LOCAL_VERSION} ${ZARF_FLAGS} --flavor ${FLAVOR} --confirm
 
 docker-repeater: sdk-wheel
 	## Build the image (and tag it for the local registry)
@@ -156,7 +158,7 @@ build-repeater: local-registry docker-repeater ## Build the repeater container a
 	docker push ${DOCKER_FLAGS} localhost:${REG_PORT}/defenseunicorns/leapfrogai/repeater:${LOCAL_VERSION}
 
 	## Build the Zarf package
-	uds zarf package create packages/repeater -a ${ARCH} -o packages/repeater --registry-override=ghcr.io=localhost:${REG_PORT} --insecure --set IMAGE_VERSION=${LOCAL_VERSION} ${ZARF_FLAGS} --confirm
+	uds zarf package create packages/repeater -a ${ARCH} -o packages/repeater --registry-override=ghcr.io=localhost:${REG_PORT} --insecure --set IMAGE_VERSION=${LOCAL_VERSION} ${ZARF_FLAGS} --flavor ${FLAVOR} --confirm
 
 build-cpu: build-supabase build-api build-ui build-llama-cpp-python build-text-embeddings build-whisper ## Build all zarf packages for a cpu-enabled deployment of LFAI
 
@@ -164,7 +166,7 @@ build-gpu: build-supabase build-api build-ui build-vllm build-text-embeddings bu
 
 build-all: build-cpu build-gpu ## Build all of the LFAI packages
 
-include tests/make-tests.mk
+include tests/Makefile
 
 include packages/k3d-gpu/Makefile
 

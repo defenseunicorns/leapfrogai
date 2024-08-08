@@ -58,3 +58,6 @@ persistence:
   size: 15Gi
   accessModes: ReadWriteOnce
   storageClass: "local-path"
+
+gpu:
+  runtimeClassName: "###ZARF_VAR_GPU_CLASS_NAME###"

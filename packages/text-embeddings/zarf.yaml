@@ -34,6 +34,8 @@ variables:
 
 components:
   - name: text-embeddings-model
+    only:
+      flavor: upstream
     required: true
     charts:
       - name: text-embeddings-model
