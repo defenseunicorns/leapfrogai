@@ -3,9 +3,11 @@ name: Python Tests
 on:
   pull_request:
     types:
-    - ready_for_review
-    - synchronize
-    - milestoned
+      - opened            # default trigger
+      - reopened          # default trigger
+      - synchronize       # default trigger
+      - ready_for_review  # don't run on draft PRs
+      - milestoned        # allows us to trigger on bot PRs
     paths:
     - "**"
     - "!.github/**"
