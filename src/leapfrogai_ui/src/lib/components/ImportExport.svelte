@@ -47,6 +47,7 @@
         subtitle: `Threads are incorrectly formatted.`,
         timeout: 5000
       });
+      importing = false;
       return;
     }
     await threadsStore.importThreads(threads);

@@ -1,6 +1,6 @@
 MAKEFILE_DIR := $(dir $(abspath $(lastword $(MAKEFILE_LIST))))
 
-UDS_VERSION := 0.24.1
+UDS_VERSION := 0.25.0
 LOCAL_VERSION ?= $(shell git rev-parse --short HEAD)
 DOCKER_FLAGS :=
 ZARF_FLAGS :=
