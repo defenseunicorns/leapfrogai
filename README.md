@@ -120,11 +120,22 @@ LeapfrogAI contains built-in embeddings for RAG and transcription / translation 
 
 #### Transcription / Translation
 
--
+- All formats supported by `ffmpeg -formats`, e.g., `.mp3`, `.wav`, `.mp4`, etc.
 
 #### Embeddings for RAG
 
--
+- `.pdf`
+- `.txt`
+- `.html`
+- `.htm`
+- `.csv`
+- `.md`
+- `.doc`
+- `.docx`
+- `.xlsx`
+- `.xls`
+- `.pptx`
+- `.ppt`
 
 ### UDS
 
