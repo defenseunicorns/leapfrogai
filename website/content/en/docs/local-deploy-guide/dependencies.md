@@ -19,7 +19,6 @@ Ensure that the following tools and packages are present in your environment:
 - [Python 3.11](https://www.python.org/downloads/release/python-3116/)
 - [Docker](https://docs.docker.com/engine/install/)
 - [K3D](https://k3d.io/)
-- [Zarf](https://docs.zarf.dev/getting-started/install/)
 - [UDS CLI](https://github.com/defenseunicorns/uds-cli)
 
 ### Install PyEnv
@@ -40,7 +39,7 @@ sudo apt-get install build-essential zlib1g-dev libffi-dev \
 ### Install Docker
 
 - Follow the [instructions](https://docs.docker.com/engine/install/) to install Docker onto your system.
-- For systems using an NVIDIA GPU, it is necessary to modify the Docker runtime to NVIDIA. Refer to the GPU instructions below for guidance on making this adjustment.
+- Systems using an NVIDIA GPU must also follow the [GPU instructions below](#gpu-specific-instructions)
 
 ### Install Kubectl
 
@@ -50,28 +49,22 @@ sudo apt-get install build-essential zlib1g-dev libffi-dev \
 
 - Follow the [instructions](https://k3d.io/) to install k3d onto your system.
 
-### Install Zarf
+### Install UDS CLI
 
-- Install [Zarf](https://zarf.dev/) using Homebrew:
+- Follow the [instructions](https://github.com/defenseunicorns/uds-cli#install) to install UDS CLI onto your system.
 
-```git
-brew tap defenseunicorns/tap && brew install zarf
+- As Homebrew does not install packages to the root directory, it is advisable to manually add the `uds` binary to the root
+- In cases where Docker is installed in a rootless configuration, certain systems may encounter container access issues if Docker is not executed with root privileges
+- To install `uds` as root, execute the following command in your terminal and ensure that the version number is replaced with the most recent [release](https://github.com/defenseunicorns/uds-cli/releases):
+
+```bash
+# where $UDS_VERSION is the latest UDS CLI release
+wget -O uds https://github.com/defenseunicorns/uds-cli/releases/download/$UDS_VERSION/uds-cli_$UDS_VERSION_Linux_amd64 && \
+        sudo chmod +x uds && \
+        sudo mv uds /usr/local/bin/
 ```
 
-- As Homebrew does not install packages to the root directory, it is advisable to manually add the `zarf` binary to the root. Even in cases where Docker is installed in a rootless configuration, certain systems may encounter container access issues if Docker is not executed with root privileges.
-- To install as root, execute the following command in your terminal and ensure that the version number is replaced with the most recent [release](https://github.com/zarf-dev/zarf/releases):
-
-```git
-# switch to sudo
-sudo su
-# download and store on removable media
-wget https://github.com/defenseunicorns/ uds-cli /releases/download/v0. 9.0/ uds-cli _v0. 9.0 _Linux_amd64
-# upload from removable media and install
-mv uds-cli_v0.9.0_Linux_amd64 /bin/uds
-chmod +x /bin/uds
-```
-
-## GPU Specific Intructions
+## GPU Specific Instructions
 
 LeapfrogAI exclusively supports NVIDIA GPUs at this point in time. The following instructions are tailored for users utilizing an NVIDIA GPU.
 
