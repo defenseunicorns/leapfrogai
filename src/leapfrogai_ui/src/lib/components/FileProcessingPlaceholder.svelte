@@ -18,7 +18,7 @@
   $: outDivclass = twMerge(sizes[size], divClass, $$props.class);
 </script>
 
-<div role="status" class={outDivclass}>
+<div role="status" class={outDivclass} {...$$restProps}>
   <svg
     class="h-12 w-12 text-gray-200 dark:text-gray-600"
     aria-hidden="true"

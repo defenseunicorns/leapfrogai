@@ -13,6 +13,11 @@
   import type { FileObject } from 'openai/resources/files';
   import FileProcessingPlaceholder from '$components/FileProcessingPlaceholder.svelte';
   import { FILE_MIME_TYPES_FOR_CONVERSION } from '$constants';
+  import {
+    CONVERT_FILE_ERROR_MSG_TOAST,
+    FILE_DOWNLOAD_ERROR_MSG_TOAST,
+    OPENAI_DOWNLOAD_DISABLED_MSG_TOAST
+  } from '$constants/toastMessages';
 
   export let file: FileObject;
   export let index: string;
@@ -26,9 +31,7 @@
   const handleFileError = () => {
     processing = false;
     toastStore.addToast({
-      kind: 'error',
-      title: 'Error Downloading File',
-      subtitle: `Please try again or contact support.`
+      ...FILE_DOWNLOAD_ERROR_MSG_TOAST
     });
   };
 
@@ -36,9 +39,7 @@
     if (browser) {
       if ($uiStore.isUsingOpenAI) {
         toastStore.addToast({
-          kind: 'warning',
-          title: 'File download disabled when using OpenAI',
-          subtitle: `OpenAI does not allow download of files with purpose 'assistants'`
+          ...OPENAI_DOWNLOAD_DISABLED_MSG_TOAST
         });
         return;
       }
@@ -91,9 +92,7 @@
           return;
         } else {
           toastStore.addToast({
-            kind: 'warning',
-            title: 'Unsupported File Type',
-            subtitle: 'Viewing this file type is not currently supported'
+            ...CONVERT_FILE_ERROR_MSG_TOAST
           });
           processing = false;
           return;
@@ -123,6 +122,7 @@
       a.download = file.filename;
       document.body.appendChild(a);
       a.click();
+
       toastStore.addToast({
         kind: 'success',
         title: 'Downloaded Successfully',
@@ -148,6 +148,7 @@
 </script>
 
 <button
+  data-testid={`${file.id}-citation-btn`}
   on:click={(e) => {
     e.preventDefault();
     handleClick();
@@ -165,22 +166,30 @@
   {/if}
 </button>
 {#if expanded && processing}
-  <FileProcessingPlaceholder imgOnly class="mb-2 mt-2 h-12" />
+  <FileProcessingPlaceholder imgOnly class="mb-2 mt-2 h-12" data-testid="file-processing-spinner" />
 {/if}
 {#if expanded && url}
   <div class="relative mb-4 h-0 w-full pb-[33%]">
     <iframe
       src={`${url}#toolbar=0`}
-      title={file.filename}
+      title={`${file.id}-iframe`}
       class="absolute left-0 top-0 h-full w-full border-2 border-gray-200"
     />
     <div class="absolute bottom-2 right-8 flex gap-2">
-      <Button outline size="large" class="!p-2" on:click={handleDownload}
-        ><DownloadOutline /></Button
+      <Button
+        data-testid="file-download-btn"
+        outline
+        size="large"
+        class="!p-2"
+        on:click={handleDownload}><DownloadOutline /></Button
       >
       {#if file.filename.endsWith('.pdf')}
-        <Button outline size="large" class="!p-2" on:click={handleOpenInNewTab}
-          ><ArrowUpRightFromSquareOutline /></Button
+        <Button
+          data-testid="file-open-new-tab-btn"
+          outline
+          size="large"
+          class="!p-2"
+          on:click={handleOpenInNewTab}><ArrowUpRightFromSquareOutline /></Button
         >
       {/if}
     </div>

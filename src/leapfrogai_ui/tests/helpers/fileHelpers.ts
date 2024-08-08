@@ -9,12 +9,16 @@ import { expect } from '../fixtures';
 import type { FileObject } from 'openai/resources/files';
 import { getTableRow } from './helpers';
 
-export const uploadFileWithApi = async (filename = 'test.pdf', openAIClient: OpenAI) => {
+export const uploadFileWithApi = async (
+  filename = 'test.pdf',
+  contentType = 'application/pdf',
+  openAIClient: OpenAI
+) => {
   const filePath = `./tests/fixtures/${filename}`;
   const fileContent = fs.readFileSync(filePath);
 
   const file = new File([new Blob([fileContent])], filename, {
-    type: 'application/pdf'
+    type: contentType
   });
 
   // This can also be done IAW the OpenAI API documentation with fs.createReadStream, but Leapfrog API does not currently

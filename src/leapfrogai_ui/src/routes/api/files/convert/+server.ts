@@ -31,11 +31,18 @@ export const POST: RequestHandler = async ({ request, locals: { session } }) => 
 
   const openai = getOpenAiClient(session.access_token);
   const fileMetadata = await openai.files.retrieve(requestData.id);
-  const fileRes = await openai.files.content(requestData.id);
+  if (!fileMetadata) error(404, 'File Not Found');
+  let fileRes: Response;
+  let file: ArrayBuffer;
+  try {
+    fileRes = await openai.files.content(requestData.id);
+    file = await fileRes.arrayBuffer();
+  } catch (e) {
+    console.error(`Error getting file content for file ${JSON.stringify(fileMetadata)}: `, e);
+    error(500, 'Internal Error');
+  }
 
-  const file = await fileRes.arrayBuffer();
-
-  if (file || fileMetadata) {
+  if (file) {
     try {
       const ext = '.pdf';
       const pdfBuf = await convertAsync(Buffer.from(file), ext, undefined);

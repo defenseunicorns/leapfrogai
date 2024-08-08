@@ -1,4 +1,5 @@
 FROM node:18-alpine AS builder
+RUN npm install -g libreoffice
 WORKDIR /app
 COPY package.json ./
 COPY package-lock.json ./
