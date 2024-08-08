@@ -343,3 +343,5 @@ export const getFakeApiKeys = (options: GetFakeApiKeysOptions = {}): APIKeyRow[]
   }
   return result;
 };
+
+export const fakeKeys = getFakeApiKeys({ numKeys: 4 });
