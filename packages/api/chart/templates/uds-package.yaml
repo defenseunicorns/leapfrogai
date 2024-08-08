@@ -2,7 +2,7 @@
 apiVersion: uds.dev/v1alpha1
 kind: Package
 metadata:
-  name: leapfrogai-api
+  name: {{ include "chart.fullname" . }}
   namespace: {{ .Release.Namespace }}
 spec:
   network:
@@ -10,7 +10,7 @@ spec:
       - service: api
         podLabels:
           app: api
-        host: leapfrogai-api
+        host: {{ include "chart.fullname" . }}
         gateway: tenant
         port: {{ .Values.api.env.port }}
 

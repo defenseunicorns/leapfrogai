@@ -7,11 +7,11 @@ metadata:
   version: "###ZARF_PKG_TMPL_IMAGE_VERSION###"
 
 components:
-  - name: leapfrogai
+  - name: leapfrogai-api
     description: "The LeapfrogAI Python API that shadows the OpenAI API specification"
     required: true
     charts:
-      - name: leapfrogai
+      - name: leapfrogai-api
         namespace: leapfrogai
         localPath: ../chart
         # x-release-please-start-version

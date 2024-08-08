@@ -1,22 +1,22 @@
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: leapfrogai-ui
+  name: {{ include "chart.fullname" . }}
   namespace: leapfrogai
 spec:
   selector:
     matchLabels:
-      app: leapfrogai-ui
+      app: {{ include "chart.fullname" . }}
   replicas: 1
   template:
     metadata:
       labels:
-        app: leapfrogai-ui
+        app: {{ include "chart.fullname" . }}
     spec:
       securityContext:
         {{- toYaml .Values.podSecurityContext | nindent 8 }}
       containers:
-        - name: leapfrogai-ui
+        - name: {{ include "chart.fullname" . }}
           securityContext:
             {{- toYaml .Values.securityContext | nindent 12 }}
           image: "{{ .Values.image.repository }}:{{ .Values.image.tag | default .Chart.AppVersion }}"
@@ -25,22 +25,22 @@ spec:
             - containerPort: 3000
           env:
             - name: LEAPFROGAI_API_BASE_URL
-              value: {{ .Values.package.leapfrogaiApiBaseUrl }}
+              value: "{{ .Values.package.leapfrogaiApiBaseUrl }}"
             - name: ORIGIN
               value: "https://{{ .Values.package.subdomain }}.{{ .Values.package.domain }}"
             - name: DEFAULT_MODEL
-              value: {{ .Values.package.defaultModel }}
+              value: "{{ .Values.package.defaultModel }}"
             - name: DEFAULT_SYSTEM_PROMPT
-              value: {{ .Values.package.defaultSystemPrompt }}
+              value: "{{ .Values.package.defaultSystemPrompt }}"
             - name: DEFAULT_TEMPERATURE
-              value: {{ .Values.package.defaultTemperature }}
+              value: "{{ .Values.package.defaultTemperature }}"
             - name: OPENAI_API_KEY
-              value: {{ .Values.package.openaiApiKey }}
+              value: "{{ .Values.package.openaiApiKey }}"
             - name: PUBLIC_SUPABASE_URL
-              value: {{ .Values.package.supabaseUrl }}
+              value: "{{ .Values.package.supabaseUrl }}"
             - name: PUBLIC_SUPABASE_ANON_KEY
               {{ if .Values.package.supabaseAnonKey  }}
-              value: {{ .Values.package.supabaseAnonKey }}
+              value: "{{ .Values.package.supabaseAnonKey }}"
               {{ else }}
               valueFrom:
                 secretKeyRef:
@@ -49,9 +49,9 @@ spec:
                   optional: true
               {{ end }}
             - name: PUBLIC_DISABLE_KEYCLOAK
-              value: {{ .Values.package.publicDisableKeyCloak }}
+              value: "{{ .Values.package.publicDisableKeyCloak }}"
             - name: PUBLIC_MESSAGE_LENGTH_LIMIT
-              value: {{ .Values.package.messageLengthLimit }}
+              value: "{{ .Values.package.messageLengthLimit }}"
             - name: SUPABASE_AUTH_EXTERNAL_KEYCLOAK_URL
               value: "https://sso.{{ .Values.package.domain }}/realms/uds"
             - name: SUPABASE_AUTH_KEYCLOAK_CLIENT_ID
@@ -65,9 +65,4 @@ spec:
                   name: sso-client-uds-supabase
                   key: secret
           resources:
-            requests:
-              memory: '0'
-              cpu: '0'
-            limits:
-              memory: '0'
-              cpu: '0'
+            {{- toYaml .Values.resources | nindent 12 }}

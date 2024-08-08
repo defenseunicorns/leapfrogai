@@ -18,15 +18,15 @@ variables:
     default: "text-embeddings"
 
 components:
-  - name: leapfrogai
-    description: "The LeapfrogAI Python API that shadows the OpenAI API specification"
+  - name: leapfrogai-api
+    description: "A Python API that shadows the OpenAI API specification"
     only:
       flavor: upstream
     required: true
     import:
       path: common
     charts:
-      - name: leapfrogai
+      - name: leapfrogai-api
         valuesFiles:
           - "values/upstream-values.yaml"
     images:
@@ -34,14 +34,14 @@ components:
       - "ghcr.io/defenseunicorns/leapfrogai/api-migrations:###ZARF_PKG_TMPL_IMAGE_VERSION###"
       - "kiwigrid/k8s-sidecar:1.23.3"
 
-  - name: leapfrogai
+  - name: leapfrogai-api
     only:
       flavor: registry1
     required: true
     import:
       path: common
     charts:
-      - name: leapfrogai
+      - name: leapfrogai-api
         valuesFiles:
           - "values/registry1-values.yaml"
     images:
@@ -51,14 +51,14 @@ components:
       - "registry1.dso.mil/ironbank/kiwigrid/k8s-sidecar:1.23.3"
 
   # # TODO: replace with Chainguard image once hardened
-  # - name: leapfrogai
+  # - name: leapfrogai-api
   #   only:
   #     flavor: unicorn
   #   required: true
   #   import:
   #     path: common
   #   charts:
-  #     - name: leapfrogai
+  #     - name: leapfrogai-api
   #       valuesFiles:
   #         - "values/unicorn-values.yaml"
   #   images:

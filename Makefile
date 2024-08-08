@@ -16,10 +16,11 @@ help: ## Display this help information
 		| sort | awk 'BEGIN {FS = ":.*?## "}; \
 		{printf "\033[36m%-30s\033[0m %s\n", $$1, $$2}'
 
-clean: ## Clean up all the things (packages, build dirs, compiled .whl files, python eggs)
+clean: ## Clean up all the things (packages, build dirs, compiled .whl files, models, python eggs)
 	-rm -rf .logs
 	-rm zarf-package-*.tar.zst
 	-rm packages/**/zarf-package-*.tar.zst
+	-rm -rf packages/**/.model
 	-rm -rf build/*
 	-rm -rf src/**/build/*
 	-rm -rf packages/**/build/*

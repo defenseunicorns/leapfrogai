@@ -1,14 +1,14 @@
 apiVersion: uds.dev/v1alpha1
 kind: Package
 metadata:
-  name: {{ .Values.package.name }}
+  name: {{ include "chart.fullname" . }}
   namespace: {{ .Release.Namespace }}
 spec:
   network:
     expose:
-      - service: {{ .Values.package.name }}
+      - service: {{ include "chart.fullname" . }}
         podLabels:
-          app: {{ .Values.package.name }}
+          app: {{ include "chart.fullname" . }}
         host: {{ .Values.package.subdomain }}
         gateway: tenant
         port: 3000
@@ -22,5 +22,5 @@ spec:
 
       - direction: Egress
         podLabels:
-          app: {{ .Values.package.name }}
+          app: {{ include "chart.fullname" . }}
         remoteGenerated: Anywhere
