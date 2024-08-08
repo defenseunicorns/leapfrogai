@@ -26,7 +26,7 @@ class ConfigOptions(BaseConfig):
     gpu_memory_utilization: float = Field(
         title="GPU Memory Limit",
         description="Maximum amount of GPU vRAM allocated to the vLLM engine and worker(s)",
-        examples=[0.50, 0.90, 0.99],
+        examples=[0.50, 0.80, 0.90],
     )
     engine_use_ray: bool = Field(
         title="Use Ray for Engine",

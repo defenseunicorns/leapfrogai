@@ -29,7 +29,7 @@ You can optionally specify different models or quantization types using the foll
 - `--build-arg TRUST_REMOTE_CODE="True"`: Whether to trust inferencing code downloaded as part of the model download
 - `--build-arg ENGINE_USE_RAY="False"`: Distributed, multi-node inferencing mode for the engine
 - `--build-arg WORKER_USE_RAY="False"`: Distributed, multi-node inferencing mode for the worker(s)
-- `--build-arg GPU_MEMORY_UTILIZATION="0.99"`: Max memory utilization (fraction, out of 1.0) for the vLLM process
+- `--build-arg GPU_MEMORY_UTILIZATION="0.90"`: Max memory utilization (fraction, out of 1.0) for the vLLM process
 - `--build-arg ENFORCE_EAGER="False"`: Disable CUDA graphs for faster token first-inferencing at the cost of more GPU memory (set to False for production)
 
 ## Prompt Formats
