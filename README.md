@@ -85,9 +85,9 @@ LeapfrogAI provides several backends for a variety of use cases.
 Available Backends:
 | Backend | AMD64 Support | ARM64 Support | Cuda Support | Docker Ready | K8s Ready | Zarf Ready |
 | --- | --- | --- | --- | --- | --- | --- |
-| [llama-cpp-python](packages/llama-cpp-python/) | ✅ | 🚧 | ✅ | ✅ | ✅ | ✅ |
-| [whisper](packages/whisper/) | ✅ | 🚧 | ✅ | ✅ | ✅ | ✅ |
-| [text-embeddings](packages/text-embeddings/) | ✅ | 🚧 | ✅ | ✅ | ✅ | ✅ |
+| [llama-cpp-python](packages/llama-cpp-python/) | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ |
+| [whisper](packages/whisper/) | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ |
+| [text-embeddings](packages/text-embeddings/) | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ |
 | [vllm](packages/vllm/) | ✅ | ❌ | ✅ | ✅ | ✅ | ✅ |
 
 ### SDK
@@ -121,7 +121,11 @@ LeapfrogAI can be deployed and run locally via UDS and Kubernetes, built out usi
 Prior to deploying any LeapfrogAI packages, a UDS Kubernetes cluster must be deployed using the most recent k3d bundle:
 
 ```sh
+# CPU-only cluster
 make create-uds-cpu-cluster
+
+# GPU-capable cluster
+make create-uds-gpu-cluster
 ```
 
 #### UDS Latest

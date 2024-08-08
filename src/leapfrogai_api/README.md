@@ -43,7 +43,7 @@ uds zarf package deploy packages/api/zarf-package-leapfrogai-api-*-dev.tar.zst -
     supabase status # to check status and see your keys
     ```
 
-5. Create a local api user
+5. Create a local API user
 
     ```bash
     make user

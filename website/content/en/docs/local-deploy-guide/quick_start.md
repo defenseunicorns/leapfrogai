@@ -8,34 +8,12 @@ weight: 2
 
 The fastest and easiest way to get started with a deployment of LeapfrogAI is by using [UDS](https://github.com/defenseunicorns/uds-core). These quick start instructions show how to deploy LeapfrogAI in either a CPU or GPU-enabled environment.
 
-## System Requirements
+## Pre-Requisites
 
-Please review the following table to ensure your system meets the minimum requirements. LFAI can be run with or without GPU-access, but GPU-enabled systems are recommended due to the performance gains. The following assumes a single personal device:
-
-|     | Minimum           | Recommended (Performance) |
-|-----|-------------------|---------------------------|
-| RAM | 32 GB             | 128 GB                    |
-| CPU | 8 Cores @ 3.0 GHz | 32 Cores @ 3.0 GHz        |
-| GPU | N/A               | 2x NVIDIA RTX 4090 GPUs   |
-
-Additionally, please check the list of tested [operating systems](https://docs.leapfrog.ai/docs/local-deploy-guide/requirements/#operating-systems) for compatibility.
-
-## Prerequisites
-
-- [Python 3.11](https://www.python.org/downloads/release/python-3116/)
-    - NOTE: Different model packages will require different Python libraries. The libraries required will be listed in the `dev` optional dependencies in each projects `pyproject.toml` file.
-- [Docker](https://docs.docker.com/engine/install/)
-- [K3D](https://k3d.io/)
-- [Zarf](https://docs.zarf.dev/getting-started/install/)
-- [UDS CLI](https://github.com/defenseunicorns/uds-cli)
-
-GPU considerations (NVIDIA GPUs only):
-
-- NVIDIA GPU must have the most up-to-date drivers installed.
-- NVIDIA GPU drivers compatible with CUDA (>=12.2).
-- NVIDIA Container Toolkit is available via internet access, pre-installed, or on a mirrored package repository in the air gap.
+See the [Dependencies](https://docs.leapfrog.ai/docs/local-deploy-guide/dependencies/) and [Requirements](https://docs.leapfrog.ai/docs/local-deploy-guide/requirements/) pages for more details.
 
 ## Default Models
+
 LeapfrogAI deploys with certain default models. The following models were selected to balance portability and performance for a base deployment:
 
 | Backend          | CPU/GPU Support | Default Model                                                                |
@@ -45,22 +23,15 @@ LeapfrogAI deploys with certain default models. The following models were select
 | text-embeddings  | CPU/GPU         | [Instructor-XL](https://huggingface.co/hkunlp/instructor-xl)                 |
 | whisper          | CPU/GPU         | [OpenAI whisper-base](https://huggingface.co/openai/whisper-base)            |
 
-**NOTE:** If a user's system specifications exceed the minimum requirements, advanced users are able to swap out the default model choices with larger or fine-tuned models.
+If a user's system specifications exceed the [minimum requirements](https://docs.leapfrog.ai/docs/local-deploy-guide/requirements/), advanced users are able to swap out the default model choices with larger or fine-tuned models. Examples of other models include:
+
+- [defenseunicorns/Hermes-2-Pro-Mistral-7B-4bit-32g](https://huggingface.co/defenseunicorns/Hermes-2-Pro-Mistral-7B-4bit-32g)
+- [justinthelaw/Phi-3-mini-128k-instruct-4bit-128g](https://huggingface.co/justinthelaw/Phi-3-mini-128k-instruct-4bit-128g)
+- [NousResearch/Nous-Hermes-2-Mixtral-8x7B-DPO-GGUF](https://huggingface.co/NousResearch/Nous-Hermes-2-Mixtral-8x7B-DPO-GGUF)
 
 ## Disclaimers
 
 The default configuration when deploying with GPU support assumes a single GPU. `vllm` is assigned the GPU resource. GPU workloads **_WILL NOT_** run if GPU resources are unavailable to the pod(s). You must provide sufficient NVIDIA GPU scheduling or else the pod(s) will go into a crash loop.
-
-If you have additional GPU resources, set `gpu_limit: <number of GPUs>` in `uds-config.yaml`. The total number of GPUs in your configuration should be less than or equal to the number of GPUs for your hardware.
-
-If `vllm` is being used with:
-
-- A quantized model, then `QUANTIZATION` must be set to the quantization method (e.g., `awq`, `gptq`, etc.)
-- Tensor parallelism for spreading a model's heads across multiple GPUs, then `TENSOR_PARALLEL_SIZE` must be set to an integer value that:
-  a) falls within the number of GPU resources (`nvidia.com/gpu`) that are allocatable in the cluster
-  b) divisible by the number of attention heads in the model architecture (if number of heads is 32, then `TENSOR_PARALLEL_SIZE` could be 2, 4, etc.)
-
-These `vllm` specific environment variables must be set at the model skeleton level or when the model is deployed into the cluster.
 
 ## Instructions
 
@@ -87,8 +58,7 @@ uds deploy uds-bundle-leapfrogai-*.tar.zst --confirm
 In order to test the GPU deployment locally on K3d, use the following command when deploying UDS-Core:
 
 ```bash
- make build-k3d-gpu # build the image
- make create-uds-gpu-cluster # create a uds cluster equipped with the k3d-gpu image
+ make create-uds-gpu-cluster
  make test-uds-gpu-cluster # deploy a test gpu pod to see if everything is working
 
  cd bundles/latest/gpu/
@@ -97,6 +67,7 @@ In order to test the GPU deployment locally on K3d, use the following command wh
 ```
 
 ## Checking Deployment
+
 Once the cluster and LFAI have deployed, the cluster and pods can be inspected using uds:
 
 ```bash
@@ -112,29 +83,6 @@ The following URLs should now also be available to view LFAI resources:
 | UI         | <https://ai.uds.dev>                  |
 | API        | <https://leapfrogai-api.uds.dev/docs> |
 
-## Accessing the UI
-
-LeapfrogAI is integrated with the UDS Core KeyCloak service, which provides authentication via SSO. Below are general instructions for accessing the LeapfrogAI UI after a successful UDS deployment of UDS Core and LeapfrogAI.
-
-1. Connect to the KeyCloak admin panel
-  a. Run the following to get a port-forwarded tunnel:  `uds zarf connect keycloak`
-  b. Go to the resulting localhost URL and create an admin account
-2. Go to ai.uds.dev and press "Login using SSO"
-3. Register a new user by pressing "Register Here"
-4. Fill-in all of the information
-  a. The bot detection requires you to scroll and click around in a natural way, so if the Register button is not activated despite correct information, try moving around the page until the bot detection says 100% verified
-5. Using an authenticator, follow the MFA steps
-6. Go to sso.uds.dev
-  a. Login using the admin account you created earlier
-7. Approve the newly registered user
-  a. Click on the hamburger menu in the top left to open/close the sidebar
-  b. Go to the dropdown that likely says "Keycloak" and switch to the "uds" context
-  c. Click "Users" in the sidebar
-  d. Click on the newly registered user's username
-  e. Go to the "Email Verified" switch and toggle it to be "Yes"
-  f. Scroll to the bottom and press "Save"
-8. Go back to ai.uds.dev and login as the registered user to access the UI
-
 ## Clean-up
 
 To clean-up or perform a fresh install, run the following commands in the context in which you had previously installed UDS Core and LeapfrogAI:
@@ -149,4 +97,5 @@ docker volume prune -f # removes all hanging container volumes
 
 ## References
 
-- [UDS-Core](https://github.com/defenseunicorns/uds-core)
+- [UDS Core](https://github.com/defenseunicorns/uds-core)
+- [UDS CLI](https://github.com/defenseunicorns/uds-cli)

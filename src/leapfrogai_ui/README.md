@@ -2,7 +2,7 @@
 
 ## Getting Started
 
-### Requirements:
+### Requirements
 
 This application requires Supabase, and either Leapfrog API or OpenAI to function. Additionally, it can optionally use
 Keycloak for authentication. There are several different ways to run it, so please see the "Configuration Options" section
@@ -21,23 +21,25 @@ It is recommended to run LeapfrogAI with UDS, but if you want to run the UI loca
 you can either:
 
 1. Connect to a UDS deployed version of the Leapfrog API and Supabase  
-   or
+
+   **OR**
+
 2. Connect to OpenAI and UDS deployed Supabase or locally running Supabase.
 
-_Note - most data CRUD operations utilize Leapfrog API or OpenAI, but some functionality still depends on a direct connection with Supabase._
+**NOTE:** most data CRUD operations utilize Leapfrog API or OpenAI, but some functionality still depends on a direct connection with Supabase.
 
-#### Running everything with UDS
+#### UDS Bundle Deployment
 
-This is the easiest way to use the UI. Follow the documentation for running the entire [LeapfrogAI stack](https://github.com/defenseunicorns/leapfrogai)
+This is the easiest way to use the UI. Follow the README and documentation website for running the entire [LeapfrogAI stack](https://github.com/defenseunicorns/leapfrogai).
 
-#### Running UI Locally with LeapfrogAI
+#### Local Development
 
-If running the UI locally and utilizing LeapfrogAPI, <ins>**you must use the same Supabase instance that the Leapfrog API is utilizing**</ins>.
+If running the UI locally and utilizing LeapfrogAPI, **you must use the same Supabase instance that the Leapfrog API is utilizing**.
 
 1. Connect the UI to a UDS deployed version of Supabase and Leapfrog API.
    Ensure these env variables are set appropriately in your .env file:
 
-```
+```bash
 PUBLIC_SUPABASE_URL=https://supabase-kong.uds.dev
 PUBLIC_SUPABASE_ANON_KEY=<anon_key>
 ...
@@ -64,7 +66,7 @@ run the UI outside of UDS on localhost (e.g. for development work), there are so
    Add these values to the "GOTRUE_URI_ALLOW_LIST" (no spaces!). This variable may not exist and you will need to add it.
    Restart the supabase-auth pod after updating the config:
    `http://localhost:5173/auth/callback,http://localhost:4173/auth/callback`  
-   Note - Port 4173 is utilized by Playwright for E2E tests. You do not need this if you are not concerned about Playwright.
+   **NOTE:** Port 4173 is utilized by Playwright for E2E tests. You do not need this if you are not concerned about Playwright.
 
 ###### With Keycloak authentication
 
@@ -84,17 +86,17 @@ run the UI outside of UDS on localhost (e.g. for development work), there are so
 
 Set the following .env variables:
 
-```
+```bash
 DEFAULT_MODEL=gpt-3.5-turbo
 LEAPFROGAI_API_BASE_URL=https://api.openai.com
-#If specified, app will use OpenAI instead of Leapfrog
+# If specified, app will use OpenAI instead of Leapfrog
 OPENAI_API_KEY=<your_openai_api_key>
 ```
 
 You still need Supabase, so you can connect to UDS deployed Supabase, or run Supabase locally.
 To connect to UDS deployed Supabase, set these .env variables:
 
-```
+```bash
 PUBLIC_SUPABASE_URL=https://supabase-kong.uds.dev
 PUBLIC_SUPABASE_ANON_KEY=<anon_key>
 ```
@@ -106,7 +108,7 @@ Running Supabase locally:
    The configuration files at src/leapfrogai_ui/supabase will ensure your Supabase is configured to work with Keycloak if
    you set these .env variables:
 
-```
+```bash
 SUPABASE_AUTH_KEYCLOAK_CLIENT_ID=uds-supabase
 SUPABASE_AUTH_KEYCLOAK_SECRET=<secret> #this is the client secret for the client in Keycloak
 SUPABASE_AUTH_EXTERNAL_KEYCLOAK_URL=https://sso.uds.dev/realms/uds
@@ -124,16 +126,13 @@ Stop Supabase:
 
 `npm run supabase:stop`
 
-_Warning - if switching the application from utilizing Leapfrog API to OpenAI or vice versa,
-and you encounter this error:_
-`Server responded with status code 431. See https://vitejs.dev/guide/troubleshooting.html#_431-request-header-fields-too-large.`
-_you need to clear your browser cookies_
+**WARNING:** if switching the application from utilizing Leapfrog API to OpenAI or vice versa, and you encounter this error: `Server responded with status code 431. See https://vitejs.dev/guide/troubleshooting.html#_431-request-header-fields-too-large.`, then you need to clear your browser cookies.
 
 ### Building
 
 To create a production version of the app:
 
-```
+```bash
 npm run build
 ```
 
@@ -170,14 +169,14 @@ Notes:
 The Supabase docs are inadequate for properly integrating with Keycloak. Additionally, they only support integration with the Supabase Cloud SAAS offering.
 Before reading the section below, first reference the [Supabase docs](https://supabase.com/docs/guides/auth/social-login/auth-keycloak).
 
-### The following steps are required to integrate Supabase with Keycloak for local development:
+**The following steps are required to integrate Supabase with Keycloak for local development**
 
 The supabase/config.toml file contains configuration options for Supabase when running it locally. When running locally, the Supabase UI dashboard does not offer
 all the same configuration options that the cloud version does, so you have to specify some options in this file instead.
 
 The variables that had to be overridden were:
 
-```
+```toml
 [auth]
 site_url = "http://localhost:5173"
 
@@ -201,8 +200,8 @@ Under a realm in Keycloak that is not the master realm (if using UDS, its "uds")
 4. Copy the Client Secret under the Clients -> Credentials tab and use in the env variables below
 5. You can create users under the "Users" tab and either have them verify their email (if you setup SMTP), or manually mark them as verified.
 
-```
-#.env
+```bash
+# .env
 SUPABASE_AUTH_KEYCLOAK_CLIENT_ID=<client-id-for-app-from-keycloak>
 SUPABASE_AUTH_KEYCLOAK_SECRET=<client-id-for-app-from-keycloak>
 SUPABASE_AUTH_EXTERNAL_KEYCLOAK_URL=<URL for keycloak see notes below>
@@ -225,26 +224,27 @@ If you need to use a different Keycloak server for local development, you will n
 
 If your Keycloak server is not at a hosted domain, you will also need to modify the /etc/hosts on your machine:
 
-```
-Example:
-sudo nano /etc/hosts
-*add this line (edit as required)*
+```bash
+vim /etc/hosts
+
+# add the following line to the opened `/etc/hosts` file
+# replace beginning with the correct IP address
 xxx.xxx.xx.xx  keycloak.admin.uds.dev
 ```
 
 Ensure the
 
-```
+```bash
 PUBLIC_SUPABASE_URL=
 PUBLIC_SUPABASE_ANON_KEY=
 ```
 
-variables in your .env file are pointing to the correct Supabase instance.
+variables in your `.env` file are pointing to the correct Supabase instance.
 
-Note - if connecting to a hosted Supabase instance, or in a cluster with networking, you will not need to override /etc/host files.
+**NOTE:** if connecting to a hosted Supabase instance, or in a cluster with networking, you will not need to override /etc/host files.
 The:
 
-```
+```bash
 SUPABASE_AUTH_KEYCLOAK_CLIENT_ID=
 SUPABASE_AUTH_KEYCLOAK_SECRET=
 SUPABASE_AUTH_EXTERNAL_KEYCLOAK_URL=
@@ -265,7 +265,7 @@ When scanning the QR code, use an app that lets you see the url of the QR code. 
 
 Login flow was adapted from [this reference](https://supabase.com/docs/guides/getting-started/tutorials/with-sveltekit?database-method=sql)
 
-### Chat Data Flow
+## Chat Data Flow
 
 The logic for handling regular chat messages and assistant chat messages, along with persisting that data to the database is complex and deserves a detailed explanation.
 

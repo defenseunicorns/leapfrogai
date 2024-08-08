@@ -14,22 +14,25 @@ LeapfrogAI offers an API closely aligned with OpenAI's, facilitating seamless co
 
 LeapfrogAI offers several backends for a variety of use cases:
 
-| Backend                                                                                    | Support                         |
-| ------------------------------------------------------------------------------------------ | ------------------------------- |
-| [llama-cpp-python](https://github.com/defenseunicorns/leapfrogai/tree/main/packages/llama-cpp-python) | AMD64, Docker, Kubernetes, Zarf |
-| [whisper](https://github.com/defenseunicorns/leapfrogai/tree/main/packages/whisper)                   | AMD64, Docker, Kubernetes, Zarf |
-| [text-embeddings](https://github.com/defenseunicorns/leapfrogai/tree/main/packages/text-embeddings)   | AMD64, Docker, Kubernetes, Zarf |
-| [VLLM](https://github.com/defenseunicorns/leapfrogai/tree/main/packages/vllm)                         | AMD64, Docker, Kubernetes, Zarf |
-| [RAG](https://github.com/defenseunicorns/leapfrogai-backend-rag)                           | AMD64, Docker, Kubernetes, Zarf |
+| Backend | AMD64 Support | ARM64 Support | Cuda Support | Docker Ready | K8s Ready | Zarf Ready |
+| --- | --- | --- | --- | --- | --- | --- |
+| [llama-cpp-python](https://github.com/defenseunicorns/leapfrogai/tree/main/packages/llama-cpp-python) | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ |
+| [whisper](https://github.com/defenseunicorns/leapfrogai/tree/main/packages/whisper) | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ |
+| [text-embeddings](https://github.com/defenseunicorns/leapfrogai/tree/main/packages/text-embeddings) | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ |
+| [vllm](https://github.com/defenseunicorns/leapfrogai/tree/main/packages/vllm) | ✅ | ❌ | ✅ | ✅ | ✅ | ✅ |
 
 ### Image Hardening
 
-LeapfrogAI utilizes Chainguard's [apko](https://github.com/chainguard-dev/apko) to fortify base Python images by adhering to a version-pinning approach, ensuring compatibility with the latest supported version by other components within the LeapfrogAI stack. Please see the [leapfrogai-images](https://github.com/defenseunicorns/leapfrogai-images) GitHub repository for additional information.
+Each component has different images and values that refer to a specific image registry and/or hardening source. These images are packaged using [Zarf Flavors](https://docs.zarf.dev/ref/examples/package-flavors/):
+
+1. `upstream`: uses upstream vendor images from open source container registries and repositories
+2. 🚧 `registry1`: uses [IronBank hardened images](https://repo1.dso.mil/dsop) from the Repo1 harbor registry
+3. 🚧 `unicorn`: uses [Chainguard hardened images](https://www.chainguard.dev/chainguard-images) from the Chainguard registry
 
 ### Software Development Kit
 
-The LeapfrogAI SDK offers a standardized collection of Protobuf and Python utilities designed to facilitate the implementation of backends and gRPC. Please see the [leapfrogai-sdk](https://github.com/defenseunicorns/leapfrogai-sdk) GitHub repository for additional information.
+The LeapfrogAI SDK offers a standardized collection of Protobuf and Python utilities designed to facilitate the implementation of backends and gRPC. Please see the [LeapfrogAI SDK](https://github.com/defenseunicorns/leapfrogai/tree/main/src/leapfrogai_sdk) sub-directory for the source code and details.
 
 ### User Interface
 
-LeapfrogAI offers user-friendly interfaces tailored for common use-cases, including chat, summarization, and transcription, providing accessible options for users to initiate these tasks. Please see the [leapfrogai-ui](https://github.com/defenseunicorns/leapfrogai-ui) GitHub repository for additional information.
+LeapfrogAI offers user-friendly interfaces tailored for common use-cases, including chat, summarization, and transcription, providing accessible options for users to initiate these tasks. Please see the [LeapfrogAI UI](https://github.com/defenseunicorns/leapfrogai/tree/main/src/leapfrogai_ui)GitHub repository for additional information.

@@ -104,7 +104,7 @@ uds create .
 Deploy a [UDS cluster](/README.md#uds) with the following flags, as so:
 
 ```bash
-uds deploy {k3d-cluster-name} --set K3D_EXTRA_ARGS="--gpus=all --image=ghcr.io/justinthelaw/k3d-gpu-support:v1.27.4-k3s1-cuda"
+❯ make create-uds-gpu-cluster
 ```
 
 Deploy the LeapfrogAI bundle:
