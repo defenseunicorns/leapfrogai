@@ -278,7 +278,7 @@ zarf package deploy zarf-package-*.tar.zst --set GPU_ENABLED=true --confirm
 
 ### VLLM
 
-This backend comes pre-packaged with [synthia-7b-v2.0-awq](https://huggingface.co/TheBloke/SynthIA-7B-v2.0-AWQ), and `vllm` as the inferencing engine and is primarily aimed at multi-user GPU deployments.
+This backend comes pre-packaged with [Defense Unicorn's quantized version of Hermes-2-Pro-Mistral-7B-4bit-32g](https://huggingface.co/defenseunicorns/Hermes-2-Pro-Mistral-7B-4bit-32g), and `vllm` as the inferencing engine and is primarily aimed at multi-user GPU deployments.
 
 ```git
 # download

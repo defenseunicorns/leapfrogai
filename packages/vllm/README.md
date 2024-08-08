@@ -2,7 +2,6 @@
 
 A LeapfrogAI API-compatible [vLLM](https://github.com/vllm-project/vllm) wrapper for quantized and un-quantized model inferencing across GPU infrastructures.
 
-
 ## Usage
 
 See [instructions](#instructions) to get the backend up and running. Then, use the [LeapfrogAI API server](https://github.com/defenseunicorns/leapfrogai-api) to interact with the backend.
@@ -21,15 +20,23 @@ The following are additional assumptions for GPU inferencing:
 
 ### Model Selection
 
-The default model that comes with this backend in this repository's officially released images is a [4-bit quantization of the Synthia-7b model](https://huggingface.co/TheBloke/SynthIA-7B-v2.0-GPTQ).
+The default model that comes with this backend in this repository's officially released images is a [4-bit quantization of the Hermes-2-Pro-Mistral-7B model](https://huggingface.co/defenseunicorns/Hermes-2-Pro-Mistral-7B-4bit-32g).
 
 You can optionally specify different models or quantization types using the following Docker build arguments:
 
-- `--build-arg HF_HUB_ENABLE_HF_TRANSFER="1"`: Enable or disable HuggingFace Hub transfer (default: 1)
-- `--build-arg REPO_ID="TheBloke/Synthia-7B-v2.0-GPTQ"`: HuggingFace repository ID for the model
-- `--build-arg REVISION="gptq-4bit-32g-actorder_True"`: Revision or commit hash for the model
-- `--build-arg QUANTIZATION="gptq"`: Quantization type (e.g., gptq, awq, or empty for un-quantized)
+- `--build-arg MAX_CONTEXT_LENGTH="32768"`: Max context length, cannot exceed model's max length - the greater length the greater the vRAM requirements
 - `--build-arg TENSOR_PARALLEL_SIZE="1"`: The number of gpus to spread the tensor processing across
+- `--build-arg TRUST_REMOTE_CODE="True"`: Whether to trust inferencing code downloaded as part of the model download
+- `--build-arg ENGINE_USE_RAY="False"`: Distributed, multi-node inferencing mode for the engine
+- `--build-arg WORKER_USE_RAY="False"`: Distributed, multi-node inferencing mode for the worker(s)
+- `--build-arg GPU_MEMORY_UTILIZATION="0.90"`: Max memory utilization (fraction, out of 1.0) for the vLLM process
+- `--build-arg ENFORCE_EAGER="False"`: Disable CUDA graphs for faster token first-inferencing at the cost of more GPU memory (set to False for production)
+
+## Prompt Formats
+
+The pre-packaged model, defenseunicorns/Hermes-2-Pro-Mistral-7B-4bit-32g, contains special prompt templates for activating the function calling and JSON response modes. The default prompt template is the ChatML format.
+
+These are a result of its training data and process. Please refer to [this section of the Hugging Face model card](https://huggingface.co/defenseunicorns/Hermes-2-Pro-Mistral-7B-4bit-32g#prompt-format-for-function-calling) for more details.
 
 ## Zarf Package Deployment
 
@@ -46,6 +53,7 @@ uds zarf package deploy packages/vllm/zarf-package-vllm-*-dev.tar.zst --confirm
 ## Run Locally
 
 To run the vllm backend locally (starting from the root directory of the repository):
+
 ```bash
 # Setup Virtual Environment if you haven't done so already
 python -m venv .venv
