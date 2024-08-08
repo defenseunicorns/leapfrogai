@@ -78,6 +78,8 @@ realtime:
   extraEnvVars:
     - name: APP_NAME
       value: "supabase-realtime"
+    - name: DB_AFTER_CONNECT_QUERY
+      value: "SET search_path TO _realtime"
     - name: DB_ENC_KEY
       valueFrom:
         secretKeyRef:
