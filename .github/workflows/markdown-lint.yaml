@@ -1,4 +1,4 @@
-name: Docker Lint
+name: Markdown Lint
 
 on:
   push:
@@ -25,7 +25,7 @@ concurrency:
 jobs:
   markdown-lint:
     runs-on: ubuntu-latest
-    name: Lint Markdowns
+    name: Lint Markdown Files
 
     permissions:
       contents: read
