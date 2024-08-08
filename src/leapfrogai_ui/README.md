@@ -20,7 +20,7 @@ below for more information.
 It is recommended to run LeapfrogAI with UDS, but if you want to run the UI locally (on localhost, e.g. for local development),
 you can either:
 
-1. Connect to a UDS deployed version of the Leapfrog API and Supabase  
+1. Connect to a UDS deployed version of the Leapfrog API and Supabase
 
    **OR**
 
