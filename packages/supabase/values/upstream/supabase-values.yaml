@@ -1,22 +1,3 @@
-####################
-# UDS and LeapfrogAI
-####################
-
-supabase:
-  sso:
-    host: supabase-kong
-    name: supabase
-    component: kong
-    clientId: ###ZARF_CONST_EXTERNAL_KEYCLOAK_CLIENT_ID###
-    redirectUris:
-      - "https://supabase-kong.###ZARF_VAR_DOMAIN###/auth/v1/callback"
-    webOrigins:
-      - "https://ai.###ZARF_VAR_DOMAIN###"
-
-##########
-# Supabase
-##########
-
 global:
   jwt:
     existingSecret: "supabase-bootstrap-jwt"

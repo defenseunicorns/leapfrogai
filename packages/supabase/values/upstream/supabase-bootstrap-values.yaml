@@ -12,7 +12,7 @@
 ## @param global.storageClass Global StorageClass for Persistent Volume(s)
 ##
 global:
-  ## We need to add the existing secret in global in order to make it accessible to the Kong subchart
+  ## We need to add the existing secret in global in order to make it accessible to the Kong sub-chart
   ##
   jwt:
     ## @param global.jwt.existingSecret The name of the existing secret containing the JWT secret

@@ -1,0 +1,36 @@
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: supabase-migrations
+spec:
+  template:
+    spec:
+      securityContext:
+        {{- toYaml .Values.podSecurityContext | nindent 8 }}
+      containers:
+        - name: supabase-cli
+          image: "{{ .Values.supabase.migration.image.repository }}:{{ .Values.supabase.migration.image.tag }}"
+          env:
+            - name: POSTGRES_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: supabase-postgresql
+                  key: postgres-password
+            - name: MIGRATION_NAMESPACE
+              value: "{{ .Values.supabase.migration.env.namespace }}"
+            - name: MIGRATION_SERVICE_NAME
+              value: "{{ .Values.supabase.migration.env.serviceName }}"
+            - name: MIGRATION_SERVICE_PORT
+              value: "{{ .Values.supabase.migration.env.servicePort }}"
+
+          # NOTE: This command is assuming the default username.
+          command: ["/bin/sh"]
+          args:
+            - -c
+            - >-
+              supabase migration fetch --db-url="postgresql://supabase_admin:$POSTGRES_PASSWORD@$MIGRATION_SERVICE_NAME.$MIGRATION_NAMESPACE.svc.cluster.local:$MIGRATION_SERVICE_PORT/postgres" --debug || true &&
+              supabase db push --db-url="postgresql://supabase_admin:$POSTGRES_PASSWORD@$MIGRATION_SERVICE_NAME.$MIGRATION_NAMESPACE.svc.cluster.local:$MIGRATION_SERVICE_PORT/postgres" --include-all --debug
+          securityContext:
+            {{- toYaml .Values.supabase.migration.securityContext | nindent 12 }}
+      restartPolicy: Never
+  backoffLimit: 4
