@@ -52,11 +52,6 @@ class RunCreateParamsRequest(RunCreateParamsRequestBase):
             ]
         ],
     )
-    stream: bool | None = Field(
-        default=None,
-        description="If set to true, the response will be streamed as it's generated.",
-        example=False,
-    )
 
     async def create_additional_messages(self, session: Session, thread_id: str):
         """If additional messages exist, create them in the DB as a part of this thread"""
@@ -118,7 +113,7 @@ class RunCreateParamsRequest(RunCreateParamsRequestBase):
                 RunCreateParamsRequestBase.get_ending_messages_base(run=new_run)
             )
             stream: AsyncGenerator[str, Any] = (
-                super().stream_generate_message_for_thread(session=session, initial_messages=initial_messages, thread=existing_thread, ending_messages=ending_messages, run_id=new_run.id, additional_instructions=self.additional_instructions)
+                super().stream_generate_message_for_thread(session=session, thread=existing_thread, run_id=new_run.id, additional_instructions=self.additional_instructions, ending_messages=ending_messages, initial_messages=initial_messages)
             )
 
             return StreamingResponse(stream, media_type="text/event-stream")
