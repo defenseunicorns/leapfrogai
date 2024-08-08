@@ -63,7 +63,7 @@ repos:
     hooks:
       - id: hadolint-docker
         name: Dockerfile Lint
-        args: ["--failure-threshold", "error"]
+        args: ["--config", ".hadolint.yaml"]
 
   - repo: local
     hooks:

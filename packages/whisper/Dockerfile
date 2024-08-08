@@ -42,6 +42,6 @@ ENV LD_LIBRARY_PATH \
 
 COPY packages/whisper/main.py .
 
-EXPOSE 50051:50051
+EXPOSE 50051
 
 ENTRYPOINT ["python", "-u", "main.py"]

@@ -30,7 +30,7 @@ COPY --from=builder /leapfrogai/.venv/ /leapfrogai/.venv/
 COPY packages/repeater/repeater.py .
 
 # Publish port
-EXPOSE 50051:50051
+EXPOSE 50051
 
 # Run the repeater model
 ENTRYPOINT ["python", "-u", "repeater.py"]

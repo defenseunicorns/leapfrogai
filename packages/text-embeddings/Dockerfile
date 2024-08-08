@@ -32,6 +32,6 @@ COPY --from=builder /leapfrogai/.venv/ /leapfrogai/.venv/
 
 COPY packages/text-embeddings/main.py .
 
-EXPOSE 50051:50051
+EXPOSE 50051
 
 ENTRYPOINT ["python", "-u", "main.py"]
