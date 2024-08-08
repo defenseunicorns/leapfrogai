@@ -13,5 +13,3 @@ ENV PATH="/leapfrogai/.venv/bin:$PATH"
 
 RUN rm -f ${SDK_DEST}/*.whl && \
     python -m pip wheel src/leapfrogai_sdk -w ${SDK_DEST}
-
-USER 65532
