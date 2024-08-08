@@ -79,7 +79,7 @@ realtime:
     - name: APP_NAME
       value: "supabase-realtime"
     - name: DB_AFTER_CONNECT_QUERY
-      value: "create schema if not exists _realtime; alter schema _realtime owner to postgres; SET search_path TO _realtime;"
+      value: "DO $body$ BEGIN CREATE SCHEMA IF NOT EXISTS _realtime; ALTER SCHEMA _realtime OWNER TO postgres; SET search_path TO _realtime; END $body$;"
     - name: DB_ENC_KEY
       valueFrom:
         secretKeyRef:
