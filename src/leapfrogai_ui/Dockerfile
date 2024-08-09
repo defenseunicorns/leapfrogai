@@ -1,5 +1,9 @@
 FROM node:18-alpine AS builder
-RUN apk add libreoffice
+
+RUN apk update && apk upgrade && apk add libreoffice-common libreoffice-writer libreoffice-calc libreoffice-impress openjdk11-jre
+ENV JAVA_HOME=/usr/lib/jvm/java-11-openjdk
+ENV PATH=${JAVA_HOME}/bin:$PATH
+
 WORKDIR /app
 COPY package.json ./
 COPY package-lock.json ./
@@ -9,20 +13,11 @@ ENV NODE_ENV=production
 RUN npm run build
 RUN npm prune
 
-
-FROM cgr.dev/chainguard/node:latest
-WORKDIR /app
-COPY --chown=node:node --from=builder /app/build build/
-COPY --chown=node:node --from=builder /app/node_modules node_modules/
-COPY --chown=node:node package.json .
-COPY --from=builder /usr/bin/libreoffice /usr/bin/libreoffice
-COPY --from=builder /usr/lib/libreoffice /usr/lib/libreoffice
-COPY --from=builder /usr/lib/libreoffice/program/oosplash /usr/bin/oosplash
-
-EXPOSE 3000
 ENV NODE_ENV=production
 # Disable request size limit
 ENV BODY_SIZE_LIMIT=Infinity
 ENV PROTOCOL_HEADER=x-forwarded-proto
 ENV HOST_HEADER=x-forwarded-host
+EXPOSE 3000
+
 CMD ["build"]
