@@ -1,6 +1,6 @@
 FROM node:18-alpine AS builder
 
-RUN apk update && apk upgrade && apk add libreoffice openjdk11-jre
+RUN apk update && apk upgrade && apk add --no-cache libreoffice openjdk11-jre
 ENV JAVA_HOME=/usr/lib/jvm/java-11-openjdk
 ENV PATH=${JAVA_HOME}/bin:$PATH
 
