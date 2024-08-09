@@ -1,5 +1,26 @@
 # Changelog
 
+## [0.11.0](https://github.com/defenseunicorns/leapfrogai/compare/v0.10.0...v0.11.0) (2024-08-09)
+
+
+### Features
+
+* **ui:** settings/profile header btn re-design ([941da3a](https://github.com/defenseunicorns/leapfrogai/commit/941da3af38621c869b5724dc91439238b046febd))
+
+
+### Bug Fixes
+
+* **api:** Adds migration to prevent null metadata messages ([#895](https://github.com/defenseunicorns/leapfrogai/issues/895)) ([44aafca](https://github.com/defenseunicorns/leapfrogai/commit/44aafca529edfb64a4cd7f7cae86835c46a6ba24))
+
+
+### Miscellaneous
+
+* add default GH PR workflow triggers to test workflows ([#892](https://github.com/defenseunicorns/leapfrogai/issues/892)) ([c418a4c](https://github.com/defenseunicorns/leapfrogai/commit/c418a4cc46cd7a23f6605252c9474d31e2ee6601))
+* Bumps all the uds core versions to 0.25.0 and updates deployment docs ([#874](https://github.com/defenseunicorns/leapfrogai/issues/874)) ([6ca39f1](https://github.com/defenseunicorns/leapfrogai/commit/6ca39f1b616c436107b9eaf6f36137988b3bade5))
+* Remove "review_requested" as trigger to prevent unintentional test re-runs ([4c20d9e](https://github.com/defenseunicorns/leapfrogai/commit/4c20d9e16eb05ccf9a24a3c9114eb64ecbf8317c))
+* **ui:** improve reliability of playwright test in workflow ([29703cb](https://github.com/defenseunicorns/leapfrogai/commit/29703cb64204879dacee286b158caad63c8c677a))
+* **ui:** improve sveltekit store mocking ([90bef05](https://github.com/defenseunicorns/leapfrogai/commit/90bef057a66ce521d0a6d6276df970c0568121a0))
+
 ## [0.10.0](https://github.com/defenseunicorns/leapfrogai/compare/v0.9.2...v0.10.0) (2024-08-02)
 
 

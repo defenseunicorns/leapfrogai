@@ -42,7 +42,7 @@ components:
         localPath: chart
         releaseName: whisper-model
         # x-release-please-start-version
-        version: 0.10.0
+        version: 0.11.0
         # x-release-please-end
         valuesFiles:
           - "whisper-values.yaml"
