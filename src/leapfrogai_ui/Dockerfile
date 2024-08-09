@@ -1,5 +1,4 @@
 FROM node:18-alpine AS builder
-RUN apk add libreoffice
 WORKDIR /app
 COPY package.json ./
 COPY package-lock.json ./
@@ -11,13 +10,13 @@ RUN npm prune
 
 
 FROM cgr.dev/chainguard/node:latest
-
 WORKDIR /app
 COPY --chown=node:node --from=builder /app/build build/
 COPY --chown=node:node --from=builder /app/node_modules node_modules/
 COPY --chown=node:node package.json .
 COPY --from=builder /usr/bin/libreoffice /usr/bin/libreoffice
 COPY --from=builder /usr/lib/libreoffice /usr/lib/libreoffice
+COPY --from=builder /usr/lib/libreoffice/program/oosplash /usr/bin/oosplash
 
 EXPOSE 3000
 ENV NODE_ENV=production
