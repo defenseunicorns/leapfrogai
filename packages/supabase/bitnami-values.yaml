@@ -75,6 +75,22 @@ realtime:
   resourcesPreset: "none"
   podLabels:
     sidecar.istio.io/inject: "false"
+  extraEnvVars:
+    - name: APP_NAME
+      value: "supabase-realtime"
+    - name: DB_AFTER_CONNECT_QUERY
+      value: "DO $body$ BEGIN CREATE SCHEMA IF NOT EXISTS _realtime; ALTER SCHEMA _realtime OWNER TO postgres; SET search_path TO _realtime; END $body$;"
+    - name: DB_ENC_KEY
+      valueFrom:
+        secretKeyRef:
+          name: supabase-realtime-extra
+          key: dbEncKey
+    - name: DNS_NODES
+      value: "supabase-realtime"
+  args:
+    - -ec
+    - |
+      realtime eval Realtime.Release.migrate && realtime eval 'Realtime.Release.seeds(Realtime.Repo)' && realtime start
 
 rest:
   enabled: ###ZARF_VAR_ENABLE_REST###
@@ -107,7 +123,7 @@ volumePermissions:
   resourcesPreset: "none"
 
 psqlImage:
-  tag: 15.1.1-debian-12-r69
+  tag: 15.6.1-debian-12-r2
 
 kong:
   enabled: ###ZARF_VAR_ENABLE_KONG###
@@ -172,9 +188,11 @@ kong:
 postgresql:
   enabled: ###ZARF_VAR_ENABLE_POSTGRES###
   image:
-    tag: 15.1.1-debian-12-r69
+    tag: 15.6.1-debian-12-r2
     debug: true
   primary:
+    extendedConfiguration: |
+      wal_level = logical
     resourcesPreset: "none"
     podLabels:
       sidecar.istio.io/inject: "false"
