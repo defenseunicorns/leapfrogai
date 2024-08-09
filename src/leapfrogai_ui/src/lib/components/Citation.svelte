@@ -22,7 +22,7 @@
   export let file: FileObject;
   export let index: string;
 
-  // TODO - add file annotations for pages, and tests
+  // TODO - debug blog on deployed app vs local (different encoding or font family?)
 
   let expanded = false;
   let url: string;
