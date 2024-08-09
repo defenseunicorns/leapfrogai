@@ -28,7 +28,6 @@ from pydantic import BaseModel, Field
 DEFAULT_MAX_COMPLETION_TOKENS = 4096
 DEFAULT_MAX_PROMPT_TOKENS = 4096
 
-
 ##########
 # GENERIC
 ##########
@@ -54,6 +53,25 @@ class Usage(BaseModel):
 ##########
 
 
+class ModelMetadataResponse(BaseModel):
+    type: Literal["embeddings", "llm"] | None = Field(
+        default=None,
+        description="The type of the model e.g. ('embeddings' or 'llm')",
+    )
+    dimensions: int | None = Field(
+        default=None,
+        description="Embedding dimensions (for embeddings models)",
+    )
+    precision: str | None = Field(
+        default=None,
+        description="Model precision (e.g., 'float16', 'float32')",
+    )
+    capabilities: str | None = Field(
+        default=None,
+        description="Model capabilities (e.g., 'embeddings' or 'chat')",
+    )
+
+
 class ModelResponseModel(BaseModel):
     """Represents a single model in the response."""
 
@@ -74,6 +92,10 @@ class ModelResponseModel(BaseModel):
     owned_by: Literal["leapfrogai"] = Field(
         default="leapfrogai",
         description="The organization that owns the model. Always 'leapfrogai' for LeapfrogAI models.",
+    )
+    metadata: ModelMetadataResponse | None = Field(
+        default=None,
+        description="Metadata for the model, including type, dimensions (for embeddings), and precision.",
     )
 
 
