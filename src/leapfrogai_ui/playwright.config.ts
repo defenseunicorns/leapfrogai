@@ -62,6 +62,8 @@ const devConfig: PlaywrightTestConfig = {
     port: 4173,
     stderr: 'pipe'
   },
+  testDir: 'tests',
+  testMatch: /(.+\.)?(test|spec)\.[jt]s/,
   use: {
     baseURL: 'http://localhost:4173'
   }
@@ -70,8 +72,11 @@ const devConfig: PlaywrightTestConfig = {
 // when e2e testing, use the deployed instance
 const CI_Config: PlaywrightTestConfig = {
   use: {
-    baseURL: 'https://ai.uds.dev'
-  }
+    baseURL: 'https://ai.uds.dev',
+    screenshot: 'only-on-failure',
+    video: 'retain-on-failure'
+  },
+  reporter: [['html', { outputFolder: 'e2e-report' }]]
 };
 
 // get the environment type from command line. If none, set it to dev

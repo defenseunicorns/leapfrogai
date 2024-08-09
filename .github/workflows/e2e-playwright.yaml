@@ -1,0 +1,122 @@
+# End-to-end testing that deploys and tests Supabase, API, UI, and VLLM
+
+name: e2e-playwright
+on:
+  pull_request:
+    types:
+      - opened            # default trigger
+      - reopened          # default trigger
+      - synchronize       # default trigger
+      - ready_for_review  # don't run on draft PRs
+      - milestoned        # allows us to trigger on bot PRs
+    paths:
+      # Catch-all
+      - "**"
+
+      # Ignore updates to the .github directory, unless it's this current file
+      - "!.github/**"
+      - ".github/workflows/e2e-playwright.yaml"
+      - ".github/actions/uds-cluster/action.yaml"
+
+      # Ignore docs and website things
+      - "!**.md"
+      - "!docs/**"
+      - "!adr/**"
+      - "!website/**"
+      - "!netlify.toml"
+
+      # Ignore updates to generic github metadata files
+      - "!CODEOWNERS"
+      - "!.gitignore"
+      - "!LICENSE"
+
+      # Ignore local development files
+      - "!.pre-commit-config.yaml"
+
+      # Ignore non e2e tests changes
+      - "!tests/pytest/**"
+
+      # Ignore changes to unrelated packages
+      - "!packages/k3d-gpu/**"
+      - "!packages/llama-cpp-python/**"
+      - "!packages/repeater/**"
+      - "!packages/text-embeddings/**"
+      - "!packages/vllm/**"
+      - "!packages/whisper/**"
+
+
+
+concurrency:
+  group: e2e-playwright-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  e2e_playwright:
+    runs-on: ai-ubuntu-big-boy-8-core
+    if: ${{ !github.event.pull_request.draft }}
+
+    steps:
+        - name: Checkout Repo
+          uses: actions/checkout@b4ffde65f46336ab88eb53be808477a3936bae11 # v4.1.1
+
+        - name: Setup Node
+          uses: actions/setup-node@60edb5dd545a775178f52524783378180af0d1f8 # v4.0.2
+          with:
+            node-version-file: 'src/leapfrogai_ui/package.json'
+
+        - name: Install UI/Playwright Dependencies
+          run: |
+            npm --prefix src/leapfrogai_ui ci
+            npx --prefix src/leapfrogai_ui playwright install
+
+        - name: Setup Python
+          uses: ./.github/actions/python
+
+        - name: Setup UDS Cluster
+          uses: ./.github/actions/uds-cluster
+          with:
+            registry1Username: ${{ secrets.IRON_BANK_ROBOT_USERNAME }}
+            registry1Password: ${{ secrets.IRON_BANK_ROBOT_PASSWORD }}
+
+        - name: Setup LFAI-API and Supabase
+          uses: ./.github/actions/lfai-core
+
+        - name: Test Supabase
+          run: |
+            python -m pip install requests
+            python -m pytest ./tests/e2e/test_supabase.py -v
+
+        - name: Test API
+          run: |
+            python -m pip install requests
+            python -m pytest ./tests/e2e/test_api.py -v
+
+        ##########
+        # UI
+        ##########
+        - name: Deploy LFAI-UI
+          run: |
+            make build-ui LOCAL_VERSION=e2e-test
+            docker image prune -af
+            uds zarf package deploy packages/ui/zarf-package-leapfrogai-ui-amd64-e2e-test.tar.zst --confirm
+            rm packages/ui/zarf-package-leapfrogai-ui-amd64-e2e-test.tar.zst
+
+        # Run the playwright UI tests using the deployed Supabase endpoint and upload report as an artifact
+        - name: UI/API/Supabase E2E Playwright Tests
+          run: |
+            cp src/leapfrogai_ui/.env.example src/leapfrogai_ui/.env
+            TEST_ENV=CI PUBLIC_DISABLE_KEYCLOAK=true PUBLIC_SUPABASE_ANON_KEY=$ANON_KEY npm --prefix src/leapfrogai_ui run test:integration:ci
+
+        # Upload the Playwright report as an artifact
+        - name: Archive Playwright Report
+          uses: actions/upload-artifact@v4
+          if: ${{ !cancelled() }}
+          with:
+            name: playwright-report
+            path: src/leapfrogai_ui/e2e-report/
+            retention-days: 30
+
+        # The UI can be removed after the Playwright tests are finished
+        - name: Cleanup UI
+          run: |
+            uds zarf package remove leapfrogai-ui --confirm

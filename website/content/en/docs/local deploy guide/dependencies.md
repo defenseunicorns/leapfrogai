@@ -56,7 +56,7 @@ brew tap defenseunicorns/tap && brew install zarf
 ```
 
 - As Homebrew does not install packages to the root directory, it is advisable to manually add the `zarf` binary to the root. Even in cases where Docker is installed in a rootless configuration, certain systems may encounter container access issues if Docker is not executed with root privileges.
-- To install as root, execute the following command in your terminal and ensure that the version number is replaced with the most recent [release](https://github.com/defenseunicorns/zarf/releases):
+- To install as root, execute the following command in your terminal and ensure that the version number is replaced with the most recent [release](https://github.com/zarf-dev/zarf/releases):
 
 ```git
 # switch to sudo

@@ -21,7 +21,7 @@ export const load: PageServerLoad = async ({ depends, locals: { session } }) => 
 
   let keys: APIKeyRow[] = [];
 
-  const res = await fetch(`${env.LEAPFROGAI_API_BASE_URL}/leapfrogai/v1/auth/list-api-keys`, {
+  const res = await fetch(`${env.LEAPFROGAI_API_BASE_URL}/leapfrogai/v1/auth/api-keys`, {
     headers: {
       Authorization: `Bearer ${session.access_token}`
     }
@@ -31,14 +31,14 @@ export const load: PageServerLoad = async ({ depends, locals: { session } }) => 
     return error(500, { message: 'Error fetching API keys' });
   }
 
-  keys = await res.json();
+  keys = (await res.json()) as APIKeyRow[];
   // convert from seconds to milliseconds
   keys.forEach((key) => {
     key.created_at = key.created_at * 1000;
     key.expires_at = key.expires_at * 1000;
   });
 
-  return { title: 'LeapfrogAI - API Keys', form, keys };
+  return { title: 'LeapfrogAI - API Keys', form, keys: keys ?? [] };
 };
 
 export const actions: Actions = {
@@ -48,12 +48,11 @@ export const actions: Actions = {
     }
 
     const form = await superValidate(request, yup(newAPIKeySchema));
-
     if (!form.valid) {
       return fail(400, { form });
     }
 
-    const res = await fetch(`${env.LEAPFROGAI_API_BASE_URL}/leapfrogai/v1/auth/create-api-key`, {
+    const res = await fetch(`${env.LEAPFROGAI_API_BASE_URL}/leapfrogai/v1/auth/api-keys`, {
       headers: {
         Authorization: `Bearer ${session.access_token}`,
         'Content-Type': 'application/json'

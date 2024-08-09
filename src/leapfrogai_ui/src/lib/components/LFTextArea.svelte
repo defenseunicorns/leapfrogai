@@ -1,205 +1,184 @@
-<!--This component was modified from https://github.com/carbon-design-system/carbon-components-svelte/blob/master/src/TextArea/TextArea.svelte
-It keeps all the Carbon Components Svelte functionality, but instead grows as multiple lines are added until it
-hits the limit specified by maxRows.
-It also defaults maxCount to the environment variable PUBLIC_MESSAGE_LENGTH_LIMIT
-and shows an error when the user attempts to type past the maxCount limitation.
-The invalid prop can still be passed to this component to validate for other conditions.
+<!--
+This component creates a custom version of Flowbite Svelte's Textarea component that auto grows and shrinks in height up
+to a limit of maxRows. It can also show error text.
 -->
 
 <script lang="ts">
-  import { WarningFilled } from 'carbon-icons-svelte';
-  import type { Writable } from 'svelte/store';
-  import { onMount } from 'svelte';
+  import { twMerge } from 'tailwind-merge';
+  import { getContext, onMount } from 'svelte';
+  import Wrapper from 'flowbite-svelte/Wrapper.svelte';
   import { env } from '$env/dynamic/public';
+  import { Helper } from 'flowbite-svelte';
+  import type { Writable } from 'svelte/store';
 
-  /** Specify the textarea value */
+  const background = getContext('background');
+
+  export let ref: HTMLInputElement | null = null;
   export let value: Writable<string>;
-  /** Specify the onSubmit function */
-  export let onSubmit: (e: SubmitEvent | KeyboardEvent) => Promise<void>;
-  /** Specify the maxRows value */
-  export let maxRows = 10;
+  export let wrappedClass: string =
+    'block w-full text-sm border-0 px-0 bg-inherit dark:bg-inherit focus:outline-none focus:ring-0 disabled:cursor-not-allowed disabled:opacity-50';
+  export let unWrappedClass: string =
+    'p-2.5 text-sm focus:ring-primary-500 border-gray-300 focus:border-primary-500 dark:focus:ring-primary-500 dark:focus:border-primary-500 disabled:cursor-not-allowed disabled:opacity-50';
+  export let innerWrappedClass: string = 'py-2 px-4 bg-white dark:bg-gray-800';
+  export let headerClass: string = '';
+  export let footerClass: string = '';
 
-  /** Specify the placeholder text */
-  export let placeholder = '';
-
-  /** Specify the number of cols */
-  export let cols = 50;
-
-  /** Specify the number of rows */
-  export let rows = 4;
-
-  /**
-   * Specify the max character count
-   */
-  export let maxCount: number = Number(env.PUBLIC_MESSAGE_LENGTH_LIMIT);
-
-  /** Set to `true` to enable the light variant */
-  export let light = false;
-
-  /** Set to `true` to disable the input */
-  export let disabled = false;
-
-  /** Set to `true` to use the read-only variant */
-  export let readonly = false;
-
-  /** Specify the helper text */
-  export let helperText = '';
-
-  /** Specify the label text */
-  export let labelText = '';
-
-  /** Set to `true` to visually hide the label text */
-  export let hideLabel = false;
-
-  /** Set to `true` to indicate an invalid state */
-  export let invalid = false;
-
-  /** Specify the text for the invalid state */
-  export let invalidText = '';
-
-  /** Set an id for the textarea element */
-  export let id = 'ccs-' + Math.random().toString(36);
-
-  /**
-   * Specify a name attribute for the input
-   */
-  export let name: string | undefined = undefined;
-
-  /** Obtain a reference to the textarea HTML element */
-  export let ref: HTMLTextAreaElement | null = null;
-
-  /**
-   * Specify an aria label for the input
-   */
-  export let ariaLabel: string | undefined = undefined;
-
-  /**
-   * Obtain a reference to the error state of the input text length.
-   */
   export let showLengthError = false;
+  export let onSubmit: (e: SubmitEvent | KeyboardEvent) => Promise<void>;
+  export let invalid = false;
+  export let invalidText = '';
+  export let id = 'ccs-' + Math.random().toString(36);
+  export let maxRows = 10;
+  export let rows = '1';
 
+  let wrapped: boolean;
+  let maxLength = Number(env.PUBLIC_MESSAGE_LENGTH_LIMIT);
+  let lengthInvalidText = 'Character limit reached';
+  $: wrapped = $$slots.header || $$slots.footer;
   $: errorId = `error-${id}`;
 
-  let lengthInvalidText = 'Character limit reached';
-  $: limitReached = $value.length === Number(env.PUBLIC_MESSAGE_LENGTH_LIMIT);
+  let wrapperClass: string;
+  $: wrapperClass = twMerge(
+    'rounded-lg bg-gray-50',
+    background ? 'dark:bg-gray-600' : 'dark:bg-gray-700',
+    'text-gray-900 dark:placeholder-gray-400 dark:text-white',
+    'border border-gray-200',
+    background ? 'dark:border-gray-500' : 'dark:border-gray-600',
+    $$props.class
+  );
 
-  function resizeTextArea() {
+  let textareaClass: string;
+  $: textareaClass = wrapped ? wrappedClass : twMerge(wrapperClass, unWrappedClass, 'scrollbar');
+
+  const headerCls = (header: boolean) =>
+    twMerge(
+      header ? 'border-b' : 'border-t',
+      'py-2 px-3 border-gray-200',
+      background ? 'dark:border-gray-500' : 'dark:border-gray-600',
+      header ? headerClass : footerClass
+    );
+
+  let innerWrapperClass: string;
+  $: innerWrapperClass = twMerge(
+    innerWrappedClass,
+    $$slots.footer ? '' : 'rounded-b-lg',
+    $$slots.header ? '' : 'rounded-t-lg'
+  );
+
+  $: limitReached = $value.length === maxLength;
+  $: $value === '' && resizeTextArea(true);
+
+  function resizeTextArea(reset = false) {
     if (ref) {
-      ref.style.height = '1px';
-      ref.style.height = ref.scrollHeight - 2 + 'px';
+      ref.style.height = 'auto';
+
+      if (reset) {
+        ref.style.overflowY = 'hidden';
+        return;
+      }
+
+      const scrollHeight = ref.scrollHeight + 2;
+      const maxHeight = maxRows * 18; // Rows are 18px in height
+      if (scrollHeight > maxHeight) {
+        ref.style.height = `${maxHeight}px`;
+        ref.style.overflowY = 'auto';
+      } else {
+        ref.style.height = `${scrollHeight}px`;
+        ref.style.overflowY = 'hidden';
+      }
     }
   }
 
   onMount(() => {
-    resizeTextArea();
+    resizeTextArea(); // prevents a pixel jump when you first type in input
   });
 </script>
 
-<!-- svelte-ignore a11y-mouse-events-have-key-events -->
-<!-- svelte-ignore a11y-click-events-have-key-events -->
-<!-- svelte-ignore a11y-no-static-element-interactions -->
-<div on:click on:mouseover on:mouseenter on:mouseleave class:bx--form-item={true}>
-  {#if (labelText || $$slots.labelText) && !hideLabel}
-    <div class:bx--text-area__label-wrapper={true}>
-      <label
-        for={id}
-        class:bx--label={true}
-        class:bx--visually-hidden={hideLabel}
-        class:bx--label--disabled={disabled}
-      >
-        <slot name="labelText">
-          {labelText}
-        </slot>
-      </label>
-      {#if maxCount}
-        <div class:bx--label={true} class:bx--label--disabled={disabled}>
-          {$value.length}/{maxCount}
-        </div>
-      {/if}
+<Wrapper show={wrapped} class={wrapperClass}>
+  {#if $$slots.header}
+    <div class={headerCls(true)}>
+      <slot name="header"></slot>
     </div>
   {/if}
-  <div class:bx--text-area__wrapper={true} data-invalid={invalid || showLengthError || undefined}>
-    {#if invalid || showLengthError}
-      <WarningFilled class="bx--text-area__invalid-icon" />
-    {/if}
-    <span class="lf-text-area">
-      <textarea
-        bind:this={ref}
-        bind:value={$value}
-        aria-invalid={invalid || showLengthError || undefined}
-        aria-describedby={invalid || showLengthError ? errorId : undefined}
-        aria-label={ariaLabel}
-        {disabled}
-        {id}
-        {name}
-        {cols}
-        {rows}
-        {placeholder}
-        {readonly}
-        class:bx--text-area={true}
-        class:bx--text-area--light={light}
-        class:bx--text-area--invalid={invalid || showLengthError}
-        style="--maxRows:{maxRows};"
-        maxlength={maxCount + 1 ?? undefined}
-        {...$$restProps}
-        on:keyup={resizeTextArea}
-        on:keydown={(e) => {
-          resizeTextArea();
-          // Allow user to type up to maxCount, but only show error once trying to add more
-          // characters after hitting this limit
 
-          // Allow Command+A / Ctrl+A for select all even when max length is reached
-          if (e.key === 'a' && (e.metaKey || e.ctrlKey)) {
-            return; // Do not prevent the default action for Command+A/Ctrl+A
-          }
-          // If limit reached and trying to delete characters
-          if (limitReached && ['Backspace', 'Delete'].includes(e.key)) {
-            showLengthError = false; // remove error
-          }
+  <Wrapper show={wrapped} class={innerWrapperClass}>
+    <textarea
+      {id}
+      bind:this={ref}
+      bind:value={$value}
+      on:blur
+      on:change
+      on:click
+      on:contextmenu
+      on:focus
+      on:input={() => resizeTextArea()}
+      on:keyup
+      on:keydown={(e) => {
+        // Allow user to type up to maxCount, but only show error once trying to add more
+        // characters after hitting this limit
 
-          // Limit has previously been reached and still trying to type
-          else if (
-            limitReached &&
-            !['Backspace', 'Delete', 'ArrowLeft', 'ArrowRight'].includes(e.key)
-          ) {
-            e.preventDefault(); // disallow adding character
-            showLengthError = true; // throw error
-          } else {
-            if (e.key === 'Enter' && !e.shiftKey && ref) {
-              resizeTextArea();
-              onSubmit(e);
-            }
+        // Allow Command+A / Ctrl+A for select all even when max length is reached
+        if (e.key === 'a' && (e.metaKey || e.ctrlKey)) {
+          return; // Do not prevent the default action for Command+A/Ctrl+A
+        }
+        // If limit reached and trying to delete characters
+        if (limitReached && ['Backspace', 'Delete'].includes(e.key)) {
+          showLengthError = false; // remove error
+        }
+
+        // Limit has previously been reached and still trying to type
+        else if (
+          limitReached &&
+          !['Backspace', 'Delete', 'ArrowLeft', 'ArrowRight'].includes(e.key)
+        ) {
+          e.preventDefault(); // disallow adding character
+          showLengthError = true; // throw error
+        } else {
+          if (e.key === 'Enter' && !e.shiftKey && ref) {
+            onSubmit(e);
           }
-        }}
-        on:focus
-        on:blur
-        on:paste
-      />
-    </span>
-  </div>
-  {#if !invalid && !showLengthError && helperText}
-    <div class:bx--form__helper-text={true} class:bx--form__helper-text--disabled={disabled}>
-      {helperText}
+        }
+      }}
+      {rows}
+      on:keypress
+      on:keyup
+      on:mouseenter
+      on:mouseleave
+      on:mouseover
+      on:paste
+      on:select
+      {...$$restProps}
+      maxlength={maxLength + 1 ?? undefined}
+      class={textareaClass}
+    />
+    <Helper>
+      <Wrapper id={errorId} show={invalid || showLengthError} class="text-red-500">
+        {showLengthError ? lengthInvalidText : invalidText}
+      </Wrapper>
+    </Helper>
+  </Wrapper>
+
+  {#if $$slots.footer}
+    <div class={headerCls(false)}>
+      <slot name="footer"></slot>
     </div>
   {/if}
-  {#if invalid || showLengthError}
-    <div id={errorId} class:bx--form-requirement={true}>
-      {showLengthError ? lengthInvalidText : invalidText}
-    </div>
-  {/if}
-</div>
+</Wrapper>
+
+<!--
+@component
+[Go to docs](https://flowbite-svelte.com/)
+## Props
+@prop export let value: Writable<string>;
+@prop export let wrappedClass: string = 'block text-sm border-0 px-0 bg-inherit dark:bg-inherit focus:outline-none focus:ring-0 disabled:cursor-not-allowed disabled:opacity-50';
+@prop export let unWrappedClass: string = 'p-2.5 text-sm focus:ring-primary-500 border-gray-300 focus:border-primary-500 dark:focus:ring-primary-500 dark:focus:border-primary-500 disabled:cursor-not-allowed disabled:opacity-50';
+@prop export let innerWrappedClass: string = 'py-2 px-4 bg-white dark:bg-gray-800';
+@prop export let headerClass: string = ''
+  export let footerClass: string = '';
+-->
 
 <style lang="scss">
-  .lf-text-area {
-    display: flex;
-    flex: 1;
-    :global(.bx--text-area) {
-      overflow-y: scroll;
-      min-height: var(--message-input-height);
-      max-height: calc(var(--maxRows) * 22px); // each row is 22px
-      scrollbar-color: themes.$layer-03 themes.$layer-01;
-      padding: 0.6rem 1rem; // need to slightly reduce padding to avoid having scroll bar initially
-      resize: none;
-    }
+  .scrollbar {
+    scrollbar-color: #4b5563 #1f2937;
   }
 </style>

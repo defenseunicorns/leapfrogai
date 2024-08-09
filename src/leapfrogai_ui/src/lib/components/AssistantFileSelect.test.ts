@@ -56,6 +56,7 @@ describe('AssistantFileSelect', () => {
       screen.queryByTestId(`${mockFiles[0].filename}-${mockFiles[0].status}-uploader-item`)
     ).not.toBeInTheDocument();
 
+    await userEvent.click(screen.getByTestId('file-select-dropdown-btn'));
     await userEvent.click(screen.getByText(mockFiles[0].filename));
     screen.getByTestId(`${mockFiles[0].filename}-${mockFiles[0].status}-uploader-item`);
   });

@@ -96,7 +96,10 @@ test('it can edit an assistant and remove a file', async ({ page, openAIClient }
   await page.getByRole('button', { name: 'Save' }).click();
   await expect(page.getByText('Assistant Updated')).toBeVisible();
 
-  await page.getByTestId(`assistant-tile-${assistant.name}`).getByTestId('overflow-menu').click();
+  await page
+    .getByTestId(`assistant-card-${assistant.name}`)
+    .getByTestId('assistant-card-dropdown')
+    .click();
   await page.getByRole('menuitem', { name: 'Edit' }).click();
   await page.waitForURL('/chat/assistants-management/edit/**/*');
 
@@ -233,7 +236,7 @@ test('can download a file with the citation', async ({ page, openAIClient }) => 
   await loadChatPage(page);
   const messages = page.getByTestId('message');
 
-  const assistantDropdown = page.getByTestId('assistant-dropdown');
+  const assistantDropdown = page.getByTestId('assistants-select-btn');
   await assistantDropdown.click();
   await page.getByText(assistant.name!).click();
   await sendMessage(page, newMessage);

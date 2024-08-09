@@ -15,6 +15,9 @@ GPU_ENABLED = (
 class Model:
     backend_config = BackendConfig()
 
+    if not os.path.exists(backend_config.model.source):
+        raise ValueError(f"Model path ({backend_config.model.source}) does not exist")
+
     llm = Llama(
         model_path=backend_config.model.source,
         n_ctx=backend_config.max_context_length,

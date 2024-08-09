@@ -1,5 +1,6 @@
 import asyncio
 import logging
+import os
 
 from InstructorEmbedding import INSTRUCTOR
 from leapfrogai_sdk import (
@@ -10,7 +11,8 @@ from leapfrogai_sdk import (
     serve,
 )
 
-model = INSTRUCTOR("./.model")
+model_dir = os.environ.get("LFAI_MODEL_PATH", ".model")
+model = INSTRUCTOR(model_dir)
 
 
 class InstructorEmbedding:

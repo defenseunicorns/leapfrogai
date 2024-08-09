@@ -5,7 +5,7 @@ import { faker } from '@faker-js/faker';
 
 export const mockGetKeys = (keys: APIKeyRow[]) => {
   server.use(
-    http.get(`${process.env.LEAPFROGAI_API_BASE_URL}/leapfrogai/v1/auth/list-api-keys`, () =>
+    http.get(`${process.env.LEAPFROGAI_API_BASE_URL}/leapfrogai/v1/auth/api-keys`, () =>
       HttpResponse.json(keys)
     )
   );
@@ -41,7 +41,7 @@ export const mockCreateApiKeyFormAction = (key: APIKeyRow) => {
 export const mockCreateApiKey = (api_key = `lfai_${faker.string.uuid()}`) => {
   server.use(
     http.post(
-      `${process.env.LEAPFROGAI_API_BASE_URL}/leapfrogai/v1/auth/create-api-key`,
+      `${process.env.LEAPFROGAI_API_BASE_URL}/leapfrogai/v1/auth/api-keys`,
       async ({ request }) => {
         const reqJson = (await request.json()) as NewApiKeyInput;
         const key: APIKeyRow = {
@@ -61,7 +61,7 @@ export const mockCreateApiKey = (api_key = `lfai_${faker.string.uuid()}`) => {
 export const mockCreateApiKeyError = () => {
   server.use(
     http.post(
-      `${process.env.LEAPFROGAI_API_BASE_URL}/leapfrogai/v1/auth/create-api-key`,
+      `${process.env.LEAPFROGAI_API_BASE_URL}/leapfrogai/v1/auth/api-keys`,
       async () => new HttpResponse(null, { status: 500 })
     )
   );
@@ -70,7 +70,7 @@ export const mockCreateApiKeyError = () => {
 export const mockRevokeApiKey = () => {
   server.use(
     http.delete(
-      `${process.env.LEAPFROGAI_API_BASE_URL}/leapfrogai/v1/auth/revoke-api-key/:id`,
+      `${process.env.LEAPFROGAI_API_BASE_URL}/leapfrogai/v1/auth/api-keys/:id`,
       () => new HttpResponse(null, { status: 204 })
     )
   );
@@ -79,8 +79,12 @@ export const mockRevokeApiKey = () => {
 export const mockRevokeApiKeyError = () => {
   server.use(
     http.delete(
-      `${process.env.LEAPFROGAI_API_BASE_URL}/leapfrogai/v1/auth/revoke-api-key/:id`,
+      `${process.env.LEAPFROGAI_API_BASE_URL}/leapfrogai/v1/auth/api-keys/:id`,
       () => new HttpResponse(null, { status: 500 })
     )
   );
+};
+
+export const mockCreateApiKeyFormActionError = () => {
+  server.use(http.post('/chat/api-keys', () => HttpResponse.error()));
 };

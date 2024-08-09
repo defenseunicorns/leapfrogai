@@ -1,0 +1,83 @@
+# End-to-end testing that deploys and tests Supabase, API, UI, and VLLM
+
+name: e2e-vllm
+on:
+  pull_request:
+    types:
+      - opened            # default trigger
+      - reopened          # default trigger
+      - synchronize       # default trigger
+      - ready_for_review  # don't run on draft PRs
+      - milestoned        # allows us to trigger on bot PRs
+    paths:
+      # Catch-all
+      - "**"
+
+      # Ignore updates to the .github directory, unless it's this current file
+      - "!.github/**"
+      - ".github/workflows/e2e-vllm.yaml"
+      - ".github/actions/uds-cluster/action.yaml"
+
+      # Ignore docs and website things
+      - "!**.md"
+      - "!docs/**"
+      - "!adr/**"
+      - "!website/**"
+      - "!netlify.toml"
+
+      # Ignore updates to generic github metadata files
+      - "!CODEOWNERS"
+      - "!.gitignore"
+      - "!LICENSE"
+
+      # Ignore local development files
+      - "!.pre-commit-config.yaml"
+
+      # Ignore non e2e tests changes
+      - "!tests/pytest/**"
+
+      # Ignore LFAI-UI source code changes
+      - "!src/leapfrogai_ui/**"
+
+      # Ignore changes to unrelated packages
+      - "!packages/k3d-gpu/**"
+      - "!packages/llama-cpp-python/**"
+      - "!packages/repeater/**"
+      - "!packages/text-embeddings/**"
+      - "!packages/ui/**"
+      - "!packages/whisper/**"
+
+
+
+concurrency:
+  group: e2e-vllm-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  e2e_vllm:
+    runs-on: ai-ubuntu-big-boy-8-core
+    if: ${{ !github.event.pull_request.draft }}
+
+    steps:
+        - name: Checkout Repo
+          uses: actions/checkout@b4ffde65f46336ab88eb53be808477a3936bae11 # v4.1.1
+
+        - name: Setup Python
+          uses: ./.github/actions/python
+          with:
+            additionalOptionalDep: dev-vllm
+
+        - name: Setup UDS Environment
+          uses: defenseunicorns/uds-common/.github/actions/setup@05f42bb3117b66ebef8c72ae050b34bce19385f5
+          with:
+            username: ${{ secrets.IRON_BANK_ROBOT_USERNAME }}
+            password: ${{ secrets.IRON_BANK_ROBOT_PASSWORD }}
+
+        ########## c
+        # vLLM
+        # NOTE: We are not deploying and testing vLLM in this workflow because it requires a GPU
+        #     : This workflow simply verifies that the vLLM package can be built
+        ##########
+        - name: Build vLLM
+          run: |
+            make build-vllm LOCAL_VERSION=e2e-test

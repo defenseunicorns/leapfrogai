@@ -1,127 +1,73 @@
 <script lang="ts">
+  import { Button, Dropdown, DropdownItem, Navbar, NavBrand } from 'flowbite-svelte';
+  import { BarsOutline, CloseOutline, CogOutline, UserCircleOutline } from 'flowbite-svelte-icons';
+  import { page } from '$app/stores';
   import { threadsStore, uiStore } from '$stores';
   import logo from '$assets/LeapfrogAI.png';
-  import { Settings, UserAvatar } from 'carbon-icons-svelte';
-  import { Header, HeaderAction, HeaderUtilities } from 'carbon-components-svelte';
 
   export let isUsingOpenAI: boolean;
 
-  let loading = false;
   let signOutForm: HTMLFormElement;
 
   $: innerWidth = 0;
 
-  const handleLogOut = () => {
-    loading = true;
+  const handleLogOut = (e) => {
+    e.preventDefault();
+
     signOutForm.submit();
-    loading = false;
-  };
-
-  // We override the default behavior of the HeaderAction component to close other actions
-  // when a new one is opened
-  let activeHeaderAction: { [key: string]: boolean };
-  $: activeHeaderAction = {
-    user: false,
-    settings: false
-  };
-
-  const setActiveHeaderAction = (headerActionName: keyof typeof activeHeaderAction) => {
-    Object.keys(activeHeaderAction).forEach((key) => {
-      activeHeaderAction[key] = key === headerActionName;
-    });
   };
 </script>
 
 <svelte:window bind:innerWidth />
 
-<Header
-  persistentHamburgerMenu={innerWidth ? innerWidth < 1056 : false}
-  bind:isSideNavOpen={$uiStore.isSideNavOpen}
->
-  <span slot="platform"
-    ><a
-      data-testid="header-logo-link"
+<header>
+  <Navbar fluid class="h-header border-b border-gray-700 py-1 dark:bg-gray-800">
+    <NavBrand
       href={$threadsStore.lastVisitedThreadId
         ? `/chat/${$threadsStore.lastVisitedThreadId}`
-        : '/chat'}><img alt="LeapfrogAI Logo" src={logo} class="logo" /></a
-    ></span
-  >
-  <HeaderUtilities>
-    <HeaderAction
-      data-testid="settings header action button"
-      aria-label="Settings"
-      title="Settings"
-      icon={Settings}
-      transition={false}
-      isOpen={activeHeaderAction.settings}
-      on:open={() => setActiveHeaderAction('settings')}
+        : '/chat'}
+      data-testid="logo-link"
     >
-      <div class="links-container">
-        <a
-          href="/chat/assistants-management"
-          class="header-link"
-          on:click={() => setActiveHeaderAction('')}>Assistants Management</a
+      {#if innerWidth < 1024 && $page.url.pathname === '/chat'}
+        <Button
+          outline={true}
+          class="mr-2 !p-2"
+          on:click={(e) => {
+            e.preventDefault();
+            uiStore.setOpenSidebar(!$uiStore.openSidebar);
+          }}
         >
-
-        <a
-          href="/chat/file-management"
-          class="header-link"
-          on:click={() => setActiveHeaderAction('')}>File Management</a
-        >
+          {#if $uiStore.openSidebar}
+            <CloseOutline data-testid="close-sidebar-btn" />
+          {:else}
+            <BarsOutline data-testid="open-sidebar-btn" />
+          {/if}
+        </Button>
+      {/if}
+      <img src={logo} class="w-[7.875rem]] h-[2.25rem]" alt="LeapfrogAI Logo" />
+    </NavBrand>
+    <div id="header-btns-container" class="flex gap-4">
+      <CogOutline
+        data-testid="header-settings-btn"
+        class="settings-menu cursor-pointer dark:text-white"
+      />
+      <Dropdown triggeredBy=".settings-menu" data-testid="settings-dropdown">
+        <DropdownItem href="/chat/assistants-management">Assistants Management</DropdownItem>
+        <DropdownItem href="/chat/file-management">File Management</DropdownItem>
         {#if !isUsingOpenAI}
-          <a href="/chat/api-keys" class="header-link" on:click={() => setActiveHeaderAction('')}
-            >API Keys</a
-          >
+          <DropdownItem href="/chat/api-keys">API Keys</DropdownItem>
         {/if}
-      </div>
-    </HeaderAction>
-    <HeaderAction
-      data-testid="user header action button"
-      aria-label="User"
-      title="User"
-      icon={UserAvatar}
-      transition={false}
-      isOpen={activeHeaderAction.user}
-      on:open={() => setActiveHeaderAction('user')}
-    >
-      <div class="links-container">
-        <form bind:this={signOutForm} method="post" action="/auth?/signout">
-          <button
-            class="header-link"
-            aria-label="Log Out"
-            disabled={loading}
-            on:click={handleLogOut}>Log Out</button
-          >
-        </form>
-      </div>
-    </HeaderAction>
-  </HeaderUtilities>
-</Header>
+      </Dropdown>
 
-<style lang="scss">
-  .logo {
-    width: 126px;
-    height: 36px;
-  }
-
-  .links-container {
-    display: flex;
-    padding: 1rem;
-    flex-direction: column;
-    gap: 0.88rem;
-  }
-
-  .header-link {
-    @include type.type-style('heading-compact-01');
-    cursor: pointer;
-    background: none;
-    color: inherit;
-    border: none;
-    padding: 0;
-    outline: inherit;
-    text-decoration: none;
-    &:hover {
-      color: themes.$text-on-color;
-    }
-  }
-</style>
+      <UserCircleOutline
+        data-testid="header-profile-btn"
+        class="profile-menu cursor-pointer dark:text-white"
+      />
+      <Dropdown triggeredBy=".profile-menu" data-testid="profile-dropdown">
+        <DropdownItem on:click={handleLogOut}
+          >Log Out <form bind:this={signOutForm} method="post" action="/auth?/signout" />
+        </DropdownItem>
+      </Dropdown>
+    </div>
+  </Navbar>
+</header>

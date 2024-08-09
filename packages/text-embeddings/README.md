@@ -14,6 +14,7 @@ To build and deploy just the text-embeddings Zarf package (from the root of the 
 > Deploy a [UDS cluster](/README.md#uds) if one isn't deployed already
 
 ```shell
+pip install 'huggingface_hub[cli,hf_transfer]'  # Used to download the model weights from huggingface
 make build-text-embeddings LOCAL_VERSION=dev
 uds zarf package deploy packages/text-embeddings/zarf-package-text-embeddings-*-dev.tar.zst --confirm
 ```

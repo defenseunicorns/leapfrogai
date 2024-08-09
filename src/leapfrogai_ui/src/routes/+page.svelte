@@ -1,9 +1,8 @@
 <script lang="ts">
   import logo from '$assets/LeapfrogAI.png';
-  import { Button } from 'carbon-components-svelte';
-  import { Auth } from '@supabase/auth-ui-svelte';
+  import { Button, Input, Label } from 'flowbite-svelte';
+  import { superForm } from 'sveltekit-superforms';
   import { env } from '$env/dynamic/public';
-  import { ThemeSupa } from '@supabase/auth-ui-shared';
 
   export let data;
   export let queryParams: { [key: string]: string } | undefined = undefined;
@@ -22,42 +21,51 @@
       }
     });
   }
+  const { form, errors, enhance } = superForm(data.form);
 </script>
 
-<div class="login-container">
-  <div class="logo">
+<div class="flex w-full flex-col items-center gap-10 pt-3">
+  <div class="h-[72px] w-[252px]">
     <img alt="LeapfrogAI Logo" src={logo} class="logo" />
   </div>
   {#if env.PUBLIC_DISABLE_KEYCLOAK === 'true'}
-    <Auth
-      supabaseClient={data.supabase}
-      view={isSignup ? 'sign_up' : 'sign_in'}
-      redirectTo={`${data.url}/auth/callback`}
-      showLinks={false}
-      appearance={{ theme: ThemeSupa, style: { input: 'color: #fff' } }}
-    />
+    <form method="POST" action={isSignup ? '/auth?/signup' : '/auth?/login'} use:enhance>
+      <div class="flex flex-col gap-2">
+        <Label for="email">Email</Label>
+        <Input
+          id="email"
+          data-testid="email-input"
+          name="email"
+          type="email"
+          bind:value={$form.email}
+          placeholder="Your email address"
+        />
+
+        <Label for="password">Password</Label>
+        <Input
+          id="password"
+          data-testid="password-input"
+          name="password"
+          type="password"
+          placeholder="Your password"
+          bind:value={$form.password}
+        />
+
+        <Button data-testid="submit-btn" type="submit">{isSignup ? 'Sign Up' : 'Sign In'}</Button>
+        {#if $errors.email}
+          <span style="color: red">{$errors.email}</span>
+        {/if}
+      </div>
+    </form>
+
     <Button
-      kind="ghost"
+      data-testid="toggle-submit-btn"
+      color="alternative"
       on:click={() => {
         isSignup = !isSignup;
       }}>{isSignup ? 'Already have an account? Sign In' : 'Need an account? Sign Up'}</Button
     >
   {:else}
-    <Button on:click={signInWithKeycloak} kind="secondary">Log In with UDS SSO</Button>
+    <Button on:click={signInWithKeycloak}>Log In with UDS SSO</Button>
   {/if}
 </div>
-
-<style lang="scss">
-  .logo {
-    width: 252px;
-    height: 72px;
-  }
-  .login-container {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    gap: layout.$spacing-08;
-    width: 100%;
-    padding-top: layout.$spacing-04;
-  }
-</style>

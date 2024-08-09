@@ -4,7 +4,7 @@ description = "ChatGPT type capabilities for secure, local, air-gapped systems."
 authors = [{ name = "LeapfrogAI Team", email = "ai@defenseunicorns.com" }]
 
 # x-release-please-start-version
-version = "0.9.2"
+version = "0.10.0"
 # x-release-please-end
 
 readme = "README.md"
@@ -13,14 +13,30 @@ license = {file = "LICENSE"}
 dependencies = [  # Dev dependencies needed for all of lfai
     "openai",
     "pip-tools == 7.3.0",
-    "pytest",
-    "pytest-asyncio",
     "httpx",
     "ruff",
-    "python-dotenv",
-    "pytest-asyncio"
+    "python-dotenv"
 ]
 requires-python = "~=3.11"
+
+[project.optional-dependencies]
+dev = [
+    "locust",
+    "pytest-asyncio",
+    "requests",
+    "requests-toolbelt",
+    "pytest",
+    "huggingface_hub[cli,hf_transfer]"
+]
+
+dev-whisper = [
+    "ctranslate2",
+    "transformers[torch]"
+]
+
+dev-vllm = [
+    "confz"
+]
 
 [tool.pip-tools]
 generate-hashes = true

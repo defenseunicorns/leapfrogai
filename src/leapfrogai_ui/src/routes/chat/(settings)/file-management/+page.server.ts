@@ -30,7 +30,6 @@ export const actions: Actions = {
 
     if (form.data.files) {
       const fileId: string | null = null;
-
       const uploadedFiles: Array<FileObject | FileRow> = [];
       for (const file of form.data.files) {
         if (file) {

@@ -1,4 +1,4 @@
-# yaml-language-server: $schema=https://raw.githubusercontent.com/defenseunicorns/zarf/main/zarf.schema.json
+# yaml-language-server: $schema=https://raw.githubusercontent.com/zarf-dev/zarf/main/zarf.schema.json
 
 kind: ZarfPackageConfig
 metadata:
@@ -16,6 +16,22 @@ variables:
     description: The GPU limit for the model inferencing.
     default: "0"
     pattern: "^[0-9]+$"
+  - name: GPU_CLASS_NAME
+    description: The GPU class name for the model inferencing. Leave blank for CPU-only.
+    default: ""
+    pattern: "^(nvidia)?$"
+  - name: PVC_SIZE
+    description: Size of the PVC used for model storage.
+    default: "15Gi"
+    pattern: "^[0-9]+[a-zA-Z]+$"
+  - name: PVC_ACCESS_MODE
+    description: Access mode of the PVC used for model storage.
+    default: "ReadWriteOnce"
+    pattern: "^(ReadWriteOnce|ReadOnlyMany|ReadWriteMany)$"
+  - name: PVC_STORAGE_CLASS
+    description: Storage class of the PVC used for model storage.
+    default: "local-path"
+
 
 components:
   - name: whisper-model
@@ -26,9 +42,30 @@ components:
         localPath: chart
         releaseName: whisper-model
         # x-release-please-start-version
-        version: 0.9.2
+        version: 0.10.0
         # x-release-please-end
         valuesFiles:
           - "whisper-values.yaml"
     images:
       - ghcr.io/defenseunicorns/leapfrogai/whisper:###ZARF_PKG_TMPL_IMAGE_VERSION###
+      - cgr.dev/chainguard/bash:latest
+    dataInjections:
+      - source: .model/
+        target:
+          namespace: leapfrogai
+          selector: app=lfai-whisper
+          container: data-loader
+          path: /data/.model
+        compress: true
+    actions:
+      onCreate:
+        before:
+          # NOTE: This assumes python is installed and in $PATH and 'ctranslate2' and 'transformers[torch]' has been installed
+          - cmd: |
+              ct2-transformers-converter --model ${MODEL_NAME} \
+                --output_dir .model \
+                --copy_files tokenizer.json special_tokens_map.json preprocessor_config.json normalizer.json tokenizer_config.json vocab.json \
+                --quantization float32 \
+                --force
+            env:
+              - MODEL_NAME=openai/whisper-base

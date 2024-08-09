@@ -9,7 +9,7 @@ image:
   pullPolicy: Always
   # Overrides the image tag whose default is the chart appVersion.
   # x-release-please-start-version
-  tag: 0.9.2
+  tag: 0.10.0
   # x-release-please-end
 
 nameOverride: whisper
@@ -53,3 +53,8 @@ nodeSelector: {}
 tolerations: []
 
 affinity: {}
+
+persistence:
+  size: 15Gi
+  accessModes: ReadWriteOnce
+  storageClass: "local-path"
