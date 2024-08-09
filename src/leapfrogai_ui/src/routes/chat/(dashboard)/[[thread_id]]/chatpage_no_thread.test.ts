@@ -35,6 +35,7 @@ describe('when there is NO active thread selected', () => {
     mockOpenAI.setMessages(allMessages);
     mockOpenAI.setFiles(files);
 
+    // @ts-expect-error: full mocking of load function params not necessary and is overcomplicated
     data = await load({
       params: {},
       fetch: global.fetch,

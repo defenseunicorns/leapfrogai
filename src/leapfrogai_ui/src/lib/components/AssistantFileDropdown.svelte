@@ -81,10 +81,11 @@
         >
       </form>
     </div>
-    <div class="max-h-64 overflow-y-auto">
+    <div data-testid="file-select-container" class="max-h-64 overflow-y-auto">
       {#each $filesStore.files?.map( (file) => ({ id: file.id, text: file.filename }) ) as file (file.id)}
         <li>
           <Checkbox
+            data-testid={`${file.id}-checkbox`}
             on:click={() => handleClick(file.id)}
             checked={$filesStore.selectedAssistantFileIds.includes(file.id)}
             class="overflow-hidden text-ellipsis whitespace-nowrap">{file.text}</Checkbox

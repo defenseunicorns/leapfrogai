@@ -263,6 +263,7 @@ export const getFakeOpenAIMessage = ({
   };
 };
 
+// @ts-expect-error: status is a deprecated field, not including it here
 export const getFakeFileObject = (): FileObject => ({
   id: `file_${faker.string.uuid()}`,
   bytes: 64,

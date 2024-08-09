@@ -38,7 +38,7 @@ export const load: PageServerLoad = async ({ depends, locals: { session } }) => 
     key.expires_at = key.expires_at * 1000;
   });
 
-  return { title: 'LeapfrogAI - API Keys', form, keys: keys ?? [] };
+  return { title: 'LeapfrogAI - API Keys', form, apiKeys: keys ?? [] };
 };
 
 export const actions: Actions = {
