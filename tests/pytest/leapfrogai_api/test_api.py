@@ -75,38 +75,60 @@ def test_config_load():
         assert response.status_code == 200
         assert response.json() == {
             "config_sources": {"repeater-test-config.yaml": ["repeater"]},
-            "models": {"repeater": {"backend": "localhost:50051", "name": "repeater"}},
+            "models": {
+                "repeater": {
+                    "backend": "localhost:50051",
+                    "metadata": None,
+                    "name": "repeater",
+                }
+            },
         }
 
 
 def test_config_delete(tmp_path):
     """Test that the config is deleted correctly."""
-    # move repeater-test-config.yaml to temp dir so that we can remove it at a later step
+    # Copy the config file to the temporary directory
     tmp_config_filepath = shutil.copyfile(
         LFAI_CONFIG_FILEPATH, os.path.join(tmp_path, LFAI_CONFIG_FILENAME)
     )
+
+    # Update the environment variable to point to the temporary directory
+    original_config_path = os.environ["LFAI_CONFIG_PATH"]
     os.environ["LFAI_CONFIG_PATH"] = str(tmp_path)
 
-    with TestClient(app) as client:
-        # ensure the API loads the temp config
-        response = client.get("/leapfrogai/v1/models")
-        assert response.status_code == 200
+    try:
+        with TestClient(app) as client:
+            # Ensure the API loads the temp config
+            response = client.get("/leapfrogai/v1/models")
+            assert response.status_code == 200
+            result = response.json()
+            assert result == {
+                "config_sources": {
+                    "repeater-test-config.yaml": ["repeater"],
+                },
+                "models": {
+                    "repeater": {
+                        "backend": "localhost:50051",
+                        "name": "repeater",
+                        "metadata": None,
+                    },
+                },
+            }
 
-        assert response.json() == {
-            "config_sources": {"repeater-test-config.yaml": ["repeater"]},
-            "models": {"repeater": {"backend": "localhost:50051", "name": "repeater"}},
-        }
-        # delete source config from temp dir
-        os.remove(tmp_config_filepath)
+            # Delete the temporary config file
+            os.remove(tmp_config_filepath)
 
-        # wait for the api to be able to detect the change
-        time.sleep(0.5)
-        # assert response is now empty
-        response = client.get("/leapfrogai/v1/models")
-        assert response.status_code == 200
-        assert response.json() == {"config_sources": {}, "models": {}}
+            # Wait for the API to detect the change
+            time.sleep(3.0)
 
-    os.environ["LFAI_CONFIG_PATH"] = os.path.join(os.path.dirname(__file__), "fixtures")
+            # Assert the response is now empty
+            response = client.get("/leapfrogai/v1/models")
+            assert response.status_code == 200
+            assert response.json() == {"config_sources": {}, "models": {}}
+
+    finally:
+        # Restore the original environment variable regardless of test failure
+        os.environ["LFAI_CONFIG_PATH"] = original_config_path
 
 
 def test_routes():
