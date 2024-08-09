@@ -21,7 +21,6 @@
 </script>
 
 <div role="status" class={outDivclass}>
-  <div class={`h-2 ${lightColor} rounded-full dark:${darkColor} mb-2.5`}></div>
-  <div class={`h-2 ${lightColor} rounded-full dark:${darkColor} mb-2.5 w-10/12`}></div>
+  <div class={`h-2 ${lightColor} rounded-full dark:${darkColor} w- mb-2.5`}></div>
   <span class="sr-only">Loading...</span>
 </div>
