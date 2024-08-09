@@ -6,8 +6,12 @@ from openai.types.beta.threads.annotation import (
     FileCitationAnnotation,
     FilePathAnnotation,
 )
+from openai.types.beta.vector_store import VectorStore
+from openai.types.beta.assistant import Assistant
+from openai.types.beta.thread import Thread
 
-LEAPFROGAI_MODEL = "vllm"
+
+LEAPFROGAI_MODEL = "llama-cpp-python"
 OPENAI_MODEL = "gpt-4o-mini"
 MESSAGES = [
     {"role": "assistant", "content": "Hello how can I help you today?"},
@@ -37,7 +41,7 @@ def client_config_factory(client_name):
         return dict(client=leapfrogai_client(), model=LEAPFROGAI_MODEL)
 
 
-def make_test_assistant(client, model):
+def make_vector_store_batched(client):
     vector_store = client.beta.vector_stores.create(name="Test data")
 
     file_streams = [open(text_file_path(), "rb")]
@@ -46,12 +50,25 @@ def make_test_assistant(client, model):
         vector_store_id=vector_store.id, files=file_streams
     )
 
+    return vector_store.id
+
+
+def make_vector_store(client):
+    vector_store = client.beta.vector_stores.create(name="Test data")
+    with open(text_file_path(), "rb") as file:
+        client.beta.vector_stores.files.upload(
+            vector_store_id=vector_store.id, file=file
+        )
+    return vector_store
+
+
+def make_test_assistant(client, model, vector_store_id):
     assistant = client.beta.assistants.create(
         name="Test Assistant",
         instructions="You must provide a response based on the attached files.",
         model=model,
         tools=[{"type": "file_search"}],
-        tool_resources={"file_search": {"vector_store_ids": [vector_store.id]}},
+        tool_resources={"file_search": {"vector_store_ids": [vector_store_id]}},
     )
     return assistant
 
@@ -69,10 +86,43 @@ def make_test_run(client, assistant, thread):
 
 
 @pytest.mark.parametrize("client_name", ["openai", "leapfrogai"])
+def test_vector_store(client_name):
+    config = client_config_factory(client_name)
+    client = config["client"]  # shorthand
+
+    vector_store = make_vector_store(client)
+
+    assert isinstance(vector_store, VectorStore)
+
+
+@pytest.mark.parametrize("client_name", ["openai", "leapfrogai"])
+def test_assistant(client_name):
+    config = client_config_factory(client_name)
+    client = config["client"]
+
+    vector_store = make_vector_store(client)
+    assistant = make_test_assistant(client, config["model"], vector_store.id)
+
+    assert isinstance(assistant, Assistant)
+
+
+@pytest.mark.parametrize("client_name", ["openai", "leapfrogai"])
+def test_thread(client_name):
+    config = client_config_factory(client_name)
+    client = config["client"]
+
+    thread = make_test_thread(client)
+
+    assert isinstance(thread, Thread)
+
+
+@pytest.mark.parametrize("client_name", ["openai", "leapfrogai"])
 def test_file_annotations(client_name):
     config = client_config_factory(client_name)
     client = config["client"]  # shorthand
-    assistant = make_test_assistant(client, config["model"])
+
+    vector_store = make_vector_store(client)
+    assistant = make_test_assistant(client, config["model"], vector_store.id)
     thread = make_test_thread(client)
     run = make_test_run(client, assistant, thread)
 
