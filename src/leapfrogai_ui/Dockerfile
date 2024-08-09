@@ -1,4 +1,6 @@
 FROM node:18-alpine AS builder
+RUN apk add libreoffice
+
 RUN npm install -g libreoffice
 WORKDIR /app
 COPY package.json ./
@@ -9,12 +11,15 @@ ENV NODE_ENV=production
 RUN npm run build
 RUN npm prune
 
+
 FROM cgr.dev/chainguard/node:latest
 
 WORKDIR /app
 COPY --chown=node:node --from=builder /app/build build/
 COPY --chown=node:node --from=builder /app/node_modules node_modules/
 COPY --chown=node:node package.json .
+COPY --from=builder /usr/bin/libreoffice /usr/bin/libreoffice
+
 EXPOSE 3000
 ENV NODE_ENV=production
 # Disable request size limit
