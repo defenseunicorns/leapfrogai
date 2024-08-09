@@ -9,6 +9,9 @@ CHECKSUM = os.environ.get("SHA256_CHECKSUM", "")
 OUTPUT_FILE = os.environ.get("OUTPUT_FILE", ".model/model.gguf")
 
 
+my_model = "###ZARF_CONST_MODEL_NAME###"
+
+
 def download_model():
     # Check if the model is already downloaded.
     if os.path.exists(OUTPUT_FILE) and CHECKSUM != "":

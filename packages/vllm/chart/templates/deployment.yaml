@@ -55,7 +55,7 @@ spec:
       volumes:
         - name: leapfrogai-pv-storage
           persistentVolumeClaim:
-            claimName: lfai-vllm-pv-claim
+            claimName: lfai-{{ regexReplaceAll "\\W+|_" .Values.model.name "-" | lower }}-{{ regexReplaceAll "\\W+|_" .Values.model.revision "-" | lower }}
       securityContext:
         {{- toYaml .Values.podSecurityContext | nindent 8 }}
       containers:
