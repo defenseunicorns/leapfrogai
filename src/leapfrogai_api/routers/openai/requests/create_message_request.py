@@ -52,7 +52,7 @@ class CreateMessageRequest(BaseModel):
                 created_at=int(
                     time.time()
                 ),  # Leave blank to have Postgres generate a timestamp
-                metadata=self.metadata or {},
+                metadata=self.metadata,
                 object="thread.message",
                 role=self.role,
                 status="completed",
