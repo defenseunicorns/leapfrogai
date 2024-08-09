@@ -7,11 +7,35 @@ metadata:
   description: >
     whisper model
 
+    -----------
+
+    PROBLEM: I want to be able to configure the name of the PVC (used for model storage).
+    CONTEXT: The PVC name should consist of `lfai-{MODEL_NAME}-{REVISION}-{QUANTIZATION}`
+    CONTEXT: K8s might limit the length of pvc names..
+
+    PROBLEM: Right now the MODEL_NAME is being set by an env to the onCreate action.
+    PROBLEM: I am unsure how to set the MODEL_NAME in the action and the PVC
+
+    I am fine with requiring the MODEL and REVISION at create time, but I don't want that to be
+    a PKG_TMPL because that would mean that it could not have a default value..
+
+
+    PROBLEM: I want to be able to deploy an update of this package while only actually updating
+             either the {MODEL_WEIGHTS} or the {MODEL_ENGINE} . So I want to be able to ONLY deploy
+
+
 constants:
   - name: IMAGE_VERSION
     value: "###ZARF_PKG_TMPL_IMAGE_VERSION###"
 
+
+
 variables:
+  # THIS DOESN'T WORK BECAUSE A DEPLOYER CAN CHANGE THIS
+  # - name: IMAGE_VERSION
+  #   default: "###ZARF_PKG_TMPL_IMAGE_VERSION###"
+
+
   - name: GPU_LIMIT
     description: The GPU limit for the model inferencing.
     default: "0"
@@ -34,6 +58,8 @@ variables:
 
 
 components:
+ # TODO @JPERRY: Should this be split into two separate components?
+ #             : One component for model-weights and another component for model-engine
   - name: whisper-model
     required: true
     charts:
@@ -50,14 +76,21 @@ components:
       - ghcr.io/defenseunicorns/leapfrogai/whisper:###ZARF_PKG_TMPL_IMAGE_VERSION###
       - cgr.dev/chainguard/bash:latest
     dataInjections:
-      - source: .model/
+      - source: .model/ # TODO @JPERRY: This needs to match something in the onCreate.before action. Think about making this more seemless...
         target:
           namespace: leapfrogai
           selector: app=lfai-whisper
           container: data-loader
-          path: /data/.model
+          path: /data/.model # TODO @JPERRY: This needs to match two things in the deployment.yaml (The LFAI_MODEL_PATH env and initContainer while loop)
         compress: true
+
     actions:
+      onDeploy:
+        before:
+          - cmd: echo ###ZARF_TEMP###/components/whisper-model/data/0/.model/model_name.txt
+            setVariables:
+              - name: MODEL_NAME
+          - cmd: echo ###ZARF_TEMP###/components/whisper-model/data/0/.model/model_revision.txt
       onCreate:
         before:
           # NOTE: This assumes python is installed and in $PATH and 'ctranslate2' and 'transformers[torch]' has been installed
@@ -67,5 +100,8 @@ components:
                 --copy_files tokenizer.json special_tokens_map.json preprocessor_config.json normalizer.json tokenizer_config.json vocab.json \
                 --quantization float32 \
                 --force
+
+              echo $MODEL_NAME > .model/model_name.txt
+              echo $MODEL_REVISION > .model/model_revision.txt
             env:
-              - MODEL_NAME=openai/whisper-base
+              - MODEL_NAME=openai/whisper-base # TODO @JPERRY: This should probably be set in a different way.. This is going to be hard

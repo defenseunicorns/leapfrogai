@@ -36,6 +36,7 @@ components:
         # x-release-please-end
         valuesFiles:
           - "vllm-values.yaml"
+          - "vllm-model-gen-values.yaml"  # TODO @JPERRY: What happens if this file does not exist??
     images:
       - ghcr.io/defenseunicorns/leapfrogai/vllm:###ZARF_PKG_TMPL_IMAGE_VERSION###
       - cgr.dev/chainguard/bash:latest
@@ -51,7 +52,10 @@ components:
       onCreate:
         before:
           # NOTE: This assumes python is installed and in $PATH and 'huggingface_hub[cli,hf_transfer]' has been installed
-          - cmd: python src/model_download.py
+          # TODO: Look into using `zarf tools jq` to write the values file. Might be cleaner
+          - cmd: |
+              python src/model_download.py
+              printf "model:\n  name: $LAI_REPO_ID\n  revision: $LAI_REVISION" > vllm-model-gen-values.yaml
             env:
               - LAI_REPO_ID=TheBloke/Synthia-7B-v2.0-GPTQ
               - LAI_REVISION=gptq-4bit-32g-actorder_True

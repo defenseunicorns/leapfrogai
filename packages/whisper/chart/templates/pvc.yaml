@@ -1,7 +1,10 @@
 apiVersion: v1
 kind: PersistentVolumeClaim
 metadata:
+    # TODO @JPERRY: This name needs to be variablized to include the MODEL_NAME and REVISION
+    # TODO @JPERRY: This is going to be hard...
     name: lfai-whisper-pv-claim
+    # name: lfai-whisper-base-v0.31.0-pv-claim
     namespace: leapfrogai
 spec:
   {{- if .Values.persistence.storageClass }}

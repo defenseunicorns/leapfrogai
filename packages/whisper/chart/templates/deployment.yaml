@@ -23,7 +23,7 @@ spec:
         {{- toYaml . | nindent 8 }}
       {{- end }}
       labels:
-        app: lfai-whisper
+        app: lfai-whisper # TODO @JPERRY: This should be variablezed and maybe but inside the below helper
         {{- include "chart.selectorLabels" . | nindent 8 }}
     spec:
       {{- if gt (index .Values.resources.limits "nvidia.com/gpu") 0.0 }}

@@ -1,7 +1,7 @@
 apiVersion: v1
 kind: PersistentVolumeClaim
 metadata:
-    name: lfai-vllm-pv-claim
+    name: lfai-{{ regexReplaceAll "\\W+|_" .Values.model.name "-" | lower }}-{{ regexReplaceAll "\\W+|_" .Values.model.revision "-" | lower }}
     namespace: leapfrogai
 spec:
   {{- if .Values.persistence.storageClass }}
