@@ -1,7 +1,5 @@
 FROM node:18-alpine AS builder
 RUN apk add libreoffice
-
-RUN npm install -g libreoffice
 WORKDIR /app
 COPY package.json ./
 COPY package-lock.json ./
@@ -19,6 +17,7 @@ COPY --chown=node:node --from=builder /app/build build/
 COPY --chown=node:node --from=builder /app/node_modules node_modules/
 COPY --chown=node:node package.json .
 COPY --from=builder /usr/bin/libreoffice /usr/bin/libreoffice
+COPY --from=builder /usr/lib/libreoffice /usr/lib/libreoffice
 
 EXPOSE 3000
 ENV NODE_ENV=production
