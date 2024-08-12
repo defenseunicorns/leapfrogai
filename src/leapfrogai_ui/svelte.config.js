@@ -42,6 +42,7 @@ const config = {
         'connect-src': [
           'self',
           process.env.LEAPFROGAI_API_BASE_URL,
+          process.env.PUBLIC_SUPABASE_URL,
           process.env.SUPABASE_AUTH_EXTERNAL_KEYCLOAK_URL
         ],
         'child-src': ['none'], // note - this will break the annotations story and will need to updated to allow the correct resource
