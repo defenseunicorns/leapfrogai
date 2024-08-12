@@ -12,6 +12,11 @@ on:
 # Declare default permissions as read only.
 permissions: read-all
 
+env:
+  ORIGIN: https://ai.uds.dev
+  PUBLIC_SUPABASE_URL: https://supabase-kong.uds.dev
+  SUPABASE_AUTH_EXTERNAL_KEYCLOAK_URL: https://sso.uds.dev/realms/uds
+
 concurrency:
   group: ui-test-${{ github.ref }}
   cancel-in-progress: true
