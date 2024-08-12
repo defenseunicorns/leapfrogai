@@ -209,3 +209,29 @@ test('it shows toast when there is an error submitting the form', async ({
   deleteFixtureFile(filename);
   await deleteFileByName(filename, openAIClient);
 });
+
+test('it can download a file', async ({ page, openAIClient }) => {
+  await loadFileManagementPage(page);
+
+  const filename = await createPDF();
+
+  await uploadFile(page, filename);
+  await expect(page.getByText(`${filename} imported successfully`)).toBeVisible();
+  await expect(page.getByText(`${filename} imported successfully`)).not.toBeVisible(); // wait for upload to finish
+
+  const row = await getTableRow(page, filename, 'file-management-table');
+  await row.getByRole('checkbox').check();
+
+  const downloadPromise = page.waitForEvent('download');
+  const downloadBtn = page.getByRole('button', { name: 'Download' });
+  await downloadBtn.click();
+  const download = await downloadPromise;
+
+  expect(download.suggestedFilename()).toEqual(filename.replace(/:/g, '_'));
+  await expect(page.getByText('File Downloaded')).toBeVisible();
+  await expect(downloadBtn).not.toBeVisible(); // all items deselected
+
+  // Cleanup
+  deleteFixtureFile(filename);
+  await deleteFileByName(filename, openAIClient);
+});
