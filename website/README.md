@@ -10,9 +10,11 @@ which is a fork of the Google Docsy theme. The Docsy documentation can be used a
 This repository enforces [Conventional Commit](https://www.conventionalcommits.org/en/v1.0.0/) messages. See the
 documentation for [`release-please`](https://github.com/googleapis/release-please#how-should-i-write-my-commits) for correctly formatting commit messages. [This video](https://www.youtube.com/watch?v=lwGcnDgwmFc&ab_channel=Syntax) does a good job of showing how to add the `Conventional Commit` VSCode extension to use when creating the commit messages.
 
-#### Prerequisites 
+### Pre-Requisites
 
 [Hugo](https://gohugo.io/documentation/) is required in order to utilize the doc site template. You can run `brew install hugo` to quickly install or see the [installation page](https://gohugo.io/installation/) for additional install methods.
+
+Go and Node are also required dependencies for running a Hugo site. Refer to the [Go installation documentation](https://go.dev/doc/install) and [NVM documentation](https://github.com/nvm-sh/nvm) for details.
 
 ## Getting Started
 
@@ -23,9 +25,9 @@ Create a new repository from this template:
 Clone your new site:
 
 ```bash
-git clone <git repo>
-cd <new repo>
-npm ci
+git clone https://github.com/defenseunicorns/leapfrogai.git
+cd website
+npm install
 ```
 
 To run the site for local development:
