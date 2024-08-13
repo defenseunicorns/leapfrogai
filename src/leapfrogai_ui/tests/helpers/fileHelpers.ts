@@ -89,6 +89,17 @@ export const createExcelFile = (options: CreateFileOptions = {}) => {
   return filenameWithExtension;
 };
 
+export const createCSVFile = (options: CreateFileOptions = {}) => {
+  const { filename = `${new Date().toISOString()}-test`, extension = '.csv' } = options;
+  const filenameWithExtension = `${filename}${extension}`;
+
+  const worksheet = XLSX.utils.json_to_sheet([{ Name: 'Leapfrog', Age: 1, Type: 'AI' }]);
+  const csv = XLSX.utils.sheet_to_csv(worksheet);
+  fs.writeFileSync(`./tests/fixtures/${filenameWithExtension}`, csv, 'utf8');
+
+  return filenameWithExtension;
+};
+
 export const createPowerpointFile = async (options: { filename?: string } = {}) => {
   const { filename = `${new Date().toISOString()}-test` } = options;
 
