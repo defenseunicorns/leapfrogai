@@ -1,5 +1,10 @@
 FROM node:18-alpine AS builder
 RUN apk update && apk upgrade && apk add --no-cache libreoffice openjdk11-jre
+RUN apk add --no-cache \
+    fontconfig \
+    msttcorefonts-installer \
+    && update-ms-fonts \
+    && fc-cache -f
 ENV JAVA_HOME=/usr/lib/jvm/java-11-openjdk
 ENV PATH=${JAVA_HOME}/bin:$PATH
 
