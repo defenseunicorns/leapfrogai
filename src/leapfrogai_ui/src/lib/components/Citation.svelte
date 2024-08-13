@@ -31,8 +31,6 @@
   let zoom = ZOOM_BASE;
   let frameRef;
 
-  // TODO - debug blog on deployed app vs local (different encoding or font family?)
-
   let expanded = false;
   let url: string;
   let iframeSrc: string;
@@ -70,7 +68,7 @@
         }
 
         let contentType = res.headers.get('content-type');
-        console.log(contentType);
+
         // content type can include charset, removing that here (ex. text.plain; charset=UTF-8)
         if (contentType?.includes('text/plain')) contentType = 'text/plain';
         if (contentType?.includes('text/csv')) contentType = 'text/csv';
@@ -230,7 +228,7 @@
       >
 
       <Button
-        data-testid="file-open-new-tab-btn"
+        data-testid={`file-${file.id}-open-new-tab-btn`}
         outline
         size="large"
         class="!p-2"

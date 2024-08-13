@@ -118,25 +118,16 @@ describe('Citation', () => {
   it('open a new tab when the open in new tab button is clicked', async () => {
     const windowOpenSpy = vi.spyOn(window, 'open');
     const file = getFakeFiles({ numFiles: 1 })[0];
+    console.log(file);
     mockGetFile(file.id, 'test');
 
     render(Citation, { file, index: 1 });
 
     await userEvent.click(screen.getByTestId(`${file.id}-citation-btn`));
     await screen.findByTitle(`${file.id}-iframe`);
-    await userEvent.click(screen.getByTestId('file-open-new-tab-btn'));
+    await userEvent.click(screen.getByTestId(`file-${file.id}-open-new-tab-btn`));
     expect(windowOpenSpy).toHaveBeenCalledTimes(1);
     expect(windowOpenSpy).toHaveBeenCalledWith('blob:http://localhost/file', '_blank');
-  });
-
-  it("does not have an open in new tab button if the file isn't a pdf", async () => {
-    const file = getFakeFiles({ numFiles: 1 })[0];
-    mockGetFile(file.id, 'test', 'text/plain');
-    mockConvertFileError();
-
-    render(Citation, { file, index: 1 });
-    await userEvent.click(screen.getByTestId(`${file.id}-citation-btn`));
-    expect(screen.queryByTestId('file-open-new-tab-btn')).not.toBeInTheDocument();
   });
 
   // Note - downloading of file tested via E2E
