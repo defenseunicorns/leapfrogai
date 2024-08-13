@@ -118,7 +118,7 @@ describe('Citation', () => {
   it('open a new tab when the open in new tab button is clicked', async () => {
     const windowOpenSpy = vi.spyOn(window, 'open');
     const file = getFakeFiles({ numFiles: 1 })[0];
-    console.log(file);
+
     mockGetFile(file.id, 'test');
 
     render(Citation, { file, index: 1 });
