@@ -1,6 +1,8 @@
 import adapter from '@sveltejs/adapter-node';
 import { vitePreprocess } from '@sveltejs/vite-plugin-svelte';
+import * as dotenv from 'dotenv';
 
+dotenv.config();
 /** @type {import('@sveltejs/kit').Config} */
 const config = {
   // Consult https://kit.svelte.dev/docs/integrations#preprocessors
@@ -20,6 +22,32 @@ const config = {
       $schemas: 'src/lib/schemas',
       $constants: 'src/lib/constants',
       $testUtils: 'testUtils'
+    },
+    csp: {
+      directives: {
+        'default-src': ['none'],
+        'base-uri': ['self'],
+        'script-src': ['self', 'strict-dynamic'],
+        'object-src': ['none'], // typically used for legacy content, such as Flash files or Java applets
+        'style-src': ['self', 'unsafe-inline'],
+        'font-src': ['self'],
+        'manifest-src': ['self'],
+        'img-src': [
+          'self',
+          `data: ${process.env.ORIGIN} ${process.env.PUBLIC_SUPABASE_URL}`,
+          `blob: ${process.env.ORIGIN}`
+        ],
+        'media-src': ['self'],
+        'form-action': ['self'],
+        'connect-src': [
+          'self',
+          process.env.LEAPFROGAI_API_BASE_URL || '',
+          process.env.PUBLIC_SUPABASE_URL || '',
+          process.env.SUPABASE_AUTH_EXTERNAL_KEYCLOAK_URL || ''
+        ],
+        'child-src': ['none'], // note - this will break the annotations story and will need to updated to allow the correct resource
+        'frame-ancestors': ['none']
+      }
     }
   }
 };
