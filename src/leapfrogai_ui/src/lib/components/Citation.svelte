@@ -168,7 +168,7 @@
     if (url) window.URL.revokeObjectURL(url); // avoid memory leaks
   });
 
-  $: iframeSrc = `${url}#toolbar=0&zoom=${zoom}`;
+  $: iframeSrc = `${url}#toolbar=1&zoom=${zoom}`;
 </script>
 
 <button

@@ -46,7 +46,7 @@ export const POST: RequestHandler = async ({ request, locals: { session } }) => 
   if (file) {
     try {
       const ext = '.pdf';
-      const pdfBuf = await convertAsync(Buffer.from(file), ext, 'writer_pdf_Export');
+      const pdfBuf = await convertAsync(Buffer.from(file), ext, undefined);
 
       // Set title for document
       const pdfDoc = await PDFDocument.load(pdfBuf);
