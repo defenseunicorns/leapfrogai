@@ -20,10 +20,11 @@ uds zarf package deploy packages/api/zarf-package-leapfrogai-api-*-dev.tar.zst -
     make install
     ```
 
-2. Create a local Supabase instance (requires [Supabase CLI](https://supabase.com/docs/guides/cli/getting-started)):
+2. Create a local Supabase instance (requires [Supabase CLI](https://supabase.com/docs/guides/cli/getting-started)).:
     ```bash
     brew install supabase/tap/supabases
 
+    export SUPABASE_ACCESS_TOKEN="nill" # Circumvents supabase start bug associated with incompatible keyring store
     supabase start # from this directory
 
     supabase stop --project-id leapfrogai # stop api containers
