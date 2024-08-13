@@ -4,7 +4,9 @@
     ArrowDownOutline,
     ArrowUpOutline,
     ArrowUpRightFromSquareOutline,
-    DownloadOutline
+    DownloadOutline,
+    MinusOutline,
+    PlusOutline
   } from 'flowbite-svelte-icons';
   import { Button } from 'flowbite-svelte';
   import { twMerge } from 'tailwind-merge';
@@ -22,11 +24,20 @@
   export let file: FileObject;
   export let index: string;
 
+  const ZOOM_BASE = 100;
+  const ZOOM_SCALE = 4;
+  const ZOOM_MAX = ZOOM_BASE * 5;
+  const ZOOM_MIN = 25;
+  let zoom = ZOOM_BASE;
+  let frameRef;
+
   // TODO - debug blog on deployed app vs local (different encoding or font family?)
 
   let expanded = false;
   let url: string;
+  let iframeSrc: string;
   let processing = false;
+  let reloadKey = 0;
 
   const handleFileError = () => {
     processing = false;
@@ -62,6 +73,7 @@
 
         // content type can include charset, removing that here (ex. text.plain; charset=UTF-8)
         if (contentType?.includes('text/plain')) contentType = 'text/plain';
+        if (contentType?.includes('text/csv')) contentType = 'text/csv';
 
         if (!contentType) {
           handleFileError();
@@ -72,12 +84,10 @@
         if (contentType === 'application/pdf') {
           const blob = await res.blob();
           url = window.URL.createObjectURL(blob);
-          processing = false;
-          return;
         }
 
         // non-pdf
-        if (FILE_MIME_TYPES_FOR_CONVERSION.includes(contentType)) {
+        else if (FILE_MIME_TYPES_FOR_CONVERSION.includes(contentType)) {
           const convertRes = await fetch('/api/files/convert', {
             method: 'POST',
             body: JSON.stringify({ id: file.id })
@@ -88,15 +98,12 @@
           }
           const convertedFileBlob = await convertRes.blob();
           url = window.URL.createObjectURL(convertedFileBlob);
-          processing = false;
-          return;
         } else {
           toastStore.addToast({
             ...CONVERT_FILE_ERROR_MSG_TOAST
           });
-          processing = false;
-          return;
         }
+        processing = false;
       } catch {
         handleFileError();
       }
@@ -142,9 +149,26 @@
     }
   };
 
+  const handleZoom = (type: 'in' | 'out') => {
+    if (type === 'in') {
+      const newZoom = (zoom += ZOOM_BASE / ZOOM_SCALE);
+      if (newZoom >= ZOOM_MAX) {
+        zoom = ZOOM_MAX;
+      } else zoom = newZoom;
+    } else {
+      const newZoom = (zoom -= ZOOM_BASE / ZOOM_SCALE);
+      if (newZoom <= ZOOM_MIN) {
+        zoom = ZOOM_MIN;
+      } else zoom = newZoom;
+    }
+    reloadKey += 1; // forces re-render of iframe to handle zoom
+  };
+
   onDestroy(() => {
     if (url) window.URL.revokeObjectURL(url); // avoid memory leaks
   });
+
+  $: iframeSrc = `${url}#toolbar=0&zoom=${zoom}`;
 </script>
 
 <button
@@ -170,12 +194,33 @@
 {/if}
 {#if expanded && url}
   <div class="relative mb-4 h-0 w-full pb-[33%]">
-    <iframe
-      src={`${url}#toolbar=0`}
-      title={`${file.id}-iframe`}
-      class="absolute left-0 top-0 h-full w-full border-2 border-gray-200"
-    />
-    <div class="absolute bottom-2 right-8 flex gap-2">
+    {#key reloadKey}
+      <iframe
+        bind:this={frameRef}
+        src={iframeSrc}
+        title={`${file.id}-iframe`}
+        class="absolute left-0 top-0 h-full w-full border-2 border-gray-200"
+      />
+    {/key}
+
+    <div class="absolute bottom-4 left-8 flex gap-2">
+      <Button
+        outline
+        size="large"
+        class="!p-2"
+        on:click={() => handleZoom('out')}
+        disabled={zoom <= ZOOM_MIN}><MinusOutline /></Button
+      >
+      <Button
+        outline
+        size="large"
+        class="!p-2"
+        on:click={() => handleZoom('in')}
+        disabled={zoom >= ZOOM_MAX}><PlusOutline /></Button
+      >
+    </div>
+
+    <div class="absolute bottom-4 right-8 flex gap-2">
       <Button
         data-testid="file-download-btn"
         outline
@@ -183,15 +228,14 @@
         class="!p-2"
         on:click={handleDownload}><DownloadOutline /></Button
       >
-      {#if file.filename.endsWith('.pdf')}
-        <Button
-          data-testid="file-open-new-tab-btn"
-          outline
-          size="large"
-          class="!p-2"
-          on:click={handleOpenInNewTab}><ArrowUpRightFromSquareOutline /></Button
-        >
-      {/if}
+
+      <Button
+        data-testid="file-open-new-tab-btn"
+        outline
+        size="large"
+        class="!p-2"
+        on:click={handleOpenInNewTab}><ArrowUpRightFromSquareOutline /></Button
+      >
     </div>
   </div>
 {/if}

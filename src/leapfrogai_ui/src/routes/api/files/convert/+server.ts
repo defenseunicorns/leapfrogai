@@ -1,6 +1,7 @@
 import { error } from '@sveltejs/kit';
-import { promisify } from 'util';
+import { PDFDocument } from 'pdf-lib';
 import libre from 'libreoffice-convert';
+import { promisify } from 'util';
 import { stringIdSchema } from '$schemas/chat';
 import { getOpenAiClient } from '$lib/server/constants';
 import type { RequestHandler } from './$types';
@@ -45,8 +46,14 @@ export const POST: RequestHandler = async ({ request, locals: { session } }) => 
   if (file) {
     try {
       const ext = '.pdf';
-      const pdfBuf = await convertAsync(Buffer.from(file), ext, "writer_pdf_Export");
-      return new Response(pdfBuf, {
+      const pdfBuf = await convertAsync(Buffer.from(file), ext, 'writer_pdf_Export');
+
+      // Set title for document
+      const pdfDoc = await PDFDocument.load(pdfBuf);
+      pdfDoc.setTitle(`${fileMetadata.filename}${ext}`);
+      const updatedPdfBuf = await pdfDoc.save();
+
+      return new Response(updatedPdfBuf, {
         headers: {
           'Content-Type': 'application/pdf',
           'Content-Disposition': `attachment; filename="${fileMetadata.filename}${ext}"`
