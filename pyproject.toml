@@ -26,7 +26,8 @@ dev = [
     "requests",
     "requests-toolbelt",
     "pytest",
-    "huggingface_hub[cli,hf_transfer]"
+    "huggingface_hub[cli,hf_transfer]",
+    "realtime >= 1.0.6"
 ]
 
 dev-whisper = [
