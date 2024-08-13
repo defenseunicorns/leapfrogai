@@ -27,7 +27,7 @@ dev = [
     "requests-toolbelt",
     "pytest",
     "huggingface_hub[cli,hf_transfer]",
-    "realtime >= 1.0.6"
+    "realtime@git+https://github.com/supabase/realtime-py.git@7485e7ca6abc39bfabdc735daf7a8d6e18160121" # There has not yet been a full release with the v2 postgres functionality
 ]
 
 dev-whisper = [

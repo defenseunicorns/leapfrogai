@@ -1,5 +1,6 @@
 import requests
 from realtime.connection import Socket
+from realtime.channel import Channel
 
 from .utils import ANON_KEY
 
@@ -22,13 +23,19 @@ def test_studio():
 
 
 def test_supabase_realtime_vector_store_indexing():
-    def callback1(payload):
-        print("Callback 1: ", payload)
+    def postgres_changes_callback(payload):
+        print("postgres_changes: ", payload)
 
-    URL = f"wss://supabase-kong.uds.dev/realtime/v1/?apikey={ANON_KEY}&vsn=1.0.0"
-    s = Socket(URL)
+    URL = f"https://supabase-kong.uds.dev/realtime/v1"
+    JWT = ANON_KEY
+    s = Socket(URL, JWT, auto_reconnect=True)
     s.connect()
 
-    channel_1 = s.set_channel("realtime:*")
-    channel_1.join().on("UPDATE", callback1)
+    channel_1: Channel = Channel(s, "postgres-vector-store-indexing-test")
+    channel_1.on_postgres_changes(
+        table="vector_store_file",
+        schema="public",
+        event="*",
+        callback=postgres_changes_callback,
+    ).subscribe()
     s.listen()
