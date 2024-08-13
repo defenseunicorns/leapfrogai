@@ -24,6 +24,7 @@ vi.stubGlobal('window', {
   ...window,
   open: vi.fn(),
   URL: {
+    ...window.URL,
     createObjectURL: vi.fn(() => 'blob:http://localhost/file'),
     revokeObjectURL: vi.fn()
   }
