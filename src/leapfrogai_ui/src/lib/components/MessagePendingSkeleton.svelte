@@ -15,13 +15,12 @@
 
   export let divClass: string = 'animate-pulse';
   export let size: keyof Sizes = 'sm';
-  export let darkColor = 'bg-gray-700';
   export let lightColor = 'bg-gray-200';
+  export let darkColor = 'bg-gray-700';
   $: outDivclass = twMerge(sizes[size], divClass, $$props.class);
 </script>
 
-<div role="status" class={outDivclass} {...$$restProps}>
-  <div class={`h-2 ${lightColor} mb-2.5 rounded-full dark:${darkColor}`}></div>
-  <div class={`h-2 ${lightColor} mb-2.5 w-10/12 rounded-full dark:${darkColor}`}></div>
+<div role="status" class={outDivclass}>
+  <div class={`h-2 ${lightColor} rounded-full dark:${darkColor} w- mb-2.5`}></div>
   <span class="sr-only">Loading...</span>
 </div>
