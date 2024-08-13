@@ -70,7 +70,7 @@
         }
 
         let contentType = res.headers.get('content-type');
-
+        console.log(contentType);
         // content type can include charset, removing that here (ex. text.plain; charset=UTF-8)
         if (contentType?.includes('text/plain')) contentType = 'text/plain';
         if (contentType?.includes('text/csv')) contentType = 'text/csv';

@@ -57,6 +57,7 @@ export const ACCEPTED_MIME_TYPES = [
 
 export const FILE_MIME_TYPES_FOR_CONVERSION = [
   'text/plain', // .txt, .text
+  'application/octet-stream', //.text
   'application/vnd.ms-excel', // .xls
   'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet', // .xlsx
   'application/vnd.ms-powerpoint', // .ppt
