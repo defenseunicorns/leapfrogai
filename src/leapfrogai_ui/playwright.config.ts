@@ -1,8 +1,11 @@
 import type { PlaywrightTestConfig } from '@playwright/test';
 import { devices } from '@playwright/test';
-import dotenv from 'dotenv';
+import * as dotenv from 'dotenv';
 
 dotenv.config();
+
+const PORT = 4173;
+process.env.ORIGIN = `http://localhost:${PORT}`;
 
 const chromeConfig = {
   name: 'chromium',
@@ -59,7 +62,7 @@ const defaultConfig: PlaywrightTestConfig = {
 const devConfig: PlaywrightTestConfig = {
   webServer: {
     command: 'npm run build && npm run preview',
-    port: 4173,
+    port: PORT,
     stderr: 'pipe'
   },
   testDir: 'tests',

@@ -8,7 +8,7 @@
   export let toastTitle = 'Copied';
   export let btnText = '';
   export let size: 'xs' | 'sm' | 'md' | 'lg' | 'xl' | undefined = 'sm';
-  export let testId: string;
+  export let testId: string = 'copy-to-clipboard-btn';
 
   const handleClick = async (e) => {
     e.stopPropagation();
