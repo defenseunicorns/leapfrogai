@@ -1,11 +1,10 @@
 import { test as setup } from './fixtures';
 import * as OTPAuth from 'otpauth';
 import { delay } from 'msw';
-import { cleanup } from './helpers/cleanup';
 
 const authFile = 'playwright/.auth/user.json';
 
-setup('authenticate', async ({ page, openAIClient }) => {
+setup('authenticate', async ({ page }) => {
   await page.goto('/'); // go to the home page
   await delay(2000); // allow page to fully hydrate
   if (process.env.PUBLIC_DISABLE_KEYCLOAK === 'true') {
@@ -65,8 +64,4 @@ setup('authenticate', async ({ page, openAIClient }) => {
   // End of authentication steps.
 
   await page.context().storageState({ path: authFile });
-
-  console.log('setting up...');
-  await cleanup(openAIClient);
-  console.log('set up complete');
 });
