@@ -56,6 +56,7 @@
     "lodash": "^4.17.21",
     "msw": "^2.3.1",
     "otpauth": "^9.3.1",
+    "pdf-lib": "^1.17.1",
     "playwright": "^1.45.2",
     "postcss": "^8.4.38",
     "pptxgenjs": "^3.12.0",
