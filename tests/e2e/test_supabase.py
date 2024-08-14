@@ -19,7 +19,6 @@ from leapfrogai_api.data.crud_vector_store import CRUDVectorStore
 from leapfrogai_api.data.crud_vector_store_file import CRUDVectorStoreFile
 
 from .utils import ANON_KEY, create_test_user, SERVICE_KEY
-from supabase._sync.client import SyncClient
 from openai.types import FileObject
 
 health_urls = {
