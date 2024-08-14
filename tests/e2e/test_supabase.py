@@ -49,6 +49,9 @@ def test_supabase_realtime_vector_store_indexing():
         _thread.interrupt_main()
 
     async def postgres_db_changes():
+        """
+        This function is responsible for creating a vector store and uploading a file to it.
+        """
         client: AsyncClient = await acreate_client(
             supabase_key=ANON_KEY,
             supabase_url="https://supabase-kong.uds.dev",
@@ -88,6 +91,9 @@ def test_supabase_realtime_vector_store_indexing():
         await CRUDVectorStoreFile(client).create(vector_store_file)
 
     def postgres_changes_callback(payload):
+        """
+        This function is responsible for listening for changes to the vector store file and signaling success if the file triggers realtime successfully.
+        """
         expected_record = {
             "object": "vector_store.file",
             "status": "completed",
@@ -107,6 +113,9 @@ def test_supabase_realtime_vector_store_indexing():
             raise TestCompleteException("Test completed successfully")
 
     async def upload_file(client: AsyncClient) -> str:
+        """
+        This function is responsible for uploading a file to the file bucket.
+        """
         id_ = str(uuid.uuid4())
 
         empty_file_object = FileObject(
@@ -132,6 +141,9 @@ def test_supabase_realtime_vector_store_indexing():
         return id_
 
     def run_postgres_db_changes():
+        """
+        This function is responsible for running the postgres_db_changes function.
+        """
         asyncio.run(postgres_db_changes())
 
     timeout_timer = None
