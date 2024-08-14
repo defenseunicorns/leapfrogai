@@ -54,7 +54,7 @@ spec:
       volumes:
         - name: leapfrogai-pv-storage
           persistentVolumeClaim:
-            claimName: lfai-llama-pv-claim
+            claimName: {{ include "chart.modelPVCName" . }}
       securityContext:
         {{- toYaml .Values.podSecurityContext | nindent 8 }}
       containers:

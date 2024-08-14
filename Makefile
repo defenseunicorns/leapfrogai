@@ -107,7 +107,7 @@ build-llama-cpp-python: local-registry docker-llama-cpp-python ## Build the llam
 	docker push ${DOCKER_FLAGS} localhost:${REG_PORT}/defenseunicorns/leapfrogai/llama-cpp-python:${LOCAL_VERSION}
 
 	## Build the Zarf package
-	uds zarf package create packages/llama-cpp-python -a ${ARCH} -o packages/llama-cpp-python --registry-override=ghcr.io=localhost:${REG_PORT} --insecure --set IMAGE_VERSION=${LOCAL_VERSION} ${ZARF_FLAGS} --confirm
+	ZARF_CONFIG=packages/llama-cpp-python/zarf-config.yaml uds zarf package create packages/llama-cpp-python -a ${ARCH} -o packages/llama-cpp-python --registry-override=ghcr.io=localhost:${REG_PORT} --insecure --set IMAGE_VERSION=${LOCAL_VERSION} ${ZARF_FLAGS} --confirm
 
 docker-vllm: sdk-wheel
 	## Build the image (and tag it for the local registry)

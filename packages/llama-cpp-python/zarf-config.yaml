@@ -1,0 +1,7 @@
+package:
+  create:
+    set:
+      MODEL_NAME: TheBloke/SynthIA-7B-v2.0-GGUF
+      MODEL_REVISION: 3f65d882253d1f15a113dabf473a7c02a004d2b5
+      MODEL_FILENAME: synthia-7b-v2.0.Q4_K_M.gguf
+      MODEL_SHASUM: 5d6369d456446c40a9fd149525747d8dc494196686861c43b00f9230a166ba82

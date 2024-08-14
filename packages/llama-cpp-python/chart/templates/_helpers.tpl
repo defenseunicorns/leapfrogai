@@ -61,3 +61,14 @@ Create the name of the service account to use
 {{- default "default" .Values.serviceAccount.name }}
 {{- end }}
 {{- end }}
+
+{{/*
+Create the name of the model PVC to use
+*/}}
+{{- define "chart.modelPVCName" -}}
+{{- if .Values.model.revision }}
+{{- printf "lfai-%s-%s-%s" .Values.nameOverride (lower (regexReplaceAll "\\W+|_" .Values.model.name "-")) (lower (regexReplaceAll "\\W+|_" .Values.model.revision "-")) -}}
+{{- else }}
+{{- printf "lfai-%s-%s" .Values.nameOverride (lower (regexReplaceAll "\\W+|_" .Values.model.name "-")) -}}
+{{- end }}
+{{- end }}
