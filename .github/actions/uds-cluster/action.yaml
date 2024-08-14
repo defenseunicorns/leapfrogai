@@ -19,4 +19,4 @@ runs:
     - name: Create UDS Cluster
       shell: bash
       run: |
-         make create-uds-cpu-cluster UDS_VERSION="0.25.2" ZARF_FLAGS="--set INSECURE_ADMIN_PASSWORD_GENERATION=true"
+         make create-uds-cpu-cluster ZARF_FLAGS="--set INSECURE_ADMIN_PASSWORD_GENERATION=true"
