@@ -68,6 +68,8 @@ wget -O uds https://github.com/defenseunicorns/uds-cli/releases/download/$UDS_VE
 
 LeapfrogAI exclusively supports NVIDIA GPUs at this point in time. The following instructions are tailored for users utilizing an NVIDIA GPU.
 
+If you are experiencing issues even after carefully following the instructions below, please refer to the [Developer Documentation](https://github.com/defenseunicorns/leapfrogai/tree/main/docs/DEVELOPMENT.md) troubleshooting section in the GitHub repository.
+
 ### NVIDIA Drivers
 
 - Ensure that the proper [NVIDIA drivers](https://www.nvidia.com/download/index.aspx) are installed (>=525.60).

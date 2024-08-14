@@ -86,9 +86,7 @@ LeapfrogAI provides a [UI](src/leapfrogai_ui/) with support for common use-cases
 
 ### Backends
 
-LeapfrogAI provides several backends for a variety of use cases.
-
-Backends support and compatibility matrix:
+LeapfrogAI provides several backends for a variety of use cases. Below is the backends support and compatibility matrix:
 
 | Backend                                        |  AMD64  |  ARM64  |  CUDA  | Docker | Kubernetes |   UDS   |
 | ---------------------------------------------- | ------- | ------- | ------ | ------ | ---------- | ------- |
@@ -111,9 +109,9 @@ For contributing and local deployment and development for each component in a lo
 
 ## Local Development
 
-Each of the LeapfrogAI components can also be run individually outside of a Kubernetes or Containerized environment. This is useful when testing changes to a specific component, but will not assist in a full deployment of LeapfrogAI. Please refer to the [above section](#usage) for deployment instructions.
+Each of the LeapfrogAI components can also be run individually outside of a Kubernetes or Containerized environment. This is useful when testing changes to a specific component, but will not assist in a full deployment of LeapfrogAI. Please refer to the [above section](#usage) for deployment instructions. Please refer to the [next section](#contributing) for rules on contributing to LeapfrogAI.
 
-Please refer to the linked READMEs for each individual packages local development instructions:
+**_First_** refer to the [DEVELOPMENT.md](docs/DEVELOPMENT.md) document for general development details, **_then_** refer to the linked READMEs for each individual packages local development instructions:
 
 - [API](src/leapfrogai_api/README.md)[^2]
 - [SDK](src/leapfrogai_sdk/README.md)[^3]
