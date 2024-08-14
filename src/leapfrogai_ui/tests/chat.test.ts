@@ -162,3 +162,27 @@ test('it formats code in a code block and can copy the code', async ({ page }) =
   const copyBtns = await page.getByTestId('copy-code-btn').all();
   expect(copyBtns.length).toBeGreaterThan(0);
 });
+
+// The skeleton only shows for assistant messages
+test('it shows a loading skeleton when a response is pending', async ({ page, openAIClient }) => {
+  const assistant = await createAssistantWithApi({ openAIClient });
+
+  await loadChatPage(page);
+
+  // Select assistant
+  await expect(page.getByTestId('assistants-select-btn')).not.toBeDisabled();
+  const assistantDropdown = page.getByTestId('assistants-select-btn');
+  await assistantDropdown.click();
+  await page.getByText(assistant!.name!).click();
+
+  const messages = page.getByTestId('message');
+  await sendMessage(page, newMessage1);
+  await expect(page.getByRole('status')).toBeVisible();
+  await waitForResponseToComplete(page);
+  await expect(messages).toHaveCount(2);
+  await expect(page.getByRole('status')).not.toBeVisible();
+
+  // Cleanup
+  await deleteActiveThread(page, openAIClient);
+  await deleteAssistantWithApi(assistant.id, openAIClient);
+});

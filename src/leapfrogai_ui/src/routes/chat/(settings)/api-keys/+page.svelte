@@ -17,19 +17,17 @@
   import { formatDate } from '$helpers/dates.js';
   import { formatKeyShort } from '$helpers/apiKeyHelpers';
   import type { APIKeyRow } from '$lib/types/apiKeys';
-  import type { PageServerData } from './$types';
   import { filterTable } from '$lib/utils/tables';
   import { tableStyles } from '$lib/styles/tables';
   import DeleteApiKeyModal from '$components/modals/DeleteApiKeyModal.svelte';
   import CreateApiKeyModal from '$components/modals/CreateApiKeyModal.svelte';
 
-  export let data: PageServerData;
+  export let data;
 
-  // TODO - data.keys not getting type inference - https://github.com/defenseunicorns/leapfrogai/issues/856
   $: filteredItems =
     searchTerm !== ''
-      ? filterTable(data.keys, FILTER_KEYS, searchTerm.toLowerCase())
-      : [...data.keys];
+      ? filterTable(data.apiKeys, FILTER_KEYS, searchTerm.toLowerCase())
+      : [...data.apiKeys];
   $: totalItems = filteredItems.length;
   $: startRange = currentPosition + 1;
   $: endRange = Math.min(currentPosition + itemsPerPage, totalItems);
