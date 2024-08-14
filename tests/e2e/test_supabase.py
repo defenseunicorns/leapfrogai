@@ -39,6 +39,7 @@ def test_studio():
         print(e)
         exit(1)
 
+
 def test_supabase_realtime_vector_store_indexing():
     class TestCompleteException(Exception):
         pass
@@ -53,9 +54,7 @@ def test_supabase_realtime_vector_store_indexing():
             supabase_key=ANON_KEY,
             supabase_url="https://supabase-kong.uds.dev",
         )
-        await client.auth.set_session(
-            access_token=access_token, refresh_token="dummy"
-        )
+        await client.auth.set_session(access_token=access_token, refresh_token="dummy")
 
         upload_file_id = await upload_file(client)
         assert upload_file_id is not None, "Failed to upload file"
@@ -73,35 +72,39 @@ def test_supabase_realtime_vector_store_indexing():
             name="test_vector_store",
             object="vector_store",
             status="completed",
-            usage_bytes=0
+            usage_bytes=0,
         )
 
         await CRUDVectorStore(client).create(vector_store)
 
         vector_store_file = VectorStoreFile(
-            id=upload_file_id, 
+            id=upload_file_id,
             vector_store_id=vector_store.id,
             created_at=int(time.time()),
             object="vector_store.file",
             status="completed",
-            usage_bytes=0
+            usage_bytes=0,
         )
 
         await CRUDVectorStoreFile(client).create(vector_store_file)
 
-
     def postgres_changes_callback(payload):
         expected_record = {
-            'object': 'vector_store.file',
-            'status': 'completed',
-            'usage_bytes': 0,
+            "object": "vector_store.file",
+            "status": "completed",
+            "usage_bytes": 0,
         }
 
-        all_records_match = all(payload.get('record', {}).get(key) == value 
-                                for key, value in expected_record.items())
-        event_information_match = (payload.get('table') == 'vector_store_file' and payload.get('type') == 'INSERT')
+        all_records_match = all(
+            payload.get("record", {}).get(key) == value
+            for key, value in expected_record.items()
+        )
+        event_information_match = (
+            payload.get("table") == "vector_store_file"
+            and payload.get("type") == "INSERT"
+        )
 
-        if (event_information_match and all_records_match):
+        if event_information_match and all_records_match:
             raise TestCompleteException("Test completed successfully")
 
     async def upload_file(client: AsyncClient) -> str:
@@ -124,7 +127,9 @@ def test_supabase_realtime_vector_store_indexing():
         assert file_object is not None, "Failed to create file object"
 
         crud_file_bucket = CRUDFileBucket(db=client, model=UploadFile)
-        await crud_file_bucket.upload(file=UploadFile(filename="", file=io.BytesIO(b"")), id_=file_object.id)
+        await crud_file_bucket.upload(
+            file=UploadFile(filename="", file=io.BytesIO(b"")), id_=file_object.id
+        )
         return id_
 
     def run_postgres_db_changes():
@@ -137,7 +142,7 @@ def test_supabase_realtime_vector_store_indexing():
 
         # Schedule postgres_db_changes to run after 5 seconds
         threading.Timer(5.0, run_postgres_db_changes).start()
-        
+
         # Set a timeout of 10 seconds
         timeout_timer = threading.Timer(10.0, timeout_handler)
         timeout_timer.start()
