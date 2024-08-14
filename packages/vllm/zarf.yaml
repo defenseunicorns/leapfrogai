@@ -9,6 +9,10 @@ metadata:
 constants:
   - name: IMAGE_VERSION
     value: "###ZARF_PKG_TMPL_IMAGE_VERSION###"
+  - name: MODEL_NAME
+    value: "###ZARF_PKG_TMPL_MODEL_NAME###"
+  - name: MODEL_REVISION
+    value: "###ZARF_PKG_TMPL_MODEL_REVISION###"
 
 variables:
   - name: PVC_SIZE
@@ -53,7 +57,5 @@ components:
           # NOTE: This assumes python is installed and in $PATH and 'huggingface_hub[cli,hf_transfer]' has been installed
           - cmd: python src/model_download.py
             env:
-              - LAI_REPO_ID=TheBloke/Synthia-7B-v2.0-GPTQ
-              - LAI_REVISION=gptq-4bit-32g-actorder_True
-              - LAI_QUANTIZATION=gptq
-              - LAI_HF_HUB_ENABLE_HF_TRANSFER=1
+              - LAI_REPO_ID=###ZARF_PKG_TMPL_MODEL_NAME###
+              - LAI_REVISION=###ZARF_PKG_TMPL_MODEL_REVISION###

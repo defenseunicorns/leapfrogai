@@ -8,3 +8,8 @@ persistence:
   size: ###ZARF_VAR_PVC_SIZE###
   accessModes: ###ZARF_VAR_PVC_ACCESS_MODE###
   storageClass: ###ZARF_VAR_PVC_STORAGE_CLASS###
+
+model:
+  name: ###ZARF_CONST_MODEL_NAME###
+  revision: ###ZARF_CONST_MODEL_REVISION###
+  
