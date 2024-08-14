@@ -27,7 +27,8 @@ dev = [
     "requests-toolbelt",
     "pytest",
     "huggingface_hub[cli,hf_transfer]",
-    "fastapi"
+    "fastapi",
+    "supabase"
 ]
 
 dev-whisper = [
