@@ -27,6 +27,11 @@ vi.stubGlobal('window', {
     ...window.URL,
     createObjectURL: vi.fn(() => 'blob:http://localhost/file'),
     revokeObjectURL: vi.fn()
+  },
+  navigator: {
+    clipboard: {
+      writeText: vi.fn()
+    }
   }
 });
 
