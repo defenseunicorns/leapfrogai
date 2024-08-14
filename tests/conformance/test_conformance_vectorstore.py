@@ -25,7 +25,8 @@ def test_vector_store_with_file(client_name):
         client.beta.vector_stores.files.upload(
             vector_store_id=vector_store.id, file=file
         )
-    return vector_store
+
+    assert isinstance(vector_store, VectorStore)
 
 
 @pytest.mark.parametrize("client_name", ["openai", "leapfrogai"])
@@ -41,4 +42,4 @@ def test_vector_store_batched(client_name):
         vector_store_id=vector_store.id, files=file_streams
     )
 
-    return vector_store
+    assert isinstance(vector_store, VectorStore)
