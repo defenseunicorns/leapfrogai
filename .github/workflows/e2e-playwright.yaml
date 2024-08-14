@@ -101,7 +101,7 @@ jobs:
 
         - name: Create Test User
           run: |
-
+            while ! uds zarf tools kubectl get secret keycloak-admin-password --namespace keycloak; do echo "Waiting for my secret. CTRL-C to exit."; sleep 1; done
             KEYCLOAK_ADMIN_PASSWORD=$(uds zarf tools kubectl get secret -n keycloak keycloak-admin-password -o jsonpath={.data.password} | base64 -d)
             KEYCLOAK_ADMIN_TOKEN=$(curl -s --location "https://keycloak.admin.uds.dev/realms/master/protocol/openid-connect/token" \
             --header "Content-Type: application/x-www-form-urlencoded" \
