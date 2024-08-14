@@ -10,6 +10,8 @@ metadata:
 constants:
   - name: IMAGE_VERSION
     value: "###ZARF_PKG_TMPL_IMAGE_VERSION###"
+  - name: MODEL_NAME
+    value: "###ZARF_PKG_TMPL_MODEL_NAME###"
 
 variables:
   - name: GPU_LIMIT
@@ -68,4 +70,4 @@ components:
                 --quantization float32 \
                 --force
             env:
-              - MODEL_NAME=openai/whisper-base
+              - MODEL_NAME=###ZARF_PKG_TMPL_MODEL_NAME###

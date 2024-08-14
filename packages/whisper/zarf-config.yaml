@@ -1,0 +1,4 @@
+package:
+  create:
+    set:
+      MODEL_NAME: "openai/whisper-base"
