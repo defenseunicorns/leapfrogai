@@ -2,7 +2,6 @@ import { expect, test } from './fixtures';
 import { getTableRow, loadApiKeyPage, loadChatPage } from './helpers/helpers';
 
 test('it can navigate to the API key page', async ({ page }) => {
-  console.log("force run, remove me")
   await loadChatPage(page);
 
   await page.getByTestId('header-settings-btn').click();
