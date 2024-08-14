@@ -1,0 +1,5 @@
+package:
+  create:
+    set:
+      MODEL_NAME: hkunlp/instructor-xl
+      MODEL_REVISION: ce48b213095e647a6c3536364b9fa00daf57f436

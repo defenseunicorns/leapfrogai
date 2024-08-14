@@ -10,6 +10,10 @@ metadata:
 constants:
   - name: IMAGE_VERSION
     value: "###ZARF_PKG_TMPL_IMAGE_VERSION###"
+  - name: MODEL_NAME
+    value: "###ZARF_PKG_TMPL_MODEL_NAME###"
+  - name: MODEL_REVISION
+    value: "###ZARF_PKG_TMPL_MODEL_REVISION###"
 
 variables:
   - name: GPU_LIMIT
@@ -62,5 +66,5 @@ components:
           # NOTE: This assumes python is installed and in $PATH and 'huggingface_hub[cli,hf_transfer]' has been installed
           - cmd: python scripts/model_download.py
             env:
-              - REPO_ID=hkunlp/instructor-xl
-              - REVISION=ce48b213095e647a6c3536364b9fa00daf57f436
+              - REPO_ID=###ZARF_PKG_TMPL_MODEL_NAME###
+              - REVISION=###ZARF_PKG_TMPL_MODEL_REVISION###
