@@ -1,32 +1,75 @@
 repos:
-  # Generic pre-commit checks
+  ################
+  # GENERAL CHECKS
+  ################
   - repo: https://github.com/pre-commit/pre-commit-hooks
     rev: v4.0.1
     hooks:
       - id: check-added-large-files
+        name: Large Files Check
         args: ["--maxkb=1024"]
-      - id: check-merge-conflict
+
       - id: detect-aws-credentials
+        name: Check AWS Credentials
         args:
           - "--allow-missing-credentials"
+
       - id: detect-private-key
+        name: Check Private Keys
+
+      - id: check-merge-conflict
+        name: Merge Conflict Resolution Check
+
       - id: end-of-file-fixer
+        name: Newline EOF Checker
+
       - id: fix-byte-order-marker
+        name: Fix UTF-8 byte order marker
+
       - id: trailing-whitespace
+        name: Whitespace Cleaning Check
         args: [--markdown-linebreak-ext=md]
 
-  # Python linting and formatting
+  - repo: https://github.com/scop/pre-commit-shfmt
+    rev: v3.8.0-1
+    hooks:
+      - id: shfmt
+        name: Shell Script Format
+
+  - repo: https://github.com/gitleaks/gitleaks
+    rev: v8.18.0
+    hooks:
+      - id: gitleaks
+        name: GitLeaks Checks
+
+  - repo: https://github.com/sirosen/fix-smartquotes
+    rev: 0.2.0
+    hooks:
+      - id: fix-smartquotes
+        name: Fix Quotes
+
+  ############
+  # CODE LINT
+  ############
+
+  - repo: https://github.com/DavidAnson/markdownlint-cli2
+    rev: v0.12.1
+    hooks:
+      - id: markdownlint-cli2
+        name: Markdown Linti
+
+  - repo: local
+    hooks:
+      - id: eslint
+        name: ESLint
+        language: system
+        entry: sh -c 'npm --prefix src/leapfrogai_ui/ run lint'
+        files: \.(js|jsx|ts|tsx|svelte|cjs|mjs)$ # *.js, *.jsx, *.ts, *.tsx, *.svelte, *.cjs, *.mjs
+
   - repo: https://github.com/astral-sh/ruff-pre-commit
     rev: v0.3.4
     hooks:
       - id: ruff # Run the linter.
+        name: Ruff Lint
       - id: ruff-format # Run the formatter.
-
-  # Local Eslint w/ Prettier
-  - repo: local
-    hooks:
-    - id: eslint
-      name: eslint
-      language: system
-      entry: sh -c 'npm --prefix src/leapfrogai_ui/ run lint'
-      files: \.(js|jsx|ts|tsx|svelte|cjs|mjs)$ # *.js, *.jsx, *.ts, *.tsx, *.svelte, *.cjs, *.mjs
+        name: Ruff Format
