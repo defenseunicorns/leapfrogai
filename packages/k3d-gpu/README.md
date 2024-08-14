@@ -2,6 +2,8 @@
 
 Prepares `k3s` + `nvidia/cuda` base image that enables a K3D cluster to have access to your host machine's NVIDIA, CUDA-capable GPU(s).
 
+This is for development and demonstration purposes, and should not be used to deploy LeapfrogAI in a production environment.
+
 ## Pre-Requisites
 
 * Docker: https://www.docker.com/
@@ -13,9 +15,9 @@ Prepares `k3s` + `nvidia/cuda` base image that enables a K3D cluster to have acc
 
 Check out the Make targets for the various options.
 
-### Local
+### Local Development
 
-```shell
+```bash
 make build-k3d-gpu # build the image
 
 make create-uds-gpu-cluster # create a uds cluster equipped with the k3d-gpu image
