@@ -20,3 +20,9 @@ runs:
       shell: bash
       run: |
          make create-uds-cpu-cluster ZARF_FLAGS="--set INSECURE_ADMIN_PASSWORD_GENERATION=true"
+
+    - name: Set environment variable
+      shell: bash
+      id: set-env-var
+      run: |
+        echo "KEYCLOAK_ADMIN_PASSWORD=$(uds zarf tools kubectl get secret keycloak-admin-password -n keycloak -o jsonpath='{.data.password}' | base64 -d)" >> "$GITHUB_ENV"
