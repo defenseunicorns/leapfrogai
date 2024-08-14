@@ -19,7 +19,7 @@ runs:
     - name: Create UDS Cluster
       shell: bash
       run: |
-         make create-uds-cpu-cluster ZARF_FLAGS="--set INSECURE_ADMIN_PASSWORD_GENERATION=true"
+         uds deploy k3d-core-slim-dev:0.25.2 --set INSECURE_ADMIN_PASSWORD_GENERATION=true --confirm 
 
     - name: Set environment variable
       shell: bash
