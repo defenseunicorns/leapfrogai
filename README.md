@@ -76,23 +76,6 @@ Please refer to the [Quick Start](https://docs.leapfrog.ai/docs/local-deploy-gui
 
 LeapfrogAI provides an API that closely matches that of OpenAI's. This feature allows tools that have been built with OpenAI/ChatGPT to function seamlessly with a LeapfrogAI backend.
 
-### Backends
-
-LeapfrogAI provides several backends for a variety of use cases.
-
-Backends support and compatibility matrix:
-
-| Backend                                        | AMD64  | ARM64  |  CUDA  | Docker | Kubernetes |   UDS   |
-| ---------------------------------------------- | ------ | ------ | ------ | ------ | ---------- | ------- |
-| [llama-cpp-python](packages/llama-cpp-python/) |   ✅   |   ✅   |   ✅   |   ✅   |     ✅     |   ✅   |
-| [whisper](packages/whisper/)                   |   ✅   |   ✅   |   ✅   |   ✅   |     ✅     |   ✅   |
-| [text-embeddings](packages/text-embeddings/)   |   ✅   |   ✅   |   ✅   |   ✅   |     ✅     |   ✅   |
-| [vllm](packages/vllm/)                         |   ✅   |   ❌   |   ✅   |   ✅   |     ✅     |   ✅   |
-
-#### Repeater
-
-The [repeater](packages/repeater/) "model" is a basic "backend" that parrots all inputs it receives back to the user. It is built out the same way all the actual backends are and it primarily used for testing the API.
-
 ### SDK
 
 The LeapfrogAI [SDK](src/leapfrogai_sdk/) provides a standard set of protobufs and Python utilities for implementing backends with gRPC.
@@ -100,6 +83,25 @@ The LeapfrogAI [SDK](src/leapfrogai_sdk/) provides a standard set of protobufs a
 ### UI
 
 LeapfrogAI provides a [UI](src/leapfrogai_ui/) with support for common use-cases such as general chat and "Q&A with your documents".
+
+### Backends
+
+LeapfrogAI provides several backends for a variety of use cases.
+
+Backends support and compatibility matrix:
+
+| Backend                                        |  AMD64  |  ARM64  |  CUDA  | Docker | Kubernetes |   UDS   |
+| ---------------------------------------------- | ------- | ------- | ------ | ------ | ---------- | ------- |
+| [llama-cpp-python](packages/llama-cpp-python/) |   ✅   |   ✅   |   ✅   |   ✅   |     ✅     |   ✅   |
+| [whisper](packages/whisper/)                   |   ✅   |   ✅   |   ✅   |   ✅   |     ✅     |   ✅   |
+| [text-embeddings](packages/text-embeddings/)   |   ✅   |   ✅   |   ✅   |   ✅   |     ✅     |   ✅   |
+| [vllm](packages/vllm/)                         |   ✅   | ❌[^1] |   ✅   |   ✅   |     ✅     |   ✅   |
+
+[^1]: vLLM requires a CUDA-enabled PyTorch built for ARM64, which is not available via pip or conda
+
+#### Repeater
+
+The [repeater](packages/repeater/) "model" is a basic "backend" that parrots all inputs it receives back to the user. It is built out the same way all the actual backends are and it primarily used for testing the API.
 
 ## Usage
 
@@ -113,14 +115,19 @@ Each of the LeapfrogAI components can also be run individually outside of a Kube
 
 Please refer to the linked READMEs for each individual packages local development instructions:
 
-- [API](/src/leapfrogai_api/README.md)
-- [LLaMA C++ Python](/packages/llama-cpp-python/README.md)
-- [vLLM](/packages/vllm/README.md)
-- [Supabase](/packages/supabase/README.md)
-- [Text Embeddings](/packages/text-embeddings/README.md)
-- [UI](/src/leapfrogai_ui/README.md)
-- [Faster Whisper](/packages/whisper/README.md)
-- [Repeater](/packages/repeater/README.md)
+- [API](src/leapfrogai_api/README.md)[^2]
+- [SDK](src/leapfrogai_sdk/README.md)[^3]
+- [UI](src/leapfrogai_ui/README.md)[^2]
+- [LLaMA C++ Python](packages/llama-cpp-python/README.md)
+- [vLLM](packages/vllm/README.md)
+- [Supabase](packages/supabase/README.md)
+- [Text Embeddings](packages/text-embeddings/README.md)
+- [Faster Whisper](packages/whisper/README.md)
+- [Repeater](packages/repeater/README.md)
+
+[^2]: Please be aware that the API and UI have artifacts under 2 sub-directories. The sub-directories related to `packages/` are focused on the Zarf packaging and Helm charts, whereas the sub-directories related to `src/` contains the actual source code and development instructions.
+
+[^3]: The SDK is not a functionally independent unit, and only becomes a functional unit when combined and packaged with the API and Backends as a dependency.
 
 ## Contributing
 
