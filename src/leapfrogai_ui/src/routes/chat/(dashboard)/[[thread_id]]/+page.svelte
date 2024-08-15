@@ -28,10 +28,10 @@
   import { PaperClipOutline, PaperPlaneOutline, StopOutline } from 'flowbite-svelte-icons';
   import { superForm } from 'sveltekit-superforms';
   import LFFileUploadBtn from '$components/LFFileUploadBtn.svelte';
+  import {twMerge} from "tailwind-merge";
 
   export let data;
 
-  // TODO - make div around spinner same size as toolbarbutton
   /** LOCAL VARS **/
   let lengthInvalid: boolean; // bound to child LFTextArea
   let assistantsList: Array<{ id: string; text: string }>;
@@ -342,16 +342,16 @@
             accept={ACCEPTED_FILE_TYPES}
             class="remove-btn-style"
           >
-
-              <div class="centered-flexbox h-6 w-6">
+            {#if uploadingFile}
+              <div class="centered-flexbox w-9 h-10">
                 <Spinner size={6} />
               </div>
-
+            {:else}
               <ToolbarButton color="dark" class="text-gray-500 dark:text-gray-400">
-                <PaperClipOutline class="h-6 w-6" />
+                <PaperClipOutline />
                 <span class="sr-only">Attach file</span>
               </ToolbarButton>
-
+            {/if}
           </LFFileUploadBtn>
         </form>
         <LFTextArea
@@ -364,13 +364,13 @@
           {onSubmit}
           maxRows={10}
         />
-        {#if !$isLoading && !uploadingFile && $status !== 'in_progress'}
+        {#if !$isLoading && $status !== 'in_progress'}
           <ToolbarButton
             data-testid="send message"
             type="submit"
             color="blue"
             class="rounded-full text-primary-600 dark:text-primary-500"
-            disabled={!$chatInput || lengthInvalid || $threadsStore.sendingBlocked}
+            disabled={uploadingFile || !$chatInput || lengthInvalid || $threadsStore.sendingBlocked}
           >
             <PaperPlaneOutline class="h-6 w-6 rotate-45" />
             <span class="sr-only">Send message</span>
