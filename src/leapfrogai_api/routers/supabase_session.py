@@ -12,6 +12,10 @@ from supabase import acreate_client
 import gotrue
 from leapfrogai_api.backend.security.api_key import APIKey
 
+from leapfrogai_api.routers.leapfrogai.auth import CreateAPIKeyRequest
+from leapfrogai_api.data.crud_api_key import CRUDAPIKey, APIKeyItem
+import time
+
 security = HTTPBearer()
 
 
@@ -32,6 +36,8 @@ def get_supabase_vars() -> tuple[str, str]:
         )
 
     return supabase_url, supabase_key
+
+
 
 
 async def init_supabase_client(
@@ -80,6 +86,17 @@ async def init_supabase_client(
             ) from e
 
         if await _validate_jwt_authorization(client, auth_creds.credentials):
+            # Create a new API key using our API
+            crud_api_key = CRUDAPIKey(client)
+            new_api_key_item = await crud_api_key.create(APIKeyItem(
+                name="Generated API Key",
+                id="",  # This is set by the database
+                api_key="",  # This is generated during the create operation
+                created_at=0,  # This is set by the database
+                expires_at=int(time.time()) + 30 * 24 * 60 * 60,  # 30 days from now
+            ))
+            # Use the new API key for the session
+            client.options.headers.update({"x-custom-api-key": new_api_key_item.api_key})
             return client
 
     # Try API Key Auth first
