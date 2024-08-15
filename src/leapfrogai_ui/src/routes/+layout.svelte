@@ -29,7 +29,7 @@
       }
     }
   }
-  console.log('session?.expires_at', new Date(session?.expires_at * 1000));
+  $: console.log('session?.expires_at', new Date(session?.expires_at * 1000));
 
   onMount(() => {
     const { data } = supabase.auth.onAuthStateChange((_, newSession) => {
