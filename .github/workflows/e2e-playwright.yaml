@@ -103,7 +103,7 @@ jobs:
           run: |
             make build-ui LOCAL_VERSION=e2e-test
             docker image prune -af
-            uds zarf package deploy packages/ui/zarf-package-leapfrogai-ui-amd64-e2e-test.tar.zst --set PUBLIC_DISABLE_KEYCLOAK=false --confirm
+            uds zarf package deploy packages/ui/zarf-package-leapfrogai-ui-amd64-e2e-test.tar.zst --set DISABLE_KEYCLOAK=false --confirm
             rm packages/ui/zarf-package-leapfrogai-ui-amd64-e2e-test.tar.zst
 
         # Run the playwright UI tests using the deployed Supabase endpoint and upload report as an artifact
