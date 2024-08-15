@@ -36,7 +36,10 @@
   let assistantsList: Array<{ id: string; text: string }>;
   const { enhance, submit } = superForm(data.form, {
     validators: yup(filesSchema),
-    invalidateAll: false
+    invalidateAll: false,
+    onResult({result}){
+      console.log(result)
+    }
   });
   /** END LOCAL VARS **/
 
@@ -319,9 +322,10 @@
 
     <div class="flex items-end justify-around gap-2">
       <div class="flex flex-grow items-center rounded-lg bg-gray-50 px-3 py-2 dark:bg-gray-700">
-        <form method="POST" use:enhance>
+        <form method="POST"  enctype="multipart/form-data" use:enhance>
           <LFFileUploadBtn
             data-testid="upload-file-btn"
+            name="files"
             outline
             size="sm"
             on:change={(e) => submit(e.detail)}

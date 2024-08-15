@@ -1,6 +1,6 @@
-
+import * as mupdf from 'mupdf';
 import type { Actions } from './$types';
-import { fail, superValidate } from 'sveltekit-superforms';
+import { fail, superValidate, withFiles } from 'sveltekit-superforms';
 import { yup } from 'sveltekit-superforms/adapters';
 import { filesSchema } from '$schemas/files';
 
@@ -24,16 +24,27 @@ export const actions: Actions = {
     }
 
     if (form.data.files && form.data.files.length > 0) {
-      let texts: string[] = [];
+      let text = '';
       for (const file of form.data.files) {
         if (file) {
           const buffer = await file.arrayBuffer();
-          // const data = await pdf(Buffer.from(buffer));
-          // texts.push(data.text);
+          const document = mupdf.Document.openDocument(buffer, 'application/pdf');
+          let i = 0;
+          while (i < document.countPages()) {
+            const page = document.loadPage(i);
+            const json = page.toStructuredText('preserve-whitespace').asJSON();
+            for (const block of JSON.parse(json).blocks) {
+              for (const line of block.lines) {
+                console.log('adding', line.text);
+                text += line.text;
+              }
+            }
+            i++;
+          }
         }
       }
 
-      return { texts, form };
+      return withFiles({ text, form });
     }
     return fail(400, { form });
   }
