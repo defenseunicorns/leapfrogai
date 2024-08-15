@@ -19,10 +19,4 @@ runs:
     - name: Create UDS Cluster
       shell: bash
       run: |
-         uds deploy k3d-core-slim-dev:0.25.2 --set INSECURE_ADMIN_PASSWORD_GENERATION=true --confirm 
-
-    - name: Set environment variable
-      shell: bash
-      id: set-env-var
-      run: |
-        echo "KEYCLOAK_ADMIN_PASSWORD=$(uds zarf tools kubectl get secret keycloak-admin-password -n keycloak -o jsonpath='{.data.password}' | base64 -d)" >> "$GITHUB_ENV"
+         uds deploy k3d-core-slim-dev:0.25.2 --set INSECURE_ADMIN_PASSWORD_GENERATION=true --confirm
