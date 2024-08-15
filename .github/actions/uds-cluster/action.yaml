@@ -22,4 +22,4 @@ runs:
     - name: Create UDS Cluster
       shell: bash
       run: |
-        UDS_CONFIG=.github/config/uds-config.yaml uds deploy k3d-core-slim-dev:0.25.2 --confirm
+        UDS_CONFIG=.github/config/uds-config.yaml make create-uds-cpu-cluster

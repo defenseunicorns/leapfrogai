@@ -16,7 +16,9 @@ on:
       # Ignore updates to the .github directory, unless it's this current file
       - "!.github/**"
       - ".github/workflows/e2e-playwright.yaml"
-      - ".github/actions/uds-cluster/**"
+      - ".github/actions/uds-cluster/action.yaml"
+      - ".github/actions/scripts/createUser.sh"
+      - ".github/actions/config/uds-config.yaml"
 
       # Ignore docs and website things
       - "!**.md"
@@ -101,8 +103,8 @@ jobs:
 
         - name: Create Test User
           run: |
-            chmod +x ./.github/config/createUser.sh
-            ./.github/config/createUser.sh
+            chmod +x ./.github/scripts/createUser.sh
+            ./.github/scripts/createUser.sh
 
         # Run the playwright UI tests using the deployed Supabase endpoint and upload report as an artifact
         - name: UI/API/Supabase E2E Playwright Tests
