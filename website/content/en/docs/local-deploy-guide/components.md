@@ -58,4 +58,4 @@ The LeapfrogAI SDK offers a standardized collection of Protobuf and Python utili
 
 ### User Interface
 
-LeapfrogAI offers user-friendly interfaces tailored for common use-cases, including chat, summarization, and transcription, providing accessible options for users to initiate these tasks. Please see the [LeapfrogAI UI](https://github.com/defenseunicorns/leapfrogai/tree/main/src/leapfrogai_ui)GitHub repository for additional information.
+LeapfrogAI offers user-friendly interfaces tailored for common use-cases, including chat, summarization, and transcription, providing accessible options for users to initiate these tasks. Please see the [LeapfrogAI UI](https://github.com/defenseunicorns/leapfrogai/tree/main/src/leapfrogai_ui) GitHub repository for additional information.

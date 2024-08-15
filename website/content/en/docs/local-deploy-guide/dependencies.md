@@ -79,4 +79,4 @@ If you are experiencing issues even after carefully following the instructions b
 
 ### Deploy LeapfrogAI
 
-- After ensuring that all system dependencies and requirements are fulfilled, refer to the LeapfrogAI deployment guide for comprehensive instructions on deploying LeapfrogAI within your local environment.
+- After ensuring that all system dependencies and requirements are fulfilled, refer to the Quick Start guide for comprehensive instructions on deploying LeapfrogAI within your local environment.

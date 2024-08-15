@@ -109,3 +109,7 @@ docker volume prune -f # removes all hanging container volumes
 
 - [UDS Core](https://github.com/defenseunicorns/uds-core)
 - [UDS CLI](https://github.com/defenseunicorns/uds-cli)
+
+## Further Tinkering
+
+For more LeapfrogAI customization options and developer-level documentation, please visit the [LeapfrogAI GitHub](https://github.com/defenseunicorns/leapfrogai) project for more details.
