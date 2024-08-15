@@ -16,7 +16,10 @@ runs:
         username: ${{ inputs.registry1Username }}
         password: ${{ inputs.registry1Password }}
 
+    - name: Checkout Repo
+      uses: actions/checkout@b4ffde65f46336ab88eb53be808477a3936bae11 # v4.1.1
+
     - name: Create UDS Cluster
       shell: bash
       run: |
-         uds deploy k3d-core-slim-dev:0.25.2 --set INSECURE_ADMIN_PASSWORD_GENERATION=true --confirm
+        UDS_CONFIG=.github/actions/uds-cluster/uds-config.yaml uds deploy k3d-core-slim-dev:0.25.2 --confirm
