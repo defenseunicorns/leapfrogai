@@ -12,7 +12,7 @@ GPU_ENABLED = (
 )
 
 logging.basicConfig(
-    level=logging.INFO,
+    level=os.getenv("LFAI_LOG_LEVEL", logging.INFO),
     format="%(name)s: %(asctime)s | %(levelname)s | %(filename)s:%(lineno)s >>> %(message)s",
 )
 logger = logging.getLogger(__name__)
