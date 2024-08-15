@@ -45,7 +45,7 @@ const config = {
           process.env.PUBLIC_SUPABASE_URL || '',
           process.env.SUPABASE_AUTH_EXTERNAL_KEYCLOAK_URL || ''
         ],
-        'child-src': ['none'], // note - this will break the annotations story and will need to updated to allow the correct resource
+        'child-src': [`blob: ${process.env.ORIGIN}`],
         'frame-ancestors': ['none']
       }
     }

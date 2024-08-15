@@ -9,12 +9,16 @@ import { expect } from '../fixtures';
 import type { FileObject } from 'openai/resources/files';
 import { getTableRow } from './helpers';
 
-export const uploadFileWithApi = async (filename = 'test.pdf', openAIClient: OpenAI) => {
+export const uploadFileWithApi = async (
+  filename = 'test.pdf',
+  contentType = 'application/pdf',
+  openAIClient: OpenAI
+) => {
   const filePath = `./tests/fixtures/${filename}`;
   const fileContent = fs.readFileSync(filePath);
 
   const file = new File([new Blob([fileContent])], filename, {
-    type: 'application/pdf'
+    type: contentType
   });
 
   // This can also be done IAW the OpenAI API documentation with fs.createReadStream, but LeapfrogAI API does not currently
@@ -81,6 +85,17 @@ export const createExcelFile = (options: CreateFileOptions = {}) => {
   const worksheet = XLSX.utils.json_to_sheet([{ Name: 'LeapfrogAI', Age: 1, Type: 'AI' }]);
   XLSX.utils.book_append_sheet(workbook, worksheet, 'Sheet1');
   XLSX.writeFile(workbook, `./tests/fixtures/${filenameWithExtension}`);
+
+  return filenameWithExtension;
+};
+
+export const createCSVFile = (options: CreateFileOptions = {}) => {
+  const { filename = `${new Date().toISOString()}-test`, extension = '.csv' } = options;
+  const filenameWithExtension = `${filename}${extension}`;
+
+  const worksheet = XLSX.utils.json_to_sheet([{ Name: 'Leapfrog', Age: 1, Type: 'AI' }]);
+  const csv = XLSX.utils.sheet_to_csv(worksheet);
+  fs.writeFileSync(`./tests/fixtures/${filenameWithExtension}`, csv, 'utf8');
 
   return filenameWithExtension;
 };

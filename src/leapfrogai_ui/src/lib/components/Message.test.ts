@@ -96,10 +96,6 @@ describe('Message component', () => {
     });
 
     it('copies text of AI response to clipboard and sends a toast notification', async () => {
-      Object.assign(navigator, {
-        clipboard: { writeText: vi.fn().mockImplementation(() => Promise.resolve()) }
-      });
-
       clipboardSpy = vi.spyOn(navigator.clipboard, 'writeText');
       const fakeAssistantMessage = getFakeMessage({ role: 'assistant' });
       render(MessageWithToast, {
