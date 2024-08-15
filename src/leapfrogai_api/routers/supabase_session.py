@@ -52,7 +52,9 @@ async def init_supabase_client(
     """
 
     supabase_url, supabase_key = get_supabase_vars()
-    client: AsyncClient = await acreate_client(supabase_key=supabase_key, supabase_url=supabase_url)
+    client: AsyncClient = await acreate_client(
+        supabase_key=supabase_key, supabase_url=supabase_url
+    )
 
     try:
         if _validate_jwt_token(auth_creds.credentials):
@@ -76,7 +78,9 @@ async def _handle_jwt_auth(client: AsyncClient, token: str) -> None:
         if await _validate_jwt_authorization(client, token):
             new_api_key_item = await _create_new_api_key(client)
             client.options.auto_refresh_token = False
-            client.options.headers.update({"x-custom-api-key": new_api_key_item.api_key})
+            client.options.headers.update(
+                {"x-custom-api-key": new_api_key_item.api_key}
+            )
     except gotrue.errors.AuthApiError as e:
         raise HTTPException(
             detail="Token has expired or is not valid. Generate a new token",
@@ -112,13 +116,15 @@ async def _create_new_api_key(client: AsyncClient) -> APIKeyItem:
     This is used for temporary authentication after JWT validation.
     """
     crud_api_key = CRUDAPIKey(client)
-    return await crud_api_key.create(APIKeyItem(
-        name="Generated Short-Lived API Key",
-        id="",
-        api_key="",
-        created_at=0,
-        expires_at=int(time.time()) + 10 * 60,  # 10 minutes from now
-    ))
+    return await crud_api_key.create(
+        APIKeyItem(
+            name="Generated Short-Lived API Key",
+            id="",
+            api_key="",
+            created_at=0,
+            expires_at=int(time.time()) + 10 * 60,  # 10 minutes from now
+        )
+    )
 
 
 async def _validate_api_authorization(session: AsyncClient) -> bool:
