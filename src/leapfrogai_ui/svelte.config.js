@@ -24,7 +24,8 @@ const config = {
       $testUtils: 'testUtils'
     },
     csp: {
-      // remainder of the CSP is set in hooks.server.ts
+      // Remainder of the CSP is set in hooks.server.ts, we partially define here for the nonce generation provided
+      // by Sveltekit
       directives: {
         'script-src': ['self', 'strict-dynamic']
       }
