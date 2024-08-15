@@ -37,6 +37,16 @@ def get_supabase_vars() -> tuple[str, str]:
     return supabase_url, supabase_key
 
 
+async def init_supabase_client_with_jwt(
+    auth_creds: Annotated[HTTPAuthorizationCredentials, Depends(security)],
+) -> AsyncClient:
+    return await init_supabase_client(auth_creds, use_jwt_directly=True)
+
+async def init_supabase_client_with_api_key(
+    auth_creds: Annotated[HTTPAuthorizationCredentials, Depends(security)],
+) -> AsyncClient:
+    return await init_supabase_client(auth_creds, use_jwt_directly=False)
+
 async def init_supabase_client(
     auth_creds: Annotated[HTTPAuthorizationCredentials, Depends(security)],
     use_jwt_directly: bool = False,
@@ -203,4 +213,5 @@ def _validate_jwt_token(token: str) -> bool:
 
 
 # This variable needs to be added to each endpoint even if it's not used to ensure auth is required for the endpoint
-Session = Annotated[AsyncClient, Depends(init_supabase_client)]
+Session = Annotated[AsyncClient, Depends(init_supabase_client_with_api_key)]
+SessionWithJWT = Annotated[AsyncClient, Depends(init_supabase_client_with_jwt)]

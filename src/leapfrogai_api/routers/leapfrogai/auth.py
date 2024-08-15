@@ -2,23 +2,12 @@
 
 import time
 from typing import Annotated
-from fastapi import APIRouter, HTTPException, status, Depends
-from fastapi.security import HTTPBearer
+from fastapi import APIRouter, HTTPException, status, Depends, HTTPAuthorizationCredentials
 from pydantic import BaseModel, Field
 from leapfrogai_api.routers.supabase_session import init_supabase_client
 from supabase import AClient as AsyncClient
 from leapfrogai_api.data.crud_api_key import APIKeyItem, CRUDAPIKey, THIRTY_DAYS
-
-security = HTTPBearer()
-
-SessionWithJWT = Annotated[
-    AsyncClient,
-    Depends(lambda auth_creds: init_supabase_client(auth_creds, use_jwt_directly=True))
-]
-SessionWithAPIKey = Annotated[
-    AsyncClient,
-    Depends(lambda auth_creds: init_supabase_client(auth_creds, use_jwt_directly=False))
-]
+from leapfrogai_api.routers.supabase_session import SessionWithJWT
 
 router = APIRouter(prefix="/leapfrogai/v1/auth", tags=["leapfrogai/auth"])
 
