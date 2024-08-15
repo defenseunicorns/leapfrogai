@@ -3,11 +3,9 @@ import type { Actions } from './$types';
 import { fail, superValidate, withFiles } from 'sveltekit-superforms';
 import { yup } from 'sveltekit-superforms/adapters';
 import { filesSchema } from '$schemas/files';
-import { delay } from 'msw';
-import { Form } from 'docx/build/file/drawing/inline/graphic/graphic-data/pic/shape-properties/form';
-// TODO - convert file to pdf if not pdf
+
 export const actions: Actions = {
-  default: async ({ request, locals: { session } }) => {
+  default: async ({ request, fetch, locals: { session } }) => {
     if (!session) {
       return fail(401, { message: 'Unauthorized' });
     }
@@ -32,14 +30,16 @@ export const actions: Actions = {
           if (file) {
             let buffer: ArrayBuffer;
             const contentType = file.type;
-            if (contentType !== 'application/pdf') { // Convert file to PDF
+            if (contentType !== 'application/pdf') {
+              // Convert file to PDF
               const formData = new FormData();
               formData.append('file', file);
               const convertRes = await fetch('/api/files/convert', {
                 method: 'POST',
                 body: formData
               });
-              if (!convertRes.ok) fail(500, { form });
+
+              if (!convertRes.ok) return fail(500, { form });
 
               const convertedFileBlob = await convertRes.blob();
               buffer = await convertedFileBlob.arrayBuffer();
@@ -60,8 +60,9 @@ export const actions: Actions = {
           }
         }
         return withFiles({ text, form });
-      } catch {
-        return fail(500, form);
+      } catch (e) {
+        console.error(e);
+        return fail(500, { form });
       }
     }
     return fail(400, { form });

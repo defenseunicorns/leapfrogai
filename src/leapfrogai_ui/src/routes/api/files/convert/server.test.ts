@@ -58,7 +58,10 @@ describe('/api/files/convert', () => {
   it('returns a 404 if the file metadata is not found', async () => {
     const request = new Request('http://thisurlhasnoeffect', {
       method: 'POST',
-      body: JSON.stringify({ id: 'fakeId123' })
+      body: JSON.stringify({ id: 'fakeId123' }),
+      headers: {
+        "content-type": "application/json"
+      }
     });
 
     await expect(
@@ -77,7 +80,10 @@ describe('/api/files/convert', () => {
 
     const request = new Request('http://thisurlhasnoeffect', {
       method: 'POST',
-      body: JSON.stringify({ id: files[0].id })
+      body: JSON.stringify({ id: files[0].id }),
+      headers: {
+        "content-type": "application/json"
+      }
     });
 
     await expect(
@@ -92,7 +98,10 @@ describe('/api/files/convert', () => {
   it('returns a 404 if the file content is undefined or null', async () => {
     const request = new Request('http://thisurlhasnoeffect', {
       method: 'POST',
-      body: JSON.stringify({ id: faker.string.uuid() })
+      body: JSON.stringify({ id: faker.string.uuid() }),
+      headers: {
+        "content-type": "application/json"
+      }
     });
 
     await expect(
@@ -115,7 +124,10 @@ describe('/api/files/convert', () => {
 
     const request = new Request('http://thisurlhasnoeffect', {
       method: 'POST',
-      body: JSON.stringify({ id: files[0].id })
+      body: JSON.stringify({ id: files[0].id }),
+      headers: {
+        "content-type": "application/json"
+      }
     });
 
     await expect(
@@ -139,7 +151,10 @@ describe('/api/files/convert', () => {
 
     const request = new Request('http://thisurlhasnoeffect', {
       method: 'POST',
-      body: JSON.stringify({ id: files[0].id })
+      body: JSON.stringify({ id: files[0].id }),
+      headers: {
+        "content-type": "application/json"
+      }
     });
 
     const res = await POST({ request, params: {}, locals: getLocalsMock() } as RequestEvent<
