@@ -49,7 +49,7 @@ To run the vllm backend locally:
 make install
 
 # Clone Model
-python scripts/model_download.py
+python src/model_download.py
 
 # Start the model backend
 make dev
