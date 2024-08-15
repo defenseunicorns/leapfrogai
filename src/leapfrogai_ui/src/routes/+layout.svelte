@@ -23,6 +23,7 @@
       if (refreshTime > 0) {
         setTimeout(async () => {
           await supabase.auth.refreshSession();
+          console.log('session refreshed');
           startRefreshCountdown = true;
         }, refreshTime * 1000);
       }
@@ -31,6 +32,7 @@
 
   onMount(() => {
     const { data } = supabase.auth.onAuthStateChange((_, newSession) => {
+      console.log('newSession?.expires_at', newSession?.expires_at);
       if (newSession?.expires_at !== session?.expires_at) {
         invalidate('supabase:auth');
       }
