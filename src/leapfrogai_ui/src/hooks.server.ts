@@ -2,6 +2,7 @@ import { createServerClient } from '@supabase/ssr';
 import { type Handle, redirect } from '@sveltejs/kit';
 import { sequence } from '@sveltejs/kit/hooks';
 import { env } from '$env/dynamic/public';
+import { env as envPrivate } from '$env/dynamic/private';
 
 const supabase: Handle = async ({ event, resolve }) => {
   /**
@@ -69,6 +70,7 @@ const authGuard: Handle = async ({ event, resolve }) => {
   const { session, user } = await event.locals.safeGetSession();
   event.locals.session = session;
   event.locals.user = user;
+  event.locals.isUsingOpenAI = !!envPrivate.OPENAI_API_KEY;
 
   // protect all routes under /chat
   if (!event.locals.session && event.url.pathname.startsWith('/chat')) {

@@ -15,11 +15,11 @@ describe('LFHeader', () => {
       streamingMessage: null
     });
 
-    render(LFHeader, { isUsingOpenAI: false });
+    render(LFHeader);
     expect(screen.getByTestId('logo-link')).toHaveAttribute('href', `/chat/${thread.id}`);
   });
   it('has a settings btn dropdown with links to various pages', async () => {
-    render(LFHeader, { isUsingOpenAI: false });
+    render(LFHeader);
     await userEvent.click(screen.getByTestId('header-settings-btn'));
 
     expect(screen.getByRole('link', { name: /assistants management/i })).toHaveAttribute(
@@ -39,7 +39,7 @@ describe('LFHeader', () => {
   });
 
   it('has a profile btn dropdown with a logout btn', async () => {
-    render(LFHeader, { isUsingOpenAI: false });
+    render(LFHeader);
     await userEvent.click(screen.getByTestId('header-profile-btn'));
 
     screen.getByRole('button', {

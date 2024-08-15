@@ -51,6 +51,7 @@ export const getLocalsMock = <T = SupabaseClient>(params: GetLocalsMockParams<T>
     user,
     session,
     safeGetSession: () => Promise.resolve({ session, user }),
-    supabase
+    supabase,
+    isUsingOpenAI: false
   };
 };

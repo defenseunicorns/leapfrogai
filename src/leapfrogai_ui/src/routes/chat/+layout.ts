@@ -1,6 +1,6 @@
 import type { LayoutLoad } from './$types';
 import { browser } from '$app/environment';
-import { filesStore, threadsStore } from '$stores';
+import { filesStore, threadsStore, uiStore } from '$stores';
 import type { LFAssistant } from '$lib/types/assistants';
 import type { FileObject } from 'openai/resources/files';
 import { convertFileObjectToFileRows } from '$helpers/fileHelpers';
@@ -31,6 +31,7 @@ export const load: LayoutLoad = async ({ fetch, data, depends }) => {
 
     filesStore.setFiles(fileRows);
     threadsStore.setThreads(data?.threads || []);
+    uiStore.setIsUsingOpenAI(data?.isUsingOpenAI);
   }
   return { assistants };
 };
