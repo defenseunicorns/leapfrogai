@@ -102,7 +102,6 @@ jobs:
         - name: Create Test User
           run: |
             KEYCLOAK_ADMIN_PASSWORD=$(uds zarf tools kubectl get secret -n keycloak keycloak-admin-password -o jsonpath={.data.password} | base64 -d)
-            echo $KEYCLOAK_ADMIN_PASSWORD
             KEYCLOAK_ADMIN_TOKEN=$(curl -s --location "https://keycloak.admin.uds.dev/realms/master/protocol/openid-connect/token" \
             --header "Content-Type: application/x-www-form-urlencoded" \
             --header "Content-Type: application/x-www-form-urlencoded" \
@@ -110,7 +109,6 @@ jobs:
             --data-urlencode "password=${KEYCLOAK_ADMIN_PASSWORD}" \
             --data-urlencode "client_id=admin-cli" \
             --data-urlencode "grant_type=password" | uds zarf tools yq .access_token)
-            echo "Passed ADMIN TOKEN STEP"
             curl --location "https://keycloak.admin.uds.dev/admin/realms/uds/users" \
             --header "Content-Type: application/json" \
             --header "Authorization: Bearer ${KEYCLOAK_ADMIN_TOKEN}" \
@@ -133,10 +131,10 @@ jobs:
                 }
               ]
             }'
-            echo "Passed CREATE USER Step"
+              
             CONDITIONAL_OTP_ID=$(curl --location "https://keycloak.admin.uds.dev/admin/realms/uds/authentication/flows/Authentication/executions" \
             --header "Authorization: Bearer ${KEYCLOAK_ADMIN_TOKEN}" | uds zarf tools yq '.[] | select(.displayName == "Conditional OTP") | .id')
-            echo "Passed CONDITIONAL_OTP_ID STEP"
+
             curl --location --request PUT "https://keycloak.admin.uds.dev/admin/realms/uds/authentication/flows/Authentication/executions" \
             --header "Content-Type: application/json" \
             --header "Authorization: Bearer ${KEYCLOAK_ADMIN_TOKEN}" \
@@ -144,7 +142,6 @@ jobs:
             \"id\": \"${CONDITIONAL_OTP_ID}\",
             \"requirement\": \"DISABLED\"
             }"
-            echo "Passed ALL Steps"
 
         # Run the playwright UI tests using the deployed Supabase endpoint and upload report as an artifact
         - name: UI/API/Supabase E2E Playwright Tests
