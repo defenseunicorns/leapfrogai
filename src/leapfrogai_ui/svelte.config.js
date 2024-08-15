@@ -24,29 +24,10 @@ const config = {
       $testUtils: 'testUtils'
     },
     csp: {
+      // Remainder of the CSP is set in hooks.server.ts, we partially define here for the nonce generation provided
+      // by Sveltekit
       directives: {
-        'default-src': ['none'],
-        'base-uri': ['self'],
-        'script-src': ['self', 'strict-dynamic'],
-        'object-src': ['none'], // typically used for legacy content, such as Flash files or Java applets
-        'style-src': ['self', 'unsafe-inline'],
-        'font-src': ['self'],
-        'manifest-src': ['self'],
-        'img-src': [
-          'self',
-          `data: ${process.env.ORIGIN} ${process.env.PUBLIC_SUPABASE_URL}`,
-          `blob: ${process.env.ORIGIN}`
-        ],
-        'media-src': ['self'],
-        'form-action': ['self'],
-        'connect-src': [
-          'self',
-          process.env.LEAPFROGAI_API_BASE_URL || '',
-          process.env.PUBLIC_SUPABASE_URL || '',
-          process.env.SUPABASE_AUTH_EXTERNAL_KEYCLOAK_URL || ''
-        ],
-        'child-src': ['none'], // note - this will break the annotations story and will need to updated to allow the correct resource
-        'frame-ancestors': ['none']
+        'script-src': ['self', 'strict-dynamic']
       }
     }
   }
