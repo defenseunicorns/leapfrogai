@@ -16,7 +16,7 @@ on:
       # Ignore updates to the .github directory, unless it's this current file
       - "!.github/**"
       - ".github/workflows/e2e-playwright.yaml"
-      - ".github/actions/uds-cluster/**"
+      - ".github/actions/uds-cluster/action.yaml"
 
       # Ignore docs and website things
       - "!**.md"
@@ -99,54 +99,11 @@ jobs:
             uds zarf package deploy packages/ui/zarf-package-leapfrogai-ui-amd64-e2e-test.tar.zst --confirm
             rm packages/ui/zarf-package-leapfrogai-ui-amd64-e2e-test.tar.zst
 
-        - name: Create Test User
-          run: |
-            KEYCLOAK_ADMIN_TOKEN=$(curl -s --location "https://keycloak.admin.uds.dev/realms/master/protocol/openid-connect/token" \
-            --header "Content-Type: application/x-www-form-urlencoded" \
-            --header "Content-Type: application/x-www-form-urlencoded" \
-            --data-urlencode "username=admin" \
-            --data-urlencode "password=${KEYCLOAK_ADMIN_PASSWORD}" \
-            --data-urlencode "client_id=admin-cli" \
-            --data-urlencode "grant_type=password" | uds zarf tools yq .access_token)
-            curl --location "https://keycloak.admin.uds.dev/admin/realms/uds/users" \
-            --header "Content-Type: application/json" \
-            --header "Authorization: Bearer ${KEYCLOAK_ADMIN_TOKEN}" \
-            --data-raw '{
-              "username": "doug",
-              "firstName": "Doug",
-              "lastName": "Unicorn",
-              "email": "doug@uds.dev",
-              "attributes": {
-                "mattermostid": "1"
-              },
-              "emailVerified": true,
-              "enabled": true,
-              "requiredActions": [],
-              "credentials": [
-                {
-                  "type": "password",
-                  "value": "unicorn123!@#UN",
-                  "temporary": false
-                }
-              ]
-            }'
-              
-            CONDITIONAL_OTP_ID=$(curl --location "https://keycloak.admin.uds.dev/admin/realms/uds/authentication/flows/Authentication/executions" \
-            --header "Authorization: Bearer ${KEYCLOAK_ADMIN_TOKEN}" | uds zarf tools yq '.[] | select(.displayName == "Conditional OTP") | .id')
-
-            curl --location --request PUT "https://keycloak.admin.uds.dev/admin/realms/uds/authentication/flows/Authentication/executions" \
-            --header "Content-Type: application/json" \
-            --header "Authorization: Bearer ${KEYCLOAK_ADMIN_TOKEN}" \
-            --data "{
-            \"id\": \"${CONDITIONAL_OTP_ID}\",
-            \"requirement\": \"DISABLED\"
-            }"
-
         # Run the playwright UI tests using the deployed Supabase endpoint and upload report as an artifact
         - name: UI/API/Supabase E2E Playwright Tests
           run: |
             cp src/leapfrogai_ui/.env.example src/leapfrogai_ui/.env
-            TEST_ENV=CI USERNAME=doug PASSWORD=unicorn123!@#UN PUBLIC_SUPABASE_ANON_KEY=$ANON_KEY npm --prefix src/leapfrogai_ui run test:integration:ci
+            TEST_ENV=CI PUBLIC_DISABLE_KEYCLOAK=true PUBLIC_SUPABASE_ANON_KEY=$ANON_KEY npm --prefix src/leapfrogai_ui run test:integration:ci
 
         # Upload the Playwright report as an artifact
         - name: Archive Playwright Report
