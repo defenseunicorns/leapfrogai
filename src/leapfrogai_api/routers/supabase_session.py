@@ -107,13 +107,17 @@ async def _handle_api_key_auth(client: AsyncClient, api_key_str: str) -> None:
 
 
 async def _create_new_api_key(client: AsyncClient) -> APIKeyItem:
+    """
+    Generate a short-lived API key that expires in 10 minutes.
+    This is used for temporary authentication after JWT validation.
+    """
     crud_api_key = CRUDAPIKey(client)
     return await crud_api_key.create(APIKeyItem(
-        name="Generated API Key",
+        name="Generated Short-Lived API Key",
         id="",
         api_key="",
         created_at=0,
-        expires_at=int(time.time()) + 30 * 24 * 60 * 60,  # 30 days from now
+        expires_at=int(time.time()) + 10 * 60,  # 10 minutes from now
     ))
 
 
