@@ -1,12 +1,13 @@
 import pytest
 
 from openai.types.beta.vector_store import VectorStore
+from openai.types.beta.vector_store_deleted import VectorStoreDeleted
 
-from .utils import client_config_factory, text_file_path
+from .utils import client_config_factory
 
 
 @pytest.mark.parametrize("client_name", ["openai", "leapfrogai"])
-def test_vector_store_empty(client_name):
+def test_vector_store_create(client_name):
     config = client_config_factory(client_name)
     client = config["client"]  # shorthand
 
@@ -16,30 +17,28 @@ def test_vector_store_empty(client_name):
 
 
 @pytest.mark.parametrize("client_name", ["openai", "leapfrogai"])
-def test_vector_store_with_file(client_name):
+def test_vector_store_list(client_name):
     config = client_config_factory(client_name)
     client = config["client"]  # shorthand
 
-    vector_store = client.beta.vector_stores.create(name="Test data")
-    with open(text_file_path(), "rb") as file:
-        client.beta.vector_stores.files.upload(
-            vector_store_id=vector_store.id, file=file
-        )
+    client.beta.vector_stores.create(name="Test data")
 
-    assert isinstance(vector_store, VectorStore)
+    vector_store_list = client.beta.vector_stores.list()
 
-
-@pytest.mark.parametrize("client_name", ["openai", "leapfrogai"])
-def test_vector_store_batched(client_name):
-    config = client_config_factory(client_name)
-    client = config["client"]  # shorthand
-
-    vector_store = client.beta.vector_stores.create(name="Test data")
-
-    file_streams = [open(text_file_path(), "rb")]
-
-    client.beta.vector_stores.file_batches.upload_and_poll(
-        vector_store_id=vector_store.id, files=file_streams
+    assert len(vector_store_list.data) > 0
+    assert all(
+        isinstance(vector_store, VectorStore) for vector_store in vector_store_list.data
     )
 
-    assert isinstance(vector_store, VectorStore)
+
+@pytest.mark.parametrize("client_name", ["openai", "leapfrogai"])
+def test_vector_store_delete(client_name):
+    config = client_config_factory(client_name)
+    client = config["client"]
+
+    vector_store = client.beta.vector_stores.create(name="Test data")
+
+    result = client.beta.vector_stores.delete(vector_store_id=vector_store.id)
+
+    assert isinstance(result, VectorStoreDeleted)
+    assert result.id == vector_store.id
