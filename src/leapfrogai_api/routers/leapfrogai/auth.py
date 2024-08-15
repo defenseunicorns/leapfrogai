@@ -8,7 +8,6 @@ from fastapi import (
     status
 )
 from pydantic import BaseModel, Field
-from leapfrogai_api.routers.supabase_session import init_supabase_client
 from supabase import AClient as AsyncClient
 from leapfrogai_api.data.crud_api_key import APIKeyItem, CRUDAPIKey, THIRTY_DAYS
 from leapfrogai_api.routers.supabase_session import SessionWithJWT
