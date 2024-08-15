@@ -32,8 +32,8 @@
     on:change={(e) => {
       dispatch('change', Array.from(e.currentTarget.files ?? []));
     }}
-    class="sr-only"
     {...$$restProps}
+    class="sr-only"
   />
   <Button
     {outline}

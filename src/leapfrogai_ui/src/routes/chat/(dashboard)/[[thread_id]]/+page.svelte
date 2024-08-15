@@ -2,6 +2,8 @@
   import { beforeNavigate } from '$app/navigation';
   import { LFTextArea, PoweredByDU } from '$components';
   import { Hr, ToolbarButton } from 'flowbite-svelte';
+  import { yup } from 'sveltekit-superforms/adapters';
+  import { filesSchema } from '$schemas/files';
   import { onMount, tick } from 'svelte';
   import { threadsStore, toastStore } from '$stores';
   import { type Message as VercelAIMessage, useAssistant, useChat } from '@ai-sdk/svelte';
@@ -9,7 +11,7 @@
   import Message from '$components/Message.svelte';
   import { getMessageText } from '$helpers/threads';
   import { getUnixSeconds } from '$helpers/dates.js';
-  import { NO_SELECTED_ASSISTANT_ID } from '$constants';
+  import { ACCEPTED_FILE_TYPES, NO_SELECTED_ASSISTANT_ID } from '$constants';
 
   import {
     isRunAssistantMessage,
@@ -23,13 +25,19 @@
     ERROR_SAVING_MSG_TOAST
   } from '$constants/toastMessages';
   import SelectAssistantDropdown from '$components/SelectAssistantDropdown.svelte';
-  import { PaperPlaneOutline, StopOutline } from 'flowbite-svelte-icons';
+  import { PaperClipOutline, PaperPlaneOutline, StopOutline } from 'flowbite-svelte-icons';
+  import { superForm } from 'sveltekit-superforms';
+  import LFFileUploadBtn from '$components/LFFileUploadBtn.svelte';
 
   export let data;
 
   /** LOCAL VARS **/
   let lengthInvalid: boolean; // bound to child LFTextArea
   let assistantsList: Array<{ id: string; text: string }>;
+  const { enhance, submit } = superForm(data.form, {
+    validators: yup(filesSchema),
+    invalidateAll: false
+  });
   /** END LOCAL VARS **/
 
   /** REACTIVE STATE **/
@@ -311,6 +319,21 @@
 
     <div class="flex items-end justify-around gap-2">
       <div class="flex flex-grow items-center rounded-lg bg-gray-50 px-3 py-2 dark:bg-gray-700">
+        <form method="POST" use:enhance>
+          <LFFileUploadBtn
+            data-testid="upload-file-btn"
+            outline
+            size="sm"
+            on:change={(e) => submit(e.detail)}
+            accept={ACCEPTED_FILE_TYPES}
+            class="remove-btn-style"
+          >
+            <ToolbarButton color="dark" class="text-gray-500 dark:text-gray-400">
+              <PaperClipOutline class="h-6 w-6" />
+              <span class="sr-only">Attach file</span>
+            </ToolbarButton></LFFileUploadBtn
+          >
+        </form>
         <LFTextArea
           id="chat"
           data-testid="chat-input"

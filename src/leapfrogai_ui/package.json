@@ -39,6 +39,7 @@
     "@types/dompurify": "^3.0.5",
     "@types/eslint": "^8.56.10",
     "@types/lodash": "^4.17.7",
+    "@types/pdf-parse": "^1.1.4",
     "@types/uuid": "^10.0.0",
     "@typescript-eslint/eslint-plugin": "^7.16.1",
     "@typescript-eslint/parser": "^7.16.1",
