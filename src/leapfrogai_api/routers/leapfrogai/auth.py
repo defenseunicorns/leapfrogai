@@ -5,9 +5,7 @@ from typing import Annotated
 from fastapi import (
     APIRouter,
     HTTPException,
-    status,
-    Depends,
-    HTTPAuthorizationCredentials,
+    status
 )
 from pydantic import BaseModel, Field
 from leapfrogai_api.routers.supabase_session import init_supabase_client
