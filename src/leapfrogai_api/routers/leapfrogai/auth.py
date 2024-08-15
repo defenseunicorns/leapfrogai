@@ -4,7 +4,10 @@ import time
 from typing import Annotated
 from fastapi import APIRouter, HTTPException, status
 from pydantic import BaseModel, Field
-from leapfrogai_api.routers.supabase_session import Session
+from leapfrogai_api.routers.supabase_session import init_supabase_client
+
+SessionWithJWT = Annotated[AsyncClient, Depends(lambda: init_supabase_client(use_jwt_directly=True))]
+SessionWithAPIKey = Annotated[AsyncClient, Depends(lambda: init_supabase_client(use_jwt_directly=False))]
 from leapfrogai_api.data.crud_api_key import APIKeyItem, CRUDAPIKey, THIRTY_DAYS
 
 router = APIRouter(prefix="/leapfrogai/v1/auth", tags=["leapfrogai/auth"])
@@ -44,7 +47,7 @@ class ModifyAPIKeyRequest(BaseModel):
 
 @router.post("/api-keys")
 async def create_api_key(
-    session: Session,
+    session: SessionWithJWT,
     request: CreateAPIKeyRequest,
 ) -> APIKeyItem:
     """
@@ -75,7 +78,7 @@ async def create_api_key(
 
 @router.get("/api-keys")
 async def list_api_keys(
-    session: Session,
+    session: SessionWithJWT,
 ) -> list[APIKeyItem]:
     """
     List all API keys.
@@ -90,7 +93,7 @@ async def list_api_keys(
 
 @router.patch("/api-keys/{api_key_id}")
 async def update_api_key(
-    session: Session,
+    session: SessionWithJWT,
     api_key_id: Annotated[str, Field(description="The UUID of the API key.")],
     request: ModifyAPIKeyRequest,
 ) -> APIKeyItem:
@@ -134,7 +137,7 @@ async def update_api_key(
 
 @router.delete("/api-keys/{api_key_id}", status_code=status.HTTP_204_NO_CONTENT)
 async def revoke_api_key(
-    session: Session,
+    session: SessionWithJWT,
     api_key_id: Annotated[str, Field(description="The UUID of the API key.")],
 ):
     """
