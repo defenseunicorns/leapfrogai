@@ -12,7 +12,6 @@ from supabase import acreate_client
 import gotrue
 from leapfrogai_api.backend.security.api_key import APIKey
 
-from leapfrogai_api.routers.leapfrogai.auth import CreateAPIKeyRequest
 from leapfrogai_api.data.crud_api_key import CRUDAPIKey, APIKeyItem
 import time
 
