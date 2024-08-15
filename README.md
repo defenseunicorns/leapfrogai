@@ -55,7 +55,7 @@ leapfrogai/
 │   ├── ui/               # deployment infrastructure for the UI
 │   ├── vllm/             # source code & deployment infrastructure for the vllm backend
 │   └── whisper/          # source code & deployment infrastructure for the whisper backend
-├── bundles/
+├── uds-bundles/
 │   ├── dev/              # uds bundles for local uds dev deployments
 │   └── latest/           # uds bundles for the most current uds deployments
 ├── Makefile
@@ -68,7 +68,7 @@ leapfrogai/
 
 The preferred method for running LeapfrogAI is a local [Kubernetes](https://kubernetes.io/) deployment using [UDS](https://github.com/defenseunicorns/uds-core).
 
-Please refer to the [Quick Start](https://docs.leapfrog.ai/docs/local-deploy-guide/quick_start/) section of the LeapfrogAI documentation site for system requirements and instructions.
+Please refer to the [Quick Start](https://docs.leapfrog.ai/docs/local-deploy-guide/quick_start/) section of the LeapfrogAI documentation website for system requirements and instructions.
 
 ## Components
 
@@ -109,9 +109,14 @@ For contributing and local deployment and development for each component in a lo
 
 ## Local Development
 
+> [!NOTE]
+> Please start with the [LeapfrogAI documentation website](https://docs.leapfrog.ai/docs/local-deploy-guide/) prior to attempting local development
+
 Each of the LeapfrogAI components can also be run individually outside of a Kubernetes or Containerized environment. This is useful when testing changes to a specific component, but will not assist in a full deployment of LeapfrogAI. Please refer to the [above section](#usage) for deployment instructions. Please refer to the [next section](#contributing) for rules on contributing to LeapfrogAI.
 
-**_First_** refer to the [DEVELOPMENT.md](docs/DEVELOPMENT.md) document for general development details, **_then_** refer to the linked READMEs for each individual packages local development instructions:
+**_First_** refer to the [DEVELOPMENT.md](docs/DEVELOPMENT.md) document for general development details.
+
+**_Then_** refer to the linked READMEs for each individual packages local development instructions.
 
 - [SDK](src/leapfrogai_sdk/README.md)[^2]
 - [API](packages/api/README.md)[^3]
