@@ -1,3 +1,4 @@
+import logging
 import os
 from typing import Any, AsyncGenerator
 
@@ -9,6 +10,12 @@ from leapfrogai_sdk.llm import LLM, GenerationConfig
 GPU_ENABLED = (
     False if os.environ.get("GPU_ENABLED", "False").lower() != "true" else True
 )
+
+logging.basicConfig(
+    level=logging.INFO,
+    format="%(name)s: %(asctime)s | %(levelname)s | %(filename)s:%(lineno)s >>> %(message)s",
+)
+logger = logging.getLogger(__name__)
 
 
 @LLM
@@ -27,6 +34,7 @@ class Model:
     async def generate(
         self, prompt: str, config: GenerationConfig
     ) -> AsyncGenerator[str, Any]:
+        logger.info("Begin generating streamed response")
         for res in self.llm(
             prompt,
             stream=True,
@@ -37,6 +45,7 @@ class Model:
             stop=self.backend_config.stop_tokens,
         ):
             yield res["choices"][0]["text"]  # type: ignore
+        logger.info("Streamed response complete")
 
     async def count_tokens(self, raw_text: str) -> int:
         string_bytes: bytes = bytes(raw_text, "utf-8")

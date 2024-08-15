@@ -30,6 +30,12 @@ from leapfrogai_sdk.llm import (
 
 load_dotenv()
 
+logging.basicConfig(
+    level=logging.INFO,
+    format="%(name)s: %(asctime)s | %(levelname)s | %(filename)s:%(lineno)s >>> %(message)s",
+)
+logger = logging.getLogger(__name__)
+
 
 def clamp(n: float | int, smallest: float | int, largest: float | int):
     return max(smallest, min(n, largest))
@@ -142,8 +148,6 @@ class Model:
     random_iterator: RandomAsyncIterator = RandomAsyncIterator([])
 
     def __init__(self):
-        logging.getLogger().setLevel(logging.DEBUG)
-
         # Background thread for managing output iteration
         _thread = threading.Thread(target=asyncio.run, args=(self.iterate_outputs(),))
         _thread.start()
@@ -180,7 +184,7 @@ class Model:
 
                     if request_output.finished:
                         # Signal that the "generate" function can stop waiting for additional inputs
-                        logging.info(
+                        logger.info(
                             f"Generated {num_tokens_by_id[request_id]} tokens in {time.time() - t0_by_id[request_id]:.2f}s"
                         )
                         self.done_by_id[request_id] = True
@@ -230,12 +234,13 @@ class Model:
             max_tokens=config.max_new_tokens,
             skip_special_tokens=False,
         )
-        logging.debug(sampling_params)
-        logging.info(f"Begin generation for request {request_id}")
+        logger.info(f"Begin generation for request {request_id}")
+        logger.debug(f"{request_id} sampling_paramms: {sampling_params}")
+
         # Generate texts from the prompts. The output is a list of RequestOutput objects
         # that contain the prompt, generated text, and other information.
         gen_iter = self.engine.generate(prompt, sampling_params, request_id)
-        logging.info(f"Begin iteration for request {request_id}")
+        logger.info(f"Begin iteration for request {request_id}")
         self.random_iterator.add_iterator(gen_iter)
 
     async def generate_session(
@@ -269,7 +274,7 @@ class Model:
         )
         _thread.start()
 
-        logging.info(f"Begin reading the output for request {request_id}")
+        logger.info(f"Begin reading the output for request {request_id}")
 
         while not self.done_by_id.get(request_id) or not self.is_queue_empty(
             request_id
@@ -279,7 +284,7 @@ class Model:
                 result = self.delta_queue_by_id.get(request_id).get()
             yield result
 
-        logging.info(f"Finished request {request_id}")
+        logger.info(f"Finished request {request_id}")
 
     async def count_tokens(self, raw_text: str) -> int:
         tokens: list[int] | list[str] = (await self.engine.get_tokenizer()).tokenize(
