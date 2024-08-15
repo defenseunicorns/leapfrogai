@@ -22,6 +22,8 @@ from openai.types.beta.assistant import (
 )
 from openai.types.beta.assistant_tool import FileSearchTool
 
+logger = logging.getLogger(__name__)
+
 
 class CreateAssistantRequest(BaseModel):
     """Request object for creating an assistant."""
@@ -95,7 +97,7 @@ class CreateAssistantRequest(BaseModel):
         """
 
         async def new_vector_store_from_file_ids():
-            logging.debug("Creating vector store for new assistant")
+            logger.debug("Creating vector store for new assistant")
             indexing_service = IndexingService(db=session)
             vector_store_params_dict = vector_stores[0]
 
@@ -127,7 +129,7 @@ class CreateAssistantRequest(BaseModel):
             self.tool_resources.file_search.vector_store_ids = [vector_store.id]
 
         async def attach_existing_vector_store_from_id():
-            logging.debug(
+            logger.debug(
                 "Attaching vector store with id: {} to new assistant".format(ids[0])
             )
             crud_vector_store = CRUDVectorStore(db=session)
@@ -189,7 +191,7 @@ class CreateAssistantRequest(BaseModel):
 
             # nothing provided, no changes made
             else:
-                logging.debug(
+                logger.debug(
                     "No files or vector store id found; assistant will be created with no vector store"
                 )
 
