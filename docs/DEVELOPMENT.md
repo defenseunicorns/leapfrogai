@@ -7,7 +7,32 @@ The purpose of this document is to describe how to run a development loop on the
 
 ## Local Development
 
-Please first see the pre-requisites listed on the LeapfrogAI documentation website's [Requirements](https://docs.leapfrog.ai/docs/local-deploy-guide/requirements/) and [Dependencies](https://docs.leapfrog.ai/docs/local-deploy-guide/dependencies/), before going to each component's subdirectory README.
+Please first see the pre-requisites listed on the LeapfrogAI documentation website's [Requirements](https://docs.leapfrog.ai/docs/local-deploy-guide/requirements/) and [Dependencies](https://docs.leapfrog.ai/docs/local-deploy-guide/dependencies/), before going to each component's subdirectory README
+
+## PyEnv
+
+It is **_HIGHLY RECOMMENDED_** that PyEnv be installed on your machine, and a new virtual environment is created for every new development branch.
+
+Follow the installation instructions outlined in the [pyenv](https://github.com/pyenv/pyenv?tab=readme-ov-file#installation) repository to install Python 3.11.6:
+
+  ```bash
+  # install the correct python version
+  pyenv install 3.11.6
+
+  # create a new virtual environment named "leapfrogai"
+  pyenv virtualenv 3.11.6 leapfrogai
+
+  # activate the virtual environment
+  pyenv activate leapfrogai
+  ```
+
+If your installation process completes successfully but indicates missing packages such as `sqlite3`, execute the following command to install the required packages then proceed with the reinstallation of Python 3.11.6:
+
+  ```bash
+  sudo apt-get install build-essential zlib1g-dev libffi-dev \
+    libssl-dev libbz2-dev libreadline-dev libsqlite3-dev \
+    liblzma-dev libncurses-dev
+  ```
 
 ## UDS CLI Aliasing
 
@@ -31,11 +56,17 @@ echo -e '#!/bin/bash\nuds zarf tools kubectl "$@"' > /usr/local/bin/kubectl
 chmod +x /usr/local/bin/kubectl
 ```
 
-## Makefile
+## Makefiles
 
 Many of the directories and sub-directories within this project contain Make targets that can be executed to simplify repetitive command-line tasks.
 
 Please refer to each Makefile for more arguments and details on what each target does and is dependent on.
+
+## Environment Variables
+
+Be wary of `*config*.yaml` or `.env*` files that are in individual components of the stack. The component's README will usually tell the developer when to fill them out or supply environment variables to a script.
+
+For example, the LeapfrogAI API requires a `config.yaml` be supplied when spun up locally. Use the `config.example.yaml` as an example, and make sure the [ports chosen for applicable backends do not conflict on localhost](#port-conflicts).
 
 ## Package Development
 
@@ -61,13 +92,56 @@ uds zarf package pull oci://ghcr.io/defenseunicorns/leapfrogai/leapfrogai-api:la
 uds zarf package deploy zarf-package-*.tar.zst --confirm
 ```
 
-## In-Cluster Components
+## Access
 
-All in-cluster components can be accessed without port-forwarding if [UDS Core Slim Dev](../packages/k3d-gpu/README.md) is installed with LeapfrogAI packages.
+All LeapfrogAI components exposed as `VirtualService` resources can be accessed without port-forwarding if [UDS Core Slim Dev](../packages/k3d-gpu/README.md) is installed with LeapfrogAI packages.
 
 For example, when developing the API and you need access to Supabase, you can point your locally running API to the in-cluster Supabase by setting the Supabase base URL to the in-cluster domain (https://supabase-kong.uds.dev).
 
 The preferred method of testing changes is to fully deploy something to a cluster and run local smoke tests as needed. The GitHub workflows will run all integration and E2E test suites.
+
+### Backends
+
+#### Cluster
+
+The model backends are the only components within the LeapfrogAI stack that are not readily accessible via a `VirtualService`. These must be port-forwarded if a user wants to test a local deployment of the API against an in-cluster backend.
+
+For example, the following bash script can be used to setup CPU RAG:
+
+```bash
+#!/bin/bash
+
+# Function to kill all background processes when the script exits or is interrupted
+cleanup() {
+    echo "Cleaning up..."
+    kill $PID1 $PID2
+}
+
+# Set environment variables
+export SUPABASE_URL="https://supabase-kong.uds.dev"
+export SUPABASE_ANON_KEY=$(kubectl get secret supabase-bootstrap-jwt -n leapfrogai -o jsonpath='{.data.anon-key}' | base64 --decode)
+
+# Trap SIGINT (Ctrl-C) and SIGTERM (termination signal) to call the cleanup function
+trap cleanup SIGINT SIGTERM
+
+# Start kubectl and uvicorn services in the background and save their PIDs
+# Expose the backends at different ports to prevent localhost conflict
+kubectl port-forward svc/text-embeddings-model -n leapfrogai 50052:50051 &
+PID1=$!
+kubectl port-forward svc/llama-cpp-python-model -n leapfrogai 50051:50051 &
+PID2=$!
+
+# Wait for all background processes to finish
+wait $PID1 $PID2
+```
+
+#### Locally
+
+Backends can also be run locally as Python applications. See each model backend's README in the `packages/` directory for more details on running each in development mode.
+
+#### Port Conflicts
+
+In all cases, port conflicts may arise when outside of a cluster service mesh. As seen in the [Cluster sub-section](#cluster), backends all try to emit at port `50051`; however, on a host machine's localhost, there can only be one on 50051. Using the [Leapfrogai API](../src/leapfrogai_api/config.example.yaml), define the ports at which you plan on making a backend accessible.
 
 ## Troubleshooting
 

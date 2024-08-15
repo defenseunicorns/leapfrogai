@@ -34,10 +34,6 @@ To run the repeater backend locally:
 > Execute the following commands from this sub-directory
 
 ```bash
-# Setup Virtual Environment
-python -m venv .venv
-source .venv/bin/activate
-
 # Install dependencies and start the model backend
 make dev
 ```

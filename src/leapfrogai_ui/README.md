@@ -157,13 +157,21 @@ would not normally utilize the LeapfrogAI API for CRUD operations.
 
 ### Playwright End-to-End Tests
 
-First install Playwright: `npm init playwright@latest`
+1. Install Playwright
 
-To run the E2E tests:  
-`npm run test:integration:ui`
-Click the play button in the Playwright UI.
-Playwright will run it's own production build and server the app at `http://localhost:4173`. If you make server side changes,
-restart playwright for them to take effect.
+   ```bash
+   npm init playwright@latest
+   ```
+
+2. Run the E2E tests:  
+
+   ```bash
+   npm run test:integration:ui
+   ```
+
+   Click the play button in the Playwright UI.
+   Playwright will run it's own production build and server the app at `http://localhost:4173`. If you make server side changes,
+   restart playwright for them to take effect.
 
 Notes:
 

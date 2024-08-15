@@ -35,15 +35,13 @@ uds zarf package deploy packages/whisper/zarf-package-whisper-*-dev.tar.zst --co
 To run the vllm backend locally without K8s (starting from the root directory of the repository):
 
 ```bash
-# Setup Virtual Environment
-python -m venv .venv
-source .venv/bin/activate
+# Install dev and runtime dependencies
+make install
 
-pip install 'ctranslate2'          # Used to download and convert the model weights
-pip install 'transformers[torch]'  # Used to download and convert the model weights
-
+# Download and convert model
+# Change the value for --model to change the whisper base
 ct2-transformers-converter --model openai/whisper-base --output_dir .model --copy_files tokenizer.json --quantization float32
 
-# Install dependencies and start the model backend
+# Start the model backend
 make dev
 ```

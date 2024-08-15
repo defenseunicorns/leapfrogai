@@ -29,6 +29,15 @@ dependencies = [
 ]
 requires-python = "~=3.11"
 
+[project.optional-dependencies]
+dev = [
+    "locust",
+    "pytest-asyncio",
+    "requests",
+    "requests-toolbelt",
+    "pytest"
+]
+
 [tool.pip-tools]
 generate-hashes = true
 

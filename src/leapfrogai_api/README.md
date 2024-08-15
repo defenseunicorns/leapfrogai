@@ -12,10 +12,13 @@ This document is only applicable for spinning up the API in a local Python devel
 
 ### Running
 
+> [!IMPORTANT]
+> The following steps assume that you already have a deployed and accessible UDS Kubernetes cluster and LeapfrogAI. Please follow the steps within the LeapfrogAI documentation website for details.
+
 1. Install dependencies
 
     ```bash
-    make install-api
+    make install
     ```
 
 2. Create a config.yaml using the config.example.yaml as a template.
@@ -23,40 +26,33 @@ This document is only applicable for spinning up the API in a local Python devel
 3. Run the FastAPI application
 
     ```bash
-    make dev-run-api
+    make dev API_PORT=3000
     ```
 
-4. Create a local Supabase user
+4. Create an API key with test user "leapfrogai@defenseunicorns.com" and test password "password", lasting 30 days from creation time
 
     ```bash
-    make user
+    # If the in-cluster API is up, and not testing the API workflow
+    make api-key API_BASE_URL=https://leapfrogai-api.uds.dev
     ```
 
-5. Create an API (JWT) token
+    To create a new 30-day API key, use the following:
 
     ```bash
-    make jwt
-    source .env
+    # If the in-cluster API is up, and not testing the API workflow
+    make new-api-key API_BASE_URL=https://leapfrogai-api.uds.dev
     ```
 
-    This will copy the JWT token to your clipboard.
+    The newest API key will be printed to a `.env` file located within this directory.
 
-6. Make calls to the api swagger endpoint at `http://localhost:8080/docs` using your JWT token as the `HTTPBearer` token.
-   * Hit `Authorize` on the swagger page to enter your JWT token
+5. Make calls to the API Swagger endpoint at `http://localhost:8080/docs` using your API token as the `HTTPBearer` token.
 
-### Integration Tests
+    - Hit `Authorize` on the Swagger page to enter your API key
 
-The integration tests serve to verify API functionality and compatibility with other existing components:
+### Access
 
-* Check all API routes
-* Validate Request/Response objects
-* Database CRUD operations
-* Schema mismatches
+See the Access section of the [DEVELOPMENT.md](../../docs/DEVELOPMENT.md) for different ways to connect the API to a model backend or Supabase.
 
-#### Running the tests
+### Tests
 
-After obtaining the JWT token, run the following:
-
-```bash
-make test-integration
-```
+See the [tests directory documentation](../../tests/README.md) for more details.

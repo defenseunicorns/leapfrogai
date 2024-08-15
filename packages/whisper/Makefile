@@ -1,6 +1,6 @@
 install:
 	python -m pip install ../../src/leapfrogai_sdk
-	python -m pip install -e .
+	python -m pip install -e ".[dev]"
 
 dev:
 	make install

@@ -38,18 +38,15 @@ Go to `https://supabase-kong.uds.dev`. The login is `supabase-admin` the passwor
 - If you cannot reach `https://supabase-kong.uds.dev`, check if the `Packages` CRDs and `VirtualServices` contain `supabase-kong.uds.dev`. If they do not, try restarting the `pepr-uds-core-watcher` pod.
 - If logging in to the UI through keycloak returns a `500`, check and see if the `sql` migrations have been run in Supabase.
   - You can find those in `leapfrogai/src/leapfrogai_ui/supabase/migrations` - Migrations can be run in the Supabase studio SQL editor
-- To obtain an API (JWT) token for testing, create a test user and run the following:
+- To obtain a 1-hour JWT for testing run the following:
 
   ```bash
-  # Grab the Supabase Anon Key from the JWT Secret in the UDS Kubernetes cluster
-  export ANON_KEY=$(uds zarf tools kubectl get secret -n leapfrogai supabase-bootstrap-jwt -o json | uds zarf tools yq '.data.anon-key' | base64 -d)
-
-  # Replace <email> and <password> / <confirmPassword> with your desired credentials
-  # only lasts 1 hour from creation
-  curl -X POST 'https://supabase-kong.uds.dev/auth/v1/signup' \
-    -H "apikey: <anon-key>" \
+  # Replace <email>, <password>, and <confirmPassword> with your desired credentials
+  # Grab the Supabase Anon Key from the JWT Secret in the UDS Kubernetes cluster and use it with xargs
+  uds zarf tools kubectl get secret -n leapfrogai supabase-bootstrap-jwt -o json | uds zarf tools yq '.data.anon-key' | base64 -d | xargs -I {} curl -X POST 'https://supabase-kong.uds.dev/auth/v1/signup' \
+    -H "apikey: {}" \
     -H "Content-Type: application/json" \
-    -H "Authorization": f"Bearer $ANON_KEY" \
+    -H "Authorization: Bearer {}" \
     -d '{ "email": "<email>", "password": "<password>", "confirmPassword": "<confirmPassword>"}'
   ```
 

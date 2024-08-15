@@ -47,17 +47,14 @@ To run the llama-cpp-python backend locally:
 > Execute the following commands from this sub-directory
 
 ```bash
-# Setup Virtual Environment
-python -m venv .venv
-source .venv/bin/activate
-
-pip install 'huggingface_hub[cli,hf_transfer]'  # Used to download the model weights from huggingface
+# Install dev and runtime dependencies
+make install
 
 # Clone Model
-# Supply a REPO_ID, FILENAME and REVISION if a different model is desired
+# Supply a REPO_ID, FILENAME and REVISION, as seen in the "Model Selection" section
 python scripts/model_download.py
 mv .model/*.gguf .model/model.gguf
 
-# Install dependencies and start the model backend
+# Start the model backend
 make dev
 ```

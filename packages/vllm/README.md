@@ -45,15 +45,12 @@ To run the vllm backend locally:
 > Execute the following commands from this sub-directory
 
 ```bash
-# Setup Virtual Environment
-python -m venv .venv
-source .venv/bin/activate
-
-pip install 'huggingface_hub[cli,hf_transfer]'  # Used to download the model weights from huggingface
+# Install dev and runtime dependencies
+make install
 
 # Clone Model
 python scripts/model_download.py
 
-# Install dependencies and start the model backend
+# Start the model backend
 make dev
 ```

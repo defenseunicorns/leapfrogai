@@ -38,13 +38,12 @@ To run the text-embeddings backend locally:
 > Execute the following commands from this sub-directory
 
 ```bash
-# Setup Virtual Environment
-python -m venv .venv
-source .venv/bin/activate
+# Install dev and runtime dependencies
+make install
 
 # Clone Model
 python scripts/model_download.py
 
-# Install dependencies and start the model backend
+# Start the model backend
 make dev
 ```

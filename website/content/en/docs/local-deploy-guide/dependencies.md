@@ -12,25 +12,33 @@ Follow the outlined steps to ensure that your device is configured to execute Le
 
 Ensure that the following tools and packages are present in your environment:
 
-- [build-essential](https://packages.ubuntu.com/focal/build-essential)
-- [iptables](https://help.ubuntu.com/community/IptablesHowTo?action=show&redirect=Iptables)
 - [Git](https://git-scm.com/)
-- [procps](https://gitlab.com/procps-ng/procps)
-- [Python 3.11](https://www.python.org/downloads/release/python-3116/)
 - [Docker](https://docs.docker.com/engine/install/)
 - [K3D](https://k3d.io/)
 - [UDS CLI](https://github.com/defenseunicorns/uds-cli)
 
 ### Install PyEnv
 
-- Follow the installation instructions outlined in the [pyenv](https://github.com/pyenv/pyenv?tab=readme-ov-file#installation) repository to install Python 3.11.6.
+- Follow the installation instructions outlined in the [pyenv](https://github.com/pyenv/pyenv?tab=readme-ov-file#installation) repository to install Python 3.11.6:
+
+  ```bash
+  # install the correct python version
+  pyenv install 3.11.6
+
+  # create a new virtual environment
+  pyenv virtualenv 3.11.6 leapfrogai
+
+  # activate the virtual environment
+  pyenv activate leapfrogai
+  ```
+
 - If your installation process completes successfully but indicates missing packages such as `sqlite3`, execute the following command to install the required packages then proceed with the reinstallation of Python 3.11.6:
 
-```bash
-sudo apt-get install build-essential zlib1g-dev libffi-dev \
-  libssl-dev libbz2-dev libreadline-dev libsqlite3-dev \
-  liblzma-dev libncurses-dev
-```
+  ```bash
+  sudo apt-get install build-essential zlib1g-dev libffi-dev \
+    libssl-dev libbz2-dev libreadline-dev libsqlite3-dev \
+    liblzma-dev libncurses-dev
+  ```
 
 ### Install Homebrew
 
