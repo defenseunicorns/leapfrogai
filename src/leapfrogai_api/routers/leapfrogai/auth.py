@@ -2,7 +2,7 @@
 
 import time
 from typing import Annotated
-from fastapi import APIRouter, HTTPException, status
+from fastapi import APIRouter, HTTPException, status, Depends
 from pydantic import BaseModel, Field
 from leapfrogai_api.routers.supabase_session import init_supabase_client
 from supabase import AClient as AsyncClient
