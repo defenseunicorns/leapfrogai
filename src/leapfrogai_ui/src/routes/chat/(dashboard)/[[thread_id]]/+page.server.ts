@@ -3,9 +3,11 @@ import type { Actions } from './$types';
 import { fail, superValidate, withFiles } from 'sveltekit-superforms';
 import { yup } from 'sveltekit-superforms/adapters';
 import { filesSchema } from '$schemas/files';
-
+import {delay} from "msw";
+// TODO - convert file to pdf if not pdf
 export const actions: Actions = {
   default: async ({ request, locals: { session } }) => {
+    await delay(5000)
     if (!session) {
       return fail(401, { message: 'Unauthorized' });
     }
@@ -35,7 +37,6 @@ export const actions: Actions = {
             const json = page.toStructuredText('preserve-whitespace').asJSON();
             for (const block of JSON.parse(json).blocks) {
               for (const line of block.lines) {
-                console.log('adding', line.text);
                 text += line.text;
               }
             }

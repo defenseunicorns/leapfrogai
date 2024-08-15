@@ -1,7 +1,7 @@
 <script lang="ts">
   import { beforeNavigate } from '$app/navigation';
   import { LFTextArea, PoweredByDU } from '$components';
-  import { Hr, ToolbarButton } from 'flowbite-svelte';
+  import { Hr, ToolbarButton, Spinner } from 'flowbite-svelte';
   import { yup } from 'sveltekit-superforms/adapters';
   import { filesSchema } from '$schemas/files';
   import { onMount, tick } from 'svelte';
@@ -31,14 +31,20 @@
 
   export let data;
 
+  // TODO - make div around spinner same size as toolbarbutton
   /** LOCAL VARS **/
   let lengthInvalid: boolean; // bound to child LFTextArea
   let assistantsList: Array<{ id: string; text: string }>;
+  let documentText: string;
+  let uploadingFile = false;
   const { enhance, submit } = superForm(data.form, {
     validators: yup(filesSchema),
     invalidateAll: false,
-    onResult({result}){
-      console.log(result)
+    onResult({ result }) {
+      uploadingFile = false;
+      if (result.type === 'success') {
+        documentText = result.data.text;
+      }
     }
   });
   /** END LOCAL VARS **/
@@ -268,6 +274,7 @@
         });
         return;
       }
+      if (documentText) $chatInput += documentText;
       assistantMode ? await sendAssistantMessage(e) : await sendChatMessage(e);
     }
   };
@@ -322,21 +329,30 @@
 
     <div class="flex items-end justify-around gap-2">
       <div class="flex flex-grow items-center rounded-lg bg-gray-50 px-3 py-2 dark:bg-gray-700">
-        <form method="POST"  enctype="multipart/form-data" use:enhance>
+        <form method="POST" enctype="multipart/form-data" use:enhance>
           <LFFileUploadBtn
             data-testid="upload-file-btn"
             name="files"
             outline
             size="sm"
-            on:change={(e) => submit(e.detail)}
+            on:change={(e) => {
+              uploadingFile = true;
+              submit(e.detail);
+            }}
             accept={ACCEPTED_FILE_TYPES}
             class="remove-btn-style"
           >
-            <ToolbarButton color="dark" class="text-gray-500 dark:text-gray-400">
-              <PaperClipOutline class="h-6 w-6" />
-              <span class="sr-only">Attach file</span>
-            </ToolbarButton></LFFileUploadBtn
-          >
+
+              <div class="centered-flexbox h-6 w-6">
+                <Spinner size={6} />
+              </div>
+
+              <ToolbarButton color="dark" class="text-gray-500 dark:text-gray-400">
+                <PaperClipOutline class="h-6 w-6" />
+                <span class="sr-only">Attach file</span>
+              </ToolbarButton>
+
+          </LFFileUploadBtn>
         </form>
         <LFTextArea
           id="chat"
@@ -348,7 +364,7 @@
           {onSubmit}
           maxRows={10}
         />
-        {#if !$isLoading && $status !== 'in_progress'}
+        {#if !$isLoading && !uploadingFile && $status !== 'in_progress'}
           <ToolbarButton
             data-testid="send message"
             type="submit"
