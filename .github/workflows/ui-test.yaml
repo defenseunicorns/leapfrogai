@@ -1,4 +1,5 @@
 name: UI Tests
+
 on:
   pull_request:
     paths:
@@ -11,6 +12,7 @@ on:
 
 # Declare default permissions as read only.
 permissions: read-all
+
 
 concurrency:
   group: ui-test-${{ github.ref }}
