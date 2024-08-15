@@ -3,7 +3,8 @@ from openai.types.beta.threads.annotation import (
     FileCitationAnnotation,
     FilePathAnnotation,
 )
-
+from openai.types.beta.threads.text import Text
+from openai.types.beta.threads.message import Message
 from .utils import client_config_factory, text_file_path
 
 
@@ -50,16 +51,19 @@ def test_thread_file_annotations(client_name):
     )
     run = make_test_run(client, assistant, thread)
 
-    messages = list(
-        client.beta.threads.messages.list(thread_id=thread.id, run_id=run.id)
-    )
+    messages = client.beta.threads.messages.list(
+        thread_id=thread.id, run_id=run.id
+    ).data
 
-    message_content = messages[0].content[0].text
-    annotations = message_content.annotations
+    assert len(messages) == 2
+    assert all(isinstance(message, Message) for message in messages)
 
-    # Check message return type
-    assert isinstance(message_content.value, str)
+    # Get the response content
+    message_content = messages[1].content[0].text
+    assert isinstance(message_content, Text)
 
     # Check annotations return type
-    for annot in annotations:
-        assert isinstance(annot, (FileCitationAnnotation, FilePathAnnotation))
+    annotations = message_content.annotations
+    for a in annotations:
+        assert isinstance(a, (FileCitationAnnotation, FilePathAnnotation))
+        print(a.text)
