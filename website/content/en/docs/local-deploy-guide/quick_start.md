@@ -36,16 +36,7 @@ The default configuration when deploying with GPU support assumes a single GPU. 
 
 ## Building the UDS Bundle
 
-The following instructions are split into two sections:
-
-1. [LeapfrogAI Latest](#leapfrogai-latest): for hassle-free deployment of the latest stable version of LeapfrogAI
-2. [LeapfrogAI Development](#leapfrogai-development): for deployment of a unreleased branch, a fork or `main`
-
 If you already have a pre-built UDS bundle, please skip to [Deploying the UDS Bundle](#deploying-the-uds-bundle)
-
-If you are using MacOS, please skip to [MacOS Specific Instructions](#macos-specifics)
-
-### LeapfrogAI Latest
 
 1. Start by cloning the [LeapfrogAI Repository](https://github.com/defenseunicorns/leapfrogai):
 
@@ -56,75 +47,16 @@ If you are using MacOS, please skip to [MacOS Specific Instructions](#macos-spec
 2. From within the cloned repository create the LeapfrogAI bundle using **ONE** of the following:
 
     ```bash
+    # For CPU-only
     cd bundles/latest/cpu/
     uds create .
-    uds deploy uds-bundle-leapfrogai-*.tar.zst --confirm
+    UDS_ARCH=amd64 uds deploy uds-bundle-leapfrogai-*.tar.zst --confirm
 
+    # For compatible AMD64, NVIDIA CUDA-capable GPU machines
     cd bundles/latest/gpu/
     uds create .
-    uds deploy uds-bundle-leapfrogai-*.tar.zst --confirm
+    UDS_ARCH=amd64 uds deploy uds-bundle-leapfrogai-*.tar.zst --confirm
     ```
-
-3. Move on to [Deploying the UDS Bundle](#deploying-the-uds-bundle)
-
-### LeapfrogAI Development
-
-1. For ease, it's best to create a virtual environment for installing, managing and isolating package creation dependencies:
-
-    ```bash
-    python -m venv .venv
-    source .venv/bin/activate
-    ```
-
-2. Install all the necessary package creation dependencies:
-
-    ```bash
-    python -m pip install "hugging_face[cli,hf_transfer]" "transformers[torch]" ctranslate2
-    ```
-
-3. Build all of the packages you need at once with **ONE** of the following `Make` targets:
-
-    ```bash
-    LOCAL_VERSION=dev make build-cpu    # ui, api, llama-cpp-python, text-embeddings, whisper, supabase
-    # OR
-    LOCAL_VERSION=dev make build-gpu    # ui, api, vllm, text-embeddings, whisper, supabase
-    # OR
-    LOCAL_VERSION=dev make build-all    # all of the components
-    ```
-
-    **OR**
-
-    You can build components individually using the following `Make` targets:
-
-    ```bash
-    LOCAL_VERSION=dev make build-ui
-    LOCAL_VERSION=dev make build-api
-    LOCAL_VERSION=dev make build-supabase
-    LOCAL_VERSION=dev make build-vllm                 # if you have GPUs (macOS not supported)
-    LOCAL_VERSION=dev make build-llama-cpp-python     # if you have CPU only
-    LOCAL_VERSION=dev make build-text-embeddings
-    LOCAL_VERSION=dev make build-whisper
-    ```
-
-## MacOS Specifics
-
-To run the same commands in MacOS, you will need to prepend your command with a couple of env vars like so:
-
-**All Macs:** `REG_PORT=5001`
-
-**Apple Silicon (M1/M2/M3/M4 series) Macs:** `ARCH=arm64`
-
-To demonstrate what this would look like for an Apple Silicon Mac:
-
-``` shell
-REG_PORT=5001 ARCH=arm64 LOCAL_VERSION=dev make build-cpu
-```
-
-To demonstrate what this would look like for an older Intel Mac:
-
-``` shell
-REG_PORT=5001 LOCAL_VERSION=dev make build-cpu
-```
 
 ## Deploying the UDS bundle
 

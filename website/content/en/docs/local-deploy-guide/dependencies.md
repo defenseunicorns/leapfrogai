@@ -10,39 +10,16 @@ Follow the outlined steps to ensure that your device is configured to execute Le
 
 ### Host Dependencies
 
-Ensure that the following tools and packages are present in your environment:
+Ensure that the following tools and packages are installed in your environment according to the instructions below:
 
 - [Git](https://git-scm.com/)
 - [Docker](https://docs.docker.com/engine/install/)
 - [K3D](https://k3d.io/)
 - [UDS CLI](https://github.com/defenseunicorns/uds-cli)
 
-### Install PyEnv
+### Install Git
 
-- Follow the installation instructions outlined in the [pyenv](https://github.com/pyenv/pyenv?tab=readme-ov-file#installation) repository to install Python 3.11.6:
-
-  ```bash
-  # install the correct python version
-  pyenv install 3.11.6
-
-  # create a new virtual environment
-  pyenv virtualenv 3.11.6 leapfrogai
-
-  # activate the virtual environment
-  pyenv activate leapfrogai
-  ```
-
-- If your installation process completes successfully but indicates missing packages such as `sqlite3`, execute the following command to install the required packages then proceed with the reinstallation of Python 3.11.6:
-
-  ```bash
-  sudo apt-get install build-essential zlib1g-dev libffi-dev \
-    libssl-dev libbz2-dev libreadline-dev libsqlite3-dev \
-    liblzma-dev libncurses-dev
-  ```
-
-### Install Homebrew
-
-- Follow the [instructions](https://brew.sh/) to install the Homebrew package manager onto your system.
+- Download [Git](https://git-scm.com/downloads) and follow the instructions on the [Git documentation website](https://git-scm.com/book/en/v2/Getting-Started-Installing-Git)
 
 ### Install Docker
 
@@ -68,8 +45,8 @@ Ensure that the following tools and packages are present in your environment:
 ```bash
 # where $UDS_VERSION is the latest UDS CLI release
 wget -O uds https://github.com/defenseunicorns/uds-cli/releases/download/$UDS_VERSION/uds-cli_$UDS_VERSION_Linux_amd64 && \
-        sudo chmod +x uds && \
-        sudo mv uds /usr/local/bin/
+  sudo chmod +x uds && \
+  sudo mv uds /usr/local/bin/
 ```
 
 ## GPU Specific Instructions

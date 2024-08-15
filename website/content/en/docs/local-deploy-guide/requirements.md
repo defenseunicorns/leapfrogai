@@ -19,7 +19,7 @@ Please review the following table to ensure your system meets the minimum requir
 
 ## Tested Environments
 
-The following operating systems, hardware, architectures, and system specifications have been tested and validated for our deployment instructions:
+The following is a non-exhaustive list of operating systems, hardware, architectures, and system specifications have been tested and validated for our deployment instructions:
 
 ### Operating Systems
 

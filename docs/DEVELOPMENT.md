@@ -70,7 +70,7 @@ For example, the LeapfrogAI API requires a `config.yaml` be supplied when spun u
 
 ## Package Development
 
-If you don't want to build an entire bundle, or you want to dev-loop on a single package in an existing [UDS Kubernetes cluster](../packages/k3d-gpu/README.md) you can do so by performing the following.
+If you don't want to [build an entire bundle](#bundle-development), or you want to "dev-loop" on a single package in an existing [UDS Kubernetes cluster](../packages/k3d-gpu/README.md) you can do so by performing the following.
 
 For example, this is how you build and (re)deploy a local DEV version of a package:
 
@@ -90,6 +90,72 @@ For example, this is how you pull and deploy a LATEST version of a package:
 # pull and deploy latest versions
 uds zarf package pull oci://ghcr.io/defenseunicorns/leapfrogai/leapfrogai-api:latest -a amd64
 uds zarf package deploy zarf-package-*.tar.zst --confirm
+```
+
+## Bundle Development
+
+1. Install all the necessary package creation dependencies:
+
+    ```bash
+    python -m pip install "hugging_face[cli,hf_transfer]" "transformers[torch]" ctranslate2
+    ```
+
+2. Build all of the packages you need at once with **ONE** of the following Make targets:
+
+    ```bash
+    LOCAL_VERSION=dev ARCH=amd64 make build-cpu    # ui, api, llama-cpp-python, text-embeddings, whisper, supabase
+    # OR
+    LOCAL_VERSION=dev ARCH=amd64 make build-gpu    # ui, api, vllm, text-embeddings, whisper, supabase
+    # OR
+    LOCAL_VERSION=dev ARCH=amd64 make build-all    # all of the components
+    ```
+
+    **OR**
+
+    You can build components individually using the following Make targets:
+
+    ```bash
+    LOCAL_VERSION=dev ARCH=amd64 make build-ui
+    LOCAL_VERSION=dev ARCH=amd64 make build-api
+    LOCAL_VERSION=dev ARCH=amd64 make build-supabase
+    LOCAL_VERSION=dev ARCH=amd64 make build-vllm                 # if you have GPUs (macOS not supported)
+    LOCAL_VERSION=dev ARCH=amd64 make build-llama-cpp-python     # if you have CPU only
+    LOCAL_VERSION=dev ARCH=amd64 make build-text-embeddings
+    LOCAL_VERSION=dev ARCH=amd64 make build-whisper
+    ```
+
+3. Create the UDS bundle, modifying the `uds-config.yaml` as required:
+
+  ```bash
+  cd uds-bundles/dev/<cpu or gpu>
+  uds create . --confirm
+  ```
+
+4. Deploy the UDS bundle to an existing [UDS Kubernetes cluster](../packages/k3d-gpu/README.md):
+
+  ```bash
+  cd uds-bundles/dev/<cpu or gpu>
+  uds deploy <insert bundle name> --confirm
+  ```
+
+### MacOS Specifics
+
+To run the same commands in MacOS, you will need to prepend your command with a couple of env vars like so:
+
+**All Macs:** `REG_PORT=5001`
+
+**Apple Silicon (M1/M2/M3/M4 series) Macs:** `ARCH=arm64`
+
+To demonstrate what this would look like for an Apple Silicon Mac:
+
+``` shell
+REG_PORT=5001 ARCH=arm64 LOCAL_VERSION=dev make build-cpu
+```
+
+To demonstrate what this would look like for an older Intel Mac:
+
+``` shell
+REG_PORT=5001 ARCH=arm64 LOCAL_VERSION=dev make build-cpu
 ```
 
 ## Access
