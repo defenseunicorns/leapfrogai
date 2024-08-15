@@ -42,10 +42,12 @@ async def init_supabase_client_with_jwt(
 ) -> AsyncClient:
     return await init_supabase_client(auth_creds, use_jwt_directly=True)
 
+
 async def init_supabase_client_with_api_key(
     auth_creds: Annotated[HTTPAuthorizationCredentials, Depends(security)],
 ) -> AsyncClient:
     return await init_supabase_client(auth_creds, use_jwt_directly=False)
+
 
 async def init_supabase_client(
     auth_creds: Annotated[HTTPAuthorizationCredentials, Depends(security)],
