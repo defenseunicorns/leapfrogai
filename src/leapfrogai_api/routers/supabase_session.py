@@ -59,7 +59,9 @@ async def init_supabase_client(
     try:
         if _validate_jwt_token(auth_creds.credentials):
             if use_jwt_directly:
-                await client.auth.set_session(access_token=auth_creds.credentials, refresh_token="dummy")
+                await client.auth.set_session(
+                    access_token=auth_creds.credentials, refresh_token="dummy"
+                )
             else:
                 await _handle_jwt_auth(client, auth_creds.credentials)
         else:
