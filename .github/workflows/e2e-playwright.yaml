@@ -66,11 +66,6 @@ jobs:
           with:
             node-version-file: 'src/leapfrogai_ui/package.json'
 
-        - name: Install UI/Playwright Dependencies
-          run: |
-            npm --prefix src/leapfrogai_ui ci
-            npx --prefix src/leapfrogai_ui playwright install
-
         - name: Setup Python
           uses: ./.github/actions/python
 
@@ -91,20 +86,25 @@ jobs:
           run: |
             python -m pytest ./tests/e2e/test_api.py -v
 
+        - name: Create Test User
+          run: |
+            chmod +x ./.github/scripts/createUser.sh
+            ./.github/scripts/createUser.sh
+
         ##########
         # UI
         ##########
+        - name: Install UI/Playwright Dependencies
+          run: |
+            npm --prefix src/leapfrogai_ui ci
+            npx --prefix src/leapfrogai_ui playwright install
+
         - name: Deploy LFAI-UI
           run: |
             make build-ui LOCAL_VERSION=e2e-test
             docker image prune -af
             uds zarf package deploy packages/ui/zarf-package-leapfrogai-ui-amd64-e2e-test.tar.zst --confirm
             rm packages/ui/zarf-package-leapfrogai-ui-amd64-e2e-test.tar.zst
-
-        - name: Create Test User
-          run: |
-            chmod +x ./.github/scripts/createUser.sh
-            ./.github/scripts/createUser.sh
 
         # Run the playwright UI tests using the deployed Supabase endpoint and upload report as an artifact
         - name: UI/API/Supabase E2E Playwright Tests
