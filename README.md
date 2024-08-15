@@ -116,7 +116,7 @@ Each of the LeapfrogAI components can also be run individually outside of a Kube
 
 **_First_** refer to the [DEVELOPMENT.md](docs/DEVELOPMENT.md) document for general development details.
 
-**_Then_** refer to the linked READMEs for each individual packages local development instructions.
+**_Then_** refer to the linked READMEs for each individual package's local development instructions.
 
 - [SDK](src/leapfrogai_sdk/README.md)[^2]
 - [API](packages/api/README.md)[^3]

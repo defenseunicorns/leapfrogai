@@ -61,6 +61,14 @@ uds zarf package pull oci://ghcr.io/defenseunicorns/leapfrogai/leapfrogai-api:la
 uds zarf package deploy zarf-package-*.tar.zst --confirm
 ```
 
+## In-Cluster Components
+
+All in-cluster components can be accessed without port-forwarding if [UDS Core Slim Dev](../packages/k3d-gpu/README.md) is installed with LeapfrogAI packages.
+
+For example, when developing the API and you need access to Supabase, you can point your locally running API to the in-cluster Supabase by setting the Supabase base URL to the in-cluster domain (https://supabase-kong.uds.dev).
+
+The preferred method of testing changes is to fully deploy something to a cluster and run local smoke tests as needed. The GitHub workflows will run all integration and E2E test suites.
+
 ## Troubleshooting
 
 Occasionally, a package you are trying to re-deploy, or a namespace you are trying to delete, may hang. To workaround this, be sure to check the events and logs of all resources, to include pods, deployments, daemonsets, clusterpolicies, etc. There may be finalizers, Pepr hooks, and etc. causing the re-deployment or deletion to fail. Use the [`k9s`](https://k9scli.io/topics/commands/) and `kubectl` tools that are vendored with UDS CLI, like in the examples below:
