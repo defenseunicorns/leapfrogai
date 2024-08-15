@@ -1,16 +1,25 @@
 # LeapfrogAI Repeater Backend
 
-A LeapfrogAI API-compatible repeater model that simply parrots the input it is provided back to the user. This is primarily used for quick-testing the API.
+A LeapfrogAI API-compatible repeater backend that simply parrots the input it is provided back to the user. This is primarily used for quick-testing the API.
+
+The repeater backend is used to verify that the API is able to both load configs for and send inputs to a very simple backend. The repeater backend fulfills this role by returning the input it recieves as output.
 
 ## Usage
 
-The repeater model is used to verify that the API is able to both load configs for and send inputs to a very simple model. The repeater model fulfills this role by returning the input it recieves as output.
+### Pre-Requisites
 
-### Zarf Package Deployment
+See the LeapfrogAI documentation website for [system requirements](https://docs.leapfrog.ai/docs/local-deploy-guide/requirements/) and [dependencies](https://docs.leapfrog.ai/docs/local-deploy-guide/dependencies/).
 
-To build and deploy just the repeater Zarf package (from the root of the repository):
+#### Dependent Components
 
-> Deploy a [UDS cluster](/README.md#uds) if one isn't deployed already
+- Have the LeapfrogAI API deployed, running, and accessible in order to provide a fully RESTful application
+
+### Deployment
+
+To build and deploy the repeater backend Zarf package into an existing [UDS Kubernetes cluster](../k3d-gpu/README.md):
+
+> [!IMPORTANT]
+> Execute the following Make targets from the root of the LeapfrogAI repository
 
 ```bash
 make build-repeater LOCAL_VERSION=dev
@@ -19,30 +28,24 @@ uds zarf package deploy packages/repeater/zarf-package-repeater-*-dev.tar.zst --
 
 ### Local Development
 
-Here is how to run the repeater model locally to test the API:
+To run the repeater backend locally:
 
-It's easiest to set up a virtual environment to keep things clean:
+> [!IMPORTANT]
+> Execute the following commands from this sub-directory
 
 ```bash
+# Setup Virtual Environment
 python -m venv .venv
 source .venv/bin/activate
+
+# Install dependencies and start the model backend
+make dev
 ```
 
-First install the lfai-repeater project and dependencies. From the root of the project repository:
+Now the basic API tests can be run in full with the following commands.
 
-```bash
-pip install src/leapfrogai_sdk
-cd packages/repeater
-pip install .
-```
-
-Next, launch the repeater model:
-
-```bash
-python repeater.py
-```
-
-Now the basic API tests can be run in full. In a new terminal, starting from the root of the project repository:
+> [!IMPORTANT]
+> Execute the following commands from from the root of the LeapfrogAI repository
 
 ```bash
 export LFAI_RUN_REPEATER_TESTS=true    # this is needed to run the tests that require the repeater model, otherwise they get skipped

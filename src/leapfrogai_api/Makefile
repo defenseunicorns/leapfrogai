@@ -1,7 +1,6 @@
 MAKEFILE_DIR := $(dir $(abspath $(lastword $(MAKEFILE_LIST))))
 SHELL := /bin/bash
 
-
 export SUPABASE_URL=$(shell supabase status | grep -oP '(?<=API URL: ).*')
 export SUPABASE_ANON_KEY=$(shell supabase status | grep -oP '(?<=anon key: ).*')
 

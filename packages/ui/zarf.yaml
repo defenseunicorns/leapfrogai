@@ -16,7 +16,7 @@ variables:
     prompt: true
     sensitive: true
   - name: OPENAI_API_KEY
-    description: OpenAI API Key. If specified, app will use OpenAI instead of Leapfrog
+    description: OpenAI API Key. If specified, app will use OpenAI instead of LeapfrogAI
     prompt: true
     default: ""
     sensitive: true

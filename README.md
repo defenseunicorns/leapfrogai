@@ -74,7 +74,7 @@ Please refer to the [Quick Start](https://docs.leapfrog.ai/docs/local-deploy-gui
 
 ### API
 
-LeapfrogAI provides an API that closely matches that of OpenAI's. This feature allows tools that have been built with OpenAI/ChatGPT to function seamlessly with a LeapfrogAI backend.
+LeapfrogAI provides an [API](src/leapfrogai_api/) that closely matches that of OpenAI's. This feature allows tools that have been built with OpenAI/ChatGPT to function seamlessly with a LeapfrogAI backend.
 
 ### SDK
 
@@ -113,9 +113,9 @@ Each of the LeapfrogAI components can also be run individually outside of a Kube
 
 **_First_** refer to the [DEVELOPMENT.md](docs/DEVELOPMENT.md) document for general development details, **_then_** refer to the linked READMEs for each individual packages local development instructions:
 
-- [API](src/leapfrogai_api/README.md)[^2]
-- [SDK](src/leapfrogai_sdk/README.md)[^3]
-- [UI](src/leapfrogai_ui/README.md)[^2]
+- [SDK](src/leapfrogai_sdk/README.md)[^2]
+- [API](packages/api/README.md)[^3]
+- [UI](packages/ui/README.md)[^3]
 - [LLaMA C++ Python](packages/llama-cpp-python/README.md)
 - [vLLM](packages/vllm/README.md)
 - [Supabase](packages/supabase/README.md)
@@ -123,9 +123,9 @@ Each of the LeapfrogAI components can also be run individually outside of a Kube
 - [Faster Whisper](packages/whisper/README.md)
 - [Repeater](packages/repeater/README.md)
 
-[^2]: Please be aware that the API and UI have artifacts under 2 sub-directories. The sub-directories related to `packages/` are focused on the Zarf packaging and Helm charts, whereas the sub-directories related to `src/` contains the actual source code and development instructions.
+[^2]: The SDK is not a functionally independent unit, and only becomes a functional unit when combined and packaged with the API and Backends as a dependency.
 
-[^3]: The SDK is not a functionally independent unit, and only becomes a functional unit when combined and packaged with the API and Backends as a dependency.
+[^3]: Please be aware that the API and UI have artifacts under 2 sub-directories. The sub-directories related to `packages/` are focused on the Zarf packaging and Helm charts, whereas the sub-directories related to `src/` contains the actual source code and development instructions.
 
 ## Contributing
 

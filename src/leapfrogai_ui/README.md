@@ -1,42 +1,61 @@
 # LeapfrogAI UI
 
-## Getting Started
+> [!IMPORTANT]
+> See the [UI package documentation](../../packages/UI/README.md) for general pre-requisites, dependent components, and package deployment instructions
 
-### Requirements
+This document is only applicable for spinning up the UI in a local Node development environment.
 
-This application requires Supabase, and either Leapfrog API or OpenAI to function. Additionally, it can optionally use
-Keycloak for authentication. There are several different ways to run it, so please see the "Configuration Options" section
-below for more information.
+## Local Development Setup
 
-### Running the UI
+> [!IMPORTANT]
+> Execute the following commands from this sub-directory
 
-1. Change directories: `cd src/leapfrogai_ui`
-2. Create a `.env` file at the root of the UI project (src/leapfrogai_ui), reference the `.env.example` file for values to put in the .env file
-3. Install dependencies: `npm install`
-4. Run `npm run dev -- --open`
+### Running
+
+1. Install dependencies
+
+   ```bash
+   npm install
+   ```
+
+2. Create a .env using the .env.example as a template.
+
+3. Run the Node application and open in your default browser
+
+   ```bash
+   npm run dev -- --open
+   ```
+
+### Building
+
+To create a production version of the app:
+
+```bash
+npm run build
+```
+
+You can preview the production build with `npm run preview`.
 
 ### Configuration Options
+
+#### API
 
 It is recommended to run LeapfrogAI with UDS, but if you want to run the UI locally (on localhost, e.g. for local development),
 you can either:
 
-1. Connect to a UDS deployed version of the Leapfrog API and Supabase
+1. Connect to a UDS deployed version of the LeapfrogAI API and Supabase
 
    **OR**
 
 2. Connect to OpenAI and UDS deployed Supabase or locally running Supabase.
 
-**NOTE:** most data CRUD operations utilize Leapfrog API or OpenAI, but some functionality still depends on a direct connection with Supabase.
+**NOTE:** most data CRUD operations utilize LeapfrogAI API or OpenAI, but some functionality still depends on a direct connection with Supabase.
 
-#### UDS Bundle Deployment
+If running the UI locally and utilizing LeapfrogAI API, **you must use the same Supabase instance that the LeapfrogAI API is utilizing**.
 
-This is the easiest way to use the UI. Follow the README and documentation website for running the entire [LeapfrogAI stack](https://github.com/defenseunicorns/leapfrogai).
+#### Cluster
 
-#### Local Development
-
-If running the UI locally and utilizing LeapfrogAPI, **you must use the same Supabase instance that the Leapfrog API is utilizing**.
-
-1. Connect the UI to a UDS deployed version of Supabase and Leapfrog API.
+1. Connect the UI to a UDS deployed version of Supabase and LeapfrogAI API.
    Ensure these env variables are set appropriately in your .env file:
 
 ```bash
@@ -54,54 +73,7 @@ database properly for you.
 
 Further instructions will be coming soon in a future release.
 
-##### Authentication
-
-You can choose to use Keycloak (with UDS) or turn Keycloak off and just use Supabase.
-
-When the UI and API are deployed with UDS, everything will be configured properly automatically, but if you want to
-run the UI outside of UDS on localhost (e.g. for development work), there are some manual configuration steps:
-
-1. Modify the "GOTRUE_URI_ALLOW_LIST" within Supabase.  
-   The Supabase UDS package has a ConfigMap called "supabase-auth-default".  
-   Add these values to the "GOTRUE_URI_ALLOW_LIST" (no spaces!). This variable may not exist and you will need to add it.
-   Restart the supabase-auth pod after updating the config:
-   `http://localhost:5173/auth/callback,http://localhost:4173/auth/callback`  
-   **NOTE:** Port 4173 is utilized by Playwright for E2E tests. You do not need this if you are not concerned about Playwright.
-
-###### With Keycloak authentication
-
-1. If Supabase was deployed with UDS, it will automatically configure a Keycloak Client for you. We need to modify this client to allow
-   localhost URIs.  
-   Within Keycloak, under the UDS Realm, edit the uds-supabase client.  
-   Under "Valid redirect URIs" add:  
-   http://localhost:5173/auth/callback  
-   http://localhost:4173/auth/callback (for Playwright tests)
-2. If you want to connect Keycloak to a locally running Supabase instance (non UDS deployed), see the "Running Supabase locally" section below.
-
-###### Without Keycloak authentication
-
-1. To turn off Keycloak, set this .env variable: `PUBLIC_DISABLE_KEYCLOAK=false`
-
-##### Running UI Locally with OpenAI
-
-Set the following .env variables:
-
-```bash
-DEFAULT_MODEL=gpt-3.5-turbo
-LEAPFROGAI_API_BASE_URL=https://api.openai.com
-# If specified, app will use OpenAI instead of Leapfrog
-OPENAI_API_KEY=<your_openai_api_key>
-```
-
-You still need Supabase, so you can connect to UDS deployed Supabase, or run Supabase locally.
-To connect to UDS deployed Supabase, set these .env variables:
-
-```bash
-PUBLIC_SUPABASE_URL=https://supabase-kong.uds.dev
-PUBLIC_SUPABASE_ANON_KEY=<anon_key>
-```
-
-Running Supabase locally:
+#### Standalone Supabase
 
 1. Install [Supabase](https://supabase.com/docs/guides/cli/getting-started?platform=macos)
 2. Run: `supabase start`
@@ -126,27 +98,62 @@ Stop Supabase:
 
 `npm run supabase:stop`
 
-**WARNING:** if switching the application from utilizing Leapfrog API to OpenAI or vice versa, and you encounter this error: `Server responded with status code 431. See https://vitejs.dev/guide/troubleshooting.html#_431-request-header-fields-too-large.`, then you need to clear your browser cookies.
+**WARNING:** if switching the application from utilizing LeapfrogAI API to OpenAI or vice versa, and you encounter this error: `Server responded with status code 431. See https://vitejs.dev/guide/troubleshooting.html#_431-request-header-fields-too-large.`, then you need to clear your browser cookies.
 
-### Building
+#### Authentication
 
-To create a production version of the app:
+You can choose to use Keycloak (with UDS) or turn Keycloak off and just use Supabase.
+
+When the UI and API are deployed with UDS, everything will be configured properly automatically, but if you want to
+run the UI outside of UDS on localhost (e.g. for development work), there are some manual configuration steps:
+
+1. Modify the "GOTRUE_URI_ALLOW_LIST" within Supabase.  
+   The Supabase UDS package has a ConfigMap called "supabase-auth-default".  
+   Add these values to the "GOTRUE_URI_ALLOW_LIST" (no spaces!). This variable may not exist and you will need to add it.
+   Restart the supabase-auth pod after updating the config:
+   `http://localhost:5173/auth/callback,http://localhost:4173/auth/callback`  
+   **NOTE:** Port 4173 is utilized by Playwright for E2E tests. You do not need this if you are not concerned about Playwright.
+
+##### With KeyCloak
+
+1. If Supabase was deployed with UDS, it will automatically configure a Keycloak Client for you. We need to modify this client to allow
+   localhost URIs.  
+   Within Keycloak, under the UDS Realm, edit the uds-supabase client.  
+   Under "Valid redirect URIs" add:  
+   http://localhost:5173/auth/callback  
+   http://localhost:4173/auth/callback (for Playwright tests)
+2. If you want to connect Keycloak to a locally running Supabase instance (non UDS deployed), see the "Running Supabase locally" section below.
+
+##### Without Keycloak
+
+1. To turn off Keycloak, set this .env variable: `PUBLIC_DISABLE_KEYCLOAK=false`
+
+#### OpenAI
+
+Set the following .env variables:
 
 ```bash
-npm run build
+DEFAULT_MODEL=gpt-3.5-turbo
+LEAPFROGAI_API_BASE_URL=https://api.openai.com
+# If specified, app will use OpenAI instead of LeapfrogAI
+OPENAI_API_KEY=<your_openai_api_key>
 ```
 
-You can preview the production build with `npm run preview`.
+You still need Supabase, so you can connect to UDS deployed Supabase, or run Supabase locally.
+To connect to UDS deployed Supabase, set these .env variables:
 
-## Developer Notes
+```bash
+PUBLIC_SUPABASE_URL=https://supabase-kong.uds.dev
+PUBLIC_SUPABASE_ANON_KEY=<anon_key>
+```
 
-### Tooling
+## Notes and Troubleshooting
 
 ### Supabase
 
 We use Supabase for authentication and a database. Application specific data
 (ex. user profile images, application settings like feature flags, etc..) should be stored directly in Supabase and
-would not normally utilize the Leapfrog API for CRUD operations.
+would not normally utilize the LeapfrogAI API for CRUD operations.
 
 ### Playwright End-to-End Tests
 
@@ -164,7 +171,7 @@ Notes:
    .env file. See the "Configuration Options" section above to configure which database Playwright is using.
 2. If you run the tests in headless mode (`npm run test:integration`) you do not need the app running, it will build the app and run on port 4173.
 
-# Supabase and Keycloak Integration
+### Supabase and Keycloak Integration
 
 The Supabase docs are inadequate for properly integrating with Keycloak. Additionally, they only support integration with the Supabase Cloud SAAS offering.
 Before reading the section below, first reference the [Supabase docs](https://supabase.com/docs/guides/auth/social-login/auth-keycloak).
@@ -265,7 +272,7 @@ When scanning the QR code, use an app that lets you see the url of the QR code. 
 
 Login flow was adapted from [this reference](https://supabase.com/docs/guides/getting-started/tutorials/with-sveltekit?database-method=sql)
 
-## Chat Data Flow
+### Chat Data Flow
 
 The logic for handling regular chat messages and assistant chat messages, along with persisting that data to the database is complex and deserves a detailed explanation.
 

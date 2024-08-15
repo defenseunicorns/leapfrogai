@@ -1,7 +1,7 @@
 ---
 title: Quick Start
 type: docs
-weight: 2
+weight: 3
 ---
 
 # LeapfrogAI UDS Deployment
@@ -32,8 +32,7 @@ Examples of other models to put into vLLM or LLaMA C++ Python that are not spons
 - [justinthelaw/Phi-3-mini-128k-instruct-4bit-128g](https://huggingface.co/justinthelaw/Phi-3-mini-128k-instruct-4bit-128g)
 - [NousResearch/Nous-Hermes-2-Mixtral-8x7B-DPO-GGUF](https://huggingface.co/NousResearch/Nous-Hermes-2-Mixtral-8x7B-DPO-GGUF)
 
-> [!CAUTION]
-> The default configuration when deploying with GPU support assumes a single GPU. `vllm` is assigned the GPU resource. GPU workloads **_WILL NOT_** run if GPU resources are unavailable to the pod(s). You must provide sufficient NVIDIA GPU scheduling or else the pod(s) will go into a crash loop. See the [Dependencies](https://docs.leapfrog.ai/docs/local-deploy-guide/dependencies/) and [Requirements](https://docs.leapfrog.ai/docs/local-deploy-guide/requirements/) pages for more details.
+The default configuration when deploying with GPU support assumes a single GPU. `vllm` is assigned the GPU resource. GPU workloads **_WILL NOT_** run if GPU resources are unavailable to the pod(s). You must provide sufficient NVIDIA GPU scheduling or else the pod(s) will go into a crash loop. See the [Dependencies](https://docs.leapfrog.ai/docs/local-deploy-guide/dependencies/) and [Requirements](https://docs.leapfrog.ai/docs/local-deploy-guide/requirements/) pages for more details.
 
 ## Building the UDS Bundle
 

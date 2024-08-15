@@ -7,7 +7,7 @@ The purpose of this document is to describe how to run a development loop on the
 
 ## Local Development
 
-Please first see the pre-requisites listed on the LeapfrogAI documentation website's [Requirements](https://docs.leapfrog.ai/docs/local-deploy-guide/requirements/) and [Dependencies](https://docs.leapfrog.ai/docs/local-deploy-guide/dependencies/)
+Please first see the pre-requisites listed on the LeapfrogAI documentation website's [Requirements](https://docs.leapfrog.ai/docs/local-deploy-guide/requirements/) and [Dependencies](https://docs.leapfrog.ai/docs/local-deploy-guide/dependencies/), before going to each component's subdirectory README.
 
 ## UDS CLI Aliasing
 
@@ -31,11 +31,17 @@ echo -e '#!/bin/bash\nuds zarf tools kubectl "$@"' > /usr/local/bin/kubectl
 chmod +x /usr/local/bin/kubectl
 ```
 
+## Makefile
+
+Many of the directories and sub-directories within this project contain Make targets that can be executed to simplify repetitive command-line tasks.
+
+Please refer to each Makefile for more arguments and details on what each target does and is dependent on.
+
 ## Package Development
 
-If you don't want to build an entire bundle, or you want to dev-loop on a single package in an existing, Zarf-init'd cluster, you can do so by performing a `uds zarf package remove [PACKAGE_NAME]` and re-deploying the package into the cluster.
+If you don't want to build an entire bundle, or you want to dev-loop on a single package in an existing [UDS Kubernetes cluster](../packages/k3d-gpu/README.md) you can do so by performing the following.
 
-For example, this is how you build and deploy a local DEV version of a package:
+For example, this is how you build and (re)deploy a local DEV version of a package:
 
 ```bash
 # if package is already in the cluster, and you are deploying a new one

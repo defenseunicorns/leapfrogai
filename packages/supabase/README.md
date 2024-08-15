@@ -1,51 +1,59 @@
 # Supabase
 
+A comprehensive relational and vector database operator and multi-functional API layer. See the [Supabase documentation](https://supabase.com/docs) and the [Bitnami package](https://bitnami.com/stack/supabase) for more details.
+
 ## Usage
 
-### Step 1: Create a Zarf package
+### Pre-Requisites
 
-From `leapfrogai/packages/supabase` run `zarf package create`
+See the LeapfrogAI documentation website for [system requirements](https://docs.leapfrog.ai/docs/local-deploy-guide/requirements/) and [dependencies](https://docs.leapfrog.ai/docs/local-deploy-guide/dependencies/).
 
-### Step 2: Create the UDS bundle
+#### Dependent Components
 
-From `leapfrogai/uds-bundles/dev/<cpu|gpu>/` run `uds create`
+- [UDS Kubernetes cluster bootstrapped with UDS Core Slim Dev](../k3d-gpu/README.md) for local KeyCloak authentication, Istio Service Mesh, and MetalLB advertisement
+- [LeapfrogAI API](../api/README.md) for RESTful interaction
+- [Text Embeddings](../text-embeddings/README.md) for vector generation
+- [LeapfrogAI UI](../ui/README.md) for a Supabase and API compatible frontend
 
-### Step 3: Deploy the UDS bundle or deploy the Zarf package
+### Deployment
 
-To deploy only Supabase for UDS bundle run the following from `leapfrogai/uds-bundles/dev/<cpu|gpu>/`:
+To build and deploy the Supabase Zarf package into an existing [UDS Kubernetes cluster](../k3d-gpu/README.md):
 
-* `uds deploy -p supabase uds-bundle-leapfrogai-*.tar.zst`
+> [!IMPORTANT]
+> Execute the following commands from the root of the LeapfrogAI repository
 
-To deploy the Zarf package run the following from `leapfrogai/packages/supabase`:
+```bash
+make build-supabase LOCAL_VERSION=dev
+uds zarf package deploy packages/supabase/zarf-package-supabase-*-dev.tar.zst --confirm
+```
 
-* `uds zarf package deploy zarf-package-supabase-*.tar.zst`
-
-### Step 4: Accessing Supabase
+### Accessing Supabase
 
 Go to `https://supabase-kong.uds.dev`. The login is `supabase-admin` the password is randomly generated in a cluster secret named `supabase-dashboard-secret`
 
 **NOTE:** The `uds.dev` domain is only used for locally deployed LeapfrogAI packages, so this domain will be unreachable without first manually deploying the UDS bundle.
 
-## Local Supabase Troubleshooting
+## Troubleshooting
 
-* If you cannot reach `https://supabase-kong.uds.dev`, check if the `Packages` CRDs and `VirtualServices` contain `supabase-kong.uds.dev`. If they do not, try restarting the `pepr-uds-core-watcher` pod.
-* If logging in to the UI through keycloak returns a `500`, check and see if the `sql` migrations have been run in Supabase.
-  * You can find those in `leapfrogai/src/leapfrogai_ui/supabase/migrations`. They can be run in the studios SQL Editor.
-* To obtain a jwt token for testing, create a test user and run the following:
+- If you cannot reach `https://supabase-kong.uds.dev`, check if the `Packages` CRDs and `VirtualServices` contain `supabase-kong.uds.dev`. If they do not, try restarting the `pepr-uds-core-watcher` pod.
+- If logging in to the UI through keycloak returns a `500`, check and see if the `sql` migrations have been run in Supabase.
+  - You can find those in `leapfrogai/src/leapfrogai_ui/supabase/migrations` - Migrations can be run in the Supabase studio SQL editor
+- To obtain an API (JWT) token for testing, create a test user and run the following:
 
-```bash
-# Grab the Supabase Key from the JWT Secret
-export ANON_KEY=$(uds zarf tools kubectl get secret -n leapfrogai supabase-bootstrap-jwt -o json | uds zarf tools yq '.data.anon-key' | base64 -d)
+  ```bash
+  # Grab the Supabase Anon Key from the JWT Secret in the UDS Kubernetes cluster
+  export ANON_KEY=$(uds zarf tools kubectl get secret -n leapfrogai supabase-bootstrap-jwt -o json | uds zarf tools yq '.data.anon-key' | base64 -d)
 
-# Replace <email> and <password> / <confirmPassword> with your desired credentials
-curl -X POST 'https://supabase-kong.uds.dev/auth/v1/signup' \
-  -H "apikey: <anon-key>" \
-  -H "Content-Type: application/json" \
-  -H "Authorization": f"Bearer $ANON_KEY" \
-  -d '{ "email": "<email>", "password": "<password>", "confirmPassword": "<confirmPassword>"}'
-```
+  # Replace <email> and <password> / <confirmPassword> with your desired credentials
+  # only lasts 1 hour from creation
+  curl -X POST 'https://supabase-kong.uds.dev/auth/v1/signup' \
+    -H "apikey: <anon-key>" \
+    -H "Content-Type: application/json" \
+    -H "Authorization": f"Bearer $ANON_KEY" \
+    -d '{ "email": "<email>", "password": "<password>", "confirmPassword": "<confirmPassword>"}'
+  ```
 
-By following these steps, you'll have successfully set up Keycloak for your application, allowing secure authentication and authorization for your users.
+- Longer term API tokens (30, 60, or 90 days) can be created from the API key workflow within the LeapfrogAI UI
 
 ## Supabase Migrations
 
