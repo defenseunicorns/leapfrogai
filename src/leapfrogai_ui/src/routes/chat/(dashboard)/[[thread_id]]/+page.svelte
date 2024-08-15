@@ -1,7 +1,7 @@
 <script lang="ts">
   import { beforeNavigate } from '$app/navigation';
   import { LFTextArea, PoweredByDU } from '$components';
-  import { Hr, ToolbarButton, Spinner } from 'flowbite-svelte';
+  import { Hr, Spinner, ToolbarButton } from 'flowbite-svelte';
   import { yup } from 'sveltekit-superforms/adapters';
   import { filesSchema } from '$schemas/files';
   import { onMount, tick } from 'svelte';
@@ -22,13 +22,13 @@
   import {
     ERROR_GETTING_AI_RESPONSE_TOAST,
     ERROR_GETTING_ASSISTANT_MSG_TOAST,
+    ERROR_PROCESSING_FILE_MSG_TOAST,
     ERROR_SAVING_MSG_TOAST
   } from '$constants/toastMessages';
   import SelectAssistantDropdown from '$components/SelectAssistantDropdown.svelte';
   import { PaperClipOutline, PaperPlaneOutline, StopOutline } from 'flowbite-svelte-icons';
   import { superForm } from 'sveltekit-superforms';
   import LFFileUploadBtn from '$components/LFFileUploadBtn.svelte';
-  import {twMerge} from "tailwind-merge";
 
   export let data;
 
@@ -44,7 +44,13 @@
       uploadingFile = false;
       if (result.type === 'success') {
         documentText = result.data.text;
+      } else {
+        toastStore.addToast(ERROR_PROCESSING_FILE_MSG_TOAST);
       }
+    },
+    onError() {
+      uploadingFile = false;
+      toastStore.addToast(ERROR_PROCESSING_FILE_MSG_TOAST);
     }
   });
   /** END LOCAL VARS **/
@@ -343,7 +349,7 @@
             class="remove-btn-style"
           >
             {#if uploadingFile}
-              <div class="centered-flexbox w-9 h-10">
+              <div class="centered-flexbox h-10 w-9">
                 <Spinner size={6} />
               </div>
             {:else}

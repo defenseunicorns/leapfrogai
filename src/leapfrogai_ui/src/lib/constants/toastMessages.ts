@@ -39,3 +39,8 @@ export const CONVERT_FILE_ERROR_MSG_TOAST: ToastData = {
   title: 'Unsupported File Type',
   subtitle: 'Viewing this file type is not currently supported'
 };
+
+export const ERROR_PROCESSING_FILE_MSG_TOAST: ToastData = {
+  kind: 'error',
+  title: 'Error Processing File'
+}
