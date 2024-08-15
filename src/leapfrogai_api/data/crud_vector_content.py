@@ -37,7 +37,7 @@ class CRUDVectorContent:
 
             rows.append(dict_)
 
-        data, _count = await self.db.table(self.table_name).insert(dict_).execute()
+        data, _count = await self.db.table(self.table_name).insert(rows).execute()
 
         _, response = data
 
