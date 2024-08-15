@@ -110,7 +110,6 @@ const csp: Handle = async ({ event, resolve }) => {
     .join('; ');
   // We use Sveltekits generated CSP for script-src to get the nonce
   const svelteKitGeneratedCSPWithNonce = response.headers.get('Content-Security-Policy');
-  console.log('setting csp', `${CSP}; ${svelteKitGeneratedCSPWithNonce}`);
   response.headers.set('Content-Security-Policy', `${CSP}; ${svelteKitGeneratedCSPWithNonce}`);
   return response;
 };
