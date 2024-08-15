@@ -6,6 +6,7 @@ from fastapi import APIRouter, HTTPException, status, Depends
 from pydantic import BaseModel, Field
 from leapfrogai_api.routers.supabase_session import init_supabase_client
 from supabase import AClient as AsyncClient
+from leapfrogai_api.data.crud_api_key import APIKeyItem, CRUDAPIKey, THIRTY_DAYS
 
 SessionWithJWT = Annotated[
     AsyncClient, Depends(lambda: init_supabase_client(use_jwt_directly=True))
@@ -13,7 +14,6 @@ SessionWithJWT = Annotated[
 SessionWithAPIKey = Annotated[
     AsyncClient, Depends(lambda: init_supabase_client(use_jwt_directly=False))
 ]
-from leapfrogai_api.data.crud_api_key import APIKeyItem, CRUDAPIKey, THIRTY_DAYS
 
 router = APIRouter(prefix="/leapfrogai/v1/auth", tags=["leapfrogai/auth"])
 
