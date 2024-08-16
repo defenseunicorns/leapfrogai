@@ -38,6 +38,7 @@ setup('authenticate', async ({ page }) => {
     }
   } else {
     // With Keycloak
+    await delay(2000);
     const emailField = page.getByLabel('Username or email');
     const passwordField = page.getByLabel('Password');
 
@@ -46,12 +47,14 @@ setup('authenticate', async ({ page }) => {
     await passwordField.click();
     await passwordField.fill(process.env.PASSWORD!);
 
-    await delay(2000);
     const emailText = await emailField.innerText();
     const passwordText = await passwordField.innerText();
-    console.log(`before submit, email field is ${emailText}, password is ${passwordText}`);
+    console.log(`before re-filling, email field is ${emailText}, password is ${passwordText}`);
     if (emailText !== process.env.USERNAME) await emailField.fill(process.env.USERNAME!);
     if (passwordText !== process.env.PASSWORD!) await passwordField.fill(process.env.PASSWORD!);
+    const emailText2 = await emailField.innerText();
+    const passwordText2 = await passwordField.innerText();
+    console.log(`before submit, email field is ${emailText2}, password is ${passwordText2}`);
 
     await page.getByRole('button', { name: 'Log In' }).click();
 
