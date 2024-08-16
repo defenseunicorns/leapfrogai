@@ -55,7 +55,7 @@
 <!--Custom styling allows center SidebarGroup (chat threads) to scroll-->
 <Sidebar
   data-testid="sidebar"
-  class="sidebar-height flex w-[255px] border-r border-gray-700  dark:bg-gray-800 "
+  class="sidebar-height flex w-[var(--sidebar-width)] border-r border-gray-700  dark:bg-gray-800 "
 >
   <SidebarWrapper class="flex w-full flex-col px-0">
     <SidebarGroup>

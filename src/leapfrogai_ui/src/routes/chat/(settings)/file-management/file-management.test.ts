@@ -8,6 +8,7 @@ import {
   mockDeleteCheck,
   mockDeleteFile,
   mockDeleteFileWithDelay,
+  mockDownloadError,
   mockGetFiles
 } from '$lib/mocks/file-mocks';
 import { beforeEach, vi } from 'vitest';
@@ -26,6 +27,7 @@ describe('file management', () => {
   let searchbox: HTMLElement;
 
   beforeEach(async () => {
+    // @ts-expect-error: full mocking of load function params not necessary and is overcomplicated
     const data = await load();
 
     form = await superValidate(yup(filesSchema));
@@ -171,6 +173,34 @@ describe('file management', () => {
       screen.queryByText(/this will affect the following assistants/i)
     ).not.toBeInTheDocument();
   });
+
+  it('displays an error toast when there is an error downloading a file', async () => {
+    vi.mock('$app/environment', () => ({
+      browser: true
+    }));
+    const toastSpy = vi.spyOn(toastStore, 'addToast');
+    mockDeleteCheck([]); // no assistants affected
+    mockGetFiles(files);
+    for (const file of files) {
+      mockDownloadError(file.id);
+    }
+
+    const checkbox = screen.getByRole('checkbox', {
+      name: /select all rows/i
+    });
+    await fireEvent.click(checkbox);
+
+    const downloadBtn = screen.getByRole('button', { name: /download/i });
+
+    await userEvent.click(downloadBtn);
+    files.forEach(() => {
+      expect(toastSpy).toHaveBeenCalledWith({
+        kind: 'error',
+        title: 'Download Failed',
+        subtitle: undefined // currentFilename is undefined since we don't get that far
+      });
+    });
+  });
 });
 
 // TODO - The API Keys table also uses this pagination logic, but we are only testing it here on the files table
@@ -182,6 +212,7 @@ describe('table pagination', () => {
   let searchbox: HTMLElement;
 
   beforeEach(async () => {
+    // @ts-expect-error: full mocking of load function params not necessary and is overcomplicated
     const data = await load();
 
     form = await superValidate(yup(filesSchema));

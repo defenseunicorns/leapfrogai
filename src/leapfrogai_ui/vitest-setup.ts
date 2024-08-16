@@ -6,7 +6,7 @@ import * as environment from '$app/environment';
 import * as navigation from '$app/navigation';
 import * as stores from '$app/stores';
 import OpenAIMock from '$lib/mocks/openai';
-import dotenv from 'dotenv';
+import * as dotenv from 'dotenv';
 
 dotenv.config();
 
@@ -15,6 +15,10 @@ const { mockSvelteStores } = await vi.hoisted(() => import('$lib/mocks/svelte'))
 
 // Fixes error: node.scrollIntoView is not a function
 window.HTMLElement.prototype.scrollIntoView = function () {};
+
+Object.assign(navigator, {
+  clipboard: { writeText: vi.fn().mockImplementation(() => Promise.resolve()) }
+});
 
 export const mockOpenAI = new OpenAIMock({ apiKey: '', baseURL: '' });
 
