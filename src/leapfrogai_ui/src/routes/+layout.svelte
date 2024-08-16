@@ -19,17 +19,15 @@
     if (startRefreshCountdown && browser && session) {
       startRefreshCountdown = false;
       const expiresIn = session.expires_at - Math.floor(Date.now() / 1000); // seconds until expiration
-      const refreshTime = expiresIn - 300; // 5 minutes before expiration
+      const refreshTime = expiresIn - 1200; // 20 minutes before expiration
       if (refreshTime > 0) {
         setTimeout(async () => {
           await supabase.auth.refreshSession();
-          console.log('session refreshed');
           startRefreshCountdown = true;
         }, refreshTime * 1000);
       }
     }
   }
-  $: console.log('session?.expires_at', new Date(session?.expires_at * 1000));
 
   onMount(() => {
     const { data } = supabase.auth.onAuthStateChange((_, newSession) => {
