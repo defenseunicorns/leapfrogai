@@ -21,6 +21,9 @@ api:
     port: 8080
     exposeAPI: "###ZARF_VAR_EXPOSE_API###"
     defaultEmbeddingsModel: "###ZARF_VAR_DEFAULT_EMBEDDINGS_MODEL###"
+  serviceAccount:
+    name: leapfrogai-api
+    create: true
 
   migration:
     image:
