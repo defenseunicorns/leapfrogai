@@ -2,11 +2,7 @@
 
 import time
 from typing import Annotated
-from fastapi import (
-    APIRouter,
-    HTTPException,
-    status
-)
+from fastapi import APIRouter, HTTPException, status
 from pydantic import BaseModel, Field
 from leapfrogai_api.data.crud_api_key import APIKeyItem, CRUDAPIKey, THIRTY_DAYS
 from leapfrogai_api.routers.supabase_session import SessionWithJWT
