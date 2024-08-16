@@ -34,6 +34,28 @@ const doSupabaseLogin = async (page: Page) => {
   }
 };
 
+const doKeycloakLogin = async (page: Page) => {
+  await page.goto('/'); // go to the home page
+  await delay(2000); // allow page to fully hydrate
+  // With Keycloak
+  await page.getByRole('button', { name: 'Log In' }).click();
+  await page.getByLabel('Username or email').fill(process.env.USERNAME!);
+  await page.getByLabel('Password').click();
+  await page.getByLabel('Password').fill(process.env.PASSWORD!);
+  await page.getByRole('button', { name: 'Log In' }).click();
+
+  const totp = new OTPAuth.TOTP({
+    issuer: 'Unicorn Delivery Service',
+    algorithm: 'SHA1',
+    digits: 6,
+    period: 30,
+    secret: process.env.MFA_SECRET!
+  });
+  const code = totp.generate();
+  await page.getByLabel('Six digit code').fill(code);
+  await page.getByRole('button', { name: 'Log In' }).click();
+};
+
 const login = async (page: Page) => {
   if (process.env.PUBLIC_DISABLE_KEYCLOAK === 'true') {
     await doSupabaseLogin(page);
@@ -62,28 +84,6 @@ const logout = async (page: Page) => {
   }
 };
 
-const doKeycloakLogin = async (page: Page) => {
-  await page.goto('/'); // go to the home page
-  await delay(2000); // allow page to fully hydrate
-  // With Keycloak
-  await page.getByRole('button', { name: 'Log In' }).click();
-  await page.getByLabel('Username or email').fill(process.env.USERNAME!);
-  await page.getByLabel('Password').click();
-  await page.getByLabel('Password').fill(process.env.PASSWORD!);
-  await page.getByRole('button', { name: 'Log In' }).click();
-
-  const totp = new OTPAuth.TOTP({
-    issuer: 'Unicorn Delivery Service',
-    algorithm: 'SHA1',
-    digits: 6,
-    period: 30,
-    secret: process.env.MFA_SECRET!
-  });
-  const code = totp.generate();
-  await page.getByLabel('Six digit code').fill(code);
-  await page.getByRole('button', { name: 'Log In' }).click();
-};
-
 setup('authenticate', async ({ page }) => {
   page.on('pageerror', (err) => {
     console.log(err.message);
@@ -97,12 +97,17 @@ setup('authenticate', async ({ page }) => {
   // Wait for the final URL to ensure that the cookies are actually set.
   await page.waitForURL('/chat');
 
-  // First test log out, then log back in and continue. We don't want to put logout in its own test, because it
-  // will invalidate the session and cause other tests to fail
-  await logout(page);
+  if (!process.env.SKIP_LOGOUT_TEST) {
+    // First test log out, then log back in and continue. We don't want to put logout in its own test, because it
+    // will invalidate the session and cause other tests to fail
+    await logout(page);
 
-  // Log back in to begin rest of tests
-  await login(page);
+    await delay(31000); // prevent logging back in too quickly and getting denied
+    // Log back in to begin rest of tests
+    await login(page);
+
+    await page.waitForURL('/chat');
+  }
 
   // Alternatively, you can wait until the page reaches a state where all cookies are set.
   //   await expect(page.getByRole('button', { name: 'View profile and more' })).toBeVisible();
