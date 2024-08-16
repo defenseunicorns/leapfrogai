@@ -13,7 +13,6 @@ from supabase import ClientOptions
 import leapfrogai_api.backend.types as lfai_types
 from leapfrogai_api.main import app
 from leapfrogai_api.routers.supabase_session import (
-    init_supabase_client_with_jwt,
     init_supabase_client_with_api_key,
 )
 
@@ -63,7 +62,9 @@ async def pack_dummy_bearer_token(request: _CachedRequest, call_next):
 
 @pytest.fixture
 def dummy_auth_middleware():
-    app.dependency_overrides[init_supabase_client_with_api_key] = mock_init_supabase_client
+    app.dependency_overrides[init_supabase_client_with_api_key] = (
+        mock_init_supabase_client
+    )
     app.user_middleware.clear()
     app.middleware_stack = None
     app.add_middleware(BaseHTTPMiddleware, dispatch=pack_dummy_bearer_token)
