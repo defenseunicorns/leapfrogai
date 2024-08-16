@@ -32,7 +32,9 @@ const getThreadWithMessages = async (
   }
 };
 
-export const load: LayoutServerLoad = async ({ locals: { supabase, session, user } }) => {
+export const load: LayoutServerLoad = async ({
+  locals: { supabase, session, user, isUsingOpenAI }
+}) => {
   if (!session) {
     throw redirect(303, '/');
   }
@@ -71,5 +73,5 @@ export const load: LayoutServerLoad = async ({ locals: { supabase, session, user
     }
   }
 
-  return { threads };
+  return { threads, isUsingOpenAI };
 };
