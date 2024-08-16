@@ -45,11 +45,10 @@ setup('authenticate', async ({ page }) => {
     await delay(2000);
     const emailText = await emailField.innerText();
     const passwordText = await passwordField.innerText();
+    console.log(`before submit, email field is ${emailText}, password is ${passwordText}`);
     if (emailText !== process.env.USERNAME) await emailField.fill(process.env.USERNAME!);
     if (passwordText !== process.env.PASSWORD!) await passwordField.fill(process.env.PASSWORD!);
-    console.log(
-      `before submit, email field is ${await emailField.innerText()}, password is ${await passwordField.innerText()}`
-    );
+
     await page.getByRole('button', { name: 'Log In' }).click();
 
     if (process.env.TEST_ENV !== 'CI') {
