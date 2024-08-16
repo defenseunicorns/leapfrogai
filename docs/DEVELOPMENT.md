@@ -36,7 +36,7 @@ If your installation process completes successfully but indicates missing packag
 
 ## UDS CLI Aliasing
 
-Below are instructions for adding UDS CLI aliases that are useful for deployments that occur in an air-gap where only the UDS CLI binary available to the engineer.
+Below are instructions for adding UDS CLI aliases that are useful for deployments that occur in an air-gap where the UDS CLI binary is available to the engineer.
 
 For general CLI UX, put the following in your shell configuration (e.g., `/root/.bashrc`, `~/.zshrc`):
 

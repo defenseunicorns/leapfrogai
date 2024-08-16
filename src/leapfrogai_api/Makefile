@@ -1,4 +1,5 @@
-API_PORT := 3000
+API_PORT := 8080
+# This can be pointed at the localhost:8080 instance of the API as well
 API_BASE_URL := https://leapfrogai-api.uds.dev
 SUPABASE_BASE_URL := https://supabase-kong.uds.dev
 EXPIRATION_TIME := $(shell date -d "+30 days" +%s)
@@ -13,7 +14,7 @@ set-env:
 	echo "SUPABASE_ANON_KEY=${SUPABASE_ANON_KEY}" >> .env
 
 dev: set-env
-	. ./.env && python -m uvicorn main:app --port ${API_PORT} --reload --log-level info
+	python -m uvicorn main:app --port ${API_PORT} --reload --log-level info --env-file .env
 
 api-key:
 	curl -s -X POST '${SUPABASE_BASE_URL}/auth/v1/signup' \

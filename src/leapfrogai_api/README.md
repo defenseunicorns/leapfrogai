@@ -26,21 +26,21 @@ This document is only applicable for spinning up the API in a local Python devel
 3. Run the FastAPI application
 
     ```bash
-    make dev API_PORT=3000
+    make dev API_PORT=8080
     ```
 
 4. Create an API key with test user "leapfrogai@defenseunicorns.com" and test password "password", lasting 30 days from creation time
 
     ```bash
     # If the in-cluster API is up, and not testing the API workflow
-    make api-key API_BASE_URL=https://leapfrogai-api.uds.dev
+    make api-key API_BASE_URL=http://localhost:8080
     ```
 
     To create a new 30-day API key, use the following:
 
     ```bash
     # If the in-cluster API is up, and not testing the API workflow
-    make new-api-key API_BASE_URL=https://leapfrogai-api.uds.dev
+    make new-api-key API_BASE_URL=http://localhost:8080
     ```
 
     The newest API key will be printed to a `.env` file located within this directory.
