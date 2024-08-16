@@ -14,7 +14,13 @@
 <div class="flex h-full">
   <SidebarWrapper />
 
-  <main class="content">
+  <main class="content chat-content">
     <slot />
   </main>
 </div>
+
+<style lang="scss">
+  .chat-content {
+    max-width: calc(100% - 255px); // prevents "random" shrinking of sidebar with some messages
+  }
+</style>

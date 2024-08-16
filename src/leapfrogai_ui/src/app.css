@@ -14,7 +14,6 @@
     display: flex;
     flex-grow: 1;
     flex-direction: column;
-    max-width: calc(100% - 255px);
     overflow: auto;
     padding-top: 2rem;
     height: calc(100vh - var(--header-height));
