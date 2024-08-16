@@ -164,6 +164,9 @@ Notes:
 1. Playwright tests are End-To-End tests and use the "real" full stack app. If you run these tests, they will use the configuration indicated by your
    .env file. See the "Configuration Options" section above to configure which database Playwright is using.
 2. If you run the tests in headless mode (`npm run test:integration`) you do not need the app running, it will build the app and run on port 4173.
+3. If using Keycloak, you cannot login twice within 30 seconds. If you global.setup.ts step fails, this is likely why. The setup file also tests logout, but
+   this can take a long time because of the 30 second wait in between log ins. You can disable this test by setting the environment
+   variable SKIP_LOGOUT_TEST=true
 
 # Supabase and Keycloak Integration
 
