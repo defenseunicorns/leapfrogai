@@ -1,0 +1,28 @@
+# yaml-language-server: $schema=https://raw.githubusercontent.com/zarf-dev/zarf/main/zarf.schema.json
+
+kind: ZarfPackageConfig
+metadata:
+  description: "LeapfrogAI API common"
+  name: leapfrogai-api-common
+  version: "###ZARF_PKG_TMPL_IMAGE_VERSION###"
+
+components:
+  - name: leapfrogai-api
+    description: "The LeapfrogAI Python API that shadows the OpenAI API specification"
+    required: true
+    charts:
+      - name: leapfrogai-api
+        namespace: leapfrogai
+        localPath: ../chart
+        # x-release-please-start-version
+        version: 0.10.0
+        # x-release-please-end
+    actions:
+      onDeploy:
+        after:
+          - wait:
+              cluster:
+                kind: Job
+                name: api-migrations
+                namespace: leapfrogai
+                condition: complete

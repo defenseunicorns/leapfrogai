@@ -1,8 +1,8 @@
-{{- if .Values.api.exposeAPI }}
+{{- if .Values.api.env.exposeAPI }}
 apiVersion: uds.dev/v1alpha1
 kind: Package
 metadata:
-  name: leapfrogai-api
+  name: {{ include "chart.fullname" . }}
   namespace: {{ .Release.Namespace }}
 spec:
   network:
@@ -10,9 +10,9 @@ spec:
       - service: api
         podLabels:
           app: api
-        host: {{ .Values.package.host }}
+        host: {{ include "chart.fullname" . }}
         gateway: tenant
-        port: 8080
+        port: {{ .Values.api.env.port }}
 
     allow:
       - direction: Ingress
