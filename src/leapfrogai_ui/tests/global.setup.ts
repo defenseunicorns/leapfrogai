@@ -38,23 +38,28 @@ setup('authenticate', async ({ page }) => {
     }
   } else {
     // With Keycloak
-    await delay(2000);
+
+    await page.getByRole('button', { name: 'Log In' }).click();
     const emailField = page.getByLabel('Username or email');
     const passwordField = page.getByLabel('Password');
 
-    await page.getByRole('button', { name: 'Log In' }).click();
+    console.log('using username:', process.env.USERNAME);
+    console.log('using password:', process.env.PASSWORD);
     await emailField.fill(process.env.USERNAME!);
     await passwordField.click();
     await passwordField.fill(process.env.PASSWORD!);
 
-    const emailText = await emailField.innerText();
-    const passwordText = await passwordField.innerText();
-    console.log(`before re-filling, email field is ${emailText}, password is ${passwordText}`);
-    if (emailText !== process.env.USERNAME) await emailField.fill(process.env.USERNAME!);
-    if (passwordText !== process.env.PASSWORD!) await passwordField.fill(process.env.PASSWORD!);
-    const emailText2 = await emailField.innerText();
-    const passwordText2 = await passwordField.innerText();
-    console.log(`before submit, email field is ${emailText2}, password is ${passwordText2}`);
+    const filledEmail = await emailField.inputValue();
+    const filledPassword = await passwordField.inputValue();
+    if (!filledEmail || !filledPassword) {
+      console.log('refilling');
+      await emailField.click();
+      await emailField.clear();
+      await emailField.fill(process.env.USERNAME!);
+      await passwordField.click();
+      await passwordField.clear();
+      await passwordField.fill(process.env.PASSWORD!);
+    }
 
     await page.getByRole('button', { name: 'Log In' }).click();
 
