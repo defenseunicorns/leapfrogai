@@ -34,10 +34,19 @@ setup('authenticate', async ({ page }) => {
     }
   } else {
     // With Keycloak
+    const emailField = page.getByLabel('Username or email');
+    const passwordField = page.getByLabel('Password');
+
     await page.getByRole('button', { name: 'Log In' }).click();
-    await page.getByLabel('Username or email').fill(process.env.USERNAME!);
-    await page.getByLabel('Password').click();
-    await page.getByLabel('Password').fill(process.env.PASSWORD!);
+    await emailField.fill(process.env.USERNAME!);
+    await passwordField.click();
+    await passwordField.fill(process.env.PASSWORD!);
+
+    const emailText = await emailField.innerText();
+    const passwordText = await passwordField.innerText();
+    if (emailText !== process.env.USERNAME) await emailField.fill(process.env.USERNAME!);
+    if (passwordText !== process.env.PASSWORD!) await passwordField.fill(process.env.PASSWORD!);
+
     await page.getByRole('button', { name: 'Log In' }).click();
 
     if (process.env.TEST_ENV !== 'CI') {
