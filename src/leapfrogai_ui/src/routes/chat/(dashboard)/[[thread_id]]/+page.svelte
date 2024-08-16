@@ -32,6 +32,15 @@
 
   export let data;
 
+  // TODO - for file upload story:
+  // Refactor to create new message instead of adding pdf content to end of current message, also store file info in current
+  // message metadata.
+  // Ensure file size limit is acceptable for context window
+  // What happens when several messages sent with lots of content?
+  // Handle when button is clicked for assistants (or remove button?)
+  // Display files IAW with designs (that don't exist yet?)
+  // Remove files
+
   /** LOCAL VARS **/
   let lengthInvalid: boolean; // bound to child LFTextArea
   let assistantsList: Array<{ id: string; text: string }>;
@@ -45,12 +54,17 @@
       if (result.type === 'success') {
         documentText = result.data.text;
       } else {
-        toastStore.addToast(ERROR_PROCESSING_FILE_MSG_TOAST);
+        toastStore.addToast({
+          ...ERROR_PROCESSING_FILE_MSG_TOAST({ subtitle: result.data.message })
+        });
       }
     },
-    onError() {
+    onError(e) {
       uploadingFile = false;
-      toastStore.addToast(ERROR_PROCESSING_FILE_MSG_TOAST);
+      console.log({ ...ERROR_PROCESSING_FILE_MSG_TOAST({ subtitle: e.result.error.message }) });
+      toastStore.addToast({
+        ...ERROR_PROCESSING_FILE_MSG_TOAST({ subtitle: e.result.error.message })
+      });
     }
   });
   /** END LOCAL VARS **/
@@ -174,7 +188,7 @@
     },
     onError: async () => {
       toastStore.addToast({
-        ...ERROR_GETTING_AI_RESPONSE_TOAST
+        ...ERROR_GETTING_AI_RESPONSE_TOAST()
       });
       await threadsStore.setSendingBlocked(false);
     }
@@ -196,7 +210,7 @@
       // ignore this error b/c it is expected on cancel
       if (e.message !== 'BodyStreamBuffer was aborted') {
         toastStore.addToast({
-          ...ERROR_GETTING_ASSISTANT_MSG_TOAST
+          ...ERROR_GETTING_ASSISTANT_MSG_TOAST()
         });
       }
       await threadsStore.setSendingBlocked(false);
@@ -238,7 +252,7 @@
         submitChatMessage(e); // submit to AI (/api/chat)
       } catch {
         toastStore.addToast({
-          ...ERROR_SAVING_MSG_TOAST
+          ...ERROR_SAVING_MSG_TOAST()
         });
         await threadsStore.setSendingBlocked(false);
       }

@@ -40,7 +40,7 @@
   const handleFileError = () => {
     processing = false;
     toastStore.addToast({
-      ...FILE_DOWNLOAD_ERROR_MSG_TOAST
+      ...FILE_DOWNLOAD_ERROR_MSG_TOAST()
     });
   };
 
@@ -48,7 +48,7 @@
     if (browser) {
       if ($uiStore.isUsingOpenAI) {
         toastStore.addToast({
-          ...OPENAI_DOWNLOAD_DISABLED_MSG_TOAST
+          ...OPENAI_DOWNLOAD_DISABLED_MSG_TOAST()
         });
         return;
       }
@@ -97,7 +97,7 @@
           url = window.URL.createObjectURL(convertedFileBlob);
         } else {
           toastStore.addToast({
-            ...CONVERT_FILE_ERROR_MSG_TOAST
+            ...CONVERT_FILE_ERROR_MSG_TOAST()
           });
         }
         processing = false;

@@ -39,11 +39,9 @@ export const filesCheckSchema = object({
   .noUnknown(true)
   .strict();
 
-export const stringIdOrFileSchema = object({
-  id: string().nullable(),
+export const fileSchema = object({
   file: mixed<File>()
-    .nullable()
-    .test('fileType', 'Please upload a file.', (value) => value == null || value instanceof File)
+    .test('fileType', 'File is required.', (value) => value == null || value instanceof File)
     .test('fileSize', FILE_SIZE_ERROR_TEXT, (value) => {
       if (value == null) {
         return true;
@@ -62,4 +60,6 @@ export const stringIdOrFileSchema = object({
       }
       return true;
     })
-});
+})
+  .noUnknown(true)
+  .strict();

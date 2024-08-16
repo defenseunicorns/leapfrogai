@@ -6,7 +6,7 @@ import { convertFileToPdf } from './utils';
 /**
  * Converts a file to PDF.
  */
-export const GET: RequestHandler = async ({ params, request, locals: { session } }) => {
+export const GET: RequestHandler = async ({ params, locals: { session } }) => {
   if (!session) {
     error(401, 'Unauthorized');
   }

@@ -2,9 +2,9 @@ import type { PageLoad } from './$types';
 import { browser } from '$app/environment';
 import type { LFThread } from '$lib/types/threads';
 import { threadsStore } from '$stores';
-import {superValidate} from "sveltekit-superforms";
-import {yup} from "sveltekit-superforms/adapters";
-import {filesSchema} from "$schemas/files";
+import { superValidate } from 'sveltekit-superforms';
+import { yup } from 'sveltekit-superforms/adapters';
+import { filesSchema } from '$schemas/files';
 
 export const load: PageLoad = async ({ params, fetch }) => {
   const promises = [fetch('/api/assistants'), fetch('/api/files')];

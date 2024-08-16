@@ -60,8 +60,8 @@ describe('/api/files/convert/[id]', () => {
       method: 'GET'
     });
 
-
     await expect(
+      // @ts-expect-error - we want to test this error
       GET({ request, params: { id: 123 }, locals: getLocalsMock() } as RequestEvent<
         RouteParams,
         '/api/files/convert/[id]'
@@ -73,14 +73,13 @@ describe('/api/files/convert/[id]', () => {
 
   it('returns a 404 if the file metadata is not found', async () => {
     const request = new Request('http://thisurlhasnoeffect', {
-      method: 'GET',
-      body: JSON.stringify({ id: 'fakeId123' })
+      method: 'GET'
     });
 
     await expect(
-      GET({ request, params: {}, locals: getLocalsMock() } as RequestEvent<
+      GET({ request, params: { id: 'fakeId123' }, locals: getLocalsMock() } as RequestEvent<
         RouteParams,
-        '/api/files/convert'
+        '/api/files/convert/[id]'
       >)
     ).rejects.toMatchObject({
       status: 404
@@ -92,14 +91,13 @@ describe('/api/files/convert/[id]', () => {
     mockOpenAI.setError('fileContent');
 
     const request = new Request('http://thisurlhasnoeffect', {
-      method: 'GET',
-      body: JSON.stringify({ id: files[0].id })
+      method: 'GET'
     });
 
     await expect(
-      GET({ request, params: {}, locals: getLocalsMock() } as RequestEvent<
+      GET({ request, params: { id: files[0].id }, locals: getLocalsMock() } as RequestEvent<
         RouteParams,
-        '/api/files/convert'
+        '/api/files/convert/[id]'
       >)
     ).rejects.toMatchObject({
       status: 500
@@ -107,14 +105,13 @@ describe('/api/files/convert/[id]', () => {
   });
   it('returns a 404 if the file content is undefined or null', async () => {
     const request = new Request('http://thisurlhasnoeffect', {
-      method: 'GET',
-      body: JSON.stringify({ id: faker.string.uuid() })
+      method: 'GET'
     });
 
     await expect(
-      GET({ request, params: {}, locals: getLocalsMock() } as RequestEvent<
+      GET({ request, params: { id: faker.string.uuid() }, locals: getLocalsMock() } as RequestEvent<
         RouteParams,
-        '/api/files/convert'
+        '/api/files/convert/[id]'
       >)
     ).rejects.toMatchObject({
       status: 404
@@ -130,14 +127,13 @@ describe('/api/files/convert/[id]', () => {
     mockOpenAI.setFiles(files);
 
     const request = new Request('http://thisurlhasnoeffect', {
-      method: 'GET',
-      body: JSON.stringify({ id: files[0].id })
+      method: 'GET'
     });
 
     await expect(
-      GET({ request, params: {}, locals: getLocalsMock() } as RequestEvent<
+      GET({ request, params: { id: files[0].id }, locals: getLocalsMock() } as RequestEvent<
         RouteParams,
-        '/api/files/convert'
+        '/api/files/convert/[id]'
       >)
     ).rejects.toMatchObject({
       status: 500
@@ -154,14 +150,14 @@ describe('/api/files/convert/[id]', () => {
     mockOpenAI.setFiles(files);
 
     const request = new Request('http://thisurlhasnoeffect', {
-      method: 'GET',
-      body: JSON.stringify({ id: files[0].id })
+      method: 'GET'
     });
 
-    const res = await GET({ request, params: {}, locals: getLocalsMock() } as RequestEvent<
-      RouteParams,
-      '/api/files/convert'
-    >);
+    const res = await GET({
+      request,
+      params: { id: files[0].id },
+      locals: getLocalsMock()
+    } as RequestEvent<RouteParams, '/api/files/convert/[id]'>);
     expect(res.status).toEqual(200);
     expect(res.headers.get('Content-Type')).toBe('application/pdf');
     const buffer = await res.arrayBuffer();

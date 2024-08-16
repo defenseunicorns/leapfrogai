@@ -2,10 +2,8 @@ import { POST } from './+server';
 import { getLocalsMock } from '$lib/mocks/misc';
 import type { RequestEvent } from '@sveltejs/kit';
 import type { RouteParams } from './$types';
-import { mockOpenAI } from '../../../../../vitest-setup';
-import { faker } from '@faker-js/faker';
-import { getFakeFiles } from '$testUtils/fakeData';
 import { afterAll } from 'vitest';
+import { fileSchema } from '$schemas/files';
 
 // Allows swapping out the mock per test
 const mocks = vi.hoisted(() => {
@@ -40,7 +38,7 @@ describe('/api/files/convert', () => {
     });
   });
 
-  it('should return 400 if file_id is missing', async () => {
+  it('should return 400 if the form data is missing', async () => {
     const request = new Request('http://thisurlhasnoeffect', {
       method: 'POST'
     });
@@ -55,10 +53,10 @@ describe('/api/files/convert', () => {
     });
   });
 
-  it('returns a 404 if the file metadata is not found', async () => {
+  it('should return 400 if the file is missing from the form data', async () => {
     const request = new Request('http://thisurlhasnoeffect', {
       method: 'POST',
-      body: JSON.stringify({ id: 'fakeId123' })
+      body: new FormData()
     });
 
     await expect(
@@ -67,17 +65,16 @@ describe('/api/files/convert', () => {
         '/api/files/convert'
       >)
     ).rejects.toMatchObject({
-      status: 404
+      status: 400
     });
   });
-  it('returns a 500 if there is an error getting the file content', async () => {
-    const files = getFakeFiles();
-    mockOpenAI.setFiles(files);
-    mockOpenAI.setError('fileContent');
 
+  it('should return 400 if the file in the form data is not of type File', async () => {
+    const formData = new FormData();
+    formData.append('file', '123');
     const request = new Request('http://thisurlhasnoeffect', {
       method: 'POST',
-      body: JSON.stringify({ id: files[0].id })
+      body: formData
     });
 
     await expect(
@@ -86,36 +83,27 @@ describe('/api/files/convert', () => {
         '/api/files/convert'
       >)
     ).rejects.toMatchObject({
-      status: 500
-    });
-  });
-  it('returns a 404 if the file content is undefined or null', async () => {
-    const request = new Request('http://thisurlhasnoeffect', {
-      method: 'POST',
-      body: JSON.stringify({ id: faker.string.uuid() })
-    });
-
-    await expect(
-      POST({ request, params: {}, locals: getLocalsMock() } as RequestEvent<
-        RouteParams,
-        '/api/files/convert'
-      >)
-    ).rejects.toMatchObject({
-      status: 404
+      status: 400
     });
   });
 
   it('returns a 500 if there is an error converting the file', async () => {
+    // When creating the file below, it fails the yup validation for not being an instance of File even though it is
+    // we are mocking the validation here to get past that issue
+    vi.spyOn(fileSchema, 'validate').mockResolvedValueOnce({});
+
+    const formData = new FormData();
+    const fileContent = new Blob(['dummy content'], { type: 'text/plain' });
+    const testFile = new File([fileContent], 'test.txt', { type: 'text/plain' });
+    formData.append('file', testFile);
+
     mocks.convert.mockImplementation((buffer, ext, options, callback) => {
       callback(new Error('Mocked convertAsync error'));
     });
 
-    const files = getFakeFiles();
-    mockOpenAI.setFiles(files);
-
     const request = new Request('http://thisurlhasnoeffect', {
       method: 'POST',
-      body: JSON.stringify({ id: files[0].id })
+      body: formData
     });
 
     await expect(
@@ -129,17 +117,23 @@ describe('/api/files/convert', () => {
   });
 
   it('converts the file', async () => {
+    // When creating the file below, it fails the yup validation for not being an instance of File even though it is
+    // we are mocking the validation here to get past that issue
+    vi.spyOn(fileSchema, 'validate').mockResolvedValueOnce({});
+
+    const formData = new FormData();
+    const fileContent = new Blob(['dummy content'], { type: 'text/plain' });
+    const testFile = new File([fileContent], 'test.txt', { type: 'text/plain' });
+    formData.append('file', testFile);
+
     mocks.convert.mockImplementation((buffer, ext, options, callback) => {
       const pdfBuffer = Buffer.from('testPdf');
       callback(null, pdfBuffer);
     });
 
-    const files = getFakeFiles();
-    mockOpenAI.setFiles(files);
-
     const request = new Request('http://thisurlhasnoeffect', {
       method: 'POST',
-      body: JSON.stringify({ id: files[0].id })
+      body: formData
     });
 
     const res = await POST({ request, params: {}, locals: getLocalsMock() } as RequestEvent<

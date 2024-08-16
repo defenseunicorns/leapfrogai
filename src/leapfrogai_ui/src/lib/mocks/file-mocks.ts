@@ -38,10 +38,10 @@ export const mockGetFileError = (id: string) => {
   server.use(http.get(`/api/files/${id}`, async () => new HttpResponse(null, { status: 500 })));
 };
 
-export const mockConvertFile = (fileContent: string) => {
+export const mockConvertFile = (id: string, fileContent: string) => {
   server.use(
-    http.post(
-      `/api/files/convert`,
+    http.get(
+      `/api/files/convert/${id}`,
       () =>
         new Response(new Blob([fileContent], { type: 'application/pdf' }), {
           headers: {
@@ -52,8 +52,10 @@ export const mockConvertFile = (fileContent: string) => {
   );
 };
 
-export const mockConvertFileError = () => {
-  server.use(http.post(`/api/files/convert`, async () => new HttpResponse(null, { status: 500 })));
+export const mockConvertFileError = (id: string) => {
+  server.use(
+    http.get(`/api/files/convert/${id}`, async () => new HttpResponse(null, { status: 500 }))
+  );
 };
 
 export const mockDeleteCheck = (assistantsToReturn: LFAssistant[]) => {

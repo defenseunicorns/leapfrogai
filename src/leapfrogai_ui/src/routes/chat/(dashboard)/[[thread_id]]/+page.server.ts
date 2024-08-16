@@ -39,7 +39,10 @@ export const actions: Actions = {
                 body: formData
               });
 
-              if (!convertRes.ok) return fail(500, { form });
+              if (!convertRes.ok) {
+                const resJson = await convertRes.json();
+                return fail(500, { form, message: resJson.message });
+              }
 
               const convertedFileBlob = await convertRes.blob();
               buffer = await convertedFileBlob.arrayBuffer();
