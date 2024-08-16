@@ -16,6 +16,10 @@ const { mockSvelteStores } = await vi.hoisted(() => import('$lib/mocks/svelte'))
 // Fixes error: node.scrollIntoView is not a function
 window.HTMLElement.prototype.scrollIntoView = function () {};
 
+Object.assign(navigator, {
+  clipboard: { writeText: vi.fn().mockImplementation(() => Promise.resolve()) }
+});
+
 export const mockOpenAI = new OpenAIMock({ apiKey: '', baseURL: '' });
 
 vi.doMock('$lib/server/constants', () => {
