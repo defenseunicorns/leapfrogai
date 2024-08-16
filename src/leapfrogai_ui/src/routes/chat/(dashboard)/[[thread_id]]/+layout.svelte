@@ -21,6 +21,8 @@
 
 <style lang="scss">
   .chat-content {
-    max-width: calc(100% - 255px); // prevents "random" shrinking of sidebar with some messages
+    max-width: calc(
+      100% - var(--sidebar-width)
+    ); // prevents "random" shrinking of sidebar with some messages
   }
 </style>
