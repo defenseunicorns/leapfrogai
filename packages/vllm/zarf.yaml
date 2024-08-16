@@ -59,3 +59,5 @@ components:
             env:
               - LAI_REPO_ID=###ZARF_PKG_TMPL_MODEL_NAME###
               - LAI_REVISION=###ZARF_PKG_TMPL_MODEL_REVISION###
+              - LAI_QUANTIZATION=gptq
+              - LAI_HF_HUB_ENABLE_HF_TRANSFER=1
