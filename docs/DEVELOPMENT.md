@@ -160,7 +160,7 @@ REG_PORT=5001 ARCH=arm64 LOCAL_VERSION=dev make build-cpu
 
 ## Access
 
-All LeapfrogAI components exposed as `VirtualService` resources can be accessed without port-forwarding if [UDS Core Slim Dev](../packages/k3d-gpu/README.md) is installed with LeapfrogAI packages.
+All LeapfrogAI components exposed as `VirtualService`resources within a [UDS Kubernetes cluster](../packages/k3d-gpu/README.md) can be accessed without port-forwarding if [UDS Core Slim Dev](../packages/k3d-gpu/README.md) is installed with LeapfrogAI packages.
 
 For example, when developing the API and you need access to Supabase, you can point your locally running API to the in-cluster Supabase by setting the Supabase base URL to the in-cluster domain (https://supabase-kong.uds.dev).
 
@@ -168,11 +168,17 @@ The preferred method of testing changes is to fully deploy something to a cluste
 
 ### Backends
 
+The following sections discuss the nuances of developing on or with the LeapfrogAI model backends.
+
+#### Locally
+
+Backends can also be run locally as Python applications. See each model backend's README in the `packages/` directory for more details on running each in development mode.
+
 #### Cluster
 
 The model backends are the only components within the LeapfrogAI stack that are not readily accessible via a `VirtualService`. These must be port-forwarded if a user wants to test a local deployment of the API against an in-cluster backend.
 
-For example, the following bash script can be used to setup CPU RAG:
+For example, the following bash script can be used to setup CPU RAG between a deployed UDS Kubernetes cluster and a locally running LeapfrogAI API:
 
 ```bash
 #!/bin/bash
@@ -190,20 +196,16 @@ export SUPABASE_ANON_KEY=$(kubectl get secret supabase-bootstrap-jwt -n leapfrog
 # Trap SIGINT (Ctrl-C) and SIGTERM (termination signal) to call the cleanup function
 trap cleanup SIGINT SIGTERM
 
-# Start kubectl and uvicorn services in the background and save their PIDs
+# Start Kubectl port-forward services in the background and save their PIDs
 # Expose the backends at different ports to prevent localhost conflict
-kubectl port-forward svc/text-embeddings-model -n leapfrogai 50052:50051 &
+uds zarf tools kubectl port-forward svc/text-embeddings-model -n leapfrogai 50052:50051 &
 PID1=$!
-kubectl port-forward svc/llama-cpp-python-model -n leapfrogai 50051:50051 &
+uds zarf tools kubectl port-forward svc/llama-cpp-python-model -n leapfrogai 50051:50051 &
 PID2=$!
 
 # Wait for all background processes to finish
 wait $PID1 $PID2
 ```
-
-#### Locally
-
-Backends can also be run locally as Python applications. See each model backend's README in the `packages/` directory for more details on running each in development mode.
 
 #### Port Conflicts
 

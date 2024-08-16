@@ -13,7 +13,7 @@ This document is only applicable for spinning up the API in a local Python devel
 ### Running
 
 > [!IMPORTANT]
-> The following steps assume that you already have a deployed and accessible UDS Kubernetes cluster and LeapfrogAI. Please follow the steps within the LeapfrogAI documentation website for details.
+> The following steps assume that you already have a deployed and accessible UDS Kubernetes cluster and LeapfrogAI. Please follow the steps within the [DEVELOPMENT.md](../../docs/DEVELOPMENT.md) for details.
 
 1. Install dependencies
 
@@ -51,7 +51,7 @@ This document is only applicable for spinning up the API in a local Python devel
 
 ### Access
 
-See the Access section of the [DEVELOPMENT.md](../../docs/DEVELOPMENT.md) for different ways to connect the API to a model backend or Supabase.
+See the ["Access" section of the DEVELOPMENT.md](../../docs/DEVELOPMENT.md#access) for different ways to connect the API to a model backend or Supabase.
 
 ### Tests
 
