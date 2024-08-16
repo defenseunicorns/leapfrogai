@@ -40,7 +40,8 @@ export const ACCEPTED_FILE_TYPES = [
   '.ppt',
   '.pptx',
   '.doc',
-  '.docx'
+  '.docx',
+  '.csv'
 ];
 export const ACCEPTED_MIME_TYPES = [
   'application/pdf', // .pdf
@@ -50,8 +51,22 @@ export const ACCEPTED_MIME_TYPES = [
   'application/vnd.ms-powerpoint', // .ppt
   'application/vnd.openxmlformats-officedocument.presentationml.presentation', // .pptx
   'application/msword', // .doc
-  'application/vnd.openxmlformats-officedocument.wordprocessingml.document' //.docx,
+  'application/vnd.openxmlformats-officedocument.wordprocessingml.document', //.docx,
+  'text/csv'
 ];
+
+export const FILE_MIME_TYPES_FOR_CONVERSION = [
+  'text/plain', // .txt, .text
+  'application/octet-stream', //.text
+  'application/vnd.ms-excel', // .xls
+  'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet', // .xlsx
+  'application/vnd.ms-powerpoint', // .ppt
+  'application/vnd.openxmlformats-officedocument.presentationml.presentation', // .pptx
+  'application/msword', // .doc
+  'application/vnd.openxmlformats-officedocument.wordprocessingml.document', //.docx,
+  'text/csv'
+];
+
 export const NO_FILE_ERROR_TEXT = 'Please upload an image or select a pictogram';
 export const AVATAR_FILE_SIZE_ERROR_TEXT = `File must be less than ${MAX_AVATAR_SIZE / 1000000} MB`;
 export const FILE_SIZE_ERROR_TEXT = `File must be less than ${MAX_FILE_SIZE / 1000000} MB`;
