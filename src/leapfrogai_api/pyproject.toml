@@ -8,7 +8,7 @@ version = "0.10.0"
 
 dependencies = [
     "fastapi >= 0.109.1",
-    "openai == 1.32.1",
+    "openai == 1.40.6",
     "uvicorn >= 0.23.2",
     "pydantic >= 2.0.0",
     "docx2txt >= 0.8",

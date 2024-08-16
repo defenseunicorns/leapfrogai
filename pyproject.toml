@@ -11,7 +11,7 @@ readme = "README.md"
 license = {file = "LICENSE"}
 
 dependencies = [  # Dev dependencies needed for all of lfai
-    "openai",
+    "openai == 1.40.6",
     "pip-tools == 7.3.0",
     "httpx",
     "ruff",
