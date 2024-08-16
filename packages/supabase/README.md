@@ -51,6 +51,7 @@ Go to `https://supabase-kong.uds.dev`. The login is `supabase-admin` the passwor
   ```
 
 - Longer term API tokens (30, 60, or 90 days) can be created from the API key workflow within the LeapfrogAI UI
+- Longer term API tokens (30 days) can also be created using the [API documentation](../../src/leapfrogai_api/README.md)
 
 ## Supabase Migrations
 

@@ -38,7 +38,7 @@ Large Language Models (LLMs) are a powerful resource for AI-driven decision maki
 
 ## Structure
 
-The LeapfrogAI repository follows a monorepo structure based around an [API](#api) with each of the [components](#components) included in a dedicated `packages` directory. Each of these package directories contains the source code for each component as well as the deployment infrastructure. The UDS bundles that handle the development and latest deployments of LeapfrogAI are in the `uds-bundles` directory. The structure looks as follows:
+The LeapfrogAI repository follows a monorepo structure based around an [API](#api) with each of the [components](#components) included in a dedicated `packages` directory. The UDS bundles that handle the development and latest deployments of LeapfrogAI are in the `uds-bundles` directory. The structure looks as follows:
 
 ```bash
 leapfrogai/
@@ -99,7 +99,7 @@ LeapfrogAI provides several backends for a variety of use cases. Below is the ba
 
 #### Repeater
 
-The [repeater](packages/repeater/) "model" is a basic "backend" that parrots all inputs it receives back to the user. It is built out the same way all the actual backends are and it primarily used for testing the API.
+The [repeater](packages/repeater/) "model" is a basic "backend" that parrots all inputs it receives back to the user. It is built out the same way all the actual backends are and it is primarily used for testing the API.
 
 ## Usage
 

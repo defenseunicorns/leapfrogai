@@ -66,12 +66,9 @@ LEAPFROGAI_API_BASE_URL=https://leapfrogai-api.uds.dev
 DEFAULT_MODEL=llama-cpp-python # or vllm
 ```
 
-2. Run the frontend migrations
+2. Run the UI migrations
 
-If you deploy the UI with UDS, the necessary database migrations will be applied. You can still run a local version of the UI, but the deployed version will have set up the
-database properly for you.
-
-Further instructions will be coming soon in a future release.
+   If you deploy the UI with UDS, the necessary database migrations will be applied. You can still run a local version of the UI, but the deployed version will have set up the database properly for you.
 
 #### Standalone Supabase
 

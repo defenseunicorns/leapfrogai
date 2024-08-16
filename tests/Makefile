@@ -1,5 +1,7 @@
+SUPABASE_URL := https://supabase-kong.uds.dev
+
 set-supabase:
-	SUPABASE_URL := $(shell cd src/leapfrogai_api; supabase status | awk '/LEAPFROGAI API URL:/ {print $$3}')
+	SUPABASE_URL := ${SUPABASE_URL}
 	SUPABASE_ANON_KEY := $(shell uds zarf tools kubectl get secret -n leapfrogai supabase-bootstrap-jwt -o json | uds zarf tools yq '.data.anon-key' | base64 -d)
 
 define get_jwt_token

@@ -13,7 +13,7 @@ All system requirements and pre-requisites from the [LeapfrogAI documentation we
 ### Deployment
 
 > [!NOTE]
-> The following Make targets from the root of the LeapfrogAI repository or within this sub-directory.
+> The following Make targets can be executed from the root of the LeapfrogAI repository or within this sub-directory.
 
 To deploy a new K3d cluster with [UDS Core Slim Dev](https://github.com/defenseunicorns/uds-core#uds-package-development), use one of the following Make targets.
 
