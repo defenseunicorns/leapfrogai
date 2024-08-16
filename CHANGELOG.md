@@ -1,5 +1,36 @@
 # Changelog
 
+## [0.11.0](https://github.com/defenseunicorns/leapfrogai/compare/v0.10.0...v0.11.0) (2024-08-16)
+
+
+### Features
+
+* **ui:** 663- skeleton text for assistant responses ([#898](https://github.com/defenseunicorns/leapfrogai/issues/898)) ([a4b0e1b](https://github.com/defenseunicorns/leapfrogai/commit/a4b0e1b51afecbbb7731b1d165e9419a4adf3c2f))
+* **ui:** 669-annotations ([#908](https://github.com/defenseunicorns/leapfrogai/issues/908)) ([9d14dbf](https://github.com/defenseunicorns/leapfrogai/commit/9d14dbf8bc66758f918e1461a28303a6499a5290))
+* **ui:** download files ([0ff7aa7](https://github.com/defenseunicorns/leapfrogai/commit/0ff7aa78e4f508d22fc315fe1018b6358364ea34))
+* **ui:** settings/profile header btn re-design ([941da3a](https://github.com/defenseunicorns/leapfrogai/commit/941da3af38621c869b5724dc91439238b046febd))
+
+
+### Bug Fixes
+
+* **api:** Adds migration to prevent null metadata messages ([#895](https://github.com/defenseunicorns/leapfrogai/issues/895)) ([44aafca](https://github.com/defenseunicorns/leapfrogai/commit/44aafca529edfb64a4cd7f7cae86835c46a6ba24))
+* **api:** Fix invalid nltk reference and bug ([#914](https://github.com/defenseunicorns/leapfrogai/issues/914)) ([6e3e5b8](https://github.com/defenseunicorns/leapfrogai/commit/6e3e5b8831f2fdebfab6f01326464c9b65beca14))
+* **api:** Updates unstructured to fix punkt_tab issue ([#905](https://github.com/defenseunicorns/leapfrogai/issues/905)) ([67a05bb](https://github.com/defenseunicorns/leapfrogai/commit/67a05bb3ab012dac605939d85f6d8d243157ee5c))
+* batch requests to the CreateEmbedding stub ([#887](https://github.com/defenseunicorns/leapfrogai/issues/887)) ([8ed4328](https://github.com/defenseunicorns/leapfrogai/commit/8ed4328a5cb2af51ad5ca1f7c0ead0d187336915))
+* Remove explicit requests install ([#906](https://github.com/defenseunicorns/leapfrogai/issues/906)) ([863e9d6](https://github.com/defenseunicorns/leapfrogai/commit/863e9d64d588fa8d7f026b2c3818c68c70c8a70d))
+* **ui:** CSP ([#913](https://github.com/defenseunicorns/leapfrogai/issues/913)) ([b83ef04](https://github.com/defenseunicorns/leapfrogai/commit/b83ef045e9ea6305d811a847a2fed76ad1c4baa9))
+
+
+### Miscellaneous
+
+* add default GH PR workflow triggers to test workflows ([#892](https://github.com/defenseunicorns/leapfrogai/issues/892)) ([c418a4c](https://github.com/defenseunicorns/leapfrogai/commit/c418a4cc46cd7a23f6605252c9474d31e2ee6601))
+* Bumps all the uds core versions to 0.25.0 and updates deployment docs ([#874](https://github.com/defenseunicorns/leapfrogai/issues/874)) ([6ca39f1](https://github.com/defenseunicorns/leapfrogai/commit/6ca39f1b616c436107b9eaf6f36137988b3bade5))
+* Remove "review_requested" as trigger to prevent unintentional test re-runs ([4c20d9e](https://github.com/defenseunicorns/leapfrogai/commit/4c20d9e16eb05ccf9a24a3c9114eb64ecbf8317c))
+* **ui:** content security policy ([#903](https://github.com/defenseunicorns/leapfrogai/issues/903)) ([c2d2262](https://github.com/defenseunicorns/leapfrogai/commit/c2d22622163b21d277eeefedbde020dda6341051))
+* **ui:** improve reliability of playwright test in workflow ([29703cb](https://github.com/defenseunicorns/leapfrogai/commit/29703cb64204879dacee286b158caad63c8c677a))
+* **ui:** improve sveltekit store mocking ([90bef05](https://github.com/defenseunicorns/leapfrogai/commit/90bef057a66ce521d0a6d6276df970c0568121a0))
+* **ui:** typescript updates and fix rag e2e tests ([#883](https://github.com/defenseunicorns/leapfrogai/issues/883)) ([8cd3011](https://github.com/defenseunicorns/leapfrogai/commit/8cd301153a9865e436f90170e971ce482da148bf))
+
 ## [0.10.0](https://github.com/defenseunicorns/leapfrogai/compare/v0.9.2...v0.10.0) (2024-08-02)
 
 
