@@ -8,6 +8,7 @@ import {
   mockDeleteCheck,
   mockDeleteFile,
   mockDeleteFileWithDelay,
+  mockDownloadError,
   mockGetFiles
 } from '$lib/mocks/file-mocks';
 import { beforeEach, vi } from 'vitest';
@@ -171,6 +172,34 @@ describe('file management', () => {
     expect(
       screen.queryByText(/this will affect the following assistants/i)
     ).not.toBeInTheDocument();
+  });
+
+  it('displays an error toast when there is an error downloading a file', async () => {
+    vi.mock('$app/environment', () => ({
+      browser: true
+    }));
+    const toastSpy = vi.spyOn(toastStore, 'addToast');
+    mockDeleteCheck([]); // no assistants affected
+    mockGetFiles(files);
+    for (const file of files) {
+      mockDownloadError(file.id);
+    }
+
+    const checkbox = screen.getByRole('checkbox', {
+      name: /select all rows/i
+    });
+    await fireEvent.click(checkbox);
+
+    const downloadBtn = screen.getByRole('button', { name: /download/i });
+
+    await userEvent.click(downloadBtn);
+    files.forEach(() => {
+      expect(toastSpy).toHaveBeenCalledWith({
+        kind: 'error',
+        title: 'Download Failed',
+        subtitle: undefined // currentFilename is undefined since we don't get that far
+      });
+    });
   });
 });
 
