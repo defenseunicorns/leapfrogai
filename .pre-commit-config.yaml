@@ -9,6 +9,9 @@ repos:
         name: Large Files Check
         args: ["--maxkb=1024"]
 
+      - id: check-merge-conflict
+        name: Check for Upstream Merge Conflicts
+
       - id: detect-aws-credentials
         name: Check AWS Credentials
         args:
