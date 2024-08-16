@@ -23,6 +23,6 @@ components:
           - wait:
               cluster:
                 kind: Job
-                name: api-migrations
+                name: leapfrogai-api-migrations-###ZARF_PKG_TMPL_IMAGE_VERSION###
                 namespace: leapfrogai
                 condition: complete

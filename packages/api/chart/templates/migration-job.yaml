@@ -1,7 +1,7 @@
 apiVersion: batch/v1
 kind: Job
 metadata:
-  name: {{ include "chart.fullname" . }}-migrations
+  name: {{ include "chart.fullname" . }}-migrations-{{ .Values.api.migration.image.tag | default .Chart.AppVersion }}
   namespace: {{ .Release.Namespace }}
   labels:
     {{- include "chart.labels" . | nindent 4 }}
