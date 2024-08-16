@@ -340,6 +340,7 @@
             data-testid="upload-file-btn"
             name="files"
             outline
+            multiple
             size="sm"
             on:change={(e) => {
               uploadingFile = true;

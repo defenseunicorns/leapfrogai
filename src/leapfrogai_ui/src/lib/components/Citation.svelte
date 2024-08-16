@@ -86,12 +86,8 @@
 
         // non-pdf
         else if (FILE_MIME_TYPES_FOR_CONVERSION.includes(contentType)) {
-          const convertRes = await fetch('/api/files/convert', {
-            method: 'POST',
-            body: JSON.stringify({ id: file.id }),
-            headers: {
-              "content-type": "application/json"
-            }
+          const convertRes = await fetch(`/api/files/convert/${file.id}`, {
+            method: 'GET'
           });
           if (!convertRes.ok) {
             handleFileError();

@@ -1,8 +1,8 @@
-import { POST } from './+server';
+import { GET } from './+server';
 import { getLocalsMock } from '$lib/mocks/misc';
 import type { RequestEvent } from '@sveltejs/kit';
 import type { RouteParams } from './$types';
-import { mockOpenAI } from '../../../../../vitest-setup';
+import { mockOpenAI } from '../../../../../../vitest-setup';
 import { faker } from '@faker-js/faker';
 import { getFakeFiles } from '$testUtils/fakeData';
 import { afterAll } from 'vitest';
@@ -20,35 +20,51 @@ vi.mock('libreoffice-convert', () => ({
   }
 }));
 
-describe('/api/files/convert', () => {
+describe('/api/files/convert/[id]', () => {
   afterAll(() => {
     vi.restoreAllMocks();
   });
 
   it('returns a 401 when there is no session', async () => {
     const request = new Request('http://thisurlhasnoeffect', {
-      method: 'POST'
+      method: 'GET'
     });
 
     await expect(
-      POST({ request, params: {}, locals: getLocalsMock({ nullSession: true }) } as RequestEvent<
+      GET({ request, params: {}, locals: getLocalsMock({ nullSession: true }) } as RequestEvent<
         RouteParams,
-        '/api/files/convert'
+        '/api/files/convert/[id]'
       >)
     ).rejects.toMatchObject({
       status: 401
     });
   });
 
-  it('should return 400 if file_id is missing', async () => {
+  it('should return 400 if file id is missing', async () => {
     const request = new Request('http://thisurlhasnoeffect', {
-      method: 'POST'
+      method: 'GET'
     });
 
     await expect(
-      POST({ request, params: {}, locals: getLocalsMock() } as RequestEvent<
+      GET({ request, params: {}, locals: getLocalsMock() } as RequestEvent<
         RouteParams,
-        '/api/files/convert'
+        '/api/files/convert/[id]'
+      >)
+    ).rejects.toMatchObject({
+      status: 400
+    });
+  });
+
+  it('should return 400 if file id is not a string', async () => {
+    const request = new Request('http://thisurlhasnoeffect', {
+      method: 'GET'
+    });
+
+
+    await expect(
+      GET({ request, params: { id: 123 }, locals: getLocalsMock() } as RequestEvent<
+        RouteParams,
+        '/api/files/convert/[id]'
       >)
     ).rejects.toMatchObject({
       status: 400
@@ -57,12 +73,12 @@ describe('/api/files/convert', () => {
 
   it('returns a 404 if the file metadata is not found', async () => {
     const request = new Request('http://thisurlhasnoeffect', {
-      method: 'POST',
+      method: 'GET',
       body: JSON.stringify({ id: 'fakeId123' })
     });
 
     await expect(
-      POST({ request, params: {}, locals: getLocalsMock() } as RequestEvent<
+      GET({ request, params: {}, locals: getLocalsMock() } as RequestEvent<
         RouteParams,
         '/api/files/convert'
       >)
@@ -76,12 +92,12 @@ describe('/api/files/convert', () => {
     mockOpenAI.setError('fileContent');
 
     const request = new Request('http://thisurlhasnoeffect', {
-      method: 'POST',
+      method: 'GET',
       body: JSON.stringify({ id: files[0].id })
     });
 
     await expect(
-      POST({ request, params: {}, locals: getLocalsMock() } as RequestEvent<
+      GET({ request, params: {}, locals: getLocalsMock() } as RequestEvent<
         RouteParams,
         '/api/files/convert'
       >)
@@ -91,12 +107,12 @@ describe('/api/files/convert', () => {
   });
   it('returns a 404 if the file content is undefined or null', async () => {
     const request = new Request('http://thisurlhasnoeffect', {
-      method: 'POST',
+      method: 'GET',
       body: JSON.stringify({ id: faker.string.uuid() })
     });
 
     await expect(
-      POST({ request, params: {}, locals: getLocalsMock() } as RequestEvent<
+      GET({ request, params: {}, locals: getLocalsMock() } as RequestEvent<
         RouteParams,
         '/api/files/convert'
       >)
@@ -114,12 +130,12 @@ describe('/api/files/convert', () => {
     mockOpenAI.setFiles(files);
 
     const request = new Request('http://thisurlhasnoeffect', {
-      method: 'POST',
+      method: 'GET',
       body: JSON.stringify({ id: files[0].id })
     });
 
     await expect(
-      POST({ request, params: {}, locals: getLocalsMock() } as RequestEvent<
+      GET({ request, params: {}, locals: getLocalsMock() } as RequestEvent<
         RouteParams,
         '/api/files/convert'
       >)
@@ -138,11 +154,11 @@ describe('/api/files/convert', () => {
     mockOpenAI.setFiles(files);
 
     const request = new Request('http://thisurlhasnoeffect', {
-      method: 'POST',
+      method: 'GET',
       body: JSON.stringify({ id: files[0].id })
     });
 
-    const res = await POST({ request, params: {}, locals: getLocalsMock() } as RequestEvent<
+    const res = await GET({ request, params: {}, locals: getLocalsMock() } as RequestEvent<
       RouteParams,
       '/api/files/convert'
     >);
