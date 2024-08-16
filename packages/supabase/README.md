@@ -32,7 +32,7 @@ uds zarf package deploy packages/supabase/zarf-package-supabase-*-dev.tar.zst --
 Go to `https://supabase-kong.uds.dev`. The login username is `supabase-admin`, and the password is randomly generated in a cluster secret named `supabase-dashboard-secret`. Run the following to grab the password in a single-line command:
 
 ```bash
-uds zarf tools kubectl get secret -n leapfrogai supabase-dashboard-secret  -o json | jq '.data | map_values(@base64d)'
+uds zarf tools kubectl get secret -n leapfrogai supabase-dashboard-secret  -o json | uds zarf tools yq '.data.password' | base64 -d
 ```
 
 **NOTE:** The `uds.dev` domain is only used for locally deployed LeapfrogAI packages, so this domain will be unreachable without first manually deploying the UDS bundle.
