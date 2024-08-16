@@ -7,9 +7,9 @@ metadata:
 spec:
   network:
     expose:
-      - service: api
+      - service: {{ include "chart.fullname" . }}
         podLabels:
-          app: api
+          app: {{ include "chart.fullname" . }}
         host: {{ include "chart.fullname" . }}
         gateway: tenant
         port: {{ .Values.api.env.port }}

@@ -11,11 +11,11 @@ spec:
     type: RollingUpdate
   selector:
     matchLabels:
-      app: api
+      app: {{ include "chart.fullname" . }}
   template:
     metadata:
       labels:
-        app: api
+        app: {{ include "chart.fullname" . }}
     spec:
       serviceAccountName: read-configmaps
       securityContext:
