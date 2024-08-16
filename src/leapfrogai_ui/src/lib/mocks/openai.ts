@@ -41,6 +41,7 @@ class OpenAI {
     updateAssistant: boolean;
     listAssistants: boolean;
     deleteFile: boolean;
+    fileContent: boolean;
   };
 
   constructor({ apiKey, baseURL }: { apiKey: string; baseURL: string }) {
@@ -69,7 +70,8 @@ class OpenAI {
       retrieveAssistant: false,
       updateAssistant: false,
       listAssistants: false,
-      deleteFile: false
+      deleteFile: false,
+      fileContent: false
     };
   }
 
@@ -116,6 +118,9 @@ class OpenAI {
   }
 
   files = {
+    retrieve: vi.fn().mockImplementation((id) => {
+      return Promise.resolve(this.uploadedFiles.find((file) => file.id === id));
+    }),
     list: vi.fn().mockImplementation(() => {
       return Promise.resolve({ data: this.uploadedFiles });
     }),
@@ -127,6 +132,10 @@ class OpenAI {
       return Promise.resolve({ id, object: 'file', deleted: true });
     }),
     content: vi.fn().mockImplementation(() => {
+      if (this.errors.fileContent) {
+        this.resetError('fileContent');
+        return Promise.reject();
+      }
       return new Response(JSON.stringify({ content: 'file content' }), {
         headers: { 'Content-Type': 'application/pdf' }
       });
