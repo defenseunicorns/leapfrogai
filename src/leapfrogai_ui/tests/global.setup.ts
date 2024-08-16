@@ -43,23 +43,9 @@ setup('authenticate', async ({ page }) => {
     const emailField = page.getByLabel('Username or email');
     const passwordField = page.getByLabel('Password');
 
-    console.log('using username:', process.env.USERNAME);
-    console.log('using password:', process.env.PASSWORD);
     await emailField.fill(process.env.USERNAME!);
     await passwordField.click();
     await passwordField.fill(process.env.PASSWORD!);
-
-    const filledEmail = await emailField.inputValue();
-    const filledPassword = await passwordField.inputValue();
-    if (!filledEmail || !filledPassword) {
-      console.log('refilling');
-      await emailField.click();
-      await emailField.clear();
-      await emailField.fill(process.env.USERNAME!);
-      await passwordField.click();
-      await passwordField.clear();
-      await passwordField.fill(process.env.PASSWORD!);
-    }
 
     await page.getByRole('button', { name: 'Log In' }).click();
 

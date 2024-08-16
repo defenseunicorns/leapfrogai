@@ -36,4 +36,8 @@ curl --location --request PUT "https://keycloak.admin.uds.dev/admin/realms/uds/a
 \"id\": \"${CONDITIONAL_OTP_ID}\",
 \"requirement\": \"DISABLED\"
 }"
-echo "User Created"
+USER=$(curl --location "https://keycloak.admin.uds.dev/admin/realms/uds/users?user=doug" \
+--header "Content-Type: application/json" \
+--header "Authorization: Bearer ${KEYCLOAK_ADMIN_TOKEN}" \
+)
+echo "User: $USER"
