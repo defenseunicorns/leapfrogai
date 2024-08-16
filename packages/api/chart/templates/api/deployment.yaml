@@ -3,6 +3,8 @@ kind: Deployment
 metadata:
   name: {{ include "chart.fullname" . }}
   namespace: {{ .Release.Namespace }}
+  labels:
+    {{- include "chart.labels" . | nindent 4 }}
 spec:
   replicas: {{ .Values.api.replicas }}
   strategy:
@@ -11,13 +13,13 @@ spec:
     type: RollingUpdate
   selector:
     matchLabels:
-      app: {{ include "chart.fullname" . }}
+      {{- include "chart.selectorLabels" . | nindent 6 }}
   template:
     metadata:
       labels:
-        app: {{ include "chart.fullname" . }}
+        {{- include "chart.selectorLabels" . | nindent 8 }}
     spec:
-      serviceAccountName: read-configmaps
+      serviceAccountName: {{ include "chart.serviceAccountName" . }}
       securityContext:
         {{- toYaml .Values.podSecurityContext | nindent 8 }}
       containers:

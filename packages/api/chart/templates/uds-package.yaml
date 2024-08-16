@@ -4,12 +4,14 @@ kind: Package
 metadata:
   name: {{ include "chart.fullname" . }}
   namespace: {{ .Release.Namespace }}
+  labels:
+    {{- include "chart.labels" . | nindent 4 }}
 spec:
   network:
     expose:
       - service: {{ include "chart.fullname" . }}
         podLabels:
-          app: {{ include "chart.fullname" . }}
+          {{- include "chart.selectorLabels" . | nindent 10 }}
         host: {{ include "chart.fullname" . }}
         gateway: tenant
         port: {{ .Values.api.env.port }}
@@ -23,6 +25,6 @@ spec:
 
       - direction: Egress
         podLabels:
-          app: api
+          {{- include "chart.selectorLabels" . | nindent 10 }}
         remoteGenerated: Anywhere
 {{- end }}

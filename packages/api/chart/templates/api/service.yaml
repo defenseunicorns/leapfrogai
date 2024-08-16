@@ -7,10 +7,11 @@ metadata:
     zarf.dev/connect-description: "Load the OpenAPI specification for the LeapfrogAI API"
     zarf.dev/connect-url: "/docs"
   labels:
+    {{- include "chart.labels" . | nindent 4 }}
     zarf.dev/connect-name: {{ include "chart.fullname" . }}
 spec:
   selector:
-    app: {{ include "chart.fullname" . }}
+    {{- include "chart.selectorLabels" . | nindent 4 }}
   ports:
     - name: http
       protocol: TCP
