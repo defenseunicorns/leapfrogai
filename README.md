@@ -36,6 +36,18 @@ Large Language Models (LLMs) are a powerful resource for AI-driven decision maki
 
 - **Mission Integration**: By hosting your own LLM, you have the ability to customize the model's parameters, training data, and more, tailoring the AI to your specific needs.
 
+## Short Minute and a Half Demo
+
+<a href="https://www.youtube.com/watch?v=BowOJttHyPU" target="_blank">
+ <img src="website/assets/img/walkthrough_thumbnail.jpg" alt="2 minute demo of features of LeapfrogAI" width="540"/>
+</a>
+
+LeapfrogAI, built on top of [Unicorn Delivery Service (UDS)](https://github.com/defenseunicorns/uds-core) includes several features including:
+- **Single Sign-On**
+- **Non-proprietary API Compatible with OpenAI's API**
+- **Retrieval Augmetented Generation (RAG)**
+- **And More!**
+
 ## Structure
 
 The LeapfrogAI repository follows a monorepo structure based around an [API](#api) with each of the [components](#components) included in a dedicated `packages` directory. The UDS bundles that handle the development and latest deployments of LeapfrogAI are in the `uds-bundles` directory. The structure looks as follows:
