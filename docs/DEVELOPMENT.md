@@ -118,7 +118,7 @@ uds zarf package deploy zarf-package-*.tar.zst --confirm
     LOCAL_VERSION=dev ARCH=amd64 make build-ui
     LOCAL_VERSION=dev ARCH=amd64 make build-api
     LOCAL_VERSION=dev ARCH=amd64 make build-supabase
-    LOCAL_VERSION=dev ARCH=amd64 make build-vllm                 # if you have GPUs (macOS not supported)
+    LOCAL_VERSION=dev ARCH=amd64 make build-vllm                 # if you have NVIDIA GPUs (AMR64 not supported)
     LOCAL_VERSION=dev ARCH=amd64 make build-llama-cpp-python     # if you have CPU only
     LOCAL_VERSION=dev ARCH=amd64 make build-text-embeddings
     LOCAL_VERSION=dev ARCH=amd64 make build-whisper
@@ -166,6 +166,17 @@ For example, when developing the API and you need access to Supabase, you can po
 
 The preferred method of testing changes is to fully deploy something to a cluster and run local smoke tests as needed. The GitHub workflows will run all integration and E2E test suites.
 
+### Supabase
+
+Supabase is a special case when spun up inside of a UDS Kubernetes cluster. All of the bitnami Supabase components are served through the Kong service mesh, which is exposed as https://supabase-kong.uds.dev through our Istio tenant gateway. All of the Make commands, and our UI and API, correctly route to the right endpoint for interacting with each sub-component of Supabase. The UI and API use the `supabase` Typescript or Python package to interact with Supabase without issue.
+
+Although not recommended, below are example endpoints for direct interaction with Supabase sub-components is as follows:
+
+- https://supabase-kong.uds.dev/auth/v1/* -> to access auth endpoints
+- https://supabase-kong.uds.dev/rest/v1/ -> for postgres
+
+We highly recommend using the published `supabase` packages, or interacting with Supabase via the LeapfrogAI API or UI. Go to https://leapfrogai-api.uds.dev/docs to see the exposed Supabase sub-component routes under the `leapfrogai` namespace / routes.
+
 ### Backends
 
 The following sections discuss the nuances of developing on or with the LeapfrogAI model backends.
@@ -198,6 +209,7 @@ trap cleanup SIGINT SIGTERM
 
 # Start Kubectl port-forward services in the background and save their PIDs
 # Expose the backends at different ports to prevent localhost conflict
+# Make sure to change the config.yaml in the api source directory
 uds zarf tools kubectl port-forward svc/text-embeddings-model -n leapfrogai 50052:50051 &
 PID1=$!
 uds zarf tools kubectl port-forward svc/llama-cpp-python-model -n leapfrogai 50051:50051 &

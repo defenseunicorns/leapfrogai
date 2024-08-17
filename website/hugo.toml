@@ -51,7 +51,9 @@ proxy = "direct"
   copyright           = "Defense Unicorns"
   github_project_repo = "https://github.com/defenseunicorns/leapfrogai"
   github_repo         = "https://github.com/defenseunicorns/leapfrogai"
-  version             = "v0.10.0"
+  # x-release-please-start-version
+  version             = "v0.11.0"
+  # x-release-please-end
 
   # version_menu = "v1"
   # url_latest_version = "https://latest-version"

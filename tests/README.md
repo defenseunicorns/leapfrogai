@@ -6,14 +6,27 @@ Please see the [documentation in the LeapfrogAI UI sub-directory](../src/leapfro
 
 ## API Tests
 
-Please see the [Makefile](./Makefile) for commands related to testing the various LeapfrogAI Python services.
-
-For the Python tests within this directory, the following components must be running and accessible:
+For the unit and integration tests within this directory, the following components must be running and accessible:
 
 - [LeapfrogAI API](../src/leapfrogai_api/README.md)
 - [Repeater](../packages/repeater/README.md)
+- [Supabase](../packages/supabase/README.md)
 
-Review the different test code and test fixtures for more details.
+Please see the [Makefile](./Makefile) for more details. Below is a quick synopsis of the available Make targets:
+
+```bash
+# create a test user for the tests
+make test-user SUPABASE_URL=https://supabase-kong.uds.dev
+
+# setup the environment variables for the tests
+make test-env SUPABASE_URL=https://supabase-kong.uds.dev
+
+# run the unit tests
+make test-api-unit SUPABASE_URL=https://supabase-kong.uds.dev
+
+# run the integration tests
+make test-api-integration SUPABASE_URL=https://supabase-kong.uds.dev
+```
 
 ## Load Tests
 
