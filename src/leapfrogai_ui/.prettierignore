@@ -6,3 +6,5 @@ yarn.lock
 ../../packages/ui/chart/
 
 supabase
+
+README.md

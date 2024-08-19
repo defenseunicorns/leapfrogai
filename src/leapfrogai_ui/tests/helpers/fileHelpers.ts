@@ -21,7 +21,7 @@ export const uploadFileWithApi = async (
     type: contentType
   });
 
-  // This can also be done IAW the OpenAI API documentation with fs.createReadStream, but Leapfrog API does not currently
+  // This can also be done IAW the OpenAI API documentation with fs.createReadStream, but LeapfrogAI API does not currently
   // support a ReadStream. Open Issue: https://github.com/defenseunicorns/leapfrogai/issues/710
 
   return openAIClient.files.create({
@@ -82,7 +82,7 @@ export const createExcelFile = (options: CreateFileOptions = {}) => {
   const filenameWithExtension = `${filename}${extension}`;
 
   const workbook = XLSX.utils.book_new();
-  const worksheet = XLSX.utils.json_to_sheet([{ Name: 'Leapfrog', Age: 1, Type: 'AI' }]);
+  const worksheet = XLSX.utils.json_to_sheet([{ Name: 'LeapfrogAI', Age: 1, Type: 'AI' }]);
   XLSX.utils.book_append_sheet(workbook, worksheet, 'Sheet1');
   XLSX.writeFile(workbook, `./tests/fixtures/${filenameWithExtension}`);
 
