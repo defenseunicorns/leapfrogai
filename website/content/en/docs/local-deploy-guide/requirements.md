@@ -10,12 +10,12 @@ Prior to deploying LeapfrogAI, ensure that the following tools, packages, and re
 
 Please review the following table to ensure your system meets the minimum requirements. GPU requirements only apply when your system is capable of deploying a GPU-accelerated version of the LeapfrogAI stack.
 
-|      | Minimum            | Recommended (Performance) |
-|------|--------------------|---------------------------|
-| DISK | 256 GB             | 1 TB                      |
-| RAM  | 32 GB              | 128 GB                    |
-| CPU  | 8 Cores @ 3.0 GHz  | 32 Cores @ 3.0 GHz        |
-| GPU  | N/A                | 2x NVIDIA RTX 4090 GPUs   |
+|      | Minimum (CPU)      | Minimum (GPU)              | Recommended (Performance) |
+|------|--------------------|----------------------------|---------------------------|
+| DISK | 256 GB             | 256 GB                     | 1 TB                      |
+| RAM  | 32 GB              | 32 GB                      | 128 GB                    |
+| CPU  | 8 Cores @ 3.0 GHz  | 8 Cores @ 3.0 GHz          | 32 Cores @ 3.0 GHz        |
+| GPU  | N/A                | 1x NVIDIA GPU @ 12 GB VRAM | 2x NVIDIA RTX 4090 GPUs   |
 
 ## Tested Environments
 
