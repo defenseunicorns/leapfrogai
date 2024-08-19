@@ -94,9 +94,11 @@ def test_thread_file_annotations(client_name):
     # assert len(messages) == 1
     assert all(isinstance(message, Message) for message in messages)
 
-    # Get the response content
-    message_content = messages[0].content[0].text
+    # Get the response content from the last message
+    message_content = messages[-1].content[0].text
     assert isinstance(message_content, Text)
+
+    assert len(message_content.annotations) > 0
 
     # Check annotations return type
     for a in message_content.annotations:
