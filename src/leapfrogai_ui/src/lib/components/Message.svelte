@@ -130,7 +130,7 @@
         <DynamicPictogram size="xs" iconName={assistantImage} />
       </div>
     {:else}
-      <img alt="LeapfrogAI" src={frog} class="chat-icon" data-testid="leapfrog-icon" />
+      <img alt="LeapfrogAI" src={frog} class="chat-icon" data-testid="leapfrogai-icon" />
     {/if}
 
     <div class="flex flex-grow flex-col gap-1 overflow-hidden pb-1">

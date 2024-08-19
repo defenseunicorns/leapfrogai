@@ -164,7 +164,7 @@ build-gpu: build-supabase build-api build-ui build-vllm build-text-embeddings bu
 
 build-all: build-cpu build-gpu ## Build all of the LFAI packages
 
-include tests/make-tests.mk
+include tests/Makefile
 
 include packages/k3d-gpu/Makefile
 
