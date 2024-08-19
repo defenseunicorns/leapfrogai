@@ -13,7 +13,7 @@ dependencies = [
     "grpcio-reflection == 1.62.1.0",
     "grpcio-health-checking == 1.62.1",
     "confz == 2.0.1",
-    "pydantic == 2.0",
+    "pydantic == 2.8.2",
     "click == 8.1.7",
 ]
 requires-python = "~=3.11"
@@ -27,9 +27,7 @@ generate-hashes = true
 [tool.setuptools.packages.find]
 where = ["../"]
 include = ["leapfrogai_sdk*"]
-exclude = [
-    "leapfrogai_sdk/proto",
-]
+exclude = ["leapfrogai_sdk/proto"]
 namespaces = false
 
 [tool.pytest.ini_options]
@@ -38,13 +36,7 @@ addopts = ["--import-mode=importlib"]
 [tool.ruff]
 target-version = "py311"
 # exclude generated grpc code
-exclude = [
-    "audio",
-    "chat",
-    "completion",
-    "embeddings",
-    "name",
-]
+exclude = ["audio", "chat", "completion", "embeddings", "name"]
 
 [build-system]
 requires = ["setuptools"]

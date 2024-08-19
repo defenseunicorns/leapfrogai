@@ -19,16 +19,14 @@ requires-python = "~=3.11"
 readme = "README.md"
 
 [project.optional-dependencies]
-dev = [
-    "huggingface_hub == 0.24.5",
-]
+dev = ["huggingface_hub == 0.24.5"]
 
 [tool.pip-tools]
 generate-hashes = true
 
 [tool.setuptools]
 packages = ["leapfrogai_sdk"]
-package-dir = {"" = "../../src"}
+package-dir = { "" = "../../src" }
 
 [tool.pytest.ini_options]
 addopts = ["--import-mode=importlib"]
