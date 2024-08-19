@@ -66,8 +66,13 @@ If you are experiencing issues even after carefully following the instructions b
 
 ### NVIDIA Container Toolkit
 
-- Follow the [instructions](https://docs.nvidia.com/datacenter/cloud-native/container-toolkit/latest/install-guide.html#installing-with-apt) to download the NVIDIA container toolkit (>=1.14).
-- After the successful installation off the toolkit, follow the [toolkit instructions](https://docs.nvidia.com/datacenter/cloud-native/container-toolkit/latest/install-guide.html#configuring-docker) to verify that your default Docker runtime is configured for NVIDIA.
+- Read the pre-requisites for installation and follow the [instructions](https://docs.nvidia.com/datacenter/cloud-native/container-toolkit/latest/install-guide.html#installing-with-apt) to download and install the NVIDIA container toolkit (>=1.14).
+- After the successful installation off the toolkit, follow the [toolkit instructions](https://docs.nvidia.com/datacenter/cloud-native/container-toolkit/latest/install-guide.html#configuring-docker) to verify that your default Docker runtime is configured for NVIDIA:
+
+  ```bash
+  nvidia-ctk runtime configure --runtime=docker --config=$HOME/.config/docker/daemon.json
+  ```
+
 - Verify that `nvidia` is now a runtime available to the Docker daemon to use:
 
   ```bash
@@ -76,7 +81,12 @@ If you are experiencing issues even after carefully following the instructions b
   ```
 
 - [Try out a sample CUDA workload](https://docs.nvidia.com/datacenter/cloud-native/container-toolkit/latest/sample-workload.html) to ensure your Docker containers have access to the GPUs after configuration.
-- (OPTIONAL) You can configure Docker to use the `nvidia` runtime by default by adding the `--set-as-default` flag during the container toolkit post-installation configuration step
+- (OPTIONAL) You can configure Docker to use the `nvidia` runtime by default by adding the `--set-as-default` flag during the container toolkit post-installation configuration step by running the following command:
+
+  ```bash
+  nvidia-ctk runtime configure --runtime=docker --config=$HOME/.config/docker/daemon.json --set-as-default
+  ```
+
 - (OPTIONAL) Verify that the default runtime is changed by running the following command:
 
   ```bash
