@@ -68,8 +68,8 @@ jobs:
           zarf package create packages/api --set=LEAPFROGAI_IMAGE_VERSION=${{ steps.get_version.outputs.version-without-v }} --architecture amd64 --confirm
           zarf package create packages/api --set=LEAPFROGAI_IMAGE_VERSION=${{ steps.get_version.outputs.version-without-v }} --architecture arm64 --confirm
 
-          zarf package publish zarf-package-leapfrogai-api-amd64-${{ steps.get_version.outputs.version-without-v }}.tar.zst oci://ghcr.io/defenseunicorns/packages/leapfrogai
-          zarf package publish zarf-package-leapfrogai-api-arm64-${{ steps.get_version.outputs.version-without-v }}.tar.zst oci://ghcr.io/defenseunicorns/packages/leapfrogai
+          zarf package publish zarf-package-leapfrogai-api-amd64-${{ steps.get_version.outputs.version-without-v }}.tar.zst oci://ghcr.io/defenseunicorns/packages/uds/leapfrogai
+          zarf package publish zarf-package-leapfrogai-api-arm64-${{ steps.get_version.outputs.version-without-v }}.tar.zst oci://ghcr.io/defenseunicorns/packages/uds/leapfrogai
 
           docker image prune -af
           rm zarf-package-leapfrogai-api-*.tar.zst
@@ -82,8 +82,8 @@ jobs:
           zarf package create packages/ui --set=IMAGE_VERSION=${{ steps.get_version.outputs.version-without-v }} --architecture amd64 --confirm
           zarf package create packages/ui --set=IMAGE_VERSION=${{ steps.get_version.outputs.version-without-v }} --architecture arm64 --confirm
 
-          zarf package publish zarf-package-leapfrogai-ui-amd64-${{ steps.get_version.outputs.version-without-v }}.tar.zst oci://ghcr.io/defenseunicorns/packages/leapfrogai
-          zarf package publish zarf-package-leapfrogai-ui-arm64-${{ steps.get_version.outputs.version-without-v }}.tar.zst oci://ghcr.io/defenseunicorns/packages/leapfrogai
+          zarf package publish zarf-package-leapfrogai-ui-amd64-${{ steps.get_version.outputs.version-without-v }}.tar.zst oci://ghcr.io/defenseunicorns/packages/uds/leapfrogai
+          zarf package publish zarf-package-leapfrogai-ui-arm64-${{ steps.get_version.outputs.version-without-v }}.tar.zst oci://ghcr.io/defenseunicorns/packages/uds/leapfrogai
 
           docker image prune -af
           rm zarf-package-leapfrogai-ui-*.tar.zst
@@ -95,8 +95,8 @@ jobs:
           zarf package create packages/supabase --set=IMAGE_VERSION=${{ steps.get_version.outputs.version-without-v }} --architecture amd64 --confirm
           zarf package create packages/supabase --set=IMAGE_VERSION=${{ steps.get_version.outputs.version-without-v }} --architecture arm64 --confirm
 
-          zarf package publish zarf-package-supabase-amd64-${{ steps.get_version.outputs.version-without-v }}.tar.zst oci://ghcr.io/defenseunicorns/packages/leapfrogai
-          zarf package publish zarf-package-supabase-arm64-${{ steps.get_version.outputs.version-without-v }}.tar.zst oci://ghcr.io/defenseunicorns/packages/leapfrogai
+          zarf package publish zarf-package-supabase-amd64-${{ steps.get_version.outputs.version-without-v }}.tar.zst oci://ghcr.io/defenseunicorns/packages/uds/leapfrogai
+          zarf package publish zarf-package-supabase-arm64-${{ steps.get_version.outputs.version-without-v }}.tar.zst oci://ghcr.io/defenseunicorns/packages/uds/leapfrogai
 
       - name: Build and Publish repeater
         run: |
@@ -105,8 +105,8 @@ jobs:
           zarf package create packages/repeater --set=IMAGE_VERSION=${{ steps.get_version.outputs.version-without-v }} --architecture amd64 --confirm
           zarf package create packages/repeater --set=IMAGE_VERSION=${{ steps.get_version.outputs.version-without-v }} --architecture arm64 --confirm
 
-          zarf package publish zarf-package-repeater-amd64-${{ steps.get_version.outputs.version-without-v }}.tar.zst oci://ghcr.io/defenseunicorns/packages/leapfrogai
-          zarf package publish zarf-package-repeater-arm64-${{ steps.get_version.outputs.version-without-v }}.tar.zst oci://ghcr.io/defenseunicorns/packages/leapfrogai
+          zarf package publish zarf-package-repeater-amd64-${{ steps.get_version.outputs.version-without-v }}.tar.zst oci://ghcr.io/defenseunicorns/packages/uds/leapfrogai
+          zarf package publish zarf-package-repeater-arm64-${{ steps.get_version.outputs.version-without-v }}.tar.zst oci://ghcr.io/defenseunicorns/packages/uds/leapfrogai
 
           docker image prune -af
           rm zarf-package-repeater-*.tar.zst
@@ -118,8 +118,8 @@ jobs:
           zarf package create packages/llama-cpp-python --set=IMAGE_VERSION=${{ steps.get_version.outputs.version-without-v }} --architecture amd64 --confirm
           zarf package create packages/llama-cpp-python --set=IMAGE_VERSION=${{ steps.get_version.outputs.version-without-v }} --architecture arm64 --confirm
 
-          zarf package publish zarf-package-llama-cpp-python-amd64-${{ steps.get_version.outputs.version-without-v }}.tar.zst oci://ghcr.io/defenseunicorns/packages/leapfrogai
-          zarf package publish zarf-package-llama-cpp-python-arm64-${{ steps.get_version.outputs.version-without-v }}.tar.zst oci://ghcr.io/defenseunicorns/packages/leapfrogai
+          zarf package publish zarf-package-llama-cpp-python-amd64-${{ steps.get_version.outputs.version-without-v }}.tar.zst oci://ghcr.io/defenseunicorns/packages/uds/leapfrogai
+          zarf package publish zarf-package-llama-cpp-python-arm64-${{ steps.get_version.outputs.version-without-v }}.tar.zst oci://ghcr.io/defenseunicorns/packages/uds/leapfrogai
 
           docker image prune -af
           rm zarf-package-llama-*.tar.zst
@@ -130,7 +130,7 @@ jobs:
 
           zarf package create packages/vllm --set=IMAGE_VERSION=${{ steps.get_version.outputs.version-without-v }} --confirm
 
-          zarf package publish zarf-package-vllm-amd64-${{ steps.get_version.outputs.version-without-v }}.tar.zst oci://ghcr.io/defenseunicorns/packages/leapfrogai
+          zarf package publish zarf-package-vllm-amd64-${{ steps.get_version.outputs.version-without-v }}.tar.zst oci://ghcr.io/defenseunicorns/packages/uds/leapfrogai
 
           docker image prune -af
           rm zarf-package-vllm-*.tar.zst
@@ -142,8 +142,8 @@ jobs:
           zarf package create packages/text-embeddings --set=IMAGE_VERSION=${{ steps.get_version.outputs.version-without-v }} --architecture amd64 --confirm
           zarf package create packages/text-embeddings --set=IMAGE_VERSION=${{ steps.get_version.outputs.version-without-v }} --architecture arm64 --confirm
 
-          zarf package publish zarf-package-text-embeddings-amd64-${{ steps.get_version.outputs.version-without-v }}.tar.zst oci://ghcr.io/defenseunicorns/packages/leapfrogai
-          zarf package publish zarf-package-text-embeddings-arm64-${{ steps.get_version.outputs.version-without-v }}.tar.zst oci://ghcr.io/defenseunicorns/packages/leapfrogai
+          zarf package publish zarf-package-text-embeddings-amd64-${{ steps.get_version.outputs.version-without-v }}.tar.zst oci://ghcr.io/defenseunicorns/packages/uds/leapfrogai
+          zarf package publish zarf-package-text-embeddings-arm64-${{ steps.get_version.outputs.version-without-v }}.tar.zst oci://ghcr.io/defenseunicorns/packages/uds/leapfrogai
 
           docker image prune -af
           rm zarf-package-text-embeddings-*.tar.zst
@@ -155,8 +155,8 @@ jobs:
           zarf package create packages/whisper --set=IMAGE_VERSION=${{ steps.get_version.outputs.version-without-v }} --architecture amd64 --confirm
           zarf package create packages/whisper --set=IMAGE_VERSION=${{ steps.get_version.outputs.version-without-v }} --architecture arm64 --confirm
 
-          zarf package publish zarf-package-whisper-amd64-${{ steps.get_version.outputs.version-without-v }}.tar.zst oci://ghcr.io/defenseunicorns/packages/leapfrogai
-          zarf package publish zarf-package-whisper-arm64-${{ steps.get_version.outputs.version-without-v }}.tar.zst oci://ghcr.io/defenseunicorns/packages/leapfrogai
+          zarf package publish zarf-package-whisper-amd64-${{ steps.get_version.outputs.version-without-v }}.tar.zst oci://ghcr.io/defenseunicorns/packages/uds/leapfrogai
+          zarf package publish zarf-package-whisper-arm64-${{ steps.get_version.outputs.version-without-v }}.tar.zst oci://ghcr.io/defenseunicorns/packages/uds/leapfrogai
 
           docker image prune -af
           rm zarf-package-whisper-*.tar.zst
