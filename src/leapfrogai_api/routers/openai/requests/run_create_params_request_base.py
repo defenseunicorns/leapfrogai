@@ -248,13 +248,11 @@ class RunCreateParamsRequestBase(BaseModel):
         for message in chat_thread_messages:
             chat_messages.append(message)
 
-        use_rag: bool = self.can_use_rag(tool_resources)
-
-        rag_message: str = "Here are relevant docs needed to reply:\n"
-
         # 4 - The RAG results are appended behind the user's query
-        file_ids: set[str] = set()
-        if use_rag:
+        if self.can_use_rag(tool_resources):
+            rag_message: str = "Here are relevant docs needed to reply:\n"
+            file_ids: set[str] = set()
+
             query_service = QueryService(db=session)
             file_search: BetaThreadToolResourcesFileSearch = cast(
                 BetaThreadToolResourcesFileSearch, tool_resources.file_search

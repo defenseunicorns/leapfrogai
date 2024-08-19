@@ -47,20 +47,19 @@ def from_content_param_to_content(
 def from_text_to_message(text: str, file_ids: list[str]) -> Message:
     all_file_ids: str = ""
 
-    for file_id in file_ids:
-        all_file_ids += f" [{file_id}]"
+    all_file_ids = " ".join([f"[{file_id}]" for file_id in file_ids])
 
     message_content: TextContentBlock = TextContentBlock(
         text=Text(
             annotations=[
                 FileCitationAnnotation(
-                    text=f"[{file_id}]",
+                    text=f"【{i}:0†source】",  # document_index:section_index
                     file_citation=FileCitation(file_id=file_id, quote=""),
                     start_index=0,
                     end_index=0,
                     type="file_citation",
                 )
-                for file_id in file_ids
+                for i, file_id in enumerate(file_ids)
             ],
             value=text + all_file_ids,
         ),
