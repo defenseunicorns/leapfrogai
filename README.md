@@ -11,16 +11,13 @@
 - [Getting Started](#getting-started)
 - [Components](#components)
   - [API](#api)
-  - [Backends](#backends)
   - [SDK](#sdk)
-  - [User Interface](#user-interface)
-  - [Repeater](#repeater)
-  - [Image Hardening](#image-hardening)
+  - [UI](#ui)
+  - [Backends](#backends)
+    - [Repeater](#repeater)
 - [Usage](#usage)
-  - [UDS](#uds)
-    - [UDS Latest](#uds-latest)
-    - [UDS Dev](#uds-dev)
-  - [Local Dev](#local-dev)
+- [Local Development](#local-development)
+- [Contributing](#contributing)
 - [Community](#community)
 
 ## Overview
@@ -39,11 +36,24 @@ Large Language Models (LLMs) are a powerful resource for AI-driven decision maki
 
 - **Mission Integration**: By hosting your own LLM, you have the ability to customize the model's parameters, training data, and more, tailoring the AI to your specific needs.
 
+## Demo Video
+
+<a href="https://www.youtube.com/watch?v=BowOJttHyPU" target="_blank">
+ <img src="website/assets/img/walkthrough_thumbnail.jpg" alt="2 minute demo of features of LeapfrogAI" width="540"/>
+</a>
+
+LeapfrogAI, built on top of [Unicorn Delivery Service (UDS)](https://github.com/defenseunicorns/uds-core), which includes several features including:
+
+- **Single Sign-On**
+- **Non-proprietary API Compatible with OpenAI's API**
+- **Retrieval Augmented Generation (RAG)**
+- **And More!**
+
 ## Structure
 
-The LeapfrogAI repository follows a monorepo structure based around an [API](#api) with each of the [components](#components) included in a dedicated `packages` directory. Each of these package directories contains the source code for each component as well as the deployment infrastructure. The UDS bundles that handle the development and latest deployments of LeapfrogAI are in the `uds-bundles` directory. The structure looks as follows:
+The LeapfrogAI repository follows a monorepo structure based around an [API](#api) with each of the [components](#components) included in a dedicated `packages` directory. The UDS bundles that handle the development and latest deployments of LeapfrogAI are in the `uds-bundles` directory. The structure looks as follows:
 
-```shell
+```bash
 leapfrogai/
 ├── src/
 │   ├── leapfrogai_api/   # source code for the API
@@ -52,7 +62,7 @@ leapfrogai/
 ├── packages/
 │   ├── api/              # deployment infrastructure for the API
 │   ├── llama-cpp-python/ # source code & deployment infrastructure for the llama-cpp-python backend
-│   ├── repeater/         # source code & deployment infrastructure for the repeater model backend  
+│   ├── repeater/         # source code & deployment infrastructure for the repeater model backend
 │   ├── supabase/         # deployment infrastructure for the Supabase backend and postgres database
 │   ├── text-embeddings/  # source code & deployment infrastructure for the text-embeddings backend
 │   ├── ui/               # deployment infrastructure for the UI
@@ -69,81 +79,78 @@ leapfrogai/
 
 ## Getting Started
 
-The preferred method for running LeapfrogAI is a local [Kubernetes](https://kubernetes.io/) deployment using [UDS](https://github.com/defenseunicorns/uds-core). Refer to the [Quick Start](https://docs.leapfrog.ai/docs/local-deploy-guide/quick_start/) section of the LeapfrogAI documentation site for instructions on this type of deployment.
+The preferred method for running LeapfrogAI is a local [Kubernetes](https://kubernetes.io/) deployment using [UDS](https://github.com/defenseunicorns/uds-core).
+
+Please refer to the [Quick Start](https://docs.leapfrog.ai/docs/local-deploy-guide/quick_start/) section of the LeapfrogAI documentation website for system requirements and instructions.
 
 ## Components
 
 ### API
 
-LeapfrogAI provides an API that closely matches that of OpenAI's. This feature allows tools that have been built with OpenAI/ChatGPT to function seamlessly with a LeapfrogAI backend.
-
-### Backends
-
-LeapfrogAI provides several backends for a variety of use cases.
-
-> Available Backends:
-> | Backend | AMD64 Support | ARM64 Support | Cuda Support | Docker Ready | K8s Ready | Zarf Ready |
-> | --- | --- | --- | --- | --- | --- | --- |
-> | [llama-cpp-python](packages/llama-cpp-python/) | ✅ | 🚧 | ✅ | ✅ | ✅ | ✅ |
-> | [whisper](packages/whisper/) | ✅ | 🚧 | ✅ | ✅ | ✅ | ✅ |
-> | [text-embeddings](packages/text-embeddings/) | ✅ | 🚧 | ✅ | ✅ | ✅ | ✅ |
-> | [vllm](packages/vllm/) | ✅ | ❌ | ✅ | ✅ | ✅ | ✅ |
+LeapfrogAI provides an [API](src/leapfrogai_api/) that closely matches that of OpenAI's. This feature allows tools that have been built with OpenAI/ChatGPT to function seamlessly with a LeapfrogAI backend.
 
 ### SDK
 
-The LeapfrogAI [SDK](src/leapfrogai_sdk/) provides a standard set of protobuff and python utilities for implementing backends and gRPC.
+The LeapfrogAI [SDK](src/leapfrogai_sdk/) provides a standard set of protobufs and Python utilities for implementing backends with gRPC.
 
-### User Interface
+### UI
 
-LeapfrogAI provides a [User Interface](src/leapfrogai_ui/) with support for common use-cases such as chat, summarization, and transcription.
+LeapfrogAI provides a [UI](src/leapfrogai_ui/) with support for common use-cases such as general chat and "Q&A with your documents".
 
-### Repeater
+### Backends
 
-The [repeater](packages/repeater/) "model" is a basic "backend" that parrots all inputs it receives back to the user. It is built out the same way all the actual backends are and it primarily used for testing the API.
+LeapfrogAI provides several backends for a variety of use cases. Below is the backends support and compatibility matrix:
 
-### Image Hardening
+| Backend                                        |  AMD64  |  ARM64  |  CUDA  | Docker | Kubernetes |   UDS   |
+| ---------------------------------------------- | ------- | ------- | ------ | ------ | ---------- | ------- |
+| [llama-cpp-python](packages/llama-cpp-python/) |   ✅   |   ✅   |   ✅   |   ✅   |     ✅     |   ✅   |
+| [whisper](packages/whisper/)                   |   ✅   |   ✅   |   ✅   |   ✅   |     ✅     |   ✅   |
+| [text-embeddings](packages/text-embeddings/)   |   ✅   |   ✅   |   ✅   |   ✅   |     ✅     |   ✅   |
+| [vllm](packages/vllm/)                         |   ✅   | ❌[^1] |   ✅   |   ✅   |     ✅     |   ✅   |
 
-> GitHub Repo:
->
-> - [leapfrogai-images](https://github.com/defenseunicorns/leapfrogai-images)
+[^1]: vLLM requires a CUDA-enabled PyTorch built for ARM64, which is not available via pip or conda
 
-LeapfrogAI leverages Chainguard's [apko](https://github.com/chainguard-dev/apko) to harden base python images - pinning Python versions to the latest supported version by the other components of the LeapfrogAI stack.
+#### Repeater
+
+The [repeater](packages/repeater/) "model" is a basic "backend" that parrots all inputs it receives back to the user. It is built out the same way all the actual backends are and it is primarily used for testing the API.
 
 ## Usage
 
-### UDS
+To build a LeapfrogAI UDS bundle and deploy it, please refer to the [LeapfrogAI Documentation Website](https://docs.leapfrog.ai/docs/). In the documentation website, you'll find system requirements and instructions for all things LeapfrogAI that aren't associated to local development and contributing.
 
-LeapfrogAI can be deployed and run locally via UDS and Kubernetes, built out using [Zarf](https://zarf.dev) packages. See the [Quick Start](https://docs.leapfrog.ai/docs/local-deploy-guide/quick_start/#prerequisites) for a list of prerequisite packages that must be installed first.
+For contributing and local deployment and development for each component in a local Python or Node.js environment please continue on to the [next section](#local-development).
 
-Prior to deploying any LeapfrogAI packages, a UDS Kubernetes cluster must be deployed using the most recent k3d bundle:
+## Local Development
 
-```sh
-make create-uds-cpu-cluster
-```
+> [!NOTE]
+> Please start with the [LeapfrogAI documentation website](https://docs.leapfrog.ai/docs/local-deploy-guide/) prior to attempting local development
 
-#### UDS Latest
+Each of the LeapfrogAI components can also be run individually outside of a Kubernetes or Containerized environment. This is useful when testing changes to a specific component, but will not assist in a full deployment of LeapfrogAI. Please refer to the [above section](#usage) for deployment instructions. Please refer to the [next section](#contributing) for rules on contributing to LeapfrogAI.
 
-This type of deployment pulls the most recent package images and is the most stable way of running a local LeapfrogAI deployment. These instructions can be found on the [LeapfrogAI Docs](https://docs.leapfrog.ai/docs/) site.
+**_First_** refer to the [DEVELOPMENT.md](docs/DEVELOPMENT.md) document for general development details.
 
-#### UDS Dev
+**_Then_** refer to the linked READMEs for each individual sub-directory's local development instructions.
 
-If you want to make some changes to LeapfrogAI before deploying via UDS (for example in a dev environment), follow the [UDS Dev Instructions](/uds-bundles/dev/README.md).
+- [SDK](src/leapfrogai_sdk/README.md)[^2]
+- [API](packages/api/README.md)[^3]
+- [UI](packages/ui/README.md)[^3]
+- [LLaMA C++ Python](packages/llama-cpp-python/README.md)
+- [vLLM](packages/vllm/README.md)
+- [Supabase](packages/supabase/README.md)
+- [Text Embeddings](packages/text-embeddings/README.md)
+- [Faster Whisper](packages/whisper/README.md)
+- [Repeater](packages/repeater/README.md)
+- [Tests](tests/README.md)
 
+[^2]: The SDK is not a functionally independent unit, and only becomes a functional unit when combined and packaged with the API and Backends as a dependency.
 
-### Local Dev
+[^3]: Please be aware that the API and UI have artifacts under 2 sub-directories. The sub-directories related to `packages/` are focused on the Zarf packaging and Helm charts, whereas the sub-directories related to `src/` contains the actual source code and development instructions.
 
-Each of the LFAI components can also be run individually outside of a Kubernetes environment via local development. This is useful when testing changes to a specific component, but will not assist in a full deployment of LeapfrogAI. Please refer to the above sections for deployment instructions.
+## Contributing
 
-Please refer to the linked READMEs for each individual packages local development instructions:
+All potential and current contributors must ensure that they have read the [Contributing documentation](.github/CONTRIBUTING.md), [Security Policies](.github/SECURITY.md) and [Code of Conduct](.github/CODE_OF_CONDUCT.md) prior to opening an issue or pull request to this repository.
 
-- [API](/src/leapfrogai_api/README.md)
-- [llama-cpp-python](/packages/llama-cpp-python/README.md)
-- [repeater](/packages/repeater/README.md)
-- [supabase](/packages/supabase/README.md)
-- [text-embeddings](/packages/text-embeddings/README.md)
-- [ui](/src/leapfrogai_ui/README.md)
-- [vllm](/packages/vllm/README.md)
-- [whisper](/packages/whisper/README.md)
+When submitting an issue or opening a PR, please first ensure that you have searched your potential issue or PR against the existing or closed issues and PRs. Perceived duplicates will be closed, so please reference and differentiate your contributions from tangential or similar issues and PRs.
 
 ## Community
 
@@ -162,4 +169,4 @@ LeapfrogAI is supported by a community of users and contributors, including:
 
 [![Defense Unicorns logo](/docs/imgs/user-logos/defense-unicorns.png)](https://defenseunicorns.com)[![Beast Code logo](/docs/imgs/user-logos/beast-code.png)](https://beast-code.com)[![Hypergiant logo](/docs/imgs/user-logos/hypergiant.png)](https://hypergiant.com)[![Pulze logo](/docs/imgs/user-logos/pulze.png)](https://pulze.ai)
 
-*Want to add your organization or logo to this list? [Open a PR!](https://github.com/defenseunicorns/leapfrogai/edit/main/README.md)*
+_Want to add your organization or logo to this list? [Open a PR!](https://github.com/defenseunicorns/leapfrogai/edit/main/README.md)_

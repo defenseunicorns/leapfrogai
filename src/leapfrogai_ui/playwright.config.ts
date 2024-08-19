@@ -45,7 +45,7 @@ const chromeConfig = {
 const defaultConfig: PlaywrightTestConfig = {
   // running more than 1 worker can cause flakiness due to test files being run at the same time in different browsers
   // (e.x. navigation history is incorrect)
-  // Additionally, Leapfrog API is slow when attaching files to assistants, resulting in flaky tests
+  // Additionally, LeapfrogAI API is slow when attaching files to assistants, resulting in flaky tests
   // We can attempt in increase number of browser and workers in the pipeline when the API is faster
   workers: 1,
   projects: [
