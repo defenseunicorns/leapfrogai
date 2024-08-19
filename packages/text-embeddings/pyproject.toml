@@ -20,7 +20,7 @@ readme = "README.md"
 
 [project.optional-dependencies]
 dev = [
-    "huggingface_hub",
+    "huggingface_hub == 0.24.5",
 ]
 
 [tool.pip-tools]

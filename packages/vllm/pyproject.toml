@@ -19,7 +19,8 @@ readme = "README.md"
 
 [project.optional-dependencies]
 dev = [
-    "huggingface_hub",
+    "confz == 2.0.1",
+    "huggingface_hub == 0.24.5"
 ]
 
 [tool.pip-tools]
