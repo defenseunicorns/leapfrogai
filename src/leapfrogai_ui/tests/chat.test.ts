@@ -99,7 +99,7 @@ test('it cancels responses when clicking enter instead of pause button and does 
   await deleteActiveThread(page, openAIClient);
 });
 
-// TODO - Leapfrog API is currently too slow when sending assistant responses so when this test
+// TODO - LeapfrogAI API is currently too slow when sending assistant responses so when this test
 // runs with multiple browsers in parallel, it times out. It should usually work for individual
 // browsers unless the API is receiving additional run requests simultaneously
 test('it can switch between normal chat and chat with an assistant', async ({
@@ -130,7 +130,7 @@ test('it can switch between normal chat and chat with an assistant', async ({
   await expect(messages).toHaveCount(4);
 
   await expect(page.getByTestId('user-icon')).toHaveCount(2);
-  await expect(page.getByTestId('leapfrog-icon')).toHaveCount(1);
+  await expect(page.getByTestId('leapfrogai-icon')).toHaveCount(1);
   await expect(page.getByTestId('assistant-icon')).toHaveCount(1);
 
   // Test selected assistant has a checkmark and clicking it again de-selects the assistant
@@ -145,7 +145,7 @@ test('it can switch between normal chat and chat with an assistant', async ({
   await expect(messages).toHaveCount(6);
 
   await expect(page.getByTestId('user-icon')).toHaveCount(3);
-  await expect(page.getByTestId('leapfrog-icon')).toHaveCount(2);
+  await expect(page.getByTestId('leapfrogai-icon')).toHaveCount(2);
   await expect(page.getByTestId('assistant-icon')).toHaveCount(1);
 
   // Cleanup

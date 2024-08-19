@@ -1,41 +1,49 @@
+# LeapfrogAI Text Embeddings Backend
 
+A LeapfrogAI API-compatible text embeddings wrapper for producing embeddings from text content.
 
-# LeapfrogAI llama-cpp-python Backend
+## Usage
 
-A LeapfrogAI API-compatible [instructor-xl](https://huggingface.co/hkunlp/instructor-xl) model for creating embeddings across CPU and GPU infrastructures.
+### Pre-Requisites
 
+See the LeapfrogAI documentation website for [system requirements](https://docs.leapfrog.ai/docs/local-deploy-guide/requirements/) and [dependencies](https://docs.leapfrog.ai/docs/local-deploy-guide/dependencies/).
 
-# Usage
+#### Dependent Components
 
-## Zarf Package Deployment
+- [LeapfrogAI API](../api/README.md) for a fully RESTful application
+- [Supabase](../supabase/README.md) for a vector database to store resulting embeddings in
 
-To build and deploy just the text-embeddings Zarf package (from the root of the repository):
+### Model Selection
 
-> Deploy a [UDS cluster](/README.md#uds) if one isn't deployed already
+The default model that comes with this backend in this repository's officially released images is [instructor-xl](https://huggingface.co/hkunlp/instructor-xl).
 
-```shell
+### Deployment
+
+To build and deploy the text-embeddings backend Zarf package into an existing [UDS Kubernetes cluster](../k3d-gpu/README.md):
+
+> [!IMPORTANT]
+> Execute the following commands from the root of the LeapfrogAI repository
+
+```bash
 pip install 'huggingface_hub[cli,hf_transfer]'  # Used to download the model weights from huggingface
 make build-text-embeddings LOCAL_VERSION=dev
 uds zarf package deploy packages/text-embeddings/zarf-package-text-embeddings-*-dev.tar.zst --confirm
 ```
 
-## Local Development
+### Local Development
 
-To run the text-embeddings backend locally (starting from the root directory of the repository):
+To run the text-embeddings backend locally:
 
-```shell
-# Setup Virtual Environment if you haven't done so already
-python -m venv .venv
-source .venv/bin/activate
+> [!IMPORTANT]
+> Execute the following commands from this sub-directory
 
-# install dependencies
-python -m pip install src/leapfrogai_sdk
-cd packages/text-embeddings
-python -m pip install ".[dev]"
+```bash
+# Install dev and runtime dependencies
+make install
 
-# download the model
+# Clone Model
 python scripts/model_download.py
 
-# start the model backend
-python -u main.py
+# Start the model backend
+make dev
 ```
