@@ -154,11 +154,12 @@ class Model:
             max_model_len=self.backend_config.max_context_length,
             # Taken from the vLLM-specific configuration
             model=AppConfig().backend_options.model_path,
+            enforce_eager=AppConfig().backend_options.enforce_eager,
+            quantization=AppConfig().backend_options.quantization,
             engine_use_ray=AppConfig().backend_options.engine_use_ray,
             worker_use_ray=AppConfig().backend_options.worker_use_ray,
             tensor_parallel_size=AppConfig().backend_options.tensor_parallel_size,
             gpu_memory_utilization=AppConfig().backend_options.gpu_memory_utilization,
-            enforce_eager=AppConfig().backend_options.enforce_eager,
             trust_remote_code=AppConfig().backend_options.trust_remote_code,
         )
         self.engine = AsyncLLMEngine.from_engine_args(self.engine_args)

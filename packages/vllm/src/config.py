@@ -16,6 +16,31 @@ class ConfigOptions(BaseConfig):
         "This must be divisible to the number of attention heads in the model",
         examples=[1, 2, 3],
     )
+    quantization: Literal[
+        "aqlm",
+        "awq",
+        "deepspeedfp",
+        "fp8",
+        "marlin",
+        "gptq_marlin_24",
+        "gptq_marlin",
+        "gptq",
+        "squeezellm",
+        "sparseml",
+        None,
+    ] = Field(
+        title="quantization",
+        description="Quantization type of the model"
+        "Force GPTQ instead of GPTQ_Marlin by explicitly providing `gptq` as value.",
+        examples=[
+            "awq",
+            "fp8",
+            "gptq_marlin",
+            "gptq",
+            "squeezellm",
+            None,
+        ],
+    )
     enforce_eager: bool = Field(
         title="Enable Eager Mode",
         description="Enable eager mode to start token generation immediately after prompt processing."
@@ -47,9 +72,6 @@ class ConfigOptions(BaseConfig):
 
 
 class DownloadOptions(BaseConfig):
-    hf_hub_enable_hf_transfer: Literal["0", "1"] = Field(
-        description="Option (0 - Disable, 1 - Enable) for faster transfers, tradeoff stability for faster speeds"
-    )
     repo_id: str = Field(
         description="The HuggingFace git repository ID",
         examples=[
@@ -74,6 +96,7 @@ class AppConfig(BaseConfig):
                 "tensor_parallel_size": "backend_options.tensor_parallel_size",
                 "trust_remote_code": "backend_options.trust_remote_code",
                 "enforce_eager": "backend_options.enforce_eager",
+                "quantization": "backend_options.quantization",
                 "gpu_memory_utilization": "backend_options.gpu_memory_utilization",
                 "worker_use_ray": "backend_options.worker_use_ray",
                 "engine_use_ray": "backend_options.engine_use_ray",
@@ -89,7 +112,6 @@ class DownloadConfig(BaseConfig):
             allow_all=True,
             prefix="LAI_",
             remap={
-                "hf_hub_enable_hf_transfer": "download_options.hf_hub_enable_hf_transfer",
                 "repo_id": "download_options.repo_id",
                 "revision": "download_options.revision",
             },

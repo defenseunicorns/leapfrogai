@@ -4,9 +4,9 @@ from config import DownloadConfig
 
 REPO_ID = DownloadConfig().download_options.repo_id
 REVISION = DownloadConfig().download_options.revision
-os.environ["HF_HUB_ENABLE_HF_TRANSFER"] = (
-    DownloadConfig().download_options.hf_hub_enable_hf_transfer
-)
+
+# enable hf_transfer to max-out model download bandwidth
+os.environ["HF_HUB_ENABLE_HF_TRANSFER"] = 1
 
 print(f"Downloading model from {REPO_ID} at revision {REVISION}...")
 

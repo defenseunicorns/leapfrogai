@@ -55,4 +55,3 @@ components:
             env:
               - LAI_REPO_ID=defenseunicorns/Hermes-2-Pro-Mistral-7B-4bit-32g
               - LAI_REVISION=main
-              - LAI_HF_HUB_ENABLE_HF_TRANSFER=1
