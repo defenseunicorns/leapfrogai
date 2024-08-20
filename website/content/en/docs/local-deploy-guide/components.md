@@ -31,11 +31,11 @@ Each component has different images and values that refer to a specific image re
 
 ### Artifact Support
 
-LeapfrogAI contains built-in embeddings for RAG and transcription / translation solutions that can handle many different file types. Many of these capabilities are accessible via the LeapfrogAI API. The support artifact types are as follows:
+LeapfrogAI contains built-in embeddings for RAG and transcription / translation solutions that can handle many different file types. Many of these capabilities are accessible via the LeapfrogAI API. The supported artifact types are as follows:
 
 #### Transcription / Translation
 
-- All formats supported by `ffmpeg -formats`, e.g., `.mp3`, `.wav`, `.mp4`, etc.
+- All formats supported by `ffmpeg` as listed using `ffmpeg -formats`, e.g., `.mp3`, `.wav`, `.mp4`, etc.
 
 #### Embeddings for RAG
 

@@ -42,7 +42,7 @@ Large Language Models (LLMs) are a powerful resource for AI-driven decision maki
  <img src="website/assets/img/walkthrough_thumbnail.jpg" alt="2 minute demo of features of LeapfrogAI" width="540"/>
 </a>
 
-LeapfrogAI, built on top of [Unicorn Delivery Service (UDS)](https://github.com/defenseunicorns/uds-core), which includes several features including:
+LeapfrogAI is built on top of [Unicorn Delivery Service (UDS) Kubernetes runtime](https://github.com/defenseunicorns/uds-core), which includes several features:
 
 - **Single Sign-On**
 - **Non-proprietary API Compatible with OpenAI's API**
@@ -113,6 +113,28 @@ LeapfrogAI provides several backends for a variety of use cases. Below is the ba
 #### Repeater
 
 The [repeater](packages/repeater/) "model" is a basic "backend" that parrots all inputs it receives back to the user. It is built out the same way all the actual backends are and it is primarily used for testing the API.
+
+### Flavors
+
+Each component has different images and values that refer to a specific image registry and/or hardening source. These images are packaged using [Zarf Flavors](https://docs.zarf.dev/ref/examples/package-flavors/):
+
+1. `upstream`: uses upstream vendor images from open source container registries and repositories
+2. 🚧 `registry1`: uses [IronBank hardened images](https://repo1.dso.mil/dsop) from the Repo1 harbor registry
+3. 🚧 `unicorn`: uses [Chainguard hardened images](https://www.chainguard.dev/chainguard-images) from the Chainguard registry
+
+Below is the current component flavors list:
+
+| Component                                      |  `upstream`  |  `registry1`  |  `chainguard`  |
+| ---------------------------------------------- | ------------ | ------------- | -------------- |
+| [api](packages/api/)                           |      ✅      |      ✅      |      🚧       |
+| [ui](packages/ui/)                             |      ✅      |      🚧      |      🚧       |
+| [supabase](packages/supabase/)                 |      ✅      |      🚧      |      🚧       |
+| [migrations](./Dockerfile.migrations)          |      ✅      |      🚧      |      🚧       |
+| [llama-cpp-python](packages/llama-cpp-python/) |      ✅      |      🚧      |      🚧       |
+| [whisper](packages/whisper/)                   |      ✅      |      🚧      |      🚧       |
+| [text-embeddings](packages/text-embeddings/)   |      ✅      |      🚧      |      🚧       |
+| [vllm](packages/vllm/)                         |      ✅      |      🚧      |      🚧       |
+| [vllm](packages/vllm/)                         |      ✅      |      🚧      |      🚧       |
 
 ## Usage
 
