@@ -15,6 +15,11 @@ on:
       - .github/workflows/e2e-registry1-weekly.yaml
       - uds-bundles/latest/**
 
+env:
+  # x-release-please-start-version
+  VERSION: 0.11.0
+  # x-release-please-end
+
 concurrency:
   group: e2e-registry1-weekly-${{ github.ref }}
   cancel-in-progress: true
@@ -53,6 +58,7 @@ jobs:
 
           uds zarf tools yq -i '.packages[1].repository = "registry1.dso.mil/ironbank/opensource/defenseunicorns/leapfrogai/api"' \
           uds-bundles/latest/cpu/uds-bundle.yaml
+          uds zarf tools yq -i '.packages[1].ref = v${{ env.VERSION }}' uds-bundles/latest/cpu/uds-bundle.yaml
 
       - name: Create Bundle
         run: |
