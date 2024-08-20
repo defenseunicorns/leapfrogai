@@ -5,18 +5,13 @@ on:
     branches:
       - "main"
     paths:
-      - "bundles"
-      - "tasks"
-      - "task.yaml"
+      - "bundles/**"
       - ".github/workflows/uds-lint.yaml"
-
   pull_request:
     branches:
       - "main"
     paths:
-      - "bundles"
-      - "tasks"
-      - "task.yaml"
+      - "bundles/**"
       - ".github/workflows/uds-lint.yaml"
 
 concurrency:
