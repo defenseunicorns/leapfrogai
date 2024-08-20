@@ -1,4 +1,5 @@
 KEYCLOAK_ADMIN_PASSWORD=$(uds zarf tools kubectl get secret -n keycloak keycloak-admin-password -o jsonpath={.data.password} | base64 -d)
+echo "::add-mask::$KEYCLOAK_ADMIN_PASSWORD"
 
 KEYCLOAK_ADMIN_TOKEN=$(curl -sS -vv --location "https://keycloak.admin.uds.dev/realms/master/protocol/openid-connect/token" \
 --http1.1 \
@@ -7,6 +8,10 @@ KEYCLOAK_ADMIN_TOKEN=$(curl -sS -vv --location "https://keycloak.admin.uds.dev/r
 --data-urlencode "password=${KEYCLOAK_ADMIN_PASSWORD}" \
 --data-urlencode "client_id=admin-cli" \
 --data-urlencode "grant_type=password" | uds zarf tools yq .access_token)
+echo "::add-mask::$KEYCLOAK_ADMIN_TOKEN"
+
+echo Echo test KEYCLOAK_ADMIN_PASSWORD: $KEYCLOAK_ADMIN_PASSWORD
+echo Echo test KEYCLOAK_ADMIN_TOKEN: KEYCLOAK_ADMIN_TOKEN
 
 curl --location "https://keycloak.admin.uds.dev/admin/realms/uds/users" \
 --http1.1 \
