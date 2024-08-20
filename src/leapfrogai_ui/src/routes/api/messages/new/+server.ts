@@ -26,7 +26,8 @@ export const POST: RequestHandler = async ({ request, locals: { session } }) => 
 
     const threadMessages = await openai.beta.threads.messages.create(requestData.thread_id, {
       role: requestData.role,
-      content: requestData.content
+      content: requestData.content,
+      metadata: requestData.metadata || null
     });
     return json(threadMessages);
   } catch (e) {

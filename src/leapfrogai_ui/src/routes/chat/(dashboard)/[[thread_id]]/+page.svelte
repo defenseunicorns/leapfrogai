@@ -48,6 +48,7 @@
   let uploadingFile = false;
   let attachedFileNames: string[] = [];
 
+  $: console.log(data.thread);
   const { enhance, submit } = superForm(data.form, {
     validators: yup(filesSchema),
     invalidateAll: false,
@@ -242,16 +243,33 @@
   const sendChatMessage = async (e: SubmitEvent | KeyboardEvent) => {
     await threadsStore.setSendingBlocked(true);
     if (data.thread?.id) {
+      if (documentText) {
+        const contextMsg = await saveMessage({
+          thread_id: data.thread.id,
+          content: documentText,
+          role: 'user',
+          metadata: {
+            isFileContext: 'true'
+          }
+        });
+        await threadsStore.addMessageToStore(contextMsg);
+      }
+
       // Save with API
       try {
         const newMessage = await saveMessage({
           thread_id: data.thread.id,
           content: $chatInput,
           role: 'user',
-          metadata: {
-            filenames: attachedFileNames
-          }
+          ...(attachedFileNames.length > 0
+            ? {
+                metadata: {
+                  filenames: attachedFileNames.join(', ')
+                }
+              }
+            : null)
         });
+
         // store user input
         await threadsStore.addMessageToStore(newMessage);
         submitChatMessage(e); // submit to AI (/api/chat)
@@ -299,7 +317,7 @@
         });
         return;
       }
-      if (documentText) $chatInput += documentText;
+
       assistantMode ? await sendAssistantMessage(e) : await sendChatMessage(e);
     }
   };
@@ -364,7 +382,7 @@
             on:change={(e) => {
               uploadingFile = true;
               for (const file of e.detail) {
-                attachedFileNames.push(file.name);
+                attachedFileNames = [...attachedFileNames, file.name];
               }
               submit(e.detail);
             }}

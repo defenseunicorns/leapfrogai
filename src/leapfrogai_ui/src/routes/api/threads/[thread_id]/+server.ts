@@ -14,6 +14,7 @@ const getThreadWithMessages = async (
     return null;
   }
   const messagesPage = await openai.beta.threads.messages.list(thread.id);
+
   const messages = messagesPage.data as LFMessage[];
   messages.sort((a, b) => a.created_at - b.created_at);
   return { ...thread, messages: messages };
