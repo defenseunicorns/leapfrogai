@@ -27,19 +27,13 @@ class ConfigOptions(BaseConfig):
         "gptq",
         "squeezellm",
         "sparseml",
-        None,
+        "None",
+        "",
     ] = Field(
         title="quantization",
         description="Quantization type of the model"
         "Force GPTQ instead of GPTQ_Marlin by explicitly providing `gptq` as value.",
-        examples=[
-            "awq",
-            "fp8",
-            "gptq_marlin",
-            "gptq",
-            "squeezellm",
-            None,
-        ],
+        examples=["awq", "fp8", "gptq_marlin", "gptq", "squeezellm", "None"],
     )
     enforce_eager: bool = Field(
         title="Enable Eager Mode",
