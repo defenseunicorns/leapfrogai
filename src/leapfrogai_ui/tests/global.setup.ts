@@ -109,7 +109,7 @@ setup('authenticate', async ({ page, openAIClient }) => {
     await page.waitForURL('/chat');
   }
 
-  if (process.env.TEST_ENV !== "CI") {
+  if (process.env.TEST_ENV !== 'CI') {
     await cleanup(openAIClient);
   }
 
