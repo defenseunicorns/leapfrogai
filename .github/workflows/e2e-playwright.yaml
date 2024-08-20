@@ -74,6 +74,7 @@ jobs:
           with:
             registry1Username: ${{ secrets.IRON_BANK_ROBOT_USERNAME }}
             registry1Password: ${{ secrets.IRON_BANK_ROBOT_PASSWORD }}
+            fakeE2EUserPassword: ${{ secrets.FAKE_E2E_USER_PASSWORD }}
 
         - name: Setup LFAI-API and Supabase
           uses: ./.github/actions/lfai-core
@@ -110,7 +111,7 @@ jobs:
         - name: UI/API/Supabase E2E Playwright Tests
           run: |
             cp src/leapfrogai_ui/.env.example src/leapfrogai_ui/.env
-            TEST_ENV=CI USERNAME=doug PASSWORD=unicorn123!@#UN PUBLIC_SUPABASE_ANON_KEY=$ANON_KEY npm --prefix src/leapfrogai_ui run test:integration:ci
+            TEST_ENV=CI USERNAME=doug PASSWORD=${{ secrets.FAKE_E2E_USER_PASSWORD }} PUBLIC_SUPABASE_ANON_KEY=$ANON_KEY npm --prefix src/leapfrogai_ui run test:integration:ci
 
         # Upload the Playwright report as an artifact
         - name: Archive Playwright Report

@@ -1,37 +1,36 @@
 KEYCLOAK_ADMIN_PASSWORD=$(uds zarf tools kubectl get secret -n keycloak keycloak-admin-password -o jsonpath={.data.password} | base64 -d)
-KEYCLOAK_ADMIN_TOKEN_CURL=$(curl --location "https://keycloak.admin.uds.dev/realms/master/protocol/openid-connect/token" \
+
+KEYCLOAK_ADMIN_TOKEN=$(curl -sS -vv --location "https://keycloak.admin.uds.dev/realms/master/protocol/openid-connect/token" \
 --http1.1 \
 --header "Content-Type: application/x-www-form-urlencoded" \
 --data-urlencode "username=admin" \
 --data-urlencode "password=${KEYCLOAK_ADMIN_PASSWORD}" \
 --data-urlencode "client_id=admin-cli" \
---data-urlencode "grant_type=password")
-
-KEYCLOAK_ADMIN_TOKEN=$(echo $KEYCLOAK_ADMIN_TOKEN_CURL | uds zarf tools yq .access_token)
+--data-urlencode "grant_type=password" | uds zarf tools yq .access_token)
 
 curl --location "https://keycloak.admin.uds.dev/admin/realms/uds/users" \
 --http1.1 \
 --header "Content-Type: application/json" \
 --header "Authorization: Bearer ${KEYCLOAK_ADMIN_TOKEN}" \
---data '{
-  "username": "doug",
-  "firstName": "Doug",
-  "lastName": "Unicorn",
-  "email": "doug@uds.dev",
-  "attributes": {
-    "mattermostid": "1"
+--data "{
+  \"username\": \"doug\",
+  \"firstName\": \"Doug\",
+  \"lastName\": \"Unicorn\",
+  \"email\": \"doug@uds.dev\",
+  \"attributes\": {
+    \"mattermostid\": \"1\"
   },
-  "emailVerified": true,
-  "enabled": true,
-  "requiredActions": [],
-  "credentials": [
+  \"emailVerified\": true,
+  \"enabled\": true,
+  \"requiredActions\": [],
+  \"credentials\": [
     {
-      "type": "password",
-      "value": "unicorn123!@#UN",
-      "temporary": false
+      \"type\": \"password\",
+      \"value\": \"${fakeE2EUserPassword}\",
+      \"temporary\": false
     }
   ]
-}'
+}"
 
 CONDITIONAL_OTP_ID=$(curl --location "https://keycloak.admin.uds.dev/admin/realms/uds/authentication/flows/Authentication/executions" \
 --http1.1 \
