@@ -12,7 +12,7 @@ RUN python3.11 -m venv .venv
 ENV PATH="/leapfrogai/.venv/bin:$PATH"
 
 # copy and install all python dependencies
-# NOTE: We are copying the leapfrog whl to this filename because installing 'optional extras' from
+# NOTE: We are copying the leapfrogai whl to this filename because installing 'optional extras' from
 #       a wheel requires the absolute path to the wheel file (instead of a wildcard whl)
 COPY --from=sdk /leapfrogai/${SDK_DEST} ${SDK_DEST}
 COPY packages/text-embeddings packages/text-embeddings

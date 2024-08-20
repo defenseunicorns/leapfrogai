@@ -1,7 +1,8 @@
+SUPABASE_URL := https://supabase-kong.uds.dev
 
 set-supabase:
-	SUPABASE_URL := $(shell cd src/leapfrogai_api; supabase status | awk '/API URL:/ {print $$3}')
-	SUPABASE_ANON_KEY := $(shell cd src/leapfrogai_api; supabase status | awk '/anon key:/ {print $$3}')
+	SUPABASE_URL := ${SUPABASE_URL}
+	SUPABASE_ANON_KEY := $(shell uds zarf tools kubectl get secret -n leapfrogai supabase-bootstrap-jwt -o json | uds zarf tools yq '.data.anon-key' | base64 -d)
 
 define get_jwt_token
 	echo "Getting JWT token from ${SUPABASE_URL}..."; \
@@ -26,10 +27,10 @@ test-env: set-supabase
 	@read -s -p "Enter your DEV API password: " SUPABASE_PASS; echo; \
 	$(call get_jwt_token,"${SUPABASE_URL}/auth/v1/token?grant_type=password")
 
-test-int-api: set-supabase
+test-api-integration: set-supabase
 	source .env; PYTHONPATH=$$(pwd) pytest -vv -s tests/integration/api
 
-test-unit: set-supabase
+test-api-unit: set-supabase
 	PYTHONPATH=$$(pwd) pytest -vv -s tests/unit
 
 test-load:
