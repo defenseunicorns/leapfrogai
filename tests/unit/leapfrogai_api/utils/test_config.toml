@@ -4,9 +4,7 @@ backend = "backend1"
 type = "type1"
 dimensions = 768
 precision = 32
-capabilities = [
-    "embeddings",
-]
+capabilities = ["embeddings"]
 
 [[models]]
 name = "model2"

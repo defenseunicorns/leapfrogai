@@ -65,4 +65,3 @@ INSERT INTO
         from
             auth.users
     );
-

@@ -1,19 +1,23 @@
-from __future__ import annotations
+from typing import AsyncGenerator, TypeAlias, Callable
 import pytest
-from pathlib import Path
-import logging
+import asyncio
 
-from unittest.mock import patch, MagicMock
-
-from src.leapfrogai_api.utils.config import (
-    Config,
-    Model,
-    ModelMetadata,
-    DEFAULT_CONFIG_FILE,
-)
+from anyio import Path
+import pytest_asyncio
+from unittest.mock import patch, AsyncMock, MagicMock
+import toml
 from watchfiles import Change
 
-# Both of these are relative to the tests directory
+from leapfrogai_api.utils.config import (
+    Config,
+    ConfigFile,
+    Model,
+)
+
+# This is just to make the IDE happy about what the factory does
+ConfigFileMaker: TypeAlias = Callable[[str], ConfigFile]
+
+
 TOML_CONFIG_FILE: str = "test_config.toml"
 YAML_CONFIG_FILE: str = "test_config.yaml"
 INVALID_CONFIG_FILE: str = "invalid_config.fake"
@@ -21,300 +25,363 @@ NON_EXISTENT_DIR: str = "/path/to/non/existent/directory"
 
 
 @pytest.fixture
-def test_dir():
-    """Fixture to return the path to the tests directory."""
-    return Path(__file__).resolve().parent
+def config_file():
+    return ConfigFile(Path(YAML_CONFIG_FILE))
 
 
-@pytest.fixture
-def config_files(test_dir: Path) -> list[Path]:
-    """Fixture to represent the list of config files in the tests directory."""
-    return [
-        test_dir / YAML_CONFIG_FILE,
-        test_dir / TOML_CONFIG_FILE,
-        test_dir / INVALID_CONFIG_FILE,
+@pytest_asyncio.fixture
+async def config_file_factory(monkeypatch) -> AsyncGenerator[ConfigFile, None]:
+    async def _create_config_file(path: str, mock_load: bool = False) -> ConfigFile:
+        config_file = ConfigFile(path=Path(path))
+
+        if mock_load:
+            # Mock the aload method
+            config_file.aload = AsyncMock()
+
+            # Optionally mock the behavior to simulate file loading
+            config_file.aload.return_value = None  # or whatever behavior you expect
+            config_file.models = {
+                "test_model": Model(name="test_model", backend="test_backend")
+            }
+
+        return config_file
+
+    yield _create_config_file
+
+
+@pytest.mark.anyio
+async def test_config_singleton():
+    """Test that Config is a singleton"""
+    config1 = await Config.create()
+    config2 = await Config.create()
+    assert config1 is config2
+    await Config.cleanup()
+
+
+@pytest.mark.anyio
+async def test_initialize_from_env(config_factory):
+    """Test that this will run from the env vars we specify and won't error just cause it's a fake path"""
+    config_path = "/test/path"
+    config_filename = "test*.yaml"
+
+    # Set env variables to existing values if not provided, and create the config object
+    config = await config_factory(
+        config_path=config_path,
+        config_filename=config_filename,
+    )
+    assert config._config_dir == "/test/path"
+    assert config._config_filename == "test*.yaml"
+    await config.cleanup()
+
+
+@pytest.mark.anyio
+async def test_config_load_config_file(config_factory, config_file_factory):
+    """Test that this will run from the env vars we specify and won't error just cause it's a fake path"""
+    config_filename = "test_config.yaml"
+    config: Config = await config_factory(
+        config_path="/test/path",
+        config_filename="test_config.yaml",
+    )
+    # Create a real ConfigFile instance with a mocked __await__ method
+    config_file: ConfigFile = await config_file_factory(
+        path=config_filename, mock_load=True
+    )
+
+    with patch(
+        "leapfrogai_api.utils.config.ConfigFile",  # Patching the class constructor to return our instance
+        return_value=config_file,
+    ):
+        await config._load_config_file(path=Path(config_filename))
+
+    # Verify that the config file was loaded into the config object
+    test_config = config.config_files.get(config_filename, None)
+    assert test_config is not None, f"{config_filename} not loaded: {test_config}"
+
+    # Verify that the model was loaded into the config's models
+    test_model = config.models.get("test_model", None)
+    assert test_model is not None, f"test_model not loaded: {test_model}"
+    assert test_model.name == "test_model"
+    assert test_model.backend == "test_backend"
+
+
+@pytest.mark.anyio
+async def test_load_all_configs(config_factory, parent_dir):
+    config = await config_factory()
+
+    mock_glob = MagicMock()
+    mock_glob.__aiter__.return_value = iter(
+        [
+            await (Path(parent_dir) / "test-config.yaml").resolve(),
+            await (Path(parent_dir) / "test-config.toml").resolve(),
+        ]
+    )
+
+    with patch("leapfrogai_api.utils.config.Path.glob", return_value=mock_glob):
+        await config.load_all_configs()
+
+    assert mock_glob.__aiter__.called
+
+
+@pytest.mark.anyio
+async def test_watch_for_changes(config_factory, parent_dir):
+    config = await config_factory(config_path=parent_dir, config_filename="*.yaml")
+
+    # Create an async generator for mocking awatch
+    awatch_response = [(Change.added, "test-config.yaml")]
+
+    async def mock_awatch_generator():
+        yield awatch_response
+        # Add a small delay to allow other coroutines to run
+        await asyncio.sleep(0.1)
+
+    with (
+        patch(
+            "leapfrogai_api.utils.config.awatch",
+            return_value=mock_awatch_generator(),
+        ),
+        patch.object(config, "initialize", new_callable=AsyncMock) as mock_initialize,
+        patch.object(
+            config, "_handle_config_changes", new_callable=AsyncMock
+        ) as mock_handle_config_changes,
+    ):
+        # Start watching in a separate task
+        watch_task = asyncio.create_task(config.start_watching())
+
+        # Wait a short time to allow the watch task to start and process the mock changes
+        await asyncio.sleep(0.2)
+
+        # Stop the watching
+        await config.stop_watching()
+
+        # Wait for the watch task to complete
+        await watch_task
+
+    mock_initialize.assert_called_once()
+    mock_handle_config_changes.assert_called_once_with(awatch_response)
+
+    # config.initialize.assert_called_once()
+    # config._handle_config_changes.assert_called_once_with([
+    #     (Change.added, "new_config.yaml")
+    # ])
+
+
+@pytest.mark.anyio
+async def test_handle_config_changes(config_factory):
+    config = await config_factory()
+    mock_load_config = AsyncMock()
+    changes = [
+        (Change.added, "new_config.yaml"),
+        (Change.modified, "existing_config.yaml"),
+        (Change.deleted, "old_config.yaml"),
+        (Change.added, "not_a_config.txt"),
     ]
 
+    config.config_files = {"old_config.yaml": AsyncMock()}
 
-@pytest.fixture(scope="function")
-def config() -> Config:
-    """Fixture to represent a Config object."""
-    return Config()
+    with patch.object(config, "_load_config_file", mock_load_config):
+        await config._handle_config_changes(changes)
 
-
-@pytest.mark.parametrize(
-    "metadata, expected",
-    [
-        (ModelMetadata(), False),
-        (ModelMetadata(type="embeddings"), True),
-        (ModelMetadata(dimensions=768), True),
-        (ModelMetadata(precision="float32"), True),
-        (ModelMetadata(capabilities=["chat"]), True),
-    ],
-)
-def test_model_metadata_has_values(metadata, expected):
-    # No values should be False, otherwise any non-None value should be True
-    assert metadata.has_values() == expected
+    assert mock_load_config.call_count == 2  # for added and modified
+    assert "old_config.yaml" not in config.config_files
 
 
-class TestConfig:
-    def test_init(self, config: Config) -> None:
-        """Test the initialization of Config."""
-        assert config.models is not None and config.models == {}
-        assert config.config_sources is not None and config.config_sources == {}
+@pytest.mark.anyio
+async def test_get_model_backend(config_factory):
+    config = await config_factory()
 
-    def test_str(self, config: Config) -> None:
-        """Test the string representation of Config."""
-        assert str(config) == "Models: {}"
+    config.models = {"test_model": Model(name="test_model", backend="test_backend")}
+    assert config.get_model_backend("test_model").backend == "test_backend"
+    assert config.get_model_backend("non_existent_model") is None
 
-    def test_repr(self, config: Config) -> None:
-        """Test the repr representation of Config."""
-        assert repr(config) == "Config(models={}, config_sources={})"
 
-    def test_get_model_backend(self, config: Config) -> None:
-        """Test retrieving model backend."""
-        model = Model(name="test_model", backend="test_backend")
-        config.models["test_model"] = model
-        assert config.get_model_backend("test_model") == model
-        assert config.get_model_backend("non_existent_model") is None
+@pytest.mark.anyio
+async def test_clear_all_models(config_factory, parent_dir):
+    config = await config_factory(config_path=parent_dir)
 
-    @pytest.mark.parametrize(
-        "config_file",
-        [
-            YAML_CONFIG_FILE,
-            TOML_CONFIG_FILE,
-        ],
+    mock_config_file = AsyncMock(spec=ConfigFile)
+    mock_config_file.filename = "test_config.yaml"  # Mock the filename attribute
+    config.config_files = {"test_config.yaml": mock_config_file}
+    config.models = {"test_model": Model(name="test_model", backend="test_backend")}
+
+    await config.clear_all_models()
+
+    assert len(config.models) == 0
+    assert len(config.config_files) == 0
+    mock_config_file.aunload.assert_called_once()
+
+
+@pytest.mark.anyio
+async def test_to_dict(config_factory):
+    config = await config_factory()
+    config.models = {
+        "model1": Model(name="model1", backend="backend1"),
+        "model2": Model(name="model2", backend="backend2"),
+    }
+    config.config_files = {
+        "config1.yaml": MagicMock(
+            spec=ConfigFile, filename="config1.yaml", models={"model1": None}
+        ),
+        "config2.yaml": MagicMock(
+            spec=ConfigFile, filename="config2.yaml", models={"model2": None}
+        ),
+    }
+
+    result = config.to_dict()
+
+    assert "config_sources" in result
+    assert "models" in result
+    assert len(result["models"]) == 2
+    assert result["config_sources"]["config1.yaml"] == ["model1"]
+    assert result["config_sources"]["config2.yaml"] == ["model2"]
+
+
+@pytest.mark.asyncio
+async def test_parse_models(config_files):
+    config_path: Path = config_files.get(YAML_CONFIG_FILE, None)
+    assert config_path is not None, f"Could not find config file: {YAML_CONFIG_FILE}"
+    config = ConfigFile(
+        path=Path(config_path),
     )
-    def test_load_config_file(
-        self, config: Config, test_dir: str, config_file: str
-    ) -> None:
-        """Test loading a single config file."""
-        config.load_config_file(
-            directory=test_dir,
-            config_file=config_file,
-        )
-
-        assert len(config.models) == 2
-        assert "model1" in config.models
-        assert "model2" in config.models
-
-        model1 = config.models["model1"]
-        assert model1.name == "model1"
-        assert model1.backend == "backend1"
-        assert model1.metadata is not None
-        assert model1.metadata.type == "type1"
-        assert model1.metadata.dimensions == 768
-        assert model1.metadata.precision == 32
-
-        model2 = config.models["model2"]
-        assert model2.name == "model2"
-        assert model2.backend == "backend2"
-        assert model2.metadata is None
-
-        assert config_file in config.config_sources
-        config_files = set(config.config_sources[config_file])
-        assert config_files == set(["model1", "model2"])
-
-    @patch.object(Config, "parse_models")
-    def test_load_config_file_raises(self, mock_parse_models, test_dir: str) -> None:
-        """Test loading a config with an invalid extension results in None."""
-        config = Config()
-        result = config.load_config_file(
-            directory=test_dir,
-            config_file=INVALID_CONFIG_FILE,
-        )
-        assert result is None
-
-    def test_load_all_configs(self, config: Config, test_dir: str) -> None:
-        """Test loading all config files in a directory."""
-        config.load_all_configs(
-            directory=test_dir,
-            filename="test_config.*",
-        )
-
-        assert len(config.config_sources) == 2
-        for file_name in [YAML_CONFIG_FILE, TOML_CONFIG_FILE]:
-            assert file_name in config.config_sources
-
-        assert (
-            len(config.models) == 2
-        )  # Both files have the same models, so only 2 unique models
-        assert "model1" in config.models
-        assert "model2" in config.models
-
-    def test_load_all_configs_directory_not_exists(self, config: Config) -> None:
-        """Test loading configs from a non-existent directory."""
-        non_existent_dir = NON_EXISTENT_DIR
-        result = config.load_all_configs(non_existent_dir, "test_config.*")
-        assert result == "THE CONFIG DIRECTORY DOES NOT EXIST"
-        assert len(config.models) == 0
-        assert len(config.config_sources) == 0
-
-    def test_process_changes(self, config):
-        changes = [
-            (Change.added, "/path/to/new_file1.txt"),
-            (Change.modified, "/path/to/new_file2.txt"),
-            (Change.deleted, "/path/to/deleted_file1.txt"),
-            (Change.deleted, "/path/to/deleted_file2.txt"),
+    await config.aload()
+    test_data = {
+        "models": [
+            {"name": "model1", "backend": "backend1"},
+            {"name": "model2", "backend": "backend2"},
         ]
+    }
 
-        new_files, deleted_files = config._process_changes(changes)
+    config.parse_models(test_data)
 
-        assert new_files == {"new_file1.txt", "new_file2.txt"}
-        assert deleted_files == {"deleted_file1.txt", "deleted_file2.txt"}
+    assert len(config.models) == 2
+    # Model 1 tests
+    model1 = config.models["model1"]
+    assert model1.name == "model1"
+    assert model1.backend == "backend1"
 
-    def test_load_updated_configs(self, config: Config, test_dir: str, caplog) -> None:
-        """Test loading updated config files."""
-        config.load_config_file = MagicMock(
-            side_effect=[
-                None,
-                Exception("Mocked Exception"),
-            ]
-        )
+    # Model 2 tests
+    model2 = config.models["model2"]
 
-        matches = [YAML_CONFIG_FILE, TOML_CONFIG_FILE]
-        with caplog.at_level(logging.ERROR):
-            config._load_updated_configs(test_dir, matches)
+    assert model2.name == "model2"
+    assert model2.backend == "backend2"
 
-        config.load_config_file.assert_any_call(test_dir, YAML_CONFIG_FILE)
-        config.load_config_file.assert_any_call(test_dir, TOML_CONFIG_FILE)
-        assert config.load_config_file.call_count == 2
-        # Check the correct log message
-        expected_log = (
-            f"Failed to load config file {TOML_CONFIG_FILE}: Mocked Exception"
-        )
-        assert expected_log in caplog.text
+    assert config._loaded is True
 
-    def test_remove_deleted_configs(self, config: Config, caplog) -> None:
-        """Test removing models corresponding to deleted config files."""
-        config.remove_model_by_config = MagicMock(
-            side_effect=[
-                None,
-                Exception("Mocked Exception"),
-            ]
-        )
 
-        matches = ["deleted_config.yaml", "other_config.yaml"]
-        with caplog.at_level(logging.ERROR):
-            config._remove_deleted_configs(matches)
+@pytest.mark.asyncio
+async def test_load_from_file_yaml(config_files):
+    config_path: Path = config_files.get(YAML_CONFIG_FILE, None)
+    assert config_path is not None, f"Could not find config file: {YAML_CONFIG_FILE}"
+    config_path = await config_path.resolve()
 
-        config.remove_model_by_config.assert_any_call(config_file="deleted_config.yaml")
-        config.remove_model_by_config.assert_any_call(config_file="other_config.yaml")
-        assert config.remove_model_by_config.call_count == 2
+    config = ConfigFile(path=config_path)
+    # result = await config._load_from_file
+    result = await config._load_from_file(config_path)
 
-        # Check the correct log message
-        expected_log = (
-            f"Failed to remove config for file {matches[1]}: Mocked Exception"
-        )
-        assert expected_log in caplog.text
+    print(f"Debug: result = {result}")
 
-    def test_remove_model_by_config(self, config: Config) -> None:
-        """Test removing models by config file."""
-        config.models = {
-            "model1": Model(name="model1", backend="backend1"),
-            "model2": Model(name="model2", backend="backend2"),
-        }
-        config.config_sources = {YAML_CONFIG_FILE: ["model1", "model2"]}
-
-        config.remove_model_by_config(YAML_CONFIG_FILE)
-
-        assert len(config.models) == 0
-        assert YAML_CONFIG_FILE not in config.config_sources
-
-    @pytest.mark.asyncio
-    async def test_clear_all_models(self, config: Config) -> None:
-        """Test clearing all models."""
-        config.models = {
-            "model1": Model(name="model1", backend="backend1"),
-            "model2": Model(name="model2", backend="backend2"),
-        }
-        config.config_sources = {YAML_CONFIG_FILE: ["model1", "model2"]}
-
-        await config.clear_all_models()
-
-        assert len(config.models) == 0
-        assert len(config.config_sources) == 0
-
-    def test_handle_config_file_changes(self, config):
-        # Mock the internal methods
-        config._process_changes = MagicMock(
-            return_value=(set(["new_file.yaml"]), set(["deleted_file.yaml"]))
-        )
-        config._load_updated_configs = MagicMock()
-        config._remove_deleted_configs = MagicMock()
-
-        # Create a sample list of changes
-        changes = [
-            (Change.added, "path/to/new_file.yaml"),
-            (Change.deleted, "path/to/deleted_file.yaml"),
+    expected_data = {
+        "models": [
+            {
+                "name": "model1",
+                "backend": "backend1",
+                "type": "type1",
+                "dimensions": 768,
+                "precision": 32,
+                "capabilities": ["embeddings"],
+            },
+            {"name": "model2", "backend": "backend2"},
         ]
+    }
 
-        # Call the method we're testing
-        with patch("src.leapfrogai_api.utils.config.fnmatch.filter") as mock_filter:
-            mock_filter.side_effect = [["new_file.yaml"], ["deleted_file.yaml"]]
-            config._handle_config_file_changes(changes, "/path/to", "*.yaml")
+    assert result == expected_data
 
-        # Assert that _process_changes was called with the correct arguments
-        config._process_changes.assert_called_once_with(changes)
 
-        # Assert that fnmatch.filter was called twice with the correct arguments
-        assert mock_filter.call_count == 2
-        mock_filter.assert_any_call({"new_file.yaml"}, "*.yaml")
-        mock_filter.assert_any_call({"deleted_file.yaml"}, "*.yaml")
+@pytest.mark.asyncio
+async def test_load_from_file_toml(config_files):
+    config_path: Path = config_files.get(TOML_CONFIG_FILE, None)
+    assert config_path is not None, f"Could not find config file: {TOML_CONFIG_FILE}"
+    config_path = await config_path.resolve()
 
-        # Assert that _load_updated_configs was called with the correct arguments
-        config._load_updated_configs.assert_called_once_with(
-            "/path/to", ["new_file.yaml"]
-        )
+    print(f"Debug: config_path = {config_path}")
+    print(f"Debug: config_path.exists() = {await config_path.exists()}")
+    print(f"Debug: config_path.is_file() = {await config_path.is_file()}")
 
-        # Assert that _remove_deleted_configs was called with the correct arguments
-        config._remove_deleted_configs.assert_called_once_with(["deleted_file.yaml"])
+    config = ConfigFile(path=config_path)
+    result = await config._load_from_file(config_path)
 
-        # Optional: Test logging (if you want to ensure the log message is correct)
-        with patch("src.leapfrogai_api.utils.config.logging.info") as mock_logging:
-            config._handle_config_file_changes(changes, "/path/to", "*.yaml")
-            mock_logging.assert_called_with(f"Config changes detected: {changes}")
+    print(f"Debug: result = {result}")
 
-    def test_initialize_config(self, config):
-        # Test default behavior
-        with patch.object(Config, "load_all_configs") as mock_load_all_configs:
-            result = config.initialize_config()
-            mock_load_all_configs.assert_called_once_with(
-                directory=".", filename=DEFAULT_CONFIG_FILE
-            )
-            assert result == (".", DEFAULT_CONFIG_FILE)
+    # Load the TOML file directly for comparison
+    with open(config_path, "r") as f:
+        expected_data = toml.load(f)
 
-        # Test with custom parameters
-        with patch.object(Config, "load_all_configs") as mock_load_all_configs:
-            result = config.initialize_config(
-                directory="/custom/dir", filename="custom.yaml"
-            )
-            mock_load_all_configs.assert_called_once_with(
-                directory="/custom/dir", filename="custom.yaml"
-            )
-            assert result == ("/custom/dir", "custom.yaml")
+    print(f"Debug: expected_data = {expected_data}")
 
-        # Test with environment variables
-        env_vars = {"LFAI_CONFIG_PATH": "/env/dir", "LFAI_CONFIG_FILENAME": "env.yaml"}
-        with (
-            patch.dict("os.environ", env_vars),
-            patch.object(Config, "load_all_configs") as mock_load_all_configs,
-        ):
-            result = config.initialize_config()
-            mock_load_all_configs.assert_called_once_with(
-                directory="/env/dir", filename="env.yaml"
-            )
-            assert result == ("/env/dir", "env.yaml")
+    assert result == expected_data
 
-        # Test with environment variables overriding custom parameters
-        with (
-            patch.dict("os.environ", env_vars),
-            patch.object(Config, "load_all_configs") as mock_load_all_configs,
-        ):
-            result = config.initialize_config(
-                directory="/custom/dir", filename="custom.yaml"
-            )
-            mock_load_all_configs.assert_called_once_with(
-                directory="/env/dir", filename="env.yaml"
-            )
-            assert result == ("/env/dir", "env.yaml")
+
+@pytest.mark.asyncio
+async def test_load_from_file_unsupported():
+    config = ConfigFile(Path("test_config.txt"))
+
+    with patch("pathlib.Path.open") as mock_open:
+        mock_file = MagicMock()
+        mock_file.read.return_value = "dummy_content"
+        mock_open.return_value.__aenter__.return_value = mock_file
+
+        result = await config._load_from_file(Path("test_config.txt"))
+
+        assert result == {}
+
+
+@pytest.mark.asyncio
+async def test_load_config_file():
+    config = ConfigFile(path=await Path(YAML_CONFIG_FILE).resolve())
+    test_data = {"models": [{"name": "test_model", "backend": "test_backend"}]}
+
+    with (
+        patch.object(config, "_load_from_file") as mock_load,
+        patch.object(config, "parse_models") as mock_parse,
+    ):
+        mock_load.return_value = test_data
+
+        await config.load_config_file()
+
+        mock_load.assert_called_once_with(path=config.path)
+        mock_parse.assert_called_once_with(test_data)
+
+
+@pytest.mark.asyncio
+async def test_aload():
+    config = ConfigFile(Path(YAML_CONFIG_FILE))
+
+    with (
+        patch("pathlib.Path.exists") as mock_exists,
+        patch.object(config, "load_config_file") as mock_load,
+    ):
+        mock_exists.return_value = True
+
+        await config.aload()
+
+        mock_exists.assert_called_once()
+        mock_load.assert_called_once()
+
+
+@pytest.mark.asyncio
+async def test_aunload():
+    config = ConfigFile(Path(YAML_CONFIG_FILE))
+    config.models = {"model1": Model(name="model1", backend="backend1")}
+    config._loaded = True
+
+    await config.aunload()
+
+    assert len(config.models) == 0
+    assert config._loaded is False, f"config._loaded = {config._loaded}"
+
+
+def test_str_representation(config_file):
+    assert str(config_file) == f"Path: {config_file.path}, Models: {{}}"
+
+
+def test_repr_representation(config_file):
+    assert repr(config_file) == f"ConfigFile(path={config_file.path}, models={{}})"
