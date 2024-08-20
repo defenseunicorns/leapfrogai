@@ -6,6 +6,8 @@ inputs:
     description: Registry1 Username
   registry1Password:
     description: Registry1 Password
+  ghToken:
+    description: GitHub Token
 
 runs:
   using: composite
@@ -13,10 +15,10 @@ runs:
     - name: Setup UDS Environment
       uses: defenseunicorns/uds-common/.github/actions/setup@822dac4452e6815aadcf09f487406ff258756a0c # v0.14.0
       with:
-        registry1Username: ${{ secrets.IRON_BANK_ROBOT_USERNAME }}
-        registry1Password: ${{ secrets.IRON_BANK_ROBOT_PASSWORD }}
+        registry1Username: ${{ inputs.IRON_BANK_ROBOT_USERNAME }}
+        registry1Password: ${{ inputs.IRON_BANK_ROBOT_PASSWORD }}
+        ghToken: ${{ inputs.ghToken }}
         udsCliVersion: 0.14.0
-        ghToken: ${{ secrets.GITHUB_TOKEN }}
 
     - name: Create UDS Cluster
       shell: bash
