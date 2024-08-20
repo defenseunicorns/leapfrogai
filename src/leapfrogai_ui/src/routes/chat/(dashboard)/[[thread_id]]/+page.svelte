@@ -46,6 +46,8 @@
   let assistantsList: Array<{ id: string; text: string }>;
   let documentText: string;
   let uploadingFile = false;
+  let attachedFileNames: string[] = [];
+
   const { enhance, submit } = superForm(data.form, {
     validators: yup(filesSchema),
     invalidateAll: false,
@@ -245,7 +247,10 @@
         const newMessage = await saveMessage({
           thread_id: data.thread.id,
           content: $chatInput,
-          role: 'user'
+          role: 'user',
+          metadata: {
+            filenames: attachedFileNames
+          }
         });
         // store user input
         await threadsStore.addMessageToStore(newMessage);
@@ -358,6 +363,9 @@
             size="sm"
             on:change={(e) => {
               uploadingFile = true;
+              for (const file of e.detail) {
+                attachedFileNames.push(file.name);
+              }
               submit(e.detail);
             }}
             accept={ACCEPTED_FILE_TYPES}

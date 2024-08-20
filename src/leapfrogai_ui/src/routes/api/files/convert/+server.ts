@@ -24,8 +24,8 @@ export const POST: RequestHandler = async ({ request, locals: { session } }) => 
   }
 
   try {
-    const fileArrayBuffer: ArrayBuffer;
-    const filename: string;
+    let fileArrayBuffer: ArrayBuffer;
+    let filename: string;
     filename = file.name;
     fileArrayBuffer = await file.arrayBuffer();
     if (!fileArrayBuffer) error(404, 'File Not Found');

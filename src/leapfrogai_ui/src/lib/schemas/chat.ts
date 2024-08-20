@@ -21,7 +21,15 @@ export const messageInputSchema: ObjectSchema<NewMessageInput> = object({
   thread_id: string().required(),
   content: contentInputSchema,
   role: string<'user' | 'assistant'>().required(),
-  assistantId: string().optional()
+  assistantId: string().optional(),
+  metadata: object({ label: string(), user_id: string() }).test(
+    'max fields',
+    'metadata is limited to 16 fields',
+    (value) => {
+      if(!value) return true;
+      return Object.keys(value).length <= 16;
+    }
+  )
 })
   .noUnknown(true)
   .strict();
