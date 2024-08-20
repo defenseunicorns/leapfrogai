@@ -6,7 +6,7 @@ KEYCLOAK_ADMIN_TOKEN=$(curl -sS -vv --location "https://keycloak.admin.uds.dev/r
 --data-urlencode "username=admin" \
 --data-urlencode "password=${KEYCLOAK_ADMIN_PASSWORD}" \
 --data-urlencode "client_id=admin-cli" \
---data-urlencode "grant_type=password" | uds zarf tools yq .access_token)
+--data-urlencode "grant_type=password" | tac | tac | uds zarf tools yq .access_token)
 echo Admin token: $KEYCLOAK_ADMIN_TOKEN
 curl -sS -vv --location "https://keycloak.admin.uds.dev/admin/realms/uds/users" \
 --http1.1 \
