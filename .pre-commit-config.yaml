@@ -9,9 +9,6 @@ repos:
         name: Large Files Check
         args: ["--maxkb=1024"]
 
-      - id: check-merge-conflict
-        name: Check for Upstream Merge Conflicts
-
       - id: detect-aws-credentials
         name: Check AWS Credentials
         args:
@@ -59,7 +56,14 @@ repos:
     rev: v0.12.1
     hooks:
       - id: markdownlint-cli2
-        name: Markdown Lint
+        name: Markdown Linti
+
+  - repo: https://github.com/hadolint/hadolint
+    rev: v2.12.0
+    hooks:
+      - id: hadolint-docker
+        name: Dockerfile Lint
+        args: ["--config", ".hadolint.yaml"]
 
   - repo: local
     hooks:
@@ -76,3 +80,53 @@ repos:
         name: Ruff Lint
       - id: ruff-format # Run the formatter.
         name: Ruff Format
+
+  - repo: https://github.com/gruntwork-io/pre-commit
+    rev: v0.1.23
+    hooks:
+      - id: helmlint
+        name: Helm Lint
+
+  #############
+  # UDS v0.14.0
+  #############
+
+  # ZARF PACKAGE CHECK
+  - repo: local
+    hooks:
+      - id: download-schema
+        name: "Download Zarf Schema"
+        entry: |
+          bash -c 'if [! -f zarf-v0.14.0.schema.json ]; \
+            then curl -o zarf-v0.14.0.schema.json https://raw.githubusercontent.com/defenseunicorns/uds-cli/v0.14.0/zarf.schema.json; \
+            else exit 0; fi'
+        language: system
+
+  - repo: https://github.com/python-jsonschema/check-jsonschema
+    rev: 0.14.0
+    hooks:
+      - id: check-jsonschema
+        name: "Validate Zarf Configs Against Schema"
+        files: "zarf.yaml"
+        types: [yaml]
+        args: ["--schemafile", "zarf-v0.14.0.schema.json"]
+
+  # UDS BUNDLE CHECK
+  - repo: local
+    hooks:
+      - id: download-schema
+        name: "Download UDS Bundle Schema"
+        entry: |
+          bash -c 'if [! -f uds-v0.14.0.schema.json ]; \
+            then curl -o uds-v0.14.0.schema.json https://raw.githubusercontent.com/defenseunicorns/uds-cli/v0.14.0/uds.schema.json; \
+            else exit 0; fi'
+        language: system
+
+  - repo: https://github.com/python-jsonschema/check-jsonschema
+    rev: 0.14.0
+    hooks:
+      - id: check-jsonschema
+        name: "Validate UDS Bundles Against Schema"
+        files: "uds-bundle.yaml"
+        types: [yaml]
+        args: ["--schemafile", "uds-v0.14.0.schema.json"]
