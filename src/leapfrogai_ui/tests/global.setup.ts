@@ -2,7 +2,6 @@ import { expect, test as setup } from './fixtures';
 import * as OTPAuth from 'otpauth';
 import { delay } from 'msw';
 import type { Page } from '@playwright/test';
-import { cleanup } from './helpers/cleanup';
 
 const authFile = 'playwright/.auth/user.json';
 
@@ -84,7 +83,7 @@ const logout = async (page: Page) => {
   }
 };
 
-setup('authenticate', async ({ page, openAIClient }) => {
+setup('authenticate', async ({ page }) => {
   page.on('pageerror', (err) => {
     console.log(err.message);
   });
@@ -107,10 +106,6 @@ setup('authenticate', async ({ page, openAIClient }) => {
     await login(page);
 
     await page.waitForURL('/chat');
-  }
-
-  if (process.env.TEST_ENV !== 'CI') {
-    await cleanup(openAIClient);
   }
 
   // Alternatively, you can wait until the page reaches a state where all cookies are set.
