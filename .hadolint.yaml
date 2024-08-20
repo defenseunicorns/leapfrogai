@@ -1,8 +1,11 @@
 failure-threshold: error
-# ignore: use of latest, --no-cache-dir, shell usage warning, apt-get list, --no-install-recommends
-ignored:
-  - "DL3007"
-  - "DL3042"
-  - "DL4006"
-  - "DL3009"
-  - "DL3015"
+override:
+  warning:
+    - "DL3007" # use of latest image
+    - "DL3042" # pip --no-cache-dir
+    - "DL4006" # shell usage warning
+    - "DL3009" # apt-get list
+    - "DL3015" # --no-install-recommends
+    - "DL3008" # pinning distro package versions
+    - "DL3045" # usage of relative COPY
+    - "DL3002" # last user as root

@@ -16,5 +16,7 @@ RUN mkdir -p /usr/local/bin && \
 # 65532 is the UID of the `nonroot` user in chainguard/static.  See: https://edu.chainguard.dev/chainguard/chainguard-images/reference/static/overview/#users
 USER 65532:65532
 
+WORKDIR /supabase/migrations/
+
 # Download the migration scripts
-COPY --chown=65532:65532 ${MIGRATIONS_DIR}/*.sql supabase/migrations/
+COPY --chown=65532:65532 ${MIGRATIONS_DIR}/*.sql /supabase/migrations/
