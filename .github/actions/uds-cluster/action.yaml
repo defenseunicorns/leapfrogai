@@ -11,10 +11,12 @@ runs:
   using: composite
   steps:
     - name: Setup UDS Environment
-      uses: defenseunicorns/uds-common/.github/actions/setup@822dac4452e6815aadcf09f487406ff258756a0c
+      uses: defenseunicorns/uds-common/.github/actions/setup@822dac4452e6815aadcf09f487406ff258756a0c # v0.14.0
       with:
-        username: ${{ inputs.registry1Username }}
-        password: ${{ inputs.registry1Password }}
+        registry1Username: ${{ secrets.IRON_BANK_ROBOT_USERNAME }}
+        registry1Password: ${{ secrets.IRON_BANK_ROBOT_PASSWORD }}
+        udsCliVersion: 0.14.0
+        ghToken: ${{ secrets.GITHUB_TOKEN }}
 
     - name: Create UDS Cluster
       shell: bash

@@ -65,9 +65,6 @@ jobs:
 
         - name: Setup UDS Cluster
           uses: ./.github/actions/uds-cluster
-          with:
-            registry1Username: ${{ secrets.IRON_BANK_ROBOT_USERNAME }}
-            registry1Password: ${{ secrets.IRON_BANK_ROBOT_PASSWORD }}
 
         - name: Setup LFAI-API and Supabase
           uses: ./.github/actions/lfai-core
