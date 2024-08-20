@@ -48,7 +48,6 @@
   let uploadingFile = false;
   let attachedFileNames: string[] = [];
 
-  $: console.log(data.thread);
   const { enhance, submit } = superForm(data.form, {
     validators: yup(filesSchema),
     invalidateAll: false,
@@ -64,7 +63,6 @@
     },
     onError(e) {
       uploadingFile = false;
-      console.log({ ...ERROR_PROCESSING_FILE_MSG_TOAST({ subtitle: e.result.error.message }) });
       toastStore.addToast({
         ...ERROR_PROCESSING_FILE_MSG_TOAST({ subtitle: e.result.error.message })
       });
@@ -244,15 +242,16 @@
     await threadsStore.setSendingBlocked(true);
     if (data.thread?.id) {
       if (documentText) {
+        // Save the text of the document as it's own message before sending actual question
         const contextMsg = await saveMessage({
           thread_id: data.thread.id,
           content: documentText,
           role: 'user',
           metadata: {
-            isFileContext: 'true'
+            hideMessage: 'true'
           }
         });
-        await threadsStore.addMessageToStore(contextMsg);
+        setChatMessages([...$chatMessages, { ...contextMsg, content: getMessageText(contextMsg) }]);
       }
 
       // Save with API
@@ -273,6 +272,8 @@
         // store user input
         await threadsStore.addMessageToStore(newMessage);
         submitChatMessage(e); // submit to AI (/api/chat)
+        documentText = '';
+        attachedFileNames = [];
       } catch {
         toastStore.addToast({
           ...ERROR_SAVING_MSG_TOAST()
@@ -350,15 +351,17 @@
   <div class="no-scrollbar flex flex-grow flex-col-reverse overflow-auto px-8">
     <div id="messages-container">
       {#each activeThreadMessages as message, index (message.id)}
-        <Message
-          messages={activeThreadMessages}
-          streamedMessages={isRunAssistantMessage(message) ? $assistantMessages : $chatMessages}
-          {message}
-          isLastMessage={!$threadsStore.streamingMessage &&
-            index === activeThreadMessages.length - 1}
-          append={assistantMode ? assistantAppend : chatAppend}
-          setMessages={isRunAssistantMessage(message) ? setAssistantMessages : setChatMessages}
-        />
+        {#if message.metadata?.hideMessage !== 'true'}
+          <Message
+            messages={activeThreadMessages}
+            streamedMessages={isRunAssistantMessage(message) ? $assistantMessages : $chatMessages}
+            {message}
+            isLastMessage={!$threadsStore.streamingMessage &&
+              index === activeThreadMessages.length - 1}
+            append={assistantMode ? assistantAppend : chatAppend}
+            setMessages={isRunAssistantMessage(message) ? setAssistantMessages : setChatMessages}
+          />
+        {/if}
       {/each}
 
       {#if $threadsStore.streamingMessage}

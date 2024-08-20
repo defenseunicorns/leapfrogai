@@ -23,7 +23,6 @@ export const load: PageLoad = async ({ params, fetch }) => {
   }
 
   if (browser) {
-    console.log('thread', thread)
     if (thread) {
       // update store with latest thread fetched by page data
       threadsStore.updateThread(thread);
