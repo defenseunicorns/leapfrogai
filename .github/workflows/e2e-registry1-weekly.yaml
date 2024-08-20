@@ -64,14 +64,6 @@ jobs:
           rm -rf uds-bundle-leapfrogai-amd64-registry1.tar.zst
           cd ../../../
 
-      - name: Install UI/Playwright Dependencies
-        run: |
-          npm --prefix src/leapfrogai_ui ci
-          npx --prefix src/leapfrogai_ui playwright install
-
-      - name: Setup Python
-        uses: ./.github/actions/python
-
       - name: Test llama-cpp-python
         run: |
           python -m pytest ./tests/e2e/test_llama.py -v
@@ -83,6 +75,11 @@ jobs:
       - name: Test whisper
         run: |
           python -m pytest ./tests/e2e/test_whisper.py -v
+
+      - name: Install UI/Playwright Dependencies
+        run: |
+          npm --prefix src/leapfrogai_ui ci
+          npx --prefix src/leapfrogai_ui playwright install
 
       - name: Test UI
         run: |
