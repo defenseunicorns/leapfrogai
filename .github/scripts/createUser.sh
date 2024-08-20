@@ -1,4 +1,5 @@
 KEYCLOAK_ADMIN_PASSWORD=$(uds zarf tools kubectl get secret -n keycloak keycloak-admin-password -o jsonpath={.data.password} | base64 -d)
+echo Admin password: $KEYCLOAK_ADMIN_PASSWORD
 KEYCLOAK_ADMIN_TOKEN=$(curl -s --location "https://keycloak.admin.uds.dev/realms/master/protocol/openid-connect/token" \
 --http1.1 \
 --header "Content-Type: application/x-www-form-urlencoded" \
@@ -6,6 +7,7 @@ KEYCLOAK_ADMIN_TOKEN=$(curl -s --location "https://keycloak.admin.uds.dev/realms
 --data-urlencode "password=${KEYCLOAK_ADMIN_PASSWORD}" \
 --data-urlencode "client_id=admin-cli" \
 --data-urlencode "grant_type=password" | uds zarf tools yq .access_token)
+echo Admin token: $KEYCLOAK_ADMIN_TOKEN
 curl --location "https://keycloak.admin.uds.dev/admin/realms/uds/users" \
 --http1.1 \
 --header "Content-Type: application/json" \
@@ -32,6 +34,7 @@ curl --location "https://keycloak.admin.uds.dev/admin/realms/uds/users" \
 CONDITIONAL_OTP_ID=$(curl --location "https://keycloak.admin.uds.dev/admin/realms/uds/authentication/flows/Authentication/executions" \
 --http1.1 \
 --header "Authorization: Bearer ${KEYCLOAK_ADMIN_TOKEN}" | uds zarf tools yq '.[] | select(.displayName == "Conditional OTP") | .id')
+echo CONDITIONAL_OTP_ID $CONDITIONAL_OTP_ID
 curl --location --request PUT "https://keycloak.admin.uds.dev/admin/realms/uds/authentication/flows/Authentication/executions" \
 --http1.1 \
 --header "Content-Type: application/json" \
