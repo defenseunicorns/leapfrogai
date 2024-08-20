@@ -1,5 +1,5 @@
 apiVersion: v2
-name: leapfrogai-api
+name: api
 description: "A Python API that shadows the OpenAI API specification"
 
 # A chart can be either an 'application' or a 'library' chart.

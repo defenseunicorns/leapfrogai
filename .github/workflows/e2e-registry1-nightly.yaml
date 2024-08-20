@@ -1,0 +1,88 @@
+name: e2e-registry1-nightly
+
+on:
+  schedule:
+    - cron: "0 0 * * 6" # Run every Sunday at 12 AM EST
+  workflow_dispatch: # trigger manually as needed
+
+concurrency:
+  group: e2e-e2e-registry1-nightly-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  test-flavor:
+    runs-on: "uds-ubuntu-big-boy-8-core"
+    name: Test LeapfrogAI Flavor
+
+    permissions:
+      contents: read
+      packages: write
+      id-token: write # This is needed for OIDC federation.
+
+    steps:
+      - name: Checkout Repo
+        uses: actions/checkout@b4ffde65f46336ab88eb53be808477a3936bae11 # v4.1.1
+
+      - name: Setup Python
+        uses: ./.github/actions/python
+
+      - name: Setup UDS Cluster
+        uses: ./.github/actions/uds-cluster
+        with:
+          registry1Username: ${{ secrets.IRON_BANK_ROBOT_USERNAME }}
+          registry1Password: ${{ secrets.IRON_BANK_ROBOT_PASSWORD }}
+
+      - name: Setup LFAI-API and Supabase
+        uses: ./.github/actions/lfai-core
+
+      - name: Set Flavor and Version
+        run: |
+          uds zarf tools yq -i '.metadata.version = "registry1"' \
+          uds-bundles/latest/cpu/uds-bundle.yaml
+
+          uds zarf tools yq -i '.packages[1].repository = "registry1.dso.mil/ironbank/opensource/defenseunicorns/leapfrogai/api"' \
+          uds-bundles/latest/cpu/uds-bundle.yaml
+
+      - name: Create Bundle
+        run: |
+          cd uds-bundles/latest/cpu
+          uds create . --confirm
+
+      - name: Deploy Bundle
+        run: |
+          uds deploy uds-bundle-leapfrogai-amd64-registry1.tar.zst
+          rm -rf uds-bundle-leapfrogai-amd64-registry1.tar.zst
+          cd ../../../
+
+      - name: Install UI/Playwright Dependencies
+        run: |
+          npm --prefix src/leapfrogai_ui ci
+          npx --prefix src/leapfrogai_ui playwright install
+
+      - name: Setup Python
+        uses: ./.github/actions/python
+
+      - name: Test llama-cpp-python
+        run: |
+          python -m pytest ./tests/e2e/test_llama.py -v
+
+      - name: Test text-embeddings
+        run: |
+          python -m pytest ./tests/e2e/test_text_embeddings.py -v
+
+      - name: Test whisper
+        run: |
+          python -m pytest ./tests/e2e/test_whisper.py -v
+
+      - name: Test UI
+        run: |
+          cp src/leapfrogai_ui/.env.example src/leapfrogai_ui/.env
+          TEST_ENV=CI PUBLIC_DISABLE_KEYCLOAK=true PUBLIC_SUPABASE_ANON_KEY=$ANON_KEY npm --prefix src/leapfrogai_ui run test:integration:ci
+
+      - name: Archive Playwright Report
+        uses: actions/upload-artifact@v4
+        if: ${{ !cancelled() }}
+        with:
+          name: playwright-report
+          path: src/leapfrogai_ui/e2e-report/
+          retention-days: 30

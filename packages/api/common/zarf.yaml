@@ -11,7 +11,7 @@ components:
     description: "The LeapfrogAI Python API that shadows the OpenAI API specification"
     required: true
     charts:
-      - name: leapfrogai-api
+      - name: leapfrogai
         namespace: leapfrogai
         localPath: ../chart
         # x-release-please-start-version

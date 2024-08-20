@@ -26,7 +26,7 @@ components:
     import:
       path: common
     charts:
-      - name: leapfrogai-api
+      - name: leapfrogai
         valuesFiles:
           - "values/upstream-values.yaml"
     images:
@@ -41,7 +41,7 @@ components:
     import:
       path: common
     charts:
-      - name: leapfrogai-api
+      - name: leapfrogai
         valuesFiles:
           - "values/registry1-values.yaml"
     images:
