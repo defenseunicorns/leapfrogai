@@ -32,7 +32,7 @@ from leapfrogai_sdk.utils import import_app
 @click.command()
 def cli(app: str, host: str, port: str, app_dir: str):
     sys.path.insert(0, app_dir)
-    """Leapfrog AI CLI"""
+    """LeapfrogAI CLI"""
     app = import_app(app)
     asyncio.run(serve(app(), host, port))
 

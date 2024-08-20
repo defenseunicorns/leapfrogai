@@ -1,29 +1,28 @@
 # LeapfrogAI Load Tests
 
-## Overview
-
 These tests check the API's ability to handle different amounts of load. The tests simulate a specified number of users hitting the endpoints with some number of requests per second.
 
-# Requirements
+## Pre-Requisites
 
-### Environment Setup
-
-Before running the tests, ensure that your API URL and bearer token are properly configured in your environment variables. Follow these steps:
+Before running the tests, ensure that your API URL and API key are properly configured in your environment variables. Follow these steps:
 
 1. Set the API URL:
+
    ```bash
    export API_URL="https://leapfrogai-api.uds.dev"
    ```
 
 2. Set the API token:
+
    ```bash
-   export BEARER_TOKEN="<your-supabase-jwt-here>"
+   export BEARER_TOKEN="<your-api-key-here>"
    ```
 
-   **Note:** The bearer token should be your Supabase user JWT. For information on generating a JWT, please refer to the [Supabase README.md](../../packages/supabase/README.md). While an API key generated from the LeapfrogAI API endpoint can be used, it will cause the token generation load tests to fail.
+   **Note:** See the [API documentation](../../src/leapfrogai_api/README.md) to create an API key.
 
 3. (Optional) - Set the model backend, this will default to `vllm` if unset:
-      ```bash
+
+   ```bash
    export DEFAULT_MODEL="llama-cpp-python"
    ```
 
@@ -32,6 +31,7 @@ Before running the tests, ensure that your API URL and bearer token are properly
 To start the Locust web interface and run the tests:
 
 1. Install dependencies from the project root.
+
    ```bash
    pip install ".[dev]"
    ```
@@ -39,6 +39,7 @@ To start the Locust web interface and run the tests:
 2. Navigate to the directory containing `loadtest.py`.
 
 3. Execute the following command:
+
    ```bash
    locust -f loadtest.py --web-port 8089
    ```
