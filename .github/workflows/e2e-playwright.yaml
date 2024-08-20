@@ -103,7 +103,7 @@ jobs:
         - name: UI/API/Supabase E2E Playwright Tests
           run: |
             cp src/leapfrogai_ui/.env.example src/leapfrogai_ui/.env
-            mkdir playwright/auth
+            mkdir -p playwright/auth
             touch playwright/auth.user.json
             SERVICE_ROLE_KEY=$(uds zarf tools kubectl get secret -n leapfrogai supabase-bootstrap-jwt -o jsonpath={.data.service-key} | base64 -d) TEST_ENV=CI PUBLIC_DISABLE_KEYCLOAK=true PUBLIC_SUPABASE_ANON_KEY=$ANON_KEY npm --prefix src/leapfrogai_ui run test:integration:ci
 
