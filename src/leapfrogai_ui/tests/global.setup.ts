@@ -2,6 +2,7 @@ import { expect, test as setup } from './fixtures';
 import * as OTPAuth from 'otpauth';
 import { delay } from 'msw';
 import type { Page } from '@playwright/test';
+import { cleanup } from './helpers/cleanup';
 
 const authFile = 'playwright/.auth/user.json';
 
@@ -83,7 +84,7 @@ const logout = async (page: Page) => {
   }
 };
 
-setup('authenticate', async ({ page }) => {
+setup('authenticate', async ({ page, openAIClient }) => {
   page.on('pageerror', (err) => {
     console.log(err.message);
   });
@@ -114,4 +115,8 @@ setup('authenticate', async ({ page }) => {
   // End of authentication steps.
 
   await page.context().storageState({ path: authFile });
+
+  if (process.env.TEST_ENV !== 'CI') {
+    await cleanup(openAIClient);
+  }
 });

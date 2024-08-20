@@ -1,10 +1,7 @@
-import { getToken } from '../fixtures';
-
 export const deleteAllTestAPIKeys = async () => {
-  const token = getToken();
   const res = await fetch(`${process.env.LEAPFROGAI_API_BASE_URL}/leapfrogai/v1/auth/api-keys`, {
     headers: {
-      Authorization: `Bearer ${token}`
+      Authorization: `Bearer ${process.env.SERVICE_ROLE_KEY}`
     }
   });
   const keys = await res.json();
@@ -15,7 +12,7 @@ export const deleteAllTestAPIKeys = async () => {
         fetch(`${process.env.LEAPFROGAI_API_BASE_URL}/leapfrogai/v1/auth/api-keys/${key.id}`, {
           method: 'DELETE',
           headers: {
-            Authorization: `Bearer ${token}`,
+            Authorization: `Bearer ${process.env.SERVICE_ROLE_KEY}`,
             'Content-Type': 'application/json'
           }
         })
