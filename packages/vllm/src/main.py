@@ -147,7 +147,7 @@ class Model:
         _thread = threading.Thread(target=asyncio.run, args=(self.iterate_outputs(),))
         _thread.start()
 
-        quantization = AppConfig().backend_options.quantization = (
+        quantization = (
             None
             if AppConfig().backend_options.quantization in ["", "None"]
             else AppConfig().backend_options.quantization
