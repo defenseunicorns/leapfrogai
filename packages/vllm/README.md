@@ -25,7 +25,7 @@ You can optionally specify different models or quantization types using the foll
 - `--build-arg WORKER_USE_RAY="False"`: Distributed, multi-node inferencing mode for the worker(s)
 - `--build-arg GPU_MEMORY_UTILIZATION="0.90"`: Max memory utilization (fraction, out of 1.0) for the vLLM process
 - `--build-arg ENFORCE_EAGER="False"`: Disable CUDA graphs for faster time-to-first-token inferencing speed at the cost of more GPU memory (set to False for production)
-- `--build-arg QUANTIZATION="None"`: Not required, bu can be used to explicitly set quantization type. Can be used to force `gptq` so that vLLM does not auto-convert to `gptq_marlin`.
+- `--build-arg QUANTIZATION="None"`: Not required, but can be used to explicitly set quantization type. Can be used to force `gptq` so that vLLM does not auto-convert to `gptq_marlin`. Use "" or "None" to allow vLLM auto-detection and conversions.
 
 ## Prompt Formats
 

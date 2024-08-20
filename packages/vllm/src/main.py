@@ -147,6 +147,12 @@ class Model:
         _thread = threading.Thread(target=asyncio.run, args=(self.iterate_outputs(),))
         _thread.start()
 
+        quantization = AppConfig().backend_options.quantization = (
+            None
+            if AppConfig().backend_options.quantization in ["", "None"]
+            else AppConfig().backend_options.quantization
+        )
+
         self.backend_config = get_backend_configs()
         self.engine_args = AsyncEngineArgs(
             # Taken from the LFAI SDK general LLM configuration
@@ -155,7 +161,7 @@ class Model:
             # Taken from the vLLM-specific configuration
             model=AppConfig().backend_options.model_path,
             enforce_eager=AppConfig().backend_options.enforce_eager,
-            quantization=AppConfig().backend_options.quantization,
+            quantization=quantization,
             engine_use_ray=AppConfig().backend_options.engine_use_ray,
             worker_use_ray=AppConfig().backend_options.worker_use_ray,
             tensor_parallel_size=AppConfig().backend_options.tensor_parallel_size,
