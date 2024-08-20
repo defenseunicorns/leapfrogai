@@ -21,7 +21,7 @@ concurrency:
 
 jobs:
   test-flavor:
-    runs-on: "uds-ubuntu-big-boy-8-core"
+    runs-on: ai-ubuntu-big-boy-8-core
     name: Test LeapfrogAI Flavor
 
     permissions:
