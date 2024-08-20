@@ -5,17 +5,17 @@ on:
     branches:
       - "main"
     paths:
-      - "packages"
-      - "Dockerfile.migrations"
-      - ".dockerignore"
+      - "**/Dockerfile"
+      - "**/Dockerfile.migrations"
+      - "**/.dockerignore"
       - ".github/workflows/docker-lint.yaml"
   pull_request:
     branches:
       - "main"
     paths:
-      - "packages"
-      - "Dockerfile.migrations"
-      - ".dockerignore"
+      - "**/Dockerfile"
+      - "**/Dockerfile.migrations"
+      - "**/.dockerignore"
       - ".github/workflows/docker-lint.yaml"
 
 concurrency:
