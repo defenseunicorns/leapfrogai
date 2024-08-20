@@ -69,12 +69,22 @@ jobs:
         - name: Setup Python
           uses: ./.github/actions/python
 
+        - name: Generate Fake Playwright User Password
+          id: generate-password
+          run: |
+            FAKE_E2E_USER_PASSWORD=$(openssl rand -base64 32 | tr -dc 'a-zA-Z0-9@#%^&*()-_=+<>?' | fold -w 12 | head -n 1)
+            echo "::add-mask::$FAKE_E2E_USER_PASSWORD"
+            echo "fake-e2e-user-password=$FAKE_E2E_USER_PASSWORD" >> "$GITHUB_OUTPUT"
+            echo "the secret password is ${{ steps.generate-password.outputs.fake-e2e-user-password }}"
+        
+        
+
         - name: Setup UDS Cluster
           uses: ./.github/actions/uds-cluster
           with:
             registry1Username: ${{ secrets.IRON_BANK_ROBOT_USERNAME }}
             registry1Password: ${{ secrets.IRON_BANK_ROBOT_PASSWORD }}
-            fakeE2EUserPassword: ${{ secrets.FAKE_E2E_USER_PASSWORD }}
+            fakeE2EUserPassword: ${{ steps.generate-password.outputs.fake-e2e-user-password }}
 
         - name: Setup LFAI-API and Supabase
           uses: ./.github/actions/lfai-core
@@ -111,7 +121,7 @@ jobs:
         - name: UI/API/Supabase E2E Playwright Tests
           run: |
             cp src/leapfrogai_ui/.env.example src/leapfrogai_ui/.env
-            TEST_ENV=CI USERNAME=doug PASSWORD=${{ secrets.FAKE_E2E_USER_PASSWORD }} PUBLIC_SUPABASE_ANON_KEY=$ANON_KEY npm --prefix src/leapfrogai_ui run test:integration:ci
+            TEST_ENV=CI USERNAME=doug PASSWORD=${{ steps.generate-password.outputs.fake-e2e-user-password }} PUBLIC_SUPABASE_ANON_KEY=$ANON_KEY npm --prefix src/leapfrogai_ui run test:integration:ci
 
         # Upload the Playwright report as an artifact
         - name: Archive Playwright Report
