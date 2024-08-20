@@ -67,8 +67,8 @@ jobs:
           with:
             additionalOptionalDep: dev-vllm
 
-        - name: Setup UDS Environment
-          uses: defenseunicorns/uds-common/.github/actions/setup@05f42bb3117b66ebef8c72ae050b34bce19385f5
+        - name: Setup UDS Cluster
+          uses: ./.github/actions/uds-cluster
           with:
             registry1Username: ${{ secrets.IRON_BANK_ROBOT_USERNAME }}
             registry1Password: ${{ secrets.IRON_BANK_ROBOT_PASSWORD }}
