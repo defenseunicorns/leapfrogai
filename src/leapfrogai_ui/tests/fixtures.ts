@@ -17,17 +17,35 @@ type Cookie = {
   sameSite: string;
 };
 
+// When using keycloak, the cookie value is missing ending " and }}, so instead we parse
+// out the token with this function
+const extractAccessToken = (jsonString: string) => {
+  const tokenKey = '"access_token":"';
+  const startIndex = jsonString.indexOf(tokenKey);
+
+  if (startIndex === -1) return null;
+
+  const tokenValueStart = startIndex + tokenKey.length;
+  const tokenValueEnd = jsonString.indexOf('"', tokenValueStart);
+  return jsonString.substring(tokenValueStart, tokenValueEnd);
+};
+
 export const getToken = () => {
   const authData = JSON.parse(fs.readFileSync('playwright/.auth/user.json', 'utf-8'));
-  const cookie = authData.cookies.find(
+  let cookie: Cookie;
+
+  cookie = authData.cookies.find(
     (cookie: Cookie) => cookie.name === 'sb-supabase-kong-auth-token.0'
   );
 
+  if (!cookie)
+    cookie = authData.cookies.find(
+      (cookie: Cookie) => cookie.name === 'sb-supabase-kong-auth-token'
+    );
+
   const cookieStripped = cookie.value.split('base64-')[1];
   const decodedValue = Buffer.from(cookieStripped, 'base64').toString('utf-8');
-  // The cookie value is missing ending " and }}, so we append it
-  const parsedValue = JSON.parse(`${decodedValue}"}}`);
-  return parsedValue.access_token;
+  return extractAccessToken(decodedValue);
 };
 export const getOpenAIClient = () => {
   const token = getToken();

@@ -2,6 +2,7 @@ import { expect, test as setup } from './fixtures';
 import * as OTPAuth from 'otpauth';
 import { delay } from 'msw';
 import type { Page } from '@playwright/test';
+import { cleanup } from './helpers/cleanup';
 
 const authFile = 'playwright/.auth/user.json';
 
@@ -11,27 +12,26 @@ const doSupabaseLogin = async (page: Page) => {
   // when running in Github CI, create a new account because we don't have seed migrations
   const emailField = page.getByTestId('email-input');
   const passwordField = page.getByTestId('password-input');
-  if (process.env.TEST_ENV === 'CI') {
-    await emailField.click();
-    await emailField.fill('ci_user@test.com');
-    await passwordField.click();
-    await passwordField.fill('password123');
 
-    const emailText = await emailField.innerText();
-    const passwordText = await passwordField.innerText();
-    if (emailText !== 'ci_user@test.com') await emailField.fill('ci_user@test.com');
-    if (passwordText !== 'password123') await passwordField.fill('password123');
+  await emailField.click();
+  await emailField.fill(process.env.USERNAME!);
+  await passwordField.click();
+  await passwordField.fill(process.env.PASSWORD!);
 
-    await page.getByTestId('submit-btn').click();
-  } else {
-    // uses local supabase test users, logs in directly with Supabase, no Keycloak
+  const emailText = await emailField.innerText();
+  const passwordText = await passwordField.innerText();
+  if (emailText !== process.env.USERNAME!) await emailField.fill(process.env.USERNAME!);
+  if (passwordText !== process.env.PASSWORD!) await passwordField.fill(process.env.PASSWORD!);
+
+  await page.getByTestId('submit-btn').click();
+
+  await delay(2000);
+  const userExists = (await page.getByText('User already exists').count()) > 0;
+  if (userExists) {
     await page.getByTestId('toggle-submit-btn').click();
-    await emailField.click();
-    await emailField.fill('user1@test.com');
-    await passwordField.click();
-    await passwordField.fill('password123');
     await page.getByTestId('submit-btn').click();
   }
+  // }
 };
 
 const doKeycloakLogin = async (page: Page) => {
@@ -84,7 +84,7 @@ const logout = async (page: Page) => {
   }
 };
 
-setup('authenticate', async ({ page }) => {
+setup('authenticate', async ({ page, openAIClient }) => {
   page.on('pageerror', (err) => {
     console.log(err.message);
   });
@@ -102,11 +102,15 @@ setup('authenticate', async ({ page }) => {
     // will invalidate the session and cause other tests to fail
     await logout(page);
 
-    await delay(31000); // prevent logging back in too quickly and getting denied
+    if (process.env.PUBLIC_DISABLE_KEYCLOAK === 'false') await delay(31000); // prevent logging back in too quickly and getting denied
     // Log back in to begin rest of tests
     await login(page);
 
     await page.waitForURL('/chat');
+  }
+
+  if (!process.env.CI) {
+    await cleanup(openAIClient);
   }
 
   // Alternatively, you can wait until the page reaches a state where all cookies are set.
