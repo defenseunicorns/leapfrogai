@@ -16,7 +16,7 @@ on:
       - uds-bundles/latest/**
 
 concurrency:
-  group: e2e-e2e-registry1-nightly-${{ github.ref }}
+  group: e2e-registry1-weekly-${{ github.ref }}
   cancel-in-progress: true
 
 jobs:
