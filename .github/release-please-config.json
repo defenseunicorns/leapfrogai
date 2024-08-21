@@ -45,11 +45,6 @@
           "type": "generic",
           "path": "**/hugo.toml",
           "glob": true
-        },
-        {
-          "type": "generic",
-          "path": ".github/workflows/e2e-registry1-weekly.yaml",
-          "glob": true
         }
       ]
     }
