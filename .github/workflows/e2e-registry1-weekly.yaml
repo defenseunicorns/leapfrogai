@@ -57,13 +57,10 @@ jobs:
         run: |
           LOCAL_VERSION=registry1 FLAVOR=registry1 make build-api
 
-      - name: Create Bundle
+      - name: Create and Deploy Bundle
         run: |
           cd uds-bundles/latest/cpu
           uds create . --confirm
-
-      - name: Deploy Bundle
-        run: |
           uds deploy uds-bundle-leapfrogai-amd64-registry1.tar.zst
           rm -rf uds-bundle-leapfrogai-amd64-registry1.tar.zst
           cd ../../../
