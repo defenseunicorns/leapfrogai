@@ -61,7 +61,7 @@ jobs:
         run: |
           cd uds-bundles/latest/cpu
           uds create . --confirm
-          uds deploy uds-bundle-leapfrogai-amd64-registry1.tar.zst
+          uds deploy uds-bundle-leapfrogai-amd64-registry1.tar.zst --confirm
           rm -rf uds-bundle-leapfrogai-amd64-registry1.tar.zst
           cd ../../../
 
