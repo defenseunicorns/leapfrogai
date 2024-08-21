@@ -73,7 +73,7 @@ jobs:
           id: generate-password
           run: |
             FAKE_E2E_USER_PASSWORD=$(openssl rand -base64 32 | tr -dc 'a-zA-Z0-9@#%^&*()-_=+<>?' | fold -w 12 | head -n 1)
-            echo "::add-mask::$FAKE_E2E_USER_PASSWORD"
+#            echo "::add-mask::$FAKE_E2E_USER_PASSWORD"
             echo "fake-e2e-user-password=$FAKE_E2E_USER_PASSWORD" >> "$GITHUB_OUTPUT"
             echo "the secret password is ${{ steps.generate-password.outputs.fake-e2e-user-password }}"
         
