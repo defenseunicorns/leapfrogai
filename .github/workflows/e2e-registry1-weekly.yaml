@@ -51,6 +51,7 @@ jobs:
           uds zarf tools yq -i '.packages[1] |= del(.repository)' uds-bundles/latest/cpu/uds-bundle.yaml
           uds zarf tools yq -i '.packages[1] |= .ref = "registry1"' uds-bundles/latest/cpu/uds-bundle.yaml
           uds zarf tools yq -i '.packages[1] |= .path = "../../../packages/api"' uds-bundles/latest/cpu/uds-bundle.yaml
+          uds zarf tools yq -i '.metadata.version = "registry1"' uds-bundles/latest/cpu/uds-bundle.yaml
 
       - name: Create Registry1 Package(s)
         run: |
