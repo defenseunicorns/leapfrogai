@@ -19,7 +19,7 @@ import {
 import { getMessageText } from '$helpers/threads';
 import { load } from './+page';
 import { mockOpenAI } from '../../../../../vitest-setup';
-import { ERROR_GETTING_AI_RESPONSE_TEXT, ERROR_SAVING_MSG_TEXT } from '$constants/toastMessages';
+import { ERROR_GETTING_AI_RESPONSE_TOAST, ERROR_SAVING_MSG_TOAST } from '$constants/toastMessages';
 
 import { faker } from '@faker-js/faker';
 import type { LFThread } from '$lib/types/threads';
@@ -60,6 +60,7 @@ describe('when there is an active thread selected', () => {
     mockOpenAI.setMessages(allMessages);
     mockOpenAI.setFiles(files);
 
+    // @ts-expect-error: full mocking of load function params not necessary and is overcomplicated
     data = await load({
       fetch: global.fetch,
       depends: vi.fn(),
@@ -109,7 +110,7 @@ describe('when there is an active thread selected', () => {
 
     expect(input.value).toBe('');
 
-    expect(screen.queryByText(ERROR_GETTING_AI_RESPONSE_TEXT.subtitle!)).not.toBeInTheDocument();
+    expect(screen.queryByText(ERROR_GETTING_AI_RESPONSE_TOAST.subtitle!)).not.toBeInTheDocument();
     await screen.findByText(fakeAiTextResponse);
   });
 
@@ -156,7 +157,7 @@ describe('when there is an active thread selected', () => {
     await userEvent.type(input, question);
     await userEvent.click(submitBtn);
 
-    await screen.findByText(ERROR_GETTING_AI_RESPONSE_TEXT.subtitle!);
+    await screen.findByText(ERROR_GETTING_AI_RESPONSE_TOAST.subtitle!);
   });
 
   it('displays an error message when there is an error saving the response', async () => {
@@ -169,7 +170,7 @@ describe('when there is an active thread selected', () => {
     await userEvent.type(input, question);
     await userEvent.click(submitBtn);
     screen.debug(undefined, 300000);
-    await screen.findByText(ERROR_SAVING_MSG_TEXT.subtitle!);
+    await screen.findByText(ERROR_SAVING_MSG_TOAST.subtitle!);
   });
 
   it('sends a toast when a message response is cancelled', async () => {

@@ -99,7 +99,7 @@ test('it cancels responses when clicking enter instead of pause button and does 
   await deleteActiveThread(page, openAIClient);
 });
 
-// TODO - Leapfrog API is currently too slow when sending assistant responses so when this test
+// TODO - LeapfrogAI API is currently too slow when sending assistant responses so when this test
 // runs with multiple browsers in parallel, it times out. It should usually work for individual
 // browsers unless the API is receiving additional run requests simultaneously
 test('it can switch between normal chat and chat with an assistant', async ({
@@ -130,7 +130,7 @@ test('it can switch between normal chat and chat with an assistant', async ({
   await expect(messages).toHaveCount(4);
 
   await expect(page.getByTestId('user-icon')).toHaveCount(2);
-  await expect(page.getByTestId('leapfrog-icon')).toHaveCount(1);
+  await expect(page.getByTestId('leapfrogai-icon')).toHaveCount(1);
   await expect(page.getByTestId('assistant-icon')).toHaveCount(1);
 
   // Test selected assistant has a checkmark and clicking it again de-selects the assistant
@@ -145,7 +145,7 @@ test('it can switch between normal chat and chat with an assistant', async ({
   await expect(messages).toHaveCount(6);
 
   await expect(page.getByTestId('user-icon')).toHaveCount(3);
-  await expect(page.getByTestId('leapfrog-icon')).toHaveCount(2);
+  await expect(page.getByTestId('leapfrogai-icon')).toHaveCount(2);
   await expect(page.getByTestId('assistant-icon')).toHaveCount(1);
 
   // Cleanup
@@ -161,4 +161,28 @@ test('it formats code in a code block and can copy the code', async ({ page }) =
   await waitForResponseToComplete(page);
   const copyBtns = await page.getByTestId('copy-code-btn').all();
   expect(copyBtns.length).toBeGreaterThan(0);
+});
+
+// The skeleton only shows for assistant messages
+test('it shows a loading skeleton when a response is pending', async ({ page, openAIClient }) => {
+  const assistant = await createAssistantWithApi({ openAIClient });
+
+  await loadChatPage(page);
+
+  // Select assistant
+  await expect(page.getByTestId('assistants-select-btn')).not.toBeDisabled();
+  const assistantDropdown = page.getByTestId('assistants-select-btn');
+  await assistantDropdown.click();
+  await page.getByText(assistant!.name!).click();
+
+  const messages = page.getByTestId('message');
+  await sendMessage(page, newMessage1);
+  await expect(page.getByRole('status')).toBeVisible();
+  await waitForResponseToComplete(page);
+  await expect(messages).toHaveCount(2);
+  await expect(page.getByRole('status')).not.toBeVisible();
+
+  // Cleanup
+  await deleteActiveThread(page, openAIClient);
+  await deleteAssistantWithApi(assistant.id, openAIClient);
 });

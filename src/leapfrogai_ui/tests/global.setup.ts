@@ -5,6 +5,10 @@ import { delay } from 'msw';
 const authFile = 'playwright/.auth/user.json';
 
 setup('authenticate', async ({ page }) => {
+  page.on('pageerror', (err) => {
+    console.log(err.message);
+  });
+
   await page.goto('/'); // go to the home page
   await delay(2000); // allow page to fully hydrate
   if (process.env.PUBLIC_DISABLE_KEYCLOAK === 'true') {

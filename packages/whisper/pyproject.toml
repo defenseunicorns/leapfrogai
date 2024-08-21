@@ -3,7 +3,7 @@ name = "lfai-whisper"
 description = "A LeapfrogAI API-compatible faster-whisper wrapper for audio transcription generation across CPU and GPU infrastructures."
 
 # x-release-please-start-version
-version = "0.10.0"
+version = "0.11.0"
 # x-release-please-end
 
 dependencies = [
@@ -16,17 +16,14 @@ readme = "README.md"
 
 [project.optional-dependencies]
 
-dev = [
-    "ctranslate2 == 4.1.0",
-    "transformers[torch] == 4.39.3",
-]
+dev = ["ctranslate2 == 4.1.0", "transformers[torch] == 4.39.3"]
 
 [tool.pip-tools]
 generate-hashes = true
 
 [tool.setuptools]
 packages = ["leapfrogai_sdk"]
-package-dir = {"" = "../../src"}
+package-dir = { "" = "../../src" }
 
 [tool.pytest.ini_options]
 addopts = ["--import-mode=importlib"]

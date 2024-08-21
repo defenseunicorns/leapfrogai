@@ -12,6 +12,7 @@ on:
 # Declare default permissions as read only.
 permissions: read-all
 
+
 concurrency:
   group: ui-test-${{ github.ref }}
   cancel-in-progress: true

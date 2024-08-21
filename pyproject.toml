@@ -1,21 +1,21 @@
 [project]
 name = "leapfrogai"
-description = "ChatGPT type capabilities for secure, local, air-gapped systems."
+description = "OpenAI-like capabilities for secure, local, air-gapped systems."
 authors = [{ name = "LeapfrogAI Team", email = "ai@defenseunicorns.com" }]
 
 # x-release-please-start-version
-version = "0.10.0"
+version = "0.11.0"
 # x-release-please-end
 
 readme = "README.md"
-license = {file = "LICENSE"}
+license = { file = "LICENSE" }
 
-dependencies = [  # Dev dependencies needed for all of lfai
+dependencies = [ # Dev dependencies needed for all of LeapfrogAI
     "openai",
     "pip-tools == 7.3.0",
     "httpx",
     "ruff",
-    "python-dotenv"
+    "python-dotenv",
 ]
 requires-python = "~=3.11"
 
@@ -31,14 +31,9 @@ dev = [
     "supabase"
 ]
 
-dev-whisper = [
-    "ctranslate2",
-    "transformers[torch]"
-]
+dev-whisper = ["ctranslate2 == 4.1.0", "transformers[torch] == 4.39.3"]
 
-dev-vllm = [
-    "confz"
-]
+dev-vllm = ["confz == 2.0.1", "huggingface_hub == 0.24.5"]
 
 [tool.pip-tools]
 generate-hashes = true

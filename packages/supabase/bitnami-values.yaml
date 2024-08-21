@@ -1,4 +1,4 @@
-## @section Leapfrog parameters
+## @section LeapfrogAI parameters
 ## Parameters not defined in the upstream chart that are related to LeapfrogAI's specific configuration
 leapfrogai:
   package:

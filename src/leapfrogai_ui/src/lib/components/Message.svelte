@@ -27,6 +27,7 @@
   import DOMPurify from 'isomorphic-dompurify';
   import TextareaV2 from '$components/LFTextArea.svelte';
   import IconButton from '$components/IconButton.svelte';
+  import MessagePendingSkeleton from '$components/MessagePendingSkeleton.svelte';
 
   export let message: OpenAIMessage;
   export let messages: OpenAIMessage[] = [];
@@ -34,6 +35,8 @@
   export let setMessages: ((messages: VercelAIMessage[]) => void) | undefined = undefined;
   export let isLastMessage: boolean;
   export let append: AppendFunction | undefined = undefined;
+
+  $: messageText = getMessageText(message);
 
   // used for code formatting and handling
   const md = markdownit({
@@ -127,7 +130,7 @@
         <DynamicPictogram size="xs" iconName={assistantImage} />
       </div>
     {:else}
-      <img alt="LeapfrogAI" src={frog} class="chat-icon" data-testid="leapfrog-icon" />
+      <img alt="LeapfrogAI" src={frog} class="chat-icon" data-testid="leapfrogai-icon" />
     {/if}
 
     <div class="flex flex-grow flex-col gap-1 overflow-hidden pb-1">
@@ -159,13 +162,17 @@
             <div class="font-bold">
               {message.role === 'user' ? 'You' : getAssistantName(message.assistant_id)}
             </div>
-            <!--eslint-disable-next-line svelte/no-at-html-tags -- We use DomPurity to sanitize the code snippet-->
-            {@html md.render(DOMPurify.sanitize(getMessageText(message)))}
-            <div class="flex flex-col items-start">
-              {#each getCitations(message, $page.data.files) as { component: Component, props }}
-                <svelte:component this={Component} {...props} />
-              {/each}
-            </div>
+            {#if message.role !== 'user' && !messageText}
+              <MessagePendingSkeleton size="sm" class="mt-4" darkColor="bg-gray-500" />
+            {:else}
+              <!--eslint-disable-next-line svelte/no-at-html-tags -- We use DomPurity to sanitize the code snippet-->
+              {@html md.render(DOMPurify.sanitize(messageText))}
+              <div class="flex flex-col items-start">
+                {#each getCitations(message, $page.data.files) as { component: Component, props }}
+                  <svelte:component this={Component} {...props} />
+                {/each}
+              </div>
+            {/if}
           </div>
         </Card>
       {/if}
