@@ -66,3 +66,7 @@ export const mockDeleteCheck = (assistantsToReturn: LFAssistant[]) => {
     })
   );
 };
+
+export const mockDownloadError = (id: string) => {
+  server.use(http.get(`api/files/${id}`, () => new HttpResponse(null, { status: 500 })));
+};

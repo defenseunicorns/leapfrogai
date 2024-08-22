@@ -3,31 +3,38 @@ name = "leapfrogai-api"
 description = "An API for LeapfrogAI that allows LeapfrogAI backends to connect seamlessly"
 
 # x-release-please-start-version
-version = "0.10.0"
+version = "0.11.0"
 # x-release-please-end
 
 dependencies = [
-    "fastapi >= 0.109.1",
+    "fastapi == 0.109.1",
+    "pydantic == 2.8.2",
     "openai == 1.32.1",
-    "uvicorn >= 0.23.2",
-    "pydantic >= 2.0.0",
-    "docx2txt >= 0.8",
-    "python-multipart >= 0.0.7", #indirect dep of FastAPI to receive form data for file uploads
-    "watchfiles >= 0.21.0",
+    "uvicorn == 0.23.2",
+    "docx2txt == 0.8",
+    "python-multipart == 0.0.7",            #indirect dep of FastAPI to receive form data for file uploads
+    "watchfiles == 0.21.0",
     "leapfrogai_sdk",
-    "supabase >= 2.5.1",
-    "langchain >= 0.2.1",
-    "langchain-community >= 0.2.1",
-    "unstructured[md,xlsx,pptx] >= 0.15.3", # Only specify necessary filetypes to prevent package bloat (e.g. 130MB vs 6GB)
-    "pylibmagic >= 0.5.0", # Resolves issue with libmagic not being bundled with OS - https://github.com/ahupp/python-magic/issues/233, may not be needed after this is merged https://github.com/ahupp/python-magic/pull/294
-    "python-magic >= 0.4.27",
-    "nltk >= 3.8.2", # This version is explicitly set to prevent accidentally importing a version of nltk with a serious vulnerability (https://github.com/nltk/nltk/issues/3266)
-    "storage3>=0.7.6", # required by supabase, bug when using previous versions
-    "postgrest>=0.16.8", # required by supabase, bug when using previous versions
-    "openpyxl >= 3.1.5",
-    "psutil >= 6.0.0"
+    "supabase == 2.6.0",
+    "langchain == 0.2.1",
+    "langchain-community == 0.2.1",
+    "unstructured[md,xlsx,pptx] == 0.15.3", # Only specify necessary filetypes to prevent package bloat (e.g. 130MB vs 6GB)
+    "pylibmagic == 0.5.0",                  # Resolves issue with libmagic not being bundled with OS - https://github.com/ahupp/python-magic/issues/233, may not be needed after this is merged https://github.com/ahupp/python-magic/pull/294
+    "python-magic == 0.4.27",
+    "storage3==0.7.6",                      # required by supabase, bug when using previous versions
+    "postgrest==0.16.8",                    # required by supabase, bug when using previous versions
+    "openpyxl == 3.1.5",
+    "psutil == 6.0.0",
 ]
 requires-python = "~=3.11"
+
+[project.optional-dependencies]
+dev = [
+    "pytest-asyncio",
+    "requests",
+    "requests-toolbelt",
+    "pytest"
+]
 
 [tool.pip-tools]
 generate-hashes = true
