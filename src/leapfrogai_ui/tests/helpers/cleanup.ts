@@ -2,7 +2,7 @@ import { deleteAllGeneratedFixtureFiles, deleteAllTestFilesWithApi } from './fil
 import { deleteAllAssistants, deleteAssistantAvatars } from './assistantHelpers';
 import { deleteAllTestThreadsWithApi } from './threadHelpers';
 import type OpenAI from 'openai';
-import {deleteAllTestAPIKeys} from "./apiHelpers";
+import { deleteAllTestAPIKeys } from './apiHelpers';
 
 export const cleanup = async (openAIClient: OpenAI) => {
   deleteAllGeneratedFixtureFiles();

@@ -5,7 +5,7 @@ type MyFixtures = {
   openAIClient: OpenAI;
 };
 
-async function getAccessToken() {
+export async function getAccessToken() {
   const supabaseUrl = process.env.PUBLIC_SUPABASE_URL;
   const serviceRoleKey = process.env.SERVICE_ROLE_KEY;
 
@@ -16,7 +16,8 @@ async function getAccessToken() {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',
-      // Authorization: `Bearer ${serviceRoleKey}`
+      apikey: serviceRoleKey,
+      Authorization: `Bearer ${serviceRoleKey}`
     },
     body: JSON.stringify({
       email: process.env.USERNAME,
