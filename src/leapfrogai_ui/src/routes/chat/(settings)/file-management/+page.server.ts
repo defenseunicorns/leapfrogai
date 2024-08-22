@@ -1,4 +1,4 @@
-import { superValidate, withFiles, fail } from 'sveltekit-superforms';
+import { fail, superValidate, withFiles } from 'sveltekit-superforms';
 import type { Actions } from './$types';
 import { yup } from 'sveltekit-superforms/adapters';
 import type { FileObject } from 'openai/resources/files';
@@ -40,7 +40,7 @@ export const actions: Actions = {
               purpose: 'assistants'
             });
 
-            uploadedFiles.push({ ...uploadedFile, created_at: new Date().getTime() });
+            uploadedFiles.push(uploadedFile);
           } catch (e) {
             console.error(`Error uploading file ${file.name}: ${e}`);
             const item: FileRow = {

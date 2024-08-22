@@ -8,6 +8,7 @@ import pptxgen from 'pptxgenjs';
 import { expect } from '../fixtures';
 import type { FileObject } from 'openai/resources/files';
 import { getTableRow } from './helpers';
+import {formatDate} from "$helpers/dates";
 
 export const uploadFileWithApi = async (
   filename = 'test.pdf',
@@ -211,6 +212,7 @@ export const testFileUpload = async (filename: string, page: Page, openAIClient:
 
   const uploadingFileIcon = row!.getByTestId('uploading-file-spinner');
   const fileUploadedIcon = row!.getByTestId('file-uploaded-icon');
+  await expect(row.getByText(formatDate(new Date()))).toBeVisible();
 
   // test loading icon shows then disappears
   await expect(uploadingFileIcon).toBeVisible();

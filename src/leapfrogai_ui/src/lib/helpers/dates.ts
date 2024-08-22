@@ -237,3 +237,6 @@ export const calculateDays = (beginDate: number, endDate: number) => {
 
   return Math.round(differenceInDays);
 };
+
+export const convertToMilliseconds = (dateValue: number) =>
+  dateValue > 10000000000 ? dateValue : dateValue * 1000;

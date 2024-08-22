@@ -15,7 +15,7 @@
   import { fade } from 'svelte/transition';
   import { yup } from 'sveltekit-superforms/adapters';
   import { superForm } from 'sveltekit-superforms';
-  import { formatDate } from '$helpers/dates';
+  import { convertToMilliseconds, formatDate } from '$helpers/dates';
   import { filesSchema } from '$schemas/files';
   import { filesStore, toastStore } from '$stores';
   import { ACCEPTED_FILE_TYPES } from '$constants';
@@ -235,9 +235,6 @@
     );
     invalidate('lf:files');
   });
-
-  // $: console.log(`date`, formatDate(new Date(pageItems[0].created_at)))
-  $: console.log(`items`, pageItems)
 </script>
 
 <div class="w-3/4 bg-gray-50 p-3 dark:bg-gray-900">
@@ -353,9 +350,11 @@
             {:else}
               <TableBodyCell tdClass="px-4 py-3">{item.filename}</TableBodyCell>
             {/if}
-            <TableBodyCell tdClass="px-4 py-3"
-              >{formatDate(new Date(item.created_at))}</TableBodyCell
-            >
+            {#if item.created_at}
+              <TableBodyCell tdClass="px-4 py-3"
+                >{formatDate(new Date(convertToMilliseconds(item.created_at)))}</TableBodyCell
+              >
+            {/if}
           </TableBodyRow>
         {/each}
       </TableBody>
