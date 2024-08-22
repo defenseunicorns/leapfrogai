@@ -1,4 +1,3 @@
-echo Echo test FAKE_E2E_USER_PASSWORD: $FAKE_E2E_USER_PASSWORD
 KEYCLOAK_ADMIN_PASSWORD=$(uds zarf tools kubectl get secret -n keycloak keycloak-admin-password -o jsonpath={.data.password} | base64 -d)
 echo "::add-mask::$KEYCLOAK_ADMIN_PASSWORD"
 

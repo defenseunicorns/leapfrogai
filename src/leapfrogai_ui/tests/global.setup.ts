@@ -44,17 +44,17 @@ const doKeycloakLogin = async (page: Page) => {
   await page.getByLabel('Password').fill(process.env.PASSWORD!);
   await page.getByRole('button', { name: 'Log In' }).click();
 
-    if (process.env.TEST_ENV !== 'CI') {
-        const totp = new OTPAuth.TOTP({
-            issuer: 'Unicorn Delivery Service',
-            algorithm: 'SHA1',
-            digits: 6,
-            period: 30,
-            secret: process.env.MFA_SECRET!
-        });
-        const code = totp.generate();
-        await page.getByLabel('Six digit code').fill(code);
-        await page.getByRole('button', { name: 'Log In' }).click();
+  if (process.env.TEST_ENV !== 'CI') {
+    const totp = new OTPAuth.TOTP({
+      issuer: 'Unicorn Delivery Service',
+      algorithm: 'SHA1',
+      digits: 6,
+      period: 30,
+      secret: process.env.MFA_SECRET!
+    });
+    const code = totp.generate();
+    await page.getByLabel('Six digit code').fill(code);
+    await page.getByRole('button', { name: 'Log In' }).click();
   }
 };
 
