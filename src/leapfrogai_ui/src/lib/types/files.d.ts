@@ -16,3 +16,9 @@ export type FilesForm = SuperValidated<
   any,
   { files?: (File | null | undefined)[] | undefined }
 >;
+
+export type FileMetadata = {
+  id: string;
+  name: string;
+  type: string;
+};

@@ -12,6 +12,7 @@
   import { getMessageText } from '$helpers/threads';
   import { getUnixSeconds } from '$helpers/dates.js';
   import { ACCEPTED_FILE_TYPES, NO_SELECTED_ASSISTANT_ID } from '$constants';
+  import { v4 as uuidv4 } from 'uuid';
 
   import {
     isRunAssistantMessage,
@@ -29,6 +30,8 @@
   import { PaperClipOutline, PaperPlaneOutline, StopOutline } from 'flowbite-svelte-icons';
   import { superForm } from 'sveltekit-superforms';
   import LFFileUploadBtn from '$components/LFFileUploadBtn.svelte';
+  import { getFileType } from '$lib/utils/files';
+  import type { FileMetadata } from '$lib/types/files';
 
   export let data;
 
@@ -46,7 +49,7 @@
   let assistantsList: Array<{ id: string; text: string }>;
   let documentText: string;
   let uploadingFile = false;
-  let attachedFileNames: string[] = [];
+  let attachedFileMetadata: FileMetadata[] = [];
 
   const { enhance, submit } = superForm(data.form, {
     validators: yup(filesSchema),
@@ -256,14 +259,15 @@
 
       // Save with API
       try {
+        const filesMetadata = [];
         const newMessage = await saveMessage({
           thread_id: data.thread.id,
           content: $chatInput,
           role: 'user',
-          ...(attachedFileNames.length > 0
+          ...(attachedFileMetadata.length > 0
             ? {
                 metadata: {
-                  filenames: attachedFileNames.join(', ')
+                  filesMetadata: JSON.stringify(attachedFileMetadata)
                 }
               }
             : null)
@@ -273,7 +277,7 @@
         await threadsStore.addMessageToStore(newMessage);
         submitChatMessage(e); // submit to AI (/api/chat)
         documentText = '';
-        attachedFileNames = [];
+        attachedFileMetadata = [];
       } catch {
         toastStore.addToast({
           ...ERROR_SAVING_MSG_TOAST()
@@ -345,6 +349,8 @@
       });
     }
   });
+
+  $: console.log(attachedFileMetadata);
 </script>
 
 <form on:submit={onSubmit} class="flex h-full flex-col">
@@ -385,7 +391,11 @@
             on:change={(e) => {
               uploadingFile = true;
               for (const file of e.detail) {
-                attachedFileNames = [...attachedFileNames, file.name];
+                console.log('file', file);
+                attachedFileMetadata = [
+                  ...attachedFileMetadata,
+                  { id: uuidv4(), name: file.name, type: file.type }
+                ];
               }
               submit(e.detail);
             }}
@@ -404,6 +414,12 @@
             {/if}
           </LFFileUploadBtn>
         </form>
+        <div>
+          {#each attachedFileMetadata as file}
+            <div>{file.name}</div>
+            <div>{getFileType(file.type)}</div>
+          {/each}
+        </div>
         <LFTextArea
           id="chat"
           data-testid="chat-input"
@@ -414,6 +430,7 @@
           {onSubmit}
           maxRows={10}
         />
+
         {#if !$isLoading && $status !== 'in_progress'}
           <ToolbarButton
             data-testid="send message"

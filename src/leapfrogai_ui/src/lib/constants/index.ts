@@ -55,6 +55,18 @@ export const ACCEPTED_MIME_TYPES = [
   'text/csv'
 ];
 
+export const FILE_TYPE_MAP = {
+  'text/plain': 'txt',
+  'application/octet-stream': 'text',
+  'application/vnd.ms-excel': 'xls',
+  'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet': 'xlsx',
+  'application/vnd.ms-powerpoint': 'ppt',
+  'application/vnd.openxmlformats-officedocument.presentationml.presentation': 'pptx',
+  'application/msword': 'doc',
+  'application/vnd.openxmlformats-officedocument.wordprocessingml.document': 'docx',
+  'text/csv': 'csv'
+};
+
 export const FILE_MIME_TYPES_FOR_CONVERSION = [
   'text/plain', // .txt, .text
   'application/octet-stream', //.text
