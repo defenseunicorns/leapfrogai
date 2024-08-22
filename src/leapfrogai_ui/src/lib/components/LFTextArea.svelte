@@ -10,7 +10,7 @@ to a limit of maxRows. It can also show error text.
   import { env } from '$env/dynamic/public';
   import { Helper } from 'flowbite-svelte';
   import type { Writable } from 'svelte/store';
-  import UploadedFileCard from "$components/UploadedFileCard.svelte";
+  import UploadedFileCard from '$components/UploadedFileCard.svelte';
 
   const background = getContext('background');
 
@@ -31,8 +31,6 @@ to a limit of maxRows. It can also show error text.
   export let id = 'ccs-' + Math.random().toString(36);
   export let maxRows = 10;
   export let rows = '1';
-
-  export let uploadedFiles;
 
   let wrapped: boolean;
   let maxLength = Number(env.PUBLIC_MESSAGE_LENGTH_LIMIT);
@@ -154,9 +152,7 @@ to a limit of maxRows. It can also show error text.
       maxlength={maxLength + 1 ?? undefined}
       class={textareaClass}
     />
-    {#each uploadedFiles as file}
-      <UploadedFileCard name={file.name} type={file.type} loading={uploadingFile} />
-    {/each}
+
     <Helper>
       <Wrapper id={errorId} show={invalid || showLengthError} class="text-red-500">
         {showLengthError ? lengthInvalidText : invalidText}

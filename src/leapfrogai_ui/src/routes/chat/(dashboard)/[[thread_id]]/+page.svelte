@@ -1,7 +1,7 @@
 <script lang="ts">
   import { beforeNavigate } from '$app/navigation';
   import { LFTextArea, PoweredByDU } from '$components';
-  import { Hr, Spinner, ToolbarButton } from 'flowbite-svelte';
+  import { Hr, ToolbarButton } from 'flowbite-svelte';
   import { yup } from 'sveltekit-superforms/adapters';
   import { filesSchema } from '$schemas/files';
   import { onMount, tick } from 'svelte';
@@ -32,6 +32,7 @@
   import LFFileUploadBtn from '$components/LFFileUploadBtn.svelte';
   import type { FileMetadata } from '$lib/types/files';
   import UploadedFileCard from '$components/UploadedFileCard.svelte';
+  import { twMerge } from 'tailwind-merge';
 
   export let data;
 
@@ -48,14 +49,14 @@
   let lengthInvalid: boolean; // bound to child LFTextArea
   let assistantsList: Array<{ id: string; text: string }>;
   let documentText: string;
-  let uploadingFile = false;
+  let uploadingFiles = false;
   let attachedFileMetadata: FileMetadata[] = [];
 
   const { enhance, submit } = superForm(data.form, {
     validators: yup(filesSchema),
     invalidateAll: false,
     onResult({ result }) {
-      uploadingFile = false;
+      uploadingFiles = false;
       if (result.type === 'success') {
         documentText = result.data.text;
       } else {
@@ -65,7 +66,8 @@
       }
     },
     onError(e) {
-      uploadingFile = false;
+      uploadingFiles = false;
+      attachedFileMetadata = [];
       toastStore.addToast({
         ...ERROR_PROCESSING_FILE_MSG_TOAST({ subtitle: e.result.error.message })
       });
@@ -259,7 +261,6 @@
 
       // Save with API
       try {
-        const filesMetadata = [];
         const newMessage = await saveMessage({
           thread_id: data.thread.id,
           content: $chatInput,
@@ -389,9 +390,8 @@
             multiple
             size="sm"
             on:change={(e) => {
-              uploadingFile = true;
+              uploadingFiles = true;
               for (const file of e.detail) {
-                console.log('file', file);
                 attachedFileMetadata = [
                   ...attachedFileMetadata,
                   { id: uuidv4(), name: file.name, type: file.type }
@@ -402,16 +402,14 @@
             accept={ACCEPTED_FILE_TYPES}
             class="remove-btn-style"
           >
-            {#if uploadingFile}
-              <div class="centered-flexbox h-10 w-9">
-                <Spinner size={6} />
-              </div>
-            {:else}
-              <ToolbarButton color="dark" class="text-gray-500 dark:text-gray-400">
-                <PaperClipOutline />
-                <span class="sr-only">Attach file</span>
-              </ToolbarButton>
-            {/if}
+            <ToolbarButton
+              color="dark"
+              class="text-gray-500 dark:text-gray-400"
+              disabled={uploadingFiles}
+            >
+              <PaperClipOutline />
+              <span class="sr-only">Attach file</span>
+            </ToolbarButton>
           </LFFileUploadBtn>
         </form>
 
@@ -424,8 +422,16 @@
           bind:showLengthError={lengthInvalid}
           {onSubmit}
           maxRows={10}
-          uploadedFiles={attachedFileMetadata}
-        />
+          {attachedFileMetadata}
+          headerClass={twMerge(attachedFileMetadata.length > 0 ? 'flex' : 'hidden', 'rounded-t-lg border-none')}
+          innerWrappedClass="rounded-t-lg py-2 px-4 bg-white dark:bg-gray-800"
+        >
+          <div slot="header" >
+            {#each attachedFileMetadata as file}
+              <UploadedFileCard name={file.name} type={file.type} loading={uploadingFiles} />
+            {/each}
+          </div>
+        </LFTextArea>
 
         {#if !$isLoading && $status !== 'in_progress'}
           <ToolbarButton
@@ -433,7 +439,10 @@
             type="submit"
             color="blue"
             class="rounded-full text-primary-600 dark:text-primary-500"
-            disabled={uploadingFile || !$chatInput || lengthInvalid || $threadsStore.sendingBlocked}
+            disabled={uploadingFiles ||
+              !$chatInput ||
+              lengthInvalid ||
+              $threadsStore.sendingBlocked}
           >
             <PaperPlaneOutline class="h-6 w-6 rotate-45" />
             <span class="sr-only">Send message</span>
