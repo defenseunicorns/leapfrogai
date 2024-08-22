@@ -73,9 +73,7 @@ jobs:
           id: generate-password
           run: |
             FAKE_E2E_USER_PASSWORD=$(openssl rand -base64 32 | tr -dc 'a-zA-Z0-9@#%^&*()-_=+<>?' | fold -w 12 | head -n 1)
-            echo "the secret password is $FAKE_E2E_USER_PASSWORD
-        
-        
+            echo "the secret password is $FAKE_E2E_USER_PASSWORD"    
 
         - name: Setup UDS Cluster
           uses: ./.github/actions/uds-cluster
