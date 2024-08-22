@@ -2,11 +2,13 @@
 
 import logging
 import traceback
+import time
 
-from fastapi import APIRouter, HTTPException, status
+from fastapi import APIRouter, HTTPException, status, BackgroundTasks
 from openai.pagination import SyncCursorPage
 from openai.types.beta import VectorStore, VectorStoreDeleted
 from openai.types.beta.vector_stores import VectorStoreFile, VectorStoreFileDeleted
+from openai.types.beta.vector_store import FileCounts
 from leapfrogai_api.backend.rag.index import IndexingService
 from leapfrogai_api.backend.types import (
     CreateVectorStoreFileRequest,
@@ -44,19 +46,47 @@ async def list_vector_stores(
 async def create_vector_store(
     request: CreateVectorStoreRequest,
     session: Session,
+    background_tasks: BackgroundTasks,
 ) -> VectorStore:
     """Create a vector store."""
 
     indexing_service = IndexingService(db=session)
     try:
-        new_vector_store = await indexing_service.create_new_vector_store(request)
+        current_time = int(time.time())
+        # Create a placeholder vector store
+        placeholder_vector_store = VectorStore(
+            id="placeholder_id",
+            name=request.name or "",
+            status="in_progress",
+            object="vector_store",
+            created_at=current_time,
+            last_active_at=current_time,
+            file_counts=FileCounts(
+                cancelled=0,
+                completed=0,
+                failed=0,
+                in_progress=0,
+                total=0
+            ),
+            usage_bytes=0,
+            metadata=request.metadata if hasattr(request, 'metadata') else None,
+            expires_after=None,
+            expires_at=None
+        )
+
+        # Add the actual creation task to background tasks
+        background_tasks.add_task(
+            indexing_service.create_new_vector_store,
+            request
+        )
+
+        return placeholder_vector_store
     except Exception as exc:
         traceback.print_exc()
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail="Unable to create vector store",
         ) from exc
-    return new_vector_store
 
 
 @router.post("/{vector_store_id}")
