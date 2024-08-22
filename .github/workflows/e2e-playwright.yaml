@@ -73,8 +73,10 @@ jobs:
           id: generate-password
           run: |
             PASSWORD=$(cat <(openssl rand -base64 32 | tr -dc 'a-zA-Z0-9!@#$%^&*()_+-=[]{}|;:,.<>?' | head -c 20 | sed 's/\(.\{5\}\)/\1!@/g' | head -c 22))
-            echo "the secret password is $PASSWORD"
+            echo "::add-mask::$PASSWORD"
             echo "FAKE_E2E_USER_PASSWORD=$PASSWORD" >> $GITHUB_ENV
+            echo "PASSWORD id $PASSWORD"
+            echo "FAKE_E2E_USER_PASSWORD is $FAKE_E2E_USER_PASSWORD" 
 
         - name: Setup UDS Cluster
           uses: ./.github/actions/uds-cluster
