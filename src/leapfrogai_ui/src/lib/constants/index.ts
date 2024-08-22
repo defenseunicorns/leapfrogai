@@ -56,28 +56,17 @@ export const ACCEPTED_MIME_TYPES = [
 ];
 
 export const FILE_TYPE_MAP = {
-  'text/plain': 'txt',
-  'application/octet-stream': 'text',
-  'application/vnd.ms-excel': 'xls',
-  'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet': 'xlsx',
-  'application/vnd.ms-powerpoint': 'ppt',
-  'application/vnd.openxmlformats-officedocument.presentationml.presentation': 'pptx',
-  'application/msword': 'doc',
-  'application/vnd.openxmlformats-officedocument.wordprocessingml.document': 'docx',
-  'text/csv': 'csv'
+  'application/pdf': 'PDF',
+  'text/plain': 'TXT',
+  'application/octet-stream': 'TEXT',
+  'application/vnd.ms-excel': 'XLS',
+  'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet': 'XLSX',
+  'application/vnd.ms-powerpoint': 'PPT',
+  'application/vnd.openxmlformats-officedocument.presentationml.presentation': 'PPTX',
+  'application/msword': 'DOC',
+  'application/vnd.openxmlformats-officedocument.wordprocessingml.document': 'DOCX',
+  'text/csv': 'CSV'
 };
-
-export const FILE_MIME_TYPES_FOR_CONVERSION = [
-  'text/plain', // .txt, .text
-  'application/octet-stream', //.text
-  'application/vnd.ms-excel', // .xls
-  'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet', // .xlsx
-  'application/vnd.ms-powerpoint', // .ppt
-  'application/vnd.openxmlformats-officedocument.presentationml.presentation', // .pptx
-  'application/msword', // .doc
-  'application/vnd.openxmlformats-officedocument.wordprocessingml.document', //.docx,
-  'text/csv'
-];
 
 export const NO_FILE_ERROR_TEXT = 'Please upload an image or select a pictogram';
 export const AVATAR_FILE_SIZE_ERROR_TEXT = `File must be less than ${MAX_AVATAR_SIZE / 1000000} MB`;

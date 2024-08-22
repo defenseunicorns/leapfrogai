@@ -32,6 +32,7 @@
   import LFFileUploadBtn from '$components/LFFileUploadBtn.svelte';
   import { getFileType } from '$lib/utils/files';
   import type { FileMetadata } from '$lib/types/files';
+  import UploadedFileCard from '$components/UploadedFileCard.svelte';
 
   export let data;
 
@@ -414,12 +415,11 @@
             {/if}
           </LFFileUploadBtn>
         </form>
-        <div>
-          {#each attachedFileMetadata as file}
-            <div>{file.name}</div>
-            <div>{getFileType(file.type)}</div>
-          {/each}
-        </div>
+
+        {#each attachedFileMetadata as file}
+          <UploadedFileCard name={file.name} type={file.type} />
+        {/each}
+
         <LFTextArea
           id="chat"
           data-testid="chat-input"

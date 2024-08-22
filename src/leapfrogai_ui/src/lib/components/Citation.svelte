@@ -14,7 +14,7 @@
   import { toastStore, uiStore } from '$stores';
   import type { FileObject } from 'openai/resources/files';
   import FileProcessingPlaceholder from '$components/FileProcessingPlaceholder.svelte';
-  import { FILE_MIME_TYPES_FOR_CONVERSION } from '$constants';
+  import { FILE_TYPE_MAP } from '$constants';
   import {
     CONVERT_FILE_ERROR_MSG_TOAST,
     FILE_DOWNLOAD_ERROR_MSG_TOAST,
@@ -85,7 +85,7 @@
         }
 
         // non-pdf
-        else if (FILE_MIME_TYPES_FOR_CONVERSION.includes(contentType)) {
+        else if (Object.keys(FILE_TYPE_MAP).includes(contentType)) {
           const convertRes = await fetch(`/api/files/convert/${file.id}`, {
             method: 'GET'
           });
