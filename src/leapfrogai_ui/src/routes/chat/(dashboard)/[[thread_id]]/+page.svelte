@@ -30,7 +30,6 @@
   import { PaperClipOutline, PaperPlaneOutline, StopOutline } from 'flowbite-svelte-icons';
   import { superForm } from 'sveltekit-superforms';
   import LFFileUploadBtn from '$components/LFFileUploadBtn.svelte';
-  import { getFileType } from '$lib/utils/files';
   import type { FileMetadata } from '$lib/types/files';
   import UploadedFileCard from '$components/UploadedFileCard.svelte';
 
@@ -416,10 +415,6 @@
           </LFFileUploadBtn>
         </form>
 
-        {#each attachedFileMetadata as file}
-          <UploadedFileCard name={file.name} type={file.type} />
-        {/each}
-
         <LFTextArea
           id="chat"
           data-testid="chat-input"
@@ -429,6 +424,7 @@
           bind:showLengthError={lengthInvalid}
           {onSubmit}
           maxRows={10}
+          uploadedFiles={attachedFileMetadata}
         />
 
         {#if !$isLoading && $status !== 'in_progress'}
