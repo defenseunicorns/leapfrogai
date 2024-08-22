@@ -72,15 +72,15 @@ jobs:
         - name: Generate Fake Playwright User Password
           id: generate-password
           run: |
-            FAKE_E2E_USER_PASSWORD=$(cat <(openssl rand -base64 32 | tr -dc 'a-zA-Z0-9!@#$%^&*()_+-=[]{}|;:,.<>?' | head -c 20 | sed 's/\(.\{5\}\)/\1!@/g' | head -c 22))
-            echo "the secret password is $FAKE_E2E_USER_PASSWORD"    
+            PASSWORD=$(cat <(openssl rand -base64 32 | tr -dc 'a-zA-Z0-9!@#$%^&*()_+-=[]{}|;:,.<>?' | head -c 20 | sed 's/\(.\{5\}\)/\1!@/g' | head -c 22))
+            echo "the secret password is $PASSWORD"
+            echo "FAKE_E2E_USER_PASSWORD=$PASSWORD" >> $GITHUB_ENV
 
         - name: Setup UDS Cluster
           uses: ./.github/actions/uds-cluster
           with:
             registry1Username: ${{ secrets.IRON_BANK_ROBOT_USERNAME }}
             registry1Password: ${{ secrets.IRON_BANK_ROBOT_PASSWORD }}
-            fakeE2EUserPassword: $FAKE_E2E_USER_PASSWORD
 
         - name: Create Test User
           run: |
