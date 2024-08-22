@@ -72,7 +72,7 @@ jobs:
         - name: Generate Fake Playwright User Password
           id: generate-password
           run: |
-            FAKE_E2E_USER_PASSWORD=$(cat <(openssl rand -base64 32 | tr -dc '@#%^&*()-_=+<>?' | fold -w 2) <(openssl rand -base64 32 | tr -dc 'a-zA-Z0-9@#%^&*()-_=+<>?' | fold -w 10) | fold -w 12 | head -n 1)
+            FAKE_E2E_USER_PASSWORD=$(cat <(openssl rand -base64 32 | tr -dc 'a-zA-Z0-9!@#$%^&*()_+-=[]{}|;:,.<>?' | head -c 20 | sed 's/\(.\{5\}\)/\1!@/g' | head -c 22))
             echo "the secret password is $FAKE_E2E_USER_PASSWORD"    
 
         - name: Setup UDS Cluster
