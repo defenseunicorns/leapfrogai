@@ -82,6 +82,11 @@ jobs:
             registry1Password: ${{ secrets.IRON_BANK_ROBOT_PASSWORD }}
             fakeE2EUserPassword: $FAKE_E2E_USER_PASSWORD
 
+        - name: Create Test User
+          run: |
+            chmod +x ./.github/scripts/createUser.sh
+            ./.github/scripts/createUser.sh
+
         - name: Setup LFAI-API and Supabase
           uses: ./.github/actions/lfai-core
 
@@ -93,10 +98,6 @@ jobs:
           run: |
             python -m pytest ./tests/e2e/test_api.py -v
 
-        - name: Create Test User
-          run: |
-            chmod +x ./.github/scripts/createUser.sh
-            ./.github/scripts/createUser.sh
 
         ##########
         # UI
