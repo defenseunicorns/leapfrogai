@@ -14,6 +14,7 @@ export async function getAccessToken() {
 
   const response = await fetch(`${supabaseUrl}/auth/v1/token?grant_type=password`, {
     method: 'POST',
+    // @ts-expect-error: apikey is a required header for this request
     headers: {
       'Content-Type': 'application/json',
       apikey: serviceRoleKey,
