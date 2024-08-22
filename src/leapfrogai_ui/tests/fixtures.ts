@@ -9,9 +9,6 @@ export async function getAccessToken() {
   const supabaseUrl = process.env.PUBLIC_SUPABASE_URL;
   const serviceRoleKey = process.env.SERVICE_ROLE_KEY;
 
-  // Typically, the access token generation would be for something like an auth login,
-  // but since you mentioned using the service role key, you'd perform operations directly.
-
   const response = await fetch(`${supabaseUrl}/auth/v1/token?grant_type=password`, {
     method: 'POST',
     // @ts-expect-error: apikey is a required header for this request
@@ -29,7 +26,6 @@ export async function getAccessToken() {
   const data = await response.json();
 
   if (response.ok) {
-    console.log('Access Token:', data.access_token);
     return data.access_token;
   } else {
     console.error('Error fetching access token:', data);
