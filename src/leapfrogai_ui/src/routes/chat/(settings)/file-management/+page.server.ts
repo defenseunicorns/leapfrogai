@@ -40,7 +40,7 @@ export const actions: Actions = {
               purpose: 'assistants'
             });
 
-            uploadedFiles.push(uploadedFile);
+            uploadedFiles.push({ ...uploadedFile, created_at: new Date().getTime() });
           } catch (e) {
             console.error(`Error uploading file ${file.name}: ${e}`);
             const item: FileRow = {

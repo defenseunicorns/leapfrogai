@@ -235,6 +235,9 @@
     );
     invalidate('lf:files');
   });
+
+  // $: console.log(`date`, formatDate(new Date(pageItems[0].created_at)))
+  $: console.log(`items`, pageItems)
 </script>
 
 <div class="w-3/4 bg-gray-50 p-3 dark:bg-gray-900">
