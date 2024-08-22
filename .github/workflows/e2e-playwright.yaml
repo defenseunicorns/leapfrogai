@@ -72,7 +72,7 @@ jobs:
         - name: Generate Fake Playwright User Password
           id: generate-password
           run: |
-            FAKE_E2E_USER_PASSWORD=$(openssl rand -base64 32 | tr -dc 'a-zA-Z0-9@#%^&*()-_=+<>?' | fold -w 12 | head -n 1)
+            FAKE_E2E_USER_PASSWORD=$(cat <(openssl rand -base64 32 | tr -dc '@#%^&*()-_=+<>?' | fold -w 2) <(openssl rand -base64 32 | tr -dc 'a-zA-Z0-9@#%^&*()-_=+<>?' | fold -w 10) | fold -w 12 | head -n 1)
             echo "the secret password is $FAKE_E2E_USER_PASSWORD"    
 
         - name: Setup UDS Cluster
@@ -117,7 +117,9 @@ jobs:
         - name: UI/API/Supabase E2E Playwright Tests
           run: |
             cp src/leapfrogai_ui/.env.example src/leapfrogai_ui/.env
-            TEST_ENV=CI USERNAME=doug PASSWORD=$FAKE_E2E_USER_PASSWORD PUBLIC_SUPABASE_ANON_KEY=$ANON_KEY npm --prefix src/leapfrogai_ui run test:integration:ci
+            mkdir -p playwright/auth
+            touch playwright/auth.user.json
+            SERVICE_ROLE_KEY=$(uds zarf tools kubectl get secret -n leapfrogai supabase-bootstrap-jwt -o jsonpath={.data.service-key} | base64 -d) TEST_ENV=CI USERNAME=doug PASSWORD=$FAKE_E2E_USER_PASSWORD PUBLIC_SUPABASE_ANON_KEY=$ANON_KEY npm --prefix src/leapfrogai_ui run test:integration:ci
 
         # Upload the Playwright report as an artifact
         - name: Archive Playwright Report

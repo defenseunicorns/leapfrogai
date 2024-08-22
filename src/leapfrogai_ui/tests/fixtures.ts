@@ -1,38 +1,13 @@
 import { test as base } from '@playwright/test';
-import fs from 'node:fs';
 import OpenAI from 'openai';
 
 type MyFixtures = {
   openAIClient: OpenAI;
 };
 
-type Cookie = {
-  name: string;
-  value: string;
-  domain: string;
-  path: string;
-  expires: number;
-  httpOnly: boolean;
-  secure: boolean;
-  sameSite: string;
-};
-
-export const getToken = () => {
-  const authData = JSON.parse(fs.readFileSync('playwright/.auth/user.json', 'utf-8'));
-  const cookie = authData.cookies.find(
-    (cookie: Cookie) => cookie.name === 'sb-supabase-kong-auth-token.0'
-  );
-
-  const cookieStripped = cookie.value.split('base64-')[1];
-  const decodedValue = Buffer.from(cookieStripped, 'base64').toString('utf-8');
-  // The cookie value is missing ending " and }}, so we append it
-  const parsedValue = JSON.parse(`${decodedValue}"}}`);
-  return parsedValue.access_token;
-};
 export const getOpenAIClient = () => {
-  const token = getToken();
   return new OpenAI({
-    apiKey: process.env.OPENAI_API_KEY || token,
+    apiKey: process.env.OPENAI_API_KEY || process.env.SERVICE_ROLE_KEY,
     baseURL: process.env.OPENAI_API_KEY
       ? `${process.env.LEAPFROGAI_API_BASE_URL}/v1`
       : `${process.env.LEAPFROGAI_API_BASE_URL}/openai/v1`
