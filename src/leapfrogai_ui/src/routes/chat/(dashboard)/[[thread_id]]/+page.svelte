@@ -39,7 +39,6 @@
   // TODO - for file upload story:
   // Ensure file size limit is acceptable for context window
   // What happens when several messages sent with lots of content?
-  // Handle when button is clicked for assistants (or remove button?)
 
   /** LOCAL VARS **/
   let lengthInvalid: boolean; // bound to child LFTextArea
@@ -100,11 +99,17 @@
 
   $: sendDisabled = uploadingFiles || !$chatInput || lengthInvalid || $threadsStore.sendingBlocked;
 
+  $: if (assistantMode) {
+    resetFiles(); // attachment of files w/assistants disabled
+  }
+
   /** END REACTIVE STATE **/
 
-  onMount(() => {
-    componentHasMounted = true;
-  });
+  const resetFiles = () => {
+    uploadingFiles = false;
+    extractedFilesText = [];
+    attachedFileMetadata = [];
+  };
 
   const updateStreamingChatMessage = () => {
     if ($isLoading && latestChatMessage?.role !== 'user')
@@ -242,7 +247,6 @@
     try {
       await threadsStore.setSendingBlocked(true);
       if (data.thread?.id) {
-        console.log(extractedFilesText);
         if (extractedFilesText) {
           // Save the text of the document as it's own message before sending actual question
           const contextMsg = await saveMessage({
@@ -277,8 +281,7 @@
         // store user input
         await threadsStore.addMessageToStore(newMessage);
         submitChatMessage(e); // submit to AI (/api/chat)
-        extractedFilesText = [];
-        attachedFileMetadata = [];
+        resetFiles();
       }
     } catch {
       toastStore.addToast({
@@ -334,6 +337,7 @@
   };
 
   onMount(async () => {
+    componentHasMounted = true;
     assistantsList = [...(data.assistants || [])].map((assistant) => ({
       id: assistant.id,
       text: assistant.name || 'unknown'
@@ -400,37 +404,39 @@
         {/each}
       </div>
       <div id="chat-row" class="flex w-full items-center">
-        <form method="POST" enctype="multipart/form-data" use:enhance>
-          <LFFileUploadBtn
-            data-testid="upload-file-btn"
-            name="files"
-            outline
-            multiple
-            size="sm"
-            on:change={(e) => {
-              uploadingFiles = true;
-              for (const file of e.detail) {
-                attachedFileMetadata = [
-                  ...attachedFileMetadata,
-                  { id: uuidv4(), name: file.name, type: file.type, status: 'uploading' }
-                ];
-              }
-              submit(e.detail);
-            }}
-            accept={ACCEPTED_FILE_TYPES}
-            class="remove-btn-style flex"
-          >
-            <ToolbarButton
-              color="dark"
-              class="rounded-full text-gray-500 dark:text-gray-400"
-              disabled={uploadingFiles}
-              on:click={(e) => e.preventDefault()}
+        {#if !assistantMode}
+          <form method="POST" enctype="multipart/form-data" use:enhance>
+            <LFFileUploadBtn
+              data-testid="upload-file-btn"
+              name="files"
+              outline
+              multiple
+              size="sm"
+              on:change={(e) => {
+                uploadingFiles = true;
+                for (const file of e.detail) {
+                  attachedFileMetadata = [
+                    ...attachedFileMetadata,
+                    { id: uuidv4(), name: file.name, type: file.type, status: 'uploading' }
+                  ];
+                }
+                submit(e.detail);
+              }}
+              accept={ACCEPTED_FILE_TYPES}
+              class="remove-btn-style flex"
             >
-              <PaperClipOutline />
-              <span class="sr-only">Attach file</span>
-            </ToolbarButton>
-          </LFFileUploadBtn>
-        </form>
+              <ToolbarButton
+                color="dark"
+                class="rounded-full text-gray-500 dark:text-gray-400"
+                disabled={uploadingFiles}
+                on:click={(e) => e.preventDefault()}
+              >
+                <PaperClipOutline />
+                <span class="sr-only">Attach file</span>
+              </ToolbarButton>
+            </LFFileUploadBtn>
+          </form>
+        {/if}
 
         <LFTextArea
           id="chat"
