@@ -30,7 +30,7 @@
   import { PaperClipOutline, PaperPlaneOutline, StopOutline } from 'flowbite-svelte-icons';
   import { superForm } from 'sveltekit-superforms';
   import LFFileUploadBtn from '$components/LFFileUploadBtn.svelte';
-  import type { FileMetadata } from '$lib/types/files';
+  import type { ExtractedFilesText, FileMetadata } from '$lib/types/files';
   import UploadedFileCard from '$components/UploadedFileCard.svelte';
   import { twMerge } from 'tailwind-merge';
 
@@ -44,7 +44,7 @@
   /** LOCAL VARS **/
   let lengthInvalid: boolean; // bound to child LFTextArea
   let assistantsList: Array<{ id: string; text: string }>;
-  let documentText: string;
+  let extractedFilesText: ExtractedFilesText = [];
   let uploadingFiles = false;
   let attachedFileMetadata: FileMetadata[] = [];
 
@@ -55,7 +55,7 @@
       uploadingFiles = false;
       attachedFileMetadata = attachedFileMetadata.map((file) => ({ ...file, status: 'complete' }));
       if (result.type === 'success') {
-        documentText = result.data.text;
+        extractedFilesText = [...extractedFilesText, ...result.data.extractedFilesText];
       }
     },
     onError(e) {
@@ -242,12 +242,12 @@
     try {
       await threadsStore.setSendingBlocked(true);
       if (data.thread?.id) {
-        console.log(documentText)
-        if (documentText) {
+        console.log(extractedFilesText);
+        if (extractedFilesText) {
           // Save the text of the document as it's own message before sending actual question
           const contextMsg = await saveMessage({
             thread_id: data.thread.id,
-            content: documentText,
+            content: JSON.stringify(extractedFilesText),
             role: 'user',
             metadata: {
               hideMessage: 'true'
@@ -277,7 +277,7 @@
         // store user input
         await threadsStore.addMessageToStore(newMessage);
         submitChatMessage(e); // submit to AI (/api/chat)
-        documentText = '';
+        extractedFilesText = [];
         attachedFileMetadata = [];
       }
     } catch {
@@ -288,7 +288,8 @@
     }
   };
 
-  const handleRemoveFile = (id: string) => {
+  const handleRemoveFile = (id: string, index: number) => {
+    extractedFilesText = extractedFilesText.toSpliced(index, 1);
     attachedFileMetadata = attachedFileMetadata.filter((file) => file.id !== id);
   };
 
@@ -389,12 +390,12 @@
           ? 'ml-9 flex max-w-full  gap-2 overflow-x-scroll bg-gray-700 px-2.5'
           : 'hidden'}
       >
-        {#each attachedFileMetadata as file}
+        {#each attachedFileMetadata as file, index}
           <UploadedFileCard
             name={file.name}
             type={file.type}
             status={file.status}
-            on:delete={() => handleRemoveFile(file.id)}
+            on:delete={() => handleRemoveFile(file.id, index)}
           />
         {/each}
       </div>

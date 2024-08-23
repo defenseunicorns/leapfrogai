@@ -23,3 +23,9 @@ export type FileMetadata = {
   type: string;
   status: FileUploadStatus;
 };
+
+export type ExtractedFilesText = {
+  id: string;
+  filename: string;
+  text: string;
+}[];

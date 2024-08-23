@@ -3,6 +3,7 @@ import { fail, superValidate, withFiles } from 'sveltekit-superforms';
 import { yup } from 'sveltekit-superforms/adapters';
 import type { Actions } from './$types';
 import { filesSchema } from '$schemas/files';
+import type { ExtractedFilesText } from '$lib/types/files';
 
 export const actions: Actions = {
   // Handles parsing text from files, will convert file to pdf if is not already
@@ -24,10 +25,12 @@ export const actions: Actions = {
       return fail(400, { form });
     }
 
+    const extractedFilesText: ExtractedFilesText = [];
+
     if (form.data.files && form.data.files.length > 0) {
-      let text = '';
       try {
         for (const file of form.data.files) {
+          let text = '';
           if (file) {
             let buffer: ArrayBuffer;
             const contentType = file.type;
@@ -61,9 +64,10 @@ export const actions: Actions = {
               }
               i++;
             }
+            extractedFilesText.push({ id: file.id, filename: file.name, text });
           }
         }
-        return withFiles({ text, form });
+        return withFiles({ extractedFilesText: extractedFilesText, form });
       } catch (e) {
         console.error(e);
         return fail(500, { form });
