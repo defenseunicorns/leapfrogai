@@ -3,7 +3,7 @@
 import logging
 import tempfile
 import time
-from fastapi import HTTPException, UploadFile, status
+from fastapi import HTTPException, UploadFile, status, BackgroundTasks
 from langchain_core.documents import Document
 from langchain_core.embeddings import Embeddings
 from openai.types.beta.vector_store import FileCounts, VectorStore
@@ -154,54 +154,76 @@ class IndexingService:
         return responses
 
     async def create_new_vector_store(
-        self, request: CreateVectorStoreRequest
+        self, request: CreateVectorStoreRequest, background_tasks: BackgroundTasks
     ) -> VectorStore:
         """Create a new vector store given a set of file ids"""
         crud_vector_store = CRUDVectorStore(db=self.db)
 
-        last_active_at = int(time.time())
-
-        expires_after, expires_at = request.get_expiry(last_active_at)
+        current_time = int(time.time())
+        expires_after, expires_at = request.get_expiry(current_time)
 
         try:
-            vector_store = VectorStore(
+            # Create a placeholder vector store
+            placeholder_vector_store = VectorStore(
                 id="",  # Leave blank to have Postgres generate a UUID
-                usage_bytes=0,  # Automatically calculated by DB
-                created_at=0,  # Leave blank to have Postgres generate a timestamp
-                file_counts=FileCounts(
-                    cancelled=0, completed=0, failed=0, in_progress=0, total=0
-                ),
-                last_active_at=last_active_at,  # Set to current time
-                metadata=request.metadata,
                 name=request.name or "",
-                object="vector_store",
                 status=VectorStoreStatus.IN_PROGRESS.value,
+                object="vector_store",
+                created_at=0,  # Leave blank to have Postgres generate a timestamp
+                last_active_at=current_time,
+                file_counts=FileCounts(
+                    cancelled=0,
+                    completed=0,
+                    failed=0,
+                    in_progress=0,
+                    total=0
+                ),
+                usage_bytes=0,
+                metadata=request.metadata if hasattr(request, 'metadata') else None,
                 expires_after=expires_after,
-                expires_at=expires_at,
+                expires_at=expires_at
             )
-            new_vector_store = await crud_vector_store.create(object_=vector_store)
 
-            if request.file_ids != []:
-                responses = await self.index_files(
-                    new_vector_store.id, request.file_ids
+            # Save the placeholder to the database
+            saved_placeholder = await crud_vector_store.create(object_=placeholder_vector_store)
+
+            if saved_placeholder is None:
+                raise HTTPException(
+                    status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+                    detail="Unable to create vector store",
                 )
 
-                for response in responses:
-                    await self._increment_vector_store_file_status(
-                        new_vector_store, response
-                    )
-
-            new_vector_store.status = VectorStoreStatus.COMPLETED.value
-
-            return await crud_vector_store.update(
-                id_=new_vector_store.id,
-                object_=new_vector_store,
+            # Add the actual creation task to background tasks
+            background_tasks.add_task(
+                self._complete_vector_store_creation,
+                saved_placeholder.id,
+                request
             )
+
+            return saved_placeholder
         except Exception as exc:
+            logging.error(exc)
             raise HTTPException(
                 status_code=status.HTTP_400_BAD_REQUEST,
                 detail="Unable to parse vector store request",
             ) from exc
+
+    async def _complete_vector_store_creation(
+        self, vector_store_id: str, request: CreateVectorStoreRequest
+    ):
+        """Complete the vector store creation process in the background."""
+        crud_vector_store = CRUDVectorStore(db=self.db)
+        vector_store = await crud_vector_store.get(filters=FilterVectorStore(id=vector_store_id))
+
+        if request.file_ids:
+            responses = await self.index_files(vector_store_id, request.file_ids)
+            for response in responses:
+                await self._increment_vector_store_file_status(vector_store, response)
+
+        vector_store.status = VectorStoreStatus.COMPLETED.value
+        vector_store.last_active_at = int(time.time())
+
+        await crud_vector_store.update(id_=vector_store_id, object_=vector_store)
 
     async def modify_existing_vector_store(
         self,

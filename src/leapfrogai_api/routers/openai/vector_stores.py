@@ -15,6 +15,7 @@ from leapfrogai_api.backend.types import (
     CreateVectorStoreRequest,
     ListVectorStoresResponse,
     ModifyVectorStoreRequest,
+    VectorStoreStatus,
 )
 from leapfrogai_api.data.crud_vector_content import CRUDVectorContent
 from leapfrogai_api.data.crud_vector_store import CRUDVectorStore, FilterVectorStore
@@ -52,35 +53,8 @@ async def create_vector_store(
 
     indexing_service = IndexingService(db=session)
     try:
-        current_time = int(time.time())
-        # Create a placeholder vector store
-        placeholder_vector_store = VectorStore(
-            id="placeholder_id",
-            name=request.name or "",
-            status="in_progress",
-            object="vector_store",
-            created_at=current_time,
-            last_active_at=current_time,
-            file_counts=FileCounts(
-                cancelled=0,
-                completed=0,
-                failed=0,
-                in_progress=0,
-                total=0
-            ),
-            usage_bytes=0,
-            metadata=request.metadata if hasattr(request, 'metadata') else None,
-            expires_after=None,
-            expires_at=None
-        )
-
-        # Add the actual creation task to background tasks
-        background_tasks.add_task(
-            indexing_service.create_new_vector_store,
-            request
-        )
-
-        return placeholder_vector_store
+        vector_store = await indexing_service.create_new_vector_store(request, background_tasks)
+        return vector_store
     except Exception as exc:
         traceback.print_exc()
         raise HTTPException(
