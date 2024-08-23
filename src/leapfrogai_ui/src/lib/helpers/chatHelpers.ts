@@ -28,6 +28,7 @@ export const saveMessage = async (input: NewMessageInput) => {
   });
 
   if (res.ok) return res.json();
+  console.log(res)
   return error(500, 'Error saving message');
 };
 

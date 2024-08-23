@@ -1,10 +1,11 @@
 import * as mupdf from 'mupdf';
-import type { Actions } from './$types';
 import { fail, superValidate, withFiles } from 'sveltekit-superforms';
 import { yup } from 'sveltekit-superforms/adapters';
+import type { Actions } from './$types';
 import { filesSchema } from '$schemas/files';
 
 export const actions: Actions = {
+  // Handles parsing text from files, will convert file to pdf if is not already
   default: async ({ request, fetch, locals: { session } }) => {
     if (!session) {
       return fail(401, { message: 'Unauthorized' });

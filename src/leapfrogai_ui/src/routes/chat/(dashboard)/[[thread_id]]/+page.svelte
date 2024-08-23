@@ -37,13 +37,9 @@
   export let data;
 
   // TODO - for file upload story:
-  // Refactor to create new message instead of adding pdf content to end of current message, also store file info in current
-  // message metadata.
   // Ensure file size limit is acceptable for context window
   // What happens when several messages sent with lots of content?
   // Handle when button is clicked for assistants (or remove button?)
-  // Display files IAW with designs (that don't exist yet?)
-  // Remove files
 
   /** LOCAL VARS **/
   let lengthInvalid: boolean; // bound to child LFTextArea
@@ -60,10 +56,6 @@
       attachedFileMetadata = attachedFileMetadata.map((file) => ({ ...file, status: 'complete' }));
       if (result.type === 'success') {
         documentText = result.data.text;
-      } else {
-        toastStore.addToast({
-          ...ERROR_PROCESSING_FILE_MSG_TOAST({ subtitle: result.data.message })
-        });
       }
     },
     onError(e) {
@@ -247,23 +239,28 @@
   };
 
   const sendChatMessage = async (e: SubmitEvent | KeyboardEvent) => {
-    await threadsStore.setSendingBlocked(true);
-    if (data.thread?.id) {
-      if (documentText) {
-        // Save the text of the document as it's own message before sending actual question
-        const contextMsg = await saveMessage({
-          thread_id: data.thread.id,
-          content: documentText,
-          role: 'user',
-          metadata: {
-            hideMessage: 'true'
-          }
-        });
-        setChatMessages([...$chatMessages, { ...contextMsg, content: getMessageText(contextMsg) }]);
-      }
+    try {
+      await threadsStore.setSendingBlocked(true);
+      if (data.thread?.id) {
+        console.log(documentText)
+        if (documentText) {
+          // Save the text of the document as it's own message before sending actual question
+          const contextMsg = await saveMessage({
+            thread_id: data.thread.id,
+            content: documentText,
+            role: 'user',
+            metadata: {
+              hideMessage: 'true'
+            }
+          });
+          setChatMessages([
+            ...$chatMessages,
+            { ...contextMsg, content: getMessageText(contextMsg) }
+          ]);
+        }
 
-      // Save with API
-      try {
+        // Save with API
+
         const newMessage = await saveMessage({
           thread_id: data.thread.id,
           content: $chatInput,
@@ -282,12 +279,12 @@
         submitChatMessage(e); // submit to AI (/api/chat)
         documentText = '';
         attachedFileMetadata = [];
-      } catch {
-        toastStore.addToast({
-          ...ERROR_SAVING_MSG_TOAST()
-        });
-        await threadsStore.setSendingBlocked(false);
       }
+    } catch {
+      toastStore.addToast({
+        ...ERROR_SAVING_MSG_TOAST()
+      });
+      await threadsStore.setSendingBlocked(false);
     }
   };
 
@@ -426,6 +423,7 @@
               color="dark"
               class="rounded-full text-gray-500 dark:text-gray-400"
               disabled={uploadingFiles}
+              on:click={(e) => e.preventDefault()}
             >
               <PaperClipOutline />
               <span class="sr-only">Attach file</span>
