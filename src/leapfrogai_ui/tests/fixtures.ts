@@ -9,6 +9,10 @@ export async function getAccessToken() {
   const supabaseUrl = process.env.PUBLIC_SUPABASE_URL;
   const serviceRoleKey = process.env.SERVICE_ROLE_KEY;
 
+  console.log(`Supabase url`, supabaseUrl)
+  console.log(`serviceRoleKey`, serviceRoleKey)
+  console.log(`USERNAME`, process.env.USERNAME)
+  console.log(`PASSWORD`, process.env.PASSWORD)
   const response = await fetch(`${supabaseUrl}/auth/v1/token?grant_type=password`, {
     method: 'POST',
     // @ts-expect-error: apikey is a required header for this request
