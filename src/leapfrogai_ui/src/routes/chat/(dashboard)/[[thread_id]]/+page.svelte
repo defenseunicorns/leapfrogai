@@ -32,7 +32,6 @@
   import LFFileUploadBtn from '$components/LFFileUploadBtn.svelte';
   import type { FileMetadata } from '$lib/types/files';
   import UploadedFileCard from '$components/UploadedFileCard.svelte';
-  import { twMerge } from 'tailwind-merge';
 
   export let data;
 
@@ -57,6 +56,7 @@
     invalidateAll: false,
     onResult({ result }) {
       uploadingFiles = false;
+      attachedFileMetadata = attachedFileMetadata.map((file) => ({ ...file, status: 'complete' }));
       if (result.type === 'success') {
         documentText = result.data.text;
       } else {
@@ -378,89 +378,87 @@
   <div id="chat-tools" class="flex flex-col gap-2 px-8">
     <SelectAssistantDropdown assistants={data?.assistants || []} />
 
-
-      <div class="flex flex-grow flex-col rounded-lg bg-gray-50 p-px dark:bg-gray-700">
-        <div
-          id="uploaded-files"
-          class={attachedFileMetadata.length > 0
-            ? 'ml-9 flex max-w-full  gap-2 overflow-x-scroll bg-gray-700 px-2.5'
-            : 'hidden'}
-        >
-          {#each attachedFileMetadata as file}
-            <UploadedFileCard name={file.name} type={file.type} loading={uploadingFiles} />
-          {/each}
-        </div>
-        <div id="chat-row" class="flex w-full items-center">
-          <form method="POST" enctype="multipart/form-data" use:enhance>
-            <LFFileUploadBtn
-              data-testid="upload-file-btn"
-              name="files"
-              outline
-              multiple
-              size="sm"
-              on:change={(e) => {
-                uploadingFiles = true;
-                for (const file of e.detail) {
-                  attachedFileMetadata = [
-                    ...attachedFileMetadata,
-                    { id: uuidv4(), name: file.name, type: file.type }
-                  ];
-                }
-                submit(e.detail);
-              }}
-              accept={ACCEPTED_FILE_TYPES}
-              class="remove-btn-style flex"
-            >
-              <ToolbarButton
-                color="dark"
-                class="rounded-full text-gray-500 dark:text-gray-400"
-                disabled={uploadingFiles}
-              >
-                <PaperClipOutline />
-                <span class="sr-only">Attach file</span>
-              </ToolbarButton>
-            </LFFileUploadBtn>
-          </form>
-
-          <LFTextArea
-            id="chat"
-            data-testid="chat-input"
-            class=" flex-grow resize-none border-none bg-white focus:ring-0 dark:bg-gray-700"
-            placeholder="Type your message here..."
-            value={chatInput}
-            bind:showLengthError={lengthInvalid}
-            {onSubmit}
-            maxRows={10}
-            innerWrappedClass="p-px bg-white dark:bg-gray-700"
-          ></LFTextArea>
-
-          {#if !$isLoading && $status !== 'in_progress'}
-            <ToolbarButton
-              data-testid="send message"
-              type="submit"
-              color="blue"
-              class="rounded-full text-primary-600 dark:text-primary-500"
-              disabled={uploadingFiles ||
-                !$chatInput ||
-                lengthInvalid ||
-                $threadsStore.sendingBlocked}
-            >
-              <PaperPlaneOutline class="h-6 w-6 rotate-45" />
-              <span class="sr-only">Send message</span>
-            </ToolbarButton>
-          {:else}
-            <ToolbarButton
-              data-testid="cancel message"
-              type="submit"
-              color="gray"
-              class="rounded-full text-primary-600 dark:text-primary-500"
-              ><StopOutline class="h-6 w-6" color="red" /><span class="sr-only">Cancel message</span
-              ></ToolbarButton
-            >
-          {/if}
-        </div>
+    <div class="flex flex-grow flex-col rounded-lg bg-gray-50 p-px dark:bg-gray-700">
+      <div
+        id="uploaded-files"
+        class={attachedFileMetadata.length > 0
+          ? 'ml-9 flex max-w-full  gap-2 overflow-x-scroll bg-gray-700 px-2.5'
+          : 'hidden'}
+      >
+        {#each attachedFileMetadata as file}
+          <UploadedFileCard name={file.name} type={file.type} status={file.status} />
+        {/each}
       </div>
+      <div id="chat-row" class="flex w-full items-center">
+        <form method="POST" enctype="multipart/form-data" use:enhance>
+          <LFFileUploadBtn
+            data-testid="upload-file-btn"
+            name="files"
+            outline
+            multiple
+            size="sm"
+            on:change={(e) => {
+              uploadingFiles = true;
+              for (const file of e.detail) {
+                attachedFileMetadata = [
+                  ...attachedFileMetadata,
+                  { id: uuidv4(), name: file.name, type: file.type, status: 'uploading' }
+                ];
+              }
+              submit(e.detail);
+            }}
+            accept={ACCEPTED_FILE_TYPES}
+            class="remove-btn-style flex"
+          >
+            <ToolbarButton
+              color="dark"
+              class="rounded-full text-gray-500 dark:text-gray-400"
+              disabled={uploadingFiles}
+            >
+              <PaperClipOutline />
+              <span class="sr-only">Attach file</span>
+            </ToolbarButton>
+          </LFFileUploadBtn>
+        </form>
 
+        <LFTextArea
+          id="chat"
+          data-testid="chat-input"
+          class=" flex-grow resize-none border-none bg-white focus:ring-0 dark:bg-gray-700"
+          placeholder="Type your message here..."
+          value={chatInput}
+          bind:showLengthError={lengthInvalid}
+          {onSubmit}
+          maxRows={10}
+          innerWrappedClass="p-px bg-white dark:bg-gray-700"
+        ></LFTextArea>
+
+        {#if !$isLoading && $status !== 'in_progress'}
+          <ToolbarButton
+            data-testid="send message"
+            type="submit"
+            color="blue"
+            class="rounded-full text-primary-600 dark:text-primary-500"
+            disabled={uploadingFiles ||
+              !$chatInput ||
+              lengthInvalid ||
+              $threadsStore.sendingBlocked}
+          >
+            <PaperPlaneOutline class="h-6 w-6 rotate-45" />
+            <span class="sr-only">Send message</span>
+          </ToolbarButton>
+        {:else}
+          <ToolbarButton
+            data-testid="cancel message"
+            type="submit"
+            color="gray"
+            class="rounded-full text-primary-600 dark:text-primary-500"
+            ><StopOutline class="h-6 w-6" color="red" /><span class="sr-only">Cancel message</span
+            ></ToolbarButton
+          >
+        {/if}
+      </div>
+    </div>
   </div>
   <PoweredByDU />
 </form>
