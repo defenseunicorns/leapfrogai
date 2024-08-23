@@ -53,9 +53,7 @@ async def create_vector_store(
 
     indexing_service = IndexingService(db=session)
     try:
-        vector_store = await indexing_service.create_new_vector_store(
-            request, background_tasks
-        )
+        vector_store = await indexing_service.create_new_vector_store(request, background_tasks)
         return vector_store
     except Exception as exc:
         traceback.print_exc()
@@ -70,13 +68,16 @@ async def modify_vector_store(
     vector_store_id: str,
     request: ModifyVectorStoreRequest,
     session: Session,
+    background_tasks: BackgroundTasks,
 ) -> VectorStore:
     """Modify a vector store."""
 
     indexing_service = IndexingService(db=session)
     try:
         modified_vector_store = await indexing_service.modify_existing_vector_store(
-            vector_store_id=vector_store_id, request=request
+            vector_store_id=vector_store_id,
+            request=request,
+            background_tasks=background_tasks,
         )
     except HTTPException as exc:
         raise exc
