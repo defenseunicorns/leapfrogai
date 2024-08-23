@@ -32,6 +32,7 @@
   import LFFileUploadBtn from '$components/LFFileUploadBtn.svelte';
   import type { FileMetadata } from '$lib/types/files';
   import UploadedFileCard from '$components/UploadedFileCard.svelte';
+  import { twMerge } from 'tailwind-merge';
 
   export let data;
 
@@ -104,6 +105,8 @@
 
   // assistant stream has completed
   $: $status, handleCompletedAssistantResponse();
+
+  $: sendDisabled = uploadingFiles || !$chatInput || lengthInvalid || $threadsStore.sendingBlocked;
 
   /** END REACTIVE STATE **/
 
@@ -447,13 +450,15 @@
             data-testid="send message"
             type="submit"
             color="blue"
-            class="rounded-full text-primary-600 dark:text-primary-500"
-            disabled={uploadingFiles ||
-              !$chatInput ||
-              lengthInvalid ||
-              $threadsStore.sendingBlocked}
+            class={twMerge(
+              'rounded-full text-primary-600 dark:text-primary-500',
+              sendDisabled && 'hover:dark:bg-gray-700 '
+            )}
+            disabled={sendDisabled}
           >
-            <PaperPlaneOutline class="h-6 w-6 rotate-45" />
+            <PaperPlaneOutline
+              class={twMerge('h-6 w-6 rotate-45', sendDisabled && 'text-primary-100')}
+            />
             <span class="sr-only">Send message</span>
           </ToolbarButton>
         {:else}

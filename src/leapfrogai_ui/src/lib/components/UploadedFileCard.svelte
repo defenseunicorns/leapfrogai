@@ -20,7 +20,7 @@
     id="card"
     horizontal
     padding="xs"
-    class="w-72 min-w-72 bg-gray-800"
+    class="w-80 min-w-72 bg-gray-800"
     on:mouseenter={() => (hovered = true)}
     on:mouseleave={() => (hovered = false)}
   >
@@ -35,7 +35,7 @@
         </div>
         <h5 class="flex flex-col">
           <div
-            class={`max-w-48 overflow-hidden text-ellipsis whitespace-nowrap text-sm font-bold text-gray-900 dark:text-white `}
+            class={`max-w-56 overflow-hidden text-ellipsis whitespace-nowrap text-sm font-bold text-gray-900 dark:text-white `}
           >
             {name}
           </div>

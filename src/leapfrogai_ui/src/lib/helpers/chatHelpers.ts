@@ -141,7 +141,7 @@ export const handleMessageEdit = async ({
   const cMessage: CreateMessage = {
     content: getMessageText(message),
     role: 'user',
-    createdAt: new Date()
+    createdAt: new Date(),
   };
 
   if (
@@ -161,7 +161,8 @@ export const handleMessageEdit = async ({
     const newMessage = await saveMessage({
       thread_id: message.thread_id,
       content: getMessageText(message),
-      role: 'user'
+      role: 'user',
+      metadata: message.metadata
     });
     await threadsStore.addMessageToStore(newMessage);
 
