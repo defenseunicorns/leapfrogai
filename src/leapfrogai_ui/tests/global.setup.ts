@@ -86,7 +86,7 @@ const logout = async (page: Page) => {
   }
 };
 
-setup('authenticate', async ({ page, openAIClient }) => {
+setup('authenticate', async ({ page }) => {
   page.on('pageerror', (err) => {
     console.log(err.message);
   });
@@ -117,8 +117,4 @@ setup('authenticate', async ({ page, openAIClient }) => {
   // End of authentication steps.
 
   await page.context().storageState({ path: authFile });
-
-  if (process.env.TEST_ENV !== 'CI') {
-    await cleanup(openAIClient);
-  }
 });
