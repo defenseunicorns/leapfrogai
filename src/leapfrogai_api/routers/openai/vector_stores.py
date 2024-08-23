@@ -2,20 +2,17 @@
 
 import logging
 import traceback
-import time
 
 from fastapi import APIRouter, HTTPException, status, BackgroundTasks
 from openai.pagination import SyncCursorPage
 from openai.types.beta import VectorStore, VectorStoreDeleted
 from openai.types.beta.vector_stores import VectorStoreFile, VectorStoreFileDeleted
-from openai.types.beta.vector_store import FileCounts
 from leapfrogai_api.backend.rag.index import IndexingService
 from leapfrogai_api.backend.types import (
     CreateVectorStoreFileRequest,
     CreateVectorStoreRequest,
     ListVectorStoresResponse,
     ModifyVectorStoreRequest,
-    VectorStoreStatus,
 )
 from leapfrogai_api.data.crud_vector_content import CRUDVectorContent
 from leapfrogai_api.data.crud_vector_store import CRUDVectorStore, FilterVectorStore
