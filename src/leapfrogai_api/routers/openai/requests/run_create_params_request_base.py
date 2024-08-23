@@ -64,7 +64,7 @@ from leapfrogai_api.routers.openai.requests.create_message_request import (
     CreateMessageRequest,
 )
 from leapfrogai_api.routers.supabase_session import Session
-from leapfrogai_api.utils import get_model_config
+from leapfrogai_api.utils.__init__ import config as global_config
 from leapfrogai_sdk.chat.chat_pb2 import (
     ChatCompletionResponse as ProtobufChatCompletionResponse,
 )
@@ -314,6 +314,7 @@ class RunCreateParamsRequestBase(BaseModel):
         chat_messages, file_ids = await self.create_chat_messages(
             session, thread, additional_instructions, tool_resources
         )
+        config = await global_config.create()
 
         # Generate a new message and add it to the thread creation request
         chat_response: ChatCompletionResponse = await chat_complete(
@@ -327,7 +328,7 @@ class RunCreateParamsRequestBase(BaseModel):
                 stop=None,
                 max_tokens=self.max_completion_tokens,
             ),
-            model_config=get_model_config(),
+            model_config=config,
             session=session,
         )
 
@@ -393,7 +394,7 @@ class RunCreateParamsRequestBase(BaseModel):
                     stop=None,
                     max_tokens=self.max_completion_tokens,
                 ),
-                model_config=get_model_config(),
+                model_config=await global_config.create(),
             )
         )
 

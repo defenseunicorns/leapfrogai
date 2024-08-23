@@ -7,9 +7,12 @@ import leapfrogai_sdk as lfai
 from leapfrogai_api.backend.grpc_client import create_embeddings
 from leapfrogai_api.backend.types import CreateEmbeddingRequest, CreateEmbeddingResponse
 from leapfrogai_api.routers.supabase_session import Session
-from leapfrogai_api.utils import get_model_config
+from leapfrogai_api.utils.__init__ import config as global_config
 from leapfrogai_api.utils.config import Config
 
+import logging
+
+logger = logging.getLogger(__name__)
 router = APIRouter(prefix="/openai/v1/embeddings", tags=["openai/embeddings"])
 
 
@@ -17,10 +20,10 @@ router = APIRouter(prefix="/openai/v1/embeddings", tags=["openai/embeddings"])
 async def embeddings(
     session: Session,  # pylint: disable=unused-argument # required for authorizing endpoint
     req: CreateEmbeddingRequest,
-    model_config: Annotated[Config, Depends(get_model_config)],
+    model_config: Annotated[Config, Depends(global_config.create)],
 ) -> CreateEmbeddingResponse:
     """Create embeddings from the given input."""
-    model = model_config.get_model_backend(req.model)
+    model = model_config.get_model_backend(model=req.model)
     if model is None:
         raise HTTPException(
             status_code=status.HTTP_405_METHOD_NOT_ALLOWED,
