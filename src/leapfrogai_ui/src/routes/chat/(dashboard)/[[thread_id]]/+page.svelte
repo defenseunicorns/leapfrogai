@@ -251,7 +251,7 @@
           // Save the text of the document as it's own message before sending actual question
           const contextMsg = await saveMessage({
             thread_id: data.thread.id,
-            content: `The following is a JSON object that has file names and their associated text content. Use the files and their text when applicable to the conversation. ${JSON.stringify(extractedFilesText)}`,
+            content: `The following is a list of file names along with their respective text content. Please consider the information from these files as needed in the context of the conversation: ${JSON.stringify(extractedFilesText)}`,
             role: 'user',
             metadata: {
               hideMessage: 'true'
