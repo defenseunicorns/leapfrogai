@@ -288,6 +288,10 @@
     }
   };
 
+  const handleRemoveFile = (id: string) => {
+    attachedFileMetadata = attachedFileMetadata.filter((file) => file.id !== id);
+  };
+
   // OpenAI returns the creation timestamp in seconds instead of milliseconds.
   // If a response comes in quickly, we need to delay 1 second to ensure the timestamps of the user message
   // and AI response are not exactly the same. This is important for sorting messages when they are initially loaded
@@ -386,7 +390,12 @@
           : 'hidden'}
       >
         {#each attachedFileMetadata as file}
-          <UploadedFileCard name={file.name} type={file.type} status={file.status} />
+          <UploadedFileCard
+            name={file.name}
+            type={file.type}
+            status={file.status}
+            on:delete={() => handleRemoveFile(file.id)}
+          />
         {/each}
       </div>
       <div id="chat-row" class="flex w-full items-center">
