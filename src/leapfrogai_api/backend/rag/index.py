@@ -172,20 +172,18 @@ class IndexingService:
                 created_at=0,  # Leave blank to have Postgres generate a timestamp
                 last_active_at=current_time,
                 file_counts=FileCounts(
-                    cancelled=0,
-                    completed=0,
-                    failed=0,
-                    in_progress=0,
-                    total=0
+                    cancelled=0, completed=0, failed=0, in_progress=0, total=0
                 ),
                 usage_bytes=0,
-                metadata=request.metadata if hasattr(request, 'metadata') else None,
+                metadata=request.metadata if hasattr(request, "metadata") else None,
                 expires_after=expires_after,
-                expires_at=expires_at
+                expires_at=expires_at,
             )
 
             # Save the placeholder to the database
-            saved_placeholder = await crud_vector_store.create(object_=placeholder_vector_store)
+            saved_placeholder = await crud_vector_store.create(
+                object_=placeholder_vector_store
+            )
 
             if saved_placeholder is None:
                 raise HTTPException(
@@ -195,9 +193,7 @@ class IndexingService:
 
             # Add the actual creation task to background tasks
             background_tasks.add_task(
-                self._complete_vector_store_creation,
-                saved_placeholder.id,
-                request
+                self._complete_vector_store_creation, saved_placeholder.id, request
             )
 
             return saved_placeholder
@@ -213,7 +209,9 @@ class IndexingService:
     ):
         """Complete the vector store creation process in the background."""
         crud_vector_store = CRUDVectorStore(db=self.db)
-        vector_store = await crud_vector_store.get(filters=FilterVectorStore(id=vector_store_id))
+        vector_store = await crud_vector_store.get(
+            filters=FilterVectorStore(id=vector_store_id)
+        )
 
         if request.file_ids:
             responses = await self.index_files(vector_store_id, request.file_ids)

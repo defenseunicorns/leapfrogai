@@ -53,7 +53,9 @@ async def create_vector_store(
 
     indexing_service = IndexingService(db=session)
     try:
-        vector_store = await indexing_service.create_new_vector_store(request, background_tasks)
+        vector_store = await indexing_service.create_new_vector_store(
+            request, background_tasks
+        )
         return vector_store
     except Exception as exc:
         traceback.print_exc()
