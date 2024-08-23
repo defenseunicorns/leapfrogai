@@ -17,6 +17,8 @@ on:
       - "!.github/**"
       - ".github/workflows/e2e-playwright.yaml"
       - ".github/actions/uds-cluster/action.yaml"
+      - ".github/actions/scripts/createUser.sh"
+      - ".github/actions/config/uds-config.yaml"
 
       # Ignore docs and website things
       - "!**.md"
@@ -64,19 +66,26 @@ jobs:
           with:
             node-version-file: 'src/leapfrogai_ui/package.json'
 
-        - name: Install UI/Playwright Dependencies
-          run: |
-            npm --prefix src/leapfrogai_ui ci
-            npx --prefix src/leapfrogai_ui playwright install
-
         - name: Setup Python
           uses: ./.github/actions/python
+
+        - name: Generate Fake Playwright User Password
+          id: generate-password
+          run: |
+            PASSWORD=$(cat <(openssl rand -base64 32 | tr -dc 'a-zA-Z0-9!@#$%^&*()_+-=[]{}|;:,.<>?' | head -c 20 | sed 's/\(.\{5\}\)/\1!@/g' | head -c 22))
+            echo "::add-mask::$PASSWORD"
+            echo "FAKE_E2E_USER_PASSWORD=$PASSWORD" >> $GITHUB_ENV
 
         - name: Setup UDS Cluster
           uses: ./.github/actions/uds-cluster
           with:
             registry1Username: ${{ secrets.IRON_BANK_ROBOT_USERNAME }}
             registry1Password: ${{ secrets.IRON_BANK_ROBOT_PASSWORD }}
+
+        - name: Create Test User
+          run: |
+            chmod +x ./.github/scripts/createUser.sh
+            ./.github/scripts/createUser.sh
 
         - name: Setup LFAI-API and Supabase
           uses: ./.github/actions/lfai-core
@@ -89,14 +98,20 @@ jobs:
           run: |
             python -m pytest ./tests/e2e/test_api.py -v
 
+
         ##########
         # UI
         ##########
+        - name: Install UI/Playwright Dependencies
+          run: |
+            npm --prefix src/leapfrogai_ui ci
+            npx --prefix src/leapfrogai_ui playwright install
+
         - name: Deploy LFAI-UI
           run: |
             make build-ui LOCAL_VERSION=e2e-test
             docker image prune -af
-            uds zarf package deploy packages/ui/zarf-package-leapfrogai-ui-amd64-e2e-test.tar.zst --confirm
+            uds zarf package deploy packages/ui/zarf-package-leapfrogai-ui-amd64-e2e-test.tar.zst --set DISABLE_KEYCLOAK=false --confirm
             rm packages/ui/zarf-package-leapfrogai-ui-amd64-e2e-test.tar.zst
 
         # Run the playwright UI tests using the deployed Supabase endpoint and upload report as an artifact
@@ -105,7 +120,7 @@ jobs:
             cp src/leapfrogai_ui/.env.example src/leapfrogai_ui/.env
             mkdir -p playwright/auth
             touch playwright/auth.user.json
-            SERVICE_ROLE_KEY=$(uds zarf tools kubectl get secret -n leapfrogai supabase-bootstrap-jwt -o jsonpath={.data.service-key} | base64 -d) TEST_ENV=CI PUBLIC_DISABLE_KEYCLOAK=true PUBLIC_SUPABASE_ANON_KEY=$ANON_KEY npm --prefix src/leapfrogai_ui run test:integration:ci
+            SERVICE_ROLE_KEY=$(uds zarf tools kubectl get secret -n leapfrogai supabase-bootstrap-jwt -o jsonpath={.data.service-key} | base64 -d) TEST_ENV=CI USERNAME=doug PASSWORD=$FAKE_E2E_USER_PASSWORD PUBLIC_SUPABASE_ANON_KEY=$ANON_KEY npm --prefix src/leapfrogai_ui run test:integration:ci
 
         # Upload the Playwright report as an artifact
         - name: Archive Playwright Report
