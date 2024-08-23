@@ -6,11 +6,9 @@
   export let name: string;
   export let type: string;
   export let loading: boolean;
-
-  const width = 72;
 </script>
 
-<Card horizontal padding="xs" class={`w-${width}`}>
+<Card id="card" horizontal padding="xs" class="w-72 bg-gray-800">
   <div class="flex gap-2">
     <div class="flex items-center rounded-lg bg-gray-700 px-2">
       {#if loading}
@@ -21,7 +19,7 @@
     </div>
     <h5 class="flex flex-col">
       <div
-        class={`overflow-hidden text-ellipsis whitespace-nowrap text-sm font-bold text-gray-900 dark:text-white max-w-${width - 16}`}
+        class={`max-w-56 overflow-hidden text-ellipsis whitespace-nowrap text-sm font-bold text-gray-900 dark:text-white `}
       >
         {name}
       </div>

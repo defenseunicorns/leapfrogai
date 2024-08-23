@@ -35,7 +35,7 @@
     {...$$restProps}
     class="sr-only"
   />
-  <Button
+  <button
     {outline}
     {size}
     {disabled}
@@ -45,5 +45,5 @@
     <div class="flex w-full justify-between">
       <slot />
     </div>
-  </Button>
+  </button>
 </div>

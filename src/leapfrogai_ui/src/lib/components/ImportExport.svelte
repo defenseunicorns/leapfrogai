@@ -78,8 +78,8 @@
 
 <div class="flex flex-col gap-2">
   {#if importing}
-    <Button outline disabled size="sm">
-      <Spinner class="me-3" size="4" color="white" />Importing...
+    <Button outline disabled size="sm" class="flex w-full justify-between">
+      Importing...<Spinner  size="4" color="white" />
     </Button>
   {:else}
     <LFFileUploadBtn
@@ -88,7 +88,11 @@
       size="sm"
       on:change={(e) => onUpload(e.detail)}
       accept={['application/json']}
-      disabled={importing}>Import chat history</LFFileUploadBtn
+      disabled={importing}
+    >
+      <Button outline size="sm" class="flex w-full justify-between"
+        >Import chat history <DownloadOutline /></Button
+      ></LFFileUploadBtn
     >
   {/if}
 
