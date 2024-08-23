@@ -2,7 +2,6 @@ import { expect, test as setup } from './fixtures';
 import * as OTPAuth from 'otpauth';
 import { delay } from 'msw';
 import type { Page } from '@playwright/test';
-import { cleanup } from './helpers/cleanup';
 
 const authFile = 'playwright/.auth/user.json';
 
@@ -86,6 +85,9 @@ const logout = async (page: Page) => {
   }
 };
 
+// NOTE - do not try to use openAIClient from the fixtures here. The user that it attempts to get a token for
+// exists in Keycloak because the workflow creates it, but the user has not yet logged in and does not exist in
+// Supabase, so the tests will fail.
 setup('authenticate', async ({ page }) => {
   page.on('pageerror', (err) => {
     console.log(err.message);
