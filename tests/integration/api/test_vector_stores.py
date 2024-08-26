@@ -11,8 +11,13 @@ from openai.types import FileDeleted
 from openai.types.beta import VectorStore, VectorStoreDeleted
 from openai.types.beta.vector_store import ExpiresAfter
 from langchain_core.embeddings.fake import FakeEmbeddings
-from leapfrogai_api.backend.types import (CreateVectorStoreRequest, ModifyVectorStoreRequest)
-from leapfrogai_api.routers.openai.requests.create_modify_assistant_request import CreateAssistantRequest
+from leapfrogai_api.backend.types import (
+    CreateVectorStoreRequest,
+    ModifyVectorStoreRequest,
+)
+from leapfrogai_api.routers.openai.requests.create_modify_assistant_request import (
+    CreateAssistantRequest,
+)
 from leapfrogai_api.routers.openai.threads import router as threads_router
 from leapfrogai_api.routers.openai.assistants import router as assistants_router
 import leapfrogai_api.backend.rag.index
@@ -358,10 +363,16 @@ def test_run_with_background_task(create_file):
 
     # Check that the assistant's response contains relevant information
     assert len(assistant_message) > 0, "Assistant's response is empty"
-    assert "vector store" in assistant_message.lower(), "Assistant's response doesn't mention the vector store"
+    assert (
+        "vector store" in assistant_message.lower()
+    ), "Assistant's response doesn't mention the vector store"
 
     # Clean up
-    delete_assistant_response = assistants_client.delete(f"/openai/v1/assistants/{assistant_id}")
+    delete_assistant_response = assistants_client.delete(
+        f"/openai/v1/assistants/{assistant_id}"
+    )
     assert delete_assistant_response.status_code == status.HTTP_200_OK
-    delete_vector_store_response = vector_store_client.delete(f"/openai/v1/vector_stores/{vector_store_id}")
+    delete_vector_store_response = vector_store_client.delete(
+        f"/openai/v1/vector_stores/{vector_store_id}"
+    )
     assert delete_vector_store_response.status_code == status.HTTP_200_OK
