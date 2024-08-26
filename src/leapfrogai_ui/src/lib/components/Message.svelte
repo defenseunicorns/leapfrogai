@@ -109,7 +109,9 @@
     }
   };
 
-  $: fileMetadata = message.metadata?.filesMetadata ? JSON.parse(message.metadata.filesMetadata) : null;
+  $: fileMetadata = message.metadata?.filesMetadata
+    ? JSON.parse(message.metadata.filesMetadata)
+    : null;
 </script>
 
 <div
@@ -121,8 +123,6 @@
   on:focus={() => (messageIsHovered = true)}
   tabindex="0"
 >
-
-
   <div class="flex flex-1 items-start">
     {#if message.role === 'user'}
       <div class="chat-icon">
@@ -168,9 +168,17 @@
               {message.role === 'user' ? 'You' : getAssistantName(message.assistant_id)}
             </div>
             {#if fileMetadata}
-              <div id="uploaded-files" class={'flex max-w-full  gap-2 overflow-x-scroll bg-gray-900'}>
+              <div
+                id="uploaded-files"
+                class={'flex max-w-full  gap-2 overflow-x-scroll bg-gray-900'}
+              >
                 {#each fileMetadata as file}
-                  <UploadedFileCard name={file.name} type={file.type} status={file.status} disableDelete />
+                  <UploadedFileCard
+                    name={file.name}
+                    type={file.type}
+                    status={file.status}
+                    disableDelete
+                  />
                 {/each}
               </div>
             {/if}

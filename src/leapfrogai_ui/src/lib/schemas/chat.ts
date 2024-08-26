@@ -26,7 +26,7 @@ export const messageInputSchema: ObjectSchema<NewMessageInput> = object({
     'max fields',
     'metadata is limited to 16 fields',
     (value) => {
-      if(!value) return true;
+      if (!value) return true;
       return Object.keys(value).length <= 16;
     }
   )

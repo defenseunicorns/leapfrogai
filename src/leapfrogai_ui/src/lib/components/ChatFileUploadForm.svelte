@@ -15,24 +15,29 @@
   export let attachedFileMetadata;
   export let extractedFilesText;
 
+  const handleUploadError = (errorMsg) => {
+    uploadingFiles = false;
+    attachedFileMetadata = [];
+
+    toastStore.addToast({
+      ...ERROR_PROCESSING_FILE_MSG_TOAST({ subtitle: errorMsg })
+    });
+  };
+
   const { enhance, submit } = superForm(form, {
     validators: yup(filesSchema),
     invalidateAll: false,
     onResult({ result }) {
       uploadingFiles = false;
       attachedFileMetadata = attachedFileMetadata.map((file) => ({ ...file, status: 'complete' }));
-
       if (result.type === 'success') {
         extractedFilesText = [...extractedFilesText, ...result.data.extractedFilesText];
+      } else {
+        handleUploadError('Internal Error');
       }
     },
     onError(e) {
-      uploadingFiles = false;
-      attachedFileMetadata = [];
-
-      toastStore.addToast({
-        ...ERROR_PROCESSING_FILE_MSG_TOAST({ subtitle: e.result.error.message })
-      });
+      handleUploadError(e.result.error.message);
     }
   });
 </script>

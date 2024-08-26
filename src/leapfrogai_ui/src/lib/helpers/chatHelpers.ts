@@ -28,7 +28,7 @@ export const saveMessage = async (input: NewMessageInput) => {
   });
 
   if (res.ok) return res.json();
-  console.log(res)
+  console.log(res);
   return error(500, 'Error saving message');
 };
 
@@ -142,7 +142,7 @@ export const handleMessageEdit = async ({
   const cMessage: CreateMessage = {
     content: getMessageText(message),
     role: 'user',
-    createdAt: new Date(),
+    createdAt: new Date()
   };
 
   if (

@@ -13,7 +13,6 @@ Added resize prop to turn on/off text area resizing
   import { env } from '$env/dynamic/public';
   import { Helper } from 'flowbite-svelte';
   import type { Writable } from 'svelte/store';
-  import UploadedFileCard from '$components/UploadedFileCard.svelte';
 
   const background = getContext('background');
 

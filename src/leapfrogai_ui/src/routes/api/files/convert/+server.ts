@@ -24,10 +24,8 @@ export const POST: RequestHandler = async ({ request, locals: { session } }) => 
   }
 
   try {
-    let fileArrayBuffer: ArrayBuffer;
-    let filename: string;
-    filename = file.name;
-    fileArrayBuffer = await file.arrayBuffer();
+    const filename = file.name;
+    const fileArrayBuffer = await file.arrayBuffer();
     if (!fileArrayBuffer) error(404, 'File Not Found');
     return await convertFileToPdf(fileArrayBuffer, filename);
   } catch (e) {
