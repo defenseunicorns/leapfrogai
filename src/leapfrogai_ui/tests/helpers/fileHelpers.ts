@@ -8,6 +8,7 @@ import pptxgen from 'pptxgenjs';
 import { expect } from '../fixtures';
 import type { FileObject } from 'openai/resources/files';
 import { getTableRow } from './helpers';
+import { formatDate } from '../../src/lib/helpers/dates';
 
 export const uploadFileWithApi = async (
   filename = 'test.pdf',
@@ -239,6 +240,7 @@ export const testFileUpload = async (filename: string, page: Page, openAIClient:
   expect(rowCheckboxesBefore.length).toEqual(0);
   await expect(fileUploadedIcon).toBeVisible();
   await expect(uploadingFileIcon).not.toBeVisible();
+  await expect(row.getByText(formatDate(new Date()))).toBeVisible();
 
   // Checkbox should now be present
   const rowCheckboxesAfter = await row!.getByRole('checkbox').all();
