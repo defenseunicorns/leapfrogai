@@ -20,7 +20,7 @@
   $: outDivclass = twMerge(sizes[size], divClass, $$props.class);
 </script>
 
-<div role="status" class={outDivclass}>
+<div data-testid="loading-msg" role="status" class={outDivclass}>
   <div class={`h-2 ${lightColor} rounded-full dark:${darkColor} w- mb-2.5`}></div>
   <span class="sr-only">Loading...</span>
 </div>
