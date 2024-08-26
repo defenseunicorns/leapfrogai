@@ -11,15 +11,12 @@ from openai.types import FileDeleted
 from openai.types.beta import VectorStore, VectorStoreDeleted
 from openai.types.beta.vector_store import ExpiresAfter
 from langchain_core.embeddings.fake import FakeEmbeddings
+
+import leapfrogai_api.backend.rag.index
 from leapfrogai_api.backend.types import (
     CreateVectorStoreRequest,
     ModifyVectorStoreRequest,
 )
-from leapfrogai_api.routers.openai.threads import router as threads_router
-from leapfrogai_api.routers.openai.messages import router as messages_router
-from leapfrogai_api.routers.openai.assistants import router as assistants_router
-from leapfrogai_api.routers.openai.runs import router as runs_router
-import leapfrogai_api.backend.rag.index
 from leapfrogai_api.routers.openai.vector_stores import router as vector_store_router
 from leapfrogai_api.routers.openai.files import router as files_router
 
@@ -48,10 +45,6 @@ except KeyError as exc:
 
 vector_store_client = TestClient(vector_store_router, headers=headers)
 files_client = TestClient(files_router, headers=headers)
-assistants_client = TestClient(assistants_router, headers=headers)
-threads_client = TestClient(threads_router, headers=headers)
-messages_client = TestClient(messages_router, headers=headers)
-runs_client = TestClient(runs_router, headers=headers)
 
 
 # Read in file for use with vector store files
@@ -74,7 +67,7 @@ def create_file(read_testfile):  # pylint: disable=redefined-outer-name, unused-
 
     file_response = files_client.post(
         "/openai/v1/files",
-        files={"file": ("test.txt", read_testfile, "text/`pla`in")},
+        files={"file": ("test.txt", read_testfile, "text/plain")},
         data={"purpose": "assistants"},
     )
 
