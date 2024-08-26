@@ -55,7 +55,6 @@ async def test_config_singleton():
     config1 = await Config.create()
     config2 = await Config.create()
     assert config1 is config2
-    await Config.cleanup()
 
 
 @pytest.mark.anyio
@@ -159,14 +158,10 @@ async def test_watch_for_changes(config_factory, parent_dir):
     mock_initialize.assert_called_once()
     mock_handle_config_changes.assert_called_once_with(awatch_response)
 
-    # config.initialize.assert_called_once()
-    # config._handle_config_changes.assert_called_once_with([
-    #     (Change.added, "new_config.yaml")
-    # ])
-
 
 @pytest.mark.anyio
 async def test_handle_config_changes(config_factory):
+    """Test that we can detect and handle config changes"""
     config = await config_factory()
     mock_load_config = AsyncMock()
     changes = [
@@ -187,6 +182,7 @@ async def test_handle_config_changes(config_factory):
 
 @pytest.mark.anyio
 async def test_get_model_backend(config_factory):
+    """Test that we can access a model's backend"""
     config = await config_factory()
 
     config.models = {"test_model": Model(name="test_model", backend="test_backend")}
@@ -212,6 +208,7 @@ async def test_clear_all_models(config_factory, parent_dir):
 
 @pytest.mark.anyio
 async def test_to_dict(config_factory):
+    """Test the dict conversion is correct"""
     config = await config_factory()
     config.models = {
         "model1": Model(name="model1", backend="backend1"),
@@ -237,6 +234,7 @@ async def test_to_dict(config_factory):
 
 @pytest.mark.asyncio
 async def test_parse_models(config_files):
+    """Test that the models are parsed correctly"""
     config_path: Path = config_files.get(YAML_CONFIG_FILE, None)
     assert config_path is not None, f"Could not find config file: {YAML_CONFIG_FILE}"
     config = ConfigFile(
@@ -272,13 +270,10 @@ async def test_load_from_file_yaml(config_files):
     config_path: Path = config_files.get(YAML_CONFIG_FILE, None)
     assert config_path is not None, f"Could not find config file: {YAML_CONFIG_FILE}"
     config_path = await config_path.resolve()
-
     config = ConfigFile(path=config_path)
-    # result = await config._load_from_file
     result = await config._load_from_file(config_path)
 
-    print(f"Debug: result = {result}")
-
+    # See the above mentioned YAML_CONFIG_FILE for the expected data
     expected_data = {
         "models": [
             {
@@ -302,20 +297,12 @@ async def test_load_from_file_toml(config_files):
     assert config_path is not None, f"Could not find config file: {TOML_CONFIG_FILE}"
     config_path = await config_path.resolve()
 
-    print(f"Debug: config_path = {config_path}")
-    print(f"Debug: config_path.exists() = {await config_path.exists()}")
-    print(f"Debug: config_path.is_file() = {await config_path.is_file()}")
-
     config = ConfigFile(path=config_path)
     result = await config._load_from_file(config_path)
-
-    print(f"Debug: result = {result}")
 
     # Load the TOML file directly for comparison
     with open(config_path, "r") as f:
         expected_data = toml.load(f)
-
-    print(f"Debug: expected_data = {expected_data}")
 
     assert result == expected_data
 
@@ -335,48 +322,47 @@ async def test_load_from_file_unsupported():
 
 
 @pytest.mark.asyncio
-async def test_load_config_file():
-    config = ConfigFile(path=await Path(YAML_CONFIG_FILE).resolve())
-    test_data = {"models": [{"name": "test_model", "backend": "test_backend"}]}
+async def test_load_config_file(config_file):
+    test_data = dict(
+        models=[dict(name="test_model", backend="test_backend")],
+    )
 
     with (
-        patch.object(config, "_load_from_file") as mock_load,
-        patch.object(config, "parse_models") as mock_parse,
+        patch.object(config_file, "_load_from_file") as mock_load,
+        patch.object(config_file, "parse_models") as mock_parse,
     ):
         mock_load.return_value = test_data
 
-        await config.load_config_file()
+        await config_file.load_config_file()
 
-        mock_load.assert_called_once_with(path=config.path)
+        mock_load.assert_called_once_with(path=config_file.path)
         mock_parse.assert_called_once_with(test_data)
 
 
 @pytest.mark.asyncio
-async def test_aload():
-    config = ConfigFile(Path(YAML_CONFIG_FILE))
-
+async def test_aload(config_file):
     with (
         patch("pathlib.Path.exists") as mock_exists,
-        patch.object(config, "load_config_file") as mock_load,
+        patch.object(config_file, "load_config_file") as mock_load,
     ):
         mock_exists.return_value = True
 
-        await config.aload()
+        await config_file.aload()
 
         mock_exists.assert_called_once()
         mock_load.assert_called_once()
 
 
 @pytest.mark.asyncio
-async def test_aunload():
-    config = ConfigFile(Path(YAML_CONFIG_FILE))
-    config.models = {"model1": Model(name="model1", backend="backend1")}
-    config._loaded = True
+async def test_aunload(config_file):
+    # config = ConfigFile(Path(YAML_CONFIG_FILE))
+    config_file.models = {"model1": Model(name="model1", backend="backend1")}
+    config_file._loaded = True
 
-    await config.aunload()
+    await config_file.aunload()
 
-    assert len(config.models) == 0
-    assert config._loaded is False, f"config._loaded = {config._loaded}"
+    assert len(config_file.models) == 0
+    assert config_file._loaded is False, f"config._loaded = {config_file._loaded}"
 
 
 def test_str_representation(config_file):
