@@ -32,7 +32,7 @@ class NIAH_Runner:
 
     This runner assumes LeapfrogAI is already deployed
 
-    The evaluation takes the following steps
+    The evaluation takes the following steps (by default)
     - Creates a vector store
     - Uploads 10 noncontextual documents (around 4000 characters long) to the vector store as haystack padding
     - Takes a subset of context-containing documents (by default 5 texts of 4000 character length containing a secret code word)
@@ -42,6 +42,8 @@ class NIAH_Runner:
         - request the secret code via RAG retrieval
         - determine if the code was retrieved (score 1 else 0)
         - determine if the code was given in the final response (score 1 else 0)
+        - delete the document (from the vector store and outright)
+    - delete the vector store
     - Average all the retrieval scores
     - Average all the response scores
     """
@@ -53,6 +55,7 @@ class NIAH_Runner:
         dataset: str = "defenseunicorns/LFAI_RAG_niah_v1",
         model: str = "vllm",
         temperature: float = 0.1,
+        add_padding: bool = True,
     ):
         """Initialize the Assistant with an API key and the path to the text file"""
 
@@ -61,6 +64,7 @@ class NIAH_Runner:
         self.vector_store = None
         self.model = model
         self.temperature = temperature
+        self.add_padding = add_padding
         self.client = openai.OpenAI(
             base_url=os.getenv("LEAPFROGAI_API_URL"),
             api_key=os.getenv("LEAPFROGAI_API_KEY"),
@@ -296,7 +300,7 @@ class NIAH_Runner:
         self.client.beta.assistants.delete(assistant_id=assistant_id)
         pass
 
-    def _create_vector_store(self, add_padding: bool = True) -> VectorStore:
+    def _create_vector_store(self) -> VectorStore:
         logging.info("Creating vector store...")
         vector_store = self.client.beta.vector_stores.create(
             name="Haystack",
@@ -304,23 +308,31 @@ class NIAH_Runner:
             expires_after={"anchor": "last_active_at", "days": 1},
             metadata={"project": "Needle in a Haystack Evaluation", "version": "0.1"},
         )
-        if add_padding:  # add the extra documents as padding for the haystack
+        if self.add_padding:  # add the extra documents as padding for the haystack
             logging.info("Uploading haystack padding to the vector store...")
+            padding_ids = []
             for count, row in tqdm(enumerate(self.padding)):
                 with open(f"padding_{count}.txt", "wb") as context_file:
                     context_file.write(row["context"].encode("utf-8"))
                 with open(f"padding_{count}.txt", "rb") as context_file:
-                    self.client.beta.vector_stores.files.upload(
+                    padding_file = self.client.beta.vector_stores.files.upload(
                         vector_store_id=vector_store.id, file=context_file
                     )
+                padding_ids.append(padding_file.id)
                 os.remove(f"padding_{count}.txt")
             logging.debug(
                 f"Added {len(self.padding)} files as padding to the haystack vector store"
             )
         self.vector_store = vector_store
+        self.padding = self.padding.add_column(name="padding_id", column=padding_ids)
 
     def _delete_vector_store(self, vector_store_id: str) -> None:
         """Deletes the vector store used for all NIAH evaluations"""
+        if self.add_padding:
+            logging.info("Deleting haystack padding files...")
+            for row in self.padding:
+                _ = self.client.files.delete(file_id=row["padding_id"])
+
         logging.info("Deleting vector store...")
         _ = self.client.beta.vector_stores.delete(vector_store_id=vector_store_id)
         self.vector_store = None
