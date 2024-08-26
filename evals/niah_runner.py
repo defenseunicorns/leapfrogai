@@ -1,5 +1,6 @@
 import datetime
 import logging
+import numpy as np
 import os
 import openai
 import seaborn as sns
@@ -9,7 +10,6 @@ from dotenv import load_dotenv
 import matplotlib.pyplot as plt
 from tqdm import tqdm
 
-from datasets.arrow_dataset import Dataset
 from matplotlib.colors import LinearSegmentedColormap
 from openai.types.beta.assistant import Assistant
 from openai.types.beta.vector_store import VectorStore
@@ -31,26 +31,47 @@ class NIAH_Runner:
     A runner to handle executing Needle in a Haystack (NIAH) evals for LeapfrogAI
 
     This runner assumes LeapfrogAI is already deployed
+
+    The evaluation takes the following steps
+    - Creates a vector store
+    - Uploads 10 noncontextual documents (around 4000 characters long) to the vector store as haystack padding
+    - Takes a subset of context-containing documents (by default 5 texts of 4000 character length containing a secret code word)
+    - For each contextual document:
+        - create an assistant
+        - upload doc to the vector store
+        - request the secret code via RAG retrieval
+        - determine if the code was retrieved (score 1 else 0)
+        - determine if the code was given in the final response (score 1 else 0)
+    - Average all the retrieval scores
+    - Average all the response scores
     """
 
     def __init__(
         self,
-        min_context: int = 0,
-        max_context: int = 32768,
+        min_doc_length: int = 4096,
+        max_doc_length: int = 4096,
         dataset: str = "defenseunicorns/LFAI_RAG_niah_v1",
         model: str = "vllm",
+        temperature: float = 0.1,
     ):
         """Initialize the Assistant with an API key and the path to the text file"""
 
         self.padding = None
+        self.niah_data = None
+        self.vector_store = None
         self.model = model
+        self.temperature = temperature
         self.client = openai.OpenAI(
             base_url=os.getenv("LEAPFROGAI_API_URL"),
             api_key=os.getenv("LEAPFROGAI_API_KEY"),
         )
         logging.info(f"client url: {self.client.base_url}")
-        self.niah_data = self._load_niah_dataset(dataset, min_context, max_context)
-        self.vector_store = self._create_vector_store()
+        self._load_niah_dataset(
+            dataset, min_doc_length=min_doc_length, max_doc_length=max_doc_length
+        )
+        self._create_vector_store()
+        self.retrieval_score = None
+        self.response_score = None
 
     def evaluate(self) -> None:
         """Runs the Needle in a Haystack evaluation"""
@@ -59,7 +80,7 @@ class NIAH_Runner:
         response_scores = []
 
         for row in tqdm(self.niah_data, desc="Evaluating data rows"):
-            logging.info(
+            logging.debug(
                 f"length: {row['context_length']}\n depth: {row['context_depth']}\n secret_code: {row['secret_code']}"
             )
             # add file to vector_store
@@ -73,10 +94,10 @@ class NIAH_Runner:
             os.remove("context.txt")
             file_id = vector_store_file.id
 
-            logging.info(
+            logging.debug(
                 f"data in vector store: {self.client.beta.vector_stores.files.list(vector_store_id=self.vector_store.id).data}"
             )
-            logging.info(
+            logging.debug(
                 f"There are now {len(self.client.beta.vector_stores.files.list(vector_store_id=self.vector_store.id).data)} files in the vector store"
             )
 
@@ -112,21 +133,21 @@ class NIAH_Runner:
             for response in response_messages:
                 # retrieval_score
                 # 1 if needle text was returned by the retrieval step of RAG else 0
-                logging.info(
+                logging.debug(
                     f"number of annotations in response: {len(response.content[0].text.annotations)}"
                 )
                 for annotation in response.content[0].text.annotations:
                     annotation_id = annotation.file_citation.file_id
                     if annotation_id == file_id:
-                        logging.info("Setting retrieval_score to 1.0")
+                        logging.debug("Setting retrieval_score to 1.0")
                         retrieval_score = 1.0
 
                 # # response_score
                 # # 1 if needle text was returned by the LLM's final response else 0
                 secret_code = row["secret_code"]
-                logging.info(f"Response message: {response.content[0].text.value}")
+                logging.debug(f"Response message: {response.content[0].text.value}")
                 if secret_code in response.content[0].text.value:
-                    logging.info("Setting response_score to 1.0")
+                    logging.debug("Setting response_score to 1.0")
                     response_score = 1.0
 
             retrieval_scores.append(retrieval_score)
@@ -138,7 +159,7 @@ class NIAH_Runner:
                 file_id=file_id, vector_store_id=self.vector_store.id
             )
             self.client.files.delete(file_id=file_id)
-            logging.info(
+            logging.debug(
                 f"There are now {len(self.client.beta.vector_stores.files.list(vector_store_id=self.vector_store.id).data)} files in the vector store"
             )
 
@@ -153,6 +174,12 @@ class NIAH_Runner:
         self.niah_data = self.niah_data.add_column(
             name="response_score", column=response_scores
         )
+
+        self.retrieval_score = np.mean(retrieval_scores)
+        self.response_score = np.mean(response_scores)
+
+        logging.info(f"Retrieval Score {self.retrieval_score}")
+        logging.info(f"Response Score {self.response_score}")
 
     def generate_report(self) -> None:
         """Creates two heatmaps for the retrieval and response scores respectively"""
@@ -207,9 +234,19 @@ class NIAH_Runner:
         logging.info("Evaluation heatmaps finished!")
 
     def _load_niah_dataset(
-        self, dataset_name: str, min_context: int, max_context: int
-    ) -> Dataset:
-        """Load the Defense Unicorns LFAI NIAH dataset with the requested context length constraints"""
+        self,
+        dataset_name: str,
+        min_doc_length: int,
+        max_doc_length: int,
+        min_depth: float = 0.0,
+        max_depth: float = 1.0,
+        num_copies: int = 2,
+    ):
+        """
+        Load the Defense Unicorns LFAI NIAH dataset with the requested constraints
+
+        By default, the dataset will contain 10 elements
+        """
         logging.info(f"Downloading dataset: {dataset_name} from HuggingFace")
         niah_dataset = load_dataset(dataset_name)
         self.padding = niah_dataset["padding"]
@@ -220,27 +257,32 @@ class NIAH_Runner:
                 niah_dataset["128k_eval"],
             ]
         )
+        _copies = [i for i in range(num_copies)]
         niah_dataset = niah_dataset.select(
             (
                 i
                 for i in range(len(niah_dataset))
                 if (
-                    niah_dataset[i]["context_length"] >= min_context
-                    and niah_dataset[i]["context_length"] <= max_context
+                    niah_dataset[i]["context_length"] >= min_doc_length
+                    and niah_dataset[i]["context_length"] <= max_doc_length
+                    and niah_dataset[i]["context_depth"] >= min_depth
+                    and niah_dataset[i]["context_depth"] <= max_depth
+                    and niah_dataset[i]["copy"] in _copies
                 )
             )
         )
 
-        return niah_dataset
+        logging.info(f"Dataset downloaded: \n{niah_dataset}")
+        self.niah_data = niah_dataset
 
-    def _create_assistant(self, temperature: float = 0.1) -> Assistant:
+    def _create_assistant(self) -> Assistant:
         """Create an assistant for a given round of the NIAH test"""
         logging.info("Creating new assistant...")
         assistant = self.client.beta.assistants.create(
             name="LFAI NIAH Assistant",
             instructions=INSTRUCTION_TEMPLATE,
             model=self.model,
-            temperature=temperature,
+            temperature=self.temperature,
             tools=[{"type": "file_search"}],
             tool_resources={
                 "file_search": {"vector_store_ids": [self.vector_store.id]}
@@ -272,10 +314,10 @@ class NIAH_Runner:
                         vector_store_id=vector_store.id, file=context_file
                     )
                 os.remove(f"padding_{count}.txt")
-            logging.info(
+            logging.debug(
                 f"Added {len(self.padding)} files as padding to the haystack vector store"
             )
-        return vector_store
+        self.vector_store = vector_store
 
     def _delete_vector_store(self, vector_store_id: str) -> None:
         """Deletes the vector store used for all NIAH evaluations"""
