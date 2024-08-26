@@ -21,6 +21,7 @@ from leapfrogai_api.routers.openai.requests.create_modify_assistant_request impo
 from leapfrogai_api.routers.openai.threads import router as threads_router
 from leapfrogai_api.routers.openai.messages import router as messages_router
 from leapfrogai_api.routers.openai.assistants import router as assistants_router
+from leapfrogai_api.routers.openai.runs import router as runs_router
 import leapfrogai_api.backend.rag.index
 from leapfrogai_api.routers.openai.vector_stores import router as vector_store_router
 from leapfrogai_api.routers.openai.files import router as files_router
@@ -53,6 +54,7 @@ files_client = TestClient(files_router, headers=headers)
 assistants_client = TestClient(assistants_router, headers=headers)
 threads_client = TestClient(threads_router, headers=headers)
 messages_client = TestClient(messages_router, headers=headers)
+runs_client = TestClient(runs_router, headers=headers)
 
 # Read in file for use with vector store files
 @pytest.fixture(scope="session", autouse=True)
@@ -309,13 +311,13 @@ def test_run_with_background_task(create_file):
         "assistant_id": assistant_id,
         "instructions": "Please use the file_search tool to find relevant information.",
     }
-    run_response = threads_client.post(
+    run_response = runs_client.post(
         f"/openai/v1/threads/{thread_id}/runs", json=run_request
     )
     assert run_response.status_code == status.HTTP_200_OK
 
     # Retrieve the assistant's message
-    messages_response = threads_client.get(f"/openai/v1/threads/{thread_id}/messages")
+    messages_response = messages_client.get(f"/openai/v1/threads/{thread_id}/messages")
     assert messages_response.status_code == status.HTTP_200_OK
     messages = messages_response.json()["data"]
     assert len(messages) > 1, "No response message from the assistant"
