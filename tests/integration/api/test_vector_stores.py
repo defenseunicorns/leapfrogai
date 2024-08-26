@@ -287,8 +287,17 @@ def test_run_with_background_task(create_file):
     # Create a message in the thread
     message_request = {
         "role": "user",
-        "content": "What information can you provide about the content in the vector store?",
+        "content": [
+            {
+                "text": {
+                    "annotations": [],
+                    "value": "What information can you provide about the content in the vector store?",
+                },
+                "type": "text",
+            },
+        ],
     }
+
     message_response = threads_client.post(
         f"/openai/v1/threads/{thread_id}/messages", json=message_request
     )
