@@ -11,15 +11,11 @@ from openai.types import FileDeleted
 from openai.types.beta import VectorStore, VectorStoreDeleted
 from openai.types.beta.vector_store import ExpiresAfter
 from langchain_core.embeddings.fake import FakeEmbeddings
-from leapfrogai_api.backend.types import CreateVectorStoreRequest
+from leapfrogai_api.backend.types import (CreateVectorStoreRequest, ModifyVectorStoreRequest)
 from leapfrogai_api.routers.openai.requests.create_modify_assistant_request import CreateAssistantRequest
 from leapfrogai_api.routers.openai.threads import router as threads_router
 from leapfrogai_api.routers.openai.assistants import router as assistants_router
 import leapfrogai_api.backend.rag.index
-from leapfrogai_api.backend.types import (
-    CreateVectorStoreRequest,
-    ModifyVectorStoreRequest,
-)
 from leapfrogai_api.routers.openai.vector_stores import router as vector_store_router
 from leapfrogai_api.routers.openai.files import router as files_router
 
