@@ -269,7 +269,7 @@ def test_run_with_background_task(create_file):
 
     # Create an assistant with the vector store
     assistant_request = CreateAssistantRequest(
-        model="llama-cpp-python",
+        model="test-chat",
         name="Test Assistant",
         instructions="You are a helpful assistant with access to a knowledge base.",
         tools=[{"type": "file_search"}],
