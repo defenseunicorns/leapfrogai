@@ -33,8 +33,8 @@ test.afterAll(() => {
 test('can edit an assistant and attach files to it', async ({ page, openAIClient }) => {
   const filename1 = `${faker.word.noun()}-test.pdf`;
   const filename2 = `${faker.word.noun()}-test.pdf`;
-  await createPDF(filename1);
-  await createPDF(filename2);
+  await createPDF({ filename: filename1 });
+  await createPDF({ filename: filename2 });
 
   const uploadedFile1 = await uploadFileWithApi(filename1, 'application/pdf', openAIClient);
   const uploadedFile2 = await uploadFileWithApi(filename2, 'application/pdf', openAIClient);
@@ -61,8 +61,8 @@ test('can create a new assistant and attach files to it', async ({ page, openAIC
   const assistantInput = getFakeAssistantInput();
   const filename1 = `${faker.word.noun()}-test.pdf`;
   const filename2 = `${faker.word.noun()}-test.pdf`;
-  await createPDF(filename1);
-  await createPDF(filename2);
+  await createPDF({ filename: filename1 });
+  await createPDF({ filename: filename2 });
   const uploadedFile1 = await uploadFileWithApi(filename1, 'application/pdf', openAIClient);
   const uploadedFile2 = await uploadFileWithApi(filename2, 'application/pdf', openAIClient);
   await page.goto(`/chat/assistants-management/new`);
@@ -90,8 +90,8 @@ test('can create a new assistant and attach files to it', async ({ page, openAIC
 test('it can edit an assistant and remove a file', async ({ page, openAIClient }) => {
   const filename1 = `${faker.word.noun()}-test.pdf`;
   const filename2 = `${faker.word.noun()}-test.pdf`;
-  await createPDF(filename1);
-  await createPDF(filename2);
+  await createPDF({ filename: filename1 });
+  await createPDF({ filename: filename2 });
   const uploadedFile1 = await uploadFileWithApi(filename1, 'application/pdf', openAIClient);
   const uploadedFile2 = await uploadFileWithApi(filename2, 'application/pdf', openAIClient);
   const assistant = await createAssistantWithApi({ openAIClient });
@@ -129,7 +129,7 @@ test('while creating an assistant, it can upload new files and save the assistan
 }) => {
   const assistantInput = getFakeAssistantInput();
   const filename = `${faker.word.noun()}-test.pdf`;
-  await createPDF(filename);
+  await createPDF({ filename: filename });
 
   await page.goto('/chat/assistants-management/new');
 
@@ -138,7 +138,7 @@ test('while creating an assistant, it can upload new files and save the assistan
   await page.getByPlaceholder("You'll act as...").fill(assistantInput.instructions);
 
   await page.getByTestId('file-select-dropdown-btn').click();
-  await uploadFile(page, filename, 'Upload new data source');
+  await uploadFile(page, [filename], 'Upload new data source');
 
   const saveBtn = await page.getByRole('button', { name: 'Save' });
   expect(saveBtn).toBeDisabled();
@@ -161,13 +161,13 @@ test('while editing an assistant, it can upload new files and save the assistant
   openAIClient
 }) => {
   const filename = `${faker.word.noun()}-test.pdf`;
-  await createPDF(filename);
+  await createPDF({ filename: filename });
 
   const assistant = await createAssistantWithApi({ openAIClient });
   await page.goto(`/chat/assistants-management/edit/${assistant.id}`);
 
   await page.getByTestId('file-select-dropdown-btn').click();
-  await uploadFile(page, filename, 'Upload new data source');
+  await uploadFile(page, [filename], 'Upload new data source');
 
   const saveBtn = await page.getByRole('button', { name: 'Save' });
   expect(saveBtn).toBeDisabled();
@@ -194,12 +194,12 @@ test('it displays a failed toast and temporarily failed uploader item when a the
   });
 
   const filename = `${faker.word.noun()}-test.pdf`;
-  await createPDF(filename);
+  await createPDF({ filename: filename });
 
   await page.goto('/chat/assistants-management/new');
 
   await page.getByTestId('file-select-dropdown-btn').click();
-  await uploadFile(page, filename, 'Upload new data source');
+  await uploadFile(page, [filename], 'Upload new data source');
 
   await expect(page.getByText(`Upload Failed`)).toBeVisible();
   await expect(page.getByTestId(`${filename}-error-uploader-item`)).toBeVisible();
@@ -216,12 +216,12 @@ test('it displays an uploading indicator temporarily when uploading a file', asy
   openAIClient
 }) => {
   const filename = `${faker.word.noun()}-test.pdf`;
-  await createPDF(filename);
+  await createPDF({ filename: filename });
 
   await page.goto('/chat/assistants-management/new');
 
   await page.getByTestId('file-select-dropdown-btn').click();
-  await uploadFile(page, filename, 'Upload new data source');
+  await uploadFile(page, [filename], 'Upload new data source');
 
   await expect(page.getByTestId(`${filename}-uploading-uploader-item`)).toBeVisible();
   await expect(page.getByTestId(`${filename}-uploading-uploader-item`)).not.toBeVisible();

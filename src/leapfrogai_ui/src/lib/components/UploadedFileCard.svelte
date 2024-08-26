@@ -18,6 +18,7 @@
 <div in:fade={{ duration: 150 }} out:fade={{ duration: 150 }}>
   <Card
     id="card"
+    data-testid={`${name}-file-uploaded-card`}
     horizontal
     padding="xs"
     class="w-80 min-w-72 bg-gray-800"
@@ -28,9 +29,9 @@
       <div class="flex gap-2">
         <div class="flex items-center rounded-lg bg-gray-700 px-2">
           {#if status === 'uploading'}
-            <Spinner size={6} />
+            <Spinner data-testid={`${name}-uploading`} size={6} />
           {:else}
-            <FileOutline size="lg" color="white" />
+            <FileOutline data-testid={`${name}-uploaded`} size="lg" color="white" />
           {/if}
         </div>
         <h5 class="flex flex-col">

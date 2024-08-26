@@ -2,8 +2,6 @@
   import { beforeNavigate } from '$app/navigation';
   import { LFTextArea, PoweredByDU } from '$components';
   import { Hr, ToolbarButton } from 'flowbite-svelte';
-  import { yup } from 'sveltekit-superforms/adapters';
-  import { filesSchema } from '$schemas/files';
   import { onMount, tick } from 'svelte';
   import { threadsStore, toastStore } from '$stores';
   import { type Message as VercelAIMessage, useAssistant, useChat } from '@ai-sdk/svelte';
@@ -11,9 +9,8 @@
   import Message from '$components/Message.svelte';
   import { getMessageText } from '$helpers/threads';
   import { getUnixSeconds } from '$helpers/dates.js';
-  import { ACCEPTED_FILE_TYPES, NO_SELECTED_ASSISTANT_ID } from '$constants';
-  import { v4 as uuidv4 } from 'uuid';
-
+  import { NO_SELECTED_ASSISTANT_ID } from '$constants';
+  import { twMerge } from 'tailwind-merge';
   import {
     isRunAssistantMessage,
     resetMessages,
@@ -23,16 +20,13 @@
   import {
     ERROR_GETTING_AI_RESPONSE_TOAST,
     ERROR_GETTING_ASSISTANT_MSG_TOAST,
-    ERROR_PROCESSING_FILE_MSG_TOAST,
     ERROR_SAVING_MSG_TOAST
   } from '$constants/toastMessages';
   import SelectAssistantDropdown from '$components/SelectAssistantDropdown.svelte';
-  import { PaperClipOutline, PaperPlaneOutline, StopOutline } from 'flowbite-svelte-icons';
-  import { superForm } from 'sveltekit-superforms';
-  import LFFileUploadBtn from '$components/LFFileUploadBtn.svelte';
+  import { PaperPlaneOutline, StopOutline } from 'flowbite-svelte-icons';
   import type { ExtractedFilesText, FileMetadata } from '$lib/types/files';
-  import UploadedFileCard from '$components/UploadedFileCard.svelte';
-  import { twMerge } from 'tailwind-merge';
+  import UploadedFileCards from '$components/UploadedFileCards.svelte';
+  import ChatFileUploadForm from '$components/ChatFileUploadForm.svelte';
 
   export let data;
 
@@ -47,24 +41,11 @@
   let uploadingFiles = false;
   let attachedFileMetadata: FileMetadata[] = [];
 
-  const { enhance, submit } = superForm(data.form, {
-    validators: yup(filesSchema),
-    invalidateAll: false,
-    onResult({ result }) {
-      uploadingFiles = false;
-      attachedFileMetadata = attachedFileMetadata.map((file) => ({ ...file, status: 'complete' }));
-      if (result.type === 'success') {
-        extractedFilesText = [...extractedFilesText, ...result.data.extractedFilesText];
-      }
-    },
-    onError(e) {
-      uploadingFiles = false;
-      attachedFileMetadata = [];
-      toastStore.addToast({
-        ...ERROR_PROCESSING_FILE_MSG_TOAST({ subtitle: e.result.error.message })
-      });
-    }
-  });
+  const handleRemoveFile = (id: string, index: number) => {
+    extractedFilesText = extractedFilesText.toSpliced(index, 1);
+    attachedFileMetadata = attachedFileMetadata.filter((file) => file.id !== id);
+  };
+
   /** END LOCAL VARS **/
 
   /** REACTIVE STATE **/
@@ -291,11 +272,6 @@
     }
   };
 
-  const handleRemoveFile = (id: string, index: number) => {
-    extractedFilesText = extractedFilesText.toSpliced(index, 1);
-    attachedFileMetadata = attachedFileMetadata.filter((file) => file.id !== id);
-  };
-
   // OpenAI returns the creation timestamp in seconds instead of milliseconds.
   // If a response comes in quickly, we need to delay 1 second to ensure the timestamps of the user message
   // and AI response are not exactly the same. This is important for sorting messages when they are initially loaded
@@ -388,54 +364,16 @@
     <SelectAssistantDropdown assistants={data?.assistants || []} />
 
     <div class="flex flex-grow flex-col rounded-lg bg-gray-50 p-px dark:bg-gray-700">
-      <div
-        id="uploaded-files"
-        class={attachedFileMetadata.length > 0
-          ? 'ml-9 flex max-w-full  gap-2 overflow-x-scroll bg-gray-700 px-2.5'
-          : 'hidden'}
-      >
-        {#each attachedFileMetadata as file, index}
-          <UploadedFileCard
-            name={file.name}
-            type={file.type}
-            status={file.status}
-            on:delete={() => handleRemoveFile(file.id, index)}
-          />
-        {/each}
-      </div>
+      <UploadedFileCards bind:attachedFileMetadata {handleRemoveFile} />
+
       <div id="chat-row" class="flex w-full items-center">
         {#if !assistantMode}
-          <form method="POST" enctype="multipart/form-data" use:enhance>
-            <LFFileUploadBtn
-              data-testid="upload-file-btn"
-              name="files"
-              outline
-              multiple
-              size="sm"
-              on:change={(e) => {
-                uploadingFiles = true;
-                for (const file of e.detail) {
-                  attachedFileMetadata = [
-                    ...attachedFileMetadata,
-                    { id: uuidv4(), name: file.name, type: file.type, status: 'uploading' }
-                  ];
-                }
-                submit(e.detail);
-              }}
-              accept={ACCEPTED_FILE_TYPES}
-              class="remove-btn-style flex"
-            >
-              <ToolbarButton
-                color="dark"
-                class="rounded-full text-gray-500 dark:text-gray-400"
-                disabled={uploadingFiles}
-                on:click={(e) => e.preventDefault()}
-              >
-                <PaperClipOutline />
-                <span class="sr-only">Attach file</span>
-              </ToolbarButton>
-            </LFFileUploadBtn>
-          </form>
+          <ChatFileUploadForm
+            bind:form={data.form}
+            bind:uploadingFiles
+            bind:attachedFileMetadata
+            bind:extractedFilesText
+          />
         {/if}
 
         <LFTextArea
