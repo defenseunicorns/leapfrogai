@@ -1,13 +1,12 @@
 import asyncio
+from dataclasses import dataclass, field
 import json
 import logging
 
-
 import os
 import shutil
-import httpx
 
-from typing import Any, Callable, Optional, TYPE_CHECKING
+from typing import Any, TYPE_CHECKING
 
 from leapfrogai_api.utils.config import Config
 
@@ -40,7 +39,7 @@ LFAI_CONFIG_FILEPATH = os.path.join(LFAI_CONFIG_PATH, LFAI_CONFIG_FILENAME)
 NO_MODEL_METADATA: dict[str, Any] = dict(
     models=dict(
         repeater=dict(
-            backend="localhost:50051",
+            backend="0.0.0.0:50051",
             name="repeater",
             metadata=None,
         )
@@ -67,52 +66,25 @@ def anyio_backend():
 
 #########################
 #########################
-# @pytest_asyncio.fixture
-# async def app_with_lifespan():
-#     @asynccontextmanager
-#     async def lifespan(app):
-#         print("Starting up")
-#         yield
-#         print("Shutting down")
-
-#     async def home(request):
-#         return PlainTextResponse("Hello, world!")
-
-#     async with LifespanManager(app) as manager:
-#         logging.debug("Lifespan manager created and running")
-#         yield manager.app
 
 
-@pytest_asyncio.fixture
-async def test_client():
-    app = create_app(testing=True)
-    transport = httpx.ASGITransport(app=app)
-    async with httpx.AsyncClient(transport=transport, base_url="http://test") as client:
-        logging.debug("Test client created and running")
-        yield client
+async def mock_init_supabase_client():
+    """Returns a mocked supabase client"""
 
+    @dataclass
+    class AsyncClient:
+        """Supabase client class."""
 
-class AsyncClient:
-    """Supabase client class."""
+        supabase_url: str = ""
+        supabase_key: str = ""
+        access_token: str | None = None
+        options: ClientOptions = field(default_factory=ClientOptions)
 
-    def __init__(
-        self,
-        supabase_url: str,
-        supabase_key: str,
-        access_token: Optional[str] = None,
-        options: ClientOptions = ClientOptions(),
-    ):
-        self.supabase_url = supabase_url
-        self.supabase_key = supabase_key
-        self.access_token = access_token
-        self.options = options
-
-
-async def mock_init_supabase_client() -> AsyncClient:
-    return AsyncClient("", "", "", ClientOptions())
+    return AsyncClient()
 
 
 async def pack_dummy_bearer_token(request: _CachedRequest, call_next):
+    """Creates a callable that adds a dummy bearer token to the request header"""
     request.headers._list.append(
         (
             "authorization".encode(),
@@ -122,52 +94,20 @@ async def pack_dummy_bearer_token(request: _CachedRequest, call_next):
     return await call_next(request)
 
 
-async def wait_for_condition(
-    condition: Callable[[], bool], timeout: float = 5.0, interval: float = 0.1
-) -> bool:
-    start_time = asyncio.get_event_loop().time()
-    while asyncio.get_event_loop().time() - start_time < timeout:
-        if condition():
-            return True
-        await asyncio.sleep(interval)
-    return False
-
-
 @pytest.fixture
 def auth_client():
+    """Creates a client with dummy auth middleware configured"""
     app = create_app(testing=True)
-    """Fixture for creating a TestClient instance with dummy auth middleware."""
-    # Save the original state of the app
-    original_dependency_overrides = app.dependency_overrides.copy()
-    original_middleware = app.user_middleware.copy()
-    original_middleware_stack = app.middleware_stack
-
-    # Modify the app for the test
     app.dependency_overrides[init_supabase_client] = mock_init_supabase_client
     app.user_middleware.clear()
     app.middleware_stack = None
     app.add_middleware(BaseHTTPMiddleware, dispatch=pack_dummy_bearer_token)
     app.middleware_stack = app.build_middleware_stack()
-
-    try:
-        with TestClient(app) as client:
-            yield client
-    finally:
-        # Restore the original state of the app
-        app.dependency_overrides = original_dependency_overrides
-        app.user_middleware = original_middleware
-        app.middleware_stack = original_middleware_stack
-
-
-@pytest.fixture(scope="function")
-def client():
-    """Fixture for creating a TestClient instance without additional middleware."""
-    app = create_app(testing=True)
     with TestClient(app) as client:
         yield client
 
 
-@pytest_asyncio.fixture
+@pytest_asyncio.fixture(scope="function")
 async def test_app_factory(monkeypatch):
     """Factory fixture for creating an app and config."""
 
@@ -176,14 +116,16 @@ async def test_app_factory(monkeypatch):
         config_path: str | None = None,
         config_filename: str | None = None,
     ) -> tuple["FastAPI", "Config"]:
-        config_path = config_path or os.environ.get("LFAI_CONFIG_PATH")
-        config_filename = config_filename or os.environ.get("LFAI_CONFIG_FILENAME")
+        if config_path is None:
+            config_path = os.environ.get("LFAI_CONFIG_PATH", LFAI_CONFIG_PATH)
+        if config_filename is None:
+            config_filename = os.environ.get(
+                "LFAI_CONFIG_FILENAME", LFAI_CONFIG_FILENAME
+            )
         monkeypatch.setenv("LFAI_CONFIG_PATH", config_path)
         monkeypatch.setenv("LFAI_CONFIG_FILENAME", config_filename)
         config = await Config.create(testing=True)
-
-        lifespan_func = None
-        app = create_app(testing=True, lifespan=lifespan_func)
+        app = create_app(testing=True, lifespan=None)
         return app, config
 
     try:
@@ -193,103 +135,88 @@ async def test_app_factory(monkeypatch):
 
 
 @pytest.mark.anyio
-# @pytest.mark.timeout(5, method="thread")
 async def test_config_load(test_app_factory):
     """Test that the config is loaded correctly."""
-    config_filename = LFAI_CONFIG_FILENAME
     config_path = LFAI_CONFIG_PATH
     model_name = "repeater"
 
-    app, config = await test_app_factory(
+    app, _ = await test_app_factory(
         config_path=config_path,
-        config_filename=config_filename,
+        config_filename=LFAI_CONFIG_FILENAME,
     )
-    app.state.config = config
 
     with TestClient(app=app) as client:
-        logger.debug("Created AsyncClient")
-
         response = client.get(REQUEST_URI)
-        logger.debug(f"Received response: {response}")
 
         result = response.json()
-        assert response.status_code == 200
+        assert response.status_code == 200, response.json()
 
         expected_response: dict[str, dict[str, Any]] = dict(
-            config_sources={config_filename: [model_name]},
+            config_sources={LFAI_CONFIG_FILENAME: [model_name]},
             **NO_MODEL_METADATA,
         )
         assert (
             expected_response == result
         ), f"Assertions failed due to {expected_response} != {result}"
-        logger.debug("Assertions passed")
-
-    logger.debug("AsyncClient context exited")
 
 
 @pytest.mark.anyio
-@pytest.mark.timeout(5, method="thread")
 async def test_config_delete(test_app_factory, tmp_path):
     """Test that the config is deleted correctly."""
-    config_filename = LFAI_CONFIG_FILENAME
-    config_path = tmp_path
-    model_name = "repeater"
 
     # Step 1: Copy the config file to the temporary directory
     tmp_config_filepath = shutil.copyfile(
-        LFAI_CONFIG_FILEPATH, tmp_path / config_filename
+        LFAI_CONFIG_FILEPATH,
+        tmp_path / LFAI_CONFIG_FILENAME,
     )
-
-    app, config = await test_app_factory(str(config_path), config_filename)
-    app.state.config = config
+    app, _ = await test_app_factory(
+        config_path=str(tmp_path),
+        config_filename=LFAI_CONFIG_FILENAME,
+    )
+    model_name = "repeater"
+    expected_response = {
+        "config_sources": {LFAI_CONFIG_FILENAME: [model_name]},
+        "models": {
+            model_name: {
+                "backend": "0.0.0.0:50051",
+                "name": model_name,
+                "metadata": None,
+            }
+        },
+    }
 
     with TestClient(app=app) as client:
-        logger.debug("Created AsyncClient")
-
         # Step 2: Ensure the API loads the temp config
         response = client.get(REQUEST_URI)
-        logger.debug(f"Received response: {response}")
-
-        expected_response = {
-            "config_sources": {config_filename: [model_name]},
-            "models": {
-                model_name: {
-                    "backend": "localhost:50051",
-                    "name": model_name,
-                    "metadata": None,
-                }
-            },
-        }
         result = response.json()
-        assert response.status_code == 200
+        assert response.status_code == 200, response.json()
         assert (
             expected_response == result
         ), f"Assertions failed due to {expected_response} != {result}"
-        logger.debug("Config loaded and assertions passed")
 
         # Step 3: Delete the source config file from temp dir
         os.remove(tmp_config_filepath)
         logger.debug(f"Deleted config file: {tmp_config_filepath}")
 
-        # Step 4: Wait for the API to detect the change
-        await asyncio.sleep(1.0)  # Adjust the sleep time as necessary
+        # Step 4: Await a context switch to allow the API to detect the change.
+        await asyncio.sleep(0.1)
 
-        # Step 5: Assert response is now empty
+        # Step 5: Make another request that should have no models loaded
         response = client.get(REQUEST_URI)
         logger.debug(f"Received response after deletion: {response}")
-        assert response.status_code == 200
-        assert response.json() == {"config_sources": {}, "models": {}}
-        logger.debug("Config deletion detected and assertions passed")
+        assert response.status_code == 200, response.json()
 
-    logger.debug("AsyncClient context exited")
+        assert response.json() == dict(
+            config_sources={},
+            models={},
+        )
 
 
 @pytest.mark.anyio
 async def test_routes(test_app_factory):
     """Test that the expected routes are present."""
-    app, config = await test_app_factory()
-    app.state.config = config
-    app = create_app()
+    app, _ = await test_app_factory()
+
     expected_routes = {
         "/docs": ["GET", "HEAD"],
         "/healthz": ["GET"],
@@ -356,13 +283,6 @@ async def test_routes(test_app_factory):
         assert route is not None, f"Route {path} not found."
         assert route.methods == set(methods), f"Methods for {path} do not match."
 
-        # if path_name is not None and path_name in expected_routes:
-        #     assert route.methods == set(expected_routes[path_name])
-        #     del expected_routes[path_name]
-        # # if hasattr(route, "path") and route.path in expected_routes:
-        # #    assert route.methods == set(expected_routes[route.path])
-        # #    del expected_routes[route.path]
-
     for path, name, methods in openai_routes:
         route = next(
             (
@@ -378,19 +298,20 @@ async def test_routes(test_app_factory):
         ), f"Methods for {path} with name {name} do not match."
 
 
-@pytest.mark.anyio
-@pytest.mark.asyncio
-async def test_healthz(test_client):
+def test_healthz():
     """Test the healthz endpoint."""
-    response = await test_client.get("/healthz")
-    assert response.status_code == 200
+
+    app = create_app(testing=True)
+    with TestClient(app) as client:
+        response = client.get("/healthz")
+    assert response.status_code == 200, response.json()
+
     assert response.json() == {"status": "ok"}
 
 
 @SKIP_IF_NO_REPEATER_ENV_VAR
 def test_embedding(auth_client):
     """Test the embedding endpoint."""
-    expected_embedding = [0.0 for _ in range(10)]
 
     # Send request to client
     embedding_request = lfai_types.CreateEmbeddingRequest(
@@ -398,19 +319,20 @@ def test_embedding(auth_client):
         input="This is the embedding input text.",
     )
     response = auth_client.post(
-        "/openai/v1/embeddings", json=embedding_request.model_dump()
+        "/openai/v1/embeddings",
+        json=embedding_request.model_dump(),
     )
-    assert response.status_code == 200
+    response_obj = response.json()
+    assert response.status_code == 200, response_obj
 
     # parse through the response
-    response_obj = response.json()
-    assert "data" in response_obj
-    assert len(response_obj.get("data")) == 1
+    assert (data := response_obj.get("data")) is not None, response_obj
+    assert len(data) == 1
 
     # validate the expected response
-    data_obj = response_obj.get("data")[0]
+    data_obj = data[0]  # type: ignore
     assert "embedding" in data_obj
-    assert data_obj.get("embedding") == expected_embedding
+    assert data_obj.get("embedding") == ([0.0] * 10)  # list of 10 floats
 
 
 @SKIP_IF_NO_REPEATER_ENV_VAR
@@ -422,25 +344,21 @@ def test_chat_completion(auth_client):
         messages=[lfai_types.ChatMessage(role="user", content=input_content)],
     )
     response = auth_client.post(
-        "/openai/v1/chat/completions", json=chat_completion_request.model_dump()
+        "/openai/v1/chat/completions",
+        json=chat_completion_request.model_dump(),
     )
-    assert response.status_code == 200
-
-    assert response
+    response_obj = response.json()
+    assert response.status_code == 200, response_obj
 
     # parse through the chat completion response
-    response_obj = response.json()
-    assert "choices" in response_obj
-
-    # parse the choices from the response
-    response_choices = response_obj.get("choices")
+    response_choices: list[dict[str, Any]] = response_obj.get("choices")
+    assert response_choices is not None, response_obj
     assert len(response_choices) == 1
-    assert "message" in response_choices[0]
-    assert "content" in response_choices[0].get("message")
+    first_choice = response_choices[0]
 
-    # parse finish reason
-    assert "finish_reason" in response_choices[0]
-    assert "stop" == response_choices[0].get("finish_reason")
+    assert (response_message := first_choice.get("message")) is not None
+    assert (response_content := response_message.get("content")) is not None
+    assert first_choice.get("finish_reason") == "stop", first_choice
 
     # parse usage data
     response_usage = response_obj.get("usage")
@@ -452,13 +370,12 @@ def test_chat_completion(auth_client):
     assert total_tokens == len(input_content) * 2
 
     # validate that the repeater repeated
-    assert response_choices[0].get("message").get("content") == input_content
+    assert response_content == input_content
 
 
 @SKIP_IF_NO_REPEATER_ENV_VAR
 def test_stream_chat_completion(auth_client):
     """Test the stream chat completion endpoint."""
-
     input_content = "this is the stream chat completion input."
 
     chat_completion_request = lfai_types.ChatCompletionRequest(
@@ -468,9 +385,11 @@ def test_stream_chat_completion(auth_client):
     )
 
     response = auth_client.post(
-        "/openai/v1/chat/completions", json=chat_completion_request.model_dump()
+        "/openai/v1/chat/completions",
+        json=chat_completion_request.model_dump(),
     )
-    assert response.status_code == 200
+    assert response.status_code == 200, response.json()
+
     assert response.headers.get("content-type") == "text/event-stream; charset=utf-8"
 
     # parse through the streamed response
@@ -479,29 +398,26 @@ def test_stream_chat_completion(auth_client):
     for line in iter_lines:
         # skip the empty, and non-data lines
         if ": " in line:
-            strings = line.split(": ", 1)
-
+            # parse through the streamed response
+            key, content = line.split(": ", 1)
             # Process all the data responses that is not the sig_stop signal
-            if strings[0] == "data" and strings[1] != "[DONE]":
-                stream_response = json.loads(strings[1])
-                assert "choices" in stream_response
-                choices = stream_response.get("choices")
+            if key == "data" and content != "[DONE]":
+                # Check the content of the response
+                stream_response = json.loads(content)
+                assert (choices := stream_response.get("choices")) is not None
                 assert len(choices) == 1
-                assert "delta" in choices[0]
-                assert "content" in choices[0].get("delta")
-                assert choices[0].get("delta").get("content") == input_content
-                iter_length += 1
-                # parse finish reason
-                assert "finish_reason" in choices[0]
-                assert "stop" == choices[0].get("finish_reason")
-                # parse usage data
+                first_choice = choices[0]
                 response_usage = stream_response.get("usage")
-                prompt_tokens = response_usage.get("prompt_tokens")
-                completion_tokens = response_usage.get("completion_tokens")
-                total_tokens = response_usage.get("total_tokens")
-                assert prompt_tokens == len(input_content)
-                assert completion_tokens == len(input_content)
-                assert total_tokens == len(input_content) * 2
+
+                # Check the content of the "first choice"
+                assert first_choice.get("delta", {}).get("content") == input_content
+                iter_length += 1
+
+                # parse finish reason
+                assert "stop" == first_choice.get("finish_reason", None), first_choice
+                assert response_usage.get("prompt_tokens", 0) == len(input_content)
+                assert response_usage.get("completion_tokens", 0) == len(input_content)
+                assert response_usage.get("total_tokens", 0) == (len(input_content) * 2)
 
     # The repeater only response with 5 messages
     assert iter_length == 5
