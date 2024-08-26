@@ -248,56 +248,6 @@ def test_get_modified_expired():
     assert get_modified_response.json() is None
 
 
-def test_delete():
-    """Test deleting a vector store. Requires a running Supabase instance."""
-    vector_store_id = vector_store_response.json()["id"]
-    delete_response = vector_store_client.delete(
-        f"/openai/v1/vector_stores/{vector_store_id}"
-    )
-    assert delete_response.status_code == status.HTTP_200_OK
-    assert VectorStoreDeleted.model_validate(
-        delete_response.json()
-    ), "Should return a VectorStoreDeleted object."
-    assert delete_response.json()["deleted"] is True, "Should be able to delete."
-
-
-def test_delete_twice():
-    """Test deleting a vector store twice. Requires a running Supabase instance."""
-    vector_store_id = vector_store_response.json()["id"]
-    delete_response = vector_store_client.delete(
-        f"/openai/v1/vector_stores/{vector_store_id}"
-    )
-    assert delete_response.status_code == status.HTTP_200_OK
-    assert VectorStoreDeleted.model_validate(
-        delete_response.json()
-    ), "Should return a VectorStoreDeleted object."
-    assert (
-        delete_response.json()["deleted"] is False
-    ), "Should not be able to delete twice."
-
-
-def test_get_nonexistent():
-    """Test getting a nonexistent vector store. Requires a running Supabase instance."""
-    vector_store_id = vector_store_response.json()["id"]
-    get_response = vector_store_client.get(
-        f"/openai/v1/vector_stores/{vector_store_id}"
-    )
-    assert get_response.status_code == status.HTTP_200_OK
-    assert (
-        get_response.json() is None
-    ), f"Get should not return deleted VectorStore {vector_store_id}."
-
-
-def test_cleanup_file(create_file):
-    """Test cleaning up the file created for the vector store. Requires a running Supabase instance."""
-    file_id = create_file["id"]
-    cleanup_response = files_client.delete(f"/openai/v1/files/{file_id}")
-    assert cleanup_response.status_code == status.HTTP_200_OK
-    assert FileDeleted.model_validate(
-        cleanup_response.json()
-    ), "Should return a FileDeleted object."
-
-
 def test_run_with_background_task(create_file):
     """Test creating a run while the vector store is still being processed in the background."""
     # Create a vector store with files
@@ -376,3 +326,52 @@ def test_run_with_background_task(create_file):
         f"/openai/v1/vector_stores/{vector_store_id}"
     )
     assert delete_vector_store_response.status_code == status.HTTP_200_OK
+
+def test_delete():
+    """Test deleting a vector store. Requires a running Supabase instance."""
+    vector_store_id = vector_store_response.json()["id"]
+    delete_response = vector_store_client.delete(
+        f"/openai/v1/vector_stores/{vector_store_id}"
+    )
+    assert delete_response.status_code == status.HTTP_200_OK
+    assert VectorStoreDeleted.model_validate(
+        delete_response.json()
+    ), "Should return a VectorStoreDeleted object."
+    assert delete_response.json()["deleted"] is True, "Should be able to delete."
+
+
+def test_delete_twice():
+    """Test deleting a vector store twice. Requires a running Supabase instance."""
+    vector_store_id = vector_store_response.json()["id"]
+    delete_response = vector_store_client.delete(
+        f"/openai/v1/vector_stores/{vector_store_id}"
+    )
+    assert delete_response.status_code == status.HTTP_200_OK
+    assert VectorStoreDeleted.model_validate(
+        delete_response.json()
+    ), "Should return a VectorStoreDeleted object."
+    assert (
+        delete_response.json()["deleted"] is False
+    ), "Should not be able to delete twice."
+
+
+def test_get_nonexistent():
+    """Test getting a nonexistent vector store. Requires a running Supabase instance."""
+    vector_store_id = vector_store_response.json()["id"]
+    get_response = vector_store_client.get(
+        f"/openai/v1/vector_stores/{vector_store_id}"
+    )
+    assert get_response.status_code == status.HTTP_200_OK
+    assert (
+        get_response.json() is None
+    ), f"Get should not return deleted VectorStore {vector_store_id}."
+
+
+def test_cleanup_file(create_file):
+    """Test cleaning up the file created for the vector store. Requires a running Supabase instance."""
+    file_id = create_file["id"]
+    cleanup_response = files_client.delete(f"/openai/v1/files/{file_id}")
+    assert cleanup_response.status_code == status.HTTP_200_OK
+    assert FileDeleted.model_validate(
+        cleanup_response.json()
+    ), "Should return a FileDeleted object."
