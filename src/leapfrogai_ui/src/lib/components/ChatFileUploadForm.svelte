@@ -39,7 +39,7 @@
 
 <form method="POST" enctype="multipart/form-data" use:enhance>
   <LFFileUploadBtn
-    data-testid="upload-file-btn"
+    testId="upload-file-btn"
     name="files"
     outline
     multiple

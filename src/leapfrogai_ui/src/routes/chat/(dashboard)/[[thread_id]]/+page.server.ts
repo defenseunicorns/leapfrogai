@@ -57,6 +57,7 @@ export const actions: Actions = {
             while (i < document.countPages()) {
               const page = document.loadPage(i);
               const json = page.toStructuredText('preserve-whitespace').asJSON();
+              console.log("page json", json)
               for (const block of JSON.parse(json).blocks) {
                 for (const line of block.lines) {
                   text += line.text;

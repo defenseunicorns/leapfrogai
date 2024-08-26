@@ -14,7 +14,7 @@ import {
   initiateDeletion,
   loadFileManagementPage,
   testFileUpload,
-  uploadFile
+  uploadFiles
 } from './helpers/fileHelpers';
 import { getLastUrlParam, sendMessage } from './helpers/threadHelpers';
 
@@ -101,10 +101,10 @@ test('confirms any affected assistants then deletes multiple files', async ({
   const filename1 = await createPDF();
   const filename2 = await createPDF();
 
-  await uploadFile(page, [filename1]);
+  await uploadFiles({ page, filenames: [filename1] });
   await expect(page.getByText(`${filename1} imported successfully`)).toBeVisible();
   await expect(page.getByText(`${filename1} imported successfully`)).not.toBeVisible(); // wait for upload to finish
-  await uploadFile(page, [`${filename2}`]);
+  await uploadFiles({ page, filenames: [`${filename2}`] });
   await expect(page.getByText(`${filename2} imported successfully`)).toBeVisible();
   await expect(page.getByText(`${filename2} imported successfully`)).not.toBeVisible();
 
@@ -132,7 +132,7 @@ test('it cancels the delete confirmation modal', async ({ page, openAIClient }) 
 
   const filename = await createPDF();
 
-  await uploadFile(page, [filename]);
+  await uploadFiles({ page, filenames: [filename] });
   await expect(page.getByText(`${filename} imported successfully`)).toBeVisible();
   await expect(page.getByText(`${filename} imported successfully`)).not.toBeVisible(); // wait for upload to finish
 
@@ -169,7 +169,7 @@ test('shows an error toast when there is an error deleting a file', async ({
     }
   });
   await loadFileManagementPage(page);
-  await uploadFile(page, [filename]);
+  await uploadFiles({ page, filenames: [filename] });
 
   await expect(page.getByText(`${filename} imported successfully`)).toBeVisible();
   await expect(page.getByText(`${filename} imported successfully`)).not.toBeVisible(); // wait for upload to finish
@@ -206,7 +206,7 @@ test('it shows toast when there is an error submitting the form', async ({
 
   const filename = await createPDF();
 
-  await uploadFile(page, [filename]);
+  await uploadFiles({ page, filenames: [filename] });
 
   await expect(page.getByText('Import Failed')).toBeVisible();
 
@@ -220,7 +220,7 @@ test('it can download a file', async ({ page, openAIClient }) => {
 
   const filename = await createPDF();
 
-  await uploadFile(page, [filename]);
+  await uploadFiles({ page, filenames: [filename] });
   await expect(page.getByText(`${filename} imported successfully`)).toBeVisible();
   await expect(page.getByText(`${filename} imported successfully`)).not.toBeVisible(); // wait for upload to finish
 

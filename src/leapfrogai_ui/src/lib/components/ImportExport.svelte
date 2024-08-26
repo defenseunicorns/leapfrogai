@@ -1,6 +1,6 @@
 <script lang="ts">
   import { Button, Spinner } from 'flowbite-svelte';
-  import { DownloadOutline } from 'flowbite-svelte-icons';
+  import { DownloadOutline, UploadOutline } from 'flowbite-svelte-icons';
   import { threadsStore, toastStore } from '$stores';
   import { threadsSchema } from '$schemas/threadSchema';
   import type { LFThread } from '$lib/types/threads';
@@ -79,7 +79,7 @@
 <div class="flex flex-col gap-2">
   {#if importing}
     <Button outline disabled size="sm" class="flex w-full justify-between">
-      Importing...<Spinner  size="4" color="white" />
+      Importing...<Spinner size="4" color="white" />
     </Button>
   {:else}
     <LFFileUploadBtn
@@ -90,9 +90,7 @@
       accept={['application/json']}
       disabled={importing}
     >
-      <Button outline size="sm" class="flex w-full justify-between"
-        >Import chat history <DownloadOutline /></Button
-      ></LFFileUploadBtn
+      Import chat history <DownloadOutline /></LFFileUploadBtn
     >
   {/if}
 

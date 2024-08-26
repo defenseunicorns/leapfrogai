@@ -46,8 +46,8 @@
         </h5>
       </div>
       {#if hovered && !disableDelete}
-        <ToolbarButton on:click={() => dispatch('delete')}>
-          <CloseOutline />
+        <ToolbarButton  on:click={() => dispatch('delete')}>
+          <CloseOutline data-testid={`${name}-remove-btn`}/>
         </ToolbarButton>
       {/if}
     </div>

@@ -9,7 +9,7 @@ import {
   deleteFileWithApi,
   deleteFixtureFile,
   deleteTestFilesWithApi,
-  uploadFile,
+  uploadFiles,
   uploadFileWithApi
 } from './helpers/fileHelpers';
 import { faker } from '@faker-js/faker';
@@ -138,7 +138,7 @@ test('while creating an assistant, it can upload new files and save the assistan
   await page.getByPlaceholder("You'll act as...").fill(assistantInput.instructions);
 
   await page.getByTestId('file-select-dropdown-btn').click();
-  await uploadFile(page, [filename], 'Upload new data source');
+  await uploadFiles({ page, filenames: [filename], btnName: 'Upload new data source' });
 
   const saveBtn = await page.getByRole('button', { name: 'Save' });
   expect(saveBtn).toBeDisabled();
@@ -167,7 +167,7 @@ test('while editing an assistant, it can upload new files and save the assistant
   await page.goto(`/chat/assistants-management/edit/${assistant.id}`);
 
   await page.getByTestId('file-select-dropdown-btn').click();
-  await uploadFile(page, [filename], 'Upload new data source');
+  await uploadFiles({ page, filenames: [filename], btnName: 'Upload new data source' });
 
   const saveBtn = await page.getByRole('button', { name: 'Save' });
   expect(saveBtn).toBeDisabled();
@@ -199,7 +199,7 @@ test('it displays a failed toast and temporarily failed uploader item when a the
   await page.goto('/chat/assistants-management/new');
 
   await page.getByTestId('file-select-dropdown-btn').click();
-  await uploadFile(page, [filename], 'Upload new data source');
+  await uploadFiles({ page, filenames: [filename], btnName: 'Upload new data source' });
 
   await expect(page.getByText(`Upload Failed`)).toBeVisible();
   await expect(page.getByTestId(`${filename}-error-uploader-item`)).toBeVisible();
@@ -221,7 +221,7 @@ test('it displays an uploading indicator temporarily when uploading a file', asy
   await page.goto('/chat/assistants-management/new');
 
   await page.getByTestId('file-select-dropdown-btn').click();
-  await uploadFile(page, [filename], 'Upload new data source');
+  await uploadFiles({ page, filenames: [filename], btnName: 'Upload new data source' });
 
   await expect(page.getByTestId(`${filename}-uploading-uploader-item`)).toBeVisible();
   await expect(page.getByTestId(`${filename}-uploading-uploader-item`)).not.toBeVisible();

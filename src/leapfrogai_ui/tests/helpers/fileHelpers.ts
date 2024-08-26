@@ -149,22 +149,20 @@ export const deleteAllGeneratedFixtureFiles = () => {
   });
 };
 
-export const uploadFile = async (
-  page: Page,
-  filenames = ['test.pdf'],
-  btnName = 'upload',
-  multiple = false
-) => {
+type UploadFileArgs = {
+  page: Page;
+  filenames?: string[];
+  btnName?: string;
+  testId?: string;
+};
+export const uploadFiles = async (options: UploadFileArgs) => {
+  const { page, filenames = ['test.pdf'], btnName = 'upload', testId } = options;
   const fileChooserPromise = page.waitForEvent('filechooser');
-  await page.getByRole('button', { name: btnName }).click();
+  if (testId) {
+    await page.getByTestId(testId).click();
+  } else await page.getByRole('button', { name: btnName }).click();
   const fileChooser = await fileChooserPromise;
-  if (multiple) {
-    for (const filename of filenames) {
-      await fileChooser.setFiles(`./tests/fixtures/${filename}`);
-    }
-  } else {
-    await fileChooser.setFiles(`./tests/fixtures/${filenames}`);
-  }
+  await fileChooser.setFiles(filenames.map((name) => `./tests/fixtures/${name}`));
 };
 
 export const deleteTestFilesWithApi = async (openAIClient: OpenAI) => {
@@ -225,7 +223,7 @@ export const deleteAllTestFilesWithApi = async (openAIClient: OpenAI) => {
 
 export const testFileUpload = async (filename: string, page: Page, openAIClient: OpenAI) => {
   await loadFileManagementPage(page);
-  await uploadFile(page, [filename]);
+  await uploadFiles({ page, filenames: [filename] });
 
   const row = await getTableRow(page, filename, 'file-management-table');
   expect(row).not.toBeNull();
