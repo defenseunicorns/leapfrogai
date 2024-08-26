@@ -22,7 +22,7 @@ test('it can create and delete an API key', async ({ page }) => {
   await page.getByRole('button', { name: 'Close', exact: true }).click({ force: true });
   await expect(page.getByText('Save secret key')).not.toBeVisible();
 
-  const row = await getTableRow(page, keyName);
+  const row = await getTableRow(page, keyName, 'api-keys-table');
   await row.getByRole('checkbox').check();
   const deleteBtn = page.getByRole('button', { name: 'delete' });
   await deleteBtn.click();

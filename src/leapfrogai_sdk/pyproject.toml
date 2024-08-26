@@ -3,18 +3,18 @@ name = "leapfrogai-sdk"
 description = "A tool for building gRPC-based model backends for LeapfrogAI"
 
 # x-release-please-start-version
-version = "0.10.0"
+version = "0.11.0"
 # x-release-please-end
 
 dependencies = [
-    "grpcio >= 1.56.0",
-    "grpcio-tools >= 1.62.1",
-    "protobuf >= 4.23.3",
-    "grpcio-reflection >=1.58.0",
-    "grpcio-health-checking >=1.58.0",
-    "confz >= 2.0.1",
-    "pydantic >= 2.0",
-    "click >= 8.1.7",
+    "grpcio == 1.62.1.0",
+    "grpcio-tools == 1.62.1",
+    "protobuf == 4.23.3",
+    "grpcio-reflection == 1.62.1.0",
+    "grpcio-health-checking == 1.62.1",
+    "confz == 2.0.1",
+    "pydantic == 2.8.2",
+    "click == 8.1.7",
 ]
 requires-python = "~=3.11"
 
@@ -27,9 +27,7 @@ generate-hashes = true
 [tool.setuptools.packages.find]
 where = ["../"]
 include = ["leapfrogai_sdk*"]
-exclude = [
-    "leapfrogai_sdk/proto",
-]
+exclude = ["leapfrogai_sdk/proto"]
 namespaces = false
 
 [tool.pytest.ini_options]
@@ -38,13 +36,7 @@ addopts = ["--import-mode=importlib"]
 [tool.ruff]
 target-version = "py311"
 # exclude generated grpc code
-exclude = [
-    "audio",
-    "chat",
-    "completion",
-    "embeddings",
-    "name",
-]
+exclude = ["audio", "chat", "completion", "embeddings", "name"]
 
 [build-system]
 requires = ["setuptools"]

@@ -3,6 +3,7 @@ import { getFakeAssistantInput } from '../testUtils/fakeData';
 import { delay } from 'msw';
 import {
   createPDF,
+  createTextFile,
   deleteAllGeneratedFixtureFiles,
   deleteFileByName,
   deleteFileWithApi,
@@ -14,11 +15,16 @@ import {
 import { faker } from '@faker-js/faker';
 import {
   createAssistantWithApi,
-  deleteAssistant,
-  deleteAssistantWithApi
+  deleteAssistantCard,
+  deleteAssistantWithApi,
+  editAssistantCard
 } from './helpers/assistantHelpers';
 import { getSimpleMathQuestion, loadChatPage } from './helpers/helpers';
-import { sendMessage, waitForResponseToComplete } from './helpers/threadHelpers';
+import {
+  deleteActiveThread,
+  sendMessage,
+  waitForResponseToComplete
+} from './helpers/threadHelpers';
 
 test.afterAll(() => {
   deleteAllGeneratedFixtureFiles(); // cleanup any files that were not deleted during tests (e.g. due to test failure)
@@ -30,15 +36,16 @@ test('can edit an assistant and attach files to it', async ({ page, openAIClient
   await createPDF(filename1);
   await createPDF(filename2);
 
-  const uploadedFile1 = await uploadFileWithApi(filename1, openAIClient);
-  const uploadedFile2 = await uploadFileWithApi(filename2, openAIClient);
+  const uploadedFile1 = await uploadFileWithApi(filename1, 'application/pdf', openAIClient);
+  const uploadedFile2 = await uploadFileWithApi(filename2, 'application/pdf', openAIClient);
   const assistant = await createAssistantWithApi({ openAIClient });
 
   await page.goto(`/chat/assistants-management/edit/${assistant.id}`);
 
-  await page.getByRole('button', { name: 'Open menu' }).click();
-  await page.getByLabel('Choose an item').locator('label').nth(1).click();
-  await page.getByLabel('Choose an item').locator('label').nth(2).click();
+  await page.getByTestId('file-select-dropdown-btn').click();
+  const fileSelectContainer = page.getByTestId('file-select-container');
+  await fileSelectContainer.getByTestId(`${uploadedFile1.id}-checkbox`).check();
+  await fileSelectContainer.getByTestId(`${uploadedFile2.id}-checkbox`).check();
   await page.getByRole('button', { name: 'Save' }).click();
   await expect(page.getByText('Assistant Updated')).toBeVisible();
 
@@ -56,23 +63,24 @@ test('can create a new assistant and attach files to it', async ({ page, openAIC
   const filename2 = `${faker.word.noun()}-test.pdf`;
   await createPDF(filename1);
   await createPDF(filename2);
-  const uploadedFile1 = await uploadFileWithApi(filename1, openAIClient);
-  const uploadedFile2 = await uploadFileWithApi(filename2, openAIClient);
+  const uploadedFile1 = await uploadFileWithApi(filename1, 'application/pdf', openAIClient);
+  const uploadedFile2 = await uploadFileWithApi(filename2, 'application/pdf', openAIClient);
   await page.goto(`/chat/assistants-management/new`);
 
   await page.getByLabel('name').fill(assistantInput.name);
-  await page.getByLabel('description').fill(assistantInput.description);
+  await page.getByLabel('tagline').fill(assistantInput.description);
   await page.getByPlaceholder("You'll act as...").fill(assistantInput.instructions);
 
-  await page.getByRole('button', { name: 'Open menu' }).click();
-  await page.getByLabel('Choose an item').locator('label').nth(1).click();
-  await page.getByLabel('Choose an item').locator('label').nth(2).click();
+  await page.getByTestId('file-select-dropdown-btn').click();
+  const fileSelectContainer = page.getByTestId('file-select-container');
+  await fileSelectContainer.getByTestId(`${uploadedFile1.id}-checkbox`).check();
+  await fileSelectContainer.getByTestId(`${uploadedFile2.id}-checkbox`).check();
   await page.getByRole('button', { name: 'Save' }).click();
   await expect(page.getByText('Assistant Created')).toBeVisible();
 
   // Cleanup
   expect(page.waitForURL('/chat/assistants-management'));
-  await deleteAssistant(assistantInput.name, page);
+  await deleteAssistantCard(assistantInput.name, page);
   await deleteFileWithApi(uploadedFile1.id, openAIClient);
   await deleteFileWithApi(uploadedFile2.id, openAIClient);
   deleteFixtureFile(filename1);
@@ -84,27 +92,26 @@ test('it can edit an assistant and remove a file', async ({ page, openAIClient }
   const filename2 = `${faker.word.noun()}-test.pdf`;
   await createPDF(filename1);
   await createPDF(filename2);
-  const uploadedFile1 = await uploadFileWithApi(filename1, openAIClient);
-  const uploadedFile2 = await uploadFileWithApi(filename2, openAIClient);
+  const uploadedFile1 = await uploadFileWithApi(filename1, 'application/pdf', openAIClient);
+  const uploadedFile2 = await uploadFileWithApi(filename2, 'application/pdf', openAIClient);
   const assistant = await createAssistantWithApi({ openAIClient });
   await page.goto(`/chat/assistants-management/edit/${assistant.id}`);
 
   // Create assistant with files
-  await page.getByRole('button', { name: 'Open menu' }).click();
-  await page.getByLabel('Choose an item').locator('label').nth(1).click();
-  await page.getByLabel('Choose an item').locator('label').nth(2).click();
+  await page.getByTestId('file-select-dropdown-btn').click();
+  const fileSelectContainer = page.getByTestId('file-select-container');
+  await fileSelectContainer.getByTestId(`${uploadedFile1.id}-checkbox`).check();
+  await fileSelectContainer.getByTestId(`${uploadedFile2.id}-checkbox`).check();
   await page.getByRole('button', { name: 'Save' }).click();
   await expect(page.getByText('Assistant Updated')).toBeVisible();
 
-  await page
-    .getByTestId(`assistant-card-${assistant.name}`)
-    .getByTestId('assistant-card-dropdown')
-    .click();
-  await page.getByRole('menuitem', { name: 'Edit' }).click();
+  await editAssistantCard(assistant.name!, page);
+
   await page.waitForURL('/chat/assistants-management/edit/**/*');
 
   // Deselect
-  await page.locator('.bx--file-close').first().click();
+  await page.getByTestId('file-select-dropdown-btn').click();
+  await fileSelectContainer.getByTestId(`${uploadedFile1.id}-checkbox`).uncheck();
   await page.getByRole('button', { name: 'Save' }).click();
   await expect(page.getByText('Assistant Updated')).toBeVisible();
 
@@ -127,10 +134,10 @@ test('while creating an assistant, it can upload new files and save the assistan
   await page.goto('/chat/assistants-management/new');
 
   await page.getByLabel('name').fill(assistantInput.name);
-  await page.getByLabel('description').fill(assistantInput.description);
+  await page.getByLabel('tagline').fill(assistantInput.description);
   await page.getByPlaceholder("You'll act as...").fill(assistantInput.instructions);
 
-  await page.getByRole('button', { name: 'Open menu' }).click();
+  await page.getByTestId('file-select-dropdown-btn').click();
   await uploadFile(page, filename, 'Upload new data source');
 
   const saveBtn = await page.getByRole('button', { name: 'Save' });
@@ -143,7 +150,7 @@ test('while creating an assistant, it can upload new files and save the assistan
 
   // Cleanup
   expect(page.waitForURL('/chat/assistants-management'));
-  await deleteAssistant(assistantInput.name, page);
+  await deleteAssistantCard(assistantInput.name, page);
   await deleteTestFilesWithApi(openAIClient);
   deleteFixtureFile(filename);
   await deleteFileByName(filename, openAIClient);
@@ -159,7 +166,7 @@ test('while editing an assistant, it can upload new files and save the assistant
   const assistant = await createAssistantWithApi({ openAIClient });
   await page.goto(`/chat/assistants-management/edit/${assistant.id}`);
 
-  await page.getByRole('button', { name: 'Open menu' }).click();
+  await page.getByTestId('file-select-dropdown-btn').click();
   await uploadFile(page, filename, 'Upload new data source');
 
   const saveBtn = await page.getByRole('button', { name: 'Save' });
@@ -191,7 +198,7 @@ test('it displays a failed toast and temporarily failed uploader item when a the
 
   await page.goto('/chat/assistants-management/new');
 
-  await page.getByRole('button', { name: 'Open menu' }).click();
+  await page.getByTestId('file-select-dropdown-btn').click();
   await uploadFile(page, filename, 'Upload new data source');
 
   await expect(page.getByText(`Upload Failed`)).toBeVisible();
@@ -213,7 +220,7 @@ test('it displays an uploading indicator temporarily when uploading a file', asy
 
   await page.goto('/chat/assistants-management/new');
 
-  await page.getByRole('button', { name: 'Open menu' }).click();
+  await page.getByTestId('file-select-dropdown-btn').click();
   await uploadFile(page, filename, 'Upload new data source');
 
   await expect(page.getByTestId(`${filename}-uploading-uploader-item`)).toBeVisible();
@@ -224,9 +231,10 @@ test('it displays an uploading indicator temporarily when uploading a file', asy
   await deleteFileByName(filename, openAIClient);
 });
 
-test('can download a file with the citation', async ({ page, openAIClient }) => {
+// Note - have been unable to test open in new tab btn, only testing download button
+test('can download a file from the citation', async ({ page, openAIClient }) => {
   const filename = await createPDF();
-  const uploadedFile = await uploadFileWithApi(filename, openAIClient);
+  const uploadedFile = await uploadFileWithApi(filename, 'application/pdf', openAIClient);
   const fakeAssistantInput = getFakeAssistantInput([uploadedFile.id]);
   const assistant = await createAssistantWithApi({
     assistantInput: fakeAssistantInput,
@@ -242,9 +250,92 @@ test('can download a file with the citation', async ({ page, openAIClient }) => 
   await sendMessage(page, newMessage);
   await waitForResponseToComplete(page);
   await expect(messages).toHaveCount(2);
+
+  await page.getByTestId(`${uploadedFile.id}-citation-btn`).click();
+  await expect(page.getByTitle(`${uploadedFile.id}-iframe`)).toBeVisible();
+
   const downloadPromise = page.waitForEvent('download');
-  await page.getByText(filename).click();
+  await page.getByTestId('file-download-btn').click();
   const download = await downloadPromise;
-  // suggested name has underscores instead of colons
+
   expect(download.suggestedFilename()).toEqual(filename.replace(/:/g, '_'));
+
+  // cleanup
+  await deleteActiveThread(page, openAIClient);
+  await deleteFileWithApi(uploadedFile.id, openAIClient);
+  await deleteAssistantWithApi(assistant.id, openAIClient);
+});
+
+test('it shows a spinner then opens an iframe when a pdf citation is clicked on', async ({
+  page,
+  openAIClient
+}) => {
+  const filename = await createPDF();
+  const uploadedFile = await uploadFileWithApi(filename, 'application/pdf', openAIClient);
+  const fakeAssistantInput = getFakeAssistantInput([uploadedFile.id]);
+  const assistant = await createAssistantWithApi({
+    assistantInput: fakeAssistantInput,
+    openAIClient
+  });
+
+  await loadChatPage(page);
+
+  const newMessage = getSimpleMathQuestion();
+  await loadChatPage(page);
+  const messages = page.getByTestId('message');
+
+  const assistantDropdown = page.getByTestId('assistants-select-btn');
+  await assistantDropdown.click();
+  await page.getByText(assistant.name!).click();
+  await sendMessage(page, newMessage);
+  await waitForResponseToComplete(page);
+  await expect(messages).toHaveCount(2);
+
+  await page.getByTestId(`${uploadedFile.id}-citation-btn`).click();
+  await expect(page.getByTestId('file-processing-spinner')).toBeVisible();
+  await expect(page.getByTitle(`${uploadedFile.id}-iframe`)).toBeVisible();
+  await expect(page.getByTestId('file-processing-spinner')).not.toBeVisible();
+  // iFrame content is not showing in Playwright, so we are not testing that the pdf contents are displayed
+
+  // cleanup
+  await deleteActiveThread(page, openAIClient);
+  await deleteFileWithApi(uploadedFile.id, openAIClient);
+  await deleteAssistantWithApi(assistant.id, openAIClient);
+});
+
+test('it shows a spinner then opens an iframe when a non-pdf citation is clicked on', async ({
+  page,
+  openAIClient
+}) => {
+  const filename = createTextFile();
+  const uploadedFile = await uploadFileWithApi(filename, 'text/plain', openAIClient);
+  const fakeAssistantInput = getFakeAssistantInput([uploadedFile.id]);
+  const assistant = await createAssistantWithApi({
+    assistantInput: fakeAssistantInput,
+    openAIClient
+  });
+
+  await loadChatPage(page);
+
+  const newMessage = getSimpleMathQuestion();
+  await loadChatPage(page);
+  const messages = page.getByTestId('message');
+
+  const assistantDropdown = page.getByTestId('assistants-select-btn');
+  await assistantDropdown.click();
+  await page.getByText(assistant.name!).click();
+  await sendMessage(page, newMessage);
+  await waitForResponseToComplete(page);
+  await expect(messages).toHaveCount(2);
+
+  await page.getByTestId(`${uploadedFile.id}-citation-btn`).click();
+  await expect(page.getByTestId('file-processing-spinner')).toBeVisible();
+  await expect(page.getByTitle(`${uploadedFile.id}-iframe`)).toBeVisible();
+  await expect(page.getByTestId('file-processing-spinner')).not.toBeVisible();
+  // iframe content is not showing in Playwright, so we are not testing that the pdf contents are displayed
+
+  // cleanup
+  await deleteActiveThread(page, openAIClient);
+  await deleteFileWithApi(uploadedFile.id, openAIClient);
+  await deleteAssistantWithApi(assistant.id, openAIClient);
 });

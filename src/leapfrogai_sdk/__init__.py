@@ -58,4 +58,4 @@ from leapfrogai_sdk.name.name_pb2_grpc import (
 )
 from leapfrogai_sdk.serve import serve
 
-print("Initializing Leapfrog")
+print("Initializing LeapfrogAI")

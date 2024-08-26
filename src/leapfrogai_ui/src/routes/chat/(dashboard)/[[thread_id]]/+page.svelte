@@ -1,6 +1,6 @@
 <script lang="ts">
   import { beforeNavigate } from '$app/navigation';
-  import { PoweredByDU } from '$components';
+  import { LFTextArea, PoweredByDU } from '$components';
   import { Hr, ToolbarButton } from 'flowbite-svelte';
   import { onMount, tick } from 'svelte';
   import { threadsStore, toastStore } from '$stores';
@@ -18,13 +18,12 @@
     stopThenSave
   } from '$helpers/chatHelpers';
   import {
-    ERROR_GETTING_AI_RESPONSE_TEXT,
-    ERROR_GETTING_ASSISTANT_MSG_TEXT,
-    ERROR_SAVING_MSG_TEXT
+    ERROR_GETTING_AI_RESPONSE_TOAST,
+    ERROR_GETTING_ASSISTANT_MSG_TOAST,
+    ERROR_SAVING_MSG_TOAST
   } from '$constants/toastMessages';
   import SelectAssistantDropdown from '$components/SelectAssistantDropdown.svelte';
   import { PaperPlaneOutline, StopOutline } from 'flowbite-svelte-icons';
-  import TextareaV2 from '$components/LFTextArea.svelte';
 
   export let data;
 
@@ -152,9 +151,7 @@
     },
     onError: async () => {
       toastStore.addToast({
-        kind: 'error',
-        title: ERROR_GETTING_AI_RESPONSE_TEXT.title,
-        subtitle: ERROR_GETTING_AI_RESPONSE_TEXT.subtitle
+        ...ERROR_GETTING_AI_RESPONSE_TOAST
       });
       await threadsStore.setSendingBlocked(false);
     }
@@ -176,9 +173,7 @@
       // ignore this error b/c it is expected on cancel
       if (e.message !== 'BodyStreamBuffer was aborted') {
         toastStore.addToast({
-          kind: 'error',
-          title: ERROR_GETTING_ASSISTANT_MSG_TEXT.title,
-          subtitle: ERROR_GETTING_ASSISTANT_MSG_TEXT.subtitle
+          ...ERROR_GETTING_ASSISTANT_MSG_TOAST
         });
       }
       await threadsStore.setSendingBlocked(false);
@@ -220,9 +215,7 @@
         submitChatMessage(e); // submit to AI (/api/chat)
       } catch {
         toastStore.addToast({
-          kind: 'error',
-          title: ERROR_SAVING_MSG_TEXT.title,
-          subtitle: ERROR_SAVING_MSG_TEXT.subtitle
+          ...ERROR_SAVING_MSG_TOAST
         });
         await threadsStore.setSendingBlocked(false);
       }
@@ -318,7 +311,7 @@
 
     <div class="flex items-end justify-around gap-2">
       <div class="flex flex-grow items-center rounded-lg bg-gray-50 px-3 py-2 dark:bg-gray-700">
-        <TextareaV2
+        <LFTextArea
           id="chat"
           data-testid="chat-input"
           class="mx-4 flex-grow resize-none bg-white dark:bg-gray-800"

@@ -1,6 +1,6 @@
 <script lang="ts">
   import { Button, Spinner } from 'flowbite-svelte';
-  import { DownloadOutline } from 'flowbite-svelte-icons';
+  import { DownloadOutline, UploadOutline } from 'flowbite-svelte-icons';
   import { threadsStore, toastStore } from '$stores';
   import { threadsSchema } from '$schemas/threadSchema';
   import type { LFThread } from '$lib/types/threads';
@@ -47,6 +47,7 @@
         subtitle: `Threads are incorrectly formatted.`,
         timeout: 5000
       });
+      importing = false;
       return;
     }
     await threadsStore.importThreads(threads);
@@ -87,7 +88,7 @@
       size="sm"
       on:change={(e) => onUpload(e.detail)}
       accept={['application/json']}
-      disabled={importing}>Import chat history</LFFileUploadBtn
+      disabled={importing}>Import chat history <UploadOutline /></LFFileUploadBtn
     >
   {/if}
 
