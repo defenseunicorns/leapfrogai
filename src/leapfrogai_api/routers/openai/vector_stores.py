@@ -50,10 +50,9 @@ async def create_vector_store(
 
     indexing_service = IndexingService(db=session)
     try:
-        vector_store = await indexing_service.create_new_vector_store(
-            request, background_tasks
+        return await indexing_service.create_new_vector_store(
+            request, background_tasks=background_tasks
         )
-        return vector_store
     except Exception as exc:
         traceback.print_exc()
         raise HTTPException(
@@ -73,7 +72,7 @@ async def modify_vector_store(
 
     indexing_service = IndexingService(db=session)
     try:
-        modified_vector_store = await indexing_service.modify_existing_vector_store(
+        return await indexing_service.modify_existing_vector_store(
             vector_store_id=vector_store_id,
             request=request,
             background_tasks=background_tasks,
@@ -86,7 +85,6 @@ async def modify_vector_store(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail="Unable to modify vector store",
         ) from exc
-    return modified_vector_store
 
 
 @router.get("/{vector_store_id}")

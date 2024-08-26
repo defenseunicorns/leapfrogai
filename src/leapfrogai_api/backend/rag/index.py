@@ -89,7 +89,7 @@ class IndexingService:
                     ),
                     object="vector_store.file",
                     status=VectorStoreFileStatus.FAILED.value,
-                    usage_bytes=0,
+                    usage_bytes=0,  # Leave blank to have Postgres generate a UUID
                     vector_store_id=vector_store_id,
                 )
                 return await crud_vector_store_file.create(object_=vector_store_file)
@@ -100,7 +100,7 @@ class IndexingService:
                 last_error=None,
                 object="vector_store.file",
                 status=VectorStoreFileStatus.IN_PROGRESS.value,
-                usage_bytes=0,
+                usage_bytes=0,  # Leave blank to have Postgres generate a UUID
                 vector_store_id=vector_store_id,
             )
 
@@ -154,7 +154,9 @@ class IndexingService:
         return responses
 
     async def create_new_vector_store(
-        self, request: CreateVectorStoreRequest, background_tasks: BackgroundTasks
+        self,
+        request: CreateVectorStoreRequest,
+        background_tasks: BackgroundTasks | None = None,
     ) -> VectorStore:
         """Create a new vector store given a set of file ids"""
         crud_vector_store = CRUDVectorStore(db=self.db)
@@ -174,8 +176,8 @@ class IndexingService:
                 file_counts=FileCounts(
                     cancelled=0, completed=0, failed=0, in_progress=0, total=0
                 ),
-                usage_bytes=0,
-                metadata=request.metadata if hasattr(request, "metadata") else None,
+                usage_bytes=0,  # Leave blank to have Postgres generate a UUID
+                metadata=request.metadata,
                 expires_after=expires_after,
                 expires_at=expires_at,
             )
@@ -191,10 +193,18 @@ class IndexingService:
                     detail="Unable to create vector store",
                 )
 
-            # Add the actual creation task to background tasks
-            background_tasks.add_task(
-                self._complete_vector_store_creation, saved_placeholder.id, request
-            )
+            # Split the files, convert the chunks into vectors, and insert them into the db
+            if background_tasks:
+                # Perform the indexing in the background
+                background_tasks.add_task(
+                    self._complete_vector_store_creation,
+                    saved_placeholder.id,
+                    request,
+                )
+            else:
+                await self._complete_vector_store_creation(
+                    saved_placeholder.id, request
+                )
 
             return saved_placeholder
         except Exception as exc:
@@ -213,7 +223,7 @@ class IndexingService:
             filters=FilterVectorStore(id=vector_store_id)
         )
 
-        if request.file_ids:
+        if request.file_ids != []:
             responses = await self.index_files(vector_store_id, request.file_ids)
             for response in responses:
                 await self._increment_vector_store_file_status(vector_store, response)
@@ -227,7 +237,7 @@ class IndexingService:
         self,
         vector_store_id: str,
         request: ModifyVectorStoreRequest,
-        background_tasks: BackgroundTasks,
+        background_tasks: BackgroundTasks | None = None,
     ) -> VectorStore:
         """Modify an existing vector store given its id."""
         crud_vector_store = CRUDVectorStore(db=self.db)
@@ -257,7 +267,7 @@ class IndexingService:
                 expires_at=old_vector_store.expires_at,
             )
 
-            # Update the vector store with the new information
+            # Update the vector store with the new information and set status to in_progress for the duration of this function
             updated_vector_store = await crud_vector_store.update(
                 id_=vector_store_id,
                 object_=new_vector_store,
@@ -269,13 +279,19 @@ class IndexingService:
                     detail="Unable to modify vector store",
                 )
 
-            # Add the file indexing task to background tasks
+            # Split the files, convert the chunks into vectors, and insert them into the db
             if request.file_ids:
-                background_tasks.add_task(
-                    self._complete_vector_store_modification,
-                    vector_store_id,
-                    request,
-                )
+                if background_tasks:
+                    # Perform the indexing in the background
+                    background_tasks.add_task(
+                        self._complete_vector_store_modification,
+                        vector_store_id,
+                        request,
+                    )
+                else:
+                    await self._complete_vector_store_modification(
+                        vector_store_id, request
+                    )
 
             return updated_vector_store
         except Exception as exc:
@@ -301,7 +317,7 @@ class IndexingService:
 
         vector_store.status = VectorStoreStatus.COMPLETED.value
         last_active_at = int(time.time())
-        vector_store.last_active_at = last_active_at
+        vector_store.last_active_at = last_active_at  # Update after indexing files
 
         expires_after, expires_at = request.get_expiry(last_active_at)
         if expires_after and expires_at:
