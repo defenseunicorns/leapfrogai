@@ -15,9 +15,6 @@ from leapfrogai_api.backend.types import (
     CreateVectorStoreRequest,
     ModifyVectorStoreRequest,
 )
-from leapfrogai_api.routers.openai.requests.create_modify_assistant_request import (
-    CreateAssistantRequest,
-)
 from leapfrogai_api.routers.openai.threads import router as threads_router
 from leapfrogai_api.routers.openai.messages import router as messages_router
 from leapfrogai_api.routers.openai.assistants import router as assistants_router
@@ -56,6 +53,7 @@ threads_client = TestClient(threads_router, headers=headers)
 messages_client = TestClient(messages_router, headers=headers)
 runs_client = TestClient(runs_router, headers=headers)
 
+
 # Read in file for use with vector store files
 @pytest.fixture(scope="session", autouse=True)
 def read_testfile():
@@ -76,7 +74,7 @@ def create_file(read_testfile):  # pylint: disable=redefined-outer-name, unused-
 
     file_response = files_client.post(
         "/openai/v1/files",
-        files={"file": ("test.txt", read_testfile, "text/plain")},
+        files={"file": ("test.txt", read_testfile, "text/`pla`in")},
         data={"purpose": "assistants"},
     )
 
@@ -250,94 +248,6 @@ def test_get_modified_expired():
     assert get_modified_response.status_code == status.HTTP_200_OK
     assert get_modified_response.json() is None
 
-
-def test_run_with_background_task(create_file):
-    """Test creating a run while the vector store is still being processed in the background."""
-    # Create a vector store with files
-    request = CreateVectorStoreRequest(
-        file_ids=[create_file["id"]],
-        name="test_background",
-        expires_after=ExpiresAfter(anchor="last_active_at", days=10),
-        metadata={},
-    )
-
-    vector_store_response = vector_store_client.post(
-        "/openai/v1/vector_stores", json=request.model_dump()
-    )
-    assert vector_store_response.status_code == status.HTTP_200_OK
-    vector_store_id = vector_store_response.json()["id"]
-
-    # Create an assistant with the vector store
-    assistant_request = CreateAssistantRequest(
-        model="test-chat",
-        name="Test Assistant",
-        instructions="You are a helpful assistant with access to a knowledge base.",
-        tools=[{"type": "file_search"}],
-        tool_resources={"file_search": {"vector_store_ids": [vector_store_id]}},
-    )
-
-    assistant_response = assistants_client.post(
-        "/openai/v1/assistants", json=assistant_request.model_dump()
-    )
-    assert assistant_response.status_code == status.HTTP_200_OK
-    assistant_id = assistant_response.json()["id"]
-
-    # Create a thread
-    thread_response = threads_client.post("/openai/v1/threads", json={})
-    assert thread_response.status_code == status.HTTP_200_OK
-    thread_id = thread_response.json()["id"]
-
-    # Create a message in the thread
-    message_request = {
-        "role": "user",
-        "content": [
-            {
-                "text": {
-                    "annotations": [],
-                    "value": "What information can you provide about the content in the vector store?",
-                },
-                "type": "text",
-            },
-        ],
-    }
-
-    message_response = messages_client.post(
-        f"/openai/v1/threads/{thread_id}/messages", json=message_request
-    )
-    assert message_response.status_code == status.HTTP_200_OK
-
-    # Create a run
-    run_request = {
-        "assistant_id": assistant_id,
-        "instructions": "Please use the file_search tool to find relevant information.",
-    }
-    run_response = runs_client.post(
-        f"/openai/v1/threads/{thread_id}/runs", json=run_request
-    )
-    assert run_response.status_code == status.HTTP_200_OK
-
-    # Retrieve the assistant's message
-    messages_response = messages_client.get(f"/openai/v1/threads/{thread_id}/messages")
-    assert messages_response.status_code == status.HTTP_200_OK
-    messages = messages_response.json()["data"]
-    assert len(messages) > 1, "No response message from the assistant"
-    assistant_message = messages[0]["content"][0]["text"]["value"]
-
-    # Check that the assistant's response contains relevant information
-    assert len(assistant_message) > 0, "Assistant's response is empty"
-    assert (
-        "vector store" in assistant_message.lower()
-    ), "Assistant's response doesn't mention the vector store"
-
-    # Clean up
-    delete_assistant_response = assistants_client.delete(
-        f"/openai/v1/assistants/{assistant_id}"
-    )
-    assert delete_assistant_response.status_code == status.HTTP_200_OK
-    delete_vector_store_response = vector_store_client.delete(
-        f"/openai/v1/vector_stores/{vector_store_id}"
-    )
-    assert delete_vector_store_response.status_code == status.HTTP_200_OK
 
 def test_delete():
     """Test deleting a vector store. Requires a running Supabase instance."""

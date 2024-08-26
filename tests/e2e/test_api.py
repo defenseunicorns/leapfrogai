@@ -4,8 +4,12 @@ import uuid
 
 import pytest as pytest
 import requests
-
+from openai import OpenAI
 from .utils import create_test_user
+
+client = OpenAI(
+    base_url="https://leapfrogai-api.uds.dev/openai/v1", api_key=create_test_user()
+)
 
 logger = logging.getLogger(__name__)
 test_id = str(uuid.uuid4())
@@ -111,3 +115,57 @@ def test_api_row_level_security():
     verify_request(get_urls, "get", jwt_token, False)
     verify_request(post_urls, "post", jwt_token, False)
     verify_request(delete_urls, "delete", jwt_token, False)
+
+
+def test_run_with_background_task():
+    # Create a vector store
+    vector_store = client.beta.vector_stores.create(
+        name="test_background",
+        file_ids=["file-id"],  # Replace with actual file ID
+    )
+    assert vector_store.id is not None
+
+    # Create an assistant
+    assistant = client.beta.assistants.create(
+        model="test-chat",
+        name="Test Assistant",
+        instructions="You are a helpful assistant with access to a knowledge base.",
+        tools=[{"type": "file_search"}],
+        tool_resources={"file_search": {"vector_store_ids": [vector_store.id]}},
+    )
+    assert assistant.id is not None
+
+    # Create a thread
+    thread = client.beta.threads.create()
+    assert thread.id is not None
+
+    # Add a message to the thread
+    message = client.beta.threads.messages.create(
+        thread_id=thread.id,
+        role="user",
+        content="What information can you provide about the content in the vector store?",
+    )
+    assert message.id is not None
+
+    # Create a run
+    run = client.beta.threads.runs.create(
+        thread_id=thread.id,
+        assistant_id=assistant.id,
+        instructions="Please use the file_search tool to find relevant information.",
+    )
+    assert run.id is not None
+
+    # Retrieve the assistant's message
+    messages = client.beta.threads.messages.list(thread_id=thread.id)
+    assert len(messages.data) > 1, "No response message from the assistant"
+    assistant_message = messages.data[0].content[0].text.value
+
+    # Check that the assistant's response contains relevant information
+    assert len(assistant_message) > 0, "Assistant's response is empty"
+    assert (
+        "vector store" in assistant_message.lower()
+    ), "Assistant's response doesn't mention the vector store"
+
+    # Clean up
+    client.beta.assistants.delete(assistant_id=assistant.id)
+    client.beta.vector_stores.delete(vector_store_id=vector_store.id)
