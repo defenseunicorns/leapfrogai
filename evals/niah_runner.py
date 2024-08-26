@@ -4,7 +4,8 @@ import os
 import openai
 import seaborn as sns
 
-from datasets import load_dataset
+from datasets import load_dataset, concatenate_datasets
+from dotenv import load_dotenv
 import matplotlib.pyplot as plt
 from tqdm import tqdm
 
@@ -14,6 +15,8 @@ from openai.types.beta.assistant import Assistant
 from openai.types.beta.vector_store import VectorStore
 
 logging.basicConfig(level=logging.INFO)
+
+load_dotenv()
 
 INSTRUCTION_TEMPLATE = """
                 You are a helpful AI bot that answers questions for a user. Keep your response short and direct.
@@ -39,14 +42,15 @@ class NIAH_Runner:
     ):
         """Initialize the Assistant with an API key and the path to the text file"""
 
+        self.padding = None
         self.model = model
         self.client = openai.OpenAI(
             base_url=os.getenv("LEAPFROGAI_API_URL"),
             api_key=os.getenv("LEAPFROGAI_API_KEY"),
         )
         logging.info(f"client url: {self.client.base_url}")
-        self.vector_store = self._create_vector_store()
         self.niah_data = self._load_niah_dataset(dataset, min_context, max_context)
+        self.vector_store = self._create_vector_store()
 
     def evaluate(self) -> None:
         """Runs the Needle in a Haystack evaluation"""
@@ -56,7 +60,7 @@ class NIAH_Runner:
 
         for row in tqdm(self.niah_data, desc="Evaluating data rows"):
             logging.info(
-                f"length: {row['context_length']}\n depth: {row['context_depth']}\n secret_code{row['secret_code']}"
+                f"length: {row['context_length']}\n depth: {row['context_depth']}\n secret_code: {row['secret_code']}"
             )
             # add file to vector_store
             # TODO: there has to be a more efficient way to add this file
@@ -66,6 +70,7 @@ class NIAH_Runner:
                 vector_store_file = self.client.beta.vector_stores.files.upload(
                     vector_store_id=self.vector_store.id, file=context_file
                 )
+            os.remove("context.txt")
             file_id = vector_store_file.id
 
             logging.info(
@@ -132,6 +137,7 @@ class NIAH_Runner:
             self.client.beta.vector_stores.files.delete(
                 file_id=file_id, vector_store_id=self.vector_store.id
             )
+            self.client.files.delete(file_id=file_id)
             logging.info(
                 f"There are now {len(self.client.beta.vector_stores.files.list(vector_store_id=self.vector_store.id).data)} files in the vector store"
             )
@@ -205,7 +211,15 @@ class NIAH_Runner:
     ) -> Dataset:
         """Load the Defense Unicorns LFAI NIAH dataset with the requested context length constraints"""
         logging.info(f"Downloading dataset: {dataset_name} from HuggingFace")
-        niah_dataset = load_dataset(dataset_name, split="base_eval")
+        niah_dataset = load_dataset(dataset_name)
+        self.padding = niah_dataset["padding"]
+        niah_dataset = concatenate_datasets(
+            [
+                niah_dataset["base_eval"],
+                niah_dataset["64k_eval"],
+                niah_dataset["128k_eval"],
+            ]
+        )
         niah_dataset = niah_dataset.select(
             (
                 i
@@ -216,6 +230,7 @@ class NIAH_Runner:
                 )
             )
         )
+
         return niah_dataset
 
     def _create_assistant(self, temperature: float = 0.1) -> Assistant:
@@ -239,7 +254,7 @@ class NIAH_Runner:
         self.client.beta.assistants.delete(assistant_id=assistant_id)
         pass
 
-    def _create_vector_store(self) -> VectorStore:
+    def _create_vector_store(self, add_padding: bool = True) -> VectorStore:
         logging.info("Creating vector store...")
         vector_store = self.client.beta.vector_stores.create(
             name="Haystack",
@@ -247,6 +262,19 @@ class NIAH_Runner:
             expires_after={"anchor": "last_active_at", "days": 1},
             metadata={"project": "Needle in a Haystack Evaluation", "version": "0.1"},
         )
+        if add_padding:  # add the extra documents as padding for the haystack
+            logging.info("Uploading haystack padding to the vector store...")
+            for count, row in tqdm(enumerate(self.padding)):
+                with open(f"padding_{count}.txt", "wb") as context_file:
+                    context_file.write(row["context"].encode("utf-8"))
+                with open(f"padding_{count}.txt", "rb") as context_file:
+                    self.client.beta.vector_stores.files.upload(
+                        vector_store_id=vector_store.id, file=context_file
+                    )
+                os.remove(f"padding_{count}.txt")
+            logging.info(
+                f"Added {len(self.padding)} files as padding to the haystack vector store"
+            )
         return vector_store
 
     def _delete_vector_store(self, vector_store_id: str) -> None:
