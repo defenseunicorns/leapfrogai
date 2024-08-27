@@ -55,7 +55,7 @@ variables:
     sensitive: false
   - name: MESSAGE_LENGTH_LIMIT
     description: The maximum length of a message to allow from the user to the backend
-    default: '10000'
+    default: '100000'
     prompt: true
     sensitive: false
 
