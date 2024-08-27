@@ -1,13 +1,13 @@
 kind: ZarfPackageConfig
 metadata:
   name: leapfrogai-ui
-  version: "###ZARF_PKG_TMPL_IMAGE_VERSION###"
+  version: '###ZARF_PKG_TMPL_IMAGE_VERSION###'
   description: >
     A UI for LeapfrogAI
 
 constants:
   - name: IMAGE_VERSION
-    value: "###ZARF_PKG_TMPL_IMAGE_VERSION###"
+    value: '###ZARF_PKG_TMPL_IMAGE_VERSION###'
 
 variables:
   - name: LEAPFROGAI_API_BASE_URL #LEAPFROGAI_API_BASE_URL
@@ -40,22 +40,22 @@ variables:
     sensitive: false
   - name: TEMPERATURE
     description: The default temperature for the LLM
-    default: "0.1"
+    default: '0.1'
     prompt: true
     sensitive: false
   - name: SUPABASE_ANON_KEY
-    default: ""
+    default: ''
     description: Public key for Supabase
     prompt: true
     sensitive: false
   - name: DISABLE_KEYCLOAK
     description: Disable keycloak true or false
-    default: "true"
+    default: 'true'
     prompt: true
     sensitive: false
   - name: MESSAGE_LENGTH_LIMIT
     description: The maximum length of a message to allow from the user to the backend
-    default: "10000"
+    default: '10000'
     prompt: true
     sensitive: false
 
@@ -67,7 +67,7 @@ components:
         namespace: leapfrogai
         localPath: chart
         valuesFiles:
-          - "chart/ui-values.yaml"
+          - 'chart/ui-values.yaml'
         # x-release-please-start-version
         version: 0.11.0
         # x-release-please-end

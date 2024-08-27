@@ -232,34 +232,31 @@
       if (data.thread?.id) {
         let extractedFilesTextString = JSON.stringify(extractedFilesText);
 
-        if (extractedFilesTextString.length > Number(env.PUBLIC_MESSAGE_LENGTH_LIMIT) - 3) {
-          extractedFilesTextString = extractedFilesTextString.substring(
-            0,
-            Number(env.PUBLIC_MESSAGE_LENGTH_LIMIT)
-          );
+        // Ensure the file content, user message, and start/end string characters are within limit
+        const adjustedMaxLength =
+          Number(env.PUBLIC_MESSAGE_LENGTH_LIMIT) -
+          FILE_UPLOAD_PROMPT.length -
+          $chatInput.length -
+          2;
+
+        if (extractedFilesTextString.length > adjustedMaxLength) {
+          extractedFilesTextString = extractedFilesTextString.substring(0, adjustedMaxLength);
           toastStore.addToast(MAX_COMBINED_FILE_TEXT_LENGTH_WARNING());
         }
         if (extractedFilesText.length > 0) {
-          try {
-            // Save the text of the document as it's own message before sending actual question
-            const contextMsg = await saveMessage({
-              thread_id: data.thread.id,
-              content: `${FILE_UPLOAD_PROMPT}: ${extractedFilesTextString}`,
-              role: 'user',
-              metadata: {
-                hideMessage: 'true'
-              }
-            });
-            setChatMessages([
-              ...$chatMessages,
-              {...contextMsg, content: getMessageText(contextMsg)}
-            ]);
-          }
-          catch(e){
-            console.log("in catch")
-            console.log(e)
-
-          }
+          // Save the text of the document as it's own message before sending actual question
+          const contextMsg = await saveMessage({
+            thread_id: data.thread.id,
+            content: `${FILE_UPLOAD_PROMPT}: ${extractedFilesTextString}`,
+            role: 'user',
+            metadata: {
+              hideMessage: 'true'
+            }
+          });
+          setChatMessages([
+            ...$chatMessages,
+            { ...contextMsg, content: getMessageText(contextMsg) }
+          ]);
         }
 
         // Save with API
