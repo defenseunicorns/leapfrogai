@@ -14,8 +14,6 @@ from matplotlib.colors import LinearSegmentedColormap
 from openai.types.beta.assistant import Assistant
 from openai.types.beta.vector_store import VectorStore
 
-logging.basicConfig(level=logging.INFO)
-
 load_dotenv()
 
 INSTRUCTION_TEMPLATE = """
@@ -43,6 +41,7 @@ class NIAH_Runner:
         - determine if the code was retrieved (score 1 else 0)
         - determine if the code was given in the final response (score 1 else 0)
         - delete the document (from the vector store and outright)
+    - delete the noncontextual documents
     - delete the vector store
     - Average all the retrieval scores
     - Average all the response scores
@@ -50,28 +49,40 @@ class NIAH_Runner:
 
     def __init__(
         self,
-        min_doc_length: int = 4096,
-        max_doc_length: int = 4096,
         dataset: str = "defenseunicorns/LFAI_RAG_niah_v1",
         model: str = "vllm",
         temperature: float = 0.1,
         add_padding: bool = True,
+        base_url: str = None,
+        api_key: str = None,
+        message_prompt: str = "What is Doug's secret code?",
+        min_doc_length: int = 4096,
+        max_doc_length: int = 4096,
+        min_depth: float = 0.0,
+        max_depth: float = 1.0,
+        num_copies: int = 2,
     ):
         """Initialize the Assistant with an API key and the path to the text file"""
 
         self.padding = None
         self.niah_data = None
         self.vector_store = None
+        self.message_prompt = message_prompt
         self.model = model
         self.temperature = temperature
         self.add_padding = add_padding
         self.client = openai.OpenAI(
-            base_url=os.getenv("LEAPFROGAI_API_URL"),
-            api_key=os.getenv("LEAPFROGAI_API_KEY"),
+            base_url=base_url or os.getenv("LEAPFROGAI_API_URL"),
+            api_key=api_key or os.getenv("LEAPFROGAI_API_KEY"),
         )
         logging.info(f"client url: {self.client.base_url}")
         self._load_niah_dataset(
-            dataset, min_doc_length=min_doc_length, max_doc_length=max_doc_length
+            dataset,
+            min_doc_length=min_doc_length,
+            max_doc_length=max_doc_length,
+            min_depth=min_depth,
+            max_depth=max_depth,
+            num_copies=num_copies,
         )
         self._create_vector_store()
         self.retrieval_score = None
@@ -82,6 +93,7 @@ class NIAH_Runner:
 
         retrieval_scores = []
         response_scores = []
+        response_contents = []
 
         for row in tqdm(self.niah_data, desc="Evaluating data rows"):
             logging.debug(
@@ -113,7 +125,7 @@ class NIAH_Runner:
             self.client.beta.threads.messages.create(
                 thread_id=thread.id,
                 role="user",
-                content="What is Doug's secret code?",
+                content=self.message_prompt,
             )
 
             # create run
@@ -133,8 +145,11 @@ class NIAH_Runner:
 
             retrieval_score = 0.0
             response_score = 0.0
+            response_content = ""
 
             for response in response_messages:
+                response_content += response.content[0].text.value + "\n"
+
                 # retrieval_score
                 # 1 if needle text was returned by the retrieval step of RAG else 0
                 logging.debug(
@@ -156,6 +171,7 @@ class NIAH_Runner:
 
             retrieval_scores.append(retrieval_score)
             response_scores.append(response_score)
+            response_contents.append(response_content)
 
             # delete file to clean up the vector store
             logging.info("Deleting files")
@@ -177,6 +193,9 @@ class NIAH_Runner:
         )
         self.niah_data = self.niah_data.add_column(
             name="response_score", column=response_scores
+        )
+        self.niah_data = self.niah_data.add_column(
+            name="response", column=response_contents
         )
 
         self.retrieval_score = np.mean(retrieval_scores)
@@ -242,9 +261,9 @@ class NIAH_Runner:
         dataset_name: str,
         min_doc_length: int,
         max_doc_length: int,
-        min_depth: float = 0.0,
-        max_depth: float = 1.0,
-        num_copies: int = 2,
+        min_depth: float,
+        max_depth: float,
+        num_copies: int,
     ):
         """
         Load the Defense Unicorns LFAI NIAH dataset with the requested constraints

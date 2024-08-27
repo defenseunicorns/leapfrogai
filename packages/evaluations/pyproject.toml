@@ -1,0 +1,37 @@
+[project]
+name = "lfai-evals"
+description = "A framework for running evaluations in LeapfrogAI"
+
+# x-release-please-start-version
+version = "0.11.0"
+# x-release-please-end
+
+dependencies = [
+    "deepeval == 1.1.1",
+    "openai == 1.42.0",
+    "tqdm == 4.66.5",
+    "python-dotenv == 1.0.1",
+    "seaborn == 0.13.2",
+    "datasets == 2.21.0",
+    "huggingface-hub == 0.24.6"
+]
+requires-python = "~=3.11"
+readme = "README.md"
+
+[tool.pip-tools]
+generate-hashes = true
+
+#[tool.setuptools.packages.find]
+#where = ["../"]
+#include = ["lfai_evals*"]
+#namespaces = false
+
+[tool.pytest.ini_options]
+addopts = ["--import-mode=importlib"]
+
+[tool.ruff]
+target-version = "py311"
+
+[build-system]
+requires = ["setuptools"]
+build-backend = "setuptools.build_meta"

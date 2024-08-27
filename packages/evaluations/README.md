@@ -2,6 +2,16 @@
 
 This covers how to use the evaluations present in LeapfrogAI. As more evaluations get added, these instructions will be updated.
 
+## Running the Evaluations
+
+Running `main.py` will by default run all of the evaluations currently available:
+
+```bash
+# from within the src/evaluations dir
+python -m pip install .
+python main.py
+```
+
 ## Needle in a Haystack (NIAH)
 
 A Needle in a Haystack evaluation is used to evaluate the performance of LLMs in tasks that require finding a specific piece of information (the "needle") within a large body of text (the "haystack").
@@ -33,16 +43,20 @@ Example:
 ### Experimental Design
 The LFAI NIAH evaluation uses the following process:
 
-For each entry in the dataset:
-
-- create an assistant
-- upload the contextual document to the vector store
-- prompt the LLM to provide the secret code hidden in the context
-- record the following:
-    - whether or not the needle text was returned by the retrieval step of RAG
-    - whether or not the needle text was returned by the LLM's final response
-- delete the files from the vector store
-- delete the assistant
+- build a vector store (the haystack) upload 10 contextless documents (as padding)
+- for a subset of the data (10 datapoints by default):
+    - create an assistant
+    - upload the contextual document (containing the needle) to the vector store
+    - prompt the LLM to provide the secret code hidden in the context
+    - record the following:
+        - whether or not the needle text was returned by the retrieval step of RAG
+        - whether or not the needle text was returned by the LLM's final response
+    - delete the contextual document from the vector store
+    - delete the assistant
+- delete the contextless documents
+- delete the vector store
+- average the retrieval scores as the final retrieval score
+- average the response scores as the final response score
 
 The retrieval and response rate is then averaged across each copy of the experiment to generate a final score.
 
@@ -50,13 +64,13 @@ The retrieval and response rate is then averaged across each copy of the experim
 The LFAI NIAH evaluation assumes the following:
 
 - LFAI is deployed
-- You have a valid LFAI API key
+- A valid LFAI API key is set
 
 Set the following environment variables:
 
 ```bash
 LEAPFROGAI_API_URL=<lfai api url, usually: https://leapfrogai-api.uds.dev/openai/v1 for development>
-LEAPFROGAI_API_KEY=<your api key>
+LEAPFROGAI_API_KEY=<lfai api key>
 ```
 
 You can then run the evaluation in a script with the following:
