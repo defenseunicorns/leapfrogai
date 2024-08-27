@@ -55,3 +55,12 @@ export const ERROR_PROCESSING_FILE_MSG_TOAST = (override: Partial<ToastData> = {
   title: 'Error Processing File',
   ...override
 });
+
+export const MAX_COMBINED_FILE_TEXT_LENGTH_WARNING = (
+  override: Partial<ToastData> = {}
+): ToastData => ({
+  kind: 'warning',
+  title: 'Too much data',
+  subtitle: 'File text was truncated due to excessive length',
+  ...override
+});

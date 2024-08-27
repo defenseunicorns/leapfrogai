@@ -9,6 +9,7 @@ export const MAX_FILE_SIZE = 512000000;
 export const ASSISTANTS_NAME_MAX_LENGTH = 256;
 export const ASSISTANTS_DESCRIPTION_MAX_LENGTH = 512;
 export const ASSISTANTS_INSTRUCTIONS_MAX_LENGTH = 256000;
+export const MAX_COMBINED_FILE_TEXT_LENGTH = 8000;
 
 // TODO - once using API to save, these defaults should be returned by the POST call and would not need to be supplied
 // We only need to default the model and tools
@@ -73,3 +74,5 @@ export const AVATAR_FILE_SIZE_ERROR_TEXT = `File must be less than ${MAX_AVATAR_
 export const FILE_SIZE_ERROR_TEXT = `File must be less than ${MAX_FILE_SIZE / 1000000} MB`;
 export const INVALID_FILE_TYPE_ERROR_TEXT = `Invalid file type, accepted types are: ${ACCEPTED_FILE_TYPES.join(', ')}`;
 export const NO_SELECTED_ASSISTANT_ID = 'noSelectedAssistantId';
+
+export const FILE_UPLOAD_PROMPT = "The following are the user's files: ";

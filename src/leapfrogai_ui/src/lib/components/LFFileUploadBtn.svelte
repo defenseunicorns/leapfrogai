@@ -11,7 +11,7 @@
   export let disabled = false;
   export let size: 'xs' | 'sm' | 'md' | 'lg' | 'xl' | 'none' = 'sm';
   export let outline: boolean = false;
-  export let testId: string; // for the button element
+  export let testId: string | null = null; // for the button element
 
   const dispatch = createEventDispatcher();
 </script>

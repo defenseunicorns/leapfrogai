@@ -52,10 +52,11 @@
     on:change={(e) => {
       uploadingFiles = true;
 
-      for (const file of e.detail) {
+      // Metadata is limited to 512 characters, we use a short id to save space
+      for (let i = 0; i < e.detail.length; i++) {
         attachedFileMetadata = [
           ...attachedFileMetadata,
-          { id: uuidv4(), name: file.name, type: file.type, status: 'uploading' }
+          { id: i, name: e.detail[i].name, type: e.detail[i].type, status: 'uploading' }
         ];
       }
       submit(e.detail);

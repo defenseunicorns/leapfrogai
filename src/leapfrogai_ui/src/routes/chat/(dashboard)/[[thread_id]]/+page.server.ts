@@ -64,9 +64,11 @@ export const actions: Actions = {
               }
               i++;
             }
+
             extractedFilesText.push({ id: file.id, filename: file.name, text });
           }
         }
+
         return withFiles({ extractedFilesText: extractedFilesText, form });
       } catch (e) {
         console.error(e);

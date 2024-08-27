@@ -170,7 +170,7 @@
             {#if fileMetadata}
               <div
                 id="uploaded-files"
-                class={'flex max-w-full  gap-2 overflow-x-scroll bg-gray-900'}
+                class={'flex max-w-full  gap-2 overflow-x-auto bg-gray-900'}
               >
                 {#each fileMetadata as file}
                   <UploadedFileCard

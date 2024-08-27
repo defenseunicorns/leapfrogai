@@ -9,7 +9,11 @@
   import Message from '$components/Message.svelte';
   import { getMessageText } from '$helpers/threads';
   import { getUnixSeconds } from '$helpers/dates.js';
-  import { NO_SELECTED_ASSISTANT_ID } from '$constants';
+  import {
+    FILE_UPLOAD_PROMPT,
+    MAX_COMBINED_FILE_TEXT_LENGTH,
+    NO_SELECTED_ASSISTANT_ID
+  } from '$constants';
   import { twMerge } from 'tailwind-merge';
   import {
     isRunAssistantMessage,
@@ -20,7 +24,8 @@
   import {
     ERROR_GETTING_AI_RESPONSE_TOAST,
     ERROR_GETTING_ASSISTANT_MSG_TOAST,
-    ERROR_SAVING_MSG_TOAST
+    ERROR_SAVING_MSG_TOAST,
+    MAX_COMBINED_FILE_TEXT_LENGTH_WARNING
   } from '$constants/toastMessages';
   import SelectAssistantDropdown from '$components/SelectAssistantDropdown.svelte';
   import { PaperPlaneOutline, StopOutline } from 'flowbite-svelte-icons';
@@ -228,11 +233,20 @@
     try {
       await threadsStore.setSendingBlocked(true);
       if (data.thread?.id) {
-        if (extractedFilesText) {
+        let extractedFilesTextString = JSON.stringify(extractedFilesText);
+
+        if (extractedFilesTextString.length > MAX_COMBINED_FILE_TEXT_LENGTH) {
+          extractedFilesTextString = extractedFilesTextString.substring(
+            0,
+            MAX_COMBINED_FILE_TEXT_LENGTH
+          );
+          toastStore.addToast(MAX_COMBINED_FILE_TEXT_LENGTH_WARNING());
+        }
+        if (extractedFilesText.length > 0) {
           // Save the text of the document as it's own message before sending actual question
           const contextMsg = await saveMessage({
             thread_id: data.thread.id,
-            content: `The following is a list of file names along with their respective text content. Please consider the information from these files as needed in the context of the conversation: ${JSON.stringify(extractedFilesText)}`,
+            content: `${FILE_UPLOAD_PROMPT}: ${extractedFilesTextString}`,
             role: 'user',
             metadata: {
               hideMessage: 'true'
@@ -259,6 +273,7 @@
             : null)
         });
 
+        console.log('$chatMessages', $chatMessages);
         // store user input
         await threadsStore.addMessageToStore(newMessage);
         submitChatMessage(e); // submit to AI (/api/chat)
@@ -363,7 +378,7 @@
   <div id="chat-tools" class="flex flex-col gap-2 px-8">
     <SelectAssistantDropdown assistants={data?.assistants || []} />
 
-    <div class="flex flex-grow flex-col rounded-lg bg-gray-50 p-px dark:bg-gray-700">
+    <div class="flex flex-grow flex-col rounded-lg bg-gray-50 px-2 dark:bg-gray-700">
       <UploadedFileCards bind:attachedFileMetadata {handleRemoveFile} />
 
       <div id="chat-row" class="flex w-full items-center">
