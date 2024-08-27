@@ -1,3 +1,5 @@
+import { MAX_NUM_FILES_UPLOAD } from '$constants/index';
+
 type ToastData = {
   kind: ToastKind;
   title: string;
@@ -56,11 +58,9 @@ export const ERROR_PROCESSING_FILE_MSG_TOAST = (override: Partial<ToastData> = {
   ...override
 });
 
-export const MAX_COMBINED_FILE_TEXT_LENGTH_WARNING = (
-  override: Partial<ToastData> = {}
-): ToastData => ({
-  kind: 'warning',
-  title: 'Too much data',
-  subtitle: 'File text was truncated due to excessive length',
+export const MAX_NUM_FILES_UPLOAD_MSG_TOAST = (override: Partial<ToastData> = {}): ToastData => ({
+  kind: 'error',
+  title: 'Too many files',
+  subtitle: `Maximum number of files is ${MAX_NUM_FILES_UPLOAD}`,
   ...override
 });

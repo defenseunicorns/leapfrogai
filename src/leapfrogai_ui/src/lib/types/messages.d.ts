@@ -12,6 +12,7 @@ export type NewMessageInput = {
   role: 'user' | 'assistant';
   assistantId?: string;
   metadata?: unknown;
+  lengthOverride?: boolean;
 };
 
 export type LFMessage = omit<OpenAIMessage | 'content' | 'role' | 'metadata'> & {

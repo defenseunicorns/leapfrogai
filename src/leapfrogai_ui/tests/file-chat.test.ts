@@ -16,8 +16,17 @@ import {
 import { faker } from '@faker-js/faker';
 import { getFakeAssistantInput } from '$testUtils/fakeData';
 import { createAssistantWithApi } from './helpers/assistantHelpers';
-import { ERROR_PROCESSING_FILE_MSG_TOAST } from '$constants/toastMessages';
+import {
+  ERROR_PROCESSING_FILE_MSG_TOAST,
+  MAX_NUM_FILES_UPLOAD_MSG_TOAST
+} from '$constants/toastMessages';
 import type { ActionResult } from '@sveltejs/kit';
+import {
+  APPROX_MAX_CHARACTERS,
+  FILE_UPLOAD_PROMPT,
+  MAX_NUM_FILES_UPLOAD
+} from '../src/lib/constants/index';
+import { FILE_CONTEXT_TOO_LARGE_ERROR_MSG } from '$constants/errors';
 
 test('it attaches multiple files of different types and creates a hidden message with their content', async ({
   page,
@@ -153,4 +162,41 @@ test('it displays a toast and removes files when there is an error processing th
   });
 
   await expect(page.getByText(ERROR_PROCESSING_FILE_MSG_TOAST().title)).toBeVisible();
+});
+
+test('it adds an error message if a file is too large to add to the context', async ({ page }) => {
+  const adjustedMax =
+    APPROX_MAX_CHARACTERS -
+    Number(process.env.PUBLIC_MESSAGE_LENGTH_LIMIT) -
+    FILE_UPLOAD_PROMPT.length -
+    2;
+  process.env.PUBLIC_MESSAGE_LENGTH_LIMIT = `${APPROX_MAX_CHARACTERS - FILE_UPLOAD_PROMPT.length - 2 + 10}`;
+  const filename = createWordFile({
+    content: 'a'.repeat(adjustedMax + 1)
+  }); // this file is first converted to pdf which we are mocking to fail
+
+  await loadChatPage(page);
+
+  await uploadFiles({
+    page,
+    filenames: [filename],
+    testId: 'upload-file-btn'
+  });
+
+  await expect(page.getByText(FILE_CONTEXT_TOO_LARGE_ERROR_MSG)).toBeVisible();
+});
+
+test('it limits the number of files that can be uploaded', async ({ page }) => {
+  await loadChatPage(page);
+
+  const filename = await createPDF();
+
+  for (let i = 0; i < MAX_NUM_FILES_UPLOAD + 1; i++)
+    await uploadFiles({
+      page,
+      filenames: [filename],
+      testId: 'upload-file-btn'
+    });
+
+  await expect(page.getByText(MAX_NUM_FILES_UPLOAD_MSG_TOAST().subtitle!)).toBeVisible();
 });

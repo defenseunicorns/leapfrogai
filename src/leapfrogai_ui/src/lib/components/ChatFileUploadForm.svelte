@@ -1,6 +1,5 @@
 <script lang="ts">
-  import { v4 as uuidv4 } from 'uuid';
-  import { ACCEPTED_FILE_TYPES } from '$constants';
+  import { ACCEPTED_FILE_TYPES, MAX_NUM_FILES_UPLOAD } from '$constants';
   import { ToolbarButton } from 'flowbite-svelte';
   import { PaperClipOutline } from 'flowbite-svelte-icons';
   import LFFileUploadBtn from '$components/LFFileUploadBtn.svelte';
@@ -8,7 +7,10 @@
   import { yup } from 'sveltekit-superforms/adapters';
   import { filesSchema } from '$schemas/files';
   import { toastStore } from '$stores';
-  import { ERROR_PROCESSING_FILE_MSG_TOAST } from '$constants/toastMessages';
+  import {
+    ERROR_PROCESSING_FILE_MSG_TOAST,
+    MAX_NUM_FILES_UPLOAD_MSG_TOAST
+  } from '$constants/toastMessages';
 
   export let form;
   export let uploadingFiles;
@@ -39,8 +41,6 @@
       handleUploadError(e.result.error.message);
     }
   });
-
-  $: console.log('attachedFileMetadata', attachedFileMetadata);
 </script>
 
 <form method="POST" enctype="multipart/form-data" use:enhance>
@@ -51,6 +51,10 @@
     multiple
     size="sm"
     on:change={(e) => {
+      if (e.detail.length > MAX_NUM_FILES_UPLOAD) {
+        toastStore.addToast(MAX_NUM_FILES_UPLOAD_MSG_TOAST());
+        return;
+      }
       // Metadata is limited to 512 characters, we use a short id to save space
       for (const file of e.detail) {
         attachedFileMetadata = [

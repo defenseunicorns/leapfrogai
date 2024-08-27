@@ -20,15 +20,13 @@
   import {
     ERROR_GETTING_AI_RESPONSE_TOAST,
     ERROR_GETTING_ASSISTANT_MSG_TOAST,
-    ERROR_SAVING_MSG_TOAST,
-    MAX_COMBINED_FILE_TEXT_LENGTH_WARNING
+    ERROR_SAVING_MSG_TOAST
   } from '$constants/toastMessages';
   import SelectAssistantDropdown from '$components/SelectAssistantDropdown.svelte';
   import { PaperPlaneOutline, StopOutline } from 'flowbite-svelte-icons';
   import type { FileMetadata } from '$lib/types/files';
   import UploadedFileCards from '$components/UploadedFileCards.svelte';
   import ChatFileUploadForm from '$components/ChatFileUploadForm.svelte';
-  import { env } from '$env/dynamic/public';
 
   export let data;
 
@@ -229,26 +227,16 @@
       if (data.thread?.id) {
         let extractedFilesTextString = JSON.stringify(attachedFileMetadata);
 
-        // Ensure the file content, user message, and start/end string characters are within limit
-        const adjustedMaxLength =
-          Number(env.PUBLIC_MESSAGE_LENGTH_LIMIT) -
-          FILE_UPLOAD_PROMPT.length -
-          $chatInput.length -
-          2;
-
-        if (extractedFilesTextString.length > adjustedMaxLength) {
-          extractedFilesTextString = extractedFilesTextString.substring(0, adjustedMaxLength);
-          toastStore.addToast(MAX_COMBINED_FILE_TEXT_LENGTH_WARNING());
-        }
         if (attachedFileMetadata.length > 0) {
-          // Save the text of the document as it's own message before sending actual question
+          // Save the text of the document as its own message before sending actual question
           const contextMsg = await saveMessage({
             thread_id: data.thread.id,
             content: `${FILE_UPLOAD_PROMPT}: ${extractedFilesTextString}`,
             role: 'user',
             metadata: {
               hideMessage: 'true'
-            }
+            },
+            lengthOverride: true
           });
           setChatMessages([
             ...$chatMessages,
@@ -380,11 +368,7 @@
 
       <div id="chat-row" class="flex w-full items-center">
         {#if !assistantMode}
-          <ChatFileUploadForm
-            bind:form={data.form}
-            bind:uploadingFiles
-            bind:attachedFileMetadata
-          />
+          <ChatFileUploadForm bind:form={data.form} bind:uploadingFiles bind:attachedFileMetadata />
         {/if}
 
         <LFTextArea

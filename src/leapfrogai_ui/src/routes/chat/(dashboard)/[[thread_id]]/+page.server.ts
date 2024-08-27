@@ -6,11 +6,13 @@ import { filesSchema } from '$schemas/files';
 import type { FileMetadata } from '$lib/types/files';
 import { env } from '$env/dynamic/public';
 import { shortenFileName } from '$helpers/stringHelpers';
+import { APPROX_MAX_CHARACTERS, FILE_UPLOAD_PROMPT } from '$constants';
+import { ERROR_UPLOADING_FILE_MSG, FILE_CONTEXT_TOO_LARGE_ERROR_MSG } from '$constants/errors';
 
-// Ensure there is buffer to include the user's message in the context window. If the user types more than the number
-// of characters allowed below, the frontend will handle it and truncate the extractedFilesText
-// and pop a warning toast notification.
-const ADJUSTED_MAX = Number(env.PUBLIC_MESSAGE_LENGTH_LIMIT) - 5000;
+// Ensure length of file context message does not exceed total context window when including the
+// file upload prompt, user's message, and string quotes
+const ADJUSTED_MAX =
+  APPROX_MAX_CHARACTERS - Number(env.PUBLIC_MESSAGE_LENGTH_LIMIT) - FILE_UPLOAD_PROMPT.length - 2;
 
 export const actions: Actions = {
   // Handles parsing text from files, will convert file to pdf if is not already
@@ -81,7 +83,7 @@ export const actions: Actions = {
               });
 
               // If this file adds too much text (larger than allowed max), remove the text and set to error status
-              let totalTextLength = extractedFilesText.reduce(
+              const totalTextLength = extractedFilesText.reduce(
                 (acc, fileMetadata) => acc + JSON.stringify(fileMetadata).length,
                 0
               );
@@ -91,7 +93,7 @@ export const actions: Actions = {
                   type: file.type,
                   text: '',
                   status: 'error',
-                  errorText: 'Error: Upload fewer or smaller files'
+                  errorText: FILE_CONTEXT_TOO_LARGE_ERROR_MSG
                 };
               }
             } catch (e) {
@@ -101,7 +103,7 @@ export const actions: Actions = {
                 type: file.type,
                 text: '',
                 status: 'error',
-                errorText: 'Error uploading file'
+                errorText: ERROR_UPLOADING_FILE_MSG
               });
             }
           }

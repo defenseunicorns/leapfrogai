@@ -4,8 +4,7 @@
   import { getFileType } from '$lib/utils/files.js';
   import { Card, Spinner, ToolbarButton } from 'flowbite-svelte';
   import { createEventDispatcher } from 'svelte';
-  import { twMerge } from 'tailwind-merge';
-  import type { FileMetadata, FileUploadStatus } from '$lib/types/files';
+  import type { FileMetadata } from '$lib/types/files';
 
   export let fileMetadata: FileMetadata;
   export let disableDelete = false;

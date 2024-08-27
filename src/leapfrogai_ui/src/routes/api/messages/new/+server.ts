@@ -15,7 +15,13 @@ export const POST: RequestHandler = async ({ request, locals: { session } }) => 
   // Validate request body
   try {
     requestData = (await request.json()) as NewMessageInput;
-    await messageInputSchema.validate(requestData, { abortEarly: false });
+    if (requestData.lengthOverride) {
+      // TODO
+      await messageInputSchema.validate(requestData, { abortEarly: false });
+    } else {
+      await messageInputSchema.validate(requestData, { abortEarly: false });
+    }
+    delete requestData.lengthOverride;
   } catch (validationError) {
     if (validationError instanceof ValidationError) {
       console.log('Validation error:', validationError.errors);
