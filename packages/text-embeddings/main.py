@@ -11,12 +11,8 @@ from leapfrogai_sdk import (
     serve,
 )
 
-GPU_ENABLED = (
-    False if os.environ.get("GPU_ENABLED", "False").lower() != "true" else True
-)
-
 model_dir = os.environ.get("LFAI_MODEL_PATH", ".model")
-model = INSTRUCTOR(model_dir, device="cuda" if GPU_ENABLED else "cpu")
+model = INSTRUCTOR(model_dir)
 
 
 class InstructorEmbedding:
