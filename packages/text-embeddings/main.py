@@ -16,7 +16,7 @@ GPU_ENABLED = (
 )
 
 model_dir = os.environ.get("LFAI_MODEL_PATH", ".model")
-model = INSTRUCTOR(model_dir, device="gpu" if GPU_ENABLED else "cpu")
+model = INSTRUCTOR(model_dir, device="cuda" if GPU_ENABLED else "cpu")
 
 
 class InstructorEmbedding:
