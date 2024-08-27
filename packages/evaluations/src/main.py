@@ -26,7 +26,7 @@ class RAGEvaluator:
             self.eval_list = ALL_EVALS
         # TODO: Add other evals options
 
-    def run_evals(self, *args, **kwargs):
+    def run_evals(self, *args, **kwargs) -> None:
         """Run all of the selected evaluations"""
         logging.info("Running the following evaluations:")
         for eval in self.eval_list:
@@ -35,10 +35,7 @@ class RAGEvaluator:
             self._niah_evaluation(*args, **kwargs)
         # TODO: add more evaluations
 
-    def report_scores(self):
-        pass
-
-    def _niah_evaluation(self, *args, **kwargs):
+    def _niah_evaluation(self, *args, **kwargs) -> None:
         """Run the Needle in a Haystack evaluation"""
         self.niah_test_cases = []
 
@@ -71,4 +68,4 @@ class RAGEvaluator:
 if __name__ == "__main__":
     evaluator = RAGEvaluator()
     evaluator.set_evaluations()
-    evaluator.run_evals(num_copies=1)
+    evaluator.run_evals()

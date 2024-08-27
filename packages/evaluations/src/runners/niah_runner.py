@@ -88,7 +88,7 @@ class NIAH_Runner:
         self.retrieval_score = None
         self.response_score = None
 
-    def evaluate(self) -> None:
+    def run_experiment(self) -> None:
         """Runs the Needle in a Haystack evaluation"""
 
         retrieval_scores = []
