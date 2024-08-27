@@ -40,7 +40,7 @@ class RAGEvaluator:
         self.niah_test_cases = []
 
         niah_runner = NIAH_Runner(*args, **kwargs)
-        niah_runner.evaluate()
+        niah_runner.run_experiment()
 
         # build test cases out of the niah_dataset
         for row in niah_runner.niah_data:
