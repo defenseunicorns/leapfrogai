@@ -168,17 +168,9 @@
               {message.role === 'user' ? 'You' : getAssistantName(message.assistant_id)}
             </div>
             {#if fileMetadata}
-              <div
-                id="uploaded-files"
-                class={'flex max-w-full  gap-2 overflow-x-auto bg-gray-900'}
-              >
+              <div id="uploaded-files" class={'flex max-w-full  gap-2 overflow-x-auto bg-gray-900'}>
                 {#each fileMetadata as file}
-                  <UploadedFileCard
-                    name={file.name}
-                    type={file.type}
-                    status={file.status}
-                    disableDelete
-                  />
+                  <UploadedFileCard {fileMetadata} disableDelete />
                 {/each}
               </div>
             {/if}

@@ -12,12 +12,7 @@
     ? 'ml-9 flex max-w-full  gap-2 overflow-x-auto bg-gray-700 px-2.5'
     : 'hidden'}
 >
-  {#each attachedFileMetadata as file, index}
-    <UploadedFileCard
-      name={file.name}
-      type={file.type}
-      status={file.status}
-      on:delete={() => handleRemoveFile(file.id, index)}
-    />
+  {#each attachedFileMetadata as fileMetadata, index}
+    <UploadedFileCard {fileMetadata} on:delete={() => handleRemoveFile(fileMetadata.id, index)} />
   {/each}
 </div>

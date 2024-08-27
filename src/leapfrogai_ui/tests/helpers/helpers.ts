@@ -56,3 +56,5 @@ export const getTableRow = async (page: Page, textToSearchWith: string, tableTes
 };
 
 export const normalizeWhitespace = (str: string) => str.replace(/\s+/g, ' ').trim();
+
+

@@ -25,7 +25,7 @@
   } from '$constants/toastMessages';
   import SelectAssistantDropdown from '$components/SelectAssistantDropdown.svelte';
   import { PaperPlaneOutline, StopOutline } from 'flowbite-svelte-icons';
-  import type { ExtractedFilesText, FileMetadata } from '$lib/types/files';
+  import type { FileMetadata } from '$lib/types/files';
   import UploadedFileCards from '$components/UploadedFileCards.svelte';
   import ChatFileUploadForm from '$components/ChatFileUploadForm.svelte';
   import { env } from '$env/dynamic/public';
@@ -39,12 +39,10 @@
   /** LOCAL VARS **/
   let lengthInvalid: boolean; // bound to child LFTextArea
   let assistantsList: Array<{ id: string; text: string }>;
-  let extractedFilesText: ExtractedFilesText = [];
   let uploadingFiles = false;
   let attachedFileMetadata: FileMetadata[] = [];
 
-  const handleRemoveFile = (id: string, index: number) => {
-    extractedFilesText = extractedFilesText.toSpliced(index, 1);
+  const handleRemoveFile = (id: string) => {
     attachedFileMetadata = attachedFileMetadata.filter((file) => file.id !== id);
   };
 
@@ -90,7 +88,6 @@
 
   const resetFiles = () => {
     uploadingFiles = false;
-    extractedFilesText = [];
     attachedFileMetadata = [];
   };
 
@@ -230,7 +227,7 @@
     try {
       await threadsStore.setSendingBlocked(true);
       if (data.thread?.id) {
-        let extractedFilesTextString = JSON.stringify(extractedFilesText);
+        let extractedFilesTextString = JSON.stringify(attachedFileMetadata);
 
         // Ensure the file content, user message, and start/end string characters are within limit
         const adjustedMaxLength =
@@ -243,7 +240,7 @@
           extractedFilesTextString = extractedFilesTextString.substring(0, adjustedMaxLength);
           toastStore.addToast(MAX_COMBINED_FILE_TEXT_LENGTH_WARNING());
         }
-        if (extractedFilesText.length > 0) {
+        if (attachedFileMetadata.length > 0) {
           // Save the text of the document as it's own message before sending actual question
           const contextMsg = await saveMessage({
             thread_id: data.thread.id,
@@ -387,7 +384,6 @@
             bind:form={data.form}
             bind:uploadingFiles
             bind:attachedFileMetadata
-            bind:extractedFilesText
           />
         {/if}
 

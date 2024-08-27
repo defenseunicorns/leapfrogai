@@ -4,10 +4,10 @@
   import { getFileType } from '$lib/utils/files.js';
   import { Card, Spinner, ToolbarButton } from 'flowbite-svelte';
   import { createEventDispatcher } from 'svelte';
+  import { twMerge } from 'tailwind-merge';
+  import type { FileMetadata, FileUploadStatus } from '$lib/types/files';
 
-  export let name: string;
-  export let type: string;
-  export let status: boolean;
+  export let fileMetadata: FileMetadata;
   export let disableDelete = false;
 
   const dispatch = createEventDispatcher();
@@ -18,36 +18,49 @@
 <div in:fade={{ duration: 150 }} out:fade={{ duration: 150 }}>
   <Card
     id="card"
-    data-testid={`${name}-file-uploaded-card`}
+    data-testid={`${fileMetadata.name}-file-uploaded-card`}
     horizontal
     padding="xs"
-    class="w-80 min-w-72 bg-gray-800"
+    class="w-80 min-w-72"
     on:mouseenter={() => (hovered = true)}
     on:mouseleave={() => (hovered = false)}
   >
     <div class="flex w-full flex-row items-center justify-between">
       <div class="flex gap-2">
         <div class="flex items-center rounded-lg bg-gray-700 px-2">
-          {#if status === 'uploading'}
-            <Spinner data-testid={`${name}-uploading`} size={6} />
+          {#if fileMetadata.status === 'uploading'}
+            <Spinner data-testid={`${fileMetadata.name}-uploading`} size={6} />
+          {:else if fileMetadata.status === 'error'}
+            <CloseOutline
+              data-testid={`${fileMetadata.name}-error`}
+              size="lg"
+              class="text-red-400 "
+            />
           {:else}
-            <FileOutline data-testid={`${name}-uploaded`} size="lg" color="white" />
+            <FileOutline data-testid={`${fileMetadata.name}-uploaded`} size="lg" color="white" />
           {/if}
         </div>
         <h5 class="flex flex-col">
           <div
             class={`max-w-56 overflow-hidden text-ellipsis whitespace-nowrap text-sm font-bold text-gray-900 dark:text-white `}
           >
-            {name}
+            {fileMetadata.name}
           </div>
-          <p class="text-sm font-normal text-gray-700 dark:text-gray-400">
-            {getFileType(type)}
-          </p>
+
+          {#if fileMetadata.status === 'error'}
+            <p class="text-sm text-red-400">
+              {fileMetadata.errorText}
+            </p>
+          {:else}
+            <p class="text-sm text-gray-400">
+              {getFileType(fileMetadata.type)}
+            </p>
+          {/if}
         </h5>
       </div>
       {#if hovered && !disableDelete}
-        <ToolbarButton on:click={() => dispatch('delete')}>
-          <CloseOutline data-testid={`${name}-remove-btn`} />
+        <ToolbarButton size="sm" on:click={() => dispatch('delete')}>
+          <CloseOutline data-testid={`${fileMetadata.name}-remove-btn`} />
         </ToolbarButton>
       {/if}
     </div>

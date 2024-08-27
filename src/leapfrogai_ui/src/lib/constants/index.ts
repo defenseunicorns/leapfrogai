@@ -4,6 +4,7 @@ export const MAX_LABEL_SIZE = 100;
 export const DEFAULT_ASSISTANT_TEMP = 0.2;
 export const MAX_AVATAR_SIZE = 5000000;
 export const MAX_FILE_SIZE = 512000000;
+export const MAX_FILE_NAME_SIZE = 27;
 
 // PER OPENAI SPEC
 export const ASSISTANTS_NAME_MAX_LENGTH = 256;

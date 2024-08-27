@@ -13,7 +13,6 @@
   export let form;
   export let uploadingFiles;
   export let attachedFileMetadata;
-  export let extractedFilesText;
 
   const handleUploadError = (errorMsg) => {
     uploadingFiles = false;
@@ -29,9 +28,9 @@
     invalidateAll: false,
     onResult({ result }) {
       uploadingFiles = false;
-      attachedFileMetadata = attachedFileMetadata.map((file) => ({ ...file, status: 'complete' }));
       if (result.type === 'success') {
-        extractedFilesText = [...extractedFilesText, ...result.data.extractedFilesText];
+        attachedFileMetadata = attachedFileMetadata.filter((file) => file.status !== 'uploading');
+        attachedFileMetadata = [...attachedFileMetadata, ...result.data.extractedFilesText];
       } else {
         handleUploadError('Internal Error');
       }
@@ -40,6 +39,8 @@
       handleUploadError(e.result.error.message);
     }
   });
+
+  $: console.log('attachedFileMetadata', attachedFileMetadata);
 </script>
 
 <form method="POST" enctype="multipart/form-data" use:enhance>
@@ -50,15 +51,14 @@
     multiple
     size="sm"
     on:change={(e) => {
-      uploadingFiles = true;
-
       // Metadata is limited to 512 characters, we use a short id to save space
-      for (let i = 0; i < e.detail.length; i++) {
+      for (const file of e.detail) {
         attachedFileMetadata = [
           ...attachedFileMetadata,
-          { id: i, name: e.detail[i].name, type: e.detail[i].type, status: 'uploading' }
+          { name: file.name, type: file.type, status: 'uploading' }
         ];
       }
+
       submit(e.detail);
     }}
     accept={ACCEPTED_FILE_TYPES}
