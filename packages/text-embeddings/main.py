@@ -21,7 +21,10 @@ model = INSTRUCTOR(model_dir, device="gpu" if GPU_ENABLED else "cpu")
 
 class InstructorEmbedding:
     async def CreateEmbedding(self, request: EmbeddingRequest, context: GrpcContext):
-        embeddings = model.encode(sentences=request.inputs, show_progress_bar=True)
+        # Run the CPU-intensive encoding in a separate thread
+        embeddings = await asyncio.to_thread(
+            model.encode, sentences=request.inputs, show_progress_bar=True
+        )
 
         embeddings = [Embedding(embedding=inner_list) for inner_list in embeddings]
         return EmbeddingResponse(embeddings=embeddings)
