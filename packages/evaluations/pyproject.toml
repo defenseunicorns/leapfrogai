@@ -21,11 +21,6 @@ readme = "README.md"
 [tool.pip-tools]
 generate-hashes = true
 
-#[tool.setuptools.packages.find]
-#where = ["../"]
-#include = ["lfai_evals*"]
-#namespaces = false
-
 [tool.pytest.ini_options]
 addopts = ["--import-mode=importlib"]
 
