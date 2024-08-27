@@ -18,7 +18,7 @@ create-uds-gpu-cluster: build-k3d-gpu
 	--set K3D_EXTRA_ARGS="--gpus=all \
 	--image=ghcr.io/defenseunicorns/leapfrogai/k3d-gpu:${LOCAL_VERSION}" --confirm
 
-create-uds-cpu-cluster: build-k3d-gpu
+create-uds-cpu-cluster:
 	@uds deploy k3d-core-slim-dev:${UDS_VERSION} \
 	${ZARF_FLAGS} \
 	--confirm
