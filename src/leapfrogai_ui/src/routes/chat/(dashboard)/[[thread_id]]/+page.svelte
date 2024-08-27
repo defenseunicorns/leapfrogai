@@ -9,11 +9,7 @@
   import Message from '$components/Message.svelte';
   import { getMessageText } from '$helpers/threads';
   import { getUnixSeconds } from '$helpers/dates.js';
-  import {
-    FILE_UPLOAD_PROMPT,
-    MAX_COMBINED_FILE_TEXT_LENGTH,
-    NO_SELECTED_ASSISTANT_ID
-  } from '$constants';
+  import { FILE_UPLOAD_PROMPT, NO_SELECTED_ASSISTANT_ID } from '$constants';
   import { twMerge } from 'tailwind-merge';
   import {
     isRunAssistantMessage,
@@ -32,6 +28,7 @@
   import type { ExtractedFilesText, FileMetadata } from '$lib/types/files';
   import UploadedFileCards from '$components/UploadedFileCards.svelte';
   import ChatFileUploadForm from '$components/ChatFileUploadForm.svelte';
+  import { PUBLIC_MESSAGE_LENGTH_LIMIT } from '$env/static/public';
 
   export let data;
 
@@ -235,27 +232,34 @@
       if (data.thread?.id) {
         let extractedFilesTextString = JSON.stringify(extractedFilesText);
 
-        if (extractedFilesTextString.length > MAX_COMBINED_FILE_TEXT_LENGTH) {
+        if (extractedFilesTextString.length > Number(PUBLIC_MESSAGE_LENGTH_LIMIT) - 3) {
           extractedFilesTextString = extractedFilesTextString.substring(
             0,
-            MAX_COMBINED_FILE_TEXT_LENGTH
+            Number(PUBLIC_MESSAGE_LENGTH_LIMIT)
           );
           toastStore.addToast(MAX_COMBINED_FILE_TEXT_LENGTH_WARNING());
         }
         if (extractedFilesText.length > 0) {
-          // Save the text of the document as it's own message before sending actual question
-          const contextMsg = await saveMessage({
-            thread_id: data.thread.id,
-            content: `${FILE_UPLOAD_PROMPT}: ${extractedFilesTextString}`,
-            role: 'user',
-            metadata: {
-              hideMessage: 'true'
-            }
-          });
-          setChatMessages([
-            ...$chatMessages,
-            { ...contextMsg, content: getMessageText(contextMsg) }
-          ]);
+          try {
+            // Save the text of the document as it's own message before sending actual question
+            const contextMsg = await saveMessage({
+              thread_id: data.thread.id,
+              content: `${FILE_UPLOAD_PROMPT}: ${extractedFilesTextString}`,
+              role: 'user',
+              metadata: {
+                hideMessage: 'true'
+              }
+            });
+            setChatMessages([
+              ...$chatMessages,
+              {...contextMsg, content: getMessageText(contextMsg)}
+            ]);
+          }
+          catch(e){
+            console.log("in catch")
+            console.log(e)
+
+          }
         }
 
         // Save with API
@@ -273,7 +277,6 @@
             : null)
         });
 
-        console.log('$chatMessages', $chatMessages);
         // store user input
         await threadsStore.addMessageToStore(newMessage);
         submitChatMessage(e); // submit to AI (/api/chat)

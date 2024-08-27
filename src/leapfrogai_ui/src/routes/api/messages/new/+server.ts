@@ -15,7 +15,7 @@ export const POST: RequestHandler = async ({ request, locals: { session } }) => 
   try {
     requestData = await request.json();
     const isValid = await messageInputSchema.isValid(requestData);
-
+    console.log("isValid", isValid)
     if (!isValid) error(400, 'Bad Request');
   } catch {
     error(400, 'Bad Request');
