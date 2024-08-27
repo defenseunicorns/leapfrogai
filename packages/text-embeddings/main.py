@@ -11,13 +11,17 @@ from leapfrogai_sdk import (
     serve,
 )
 
+GPU_ENABLED = (
+    False if os.environ.get("GPU_ENABLED", "False").lower() != "true" else True
+)
+
 model_dir = os.environ.get("LFAI_MODEL_PATH", ".model")
-model = INSTRUCTOR(model_dir)
+model = INSTRUCTOR(model_dir, device="gpu" if GPU_ENABLED else "cpu")
 
 
 class InstructorEmbedding:
     async def CreateEmbedding(self, request: EmbeddingRequest, context: GrpcContext):
-        embeddings = model.encode(request.inputs)
+        embeddings = model.encode(sentences=request.inputs, show_progress_bar=True)
 
         embeddings = [Embedding(embedding=inner_list) for inner_list in embeddings]
         return EmbeddingResponse(embeddings=embeddings)
