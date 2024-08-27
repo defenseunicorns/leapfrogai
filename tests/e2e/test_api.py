@@ -122,7 +122,7 @@ def test_api_row_level_security():
 
 
 def download_arxiv_pdf():
-    url = "https://arxiv.org/pdf/2305.16291.pdf"
+    url = "https://arxiv.org/pdf/1706.03762.pdf"
     response = requests.get(url)
     if response.status_code == 200:
         with tempfile.NamedTemporaryFile(delete=False, suffix=".pdf") as temp_file:
@@ -238,10 +238,10 @@ def test_run_with_background_task():
             )
 
     # Wait for indexing to complete if it hasn't already
-    max_wait_time = 60 * 10  # 10 minutes in seconds
+    max_wait_time_in_seconds = 60 * 3  # 3 minutes
     start_time = time.time()
     while check_vector_store_status() != VectorStoreStatus.COMPLETED.value:
-        if time.time() - start_time > max_wait_time:
+        if time.time() - start_time > max_wait_time_in_seconds:
             pytest.fail(
                 "Vector store indexing did not complete within the expected time"
             )
