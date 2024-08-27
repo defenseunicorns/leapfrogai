@@ -1,43 +1,45 @@
-MAKEFILE_DIR := $(dir $(abspath $(lastword $(MAKEFILE_LIST))))
-SHELL := /bin/bash
+API_PORT := 8080
+# This can be pointed at the localhost:8080 instance of the API as well
+API_BASE_URL := https://leapfrogai-api.uds.dev
+SUPABASE_BASE_URL := https://supabase-kong.uds.dev
+EXPIRATION_TIME := $(shell date -d "+30 days" +%s)
+SUPABASE_ANON_KEY := $(shell uds zarf tools kubectl get secret -n leapfrogai supabase-bootstrap-jwt -o json | uds zarf tools yq '.data.anon-key' | base64 -d)
 
-
-export SUPABASE_URL=$(shell supabase status | grep -oP '(?<=API URL: ).*')
-export SUPABASE_ANON_KEY=$(shell supabase status | grep -oP '(?<=anon key: ).*')
-
-install-api:
-	@cd ${MAKEFILE_DIR} && \
+install: set-env
 	python -m pip install ../../src/leapfrogai_sdk
-	@cd ${MAKEFILE_DIR} && \
-	python -m pip install -e .
+	python -m pip install -e ".[dev]"
 
-dev-run-api:
-	@cd ${MAKEFILE_DIR} && \
-	python -m uvicorn main:app --port 3000 --reload --log-level info
+set-env:
+	echo "SUPABASE_URL=${SUPABASE_BASE_URL}" > .env
+	echo "SUPABASE_ANON_KEY=${SUPABASE_ANON_KEY}" >> .env
 
-define get_jwt_token
-	echo "Getting JWT token from ${SUPABASE_URL}..."; \
-	TOKEN_RESPONSE=$$(curl -s -X POST $(1) \
-	-H "apikey: ${SUPABASE_ANON_KEY}" \
+dev: set-env
+	python -m uvicorn main:app --port ${API_PORT} --reload --log-level info --env-file .env
+
+api-key:
+	curl -s -X POST '${SUPABASE_BASE_URL}/auth/v1/signup' \
+	-H "apikey:  ${SUPABASE_ANON_KEY}" \
 	-H "Content-Type: application/json" \
-	-d '{ "email": "admin@localhost", "password": "$$SUPABASE_PASS"}'); \
-	echo "Extracting token from $(TOKEN_RESPONSE)"; \
-	JWT=$$(echo $$TOKEN_RESPONSE | grep -oP '(?<="access_token":")[^"]*'); \
-	echo -n "$$JWT" | xclip -selection clipboard; \
-	echo "SUPABASE_USER_JWT=$$JWT" > .env; \
-	echo "SUPABASE_URL=$$SUPABASE_URL" >> .env; \
-	echo "SUPABASE_ANON_KEY=$$SUPABASE_ANON_KEY" >> .env; \
-	echo "DONE - JWT token copied to clipboard"
-endef
+	-H "Authorization: Bearer  ${SUPABASE_ANON_KEY}" \
+	-d '{ "email": "leapfrogai@defenseunicorns.com", "password": "password", "confirmPassword": "password"}' | \
+	uds zarf tools yq '.access_token' | \
+	xargs -I {} curl -s --insecure -X POST '${API_BASE_URL}/leapfrogai/v1/auth/api-keys' \
+	-H "apikey: {}" \
+	-H "Content-Type: application/json" \
+	-H "Authorization: Bearer {}" \
+	-d '{ "name": "api-key", "expires_at": "${EXPIRATION_TIME}" }' | \
+	uds zarf tools yq '.api_key'
 
-user:
-	@read -s -p "Enter a new DEV API password: " SUPABASE_PASS; echo; \
-	echo "Creating new supabase user..."; \
-	$(call get_jwt_token,"${SUPABASE_URL}/auth/v1/signup")
-
-env:
-	@read -s -p "Enter your DEV API password: " SUPABASE_PASS; echo; \
-	$(call get_jwt_token,"${SUPABASE_URL}/auth/v1/token?grant_type=password")
-
-test-integration:
-	@cd ${MAKEFILE_DIR} && python -m pytest ../../tests/integration/api/ -vv -s
+new-api-key:
+	curl -s -X POST '${SUPABASE_BASE_URL}/auth/v1/token?grant_type=password' \
+	-H "apikey:  ${SUPABASE_ANON_KEY}" \
+	-H "Content-Type: application/json" \
+	-H "Authorization: Bearer  ${SUPABASE_ANON_KEY}" \
+	-d '{ "email": "leapfrogai@defenseunicorns.com", "password": "password"}' | \
+	uds zarf tools yq '.access_token' | \
+	xargs -I {} curl -s --insecure -X POST '${API_BASE_URL}/leapfrogai/v1/auth/api-keys' \
+	-H "apikey: {}" \
+	-H "Content-Type: application/json" \
+	-H "Authorization: Bearer {}" \
+	-d '{ "name": "api-key", "expires_at": "${EXPIRATION_TIME}" }' | \
+	uds zarf tools yq '.api_key'

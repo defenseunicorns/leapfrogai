@@ -1,4 +1,4 @@
-import { superValidate, withFiles, fail } from 'sveltekit-superforms';
+import { fail, superValidate, withFiles } from 'sveltekit-superforms';
 import type { Actions } from './$types';
 import { yup } from 'sveltekit-superforms/adapters';
 import type { FileObject } from 'openai/resources/files';
@@ -30,7 +30,6 @@ export const actions: Actions = {
 
     if (form.data.files) {
       const fileId: string | null = null;
-
       const uploadedFiles: Array<FileObject | FileRow> = [];
       for (const file of form.data.files) {
         if (file) {

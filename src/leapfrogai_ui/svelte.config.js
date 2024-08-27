@@ -1,12 +1,13 @@
 import adapter from '@sveltejs/adapter-node';
 import { vitePreprocess } from '@sveltejs/vite-plugin-svelte';
-import { optimizeImports } from 'carbon-preprocess-svelte';
+import * as dotenv from 'dotenv';
 
+dotenv.config();
 /** @type {import('@sveltejs/kit').Config} */
 const config = {
   // Consult https://kit.svelte.dev/docs/integrations#preprocessors
   // for more information about preprocessors
-  preprocess: [vitePreprocess(), optimizeImports()],
+  preprocess: [vitePreprocess()],
   kit: {
     // adapter-auto only supports some environments, see https://kit.svelte.dev/docs/adapter-auto for a list.
     // If your environment is not supported or you settled on a specific environment, switch out the adapter.
@@ -21,6 +22,13 @@ const config = {
       $schemas: 'src/lib/schemas',
       $constants: 'src/lib/constants',
       $testUtils: 'testUtils'
+    },
+    csp: {
+      // Remainder of the CSP is set in hooks.server.ts, we partially define here for the nonce generation provided
+      // by Sveltekit
+      directives: {
+        'script-src': ['self', 'strict-dynamic']
+      }
     }
   }
 };

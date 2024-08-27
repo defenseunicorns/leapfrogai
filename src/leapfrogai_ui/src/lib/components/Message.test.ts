@@ -11,7 +11,6 @@ import { threadsStore } from '$stores';
 import { NO_SELECTED_ASSISTANT_ID } from '$constants';
 
 const fakeAppend = vi.fn();
-const fakeReload = vi.fn();
 
 const getDefaultMessageProps = () => {
   let messages: VercelAIMessage[] = [];
@@ -19,33 +18,30 @@ const getDefaultMessageProps = () => {
     messages = [...newMessages];
   };
   return {
-    allStreamedMessages: [],
     message: convertMessageToVercelAiMessage(getFakeMessage()),
     messages,
+    streamedMessages: [],
     setMessages,
     isLastMessage: false,
-    append: fakeAppend,
-    reload: fakeReload
+    append: fakeAppend
   };
 };
 
 describe('Message component', () => {
   afterEach(() => {
     fakeAppend.mockReset();
-    fakeReload.mockReset();
   });
 
   afterAll(() => {
     fakeAppend.mockRestore();
-    fakeReload.mockRestore();
   });
 
   it('displays edit text area when edit btn is clicked', async () => {
     render(Message, { ...getDefaultMessageProps() });
-    expect(screen.queryByText('edit message input')).not.toBeInTheDocument();
+    expect(screen.queryByTestId('edit-message-input')).not.toBeInTheDocument();
     const editPromptBtn = screen.getByLabelText('edit prompt');
     await userEvent.click(editPromptBtn);
-    await screen.findByLabelText('edit message input');
+    await screen.findByTestId('edit-message-input');
   });
   it('removes the edit textarea and restores original text on close', async () => {
     const fakeMessage = getFakeMessage();
@@ -54,11 +50,11 @@ describe('Message component', () => {
       message: convertMessageToVercelAiMessage(fakeMessage)
     });
     const editPromptBtn = screen.getByLabelText('edit prompt');
-    expect(screen.queryByText('edit message input')).not.toBeInTheDocument();
+    expect(screen.queryByTestId('edit-message-input')).not.toBeInTheDocument();
     expect(screen.getByText(getMessageText(fakeMessage))).toBeInTheDocument();
     await userEvent.click(editPromptBtn);
 
-    const input = screen.getByRole('textbox', { name: /edit message input/i });
+    const input = screen.getByTestId('edit-message-input');
     await userEvent.clear(input);
     expect(screen.queryByText(getMessageText(fakeMessage))).not.toBeInTheDocument();
 
@@ -76,7 +72,7 @@ describe('Message component', () => {
       message: convertMessageToVercelAiMessage(fakeMessage)
     });
     const editPromptBtn = screen.getByLabelText('edit prompt');
-    expect(screen.queryByText('edit message input')).not.toBeInTheDocument();
+    expect(screen.queryByTestId('edit-message-input')).not.toBeInTheDocument();
     expect(screen.getByText(getMessageText(fakeMessage))).toBeInTheDocument();
     await userEvent.click(editPromptBtn);
 
@@ -100,10 +96,6 @@ describe('Message component', () => {
     });
 
     it('copies text of AI response to clipboard and sends a toast notification', async () => {
-      Object.assign(navigator, {
-        clipboard: { writeText: vi.fn().mockImplementation(() => Promise.resolve()) }
-      });
-
       clipboardSpy = vi.spyOn(navigator.clipboard, 'writeText');
       const fakeAssistantMessage = getFakeMessage({ role: 'assistant' });
       render(MessageWithToast, {
@@ -139,16 +131,17 @@ describe('Message component', () => {
         threads: fakeThreads,
         selectedAssistantId: NO_SELECTED_ASSISTANT_ID,
         sendingBlocked: true,
-        lastVisitedThreadId: ''
+        lastVisitedThreadId: '',
+        streamingMessage: null
       });
       render(MessageWithToast, {
         ...getDefaultMessageProps()
       });
 
-      const editPromptBtn = screen.getByLabelText('edit prompt');
+      const editPromptBtn = screen.getByTestId('edit-message');
       await userEvent.click(editPromptBtn);
 
-      const submitBtn = screen.getByRole('button', { name: /submit/i });
+      const submitBtn = screen.getByTestId('submit-edit-message');
       expect(submitBtn).toHaveProperty('disabled', true);
     });
     it('has copy and regenerate buttons for the last AI response', () => {
@@ -156,7 +149,8 @@ describe('Message component', () => {
         threads: fakeThreads,
         selectedAssistantId: NO_SELECTED_ASSISTANT_ID,
         sendingBlocked: false,
-        lastVisitedThreadId: ''
+        lastVisitedThreadId: '',
+        streamingMessage: null
       });
       render(MessageWithToast, {
         ...getDefaultMessageProps(),
@@ -198,7 +192,8 @@ describe('Message component', () => {
         threads: fakeThreads,
         selectedAssistantId: NO_SELECTED_ASSISTANT_ID,
         sendingBlocked: true,
-        lastVisitedThreadId: ''
+        lastVisitedThreadId: '',
+        streamingMessage: null
       });
       render(MessageWithToast, {
         ...getDefaultMessageProps(),
@@ -213,7 +208,8 @@ describe('Message component', () => {
         threads: fakeThreads,
         selectedAssistantId: NO_SELECTED_ASSISTANT_ID,
         sendingBlocked: true,
-        lastVisitedThreadId: ''
+        lastVisitedThreadId: '',
+        streamingMessage: null
       });
       render(MessageWithToast, {
         ...getDefaultMessageProps(),
@@ -227,7 +223,8 @@ describe('Message component', () => {
         threads: fakeThreads,
         selectedAssistantId: NO_SELECTED_ASSISTANT_ID,
         sendingBlocked: true,
-        lastVisitedThreadId: ''
+        lastVisitedThreadId: '',
+        streamingMessage: null
       });
       render(MessageWithToast, {
         ...getDefaultMessageProps(),

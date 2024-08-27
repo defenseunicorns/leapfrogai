@@ -48,6 +48,18 @@ spec:
               value: '###ZARF_VAR_DISABLE_KEYCLOAK###'
             - name: PUBLIC_MESSAGE_LENGTH_LIMIT
               value: '###ZARF_VAR_MESSAGE_LENGTH_LIMIT###'
+            - name: SUPABASE_AUTH_EXTERNAL_KEYCLOAK_URL
+              value: "https://sso.{{ .Values.package.domain }}/realms/uds"
+            - name: SUPABASE_AUTH_KEYCLOAK_CLIENT_ID
+              valueFrom:
+                secretKeyRef:
+                  name: sso-client-uds-supabase
+                  key: clientId
+            - name: SUPABASE_AUTH_KEYCLOAK_SECRET
+              valueFrom:
+                secretKeyRef:
+                  name: sso-client-uds-supabase
+                  key: secret
           resources:
             requests:
               memory: '0'

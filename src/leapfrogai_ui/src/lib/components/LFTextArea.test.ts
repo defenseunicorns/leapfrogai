@@ -21,8 +21,13 @@ describe('LF Text Area', () => {
   });
   it('limits text input and displays an error message', async () => {
     const value = writable('');
-    render(LFTextArea, { value, onSubmit: vi.fn(), maxRows: 2, ariaLabel: 'test input' });
-    const input = screen.getByLabelText('test input');
+    render(LFTextArea, {
+      value,
+      onSubmit: vi.fn(),
+      maxRows: 2,
+      'data-testid': 'edit-message-input'
+    });
+    const input = screen.getByTestId('edit-message-input');
     const limitText = faker.string.alpha({ length: 10 });
     await userEvent.type(input, limitText);
     expect(screen.queryByText('Character limit reached')).not.toBeInTheDocument();

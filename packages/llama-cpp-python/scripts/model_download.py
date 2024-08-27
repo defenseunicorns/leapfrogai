@@ -1,17 +1,34 @@
 import os
+import hashlib
+import urllib.request
 
-from huggingface_hub import hf_hub_download
+REPO_ID = os.environ.get("REPO_ID", "")
+FILENAME = os.environ.get("FILENAME", "")
+REVISION = os.environ.get("REVISION", "main")
+CHECKSUM = os.environ.get("SHA256_CHECKSUM", "")
+OUTPUT_FILE = os.environ.get("OUTPUT_FILE", ".model/model.gguf")
 
-REPO_ID = os.environ.get("REPO_ID", "TheBloke/SynthIA-7B-v2.0-GGUF")
-FILENAME = os.environ.get("FILENAME", "synthia-7b-v2.0.Q4_K_M.gguf")
-REVISION = os.environ.get("REVISION", "3f65d882253d1f15a113dabf473a7c02a004d2b5")
 
-os.environ["HF_HUB_ENABLE_HF_TRANSFER"] = "1"
+def download_model():
+    # Check if the model is already downloaded.
+    if os.path.exists(OUTPUT_FILE) and CHECKSUM != "":
+        if hashlib.sha256(open(OUTPUT_FILE, "rb").read()).hexdigest() == CHECKSUM:
+            print("Model already downloaded.")
+            return
 
-hf_hub_download(
-    repo_id=REPO_ID,
-    filename=FILENAME,
-    local_dir=".model",
-    local_dir_use_symlinks=False,
-    revision=REVISION,
-)
+    # Validate that require environment variables are provided
+    if REPO_ID == "" or FILENAME == "":
+        print("Please provide REPO_ID and FILENAME environment variables.")
+        return
+
+    # Download the model!
+    print("Downloading model... This may take a while.")
+    if not os.path.exists(".model"):
+        os.mkdir(".model")
+    urllib.request.urlretrieve(
+        f"https://huggingface.co/{REPO_ID}/resolve/{REVISION}/{FILENAME}", OUTPUT_FILE
+    )
+
+
+if __name__ == "__main__":
+    download_model()

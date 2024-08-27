@@ -65,9 +65,8 @@ function countWords(str: string) {
 test('it cancels responses', async ({ page, openAIClient }) => {
   await loadChatPage(page);
   const messages = page.getByTestId('message');
-  await sendMessage(page, newMessage1);
+  await sendMessage(page, LONG_RESPONSE_PROMPT);
   await expect(messages).toHaveCount(2); // ensure new response is being received
-  await page.waitForTimeout(25); // let it partially complete
   await page.getByTestId('cancel message').click();
   await page.waitForTimeout(200); // wait to ensure new question was not sent
   await expect(messages).toHaveCount(2);
@@ -87,7 +86,7 @@ test('it cancels responses when clicking enter instead of pause button and does 
   const messages = page.getByTestId('message');
   await sendMessage(page, LONG_RESPONSE_PROMPT); // response must take a long time for this test to work
   await expect(messages).toHaveCount(2); // ensure new response is being received
-  await page.getByLabel('message input').fill('new question');
+  await page.getByTestId('chat-input').fill('new question');
   await page.waitForTimeout(25); // let it partially complete
   await page.keyboard.down('Enter'); // pause response
   await page.waitForTimeout(200); // wait to ensure new question was not sent
@@ -100,7 +99,7 @@ test('it cancels responses when clicking enter instead of pause button and does 
   await deleteActiveThread(page, openAIClient);
 });
 
-// TODO - Leapfrog API is currently too slow when sending assistant responses so when this test
+// TODO - LeapfrogAI API is currently too slow when sending assistant responses so when this test
 // runs with multiple browsers in parallel, it times out. It should usually work for individual
 // browsers unless the API is receiving additional run requests simultaneously
 test('it can switch between normal chat and chat with an assistant', async ({
@@ -119,8 +118,8 @@ test('it can switch between normal chat and chat with an assistant', async ({
   await expect(messages).toHaveCount(2);
 
   // Select assistant
-  await expect(page.getByTestId('assistant-dropdown')).not.toBeDisabled();
-  const assistantDropdown = page.getByTestId('assistant-dropdown');
+  await expect(page.getByTestId('assistants-select-btn')).not.toBeDisabled();
+  const assistantDropdown = page.getByTestId('assistants-select-btn');
   await assistantDropdown.click();
   await page.getByText(assistant!.name!).click();
 
@@ -131,11 +130,11 @@ test('it can switch between normal chat and chat with an assistant', async ({
   await expect(messages).toHaveCount(4);
 
   await expect(page.getByTestId('user-icon')).toHaveCount(2);
-  await expect(page.getByTestId('leapfrog-icon')).toHaveCount(1);
+  await expect(page.getByTestId('leapfrogai-icon')).toHaveCount(1);
   await expect(page.getByTestId('assistant-icon')).toHaveCount(1);
 
   // Test selected assistant has a checkmark and clicking it again de-selects the assistant
-  await expect(page.getByTestId('assistant-dropdown')).not.toBeDisabled();
+  await expect(page.getByTestId('assistants-select-btn')).not.toBeDisabled();
   await assistantDropdown.click();
   await page.getByTestId('checked').click();
 
@@ -146,7 +145,7 @@ test('it can switch between normal chat and chat with an assistant', async ({
   await expect(messages).toHaveCount(6);
 
   await expect(page.getByTestId('user-icon')).toHaveCount(3);
-  await expect(page.getByTestId('leapfrog-icon')).toHaveCount(2);
+  await expect(page.getByTestId('leapfrogai-icon')).toHaveCount(2);
   await expect(page.getByTestId('assistant-icon')).toHaveCount(1);
 
   // Cleanup
@@ -160,6 +159,30 @@ test('it formats code in a code block and can copy the code', async ({ page }) =
   await expect(page.getByTestId('copy-code-btn')).not.toBeVisible();
   await sendMessage(page, 'create a javascript function that prints hello world');
   await waitForResponseToComplete(page);
-  const copyBtn = page.getByTestId('copy-code-btn');
-  await expect(copyBtn).toBeVisible();
+  const copyBtns = await page.getByTestId('copy-code-btn').all();
+  expect(copyBtns.length).toBeGreaterThan(0);
+});
+
+// The skeleton only shows for assistant messages
+test('it shows a loading skeleton when a response is pending', async ({ page, openAIClient }) => {
+  const assistant = await createAssistantWithApi({ openAIClient });
+
+  await loadChatPage(page);
+
+  // Select assistant
+  await expect(page.getByTestId('assistants-select-btn')).not.toBeDisabled();
+  const assistantDropdown = page.getByTestId('assistants-select-btn');
+  await assistantDropdown.click();
+  await page.getByText(assistant!.name!).click();
+
+  const messages = page.getByTestId('message');
+  await sendMessage(page, newMessage1);
+  await expect(page.getByRole('status')).toBeVisible();
+  await waitForResponseToComplete(page);
+  await expect(messages).toHaveCount(2);
+  await expect(page.getByRole('status')).not.toBeVisible();
+
+  // Cleanup
+  await deleteActiveThread(page, openAIClient);
+  await deleteAssistantWithApi(assistant.id, openAIClient);
 });

@@ -1,0 +1,92 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  --header-height: 3rem;
+  --message-input-height: 2.5rem;
+  --sidebar-width: 255px;
+  scrollbar-color: #4b5563 #1f2937;
+}
+
+/*TODO - can we get rid of some of these?*/
+@layer utilities {
+  .content {
+    display: flex;
+    flex-grow: 1;
+    flex-direction: column;
+    overflow: auto;
+    padding-top: 2rem;
+    height: calc(100vh - var(--header-height));
+  }
+
+  .sidebar-height {
+    height: calc(100vh - var(--header-height));
+  }
+
+  .no-scrollbar {
+    scrollbar-width: none;
+  }
+
+  .hide {
+    opacity: 0;
+    transition: opacity 0.2s;
+  }
+
+  .lf-content-container {
+    display: flex;
+    height: 100%;
+    flex-direction: column;
+    justify-content: space-between;
+  }
+
+  .centered-flexbox {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+  }
+
+  .remove-btn-style {
+    background: none;
+    color: inherit;
+    border: none;
+    padding: 0;
+    font: inherit;
+    cursor: pointer;
+    outline: inherit;
+  }
+
+  .link {
+    font-size: 0.875rem;
+    line-height: 1.25rem;
+    font-weight: 400;
+    letter-spacing: 0.16px;
+    text-decoration: none;
+    color: #78a9ff;
+    cursor: pointer;
+  }
+
+  .z-max {
+    z-index: 9999;
+  }
+}
+
+@layer components {
+  .chat-icon {
+    width: 32px;
+    height: 52px;
+    padding: 14px 0.25rem;
+    color: white;
+  }
+
+  .pictogram {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    cursor: pointer;
+    transition: fill 70ms ease;
+    &:hover {
+      background-color: gray;
+    }
+  }
+}

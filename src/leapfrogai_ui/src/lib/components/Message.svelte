@@ -1,13 +1,18 @@
 <script lang="ts">
   import { page } from '$app/stores';
-  import { Button, Tile } from 'carbon-components-svelte';
-  import { Copy, Edit, Reset, UserAvatar } from 'carbon-icons-svelte';
+  import { Button, Card } from 'flowbite-svelte';
   import { type Message as VercelAIMessage } from '@ai-sdk/svelte';
   import markdownit from 'markdown-it';
   import hljs from 'highlight.js';
-  import { LFTextArea } from '$components';
   import frog from '$assets/frog.png';
   import { writable } from 'svelte/store';
+  import {
+    EditOutline,
+    FileCopyOutline,
+    RedoOutline,
+    UserCircleOutline
+  } from 'flowbite-svelte-icons';
+  import { twMerge } from 'tailwind-merge';
   import { threadsStore, toastStore } from '$stores';
   import { convertTextToMessageContentArr, getMessageText } from '$helpers/threads';
   import type { Message as OpenAIMessage } from 'openai/resources/beta/threads/messages';
@@ -20,6 +25,9 @@
   import DynamicPictogram from '$components/DynamicPictogram.svelte';
   import type { AppendFunction } from '$lib/types/messages';
   import DOMPurify from 'isomorphic-dompurify';
+  import TextareaV2 from '$components/LFTextArea.svelte';
+  import IconButton from '$components/IconButton.svelte';
+  import MessagePendingSkeleton from '$components/MessagePendingSkeleton.svelte';
 
   export let message: OpenAIMessage;
   export let messages: OpenAIMessage[] = [];
@@ -27,6 +35,8 @@
   export let setMessages: ((messages: VercelAIMessage[]) => void) | undefined = undefined;
   export let isLastMessage: boolean;
   export let append: AppendFunction | undefined = undefined;
+
+  $: messageText = getMessageText(message);
 
   // used for code formatting and handling
   const md = markdownit({
@@ -42,7 +52,7 @@
         code = md.utils.escapeHtml(str);
       }
 
-      return `<pre><code><code-block code="${code}" language="${language}"></code></pre>`;
+      return `<pre><code><code-block code="${code}" language="${language}" /></code></pre>`;
     }
   });
 
@@ -101,88 +111,100 @@
 
 <div
   data-testid="message"
-  class="message"
+  class="whitespace-pre-line"
   role="toolbar"
-  class:transparent={message.role === 'user'}
   on:mouseover={() => (messageIsHovered = true)}
   on:mouseleave={() => (messageIsHovered = false)}
   on:focus={() => (messageIsHovered = true)}
   tabindex="0"
 >
-  <div class="message-and-avatar">
+  <div class="flex flex-1 items-start">
     {#if message.role === 'user'}
-      <div class="icon">
-        <UserAvatar style="width: 24px; height: 24px;" data-testid="user-icon" />
+      <div class="chat-icon">
+        <UserCircleOutline class="h-6 w-6" data-testid="user-icon" />
       </div>
     {:else if assistantImage && assistantImage.startsWith('http')}
-      <img alt="Assistant" src={assistantImage} class="icon" data-testid="assistant-icon" />
+      <img alt="Assistant" src={assistantImage} class="chat-icon" data-testid="assistant-icon" />
     {:else if assistantImage}
-      <div class="icon" data-testid="assistant-icon">
-        <DynamicPictogram iconName={assistantImage} width="24px" height="24px" />
+      <div class="chat-icon" data-testid="assistant-icon">
+        <DynamicPictogram size="xs" iconName={assistantImage} />
       </div>
     {:else}
-      <img alt="LeapfrogAI" src={frog} class="icon" data-testid="leapfrog-icon" />
+      <img alt="LeapfrogAI" src={frog} class="chat-icon" data-testid="leapfrogai-icon" />
     {/if}
 
-    <div class="message-and-utils">
+    <div class="flex flex-grow flex-col gap-1 overflow-hidden pb-1">
       {#if editMode}
-        <div class="edit-prompt">
-          <LFTextArea {value} {onSubmit} ariaLabel="edit message input" />
-          <div class="cancel-save">
-            <Button size="small" kind="secondary" on:click={handleCancel}>Cancel</Button>
-            <Button
-              size="small"
-              disabled={$threadsStore.sendingBlocked}
-              on:click={onSubmit}
-              aria-label="submit edited message">Submit</Button
-            >
-          </div>
+        <TextareaV2
+          data-testid="edit-message-input"
+          {value}
+          {onSubmit}
+          class="mx-4 mt-[54px] resize-none bg-white dark:bg-gray-800"
+        />
+        <div class="flex justify-end gap-1">
+          <Button size="sm" color="alternative" on:click={handleCancel}>Cancel</Button>
+          <Button
+            size="sm"
+            disabled={$threadsStore.sendingBlocked}
+            on:click={onSubmit}
+            aria-label="submit edited message"
+            data-testid="submit-edit-message">Submit</Button
+          >
         </div>
       {:else}
-        <Tile style="line-height: 20px;">
-          <div class="message-content">
-            <div style="font-weight: bold">
+        <Card
+          class={twMerge(
+            'max-w-full break-words border-none dark:bg-gray-700 dark:text-white',
+            message.role === 'user' && 'bg-transparent shadow-none dark:bg-transparent'
+          )}
+        >
+          <div class="flex flex-col gap-2">
+            <div class="font-bold">
               {message.role === 'user' ? 'You' : getAssistantName(message.assistant_id)}
             </div>
-            <!--eslint-disable-next-line svelte/no-at-html-tags -- We use DomPurity to sanitize the code snippet-->
-            {@html md.render(DOMPurify.sanitize(getMessageText(message)))}
-            <div class="citations">
-              {#each getCitations(message, $page.data.files) as { component: Component, props }}
-                <svelte:component this={Component} {...props} />
-              {/each}
-            </div>
+            {#if message.role !== 'user' && !messageText}
+              <MessagePendingSkeleton size="sm" class="mt-4" darkColor="bg-gray-500" />
+            {:else}
+              <!--eslint-disable-next-line svelte/no-at-html-tags -- We use DomPurity to sanitize the code snippet-->
+              {@html md.render(DOMPurify.sanitize(messageText))}
+              <div class="flex flex-col items-start">
+                {#each getCitations(message, $page.data.files) as { component: Component, props }}
+                  <svelte:component this={Component} {...props} />
+                {/each}
+              </div>
+            {/if}
           </div>
-        </Tile>
+        </Card>
       {/if}
 
-      <div class="utils">
+      <div class="flex gap-1 pl-4">
         {#if message.role === 'user' && !editMode}
-          <button
-            data-testid="edit prompt btn"
-            class="remove-btn-style"
-            class:highlight-icon={!$threadsStore.sendingBlocked}
-            class:hide={!messageIsHovered}
+          <IconButton
+            class={!messageIsHovered && 'hide'}
             on:click={() => (editMode = true)}
             aria-label="edit prompt"
-            tabindex="0"><Edit /></button
+            data-testid="edit-message"
+            tabindex="0"
           >
+            <EditOutline />
+          </IconButton>
         {/if}
         {#if message.role !== 'user'}
-          <button
+          <IconButton
             data-testid="copy btn"
-            class="highlight-icon remove-btn-style"
-            class:hide={!messageIsHovered}
+            class={!messageIsHovered && 'hide'}
             on:click={handleCopy}
             tabindex="0"
-            aria-label="copy message"><Copy /></button
+            aria-label="copy message"
           >
+            <FileCopyOutline />
+          </IconButton>
         {/if}
         {#if message.role !== 'user' && isLastMessage && !$threadsStore.sendingBlocked}
-          <button
+          <IconButton
             data-testid="regenerate btn"
-            class="remove-btn-style"
-            class:highlight-icon={!$threadsStore.sendingBlocked}
-            class:hide={!messageIsHovered}
+            class={!messageIsHovered && 'hide'}
+            disabled={$threadsStore.sendingBlocked}
             on:click={async () =>
               await handleMessageEdit({
                 messages,
@@ -193,78 +215,12 @@
                 selectedAssistantId: $threadsStore.selectedAssistantId
               })}
             aria-label="regenerate message"
-            tabindex="0"><Reset /></button
+            tabindex="0"
           >
+            <RedoOutline />
+          </IconButton>
         {/if}
       </div>
     </div>
   </div>
 </div>
-
-<style lang="scss">
-  .message-and-avatar {
-    display: flex;
-    flex: 1;
-    align-items: flex-start;
-  }
-
-  .message-and-utils {
-    display: flex;
-    flex-direction: column;
-    width: 100%;
-    gap: layout.$spacing-02;
-    overflow: hidden;
-    padding-bottom: layout.$spacing-02;
-  }
-
-  .hide {
-    opacity: 0;
-    transition: opacity 0.2s;
-  }
-  .message {
-    white-space: pre-line;
-  }
-
-  .transparent {
-    :global(.bx--tile) {
-      background-color: transparent;
-    }
-  }
-  .icon {
-    width: 32px;
-    height: 52px;
-    padding: 14px layout.$spacing-02;
-  }
-
-  .cancel-save {
-    display: flex;
-    justify-content: flex-end;
-    gap: layout.$spacing-02;
-    margin-top: 1px; // prevents text in editable text area from slightly jumping
-  }
-
-  .utils {
-    display: flex;
-    gap: layout.$spacing-03;
-    padding-left: layout.$spacing-05;
-  }
-
-  .edit-prompt :global(.lf-text-area.bx--text-area) {
-    background: themes.$background;
-    outline: 1px solid themes.$layer-02;
-    border-bottom: 0;
-    margin-top: 7px; // prevents edit box from jumping up on editMode
-  }
-
-  .message-content {
-    display: flex;
-    flex-direction: column;
-    gap: layout.$spacing-03;
-  }
-
-  .citations {
-    display: flex;
-    align-items: flex-start;
-    flex-direction: column;
-  }
-</style>

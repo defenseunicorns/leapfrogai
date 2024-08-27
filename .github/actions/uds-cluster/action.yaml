@@ -1,0 +1,26 @@
+name: setup-uds
+description: "Setup UDS Cluster"
+
+inputs:
+  registry1Username:
+    description: Registry1 Username
+  registry1Password:
+    description: Registry1 Password
+
+runs:
+  using: composite
+  steps:
+    - name: Setup UDS Environment
+      uses: defenseunicorns/uds-common/.github/actions/setup@822dac4452e6815aadcf09f487406ff258756a0c # v0.14.0
+      with:
+        username: ${{ inputs.registry1Username }}
+        password: ${{ inputs.registry1Password }}
+        udsCliVersion: 0.14.0
+
+    - name: Checkout Repo
+      uses: actions/checkout@b4ffde65f46336ab88eb53be808477a3936bae11 # v4.1.1
+
+    - name: Create UDS Cluster
+      shell: bash
+      run: |
+        UDS_CONFIG=.github/config/uds-config.yaml make create-uds-cpu-cluster

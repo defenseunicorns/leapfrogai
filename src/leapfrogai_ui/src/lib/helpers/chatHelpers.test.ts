@@ -48,14 +48,15 @@ describe('chat helpers', () => {
       expect(timestamp).toBe(timestampValue * 1000);
     });
 
-    it('should default to a timestamp in miliseconds of right now for invalid or missing date value', () => {
+    it('should default to a timestamp in milliseconds of right now for invalid or missing date value', () => {
       const message: LFMessage = {
         ...getFakeOpenAIMessage({ thread_id: '123', content: 'test', role: 'user' }),
         createdAt: null,
         created_at: null
       };
-      const timestamp = normalizeTimestamp(message);
-      expect(timestamp).toBe(new Date().getTime());
+      // Occasionally the timestamps can be off by 1 millisecond and fail the tests, so we just check seconds here
+      const timestamp = Math.floor(normalizeTimestamp(message) / 1000);
+      expect(timestamp).toBe(Math.floor(new Date().getTime() / 1000));
     });
   });
 });

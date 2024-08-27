@@ -16,7 +16,7 @@ variables:
     prompt: true
     sensitive: true
   - name: OPENAI_API_KEY
-    description: OpenAI API Key. If specified, app will use OpenAI instead of Leapfrog
+    description: OpenAI API Key. If specified, app will use OpenAI instead of LeapfrogAI
     prompt: true
     default: ""
     sensitive: true
@@ -69,7 +69,7 @@ components:
         valuesFiles:
           - 'chart/ui-values.yaml'
         # x-release-please-start-version
-        version: 0.9.2
+        version: 0.11.0
         # x-release-please-end
     images:
       - ghcr.io/defenseunicorns/leapfrogai/leapfrogai-ui:###ZARF_PKG_TMPL_IMAGE_VERSION###

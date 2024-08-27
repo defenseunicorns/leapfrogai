@@ -32,7 +32,6 @@ export const actions: Actions = {
     }
 
     const form = await superValidate(request, yup(assistantInputSchema));
-
     if (!form.valid) {
       return fail(400, { form });
     }

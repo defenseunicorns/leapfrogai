@@ -3,27 +3,22 @@ name = "lfai-llama-cpp-python"
 description = "A LeapfrogAI API-compatible llama-cpp-python wrapper for quantized and un-quantized model inferencing on CPU infrastructures."
 
 # x-release-please-start-version
-version = "0.9.2"
+version = "0.11.0"
 # x-release-please-end
 
-dependencies = [
-    "llama-cpp-python == 0.2.72",
-    "leapfrogai-sdk",
-]
+dependencies = ["llama-cpp-python == 0.2.72", "leapfrogai-sdk"]
 requires-python = "~=3.11"
 readme = "README.md"
 
 [project.optional-dependencies]
-dev = [
-    "huggingface_hub",
-]
+dev = ["huggingface_hub[cli,hf_transfer] == 0.24.5"]
 
 [tool.pip-tools]
 generate-hashes = true
 
 [tool.setuptools]
 packages = ["leapfrogai_sdk"]
-package-dir = {"" = "../../src"}
+package-dir = { "" = "../../src" }
 
 [tool.pytest.ini_options]
 addopts = ["--import-mode=importlib"]

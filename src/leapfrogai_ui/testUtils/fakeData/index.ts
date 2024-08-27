@@ -117,7 +117,7 @@ export const getFakeAssistant = (options: GetFakeAssistantOptions = {}): LFAssis
   return {
     id: faker.string.uuid(),
     ...assistantDefaults,
-    name: faker.person.fullName(),
+    name: faker.person.firstName(),
     description: faker.lorem.sentence(),
     instructions: faker.lorem.paragraph(),
     temperature: DEFAULT_ASSISTANT_TEMP,
@@ -152,7 +152,7 @@ export const fakeAssistants: LFAssistant[] = [getFakeAssistant(), getFakeAssista
 
 export const getFakeAssistantInput = (data_sources?: string[]): AssistantInput => {
   return {
-    name: faker.person.fullName(),
+    name: faker.person.firstName(),
     description: faker.lorem.sentence(),
     instructions: faker.lorem.paragraph(),
     temperature: DEFAULT_ASSISTANT_TEMP,
@@ -263,6 +263,7 @@ export const getFakeOpenAIMessage = ({
   };
 };
 
+// @ts-expect-error: status is a deprecated field, not including it here
 export const getFakeFileObject = (): FileObject => ({
   id: `file_${faker.string.uuid()}`,
   bytes: 64,
@@ -343,3 +344,5 @@ export const getFakeApiKeys = (options: GetFakeApiKeysOptions = {}): APIKeyRow[]
   }
   return result;
 };
+
+export const fakeKeys = getFakeApiKeys({ numKeys: 4 });

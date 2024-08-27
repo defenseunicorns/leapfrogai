@@ -1,64 +1,49 @@
 <script lang="ts">
   import { formatKeyLong } from '$helpers/apiKeyHelpers.js';
   import { calculateDays, formatDate } from '$helpers/dates.js';
-  import { Modal, TextInput } from 'carbon-components-svelte';
+  import { Button, Kbd, Label, Modal, P } from 'flowbite-svelte';
   import type { APIKeyRow } from '$lib/types/apiKeys';
   import CopyToClipboardBtn from '$components/CopyToClipboardBtn.svelte';
 
   export let copyKeyModalOpen: boolean;
-  export let handleCloseCopyKeyModal: () => void;
   export let createdKey: APIKeyRow | null;
 
   let saveKeyModalRef: HTMLDivElement;
+
+  const handleClose = () => {
+    copyKeyModalOpen = false;
+  };
 </script>
 
 <Modal
-  bind:ref={saveKeyModalRef}
   bind:open={copyKeyModalOpen}
-  preventCloseOnClickOutside
-  modalHeading="Save secret key"
-  primaryButtonText="Close"
-  on:close={handleCloseCopyKeyModal}
-  on:submit={handleCloseCopyKeyModal}
+  autoclose
+  title="Save secret key"
+  on:close={handleClose}
+  color="primary"
 >
   {#if createdKey}
-    <div class="centered-spaced-container" style="flex-direction: column">
-      <p>
+    <div class="flex flex-col gap-4">
+      <P size="xl" class="text-center dark:text-gray-400">
         Please store this secret key in a safe and accessible place. For security purposes, it
         cannot be viewed again through your LeapfrogAI account. If you lose it, you'll need to
         create a new one.
-      </p>
-      <div class="centered-spaced-lg-container" style="width: 100%">
-        <TextInput
-          readonly
-          labelText="Key"
-          value={formatKeyLong(createdKey.api_key, saveKeyModalRef?.offsetWidth || 200)}
-        />
-        <CopyToClipboardBtn value={createdKey.api_key} toastTitle="API Key Copied" />
+      </P>
+      <div class="flex w-full gap-2">
+        <Kbd class="flex items-center px-2 py-1.5"
+          >{formatKeyLong(createdKey.api_key, saveKeyModalRef?.offsetWidth || 200)}</Kbd
+        >
+        <CopyToClipboardBtn btnText="Copy" value={createdKey.api_key} toastTitle="API Key Copied" />
       </div>
-      <div style="width: 100%">
-        <label for="saved-expiration" class:bx--label={true}>Expiration</label>
-        <p id="saved-expiration">
+      <div>
+        <Label for="saved-expiration" class="mb-2 block">Expiration</Label>
+        <P size="lg" class=" dark:text-gray-400">
           {`${calculateDays(createdKey.created_at, createdKey.expires_at)} days - ${formatDate(new Date(createdKey.expires_at * 1000))}`}
-        </p>
+        </P>
       </div>
     </div>
   {/if}
+  <div class="flex justify-end">
+    <Button on:click={handleClose} size="sm">Close</Button>
+  </div>
 </Modal>
-
-<style lang="scss">
-  .centered-spaced-container {
-    display: flex;
-    gap: layout.$spacing-06;
-    align-items: center;
-  }
-
-  .centered-spaced-lg-container {
-    display: flex;
-    gap: layout.$spacing-07;
-    align-items: center;
-    :global(.bx--text-input__readonly-icon) {
-      display: none;
-    }
-  }
-</style>

@@ -5,31 +5,45 @@ import { threadsStore } from '$stores';
 import { getFakeThread } from '$testUtils/fakeData';
 
 describe('LFHeader', () => {
-  it('closes the other header actions when one is opened', async () => {
-    // We cannot test by visibility because carbon components svelte does not give us a way to grab the panel
-    // in our test. The best we can do is check that the bx--header__action--active class is correctly
-    // applied or not applied to the button that controls the panel
-    render(LFHeader);
-
-    const userActionBtn = screen.getByTestId('user header action button');
-    await userEvent.click(userActionBtn);
-
-    expect(userActionBtn).toHaveClass('bx--header__action--active');
-
-    const settingsActionBtn = screen.getByTestId('settings header action button');
-    await userEvent.click(settingsActionBtn);
-
-    expect(settingsActionBtn).toHaveClass('bx--header__action--active');
-    expect(userActionBtn).not.toHaveClass('bx--header__action--active');
-  });
-  it('has a link on the logo that navigates to the last visited thread id', () => {
+  it('has a link on the logo that navigates to the last visited thread id', async () => {
     const thread = getFakeThread();
-
     threadsStore.set({
       threads: [thread],
-      lastVisitedThreadId: thread.id
+      lastVisitedThreadId: thread.id,
+      selectedAssistantId: '',
+      sendingBlocked: false,
+      streamingMessage: null
     });
+
     render(LFHeader);
-    expect(screen.getByTestId('header-logo-link')).toHaveAttribute('href', `/chat/${thread.id}`);
+    expect(screen.getByTestId('logo-link')).toHaveAttribute('href', `/chat/${thread.id}`);
+  });
+  it('has a settings btn dropdown with links to various pages', async () => {
+    render(LFHeader);
+    await userEvent.click(screen.getByTestId('header-settings-btn'));
+
+    expect(screen.getByRole('link', { name: /assistants management/i })).toHaveAttribute(
+      'href',
+      '/chat/assistants-management'
+    );
+
+    expect(screen.getByRole('link', { name: /file management/i })).toHaveAttribute(
+      'href',
+      '/chat/file-management'
+    );
+
+    expect(screen.getByRole('link', { name: /api keys/i })).toHaveAttribute(
+      'href',
+      '/chat/api-keys'
+    );
+  });
+
+  it('has a profile btn dropdown with a logout btn', async () => {
+    render(LFHeader);
+    await userEvent.click(screen.getByTestId('header-profile-btn'));
+
+    screen.getByRole('button', {
+      name: /log out/i
+    });
   });
 });

@@ -1,19 +1,33 @@
-<script lang="ts">
+<script>
+  import '../app.css';
   import { invalidate } from '$app/navigation';
   import { onMount } from 'svelte';
   import { Toasts } from '$components';
   import { page } from '$app/stores';
-  import 'carbon-components-svelte/css/g90.css';
-  import '../styles/main.scss';
-  import { Theme } from 'carbon-components-svelte';
-  import type { CarbonTheme } from 'carbon-components-svelte/src/Theme/Theme.svelte';
   import '$webComponents/CodeBlock';
+  import { browser } from '$app/environment';
 
   export let data;
+
   let { supabase, session } = data;
+
   $: ({ supabase, session } = data);
 
-  let theme: CarbonTheme | undefined = 'g90';
+  // Refresh token early so backend requests get token with enough time before expiration (for long processing ops)
+  let startRefreshCountdown = true;
+  $: {
+    if (startRefreshCountdown && browser && session) {
+      startRefreshCountdown = false;
+      const expiresIn = session.expires_at - Math.floor(Date.now() / 1000); // seconds until expiration
+      const refreshTime = expiresIn - 1200; // 20 minutes before expiration
+      if (refreshTime > 0) {
+        setTimeout(async () => {
+          await supabase.auth.refreshSession();
+          startRefreshCountdown = true;
+        }, refreshTime * 1000);
+      }
+    }
+  }
 
   onMount(() => {
     const { data } = supabase.auth.onAuthStateChange((_, newSession) => {
@@ -30,15 +44,7 @@
   <title>{$page.data.title || ''}</title>
 </svelte:head>
 
-<Theme bind:theme />
-
 <Toasts />
-
-<slot />
-
-<style lang="scss">
-  :global(.bx--content) {
-    height: calc(100vh - var(--header-height));
-    padding-bottom: 1rem;
-  }
-</style>
+<div class="flex h-screen flex-col bg-gray-900">
+  <slot />
+</div>

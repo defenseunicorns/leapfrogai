@@ -1,8 +1,11 @@
 import type { PlaywrightTestConfig } from '@playwright/test';
 import { devices } from '@playwright/test';
-import dotenv from 'dotenv';
+import * as dotenv from 'dotenv';
 
 dotenv.config();
+
+const PORT = 4173;
+process.env.ORIGIN = `http://localhost:${PORT}`;
 
 const chromeConfig = {
   name: 'chromium',
@@ -42,9 +45,10 @@ const chromeConfig = {
 const defaultConfig: PlaywrightTestConfig = {
   // running more than 1 worker can cause flakiness due to test files being run at the same time in different browsers
   // (e.x. navigation history is incorrect)
-  // Additionally, Leapfrog API is slow when attaching files to assistants, resulting in flaky tests
+  // Additionally, LeapfrogAI API is slow when attaching files to assistants, resulting in flaky tests
   // We can attempt in increase number of browser and workers in the pipeline when the API is faster
   workers: 1,
+  timeout: 60000,
   projects: [
     { name: 'setup', testMatch: /global\.setup\.ts/, teardown: 'cleanup' },
     {
@@ -59,7 +63,7 @@ const defaultConfig: PlaywrightTestConfig = {
 const devConfig: PlaywrightTestConfig = {
   webServer: {
     command: 'npm run build && npm run preview',
-    port: 4173,
+    port: PORT,
     stderr: 'pipe'
   },
   testDir: 'tests',
@@ -72,8 +76,11 @@ const devConfig: PlaywrightTestConfig = {
 // when e2e testing, use the deployed instance
 const CI_Config: PlaywrightTestConfig = {
   use: {
-    baseURL: 'https://ai.uds.dev'
-  }
+    baseURL: 'https://ai.uds.dev',
+    screenshot: 'only-on-failure',
+    video: 'retain-on-failure'
+  },
+  reporter: [['html', { outputFolder: 'e2e-report' }]]
 };
 
 // get the environment type from command line. If none, set it to dev

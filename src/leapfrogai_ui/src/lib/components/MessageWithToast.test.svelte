@@ -2,27 +2,18 @@
   import { Message, Toasts } from '$components';
   import { type Message as VercelAIMessage } from '@ai-sdk/svelte';
 
-  import type { AppendFunction, ReloadFunction, VercelOrOpenAIMessage } from '$lib/types/messages';
+  import type { AppendFunction } from '$lib/types/messages';
+  import type { Message as OpenAIMessage } from 'openai/resources/beta/threads/messages';
 
-  export let allStreamedMessages: VercelAIMessage[];
-  export let message: VercelOrOpenAIMessage;
-  export let messages: VercelAIMessage[] = [];
-  export let setMessages: (messages: VercelAIMessage[]) => void;
+  export let message: OpenAIMessage;
+  export let messages: OpenAIMessage[] = [];
+  export let streamedMessages: VercelAIMessage[] = [];
+  export let setMessages: ((messages: VercelAIMessage[]) => void) | undefined = undefined;
   export let isLastMessage: boolean;
-
-  export let append: AppendFunction;
-  export let reload: ReloadFunction;
+  export let append: AppendFunction | undefined = undefined;
 </script>
 
 <div>
   <Toasts />
-  <Message
-    {allStreamedMessages}
-    {message}
-    {messages}
-    {setMessages}
-    {isLastMessage}
-    {append}
-    {reload}
-  />
+  <Message {message} {messages} {streamedMessages} {setMessages} {isLastMessage} {append} />
 </div>

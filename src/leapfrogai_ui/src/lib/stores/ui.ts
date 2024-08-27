@@ -1,15 +1,13 @@
 import { writable } from 'svelte/store';
 
 type UIStore = {
-  isSideNavOpen: boolean;
-  overflowMenuOpen: boolean;
-  selectedThreadOverflowMenuId: string;
+  openSidebar: boolean;
+  isUsingOpenAI: boolean;
 };
 
 const defaultValues: UIStore = {
-  isSideNavOpen: true,
-  overflowMenuOpen: false,
-  selectedThreadOverflowMenuId: ''
+  openSidebar: true,
+  isUsingOpenAI: false
 };
 
 const createUIStore = () => {
@@ -20,14 +18,11 @@ const createUIStore = () => {
     set,
     update,
     reset: () => set({ ...defaultValues }),
-    setIsSideNavOpen: (isOpen: boolean) => {
-      update((old) => ({ ...old, isSideNavOpen: isOpen }));
+    setOpenSidebar: (isOpen: boolean) => {
+      update((old) => ({ ...old, openSidebar: isOpen }));
     },
-    setOverflowMenuOpen: (isOpen: boolean) => {
-      update((old) => ({ ...old, overflowMenuOpen: isOpen }));
-    },
-    setSelectedThreadOverflowMenuId: (id: string) => {
-      update((old) => ({ ...old, selectedThreadOverflowMenuId: id }));
+    setIsUsingOpenAI: (state: boolean) => {
+      update((old) => ({ ...old, isUsingOpenAI: state }));
     }
   };
 };

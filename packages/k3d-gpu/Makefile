@@ -1,19 +1,27 @@
 MAKEFILE_DIR := $(dir $(abspath $(lastword $(MAKEFILE_LIST))))
 
-UDS_VERSION := 0.24.1
+UDS_VERSION := 0.25.0
 LOCAL_VERSION ?= $(shell git rev-parse --short HEAD)
-
+DOCKER_FLAGS :=
+ZARF_FLAGS :=
 
 build-k3d-gpu:
 	@cd ${MAKEFILE_DIR} && \
 	docker build \
+	${DOCKER_FLAGS} \
 	--platform linux/amd64 \
 	-t ghcr.io/defenseunicorns/leapfrogai/k3d-gpu:${LOCAL_VERSION} .
 
 create-uds-gpu-cluster: build-k3d-gpu
 	@uds deploy k3d-core-slim-dev:${UDS_VERSION} \
+	${ZARF_FLAGS} \
 	--set K3D_EXTRA_ARGS="--gpus=all \
 	--image=ghcr.io/defenseunicorns/leapfrogai/k3d-gpu:${LOCAL_VERSION}" --confirm
+
+create-uds-cpu-cluster:
+	@uds deploy k3d-core-slim-dev:${UDS_VERSION} \
+	${ZARF_FLAGS} \
+	--confirm
 
 test-uds-gpu-cluster:
 	@cd ${MAKEFILE_DIR} && \
@@ -23,4 +31,4 @@ test-uds-gpu-cluster:
 	@cd ${MAKEFILE_DIR} && \
 	uds zarf tools kubectl delete -f ./test/cuda-vector-add.yaml
 
-.PHONY: build-k3d-gpu create-uds-gpu-cluster test-uds-gpu-cluster
+.PHONY: build-k3d-gpu create-uds-gpu-cluster create-uds-cpu-cluster test-uds-gpu-cluster

@@ -1,10 +1,10 @@
 <script lang="ts">
-  import { Export } from 'carbon-icons-svelte';
-  import { Button } from 'carbon-components-svelte';
-  import LFFileUploader from '$components/LFFileUploader.svelte';
+  import { Button, Spinner } from 'flowbite-svelte';
+  import { DownloadOutline, UploadOutline } from 'flowbite-svelte-icons';
   import { threadsStore, toastStore } from '$stores';
   import { threadsSchema } from '$schemas/threadSchema';
   import type { LFThread } from '$lib/types/threads';
+  import LFFileUploadBtn from '$components/LFFileUploadBtn.svelte';
 
   let importing = false;
 
@@ -44,8 +44,10 @@
       toastStore.addToast({
         kind: 'error',
         title: 'Error',
-        subtitle: `Threads are incorrectly formatted.`
+        subtitle: `Threads are incorrectly formatted.`,
+        timeout: 5000
       });
+      importing = false;
       return;
     }
     await threadsStore.importThreads(threads);
@@ -74,28 +76,25 @@
   };
 </script>
 
-<div class="import-export-btns-container">
-  <LFFileUploader accept={['application/json']} {importing} {onUpload} />
-  <Button
-    id="export-btn"
-    kind="ghost"
-    icon={Export}
-    size="small"
-    iconDescription="Export conversations"
-    on:click={onExport}>Export chat history</Button
-  >
-</div>
+<div class="flex flex-col gap-2">
+  {#if importing}
+    <Button outline disabled size="sm">
+      <Spinner class="me-3" size="4" color="white" />Importing...
+    </Button>
+  {:else}
+    <LFFileUploadBtn
+      data-testid="import-chat-history-input"
+      outline
+      size="sm"
+      on:change={(e) => onUpload(e.detail)}
+      accept={['application/json']}
+      disabled={importing}>Import chat history <UploadOutline /></LFFileUploadBtn
+    >
+  {/if}
 
-<style lang="scss">
-  .import-export-btns-container {
-    display: flex;
-    flex-direction: column;
-    justify-content: space-between;
-    padding: layout.$spacing-03 0 layout.$spacing-03 0;
-    :global(.bx--btn) {
-      width: 100%;
-      color: themes.$text-secondary;
-      font-weight: bold;
-    }
-  }
-</style>
+  <Button id="export-btn" outline size="sm" on:click={onExport} class="w-full">
+    <div class="flex w-full justify-between">
+      Export chat history <DownloadOutline />
+    </div>
+  </Button>
+</div>
