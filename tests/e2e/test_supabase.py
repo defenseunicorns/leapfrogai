@@ -159,6 +159,8 @@ def test_supabase_realtime_vector_store_indexing():
         timeout_timer.start()
 
         # Listening socket
+        # The service key is needed for proper permission to listen to realtime events
+        # At the time of writing this, the Supabase realtime library does not support RLS
         URL = f"wss://supabase-kong.uds.dev/realtime/v1/websocket?apikey={SERVICE_KEY}&vsn=1.0.0"
         s = Socket(URL)
         s.connect()
