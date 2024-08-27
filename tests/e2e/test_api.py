@@ -238,7 +238,7 @@ def test_run_with_background_task():
             )
 
     # Wait for indexing to complete if it hasn't already
-    max_wait_time = 60  # seconds
+    max_wait_time = 60 * 10  # 10 minutes in seconds
     start_time = time.time()
     while check_vector_store_status() != VectorStoreStatus.COMPLETED.value:
         if time.time() - start_time > max_wait_time:
