@@ -7,9 +7,9 @@ This covers how to use the evaluations present in LeapfrogAI. As more evaluation
 Running `main.py` will by default run all of the evaluations currently available:
 
 ```bash
-# from within the src/evaluations dir
+# from within the packages/evaluations dir
 python -m pip install .
-python main.py
+python src/main.py
 ```
 
 ## Needle in a Haystack (NIAH)
@@ -55,8 +55,6 @@ The LFAI NIAH evaluation uses the following process:
     - delete the assistant
 - delete the contextless documents
 - delete the vector store
-- average the retrieval scores as the final retrieval score
-- average the response scores as the final response score
 
 The retrieval and response rate is then averaged across each copy of the experiment to generate a final score.
 
