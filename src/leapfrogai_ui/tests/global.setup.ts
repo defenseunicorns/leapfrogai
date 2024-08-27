@@ -2,7 +2,6 @@ import { expect, test as setup } from './fixtures';
 import * as OTPAuth from 'otpauth';
 import { delay } from 'msw';
 import type { Page } from '@playwright/test';
-import { cleanup } from './helpers/cleanup';
 
 const authFile = 'playwright/.auth/user.json';
 
@@ -44,16 +43,18 @@ const doKeycloakLogin = async (page: Page) => {
   await page.getByLabel('Password').fill(process.env.PASSWORD!);
   await page.getByRole('button', { name: 'Log In' }).click();
 
-  const totp = new OTPAuth.TOTP({
-    issuer: 'Unicorn Delivery Service',
-    algorithm: 'SHA1',
-    digits: 6,
-    period: 30,
-    secret: process.env.MFA_SECRET!
-  });
-  const code = totp.generate();
-  await page.getByLabel('Six digit code').fill(code);
-  await page.getByRole('button', { name: 'Log In' }).click();
+  if (process.env.TEST_ENV !== 'CI') {
+    const totp = new OTPAuth.TOTP({
+      issuer: 'Unicorn Delivery Service',
+      algorithm: 'SHA1',
+      digits: 6,
+      period: 30,
+      secret: process.env.MFA_SECRET!
+    });
+    const code = totp.generate();
+    await page.getByLabel('Six digit code').fill(code);
+    await page.getByRole('button', { name: 'Log In' }).click();
+  }
 };
 
 const login = async (page: Page) => {
@@ -84,7 +85,10 @@ const logout = async (page: Page) => {
   }
 };
 
-setup('authenticate', async ({ page, openAIClient }) => {
+// NOTE - do not try to use openAIClient from the fixtures here. The user that it attempts to get a token for
+// exists in Keycloak because the workflow creates it, but the user has not yet logged in and does not exist in
+// Supabase, so the tests will fail.
+setup('authenticate', async ({ page }) => {
   page.on('pageerror', (err) => {
     console.log(err.message);
   });
@@ -115,8 +119,4 @@ setup('authenticate', async ({ page, openAIClient }) => {
   // End of authentication steps.
 
   await page.context().storageState({ path: authFile });
-
-  if (process.env.TEST_ENV !== 'CI') {
-    await cleanup(openAIClient);
-  }
 });
