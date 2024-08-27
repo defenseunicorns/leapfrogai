@@ -28,7 +28,7 @@
   import type { ExtractedFilesText, FileMetadata } from '$lib/types/files';
   import UploadedFileCards from '$components/UploadedFileCards.svelte';
   import ChatFileUploadForm from '$components/ChatFileUploadForm.svelte';
-  import { PUBLIC_MESSAGE_LENGTH_LIMIT } from '$env/static/public';
+  import { env } from '$env/dynamic/public';
 
   export let data;
 
@@ -232,10 +232,10 @@
       if (data.thread?.id) {
         let extractedFilesTextString = JSON.stringify(extractedFilesText);
 
-        if (extractedFilesTextString.length > Number(PUBLIC_MESSAGE_LENGTH_LIMIT) - 3) {
+        if (extractedFilesTextString.length > Number(env.PUBLIC_MESSAGE_LENGTH_LIMIT) - 3) {
           extractedFilesTextString = extractedFilesTextString.substring(
             0,
-            Number(PUBLIC_MESSAGE_LENGTH_LIMIT)
+            Number(env.PUBLIC_MESSAGE_LENGTH_LIMIT)
           );
           toastStore.addToast(MAX_COMBINED_FILE_TEXT_LENGTH_WARNING());
         }
