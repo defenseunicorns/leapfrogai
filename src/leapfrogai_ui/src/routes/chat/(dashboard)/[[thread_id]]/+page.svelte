@@ -357,15 +357,14 @@
     <div class="flex flex-grow flex-col rounded-lg bg-gray-50 px-2 dark:bg-gray-700">
       <UploadedFileCards bind:attachedFileMetadata />
 
-      <div id="chat-row" class="flex w-full items-center">
+      <div id="chat-row" class="flex w-full items-center gap-1">
         {#if !assistantMode}
           <ChatFileUploadForm bind:form={data.form} bind:uploadingFiles bind:attachedFileMetadata />
         {/if}
-
         <LFTextArea
           id="chat"
           data-testid="chat-input"
-          class=" flex-grow resize-none border-none bg-white focus:ring-0 dark:bg-gray-700"
+          class="flex-grow resize-none border-none bg-white focus:ring-0 dark:bg-gray-700"
           placeholder="Type your message here..."
           value={chatInput}
           bind:showLengthError={lengthInvalid}

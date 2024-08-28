@@ -1,6 +1,5 @@
 <script lang="ts">
   import { ACCEPTED_FILE_TYPES, MAX_NUM_FILES_UPLOAD } from '$constants';
-  import { ToolbarButton } from 'flowbite-svelte';
   import { PaperClipOutline } from 'flowbite-svelte-icons';
   import { v4 as uuidv4 } from 'uuid';
   import LFFileUploadBtn from '$components/LFFileUploadBtn.svelte';
@@ -29,7 +28,7 @@
   const { enhance, submit } = superForm(form, {
     validators: yup(filesSchema),
     invalidateAll: false,
-    onResult({ result }) {
+    onResult({ result, cancel }) {
       uploadingFiles = false;
       if (result.type === 'success') {
         attachedFileMetadata = attachedFileMetadata.filter((file) => file.status !== 'uploading');
@@ -43,9 +42,12 @@
       } else {
         handleUploadError('Internal Error');
       }
+
+      cancel(); // cancel the rest of the event chain and any form updates to prevent losing focus of chat input
     },
     onError(e) {
       handleUploadError(e.result.error.message);
+      uploadingFiles = false;
     }
   });
 </script>
@@ -62,6 +64,7 @@
         toastStore.addToast(MAX_NUM_FILES_UPLOAD_MSG_TOAST());
         return;
       }
+      uploadingFiles = true;
       // Metadata is limited to 512 characters, we use a short id to save space
       for (const file of e.detail) {
         attachedFileMetadata = [
@@ -73,16 +76,10 @@
       submit(e.detail);
     }}
     accept={ACCEPTED_FILE_TYPES}
-    class="remove-btn-style flex"
+    disabled={uploadingFiles}
+    class="remove-btn-style flex  rounded-lg  p-1.5 text-gray-500 hover:bg-inherit dark:hover:bg-inherit"
   >
-    <ToolbarButton
-      color="dark"
-      class="rounded-full text-gray-500 dark:text-gray-400"
-      disabled={uploadingFiles}
-      on:click={(e) => e.preventDefault()}
-    >
-      <PaperClipOutline />
-      <span class="sr-only">Attach file</span>
-    </ToolbarButton>
+    <PaperClipOutline class="text-gray-300" />
+    <span class="sr-only">Attach file</span>
   </LFFileUploadBtn>
 </form>

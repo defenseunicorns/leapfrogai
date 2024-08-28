@@ -4,7 +4,7 @@ import {
   createPDF,
   createTextFile,
   createWordFile,
-  deleteFileByName, deleteFixtureFile,
+  deleteFixtureFile,
   uploadFiles,
   uploadFileWithApi
 } from './helpers/fileHelpers';
@@ -14,20 +14,20 @@ import {
   sendMessage,
   waitForResponseToComplete
 } from './helpers/threadHelpers';
-import { faker, fi } from '@faker-js/faker';
-import { getFakeAssistantInput } from '$testUtils/fakeData';
+import { faker } from '@faker-js/faker';
+import { getFakeAssistantInput } from '../testUtils/fakeData';
 import { createAssistantWithApi } from './helpers/assistantHelpers';
 import {
   ERROR_PROCESSING_FILE_MSG_TOAST,
   MAX_NUM_FILES_UPLOAD_MSG_TOAST
-} from '$constants/toastMessages';
+} from '../src/lib/constants/toastMessages';
 import type { ActionResult } from '@sveltejs/kit';
 import {
   APPROX_MAX_CHARACTERS,
   FILE_UPLOAD_PROMPT,
   MAX_NUM_FILES_UPLOAD
-} from '../src/lib/constants/index';
-import { FILE_CONTEXT_TOO_LARGE_ERROR_MSG } from '$constants/errors';
+} from '../src/lib/constants';
+import { FILE_CONTEXT_TOO_LARGE_ERROR_MSG } from '../src/lib/constants/errors';
 import { shortenFileName } from '../src/lib/helpers/stringHelpers';
 
 test('it attaches multiple files of different types and creates a hidden message with their content', async ({
@@ -180,9 +180,7 @@ test('it displays a toast and removes files when there is an error processing th
   deleteFixtureFile(filename);
 });
 
-test('it adds an error message if a file is too large to add to the context', async ({
-  page
-}) => {
+test('it adds an error message if a file is too large to add to the context', async ({ page }) => {
   const adjustedMax =
     APPROX_MAX_CHARACTERS -
     Number(process.env.PUBLIC_MESSAGE_LENGTH_LIMIT) -
@@ -207,10 +205,10 @@ test('it adds an error message if a file is too large to add to the context', as
   deleteFixtureFile(filename);
 });
 
-test('it limits the number of files that can be uploaded', async ({ page, openAIClient }) => {
+test('it limits the number of files that can be uploaded', async ({ page }) => {
   await loadChatPage(page);
 
-  let filenames: string[] = [];
+  const filenames: string[] = [];
   for (let i = 0; i < MAX_NUM_FILES_UPLOAD + 1; i++) {
     const filename = await createPDF();
     filenames.push(filename);
