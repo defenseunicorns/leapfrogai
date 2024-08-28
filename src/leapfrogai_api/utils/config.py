@@ -6,7 +6,7 @@ import toml
 import yaml
 from watchfiles import Change, awatch
 
-from leapfrogai_api.typedef.models import Model
+from leapfrogai_api.types import Model
 
 
 logger = logging.getLogger(__name__)

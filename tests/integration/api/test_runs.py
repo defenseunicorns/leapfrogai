@@ -12,14 +12,16 @@ from leapfrogai_api.main import app
 from leapfrogai_api.routers.openai.requests.create_modify_assistant_request import (
     CreateAssistantRequest,
 )
-from leapfrogai_api.typedef.messages import (
+from leapfrogai_api.routers.openai.requests.create_message_request import (
     CreateMessageRequest,
 )
-from leapfrogai_api.typedef.runs import (
+from leapfrogai_api.routers.openai.requests.create_thread_request import (
+    CreateThreadRequest,
+)
+from leapfrogai_api.types.request import (
     RunCreateParamsRequest,
 )
-from leapfrogai_api.typedef.threads import (
-    CreateThreadRequest,
+from leapfrogai_api.routers.openai.requests.thread_run_create_params_request import (
     ThreadRunCreateParamsRequest,
 )
 
