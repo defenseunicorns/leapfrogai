@@ -2,6 +2,7 @@ import { derived, writable } from 'svelte/store';
 import type { FileObject } from 'openai/resources/files';
 import type { FileRow } from '$lib/types/files';
 import { toastStore } from '$stores/index';
+import OpenAI from 'openai';
 
 type FilesStore = {
   files: FileRow[];
@@ -86,31 +87,24 @@ const createFilesStore = () => {
         };
       });
     },
-    updateWithUploadResults: (newFiles: Array<FileObject | FileRow>) => {
+    updateWithUploadErrors: (newFiles: Array<FileObject | FileRow>) => {
       update((old) => {
-        const successRows = [...old.files];
         const failedRows: FileRow[] = [];
 
         for (const file of newFiles) {
-          const row: FileRow = {
-            id: file.id,
-            filename: file.filename,
-            created_at: file.created_at,
-            status: file.status === 'error' ? 'error' : 'complete'
-          };
           if (file.status === 'error') {
+            const row: FileRow = {
+              id: file.id,
+              filename: file.filename,
+              created_at: file.created_at,
+              status: 'error'
+            };
+
             failedRows.push(row);
             toastStore.addToast({
               kind: 'error',
               title: 'Import Failed',
               subtitle: `${file.filename} import failed.`
-            });
-          } else {
-            successRows.push(row);
-            toastStore.addToast({
-              kind: 'success',
-              title: 'Imported Successfully',
-              subtitle: `${file.filename} imported successfully.`
             });
           }
         }
@@ -128,8 +122,44 @@ const createFilesStore = () => {
 
         return {
           ...old,
-          files: successRows,
           pendingUploads: failedRows
+        };
+      });
+    },
+    updateWithUploadSuccess: (newFiles: Array<FileObject | FileRow>) => {
+      update((old) => {
+        const successRows = [...old.files];
+
+        for (const file of newFiles) {
+          const row: FileRow = {
+            id: file.id,
+            filename: file.filename,
+            created_at: file.created_at,
+            status: 'complete'
+          };
+
+          successRows.push(row);
+          toastStore.addToast({
+            kind: 'success',
+            title: 'Imported Successfully',
+            subtitle: `${file.filename} imported successfully.`
+          });
+
+          // Remove the error files after 1.5 seconds
+          new Promise((resolve) => setTimeout(resolve, 1500)).then(() => {
+            update((old) => {
+              const index = old.files.findIndex((f) => f.id === file.id);
+              old.files[index] = { ...old.files[index], status: 'hide' };
+              return {
+                ...old
+              };
+            });
+          });
+        }
+
+        return {
+          ...old,
+          files: successRows
         };
       });
     },
@@ -166,6 +196,18 @@ const createFilesStore = () => {
           uploading: false
         };
       });
+    },
+    uploadFile: async (file: File, token: string) => {
+      const openai = new OpenAI({
+        apiKey: token,
+        baseURL: 'https://leapfrogai-api.uds.dev/openai/v1'
+      });
+
+      const uploadedFile = await openai.files.create({
+        file: file,
+        purpose: 'assistants'
+      });
+      console.log('uploadedFile', uploadedFile);
     }
   };
 };

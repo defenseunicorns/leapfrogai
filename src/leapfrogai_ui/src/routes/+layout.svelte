@@ -1,4 +1,4 @@
-<script>
+<script lang="ts">
   import '../app.css';
   import { invalidate } from '$app/navigation';
   import { onMount } from 'svelte';
@@ -6,6 +6,7 @@
   import { page } from '$app/stores';
   import '$webComponents/CodeBlock';
   import { browser } from '$app/environment';
+  import { filesStore, toastStore, uiStore } from '$stores';
 
   export let data;
 
@@ -29,14 +30,51 @@
     }
   }
 
+  const handleVectorStoreTableUpdate = (payload) => {
+    console.log('Change received:', payload);
+  };
+  const handleFileTableUpdate = (payload) => {
+    filesStore.updateWithUploadSuccess([payload.new]);
+  };
+
   onMount(() => {
+    let vectorStoreChannel;
+    let fileChannel;
     const { data } = supabase.auth.onAuthStateChange((_, newSession) => {
       if (newSession?.expires_at !== session?.expires_at) {
         invalidate('supabase:auth');
       }
+
+      if (!$uiStore.isUsingOpenAI) {
+        //*** REALTIME LISTENERS ***//
+        vectorStoreChannel = supabase
+          .channel('vector_store_file')
+          .on(
+            'postgres_changes',
+            { event: 'UPDATE', schema: 'public', table: 'vector_store_file' },
+            handleVectorStoreTableUpdate
+          )
+          .subscribe();
+        fileChannel = supabase
+          .channel('file_objects')
+          .on(
+            'postgres_changes',
+            { event: 'INSERT', schema: 'public', table: 'file_objects' },
+            handleFileTableUpdate
+          )
+          .subscribe();
+        //*** END REALTIME LISTENERS ***//
+      }
     });
 
-    return () => data.subscription.unsubscribe();
+    // Cleanup
+    return () => {
+      data.subscription.unsubscribe();
+      if (!$uiStore.isUsingOpenAI) {
+        supabase.removeChannel(vectorStoreChannel);
+        supabase.removeChannel(fileChannel);
+      }
+    };
   });
 </script>
 

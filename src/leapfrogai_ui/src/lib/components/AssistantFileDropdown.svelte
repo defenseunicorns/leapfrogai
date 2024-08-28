@@ -44,7 +44,7 @@
     if (result.type === 'success') {
       const idsToSelect: string[] = [];
       const uploadedFiles = result.data?.uploadedFiles;
-      filesStore.updateWithUploadResults(result.data?.uploadedFiles);
+      filesStore.updateWithUploadSuccess(result.data?.uploadedFiles);
       for (const uploadedFile of uploadedFiles) {
         idsToSelect.push(uploadedFile.id);
       }
