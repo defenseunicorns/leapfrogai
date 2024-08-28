@@ -89,7 +89,7 @@ class IndexingService:
                     ),
                     object="vector_store.file",
                     status=VectorStoreFileStatus.FAILED.value,
-                    usage_bytes=0,  # Leave blank to have Postgres generate a UUID
+                    usage_bytes=0,  # Leave blank to have Postgres calculate the document bytes
                     vector_store_id=vector_store_id,
                 )
                 return await crud_vector_store_file.create(object_=vector_store_file)
@@ -100,7 +100,7 @@ class IndexingService:
                 last_error=None,
                 object="vector_store.file",
                 status=VectorStoreFileStatus.IN_PROGRESS.value,
-                usage_bytes=0,  # Leave blank to have Postgres generate a UUID
+                usage_bytes=0,  # Leave blank to have Postgres calculate the document bytes
                 vector_store_id=vector_store_id,
             )
 
@@ -176,7 +176,7 @@ class IndexingService:
                 file_counts=FileCounts(
                     cancelled=0, completed=0, failed=0, in_progress=0, total=0
                 ),
-                usage_bytes=0,  # Leave blank to have Postgres generate a UUID
+                usage_bytes=0,  # Leave blank to have Postgres calculate the document bytes
                 metadata=request.metadata,
                 expires_after=expires_after,
                 expires_at=expires_at,
