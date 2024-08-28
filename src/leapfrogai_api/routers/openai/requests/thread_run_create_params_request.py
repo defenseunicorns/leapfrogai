@@ -24,7 +24,7 @@ from starlette.responses import StreamingResponse
 from leapfrogai_api.routers.openai.requests.create_message_request import (
     CreateMessageRequest,
 )
-from leapfrogai_api.routers.openai.requests.run_create_params_request_base import (
+from leapfrogai_api.types.request import (
     RunCreateParamsRequestBase,
 )
 from leapfrogai_api.data.crud_run import CRUDRun
