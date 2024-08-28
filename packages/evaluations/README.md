@@ -14,7 +14,7 @@ python src/main.py
 
 ## Needle in a Haystack (NIAH)
 
-A Needle in a Haystack evaluation is used to evaluate the performance of LLMs in tasks that require finding a specific piece of information (the "needle") within a large body of text (the "haystack").
+A Needle in a Haystack evaluation is used to evaluate the performance of the LFAI RAG system in tasks that require finding a specific piece of information (the "needle") within a large body of text (the "haystack").
 
 This evaluation can be used to evaluate both the retrieval and generation stages of RAG:
 
