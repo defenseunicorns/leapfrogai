@@ -4,7 +4,6 @@ import threading
 import uuid
 from fastapi import UploadFile
 import requests
-import time
 from openai.types.beta.vector_stores import VectorStoreFile
 from openai.types.beta import VectorStore
 from openai.types.beta.vector_store import FileCounts
@@ -62,8 +61,8 @@ def test_supabase_realtime_vector_store_indexing():
         assert upload_file_id is not None, "Failed to upload file"
 
         vector_store = VectorStore(
-            id=str(uuid.uuid4()),
-            created_at=int(time.time()),
+            id="",
+            created_at=0,
             file_counts=FileCounts(
                 cancelled=0,
                 completed=0,
@@ -82,7 +81,7 @@ def test_supabase_realtime_vector_store_indexing():
         vector_store_file = VectorStoreFile(
             id=upload_file_id,
             vector_store_id=vector_store.id,
-            created_at=int(time.time()),
+            created_at=0,
             object="vector_store.file",
             status="completed",
             usage_bytes=0,
