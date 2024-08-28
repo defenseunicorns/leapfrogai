@@ -37,82 +37,77 @@ export const actions: Actions = {
     const extractedFilesText: FileMetadata[] = [];
 
     if (form.data.files && form.data.files.length > 0) {
-      try {
-        for (const file of form.data.files) {
-          let text = '';
-          if (file) {
-            try {
-              let buffer: ArrayBuffer;
-              const contentType = file.type;
-              if (contentType !== 'application/pdf') {
-                // Convert file to PDF
-                const formData = new FormData();
-                formData.append('file', file);
-                const convertRes = await fetch('/api/files/convert', {
-                  method: 'POST',
-                  body: formData
-                });
-
-                if (!convertRes.ok) {
-                  const resJson = await convertRes.json();
-                  return fail(500, { form, message: resJson.message });
-                }
-
-                const convertedFileBlob = await convertRes.blob();
-                buffer = await convertedFileBlob.arrayBuffer();
-              } else buffer = await file.arrayBuffer();
-
-              const document = mupdf.Document.openDocument(buffer, 'application/pdf');
-              let i = 0;
-              while (i < document.countPages()) {
-                const page = document.loadPage(i);
-                const json = page.toStructuredText('preserve-whitespace').asJSON();
-                for (const block of JSON.parse(json).blocks) {
-                  for (const line of block.lines) {
-                    text += line.text;
-                  }
-                }
-                i++;
-              }
-
-              extractedFilesText.push({
-                name: shortenFileName(file.name),
-                type: file.type,
-                text,
-                status: 'complete'
+      for (const file of form.data.files) {
+        let text = '';
+        if (file) {
+          try {
+            let buffer: ArrayBuffer;
+            const contentType = file.type;
+            if (contentType !== 'application/pdf') {
+              // Convert file to PDF
+              const formData = new FormData();
+              formData.append('file', file);
+              const convertRes = await fetch('/api/files/convert', {
+                method: 'POST',
+                body: formData
               });
 
-              // If this file adds too much text (larger than allowed max), remove the text and set to error status
-              const totalTextLength = extractedFilesText.reduce(
-                (acc, fileMetadata) => acc + JSON.stringify(fileMetadata).length,
-                0
-              );
-              if (totalTextLength > ADJUSTED_MAX) {
-                extractedFilesText[extractedFilesText.length - 1] = {
-                  name: shortenFileName(file.name),
-                  type: file.type,
-                  text: '',
-                  status: 'error',
-                  errorText: FILE_CONTEXT_TOO_LARGE_ERROR_MSG
-                };
+              if (!convertRes.ok) {
+                throw new Error('Error converting file'); //caught locally
               }
-            } catch (e) {
-              console.error(`Error uploading file: ${file}: ${e}`);
-              extractedFilesText.push({
+
+              const convertedFileBlob = await convertRes.blob();
+              buffer = await convertedFileBlob.arrayBuffer();
+            } else buffer = await file.arrayBuffer();
+
+            const document = mupdf.Document.openDocument(buffer, 'application/pdf');
+            let i = 0;
+            while (i < document.countPages()) {
+              const page = document.loadPage(i);
+              const json = page.toStructuredText('preserve-whitespace').asJSON();
+              for (const block of JSON.parse(json).blocks) {
+                for (const line of block.lines) {
+                  text += line.text;
+                }
+              }
+              i++;
+            }
+
+            extractedFilesText.push({
+              name: shortenFileName(file.name),
+              type: file.type,
+              text,
+              status: 'complete'
+            });
+
+            // If this file adds too much text (larger than allowed max), remove the text and set to error status
+            const totalTextLength = extractedFilesText.reduce(
+              (acc, fileMetadata) => acc + JSON.stringify(fileMetadata).length,
+              0
+            );
+            if (totalTextLength > ADJUSTED_MAX) {
+              extractedFilesText[extractedFilesText.length - 1] = {
                 name: shortenFileName(file.name),
                 type: file.type,
                 text: '',
                 status: 'error',
-                errorText: ERROR_UPLOADING_FILE_MSG
-              });
+                errorText: FILE_CONTEXT_TOO_LARGE_ERROR_MSG
+              };
             }
+          } catch (e) {
+            console.error(`Error uploading file: ${file}: ${e}`);
+            extractedFilesText.push({
+              name: shortenFileName(file.name),
+              type: file.type,
+              text: '',
+              status: 'error',
+              errorText: ERROR_UPLOADING_FILE_MSG
+            });
           }
         }
-        return withFiles({ extractedFilesText, form });
-      } catch (e) {
-        console.error(e);
-        return fail(500, { form });
       }
+
+      return withFiles({ extractedFilesText, form });
     }
     return fail(400, { form });
   }
