@@ -10,7 +10,7 @@ from openai.types.beta.threads.run_create_params import (
 )
 from pydantic import Field
 from starlette.responses import StreamingResponse
-from leapfrogai_api.routers.openai.requests.run_create_params_request_base import (
+from leapfrogai_api.types.request.run_create_params_base import (
     RunCreateParamsRequestBase,
 )
 from leapfrogai_api.routers.openai.requests.create_message_request import (

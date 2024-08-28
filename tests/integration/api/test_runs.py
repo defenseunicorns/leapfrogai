@@ -7,6 +7,7 @@ from fastapi.testclient import TestClient
 from openai.types.beta import Assistant, Thread, AssistantDeleted, ThreadDeleted
 from openai.types.beta.thread import ToolResources, ToolResourcesFileSearch
 from openai.types.beta.threads import Message, Text, TextContentBlock, Run
+
 from leapfrogai_api.main import app
 from leapfrogai_api.routers.openai.requests.create_modify_assistant_request import (
     CreateAssistantRequest,
@@ -17,7 +18,7 @@ from leapfrogai_api.routers.openai.requests.create_message_request import (
 from leapfrogai_api.routers.openai.requests.create_thread_request import (
     CreateThreadRequest,
 )
-from leapfrogai_api.routers.openai.requests.run_create_params_request import (
+from leapfrogai_api.types.request import (
     RunCreateParamsRequest,
 )
 from leapfrogai_api.routers.openai.requests.thread_run_create_params_request import (

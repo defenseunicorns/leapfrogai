@@ -42,6 +42,10 @@ from openai.types.beta.threads.run_create_params import TruncationStrategy
 from postgrest.base_request_builder import SingleAPIResponse
 from pydantic import BaseModel, Field, ValidationError
 
+from leapfrogai_api.types.constants import (
+    DEFAULT_MAX_COMPLETION_TOKENS,
+    DEFAULT_MAX_PROMPT_TOKENS,
+)
 from leapfrogai_api.backend.converters import (
     from_assistant_stream_event_to_str,
     from_text_to_message,
@@ -54,8 +58,6 @@ from leapfrogai_api.backend.types import (
     ChatCompletionResponse,
     ChatCompletionRequest,
     ChatChoice,
-    DEFAULT_MAX_COMPLETION_TOKENS,
-    DEFAULT_MAX_PROMPT_TOKENS,
 )
 from leapfrogai_api.data.crud_assistant import CRUDAssistant, FilterAssistant
 from leapfrogai_api.data.crud_message import CRUDMessage
