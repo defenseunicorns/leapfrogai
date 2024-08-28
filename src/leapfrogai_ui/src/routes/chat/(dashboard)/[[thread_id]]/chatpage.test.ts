@@ -169,7 +169,6 @@ describe('when there is an active thread selected', () => {
 
     await userEvent.type(input, question);
     await userEvent.click(submitBtn);
-    screen.debug(undefined, 300000);
     await screen.findByText(ERROR_SAVING_MSG_TOAST().subtitle!);
   });
 

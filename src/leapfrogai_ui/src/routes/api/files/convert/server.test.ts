@@ -87,71 +87,63 @@ describe('/api/files/convert', () => {
     });
   });
 
-  it(
-    'returns a 500 if there is an error converting the file',
-    async () => {
-      // When creating the file below, it fails the yup validation for not being an instance of File even though it is
-      // we are mocking the validation here to get past that issue
-      vi.spyOn(fileSchema, 'validate').mockResolvedValueOnce({});
+  it('returns a 500 if there is an error converting the file', async () => {
+    mocks.convert.mockImplementation((buffer, ext, options, callback) => {
+      callback(new Error('Mocked convertAsync error'));
+    });
 
-      const formData = new FormData();
-      const fileContent = new Blob(['dummy content'], { type: 'text/plain' });
-      const testFile = new File([fileContent], 'test.txt', { type: 'text/plain' });
-      formData.append('file', testFile);
+    // When creating the file below, it fails the yup validation for not being an instance of File even though it is
+    // we are mocking the validation here to get past that issue
+    vi.spyOn(fileSchema, 'validate').mockResolvedValueOnce({});
 
-      mocks.convert.mockImplementation((buffer, ext, options, callback) => {
-        callback(new Error('Mocked convertAsync error'));
-      });
+    const formData = new FormData();
+    const fileContent = new Blob(['dummy content'], { type: 'text/plain' });
+    const testFile = new File([fileContent], 'test.txt', { type: 'text/plain' });
+    formData.append('file', testFile);
 
-      const request = new Request('http://thisurlhasnoeffect', {
-        method: 'POST',
-        body: formData
-      });
+    const request = new Request('http://thisurlhasnoeffect', {
+      method: 'POST',
+      body: formData
+    });
 
-      await expect(
-        POST({ request, params: {}, locals: getLocalsMock() } as RequestEvent<
-          RouteParams,
-          '/api/files/convert'
-        >)
-      ).rejects.toMatchObject({
-        status: 500
-      });
-    },
-    { timeout: 30000 }
-  );
-
-  it(
-    'converts the file',
-    async () => {
-      // When creating the file below, it fails the yup validation for not being an instance of File even though it is
-      // we are mocking the validation here to get past that issue
-      vi.spyOn(fileSchema, 'validate').mockResolvedValueOnce({});
-
-      const formData = new FormData();
-      const fileContent = new Blob(['dummy content'], { type: 'text/plain' });
-      const testFile = new File([fileContent], 'test.txt', { type: 'text/plain' });
-      formData.append('file', testFile);
-
-      mocks.convert.mockImplementation((buffer, ext, options, callback) => {
-        const pdfBuffer = Buffer.from('testPdf');
-        callback(null, pdfBuffer);
-      });
-
-      const request = new Request('http://thisurlhasnoeffect', {
-        method: 'POST',
-        body: formData
-      });
-
-      const res = await POST({ request, params: {}, locals: getLocalsMock() } as RequestEvent<
+    await expect(
+      POST({ request, params: {}, locals: getLocalsMock() } as RequestEvent<
         RouteParams,
         '/api/files/convert'
-      >);
-      expect(res.status).toEqual(200);
-      expect(res.headers.get('Content-Type')).toBe('application/pdf');
-      const buffer = await res.arrayBuffer();
-      const pdfText = new TextDecoder().decode(buffer);
-      expect(pdfText).toContain('testPdf');
-    },
-    { timeout: 30000 }
-  );
+      >)
+    ).rejects.toMatchObject({
+      status: 500
+    });
+  });
+
+  it('converts the file', async () => {
+    mocks.convert.mockImplementation((buffer, ext, options, callback) => {
+      const pdfBuffer = Buffer.from('testPdf');
+      callback(null, pdfBuffer);
+    });
+
+    // When creating the file below, it fails the yup validation for not being an instance of File even though it is
+    // we are mocking the validation here to get past that issue
+    vi.spyOn(fileSchema, 'validate').mockResolvedValueOnce({});
+
+    const formData = new FormData();
+    const fileContent = new Blob(['dummy content'], { type: 'text/plain' });
+    const testFile = new File([fileContent], 'test.txt', { type: 'text/plain' });
+    formData.append('file', testFile);
+
+    const request = new Request('http://thisurlhasnoeffect', {
+      method: 'POST',
+      body: formData
+    });
+
+    const res = await POST({ request, params: {}, locals: getLocalsMock() } as RequestEvent<
+      RouteParams,
+      '/api/files/convert'
+    >);
+    expect(res.status).toEqual(200);
+    expect(res.headers.get('Content-Type')).toBe('application/pdf');
+    const buffer = await res.arrayBuffer();
+    const pdfText = new TextDecoder().decode(buffer);
+    expect(pdfText).toContain('testPdf');
+  });
 });
