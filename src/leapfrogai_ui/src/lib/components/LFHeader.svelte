@@ -5,8 +5,6 @@
   import { threadsStore, uiStore } from '$stores';
   import logo from '$assets/LeapfrogAI.png';
 
-  export let isUsingOpenAI: boolean;
-
   let signOutForm: HTMLFormElement;
 
   $: innerWidth = 0;
@@ -54,7 +52,7 @@
       <Dropdown triggeredBy=".settings-menu" data-testid="settings-dropdown">
         <DropdownItem href="/chat/assistants-management">Assistants Management</DropdownItem>
         <DropdownItem href="/chat/file-management">File Management</DropdownItem>
-        {#if !isUsingOpenAI}
+        {#if !$uiStore.isUsingOpenAI}
           <DropdownItem href="/chat/api-keys">API Keys</DropdownItem>
         {/if}
       </Dropdown>

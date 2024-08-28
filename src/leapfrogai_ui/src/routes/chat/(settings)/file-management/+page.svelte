@@ -15,7 +15,7 @@
   import { fade } from 'svelte/transition';
   import { yup } from 'sveltekit-superforms/adapters';
   import { superForm } from 'sveltekit-superforms';
-  import { formatDate } from '$helpers/dates';
+  import { convertToMilliseconds, formatDate } from '$helpers/dates';
   import { filesSchema } from '$schemas/files';
   import { filesStore, toastStore } from '$stores';
   import { ACCEPTED_FILE_TYPES } from '$constants';
@@ -34,6 +34,7 @@
   import LFFileUploadBtn from '$components/LFFileUploadBtn.svelte';
   import ConfirmFilesDeleteModal from '$components/modals/ConfirmFilesDeleteModal.svelte';
   import { allFilesAndPendingUploads } from '$stores/filesStore';
+  import { browser } from '$app/environment';
 
   export let data;
 
@@ -190,6 +191,41 @@
     submit(); //upload all files
   };
 
+  const handleDownload = async () => {
+    let currentFilename;
+    if (browser) {
+      try {
+        for (const id of $filesStore.selectedFileManagementFileIds) {
+          const res = await fetch(`/api/files/${id}`);
+          if (!res.ok) {
+            throw new Error(`Failed to fetch file with id ${id}`);
+          }
+          currentFilename = $filesStore.files.find((f) => f.id === id)?.filename;
+          const blob = await res.blob();
+          const url = window.URL.createObjectURL(blob);
+          const a = document.createElement('a');
+          a.href = url;
+          a.download = currentFilename || `file_${id}`;
+          document.body.appendChild(a);
+          a.click();
+          window.URL.revokeObjectURL(url);
+          document.body.removeChild(a);
+        }
+        toastStore.addToast({
+          kind: 'success',
+          title: `File${$filesStore.selectedFileManagementFileIds.length > 1 ? 's' : ''} Downloaded`
+        });
+        filesStore.setSelectedFileManagementFileIds([]); // deselect all
+      } catch {
+        toastStore.addToast({
+          kind: 'error',
+          title: 'Download Failed',
+          subtitle: currentFilename && `Download of file ${currentFilename} failed.`
+        });
+      }
+    }
+  };
+
   afterNavigate(() => {
     // Remove files with "uploading" status from store and invalidate the route so files are re-fetched
     // when the page is loaded again
@@ -219,6 +255,7 @@
         <div class="h-[42px]">
           {#if editMode}
             <div in:fade={{ duration: 150 }} class="flex items-center gap-2">
+              <Button color="blue" on:click={handleDownload}>Download</Button>
               {#if deleting}
                 <Button color="red" disabled>
                   <Spinner class="me-3" size="4" color="white" />Deleting...
@@ -313,9 +350,11 @@
             {:else}
               <TableBodyCell tdClass="px-4 py-3">{item.filename}</TableBodyCell>
             {/if}
-            <TableBodyCell tdClass="px-4 py-3"
-              >{formatDate(new Date(item.created_at))}</TableBodyCell
-            >
+            {#if item.created_at}
+              <TableBodyCell tdClass="px-4 py-3"
+                >{formatDate(new Date(convertToMilliseconds(item.created_at)))}</TableBodyCell
+              >
+            {/if}
           </TableBodyRow>
         {/each}
       </TableBody>

@@ -18,9 +18,9 @@
     stopThenSave
   } from '$helpers/chatHelpers';
   import {
-    ERROR_GETTING_AI_RESPONSE_TEXT,
-    ERROR_GETTING_ASSISTANT_MSG_TEXT,
-    ERROR_SAVING_MSG_TEXT
+    ERROR_GETTING_AI_RESPONSE_TOAST,
+    ERROR_GETTING_ASSISTANT_MSG_TOAST,
+    ERROR_SAVING_MSG_TOAST
   } from '$constants/toastMessages';
   import SelectAssistantDropdown from '$components/SelectAssistantDropdown.svelte';
   import { PaperPlaneOutline, StopOutline } from 'flowbite-svelte-icons';
@@ -151,9 +151,7 @@
     },
     onError: async () => {
       toastStore.addToast({
-        kind: 'error',
-        title: ERROR_GETTING_AI_RESPONSE_TEXT.title,
-        subtitle: ERROR_GETTING_AI_RESPONSE_TEXT.subtitle
+        ...ERROR_GETTING_AI_RESPONSE_TOAST
       });
       await threadsStore.setSendingBlocked(false);
     }
@@ -175,9 +173,7 @@
       // ignore this error b/c it is expected on cancel
       if (e.message !== 'BodyStreamBuffer was aborted') {
         toastStore.addToast({
-          kind: 'error',
-          title: ERROR_GETTING_ASSISTANT_MSG_TEXT.title,
-          subtitle: ERROR_GETTING_ASSISTANT_MSG_TEXT.subtitle
+          ...ERROR_GETTING_ASSISTANT_MSG_TOAST
         });
       }
       await threadsStore.setSendingBlocked(false);
@@ -219,9 +215,7 @@
         submitChatMessage(e); // submit to AI (/api/chat)
       } catch {
         toastStore.addToast({
-          kind: 'error',
-          title: ERROR_SAVING_MSG_TEXT.title,
-          subtitle: ERROR_SAVING_MSG_TEXT.subtitle
+          ...ERROR_SAVING_MSG_TOAST
         });
         await threadsStore.setSendingBlocked(false);
       }

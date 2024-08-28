@@ -1,36 +1,41 @@
 import { test as base } from '@playwright/test';
-import fs from 'node:fs';
 import OpenAI from 'openai';
 
 type MyFixtures = {
   openAIClient: OpenAI;
 };
 
-type Cookie = {
-  name: string;
-  value: string;
-  domain: string;
-  path: string;
-  expires: number;
-  httpOnly: boolean;
-  secure: boolean;
-  sameSite: string;
-};
+export async function getAccessToken() {
+  const supabaseUrl = process.env.PUBLIC_SUPABASE_URL;
+  const serviceRoleKey = process.env.SERVICE_ROLE_KEY;
 
-export const getToken = () => {
-  const authData = JSON.parse(fs.readFileSync('playwright/.auth/user.json', 'utf-8'));
-  const cookie = authData.cookies.find(
-    (cookie: Cookie) => cookie.name === 'sb-supabase-kong-auth-token.0'
-  );
+  const response = await fetch(`${supabaseUrl}/auth/v1/token?grant_type=password`, {
+    method: 'POST',
+    // @ts-expect-error: apikey is a required header for this request
+    headers: {
+      'Content-Type': 'application/json',
+      apikey: serviceRoleKey,
+      Authorization: `Bearer ${serviceRoleKey}`
+    },
+    body: JSON.stringify({
+      email: process.env.USERNAME,
+      password: process.env.PASSWORD
+    })
+  });
 
-  const cookieStripped = cookie.value.split('base64-')[1];
-  const decodedValue = Buffer.from(cookieStripped, 'base64').toString('utf-8');
-  // The cookie value is missing ending " and }}, so we append it
-  const parsedValue = JSON.parse(`${decodedValue}"}}`);
-  return parsedValue.access_token;
-};
-export const getOpenAIClient = () => {
-  const token = getToken();
+  const data = await response.json();
+
+  if (response.ok) {
+    return data.access_token;
+  } else {
+    console.error('Error fetching access token:', data);
+    throw new Error(data.error_description || 'Failed to fetch access token');
+  }
+}
+
+export const getOpenAIClient = async () => {
+  const token = await getAccessToken();
+
   return new OpenAI({
     apiKey: process.env.OPENAI_API_KEY || token,
     baseURL: process.env.OPENAI_API_KEY
@@ -42,7 +47,8 @@ export const getOpenAIClient = () => {
 export const test = base.extend<MyFixtures>({
   // eslint-disable-next-line  no-empty-pattern
   openAIClient: async ({}, use) => {
-    const client = getOpenAIClient();
+    const client = await getOpenAIClient();
+    console.log('client', client);
     await use(client);
   }
 });

@@ -1,79 +1,58 @@
 # LeapfrogAI API
 
-A mostly OpenAI compliant API surface.
+> [!IMPORTANT]
+> See the [API package documentation](../../packages/api/README.md) for general pre-requisites, dependent components, and package deployment instructions
 
-## Zarf Package Deployment
-
-To build and deploy just the API Zarf package (from the root of the repository):
-
-> Deploy a [UDS cluster](/README.md#uds) if one isn't deployed already
-
-```shell
-make build-api LOCAL_VERSION=dev
-uds zarf package deploy packages/api/zarf-package-leapfrogai-api-*-dev.tar.zst --confirm
-```
+This document is only applicable for spinning up the API in a local Python development environment.
 
 ## Local Development Setup
 
+> [!IMPORTANT]
+> Execute the following commands from this sub-directory
+
+### Running
+
+> [!IMPORTANT]
+> The following steps assume that you already have a deployed and accessible UDS Kubernetes cluster and LeapfrogAI. Please follow the steps within the [DEVELOPMENT.md](../../docs/DEVELOPMENT.md) for details.
+
 1. Install dependencies
+
     ```bash
     make install
     ```
 
-2. Create a local Supabase instance (requires [Supabase CLI](https://supabase.com/docs/guides/cli/getting-started)):
+2. Create a config.yaml using the config.example.yaml as a template.
+
+3. Run the FastAPI application
+
     ```bash
-    brew install supabase/tap/supabases
-
-    supabase start # from this directory
-
-    supabase stop --project-id leapfrogai # stop api containers
-
-    supabase db reset # clears all data and reinitializes migrations
-
-    supabase status # to check status and see your keys
+    make dev API_PORT=8080
     ```
 
-### Session Authentication
+4. Create an API key with test user "leapfrogai@defenseunicorns.com" and test password "password", lasting 30 days from creation time
 
-3. Create a local api user
     ```bash
-    make user
+    # If the in-cluster API is up, and not testing the API workflow
+    make api-key API_BASE_URL=http://localhost:8080
     ```
 
-4. Create a JWT token
+    To create a new 30-day API key, use the following:
+
     ```bash
-    make jwt
-    source .env
+    # If the in-cluster API is up, and not testing the API workflow
+    make new-api-key API_BASE_URL=http://localhost:8080
     ```
-    This will copy the JWT token to your clipboard.
 
+    The newest API key will be printed to a `.env` file located within this directory.
 
-5. Make calls to the api swagger endpoint at `http://localhost:8080/docs` using your JWT token as the `HTTPBearer` token.
-   * Hit `Authorize` on the swagger page to enter your JWT token
+5. Make calls to the API Swagger endpoint at `http://localhost:8080/docs` using your API token as the `HTTPBearer` token.
 
-## Integration Tests
+    - Hit `Authorize` on the Swagger page to enter your API key
 
-The integration tests serve to identify any mismatches between components:
+### Access
 
-- Check all API routes
-- Validate Request/Response types
-- DB CRUD operations
-- Schema mismatches
+See the ["Access" section of the DEVELOPMENT.md](../../docs/DEVELOPMENT.md#access) for different ways to connect the API to a model backend or Supabase.
 
-### Prerequisites
+### Tests
 
-Integration tests require a Supabase instance and environment variables configured (see [Local Development](#local-development)).
-
-### Authentication
-
-Tests require a JWT token environment variable `SUPABASE_USER_JWT`. See [Session Authentication](#session-authentication) to set this up.
-
-### Running the tests
-After obtaining the JWT token, run the following:
-```
-make test-integration
-```
-
-## Notes
-
-* All API calls must be authenticated via a Supabase JWT token in the message's `Authorization` header, including swagger docs.
+See the [tests directory documentation](../../tests/README.md) for more details.
