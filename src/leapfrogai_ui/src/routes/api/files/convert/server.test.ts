@@ -3,7 +3,6 @@ import { getLocalsMock } from '$lib/mocks/misc';
 import type { RequestEvent } from '@sveltejs/kit';
 import type { RouteParams } from './$types';
 import { afterAll } from 'vitest';
-import { fileSchema } from '$schemas/files';
 
 // Allows swapping out the mock per test
 const mocks = vi.hoisted(() => {
