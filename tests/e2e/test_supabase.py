@@ -61,7 +61,7 @@ def test_supabase_realtime_vector_store_indexing():
         assert upload_file_id is not None, "Failed to upload file"
 
         vector_store = VectorStore(
-            id="",
+            id=str(uuid.uuid4()),
             created_at=0,
             file_counts=FileCounts(
                 cancelled=0,
