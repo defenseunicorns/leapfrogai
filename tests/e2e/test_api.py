@@ -1,15 +1,11 @@
 import io
 import logging
 import uuid
+
+import pytest as pytest
 import requests
-import pytest
-from openai import OpenAI
 
 from .utils import create_test_user
-
-client = OpenAI(
-    base_url="https://leapfrogai-api.uds.dev/openai/v1", api_key=create_test_user()
-)
 
 logger = logging.getLogger(__name__)
 test_id = str(uuid.uuid4())
