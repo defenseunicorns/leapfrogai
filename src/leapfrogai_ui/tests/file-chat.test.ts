@@ -4,6 +4,7 @@ import {
   createPDF,
   createTextFile,
   createWordFile,
+  deleteFileByName, deleteFixtureFile,
   uploadFiles,
   uploadFileWithApi
 } from './helpers/fileHelpers';
@@ -89,6 +90,9 @@ test('it attaches multiple files of different types and creates a hidden message
   expect(hiddenMessage!.content[0].text.value).toContain(fakeContent3);
 
   // cleanup
+  deleteFixtureFile(pdfFilename);
+  deleteFixtureFile(textFilename);
+  deleteFixtureFile(wordFilename);
   await deleteActiveThread(page, openAIClient);
 });
 
@@ -112,6 +116,10 @@ test('it can remove attached files', async ({ page }) => {
 
   await expect(page.getByTestId(`${pdfFilename1}-uploaded`)).toBeVisible();
   await expect(page.getByTestId(`${pdfFilename2}-uploaded`)).not.toBeVisible();
+
+  // cleanup
+  deleteFixtureFile(pdfFilename1);
+  deleteFixtureFile(pdfFilename2);
 });
 test('it removes the file btn and attached files when switching to an assistant', async ({
   page,
@@ -134,6 +142,9 @@ test('it removes the file btn and attached files when switching to an assistant'
   await page.getByText(assistant.name!).click();
 
   await expect(page.getByTestId('upload-file-bnt')).not.toBeVisible();
+
+  // cleanup
+  deleteFixtureFile(filename);
 });
 
 test('it displays a toast and removes files when there is an error processing the pdf', async ({
@@ -164,9 +175,14 @@ test('it displays a toast and removes files when there is an error processing th
   });
 
   await expect(page.getByText(ERROR_PROCESSING_FILE_MSG_TOAST().title)).toBeVisible();
+
+  // cleanup
+  deleteFixtureFile(filename);
 });
 
-test('it adds an error message if a file is too large to add to the context', async ({ page }) => {
+test('it adds an error message if a file is too large to add to the context', async ({
+  page
+}) => {
   const adjustedMax =
     APPROX_MAX_CHARACTERS -
     Number(process.env.PUBLIC_MESSAGE_LENGTH_LIMIT) -
@@ -186,9 +202,12 @@ test('it adds an error message if a file is too large to add to the context', as
   });
 
   await expect(page.getByText(FILE_CONTEXT_TOO_LARGE_ERROR_MSG)).toBeVisible();
+
+  // cleanup
+  deleteFixtureFile(filename);
 });
 
-test('it limits the number of files that can be uploaded', async ({ page }) => {
+test('it limits the number of files that can be uploaded', async ({ page, openAIClient }) => {
   await loadChatPage(page);
 
   let filenames: string[] = [];
@@ -204,4 +223,9 @@ test('it limits the number of files that can be uploaded', async ({ page }) => {
   });
 
   await expect(page.getByText(MAX_NUM_FILES_UPLOAD_MSG_TOAST().subtitle!)).toBeVisible();
+
+  // Cleanup
+  for (const filename of filenames) {
+    deleteFixtureFile(filename);
+  }
 });
