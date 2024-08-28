@@ -2,6 +2,7 @@
   import { ACCEPTED_FILE_TYPES, MAX_NUM_FILES_UPLOAD } from '$constants';
   import { ToolbarButton } from 'flowbite-svelte';
   import { PaperClipOutline } from 'flowbite-svelte-icons';
+  import { v4 as uuidv4 } from 'uuid';
   import LFFileUploadBtn from '$components/LFFileUploadBtn.svelte';
   import { superForm } from 'sveltekit-superforms';
   import { yup } from 'sveltekit-superforms/adapters';
@@ -32,7 +33,13 @@
       uploadingFiles = false;
       if (result.type === 'success') {
         attachedFileMetadata = attachedFileMetadata.filter((file) => file.status !== 'uploading');
-        attachedFileMetadata = [...attachedFileMetadata, ...result.data.extractedFilesText];
+        attachedFileMetadata = [
+          ...attachedFileMetadata,
+          ...result.data.extractedFilesText.map((file) => ({
+            id: uuidv4().substring(0, 8),
+            ...file
+          }))
+        ];
       } else {
         handleUploadError('Internal Error');
       }
@@ -59,7 +66,7 @@
       for (const file of e.detail) {
         attachedFileMetadata = [
           ...attachedFileMetadata,
-          { name: file.name, type: file.type, status: 'uploading' }
+          { id: uuidv4().substring(0, 8), name: file.name, type: file.type, status: 'uploading' }
         ];
       }
 

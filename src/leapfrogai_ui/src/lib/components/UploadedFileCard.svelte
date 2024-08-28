@@ -57,7 +57,7 @@
           {/if}
         </h5>
       </div>
-      {#if hovered && !disableDelete}
+      {#if hovered && !disableDelete && fileMetadata.status !== 'uploading'}
         <ToolbarButton size="sm" on:click={() => dispatch('delete')}>
           <CloseOutline data-testid={`${fileMetadata.name}-remove-btn`} />
         </ToolbarButton>

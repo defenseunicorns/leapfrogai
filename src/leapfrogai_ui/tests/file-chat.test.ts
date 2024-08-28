@@ -13,7 +13,7 @@ import {
   sendMessage,
   waitForResponseToComplete
 } from './helpers/threadHelpers';
-import { faker } from '@faker-js/faker';
+import { faker, fi } from '@faker-js/faker';
 import { getFakeAssistantInput } from '$testUtils/fakeData';
 import { createAssistantWithApi } from './helpers/assistantHelpers';
 import {
@@ -27,6 +27,7 @@ import {
   MAX_NUM_FILES_UPLOAD
 } from '../src/lib/constants/index';
 import { FILE_CONTEXT_TOO_LARGE_ERROR_MSG } from '$constants/errors';
+import { shortenFileName } from '../src/lib/helpers/stringHelpers';
 
 test('it attaches multiple files of different types and creates a hidden message with their content', async ({
   page,
@@ -52,6 +53,8 @@ test('it attaches multiple files of different types and creates a hidden message
   await page.getByTestId(`${pdfFilename}-uploading`);
   await page.getByTestId(`${textFilename}-uploading`);
   await page.getByTestId(`${wordFilename}-uploading`);
+  // confirm remove btn is not present while uploading
+  await expect(page.getByTestId(`${wordFilename}-remove-btn`)).not.toBeVisible();
 
   await expect(page.getByTestId(`${pdfFilename}-uploading`)).not.toBeVisible({ timeout: 20000 });
   await expect(page.getByTestId(`${textFilename}-uploading`)).not.toBeVisible({ timeout: 20000 });
@@ -74,13 +77,12 @@ test('it attaches multiple files of different types and creates a hidden message
   const hiddenMessage = messagesPage.data.find(
     (message) => message.metadata?.hideMessage === 'true'
   );
-  console.log('hiddenMessage', hiddenMessage?.content);
 
   expect(hiddenMessage).toBeDefined();
 
-  expect(hiddenMessage!.content[0].text.value).toContain(pdfFilename);
-  expect(hiddenMessage!.content[0].text.value).toContain(textFilename);
-  expect(hiddenMessage!.content[0].text.value).toContain(wordFilename);
+  expect(hiddenMessage!.content[0].text.value).toContain(shortenFileName(pdfFilename));
+  expect(hiddenMessage!.content[0].text.value).toContain(shortenFileName(textFilename));
+  expect(hiddenMessage!.content[0].text.value).toContain(shortenFileName(wordFilename));
 
   expect(hiddenMessage!.content[0].text.value).toContain(fakeContent1);
   expect(hiddenMessage!.content[0].text.value).toContain(fakeContent2);
@@ -93,8 +95,8 @@ test('it attaches multiple files of different types and creates a hidden message
 test('it can remove attached files', async ({ page }) => {
   await loadChatPage(page);
 
-  const pdfFilename1 = await createPDF();
-  const pdfFilename2 = await createPDF();
+  const pdfFilename1 = await createPDF({ filename: 'shortName1.pdf' });
+  const pdfFilename2 = await createPDF({ filename: 'shortName2.pdf' });
 
   await uploadFiles({
     page,
@@ -102,8 +104,8 @@ test('it can remove attached files', async ({ page }) => {
     testId: 'upload-file-btn'
   });
 
-  await page.getByTestId(`${pdfFilename1}-uploaded`);
-  await page.getByTestId(`${pdfFilename2}-uploaded`);
+  await expect(page.getByTestId(`${pdfFilename1}-uploaded`)).toBeVisible();
+  await expect(page.getByTestId(`${pdfFilename2}-uploaded`)).toBeVisible();
 
   await page.getByText(pdfFilename2).hover();
   await page.getByTestId(`${pdfFilename2}-remove-btn`).click();
@@ -189,14 +191,17 @@ test('it adds an error message if a file is too large to add to the context', as
 test('it limits the number of files that can be uploaded', async ({ page }) => {
   await loadChatPage(page);
 
-  const filename = await createPDF();
+  let filenames: string[] = [];
+  for (let i = 0; i < MAX_NUM_FILES_UPLOAD + 1; i++) {
+    const filename = await createPDF();
+    filenames.push(filename);
+  }
 
-  for (let i = 0; i < MAX_NUM_FILES_UPLOAD + 1; i++)
-    await uploadFiles({
-      page,
-      filenames: [filename],
-      testId: 'upload-file-btn'
-    });
+  await uploadFiles({
+    page,
+    filenames,
+    testId: 'upload-file-btn'
+  });
 
   await expect(page.getByText(MAX_NUM_FILES_UPLOAD_MSG_TOAST().subtitle!)).toBeVisible();
 });

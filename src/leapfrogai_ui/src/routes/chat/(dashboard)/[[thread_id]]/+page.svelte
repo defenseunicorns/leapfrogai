@@ -30,20 +30,11 @@
 
   export let data;
 
-  // TODO - for file upload story:
-  // Ensure file size limit is acceptable for context window
-  // What happens when several messages sent with lots of content?
-
   /** LOCAL VARS **/
   let lengthInvalid: boolean; // bound to child LFTextArea
   let assistantsList: Array<{ id: string; text: string }>;
   let uploadingFiles = false;
   let attachedFileMetadata: FileMetadata[] = [];
-
-  const handleRemoveFile = (id: string) => {
-    attachedFileMetadata = attachedFileMetadata.filter((file) => file.id !== id);
-  };
-
   /** END LOCAL VARS **/
 
   /** REACTIVE STATE **/
@@ -364,7 +355,7 @@
     <SelectAssistantDropdown assistants={data?.assistants || []} />
 
     <div class="flex flex-grow flex-col rounded-lg bg-gray-50 px-2 dark:bg-gray-700">
-      <UploadedFileCards bind:attachedFileMetadata {handleRemoveFile} />
+      <UploadedFileCards bind:attachedFileMetadata />
 
       <div id="chat-row" class="flex w-full items-center">
         {#if !assistantMode}

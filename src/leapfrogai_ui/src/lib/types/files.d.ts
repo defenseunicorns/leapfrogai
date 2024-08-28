@@ -18,6 +18,7 @@ export type FilesForm = SuperValidated<
 >;
 
 export type FileMetadata = {
+  id?: string;
   name: string;
   type: string;
   status: FileUploadStatus;

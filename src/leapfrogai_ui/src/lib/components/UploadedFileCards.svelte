@@ -3,7 +3,10 @@
   import type { FileMetadata } from '$lib/types/files';
 
   export let attachedFileMetadata: FileMetadata[];
-  export let handleRemoveFile: (id: string, index: number) => void;
+
+  const handleRemoveFile = (id: string) => {
+    attachedFileMetadata = attachedFileMetadata.filter((file) => file.id !== id);
+  };
 </script>
 
 <div
@@ -13,6 +16,6 @@
     : 'hidden'}
 >
   {#each attachedFileMetadata as fileMetadata, index}
-    <UploadedFileCard {fileMetadata} on:delete={() => handleRemoveFile(fileMetadata.id, index)} />
+    <UploadedFileCard {fileMetadata} on:delete={() => handleRemoveFile(fileMetadata.id)} />
   {/each}
 </div>
