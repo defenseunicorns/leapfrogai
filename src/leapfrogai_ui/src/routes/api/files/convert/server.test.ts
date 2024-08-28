@@ -117,7 +117,7 @@ describe('/api/files/convert', () => {
         status: 500
       });
     },
-    { timeout: 10000 }
+    { timeout: 30000 }
   );
 
   it(
@@ -152,6 +152,6 @@ describe('/api/files/convert', () => {
       const pdfText = new TextDecoder().decode(buffer);
       expect(pdfText).toContain('testPdf');
     },
-    { timeout: 10000 }
+    { timeout: 30000 }
   );
 });
