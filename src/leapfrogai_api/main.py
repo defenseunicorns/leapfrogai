@@ -27,6 +27,7 @@ from leapfrogai_api.routers.openai import (
     threads,
     vector_stores,
 )
+from leapfrogai_api.routers import token_count
 from leapfrogai_api.utils import get_model_config
 
 logging.basicConfig(
@@ -72,6 +73,7 @@ app.include_router(runs.router)
 app.include_router(messages.router)
 app.include_router(runs_steps.router)
 app.include_router(lfai_vector_stores.router)
+app.include_router(token_count.router)
 app.include_router(lfai_models.router)
 # This should be at the bottom to prevent it preempting more specific runs endpoints
 # https://fastapi.tiangolo.com/tutorial/path-params/#order-matters
