@@ -8,7 +8,7 @@ class NIAH_Retrieval(BaseMetric):
 
     def __init__(
         self,
-        threshold: float = 0.75,
+        threshold: float = 1.0,
         async_mode: bool = True,
     ):
         self.threshold = threshold
@@ -45,7 +45,7 @@ class NIAH_Response(BaseMetric):
 
     def __init__(
         self,
-        threshold: float = 0.75,
+        threshold: float = 1.0,
         async_mode: bool = True,
     ):
         self.threshold = threshold

@@ -91,6 +91,7 @@ class RAGEvaluator:
 
 
 if __name__ == "__main__":
+    logging.basicConfig(level=logging.INFO)
     evaluator = RAGEvaluator()
     evaluator.set_evaluations()
     evaluator.run_evals()
