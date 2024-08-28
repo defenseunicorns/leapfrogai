@@ -92,50 +92,47 @@ describe('/api/files/convert', () => {
       callback(new Error('Mocked convertAsync error'));
     });
 
-    // When creating the file below, it fails the yup validation for not being an instance of File even though it is
-    // we are mocking the validation here to get past that issue
-    // vi.spyOn(fileSchema, 'validate').mockResolvedValueOnce({});
-
-    const formData = new FormData();
     const fileContent = new Blob(['dummy content'], { type: 'text/plain' });
     const testFile = new File([fileContent], 'test.txt', { type: 'text/plain' });
-    formData.append('file', testFile);
 
-    const request = new Request('http://thisurlhasnoeffect', {
-      method: 'POST',
-      body: formData
+    // In the test environment, formData.get('file') does not return a file of type File, so we mock it differently
+    // here
+    const request = {
+      formData: vi.fn().mockResolvedValue({
+        get: vi.fn().mockReturnValue(testFile)
+      })
+    } as unknown as Request;
+
+    await expect(
+      POST({ request, params: {}, locals: getLocalsMock() } as RequestEvent<
+        RouteParams,
+        '/api/files/convert'
+      >)
+    ).rejects.toMatchObject({
+      status: 500
     });
-
-    expect(true).toEqual(true);
-    // await expect(
-    //   POST({ request, params: {}, locals: getLocalsMock() } as RequestEvent<
-    //     RouteParams,
-    //     '/api/files/convert'
-    //   >)
-    // ).rejects.toMatchObject({
-    //   status: 500
-    // });
   });
 
-  it.skip('converts the file', async () => {
+  it('converts the file', async () => {
     mocks.convert.mockImplementation((buffer, ext, options, callback) => {
       const pdfBuffer = Buffer.from('testPdf');
       callback(null, pdfBuffer);
     });
 
-    // When creating the file below, it fails the yup validation for not being an instance of File even though it is
-    // we are mocking the validation here to get past that issue
-    vi.spyOn(fileSchema, 'validate').mockResolvedValueOnce({});
+    const fileContent = new Uint8Array([
+      100, 117, 109, 109, 121, 32, 99, 111, 110, 116, 101, 110, 116
+    ]); // dummy content
 
-    const formData = new FormData();
-    const fileContent = new Blob(['dummy content'], { type: 'text/plain' });
     const testFile = new File([fileContent], 'test.txt', { type: 'text/plain' });
-    formData.append('file', testFile);
+    testFile.arrayBuffer = async () => fileContent.buffer;
 
-    const request = new Request('http://thisurlhasnoeffect', {
-      method: 'POST',
-      body: formData
-    });
+    // In the test environment, formData.get('file') does not return a file of type File, so we mock it differently
+    // here
+    const request = {
+      formData: vi.fn().mockResolvedValue({
+        get: vi.fn().mockReturnValue(testFile)
+      })
+    } as unknown as Request;
 
     const res = await POST({ request, params: {}, locals: getLocalsMock() } as RequestEvent<
       RouteParams,
