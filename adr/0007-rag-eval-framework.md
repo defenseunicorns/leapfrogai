@@ -131,6 +131,10 @@ This section covers all of the decision points that needed to be made along side
   - Needle in a Haystack (response): determines if a needle of information is correctly given in the final response of the LLM in a RAG pipeline
   - HumanEval: Evaluates an LLM's code generation abilities (not RAG-enabled, but it useful as an established baseline to compare against)
 
+  While these metrics are going to be utilized first to balance value-gained and time to implement, we will be adding additional evaluation metrics soon following MVP status. Potential options include:
+  - RAG retrieval Hit Rate: non-LLM metric that evaluates how often a retrieved context matches the expected context for a question/answer scenario
+  - Performance metrics: non-LLM metrics that measure performance targets such as runtime, compute (cpu and gpu), etc. (requires a standarized deployment context)
+
 </details>
 
 ### Execution
