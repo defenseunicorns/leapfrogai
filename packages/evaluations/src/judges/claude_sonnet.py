@@ -26,9 +26,10 @@ class ClaudeSonnet(DeepEvalBaseLLM):
         prompt: str,
         schema: BaseModel,
         max_tokens: int = 1024,
-    ) -> str:
+    ) -> BaseModel:
+        """Generates a response from the Anthropic API"""
         instructor_client = instructor.from_anthropic(self.client)
-        resp = instructor_client.messages.create(
+        response = instructor_client.messages.create(
             model=self.model,
             max_tokens=max_tokens,
             messages=[
@@ -39,11 +40,12 @@ class ClaudeSonnet(DeepEvalBaseLLM):
             ],
             response_model=schema,
         )
-        return resp
+        return response
 
     async def a_generate(
         self, prompt: str, schema: BaseModel, max_tokens: Optional[int]
     ) -> str:
+        """Async implementation of the generate function"""
         loop = asyncio.get_running_loop()
         return await loop.run_in_executor(
             None, self.generate, prompt, schema, max_tokens

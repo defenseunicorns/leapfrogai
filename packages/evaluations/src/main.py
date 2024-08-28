@@ -1,13 +1,24 @@
 import deepeval
 from deepeval.test_case import LLMTestCase
+
+# from deepeval.metrics import ContextualRecallMetric, FaithfulnessMetric
 import logging
 
 from runners.niah_runner import NIAH_Runner
 from metrics.niah_metrics import NIAH_Retrieval, NIAH_Response
+# from metrics.correctness import CorrectnessMetric
 
 logging.basicConfig(level=logging.INFO)  # for testing
 
-ALL_EVALS = ["LFAI_NIAH"]
+ALL_EVALS = ["LFAI_NIAH", "LFAI_QA"]
+
+ALL_METRICS = [
+    "NIAH_RETRIEVAL",
+    "NIAH_RESPONSE",
+    "CORRECTNESS",
+    "CONTEXTUAL_RECALL",
+    "FAITHFULNESS",
+]
 
 
 class RAGEvaluator:
@@ -17,17 +28,27 @@ class RAGEvaluator:
         self.eval_list = None
         self.test_case_dict = None
         self.niah_test_cases = None
-        self.eval_options = ALL_EVALS
 
-    def set_evaluations(self, evals_list=[]) -> None:
+    def set_evaluations(self, eval_list=[]) -> None:
         """Set the evaluations that will be run via a list"""
-        if len(evals_list) == 0:
+        if len(eval_list) == 0:
             logging.info("Setting eval list to ALL")
             self.eval_list = ALL_EVALS
-        # TODO: Add other evals options
+        else:
+            for item in eval_list:
+                if item not in ALL_EVALS:
+                    raise AttributeError(
+                        f"'{item}' is not an available evaluation. Please limit the list to one of the following: {ALL_EVALS}"
+                    )
+            self.eval_list = eval_list
 
     def run_evals(self, *args, **kwargs) -> None:
         """Run all of the selected evaluations"""
+        if self.eval_list is None:
+            raise AttributeError(
+                "the list of evaluations has not been set. Please do so by running the 'set_evaluations()' function"
+            )
+
         logging.info("Running the following evaluations:")
         for eval in self.eval_list:
             logging.info(f" -{eval}")
@@ -63,6 +84,10 @@ class RAGEvaluator:
         deepeval.evaluate(
             test_cases=self.niah_test_cases, metrics=[retrieval_metric, response_metric]
         )
+
+    def _qa_evaluation(self, *args, **kwargs) -> None:
+        """Runs the Question/Answer evaluation"""
+        pass
 
 
 if __name__ == "__main__":
