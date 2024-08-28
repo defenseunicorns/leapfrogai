@@ -1,5 +1,5 @@
 -- Update the vector_store_file table to add an updated_at column
-ALTER TABLE vector_store_file ADD COLUMN updated_at timestamp(3) DEFAULT CURRENT_TIMESTAMP NOT NULL;
+ALTER TABLE vector_store_file ADD COLUMN updated_at timestamp DEFAULT timezone('utc', now()) NOT NULL;
 
 -- Add an index on user_id for faster queries
 CREATE INDEX idx_vector_store_file_user_id ON vector_store_file(user_id);
@@ -8,7 +8,7 @@ CREATE INDEX idx_vector_store_file_user_id ON vector_store_file(user_id);
 CREATE OR REPLACE FUNCTION update_modified_column()
 RETURNS TRIGGER AS $$
 BEGIN
-    NEW.updated_at = CURRENT_TIMESTAMP;
+    NEW.updated_at = timezone('utc', now());
     RETURN NEW;
 END;
 $$ language 'plpgsql';
