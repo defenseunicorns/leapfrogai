@@ -5,8 +5,6 @@ import logging
 from runners.niah_runner import NIAH_Runner
 from metrics.niah_metrics import NIAH_Retrieval, NIAH_Response
 
-logging.basicConfig(level=logging.INFO)  # for testing
-
 ALL_EVALS = ["LFAI_NIAH"]
 
 
@@ -66,6 +64,7 @@ class RAGEvaluator:
 
 
 if __name__ == "__main__":
+    logging.basicConfig(level=logging.INFO)
     evaluator = RAGEvaluator()
     evaluator.set_evaluations()
     evaluator.run_evals()
