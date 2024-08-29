@@ -69,6 +69,7 @@ Set the following environment variables:
 ```bash
 LEAPFROGAI_API_URL=<LeapfrogAI API url, usually: https://leapfrogai-api.uds.dev/openai/v1 for development>
 LEAPFROGAI_API_KEY=<LeapfrogAI API key>
+MODEL_TO_EVALUATE="vllm" # can also be provided as "model" to the __init__ for the runner
 ```
 
 You can then run the evaluation in a script with the following:
