@@ -42,7 +42,7 @@ from openai.types.beta.threads.run_create_params import TruncationStrategy
 from postgrest.base_request_builder import SingleAPIResponse
 from pydantic import BaseModel, Field, ValidationError
 
-from leapfrogai_api.types.constants import (
+from leapfrogai_api.typedef.constants import (
     DEFAULT_MAX_COMPLETION_TOKENS,
     DEFAULT_MAX_PROMPT_TOKENS,
 )

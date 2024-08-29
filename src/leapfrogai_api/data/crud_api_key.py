@@ -7,7 +7,7 @@ from supabase import AClient as AsyncClient
 from leapfrogai_api.data.crud_base import CRUDBase
 from leapfrogai_api.backend.security.api_key import APIKey, KEY_PREFIX
 
-from leapfrogai_api.types.constants import THIRTY_DAYS
+from leapfrogai_api.typedef.constants import THIRTY_DAYS
 
 
 class APIKeyItem(BaseModel):

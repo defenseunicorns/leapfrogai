@@ -20,7 +20,7 @@ from openai.types.beta.threads.text_content_block_param import TextContentBlockP
 from openai.types.beta.vector_store import ExpiresAfter
 from pydantic import BaseModel, Field
 
-from leapfrogai_api.types.constants import DEFAULT_MAX_COMPLETION_TOKENS
+from leapfrogai_api.typedef.constants import DEFAULT_MAX_COMPLETION_TOKENS
 
 ##########
 # GENERIC
