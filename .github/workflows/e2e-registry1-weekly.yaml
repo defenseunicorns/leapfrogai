@@ -43,9 +43,6 @@ jobs:
           registry1Password: ${{ secrets.IRON_BANK_ROBOT_PASSWORD }}
           ghToken: ${{ secrets.GITHUB_TOKEN }}
 
-      - name: Setup LeapfrogAI API and Supabase
-        uses: ./.github/actions/lfai-core
-
       - name: Set Bundle Flavor Fields
         run: |
           uds zarf tools yq -i '.packages[1] |= del(.repository)' uds-bundles/latest/cpu/uds-bundle.yaml
