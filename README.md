@@ -4,9 +4,9 @@
 
 ## Table of Contents
 
-- [Table of Contents](#table-of-contents)
 - [Overview](#overview)
 - [Why Host Your Own LLM?](#why-host-your-own-llm)
+- [Demo Video](#demo-video)
 - [Structure](#structure)
 - [Getting Started](#getting-started)
 - [Components](#components)
@@ -39,14 +39,15 @@ Large Language Models (LLMs) are a powerful resource for AI-driven decision maki
 ## Demo Video
 
 <a href="https://www.youtube.com/watch?v=BowOJttHyPU" target="_blank">
- <img src="website/assets/img/walkthrough_thumbnail.jpg" alt="2 minute demo of features of LeapfrogAI" width="540"/>
+ <img src="docs/imgs/walkthrough_thumbnail.jpg" alt="2 minute demo of features of LeapfrogAI" width="540"/>
 </a>
 
-LeapfrogAI is built on top of [Unicorn Delivery Service (UDS) Kubernetes runtime](https://github.com/defenseunicorns/uds-core), which includes several features:
+LeapfrogAI is built on top of [Unicorn Delivery Service (UDS)](https://github.com/defenseunicorns/uds-core), Defense Unicorns' secure runtime environment, and includes several features such as:
 
 - **Single Sign-On**
 - **Non-proprietary API Compatible with OpenAI's API**
 - **Retrieval Augmented Generation (RAG)**
+- **Transcription and Translation**
 - **And More!**
 
 ## Structure

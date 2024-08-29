@@ -48,12 +48,12 @@ If you already have a pre-built UDS bundle, please skip to [Deploying the UDS Bu
 
     ```bash
     # For CPU-only
-    cd bundles/latest/cpu/
+    cd uds-bundles/latest/cpu/
     uds create .
     UDS_ARCH=amd64 uds deploy uds-bundle-leapfrogai-*.tar.zst --confirm
 
     # For compatible AMD64, NVIDIA CUDA-capable GPU machines
-    cd bundles/latest/gpu/
+    cd uds-bundles/latest/gpu/
     uds create .
     UDS_ARCH=amd64 uds deploy uds-bundle-leapfrogai-*.tar.zst --confirm
     ```
