@@ -1,14 +1,11 @@
-import datetime
 import logging
 import os
 import openai
-import seaborn as sns
 import zipfile
 
 from datasets import load_dataset
 from dotenv import load_dotenv
 from huggingface_hub import hf_hub_download
-import matplotlib.pyplot as plt
 from tqdm import tqdm
 
 from openai.types.beta.assistant import Assistant
@@ -57,6 +54,7 @@ class QA_Runner:
         self.qa_data = None
         self.vector_store = None
         self.file_ids = None
+        self.current_assistant = None
         self.model = model
         self.temperature = temperature
         self.instruction_template = instruction_template
@@ -69,120 +67,87 @@ class QA_Runner:
         self._create_vector_store()
         self._upload_context(dataset_name=dataset)
 
-    def run_experiment(self, clean_up_after: bool = True) -> None:
+    def run_experiment(self, cleanup: bool = True) -> None:
         """Prompts LFAI to answer questions from the QA dataset"""
-        if clean_up_after:
+        if cleanup:
             logging.info(
                 "By default, all files and the vector store will be deleted after running the experiment. \
-                         Please set `clean_up_after` to false when running the experiment if this is not preferred."
+                         Please set `cleanup` to false when running the experiment if this is not preferred."
             )
 
-        response_contents = []
+        try:
+            response_contents = []
 
-        for row in tqdm(self.qa_data, desc="Evaluating data rows"):
-            # create assistant
-            assistant = self._create_assistant()
+            for row in tqdm(self.qa_data, desc="Evaluating data rows"):
+                # create assistant
+                self.current_assistant = self._create_assistant()
 
-            # create thread
-            thread = self.client.beta.threads.create()
-            self.client.beta.threads.messages.create(
-                thread_id=thread.id,
-                role="user",
-                content=row["input"],
-            )
-
-            # create run
-            run = self.client.beta.threads.runs.create_and_poll(
-                assistant_id=assistant.id, thread_id=thread.id
-            )
-
-            # get messages
-            messages = self.client.beta.threads.messages.list(
-                thread_id=thread.id, run_id=run.id
-            ).data
-
-            response_messages = []
-            for message in messages:
-                if message.role == "assistant":
-                    response_messages.append(message)
-
-            response_content = ""
-            for response in response_messages:
-                response_content += response.content[0].text.value + "\n"
-
-                logging.debug(
-                    f"number of annotations in response: {len(response.content[0].text.annotations)}"
+                # create thread
+                thread = self.client.beta.threads.create()
+                self.client.beta.threads.messages.create(
+                    thread_id=thread.id,
+                    role="user",
+                    content=row["input"],
                 )
 
-            logging.info(f"Response recorded:\n{response_content}")
-            response_contents.append(response_content)
+                # create run
+                run = self.client.beta.threads.runs.create_and_poll(
+                    assistant_id=self.current_assistant.id, thread_id=thread.id
+                )
 
-            # delete the assistant
-            self._delete_assistant(assistant.id)
+                # get messages
+                messages = self.client.beta.threads.messages.list(
+                    thread_id=thread.id, run_id=run.id
+                ).data
 
-        # set the responses
-        self.qa_data["actual_output"] = response_contents
+                response_messages = []
+                for message in messages:
+                    if message.role == "assistant":
+                        response_messages.append(message)
 
-        if clean_up_after:
-            self.clean_up()
+                response_content = ""
+                for response in response_messages:
+                    response_content += response.content[0].text.value + "\n"
 
-    def generate_report(self) -> None:
-        """Creates two heatmaps for the retrieval and response scores respectively"""
-        logging.info("Creating evaluation report...")
+                    logging.debug(
+                        f"number of annotations in response: {len(response.content[0].text.annotations)}"
+                    )
 
-        niah_df = self.niah_data.to_pandas()
+                logging.info(f"Response recorded:\n{response_content}")
+                response_contents.append(response_content)
 
-        # average the scores across context depths and context lengths
-        mean_retrieval_scores = (
-            niah_df.groupby(["context_depth", "context_length"])["retrieval_score"]
-            .mean()
-            .reset_index()
-        )
-        mean_response_scores = (
-            niah_df.groupby(["context_depth", "context_length"])["response_score"]
-            .mean()
-            .reset_index()
-        )
+                # delete the assistant
+                self._delete_assistant(self.current_assistant.id)
+                self.current_assistant = None
 
-        mean_retrieval_pivot = mean_retrieval_scores.pivot(
-            index="context_depth", columns="context_length", values="retrieval_score"
-        )
-        mean_response_pivot = mean_response_scores.pivot(
-            index="context_depth", columns="context_length", values="response_score"
-        )
+            # set the responses
+            self.qa_data["actual_output"] = response_contents
 
-        logging.info("--- Scores ---")
-        logging.info(f"Retrieval:\n {mean_retrieval_pivot}")
-        logging.info(f"Response:\n {mean_response_pivot}")
+            if cleanup:
+                self.cleanup()
 
-        color_map = self._get_color_map()
-        fig, axes = plt.subplots(1, 2)
-        fig.suptitle("Needle in a Haystack (NIAH) Evaluation Scores")
+        # remove artifacts from the API if the experiment fails
+        except Exception as exc:
+            logging.info("Error encountered, running cleanup")
+            self.cleanup()
+            raise exc
 
-        sns.heatmap(
-            mean_retrieval_pivot, ax=axes[0], annot=True, cmap=color_map, vmin=0, vmax=1
-        )
-        axes[0].set_xlabel("Context Length")
-        axes[0].set_ylabel("Context Depth (%)")
-        axes[0].set_title("Retrieval Scores")
+    def cleanup(self) -> None:
+        """
+        Deletes the vector store and any remaining uploaded files
 
-        sns.heatmap(
-            mean_response_pivot, ax=axes[1], annot=True, cmap=color_map, vmin=0, vmax=1
-        )
-        axes[1].set_xlabel("Context Length")
-        axes[1].set_ylabel("Context Depth (%)")
-        axes[1].set_title("Response Scores")
-
-        fig.tight_layout(rect=[0, 0, 1, 0.95])
-        fig.savefig(f"niah_heatmaps_{self.model}_{datetime.date.today()}.png", dpi=600)
-
-        logging.info("Evaluation heatmaps finished!")
-
-    def clean_up(self) -> None:
-        """Deletes files and the vector store following a successful run"""
-        logging.info("Cleaning up...")
-        self._delete_context()
-        self._delete_vector_store()
+        This is run by default after completing a run and in case a run fails
+        """
+        logging.info("Cleaning up runtime artifacts...")
+        if self.current_assistant:
+            self._delete_assistant(assistant_id=self.current_assistant.id)
+            self.current_assistant = None
+        if self.file_ids:
+            self._delete_context()
+            self.file_ids = None
+        if self.vector_store:
+            self._delete_vector_store(vector_store_id=self.vector_store.id)
+            self.vector_store = None
 
     def _load_qa_dataset(self, dataset_name: str, num_samples: int):
         """
@@ -220,10 +185,10 @@ class QA_Runner:
     def _create_vector_store(self) -> VectorStore:
         logging.info("Creating vector store...")
         vector_store = self.client.beta.vector_stores.create(
-            name="Haystack",
+            name="Question/Answer Store",
             file_ids=[],
             expires_after={"anchor": "last_active_at", "days": 1},
-            metadata={"project": "Needle in a Haystack Evaluation", "version": "0.1"},
+            metadata={"project": "QA Evaluation", "version": "0.1"},
         )
         self.vector_store = vector_store
         logging.info("Uploading context to vector store...")
