@@ -178,7 +178,11 @@ class Model:
                 async for request_output in self.random_iterator:
                     request_id = request_output.request_id
 
-                    if request_output.finished:
+                    # At least one iteration must be done for each request_id
+                    if (
+                        self.delta_queue_by_id.get(request_id)
+                        and request_output.finished
+                    ):
                         # Signal that the "generate" function can stop waiting for additional inputs
                         logging.info(
                             f"Generated {num_tokens_by_id[request_id]} tokens in {time.time() - t0_by_id[request_id]:.2f}s"

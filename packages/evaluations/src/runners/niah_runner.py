@@ -1,22 +1,18 @@
-import datetime
 import logging
 import numpy as np
 import os
 import openai
-import seaborn as sns
 
 from datasets import load_dataset, concatenate_datasets
 from dotenv import load_dotenv
-import matplotlib.pyplot as plt
 from tqdm import tqdm
 
-from matplotlib.colors import LinearSegmentedColormap
 from openai.types.beta.assistant import Assistant
 from openai.types.beta.vector_store import VectorStore
 
 load_dotenv()
 
-INSTRUCTION_TEMPLATE = """
+DEFAULT_INSTRUCTION_TEMPLATE = """
                 You are a helpful AI bot that answers questions for a user. Keep your response short and direct.
                 You will receive a set of context and a question that will relate to the context.
                 Do not give information outside the document or repeat your findings.
@@ -50,12 +46,13 @@ class NIAH_Runner:
     def __init__(
         self,
         dataset: str = "defenseunicorns/LFAI_RAG_niah_v1",
-        model: str = "vllm",
         temperature: float = 0.1,
         add_padding: bool = True,
         base_url: str = None,
         api_key: str = None,
+        model: str = None,
         message_prompt: str = "What is Doug's secret code?",
+        instruction_template: str = DEFAULT_INSTRUCTION_TEMPLATE,
         min_doc_length: int = 4096,
         max_doc_length: int = 4096,
         min_depth: float = 0.0,
@@ -67,13 +64,16 @@ class NIAH_Runner:
         self.padding = None
         self.niah_data = None
         self.vector_store = None
+        self.current_file = None
+        self.current_assistant = None
         self.message_prompt = message_prompt
-        self.model = model
+        self.instruction_template = instruction_template
+        self.model = model or os.environ.get("MODEL_TO_EVALUATE")
         self.temperature = temperature
         self.add_padding = add_padding
         self.client = openai.OpenAI(
-            base_url=base_url or os.getenv("LEAPFROGAI_API_URL"),
-            api_key=api_key or os.getenv("LEAPFROGAI_API_KEY"),
+            base_url=base_url or os.environ.get("LEAPFROGAI_API_URL"),
+            api_key=api_key or os.environ.get("LEAPFROGAI_API_KEY"),
         )
         logging.info(f"client url: {self.client.base_url}")
         self._load_niah_dataset(
@@ -88,173 +88,159 @@ class NIAH_Runner:
         self.retrieval_score = None
         self.response_score = None
 
-    def run_experiment(self) -> None:
-        """Runs the Needle in a Haystack evaluation"""
+    def run_experiment(self, cleanup: bool = True) -> None:
+        """
+        Runs the Needle in a Haystack evaluation
 
-        retrieval_scores = []
-        response_scores = []
-        response_contents = []
+        if cleanup == True, then the following will be deleted from the API following the experiment:
+        - assistants
+        - contextual files
+        - noncontextual padding files
+        - the vector store
 
-        for row in tqdm(self.niah_data, desc="Evaluating data rows"):
-            logging.debug(
-                f"length: {row['context_length']}\n depth: {row['context_depth']}\n secret_code: {row['secret_code']}"
-            )
-            # add file to vector_store
-            # TODO: there has to be a more efficient way to add this file
-            with open("context.txt", "wb") as context_file:
-                context_file.write(row["context"].encode("utf-8"))
-            with open("context.txt", "rb") as context_file:
-                vector_store_file = self.client.beta.vector_stores.files.upload(
-                    vector_store_id=self.vector_store.id, file=context_file
-                )
-            os.remove("context.txt")
-            file_id = vector_store_file.id
+        In the event of an error, the cleanup function will be run regardless
+        """
 
-            logging.debug(
-                f"data in vector store: {self.client.beta.vector_stores.files.list(vector_store_id=self.vector_store.id).data}"
-            )
-            logging.debug(
-                f"There are now {len(self.client.beta.vector_stores.files.list(vector_store_id=self.vector_store.id).data)} files in the vector store"
-            )
+        try:
+            retrieval_scores = []
+            response_scores = []
+            response_contents = []
 
-            # create assistant
-            assistant = self._create_assistant()
-
-            # create thread
-            thread = self.client.beta.threads.create()
-            self.client.beta.threads.messages.create(
-                thread_id=thread.id,
-                role="user",
-                content=self.message_prompt,
-            )
-
-            # create run
-            run = self.client.beta.threads.runs.create_and_poll(
-                assistant_id=assistant.id, thread_id=thread.id
-            )
-
-            # get messages
-            messages = self.client.beta.threads.messages.list(
-                thread_id=thread.id, run_id=run.id
-            ).data
-
-            response_messages = []
-            for message in messages:
-                if message.role == "assistant":
-                    response_messages.append(message)
-
-            retrieval_score = 0.0
-            response_score = 0.0
-            response_content = ""
-
-            for response in response_messages:
-                response_content += response.content[0].text.value + "\n"
-
-                # retrieval_score
-                # 1 if needle text was returned by the retrieval step of RAG else 0
+            for row in tqdm(self.niah_data, desc="Evaluating data rows"):
                 logging.debug(
-                    f"number of annotations in response: {len(response.content[0].text.annotations)}"
+                    f"length: {row['context_length']}\n depth: {row['context_depth']}\n secret_code: {row['secret_code']}"
                 )
-                for annotation in response.content[0].text.annotations:
-                    annotation_id = annotation.file_citation.file_id
-                    if annotation_id == file_id:
-                        logging.debug("Setting retrieval_score to 1.0")
-                        retrieval_score = 1.0
+                # add file to vector_store
+                # TODO: there has to be a more efficient way to add this file
+                with open("context.txt", "wb") as context_file:
+                    context_file.write(row["context"].encode("utf-8"))
+                with open("context.txt", "rb") as context_file:
+                    vector_store_file = self.client.beta.vector_stores.files.upload(
+                        vector_store_id=self.vector_store.id, file=context_file
+                    )
+                os.remove("context.txt")
+                self.current_file = vector_store_file.id
 
-                # # response_score
-                # # 1 if needle text was returned by the LLM's final response else 0
-                secret_code = row["secret_code"]
-                logging.debug(f"Response message: {response.content[0].text.value}")
-                if secret_code in response.content[0].text.value:
-                    logging.debug("Setting response_score to 1.0")
-                    response_score = 1.0
+                logging.debug(
+                    f"data in vector store: {self.client.beta.vector_stores.files.list(vector_store_id=self.vector_store.id).data}"
+                )
+                logging.debug(
+                    f"There are now {len(self.client.beta.vector_stores.files.list(vector_store_id=self.vector_store.id).data)} files in the vector store"
+                )
 
-            retrieval_scores.append(retrieval_score)
-            response_scores.append(response_score)
-            response_contents.append(response_content)
+                # create assistant
+                self.current_assistant = self._create_assistant()
 
-            # delete file to clean up the vector store
-            logging.info("Deleting files")
-            self.client.beta.vector_stores.files.delete(
-                file_id=file_id, vector_store_id=self.vector_store.id
+                # create thread
+                thread = self.client.beta.threads.create()
+                self.client.beta.threads.messages.create(
+                    thread_id=thread.id,
+                    role="user",
+                    content=self.message_prompt,
+                )
+
+                # create run
+                run = self.client.beta.threads.runs.create_and_poll(
+                    assistant_id=self.current_assistant.id, thread_id=thread.id
+                )
+
+                # get messages
+                messages = self.client.beta.threads.messages.list(
+                    thread_id=thread.id, run_id=run.id
+                ).data
+
+                response_messages = []
+                for message in messages:
+                    if message.role == "assistant":
+                        response_messages.append(message)
+
+                retrieval_score = 0.0
+                response_score = 0.0
+                response_content = ""
+
+                for response in response_messages:
+                    response_content += response.content[0].text.value + "\n"
+
+                    # retrieval_score
+                    # 1 if needle text was returned by the retrieval step of RAG else 0
+                    logging.debug(
+                        f"number of annotations in response: {len(response.content[0].text.annotations)}"
+                    )
+                    for annotation in response.content[0].text.annotations:
+                        annotation_id = annotation.file_citation.file_id
+                        if annotation_id == self.current_file:
+                            logging.debug("Setting retrieval_score to 1.0")
+                            retrieval_score = 1.0
+
+                    # # response_score
+                    # # 1 if needle text was returned by the LLM's final response else 0
+                    secret_code = row["secret_code"]
+                    logging.debug(f"Response message: {response.content[0].text.value}")
+                    if secret_code in response.content[0].text.value:
+                        logging.debug("Setting response_score to 1.0")
+                        response_score = 1.0
+
+                retrieval_scores.append(retrieval_score)
+                response_scores.append(response_score)
+                response_contents.append(response_content)
+
+                # delete file to clean up the vector store
+                self._delete_file(self.current_file)
+                self.current_file = None
+                logging.debug(
+                    f"There are now {len(self.client.beta.vector_stores.files.list(vector_store_id=self.vector_store.id).data)} files in the vector store"
+                )
+
+                # delete the assistant
+                self._delete_assistant(self.current_assistant.id)
+                self.current_assistant = None
+
+            # remove any remaining artifacts from the experiment
+            self.cleanup()
+
+            self.niah_data = self.niah_data.add_column(
+                name="retrieval_score", column=retrieval_scores
             )
-            self.client.files.delete(file_id=file_id)
-            logging.debug(
-                f"There are now {len(self.client.beta.vector_stores.files.list(vector_store_id=self.vector_store.id).data)} files in the vector store"
+            self.niah_data = self.niah_data.add_column(
+                name="response_score", column=response_scores
+            )
+            self.niah_data = self.niah_data.add_column(
+                name="response", column=response_contents
             )
 
-            # delete the assistant
-            self._delete_assistant(assistant.id)
+            self.retrieval_score = np.mean(retrieval_scores)
+            self.response_score = np.mean(response_scores)
 
-        self._delete_vector_store(self.vector_store.id)
+            logging.info(f"Retrieval Score {self.retrieval_score}")
+            logging.info(f"Response Score {self.response_score}")
 
-        self.niah_data = self.niah_data.add_column(
-            name="retrieval_score", column=retrieval_scores
-        )
-        self.niah_data = self.niah_data.add_column(
-            name="response_score", column=response_scores
-        )
-        self.niah_data = self.niah_data.add_column(
-            name="response", column=response_contents
-        )
+        # remove artifacts from the API if the experiment fails
+        except Exception as exc:
+            logging.info("Error encountered, running cleanup")
+            self.cleanup()
+            raise exc
 
-        self.retrieval_score = np.mean(retrieval_scores)
-        self.response_score = np.mean(response_scores)
+    def cleanup(self) -> None:
+        """
+        Deletes the vector store and any remaining uploaded files
 
-        logging.info(f"Retrieval Score {self.retrieval_score}")
-        logging.info(f"Response Score {self.response_score}")
-
-    def generate_report(self) -> None:
-        """Creates two heatmaps for the retrieval and response scores respectively"""
-        logging.info("Creating evaluation report...")
-
-        niah_df = self.niah_data.to_pandas()
-
-        # average the scores across context depths and context lengths
-        mean_retrieval_scores = (
-            niah_df.groupby(["context_depth", "context_length"])["retrieval_score"]
-            .mean()
-            .reset_index()
-        )
-        mean_response_scores = (
-            niah_df.groupby(["context_depth", "context_length"])["response_score"]
-            .mean()
-            .reset_index()
-        )
-
-        mean_retrieval_pivot = mean_retrieval_scores.pivot(
-            index="context_depth", columns="context_length", values="retrieval_score"
-        )
-        mean_response_pivot = mean_response_scores.pivot(
-            index="context_depth", columns="context_length", values="response_score"
-        )
-
-        logging.info("--- Scores ---")
-        logging.info(f"Retrieval:\n {mean_retrieval_pivot}")
-        logging.info(f"Response:\n {mean_response_pivot}")
-
-        color_map = self._get_color_map()
-        fig, axes = plt.subplots(1, 2)
-        fig.suptitle("Needle in a Haystack (NIAH) Evaluation Scores")
-
-        sns.heatmap(
-            mean_retrieval_pivot, ax=axes[0], annot=True, cmap=color_map, vmin=0, vmax=1
-        )
-        axes[0].set_xlabel("Context Length")
-        axes[0].set_ylabel("Context Depth (%)")
-        axes[0].set_title("Retrieval Scores")
-
-        sns.heatmap(
-            mean_response_pivot, ax=axes[1], annot=True, cmap=color_map, vmin=0, vmax=1
-        )
-        axes[1].set_xlabel("Context Length")
-        axes[1].set_ylabel("Context Depth (%)")
-        axes[1].set_title("Response Scores")
-
-        fig.tight_layout(rect=[0, 0, 1, 0.95])
-        fig.savefig(f"niah_heatmaps_{self.model}_{datetime.date.today()}.png", dpi=600)
-
-        logging.info("Evaluation heatmaps finished!")
+        This is run by default after completing a run and in case a run fails
+        """
+        logging.info("Cleaning up runtime artifacts...")
+        if self.current_assistant:
+            self._delete_assistant(assistant_id=self.current_assistant.id)
+            self.current_assistant = None
+        if self.current_file:
+            self._delete_file(file_id=self.current_file)
+            self.current_file = None
+        if self.padding:
+            logging.info("Removing haystack padding files...")
+            for row in self.padding:
+                _ = self.client.files.delete(file_id=row["padding_id"])
+            self.padding = None
+        if self.vector_store:
+            self._delete_vector_store(vector_store_id=self.vector_store.id)
+            self.vector_store = None
 
     def _load_niah_dataset(
         self,
@@ -301,9 +287,13 @@ class NIAH_Runner:
     def _create_assistant(self) -> Assistant:
         """Create an assistant for a given round of the NIAH test"""
         logging.info("Creating new assistant...")
+        if self.model is None:
+            raise AttributeError(
+                "No 'model' has been set. Either provide a model at runner creation time with 'model=' or set the 'MODEL_TO_EVALUATE' env var"
+            )
         assistant = self.client.beta.assistants.create(
             name="LFAI NIAH Assistant",
-            instructions=INSTRUCTION_TEMPLATE,
+            instructions=self.instruction_template,
             model=self.model,
             temperature=self.temperature,
             tools=[{"type": "file_search"}],
@@ -311,6 +301,7 @@ class NIAH_Runner:
                 "file_search": {"vector_store_ids": [self.vector_store.id]}
             },
         )
+        logging.info(f"Created assistant: {assistant}")
         return assistant
 
     def _delete_assistant(self, assistant_id: str) -> None:
@@ -347,15 +338,19 @@ class NIAH_Runner:
 
     def _delete_vector_store(self, vector_store_id: str) -> None:
         """Deletes the vector store used for all NIAH evaluations"""
-        if self.add_padding:
-            logging.info("Deleting haystack padding files...")
-            for row in self.padding:
-                _ = self.client.files.delete(file_id=row["padding_id"])
-
         logging.info("Deleting vector store...")
         _ = self.client.beta.vector_stores.delete(vector_store_id=vector_store_id)
         self.vector_store = None
 
-    def _get_color_map(self) -> LinearSegmentedColormap:
-        """Builds a custom colormap for the heatmap figure"""
-        return LinearSegmentedColormap.from_list("rg", ["r", "y", "g"], N=256)
+    def _delete_file(self, file_id: str) -> None:
+        """
+        Deletes a file from the file store given its id
+
+        If the vectore store exists, it will be removed from the vector store as well
+        """
+        logging.info(f"Deleting file with id: {file_id}")
+        if self.vector_store:
+            self.client.beta.vector_stores.files.delete(
+                file_id=file_id, vector_store_id=self.vector_store.id
+            )
+        self.client.files.delete(file_id=file_id)
