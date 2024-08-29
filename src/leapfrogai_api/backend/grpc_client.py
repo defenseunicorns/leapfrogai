@@ -12,9 +12,11 @@ from leapfrogai_api.backend.types import (
     CompletionChoice,
     CompletionResponse,
     CreateEmbeddingResponse,
-    CreateTranscriptionResponse,
     EmbeddingResponseData,
     Usage,
+)
+from leapfrogai_api.typedef.request import (
+    CreateTranscriptionResponse,
     CreateTranslationResponse,
 )
 from leapfrogai_sdk.chat.chat_pb2 import (
