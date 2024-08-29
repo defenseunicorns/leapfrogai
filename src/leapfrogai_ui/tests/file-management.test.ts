@@ -1,5 +1,5 @@
 import { expect, test } from './fixtures';
-import { getTableRow, getSimpleMathQuestion, loadChatPage } from './helpers/helpers';
+import { getTableRow, getSimpleMathQuestion } from './helpers/helpers';
 import {
   confirmDeletion,
   createCSVFile,
@@ -8,23 +8,34 @@ import {
   createPowerpointFile,
   createTextFile,
   createWordFile,
+  deleteAllGeneratedFixtureFiles,
   deleteFileByName,
   deleteFixtureFile,
   deleteTestFilesWithApi,
   initiateDeletion,
-  loadFileManagementPage,
   testFileUpload,
   uploadFile
 } from './helpers/fileHelpers';
 import { sendMessage } from './helpers/threadHelpers';
+import {
+  loadFileManagementPage,
+  navigateToChatPage,
+  navigateToFileManagementPage
+} from './helpers/navigationHelpers';
 
-test.beforeEach(async ({ openAIClient }) => {
+test.beforeEach(async ({ page, openAIClient }) => {
+  await deleteTestFilesWithApi(openAIClient);
+  await loadFileManagementPage(page);
+});
+
+test.afterEach(async ({ openAIClient }) => {
+  deleteAllGeneratedFixtureFiles();
   await deleteTestFilesWithApi(openAIClient);
 });
 
 test('it can navigate to the last visited thread with breadcrumbs', async ({ page }) => {
+  await navigateToChatPage(page);
   const newMessage = getSimpleMathQuestion();
-  await page.goto('/chat');
   await sendMessage(page, newMessage);
   const messages = page.getByTestId('message');
   await expect(messages).toHaveCount(2);
@@ -32,18 +43,12 @@ test('it can navigate to the last visited thread with breadcrumbs', async ({ pag
   const urlParts = new URL(page.url()).pathname.split('/');
   const threadId = urlParts[urlParts.length - 1];
 
-  await page.getByTestId('header-settings-btn').click();
-  await page.getByText('File Management').click();
+  await navigateToFileManagementPage(page);
   await page.getByTestId('breadcrumbs').getByRole('link', { name: 'Chat' }).click();
   await page.waitForURL(`/chat/${threadId}`);
 });
 
 test('it can navigate to the file management page', async ({ page }) => {
-  await loadChatPage(page);
-
-  await page.getByTestId('header-settings-btn').click();
-  await page.getByText('File Management').click();
-
   await expect(page).toHaveTitle('LeapfrogAI - File Management');
 });
 
@@ -93,12 +98,7 @@ test('it can upload a .pptx powerpoint file', async ({ page, openAIClient }) => 
   await testFileUpload(filename, page, openAIClient);
 });
 
-test('confirms any affected assistants then deletes multiple files', async ({
-  page,
-  openAIClient
-}) => {
-  await loadFileManagementPage(page);
-
+test('confirms any affected assistants then deletes multiple files', async ({ page }) => {
   const filename1 = await createPDF();
   const filename2 = await createPDF();
 
@@ -120,17 +120,9 @@ test('confirms any affected assistants then deletes multiple files', async ({
   await confirmDeletion(page);
 
   await expect(page.getByText('Files Deleted')).toBeVisible();
-
-  // cleanup
-  deleteFixtureFile(filename1);
-  deleteFixtureFile(filename2);
-  await deleteFileByName(filename1, openAIClient);
-  await deleteFileByName(filename2, openAIClient);
 });
 
 test('it cancels the delete confirmation modal', async ({ page, openAIClient }) => {
-  await loadFileManagementPage(page);
-
   const filename = await createPDF();
 
   await uploadFile(page, filename);
@@ -151,12 +143,8 @@ test('it cancels the delete confirmation modal', async ({ page, openAIClient }) 
   await deleteFileByName(filename, openAIClient);
 });
 
-test('shows an error toast when there is an error deleting a file', async ({
-  page,
-  openAIClient
-}) => {
+test('shows an error toast when there is an error deleting a file', async ({ page }) => {
   const filename = await createPDF();
-
   let hasBeenCalled = false;
   await page.route('*/**/api/files/delete', async (route) => {
     if (!hasBeenCalled && route.request().method() === 'DELETE') {
@@ -169,7 +157,6 @@ test('shows an error toast when there is an error deleting a file', async ({
       }
     }
   });
-  await loadFileManagementPage(page);
   await uploadFile(page, filename);
 
   await expect(page.getByText(`${filename} imported successfully`)).toBeVisible();
@@ -182,16 +169,9 @@ test('shows an error toast when there is an error deleting a file', async ({
   await confirmDeletion(page);
 
   await expect(page.getByText('Error Deleting File')).toBeVisible();
-
-  // Cleanup
-  deleteFixtureFile(filename);
-  await deleteFileByName(filename, openAIClient);
 });
 
-test('it shows toast when there is an error submitting the form', async ({
-  page,
-  openAIClient
-}) => {
+test('it shows toast when there is an error submitting the form', async ({ page }) => {
   await page.route('*/**/chat/file-management', async (route) => {
     if (route.request().method() === 'POST') {
       const json = {};
@@ -203,22 +183,14 @@ test('it shows toast when there is an error submitting the form', async ({
     }
   });
 
-  await loadFileManagementPage(page);
-
   const filename = await createPDF();
 
   await uploadFile(page, filename);
 
   await expect(page.getByText('Import Failed')).toBeVisible();
-
-  // Cleanup
-  deleteFixtureFile(filename);
-  await deleteFileByName(filename, openAIClient);
 });
 
-test('it can download a file', async ({ page, openAIClient }) => {
-  await loadFileManagementPage(page);
-
+test('it can download a file', async ({ page }) => {
   const filename = await createPDF();
 
   await uploadFile(page, filename);
@@ -236,17 +208,17 @@ test('it can download a file', async ({ page, openAIClient }) => {
   expect(download.suggestedFilename()).toEqual(filename.replace(/:/g, '_'));
   await expect(page.getByText('File Downloaded')).toBeVisible();
   await expect(downloadBtn).not.toBeVisible(); // all items deselected
-
-  // Cleanup
-  deleteFixtureFile(filename);
-  await deleteFileByName(filename, openAIClient);
 });
 
-test("it notifies the user when a file has uploaded successfully, even when leaving the page", async ({ page }) => {
+test('it notifies the user when a file has uploaded successfully, even when leaving the page', async ({
+  page
+}) => {
   const filename = await createPDF();
-  await loadFileManagementPage(page);
   await uploadFile(page, filename);
   await page.getByTestId('breadcrumbs').getByRole('link', { name: 'Chat' }).click();
   await expect(page.getByText(`${filename} imported successfully`)).not.toBeVisible();
   await expect(page.getByText(`${filename} imported successfully`)).toBeVisible();
-})
+  await expect(page.getByText(`${filename} imported successfully`)).not.toBeVisible();
+  await navigateToFileManagementPage(page);
+  await expect(page.getByText(filename)).toBeVisible(); // ensure the file was still loaded into the list despite navigation
+});

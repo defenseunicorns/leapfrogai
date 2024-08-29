@@ -6,7 +6,7 @@
 
 {#if $toastStore.toasts}
   <section
-    class="z-max absolute right-0 top-header flex sidebar-height flex-col  gap-1 overflow-y-auto overflow-x-hidden"
+    class="z-max sidebar-height absolute right-0 top-header flex flex-col gap-1 overflow-y-auto overflow-x-hidden"
   >
     {#each $toastStore.toasts as toast (toast.id)}
       <div transition:slide>

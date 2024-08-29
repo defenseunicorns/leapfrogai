@@ -1,11 +1,12 @@
 import { expect, test } from './fixtures';
-import { getSimpleMathQuestion, loadChatPage, LONG_RESPONSE_PROMPT } from './helpers/helpers';
+import { getSimpleMathQuestion, LONG_RESPONSE_PROMPT } from './helpers/helpers';
 import { createAssistantWithApi, deleteAssistantWithApi } from './helpers/assistantHelpers';
 import {
   deleteActiveThread,
   sendMessage,
   waitForResponseToComplete
 } from './helpers/threadHelpers';
+import { loadChatPage } from './helpers/navigationHelpers';
 
 const newMessage1 = getSimpleMathQuestion();
 const newMessage2 = getSimpleMathQuestion();

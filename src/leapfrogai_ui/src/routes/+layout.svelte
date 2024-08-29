@@ -6,7 +6,7 @@
   import { page } from '$app/stores';
   import '$webComponents/CodeBlock';
   import { browser } from '$app/environment';
-  import { filesStore, toastStore, uiStore } from '$stores';
+  import { filesStore, uiStore } from '$stores';
 
   export let data;
 
@@ -34,7 +34,7 @@
     console.log('Change received:', payload);
   };
   const handleFileTableUpdate = (payload) => {
-    console.log("payload", payload)
+    console.log('payload', payload);
     filesStore.updateWithUploadSuccess([payload.new]);
   };
 

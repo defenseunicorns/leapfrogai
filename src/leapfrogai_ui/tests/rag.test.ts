@@ -19,12 +19,13 @@ import {
   deleteAssistantWithApi,
   editAssistantCard
 } from './helpers/assistantHelpers';
-import { getSimpleMathQuestion, loadChatPage } from './helpers/helpers';
+import { getSimpleMathQuestion } from './helpers/helpers';
 import {
   deleteActiveThread,
   sendMessage,
   waitForResponseToComplete
 } from './helpers/threadHelpers';
+import { loadChatPage } from './helpers/navigationHelpers';
 
 test.afterAll(() => {
   deleteAllGeneratedFixtureFiles(); // cleanup any files that were not deleted during tests (e.g. due to test failure)
