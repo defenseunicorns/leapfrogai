@@ -55,10 +55,12 @@ class IndexingService:
         crud_vector_store_file = CRUDVectorStoreFile(db=self.db)
         crud_vector_store = CRUDVectorStore(db=self.db)
 
-        if file_existing := await crud_vector_store_file.get(
+        if existing_file := await crud_vector_store_file.get(
             filters=FilterVectorStoreFile(vector_store_id=vector_store_id, id=file_id)
         ):
-            return file_existing
+            logger.warning("File already indexed: %s", file_id)
+            return existing_file
+
         if not (
             await crud_vector_store.get(filters=FilterVectorStore(id=vector_store_id))
         ):

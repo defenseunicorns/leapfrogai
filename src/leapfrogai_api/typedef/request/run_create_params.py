@@ -1,7 +1,6 @@
 from __future__ import annotations
 
 import logging
-from typing import AsyncGenerator, Any
 from openai.types.beta.threads import Run
 from openai.types.beta.threads.run_create_params import (
     AdditionalMessage,
@@ -9,7 +8,6 @@ from openai.types.beta.threads.run_create_params import (
     AdditionalMessageAttachmentToolFileSearch,
 )
 from pydantic import Field
-from starlette.responses import StreamingResponse
 from leapfrogai_api.typedef.request.run_create_params_base import (
     RunCreateParamsRequestBase,
 )
@@ -107,27 +105,3 @@ class RunCreateParamsRequest(RunCreateParamsRequestBase):
             **create_params.__dict__,
         )
         return await crud_run.create(object_=run)
-
-    async def generate_response(self, existing_thread, new_run: Run, session: Session):
-        """Generate a new response based on the existing thread"""
-        if self.stream:
-            initial_messages: list[str] = (
-                RunCreateParamsRequestBase.get_initial_messages_base(run=new_run)
-            )
-            ending_messages: list[str] = (
-                RunCreateParamsRequestBase.get_ending_messages_base(run=new_run)
-            )
-            stream: AsyncGenerator[str, Any] = (
-                super().stream_generate_message_for_thread(session=session, initial_messages=initial_messages, thread=existing_thread, ending_messages=ending_messages, run_id=new_run.id, additional_instructions=self.additional_instructions)
-            )
-
-            return StreamingResponse(stream, media_type="text/event-stream")
-        else:
-            await super().generate_message_for_thread(
-                session=session,
-                thread=existing_thread,
-                run_id=new_run.id,
-                additional_instructions=self.additional_instructions,
-            )
-
-            return new_run
