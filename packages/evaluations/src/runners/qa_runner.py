@@ -16,7 +16,7 @@ from openai.types.beta.vector_store import VectorStore
 
 load_dotenv()
 
-INSTRUCTION_TEMPLATE = """
+DEFAULT_INSTRUCTION_TEMPLATE = """
                 You are a helpful AI bot that answers questions for a user. Keep your response short and direct.
                 You will receive a set of context and a question that will relate to the context.
                 Do not give information outside the document or repeat your findings.
@@ -50,6 +50,7 @@ class QA_Runner:
         base_url: str = None,
         api_key: str = None,
         num_samples: int = 32,
+        instruction_template: str = DEFAULT_INSTRUCTION_TEMPLATE,
     ):
         """Initialize the Assistant with an API key and the path to the text file"""
 
@@ -58,6 +59,7 @@ class QA_Runner:
         self.file_ids = None
         self.model = model
         self.temperature = temperature
+        self.instruction_template = instruction_template
         self.client = openai.OpenAI(
             base_url=base_url or os.getenv("LEAPFROGAI_API_URL"),
             api_key=api_key or os.getenv("LEAPFROGAI_API_KEY"),
@@ -66,8 +68,6 @@ class QA_Runner:
         self._load_qa_dataset(dataset_name=dataset, num_samples=num_samples)
         self._create_vector_store()
         self._upload_context(dataset_name=dataset)
-        self.retrieval_score = None
-        self.response_score = None
 
     def run_experiment(self, clean_up_after: bool = True) -> None:
         """Prompts LFAI to answer questions from the QA dataset"""
@@ -201,7 +201,7 @@ class QA_Runner:
         logging.info("Creating new assistant...")
         assistant = self.client.beta.assistants.create(
             name="LFAI QA Assistant",
-            instructions=INSTRUCTION_TEMPLATE,
+            instructions=self.instruction_template,
             model=self.model,
             temperature=self.temperature,
             tools=[{"type": "file_search"}],
