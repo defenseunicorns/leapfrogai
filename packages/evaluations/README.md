@@ -62,7 +62,7 @@ The retrieval and response rate is then averaged across each copy of the experim
 The LeapfrogAI NIAH evaluation assumes the following:
 
 - LeapfrogAI is deployed
-- A valid LeapfrogAI API key is set
+- A valid LeapfrogAI API key is set (for more info, see the [API README](/src/leapfrogai_api/README.md))
 
 Set the following environment variables:
 
