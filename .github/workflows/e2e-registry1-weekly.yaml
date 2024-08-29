@@ -54,6 +54,12 @@ jobs:
         run: |
           LOCAL_VERSION=registry1 FLAVOR=registry1 make build-api
 
+      - name: Set environment variable
+        shell: bash
+        id: set-env-var
+        run: |
+          echo "ANON_KEY=$(uds zarf tools kubectl get secret supabase-bootstrap-jwt -n leapfrogai -o jsonpath='{.data.anon-key}' | base64 -d)" >> "$GITHUB_ENV"
+
       - name: Create and Deploy Bundle
         run: |
           cd uds-bundles/latest/cpu
