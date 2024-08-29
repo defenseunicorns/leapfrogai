@@ -78,7 +78,7 @@ from niah_runner import NIAH_Runner
 
 runner = NIAH_Runner() # see input parameters
 
-runner.evaluate() # run the evaluation
+runner.run_experiment() # run the evaluation
 
 runner.generate_report() # generate a heatmap with the results
 ```
