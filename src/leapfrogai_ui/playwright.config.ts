@@ -48,6 +48,7 @@ const defaultConfig: PlaywrightTestConfig = {
   // Additionally, LeapfrogAI API is slow when attaching files to assistants, resulting in flaky tests
   // We can attempt in increase number of browser and workers in the pipeline when the API is faster
   workers: 1,
+  timeout: 60000,
   projects: [
     { name: 'setup', testMatch: /global\.setup\.ts/, teardown: 'cleanup' },
     {
