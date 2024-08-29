@@ -241,3 +241,12 @@ test('it can download a file', async ({ page, openAIClient }) => {
   deleteFixtureFile(filename);
   await deleteFileByName(filename, openAIClient);
 });
+
+test("it notifies the user when a file has uploaded successfully, even when leaving the page", async ({ page }) => {
+  const filename = await createPDF();
+  await loadFileManagementPage(page);
+  await uploadFile(page, filename);
+  await page.getByTestId('breadcrumbs').getByRole('link', { name: 'Chat' }).click();
+  await expect(page.getByText(`${filename} imported successfully`)).not.toBeVisible();
+  await expect(page.getByText(`${filename} imported successfully`)).toBeVisible();
+})

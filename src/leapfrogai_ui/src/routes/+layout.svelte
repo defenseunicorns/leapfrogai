@@ -34,6 +34,7 @@
     console.log('Change received:', payload);
   };
   const handleFileTableUpdate = (payload) => {
+    console.log("payload", payload)
     filesStore.updateWithUploadSuccess([payload.new]);
   };
 

@@ -2,7 +2,6 @@ import { derived, writable } from 'svelte/store';
 import type { FileObject } from 'openai/resources/files';
 import type { FileRow } from '$lib/types/files';
 import { toastStore } from '$stores/index';
-import OpenAI from 'openai';
 
 type FilesStore = {
   files: FileRow[];
@@ -196,18 +195,6 @@ const createFilesStore = () => {
           uploading: false
         };
       });
-    },
-    uploadFile: async (file: File, token: string) => {
-      const openai = new OpenAI({
-        apiKey: token,
-        baseURL: 'https://leapfrogai-api.uds.dev/openai/v1'
-      });
-
-      const uploadedFile = await openai.files.create({
-        file: file,
-        purpose: 'assistants'
-      });
-      console.log('uploadedFile', uploadedFile);
     }
   };
 };
