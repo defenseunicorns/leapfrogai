@@ -14,7 +14,7 @@ class NIAH_Retrieval(BaseMetric):
         self.threshold = threshold
         self.async_mode = async_mode
 
-    def measure(self, test_case: LLMTestCase):
+    def measure(self, test_case: LLMTestCase) -> int:
         """Records the niah retrieval score from the test case"""
         self.success = (
             test_case.additional_metadata["retrieval_score"] >= self.threshold
@@ -28,11 +28,11 @@ class NIAH_Retrieval(BaseMetric):
 
         return self.score
 
-    async def a_measure(self, test_case: LLMTestCase):
+    async def a_measure(self, test_case: LLMTestCase) -> int:
         loop = asyncio.get_running_loop()
         return await loop.run_in_executor(None, self.measure, test_case)
 
-    def is_successful(self):
+    def is_successful(self) -> bool:
         return self.success
 
     @property
@@ -51,7 +51,7 @@ class NIAH_Response(BaseMetric):
         self.threshold = threshold
         self.async_mode = async_mode
 
-    def measure(self, test_case: LLMTestCase):
+    def measure(self, test_case: LLMTestCase) -> int:
         """Records the niah response score from the test case"""
         self.success = test_case.additional_metadata["response_score"] >= self.threshold
         if self.success:
@@ -63,11 +63,11 @@ class NIAH_Response(BaseMetric):
 
         return self.score
 
-    async def a_measure(self, test_case: LLMTestCase):
+    async def a_measure(self, test_case: LLMTestCase) -> int:
         loop = asyncio.get_running_loop()
         return await loop.run_in_executor(None, self.measure, test_case)
 
-    def is_successful(self):
+    def is_successful(self) -> bool:
         return self.success
 
     @property
