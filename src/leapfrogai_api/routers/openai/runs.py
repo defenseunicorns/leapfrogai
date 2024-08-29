@@ -11,7 +11,7 @@ from leapfrogai_api.backend.types import (
 from leapfrogai_api.routers.openai.requests.thread_run_create_params_request import (
     ThreadRunCreateParamsRequest,
 )
-from leapfrogai_api.types.request import (
+from leapfrogai_api.typedef.request import (
     RunCreateParamsRequest,
 )
 from leapfrogai_api.data.crud_run import CRUDRun

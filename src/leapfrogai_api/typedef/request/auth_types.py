@@ -1,7 +1,7 @@
 from pydantic import BaseModel, Field
 import time
 
-from leapfrogai_api.types.constants import THIRTY_DAYS
+from leapfrogai_api.typedef.constants import THIRTY_DAYS
 
 
 class CreateAPIKeyRequest(BaseModel):
