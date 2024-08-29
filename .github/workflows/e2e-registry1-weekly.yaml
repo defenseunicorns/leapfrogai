@@ -85,7 +85,7 @@ jobs:
       - name: Test UI
         run: |
           cp src/leapfrogai_ui/.env.example src/leapfrogai_ui/.env
-          TEST_ENV=CI PUBLIC_DISABLE_KEYCLOAK=true PUBLIC_SUPABASE_ANON_KEY=$ANON_KEY npm --prefix src/leapfrogai_ui run test:integration:ci
+          LEAPFROGAI_API_BASE_URL="http://leapfrogai-api.leapfrogai.svc.cluster.local:8080" TEST_ENV=CI PUBLIC_DISABLE_KEYCLOAK=true PUBLIC_SUPABASE_ANON_KEY=$ANON_KEY npm --prefix src/leapfrogai_ui run test:integration:ci
 
       - name: Archive Playwright Report
         uses: actions/upload-artifact@v4
