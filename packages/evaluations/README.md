@@ -14,7 +14,7 @@ python src/main.py
 
 ## Needle in a Haystack (NIAH)
 
-A Needle in a Haystack evaluation is used to evaluate the performance of the LFAI RAG system in tasks that require finding a specific piece of information (the "needle") within a large body of text (the "haystack").
+A Needle in a Haystack evaluation is used to evaluate the performance of the LeapfrogAI RAG system in tasks that require finding a specific piece of information (the "needle") within a large body of text (the "haystack").
 
 This evaluation can be used to evaluate both the retrieval and generation stages of RAG:
 
@@ -22,7 +22,7 @@ This evaluation can be used to evaluate both the retrieval and generation stages
 - If the needle is present in the final generated response, the generation process is functioning as expected
 
 ### Data
-The LFAI NIAH evaluation uses a custom dataset available on HuggingFace: [defenseunicorns/LFAI_RAG_niah_v1](https://huggingface.co/datasets/defenseunicorns/LFAI_RAG_niah_v1)
+The LeapfrogAI NIAH evaluation uses a custom dataset available on HuggingFace: [defenseunicorns/LFAI_RAG_niah_v1](https://huggingface.co/datasets/defenseunicorns/LFAI_RAG_niah_v1)
 
 LFAI_RAG_niah_v1 contains 120 context entries that are intended to be used for Needle in a Haystack RAG Evaluations.
 
@@ -41,7 +41,7 @@ Example:
 ```
 
 ### Experimental Design
-The LFAI NIAH evaluation uses the following process:
+The LeapfrogAI NIAH evaluation uses the following process:
 
 - build a vector store (the haystack) upload 10 contextless documents (as padding)
 - for a subset of the data (10 datapoints by default):
@@ -59,16 +59,16 @@ The LFAI NIAH evaluation uses the following process:
 The retrieval and response rate is then averaged across each copy of the experiment to generate a final score.
 
 ### Running the Evaluation
-The LFAI NIAH evaluation assumes the following:
+The LeapfrogAI NIAH evaluation assumes the following:
 
-- LFAI is deployed
-- A valid LFAI API key is set
+- LeapfrogAI is deployed
+- A valid LeapfrogAI API key is set
 
 Set the following environment variables:
 
 ```bash
-LEAPFROGAI_API_URL=<lfai api url, usually: https://leapfrogai-api.uds.dev/openai/v1 for development>
-LEAPFROGAI_API_KEY=<lfai api key>
+LEAPFROGAI_API_URL=<LeapfrogAI API url, usually: https://leapfrogai-api.uds.dev/openai/v1 for development>
+LEAPFROGAI_API_KEY=<LeapfrogAI API key>
 ```
 
 You can then run the evaluation in a script with the following:
