@@ -60,10 +60,9 @@ jobs:
       - name: Create and Deploy Bundle
         run: |
           cd uds-bundles/latest/cpu
-          uds create . --confirm
-          uds deploy uds-bundle-leapfrogai-amd64-registry1.tar.zst --confirm
-          rm -rf uds-bundle-leapfrogai-amd64-registry1.tar.zst
-          cd ../../../
+          uds create . --confirm && \
+            uds deploy uds-bundle-leapfrogai-amd64-registry1.tar.zst --confirm --no-progress && \
+            rm -rf uds-bundle-leapfrogai-amd64-registry1.tar.zst
 
       - name: Test llama-cpp-python
         run: |
