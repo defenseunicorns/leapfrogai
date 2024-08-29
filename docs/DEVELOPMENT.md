@@ -70,7 +70,7 @@ For example, the LeapfrogAI API requires a `config.yaml` be supplied when spun u
 
 ## Package Development
 
-If you don't want to [build an entire bundle](#bundle-development), or you want to "dev-loop" on a single package in an existing [UDS Kubernetes cluster](../packages/k3d-gpu/README.md) you can do so by performing the following.
+If you don't want to [build an entire bundle](#bundle-development), or you want to "dev-loop" on a single package in an existing [UDS Kubernetes cluster](../packages/k3d-gpu/README.md) you can do so by following the instructions below.
 
 For example, this is how you build and (re)deploy a local DEV version of a package:
 
@@ -80,6 +80,7 @@ uds zarf package remove leapfrogai-api --confirm
 uds zarf tools registry prune --confirm
 
 # create and deploy the new package
+# FLAVOR can be registry1, upstream, or unicorn - see README for availability details
 LOCAL_VERSION=dev FLAVOR=upstream REGISTRY_PORT=5000 ARCH=amd64 make build-api
 LOCAL_VERSION=dev FLAVOR=upstream REGISTRY_PORT=5000 ARCH=amd64 make deploy-api
 ```

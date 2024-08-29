@@ -137,6 +137,8 @@ Below is the current component flavors list:
 | [vllm](packages/vllm/)                         |      ✅      |      🚧      |      🚧       |
 | [vllm](packages/vllm/)                         |      ✅      |      🚧      |      🚧       |
 
+Flavors with any components labelled as 🚧 are not available as a quick start bundle deployment yet. Please refer to the [DEVELOPMENT.md](./docs/DEVELOPMENT.md) for instructions on how to build a component's Zarf package for local testing.
+
 ## Usage
 
 To build a LeapfrogAI UDS bundle and deploy it, please refer to the [LeapfrogAI Documentation Website](https://docs.leapfrog.ai/docs/). In the documentation website, you'll find system requirements and instructions for all things LeapfrogAI that aren't associated to local development and contributing.
