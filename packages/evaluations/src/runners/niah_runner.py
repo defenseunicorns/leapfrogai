@@ -16,7 +16,7 @@ from openai.types.beta.vector_store import VectorStore
 
 load_dotenv()
 
-INSTRUCTION_TEMPLATE = """
+DEFAULT_INSTRUCTION_TEMPLATE = """
                 You are a helpful AI bot that answers questions for a user. Keep your response short and direct.
                 You will receive a set of context and a question that will relate to the context.
                 Do not give information outside the document or repeat your findings.
@@ -56,6 +56,7 @@ class NIAH_Runner:
         base_url: str = None,
         api_key: str = None,
         message_prompt: str = "What is Doug's secret code?",
+        instruction_template: str = DEFAULT_INSTRUCTION_TEMPLATE,
         min_doc_length: int = 4096,
         max_doc_length: int = 4096,
         min_depth: float = 0.0,
@@ -68,6 +69,7 @@ class NIAH_Runner:
         self.niah_data = None
         self.vector_store = None
         self.message_prompt = message_prompt
+        self.instruction_template = instruction_template
         self.model = model
         self.temperature = temperature
         self.add_padding = add_padding
@@ -303,7 +305,7 @@ class NIAH_Runner:
         logging.info("Creating new assistant...")
         assistant = self.client.beta.assistants.create(
             name="LFAI NIAH Assistant",
-            instructions=INSTRUCTION_TEMPLATE,
+            instructions=self.instruction_template,
             model=self.model,
             temperature=self.temperature,
             tools=[{"type": "file_search"}],
