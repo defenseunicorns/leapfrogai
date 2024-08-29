@@ -1,31 +1,34 @@
 import deepeval
 from deepeval.test_case import LLMTestCase
-
-# from deepeval.metrics import ContextualRecallMetric, FaithfulnessMetric
+from deepeval.metrics import (
+    FaithfulnessMetric,
+)  # , ContextualRecallMetric TODO: enable this metric
 import logging
+from typing import Optional, List
 
-from runners.niah_runner import NIAH_Runner
+from metrics.correctness import CorrectnessMetric
 from metrics.niah_metrics import NIAH_Retrieval, NIAH_Response
-# from metrics.correctness import CorrectnessMetric
+from runners.niah_runner import NIAH_Runner
+from runners.qa_runner import QA_Runner
 
 logging.basicConfig(level=logging.INFO)  # for testing
 
 ALL_EVALS = ["LFAI_NIAH", "LFAI_QA"]
-
-ALL_METRICS = [
-    "NIAH_RETRIEVAL",
-    "NIAH_RESPONSE",
-    "CORRECTNESS",
-    "CONTEXTUAL_RECALL",
-    "FAITHFULNESS",
-]
+QA_METRICS = ["CORRECTNESS", "CONTEXTUAL_RECALL", "FAITHFULNESS"]
+NIAH_METRICS = ["NIAH_RETRIEVAL", "NIAH_RESPONSE"]
 
 
 class RAGEvaluator:
     """A class that handles running all of the LeapfrogAI RAG evaluations"""
 
-    def __init__(self):
-        self.eval_list = None
+    def __init__(
+        self,
+        eval_list: Optional[List[str]] = None,
+        metric_list: Optional[List[str]] = None,
+    ):
+        self._check_evals_and_metrics(eval_list, metric_list)
+        self.eval_list = eval_list
+        self.metric_list = metric_list
         self.test_case_dict = None
         self.niah_test_cases = None
 
@@ -52,9 +55,14 @@ class RAGEvaluator:
         logging.info("Running the following evaluations:")
         for eval in self.eval_list:
             logging.info(f" -{eval}")
+
         if "LFAI_NIAH" in self.eval_list:
+            logging.info("Beginning Needle in a Haystack Evaluation...")
             self._niah_evaluation(*args, **kwargs)
-        # TODO: add more evaluations
+
+        if "LFAI_QA" in self.eval_list:
+            logging.info("Beginning Question/Answer Evaluation...")
+            self._qa_evaluation(*args, **kwargs)
 
     def _niah_evaluation(self, *args, **kwargs) -> None:
         """Run the Needle in a Haystack evaluation"""
@@ -87,11 +95,43 @@ class RAGEvaluator:
 
     def _qa_evaluation(self, *args, **kwargs) -> None:
         """Runs the Question/Answer evaluation"""
-        pass
+        self.qa_test_cases = []
+
+        qa_runner = QA_Runner(*args, **kwargs)
+        qa_runner.run_experiment()
+
+        # build test cases out of the qa_dataset
+        for row in qa_runner.qa_data:
+            self.qa_test_cases.append(
+                LLMTestCase(
+                    input=row["input"],
+                    actual_output=row["actual_output"],
+                    context=[row["context"]],
+                    expected_output=row["expected_output"],
+                    # retrieval_context = row['retrieval_context'] # TODO: add this for more metrics
+                )
+            )
+
+        # run metrics
+        correctness_metric = CorrectnessMetric()
+        faithfulness_metric = FaithfulnessMetric()
+
+        deepeval.evaluate(
+            test_cases=self.qa_test_cases,
+            metrics=[correctness_metric, faithfulness_metric],
+        )
+
+    def _check_evals_and_metrics(
+        eval_list: List[str] | None, metric_list: List[str] | None
+    ) -> None:
+        if eval_list and metric_list:
+            raise AttributeError(
+                "A list of evals and metrics were both supplied. Only one can be provided."
+            )
 
 
 if __name__ == "__main__":
     logging.basicConfig(level=logging.INFO)
     evaluator = RAGEvaluator()
-    evaluator.set_evaluations()
+    evaluator.set_evaluations(eval_list=["LFAI_QA"])
     evaluator.run_evals()
