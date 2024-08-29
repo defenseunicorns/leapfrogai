@@ -27,6 +27,13 @@ const createFilesStore = () => {
     set,
     update,
     setUploading: (status: boolean) => update((old) => ({ ...old, uploading: status })),
+    updateFileRow: (id: string, updateItems: Partial<FileRow>) => {
+      update((old) => {
+        const oldFileIndex = old.files.findIndex((file) => file.id === id);
+        old.files[oldFileIndex] = { ...old.files[oldFileIndex], ...updateItems };
+        return { ...old };
+      });
+    },
     setFiles: (newFiles: FileRow[]) => {
       update((old) => ({ ...old, files: [...newFiles] }));
     },

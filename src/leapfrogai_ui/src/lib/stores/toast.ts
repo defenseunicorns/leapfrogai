@@ -5,7 +5,7 @@ const defaultValues: ToastStore = {
   toasts: []
 };
 
-const toastDefaults: Pick<ToastNotificationProps, 'kind' | 'title' | 'timeout'> = {
+const toastDefaults: ToastNotificationProps = {
   kind: 'info',
   title: '',
   timeout: 3000
@@ -28,12 +28,14 @@ const createToastsStore = () => {
       }));
 
       // Remove toast after timeout
-      setTimeout(() => {
-        update((old) => ({
-          ...old,
-          toasts: old.toasts.filter((toast) => toast.id !== id)
-        }));
-      }, newToast.timeout);
+      if (newToast.timeout !== -1) {
+        setTimeout(() => {
+          update((old) => ({
+            ...old,
+            toasts: old.toasts.filter((toast) => toast.id !== id)
+          }));
+        }, newToast.timeout);
+      }
     },
     dismissToast: (id: string) => {
       update((old) => ({

@@ -1,16 +1,16 @@
-import { superValidate } from 'sveltekit-superforms';
-import type { Actions, PageServerLoad } from './$types';
-import { fail, redirect } from '@sveltejs/kit';
-import { yup } from 'sveltekit-superforms/adapters';
-import { assistantDefaults, DEFAULT_ASSISTANT_TEMP } from '$lib/constants';
-import { env } from '$env/dynamic/private';
-import { assistantInputSchema } from '$lib/schemas/assistants';
-import type { LFAssistant } from '$lib/types/assistants';
-import { getAssistantAvatarUrl } from '$helpers/assistants';
-import type { AssistantCreateParams } from 'openai/resources/beta/assistants';
-import { getOpenAiClient } from '$lib/server/constants';
-import { filesSchema } from '$schemas/files';
-import type { VectorStore } from 'openai/resources/beta/vector-stores/index';
+import {superValidate} from 'sveltekit-superforms';
+import type {Actions, PageServerLoad} from './$types';
+import {fail} from '@sveltejs/kit';
+import {yup} from 'sveltekit-superforms/adapters';
+import {assistantDefaults, DEFAULT_ASSISTANT_TEMP} from '$lib/constants';
+import {env} from '$env/dynamic/private';
+import {assistantInputSchema} from '$lib/schemas/assistants';
+import type {LFAssistant} from '$lib/types/assistants';
+import {getAssistantAvatarUrl} from '$helpers/assistants';
+import type {AssistantCreateParams} from 'openai/resources/beta/assistants';
+import {getOpenAiClient} from '$lib/server/constants';
+import {filesSchema} from '$schemas/files';
+import type {VectorStore} from 'openai/resources/beta/vector-stores/index';
 
 export const load: PageServerLoad = async () => {
   // Populate form with default temperature
@@ -116,7 +116,6 @@ export const actions: Actions = {
         return fail(500, { message: 'Error adding avatar to assistant.' });
       }
     }
-
-    return redirect(303, '/chat/assistants-management');
+    return { form, createdAssistant: createdAssistant, redirectUrl: '/chat/assistants-management' };
   }
 };

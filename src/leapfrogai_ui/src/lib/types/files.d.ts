@@ -7,6 +7,7 @@ export type FileRow = {
   filename: string;
   created_at: number | null;
   status: FileUploadStatus;
+  vectorStatus?: 'in_progress' | 'completed' | 'cancelled' | 'failed';
 };
 
 // This type is taken from SuperValidated, leaving the any

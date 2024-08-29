@@ -37,14 +37,17 @@
         subtitle: `Please try again or contact support`
       });
     },
-    onResult: async ({ result }) => handleResult(result)
+    onResult: async ({ result }) => handleResult(result),
+
   });
 
   const handleResult = async (result: ActionResult) => {
     if (result.type === 'success') {
       const idsToSelect: string[] = [];
       const uploadedFiles = result.data?.uploadedFiles;
-      filesStore.updateWithUploadSuccess(result.data?.uploadedFiles);
+      filesStore.updateWithUploadErrors(result.data?.uploadedFiles);
+      // filesStore.updateWithUploadSuccess(result.data?.uploadedFiles);
+      console.log('uploadedFiles', uploadedFiles)
       for (const uploadedFile of uploadedFiles) {
         idsToSelect.push(uploadedFile.id);
       }
@@ -52,6 +55,7 @@
     }
     filesStore.setUploading(false);
   };
+
 </script>
 
 <div class={$$props.class}>

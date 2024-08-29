@@ -31,10 +31,9 @@
   }
 
   const handleVectorStoreTableUpdate = (payload) => {
-    console.log('Change received:', payload);
+    filesStore.updateFileRow(payload.new.id, { vectorStatus: payload.new.status });
   };
   const handleFileTableUpdate = (payload) => {
-    console.log('payload', payload);
     filesStore.updateWithUploadSuccess([payload.new]);
   };
 
@@ -50,6 +49,11 @@
         //*** REALTIME LISTENERS ***//
         vectorStoreChannel = supabase
           .channel('vector_store_file')
+          .on(
+            'postgres_changes',
+            { event: 'INSERT', schema: 'public', table: 'vector_store_file' },
+            handleVectorStoreTableUpdate
+          )
           .on(
             'postgres_changes',
             { event: 'UPDATE', schema: 'public', table: 'vector_store_file' },
