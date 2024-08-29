@@ -3,6 +3,18 @@
 This covers how to use the evaluations present in LeapfrogAI. As more evaluations get added, these instructions will be updated.
 
 ## Running the Evaluations
+The LeapfrogAI RAG evaluation system assumes the following:
+
+- LeapfrogAI is deployed
+- A valid LeapfrogAI API key is set (for more info, see the [API README](/src/leapfrogai_api/README.md))
+
+Set the following environment variables:
+
+```bash
+LEAPFROGAI_API_URL=<LeapfrogAI API url, usually: https://leapfrogai-api.uds.dev/openai/v1 for development>
+LEAPFROGAI_API_KEY=<LeapfrogAI API key>
+MODEL_TO_EVALUATE="vllm" # can also be provided as "model" to the __init__ for the runner
+```
 
 Running `main.py` will by default run all of the evaluations currently available:
 
@@ -57,29 +69,3 @@ The LeapfrogAI NIAH evaluation uses the following process:
 - delete the vector store
 
 The retrieval and response rate is then averaged across each copy of the experiment to generate a final score.
-
-### Running the Evaluation
-The LeapfrogAI NIAH evaluation assumes the following:
-
-- LeapfrogAI is deployed
-- A valid LeapfrogAI API key is set (for more info, see the [API README](/src/leapfrogai_api/README.md))
-
-Set the following environment variables:
-
-```bash
-LEAPFROGAI_API_URL=<LeapfrogAI API url, usually: https://leapfrogai-api.uds.dev/openai/v1 for development>
-LEAPFROGAI_API_KEY=<LeapfrogAI API key>
-MODEL_TO_EVALUATE="vllm" # can also be provided as "model" to the __init__ for the runner
-```
-
-You can then run the evaluation in a script with the following:
-
-```python
-from niah_runner import NIAH_Runner
-
-runner = NIAH_Runner() # see input parameters
-
-runner.run_experiment() # run the evaluation
-
-runner.generate_report() # generate a heatmap with the results
-```
