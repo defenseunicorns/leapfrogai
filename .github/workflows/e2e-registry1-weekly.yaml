@@ -60,7 +60,8 @@ jobs:
           cd uds-bundles/latest/cpu
           uds create . --confirm && \
             uds deploy uds-bundle-leapfrogai-amd64-registry1.tar.zst --confirm --no-progress && \
-            rm -rf uds-bundle-leapfrogai-amd64-registry1.tar.zst
+            rm -rf uds-bundle-leapfrogai-amd64-registry1.tar.zst && \
+            docker system prune -af
 
       # API Key Prep
       - name: Set environment variable
@@ -116,10 +117,12 @@ jobs:
           cp src/leapfrogai_ui/.env.example src/leapfrogai_ui/.env
           mkdir -p playwright/auth
           touch playwright/auth.user.json
-          SERVICE_ROLE_KEY=$ANON_KEY TEST_ENV=CI USERNAME=doug PASSWORD=$FAKE_E2E_USER_PASSWORD PUBLIC_SUPABASE_ANON_KEY=$ANON_KEY npm --prefix src/leapfrogai_ui run test:integration:ci
+          SERVICE_ROLE_KEY=$(uds zarf tools kubectl get secret -n leapfrogai supabase-bootstrap-jwt -o jsonpath={.data.service-key} | base64 -d)
+          echo "::add-mask::$SERVICE_ROLE_KEY"
+          SERVICE_ROLE_KEY=$SERVICE_ROLE_KEY TEST_ENV=CI USERNAME=doug PASSWORD=$FAKE_E2E_USER_PASSWORD PUBLIC_SUPABASE_ANON_KEY=$ANON_KEY npm --prefix src/leapfrogai_ui run test:integration:ci
 
       - name: Archive Playwright Report
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@834a144ee995460fba8ed112a2fc961b36a5ec5a # v4.3.6
         if: ${{ !cancelled() }}
         with:
           name: playwright-report
