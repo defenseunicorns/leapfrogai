@@ -28,7 +28,7 @@ from postgrest.base_request_builder import SingleAPIResponse
 from pydantic import BaseModel
 from starlette.responses import StreamingResponse
 
-from leapfrogai_api.types.constants import (
+from leapfrogai_api.typedef.constants import (
     DEFAULT_MAX_COMPLETION_TOKENS,
     DEFAULT_MAX_PROMPT_TOKENS,
 )
