@@ -50,11 +50,11 @@ class NIAH_Runner:
     def __init__(
         self,
         dataset: str = "defenseunicorns/LFAI_RAG_niah_v1",
-        model: str = "vllm",
         temperature: float = 0.1,
         add_padding: bool = True,
         base_url: str = None,
         api_key: str = None,
+        model: str = None,
         message_prompt: str = "What is Doug's secret code?",
         instruction_template: str = DEFAULT_INSTRUCTION_TEMPLATE,
         min_doc_length: int = 4096,
@@ -70,7 +70,7 @@ class NIAH_Runner:
         self.vector_store = None
         self.message_prompt = message_prompt
         self.instruction_template = instruction_template
-        self.model = model
+        self.model = model or os.environ.get("MODEL_TO_EVALUATE")
         self.temperature = temperature
         self.add_padding = add_padding
         self.client = openai.OpenAI(
@@ -303,6 +303,12 @@ class NIAH_Runner:
     def _create_assistant(self) -> Assistant:
         """Create an assistant for a given round of the NIAH test"""
         logging.info("Creating new assistant...")
+        if self.model is None:
+            raise AttributeError(
+                "No 'model' has been set. \
+                Either provide a model at runner creation time with 'model=' \
+                or set the 'MODEL_TO_EVALUATE' env var"
+            )
         assistant = self.client.beta.assistants.create(
             name="LFAI NIAH Assistant",
             instructions=self.instruction_template,
@@ -313,6 +319,7 @@ class NIAH_Runner:
                 "file_search": {"vector_store_ids": [self.vector_store.id]}
             },
         )
+        logging.info(f"Created assistant: {assistant}")
         return assistant
 
     def _delete_assistant(self, assistant_id: str) -> None:
