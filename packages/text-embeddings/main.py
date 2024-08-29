@@ -17,7 +17,10 @@ model = INSTRUCTOR(model_dir)
 
 class InstructorEmbedding:
     async def CreateEmbedding(self, request: EmbeddingRequest, context: GrpcContext):
-        embeddings = model.encode(request.inputs)
+        # Run the CPU-intensive encoding in a separate thread
+        embeddings = await asyncio.to_thread(
+            model.encode, sentences=request.inputs, show_progress_bar=True
+        )
 
         embeddings = [Embedding(embedding=inner_list) for inner_list in embeddings]
         return EmbeddingResponse(embeddings=embeddings)

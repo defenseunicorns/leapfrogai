@@ -3,7 +3,7 @@
 import logging
 import traceback
 
-from fastapi import APIRouter, HTTPException, status
+from fastapi import APIRouter, HTTPException, status, BackgroundTasks
 from openai.pagination import SyncCursorPage
 from openai.types.beta import VectorStore, VectorStoreDeleted
 from openai.types.beta.vector_stores import VectorStoreFile, VectorStoreFileDeleted
@@ -44,19 +44,21 @@ async def list_vector_stores(
 async def create_vector_store(
     request: CreateVectorStoreRequest,
     session: Session,
+    background_tasks: BackgroundTasks,
 ) -> VectorStore:
     """Create a vector store."""
 
     indexing_service = IndexingService(db=session)
     try:
-        new_vector_store = await indexing_service.create_new_vector_store(request)
+        return await indexing_service.create_new_vector_store(
+            request, background_tasks=background_tasks
+        )
     except Exception as exc:
         traceback.print_exc()
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail="Unable to create vector store",
         ) from exc
-    return new_vector_store
 
 
 @router.post("/{vector_store_id}")
@@ -64,13 +66,16 @@ async def modify_vector_store(
     vector_store_id: str,
     request: ModifyVectorStoreRequest,
     session: Session,
+    background_tasks: BackgroundTasks,
 ) -> VectorStore:
     """Modify a vector store."""
 
     indexing_service = IndexingService(db=session)
     try:
-        modified_vector_store = await indexing_service.modify_existing_vector_store(
-            vector_store_id=vector_store_id, request=request
+        return await indexing_service.modify_existing_vector_store(
+            vector_store_id=vector_store_id,
+            request=request,
+            background_tasks=background_tasks,
         )
     except HTTPException as exc:
         raise exc
@@ -80,7 +85,6 @@ async def modify_vector_store(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail="Unable to modify vector store",
         ) from exc
-    return modified_vector_store
 
 
 @router.get("/{vector_store_id}")
