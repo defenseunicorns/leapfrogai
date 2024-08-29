@@ -1,16 +1,12 @@
-import datetime
 import logging
 import numpy as np
 import os
 import openai
-import seaborn as sns
 
 from datasets import load_dataset, concatenate_datasets
 from dotenv import load_dotenv
-import matplotlib.pyplot as plt
 from tqdm import tqdm
 
-from matplotlib.colors import LinearSegmentedColormap
 from openai.types.beta.assistant import Assistant
 from openai.types.beta.vector_store import VectorStore
 
@@ -76,8 +72,8 @@ class NIAH_Runner:
         self.temperature = temperature
         self.add_padding = add_padding
         self.client = openai.OpenAI(
-            base_url=base_url or os.getenv("LEAPFROGAI_API_URL"),
-            api_key=api_key or os.getenv("LEAPFROGAI_API_KEY"),
+            base_url=base_url or os.environ.get("LEAPFROGAI_API_URL"),
+            api_key=api_key or os.environ.get("LEAPFROGAI_API_KEY"),
         )
         logging.info(f"client url: {self.client.base_url}")
         self._load_niah_dataset(
@@ -246,58 +242,6 @@ class NIAH_Runner:
             self._delete_vector_store(vector_store_id=self.vector_store.id)
             self.vector_store = None
 
-    def generate_report(self) -> None:
-        """Creates two heatmaps for the retrieval and response scores respectively"""
-        logging.info("Creating evaluation report...")
-
-        niah_df = self.niah_data.to_pandas()
-
-        # average the scores across context depths and context lengths
-        mean_retrieval_scores = (
-            niah_df.groupby(["context_depth", "context_length"])["retrieval_score"]
-            .mean()
-            .reset_index()
-        )
-        mean_response_scores = (
-            niah_df.groupby(["context_depth", "context_length"])["response_score"]
-            .mean()
-            .reset_index()
-        )
-
-        mean_retrieval_pivot = mean_retrieval_scores.pivot(
-            index="context_depth", columns="context_length", values="retrieval_score"
-        )
-        mean_response_pivot = mean_response_scores.pivot(
-            index="context_depth", columns="context_length", values="response_score"
-        )
-
-        logging.info("--- Scores ---")
-        logging.info(f"Retrieval:\n {mean_retrieval_pivot}")
-        logging.info(f"Response:\n {mean_response_pivot}")
-
-        color_map = self._get_color_map()
-        fig, axes = plt.subplots(1, 2)
-        fig.suptitle("Needle in a Haystack (NIAH) Evaluation Scores")
-
-        sns.heatmap(
-            mean_retrieval_pivot, ax=axes[0], annot=True, cmap=color_map, vmin=0, vmax=1
-        )
-        axes[0].set_xlabel("Context Length")
-        axes[0].set_ylabel("Context Depth (%)")
-        axes[0].set_title("Retrieval Scores")
-
-        sns.heatmap(
-            mean_response_pivot, ax=axes[1], annot=True, cmap=color_map, vmin=0, vmax=1
-        )
-        axes[1].set_xlabel("Context Length")
-        axes[1].set_ylabel("Context Depth (%)")
-        axes[1].set_title("Response Scores")
-
-        fig.tight_layout(rect=[0, 0, 1, 0.95])
-        fig.savefig(f"niah_heatmaps_{self.model}_{datetime.date.today()}.png", dpi=600)
-
-        logging.info("Evaluation heatmaps finished!")
-
     def _load_niah_dataset(
         self,
         dataset_name: str,
@@ -410,7 +354,3 @@ class NIAH_Runner:
                 file_id=file_id, vector_store_id=self.vector_store.id
             )
         self.client.files.delete(file_id=file_id)
-
-    def _get_color_map(self) -> LinearSegmentedColormap:
-        """Builds a custom colormap for the heatmap figure"""
-        return LinearSegmentedColormap.from_list("rg", ["r", "y", "g"], N=256)
