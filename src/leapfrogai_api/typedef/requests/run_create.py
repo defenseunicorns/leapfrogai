@@ -8,7 +8,7 @@ from openai.types.beta.threads.run_create_params import (
     AdditionalMessageAttachmentToolFileSearch,
 )
 from pydantic import Field
-from leapfrogai_api.typedef.requests.run_create_params_base import (
+from leapfrogai_api.typedef.requests.run_create_base import (
     RunCreateParamsRequestBase,
 )
 from leapfrogai_api.routers.openai.requests.create_message_request import (
