@@ -2,8 +2,8 @@ import deepeval
 from deepeval.test_case import LLMTestCase
 import logging
 
-from runners.niah_runner import NIAH_Runner
-from metrics.niah_metrics import NIAH_Retrieval, NIAH_Response
+from leapfrogai_evals.runners.niah_runner import NIAH_Runner
+from leapfrogai_evals.metrics.niah_metrics import NIAH_Retrieval, NIAH_Response
 
 ALL_EVALS = ["LFAI_NIAH"]
 

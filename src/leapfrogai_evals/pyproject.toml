@@ -1,5 +1,5 @@
 [project]
-name = "lfai-evals"
+name = "leapfrogai-evals"
 description = "A framework for running evaluations in LeapfrogAI"
 
 # x-release-please-start-version
@@ -20,6 +20,11 @@ readme = "README.md"
 
 [tool.pip-tools]
 generate-hashes = true
+
+[tool.setuptools.packages.find]
+where = ["../"]
+include = ["leapfrogai_evals*"]
+namespaces = false
 
 [tool.pytest.ini_options]
 addopts = ["--import-mode=importlib"]
