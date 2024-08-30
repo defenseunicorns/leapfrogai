@@ -94,6 +94,8 @@ jobs:
 
       # Backends
       - name: Run Backend Tests
+        env:
+          ANON_KEY: ${{ steps.generate_secrets.outputs.ANON_KEY }}
         run: |
           python -m pytest ./tests/e2e/test_llama.py -v
           python -m pytest ./tests/e2e/test_text_embeddings.py -v
