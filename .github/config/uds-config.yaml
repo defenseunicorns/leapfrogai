@@ -1,0 +1,3 @@
+variables:
+  core-slim-dev:
+    INSECURE_ADMIN_PASSWORD_GENERATION: "true"
