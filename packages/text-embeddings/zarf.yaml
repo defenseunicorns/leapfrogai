@@ -44,7 +44,7 @@ components:
         version: 0.11.0
         # x-release-please-end
         valuesFiles:
-          - "embedding-values.yaml"
+          - "values/upstream-values.yaml"
     images:
       - ghcr.io/defenseunicorns/leapfrogai/text-embeddings:###ZARF_PKG_TMPL_IMAGE_VERSION###
       - cgr.dev/chainguard/bash:latest

@@ -1,8 +1,9 @@
 image:
-  tag: "###ZARF_CONST_IMAGE_VERSION###"
+  repository: ghcr.io/defenseunicorns/leapfrogai/text-embeddings
+  tag: ###ZARF_CONST_IMAGE_VERSION###
 
 gpu:
-  runtimeClassName: "###ZARF_VAR_GPU_CLASS_NAME###"
+  runtimeClassName: ###ZARF_VAR_GPU_CLASS_NAME###
 
 resources:
   limits:
