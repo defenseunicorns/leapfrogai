@@ -23,7 +23,7 @@ spec:
         {{- toYaml . | nindent 8 }}
       {{- end }}
       labels:
-        app: lfai-whisper
+        app: lfai-{{ .Values.nameOverride }}
         {{- include "chart.selectorLabels" . | nindent 8 }}
     spec:
       {{- if gt (index .Values.resources.limits "nvidia.com/gpu") 0.0 }}
@@ -59,7 +59,7 @@ spec:
       volumes:
         - name: leapfrogai-pv-storage
           persistentVolumeClaim:
-            claimName: lfai-whisper-pv-claim
+            claimName: lfai-{{ .Values.nameOverride }}-pv-claim
       securityContext:
         {{- toYaml .Values.podSecurityContext | nindent 8 }}
       containers:

@@ -2,7 +2,7 @@ apiVersion: v1
 kind: PersistentVolumeClaim
 metadata:
     name: lfai-{{ .Values.nameOverride }}-pv-claim
-    namespace: leapfrogai
+    namespace: {{ .Release.Namespace }}
 spec:
   {{- if .Values.persistence.storageClass }}
   storageClassName: {{ .Values.persistence.storageClass  }}

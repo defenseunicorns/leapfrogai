@@ -45,7 +45,7 @@ components:
         version: 0.11.0
         # x-release-please-end
         valuesFiles:
-          - "whisper-values.yaml"
+          - "values/upstream-values.yaml"
     images:
       - ghcr.io/defenseunicorns/leapfrogai/whisper:###ZARF_PKG_TMPL_IMAGE_VERSION###
       - cgr.dev/chainguard/bash:latest
