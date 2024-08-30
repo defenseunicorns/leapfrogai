@@ -8,6 +8,7 @@
   } from 'flowbite-svelte-icons';
   import type { ToastKind, ToastNotificationProps } from '$lib/types/toast';
   import AssistantProgressToastContent from '$components/AssistantProgressToastContent.svelte';
+  import ToastOverride from '$components/ToastOverride.svelte';
 
   export let toast: ToastNotificationProps;
 
@@ -45,21 +46,43 @@
         return InfoCircleOutline;
     }
   }
+
+  function getAssistantVariantTitle(toastKind: ToastKind) {
+    switch (toastKind) {
+      case 'success':
+        return 'Assistant Updated';
+      case 'info':
+        return 'Updating Assistant Files';
+      case 'warning':
+        return 'Updating Assistant Files';
+      case 'error':
+        return 'Error Updating Assistant';
+      default:
+        return 'Updating Assistant Files';
+    }
+  }
 </script>
 
-<Toast {color}>
+<ToastOverride {color} align={false}>
   <svelte:fragment slot="icon">
-    <IconComponent class="h-5 w-5" />
+    <svelte:component this={getIconComponent(kind)} class="h-5 w-5" />
     <span class="sr-only">Toast icon</span>
   </svelte:fragment>
   <div class="flex flex-col">
-    {title}
+    {variant === 'assistant-progress' ? getAssistantVariantTitle(kind) : title}
     {#if subtitle}
       <P size="xs">{subtitle}</P>
     {/if}
     {#if variant === 'assistant-progress'}
-      <AssistantProgressToastContent toastId={id} fileIds={toast.fileIds} />
+      <AssistantProgressToastContent
+        toastId={id}
+        fileIds={toast.fileIds}
+        vectorStoreId={toast.vectorStoreId}
+        on:statusChange={(e) => {
+          kind = e.detail;
+        }}
+      />
     {/if}
     <P size="xs">{`Time stamp [${new Date().toLocaleTimeString()}]`}</P>
   </div>
-</Toast>
+</ToastOverride>

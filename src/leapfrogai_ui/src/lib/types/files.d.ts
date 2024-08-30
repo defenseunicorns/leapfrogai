@@ -2,12 +2,16 @@ import type { SuperValidated } from 'sveltekit-superforms';
 
 export type FileUploadStatus = 'uploading' | 'complete' | 'error' | 'hide';
 
+export type VectorStatus = 'in_progress' | 'completed' | 'cancelled' | 'failed';
+
 export type FileRow = {
   id: string;
   filename: string;
   created_at: number | null;
   status: FileUploadStatus;
-  vectorStatus?: 'in_progress' | 'completed' | 'cancelled' | 'failed';
+  vectorStatus?: {
+    [vector_store_id: string]: VectorStatus;
+  };
 };
 
 // This type is taken from SuperValidated, leaving the any

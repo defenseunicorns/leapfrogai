@@ -30,7 +30,7 @@
 </script>
 
 <Button class="w-48 justify-between "
-  ><span class="overflow-hidden text-ellipsis whitespace-nowrap">{selectedAssistantName}</span
+  ><span class="truncate">{selectedAssistantName}</span
   ><ChevronDownOutline
     class="ms-2 h-6 w-6 text-white dark:text-white"
     data-testid="assistants-select-btn"

@@ -23,7 +23,7 @@ It adds a "three-dot" menu button with Popover, and delete confirmation Modal
   let editLabelText: string | undefined = label;
   let editLabelInputDisabled = false;
 
-  let lengthOverride = 'overflow-hidden text-ellipsis whitespace-nowrap';
+  let lengthOverride = 'truncate';
 
   $: popperOpen = false;
   $: editMode = false;
@@ -118,7 +118,7 @@ It adds a "three-dot" menu button with Popover, and delete confirmation Modal
         $$props.class
       )}
     >
-      <P size="sm" class="overflow-hidden text-ellipsis whitespace-nowrap">
+      <P size="sm" class="truncate">
         {label}
       </P>
     </button>

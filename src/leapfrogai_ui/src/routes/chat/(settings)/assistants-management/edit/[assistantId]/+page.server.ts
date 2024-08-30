@@ -141,6 +141,7 @@ export const actions: Actions = {
               file_id
             });
           }
+
           await Promise.all(promises);
         }
       } catch (e) {
@@ -191,7 +192,6 @@ export const actions: Actions = {
       console.error(`Error updating assistant: ${e}`);
       return fail(500, { message: 'Error updating assistant.' });
     }
-
-    return redirect(303, '/chat/assistants-management');
+    return { form, assistant, fileIds: data_sources, redirectUrl: '/chat/assistants-management' };
   }
 };

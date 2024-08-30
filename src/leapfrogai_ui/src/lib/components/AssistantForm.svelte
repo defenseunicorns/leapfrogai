@@ -27,19 +27,18 @@
   const { form, errors, enhance, submitting, isTainted, delayed } = superForm(data.form, {
     invalidateAll: false,
     validators: yup(isEditMode ? editAssistantInputSchema : assistantInputSchema),
-    onResult: async ({ result })  => {
+    onResult: async ({ result }) => {
       if (result.type === 'success') {
-        const vectorStoreId = result.data.createdAssistant?.tool_resources?.file_search?.vector_store_ids?.[0] as string;
-        console.log('vectorStoreId', vectorStoreId)
-        if (
-          !uiStore.isUsingOpenAI &&
-                vectorStoreId
-        ) {
+        const vectorStoreId = result.data.assistant?.tool_resources?.file_search
+          ?.vector_store_ids?.[0] as string;
+
+        if (!uiStore.isUsingOpenAI && vectorStoreId) {
           toastStore.addToast({
             kind: 'info',
-            title: `Processing Assistant Files`,
-            subtitle: result.data.createdAssistant.name,
+            title: `Updating Assistant Files`,
+            subtitle: result.data.assistant.name,
             fileIds: result.data.fileIds,
+            vectorStoreId: vectorStoreId,
             variant: 'assistant-progress',
             timeout: -1 // no expiration
           });

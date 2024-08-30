@@ -31,7 +31,9 @@
   }
 
   const handleVectorStoreTableUpdate = (payload) => {
-    filesStore.updateFileRow(payload.new.id, { vectorStatus: payload.new.status });
+    const newFile = payload.new;
+    console.log('newFile', newFile);
+    filesStore.updateFileVectorStatus(newFile.id, newFile.vector_store_id, newFile.status);
   };
   const handleFileTableUpdate = (payload) => {
     filesStore.updateWithUploadSuccess([payload.new]);
