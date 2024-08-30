@@ -116,6 +116,6 @@ export const actions: Actions = {
         return fail(500, { message: 'Error adding avatar to assistant.' });
       }
     }
-    return { form, createdAssistant: createdAssistant, redirectUrl: '/chat/assistants-management' };
+    return { form, createdAssistant: createdAssistant, fileIds: data_sources, redirectUrl: '/chat/assistants-management' };
   }
 };

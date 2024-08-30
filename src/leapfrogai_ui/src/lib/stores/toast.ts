@@ -8,7 +8,8 @@ const defaultValues: ToastStore = {
 const toastDefaults: ToastNotificationProps = {
   kind: 'info',
   title: '',
-  timeout: 3000
+  timeout: 3000,
+  variant: 'default'
 };
 const createToastsStore = () => {
   const { subscribe, update } = writable<ToastStore>({ ...defaultValues });

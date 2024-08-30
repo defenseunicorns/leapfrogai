@@ -30,6 +30,7 @@
     onResult: async ({ result })  => {
       if (result.type === 'success') {
         const vectorStoreId = result.data.createdAssistant?.tool_resources?.file_search?.vector_store_ids?.[0] as string;
+        console.log('vectorStoreId', vectorStoreId)
         if (
           !uiStore.isUsingOpenAI &&
                 vectorStoreId
@@ -38,7 +39,8 @@
             kind: 'info',
             title: `Processing Assistant Files`,
             subtitle: result.data.createdAssistant.name,
-            vectorStoreId: vectorStoreId,
+            fileIds: result.data.fileIds,
+            variant: 'assistant-progress',
             timeout: -1 // no expiration
           });
         } else {

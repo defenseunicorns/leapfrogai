@@ -1,34 +1,14 @@
 <script lang="ts">
   import { Spinner } from 'flowbite-svelte';
-  import { browser } from '$app/environment';
   import { filesStore, toastStore } from '$stores';
   import { CheckOutline, CloseCircleOutline } from 'flowbite-svelte-icons';
 
   export let toastId: string;
-  export let vectorStoreId: string;
+  export let fileIds: string[];
 
-  let vector_store_file_ids: string[] = [];
-  let checkingStatus = true;
-
-  $: filesToDisplay = $filesStore.files.filter((file) => vector_store_file_ids.includes(file.id));
+  $: filesToDisplay = $filesStore.files.filter((file) => fileIds.includes(file.id));
   $: allCompleted =
     filesToDisplay.length > 0 && filesToDisplay.every((item) => item.vectorStatus === 'completed');
-  $: console.log('allCompleted', allCompleted);
-  $: console.log('filesToDisplay', filesToDisplay);
-
-  const setVectorStoreFileIds = () => {
-    setTimeout(async () => {
-      const res = await fetch(`/api/vector-store-files?id=${vectorStoreId}`);
-      if (res.ok) {
-        const data = await res.json();
-        vector_store_file_ids = data?.data?.map((file) => file.id);
-      }
-      checkingStatus = false;
-    }, 3000);
-  };
-  $: if (browser && vectorStoreId) {
-    setVectorStoreFileIds();
-  }
 
   $: if (allCompleted) {
     setTimeout(() => {
@@ -38,9 +18,7 @@
 </script>
 
 <div class="flex max-h-36 flex-col overflow-y-auto">
-  {#if checkingStatus}
-    <div>Fetching status...</div>
-  {:else if allCompleted}
+  {#if allCompleted}
     <div class="text-green-500">File Processing Complete</div>
   {:else}
     {#each filesToDisplay as file}

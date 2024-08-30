@@ -6,13 +6,12 @@
     ExclamationCircleOutline,
     InfoCircleOutline
   } from 'flowbite-svelte-icons';
-  import type { SvelteComponent } from 'svelte';
   import type { ToastKind, ToastNotificationProps } from '$lib/types/toast';
   import AssistantProgressToastContent from '$components/AssistantProgressToastContent.svelte';
 
   export let toast: ToastNotificationProps;
 
-  let { id, title, subtitle, kind } = toast;
+  let { id, title, subtitle, kind, variant } = toast;
 
   $: color = getColor(kind);
   $: IconComponent = getIconComponent(kind);
@@ -58,8 +57,8 @@
     {#if subtitle}
       <P size="xs">{subtitle}</P>
     {/if}
-    {#if toast.vectorStoreId}
-      <AssistantProgressToastContent toastId={id} vectorStoreId={toast.vectorStoreId} />
+    {#if variant === 'assistant-progress'}
+      <AssistantProgressToastContent toastId={id} fileIds={toast.fileIds} />
     {/if}
     <P size="xs">{`Time stamp [${new Date().toLocaleTimeString()}]`}</P>
   </div>
