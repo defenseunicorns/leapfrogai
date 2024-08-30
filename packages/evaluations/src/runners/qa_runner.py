@@ -1,6 +1,7 @@
 import logging
 import os
 import openai
+import pyPDF2
 import zipfile
 
 from datasets import load_dataset
@@ -213,6 +214,19 @@ class QA_Runner:
 
         logging.info("Uploading context documents")
         for doc in tqdm(doc_list):
+            with open(doc, "r") as pdf_file:
+                reader = pyPDF2.PdfReader(pdf_file)
+                text = ""
+                for page in reader.pages:
+                    text += page.extract_text()
+            # TODO: Find more efficient way to upload files
+            with open("context.txt", "wb") as context_file:
+                context_file.write(text.encode("utf-8"))
+            with open("context.txt", "rb") as context_file:
+                vector_store_file = self.client.beta.vector_stores.files.upload(
+                    vector_store_id=self.vector_store.id, file=context_file
+                )
+            os.remove("context.txt")
             vector_store_file = self.client.beta.vector_stores.files.upload(
                 vector_store_id=self.vector_store.id, file=f"{output_dir}/{doc}"
             )

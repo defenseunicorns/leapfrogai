@@ -14,8 +14,9 @@ from runners.qa_runner import QA_Runner
 logging.basicConfig(level=logging.INFO)  # for testing
 
 ALL_EVALS = ["LFAI_NIAH", "LFAI_QA"]
-QA_METRICS = ["CORRECTNESS", "CONTEXTUAL_RECALL", "FAITHFULNESS"]
-NIAH_METRICS = ["NIAH_RETRIEVAL", "NIAH_RESPONSE"]
+# QA_METRICS = ["CORRECTNESS", "CONTEXTUAL_RECALL", "FAITHFULNESS"]
+# NIAH_METRICS = ["NIAH_RETRIEVAL", "NIAH_RESPONSE"]
+# ALL_METRICS = QA_METRICS + NIAH_METRICS
 
 
 class RAGEvaluator:
@@ -24,11 +25,10 @@ class RAGEvaluator:
     def __init__(
         self,
         eval_list: Optional[List[str]] = None,
-        metric_list: Optional[List[str]] = None,
+        # metric_list: Optional[List[str]] = None,
     ):
-        self._check_evals_and_metrics(eval_list, metric_list)
         self.eval_list = eval_list
-        self.metric_list = metric_list
+        # self.metric_list = metric_list
         self.test_case_dict = None
         self.niah_test_cases = None
 
@@ -86,6 +86,7 @@ class RAGEvaluator:
             )
 
         # run metrics
+        # TODO: Give ability to choose which metrics to run
         retrieval_metric = NIAH_Retrieval()
         response_metric = NIAH_Response()
 
@@ -113,6 +114,7 @@ class RAGEvaluator:
             )
 
         # run metrics
+        # TODO: Give ability to choose which metrics to run
         correctness_metric = CorrectnessMetric()
         faithfulness_metric = FaithfulnessMetric()
 
@@ -120,14 +122,6 @@ class RAGEvaluator:
             test_cases=self.qa_test_cases,
             metrics=[correctness_metric, faithfulness_metric],
         )
-
-    def _check_evals_and_metrics(
-        eval_list: List[str] | None, metric_list: List[str] | None
-    ) -> None:
-        if eval_list and metric_list:
-            raise AttributeError(
-                "A list of evals and metrics were both supplied. Only one can be provided."
-            )
 
 
 if __name__ == "__main__":
