@@ -5,14 +5,8 @@ import pytest
 from openai import InternalServerError, OpenAI
 import unicodedata
 
-from .utils import create_test_user
 
-client = OpenAI(
-    base_url="https://leapfrogai-api.uds.dev/openai/v1", api_key=create_test_user()
-)
-
-
-def test_completions():
+def test_completions(client: OpenAI):
     with pytest.raises(InternalServerError) as excinfo:
         client.completions.create(
             model="whisper",
@@ -21,7 +15,7 @@ def test_completions():
     assert str(excinfo.value) == "Internal Server Error"
 
 
-def test_chat_completions():
+def test_chat_completions(client: OpenAI):
     messages = [
         {"role": "system", "content": "You are a helpful assistant."},
         {"role": "user", "content": "This should result in a failure"},
@@ -32,7 +26,7 @@ def test_chat_completions():
     assert str(excinfo.value) == "Internal Server Error"
 
 
-def test_embeddings():
+def test_embeddings(client: OpenAI):
     with pytest.raises(InternalServerError) as excinfo:
         client.embeddings.create(
             model="whisper",
@@ -41,7 +35,7 @@ def test_embeddings():
     assert str(excinfo.value) == "Internal Server Error"
 
 
-def test_transcriptions():
+def test_transcriptions(client: OpenAI):
     transcription = client.audio.transcriptions.create(
         model="whisper",
         file=Path("tests/data/0min12sec.wav"),
@@ -56,7 +50,7 @@ def test_transcriptions():
     assert len(transcription.text) < 500, "The transcription should not be too long"
 
 
-def test_translations():
+def test_translations(client: OpenAI):
     translation = client.audio.translations.create(
         model="whisper",
         file=Path("tests/data/arabic-audio.wav"),
