@@ -74,20 +74,26 @@ jobs:
             docker system prune -af
 
       - name: Generate Secrets and Test User
+        id: generate_secrets
         run: |
           PASSWORD=$(cat <(openssl rand -base64 32 | tr -dc 'a-zA-Z0-9!@#$%^&*()_+-=[]{}|;:,.<>?' | head -c 20) <(echo '!@1Aa') | fold -w1 | shuf | tr -d '\n')
           echo "::add-mask::$PASSWORD"
-          echo "FAKE_E2E_USER_PASSWORD=$PASSWORD" >> $GITHUB_ENV
-
+          echo "FAKE_E2E_USER_PASSWORD=$PASSWORD" >> $GITHUB_OUTPUT
           ANON_KEY=$(uds zarf tools kubectl get secret supabase-bootstrap-jwt -n leapfrogai -o jsonpath='{.data.anon-key}' | base64 -d)
           echo "::add-mask::$ANON_KEY"
-          echo "ANON_KEY=$ANON_KEY" >> "$GITHUB_ENV"
-
+          echo "ANON_KEY=$ANON_KEY" >> $GITHUB_OUTPUT
           SERVICE_ROLE_KEY=$(uds zarf tools kubectl get secret -n leapfrogai supabase-bootstrap-jwt -o jsonpath={.data.service-key} | base64 -d)
           echo "::add-mask::$SERVICE_ROLE_KEY"
+          echo "SERVICE_ROLE_KEY=$SERVICE_ROLE_KEY" >> $GITHUB_OUTPUT
 
           chmod +x ./.github/scripts/createUser.sh
           ./.github/scripts/createUser.sh
+
+      - name: Verify Secrets
+        run: |
+          echo "FAKE_E2E_USER_PASSWORD is set: ${{ steps.generate_secrets.outputs.FAKE_E2E_USER_PASSWORD != '' }}"
+          echo "ANON_KEY is set: ${{ steps.generate_secrets.outputs.ANON_KEY != '' }}"
+          echo "SERVICE_ROLE_KEY is set: ${{ steps.generate_secrets.outputs.SERVICE_ROLE_KEY != '' }}"
 
       # Backends
       - name: Run Backend Tests
@@ -99,6 +105,10 @@ jobs:
           python -m pytest ./tests/e2e/test_api.py -v
 
       - name: Run Playwright E2E Tests
+        env:
+          SERVICE_ROLE_KEY: ${{ steps.generate_secrets.outputs.SERVICE_ROLE_KEY }}
+          FAKE_E2E_USER_PASSWORD: ${{ steps.generate_secrets.outputs.FAKE_E2E_USER_PASSWORD }}
+          ANON_KEY: ${{ steps.generate_secrets.outputs.ANON_KEY }}
         run: |
           cp src/leapfrogai_ui/.env.example src/leapfrogai_ui/.env
           mkdir -p playwright/auth
