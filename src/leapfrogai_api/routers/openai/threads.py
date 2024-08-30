@@ -15,7 +15,6 @@ router = APIRouter(prefix="/openai/v1/threads", tags=["openai/threads"])
 @router.post("")
 async def create_thread(request: CreateThreadRequest, session: Session) -> Thread:
     """Create a thread."""
-
     if request.tool_resources and not validate_tool_resources(request.tool_resources):
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,

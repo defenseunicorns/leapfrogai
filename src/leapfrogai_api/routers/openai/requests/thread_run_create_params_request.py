@@ -32,9 +32,7 @@ from leapfrogai_api.backend.converters import (
     from_content_param_to_content,
     from_assistant_stream_event_to_str,
 )
-from leapfrogai_api.routers.openai.requests.create_thread_request import (
-    CreateThreadRequest,
-)
+from leapfrogai_api.typedef.requests import CreateThreadRequest
 
 from leapfrogai_api.routers.supabase_session import Session
 
