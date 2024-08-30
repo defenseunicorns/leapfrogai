@@ -10,7 +10,6 @@ from fastapi import UploadFile, Form, File
 from openai.types import FileObject
 from openai.types.beta import VectorStore
 
-from openai.types.beta.thread import ToolResources as BetaThreadToolResources
 from openai.types.beta.thread_create_params import (
     ToolResourcesFileSearchVectorStoreChunkingStrategy,
     ToolResourcesFileSearchVectorStoreChunkingStrategyAuto,
@@ -526,15 +525,6 @@ class ListVectorStoresResponse(BaseModel):
 ################
 # THREADS, RUNS, MESSAGES
 ################
-
-
-class ModifyThreadRequest(BaseModel):
-    """Request object for modifying a thread."""
-
-    tool_resources: BetaThreadToolResources | None = Field(
-        default=None, examples=[None]
-    )
-    metadata: dict | None = Field(default=None, examples=[{}])
 
 
 class ModifyMessageRequest(BaseModel):
