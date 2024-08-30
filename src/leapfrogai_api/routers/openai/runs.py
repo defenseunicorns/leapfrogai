@@ -15,7 +15,7 @@ from leapfrogai_api.utils.validate_tools import (
     validate_assistant_tool,
     validate_assistant_tool_choice_option,
 )
-from leapfrogai_api.typedef.request import RunCreateParamsRequest, ModifyRunRequest
+from leapfrogai_api.typedef.requests import RunCreateParamsRequest, ModifyRunRequest
 from leapfrogai_api.backend.thread_runner import ThreadRunner
 
 router = APIRouter(prefix="/openai/v1/threads", tags=["openai/threads/runs"])

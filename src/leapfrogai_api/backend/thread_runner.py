@@ -52,7 +52,7 @@ from leapfrogai_api.backend.types import (
     ChatCompletionRequest,
     ChatChoice,
 )
-from leapfrogai_api.typedef.request import RunCreateParamsRequest
+from leapfrogai_api.typedef.requests import RunCreateParamsRequest
 
 
 class ThreadRunner(BaseModel):
