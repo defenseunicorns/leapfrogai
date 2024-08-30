@@ -15,7 +15,7 @@ from leapfrogai_api.backend.types import (
     EmbeddingResponseData,
     Usage,
 )
-from leapfrogai_api.typedef.request import (
+from leapfrogai_api.typedef.requests import (
     CreateTranscriptionResponse,
     CreateTranslationResponse,
 )
