@@ -4,49 +4,35 @@ kind: UDSBundle
 metadata:
   name: leapfrogai
   description: A UDS bundle for deploying LeapfrogAI
-  # x-release-please-start-version
-  version: 0.11.0
-  # x-release-please-end
+  version: 0.12.0-upstream
 
 packages:
   # Supabase backend for the UI and API to interface with Postgresql
   - name: supabase
     repository: ghcr.io/defenseunicorns/packages/uds/leapfrogai/supabase
-    # x-release-please-start-version
-    ref: 0.11.0
-    # x-release-please-end
+    ref: 0.12.0-upstream
 
   # API
   - name: leapfrogai-api
     repository: ghcr.io/defenseunicorns/packages/uds/leapfrogai/leapfrogai-api
-    # x-release-please-start-version
-    ref: 0.11.0
-    # x-release-please-end
+    ref: 0.12.0-upstream
 
   # Chat Model
   - name: llama-cpp-python
     repository: ghcr.io/defenseunicorns/packages/uds/leapfrogai/llama-cpp-python
-    # x-release-please-start-version
-    ref: 0.11.0
-    # x-release-please-end
+    ref: 0.12.0-upstream
 
   # Text Embeddings Model
   - name: text-embeddings
     repository: ghcr.io/defenseunicorns/packages/uds/leapfrogai/text-embeddings
-    # x-release-please-start-version
-    ref: 0.11.0
-    # x-release-please-end
+    ref: 0.12.0-upstream
 
   # Transcription Model
   - name: whisper
     repository: ghcr.io/defenseunicorns/packages/uds/leapfrogai/whisper
-    # x-release-please-start-version
-    ref: 0.11.0
-    # x-release-please-end
+    ref: 0.12.0-upstream
 
-  # UI - new UI TODO - point to ghcr image after Sprint 0.7.0
+  # UI
   - name: leapfrogai-ui
     repository: ghcr.io/defenseunicorns/packages/uds/leapfrogai/leapfrogai-ui
-    # x-release-please-start-version
-    ref: 0.11.0
-    # x-release-please-end
+    ref: 0.12.0-upstream
