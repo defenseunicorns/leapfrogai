@@ -73,7 +73,7 @@ jobs:
             rm -rf uds-bundle-leapfrogai-amd64-registry1.tar.zst && \
             docker system prune -af
 
-      - name: Generate Secrets and Test User
+      - name: Generate Secrets
         id: generate_secrets
         run: |
           PASSWORD=$(cat <(openssl rand -base64 32 | tr -dc 'a-zA-Z0-9!@#$%^&*()_+-=[]{}|;:,.<>?' | head -c 20) <(echo '!@1Aa') | fold -w1 | shuf | tr -d '\n')
@@ -85,9 +85,6 @@ jobs:
           SERVICE_ROLE_KEY=$(uds zarf tools kubectl get secret -n leapfrogai supabase-bootstrap-jwt -o jsonpath={.data.service-key} | base64 -d)
           echo "::add-mask::$SERVICE_ROLE_KEY"
           echo "SERVICE_ROLE_KEY=$SERVICE_ROLE_KEY" >> $GITHUB_OUTPUT
-
-          chmod +x ./.github/scripts/createUser.sh
-          ./.github/scripts/createUser.sh
 
       - name: Verify Secrets
         run: |
@@ -110,6 +107,9 @@ jobs:
           FAKE_E2E_USER_PASSWORD: ${{ steps.generate_secrets.outputs.FAKE_E2E_USER_PASSWORD }}
           ANON_KEY: ${{ steps.generate_secrets.outputs.ANON_KEY }}
         run: |
+          chmod +x ./.github/scripts/createUser.sh
+          ./.github/scripts/createUser.sh
+
           cp src/leapfrogai_ui/.env.example src/leapfrogai_ui/.env
           mkdir -p playwright/auth
           touch playwright/auth.user.json
