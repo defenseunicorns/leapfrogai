@@ -80,7 +80,7 @@ uds zarf package remove leapfrogai-api --confirm
 uds zarf tools registry prune --confirm
 
 # create and deploy the new package
-# FLAVOR can be registry1, upstream, or unicorn - see README for availability details
+# FLAVOR can be upstream (default) or registry1 - see README for availability details
 LOCAL_VERSION=dev FLAVOR=upstream REGISTRY_PORT=5000 ARCH=amd64 make build-api
 LOCAL_VERSION=dev FLAVOR=upstream REGISTRY_PORT=5000 ARCH=amd64 make deploy-api
 ```
@@ -98,12 +98,15 @@ uds zarf package deploy zarf-package-*.tar.zst --confirm
 1. Install all the necessary package creation dependencies:
 
     ```bash
-    python -m pip install "huggingface_hub[cli,hf_transfer]" "transformers[torch]" ctranslate2
+    python -m pip install ".[dev]"
+    python -m pip install ".[dev-whisper]"
+    python -m pip install ".[dev-vllm]"
     ```
 
 2. Build all of the packages you need at once with **ONE** of the following Make targets:
 
     ```bash
+    # FLAVOR can be upstream (default) or registry1 - see README for availability details
     LOCAL_VERSION=dev FLAVOR=upstream ARCH=amd64 make build-cpu    # ui, api, llama-cpp-python, text-embeddings, whisper, supabase
     # OR
     LOCAL_VERSION=dev FLAVOR=upstream ARCH=amd64 make build-gpu    # ui, api, vllm, text-embeddings, whisper, supabase
@@ -116,6 +119,7 @@ uds zarf package deploy zarf-package-*.tar.zst --confirm
     You can build components individually using the following Make targets:
 
     ```bash
+    # FLAVOR can be upstream (default) or registry1 - see README for availability details
     LOCAL_VERSION=dev FLAVOR=upstream ARCH=amd64 make build-ui
     LOCAL_VERSION=dev FLAVOR=upstream ARCH=amd64 make build-api
     LOCAL_VERSION=dev FLAVOR=upstream ARCH=amd64 make build-supabase
@@ -149,13 +153,15 @@ To run the same commands in MacOS, you will need to prepend your command with a 
 
 To demonstrate what this would look like for an Apple Silicon Mac:
 
-``` shell
+```bash
+# FLAVOR can be upstream (default) or registry1 - see README for availability details
 REG_PORT=5001 ARCH=arm64 LOCAL_VERSION=dev FLAVOR=upstream make build-cpu
 ```
 
 To demonstrate what this would look like for an older Intel Mac:
 
-``` shell
+```bash
+# FLAVOR can be upstream (default) or registry1 - see README for availability details
 REG_PORT=5001 ARCH=arm64 LOCAL_VERSION=dev FLAVOR=upstream make build-cpu
 ```
 

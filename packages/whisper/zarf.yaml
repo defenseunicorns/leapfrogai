@@ -36,6 +36,8 @@ variables:
 components:
   - name: whisper-model
     required: true
+    only:
+      flavor: upstream
     charts:
       - name: whisper-model
         namespace: leapfrogai
