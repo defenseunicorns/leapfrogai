@@ -19,10 +19,14 @@ concurrency:
   group: e2e-registry1-weekly-${{ github.ref }}
   cancel-in-progress: true
 
+defaults:
+  run:
+    shell: bash
+
 jobs:
   test-flavors:
     runs-on: ai-ubuntu-big-boy-8-core
-    name: Test LeapfrogAI Flavors
+    name: e2e_registry1_weekly
 
     permissions:
       contents: read
@@ -43,82 +47,63 @@ jobs:
           registry1Password: ${{ secrets.IRON_BANK_ROBOT_PASSWORD }}
           ghToken: ${{ secrets.GITHUB_TOKEN }}
 
-      # Set flavored package within UDS bundle definition
-      - name: Set Bundle Flavor Fields
+      - name: Setup Playwright
+        run: |
+          npm --prefix src/leapfrogai_ui ci
+          npx --prefix src/leapfrogai_ui playwright install
+
+      - name: Create Registry1 Packages
+        run: |
+          LOCAL_VERSION=registry1 FLAVOR=registry1 make build-api
+
+      # Mutate UDS bundle definition to use Registry1 packages
+      - name: Mutation to Registry1 Bundle
         run: |
           uds zarf tools yq -i '.packages[1] |= del(.repository)' uds-bundles/latest/cpu/uds-bundle.yaml
           uds zarf tools yq -i '.packages[1] |= .ref = "registry1"' uds-bundles/latest/cpu/uds-bundle.yaml
           uds zarf tools yq -i '.packages[1] |= .path = "../../../packages/api"' uds-bundles/latest/cpu/uds-bundle.yaml
           uds zarf tools yq -i '.metadata.version = "registry1"' uds-bundles/latest/cpu/uds-bundle.yaml
 
-      - name: Create Registry1 Package(s)
-        run: |
-          LOCAL_VERSION=registry1 FLAVOR=registry1 make build-api
-
       - name: Create and Deploy Bundle
         run: |
           cd uds-bundles/latest/cpu
           uds create . --confirm && \
-            uds deploy uds-bundle-leapfrogai-amd64-registry1.tar.zst --confirm --no-progress && \
+            uds deploy uds-bundle-leapfrogai-amd64-registry1.tar.zst \
+              --set LEAPFROGAI_API_BASE_URL="http://leapfrogai-api.leapfrogai.svc.cluster.local:8080" --confirm --no-progress && \
             rm -rf uds-bundle-leapfrogai-amd64-registry1.tar.zst && \
             docker system prune -af
 
-      # API Key Prep
-      - name: Set environment variable
-        shell: bash
-        id: set-env-var
-        run: |
-          echo "ANON_KEY=$(uds zarf tools kubectl get secret supabase-bootstrap-jwt -n leapfrogai -o jsonpath='{.data.anon-key}' | base64 -d)" >> "$GITHUB_ENV"
-
-      # Backends
-      - name: Test llama-cpp-python
-        run: |
-          python -m pytest ./tests/e2e/test_llama.py -v
-
-      - name: Test text-embeddings
-        run: |
-          python -m pytest ./tests/e2e/test_text_embeddings.py -v
-
-      - name: Test whisper
-        run: |
-          python -m pytest ./tests/e2e/test_whisper.py -v
-
-      # Setup for application layer testing
-      - name: Generate Fake Playwright User Password
-        id: generate-password
+      - name: Generate Secrets and Test User
         run: |
           PASSWORD=$(cat <(openssl rand -base64 32 | tr -dc 'a-zA-Z0-9!@#$%^&*()_+-=[]{}|;:,.<>?' | head -c 20) <(echo '!@1Aa') | fold -w1 | shuf | tr -d '\n')
           echo "::add-mask::$PASSWORD"
           echo "FAKE_E2E_USER_PASSWORD=$PASSWORD" >> $GITHUB_ENV
 
-      - name: Create Test User
-        run: |
+          ANON_KEY=$(uds zarf tools kubectl get secret supabase-bootstrap-jwt -n leapfrogai -o jsonpath='{.data.anon-key}' | base64 -d)
+          echo "::add-mask::$ANON_KEY"
+          echo "ANON_KEY=$ANON_KEY" >> "$GITHUB_ENV"
+
+          SERVICE_ROLE_KEY=$(uds zarf tools kubectl get secret -n leapfrogai supabase-bootstrap-jwt -o jsonpath={.data.service-key} | base64 -d)
+          echo "::add-mask::$SERVICE_ROLE_KEY"
+
           chmod +x ./.github/scripts/createUser.sh
           ./.github/scripts/createUser.sh
 
-      # Supabase
-      - name: Test Supabase
+      # Backends
+      - name: Run Backend Tests
         run: |
+          python -m pytest ./tests/e2e/test_llama.py -v
+          python -m pytest ./tests/e2e/test_text_embeddings.py -v
+          python -m pytest ./tests/e2e/test_whisper.py -v
           python -m pytest ./tests/e2e/test_supabase.py -v
-
-      # API
-      - name: Test API
-        run: |
           python -m pytest ./tests/e2e/test_api.py -v
 
-      # UI
-      - name: Install UI/Playwright Dependencies
-        run: |
-          npm --prefix src/leapfrogai_ui ci
-          npx --prefix src/leapfrogai_ui playwright install
-
-      - name: UI/API/Supabase E2E Playwright Tests
+      - name: Run Playwright E2E Tests
         run: |
           cp src/leapfrogai_ui/.env.example src/leapfrogai_ui/.env
           mkdir -p playwright/auth
           touch playwright/auth.user.json
-          SERVICE_ROLE_KEY=$(uds zarf tools kubectl get secret -n leapfrogai supabase-bootstrap-jwt -o jsonpath={.data.service-key} | base64 -d)
-          echo "::add-mask::$SERVICE_ROLE_KEY"
+
           SERVICE_ROLE_KEY=$SERVICE_ROLE_KEY TEST_ENV=CI USERNAME=doug PASSWORD=$FAKE_E2E_USER_PASSWORD PUBLIC_SUPABASE_ANON_KEY=$ANON_KEY npm --prefix src/leapfrogai_ui run test:integration:ci
 
       - name: Archive Playwright Report
