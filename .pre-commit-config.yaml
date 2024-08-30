@@ -97,7 +97,7 @@ repos:
       - id: download-schema
         name: "Download Zarf Schema"
         entry: |
-          bash -c 'if [! -f zarf-v0.14.0.schema.json ]; then curl -o zarf-v0.14.0.schema.json https://raw.githubusercontent.com/defenseunicorns/uds-cli/v0.14.0/zarf.schema.json; else exit 0; fi'
+          bash -c 'curl -o zarf-v0.14.0.schema.json https://raw.githubusercontent.com/defenseunicorns/uds-cli/v0.14.0/zarf.schema.json'
         language: system
 
   - repo: https://github.com/python-jsonschema/check-jsonschema
@@ -115,7 +115,7 @@ repos:
       - id: download-schema
         name: "Download UDS Bundle Schema"
         entry: |
-          bash -c 'if [! -f uds-v0.14.0.schema.json ]; then curl -o uds-v0.14.0.schema.json https://raw.githubusercontent.com/defenseunicorns/uds-cli/v0.14.0/uds.schema.json; else exit 0; fi'
+          bash -c 'curl -o uds-v0.14.0.schema.json https://raw.githubusercontent.com/defenseunicorns/uds-cli/v0.14.0/uds.schema.json'
         language: system
 
   - repo: https://github.com/python-jsonschema/check-jsonschema

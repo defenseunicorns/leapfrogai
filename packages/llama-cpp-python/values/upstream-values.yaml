@@ -1,5 +1,6 @@
 image:
-  tag: "###ZARF_CONST_IMAGE_VERSION###"
+  repository: ghcr.io/defenseunicorns/leapfrogai/llama-cpp-python
+  tag: ###ZARF_CONST_IMAGE_VERSION###
 
 persistence:
   size: ###ZARF_VAR_PVC_SIZE###
