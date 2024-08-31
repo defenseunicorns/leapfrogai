@@ -61,7 +61,7 @@ def test_supabase_realtime_vector_store_indexing():
         assert upload_file_id is not None, "Failed to upload file"
 
         vector_store = VectorStore(
-            id=str(uuid.uuid4()),
+            id="",
             created_at=0,
             file_counts=FileCounts(
                 cancelled=0,
@@ -76,11 +76,12 @@ def test_supabase_realtime_vector_store_indexing():
             usage_bytes=0,
         )
 
-        await CRUDVectorStore(client).create(vector_store)
+        new_vector_store = await CRUDVectorStore(client).create(vector_store)
+        assert new_vector_store is not None, "Failed to create vector store"
 
         vector_store_file = VectorStoreFile(
             id=upload_file_id,
-            vector_store_id=vector_store.id,
+            vector_store_id=new_vector_store.id,
             created_at=0,
             object="vector_store.file",
             status="completed",
@@ -115,10 +116,8 @@ def test_supabase_realtime_vector_store_indexing():
         """
         This function is responsible for uploading a file to the file bucket.
         """
-        id_ = str(uuid.uuid4())
-
         empty_file_object = FileObject(
-            id=id_,
+            id="",
             bytes=0,
             created_at=0,
             filename="",
@@ -128,16 +127,14 @@ def test_supabase_realtime_vector_store_indexing():
             status_details=None,
         )
 
-        crud_file_object = CRUDFileObject(client)
-
-        file_object = await crud_file_object.create(object_=empty_file_object)
+        file_object = await CRUDFileObject(client).create(object_=empty_file_object)
         assert file_object is not None, "Failed to create file object"
 
         crud_file_bucket = CRUDFileBucket(db=client, model=UploadFile)
         await crud_file_bucket.upload(
             file=UploadFile(filename="", file=io.BytesIO(b"")), id_=file_object.id
         )
-        return id_
+        return file_object.id
 
     def run_postgres_db_changes():
         """
