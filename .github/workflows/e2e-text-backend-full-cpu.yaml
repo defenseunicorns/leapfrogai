@@ -1,6 +1,6 @@
-# End-to-end testing that deploys and tests Supabase, API, UI, and VLLM
+# End-to-end testing that deploys and tests Supabase, API, llama-cpp-python, and text-embeddings
 
-name: e2e-vllm
+name: e2e-text-backend-full-cpu
 on:
   pull_request:
     types:
@@ -15,7 +15,7 @@ on:
 
       # Ignore updates to the .github directory, unless it's this current file
       - "!.github/**"
-      - ".github/workflows/e2e-vllm.yaml"
+      - ".github/workflows/e2e-text-backend-full-cpu.yaml"
       - ".github/actions/uds-cluster/action.yaml"
 
       # Ignore docs and website things
@@ -41,20 +41,19 @@ on:
 
       # Ignore changes to unrelated packages
       - "!packages/k3d-gpu/**"
-      - "!packages/llama-cpp-python/**"
       - "!packages/repeater/**"
-      - "!packages/text-embeddings/**"
       - "!packages/ui/**"
+      - "!packages/vllm/**"
       - "!packages/whisper/**"
 
 
 
 concurrency:
-  group: e2e-vllm-${{ github.ref }}
+  group: e2e-text-backend-full-cpu-${{ github.ref }}
   cancel-in-progress: true
 
 jobs:
-  e2e_vllm:
+  e2e_text_backend_full_cpu:
     runs-on: ai-ubuntu-big-boy-8-core
     if: ${{ !github.event.pull_request.draft }}
 
@@ -64,22 +63,39 @@ jobs:
 
         - name: Setup Python
           uses: ./.github/actions/python
-          with:
-            additionalOptionalDep: dev-vllm
 
-        - name: Setup UDS Environment
-          uses: defenseunicorns/uds-common/.github/actions/setup@822dac4452e6815aadcf09f487406ff258756a0c # v0.14.0
+        - name: Setup UDS Cluster
+          uses: ./.github/actions/uds-cluster
           with:
             registry1Username: ${{ secrets.IRON_BANK_ROBOT_USERNAME }}
             registry1Password: ${{ secrets.IRON_BANK_ROBOT_PASSWORD }}
-            ghToken: ${{ secrets.GITHUB_TOKEN }}
-            udsCliVersion: 0.14.0
 
-        ########## c
-        # vLLM
-        # NOTE: We are not deploying and testing vLLM in this workflow because it requires a GPU
-        #     : This workflow simply verifies that the vLLM package can be built
+        - name: Setup LFAI-API and Supabase
+          uses: ./.github/actions/lfai-core
+
         ##########
-        - name: Build vLLM
+        # text-embeddings
+        ##########
+        - name: Deploy text-embeddings
           run: |
-            make build-vllm LOCAL_VERSION=e2e-test
+            make build-text-embeddings LOCAL_VERSION=e2e-test
+            docker image prune -af
+            uds zarf package deploy packages/text-embeddings/zarf-package-text-embeddings-amd64-e2e-test.tar.zst -l=trace --confirm
+            rm packages/text-embeddings/zarf-package-text-embeddings-amd64-e2e-test.tar.zst
+
+        ##########
+        # llama
+        ##########
+        - name: Deploy llama-cpp-python
+          run: |
+            make build-llama-cpp-python LOCAL_VERSION=e2e-test
+            docker image prune -af
+            uds zarf package deploy packages/llama-cpp-python/zarf-package-llama-cpp-python-amd64-e2e-test.tar.zst -l=trace --confirm
+            rm packages/llama-cpp-python/zarf-package-llama-cpp-python-amd64-e2e-test.tar.zst
+
+        ##########
+        # Test
+        ##########
+        - name: Test Text Backend
+          run: |
+            python -m pytest ./tests/e2e/test_text_backend_full.py -v

@@ -22,7 +22,7 @@ runs:
     - name: Deploy LFAI-API
       shell: bash
       run: |
-        make build-api LOCAL_VERSION=e2e-test
+        make build-api LOCAL_VERSION=e2e-test FLAVOR=upstream
         docker image prune -af
         uds zarf package deploy packages/api/zarf-package-leapfrogai-api-amd64-e2e-test.tar.zst --confirm
         rm packages/api/zarf-package-leapfrogai-api-amd64-e2e-test.tar.zst
