@@ -46,13 +46,42 @@ jobs:
         with:
           version: "v3.13.3"
 
-      - name: Lint Helm Charts
+      - name: Lint API Helm Charts
+        if: always()
         run: |
           helm lint packages/api/chart --quiet
+
+      - name: Lint llama-cpp-python Helm Charts
+        if: always()
+        run: |
           helm lint packages/llama-cpp-python/chart --quiet
+
+      - name: Lint text-embeddings Helm Charts
+        if: always()
+        run: |
           helm lint packages/text-embeddings/chart --quiet
+
+      - name: Lint vllm Helm Charts
+        if: always()
+        run: |
           helm lint packages/vllm/chart --quiet
+
+      - name: Lint whisper Helm Charts
+        if: always()
+        run: |
           helm lint packages/whisper/chart --quiet
+
+      - name: Lint repeater Helm Charts
+        if: always()
+        run: |
           helm lint packages/repeater/chart --quiet
+
+      - name: Lint UI Helm Charts
+        if: always()
+        run: |
           helm lint packages/ui/chart --quiet
+
+      - name: Lint supabase Helm Charts
+        if: always()
+        run: |
           helm lint packages/supabase/chart --quiet --with-subcharts packages/supabase/migrationChart --with-subcharts packages/supabase/manifests

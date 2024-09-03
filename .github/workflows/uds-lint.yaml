@@ -41,9 +41,14 @@ jobs:
       - name: Download UDS Bundle Schema
         run: curl -o uds.schema.json https://raw.githubusercontent.com/defenseunicorns/uds-cli/v0.14.0/uds.schema.json
 
-      - name: Validate uds-bundle.yaml
+      - name: Validate uds-bundle.yaml (dev)
+        if: always()
         run: |
           check-jsonschema uds-bundles/dev/gpu/uds-bundle.yaml --schemafile uds.schema.json
           check-jsonschema uds-bundles/dev/cpu/uds-bundle.yaml --schemafile uds.schema.json
+
+      - name: Validate uds-bundle.yaml (latest)
+        if: always()
+        run: |
           check-jsonschema uds-bundles/latest/gpu/uds-bundle.yaml --schemafile uds.schema.json
           check-jsonschema uds-bundles/latest/cpu/uds-bundle.yaml --schemafile uds.schema.json
