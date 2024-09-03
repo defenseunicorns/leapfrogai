@@ -1,7 +1,7 @@
 import logging
 import os
 import openai
-import pyPDF2
+import PyPDF2
 import zipfile
 
 from datasets import load_dataset
@@ -206,33 +206,33 @@ class QA_Runner:
         zip_path = hf_hub_download(
             repo_id=dataset_name, repo_type="dataset", filename="document_context.zip"
         )
-        output_dir = "temp_data"
+        output_dir = "."
         # make a temporary directory to store documents
         with zipfile.ZipFile(zip_path, "r") as zip_ref:
             zip_ref.extractall(output_dir)
-            doc_list = zip_ref.namelist()
+            context_dir = zip_ref.namelist()[0]
+            doc_list = zip_ref.namelist()[1:]  # skip the name of the parent dir
+
+        logging.info(f"doc list: {doc_list}")
 
         logging.info("Uploading context documents")
         for doc in tqdm(doc_list):
-            with open(doc, "r") as pdf_file:
-                reader = pyPDF2.PdfReader(pdf_file)
+            with open(doc, "rb") as pdf_file:
+                reader = PyPDF2.PdfReader(pdf_file)
                 text = ""
                 for page in reader.pages:
                     text += page.extract_text()
             # TODO: Find more efficient way to upload files
-            with open("context.txt", "wb") as context_file:
+            with open(f"{doc}.txt", "wb") as context_file:
                 context_file.write(text.encode("utf-8"))
-            with open("context.txt", "rb") as context_file:
+            with open(f"{doc}.txt", "rb") as context_file:
                 vector_store_file = self.client.beta.vector_stores.files.upload(
                     vector_store_id=self.vector_store.id, file=context_file
                 )
-            os.remove("context.txt")
-            vector_store_file = self.client.beta.vector_stores.files.upload(
-                vector_store_id=self.vector_store.id, file=f"{output_dir}/{doc}"
-            )
+            os.remove(f"{doc}.txt")
             file_ids.append(vector_store_file.id)
 
-        os.remove("temp_data")
+        os.remove(context_dir)
         logging.debug(
             f"data in vector store: {self.client.beta.vector_stores.files.list(vector_store_id=self.vector_store.id).data}"
         )
