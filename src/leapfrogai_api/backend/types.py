@@ -228,17 +228,6 @@ class ListVectorStoresResponse(BaseModel):
 
 
 ################
-# THREADS, RUNS, MESSAGES
-################
-
-
-class ModifyMessageRequest(BaseModel):
-    """Request object for modifying a message."""
-
-    metadata: dict | None = Field(default=None, examples=[{}])
-
-
-################
 # LEAPFROGAI Vector Stores
 ################
 

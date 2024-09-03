@@ -37,9 +37,6 @@ from leapfrogai_api.backend.rag.query import QueryService
 from leapfrogai_api.data.crud_assistant import CRUDAssistant, FilterAssistant
 from leapfrogai_api.data.crud_message import CRUDMessage
 from leapfrogai_api.routers.openai.chat import chat_complete, chat_complete_stream_raw
-from leapfrogai_api.routers.openai.requests.create_message_request import (
-    CreateMessageRequest,
-)
 from leapfrogai_api.routers.supabase_session import Session
 from leapfrogai_api.utils import get_model_config
 from leapfrogai_sdk.chat.chat_pb2 import (
@@ -52,6 +49,7 @@ from leapfrogai_api.typedef.chat import (
     ChatChoice,
 )
 from leapfrogai_api.typedef.runs import RunCreateParamsRequest
+from leapfrogai_api.typedef.messages import CreateMessageRequest
 from leapfrogai_api.backend.types import SearchResponse
 
 

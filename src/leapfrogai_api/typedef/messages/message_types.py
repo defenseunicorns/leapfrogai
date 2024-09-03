@@ -73,3 +73,9 @@ class CreateMessageRequest(BaseModel):
                 status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
                 detail="Unable to create message",
             ) from exc
+
+
+class ModifyMessageRequest(BaseModel):
+    """Request object for modifying a message."""
+
+    metadata: dict | None = Field(default=None, examples=[{}])

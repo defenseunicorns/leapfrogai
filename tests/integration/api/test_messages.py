@@ -10,7 +10,7 @@ from openai.types.beta.threads import TextContentBlock, Text, Message, MessageDe
 from leapfrogai_api.backend.types import (
     ModifyMessageRequest,
 )
-from leapfrogai_api.routers.openai.requests.create_message_request import (
+from leapfrogai_api.typedef.messages.create_message_request import (
     CreateMessageRequest,
 )
 from leapfrogai_api.routers.openai.requests.create_thread_request import (
