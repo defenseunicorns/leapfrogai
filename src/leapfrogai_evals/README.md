@@ -19,9 +19,9 @@ MODEL_TO_EVALUATE="vllm" # can also be provided as "model" to the __init__ for t
 Running `main.py` will by default run all of the evaluations currently available:
 
 ```bash
-# from within the src/leapfrogai_evals dir
+# from within the packages/evaluations dir
 python -m pip install .
-python main.py
+python src/main.py
 ```
 
 ## Needle in a Haystack (NIAH)
