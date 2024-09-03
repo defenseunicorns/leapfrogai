@@ -10,12 +10,14 @@ ENV PATH=${JAVA_HOME}/bin:$PATH
 
 WORKDIR /app
 
+WORKDIR /app
+
 COPY . .
 
+RUN npm ci
+
 ENV NODE_ENV=production
-RUN npm ci && \
-    npm run build && \
-    npm prune
+RUN npm run build && npm prune
 
 # Disable request size limit
 ENV BODY_SIZE_LIMIT=Infinity \
