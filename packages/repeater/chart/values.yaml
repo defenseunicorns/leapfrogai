@@ -19,11 +19,11 @@ podAnnotations: {}
 
 podSecurityContext:
   runAsNonRoot: true
+  fsGroup: 65532
 
 securityContext:
   runAsUser: 65532
   runAsGroup: 65532
-  fsGroup: 65532
 
 service:
   type: ClusterIP

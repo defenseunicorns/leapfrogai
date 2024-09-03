@@ -6,6 +6,8 @@ from google.protobuf.internal.containers import RepeatedCompositeFieldContainer
 
 from leapfrogai_sdk import ChatItem, ChatRole
 
+logger = logging.getLogger(__name__)
+
 
 class LLMDefaults(BaseConfig):
     temperature: float = 0.5
@@ -58,7 +60,7 @@ class BackendConfig(BaseConfig):
             elif item.role == ChatRole.USER:
                 prompt += self.prompt_format.chat.user.format(item.content)
             elif item.role == ChatRole.FUNCTION:
-                logging.warning(
+                logger.warning(
                     "ChatRole FUNCTION is not implemented for this model and this ChatItem will be ignored."
                 )
         # add the response prefix to start the model's reponse
