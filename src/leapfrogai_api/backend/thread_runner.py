@@ -50,7 +50,7 @@ from leapfrogai_api.typedef.chat import (
 )
 from leapfrogai_api.typedef.runs import RunCreateParamsRequest
 from leapfrogai_api.typedef.messages import CreateMessageRequest
-from leapfrogai_api.backend.types import SearchResponse
+from leapfrogai_api.typedef.vectorstores import SearchResponse
 
 
 class ThreadRunner(BaseModel):

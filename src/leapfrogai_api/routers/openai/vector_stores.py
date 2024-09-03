@@ -8,7 +8,7 @@ from openai.pagination import SyncCursorPage
 from openai.types.beta import VectorStore, VectorStoreDeleted
 from openai.types.beta.vector_stores import VectorStoreFile, VectorStoreFileDeleted
 from leapfrogai_api.backend.rag.index import IndexingService
-from leapfrogai_api.backend.types import (
+from leapfrogai_api.typedef.vectorstores import (
     CreateVectorStoreFileRequest,
     CreateVectorStoreRequest,
     ListVectorStoresResponse,

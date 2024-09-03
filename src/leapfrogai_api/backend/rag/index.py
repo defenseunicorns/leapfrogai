@@ -10,12 +10,13 @@ from openai.types.beta.vector_store import FileCounts, VectorStore
 from openai.types.beta.vector_stores import VectorStoreFile
 from openai.types.beta.vector_stores.vector_store_file import LastError
 from supabase import AClient as AsyncClient
+
 from leapfrogai_api.backend.rag.document_loader import load_file, split
 from leapfrogai_api.backend.rag.leapfrogai_embeddings import LeapfrogAIEmbeddings
 from leapfrogai_api.data.crud_file_bucket import CRUDFileBucket
 from leapfrogai_api.data.crud_file_object import CRUDFileObject, FilterFileObject
 from leapfrogai_api.data.crud_vector_store import CRUDVectorStore, FilterVectorStore
-from leapfrogai_api.backend.types import (
+from leapfrogai_api.typedef.vectorstores import (
     VectorStoreStatus,
     VectorStoreFileStatus,
     CreateVectorStoreRequest,
