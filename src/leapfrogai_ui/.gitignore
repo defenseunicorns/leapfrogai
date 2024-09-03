@@ -21,3 +21,4 @@ zarf-sbom/
 
 playwright/.auth
 test-results/
+e2e-report/

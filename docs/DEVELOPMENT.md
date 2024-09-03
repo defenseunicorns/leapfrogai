@@ -97,7 +97,7 @@ uds zarf package deploy zarf-package-*.tar.zst --confirm
 1. Install all the necessary package creation dependencies:
 
     ```bash
-    python -m pip install "hugging_face[cli,hf_transfer]" "transformers[torch]" ctranslate2
+    python -m pip install "huggingface_hub[cli,hf_transfer]" "transformers[torch]" ctranslate2
     ```
 
 2. Build all of the packages you need at once with **ONE** of the following Make targets:

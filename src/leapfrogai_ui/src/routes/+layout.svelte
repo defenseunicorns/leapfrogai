@@ -5,11 +5,29 @@
   import { Toasts } from '$components';
   import { page } from '$app/stores';
   import '$webComponents/CodeBlock';
+  import { browser } from '$app/environment';
+
   export let data;
 
   let { supabase, session } = data;
 
   $: ({ supabase, session } = data);
+
+  // Refresh token early so backend requests get token with enough time before expiration (for long processing ops)
+  let startRefreshCountdown = true;
+  $: {
+    if (startRefreshCountdown && browser && session) {
+      startRefreshCountdown = false;
+      const expiresIn = session.expires_at - Math.floor(Date.now() / 1000); // seconds until expiration
+      const refreshTime = expiresIn - 1200; // 20 minutes before expiration
+      if (refreshTime > 0) {
+        setTimeout(async () => {
+          await supabase.auth.refreshSession();
+          startRefreshCountdown = true;
+        }, refreshTime * 1000);
+      }
+    }
+  }
 
   onMount(() => {
     const { data } = supabase.auth.onAuthStateChange((_, newSession) => {

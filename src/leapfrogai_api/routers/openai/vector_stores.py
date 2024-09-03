@@ -22,6 +22,8 @@ from leapfrogai_api.data.crud_vector_store_file import (
 )
 from leapfrogai_api.routers.supabase_session import Session
 
+logger = logging.getLogger(__name__)
+
 router = APIRouter(prefix="/openai/v1/vector_stores", tags=["openai/vector_stores"])
 
 
@@ -128,7 +130,7 @@ async def create_vector_store_file(
         )
         return vector_store_file
     except Exception as exc:
-        logging.exception("Error indexing file")
+        logger.exception("Error indexing file")
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail="Failed to create vector store file",
