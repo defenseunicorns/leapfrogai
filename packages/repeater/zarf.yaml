@@ -12,6 +12,8 @@ constants:
 components:
   - name: repeater
     required: true
+    only:
+      flavor: upstream
     charts:
       - name: repeater
         namespace: leapfrogai

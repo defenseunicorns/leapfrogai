@@ -35,6 +35,8 @@ variables:
 components:
   - name: text-embeddings-model
     required: true
+    only:
+      flavor: upstream
     charts:
       - name: text-embeddings-model
         namespace: leapfrogai

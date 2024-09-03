@@ -27,6 +27,8 @@ variables:
 components:
   - name: llama-cpp-python-model
     required: true
+    only:
+      flavor: upstream
     charts:
       - name: llama-cpp-python-model
         namespace: leapfrogai
