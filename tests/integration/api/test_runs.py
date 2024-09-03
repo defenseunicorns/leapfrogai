@@ -18,10 +18,10 @@ from leapfrogai_api.routers.openai.requests.create_message_request import (
 from leapfrogai_api.routers.openai.requests.create_thread_request import (
     CreateThreadRequest,
 )
-from leapfrogai_api.typedef.requests import (
+from leapfrogai_api.typedef.runs import (
     RunCreateParamsRequest,
 )
-from leapfrogai_api.routers.openai.requests.thread_run_create_params_request import (
+from leapfrogai_api.typedef.threads import (
     ThreadRunCreateParamsRequest,
 )
 
