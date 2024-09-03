@@ -27,6 +27,7 @@ dev = [
     "requests-toolbelt",
     "pytest",
     "huggingface_hub[cli,hf_transfer] == 0.24.5",
+    "fastapi == 0.109.1",
 ]
 
 dev-whisper = ["ctranslate2 == 4.1.0", "transformers[torch] == 4.39.3"]
