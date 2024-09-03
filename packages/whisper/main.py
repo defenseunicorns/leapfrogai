@@ -7,6 +7,10 @@ from typing import Iterator
 import leapfrogai_sdk as lfai
 from faster_whisper import WhisperModel
 
+logging.basicConfig(
+    level=os.getenv("LFAI_LOG_LEVEL", logging.INFO),
+    format="%(name)s: %(asctime)s | %(levelname)s | %(filename)s:%(lineno)s >>> %(message)s",
+)
 logger = logging.getLogger(__name__)
 
 model_path = os.environ.get("LFAI_MODEL_PATH", ".model")
@@ -107,7 +111,6 @@ class Whisper(lfai.AudioServicer):
 
 
 async def main():
-    logging.basicConfig(level=logging.INFO)
     logger.info(f"GPU_ENABLED = {GPU_ENABLED}")
     await lfai.serve(Whisper())
 
