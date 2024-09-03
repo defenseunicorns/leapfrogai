@@ -6,6 +6,8 @@ from leapfrogai_api.utils import get_model_config
 from leapfrogai_api.backend.grpc_client import create_embeddings
 import logging
 
+logger = logging.getLogger(__name__)
+
 
 # Partially implements the Langchain Core Embeddings interface
 class LeapfrogAIEmbeddings:
@@ -61,7 +63,7 @@ class LeapfrogAIEmbeddings:
         """
 
         if not (model := get_model_config().get_model_backend(model=model_name)):
-            logging.error(f"Embeddings model {model_name} not found.")
+            logger.error(f"Embeddings model {model_name} not found.")
             raise ValueError("Embeddings model not found.")
 
         return model

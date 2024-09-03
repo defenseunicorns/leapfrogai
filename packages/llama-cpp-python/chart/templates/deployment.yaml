@@ -33,7 +33,6 @@ spec:
           securityContext:
             runAsUser: 65532
             runAsGroup: 65532
-            fsGroup: 65532
           # This command looks for the Zarf "data injection marker" which is a timestamped file that is injected after everything else and marks the injection as complete.
           command:
             [
