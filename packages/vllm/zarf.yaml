@@ -26,6 +26,8 @@ variables:
 components:
   - name: vllm-model
     required: true
+    only:
+      flavor: upstream
     charts:
       - name: vllm-model
         namespace: leapfrogai

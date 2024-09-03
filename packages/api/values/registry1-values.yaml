@@ -5,6 +5,10 @@ api:
     tag: v0.11.0
     # x-release-please-end
 
+  env:
+    exposeAPI: "###ZARF_VAR_EXPOSE_API###"
+    defaultEmbeddingsModel: "###ZARF_VAR_DEFAULT_EMBEDDINGS_MODEL###"
+
   migration:
     image:
       # TODO: replace with Ironbank image once hardened: registry1.dso.mil/ironbank/opensource/defenseunicorns/leapfrogai/api/migrations
