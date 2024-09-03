@@ -115,6 +115,29 @@ LeapfrogAI provides several backends for a variety of use cases. Below is the ba
 
 The [repeater](packages/repeater/) "model" is a basic "backend" that parrots all inputs it receives back to the user. It is built out the same way all the actual backends are and it is primarily used for testing the API.
 
+### Flavors
+
+Each component has different images and values that refer to a specific image registry and/or hardening source. These images are packaged using [Zarf Flavors](https://docs.zarf.dev/ref/examples/package-flavors/):
+
+1. `upstream`: uses upstream vendor images from open source container registries and repositories
+2. 🚧 `registry1`: uses [IronBank hardened images](https://repo1.dso.mil/dsop) from the Repo1 harbor registry
+
+Below is the current component flavors list:
+
+| Component                                      |  `upstream`  |  `registry1`  |
+| ---------------------------------------------- | ------------ | ------------- |
+| [api](packages/api/)                           |      ✅      |      ✅      |
+| [ui](packages/ui/)                             |      ✅      |      🚧      |
+| [supabase](packages/supabase/)                 |      ✅      |      🚧      |
+| [migrations](./Dockerfile.migrations)          |      ✅      |      🚧      |
+| [llama-cpp-python](packages/llama-cpp-python/) |      ✅      |      🚧      |
+| [whisper](packages/whisper/)                   |      ✅      |      🚧      |
+| [text-embeddings](packages/text-embeddings/)   |      ✅      |      🚧      |
+| [vllm](packages/vllm/)                         |      ✅      |      🚧      |
+| [vllm](packages/vllm/)                         |      ✅      |      🚧      |
+
+Flavors with any components labelled as 🚧 are not available as a quick start bundle deployment yet. Please refer to the [DEVELOPMENT.md](./docs/DEVELOPMENT.md) for instructions on how to build a component's Zarf package for local testing.
+
 ## Usage
 
 To build a LeapfrogAI UDS bundle and deploy it, please refer to the [LeapfrogAI Documentation Website](https://docs.leapfrog.ai/docs/). In the documentation website, you'll find system requirements and instructions for all things LeapfrogAI that aren't associated to local development and contributing.

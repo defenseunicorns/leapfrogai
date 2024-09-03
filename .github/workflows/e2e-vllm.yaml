@@ -68,10 +68,12 @@ jobs:
             additionalOptionalDep: dev-vllm
 
         - name: Setup UDS Environment
-          uses: defenseunicorns/uds-common/.github/actions/setup@05f42bb3117b66ebef8c72ae050b34bce19385f5
+          uses: defenseunicorns/uds-common/.github/actions/setup@822dac4452e6815aadcf09f487406ff258756a0c # v0.14.0
           with:
-            username: ${{ secrets.IRON_BANK_ROBOT_USERNAME }}
-            password: ${{ secrets.IRON_BANK_ROBOT_PASSWORD }}
+            registry1Username: ${{ secrets.IRON_BANK_ROBOT_USERNAME }}
+            registry1Password: ${{ secrets.IRON_BANK_ROBOT_PASSWORD }}
+            ghToken: ${{ secrets.GITHUB_TOKEN }}
+            udsCliVersion: 0.14.0
 
         ########## c
         # vLLM

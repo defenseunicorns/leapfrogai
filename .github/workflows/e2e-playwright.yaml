@@ -81,6 +81,7 @@ jobs:
           with:
             registry1Username: ${{ secrets.IRON_BANK_ROBOT_USERNAME }}
             registry1Password: ${{ secrets.IRON_BANK_ROBOT_PASSWORD }}
+            ghToken: ${{ secrets.GITHUB_TOKEN }}
 
         - name: Create Test User
           run: |

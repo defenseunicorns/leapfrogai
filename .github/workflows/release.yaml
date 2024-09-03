@@ -65,8 +65,8 @@ jobs:
           docker buildx build --platform amd64,arm64 --build-arg LOCAL_VERSION=${{ steps.get_version.outputs.version-without-v }} -t ghcr.io/defenseunicorns/leapfrogai/leapfrogai-api:${{ steps.get_version.outputs.version-without-v }} --push -f packages/api/Dockerfile .
           docker buildx build --platform amd64,arm64 -t ghcr.io/defenseunicorns/leapfrogai/api-migrations:${{ steps.get_version.outputs.version-without-v }} --push -f Dockerfile.migrations --build-arg="MIGRATIONS_DIR=packages/api/supabase/migrations" .
 
-          zarf package create packages/api --set=LEAPFROGAI_IMAGE_VERSION=${{ steps.get_version.outputs.version-without-v }} --architecture amd64 --confirm
-          zarf package create packages/api --set=LEAPFROGAI_IMAGE_VERSION=${{ steps.get_version.outputs.version-without-v }} --architecture arm64 --confirm
+          zarf package create packages/api --set=IMAGE_VERSION=${{ steps.get_version.outputs.version-without-v }} --architecture amd64 --flavor upstream --confirm
+          zarf package create packages/api --set=IMAGE_VERSION=${{ steps.get_version.outputs.version-without-v }} --architecture arm64 --flavor upstream --confirm
 
           zarf package publish zarf-package-leapfrogai-api-amd64-${{ steps.get_version.outputs.version-without-v }}.tar.zst oci://ghcr.io/defenseunicorns/packages/uds/leapfrogai
           zarf package publish zarf-package-leapfrogai-api-arm64-${{ steps.get_version.outputs.version-without-v }}.tar.zst oci://ghcr.io/defenseunicorns/packages/uds/leapfrogai
@@ -79,8 +79,8 @@ jobs:
           docker buildx build --platform amd64,arm64 -t ghcr.io/defenseunicorns/leapfrogai/leapfrogai-ui:${{ steps.get_version.outputs.version-without-v }} --push src/leapfrogai_ui
           docker buildx build --platform amd64,arm64 -t ghcr.io/defenseunicorns/leapfrogai/ui-migrations:${{ steps.get_version.outputs.version-without-v }} --push -f Dockerfile.migrations --build-arg="MIGRATIONS_DIR=src/leapfrogai_ui/supabase/migrations" .
 
-          zarf package create packages/ui --set=IMAGE_VERSION=${{ steps.get_version.outputs.version-without-v }} --architecture amd64 --confirm
-          zarf package create packages/ui --set=IMAGE_VERSION=${{ steps.get_version.outputs.version-without-v }} --architecture arm64 --confirm
+          zarf package create packages/ui --set=IMAGE_VERSION=${{ steps.get_version.outputs.version-without-v }} --architecture amd64 --flavor upstream --confirm
+          zarf package create packages/ui --set=IMAGE_VERSION=${{ steps.get_version.outputs.version-without-v }} --architecture arm64 --flavor upstream --confirm
 
           zarf package publish zarf-package-leapfrogai-ui-amd64-${{ steps.get_version.outputs.version-without-v }}.tar.zst oci://ghcr.io/defenseunicorns/packages/uds/leapfrogai
           zarf package publish zarf-package-leapfrogai-ui-arm64-${{ steps.get_version.outputs.version-without-v }}.tar.zst oci://ghcr.io/defenseunicorns/packages/uds/leapfrogai
@@ -92,8 +92,8 @@ jobs:
         run: |
           docker buildx build --platform amd64,arm64 -t ghcr.io/defenseunicorns/leapfrogai/supabase-migrations:${{ steps.get_version.outputs.version-without-v }} --push -f Dockerfile.migrations --build-arg="MIGRATIONS_DIR=packages/supabase/migrations" .
 
-          zarf package create packages/supabase --set=IMAGE_VERSION=${{ steps.get_version.outputs.version-without-v }} --architecture amd64 --confirm
-          zarf package create packages/supabase --set=IMAGE_VERSION=${{ steps.get_version.outputs.version-without-v }} --architecture arm64 --confirm
+          zarf package create packages/supabase --set=IMAGE_VERSION=${{ steps.get_version.outputs.version-without-v }} --architecture amd64 --flavor upstream --confirm
+          zarf package create packages/supabase --set=IMAGE_VERSION=${{ steps.get_version.outputs.version-without-v }} --architecture arm64 --flavor upstream --confirm
 
           zarf package publish zarf-package-supabase-amd64-${{ steps.get_version.outputs.version-without-v }}.tar.zst oci://ghcr.io/defenseunicorns/packages/uds/leapfrogai
           zarf package publish zarf-package-supabase-arm64-${{ steps.get_version.outputs.version-without-v }}.tar.zst oci://ghcr.io/defenseunicorns/packages/uds/leapfrogai
@@ -102,8 +102,8 @@ jobs:
         run: |
           docker buildx build --platform amd64,arm64 --build-arg LOCAL_VERSION=${{ steps.get_version.outputs.version-without-v }} -t ghcr.io/defenseunicorns/leapfrogai/repeater:${{ steps.get_version.outputs.version-without-v }} --push -f packages/repeater/Dockerfile .
 
-          zarf package create packages/repeater --set=IMAGE_VERSION=${{ steps.get_version.outputs.version-without-v }} --architecture amd64 --confirm
-          zarf package create packages/repeater --set=IMAGE_VERSION=${{ steps.get_version.outputs.version-without-v }} --architecture arm64 --confirm
+          zarf package create packages/repeater --set=IMAGE_VERSION=${{ steps.get_version.outputs.version-without-v }} --architecture amd64 --flavor upstream --confirm
+          zarf package create packages/repeater --set=IMAGE_VERSION=${{ steps.get_version.outputs.version-without-v }} --architecture arm64 --flavor upstream --confirm
 
           zarf package publish zarf-package-repeater-amd64-${{ steps.get_version.outputs.version-without-v }}.tar.zst oci://ghcr.io/defenseunicorns/packages/uds/leapfrogai
           zarf package publish zarf-package-repeater-arm64-${{ steps.get_version.outputs.version-without-v }}.tar.zst oci://ghcr.io/defenseunicorns/packages/uds/leapfrogai
@@ -115,8 +115,8 @@ jobs:
         run: |
           docker buildx build --platform amd64,arm64 --build-arg LOCAL_VERSION=${{ steps.get_version.outputs.version-without-v }} -t ghcr.io/defenseunicorns/leapfrogai/llama-cpp-python:${{ steps.get_version.outputs.version-without-v }} --push -f packages/llama-cpp-python/Dockerfile .
 
-          zarf package create packages/llama-cpp-python --set=IMAGE_VERSION=${{ steps.get_version.outputs.version-without-v }} --architecture amd64 --confirm
-          zarf package create packages/llama-cpp-python --set=IMAGE_VERSION=${{ steps.get_version.outputs.version-without-v }} --architecture arm64 --confirm
+          zarf package create packages/llama-cpp-python --set=IMAGE_VERSION=${{ steps.get_version.outputs.version-without-v }} --architecture amd64 --flavor upstream --confirm
+          zarf package create packages/llama-cpp-python --set=IMAGE_VERSION=${{ steps.get_version.outputs.version-without-v }} --architecture arm64 --flavor upstream --confirm
 
           zarf package publish zarf-package-llama-cpp-python-amd64-${{ steps.get_version.outputs.version-without-v }}.tar.zst oci://ghcr.io/defenseunicorns/packages/uds/leapfrogai
           zarf package publish zarf-package-llama-cpp-python-arm64-${{ steps.get_version.outputs.version-without-v }}.tar.zst oci://ghcr.io/defenseunicorns/packages/uds/leapfrogai
@@ -128,7 +128,7 @@ jobs:
         run: |
           docker buildx build --build-arg LOCAL_VERSION=${{ steps.get_version.outputs.version-without-v }} -t ghcr.io/defenseunicorns/leapfrogai/vllm:${{ steps.get_version.outputs.version-without-v }} --push -f packages/vllm/Dockerfile .
 
-          zarf package create packages/vllm --set=IMAGE_VERSION=${{ steps.get_version.outputs.version-without-v }} --confirm
+          zarf package create packages/vllm --set=IMAGE_VERSION=${{ steps.get_version.outputs.version-without-v }} --flavor upstream --confirm
 
           zarf package publish zarf-package-vllm-amd64-${{ steps.get_version.outputs.version-without-v }}.tar.zst oci://ghcr.io/defenseunicorns/packages/uds/leapfrogai
 
@@ -139,8 +139,8 @@ jobs:
         run: |
           docker buildx build --platform amd64,arm64 --build-arg LOCAL_VERSION=${{ steps.get_version.outputs.version-without-v }} -t ghcr.io/defenseunicorns/leapfrogai/text-embeddings:${{ steps.get_version.outputs.version-without-v }} --push -f packages/text-embeddings/Dockerfile .
 
-          zarf package create packages/text-embeddings --set=IMAGE_VERSION=${{ steps.get_version.outputs.version-without-v }} --architecture amd64 --confirm
-          zarf package create packages/text-embeddings --set=IMAGE_VERSION=${{ steps.get_version.outputs.version-without-v }} --architecture arm64 --confirm
+          zarf package create packages/text-embeddings --set=IMAGE_VERSION=${{ steps.get_version.outputs.version-without-v }} --architecture amd64 --flavor upstream --confirm
+          zarf package create packages/text-embeddings --set=IMAGE_VERSION=${{ steps.get_version.outputs.version-without-v }} --architecture arm64 --flavor upstream --confirm
 
           zarf package publish zarf-package-text-embeddings-amd64-${{ steps.get_version.outputs.version-without-v }}.tar.zst oci://ghcr.io/defenseunicorns/packages/uds/leapfrogai
           zarf package publish zarf-package-text-embeddings-arm64-${{ steps.get_version.outputs.version-without-v }}.tar.zst oci://ghcr.io/defenseunicorns/packages/uds/leapfrogai
@@ -152,8 +152,8 @@ jobs:
         run: |
           docker buildx build --platform amd64,arm64 --build-arg LOCAL_VERSION=${{ steps.get_version.outputs.version-without-v }} -t ghcr.io/defenseunicorns/leapfrogai/whisper:${{ steps.get_version.outputs.version-without-v }} --push -f packages/whisper/Dockerfile .
 
-          zarf package create packages/whisper --set=IMAGE_VERSION=${{ steps.get_version.outputs.version-without-v }} --architecture amd64 --confirm
-          zarf package create packages/whisper --set=IMAGE_VERSION=${{ steps.get_version.outputs.version-without-v }} --architecture arm64 --confirm
+          zarf package create packages/whisper --set=IMAGE_VERSION=${{ steps.get_version.outputs.version-without-v }} --architecture amd64 --flavor upstream --confirm
+          zarf package create packages/whisper --set=IMAGE_VERSION=${{ steps.get_version.outputs.version-without-v }} --architecture arm64 --flavor upstream --confirm
 
           zarf package publish zarf-package-whisper-amd64-${{ steps.get_version.outputs.version-without-v }}.tar.zst oci://ghcr.io/defenseunicorns/packages/uds/leapfrogai
           zarf package publish zarf-package-whisper-arm64-${{ steps.get_version.outputs.version-without-v }}.tar.zst oci://ghcr.io/defenseunicorns/packages/uds/leapfrogai
