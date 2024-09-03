@@ -69,6 +69,8 @@ from leapfrogai_sdk.chat.chat_pb2 import (
     ChatCompletionResponse as ProtobufChatCompletionResponse,
 )
 
+logger = logging.getLogger(__name__)
+
 
 class RunCreateParamsRequestBase(BaseModel):
     assistant_id: str = Field(default="", examples=["123ab"])
@@ -101,13 +103,13 @@ class RunCreateParamsRequestBase(BaseModel):
         super().__init__(**data)
         # TODO: Temporary fix to ensure max_completion_tokens and max_prompt_tokens are set
         if self.max_completion_tokens is None or self.max_completion_tokens < 1:
-            logging.warning(
+            logger.warning(
                 "max_completion_tokens is not set or is less than 1, setting to %s",
                 DEFAULT_MAX_COMPLETION_TOKENS,
             )
             self.max_completion_tokens = DEFAULT_MAX_COMPLETION_TOKENS
         if self.max_prompt_tokens is None or self.max_prompt_tokens < 1:
-            logging.warning(
+            logger.warning(
                 "max_prompt_tokens is not set or is less than 1, setting to %s",
                 DEFAULT_MAX_PROMPT_TOKENS,
             )
@@ -170,7 +172,7 @@ class RunCreateParamsRequestBase(BaseModel):
                         return self.tool_choice.type == "file_search"
                 except ValidationError:
                     traceback.print_exc()
-                    logging.error(
+                    logger.error(
                         "Cannot use RAG for request, failed to validate tool for thread"
                     )
                     return False

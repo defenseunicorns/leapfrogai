@@ -39,6 +39,9 @@ from leapfrogai_api.routers.openai.requests.create_thread_request import (
 from leapfrogai_api.routers.supabase_session import Session
 
 
+logger = logging.getLogger(__name__)
+
+
 class ThreadRunCreateParamsRequest(RunCreateParamsRequestBase):
     thread: ThreadCreateAndRunsThread | None = Field(
         default=None,
@@ -112,7 +115,7 @@ class ThreadRunCreateParamsRequest(RunCreateParamsRequestBase):
 
                     thread_request.messages.append(new_message)
                 except ValueError as exc:
-                    logging.error(f"\t{exc}")
+                    logger.error(f"\t{exc}")
                     continue
         return thread_request
 

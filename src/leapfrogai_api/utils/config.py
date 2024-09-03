@@ -8,7 +8,8 @@ import toml
 import yaml
 from watchfiles import Change, awatch
 
-logging.basicConfig(level=logging.INFO)
+
+logger = logging.getLogger(__name__)
 
 
 class Model:
@@ -50,7 +51,7 @@ class Config:
             async for changes in awatch(directory, recursive=False, step=50):
                 # get two unique lists of files that have been (updated files and deleted files)
                 # (awatch can return duplicates depending on the type of updates that happen)
-                logging.info("Config changes detected: {}".format(changes))
+                logger.info("Config changes detected: {}".format(changes))
                 unique_new_files = set()
                 unique_deleted_files = set()
                 for change in changes:
@@ -77,10 +78,10 @@ class Config:
         # reset the model config on shutdown (so old model configs don't get cached)
         self.models = {}
         self.config_sources = {}
-        logging.info("All models have been removed")
+        logger.info("All models have been removed")
 
     def load_config_file(self, directory: str, config_file: str):
-        logging.info("Loading config file: {}/{}".format(directory, config_file))
+        logger.info("Loading config file: {}/{}".format(directory, config_file))
 
         # load the config file into the config object
         config_path = os.path.join(directory, config_file)
@@ -93,25 +94,25 @@ class Config:
                 loaded_artifact = yaml.safe_load(c)
             else:
                 # TODO: Return an error ???
-                logging.error(f"Unsupported file type: {config_path}")
+                logger.error(f"Unsupported file type: {config_path}")
                 return
 
             # parse the object into our config
             self.parse_models(loaded_artifact, config_file)
 
-        logging.info("loaded artifact at {}".format(config_path))
+        logger.info("loaded artifact at {}".format(config_path))
 
         return
 
     def load_all_configs(self, directory="", filename="config.yaml"):
-        logging.info(
+        logger.info(
             "Loading all configs in {} that match the name '{}'".format(
                 directory, filename
             )
         )
 
         if not os.path.exists(directory):
-            logging.error("The config directory ({}) does not exist".format(directory))
+            logger.error("The config directory ({}) does not exist".format(directory))
             return "THE CONFIG DIRECTORY DOES NOT EXIST"
 
         # Get all config files and load them into the config object
@@ -137,12 +138,12 @@ class Config:
                 self.config_sources[config_file].append(m["name"])
             except KeyError:
                 self.config_sources[config_file] = [m["name"]]
-            logging.info("added {} to model config".format(m["name"]))
+            logger.info("added {} to model config".format(m["name"]))
 
     def remove_model_by_config(self, config_file):
         for model_name in self.config_sources[config_file]:
             self.models.pop(model_name)
-            logging.info("removed {} from model config".format(model_name))
+            logger.info("removed {} from model config".format(model_name))
 
         # clear config once all corresponding models are deleted
         self.config_sources.pop(config_file)
