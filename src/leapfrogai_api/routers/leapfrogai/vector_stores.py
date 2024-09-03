@@ -3,7 +3,7 @@
 from fastapi import APIRouter
 from postgrest.base_request_builder import SingleAPIResponse
 from leapfrogai_api.backend.rag.query import QueryService
-from leapfrogai_api.backend.types import SearchResponse
+from leapfrogai_api.typedef.vectorstores import SearchResponse
 from leapfrogai_api.routers.supabase_session import Session
 
 router = APIRouter(
