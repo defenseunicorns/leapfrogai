@@ -1,5 +1,7 @@
 import json
+import logging
 import os
+import traceback
 import pytest
 import requests
 
@@ -20,15 +22,21 @@ def create_test_user(
         "Content-Type": "application/json",
     }
 
-    requests.post(
-        url="https://supabase-kong.uds.dev/auth/v1/signup",
-        headers=headers,
-        json={
-            "email": email,
-            "password": password,
-            "confirmPassword": password,
-        },
-    )
+    try:
+        requests.post(
+            url="https://supabase-kong.uds.dev/auth/v1/signup",
+            headers=headers,
+            json={
+                "email": email,
+                "password": password,
+                "confirmPassword": password,
+            },
+        )
+    except Exception:
+        logging.error(
+            "Error creating user (likely because the user already exists): %s",
+            traceback.format_exc(),
+        )
 
     return get_jwt_token(anon_key, email, password)
 
