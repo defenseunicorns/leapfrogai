@@ -28,7 +28,10 @@ class InstructorEmbedding:
             f"processing CreateEmbedding request: char-length: {len(str(request.inputs))} word-count: {len(str(request.inputs).split())}"
         )
 
-        embeddings = model.encode(request.inputs, show_progress_bar=True)
+        # Run the CPU-intensive encoding in a separate thread
+        embeddings = await asyncio.to_thread(
+            model.encode, sentences=request.inputs, show_progress_bar=True
+        )
 
         embeddings = [Embedding(embedding=inner_list) for inner_list in embeddings]
 
