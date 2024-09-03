@@ -12,7 +12,7 @@ from pydantic import Field
 from .run_create_base import (
     RunCreateParamsRequestBase,
 )
-from leapfrogai_api.routers.openai.requests.create_message_request import (
+from leapfrogai_api.typedef.messages import (
     CreateMessageRequest,
 )
 from leapfrogai_api.data.crud_run import CRUDRun
