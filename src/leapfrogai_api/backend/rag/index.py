@@ -28,6 +28,8 @@ from leapfrogai_api.data.crud_vector_store_file import (
 
 from leapfrogai_api.data.crud_vector_content import CRUDVectorContent, Vector
 
+logger = logging.getLogger(__name__)
+
 # Allows for overwriting type of embeddings that will be instantiated
 embeddings_type: type[Embeddings] | type[LeapfrogAIEmbeddings] | None = (
     LeapfrogAIEmbeddings
@@ -56,13 +58,13 @@ class IndexingService:
         if await crud_vector_store_file.get(
             filters=FilterVectorStoreFile(vector_store_id=vector_store_id, id=file_id)
         ):
-            logging.error("File already indexed: %s", file_id)
+            logger.error("File already indexed: %s", file_id)
             raise FileAlreadyIndexedError("File already indexed")
 
         if not (
             await crud_vector_store.get(filters=FilterVectorStore(id=vector_store_id))
         ):
-            logging.error("Vector store doesn't exist: %s", vector_store_id)
+            logger.error("Vector store doesn't exist: %s", vector_store_id)
             raise ValueError("Vector store not found")
 
         crud_file_object = CRUDFileObject(db=self.db)
@@ -146,7 +148,7 @@ class IndexingService:
                 )
                 responses.append(response)
             except FileAlreadyIndexedError:
-                logging.info("File %s already exists and cannot be re-indexed", file_id)
+                logger.info("File %s already exists and cannot be re-indexed", file_id)
                 continue
             except Exception as exc:
                 raise exc
@@ -163,6 +165,7 @@ class IndexingService:
 
         current_time = int(time.time())
         expires_after, expires_at = request.get_expiry(current_time)
+        saved_placeholder = None
 
         try:
             # Create a placeholder vector store
@@ -209,6 +212,9 @@ class IndexingService:
             return saved_placeholder
         except Exception as exc:
             logging.error(exc)
+            # Clean up the placeholder vector store if it was created
+            if saved_placeholder:
+                await crud_vector_store.delete(id_=saved_placeholder.id)
             raise HTTPException(
                 status_code=status.HTTP_400_BAD_REQUEST,
                 detail="Unable to parse vector store request",
@@ -295,7 +301,7 @@ class IndexingService:
 
             return updated_vector_store
         except Exception as exc:
-            logging.error(exc)
+            logger.error(exc)
             raise HTTPException(
                 status_code=status.HTTP_400_BAD_REQUEST,
                 detail="Unable to parse vector store request",
