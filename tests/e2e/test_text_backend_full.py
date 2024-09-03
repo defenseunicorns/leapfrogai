@@ -6,11 +6,6 @@ from openai import OpenAI
 from openai.types.beta.vector_store import VectorStore
 
 from leapfrogai_api.backend.types import VectorStoreStatus
-from .utils import create_test_user
-
-client = OpenAI(
-    base_url="https://leapfrogai-api.uds.dev/openai/v1", api_key=create_test_user()
-)
 
 
 def download_arxiv_pdf():
@@ -26,7 +21,7 @@ def download_arxiv_pdf():
         )
 
 
-def test_run_with_background_task():
+def test_run_with_background_task(client: OpenAI):
     """
     This test confirms whether a vector store for an assistant can index files
     while chatting at the same time.
