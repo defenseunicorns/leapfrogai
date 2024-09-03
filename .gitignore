@@ -44,3 +44,6 @@ vocabulary.json
 
 # go binaries
 api/main
+
+# evaluation artifacts
+.deepeval-cache.json
