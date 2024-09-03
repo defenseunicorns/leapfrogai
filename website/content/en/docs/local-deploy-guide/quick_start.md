@@ -71,7 +71,7 @@ If you already have a pre-built UDS bundle, please skip to [Deploying the UDS Bu
 2. Deploy the bundle you created in the [previous steps](#building-the-uds-bundle):
 
     ```bash
-    # make sure you ar ein the directory with the UDS bundle archive
+    # make sure you are in the directory with the UDS bundle archive
     uds deploy uds-bundle-leapfrogai*.tar.zst
     ```
 
