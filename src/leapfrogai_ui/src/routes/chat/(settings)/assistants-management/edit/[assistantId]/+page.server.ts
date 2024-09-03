@@ -90,11 +90,13 @@ export const actions: Actions = {
     } else {
       if (!form.data.avatar) {
         // Delete avatar
-        const { error: deleteAvatarError } = await supabase.storage
-          .from('avatars')
-          .remove(['folder/avatar1.png']);
-
-        if (deleteAvatarError) return fail(500, { message: 'error deleting avatar' });
+        const { error: deleteAvatarError, data } = await supabase.storage
+          .from('assistant_avatars')
+          .remove([`${filePath}`]);
+        if (deleteAvatarError) {
+          console.error('Error deleting assistant avatar:', deleteAvatarError);
+          return fail(500, { message: 'error deleting avatar' });
+        }
       }
     }
 
