@@ -45,10 +45,10 @@ COPY --chown=nonroot:nonroot packages/vllm packages/vllm
 
 # create virtual environment for light-weight portability and minimal libraries
 RUN curl https://pyenv.run | bash && \
-    echo 'export PYENV_ROOT="$HOME/.pyenv"' >> ~/.bashrc && \
-    echo 'export PATH="$PYENV_ROOT/bin:$PATH"' >> ~/.bashrc && \
-    echo 'eval "$(pyenv init -)"' >> ~/.bashrc && \
-    echo 'eval "$(pyenv virtualenv-init -)"' >> ~/.bashrc
+    echo "export PYENV_ROOT='$HOME/.pyenv'" >> ~/.bashrc && \
+    echo "export PATH='$PYENV_ROOT/bin:$PATH'" >> ~/.bashrc && \
+    echo "eval '$(pyenv init -)'" >> ~/.bashrc && \
+    echo "eval '$(pyenv virtualenv-init -)'" >> ~/.bashrc
 
 # Set environment variables
 ENV PYENV_ROOT="/home/nonroot/.pyenv" \
