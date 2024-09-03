@@ -27,15 +27,30 @@ Each component has different images and values that refer to a specific image re
 
 1. `upstream`: uses upstream vendor images from open source container registries and repositories
 2. 🚧 `registry1`: uses [IronBank hardened images](https://repo1.dso.mil/dsop) from the Repo1 harbor registry
-3. 🚧 `unicorn`: uses [Chainguard hardened images](https://www.chainguard.dev/chainguard-images) from the Chainguard registry
+
+Below is the current component flavors list:
+
+| Component                                      |  `upstream`  |  `registry1`  |
+| ---------------------------------------------- | ------------ | ------------- |
+| [api](packages/api/)                           |      ✅      |      ✅      |
+| [ui](packages/ui/)                             |      ✅      |      🚧      |
+| [supabase](packages/supabase/)                 |      ✅      |      🚧      |
+| [migrations](./Dockerfile.migrations)          |      ✅      |      🚧      |
+| [llama-cpp-python](packages/llama-cpp-python/) |      ✅      |      🚧      |
+| [whisper](packages/whisper/)                   |      ✅      |      🚧      |
+| [text-embeddings](packages/text-embeddings/)   |      ✅      |      🚧      |
+| [vllm](packages/vllm/)                         |      ✅      |      🚧      |
+| [vllm](packages/vllm/)                         |      ✅      |      🚧      |
+
+Flavors with any components labelled as 🚧 are not available as a quick start bundle deployment yet. Please refer to the [DEVELOPMENT.md](https://github.com/defenseunicorns/leapfrogai/blob/main/docs/DEVELOPMENT.md) for instructions on how to build a component's Zarf package for local testing.
 
 ### Artifact Support
 
-LeapfrogAI contains built-in embeddings for RAG and transcription / translation solutions that can handle many different file types. Many of these capabilities are accessible via the LeapfrogAI API. The support artifact types are as follows:
+LeapfrogAI contains built-in embeddings for RAG and transcription / translation solutions that can handle many different file types. Many of these capabilities are accessible via the LeapfrogAI API. The supported artifact types are as follows:
 
 #### Transcription / Translation
 
-- All formats supported by `ffmpeg -formats`, e.g., `.mp3`, `.wav`, `.mp4`, etc.
+- All formats supported by `ffmpeg` as listed using `ffmpeg -formats`, e.g., `.mp3`, `.wav`, `.mp4`, etc.
 
 #### Embeddings for RAG
 
