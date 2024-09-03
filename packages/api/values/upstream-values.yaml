@@ -3,6 +3,10 @@ api:
     repository: ghcr.io/defenseunicorns/leapfrogai/leapfrogai-api
     tag: ###ZARF_CONST_IMAGE_VERSION###
 
+  env:
+    exposeAPI: "###ZARF_VAR_EXPOSE_API###"
+    defaultEmbeddingsModel: "###ZARF_VAR_DEFAULT_EMBEDDINGS_MODEL###"
+
   migration:
     image:
       repository: ghcr.io/defenseunicorns/leapfrogai/api-migrations

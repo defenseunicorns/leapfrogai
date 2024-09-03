@@ -9,18 +9,23 @@ api:
     tag: 0.11.0
     # x-release-please-end
     imagePullPolicy: Always
+
   replicas: 1
+
   securityContext:
     runAsUser: 65532
     runAsGroup: 65532
     runAsNonRoot: true
     capabilities:
       drop:
-      - ALL
+        - ALL
+
+  port: 8080
+
   env:
-    port: 8080
-    exposeAPI: "###ZARF_VAR_EXPOSE_API###"
-    defaultEmbeddingsModel: "###ZARF_VAR_DEFAULT_EMBEDDINGS_MODEL###"
+    exposeAPI: "true"
+    defaultEmbeddingsModel: "text-embeddings"
+
   serviceAccount:
     name: leapfrogai-api
     create: true
@@ -38,7 +43,8 @@ api:
       runAsNonRoot: true
       capabilities:
         drop:
-        - ALL
+          - ALL
+
     env:
       serviceName: "supabase-postgresql"
       servicePort: 5432
@@ -52,10 +58,11 @@ kiwigrid:
     repository: kiwigrid/k8s-sidecar
     tag: 1.23.3
     imagePullPolicy: Always
+
   securityContext:
     runAsUser: 65532
     runAsGroup: 65532
     runAsNonRoot: true
     capabilities:
       drop:
-      - ALL
+        - ALL

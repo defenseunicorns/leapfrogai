@@ -53,7 +53,7 @@ spec:
             - name: DEFAULT_EMBEDDINGS_MODEL
               value: "{{ .Values.api.env.defaultEmbeddingsModel }}"
             - name: PORT
-              value: "{{ .Values.api.env.port }}"
+              value: "{{ .Values.api.port }}"
             - name: SUPABASE_URL
               value: "{{ .Values.supabase.env.url }}"
             - name: SUPABASE_ANON_KEY
@@ -63,17 +63,17 @@ spec:
                   key: anon-key
                   optional: true
           ports:
-            - containerPort: {{ .Values.api.env.port }}
+            - containerPort: {{ .Values.api.port }}
           livenessProbe:
             httpGet:
               path: /healthz
-              port: {{ .Values.api.env.port }}
+              port: {{ .Values.api.port }}
             initialDelaySeconds: 10
             periodSeconds: 10
           readinessProbe:
             httpGet:
               path: /healthz
-              port: {{ .Values.api.env.port }}
+              port: {{ .Values.api.port }}
             initialDelaySeconds: 10
             periodSeconds: 10
           securityContext:
