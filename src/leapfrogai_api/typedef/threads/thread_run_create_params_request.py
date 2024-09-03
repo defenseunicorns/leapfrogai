@@ -24,7 +24,7 @@ from starlette.responses import StreamingResponse
 from leapfrogai_api.routers.openai.requests.create_message_request import (
     CreateMessageRequest,
 )
-from leapfrogai_api.typedef.requests import (
+from leapfrogai_api.typedef.runs import (
     RunCreateParamsRequestBase,
 )
 from leapfrogai_api.data.crud_run import CRUDRun
@@ -32,7 +32,7 @@ from leapfrogai_api.backend.converters import (
     from_content_param_to_content,
     from_assistant_stream_event_to_str,
 )
-from leapfrogai_api.typedef.requests import CreateThreadRequest
+from leapfrogai_api.typedef.threads import CreateThreadRequest
 
 from leapfrogai_api.routers.supabase_session import Session
 

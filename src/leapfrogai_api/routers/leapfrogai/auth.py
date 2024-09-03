@@ -7,7 +7,7 @@ from pydantic import Field
 
 from leapfrogai_api.routers.supabase_session import Session
 from leapfrogai_api.data.crud_api_key import APIKeyItem, CRUDAPIKey
-from leapfrogai_api.typedef.requests import CreateAPIKeyRequest, ModifyAPIKeyRequest
+from leapfrogai_api.typedef.auth import CreateAPIKeyRequest, ModifyAPIKeyRequest
 
 
 router = APIRouter(prefix="/leapfrogai/v1/auth", tags=["leapfrogai/auth"])

@@ -2,7 +2,8 @@
 
 from fastapi import HTTPException, APIRouter, status
 from openai.types.beta import Thread, ThreadDeleted
-from leapfrogai_api.typedef.requests import ModifyThreadRequest, CreateThreadRequest
+
+from leapfrogai_api.typedef.threads import ModifyThreadRequest, CreateThreadRequest
 from leapfrogai_api.data.crud_thread import CRUDThread
 from leapfrogai_api.routers.supabase_session import Session
 from leapfrogai_api.utils.validate_tools import (

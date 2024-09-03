@@ -45,14 +45,14 @@ from leapfrogai_api.utils import get_model_config
 from leapfrogai_sdk.chat.chat_pb2 import (
     ChatCompletionResponse as ProtobufChatCompletionResponse,
 )
-from leapfrogai_api.backend.types import (
+from leapfrogai_api.typedef.chat import (
     ChatMessage,
-    SearchResponse,
     ChatCompletionResponse,
     ChatCompletionRequest,
     ChatChoice,
 )
-from leapfrogai_api.typedef.requests import RunCreateParamsRequest
+from leapfrogai_api.typedef.runs import RunCreateParamsRequest
+from leapfrogai_api.backend.types import SearchResponse
 
 
 class ThreadRunner(BaseModel):
