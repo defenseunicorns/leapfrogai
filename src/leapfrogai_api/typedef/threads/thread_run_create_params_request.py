@@ -1,7 +1,8 @@
 from __future__ import annotations
-
 import logging
 from typing import Iterable, AsyncGenerator, Any
+from pydantic import Field
+from starlette.responses import StreamingResponse
 
 from openai.types.beta import Thread
 from openai.types.beta.assistant_stream_event import ThreadCreated
@@ -18,10 +19,8 @@ from openai.types.beta.thread_create_and_run_params import (
     ThreadMessageAttachmentToolFileSearch,
 )
 from openai.types.beta.threads import MessageContent, Message, Run
-from pydantic import Field
-from starlette.responses import StreamingResponse
 
-from leapfrogai_api.routers.openai.requests.create_message_request import (
+from leapfrogai_api.typedef.messages import (
     CreateMessageRequest,
 )
 from leapfrogai_api.typedef.runs import (
