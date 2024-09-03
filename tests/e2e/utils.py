@@ -1,5 +1,7 @@
 import json
+import logging
 import os
+import traceback
 import pytest
 import requests
 
@@ -31,8 +33,10 @@ def create_test_user(
             },
         )
     except Exception:
-        # If the user already exists, we can ignore the error
-        pass
+        logging.error(
+            "Error creating user (likely because the user already exists): %s",
+            traceback.format_exc(),
+        )
 
     return get_jwt_token(anon_key, email, password)
 

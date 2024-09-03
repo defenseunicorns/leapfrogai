@@ -165,6 +165,7 @@ class IndexingService:
 
         current_time = int(time.time())
         expires_after, expires_at = request.get_expiry(current_time)
+        saved_placeholder = None
 
         try:
             # Create a placeholder vector store
@@ -211,6 +212,9 @@ class IndexingService:
             return saved_placeholder
         except Exception as exc:
             logging.error(exc)
+            # Clean up the placeholder vector store if it was created
+            if saved_placeholder:
+                await crud_vector_store.delete(id_=saved_placeholder.id)
             raise HTTPException(
                 status_code=status.HTTP_400_BAD_REQUEST,
                 detail="Unable to parse vector store request",
