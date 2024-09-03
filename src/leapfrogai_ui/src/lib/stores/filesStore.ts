@@ -1,6 +1,6 @@
 import { derived, writable } from 'svelte/store';
 import type { FileObject } from 'openai/resources/files';
-import type { FileRow, VectorStatus } from '$lib/types/files';
+import type { FileRow } from '$lib/types/files';
 import { toastStore } from '$stores/index';
 
 type FilesStore = {
@@ -27,18 +27,7 @@ const createFilesStore = () => {
     set,
     update,
     setUploading: (status: boolean) => update((old) => ({ ...old, uploading: status })),
-    // A file can belong to multiple vector stores.
-    // This helper adds/updates the vector store and id for the file's vectorStatus array
-    updateFileVectorStatus: (fileId: string, vectorStoreId: string, status: VectorStatus) => {
-      update((old) => {
-        const oldFile = old.files.find((file) => file.id === fileId);
-        if (oldFile) {
-          if (!oldFile.vectorStatus) oldFile.vectorStatus = {};
-          oldFile.vectorStatus[vectorStoreId] = status;
-        }
-        return { ...old };
-      });
-    },
+
     setFiles: (newFiles: FileRow[]) => {
       update((old) => ({ ...old, files: [...newFiles] }));
     },

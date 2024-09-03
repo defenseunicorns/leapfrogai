@@ -7,6 +7,7 @@
   import '$webComponents/CodeBlock';
   import { browser } from '$app/environment';
   import { filesStore, uiStore } from '$stores';
+  import vectorStatusStore from '$stores/vectorFilesStore';
 
   export let data;
 
@@ -31,9 +32,15 @@
   }
 
   const handleVectorStoreTableUpdate = (payload) => {
+    console.log('vectorStatusStore before', $vectorStatusStore);
+    console.log('payload', payload);
     const newFile = payload.new;
-    console.log('newFile', newFile);
-    filesStore.updateFileVectorStatus(newFile.id, newFile.vector_store_id, newFile.status);
+    if (payload.eventType === 'DELETE') {
+      vectorStatusStore.removeFile(payload.old.id, payload.old.vector_store_id);
+    } else {
+      vectorStatusStore.updateFileVectorStatus(newFile.id, newFile.vector_store_id, newFile.status);
+    }
+    console.log('vectorStatusStore update', $vectorStatusStore);
   };
   const handleFileTableUpdate = (payload) => {
     filesStore.updateWithUploadSuccess([payload.new]);
@@ -53,12 +60,7 @@
           .channel('vector_store_file')
           .on(
             'postgres_changes',
-            { event: 'INSERT', schema: 'public', table: 'vector_store_file' },
-            handleVectorStoreTableUpdate
-          )
-          .on(
-            'postgres_changes',
-            { event: 'UPDATE', schema: 'public', table: 'vector_store_file' },
+            { event: '*', schema: 'public', table: 'vector_store_file' },
             handleVectorStoreTableUpdate
           )
           .subscribe();

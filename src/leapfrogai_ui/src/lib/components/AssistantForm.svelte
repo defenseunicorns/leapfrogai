@@ -18,6 +18,7 @@
   import LFInput from '$components/LFInput.svelte';
   import LFLabel from '$components/LFLabel.svelte';
   import AssistantAvatar from '$components/AssistantAvatar.svelte';
+  import vectorStatusStore from '$stores/vectorFilesStore.js';
 
   export let data;
 
@@ -42,6 +43,10 @@
             variant: 'assistant-progress',
             timeout: -1 // no expiration
           });
+          // If the assistant is being edited and previously had files with "completed" vector status,
+          // we need to fetch those statuses. The realtime listener will not detect a change for those old files and
+          // will not update the vectorStatusStore.
+          await vectorStatusStore.updateAllStatusesForVector(vectorStoreId);
         } else {
           toastStore.addToast({
             kind: 'success',
