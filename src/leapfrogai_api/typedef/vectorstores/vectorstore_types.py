@@ -1,7 +1,3 @@
-"""Typing definitions for assistants API."""
-
-from __future__ import annotations
-
 import datetime
 from enum import Enum
 from typing import Literal
@@ -14,11 +10,6 @@ from openai.types.beta.thread_create_params import (
 )
 from openai.types.beta.vector_store import ExpiresAfter
 from pydantic import BaseModel, Field
-
-
-################
-# VECTOR STORES
-################
 
 
 class VectorStoreFileStatus(Enum):
@@ -137,36 +128,4 @@ class ListVectorStoresResponse(BaseModel):
     data: list[VectorStore] = Field(
         default=[],
         description="A list of VectorStore objects.",
-    )
-
-
-################
-# LEAPFROGAI Vector Stores
-################
-
-
-class SearchItem(BaseModel):
-    """Object representing a single item in a search result."""
-
-    id: str = Field(..., description="Unique identifier for the search item.")
-    vector_store_id: str = Field(
-        ..., description="ID of the vector store containing this item."
-    )
-    file_id: str = Field(..., description="ID of the file associated with this item.")
-    content: str = Field(..., description="The actual content of the item.")
-    metadata: dict = Field(
-        ..., description="Additional metadata associated with the item."
-    )
-    similarity: float = Field(
-        ..., description="Similarity score of this item to the query."
-    )
-
-
-class SearchResponse(BaseModel):
-    """Response object for RAG queries."""
-
-    data: list[SearchItem] = Field(
-        ...,
-        description="List of RAG items returned as a result of the query.",
-        min_length=0,
     )
