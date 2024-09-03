@@ -285,6 +285,7 @@
       await threadsStore.setSendingBlocked(false);
       return;
     } else {
+      if (sendDisabled) return;
       if (!data.thread?.id) {
         // create new thread
         await threadsStore.newThread($chatInput);
