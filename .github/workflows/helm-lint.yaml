@@ -80,3 +80,8 @@ jobs:
         if: always()
         run: |
           helm lint packages/whisper/chart --quiet
+
+      - name: Lint repeater Charts
+        if: always()
+        run: |
+          helm lint packages/repeater/chart --quiet

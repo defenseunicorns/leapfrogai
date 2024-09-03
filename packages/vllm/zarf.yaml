@@ -11,6 +11,14 @@ constants:
     value: "###ZARF_PKG_TMPL_IMAGE_VERSION###"
 
 variables:
+  - name: GPU_LIMIT
+    description: The GPU limit for the model inferencing. Must be 1 or more.
+    default: "1"
+    pattern: "^[1-9][0-9]*$"
+  - name: GPU_RUNTIME_NAME
+    description: The GPU runtime name for the model inferencing.
+    default: "nvidia"
+    pattern: "^(nvidia)?$"
   - name: PVC_SIZE
     description: Size of the PVC used for model storage.
     default: "15Gi"
@@ -35,7 +43,7 @@ components:
         version: 0.11.0
         # x-release-please-end
         valuesFiles:
-          - "vllm-values.yaml"
+          - "values/upstream-values.yaml"
     images:
       - ghcr.io/defenseunicorns/leapfrogai/vllm:###ZARF_PKG_TMPL_IMAGE_VERSION###
       - cgr.dev/chainguard/bash:latest

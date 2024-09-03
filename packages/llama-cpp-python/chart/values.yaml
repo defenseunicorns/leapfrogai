@@ -27,7 +27,7 @@ securityContext:
   runAsNonRoot: true
   capabilities:
     drop:
-    - ALL
+      - ALL
 
 service:
   type: ClusterIP
@@ -63,3 +63,24 @@ persistence:
   size: 15Gi
   accessModes: ReadWriteOnce
   storageClass: "local-path"
+
+modelInjectionContainer:
+  securityContext:
+    runAsUser: 65532
+    runAsGroup: 65532
+    runAsNonRoot: true
+    capabilities:
+      drop:
+        - ALL
+
+  resources:
+    limits:
+      memory: "128Mi"
+      cpu: "500m"
+    requests:
+      memory: "64Mi"
+      cpu: "200m"
+
+  volumeMounts:
+    - name: leapfrogai-pv-storage
+      mountPath: /data

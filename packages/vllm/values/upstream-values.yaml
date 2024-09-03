@@ -1,5 +1,5 @@
 image:
-  repository: ghcr.io/defenseunicorns/leapfrogai/whisper
+  repository: ghcr.io/defenseunicorns/leapfrogai/vllm
   tag: ###ZARF_CONST_IMAGE_VERSION###
 
 gpu:
