@@ -1,7 +1,7 @@
 """OpenAI compliant models router."""
 
 from fastapi import APIRouter
-from leapfrogai_api.backend.types import (
+from leapfrogai_api.typedef.models import (
     ModelResponse,
     ModelResponseModel,
 )
