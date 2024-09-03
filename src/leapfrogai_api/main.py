@@ -2,6 +2,7 @@
 
 import asyncio
 import logging
+import os
 from contextlib import asynccontextmanager
 
 from fastapi import FastAPI
@@ -28,17 +29,23 @@ from leapfrogai_api.routers.openai import (
 )
 from leapfrogai_api.utils import get_model_config
 
+logging.basicConfig(
+    level=os.getenv("LFAI_LOG_LEVEL", logging.INFO),
+    format="%(name)s: %(asctime)s | %(levelname)s | %(filename)s:%(lineno)s >>> %(message)s",
+)
+logger = logging.getLogger(__name__)
+
 
 # handle startup & shutdown tasks
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     """Handle startup and shutdown tasks for the FastAPI app."""
     # startup
-    logging.info("Starting to watch for configs")
+    logger.info("Starting to watch for configs with this being an info")
     asyncio.create_task(get_model_config().watch_and_load_configs())
     yield
     # shutdown
-    logging.info("Clearing model configs")
+    logger.info("Clearing model configs")
     asyncio.create_task(get_model_config().clear_all_models())
 
 
@@ -47,14 +54,9 @@ app = FastAPI(lifespan=lifespan)
 
 @app.exception_handler(RequestValidationError)
 async def validation_exception_handler(request, exc):
-    logging.error(f"The client sent invalid data!: {exc}")
+    logger.error(f"The client sent invalid data!: {exc}")
     return await request_validation_exception_handler(request, exc)
 
-
-logger = logging.getLogger(__name__)
-handler = logging.StreamHandler()
-handler.setFormatter(logging.Formatter("%(asctime)s - %(levelname)s - %(message)s"))
-logger.addHandler(handler)
 
 app.include_router(base_router)
 app.include_router(auth.router)
