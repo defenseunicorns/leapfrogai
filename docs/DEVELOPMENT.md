@@ -127,14 +127,14 @@ uds zarf package deploy zarf-package-*.tar.zst --confirm
 3. Create the UDS bundle, modifying the `uds-config.yaml` as required:
 
   ```bash
-  cd uds-bundles/dev/<cpu or gpu>
+  cd bundles/dev/<cpu or gpu>
   uds create . --confirm
   ```
 
 4. Deploy the UDS bundle to an existing [UDS Kubernetes cluster](../packages/k3d-gpu/README.md):
 
   ```bash
-  cd uds-bundles/dev/<cpu or gpu>
+  cd bundles/dev/<cpu or gpu>
   uds deploy <insert bundle name> --confirm
   ```
 
