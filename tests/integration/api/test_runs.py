@@ -12,7 +12,7 @@ from leapfrogai_api.main import app
 from leapfrogai_api.routers.openai.requests.create_modify_assistant_request import (
     CreateAssistantRequest,
 )
-from leapfrogai_api.routers.openai.requests.create_message_request import (
+from leapfrogai_api.typedef.messages.create_message_request import (
     CreateMessageRequest,
 )
 from leapfrogai_api.routers.openai.requests.create_thread_request import (
