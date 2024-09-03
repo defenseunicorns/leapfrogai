@@ -23,8 +23,6 @@ It adds a "three-dot" menu button with Popover, and delete confirmation Modal
   let editLabelText: string | undefined = label;
   let editLabelInputDisabled = false;
 
-  let lengthOverride = 'truncate';
-
   $: popperOpen = false;
   $: editMode = false;
 
@@ -112,7 +110,7 @@ It adds a "three-dot" menu button with Popover, and delete confirmation Modal
       }}
       class={twMerge(
         active ? activeClass : sClass,
-        lengthOverride,
+        'truncate',
         'flex-grow',
         'cursor-pointer',
         $$props.class

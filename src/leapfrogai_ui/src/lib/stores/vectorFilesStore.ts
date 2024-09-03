@@ -40,7 +40,10 @@ const createVectorStatusStore = () => {
     },
     removeFile: async (fileId: string, vectorStoreId: string) => {
       update((old) => {
-        old[fileId][vectorStoreId] = undefined;
+        delete old[fileId][vectorStoreId];
+        if (Object.keys(old[fileId]).length === 0) {
+          delete old[fileId];
+        }
         return { ...old };
       });
     }

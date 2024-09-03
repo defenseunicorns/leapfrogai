@@ -1,5 +1,5 @@
 import { error, fail, redirect } from '@sveltejs/kit';
-import { superValidate } from 'sveltekit-superforms';
+import { superValidate, withFiles } from 'sveltekit-superforms';
 import { yup } from 'sveltekit-superforms/adapters';
 import { editAssistantInputSchema } from '$lib/schemas/assistants';
 import { env } from '$env/dynamic/private';
@@ -77,6 +77,8 @@ export const actions: Actions = {
     const deleteAvatar = !form.data.avatar && !form.data.avatarFile;
     const filePath = form.data.id;
 
+    console.log(form.data);
+
     // Update avatar if new file uploaded
     if (form.data.avatarFile) {
       const { error } = await supabase.storage
@@ -91,9 +93,9 @@ export const actions: Actions = {
       if (!form.data.avatar) {
         // Delete avatar
         const { error: deleteAvatarError } = await supabase.storage
-          .from('avatars')
-          .remove(['folder/avatar1.png']);
-
+          .from('assistant_avatars')
+          .remove([`${filePath}`]);
+        console.error('Error deleting assistant avatar:', deleteAvatarError);
         if (deleteAvatarError) return fail(500, { message: 'error deleting avatar' });
       }
     }
@@ -179,6 +181,11 @@ export const actions: Actions = {
       console.error(`Error updating assistant: ${e}`);
       return fail(500, { message: 'Error updating assistant.' });
     }
-    return { form, assistant, fileIds: data_sources, redirectUrl: '/chat/assistants-management' };
+    return withFiles({
+      form,
+      assistant,
+      fileIds: data_sources,
+      redirectUrl: '/chat/assistants-management'
+    });
   }
 };

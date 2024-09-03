@@ -32,15 +32,12 @@
   }
 
   const handleVectorStoreTableUpdate = (payload) => {
-    console.log('vectorStatusStore before', $vectorStatusStore);
-    console.log('payload', payload);
     const newFile = payload.new;
     if (payload.eventType === 'DELETE') {
       vectorStatusStore.removeFile(payload.old.id, payload.old.vector_store_id);
     } else {
       vectorStatusStore.updateFileVectorStatus(newFile.id, newFile.vector_store_id, newFile.status);
     }
-    console.log('vectorStatusStore update', $vectorStatusStore);
   };
   const handleFileTableUpdate = (payload) => {
     filesStore.updateWithUploadSuccess([payload.new]);

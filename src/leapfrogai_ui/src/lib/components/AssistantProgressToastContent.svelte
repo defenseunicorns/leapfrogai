@@ -14,11 +14,14 @@
   $: filesToDisplay = $filesStore.files.filter((file) => fileIds.includes(file.id));
 
   $: allCompleted =
-    filesToDisplay.length > 0 &&
-    filesToDisplay.every(
-      (file) =>
-        $vectorStatusStore[file.id] && $vectorStatusStore[file.id][vectorStoreId] === 'completed'
-    );
+    filesToDisplay.length === 0
+      ? true
+      : filesToDisplay.length > 0 &&
+        filesToDisplay.every(
+          (file) =>
+            $vectorStatusStore[file.id] &&
+            $vectorStatusStore[file.id][vectorStoreId] === 'completed'
+        );
 
   $: errorStatus = filesToDisplay.some(
     (file) => $vectorStatusStore[file.id] && $vectorStatusStore[file.id][vectorStoreId] === 'failed'

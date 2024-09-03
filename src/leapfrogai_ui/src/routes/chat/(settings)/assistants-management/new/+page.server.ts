@@ -1,4 +1,4 @@
-import {superValidate} from 'sveltekit-superforms';
+import {superValidate, withFiles} from 'sveltekit-superforms';
 import type {Actions, PageServerLoad} from './$types';
 import {fail} from '@sveltejs/kit';
 import {yup} from 'sveltekit-superforms/adapters';
@@ -116,6 +116,6 @@ export const actions: Actions = {
         return fail(500, { message: 'Error adding avatar to assistant.' });
       }
     }
-    return { form, assistant: createdAssistant, fileIds: data_sources, redirectUrl: '/chat/assistants-management' };
+    return withFiles({ form, assistant: createdAssistant, fileIds: data_sources, redirectUrl: '/chat/assistants-management' });
   }
 };
