@@ -1,7 +1,7 @@
 FROM cgr.dev/chainguard/bash:latest
 
 ARG TARGETPLATFORM \
-    version="1.169.8" \
+    SUPABASE_CLI_VERSION="1.169.8" \
     MIGRATIONS_DIR
 
 RUN test -n "$MIGRATIONS_DIR" || (echo "MIGRATIONS_DIR is required" && false)
@@ -9,7 +9,7 @@ RUN test -n "$MIGRATIONS_DIR" || (echo "MIGRATIONS_DIR is required" && false)
 # Download the supabase cli
 RUN mkdir -p /usr/local/bin && \
     ARCH=$(echo $TARGETPLATFORM | cut -d "/" -f2) && \
-    curl -LO https://github.com/supabase/cli/releases/download/v${version}/supabase_linux_${ARCH}.tar.gz && \
+    curl -LO https://github.com/supabase/cli/releases/download/v${SUPABASE_CLI_VERSION}/supabase_linux_${ARCH}.tar.gz && \
     tar -xzf supabase_linux_${ARCH}.tar.gz -C /usr/local/bin/ && \
     rm supabase_linux_${ARCH}.tar.gz
 

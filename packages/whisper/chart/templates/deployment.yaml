@@ -47,7 +47,8 @@ spec:
           resources:
             {{- toYaml .Values.modelInjectionContainer.resources | nindent 12 }}
           volumeMounts:
-            {{- toYaml .Values.modelInjectionContainer.volumeMounts | nindent 12 }}
+            - name: leapfrogai-pv-storage
+              mountPath: "/data"
       volumes:
         - name: leapfrogai-pv-storage
           persistentVolumeClaim:
