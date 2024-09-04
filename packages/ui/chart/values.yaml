@@ -26,7 +26,7 @@ securityContext:
 
 env:
   - name: LEAPFROGAI_API_BASE_URL
-    value: "ai"
+    value: "http://leapfrogai-api.leapfrogai.svc.cluster.local:8080"
   - name: ORIGIN
     value: "https://ai.uds.dev"
   - name: DEFAULT_MODEL
@@ -56,9 +56,11 @@ env:
         name: sso-client-uds-supabase
         key: secret
 
-# Only required when Supabase is hosted via PaaS outside of the cluster
 extraEnv:
+  # Only required when Supabase is hosted via PaaS outside of the cluster
   supabaseAnonKey: ""
+  # UDS package CR hosting subdomain (e.g. `ai` will produce a VirtualService with `ai.uds.dev`)
+  host: "ai"
 
 migration:
   image:
@@ -82,10 +84,6 @@ migration:
   securityContext:
     runAsUser: 65532
     runAsGroup: 65532
-    runAsNonRoot: true
-    capabilities:
-      drop:
-        - ALL
 
 resources:
   # We usually recommend not to specify default resources and to leave this as a conscious

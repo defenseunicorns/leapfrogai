@@ -11,7 +11,7 @@ spec:
       - service: {{ include "chart.fullname" . }}
         podLabels:
           {{- include "chart.selectorLabels" . | nindent 10 }}
-        host: {{ include "chart.fullname" . }}
+        host: {{ .Values.extraEnv.host }}
         gateway: tenant
         port: {{ .Values.service.port }}
 

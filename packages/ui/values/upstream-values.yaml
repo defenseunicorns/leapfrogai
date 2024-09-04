@@ -6,7 +6,7 @@ env:
   - name: LEAPFROGAI_API_BASE_URL
     value: "###ZARF_VAR_LEAPFROGAI_API_BASE_URL###"
   - name: ORIGIN
-    value: "https://###ZARF_VAR_DOMAIN###.###ZARF_VAR_SUBDOMAIN###"
+    value: "https://###ZARF_VAR_SUBDOMAIN###.###ZARF_VAR_DOMAIN###"
   - name: DEFAULT_MODEL
     value: "###ZARF_VAR_MODEL###"
   - name: DEFAULT_SYSTEM_PROMPT
@@ -34,9 +34,11 @@ env:
         name: sso-client-uds-supabase
         key: secret
 
-# Only required when Supabase is hosted via PaaS outside of the cluster
 extraEnv:
+  # Only required when Supabase is hosted via PaaS outside of the cluster
   supabaseAnonKey: "###ZARF_VAR_SUPABASE_ANON_KEY###"
+  # UDS package CR hosting subdomain (e.g. `ai` will produce a VirtualService with `ai.uds.dev`)
+  host: "###ZARF_VAR_SUBDOMAIN###"
 
 migration:
   image:

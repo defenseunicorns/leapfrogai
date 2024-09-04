@@ -1,22 +1,3 @@
-podSecurityContext:
-  runAsNonRoot: true
-  fsGroup: 65532
-
-replicaCount: 1
-
-podAnnotations: {}
-
-nodeSelector: {}
-
-tolerations: []
-
-affinity: {}
-
-strategy:
-  rollingUpdate:
-    maxUnavailable: 0
-  type: RollingUpdate
-
 api:
   expose: true
 
@@ -73,10 +54,6 @@ api:
     securityContext:
       runAsUser: 65532
       runAsGroup: 65532
-      runAsNonRoot: true
-      capabilities:
-        drop:
-          - ALL
 
     env:
       - name: POSTGRES_PASSWORD
@@ -114,3 +91,22 @@ kiwigrid:
       value: "true"
     - name: NAMESPACE
       value: leapfrogai
+
+podSecurityContext:
+  runAsNonRoot: true
+  fsGroup: 65532
+
+replicaCount: 1
+
+podAnnotations: {}
+
+nodeSelector: {}
+
+tolerations: []
+
+affinity: {}
+
+strategy:
+  rollingUpdate:
+    maxUnavailable: 0
+  type: RollingUpdate

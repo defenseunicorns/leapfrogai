@@ -1,0 +1,7 @@
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: {{ include "chart.serviceAccountName" . }}
+  namespace: {{ default "leapfrogai" .Release.Namespace }}
+  labels:
+    {{- include "chart.labels" . | nindent 4 }}
