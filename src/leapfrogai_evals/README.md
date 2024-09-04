@@ -24,6 +24,45 @@ python -m pip install .
 python src/main.py
 ```
 
+## Question/Answer Evaluation
+
+Question and answer pairs are a valuable setup for evaluating LLM systems as a hole. Within LeapfrogAI, this type of evaluation takes an input question, expected context, and expected output, and compares them to the retrieved context from RAG and the system's final output.
+
+### Data
+The LeapfrogAI QA evaluation uses a custom dataset available on HuggingFace: [defenseunicorns/LFAI_RAG_qa_v1](https://huggingface.co/datasets/defenseunicorns/LFAI_RAG_qa_v1)
+
+LFAI_RAG_qa_v1 contains 36 question/answer/context entries that are intended to be used for LLM-as-a-judge enabled RAG Evaluations.
+
+Example:
+
+```json
+{
+    "input": "What requirement must be met to run VPI PVA algorithms in a Docker container?",
+    "actual_output": null,
+    "expected_output": "To run VPI PVA algorithms in a Docker container, the same VPI version must be installed on the Docker host.",
+    "context": [
+        "2.6.\nCompute\nStack\nThe\nfollowing\nDeep\nLearning-related\nissues\nare\nnoted\nin\nthis\nrelease.\nIssue\nDescription\n4564075\nTo\nrun\nVPI\nPVA\nalgorithms\nin\na\ndocker\ncontainer,\nthe\nsame\nVPI\nversion\nhas\nto\nbe\ninstalled\non \nthe\ndocker\nhost.\n2.7.\nDeepstream\nIssue\nDescription\n4325898\nThe\npipeline\ngets\nstuck\nfor\nmulti\u0000lesrc\nwhen\nusing\nnvv4l2decoder.\nDS\ndevelopers\nuse \nthe\npipeline\nto\nrun\ndecode\nand\ninfer\njpeg\nimages.\nNVIDIA\nJetson\nLinux\nRelease\nNotes\nRN_10698-r36.3\n|\n11"
+    ],
+    "source_file": "documents/Jetson_Linux_Release_Notes_r36.3.pdf"
+}
+```
+
+### Experimental Design
+The LeapfrogAI QA evaluation uses the following process:
+
+- build a vector store and upload the contextual documents from the qa dataset
+- for each row in the dataset:
+    - create an assistant
+    - prompt the LLM to answer the input question using the contextual documents
+    - record the following:
+        - the model response
+        - the retrieved context from RAG
+    - delete the assistant
+- delete the contextless documents
+- delete the vector store
+
+Various metrics can then be calculated using these individual pieces.
+
 ## Needle in a Haystack (NIAH)
 
 A Needle in a Haystack evaluation is used to evaluate the performance of the LeapfrogAI RAG system in tasks that require finding a specific piece of information (the "needle") within a large body of text (the "haystack").
