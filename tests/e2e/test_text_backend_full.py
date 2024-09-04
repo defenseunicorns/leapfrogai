@@ -5,7 +5,7 @@ import pytest
 from openai import OpenAI
 from openai.types.beta.vector_store import VectorStore
 
-from leapfrogai_api.backend.types import VectorStoreStatus
+from leapfrogai_api.typedef.vectorstores import VectorStoreStatus
 
 
 def download_arxiv_pdf():

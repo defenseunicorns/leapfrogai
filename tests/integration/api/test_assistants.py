@@ -13,11 +13,11 @@ from openai.types.beta.assistant import ToolResources
 from openai.types.beta.vector_store import ExpiresAfter
 
 import leapfrogai_api.backend.rag.index
-from leapfrogai_api.backend.types import CreateVectorStoreRequest
 from leapfrogai_api.routers.openai.vector_stores import router as vector_store_router
 from leapfrogai_api.routers.openai.files import router as files_router
 from leapfrogai_api.routers.openai.assistants import router as assistants_router
-from leapfrogai_api.routers.openai.requests.create_modify_assistant_request import (
+from leapfrogai_api.typedef.vectorstores import CreateVectorStoreRequest
+from leapfrogai_api.typedef.assistants import (
     CreateAssistantRequest,
     ModifyAssistantRequest,
 )

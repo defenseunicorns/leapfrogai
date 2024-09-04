@@ -13,7 +13,7 @@ from openai.types.beta.vector_store import ExpiresAfter
 from langchain_core.embeddings.fake import FakeEmbeddings
 
 import leapfrogai_api.backend.rag.index
-from leapfrogai_api.backend.types import (
+from leapfrogai_api.typedef.vectorstores import (
     CreateVectorStoreRequest,
     ModifyVectorStoreRequest,
 )
