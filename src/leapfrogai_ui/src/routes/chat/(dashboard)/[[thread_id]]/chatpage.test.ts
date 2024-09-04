@@ -110,7 +110,7 @@ describe('when there is an active thread selected', () => {
 
     expect(input.value).toBe('');
 
-    expect(screen.queryByText(ERROR_GETTING_AI_RESPONSE_TOAST.subtitle!)).not.toBeInTheDocument();
+    expect(screen.queryByText(ERROR_GETTING_AI_RESPONSE_TOAST().subtitle!)).not.toBeInTheDocument();
     await screen.findByText(fakeAiTextResponse);
   });
 
@@ -157,7 +157,7 @@ describe('when there is an active thread selected', () => {
     await userEvent.type(input, question);
     await userEvent.click(submitBtn);
 
-    await screen.findByText(ERROR_GETTING_AI_RESPONSE_TOAST.subtitle!);
+    await screen.findByText(ERROR_GETTING_AI_RESPONSE_TOAST().subtitle!);
   });
 
   it('displays an error message when there is an error saving the response', async () => {
@@ -169,8 +169,7 @@ describe('when there is an active thread selected', () => {
 
     await userEvent.type(input, question);
     await userEvent.click(submitBtn);
-    screen.debug(undefined, 300000);
-    await screen.findByText(ERROR_SAVING_MSG_TOAST.subtitle!);
+    await screen.findByText(ERROR_SAVING_MSG_TOAST().subtitle!);
   });
 
   it('sends a toast when a message response is cancelled', async () => {
