@@ -104,7 +104,8 @@ const csp: Handle = async ({ event, resolve }) => {
       process.env.SUPABASE_AUTH_EXTERNAL_KEYCLOAK_URL,
       `wss://${process.env.PUBLIC_SUPABASE_URL!.replace('https://', '')}` // supabase realtime websocket
     ],
-    'child-src': ["'none'"], // note - this will break the annotations story and will need to updated to allow the correct resource
+    'child-src': ["'none'"],
+    'frame-src': [`blob: 'self'`],
     'frame-ancestors': ["'none'"]
   };
 

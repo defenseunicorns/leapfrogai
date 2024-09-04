@@ -9,8 +9,8 @@
   import Message from '$components/Message.svelte';
   import { getMessageText } from '$helpers/threads';
   import { getUnixSeconds } from '$helpers/dates.js';
-  import { NO_SELECTED_ASSISTANT_ID } from '$constants';
-
+  import { FILE_UPLOAD_PROMPT, NO_SELECTED_ASSISTANT_ID } from '$constants';
+  import { twMerge } from 'tailwind-merge';
   import {
     isRunAssistantMessage,
     resetMessages,
@@ -24,12 +24,17 @@
   } from '$constants/toastMessages';
   import SelectAssistantDropdown from '$components/SelectAssistantDropdown.svelte';
   import { PaperPlaneOutline, StopOutline } from 'flowbite-svelte-icons';
+  import type { FileMetadata } from '$lib/types/files';
+  import UploadedFileCards from '$components/UploadedFileCards.svelte';
+  import ChatFileUploadForm from '$components/ChatFileUploadForm.svelte';
 
   export let data;
 
   /** LOCAL VARS **/
   let lengthInvalid: boolean; // bound to child LFTextArea
   let assistantsList: Array<{ id: string; text: string }>;
+  let uploadingFiles = false;
+  let attachedFileMetadata: FileMetadata[] = [];
   /** END LOCAL VARS **/
 
   /** REACTIVE STATE **/
@@ -62,11 +67,18 @@
   // assistant stream has completed
   $: $status, handleCompletedAssistantResponse();
 
+  $: sendDisabled = uploadingFiles || !$chatInput || lengthInvalid || $threadsStore.sendingBlocked;
+
+  $: if (assistantMode) {
+    resetFiles(); // attachment of files w/assistants disabled
+  }
+
   /** END REACTIVE STATE **/
 
-  onMount(() => {
-    componentHasMounted = true;
-  });
+  const resetFiles = () => {
+    uploadingFiles = false;
+    attachedFileMetadata = [];
+  };
 
   const updateStreamingChatMessage = () => {
     if ($isLoading && latestChatMessage?.role !== 'user')
@@ -151,7 +163,7 @@
     },
     onError: async () => {
       toastStore.addToast({
-        ...ERROR_GETTING_AI_RESPONSE_TOAST
+        ...ERROR_GETTING_AI_RESPONSE_TOAST()
       });
       await threadsStore.setSendingBlocked(false);
     }
@@ -173,7 +185,7 @@
       // ignore this error b/c it is expected on cancel
       if (e.message !== 'BodyStreamBuffer was aborted') {
         toastStore.addToast({
-          ...ERROR_GETTING_ASSISTANT_MSG_TOAST
+          ...ERROR_GETTING_ASSISTANT_MSG_TOAST()
         });
       }
       await threadsStore.setSendingBlocked(false);
@@ -201,24 +213,53 @@
   };
 
   const sendChatMessage = async (e: SubmitEvent | KeyboardEvent) => {
-    await threadsStore.setSendingBlocked(true);
-    if (data.thread?.id) {
-      // Save with API
-      try {
+    try {
+      await threadsStore.setSendingBlocked(true);
+      if (data.thread?.id) {
+        let extractedFilesTextString = JSON.stringify(attachedFileMetadata);
+
+        if (attachedFileMetadata.length > 0) {
+          // Save the text of the document as its own message before sending actual question
+          const contextMsg = await saveMessage({
+            thread_id: data.thread.id,
+            content: `${FILE_UPLOAD_PROMPT}: ${extractedFilesTextString}`,
+            role: 'user',
+            metadata: {
+              hideMessage: 'true'
+            },
+            lengthOverride: true
+          });
+          setChatMessages([
+            ...$chatMessages,
+            { ...contextMsg, content: getMessageText(contextMsg) }
+          ]);
+        }
+
+        // Save with API
+
         const newMessage = await saveMessage({
           thread_id: data.thread.id,
           content: $chatInput,
-          role: 'user'
+          role: 'user',
+          ...(attachedFileMetadata.length > 0
+            ? {
+                metadata: {
+                  filesMetadata: JSON.stringify(attachedFileMetadata)
+                }
+              }
+            : null)
         });
+
         // store user input
         await threadsStore.addMessageToStore(newMessage);
         submitChatMessage(e); // submit to AI (/api/chat)
-      } catch {
-        toastStore.addToast({
-          ...ERROR_SAVING_MSG_TOAST
-        });
-        await threadsStore.setSendingBlocked(false);
+        resetFiles();
       }
+    } catch {
+      toastStore.addToast({
+        ...ERROR_SAVING_MSG_TOAST()
+      });
+      await threadsStore.setSendingBlocked(false);
     }
   };
 
@@ -244,6 +285,7 @@
       await threadsStore.setSendingBlocked(false);
       return;
     } else {
+      if (sendDisabled) return;
       if (!data.thread?.id) {
         // create new thread
         await threadsStore.newThread($chatInput);
@@ -257,11 +299,13 @@
         });
         return;
       }
+
       assistantMode ? await sendAssistantMessage(e) : await sendChatMessage(e);
     }
   };
 
   onMount(async () => {
+    componentHasMounted = true;
     assistantsList = [...(data.assistants || [])].map((assistant) => ({
       id: assistant.id,
       text: assistant.name || 'unknown'
@@ -289,15 +333,17 @@
   <div class="no-scrollbar flex flex-grow flex-col-reverse overflow-auto px-8">
     <div id="messages-container">
       {#each activeThreadMessages as message, index (message.id)}
-        <Message
-          messages={activeThreadMessages}
-          streamedMessages={isRunAssistantMessage(message) ? $assistantMessages : $chatMessages}
-          {message}
-          isLastMessage={!$threadsStore.streamingMessage &&
-            index === activeThreadMessages.length - 1}
-          append={assistantMode ? assistantAppend : chatAppend}
-          setMessages={isRunAssistantMessage(message) ? setAssistantMessages : setChatMessages}
-        />
+        {#if message.metadata?.hideMessage !== 'true'}
+          <Message
+            messages={activeThreadMessages}
+            streamedMessages={isRunAssistantMessage(message) ? $assistantMessages : $chatMessages}
+            {message}
+            isLastMessage={!$threadsStore.streamingMessage &&
+              index === activeThreadMessages.length - 1}
+            append={assistantMode ? assistantAppend : chatAppend}
+            setMessages={isRunAssistantMessage(message) ? setAssistantMessages : setChatMessages}
+          />
+        {/if}
       {/each}
 
       {#if $threadsStore.streamingMessage}
@@ -309,27 +355,39 @@
   <div id="chat-tools" class="flex flex-col gap-2 px-8">
     <SelectAssistantDropdown assistants={data?.assistants || []} />
 
-    <div class="flex items-end justify-around gap-2">
-      <div class="flex flex-grow items-center rounded-lg bg-gray-50 px-3 py-2 dark:bg-gray-700">
+    <div class="flex flex-grow flex-col rounded-lg bg-gray-50 px-2 dark:bg-gray-700">
+      <UploadedFileCards bind:attachedFileMetadata />
+
+      <div id="chat-row" class="flex w-full items-center gap-1">
+        {#if !assistantMode}
+          <ChatFileUploadForm bind:form={data.form} bind:uploadingFiles bind:attachedFileMetadata />
+        {/if}
         <LFTextArea
           id="chat"
           data-testid="chat-input"
-          class="mx-4 flex-grow resize-none bg-white dark:bg-gray-800"
+          class="flex-grow resize-none border-none bg-white focus:ring-0 dark:bg-gray-700"
           placeholder="Type your message here..."
           value={chatInput}
           bind:showLengthError={lengthInvalid}
           {onSubmit}
           maxRows={10}
-        />
+          innerWrappedClass="p-px bg-white dark:bg-gray-700"
+        ></LFTextArea>
+
         {#if !$isLoading && $status !== 'in_progress'}
           <ToolbarButton
             data-testid="send message"
             type="submit"
             color="blue"
-            class="rounded-full text-primary-600 dark:text-primary-500"
-            disabled={!$chatInput || lengthInvalid || $threadsStore.sendingBlocked}
+            class={twMerge(
+              'rounded-full text-primary-600 dark:text-primary-500',
+              sendDisabled && 'hover:dark:bg-gray-700 '
+            )}
+            disabled={sendDisabled}
           >
-            <PaperPlaneOutline class="h-6 w-6 rotate-45" />
+            <PaperPlaneOutline
+              class={twMerge('h-6 w-6 rotate-45', sendDisabled && 'text-primary-100')}
+            />
             <span class="sr-only">Send message</span>
           </ToolbarButton>
         {:else}

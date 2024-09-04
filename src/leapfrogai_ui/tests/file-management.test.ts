@@ -14,9 +14,9 @@ import {
   deleteTestFilesWithApi,
   initiateDeletion,
   testFileUpload,
-  uploadFile
+  uploadFiles
 } from './helpers/fileHelpers';
-import { sendMessage } from './helpers/threadHelpers';
+import { getLastUrlParam, sendMessage } from './helpers/threadHelpers';
 import {
   loadFileManagementPage,
   navigateToChatPage,
@@ -40,8 +40,7 @@ test('it can navigate to the last visited thread with breadcrumbs', async ({ pag
   const messages = page.getByTestId('message');
   await expect(messages).toHaveCount(2);
 
-  const urlParts = new URL(page.url()).pathname.split('/');
-  const threadId = urlParts[urlParts.length - 1];
+  const threadId = getLastUrlParam(page);
 
   await navigateToFileManagementPage(page);
   await page.getByTestId('breadcrumbs').getByRole('link', { name: 'Chat' }).click();
@@ -54,58 +53,58 @@ test('it can navigate to the file management page', async ({ page }) => {
 
 test('it can upload a pdf file', async ({ page, openAIClient }) => {
   const filename = await createPDF();
-  await testFileUpload(filename, page, openAIClient);
+  await testFileUpload(filename, page);
 });
 
-test('it can upload a .txt file', async ({ page, openAIClient }) => {
+test('it can upload a .txt file', async ({ page }) => {
   const filename = createTextFile();
-  await testFileUpload(filename, page, openAIClient);
+  await testFileUpload(filename, page);
 });
 
-test('it can upload a .text file', async ({ page, openAIClient }) => {
+test('it can upload a .text file', async ({ page }) => {
   const filename = createTextFile({ extension: '.text' });
-  await testFileUpload(filename, page, openAIClient);
+  await testFileUpload(filename, page);
 });
 
-test('it can upload a .docx word file', async ({ page, openAIClient }) => {
+test('it can upload a .docx word file', async ({ page }) => {
   const filename = createWordFile();
-  await testFileUpload(filename, page, openAIClient);
+  await testFileUpload(filename, page);
 });
 
-test('it can upload a .doc word file', async ({ page, openAIClient }) => {
+test('it can upload a .doc word file', async ({ page }) => {
   const filename = createWordFile({ extension: '.doc' });
-  await testFileUpload(filename, page, openAIClient);
+  await testFileUpload(filename, page);
 });
 
-test('it can upload a .xlsx excel file', async ({ page, openAIClient }) => {
+test('it can upload a .xlsx excel file', async ({ page }) => {
   const filename = createExcelFile();
-  await testFileUpload(filename, page, openAIClient);
+  await testFileUpload(filename, page);
 });
 
-test('it can upload a .xls excel file', async ({ page, openAIClient }) => {
+test('it can upload a .xls excel file', async ({ page }) => {
   const filename = createExcelFile({ extension: '.xls' });
-  await testFileUpload(filename, page, openAIClient);
+  await testFileUpload(filename, page);
 });
 
-test('it can upload a .csv file', async ({ page, openAIClient }) => {
+test('it can upload a .csv file', async ({ page }) => {
   const filename = createCSVFile();
-  await testFileUpload(filename, page, openAIClient);
+  await testFileUpload(filename, page);
 });
 
 // pptxgenjs library not capable of creating .ppt files, so only testing .pptx
-test('it can upload a .pptx powerpoint file', async ({ page, openAIClient }) => {
+test('it can upload a .pptx powerpoint file', async ({ page }) => {
   const filename = await createPowerpointFile();
-  await testFileUpload(filename, page, openAIClient);
+  await testFileUpload(filename, page);
 });
 
 test('confirms any affected assistants then deletes multiple files', async ({ page }) => {
   const filename1 = await createPDF();
   const filename2 = await createPDF();
 
-  await uploadFile(page, filename1);
+  await uploadFiles({ page, filenames: [filename1] });
   await expect(page.getByText(`${filename1} imported successfully`)).toBeVisible();
   await expect(page.getByText(`${filename1} imported successfully`)).not.toBeVisible(); // wait for upload to finish
-  await uploadFile(page, `${filename2}`);
+  await uploadFiles({ page, filenames: [`${filename2}`] });
   await expect(page.getByText(`${filename2} imported successfully`)).toBeVisible();
   await expect(page.getByText(`${filename2} imported successfully`)).not.toBeVisible();
 
@@ -125,7 +124,7 @@ test('confirms any affected assistants then deletes multiple files', async ({ pa
 test('it cancels the delete confirmation modal', async ({ page, openAIClient }) => {
   const filename = await createPDF();
 
-  await uploadFile(page, filename);
+  await uploadFiles({ page, filenames: [filename] });
   await expect(page.getByText(`${filename} imported successfully`)).toBeVisible();
   await expect(page.getByText(`${filename} imported successfully`)).not.toBeVisible(); // wait for upload to finish
 
@@ -157,7 +156,7 @@ test('shows an error toast when there is an error deleting a file', async ({ pag
       }
     }
   });
-  await uploadFile(page, filename);
+  await uploadFiles({ page, filenames: [filename] });
 
   await expect(page.getByText(`${filename} imported successfully`)).toBeVisible();
   await expect(page.getByText(`${filename} imported successfully`)).not.toBeVisible(); // wait for upload to finish
@@ -185,7 +184,7 @@ test('it shows toast when there is an error submitting the form', async ({ page 
 
   const filename = await createPDF();
 
-  await uploadFile(page, filename);
+  await uploadFiles({ page, filenames: [filename] });
 
   await expect(page.getByText('Import Failed')).toBeVisible();
 });
@@ -193,7 +192,7 @@ test('it shows toast when there is an error submitting the form', async ({ page 
 test('it can download a file', async ({ page }) => {
   const filename = await createPDF();
 
-  await uploadFile(page, filename);
+  await uploadFiles({ page, filenames: [filename] });
   await expect(page.getByText(`${filename} imported successfully`)).toBeVisible();
   await expect(page.getByText(`${filename} imported successfully`)).not.toBeVisible(); // wait for upload to finish
 
@@ -214,7 +213,7 @@ test('it notifies the user when a file has uploaded successfully, even when leav
   page
 }) => {
   const filename = await createPDF();
-  await uploadFile(page, filename);
+  await uploadFiles({ page, filenames: [filename] });
   await page.getByTestId('breadcrumbs').getByRole('link', { name: 'Chat' }).click();
   await expect(page.getByText(`${filename} imported successfully`)).not.toBeVisible();
   await expect(page.getByText(`${filename} imported successfully`)).toBeVisible();

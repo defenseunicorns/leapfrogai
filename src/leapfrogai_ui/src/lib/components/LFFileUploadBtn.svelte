@@ -11,6 +11,7 @@
   export let disabled = false;
   export let size: 'xs' | 'sm' | 'md' | 'lg' | 'xl' | 'none' = 'sm';
   export let outline: boolean = false;
+  export let testId: string | null = null; // for the button element
 
   const dispatch = createEventDispatcher();
 </script>
@@ -32,10 +33,11 @@
     on:change={(e) => {
       dispatch('change', Array.from(e.currentTarget.files ?? []));
     }}
-    class="sr-only"
     {...$$restProps}
+    class="sr-only"
   />
   <Button
+    data-testid={testId}
     {outline}
     {size}
     {disabled}

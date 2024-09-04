@@ -178,10 +178,10 @@ test('it shows a loading skeleton when a response is pending', async ({ page, op
 
   const messages = page.getByTestId('message');
   await sendMessage(page, newMessage1);
-  await expect(page.getByRole('status')).toBeVisible();
+  await expect(page.getByTestId('loading-msg')).toBeVisible();
   await waitForResponseToComplete(page);
   await expect(messages).toHaveCount(2);
-  await expect(page.getByRole('status')).not.toBeVisible();
+  await expect(page.getByTestId('loading-msg')).not.toBeVisible();
 
   // Cleanup
   await deleteActiveThread(page, openAIClient);

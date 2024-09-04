@@ -31,6 +31,7 @@ spec:
         securityContext:
           runAsUser: {{ .Values.leapfrogai.securityContext.runAsUser }}
           runAsGroup: {{ .Values.leapfrogai.securityContext.runAsGroup }}
-          fsGroup: {{ .Values.leapfrogai.securityContext.fsGroup }}
+      securityContext:
+        fsGroup: {{ .Values.leapfrogai.securityContext.fsGroup }}
       restartPolicy: Never
   backoffLimit: 4
