@@ -21,8 +21,8 @@
   import vectorStatusStore from '$stores/vectorStatusStore.js';
 
   export let data;
+  export let isEditMode = $page.url.pathname.includes('edit');
 
-  let isEditMode = $page.url.pathname.includes('edit');
   let bypassCancelWarning = false;
 
   const { form, errors, enhance, submitting, isTainted, delayed } = superForm(data.form, {

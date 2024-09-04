@@ -4,19 +4,15 @@
   import { CheckOutline, ClockOutline, CloseCircleOutline } from 'flowbite-svelte-icons';
   import { createEventDispatcher, onMount } from 'svelte';
   import vectorStatusStore from '$stores/vectorStatusStore';
-  import { FILE_VECTOR_TIMEOUT_MSG_TOAST } from '$constants/toastMessages';
 
   export let toastId: string;
   export let vectorStoreId: string;
   export let fileIds: string[];
 
-  // Processing timeout
-  export let timeout: number = 5 * 60 * 1000;
   // Auto dismiss toast after success
   export let successTimeout: number = 5000;
 
   const dispatch = createEventDispatcher();
-  let timeoutId: number;
   let completedTimeoutId: number;
 
   $: filesToDisplay = $filesStore.files.filter((file) => fileIds.includes(file.id));
@@ -43,15 +39,9 @@
       toastStore.dismissToast(toastId);
     }, successTimeout);
   }
-  // If the files are still processing after x minutes, dismiss the toast and
-  // pop a new error toast
+
   onMount(() => {
-    timeoutId = setTimeout(() => {
-      toastStore.addToast(FILE_VECTOR_TIMEOUT_MSG_TOAST());
-      toastStore.dismissToast(toastId);
-    }, timeout);
     return () => {
-      clearTimeout(timeoutId);
       clearTimeout(completedTimeoutId);
     };
   });

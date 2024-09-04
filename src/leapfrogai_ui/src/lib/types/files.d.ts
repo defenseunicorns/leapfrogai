@@ -9,9 +9,6 @@ export type FileRow = {
   filename: string;
   created_at: number | null;
   status: FileUploadStatus;
-  vectorStatus?: {
-    [vector_store_id: string]: VectorStatus;
-  };
 };
 
 // This type is taken from SuperValidated, leaving the any
