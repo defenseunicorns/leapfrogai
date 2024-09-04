@@ -75,6 +75,7 @@ test('it can edit an assistant and remove a file', async ({ page, openAIClient }
   await fileSelectContainer.getByTestId(`${uploadedFile2.id}-checkbox`).check();
   await page.getByRole('button', { name: 'Save' }).click();
   await expect(page.getByTestId('assistant-progress-toast')).toBeVisible();
+  await delay(5000); // allow file to be vectorized (see note in assistant-progress.test.ts for testing issues)
 
   await editAssistantCard(assistant.name!, page);
 
