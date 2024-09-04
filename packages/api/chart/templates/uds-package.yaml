@@ -1,18 +1,20 @@
-{{- if .Values.api.exposeAPI }}
+{{- if .Values.api.env.exposeAPI }}
 apiVersion: uds.dev/v1alpha1
 kind: Package
 metadata:
-  name: leapfrogai-api
+  name: {{ include "chart.fullname" . }}
   namespace: {{ .Release.Namespace }}
+  labels:
+    {{- include "chart.labels" . | nindent 4 }}
 spec:
   network:
     expose:
-      - service: api
+      - service: {{ include "chart.fullname" . }}
         podLabels:
-          app: api
-        host: {{ .Values.package.host }}
+          {{- include "chart.selectorLabels" . | nindent 10 }}
+        host: {{ include "chart.fullname" . }}
         gateway: tenant
-        port: 8080
+        port: {{ .Values.api.port }}
 
     allow:
       - direction: Ingress
@@ -23,6 +25,6 @@ spec:
 
       - direction: Egress
         podLabels:
-          app: api
+          {{- include "chart.selectorLabels" . | nindent 10 }}
         remoteGenerated: Anywhere
 {{- end }}

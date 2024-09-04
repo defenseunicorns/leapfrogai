@@ -28,6 +28,7 @@
   import TextareaV2 from '$components/LFTextArea.svelte';
   import IconButton from '$components/IconButton.svelte';
   import MessagePendingSkeleton from '$components/MessagePendingSkeleton.svelte';
+  import UploadedFileCard from '$components/UploadedFileCard.svelte';
 
   export let message: OpenAIMessage;
   export let messages: OpenAIMessage[] = [];
@@ -107,6 +108,10 @@
       });
     }
   };
+
+  $: fileMetadata = message.metadata?.filesMetadata
+    ? JSON.parse(message.metadata.filesMetadata)
+    : null;
 </script>
 
 <div
@@ -162,6 +167,13 @@
             <div class="font-bold">
               {message.role === 'user' ? 'You' : getAssistantName(message.assistant_id)}
             </div>
+            {#if fileMetadata}
+              <div id="uploaded-files" class={'flex max-w-full  gap-2 overflow-x-auto bg-gray-900'}>
+                {#each fileMetadata as file}
+                  <UploadedFileCard fileMetadata={file} disableDelete />
+                {/each}
+              </div>
+            {/if}
             {#if message.role !== 'user' && !messageText}
               <MessagePendingSkeleton size="sm" class="mt-4" darkColor="bg-gray-500" />
             {:else}

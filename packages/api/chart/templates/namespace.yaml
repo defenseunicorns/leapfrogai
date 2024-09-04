@@ -1,4 +1,6 @@
 apiVersion: v1
 kind: Namespace
 metadata:
-  name: leapfrogai
+  name: {{ .Release.Namespace | default "leapfrogai" }}
+  labels:
+    {{- include "chart.labels" . | nindent 4 }}

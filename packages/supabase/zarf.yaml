@@ -56,6 +56,8 @@ variables:
 components:
   - name: supabase
     required: true
+    only:
+      flavor: upstream
     charts:
       # This exists because the jwt token job fails to run in the main helm chart at the proper time due to its reliance on `helm.sh/hook: post-install`.
       # This annotation causes it to run at the end of the Supabase Zarf component.
@@ -99,6 +101,8 @@ components:
   - name: supabase-post-process
     description: "Perform necessary post processing here"
     required: true
+    only:
+      flavor: upstream
     actions:
       onDeploy:
         before:
@@ -120,6 +124,8 @@ components:
   - name: supabase-migrations
     description: "Migrations that operate on a database configuration level that require higher elevated permissions (ie adding extensions)"
     required: true
+    only:
+      flavor: upstream
     charts:
       - name: supabase-migrations
         namespace: leapfrogai
