@@ -70,6 +70,7 @@ def test_rag_needle_haystack():
     # Get the response content from the last message
     message_content = messages[-1].content[0].text
     assert isinstance(message_content, Text)
+    assert "orange" in message_content.value
     assert len(message_content.annotations) > 0
 
     for a in message_content.annotations:
