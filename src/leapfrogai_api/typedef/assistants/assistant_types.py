@@ -23,7 +23,9 @@ from leapfrogai_api.utils.validate_tools import (
     validate_tool_resources,
 )
 
+
 logger = logging.getLogger(__name__)
+
 
 class CreateAssistantRequest(BaseModel):
     """Request object for creating an assistant."""
