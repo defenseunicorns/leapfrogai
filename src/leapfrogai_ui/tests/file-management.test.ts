@@ -1,5 +1,5 @@
 import { expect, test } from './fixtures';
-import { getTableRow, getSimpleMathQuestion } from './helpers/helpers';
+import { getSimpleMathQuestion, getTableRow } from './helpers/helpers';
 import {
   confirmDeletion,
   createCSVFile,
@@ -51,7 +51,7 @@ test('it can navigate to the file management page', async ({ page }) => {
   await expect(page).toHaveTitle('LeapfrogAI - File Management');
 });
 
-test('it can upload a pdf file', async ({ page, openAIClient }) => {
+test('it can upload a pdf file', async ({ page }) => {
   const filename = await createPDF();
   await testFileUpload(filename, page);
 });

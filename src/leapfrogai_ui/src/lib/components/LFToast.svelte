@@ -1,5 +1,5 @@
 <script lang="ts">
-  import { P, Toast } from 'flowbite-svelte';
+  import { P } from 'flowbite-svelte';
   import {
     BanOutline,
     CheckCircleSolid,
@@ -15,7 +15,6 @@
   let { id, title, subtitle, kind, variant } = toast;
 
   $: color = getColor(kind);
-  $: IconComponent = getIconComponent(kind);
 
   function getColor(toastKind: ToastKind) {
     switch (toastKind) {

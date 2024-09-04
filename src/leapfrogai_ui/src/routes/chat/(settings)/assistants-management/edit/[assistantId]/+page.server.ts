@@ -36,7 +36,9 @@ export const load: PageServerLoad = async ({ params, locals: { session } }) => {
   if (vectorStoreId) {
     try {
       const vectorStoreFiles = await openai.beta.vectorStores.files.list(vectorStoreId);
-      file_ids = vectorStoreFiles.data.map((file) => file.id);
+      file_ids = vectorStoreFiles.data
+        .filter((file) => file.status === 'completed')
+        .map((file) => file.id);
     } catch (e) {
       console.error(`Error getting vector store files: ${e}`);
     }
@@ -77,8 +79,6 @@ export const actions: Actions = {
     const deleteAvatar = !form.data.avatar && !form.data.avatarFile;
     const filePath = form.data.id;
 
-    console.log(form.data);
-
     // Update avatar if new file uploaded
     if (form.data.avatarFile) {
       const { error } = await supabase.storage
@@ -92,7 +92,7 @@ export const actions: Actions = {
     } else {
       if (!form.data.avatar) {
         // Delete avatar
-        const { error: deleteAvatarError, data } = await supabase.storage
+        const { error: deleteAvatarError } = await supabase.storage
           .from('assistant_avatars')
           .remove([`${filePath}`]);
         if (deleteAvatarError) {

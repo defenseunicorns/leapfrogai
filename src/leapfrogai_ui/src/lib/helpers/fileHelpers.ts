@@ -6,5 +6,5 @@ export const convertFileObjectToFileRows = (files: FileObject[]): FileRow[] =>
     id: file.id,
     filename: file.filename,
     created_at: file.created_at * 1000,
-    status: 'hide',
+    status: 'hide'
   }));

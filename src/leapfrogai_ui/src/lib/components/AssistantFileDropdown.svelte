@@ -37,8 +37,7 @@
         subtitle: `Please try again or contact support`
       });
     },
-    onResult: async ({ result }) => handleResult(result),
-
+    onResult: async ({ result }) => handleResult(result)
   });
 
   const handleResult = async (result: ActionResult) => {
@@ -53,7 +52,6 @@
     }
     filesStore.setUploading(false);
   };
-
 </script>
 
 <div class={$$props.class}>

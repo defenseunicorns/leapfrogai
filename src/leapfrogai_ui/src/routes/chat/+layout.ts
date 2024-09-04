@@ -23,7 +23,6 @@ export const load: LayoutLoad = async ({ fetch, data, depends }) => {
   const assistants = (await assistantRes.json()) as LFAssistant[];
   const files = (await filesRes.json()) as FileObject[];
 
-
   if (browser) {
     let fileRows: FileRow[] = [];
     if (files && files.length > 0) {
