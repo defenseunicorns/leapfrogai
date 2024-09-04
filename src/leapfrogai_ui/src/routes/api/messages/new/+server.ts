@@ -3,22 +3,31 @@ import { error, json } from '@sveltejs/kit';
 import { messageInputSchema } from '$lib/schemas/chat';
 import type { NewMessageInput } from '$lib/types/messages';
 import { getOpenAiClient } from '$lib/server/constants';
+import { ValidationError } from 'yup';
 
 export const POST: RequestHandler = async ({ request, locals: { session } }) => {
   if (!session) {
-    error(401, 'Unauthorized');
+    return error(401, 'Unauthorized');
   }
 
   let requestData: NewMessageInput;
 
   // Validate request body
   try {
-    requestData = await request.json();
-    const isValid = await messageInputSchema.isValid(requestData);
-
-    if (!isValid) error(400, 'Bad Request');
-  } catch {
-    error(400, 'Bad Request');
+    requestData = (await request.json()) as NewMessageInput;
+    if (requestData.lengthOverride) {
+      // TODO
+      await messageInputSchema.validate(requestData, { abortEarly: false });
+    } else {
+      await messageInputSchema.validate(requestData, { abortEarly: false });
+    }
+    delete requestData.lengthOverride;
+  } catch (validationError) {
+    if (validationError instanceof ValidationError) {
+      console.log('Validation error:', validationError.errors);
+      return error(400, `Bad Request: ${validationError.errors.join(', ')}`);
+    }
+    return error(400, 'Bad Request');
   }
 
   try {
@@ -26,7 +35,8 @@ export const POST: RequestHandler = async ({ request, locals: { session } }) => 
 
     const threadMessages = await openai.beta.threads.messages.create(requestData.thread_id, {
       role: requestData.role,
-      content: requestData.content
+      content: requestData.content,
+      metadata: requestData.metadata || null
     });
     return json(threadMessages);
   } catch (e) {
