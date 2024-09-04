@@ -1,1 +1,5 @@
-from .assistant_types import ListAssistantsResponse as ListAssistantsResponse
+from .assistant_types import (
+    CreateAssistantRequest as CreateAssistantRequest,
+    ModifyAssistantRequest as ModifyAssistantRequest,
+    ListAssistantsResponse as ListAssistantsResponse,
+)
