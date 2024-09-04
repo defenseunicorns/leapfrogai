@@ -1,33 +1,8 @@
 import os
 from pathlib import Path
 from openai.types.beta.threads.text import Text
-from openai import OpenAI
 
-
-LEAPFROGAI_MODEL = "llama-cpp-python"
-OPENAI_MODEL = "gpt-4o-mini"
-
-
-def text_file_path():
-    return Path(os.path.dirname(__file__) + "/../../data/test_with_data.txt")
-
-
-def openai_client():
-    return OpenAI(api_key=os.getenv("OPENAI_API_KEY"))
-
-
-def leapfrogai_client():
-    return OpenAI(
-        base_url=os.getenv("LEAPFROGAI_API_URL"),
-        api_key=os.getenv("LEAPFROGAI_API_KEY"),
-    )
-
-
-def client_config_factory(client_name):
-    if client_name == "openai":
-        return dict(client=openai_client(), model=OPENAI_MODEL)
-    elif client_name == "leapfrogai":
-        return dict(client=leapfrogai_client(), model=LEAPFROGAI_MODEL)
+from ...utils.client import client_config_factory
 
 
 def make_test_assistant(client, model, vector_store_id):
@@ -50,7 +25,7 @@ def make_test_run(client, assistant, thread):
 
 def test_rag_needle_haystack():
     config = client_config_factory("leapfrogai")
-    client = config["client"]
+    client = config.client
 
     vector_store = client.beta.vector_stores.create(name="Test data")
     file_path = "../../data"
@@ -73,7 +48,7 @@ def test_rag_needle_haystack():
                 )
             )
 
-    assistant = make_test_assistant(client, config["model"], vector_store.id)
+    assistant = make_test_assistant(client, config.model, vector_store.id)
     thread = client.beta.threads.create()
 
     client.beta.threads.messages.create(
