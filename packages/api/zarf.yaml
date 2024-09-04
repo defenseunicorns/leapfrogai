@@ -27,6 +27,7 @@ components:
       path: common
     charts:
       - name: leapfrogai
+        namespace: leapfrogai
         valuesFiles:
           - "values/upstream-values.yaml"
     images:
@@ -42,6 +43,7 @@ components:
       path: common
     charts:
       - name: leapfrogai
+        namespace: leapfrogai
         valuesFiles:
           - "values/registry1-values.yaml"
     images:

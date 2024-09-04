@@ -2,7 +2,7 @@ apiVersion: batch/v1
 kind: Job
 metadata:
   name: {{ include "chart.fullname" . }}-migrations-{{ .Values.api.migration.image.tag | default .Chart.AppVersion }}
-  namespace: {{ .Release.Namespace }}
+  namespace: {{ default "leapfrogai" .Release.Namespace }}
   labels:
     {{- include "chart.labels" . | nindent 4 }}
 spec:
@@ -16,10 +16,12 @@ spec:
       containers:
         - name: supabase-cli
           image: "{{ .Values.api.migration.image.repository }}:{{ .Values.api.migration.image.tag | default .Chart.AppVersion }}"
+          {{- with .Values.api.migration.env }}
           env:
-            {{- toYaml .Values.api.migration.env | nindent 12 }}
+            {{- toYaml . | nindent 12 }}
             - name: MIGRATION_NAMESPACE
-              value: "{{ .Release.Namespace }}"
+              value: "{{ default "leapfrogai" $.Release.Namespace }}"
+          {{- end }}
           command: ["/bin/sh"]
           args:
             - -c

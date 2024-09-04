@@ -2,7 +2,7 @@ apiVersion: uds.dev/v1alpha1
 kind: Package
 metadata:
   name: {{ include "chart.fullname" . }}
-  namespace: {{ .Release.Namespace }}
+  namespace: {{ default "leapfrogai" .Release.Namespace }}
   labels:
     {{- include "chart.labels" . | nindent 4 }}
 spec:

@@ -2,7 +2,7 @@ apiVersion: apps/v1
 kind: Deployment
 metadata:
   name: {{ include "chart.fullname" . }}
-  namespace: {{ .Release.Namespace }}
+  namespace: {{ default "leapfrogai" .Release.Namespace }}
   labels:
     {{- include "chart.labels" . | nindent 4 }}
 spec:
@@ -31,17 +31,21 @@ spec:
           image: "{{ .Values.kiwigrid.image.repository }}:{{ .Values.kiwigrid.image.tag }}"
           imagePullPolicy: {{ .Values.kiwigrid.image.imagePullPolicy }}
           volumeMounts:
-            - name: api-model
+            - name: {{ include "chart.fullname" . }}-model
               mountPath: /config/
+          {{- with .Values.kiwigrid.env }}
           env:
-            {{- toYaml .Values.kiwigrid.env | nindent 12 }}
+            {{- toYaml . | nindent 12 }}
+          {{- end }}
           securityContext:
             {{- toYaml .Values.kiwigrid.securityContext | nindent 12 }}
         - name: {{ include "chart.fullname" . }}-container
           image: "{{ .Values.api.image.repository }}:{{ .Values.api.image.tag | default .Chart.AppVersion }}"
           imagePullPolicy: {{ .Values.api.image.imagePullPolicy }}
+          {{- with .Values.api.env }}
           env:
-            {{- toYaml .Values.api.env | nindent 12 }}
+            {{- toYaml . | nindent 12 }}
+          {{- end }}
           ports:
             - containerPort: {{ .Values.api.service.port }}
           livenessProbe:
@@ -59,10 +63,10 @@ spec:
           securityContext:
             {{- toYaml .Values.api.securityContext | nindent 12 }}
           volumeMounts:
-            - name: api-model
+            - name: {{ include "chart.fullname" . }}-model
               mountPath: /config
       volumes:
-        - name: api-model
+        - name: {{ include "chart.fullname" . }}-model
           emptyDir: {}
       {{- with .Values.nodeSelector }}
       nodeSelector:
