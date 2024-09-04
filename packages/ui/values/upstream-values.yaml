@@ -37,3 +37,9 @@ env:
 # Only required when Supabase is hosted via PaaS outside of the cluster
 extraEnv:
   supabaseAnonKey: "###ZARF_VAR_SUPABASE_ANON_KEY###"
+
+migration:
+  image:
+    repository: ghcr.io/defenseunicorns/leapfrogai/ui-migrations
+    tag: ###ZARF_CONST_IMAGE_VERSION###
+    imagePullPolicy: Always

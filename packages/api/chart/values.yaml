@@ -37,7 +37,7 @@ api:
 
   env:
     - name: LFAI_LOG_LEVEL
-      value: "20" # equivalent to logging.INFO
+      value: "INFO"
     - name: LFAI_CONFIG_PATH
       value: /config/
     - name: LFAI_CONFIG_FILENAME

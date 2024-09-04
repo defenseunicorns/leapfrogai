@@ -15,7 +15,7 @@ fullnameOverride: ""
 
 env:
   - name: LFAI_LOG_LEVEL
-    value: "20" # equivalent to logging.INFO
+    value: "INFO"
 
 podSecurityContext:
   runAsNonRoot: true

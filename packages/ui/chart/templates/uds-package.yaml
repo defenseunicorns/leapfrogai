@@ -13,7 +13,7 @@ spec:
           {{- include "chart.selectorLabels" . | nindent 10 }}
         host: {{ include "chart.fullname" . }}
         gateway: tenant
-        port: {{ .Values.port }}
+        port: {{ .Values.service.port }}
 
     allow:
       - direction: Ingress

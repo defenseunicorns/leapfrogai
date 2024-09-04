@@ -4,6 +4,7 @@ metadata:
   name: {{ include "chart.fullname" . }}
   namespace: {{ default "leapfrogai" .Release.Namespace }}
   annotations:
+    app: {{ include "chart.fullname" . }}
     zarf.dev/connect-description: "Load the LeapfrogAI UI"
     zarf.dev/connect-url: "/chat"
   labels:
@@ -17,4 +18,3 @@ spec:
       protocol: TCP
       port: {{ .Values.service.port }}
       targetPort: {{ .Values.service.port }}
-  type: ClusterIP
