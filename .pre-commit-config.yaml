@@ -86,6 +86,7 @@ repos:
     hooks:
       - id: helmlint
         name: Helm Lint
+        exclude: "packages/supabase"
 
   #############
   # UDS v0.14.0
