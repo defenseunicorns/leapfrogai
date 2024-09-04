@@ -48,8 +48,7 @@ test('can edit an assistant and attach files to it', async ({ page, openAIClient
   await fileSelectContainer.getByTestId(`${uploadedFile1.id}-checkbox`).check();
   await fileSelectContainer.getByTestId(`${uploadedFile2.id}-checkbox`).check();
   await page.getByRole('button', { name: 'Save' }).click();
-  await expect(page.getByTestId(`file-${uploadedFile1.id}-vector-in-progress`)).toBeVisible();
-  await expect(page.getByTestId(`file-${uploadedFile2.id}-vector-pending`)).toBeVisible();
+  await expect(page.getByTestId('assistant-progress-toast')).toBeVisible();
 
   // Cleanup
   await deleteFileWithApi(uploadedFile1.id, openAIClient);
@@ -75,6 +74,7 @@ test('it can edit an assistant and remove a file', async ({ page, openAIClient }
   await fileSelectContainer.getByTestId(`${uploadedFile1.id}-checkbox`).check();
   await fileSelectContainer.getByTestId(`${uploadedFile2.id}-checkbox`).check();
   await page.getByRole('button', { name: 'Save' }).click();
+  await expect(page.getByTestId('assistant-progress-toast')).toBeVisible();
 
   await editAssistantCard(assistant.name!, page);
 
