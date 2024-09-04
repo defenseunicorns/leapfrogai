@@ -70,8 +70,6 @@ describe('api keys form action', () => {
     formData.append('name', newApiKeyInput.name!);
     formData.append('expires_at', newApiKeyInput.expires_at.toString());
 
-    const form = await superValidate(yup(newAPIKeySchema));
-    form.data = newApiKeyInput;
     const request = new Request('https://thisurldoesntmatter', {
       method: 'POST',
       body: formData
