@@ -17,17 +17,9 @@ spec:
         - name: supabase-cli
           image: "{{ .Values.api.migration.image.repository }}:{{ .Values.api.migration.image.tag | default .Chart.AppVersion }}"
           env:
-            - name: POSTGRES_PASSWORD
-              valueFrom:
-                secretKeyRef:
-                  name: supabase-postgresql
-                  key: postgres-password
+            {{- toYaml .Values.api.migration.env | nindent 12 }}
             - name: MIGRATION_NAMESPACE
               value: "{{ .Release.Namespace }}"
-            - name: MIGRATION_SERVICE_NAME
-              value: "{{ .Values.api.migration.env.serviceName }}"
-            - name: MIGRATION_SERVICE_PORT
-              value: "{{ .Values.api.migration.env.servicePort }}"
           command: ["/bin/sh"]
           args:
             - -c

@@ -2,19 +2,38 @@ image:
   repository: ghcr.io/defenseunicorns/leapfrogai/leapfrogai-ui
   tag: ###ZARF_CONST_IMAGE_VERSION###
 
-securityContext:
-  runAsUser: 65532
-  runAsGroup: 65532
+env:
+  - name: LEAPFROGAI_API_BASE_URL
+    value: "###ZARF_VAR_LEAPFROGAI_API_BASE_URL###"
+  - name: ORIGIN
+    value: "https://###ZARF_VAR_DOMAIN###.###ZARF_VAR_SUBDOMAIN###"
+  - name: DEFAULT_MODEL
+    value: "###ZARF_VAR_MODEL###"
+  - name: DEFAULT_SYSTEM_PROMPT
+    value: "###ZARF_VAR_SYSTEM_PROMPT###"
+  - name: DEFAULT_TEMPERATURE
+    value: "###ZARF_VAR_TEMPERATURE###"
+  - name: OPENAI_API_KEY
+    value: "###ZARF_VAR_OPENAI_API_KEY###"
+  - name: PUBLIC_SUPABASE_URL
+    value: "https://supabase-kong.###ZARF_VAR_DOMAIN###"
+  - name: PUBLIC_DISABLE_KEYCLOAK
+    value: "true"
+  - name: PUBLIC_MESSAGE_LENGTH_LIMIT
+    value: "10000"
+  - name: SUPABASE_AUTH_EXTERNAL_KEYCLOAK_URL
+    value: "https://sso.uds.dev/realms/uds"
+  - name: SUPABASE_AUTH_KEYCLOAK_CLIENT_ID
+    valueFrom:
+      secretKeyRef:
+        name: sso-client-uds-supabase
+        key: clientId
+  - name: SUPABASE_AUTH_KEYCLOAK_SECRET
+    valueFrom:
+      secretKeyRef:
+        name: sso-client-uds-supabase
+        key: secret
 
-package:
-  name: leapfrogai-ui
-  subdomain: "###ZARF_VAR_SUBDOMAIN###"
-  domain: "###ZARF_VAR_DOMAIN###"
-  supabase_url: https://supabase-kong.###ZARF_VAR_DOMAIN###
-  supabase_anon_key: "###ZARF_VAR_SUPABASE_ANON_KEY###"
-  message_length_limit: "###ZARF_VAR_MESSAGE_LENGTH_LIMIT###"
-
-migration:
-  namespace: leapfrogai
-  serviceName: supabase-postgresql
-  servicePort: 5432
+# Only required when Supabase is hosted via PaaS outside of the cluster
+extraEnv:
+  supabaseAnonKey: "###ZARF_VAR_SUPABASE_ANON_KEY###"

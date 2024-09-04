@@ -1,4 +1,4 @@
-{{- if .Values.api.env.exposeAPI }}
+{{- if .Values.api.expose }}
 apiVersion: uds.dev/v1alpha1
 kind: Package
 metadata:
@@ -14,7 +14,7 @@ spec:
           {{- include "chart.selectorLabels" . | nindent 10 }}
         host: {{ include "chart.fullname" . }}
         gateway: tenant
-        port: {{ .Values.api.port }}
+        port: {{ .Values.api.service.port }}
 
     allow:
       - direction: Ingress
