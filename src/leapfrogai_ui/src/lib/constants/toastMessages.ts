@@ -68,7 +68,7 @@ export const MAX_NUM_FILES_UPLOAD_MSG_TOAST = (override: Partial<ToastData> = {}
 export const FILE_VECTOR_TIMEOUT_MSG_TOAST = (override: Partial<ToastData> = {}): ToastData =>( {
   kind: 'error',
   title: 'Timeout',
-  subtitle: 'There was an error processing the file',
+  subtitle: 'There was an error processing assistant files',
     ...override
 });
 

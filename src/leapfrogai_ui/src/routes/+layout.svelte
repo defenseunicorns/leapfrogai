@@ -7,7 +7,7 @@
   import '$webComponents/CodeBlock';
   import { browser } from '$app/environment';
   import { filesStore, uiStore } from '$stores';
-  import vectorStatusStore from '$stores/vectorFilesStore';
+  import vectorStatusStore from '$stores/vectorStatusStore';
 
   export let data;
 
@@ -34,7 +34,10 @@
   const handleVectorStoreTableUpdate = (payload) => {
     const newFile = payload.new;
     if (payload.eventType === 'DELETE') {
-      vectorStatusStore.removeFile(payload.old.id, payload.old.vector_store_id);
+      vectorStatusStore.removeVectorStoreStatusFromFile(
+        payload.old.id,
+        payload.old.vector_store_id
+      );
     } else {
       vectorStatusStore.updateFileVectorStatus(newFile.id, newFile.vector_store_id, newFile.status);
     }

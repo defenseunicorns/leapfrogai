@@ -27,6 +27,7 @@
     searchResults = fuse.search(searchText);
     filteredAssistants = searchResults.map((result) => result.item);
   }
+
 </script>
 
 <div class="no-scrollbar flex w-3/4 flex-col gap-4 overflow-y-scroll py-2">

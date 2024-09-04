@@ -18,7 +18,7 @@
   import LFInput from '$components/LFInput.svelte';
   import LFLabel from '$components/LFLabel.svelte';
   import AssistantAvatar from '$components/AssistantAvatar.svelte';
-  import vectorStatusStore from '$stores/vectorFilesStore.js';
+  import vectorStatusStore from '$stores/vectorStatusStore.js';
 
   export let data;
 
