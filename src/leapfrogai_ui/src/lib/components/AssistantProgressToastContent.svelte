@@ -2,8 +2,9 @@
   import { Spinner } from 'flowbite-svelte';
   import { filesStore, toastStore } from '$stores';
   import { CheckOutline, ClockOutline, CloseCircleOutline } from 'flowbite-svelte-icons';
-  import { createEventDispatcher } from 'svelte';
+  import {createEventDispatcher, onMount} from 'svelte';
   import vectorStatusStore from '$stores/vectorFilesStore';
+  import {FILE_VECTOR_TIMEOUT_MSG_TOAST} from "$constants/toastMessages";
 
   export let toastId: string;
   export let vectorStoreId: string;
@@ -37,6 +38,14 @@
   $: if (errorStatus) {
     dispatch('statusChange', 'error');
   }
+
+  let timeoutId: number;
+  onMount(() => {
+    timeoutId = setTimeout(() => {
+      toastStore.addToast(FILE_VECTOR_TIMEOUT_MSG_TOAST())
+    }, 5 * 60 * 1000)
+    return () => clearTimeout(timeoutId)
+  })
 </script>
 
 <div class="flex max-h-36 flex-col overflow-y-auto">
@@ -56,7 +65,7 @@
         {:else if $vectorStatusStore[file.id][vectorStoreId] === 'in_progress'}
           <Spinner
             data-testid={`file-${file.id}-vector-in-progress`}
-            class="me-3"
+            class="me-2.5"
             size="4"
             color="white"
           />
