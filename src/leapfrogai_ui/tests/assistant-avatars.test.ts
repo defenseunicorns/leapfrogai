@@ -2,7 +2,9 @@ import { expect, test } from './fixtures';
 import { getFakeAssistantInput } from '../testUtils/fakeData';
 import { NO_FILE_ERROR_TEXT } from '../src/lib/constants/index';
 import {
+  createAssistantWithApi,
   deleteAllAssistants,
+  deleteAssistantWithApi,
   fillOutRequiredAssistantFields,
   getRandomPictogramName,
   saveAssistant,
@@ -226,4 +228,35 @@ test('it can upload an image, then change to a pictogram, then change to an imag
   const avatarSrc = await avatar.getAttribute('src');
 
   expect(avatarSrc).toBeDefined();
+});
+
+test('it deletes the avatar image from storage when the avatar', async ({ page, openAIClient }) => {
+  const assistant = await createAssistantWithApi({ openAIClient });
+  await page.goto(`/chat/assistants-management/edit/${assistant.id}`);
+  await saveAvatarImage(page);
+  const saveButton = page.getByRole('button', { name: 'Save' }).nth(0);
+  await saveButton.click();
+
+  const card = page.getByTestId(`assistant-card-${assistant.name}`);
+  const avatar = card.getByTestId('assistant-card-avatar');
+  const avatarSrc = await avatar.getAttribute('src');
+  const res = await fetch(avatarSrc!);
+
+  expect(res.status).toBe(200);
+  // Check if the content type is an image
+  const contentType = res.headers.get('content-type');
+  expect(contentType).toMatch(/^image\//);
+  // Ensure the response body has content
+  // const buffer = await res.buffer();
+  // expect(buffer.length).toBeGreaterThan(0);
+
+  await page.goto(`/chat/assistants-management/edit/${assistant.id}`);
+  await savePictogram(getRandomPictogramName(), page);
+
+  const newAvatarSrc = await avatar.getAttribute('src');
+  const res2 = await fetch(avatarSrc!);
+  expect(res2.status).toBe(404);
+
+  //cleanup
+  await deleteAssistantWithApi(assistant.id, openAIClient);
 });
