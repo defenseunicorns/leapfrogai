@@ -90,7 +90,7 @@ export const actions: Actions = {
     } else {
       if (!form.data.avatar) {
         // Delete avatar
-        const { error: deleteAvatarError, data } = await supabase.storage
+        const { error: deleteAvatarError } = await supabase.storage
           .from('assistant_avatars')
           .remove([`${filePath}`]);
         if (deleteAvatarError) {

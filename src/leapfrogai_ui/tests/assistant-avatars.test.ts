@@ -243,19 +243,17 @@ test('it deletes the avatar image from storage when the avatar', async ({ page, 
   const res = await fetch(avatarSrc!);
 
   expect(res.status).toBe(200);
-  // Check if the content type is an image
   const contentType = res.headers.get('content-type');
   expect(contentType).toMatch(/^image\//);
-  // Ensure the response body has content
-  // const buffer = await res.buffer();
-  // expect(buffer.length).toBeGreaterThan(0);
 
   await page.goto(`/chat/assistants-management/edit/${assistant.id}`);
   await savePictogram(getRandomPictogramName(), page);
+  await saveButton.click();
+  await expect(page.getByText('Assistant Updated')).toBeVisible();
 
-  const newAvatarSrc = await avatar.getAttribute('src');
   const res2 = await fetch(avatarSrc!);
-  expect(res2.status).toBe(404);
+  const resJson = await res2.json();
+  expect(resJson.statusCode).toEqual('404');
 
   //cleanup
   await deleteAssistantWithApi(assistant.id, openAIClient);
