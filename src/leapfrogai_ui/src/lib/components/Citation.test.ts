@@ -63,7 +63,7 @@ describe('Citation', () => {
   it('renders an iframe when a non-pdf file type is clicked (converted to pdf)', async () => {
     const file = getFakeFiles({ numFiles: 1 })[0];
     mockGetFile(file.id, 'test', 'text/plain');
-    mockConvertFile('fake content');
+    mockConvertFile(file.id, 'fake content');
 
     render(Citation, { file, index: 1 });
 
@@ -83,7 +83,7 @@ describe('Citation', () => {
     await userEvent.click(screen.getByTestId(`${file.id}-citation-btn`));
     expect(screen.queryByTitle(`${file.id}-iframe`)).not.toBeInTheDocument();
     expect(toastSpy).toHaveBeenCalledWith({
-      ...OPENAI_DOWNLOAD_DISABLED_MSG_TOAST
+      ...OPENAI_DOWNLOAD_DISABLED_MSG_TOAST()
     });
   });
   it('displays a toast when an error occurs after clicking a citation', async () => {
@@ -94,20 +94,20 @@ describe('Citation', () => {
     await userEvent.click(screen.getByTestId(`${file.id}-citation-btn`));
 
     expect(toastSpy).toHaveBeenCalledWith({
-      ...FILE_DOWNLOAD_ERROR_MSG_TOAST
+      ...FILE_DOWNLOAD_ERROR_MSG_TOAST()
     });
   });
 
   it('displays a toast when an error occurs when converting a file to pdf', async () => {
     const file = getFakeFiles({ numFiles: 1 })[0];
     mockGetFile(file.id, 'test', 'text/plain');
-    mockConvertFileError();
+    mockConvertFileError(file.id);
 
     render(Citation, { file, index: 1 });
     await userEvent.click(screen.getByTestId(`${file.id}-citation-btn`));
 
     expect(toastSpy).toHaveBeenCalledWith({
-      ...FILE_DOWNLOAD_ERROR_MSG_TOAST
+      ...FILE_DOWNLOAD_ERROR_MSG_TOAST()
     });
   });
   it('displays a toast when the file type is not supported for download', async () => {
@@ -118,7 +118,7 @@ describe('Citation', () => {
     await userEvent.click(screen.getByTestId(`${file.id}-citation-btn`));
 
     expect(toastSpy).toHaveBeenCalledWith({
-      ...CONVERT_FILE_ERROR_MSG_TOAST
+      ...CONVERT_FILE_ERROR_MSG_TOAST()
     });
   });
   it('open a new tab when the open in new tab button is clicked', async () => {
