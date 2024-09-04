@@ -10,7 +10,7 @@
     easing: sineIn
   };
 
-  $: innerWidth = 0;
+  $: innerWidth = 1024;
 
   $: innerWidth < 1024 && uiStore.setOpenSidebar(false);
 </script>

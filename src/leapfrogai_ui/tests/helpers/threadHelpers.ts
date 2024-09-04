@@ -16,9 +16,13 @@ export const sendMessage = async (page: Page, message = 'Who are Defense Unicorn
   await page.getByTestId('chat-input').fill(message);
   await page.click('button[type="submit"]');
 };
-export const deleteActiveThread = async (page: Page, openAIClient: OpenAI) => {
+
+export const getLastUrlParam = (page: Page) => {
   const urlParts = new URL(page.url()).pathname.split('/');
-  const threadId = urlParts[urlParts.length - 1];
+  return urlParts[urlParts.length - 1];
+};
+export const deleteActiveThread = async (page: Page, openAIClient: OpenAI) => {
+  const threadId = getLastUrlParam(page);
 
   if (threadId && threadId !== 'chat') {
     await deleteThread(threadId, openAIClient);

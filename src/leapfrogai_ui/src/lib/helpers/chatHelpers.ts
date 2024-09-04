@@ -161,7 +161,8 @@ export const handleMessageEdit = async ({
     const newMessage = await saveMessage({
       thread_id: message.thread_id,
       content: getMessageText(message),
-      role: 'user'
+      role: 'user',
+      metadata: message.metadata
     });
     await threadsStore.addMessageToStore(newMessage);
 
