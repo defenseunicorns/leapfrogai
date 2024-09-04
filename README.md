@@ -52,7 +52,7 @@ LeapfrogAI is built on top of [Unicorn Delivery Service (UDS)](https://github.co
 
 ## Structure
 
-The LeapfrogAI repository follows a monorepo structure based around an [API](#api) with each of the [components](#components) included in a dedicated `packages` directory. The UDS bundles that handle the development and latest deployments of LeapfrogAI are in the `uds-bundles` directory. The structure looks as follows:
+The LeapfrogAI repository follows a monorepo structure based around an [API](#api) with each of the [components](#components) included in a dedicated `packages` directory. The UDS bundles that handle the development and latest deployments of LeapfrogAI are in the `bundles` directory. The structure looks as follows:
 
 ```bash
 leapfrogai/
@@ -69,7 +69,7 @@ leapfrogai/
 │   ├── ui/               # deployment infrastructure for the UI
 │   ├── vllm/             # source code & deployment infrastructure for the vllm backend
 │   └── whisper/          # source code & deployment infrastructure for the whisper backend
-├── uds-bundles/
+├── bundles/
 │   ├── dev/              # uds bundles for local uds dev deployments
 │   └── latest/           # uds bundles for the most current uds deployments
 ├── Makefile
