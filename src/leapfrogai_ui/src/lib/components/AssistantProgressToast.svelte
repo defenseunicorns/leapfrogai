@@ -52,7 +52,7 @@ Note - fully testing the assistant progress toast has proven difficult with Play
   });
 </script>
 
-<ToastOverride {color} align={false}>
+<ToastOverride {color} align={false} data-testid="assistant-progress-toast">
   <svelte:fragment slot="icon">
     <svelte:component this={getIconComponent(kind)} class="h-5 w-5" />
     <span class="sr-only">Toast icon</span>
