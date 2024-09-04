@@ -2,6 +2,7 @@
   import { toastStore } from '$stores';
   import { slide } from 'svelte/transition';
   import LFToast from '$components/LFToast.svelte';
+  import AssistantProgressToast from '$components/AssistantProgressToast.svelte';
 </script>
 
 {#if $toastStore.toasts}
@@ -10,7 +11,11 @@
   >
     {#each $toastStore.toasts as toast (toast.id)}
       <div transition:slide>
-        <LFToast {toast} />
+        {#if toast.variant === 'assistant-progress'}
+          <AssistantProgressToast {toast} />
+        {:else}
+          <LFToast {toast} />
+        {/if}
       </div>
     {/each}
   </section>
