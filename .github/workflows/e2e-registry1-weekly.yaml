@@ -13,7 +13,7 @@ on:
       - milestoned # allows us to trigger on bot PRs
     paths:
       - .github/workflows/e2e-registry1-weekly.yaml
-      - uds-bundles/latest/**
+      - bundles/latest/**
 
 concurrency:
   group: e2e-registry1-weekly-${{ github.ref }}
@@ -59,14 +59,14 @@ jobs:
       # Mutate UDS bundle definition to use Registry1 packages
       - name: Mutation to Registry1 Bundle
         run: |
-          uds zarf tools yq -i '.packages[1] |= del(.repository)' uds-bundles/latest/cpu/uds-bundle.yaml
-          uds zarf tools yq -i '.packages[1] |= .ref = "registry1"' uds-bundles/latest/cpu/uds-bundle.yaml
-          uds zarf tools yq -i '.packages[1] |= .path = "../../../packages/api"' uds-bundles/latest/cpu/uds-bundle.yaml
-          uds zarf tools yq -i '.metadata.version = "registry1"' uds-bundles/latest/cpu/uds-bundle.yaml
+          uds zarf tools yq -i '.packages[1] |= del(.repository)' bundles/latest/cpu/uds-bundle.yaml
+          uds zarf tools yq -i '.packages[1] |= .ref = "registry1"' bundles/latest/cpu/uds-bundle.yaml
+          uds zarf tools yq -i '.packages[1] |= .path = "../../../packages/api"' bundles/latest/cpu/uds-bundle.yaml
+          uds zarf tools yq -i '.metadata.version = "registry1"' bundles/latest/cpu/uds-bundle.yaml
 
       - name: Create and Deploy Bundle
         run: |
-          cd uds-bundles/latest/cpu
+          cd bundles/latest/cpu
           uds create . --confirm && \
             uds deploy uds-bundle-leapfrogai-amd64-registry1.tar.zst \
               --set LEAPFROGAI_API_BASE_URL="http://leapfrogai-api.leapfrogai.svc.cluster.local:8080" --confirm --no-progress && \
