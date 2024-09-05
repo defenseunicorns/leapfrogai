@@ -1,5 +1,5 @@
 failure-threshold: error
-# TODO: slowly burn down these lower priority container issues
+# TODO: slowly burn down these lower priority container warnings and errors, issue #984
 ignored:
   - DL3007 # use of latest image
   - DL3042 # pip --no-cache-dir
