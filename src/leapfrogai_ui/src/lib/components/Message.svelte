@@ -43,6 +43,7 @@
   const md = markdownit({
     highlight: function (str: string, language: string) {
       let code: string;
+
       if (language && hljs.getLanguage(language)) {
         try {
           code = md.utils.escapeHtml(hljs.highlight(str, { language }).value);
@@ -112,6 +113,8 @@
   $: fileMetadata = message.metadata?.filesMetadata
     ? JSON.parse(message.metadata.filesMetadata)
     : null;
+
+  $: console.log('messageText', messageText);
 </script>
 
 <div
@@ -177,8 +180,14 @@
             {#if message.role !== 'user' && !messageText}
               <MessagePendingSkeleton size="sm" class="mt-4" darkColor="bg-gray-500" />
             {:else}
+              <pre>
+              {@html md.render(messageText)}</pre>
+
               <!--eslint-disable-next-line svelte/no-at-html-tags -- We use DomPurity to sanitize the code snippet-->
-              {@html md.render(DOMPurify.sanitize(messageText))}
+              {@html DOMPurify.sanitize(md.render(messageText), {
+                ADD_TAGS: ['code-block', 'pre', 'code'],
+                ALLOWED_ATTR: ['code', 'language']
+              })}
               <div class="flex flex-col items-start">
                 {#each getCitations(message, $page.data.files) as { component: Component, props }}
                   <svelte:component this={Component} {...props} />
