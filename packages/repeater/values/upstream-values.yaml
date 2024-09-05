@@ -1,5 +1,5 @@
 image:
-  repository: ghcr.io/defenseunicorns/leapfrogai/repeater
+  repository: "ghcr.io/defenseunicorns/leapfrogai/repeater"
   tag: "###ZARF_CONST_IMAGE_VERSION###"
 
 persistence:

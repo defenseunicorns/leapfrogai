@@ -1,6 +1,6 @@
 api:
   image:
-    repository: registry1.dso.mil/ironbank/opensource/defenseunicorns/leapfrogai/api
+    repository: "registry1.dso.mil/ironbank/opensource/defenseunicorns/leapfrogai/api"
     # x-release-please-start-version
     tag: "v0.11.0"
     # x-release-please-end
@@ -30,10 +30,10 @@ api:
   migration:
     image:
       # TODO: replace with Ironbank image once hardened: registry1.dso.mil/ironbank/opensource/defenseunicorns/leapfrogai/api/migrations
-      repository: ghcr.io/defenseunicorns/leapfrogai/api-migrations
+      repository: "ghcr.io/defenseunicorns/leapfrogai/api-migrations"
       tag: "###ZARF_CONST_IMAGE_VERSION###"
 
 kiwigrid:
   image:
-    repository: registry1.dso.mil/ironbank/kiwigrid/k8s-sidecar
+    repository: "registry1.dso.mil/ironbank/kiwigrid/k8s-sidecar"
     tag: "1.23.3"

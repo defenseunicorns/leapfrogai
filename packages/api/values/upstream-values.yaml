@@ -1,6 +1,6 @@
 api:
   image:
-    repository: ghcr.io/defenseunicorns/leapfrogai/leapfrogai-api
+    repository: "ghcr.io/defenseunicorns/leapfrogai/leapfrogai-api"
     tag: "###ZARF_CONST_IMAGE_VERSION###"
 
   expose: "###ZARF_VAR_EXPOSE_API###"
@@ -27,7 +27,7 @@ api:
 
   migration:
     image:
-      repository: ghcr.io/defenseunicorns/leapfrogai/api-migrations
+      repository: "ghcr.io/defenseunicorns/leapfrogai/api-migrations"
       tag: "###ZARF_CONST_IMAGE_VERSION###"
 
 kiwigrid:

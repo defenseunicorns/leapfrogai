@@ -3,14 +3,14 @@
 # Declare variables to be passed into your templates.
 
 image:
-  repository: ghcr.io/defenseunicorns/leapfrogai/llama-cpp-python
+  repository: "ghcr.io/defenseunicorns/leapfrogai/llama-cpp-python"
   pullPolicy: Always
   # Overrides the image tag whose default is the chart appVersion.
   # x-release-please-start-version
-  tag: 0.11.0
+  tag: "0.11.0"
   # x-release-please-end
 
-nameOverride: llama-cpp-python
+nameOverride: "llama-cpp-python"
 fullnameOverride: ""
 
 env:

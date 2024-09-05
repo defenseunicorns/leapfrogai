@@ -2,9 +2,9 @@ api:
   expose: true
 
   image:
-    repository: ghcr.io/defenseunicorns/leapfrogai/leapfrogai-api
+    repository: "ghcr.io/defenseunicorns/leapfrogai/leapfrogai-api"
     # x-release-please-start-version
-    tag: 0.11.0
+    tag: "0.11.0"
     # x-release-please-end
     imagePullPolicy: Always
 
@@ -40,14 +40,14 @@ api:
     port: 8080
 
   serviceAccount:
-    name: leapfrogai-api
+    name: "leapfrogai-api"
     create: true
 
   migration:
     image:
-      repository: ghcr.io/defenseunicorns/leapfrogai/api-migrations
+      repository: "ghcr.io/defenseunicorns/leapfrogai/api-migrations"
       # x-release-please-start-version
-      tag: 0.11.0
+      tag: "0.11.0"
       # x-release-please-end
       imagePullPolicy: Always
 
@@ -68,8 +68,8 @@ api:
 
 kiwigrid:
   image:
-    repository: kiwigrid/k8s-sidecar
-    tag: 1.23.3
+    repository: "kiwigrid/k8s-sidecar"
+    tag: "1.23.3"
     imagePullPolicy: Always
 
   securityContext:
