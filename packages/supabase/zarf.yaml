@@ -64,84 +64,26 @@ components:
       # Because of this the job never starts. As parts of Supabase rely on this token being created before moving on.
       # When attempts are made to move it earlier in the process within the same component the job does not complete due to pre-requisites that the job has.
       # So all of this has been moved into the bootstrap values file and component.
-      - name: supabase-bootstrap
-        namespace: leapfrogai
-        url: oci://registry-1.docker.io/bitnamicharts/supabase
-        releaseName: supabase-bootstrap
-        version: 5.3.3
-        valuesFiles:
-          - "bitnami-values.yaml"
-          - "bitnami-values-bootstrap.yaml"
-      - name: supabase-secrets-generator
-        namespace: leapfrogai
-        localPath: chart/
-        releaseName: supabase-secrets-generator
-        version: 0.0.1
-        valuesFiles:
-          - "bitnami-values.yaml"
       - name: supabase
         namespace: leapfrogai
-        url: oci://registry-1.docker.io/bitnamicharts/supabase
+        url: https://github.com/supabase-community/supabase-kubernetes.git
+        gitPath: charts/supabase
         releaseName: supabase
-        version: 5.3.3
+        version: 17e14e812fd60a7b5eedb56bf3b359f42ebf91a4
         valuesFiles:
           - "bitnami-values.yaml"
     images:
-      - docker.io/bitnami/gotrue:2.155.6-debian-12-r3
-      - docker.io/bitnami/jwt-cli:6.1.0-debian-12-r5
-      - docker.io/bitnami/kubectl:1.30.3-debian-12-r4
-      - docker.io/bitnami/os-shell:12-debian-12-r27
-      - docker.io/bitnami/postgrest:11.2.2-debian-12-r31
-      - docker.io/bitnami/supabase-postgres:15.6.1-debian-12-r2
-      - docker.io/bitnami/supabase-postgres-meta:0.83.2-debian-12-r3
-      - docker.io/bitnami/supabase-realtime:2.30.14-debian-12-r2
-      - docker.io/bitnami/supabase-storage:1.8.2-debian-12-r2
-      - docker.io/bitnami/supabase-studio:1.24.5-debian-12-r4
-      - docker.io/bitnami/kong:3.7.1-debian-12-r5
-  - name: supabase-post-process
-    description: "Perform necessary post processing here"
-    required: true
-    only:
-      flavor: upstream
-    actions:
-      onDeploy:
-        before:
-          # Deletes the initial kong config created by the upstream chart
-          - cmd: ./zarf tools kubectl delete cm supabase-kong-declarative-config -n leapfrogai
-        after:
-          # Restarts supabase-kong after the new kong config has been applied
-          # so that it can be loaded into the kong container
-          - cmd: ./zarf tools kubectl rollout restart deployment supabase-kong -n leapfrogai
-          - cmd: ./zarf tools kubectl rollout status deployment supabase-kong -n leapfrogai
-    manifests:
-      # Applies an update kong config that includes basic auth, this gets applied
-      # after the kong pods have started so the original config needs to be deleted and pod restarted
-      - name: supabase-manifests
-        namespace: leapfrogai
-        files:
-          - "manifests/declarative-conf-configmap.yaml"
-
-  - name: supabase-migrations
-    description: "Migrations that operate on a database configuration level that require higher elevated permissions (ie adding extensions)"
-    required: true
-    only:
-      flavor: upstream
-    charts:
-      - name: supabase-migrations
-        namespace: leapfrogai
-        localPath: migrationChart/
-        releaseName: supabase-migrations
-        version: 0.0.1
-        valuesFiles:
-          - "migration-values.yaml"
-    images:
-      - "ghcr.io/defenseunicorns/leapfrogai/supabase-migrations:###ZARF_PKG_TMPL_IMAGE_VERSION###"
-    actions:
-      onDeploy:
-        after:
-          - wait:
-              cluster:
-                kind: Job
-                name: supabase-migrations-###ZARF_PKG_TMPL_IMAGE_VERSION###
-                namespace: leapfrogai
-                condition: complete
+      - docker.io/supabase/gotrue:v2.143.0
+      - docker.io/postgrest/postgrest:v12.0.1
+      - docker.io/supabase/postgres:15.6.1.116
+      - docker.io/supabase/postgres-meta:v0.80.0
+      - docker.io/supabase/realtime:v2.27.5
+      - docker.io/supabase/storage-api:v0.46.4
+      - docker.io/supabase/studio:20240326-5e5586d
+      - localhost:5000/test/custom-supabase-postgres:0.0.3
+      - docker.io/postgres:15-alpine
+      - docker.io/kong:2.8.1
+      - docker.io/supabase/logflare:1.4.0
+      - docker.io/darthsim/imgproxy:v3.8.0
+      - docker.io/timberio/vector:0.34.0-alpine
+      - localhost:5000/test/custom-supabase-vector:0.0.1

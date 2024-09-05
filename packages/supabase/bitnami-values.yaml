@@ -1,205 +1,190 @@
-## @section LeapfrogAI parameters
-## Parameters not defined in the upstream chart that are related to LeapfrogAI's specific configuration
-leapfrogai:
-  package:
-    host: supabase-kong
-    name: supabase
-    component: kong
-  sso:
-    clientId: ###ZARF_CONST_EXTERNAL_KEYCLOAK_CLIENT_ID###
-    redirectUris:
-      - "https://{{ .Values.leapfrogai.package.host }}.###ZARF_VAR_DOMAIN###/auth/v1/callback"
-    webOrigins:
-      - "https://ai.###ZARF_VAR_DOMAIN###"
-
-global:
+secret:
   jwt:
-    existingSecret: "supabase-bootstrap-jwt"
+    anonKey: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyAgCiAgICAicm9sZSI6ICJhbm9uIiwKICAgICJpc3MiOiAic3VwYWJhc2UtZGVtbyIsCiAgICAiaWF0IjogMTY0MTc2OTIwMCwKICAgICJleHAiOiAxNzk5NTM1NjAwCn0.dc_X5iR_VP_qT0zsiyj_I_OZ2T9FtRU2BBNWN8Bu4GE
+    serviceKey: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyAgCiAgICAicm9sZSI6ICJzZXJ2aWNlX3JvbGUiLAogICAgImlzcyI6ICJzdXBhYmFzZS1kZW1vIiwKICAgICJpYXQiOiAxNjQxNzY5MjAwLAogICAgImV4cCI6IDE3OTk1MzU2MDAKfQ.DaYlNEoUrrEn2Ig7tqibS-PHK5vgusbcbo7X36XVt4Q
+    secret: your-super-secret-jwt-token-with-at-least-32-characters-long
+    # specify existing secret, which takes precedence over variables above
+    # secretRef: ""
+    # override secret keys for existing secret refs
+    # secretRefKey:
+    #   anonKey: anonKey
+    #   serviceKey: serviceKey
+    #   secret: secret
+  smtp:
+    username: your-mail@example.com
+    password: example123456
+    # specify existing secret, which takes precedence over variables above
+    # secretRef: ""
+    # override secret keys for existing secret refs
+    # secretRefKey:
+    #   username: username
+    #   password: password
+  dashboard:
+    username: supabase
+    password: this_password_is_insecure_and_should_be_updated
+    # specify existing secret, which takes precedence over variables above
+    # secretRef: ""
+    # override secret keys for existing secret refs
+    # secretRefKey:
+    #   username: username
+    #   password: password
+  db:
+    username: postgres
+    password: example123456
+    database: postgres
+    # specify existing secret, which takes precedence over variables above
+    # secretRef: ""
+    # override secret keys for existing secret refs
+    # secretRefKey:
+    #   username: username
+    #   password: password
+    #   database: database
+  analytics:
+    apiKey: your-super-secret-and-long-logflare-key
+    # specify existing secret, which takes precedence over variable above
+    # secretRef: ""
+    # override secret keys for existing secret refs
+    # secretRefKey:
+    #   apiKey: apiKey
 
-commonLabels:
-  sidecar.istio.io/inject: "false"
+db:
+  enabled: true
+  image:
+    repository: localhost:5000/test/custom-supabase-postgres
+    tag: 0.0.3
+    pullPolicy: Always
+  livenessProbe:
+    exec:
+      command:
+        - pg_isready
+        - -U
+        - postgres
+    initialDelaySeconds: 3
+  persistence:
+    enabled: false
+  podSecurityContext:
+    runAsUser: 105
+    runAsGroup: 106
 
-jwt:
-  autoGenerate:
-    resourcesPreset: "none"
-    podLabels:
-      sidecar.istio.io/inject: "false"
-publicURL: "https://supabase-kong.###ZARF_VAR_DOMAIN###"
+studio:
+  image:
+    tag: 20240326-5e5586d
+  environment:
+    STUDIO_DEFAULT_ORGANIZATION: "My Organization"
+    STUDIO_DEFAULT_PROJECT: "My Project"
+    SUPABASE_PUBLIC_URL: http://example.com/
+    NEXT_PUBLIC_ENABLE_LOGS: "true"
+  livenessProbe:
+    httpGet:
+      path: /api/profile
+      port: 3000
+    initialDelaySeconds: 3
+
 auth:
-  enabled: ###ZARF_VAR_ENABLE_AUTH###
-  defaultConfig: |
-    GOTRUE_API_HOST: "0.0.0.0"
-    GOTRUE_API_PORT: {{ .Values.auth.containerPorts.http | quote }}
-    API_EXTERNAL_URL: "http://{{ include "supabase.auth.fullname" . }}:{{ .Values.auth.service.ports.http }}"
-    GOTRUE_SITE_URL: {{ include "supabase.studio.publicURL" . | quote }}
-    GOTRUE_DISABLE_SIGNUP: "false"
-    GOTRUE_DB_DRIVER: "postgres"
-    GOTRUE_DB_MIGRATIONS_PATH: "/opt/bitnami/gotrue/"
-    GOTRUE_JWT_DEFAULT_GROUP_NAME: "authenticated"
-    GOTRUE_JWT_ADMIN_ROLES: "service_role"
-    GOTRUE_JWT_AUD: "authenticated"
-    GOTRUE_JWT_EXP: "3600"
+  image:
+    tag: v2.143.0
+  environment:
+    API_EXTERNAL_URL: http://example.com
+    GOTRUE_SITE_URL: http://example.com
     GOTRUE_EXTERNAL_EMAIL_ENABLED: "true"
     GOTRUE_MAILER_AUTOCONFIRM: "true"
     GOTRUE_SMTP_ADMIN_EMAIL: "your-mail@example.com"
     GOTRUE_SMTP_HOST: "smtp.example.com"
     GOTRUE_SMTP_PORT: "587"
     GOTRUE_SMTP_SENDER_NAME: "your-mail@example.com"
-    GOTRUE_EXTERNAL_PHONE_ENABLED: "false"
-    GOTRUE_SMS_AUTOCONFIRM: "false"
-    GOTRUE_MAILER_URLPATHS_INVITE: "{{ include "supabase.studio.publicURL" . }}/auth/v1/verify"
-    GOTRUE_MAILER_URLPATHS_CONFIRMATION: "{{ include "supabase.studio.publicURL" . }}/auth/v1/verify"
-    GOTRUE_MAILER_URLPATHS_RECOVERY: "{{ include "supabase.studio.publicURL" . }}/auth/v1/verify"
-    GOTRUE_MAILER_URLPATHS_EMAIL_CHANGE: "{{ include "supabase.studio.publicURL" . }}/auth/v1/verify"
-    GOTRUE_EXTERNAL_KEYCLOAK_ENABLED: "###ZARF_VAR_ENABLE_EXTERNAL_KEYCLOAK###"
-    GOTRUE_EXTERNAL_KEYCLOAK_CLIENT_ID: "{{ .Values.leapfrogai.sso.clientId }}"
-    GOTRUE_EXTERNAL_KEYCLOAK_REDIRECT_URI: "https://{{ .Values.leapfrogai.package.host }}.###ZARF_VAR_DOMAIN###/auth/v1/callback"
-    GOTRUE_EXTERNAL_KEYCLOAK_URL: "https://sso.###ZARF_VAR_DOMAIN###/realms/uds"
-  resourcesPreset: "none"
-  podLabels:
-    sidecar.istio.io/inject: "false"
-  extraEnvVars:
-    - name: GOTRUE_EXTERNAL_KEYCLOAK_SECRET
-      valueFrom:
-        secretKeyRef:
-          name: sso-client-uds-supabase
-          key: secret
-meta:
-  enabled: ###ZARF_VAR_ENABLE_META###
-  resourcesPreset: "none"
-  podLabels:
-    sidecar.istio.io/inject: "false"
-
-realtime:
-  enabled: ###ZARF_VAR_ENABLE_REALTIME###
-  resourcesPreset: "none"
-  podLabels:
-    sidecar.istio.io/inject: "false"
-  extraEnvVars:
-    - name: APP_NAME
-      value: "supabase-realtime"
-    - name: DB_AFTER_CONNECT_QUERY
-      value: "DO $body$ BEGIN CREATE SCHEMA IF NOT EXISTS _realtime; ALTER SCHEMA _realtime OWNER TO postgres; SET search_path TO _realtime; END $body$;"
-    - name: DB_ENC_KEY
-      valueFrom:
-        secretKeyRef:
-          name: supabase-realtime-extra
-          key: dbEncKey
-    - name: DNS_NODES
-      value: "supabase-realtime"
-  args:
-    - -ec
-    - |
-      realtime eval Realtime.Release.migrate && realtime eval 'Realtime.Release.seeds(Realtime.Repo)' && realtime start
 
 rest:
-  enabled: ###ZARF_VAR_ENABLE_REST###
-  resourcesPreset: "none"
-  podLabels:
-    sidecar.istio.io/inject: "false"
+  image:
+    tag: v12.0.1
+
+realtime:
+  image:
+    tag: v2.27.5
+  livenessProbe:
+    httpGet:
+      path: /
+      port: 4000
+    initialDelaySeconds: 3
+
+meta:
+  image:
+    tag: v0.80.0
 
 storage:
-  enabled: ###ZARF_VAR_ENABLE_STORAGE###
-  resourcesPreset: "none"
-  podLabels:
-    sidecar.istio.io/inject: "false"
-  extraEnvVars:
-    # FILE_SIZE_LIMIT and UPLOAD_FILE_SIZE_LIMIT do the same thing, Supabase has a primary and fallback variable,
-    # so we have opted to set both of the variables to the same value.
-    - name: FILE_SIZE_LIMIT
-      value: "###ZARF_VAR_MAX_FILE_UPLOAD_SIZE_IN_BYTES###"
-    - name: UPLOAD_FILE_SIZE_LIMIT
-      value: "###ZARF_VAR_MAX_FILE_UPLOAD_SIZE_IN_BYTES###"
+  image:
+    tag: v0.46.4
+  livenessProbe:
+    httpGet:
+      path: /status
+      port: 5000
+    initialDelaySeconds: 3
+  persistence:
+    enabled: false
 
-studio:
-  enabled: ###ZARF_VAR_ENABLE_STUDIO###
-  publicURL: "https://ai.###ZARF_VAR_DOMAIN###"
-  resourcesPreset: "none"
-  podLabels:
-    sidecar.istio.io/inject: "false"
-
-volumePermissions:
-  enabled: ###ZARF_VAR_ENABLE_VOLUME_PERMISSIONS###
-  resourcesPreset: "none"
-
-psqlImage:
-  tag: 15.6.1-debian-12-r2
+imgproxy:
+  image:
+    tag: v3.8.0
+  environment:
+    IMGPROXY_ENABLE_WEBP_DETECTION: "true"
+  livenessProbe:
+    exec:
+      command:
+        - imgproxy
+        - health
+    initialDelaySeconds: 3
+  persistence:
+    enabled: false
 
 kong:
-  enabled: ###ZARF_VAR_ENABLE_KONG###
-  initContainers: |
-    - name: render-kong-declarative-conf
-      image: '{{ include "kong.image" . }}'
-      command:
-        - /bin/bash
-      args:
-        - -ec
-        - |
-          #!/bin/bash
-
-          . /opt/bitnami/scripts/liblog.sh
-
-          # We need to generate it in the tmp folder to ensure that we have write permissions
-          info "Rendering Supabase declarative config template"
-          render-template /bitnami/kong/declarative-template/kong.yml.tpl > "/bitnami/kong/declarative-conf/kong.yml"
-      volumeMounts:
-        - name: declarative-conf-template
-          mountPath: /bitnami/kong/declarative-template/
-        - name: rendered-declarative-conf
-          mountPath: /bitnami/kong/declarative-conf/
-      {{- if .Values.containerSecurityContext.enabled }}
-      securityContext: {{- omit .Values.containerSecurityContext "enabled" | toYaml | nindent 6 }}
-      {{- end }}
-      env:
-        - name: SUPABASE_DASHBOARD_USERNAME
-          value: '###ZARF_CONST_DASHBOARD_USERNAME###'
-        - name: SUPABASE_DASHBOARD_PASSWORD
-          valueFrom:
-            secretKeyRef:
-              name: supabase-dashboard-secret
-              key: password
-        - name: SUPABASE_ANON_KEY
-          valueFrom:
-            secretKeyRef:
-              name: '{{ include "supabase.jwt.secretName" . }}'
-              key: '{{ include "supabase.jwt.anonSecretKey" . }}'
-        - name: SUPABASE_SERVICE_KEY
-          valueFrom:
-            secretKeyRef:
-              name: '{{ include "supabase.jwt.secretName" . }}'
-              key: '{{ include "supabase.jwt.serviceSecretKey" . }}'
-  podLabels:
-    sidecar.istio.io/inject: "false"
-  kong:
-    extraEnvVars:
-      - name: KONG_DECLARATIVE_CONFIG
-        value: "/bitnami/kong/declarative-conf/kong.yml"
-      - name: KONG_DNS_ORDER
-        value: LAST,A,CNAME
-      - name: KONG_PLUGINS
-        value: request-transformer,cors,key-auth,acl,basic-auth
-    resourcesPreset: "none"
-    livenessProbe:
-      timeoutSeconds: 40
-    readinessProbe:
-      timeoutSeconds: 40
-  service:
-    type: ClusterIP
-postgresql:
-  enabled: ###ZARF_VAR_ENABLE_POSTGRES###
   image:
-    tag: 15.6.1-debian-12-r2
-    debug: true
-  primary:
-    extendedConfiguration: |
-      wal_level = logical
-    resourcesPreset: "none"
-    podLabels:
-      sidecar.istio.io/inject: "false"
+    repository: kong
+    tag: 2.8.1
+  environment:
+    KONG_DECLARATIVE_CONFIG: /usr/local/kong/kong.yml
+    KONG_LOG_LEVEL: info
+  ingress:
+    enabled: true
+    className: "nginx"
+    annotations:
+      nginx.ingress.kubernetes.io/rewrite-target: /
+    tls: []
+      # - secretName: example-ingress-tls
+      #   hosts:
+      #     - example.com
+    hosts:
+      - host: example.com
+        paths:
+          - path: /
+            pathType: Prefix
+  podSecurityContext:
+    runAsUser: 100
+    runAsGroup: 65533
 
-  commonAnnotations:
-    helm.sh/resource-policy: keep
-  ## @param postgresql.postgresqlSharedPreloadLibraries Set the shared_preload_libraries parameter in postgresql.conf
-  ## Setting an empty value in order to force the default extensions of supabase-postgres
-  ##
-  postgresqlSharedPreloadLibraries: "pg_stat_statements, pg_stat_monitor, pgaudit, plpgsql, plpgsql_check, pg_cron, pg_net, pgsodium, timescaledb, auto_explain, vector"
+analytics:
+  image:
+    tag: 1.4.0
+  livenessProbe:
+    httpGet:
+      path: /health
+      port: 4000
+    initialDelaySeconds: 3
+
+vector:
+  image:
+    repository: localhost:5000/test/custom-supabase-vector
+    tag: 0.0.1
+    pullPolicy: Always
+  livenessProbe:
+    httpGet:
+      path: /health
+      port: 9001
+    initialDelaySeconds: 3
+  volumeMounts:
+    - name: pod-logs
+      mountPath: /var/log/pods
+  volumes:
+    - name: pod-logs
+      emptyDir: {}
+
+functions:
+  enabled: false
