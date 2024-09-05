@@ -8,7 +8,7 @@ import pptxgen from 'pptxgenjs';
 import { expect } from '../fixtures';
 import type { FileObject } from 'openai/resources/files';
 import { getTableRow } from './helpers';
-import { formatDate } from '$helpers/dates';
+import { formatDate } from '../../src/lib/helpers/dates';
 
 export const uploadFileWithApi = async (
   filename = 'test.pdf',
