@@ -43,12 +43,12 @@ class ClaudeSonnet(DeepEvalBaseLLM):
         return response
 
     async def a_generate(
-        self, prompt: str, schema: BaseModel, max_tokens: Optional[int]
-    ) -> str:
+        self, prompt: str, schema: BaseModel, *args, **kwargs
+    ) -> BaseModel:
         """Async implementation of the generate function"""
         loop = asyncio.get_running_loop()
         return await loop.run_in_executor(
-            None, self.generate, prompt, schema, max_tokens
+            None, self.generate, prompt, schema, *args, **kwargs
         )
 
     def get_model_name(self):

@@ -51,7 +51,7 @@ class NIAH_Runner:
         base_url: str = None,
         api_key: str = None,
         model: str = None,
-        message_prompt: str = "What is Doug's secret code?",
+        message_prompt: str = "What is the secret code?",
         instruction_template: str = DEFAULT_INSTRUCTION_TEMPLATE,
         min_doc_length: int = 4096,
         max_doc_length: int = 4096,

@@ -1,11 +1,14 @@
-import deepeval
+# import deepeval
 from deepeval.test_case import LLMTestCase
-from deepeval.metrics import (
-    FaithfulnessMetric,
-)  # , ContextualRecallMetric TODO: enable this metric
+from deepeval.metrics import AnswerRelevancyMetric
+
+# , ContextualRecallMetric TODO: enable this metric
+# FaithfulnessMetric,
 import logging
+import numpy as np
 from typing import Optional, List
 
+from leapfrogai_evals.judges.claude_sonnet import ClaudeSonnet
 from leapfrogai_evals.metrics.correctness import CorrectnessMetric
 from leapfrogai_evals.metrics.niah_metrics import NIAH_Retrieval, NIAH_Response
 from leapfrogai_evals.runners.niah_runner import NIAH_Runner
@@ -29,6 +32,7 @@ class RAGEvaluator:
         # self.metric_list = metric_list
         self.test_case_dict = None
         self.niah_test_cases = None
+        self.eval_results = dict()
 
     def set_evaluations(self, eval_list=[]) -> None:
         """Set the evaluations that will be run via a list"""
@@ -52,7 +56,7 @@ class RAGEvaluator:
 
         logging.info("Running the following evaluations:")
         for eval in self.eval_list:
-            logging.info(f" -{eval}")
+            logging.info(f" - {eval}")
 
         if "LFAI_NIAH" in self.eval_list:
             logging.info("Beginning Needle in a Haystack Evaluation...")
@@ -61,6 +65,10 @@ class RAGEvaluator:
         if "LFAI_QA" in self.eval_list:
             logging.info("Beginning Question/Answer Evaluation...")
             self._qa_evaluation(*args, **kwargs)
+
+        logging.info("Final Results:")
+        for key, value in self.eval_results.items():
+            logging.info(f"{key}: {value}")
 
     def _niah_evaluation(self, *args, **kwargs) -> None:
         """Run the Needle in a Haystack evaluation"""
@@ -87,10 +95,20 @@ class RAGEvaluator:
         # TODO: Give ability to choose which metrics to run
         retrieval_metric = NIAH_Retrieval()
         response_metric = NIAH_Response()
+        metrics = [retrieval_metric, response_metric]
 
-        deepeval.evaluate(
-            test_cases=self.niah_test_cases, metrics=[retrieval_metric, response_metric]
-        )
+        for metric in metrics:
+            scores = []
+            successes = []
+            for test_case in self.niah_test_cases:
+                metric.measure(test_case)
+                scores.append(metric.score)
+                successes.append(metric.is_successful())
+            self.eval_results[f"Average {metric.__name__}"] = np.mean(scores)
+            logging.info(f"{metric.__name__} Results:")
+            logging.info(f"average score: {np.mean(scores)}")
+            logging.info(f"scores: {scores}")
+            logging.info(f"successes: {successes}")
 
     def _qa_evaluation(self, *args, **kwargs) -> None:
         """Runs the Question/Answer evaluation"""
@@ -105,7 +123,7 @@ class RAGEvaluator:
                 LLMTestCase(
                     input=row["input"],
                     actual_output=row["actual_output"],
-                    context=[row["context"]],
+                    context=row["context"],
                     expected_output=row["expected_output"],
                     # retrieval_context = row['retrieval_context'] # TODO: add this for more metrics
                 )
@@ -113,13 +131,32 @@ class RAGEvaluator:
 
         # run metrics
         # TODO: Give ability to choose which metrics to run
-        correctness_metric = CorrectnessMetric()
-        faithfulness_metric = FaithfulnessMetric()
+        judge_model = ClaudeSonnet()
+        correctness_metric = CorrectnessMetric(model=judge_model)
+        # faithfulness_metric = FaithfulnessMetric(model=judge_model)
+        answer_relevancy_metric = AnswerRelevancyMetric(model=judge_model)
+        metrics = [correctness_metric, answer_relevancy_metric]
 
-        deepeval.evaluate(
-            test_cases=self.qa_test_cases,
-            metrics=[correctness_metric, faithfulness_metric],
-        )
+        for metric in metrics:
+            scores = []
+            successes = []
+            reasons = []
+            for test_case in self.qa_test_cases:
+                metric.measure(test_case)
+                scores.append(metric.score)
+                successes.append(metric.is_successful())
+                reasons.append(metric.reason)
+            self.eval_results[f"Average {metric.__name__}"] = np.mean(scores)
+            logging.info(f"{metric.__name__} Results:")
+            logging.info(f"average score: {np.mean(scores)}")
+            logging.info(f"scores: {scores}")
+            logging.info(f"successes: {successes}")
+            logging.info(f"reasons: {reasons}")
+        # deepeval.evaluate(
+        #     test_cases=self.qa_test_cases,
+        #     metrics=metrics,
+        #     print_results=False
+        # )
 
 
 if __name__ == "__main__":

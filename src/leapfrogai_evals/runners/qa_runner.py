@@ -1,7 +1,7 @@
 import logging
 import os
 import openai
-import PyPDF2
+import shutil
 import zipfile
 
 from datasets import load_dataset
@@ -49,6 +49,7 @@ class QA_Runner:
         api_key: str = None,
         num_samples: int = 32,
         instruction_template: str = DEFAULT_INSTRUCTION_TEMPLATE,
+        vector_store_id: str = None,
     ):
         """Initialize the Assistant with an API key and the path to the text file"""
 
@@ -64,9 +65,10 @@ class QA_Runner:
             api_key=api_key or os.getenv("LEAPFROGAI_API_KEY"),
         )
         logging.info(f"client url: {self.client.base_url}")
+        self.vector_store = vector_store_id or self._create_vector_store()
+        if not vector_store_id:
+            self._upload_context(dataset_name=dataset)
         self._load_qa_dataset(dataset_name=dataset, num_samples=num_samples)
-        self._create_vector_store()
-        self._upload_context(dataset_name=dataset)
 
     def run_experiment(self, cleanup: bool = True) -> None:
         """Prompts LFAI to answer questions from the QA dataset"""
@@ -122,7 +124,10 @@ class QA_Runner:
                 self.current_assistant = None
 
             # set the responses
-            self.qa_data["actual_output"] = response_contents
+            self.qa_data = self.qa_data.remove_columns("actual_output")
+            self.qa_data = self.qa_data.add_column(
+                name="actual_output", column=response_contents
+            )
 
             if cleanup:
                 self.cleanup()
@@ -157,9 +162,19 @@ class QA_Runner:
         By default, the dataset will contain 32 elements
         """
         logging.info(f"Downloading dataset: {dataset_name} from HuggingFace")
-        qa_dataset = load_dataset(dataset_name)["eval"].select(range(num_samples))
+        qa_dataset = load_dataset(dataset_name)["eval"]
+        qa_dataset = qa_dataset.select(
+            (
+                i
+                for i in range(len(qa_dataset))
+                if (qa_dataset[i]["source_file"] in self.doc_list)
+            )
+        )
 
         logging.info(f"Dataset downloaded: \n{qa_dataset}")
+        if num_samples < len(qa_dataset):
+            qa_dataset = qa_dataset.select(range(num_samples))
+
         self.qa_data = qa_dataset
 
     def _create_assistant(self) -> Assistant:
@@ -191,8 +206,7 @@ class QA_Runner:
             expires_after={"anchor": "last_active_at", "days": 1},
             metadata={"project": "QA Evaluation", "version": "0.1"},
         )
-        self.vector_store = vector_store
-        logging.info("Uploading context to vector store...")
+        return vector_store
 
     def _delete_vector_store(self, vector_store_id: str) -> None:
         """Deletes the vector store used for all QA evaluations"""
@@ -204,38 +218,34 @@ class QA_Runner:
         """Uploads the full-text context documents to the vector store"""
         file_ids = []
         zip_path = hf_hub_download(
-            repo_id=dataset_name, repo_type="dataset", filename="document_context.zip"
+            repo_id=dataset_name, repo_type="dataset", filename="documents.zip"
         )
-        output_dir = "."
         # make a temporary directory to store documents
         with zipfile.ZipFile(zip_path, "r") as zip_ref:
-            zip_ref.extractall(output_dir)
-            context_dir = zip_ref.namelist()[0]
-            doc_list = zip_ref.namelist()[1:]  # skip the name of the parent dir
+            zip_ref.extractall(".")
+            doc_list = zip_ref.namelist()
+            context_dir = doc_list.pop(0)  # first entry is the parent dir
+            doc_list.pop(1)  # remove second item in list for now
+            doc_list.pop(3)
+            doc_list.pop(3)
+            doc_list = [doc_list.pop(0)]
 
         logging.info(f"doc list: {doc_list}")
 
         logging.info("Uploading context documents")
         for doc in tqdm(doc_list):
             with open(doc, "rb") as pdf_file:
-                reader = PyPDF2.PdfReader(pdf_file)
-                text = ""
-                for page in reader.pages:
-                    text += page.extract_text()
-            # TODO: Find more efficient way to upload files
-            with open(f"{doc}.txt", "wb") as context_file:
-                context_file.write(text.encode("utf-8"))
-            with open(f"{doc}.txt", "rb") as context_file:
                 vector_store_file = self.client.beta.vector_stores.files.upload(
-                    vector_store_id=self.vector_store.id, file=context_file
+                    vector_store_id=self.vector_store.id, file=pdf_file
                 )
-            os.remove(f"{doc}.txt")
             file_ids.append(vector_store_file.id)
 
-        os.remove(context_dir)
+        shutil.rmtree(context_dir)
         logging.debug(
             f"data in vector store: {self.client.beta.vector_stores.files.list(vector_store_id=self.vector_store.id).data}"
         )
+
+        self.doc_list = doc_list
 
     def _delete_context(self) -> None:
         """Deletes the context files uploaded to the vector store"""
