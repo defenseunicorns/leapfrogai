@@ -18,6 +18,9 @@ help: ## Display this help information
 
 clean: ## Clean up all the things (packages, build dirs, compiled .whl files, python eggs)
 	-rm -rf .logs
+	-rm -rf ./packages/**/.model/
+	-rm -rf ./**/__pycache__/
+	-rm -rf ./**/.ruff_cache
 	-rm zarf-package-*.tar.zst
 	-rm packages/**/zarf-package-*.tar.zst
 	-rm -rf build/*
