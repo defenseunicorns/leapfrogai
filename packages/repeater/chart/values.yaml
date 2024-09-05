@@ -57,8 +57,3 @@ strategy:
   rollingUpdate:
     maxUnavailable: 0
   type: RollingUpdate
-
-persistence:
-  size: 15Gi
-  accessModes: ReadWriteOnce
-  storageClass: "local-path"
