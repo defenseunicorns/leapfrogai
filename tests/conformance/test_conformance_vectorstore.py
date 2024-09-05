@@ -3,13 +3,13 @@ import pytest
 from openai.types.beta.vector_store import VectorStore
 from openai.types.beta.vector_store_deleted import VectorStoreDeleted
 
-from .utils import client_config_factory
+from ..utils.client import client_config_factory
 
 
 @pytest.mark.parametrize("client_name", ["openai", "leapfrogai"])
 def test_vector_store_create(client_name):
     config = client_config_factory(client_name)
-    client = config["client"]  # shorthand
+    client = config.client  # shorthand
 
     vector_store = client.beta.vector_stores.create(name="Test data")
 
@@ -19,7 +19,7 @@ def test_vector_store_create(client_name):
 @pytest.mark.parametrize("client_name", ["openai", "leapfrogai"])
 def test_vector_store_list(client_name):
     config = client_config_factory(client_name)
-    client = config["client"]  # shorthand
+    client = config.client  # shorthand
 
     client.beta.vector_stores.create(name="Test data")
 
@@ -34,7 +34,7 @@ def test_vector_store_list(client_name):
 @pytest.mark.parametrize("client_name", ["openai", "leapfrogai"])
 def test_vector_store_delete(client_name):
     config = client_config_factory(client_name)
-    client = config["client"]
+    client = config.client
 
     vector_store = client.beta.vector_stores.create(name="Test data")
 

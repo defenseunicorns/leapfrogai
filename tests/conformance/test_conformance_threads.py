@@ -2,7 +2,7 @@ import pytest
 from openai.types.beta.thread import Thread
 from openai.types.beta.threads import Message, TextContentBlock, Text
 
-from .utils import client_config_factory
+from ..utils.client import client_config_factory
 
 
 def make_mock_message_object(role, message_text):
@@ -37,7 +37,7 @@ mock_message = make_mock_message_simple(role="user", message_text="Who is Sam?")
 )
 def test_thread(client_name, test_messages):
     config = client_config_factory(client_name)
-    client = config["client"]
+    client = config.client
 
     thread = client.beta.threads.create(messages=test_messages)
 
