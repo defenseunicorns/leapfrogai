@@ -8,14 +8,27 @@ on:
 
 jobs:
   tag-new-version:
-    permissions:
-      contents: write
-      pull-requests: write
+    permissions: write-all
     runs-on: ubuntu-latest
+    outputs:
+      release_created: ${{ steps.release-flag.outputs.release_created }}
     steps:
       - name: Create release tag
         id: tag
-        uses: google-github-actions/release-please-action@a37ac6e4f6449ce8b3f7607e4d97d0146028dc0b # v4
+        uses: googleapis/release-please-action@7987652d64b4581673a76e33ad5e98e3dd56832f # v4.1.3
         with:
           config-file: .github/release-please-config.json
           manifest-file: .github/.release-please-manifest.json
+      - id: release-flag
+        run: echo "release_created=${{ steps.tag.outputs.release_created || false }}" >> $GITHUB_OUTPUT
+
+
+  publish-release-artifacts:
+    needs: tag-new-version
+    if: ${{ needs.tag-new-version.outputs.release_created == 'true' }}
+    permissions:
+      contents: write
+      packages: write
+      id-token: write
+    uses: ./.github/workflows/release.yaml
+    secrets: inherit
