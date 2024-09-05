@@ -38,7 +38,7 @@ jobs:
         id: get_version
         run: |
           LFAI_VERSION=$(jq -r '.["."]' .github/.release-please-manifest.json)
-          echo "LFAI_VERSION=$LFAI_VERSION" >> $GITHUB_ENV
+          echo "LFAI_VERSION=$LFAI_VERSION" >> $GITHUB_OUTPUT
 
       - name: Instal Python Deps
         run: |
