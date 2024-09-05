@@ -55,7 +55,7 @@ class QA_Runner:
 
         self.qa_data = None
         self.vector_store = None
-        self.file_ids = None
+        self.file_dict = None
         self.current_assistant = None
         self.model = model
         self.temperature = temperature
@@ -80,6 +80,8 @@ class QA_Runner:
 
         try:
             response_contents = []
+            expected_annotations = []
+            actual_annotations = []
 
             for row in tqdm(self.qa_data, desc="Evaluating data rows"):
                 # create assistant
@@ -109,12 +111,20 @@ class QA_Runner:
                         response_messages.append(message)
 
                 response_content = ""
+                response_annotations = []
                 for response in response_messages:
                     response_content += response.content[0].text.value + "\n"
+
+                    for annotation in response.content[0].text.annotations:
+                        annotation_id = annotation.file_citation.file_id
+                        response_annotations.append(annotation_id)
 
                     logging.debug(
                         f"number of annotations in response: {len(response.content[0].text.annotations)}"
                     )
+
+                expected_annotations.append([self.file_dict[row["source_file"]]])
+                actual_annotations.append(response_annotations)
 
                 logging.info(f"Response recorded:\n{response_content}")
                 response_contents.append(response_content)
@@ -127,6 +137,12 @@ class QA_Runner:
             self.qa_data = self.qa_data.remove_columns("actual_output")
             self.qa_data = self.qa_data.add_column(
                 name="actual_output", column=response_contents
+            )
+            self.qa_data = self.qa_data.add_column(
+                name="expected_annotations", column=expected_annotations
+            )
+            self.qa_data = self.qa_data.add_column(
+                name="actual_annotations", column=actual_annotations
             )
 
             if cleanup:
@@ -148,9 +164,9 @@ class QA_Runner:
         if self.current_assistant:
             self._delete_assistant(assistant_id=self.current_assistant.id)
             self.current_assistant = None
-        if self.file_ids:
+        if self.file_dict:
             self._delete_context()
-            self.file_ids = None
+            self.file_dict = None
         if self.vector_store:
             self._delete_vector_store(vector_store_id=self.vector_store.id)
             self.vector_store = None
@@ -216,7 +232,7 @@ class QA_Runner:
 
     def _upload_context(self, dataset_name: str) -> None:
         """Uploads the full-text context documents to the vector store"""
-        file_ids = []
+        self.file_dict = dict()
         zip_path = hf_hub_download(
             repo_id=dataset_name, repo_type="dataset", filename="documents.zip"
         )
@@ -225,10 +241,11 @@ class QA_Runner:
             zip_ref.extractall(".")
             doc_list = zip_ref.namelist()
             context_dir = doc_list.pop(0)  # first entry is the parent dir
-            doc_list.pop(1)  # remove second item in list for now
+            doc_list.pop(
+                1
+            )  # remove documents that cause issues for now TODO: find out why these fail
             doc_list.pop(3)
             doc_list.pop(3)
-            doc_list = [doc_list.pop(0)]
 
         logging.info(f"doc list: {doc_list}")
 
@@ -238,7 +255,7 @@ class QA_Runner:
                 vector_store_file = self.client.beta.vector_stores.files.upload(
                     vector_store_id=self.vector_store.id, file=pdf_file
                 )
-            file_ids.append(vector_store_file.id)
+            self.file_dict[doc] = vector_store_file.id
 
         shutil.rmtree(context_dir)
         logging.debug(
@@ -250,5 +267,5 @@ class QA_Runner:
     def _delete_context(self) -> None:
         """Deletes the context files uploaded to the vector store"""
         logging.info("Deleting uploaded context files...")
-        for file_id in self.file_ids:
+        for _, file_id in self.file_dict.items():
             self.client.files.delete(file_id=file_id)
