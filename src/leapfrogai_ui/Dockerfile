@@ -10,8 +10,6 @@ ENV PATH=${JAVA_HOME}/bin:$PATH
 
 WORKDIR /app
 
-WORKDIR /app
-
 COPY . .
 
 RUN npm ci
