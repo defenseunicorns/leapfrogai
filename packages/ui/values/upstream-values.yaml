@@ -18,7 +18,7 @@ env:
   - name: PUBLIC_SUPABASE_URL
     value: "https://supabase-kong.###ZARF_VAR_DOMAIN###"
   - name: PUBLIC_DISABLE_KEYCLOAK
-    value: "true"
+    value: "###ZARF_VAR_DISABLE_KEYCLOAK###"
   - name: PUBLIC_MESSAGE_LENGTH_LIMIT
     value: "10000"
   - name: SUPABASE_AUTH_EXTERNAL_KEYCLOAK_URL

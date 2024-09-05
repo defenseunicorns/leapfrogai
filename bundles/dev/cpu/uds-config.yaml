@@ -1,10 +1,10 @@
 variables:
   text-embeddings:
-    GPU_RUNTIME_NAME: "" # Leave blank if nvidia runtimeClass is not present in cluster
+    gpu_runtime: "" # Leave blank if nvidia runtimeClass is not present in cluster
     gpu_limit: 0
 
   whisper:
-    GPU_RUNTIME_NAME: "" # Leave blank if nvidia runtimeClass is not present in cluster
+    gpu_runtime: "" # Leave blank if nvidia runtimeClass is not present in cluster
     gpu_limit: 0
 
   supabase:

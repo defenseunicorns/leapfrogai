@@ -15,7 +15,7 @@ variables:
     description: The GPU limit for the model inferencing. Must be 1 or more.
     default: "1"
     pattern: "^[1-9][0-9]*$"
-  - name: GPU_RUNTIME_NAME
+  - name: GPU_RUNTIME
     description: The GPU runtime name for the model inferencing.
     default: "nvidia"
     pattern: "^(nvidia)?$"
