@@ -175,3 +175,80 @@ def test_supabase_realtime_vector_store_indexing():
         assert True
     except Exception:
         assert False
+
+
+def test_supabase_realtime_file_objects():
+    class TestCompleteException(Exception):
+        pass
+
+    def timeout_handler():
+        print("Test timed out after 10 seconds")
+        _thread.interrupt_main()
+
+    async def create_file_object():
+        client: AsyncClient = await acreate_client(
+            supabase_key=ANON_KEY,
+            supabase_url="https://supabase-kong.uds.dev",
+        )
+        await client.auth.set_session(access_token=access_token, refresh_token="dummy")
+
+        empty_file_object = FileObject(
+            id="",
+            bytes=0,
+            created_at=0,
+            filename="test_file.txt",
+            object="file",
+            purpose="assistants",
+            status="uploaded",
+            status_details=None,
+        )
+
+        file_object = await CRUDFileObject(client).create(object_=empty_file_object)
+        assert file_object is not None, "Failed to create file object"
+
+    def file_objects_callback(payload):
+        expected_record = {
+            "object": "file",
+            "status": "uploaded",
+            "filename": "test_file.txt",
+        }
+
+        all_records_match = all(
+            payload.get("record", {}).get(key) == value
+            for key, value in expected_record.items()
+        )
+        event_information_match = (
+            payload.get("table") == "file_objects"
+            and payload.get("type") == "INSERT"
+        )
+
+        if event_information_match and all_records_match:
+            raise TestCompleteException("Test completed successfully")
+
+    def run_create_file_object():
+        asyncio.run(create_file_object())
+
+    timeout_timer = None
+    try:
+        random_name = str(uuid.uuid4())
+        access_token = create_test_user(email=f"{random_name}@fake.com")
+
+        threading.Timer(5.0, run_create_file_object).start()
+
+        timeout_timer = threading.Timer(10.0, timeout_handler)
+        timeout_timer.start()
+
+        URL = f"wss://supabase-kong.uds.dev/realtime/v1/websocket?apikey={SERVICE_KEY}&vsn=1.0.0"
+        s = Socket(URL)
+        s.connect()
+
+        channel = s.set_channel("realtime:public:file_objects")
+        channel.join().on("*", file_objects_callback)
+
+        s.listen()
+    except TestCompleteException:
+        if timeout_timer is not None:
+            timeout_timer.cancel()
+        assert True
+    except Exception:
+        assert False
