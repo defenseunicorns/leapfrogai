@@ -1,6 +1,6 @@
 image:
   repository: ghcr.io/defenseunicorns/leapfrogai/leapfrogai-ui
-  tag: ###ZARF_CONST_IMAGE_VERSION###
+  tag: "###ZARF_CONST_IMAGE_VERSION###"
 
 env:
   - name: LEAPFROGAI_API_BASE_URL
@@ -43,5 +43,5 @@ extraEnv:
 migration:
   image:
     repository: ghcr.io/defenseunicorns/leapfrogai/ui-migrations
-    tag: ###ZARF_CONST_IMAGE_VERSION###
+    tag: "###ZARF_CONST_IMAGE_VERSION###"
     imagePullPolicy: Always

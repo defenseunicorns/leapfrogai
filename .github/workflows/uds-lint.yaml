@@ -1,12 +1,6 @@
 name: UDS Lint
 
 on:
-  push:
-    branches:
-      - "main"
-    paths:
-      - "bundles/**"
-      - ".github/workflows/uds-lint.yaml"
   pull_request:
     branches:
       - "main"

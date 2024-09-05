@@ -1,14 +1,6 @@
 name: Helm Lint
 
 on:
-  push:
-    branches:
-      - "main"
-    paths:
-      - "**/chart"
-      - "**/values"
-      - "**/*values.yaml"
-      - ".github/workflows/helm-lint.yaml"
   pull_request:
     branches:
       - "main"

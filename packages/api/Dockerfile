@@ -21,10 +21,8 @@ RUN rm -f packages/api/build/*.whl && \
     pip install packages/api/build/leapfrogai_api*.whl --no-index --find-links=packages/api/build/
 
 FROM ghcr.io/defenseunicorns/leapfrogai/python:3.11
-
-WORKDIR /leapfrogai
-
 ENV PATH="/leapfrogai/.venv/bin:$PATH"
+WORKDIR /leapfrogai
 
 COPY --from=builder /leapfrogai/.venv/ /leapfrogai/.venv/
 

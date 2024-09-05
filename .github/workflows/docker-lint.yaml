@@ -1,14 +1,6 @@
 name: Docker Lint
 
 on:
-  push:
-    branches:
-      - "main"
-    paths:
-      - "**/Dockerfile"
-      - "**/Dockerfile.migrations"
-      - "**/.dockerignore"
-      - ".github/workflows/docker-lint.yaml"
   pull_request:
     branches:
       - "main"

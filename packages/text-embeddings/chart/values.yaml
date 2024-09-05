@@ -67,7 +67,7 @@ persistence:
   storageClass: "local-path"
 
 gpu:
-  runtimeClassName: "###ZARF_VAR_GPU_RUNTIME###"
+  runtimeClassName: ""
 
 modelInjectionContainer:
   securityContext:

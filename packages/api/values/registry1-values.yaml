@@ -2,10 +2,10 @@ api:
   image:
     repository: registry1.dso.mil/ironbank/opensource/defenseunicorns/leapfrogai/api
     # x-release-please-start-version
-    tag: v0.11.0
+    tag: "v0.11.0"
     # x-release-please-end
 
-  expose: ###ZARF_VAR_EXPOSE_API###
+  expose: "###ZARF_VAR_EXPOSE_API###"
 
   env:
     - name: LFAI_LOG_LEVEL
@@ -31,9 +31,9 @@ api:
     image:
       # TODO: replace with Ironbank image once hardened: registry1.dso.mil/ironbank/opensource/defenseunicorns/leapfrogai/api/migrations
       repository: ghcr.io/defenseunicorns/leapfrogai/api-migrations
-      tag: ###ZARF_CONST_IMAGE_VERSION###
+      tag: "###ZARF_CONST_IMAGE_VERSION###"
 
 kiwigrid:
   image:
     repository: registry1.dso.mil/ironbank/kiwigrid/k8s-sidecar
-    tag: 1.23.3
+    tag: "1.23.3"
