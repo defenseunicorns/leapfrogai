@@ -73,17 +73,19 @@ FROM nvidia/cuda:12.2.2-runtime-ubuntu22.04
 ARG SDK_DEST=src/leapfrogai_sdk/build
 
 # model-specific arguments
-ARG TRUST_REMOTE_CODE="True" \
+ARG ARG HF_HUB_ENABLE_HF_TRANSFER="1" \
+    REPO_ID="TheBloke/Synthia-7B-v2.0-GPTQ" \
+    REVISION="gptq-4bit-32g-actorder_True" \
     MODEL_SOURCE="/data/.model/" \
     MAX_CONTEXT_LENGTH=32768 \
     STOP_TOKENS='["</s>"]' \
-    PROMPT_FORMAT_CHAT_SYSTEM="<|im_start|>system\n{}<|im_end|>\n" \
-    PROMPT_FORMAT_CHAT_USER="<|im_start|>user\n{}<|im_end|>\n" \
-    PROMPT_FORMAT_CHAT_ASSISTANT="<|im_start|>assistant\n{}<|im_end|>\n" \
+    PROMPT_FORMAT_CHAT_SYSTEM="SYSTEM: {}\n" \
+    PROMPT_FORMAT_CHAT_USER="USER: {}\n" \
+    PROMPT_FORMAT_CHAT_ASSISTANT="ASSISTANT: {}\n" \
     PROMPT_FORMAT_DEFAULTS_TOP_P=1.0 \
     PROMPT_FORMAT_DEFAULTS_TOP_K=0 \
     TENSOR_PARALLEL_SIZE=1 \
-    QUANTIZATION="None"
+    QUANTIZATION="gptq"
 
 # setup nonroot user and permissions
 USER root
@@ -102,7 +104,9 @@ COPY --from=builder --chown=nonroot:nonroot /home/leapfrogai/packages/vllm/src /
 COPY --from=builder --chown=nonroot:nonroot /home/nonroot/.pyenv/versions/3.11.6/ /home/nonroot/.pyenv/versions/3.11.6/
 
 # load ARG values into env variables for pickup by confz
-ENV LAI_TRUST_REMOTE_CODE=${TRUST_REMOTE_CODE} \
+ENV LAI_HF_HUB_ENABLE_HF_TRANSFER=${HF_HUB_ENABLE_HF_TRANSFER} \
+    LAI_REPO_ID=${REPO_ID} \
+    LAI_REVISION=${REVISION} \
     LAI_MODEL_SOURCE=${MODEL_SOURCE} \
     LAI_MAX_CONTEXT_LENGTH=${MAX_CONTEXT_LENGTH} \
     LAI_STOP_TOKENS=${STOP_TOKENS} \

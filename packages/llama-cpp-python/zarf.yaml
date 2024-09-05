@@ -46,7 +46,7 @@ components:
       - source: .model/
         target:
           namespace: leapfrogai
-          selector: app=lfai-llama
+          selector: app=lfai-llama-cpp-python
           container: data-loader
           path: /data/.model
         compress: true
