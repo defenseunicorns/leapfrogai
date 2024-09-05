@@ -218,8 +218,7 @@ def test_supabase_realtime_file_objects():
             for key, value in expected_record.items()
         )
         event_information_match = (
-            payload.get("table") == "file_objects"
-            and payload.get("type") == "INSERT"
+            payload.get("table") == "file_objects" and payload.get("type") == "INSERT"
         )
 
         if event_information_match and all_records_match:
