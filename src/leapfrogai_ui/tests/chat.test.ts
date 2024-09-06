@@ -190,6 +190,7 @@ test('it shows a loading skeleton when a response is pending', async ({ page, op
 
 test('it can chat with an assistant that doesnt have files', async ({ page, openAIClient }) => {
   const assistant = await createAssistantWithApi({ openAIClient });
+  expect(assistant.tool_resources?.file_search).not.toBeDefined(); // ensure the assistant has no files
 
   await loadChatPage(page);
 
