@@ -20,7 +20,7 @@ build/
 **/*.whl
 .model/
 *.gguf
-.env
+.env*
 .ruff_cache
 .branches
 .temp
