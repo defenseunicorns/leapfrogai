@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.12.1](https://github.com/defenseunicorns/leapfrogai/compare/v0.12.0...v0.12.1) (2024-09-06)
+
+
+### Bug Fixes
+
+* hotfix fix typo in release pipeline ([#999](https://github.com/defenseunicorns/leapfrogai/issues/999)) ([5f6536f](https://github.com/defenseunicorns/leapfrogai/commit/5f6536f98d4e1db145ab13e525113cb9554bb247))
+
 ## [0.12.0](https://github.com/defenseunicorns/leapfrogai/compare/v0.11.0...v0.12.0) (2024-09-06)
 
 
