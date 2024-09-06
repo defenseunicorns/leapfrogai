@@ -3,9 +3,11 @@ from deepeval.metrics import AnswerRelevancyMetric
 
 import logging
 import numpy as np
+import os
+from dotenv import load_dotenv
 from typing import Optional, List
 
-from leapfrogai_evals.judges.claude_sonnet import ClaudeSonnet
+from leapfrogai_evals.judges.claude_sonnet import ClaudeSonnet  # noqa
 from leapfrogai_evals.metrics.annotation_relevancy import AnnotationRelevancyMetric
 from leapfrogai_evals.metrics.correctness import CorrectnessMetric
 from leapfrogai_evals.metrics.niah_metrics import NIAH_Retrieval, NIAH_Response
@@ -128,9 +130,14 @@ class RAGEvaluator:
                 )
             )
 
+        # Create judge llm
+        try:
+            judge_model = globals()[os.environ.get("LLM_JUDGE")]()
+        except KeyError:
+            judge_model = os.environ.get("LLM_JUDGE")
+
         # run metrics
         # TODO: Give ability to choose which metrics to run
-        judge_model = ClaudeSonnet()
         correctness_metric = CorrectnessMetric(model=judge_model)
         answer_relevancy_metric = AnswerRelevancyMetric(model=judge_model)
         annotation_relevancy_metric = AnnotationRelevancyMetric()
@@ -165,6 +172,7 @@ class RAGEvaluator:
 
 if __name__ == "__main__":
     logging.basicConfig(level=logging.INFO)
+    load_dotenv()
     evaluator = RAGEvaluator()
-    evaluator.set_evaluations()
+    evaluator.set_evaluations(eval_list=["qa_eval"])
     evaluator.run_evals()

@@ -5,6 +5,7 @@ import shutil
 import zipfile
 
 from datasets import load_dataset
+from distutils.util import strtobool
 from dotenv import load_dotenv
 from huggingface_hub import hf_hub_download
 from tqdm import tqdm
@@ -43,14 +44,15 @@ class QA_Runner:
     def __init__(
         self,
         dataset: str = "defenseunicorns/LFAI_RAG_qa_v1",
-        model: str = None,
+        model: str = "vllm",
         temperature: float = 0.1,
         base_url: str = None,
         api_key: str = None,
         num_samples: int = 32,
+        num_documents: int = 5,
         instruction_template: str = DEFAULT_INSTRUCTION_TEMPLATE,
         vector_store_id: str = None,
-        **kwargs,
+        cleanup: bool = True,
     ):
         """Initialize the Assistant with an API key and the path to the text file"""
 
@@ -58,26 +60,51 @@ class QA_Runner:
         self.vector_store = None
         self.file_dict = None
         self.current_assistant = None
-        self.additional_attributes = kwargs
-        self.model = model or os.environ.get("MODEL_TO_EVALUATE")
-        self.temperature = temperature
-        self.instruction_template = instruction_template
+        self.dataset_name = os.environ.get("QA_DATASET", dataset)
+        self.model = os.environ.get("MODEL_TO_EVALUATE", model)
+        self.temperature = float(os.environ.get("TEMPERATURE", temperature))
+        self.num_documents = int(os.environ.get("QA_NUM_DOCUMENTS", num_documents))
+        self.cleanup_after = (
+            bool(strtobool(os.environ.get("QA_CLEANUP_VECTOR_STORE")))
+            if os.environ.get("QA_CLEANUP_VECTOR_STORE") is not None
+            else cleanup
+        )
+        try:
+            self.instruction_template = globals()[
+                os.environ.get("QA_INSTRUCTION_TEMPLATE")
+            ]
+        except KeyError:
+            logging.debug("Instruction template not in globals; setting as a string")
+            self.instruction_template = os.environ.get(
+                "QA_INSTRUCTION_TEMPLATE", instruction_template
+            )
+
         self.client = openai.OpenAI(
             base_url=base_url or os.getenv("LEAPFROGAI_API_URL"),
             api_key=api_key or os.getenv("LEAPFROGAI_API_KEY"),
         )
         logging.info(f"client url: {self.client.base_url}")
-        self.vector_store = vector_store_id or self._create_vector_store()
-        if not vector_store_id:
-            self._upload_context(dataset_name=dataset)
-        self._load_qa_dataset(dataset_name=dataset, num_samples=num_samples)
+        try:  # use existing vector store if supplied
+            self.vector_store = self._get_vector_store(
+                os.environ.get("QA_VECTOR_STORE_ID", vector_store_id)
+            )
+        except Exception:  # otherwise create a new one
+            self.vector_store = self._create_vector_store()
+        if not os.environ.get("QA_VECTOR_STORE_ID") and not vector_store_id:
+            self._upload_context(
+                dataset_name=self.dataset_name, num_documents=self.num_documents
+            )
+        self._load_qa_dataset(
+            dataset_name=self.dataset_name,
+            num_samples=int(os.environ.get("QA_NUM_SAMPLES", num_samples)),
+        )
 
-    def run_experiment(self, cleanup: bool = True) -> None:
+    def run_experiment(self) -> None:
         """Prompts LFAI to answer questions from the QA dataset"""
-        if cleanup:
+        if self.cleanup_after:
             logging.info(
                 "By default, all files and the vector store will be deleted after running the experiment. \
-                         Please set `cleanup` to false when running the experiment if this is not preferred."
+                         Please set `self.cleanup_after` to false if this is not preferred."
             )
 
         try:
@@ -147,7 +174,7 @@ class QA_Runner:
                 name="actual_annotations", column=actual_annotations
             )
 
-            if cleanup:
+            if self.cleanup_after:
                 self.cleanup()
 
         # remove artifacts from the API if the experiment fails
@@ -223,6 +250,13 @@ class QA_Runner:
             file_ids=[],
             expires_after={"anchor": "last_active_at", "days": 1},
             metadata={"project": "QA Evaluation", "version": "0.1"},
+        )
+        return vector_store
+
+    def _get_vector_store(self, vector_store_id: str) -> VectorStore:
+        logging.info("Retrieving vector store...")
+        vector_store = self.client.beta.vector_stores.retrieve(
+            vector_store_id=vector_store_id
         )
         return vector_store
 
