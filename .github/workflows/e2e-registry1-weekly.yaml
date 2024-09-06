@@ -37,6 +37,10 @@ jobs:
     steps:
       - name: Checkout Repo
         uses: actions/checkout@b4ffde65f46336ab88eb53be808477a3936bae11 # v4.1.1
+        with:
+          # x-release-please-start-version
+          ref: "0.11.0"
+          # x-release-please-end
 
       - name: Setup Python
         uses: ./.github/actions/python
