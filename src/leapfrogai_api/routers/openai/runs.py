@@ -15,7 +15,7 @@ from leapfrogai_api.utils.validate_tools import (
 )
 from leapfrogai_api.typedef.threads import ThreadRunCreateParamsRequest
 from leapfrogai_api.typedef.runs import RunCreateParamsRequest, ModifyRunRequest
-from leapfrogai_api.backend.thread_runner import ThreadRunner
+from leapfrogai_api.backend.composer import Composer
 
 router = APIRouter(prefix="/openai/v1/threads", tags=["openai/threads/runs"])
 
@@ -55,7 +55,7 @@ async def create_run(
         )
 
     try:
-        return await ThreadRunner().generate_response(
+        return await Composer().generate_response(
             request=request,
             existing_thread=existing_thread,
             new_run=new_run,
@@ -84,7 +84,7 @@ async def create_thread_and_run(
         )
 
     try:
-        return await ThreadRunner().generate_response(
+        return await Composer().generate_response(
             request=request, exising_thread=new_thread, new_run=new_run, session=session
         )
     except Exception as exc:
