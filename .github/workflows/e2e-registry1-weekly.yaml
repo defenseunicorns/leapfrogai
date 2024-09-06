@@ -81,7 +81,7 @@ jobs:
         run: |
           cd uds-bundles/latest/cpu
           uds create . --confirm && \
-            uds deploy uds-bundle-leapfrogai-amd64-registry1.tar.zst --confirm --no-progress && \
+            uds deploy --set DISABLE_KEYCLOAK=true uds-bundle-leapfrogai-amd64-registry1.tar.zst --confirm --no-progress && \
             rm -rf uds-bundle-leapfrogai-amd64-registry1.tar.zst && \
             docker system prune -af
 
