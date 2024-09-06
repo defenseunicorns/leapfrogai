@@ -213,7 +213,7 @@ class RunCreateParamsRequestBase(BaseModel):
         def sort_by_created_at(msg: Message):
             return msg.created_at
 
-        # Sort messages by created_at
+        # The messages are not guaranteed to come out of the DB sorted, so they are sorted here
         thread_messages.sort(key=sort_by_created_at)
 
         chat_thread_messages = []
@@ -221,7 +221,7 @@ class RunCreateParamsRequestBase(BaseModel):
         for message in thread_messages:
             if isinstance(message.content[0], TextContentBlock):
                 for annotation in message.content[0].text.annotations:
-                    # Remove annotations to avoid LLM hallucinations
+                    # The LLM may hallucinate if we leave the annotations in when we pass them into the LLM, so they are removed
                     message.content[0].text.value = message.content[
                         0
                     ].text.value.replace(annotation.text, "")
@@ -231,7 +231,7 @@ class RunCreateParamsRequestBase(BaseModel):
                     )
                 )
 
-        # Initialize chat messages
+        # Holds the converted thread's messages, this will be built up with a series of push operations
         chat_messages: list[ChatMessage] = []
 
         # 1 - Model instructions (system message)
@@ -247,7 +247,7 @@ class RunCreateParamsRequestBase(BaseModel):
         # 3 - Add the existing messages to chat_messages
         chat_messages.extend(chat_thread_messages)
 
-        # 4 - Add RAG results behind the user's query
+        # 4 - The RAG results are appended behind the user's query
         if self.can_use_rag(tool_resources):
             rag_message: str = "Here are relevant docs needed to reply:\n"
 
