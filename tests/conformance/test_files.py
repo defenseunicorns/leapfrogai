@@ -6,13 +6,13 @@ from openai.types.beta.vector_stores.vector_store_file_deleted import (
 )
 from openai.types.beta.vector_stores.vector_store_file import VectorStoreFile
 
-from .utils import client_config_factory, text_file_path
+from ..utils.client import client_config_factory, text_file_path
 
 
 @pytest.mark.parametrize("client_name", ["openai", "leapfrogai"])
 def test_file_upload(client_name):
     config = client_config_factory(client_name)
-    client = config["client"]  # shorthand
+    client = config.client  # shorthand
 
     vector_store = client.beta.vector_stores.create(name="Test data")
     with open(text_file_path(), "rb") as file:
@@ -27,7 +27,7 @@ def test_file_upload(client_name):
 @pytest.mark.parametrize("client_name", ["openai", "leapfrogai"])
 def test_file_upload_batches(client_name):
     config = client_config_factory(client_name)
-    client = config["client"]  # shorthand
+    client = config.client  # shorthand
 
     vector_store = client.beta.vector_stores.create(name="Test data")
 
@@ -43,7 +43,7 @@ def test_file_upload_batches(client_name):
 @pytest.mark.parametrize("client_name", ["openai", "leapfrogai"])
 def test_file_delete(client_name):
     config = client_config_factory(client_name)
-    client = config["client"]
+    client = config.client
 
     vector_store = client.beta.vector_stores.create(name="Test data")
     with open(text_file_path(), "rb") as file:

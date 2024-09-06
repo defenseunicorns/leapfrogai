@@ -169,7 +169,7 @@ export const deleteTestFilesWithApi = async (openAIClient: OpenAI) => {
   const list = await openAIClient.files.list();
   const idsToDelete: string[] = [];
   for await (const file of list) {
-    if (file.filename.startsWith('test')) {
+    if (file.filename.includes('test')) {
       idsToDelete.push(file.id);
     }
   }
@@ -179,10 +179,6 @@ export const deleteTestFilesWithApi = async (openAIClient: OpenAI) => {
     promises.push(openAIClient.files.del(id));
   }
   await Promise.all(promises);
-};
-export const loadFileManagementPage = async (page: Page) => {
-  await page.goto('/chat/file-management');
-  await expect(page).toHaveTitle('LeapfrogAI - File Management');
 };
 export const initiateDeletion = async (page: Page, fileNameText: string) => {
   const deleteBtn = page.getByRole('button', { name: 'delete' });
@@ -221,8 +217,7 @@ export const deleteAllTestFilesWithApi = async (openAIClient: OpenAI) => {
   }
 };
 
-export const testFileUpload = async (filename: string, page: Page, openAIClient: OpenAI) => {
-  await loadFileManagementPage(page);
+export const testFileUpload = async (filename: string, page: Page) => {
   await uploadFiles({ page, filenames: [filename] });
 
   const row = await getTableRow(page, filename, 'file-management-table');
@@ -249,8 +244,4 @@ export const testFileUpload = async (filename: string, page: Page, openAIClient:
 
   // test complete icon disappears
   await expect(fileUploadedIcon).not.toBeVisible();
-
-  // cleanup
-  deleteFixtureFile(filename);
-  await deleteFileByName(filename, openAIClient);
 };

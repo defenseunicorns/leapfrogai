@@ -231,8 +231,6 @@ class RunCreateParamsRequestBase(BaseModel):
                     )
                 )
 
-        first_message: ChatMessage = chat_thread_messages[0]
-
         # Holds the converted thread's messages, this will be built up with a series of push operations
         chat_messages: list[ChatMessage] = []
 
@@ -246,46 +244,58 @@ class RunCreateParamsRequestBase(BaseModel):
                 ChatMessage(role="system", content=additional_instructions)
             )
 
-        # 3 - The existing messages with everything after the first message
-        for message in chat_thread_messages:
-            chat_messages.append(message)
-
-        use_rag: bool = self.can_use_rag(tool_resources)
-
-        rag_message: str = "Here are relevant docs needed to reply:\n"
+        # 3 - Add the existing messages to chat_messages
+        chat_messages.extend(chat_thread_messages)
 
         # 4 - The RAG results are appended behind the user's query
-        file_ids: set[str] = set()
-        if use_rag:
-            query_service = QueryService(db=session)
-            file_search: BetaThreadToolResourcesFileSearch = cast(
-                BetaThreadToolResourcesFileSearch, tool_resources.file_search
-            )
-            vector_store_ids: list[str] = cast(list[str], file_search.vector_store_ids)
+        if self.can_use_rag(tool_resources):
+            rag_message: str = "Here are relevant docs needed to reply:\n"
 
-            for vector_store_id in vector_store_ids:
-                rag_results_raw: SingleAPIResponse[
-                    SearchResponse
-                ] = await query_service.query_rag(
-                    query=first_message.content,
-                    vector_store_id=vector_store_id,
-                )
-                rag_responses: SearchResponse = SearchResponse(
-                    data=rag_results_raw.data
+            if chat_thread_messages:
+                query_message: ChatMessage = chat_thread_messages[-1]
+
+                query_service = QueryService(db=session)
+                file_search: BetaThreadToolResourcesFileSearch = cast(
+                    BetaThreadToolResourcesFileSearch, tool_resources.file_search
                 )
 
-                # Insert the RAG response messages just before the user's query
-                for count, rag_response in enumerate(rag_responses.data):
-                    file_ids.add(rag_response.file_id)
-                    response_with_instructions: str = f"{rag_response.content}"
-                    rag_message += f"{response_with_instructions}\n"
+                # Ensure vector_store_ids is not empty or None
+                vector_store_ids: list[str] = (
+                    cast(list[str], file_search.vector_store_ids)
+                    if file_search.vector_store_ids
+                    else []
+                )
 
-            chat_messages.insert(
-                len(chat_messages) - 1,  # Insert right before the user message
-                ChatMessage(role="user", content=rag_message),
-            )  # TODO: Should this go in user or something else like function?
+                file_ids: set[str] = set()
+                for vector_store_id in vector_store_ids:
+                    rag_results_raw: SingleAPIResponse[
+                        SearchResponse
+                    ] = await query_service.query_rag(
+                        query=query_message.content,
+                        vector_store_id=vector_store_id,
+                    )
+                    rag_responses: SearchResponse = SearchResponse(
+                        data=rag_results_raw.data
+                    )
 
-        return chat_messages, list(file_ids)
+                    # Insert RAG response messages
+                    for count, rag_response in enumerate(rag_responses.data):
+                        if rag_response.file_id:  # Check if file_id exists
+                            file_ids.add(rag_response.file_id)
+                        response_with_instructions: str = f"{rag_response.content}"
+                        rag_message += f"{response_with_instructions}\n"
+
+                # Insert RAG message before the last user message
+                chat_messages.insert(
+                    len(chat_messages) - 1,
+                    ChatMessage(role="user", content=rag_message),
+                )
+
+            # Return chat messages and list of file_ids
+            return chat_messages, list(file_ids)
+
+        # If no RAG is used, return the basic chat messages and empty file_ids
+        return chat_messages, []
 
     async def generate_message_for_thread(
         self,
