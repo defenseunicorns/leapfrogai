@@ -97,7 +97,7 @@ jobs:
       - name: Run Backend Tests
         env:
           ANON_KEY: ${{ steps.generate_secrets.outputs.ANON_KEY }}
-          # this variable is named differently in backend tests as compared to backend tests
+          # this variable is named differently in backend tests as compared to playwright tests
           SERVICE_KEY: ${{ steps.generate_secrets.outputs.SERVICE_ROLE_KEY }}
         run: |
           python -m pytest ./tests/e2e/test_llama.py -v
