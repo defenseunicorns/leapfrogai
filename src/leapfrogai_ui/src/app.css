@@ -74,6 +74,10 @@
     z-index: 9999;
   }
 
+  .z-max-1 {
+    z-index: 9000;
+  }
+
   /*Note - tailwind has a truncate class that sets these properties, but for an unknown reason, it was
    not working.
    */
