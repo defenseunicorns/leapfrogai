@@ -43,7 +43,6 @@
   const md = markdownit({
     highlight: function (str: string, language: string) {
       let code: string;
-
       if (language && hljs.getLanguage(language)) {
         try {
           code = md.utils.escapeHtml(hljs.highlight(str, { language }).value);
@@ -113,8 +112,6 @@
   $: fileMetadata = message.metadata?.filesMetadata
     ? JSON.parse(message.metadata.filesMetadata)
     : null;
-
-  $: console.log('messageText', messageText);
 </script>
 
 <div
