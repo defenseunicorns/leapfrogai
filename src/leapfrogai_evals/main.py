@@ -5,6 +5,7 @@ import logging
 import numpy as np
 import os
 from dotenv import load_dotenv
+import time
 from typing import Optional, List
 
 from leapfrogai_evals.judges.claude_sonnet import ClaudeSonnet  # noqa
@@ -52,9 +53,13 @@ class RAGEvaluator:
         logging.info("Running the following evaluations:")
         logging.info("".join([f"\n - {eval_name}" for eval_name in self.eval_list]))
 
+        start_time = time.time()
         for eval_name in self.eval_list:
             eval = getattr(self, eval_name)
             eval(*args, **kwargs)
+        end_time = time.time()
+
+        self.eval_results["Eval Execution Runtime (seconds)"] = end_time - start_time
 
         logging.info("Final Results:")
         for key, value in self.eval_results.items():
