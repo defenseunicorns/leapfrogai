@@ -35,4 +35,4 @@ packages:
   # UI
   - name: leapfrogai-ui
     path: ../../../packages/ui/
-    ref: dev
+    ref: registry1

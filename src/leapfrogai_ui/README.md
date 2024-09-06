@@ -22,8 +22,9 @@ This document is only applicable for spinning up the UI in a local Node developm
 
 3. Some backend functionality within the app requires libreoffice (for converting files to PDFs). While not required for 
    the app to run, if you are running the app locally without using the Dockerfile (e.g. via npm run dev), you will 
-   need to install libreoffice. 
-   ```brew install libreoffice```
+   need to install libreoffice.
+
+   ex. ```brew install libreoffice``` or ```apk add libreoffice```
 
 3. Run the Node application and open in your default browser
 
