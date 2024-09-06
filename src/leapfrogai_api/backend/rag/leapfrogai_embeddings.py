@@ -6,6 +6,8 @@ from leapfrogai_api.utils.__init__ import config as global_config
 from leapfrogai_api.backend.grpc_client import create_embeddings
 import logging
 
+logger = logging.getLogger(__name__)
+
 
 # Partially implements the Langchain Core Embeddings interface
 class LeapfrogAIEmbeddings:

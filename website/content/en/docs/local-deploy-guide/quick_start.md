@@ -50,12 +50,10 @@ If you already have a pre-built UDS bundle, please skip to [Deploying the UDS Bu
     # For CPU-only
     cd bundles/latest/cpu/
     uds create .
-    UDS_ARCH=amd64 uds deploy uds-bundle-leapfrogai-*.tar.zst --confirm
 
     # For compatible AMD64, NVIDIA CUDA-capable GPU machines
     cd bundles/latest/gpu/
     uds create .
-    UDS_ARCH=amd64 uds deploy uds-bundle-leapfrogai-*.tar.zst --confirm
     ```
 
 ## Deploying the UDS bundle
@@ -71,7 +69,7 @@ If you already have a pre-built UDS bundle, please skip to [Deploying the UDS Bu
 2. Deploy the bundle you created in the [previous steps](#building-the-uds-bundle):
 
     ```bash
-    # make sure you ar ein the directory with the UDS bundle archive
+    # make sure you are in the directory with the UDS bundle archive
     uds deploy uds-bundle-leapfrogai*.tar.zst
     ```
 

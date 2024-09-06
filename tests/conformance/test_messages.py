@@ -2,13 +2,13 @@ import pytest
 
 from openai.types.beta.threads.message import Message
 
-from .utils import client_config_factory
+from ..utils.client import client_config_factory
 
 
 @pytest.mark.parametrize("client_name", ["openai", "leapfrogai"])
 def test_message_create(client_name):
     config = client_config_factory(client_name)
-    client = config["client"]
+    client = config.client
 
     thread = client.beta.threads.create()
     message = client.beta.threads.messages.create(
@@ -23,7 +23,7 @@ def test_message_create(client_name):
 @pytest.mark.parametrize("client_name", ["openai", "leapfrogai"])
 def test_message_list(client_name):
     config = client_config_factory(client_name)
-    client = config["client"]
+    client = config.client
 
     thread = client.beta.threads.create()
     client.beta.threads.messages.create(

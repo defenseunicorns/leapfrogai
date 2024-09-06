@@ -90,7 +90,8 @@ const logout = async (page: Page) => {
 // Supabase, so the tests will fail.
 setup('authenticate', async ({ page }) => {
   page.on('pageerror', (err) => {
-    console.log(err.message);
+    console.error('page error');
+    console.error(err.message);
   });
 
   await login(page);

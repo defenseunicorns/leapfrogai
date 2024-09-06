@@ -1,4 +1,4 @@
-import { array, object, ObjectSchema, string } from 'yup';
+import { array, boolean, object, ObjectSchema, string } from 'yup';
 import { MAX_LABEL_SIZE } from '$lib/constants';
 import { env } from '$env/dynamic/public';
 import type { NewMessageInput } from '$lib/types/messages';
@@ -16,12 +16,28 @@ export const stringIdArraySchema = object({
   .strict();
 
 const contentInputSchema = string().max(Number(env.PUBLIC_MESSAGE_LENGTH_LIMIT)).required();
+const contentInputSchemaNoLength = string().required();
 
 export const messageInputSchema: ObjectSchema<NewMessageInput> = object({
   thread_id: string().required(),
-  content: contentInputSchema,
+  content: string()
+    .when('lengthOverride', {
+      is: true,
+      then: () => contentInputSchemaNoLength,
+      otherwise: () => contentInputSchema
+    })
+    .required(),
   role: string<'user' | 'assistant'>().required(),
-  assistantId: string().optional()
+  assistantId: string().optional(),
+  metadata: object({ label: string(), user_id: string() }).test(
+    'max fields',
+    'metadata is limited to 16 fields',
+    (value) => {
+      if (!value) return true;
+      return Object.keys(value).length <= 16;
+    }
+  ),
+  lengthOverride: boolean().optional()
 })
   .noUnknown(true)
   .strict();

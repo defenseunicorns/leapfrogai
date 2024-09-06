@@ -1,6 +1,7 @@
 """Main FastAPI application for the LeapfrogAI API."""
 
 import logging
+import os
 from contextlib import asynccontextmanager
 import os
 
@@ -58,6 +59,12 @@ API_ROUTERS: list[APIRouter] = [
     threads.router,
 ]
 
+logging.basicConfig(
+    level=os.getenv("LFAI_LOG_LEVEL", logging.INFO),
+    format="%(name)s: %(asctime)s | %(levelname)s | %(filename)s:%(lineno)s >>> %(message)s",
+)
+logger = logging.getLogger(__name__)
+
 
 def get_lifespan(
     testing: bool | None = None,
@@ -90,7 +97,6 @@ def get_lifespan(
 
         await app.state.config.cleanup()
         logger.info("Lifespan shutdown complete")
-
         logger.info(f"Cleanup complete in {lifespan_name} lifespan mode")
 
     return _lifespan
@@ -130,7 +136,7 @@ def create_app(
 
 
 async def validation_exception_handler(request, exc):
-    logging.error(f"The client sent invalid data!: {exc}")
+    logger.error(f"The client sent invalid data!: {exc}")
     return await request_validation_exception_handler(request, exc)
 
 

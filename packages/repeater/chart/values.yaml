@@ -9,7 +9,7 @@ image:
   pullPolicy: Always
   # Overrides the image tag whose default is the chart appVersion.
   # x-release-please-start-version
-  tag: 0.11.0
+  tag: 0.12.2
   # x-release-please-end
 
 nameOverride: repeater
@@ -19,11 +19,11 @@ podAnnotations: {}
 
 podSecurityContext:
   runAsNonRoot: true
+  fsGroup: 65532
 
 securityContext:
   runAsUser: 65532
   runAsGroup: 65532
-  fsGroup: 65532
 
 service:
   type: ClusterIP

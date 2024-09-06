@@ -1,6 +1,9 @@
 <!--
 This component creates a custom version of Flowbite Svelte's Textarea component that auto grows and shrinks in height up
 to a limit of maxRows. It can also show error text.
+Other modifications:
+Adjusted headerCls to make it reactive
+Added resize prop to turn on/off text area resizing
 -->
 
 <script lang="ts">
@@ -151,6 +154,7 @@ to a limit of maxRows. It can also show error text.
       maxlength={maxLength + 1 ?? undefined}
       class={textareaClass}
     />
+
     <Helper>
       <Wrapper id={errorId} show={invalid || showLengthError} class="text-red-500">
         {showLengthError ? lengthInvalidText : invalidText}

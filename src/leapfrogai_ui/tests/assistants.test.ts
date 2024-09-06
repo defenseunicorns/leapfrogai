@@ -1,5 +1,5 @@
 import { expect, test } from './fixtures';
-import { getSimpleMathQuestion, loadChatPage } from './helpers/helpers';
+import { getSimpleMathQuestion } from './helpers/helpers';
 import { getFakeAssistantInput } from '../testUtils/fakeData';
 import type { ActionResult } from '@sveltejs/kit';
 import {
@@ -9,7 +9,8 @@ import {
   deleteAssistantWithApi,
   editAssistantCard
 } from './helpers/assistantHelpers';
-import { deleteActiveThread, sendMessage } from './helpers/threadHelpers';
+import { deleteActiveThread, getLastUrlParam, sendMessage } from './helpers/threadHelpers';
+import { loadChatPage } from './helpers/navigationHelpers';
 
 test('it navigates to the assistants page', async ({ page }) => {
   await loadChatPage(page);
@@ -154,8 +155,7 @@ test('it can navigate to the last visited thread with breadcrumbs', async ({
   const messages = page.getByTestId('message');
   await expect(messages).toHaveCount(2);
 
-  const urlParts = new URL(page.url()).pathname.split('/');
-  const threadId = urlParts[urlParts.length - 1];
+  const threadId = getLastUrlParam(page);
 
   await page.getByTestId('header-settings-btn').click();
   await page.getByText('Assistants Management').click();
