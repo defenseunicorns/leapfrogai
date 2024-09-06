@@ -16,7 +16,7 @@
     "format": "prettier --write . && eslint . --fix",
     "test:integration": "playwright test",
     "test:integration:ui": "playwright test --ui",
-    "test:integration:ci": "playwright test tests/global.setup.ts tests/api.test.ts tests/api-keys.test.ts tests/header.test.ts",
+    "test:integration:ci": "playwright test tests/global.setup.ts tests/api.test.ts tests/api-keys.test.ts tests/header.test.ts tests/chat.test.ts",
     "test:unit": "vitest run",
     "test:unit:watch": "vitest",
     "supabase:start": "supabase start",
