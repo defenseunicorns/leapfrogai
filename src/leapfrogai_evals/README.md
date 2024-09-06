@@ -7,21 +7,28 @@ The LeapfrogAI RAG evaluation system assumes the following:
 
 - LeapfrogAI is deployed
 - A valid LeapfrogAI API key is set (for more info, see the [API README](/src/leapfrogai_api/README.md))
+- For all LLM-enabled metrics, a valid Anthropic API key is set
 
-Set the following environment variables:
+For the easiest setup, copy the `.env-example` file:
+
+```bash
+cp .env-example .env
+```
+
+Within `.env`, replace the necessary environment variables:
 
 ```bash
 LEAPFROGAI_API_URL=<LeapfrogAI API url, usually: https://leapfrogai-api.uds.dev/openai/v1 for development>
 LEAPFROGAI_API_KEY=<LeapfrogAI API key>
-MODEL_TO_EVALUATE="vllm" # can also be provided as "model" to the __init__ for the runner
+ANTHROPIC_API_KEY=<Anthropic API key>
 ```
 
 Running `main.py` will by default run all of the evaluations currently available:
 
 ```bash
-# from within the packages/evaluations dir
+# from within the src/leapfrogai_evals dir
 python -m pip install .
-python src/main.py
+python main.py
 ```
 
 ## Question/Answer Evaluation
