@@ -13,9 +13,7 @@
 
 <Card {id} class="w-full " padding="xs" {...$$restProps}>
   <div class="flex items-center justify-between">
-    <p
-      class="overflow-hidden text-ellipsis whitespace-nowrap font-normal leading-tight text-gray-700 dark:text-gray-400"
-    >
+    <p class="truncate font-normal leading-tight text-gray-700 dark:text-gray-400">
       {name}
     </p>
 
