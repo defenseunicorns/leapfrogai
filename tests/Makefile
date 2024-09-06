@@ -36,6 +36,9 @@ test-api-unit: set-supabase
 test-load:
 	locust -f ${PWD}/tests/load/loadtest.py --web-port 8089
 
+test-conformance:
+	source .env; PYTHONPATH=$$(pwd) pytest -vv -s tests/conformance
+
 debug: set-supabase
 	@echo ${SUPABASE_URL}
 	@echo ${SUPABASE_ANON_KEY}
