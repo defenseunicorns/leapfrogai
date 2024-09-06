@@ -117,6 +117,10 @@ This section covers all of the decision points that needed to be made along side
   
   Non-llm-enabled evaluations:
   - Needle in a Haystack (for evaluating retrieval and generation)
+  - Annotation Relevancy (for evaluating retrieval)
+
+  Performance Metrics:
+  - Total Execution Runtime
   
   Non-RAG LLM benchmarks:
   - [HumanEval](https://docs.confident-ai.com/docs/benchmarks-human-eval) (for evaluating generation)
@@ -130,6 +134,7 @@ This section covers all of the decision points that needed to be made along side
   - Needle in a Haystack (retrieval): determines if a needle of information is correctly retrieved from the vector store by RAG
   - Needle in a Haystack (response): determines if a needle of information is correctly given in the final response of the LLM in a RAG pipeline
   - HumanEval: Evaluates an LLM's code generation abilities (not RAG-enabled, but it useful as an established baseline to compare against)
+  - Annotation Relevancy: A custom metric that measures how often documents that have nothing to do with the question are cited in the annotations. Higher is better
 
   While these metrics are going to be utilized first to balance value-gained and time to implement, we will be adding additional evaluation metrics soon following MVP status. Potential options include:
   - RAG retrieval Hit Rate: non-LLM metric that evaluates how often a retrieved context matches the expected context for a question/answer scenario
