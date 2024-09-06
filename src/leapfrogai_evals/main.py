@@ -15,9 +15,6 @@ from leapfrogai_evals.runners.niah_runner import NIAH_Runner
 from leapfrogai_evals.runners.qa_runner import QA_Runner
 
 ALL_EVALS = ["niah_eval", "qa_eval"]
-# QA_METRICS = ["CORRECTNESS", "CONTEXTUAL_RECALL", "FAITHFULNESS"]
-# NIAH_METRICS = ["NIAH_RETRIEVAL", "NIAH_RESPONSE"]
-# ALL_METRICS = QA_METRICS + NIAH_METRICS
 
 
 class RAGEvaluator:
@@ -26,10 +23,8 @@ class RAGEvaluator:
     def __init__(
         self,
         eval_list: Optional[List[str]] = None,
-        # metric_list: Optional[List[str]] = None,
     ):
         self.eval_list = eval_list
-        # self.metric_list = metric_list
         self.test_case_dict = None
         self.niah_test_cases = None
         self.eval_results = dict()
@@ -141,7 +136,6 @@ class RAGEvaluator:
         correctness_metric = CorrectnessMetric(model=judge_model)
         answer_relevancy_metric = AnswerRelevancyMetric(model=judge_model)
         annotation_relevancy_metric = AnnotationRelevancyMetric()
-        # faithfulness_metric = FaithfulnessMetric(model=judge_model)
         metrics = [
             correctness_metric,
             answer_relevancy_metric,
@@ -163,11 +157,6 @@ class RAGEvaluator:
             logging.info(f"scores: {scores}")
             logging.info(f"successes: {successes}")
             logging.info(f"reasons: {reasons}")
-        # deepeval.evaluate(
-        #     test_cases=self.qa_test_cases,
-        #     metrics=metrics,
-        #     print_results=False
-        # )
 
 
 if __name__ == "__main__":
