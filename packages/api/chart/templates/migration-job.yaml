@@ -20,8 +20,8 @@ spec:
             - name: POSTGRES_PASSWORD
               valueFrom:
                 secretKeyRef:
-                  name: supabase-postgresql
-                  key: postgres-password
+                  name: supabase-db
+                  key: password
             - name: MIGRATION_NAMESPACE
               value: "{{ .Release.Namespace }}"
             - name: MIGRATION_SERVICE_NAME

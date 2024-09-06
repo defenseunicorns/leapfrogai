@@ -46,7 +46,7 @@ api:
           - ALL
 
     env:
-      serviceName: "supabase-postgresql"
+      serviceName: "supabase-supabase-db"
       servicePort: 5432
 
 supabase:
