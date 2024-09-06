@@ -70,11 +70,12 @@ jobs:
 
       # Mutate UDS bundle definition to use Registry1 packages
       - name: Mutation to Registry1 Bundle
+        # TODO: fix bundle path
         run: |
-          uds zarf tools yq -i '.packages[1] |= del(.repository)' bundles/latest/cpu/uds-bundle.yaml
-          uds zarf tools yq -i '.packages[1] |= .ref = "registry1"' bundles/latest/cpu/uds-bundle.yaml
-          uds zarf tools yq -i '.packages[1] |= .path = "../../../packages/api"' bundles/latest/cpu/uds-bundle.yaml
-          uds zarf tools yq -i '.metadata.version = "registry1"' bundles/latest/cpu/uds-bundle.yaml
+          uds zarf tools yq -i '.packages[1] |= del(.repository)' uds-bundles/latest/cpu/uds-bundle.yaml
+          uds zarf tools yq -i '.packages[1] |= .ref = "registry1"' uds-bundles/latest/cpu/uds-bundle.yaml
+          uds zarf tools yq -i '.packages[1] |= .path = "../../../packages/api"' uds-bundles/latest/cpu/uds-bundle.yaml
+          uds zarf tools yq -i '.metadata.version = "registry1"' uds-bundles/latest/cpu/uds-bundle.yaml
 
       - name: Create and Deploy Bundle
         run: |
@@ -108,13 +109,8 @@ jobs:
 
       - name: Run Playwright E2E Tests
         env:
-          SERVICE_ROLE_KEY: ${{ steps.generate_secrets.outputs.SERVICE_ROLE_KEY }}
-          FAKE_E2E_USER_PASSWORD: ${{ steps.generate_secrets.outputs.FAKE_E2E_USER_PASSWORD }}
           ANON_KEY: ${{ steps.generate_secrets.outputs.ANON_KEY }}
         run: |
-          chmod +x ./.github/scripts/createUser.sh
-          ./.github/scripts/createUser.sh
-
           cp src/leapfrogai_ui/.env.example src/leapfrogai_ui/.env
           mkdir -p playwright/auth
           touch playwright/auth.user.json
