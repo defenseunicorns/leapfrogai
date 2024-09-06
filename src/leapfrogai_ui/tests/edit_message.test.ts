@@ -1,5 +1,5 @@
 import { expect, test } from './fixtures';
-import { getSimpleMathQuestion, loadChatPage, normalizeWhitespace } from './helpers/helpers';
+import { getSimpleMathQuestion, normalizeWhitespace } from './helpers/helpers';
 import { delay } from 'msw';
 import { createAssistantWithApi, deleteAssistantWithApi } from './helpers/assistantHelpers';
 import {
@@ -7,6 +7,7 @@ import {
   sendMessage,
   waitForResponseToComplete
 } from './helpers/threadHelpers';
+import { loadChatPage } from './helpers/navigationHelpers';
 
 const newMessage1 = getSimpleMathQuestion();
 const newMessage2 = getSimpleMathQuestion();
