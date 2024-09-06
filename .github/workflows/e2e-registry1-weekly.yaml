@@ -79,7 +79,7 @@ jobs:
 
       - name: Create and Deploy Bundle
         run: |
-          cd bundles/latest/cpu
+          cd uds-bundles/latest/cpu
           uds create . --confirm && \
             uds deploy uds-bundle-leapfrogai-amd64-registry1.tar.zst --confirm --no-progress && \
             rm -rf uds-bundle-leapfrogai-amd64-registry1.tar.zst && \
