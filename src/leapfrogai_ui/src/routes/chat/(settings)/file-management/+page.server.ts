@@ -30,8 +30,8 @@ export const actions: Actions = {
 
     if (form.data.files) {
       const fileId: string | null = null;
-      const uploadedFiles: Array<FileObject | FileRow> = [];
-      for (const file of form.data.files) {
+
+      const uploadPromises = form.data.files.map(async (file) => {
         if (file) {
           try {
             // Upload file
@@ -40,7 +40,7 @@ export const actions: Actions = {
               purpose: 'assistants'
             });
 
-            uploadedFiles.push(uploadedFile);
+            return uploadedFile;
           } catch (e) {
             console.error(`Error uploading file ${file.name}: ${e}`);
             const item: FileRow = {
@@ -61,9 +61,14 @@ export const actions: Actions = {
               console.error(`Error cleaning up file/vector store: ${e}`);
               // fail silently so user still receives item with error status
             }
+            return item;
           }
         }
-      }
+        return null;
+      });
+      const uploadedFiles = (await Promise.all(uploadPromises)).filter(
+        (file): file is FileObject | FileRow => file !== null
+      );
 
       return withFiles({ form, uploadedFiles });
     }

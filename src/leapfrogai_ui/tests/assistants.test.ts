@@ -1,5 +1,5 @@
 import { expect, test } from './fixtures';
-import { getSimpleMathQuestion, loadChatPage } from './helpers/helpers';
+import { getSimpleMathQuestion } from './helpers/helpers';
 import { getFakeAssistantInput } from '../testUtils/fakeData';
 import type { ActionResult } from '@sveltejs/kit';
 import {
@@ -10,6 +10,7 @@ import {
   editAssistantCard
 } from './helpers/assistantHelpers';
 import { deleteActiveThread, getLastUrlParam, sendMessage } from './helpers/threadHelpers';
+import { loadChatPage } from './helpers/navigationHelpers';
 
 test('it navigates to the assistants page', async ({ page }) => {
   await loadChatPage(page);
