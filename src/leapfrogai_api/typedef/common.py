@@ -1,5 +1,5 @@
 from pydantic import BaseModel, Field
-from leapfrogai_api.typedef.constants import DEFAULT_MAX_COMPLETION_TOKENS
+from leapfrogai_api.backend.constants import DEFAULT_MAX_COMPLETION_TOKENS
 
 
 class Usage(BaseModel):

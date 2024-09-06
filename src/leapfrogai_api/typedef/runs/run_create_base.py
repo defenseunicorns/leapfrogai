@@ -22,7 +22,7 @@ from openai.types.beta.threads import Run
 from openai.types.beta.threads.run_create_params import TruncationStrategy
 from pydantic import BaseModel, Field, ValidationError
 
-from leapfrogai_api.typedef.constants import (
+from leapfrogai_api.backend.constants import (
     DEFAULT_MAX_COMPLETION_TOKENS,
     DEFAULT_MAX_PROMPT_TOKENS,
 )

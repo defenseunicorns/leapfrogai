@@ -53,7 +53,7 @@ from leapfrogai_api.typedef.messages import CreateMessageRequest
 from leapfrogai_api.typedef.vectorstores import SearchResponse
 
 
-class ThreadRunner(BaseModel):
+class Composer(BaseModel):
     @staticmethod
     async def list_messages(thread_id: str, session: Session) -> list[Message]:
         """List all the messages in a thread."""
