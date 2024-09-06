@@ -61,7 +61,7 @@ class RAGEvaluator:
 
         self.eval_results["Eval Execution Runtime (seconds)"] = end_time - start_time
 
-        logging.info("Final Results:")
+        logging.info("\n\nFinal Results:")
         for key, value in self.eval_results.items():
             logging.info(f"{key}: {value}")
 
