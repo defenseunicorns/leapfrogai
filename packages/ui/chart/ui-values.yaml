@@ -19,5 +19,5 @@ package:
 
 migration:
   namespace: "leapfrogai"
-  serviceName: "supabase-supabase-db"
+  serviceName: "supabase-db"
   servicePort: "5432"

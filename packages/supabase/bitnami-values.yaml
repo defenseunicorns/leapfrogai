@@ -3,8 +3,8 @@
 leapfrogai:
   package:
     host: supabase-kong
-    name: supabase
-    component: kong
+    name: supabase-kong
+    component: supabase-kong
   sso:
     clientId: ###ZARF_CONST_EXTERNAL_KEYCLOAK_CLIENT_ID###
     redirectUris:
@@ -63,6 +63,7 @@ secret:
 
 db:
   enabled: true
+  fullnameOverride: supabase-db
   image:
     repository: localhost:5000/test/custom-supabase-postgres
     tag: 0.0.3
@@ -79,39 +80,55 @@ db:
   podSecurityContext:
     runAsUser: 105
     runAsGroup: 106
+  podAnnotations:
+    sidecar.istio.io/inject: "false"
 
 studio:
+  fullnameOverride: supabase-studio
   image:
     tag: 20240326-5e5586d
   environment:
     STUDIO_DEFAULT_ORGANIZATION: "My Organization"
     STUDIO_DEFAULT_PROJECT: "My Project"
-    SUPABASE_PUBLIC_URL: http://example.com/
+    SUPABASE_PUBLIC_URL: https://supabase-kong.uds.dev
     NEXT_PUBLIC_ENABLE_LOGS: "true"
   livenessProbe:
     httpGet:
       path: /api/profile
       port: 3000
     initialDelaySeconds: 3
+  podAnnotations:
+    sidecar.istio.io/inject: "false"
 
 auth:
+  podAnnotations:
+    sidecar.istio.io/inject: "false"
+  fullnameOverride: supabase-auth
   image:
     tag: v2.143.0
   environment:
     API_EXTERNAL_URL: http://example.com
     GOTRUE_SITE_URL: http://example.com
-    GOTRUE_EXTERNAL_EMAIL_ENABLED: "true"
+    GOTRUE_EXTERNAL_EMAIL_ENABLED: "false"
     GOTRUE_MAILER_AUTOCONFIRM: "true"
     GOTRUE_SMTP_ADMIN_EMAIL: "your-mail@example.com"
     GOTRUE_SMTP_HOST: "smtp.example.com"
     GOTRUE_SMTP_PORT: "587"
     GOTRUE_SMTP_SENDER_NAME: "your-mail@example.com"
+    GOTRUE_EXTERNAL_KEYCLOAK_ENABLED: "###ZARF_VAR_ENABLE_EXTERNAL_KEYCLOAK###"
+    GOTRUE_EXTERNAL_KEYCLOAK_CLIENT_ID: "{{ .Values.leapfrogai.sso.clientId }}"
+    GOTRUE_EXTERNAL_KEYCLOAK_REDIRECT_URI: "https://{{ .Values.leapfrogai.package.host }}.###ZARF_VAR_DOMAIN###/auth/v1/callback"
+    GOTRUE_EXTERNAL_KEYCLOAK_URL: "https://sso.###ZARF_VAR_DOMAIN###/realms/uds"
 
 rest:
+  fullnameOverride: supabase-rest
   image:
     tag: v12.0.1
+  podAnnotations:
+    sidecar.istio.io/inject: "false"
 
 realtime:
+  fullnameOverride: supabase-realtime
   image:
     tag: v2.27.5
   livenessProbe:
@@ -119,12 +136,18 @@ realtime:
       path: /
       port: 4000
     initialDelaySeconds: 3
+  podAnnotations:
+    sidecar.istio.io/inject: "false"
 
 meta:
+  fullnameOverride: supabase-meta
   image:
     tag: v0.80.0
+  podAnnotations:
+    sidecar.istio.io/inject: "false"
 
 storage:
+  fullnameOverride: supabase-storage
   image:
     tag: v0.46.4
   livenessProbe:
@@ -134,8 +157,11 @@ storage:
     initialDelaySeconds: 3
   persistence:
     enabled: false
+  podAnnotations:
+    sidecar.istio.io/inject: "false"
 
 imgproxy:
+  fullnameOverride: supabase-imgproxy
   image:
     tag: v3.8.0
   environment:
@@ -148,8 +174,11 @@ imgproxy:
     initialDelaySeconds: 3
   persistence:
     enabled: false
+  podAnnotations:
+    sidecar.istio.io/inject: "false"
 
 kong:
+  fullnameOverride: supabase-kong
   image:
     repository: kong
     tag: 2.8.1
@@ -170,11 +199,16 @@ kong:
         paths:
           - path: /
             pathType: Prefix
+  service:
+    port: 80
   podSecurityContext:
     runAsUser: 100
     runAsGroup: 65533
+  podAnnotations:
+    sidecar.istio.io/inject: "false"
 
 analytics:
+  fullnameOverride: supabase-analytics
   image:
     tag: 1.4.0
   livenessProbe:
@@ -182,8 +216,11 @@ analytics:
       path: /health
       port: 4000
     initialDelaySeconds: 3
+  podAnnotations:
+    sidecar.istio.io/inject: "false"
 
 vector:
+  fullnameOverride: supabase-vector
   image:
     repository: localhost:5000/test/custom-supabase-vector
     tag: 0.0.1
@@ -199,6 +236,8 @@ vector:
   volumes:
     - name: pod-logs
       emptyDir: {}
+  podAnnotations:
+    sidecar.istio.io/inject: "false"
 
 functions:
   enabled: false

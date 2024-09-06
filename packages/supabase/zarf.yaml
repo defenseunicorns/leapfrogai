@@ -59,6 +59,13 @@ components:
     only:
       flavor: upstream
     charts:
+      - name: supabase-secrets-generator
+        namespace: leapfrogai
+        localPath: chart/
+        releaseName: supabase-secrets-generator
+        version: 0.0.1
+        valuesFiles:
+          - "bitnami-values.yaml"
       - name: supabase
         namespace: leapfrogai
         url: https://github.com/supabase-community/supabase-kubernetes.git
@@ -82,7 +89,6 @@ components:
       - docker.io/darthsim/imgproxy:v3.8.0
       - docker.io/timberio/vector:0.34.0-alpine
       - localhost:5000/test/custom-supabase-vector:0.0.1
-
   - name: supabase-migrations
     description: "Migrations that operate on a database configuration level that require higher elevated permissions (ie adding extensions)"
     required: true

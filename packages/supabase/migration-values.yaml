@@ -7,5 +7,5 @@ leapfrogai:
   migration:
     imageTag: "###ZARF_CONST_IMAGE_VERSION###"
     namespace: "leapfrogai"
-    serviceName: "supabase-supabase-db"
+    serviceName: "supabase-db"
     servicePort: "5432"
