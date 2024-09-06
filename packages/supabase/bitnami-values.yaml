@@ -1,3 +1,17 @@
+## @section LeapfrogAI parameters
+## Parameters not defined in the upstream chart that are related to LeapfrogAI's specific configuration
+leapfrogai:
+  package:
+    host: supabase-kong
+    name: supabase
+    component: kong
+  sso:
+    clientId: ###ZARF_CONST_EXTERNAL_KEYCLOAK_CLIENT_ID###
+    redirectUris:
+      - "https://{{ .Values.leapfrogai.package.host }}.###ZARF_VAR_DOMAIN###/auth/v1/callback"
+    webOrigins:
+      - "https://ai.###ZARF_VAR_DOMAIN###"
+
 secret:
   jwt:
     anonKey: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyAgCiAgICAicm9sZSI6ICJhbm9uIiwKICAgICJpc3MiOiAic3VwYWJhc2UtZGVtbyIsCiAgICAiaWF0IjogMTY0MTc2OTIwMCwKICAgICJleHAiOiAxNzk5NTM1NjAwCn0.dc_X5iR_VP_qT0zsiyj_I_OZ2T9FtRU2BBNWN8Bu4GE
