@@ -38,7 +38,21 @@ export const mockGetFileError = (id: string) => {
   server.use(http.get(`/api/files/${id}`, async () => new HttpResponse(null, { status: 500 })));
 };
 
-export const mockConvertFile = (fileContent: string) => {
+export const mockConvertFile = (id: string, fileContent: string) => {
+  server.use(
+    http.get(
+      `/api/files/convert/${id}`,
+      () =>
+        new Response(new Blob([fileContent], { type: 'application/pdf' }), {
+          headers: {
+            'Content-Type': 'application/pdf'
+          }
+        })
+    )
+  );
+};
+
+export const mockConvertFileNoId = (fileContent: string) => {
   server.use(
     http.post(
       `/api/files/convert`,
@@ -52,7 +66,13 @@ export const mockConvertFile = (fileContent: string) => {
   );
 };
 
-export const mockConvertFileError = () => {
+export const mockConvertFileError = (id: string) => {
+  server.use(
+    http.get(`/api/files/convert/${id}`, async () => new HttpResponse(null, { status: 500 }))
+  );
+};
+
+export const mockConvertFileErrorNoId = () => {
   server.use(http.post(`/api/files/convert`, async () => new HttpResponse(null, { status: 500 })));
 };
 

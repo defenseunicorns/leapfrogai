@@ -2,9 +2,6 @@ import { POST } from './+server';
 import { getLocalsMock } from '$lib/mocks/misc';
 import type { RequestEvent } from '@sveltejs/kit';
 import type { RouteParams } from './$types';
-import { mockOpenAI } from '../../../../../vitest-setup';
-import { faker } from '@faker-js/faker';
-import { getFakeFiles } from '$testUtils/fakeData';
 import { afterAll } from 'vitest';
 
 // Allows swapping out the mock per test
@@ -40,7 +37,7 @@ describe('/api/files/convert', () => {
     });
   });
 
-  it('should return 400 if file_id is missing', async () => {
+  it('should return 400 if the form data is missing', async () => {
     const request = new Request('http://thisurlhasnoeffect', {
       method: 'POST'
     });
@@ -55,10 +52,10 @@ describe('/api/files/convert', () => {
     });
   });
 
-  it('returns a 404 if the file metadata is not found', async () => {
+  it('should return 400 if the file is missing from the form data', async () => {
     const request = new Request('http://thisurlhasnoeffect', {
       method: 'POST',
-      body: JSON.stringify({ id: 'fakeId123' })
+      body: new FormData()
     });
 
     await expect(
@@ -67,17 +64,16 @@ describe('/api/files/convert', () => {
         '/api/files/convert'
       >)
     ).rejects.toMatchObject({
-      status: 404
+      status: 400
     });
   });
-  it('returns a 500 if there is an error getting the file content', async () => {
-    const files = getFakeFiles();
-    mockOpenAI.setFiles(files);
-    mockOpenAI.setError('fileContent');
 
+  it('should return 400 if the file in the form data is not of type File', async () => {
+    const formData = new FormData();
+    formData.append('file', '123');
     const request = new Request('http://thisurlhasnoeffect', {
       method: 'POST',
-      body: JSON.stringify({ id: files[0].id })
+      body: formData
     });
 
     await expect(
@@ -86,22 +82,7 @@ describe('/api/files/convert', () => {
         '/api/files/convert'
       >)
     ).rejects.toMatchObject({
-      status: 500
-    });
-  });
-  it('returns a 404 if the file content is undefined or null', async () => {
-    const request = new Request('http://thisurlhasnoeffect', {
-      method: 'POST',
-      body: JSON.stringify({ id: faker.string.uuid() })
-    });
-
-    await expect(
-      POST({ request, params: {}, locals: getLocalsMock() } as RequestEvent<
-        RouteParams,
-        '/api/files/convert'
-      >)
-    ).rejects.toMatchObject({
-      status: 404
+      status: 400
     });
   });
 
@@ -110,13 +91,16 @@ describe('/api/files/convert', () => {
       callback(new Error('Mocked convertAsync error'));
     });
 
-    const files = getFakeFiles();
-    mockOpenAI.setFiles(files);
+    const fileContent = new Blob(['dummy content'], { type: 'text/plain' });
+    const testFile = new File([fileContent], 'test.txt', { type: 'text/plain' });
 
-    const request = new Request('http://thisurlhasnoeffect', {
-      method: 'POST',
-      body: JSON.stringify({ id: files[0].id })
-    });
+    // In the test environment, formData.get('file') does not return a file of type File, so we mock it differently
+    // here
+    const request = {
+      formData: vi.fn().mockResolvedValue({
+        get: vi.fn().mockReturnValue(testFile)
+      })
+    } as unknown as Request;
 
     await expect(
       POST({ request, params: {}, locals: getLocalsMock() } as RequestEvent<
@@ -134,13 +118,20 @@ describe('/api/files/convert', () => {
       callback(null, pdfBuffer);
     });
 
-    const files = getFakeFiles();
-    mockOpenAI.setFiles(files);
+    const fileContent = new Uint8Array([
+      100, 117, 109, 109, 121, 32, 99, 111, 110, 116, 101, 110, 116
+    ]); // dummy content
 
-    const request = new Request('http://thisurlhasnoeffect', {
-      method: 'POST',
-      body: JSON.stringify({ id: files[0].id })
-    });
+    const testFile = new File([fileContent], 'test.txt', { type: 'text/plain' });
+    testFile.arrayBuffer = async () => fileContent.buffer;
+
+    // In the test environment, formData.get('file') does not return a file of type File, so we mock it differently
+    // here
+    const request = {
+      formData: vi.fn().mockResolvedValue({
+        get: vi.fn().mockReturnValue(testFile)
+      })
+    } as unknown as Request;
 
     const res = await POST({ request, params: {}, locals: getLocalsMock() } as RequestEvent<
       RouteParams,

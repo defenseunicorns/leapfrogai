@@ -53,7 +53,7 @@ LeapfrogAI is built on top of [Unicorn Delivery Service (UDS)](https://github.co
 
 ## Structure
 
-The LeapfrogAI repository follows a monorepo structure based around an [API](#api) with each of the [components](#components) included in a dedicated `packages` directory. The UDS bundles that handle the development and latest deployments of LeapfrogAI are in the `uds-bundles` directory. The structure looks as follows:
+The LeapfrogAI repository follows a monorepo structure based around an [API](#api) with each of the [components](#components) included in a dedicated `packages` directory. The UDS bundles that handle the development and latest deployments of LeapfrogAI are in the `bundles` directory. The structure looks as follows:
 
 ```bash
 leapfrogai/
@@ -71,7 +71,7 @@ leapfrogai/
 │   ├── ui/               # deployment infrastructure for the UI
 │   ├── vllm/             # source code & deployment infrastructure for the vllm backend
 │   └── whisper/          # source code & deployment infrastructure for the whisper backend
-├── uds-bundles/
+├── bundles/
 │   ├── dev/              # uds bundles for local uds dev deployments
 │   └── latest/           # uds bundles for the most current uds deployments
 ├── Makefile
@@ -120,6 +120,29 @@ The [repeater](packages/repeater/) "model" is a basic "backend" that parrots all
 ### Evaluations
 
 LeapfrogAI comes with an evaluation framework that is integrated with [DeepEval](https://docs.confident-ai.com/). For more information on running and utilizing evaluations in LeapfrogAI, please see the [Evals README](/src/leapfrogai_evals/README.md).
+
+### Flavors
+
+Each component has different images and values that refer to a specific image registry and/or hardening source. These images are packaged using [Zarf Flavors](https://docs.zarf.dev/ref/examples/package-flavors/):
+
+1. `upstream`: uses upstream vendor images from open source container registries and repositories
+2. 🚧 `registry1`: uses [IronBank hardened images](https://repo1.dso.mil/dsop) from the Repo1 harbor registry
+
+Below is the current component flavors list:
+
+| Component                                      |  `upstream`  |  `registry1`  |
+| ---------------------------------------------- | ------------ | ------------- |
+| [api](packages/api/)                           |      ✅      |      ✅      |
+| [ui](packages/ui/)                             |      ✅      |      🚧      |
+| [supabase](packages/supabase/)                 |      ✅      |      🚧      |
+| [migrations](./Dockerfile.migrations)          |      ✅      |      🚧      |
+| [llama-cpp-python](packages/llama-cpp-python/) |      ✅      |      🚧      |
+| [whisper](packages/whisper/)                   |      ✅      |      🚧      |
+| [text-embeddings](packages/text-embeddings/)   |      ✅      |      🚧      |
+| [vllm](packages/vllm/)                         |      ✅      |      🚧      |
+| [vllm](packages/vllm/)                         |      ✅      |      🚧      |
+
+Flavors with any components labelled as 🚧 are not available as a quick start bundle deployment yet. Please refer to the [DEVELOPMENT.md](./docs/DEVELOPMENT.md) for instructions on how to build a component's Zarf package for local testing.
 
 ## Usage
 
