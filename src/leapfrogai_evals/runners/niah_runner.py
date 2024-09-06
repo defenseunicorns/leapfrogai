@@ -57,7 +57,8 @@ class NIAH_Runner:
         max_doc_length: int = 4096,
         min_depth: float = 0.0,
         max_depth: float = 1.0,
-        num_copies: int = 2,
+        num_copies: int = 3,
+        **kwargs,
     ):
         """Initialize the Assistant with an API key and the path to the text file"""
 
@@ -66,6 +67,7 @@ class NIAH_Runner:
         self.vector_store = None
         self.current_file = None
         self.current_assistant = None
+        self.additional_attributes = kwargs
         self.message_prompt = message_prompt
         self.instruction_template = instruction_template
         self.model = model or os.environ.get("MODEL_TO_EVALUATE")

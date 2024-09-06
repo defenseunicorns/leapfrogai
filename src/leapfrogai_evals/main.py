@@ -1,9 +1,6 @@
-# import deepeval
 from deepeval.test_case import LLMTestCase
 from deepeval.metrics import AnswerRelevancyMetric
 
-# , ContextualRecallMetric TODO: enable this metric
-# FaithfulnessMetric,
 import logging
 import numpy as np
 from typing import Optional, List
@@ -15,7 +12,7 @@ from leapfrogai_evals.metrics.niah_metrics import NIAH_Retrieval, NIAH_Response
 from leapfrogai_evals.runners.niah_runner import NIAH_Runner
 from leapfrogai_evals.runners.qa_runner import QA_Runner
 
-ALL_EVALS = ["LFAI_NIAH", "LFAI_QA"]
+ALL_EVALS = ["niah_eval", "qa_eval"]
 # QA_METRICS = ["CORRECTNESS", "CONTEXTUAL_RECALL", "FAITHFULNESS"]
 # NIAH_METRICS = ["NIAH_RETRIEVAL", "NIAH_RESPONSE"]
 # ALL_METRICS = QA_METRICS + NIAH_METRICS
@@ -56,23 +53,19 @@ class RAGEvaluator:
             )
 
         logging.info("Running the following evaluations:")
-        for eval in self.eval_list:
-            logging.info(f" - {eval}")
+        logging.info("".join([f"\n - {eval_name}" for eval_name in self.eval_list]))
 
-        if "LFAI_QA" in self.eval_list:
-            logging.info("Beginning Question/Answer Evaluation...")
-            self._qa_evaluation(*args, **kwargs)
-
-        if "LFAI_NIAH" in self.eval_list:
-            logging.info("Beginning Needle in a Haystack Evaluation...")
-            self._niah_evaluation(*args, **kwargs)
+        for eval_name in self.eval_list:
+            eval = getattr(self, eval_name)
+            eval(*args, **kwargs)
 
         logging.info("Final Results:")
         for key, value in self.eval_results.items():
             logging.info(f"{key}: {value}")
 
-    def _niah_evaluation(self, *args, **kwargs) -> None:
+    def niah_eval(self, *args, **kwargs) -> None:
         """Run the Needle in a Haystack evaluation"""
+        logging.info("Beginning Needle in a Haystack Evaluation...")
         self.niah_test_cases = []
 
         niah_runner = NIAH_Runner(*args, **kwargs)
@@ -111,8 +104,9 @@ class RAGEvaluator:
             logging.info(f"scores: {scores}")
             logging.info(f"successes: {successes}")
 
-    def _qa_evaluation(self, *args, **kwargs) -> None:
+    def qa_eval(self, *args, **kwargs) -> None:
         """Runs the Question/Answer evaluation"""
+        logging.info("Beginning Question/Answer Evaluation...")
         self.qa_test_cases = []
 
         qa_runner = QA_Runner(*args, **kwargs)

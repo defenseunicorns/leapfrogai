@@ -43,13 +43,14 @@ class QA_Runner:
     def __init__(
         self,
         dataset: str = "defenseunicorns/LFAI_RAG_qa_v1",
-        model: str = "vllm",
+        model: str = None,
         temperature: float = 0.1,
         base_url: str = None,
         api_key: str = None,
         num_samples: int = 32,
         instruction_template: str = DEFAULT_INSTRUCTION_TEMPLATE,
         vector_store_id: str = None,
+        **kwargs,
     ):
         """Initialize the Assistant with an API key and the path to the text file"""
 
@@ -57,7 +58,8 @@ class QA_Runner:
         self.vector_store = None
         self.file_dict = None
         self.current_assistant = None
-        self.model = model
+        self.additional_attributes = kwargs
+        self.model = model or os.environ.get("MODEL_TO_EVALUATE")
         self.temperature = temperature
         self.instruction_template = instruction_template
         self.client = openai.OpenAI(
@@ -230,22 +232,27 @@ class QA_Runner:
         _ = self.client.beta.vector_stores.delete(vector_store_id=vector_store_id)
         self.vector_store = None
 
-    def _upload_context(self, dataset_name: str) -> None:
+    def _upload_context(
+        self, dataset_name: str, num_documents: int | None = None
+    ) -> None:
         """Uploads the full-text context documents to the vector store"""
         self.file_dict = dict()
         zip_path = hf_hub_download(
-            repo_id=dataset_name, repo_type="dataset", filename="documents.zip"
+            repo_id=dataset_name, repo_type="dataset", filename="documents_partial.zip"
         )
         # make a temporary directory to store documents
         with zipfile.ZipFile(zip_path, "r") as zip_ref:
             zip_ref.extractall(".")
             doc_list = zip_ref.namelist()
             context_dir = doc_list.pop(0)  # first entry is the parent dir
-            doc_list.pop(
-                1
-            )  # remove documents that cause issues for now TODO: find out why these fail
-            doc_list.pop(3)
-            doc_list.pop(3)
+
+        if num_documents:
+            try:
+                doc_list = doc_list[0:num_documents]
+            except Exception:
+                logging.info(
+                    f"The number of documents requested was invalid ({num_documents}), defaulting to all documents ({len(doc_list)})"
+                )
 
         logging.info(f"doc list: {doc_list}")
 
