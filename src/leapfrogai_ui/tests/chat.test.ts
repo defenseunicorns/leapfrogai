@@ -210,3 +210,7 @@ test('it can chat with an assistant that doesnt have files', async ({ page, open
   await deleteActiveThread(page, openAIClient);
   await deleteAssistantWithApi(assistant.id, openAIClient);
 });
+
+test("dummy test to test in workflow, DELETE ME", async () => {
+  expect(true).toEqual(true);
+})
