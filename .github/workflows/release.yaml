@@ -92,8 +92,8 @@ jobs:
         run: |
           docker buildx build --platform amd64,arm64 -t ghcr.io/defenseunicorns/leapfrogai/supabase-migrations:${{ steps.get_version.outputs.LFAI_VERSION }} --push -f Dockerfile.migrations --build-arg="MIGRATIONS_DIR=packages/supabase/migrations" .
 
-          zarf package create packages/supabase --set=IMAGE_VERSION=${{ steps.get_version.outputs.LFAI_VERSION }} --architecture amd64 --upstream --confirm
-          zarf package create packages/supabase --set=IMAGE_VERSION=${{ steps.get_version.outputs.LFAI_VERSION }} --architecture arm64 --upstream --confirm
+          zarf package create packages/supabase --set=IMAGE_VERSION=${{ steps.get_version.outputs.LFAI_VERSION }} --architecture amd64 --flavor upstream --confirm
+          zarf package create packages/supabase --set=IMAGE_VERSION=${{ steps.get_version.outputs.LFAI_VERSION }} --architecture arm64 --flavor upstream --confirm
 
           zarf package publish zarf-package-supabase-amd64-${{ steps.get_version.outputs.LFAI_VERSION }}.tar.zst oci://ghcr.io/defenseunicorns/packages/uds/leapfrogai
           zarf package publish zarf-package-supabase-arm64-${{ steps.get_version.outputs.LFAI_VERSION }}.tar.zst oci://ghcr.io/defenseunicorns/packages/uds/leapfrogai
