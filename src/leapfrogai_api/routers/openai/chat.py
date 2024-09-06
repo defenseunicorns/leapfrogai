@@ -11,7 +11,7 @@ from leapfrogai_api.backend.grpc_client import (
 from leapfrogai_api.backend.helpers import grpc_chat_role
 from leapfrogai_api.backend.types import ChatCompletionRequest
 from leapfrogai_api.routers.supabase_session import Session
-from leapfrogai_api.utils import get_model_config
+from leapfrogai_api.utils.__init__ import config as config_global
 from leapfrogai_api.utils.config import Config
 from leapfrogai_sdk.chat.chat_pb2 import (
     ChatCompletionResponse as ProtobufChatCompletionResponse,
@@ -23,7 +23,7 @@ router = APIRouter(prefix="/openai/v1/chat", tags=["openai/chat"])
 @router.post("/completions")
 async def chat_complete(
     req: ChatCompletionRequest,
-    model_config: Annotated[Config, Depends(get_model_config)],
+    model_config: Annotated[Config, Depends(config_global.create)],
     session: Session,  # pylint: disable=unused-argument # required for authorizing endpoint
 ):
     """Complete a chat conversation with the given model."""
@@ -32,7 +32,7 @@ async def chat_complete(
     if model is None:
         raise HTTPException(
             status_code=405,
-            detail=f"Model {req.model} not found. Currently supported models are {list(model_config.models.keys())}",
+            detail=f"Model {req.model} not found. Currently supported models are {model_config}",
         )
 
     chat_items: list[lfai.ChatItem] = []
@@ -61,7 +61,7 @@ async def chat_complete(
 
 async def chat_complete_stream_raw(
     req: ChatCompletionRequest,
-    model_config: Annotated[Config, Depends(get_model_config)],
+    model_config: Annotated[Config, Depends(config_global.create)],
 ) -> AsyncGenerator[ProtobufChatCompletionResponse, Any]:
     """Complete a prompt with the given model."""
     # Get the model backend configuration
@@ -69,7 +69,7 @@ async def chat_complete_stream_raw(
     if model is None:
         raise HTTPException(
             status_code=405,
-            detail=f"Model {req.model} not found. Currently supported models are {list(model_config.models.keys())}",
+            detail=f"Model {req.model} not found. Currently supported models are {model_config}",
         )
 
     chat_items: list[lfai.ChatItem] = []

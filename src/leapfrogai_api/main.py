@@ -1,11 +1,13 @@
 """Main FastAPI application for the LeapfrogAI API."""
 
-import asyncio
 import logging
 import os
 from contextlib import asynccontextmanager
+import os
 
-from fastapi import FastAPI
+from typing import AsyncContextManager, Callable
+
+from fastapi import FastAPI, APIRouter
 from fastapi.exception_handlers import request_validation_exception_handler
 from fastapi.exceptions import RequestValidationError
 
@@ -27,7 +29,35 @@ from leapfrogai_api.routers.openai import (
     threads,
     vector_stores,
 )
-from leapfrogai_api.utils import get_model_config
+from leapfrogai_api.utils.config import Config
+
+# TODO: Add in `if __name__ == "__main__":` block to allow uvicorn to be invoked here instead.
+
+logger = logging.getLogger(__name__)
+handler = logging.StreamHandler()
+handler.setFormatter(logging.Formatter("%(asctime)s - %(levelname)s - %(message)s"))
+logger.addHandler(handler)
+
+API_ROUTERS: list[APIRouter] = [
+    base_router,
+    auth.router,
+    models.router,
+    completions.router,
+    chat.router,
+    audio.router,
+    embeddings.router,
+    assistants.router,
+    files.router,
+    vector_stores.router,
+    runs.router,
+    messages.router,
+    runs_steps.router,
+    lfai_vector_stores.router,
+    lfai_models.router,
+    # This should be at the bottom to prevent it preempting more specific runs endpoints
+    # https://fastapi.tiangolo.com/tutorial/path-params/#order-matters
+    threads.router,
+]
 
 logging.basicConfig(
     level=os.getenv("LFAI_LOG_LEVEL", logging.INFO),
@@ -36,43 +66,84 @@ logging.basicConfig(
 logger = logging.getLogger(__name__)
 
 
-# handle startup & shutdown tasks
-@asynccontextmanager
-async def lifespan(app: FastAPI):
-    """Handle startup and shutdown tasks for the FastAPI app."""
-    # startup
-    logger.info("Starting to watch for configs with this being an info")
-    asyncio.create_task(get_model_config().watch_and_load_configs())
-    yield
-    # shutdown
-    logger.info("Clearing model configs")
-    asyncio.create_task(get_model_config().clear_all_models())
+def get_lifespan(
+    testing: bool | None = None,
+) -> Callable[[FastAPI], AsyncContextManager]:
+    """
+    Returns a lifespan function based on the testing environment.
+    NOTE: We will never call use function directly, its just to make the app more testable
+
+    Args:
+        testing (bool | None): A boolean indicating whether the testing environment is active. Defaults to None.
+
+    Returns:
+        Callable[[FastAPI], AsyncContextManager]: A lifespan function that handles the application's lifecycle.
+    """
+    # Convenience function to get the lifespan function
+    #
+
+    lifespan_name = "DEVELOPMENT" if testing else "TESTING"
+
+    @asynccontextmanager
+    async def _lifespan(app: FastAPI):
+        logger.info(f"Entering {lifespan_name} lifespan")
+        config = await Config.create(testing=testing)
+        app.state.config = config
+        await config.start_watching(testing=testing)
+
+        logger.info(f"Yielding control to FastAPI in {lifespan_name} mode")
+        yield
+        logger.info(f"Shutting down {lifespan_name} lifespan")
+
+        await app.state.config.cleanup()
+        logger.info("Lifespan shutdown complete")
+        logger.info(f"Cleanup complete in {lifespan_name} lifespan mode")
+
+    return _lifespan
 
 
-app = FastAPI(lifespan=lifespan)
+def create_app(
+    testing: bool | None = None,
+    lifespan: Callable[[FastAPI], None] | None = None,
+    **kwargs,
+) -> FastAPI:
+    """
+    Creates a FastAPI application instance.
+
+    Args:
+        testing (bool | None): A boolean indicating whether the application is in testing mode.
+            If None, the value will be determined from the LFAI_TESTING environment variable.
+        lifespan (Callable[[FastAPI], None] | None): A callable that defines the lifespan of the application.
+            If None, the lifespan will be determined based on the testing mode.
+        **kwargs: Additional keyword arguments to pass to the FastAPI application constructor.
+
+    Returns:
+        FastAPI: The created FastAPI application instance.
+    """
+
+    # Set the lifespan based off of the testing mode and if it was provided
+    lifespan = lifespan if callable(lifespan) else get_lifespan(testing=testing)
+    testing = testing or os.environ.get("LFAI_TESTING", "false").lower() == "true"
+
+    if "debug" not in kwargs:
+        kwargs["debug"] = testing
+
+    app = FastAPI(lifespan=lifespan, **kwargs)
+    for router in API_ROUTERS:
+        app.include_router(router)
+
+    return app
 
 
-@app.exception_handler(RequestValidationError)
 async def validation_exception_handler(request, exc):
     logger.error(f"The client sent invalid data!: {exc}")
     return await request_validation_exception_handler(request, exc)
 
 
-app.include_router(base_router)
-app.include_router(auth.router)
-app.include_router(models.router)
-app.include_router(completions.router)
-app.include_router(chat.router)
-app.include_router(audio.router)
-app.include_router(embeddings.router)
-app.include_router(assistants.router)
-app.include_router(files.router)
-app.include_router(vector_stores.router)
-app.include_router(runs.router)
-app.include_router(messages.router)
-app.include_router(runs_steps.router)
-app.include_router(lfai_vector_stores.router)
-app.include_router(lfai_models.router)
-# This should be at the bottom to prevent it preempting more specific runs endpoints
-# https://fastapi.tiangolo.com/tutorial/path-params/#order-matters
-app.include_router(threads.router)
+app = create_app(
+    testing=False,
+    lifespan=get_lifespan(testing=False),
+    exception_handlers={
+        RequestValidationError: validation_exception_handler,
+    },
+)

@@ -1,0 +1,11 @@
+# This file is meant to serve as a sample config file.
+# `test_config.toml` is supposed to be a TOML file with the same contents.
+models:
+  - name: "model1"
+    backend: "backend1"
+    type: "type1"
+    dimensions: 768
+    precision: 32
+    capabilities: ["embeddings"]
+  - name: model2
+    backend: backend2

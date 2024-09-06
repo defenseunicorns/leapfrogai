@@ -4,10 +4,16 @@ from fastapi import APIRouter
 from leapfrogai_api.backend.types import (
     ModelResponse,
     ModelResponseModel,
+    ModelMetadataResponse,
 )
+from typing import TYPE_CHECKING
 from leapfrogai_api.routers.supabase_session import Session
-from leapfrogai_api.utils import get_model_config
-from leapfrogai_api.utils.config import Config
+
+import logging
+
+logger = logging.getLogger(__file__)
+if TYPE_CHECKING:
+    from leapfrogai_api.utils.config import Config
 
 router = APIRouter(prefix="/openai/v1/models", tags=["openai/models"])
 
@@ -18,8 +24,14 @@ async def models(
 ) -> ModelResponse:
     """List all available models."""
     res = ModelResponse(data=[])
-    model_config: Config = get_model_config()
-    for model in model_config.models:
-        m = ModelResponseModel(id=model)
+    # shared config object from the app
+    model_config: "Config" = session.app.state.config
+
+    for model_name, model_data in model_config.models.items():
+        meta = ModelMetadataResponse(**dict(model_data.metadata))
+        m = ModelResponseModel(
+            id=model_name,
+            metadata=meta,
+        )
         res.data.append(m)
     return res

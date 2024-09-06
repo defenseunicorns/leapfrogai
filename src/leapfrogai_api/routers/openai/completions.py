@@ -10,7 +10,7 @@ from leapfrogai_api.backend.types import (
     CompletionRequest,
 )
 from leapfrogai_api.routers.supabase_session import Session
-from leapfrogai_api.utils import get_model_config
+from leapfrogai_api.utils.__init__ import config as config_global
 from leapfrogai_api.utils.config import Config
 import leapfrogai_sdk as lfai
 
@@ -21,7 +21,7 @@ router = APIRouter(prefix="/openai/v1/completions", tags=["openai/completions"])
 async def complete(
     session: Session,  # pylint: disable=unused-argument # required for authorizing endpoint
     req: CompletionRequest,
-    model_config: Annotated[Config, Depends(get_model_config)],
+    model_config: Annotated[Config, Depends(config_global.create)],
 ):
     """Complete a prompt with the given model."""
     # Get the model backend configuration
@@ -29,7 +29,7 @@ async def complete(
     if model is None:
         raise HTTPException(
             status_code=405,
-            detail=f"Model {req.model} not found. Currently supported models are {list(model_config.models.keys())}",
+            detail=f"Model {req.model} not found. Currently supported models are {model_config}",
         )
 
     request = lfai.CompletionRequest(
