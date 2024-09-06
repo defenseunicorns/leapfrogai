@@ -180,13 +180,13 @@
             {#if message.role !== 'user' && !messageText}
               <MessagePendingSkeleton size="sm" class="mt-4" darkColor="bg-gray-500" />
             {:else}
-              <pre>
-              {@html md.render(messageText)}</pre>
-
               <!--eslint-disable-next-line svelte/no-at-html-tags -- We use DomPurity to sanitize the code snippet-->
               {@html DOMPurify.sanitize(md.render(messageText), {
-                ADD_TAGS: ['code-block', 'pre', 'code'],
-                ALLOWED_ATTR: ['code', 'language']
+                CUSTOM_ELEMENT_HANDLING: {
+                  tagNameCheck: (tagName) => tagName.match(/code-block/),
+                  attributeNameCheck: (attr) => attr.match(/code/) || attr.match(/language/),
+                  allowCustomizedBuiltInElements: false
+                }
               })}
               <div class="flex flex-col items-start">
                 {#each getCitations(message, $page.data.files) as { component: Component, props }}
