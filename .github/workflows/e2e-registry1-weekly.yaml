@@ -45,12 +45,19 @@ jobs:
       - name: Setup Python
         uses: ./.github/actions/python
 
-      - name: Setup UDS Cluster
-        uses: ./.github/actions/uds-cluster
+      # TODO: remove hardcoded uds-cluster action due to incorrect usage in v0.11.0
+      - name: Setup UDS Environment
+        uses: defenseunicorns/uds-common/.github/actions/setup@822dac4452e6815aadcf09f487406ff258756a0c # v0.14.0
         with:
           registry1Username: ${{ secrets.IRON_BANK_ROBOT_USERNAME }}
           registry1Password: ${{ secrets.IRON_BANK_ROBOT_PASSWORD }}
           ghToken: ${{ secrets.GITHUB_TOKEN }}
+          udsCliVersion: 0.14.0
+
+      - name: Create UDS Cluster
+        shell: bash
+        run: |
+          UDS_CONFIG=.github/config/uds-config.yaml make create-uds-cpu-cluster
 
       - name: Setup Playwright
         run: |
