@@ -70,6 +70,12 @@ BEGIN
           for update using (auth.uid() = owner) with check (bucket_id = 'avatars');
     END IF;
 
+    IF NOT EXISTS(SELECT 1 FROM pg_policies WHERE schemaname = 'storage'
+      AND tablename  = 'objects'
+      AND policyname = 'Anyone can upload an assistant avatar.')
+        THEN create policy "Anyone can upload an assistant avatar." on storage.objects
+          for insert with check (bucket_id = 'assistant_avatars');
+    END IF;
 END $$;
 
 -- Policies for assistant_avatars
