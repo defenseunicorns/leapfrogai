@@ -1,4 +1,5 @@
 SUPABASE_URL ?= https://supabase-kong.uds.dev
+LEAPFROGAI_MODEL ?= llama-cpp-python
 
 set-supabase:
 	$(eval SUPABASE_ANON_KEY := $(shell uds zarf tools kubectl get secret -n leapfrogai supabase-bootstrap-jwt -o json | uds zarf tools yq '.data.anon-key' | base64 -d))
@@ -18,6 +19,7 @@ define get_jwt_token
 	echo "SUPABASE_USER_JWT=$$JWT" > .env; \
 	echo "SUPABASE_URL=$(SUPABASE_URL)" >> .env; \
 	echo "SUPABASE_ANON_KEY=$(SUPABASE_ANON_KEY)" >> .env; \
+	echo "LEAPFROGAI_MODEL=$(LEAPFROGAI_MODEL)" >> .env
 	echo "DONE - variables exported to .env file"
 endef
 

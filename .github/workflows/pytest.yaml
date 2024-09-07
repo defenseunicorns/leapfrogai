@@ -54,14 +54,15 @@ jobs:
             **/src/leapfrogai_sdk
           key: pytest-integration-pip-${{ github.ref }}
 
-      - uses: actions/setup-python@0a5c61591373683505ea898e09a3ea4f39ef2b9c #v5.0.0
+      - name: Setup Python
+        uses: actions/setup-python@0a5c61591373683505ea898e09a3ea4f39ef2b9c #v5.0.0
         with:
           python-version-file: "pyproject.toml"
 
-      - name: Install Python Deps
+      - name: Install Python Dependencies
         run: pip install ".[dev]" "src/leapfrogai_api" "src/leapfrogai_sdk"
 
-      - name: Build and Run Repeater
+      - name: Setup Repeater
         env:
           LOCAL_VERSION: e2e-test
         run: |
@@ -92,14 +93,15 @@ jobs:
             **/src/leapfrogai_sdk
           key: pytest-integration-pip-${{ github.ref }}
 
-      - uses: actions/setup-python@0a5c61591373683505ea898e09a3ea4f39ef2b9c #v5.0.0
+      - name: Setup Python
+        uses: actions/setup-python@0a5c61591373683505ea898e09a3ea4f39ef2b9c #v5.0.0
         with:
           python-version-file: "pyproject.toml"
 
       - name: Install Python Deps
         run: pip install ".[dev]" "src/leapfrogai_api" "src/leapfrogai_sdk"
 
-      - name: Build and Run Repeater
+      - name: Setup Repeater
         env:
           LOCAL_VERSION: e2e-test
         run: |
@@ -116,13 +118,6 @@ jobs:
       - name: Setup API and Supabase
         uses: ./.github/actions/lfai-core
 
-      - name: Deploy text-embeddings
-        run: |
-          make build-text-embeddings LOCAL_VERSION=e2e-test
-          docker image prune -af
-          uds zarf package deploy packages/text-embeddings/zarf-package-text-embeddings-amd64-e2e-test.tar.zst -l=trace --confirm
-          rm packages/text-embeddings/zarf-package-text-embeddings-amd64-e2e-test.tar.zst
-
       - name: Generate Secrets
         id: generate_secrets
         run: |
@@ -138,10 +133,17 @@ jobs:
           echo "SUPABASE_ANON_KEY is set: ${{ steps.generate_secrets.outputs.SUPABASE_ANON_KEY != '' }}"
           echo "SUPABASE_PASS is set: ${{ steps.generate_secrets.outputs.SUPABASE_PASS != '' }}"
 
+      - name: Setup Text-Embeddings
+        run: |
+          make build-text-embeddings LOCAL_VERSION=e2e-test
+          docker image prune -af
+          uds zarf package deploy packages/text-embeddings/zarf-package-text-embeddings-amd64-e2e-test.tar.zst -l=trace --confirm
+          rm packages/text-embeddings/zarf-package-text-embeddings-amd64-e2e-test.tar.zst
+
       - name: Run Integration Tests
         env:
           SUPABASE_ANON_KEY: ${{ steps.generate_secrets.outputs.SUPABASE_ANON_KEY }}
           SUPABASE_PASS: ${{ steps.generate_secrets.outputs.SUPABASE_PASS }}
           SUPABASE_EMAIL: "doug@uds.dev"
         run: |
-          env $$(cat .env | xargs) python -m pytest -v -s tests/integration/api
+          env $(cat .env | xargs) python -m pytest -v -s tests/integration/api
