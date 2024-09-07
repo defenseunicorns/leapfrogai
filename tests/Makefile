@@ -36,7 +36,12 @@ test-user: set-supabase prompt-email prompt-password
 	SUPABASE_PASS=$$(cat .env.password | tr -d '\n'); \
 	$(call get_jwt_token,$$SUPABASE_EMAIL,$$SUPABASE_PASS,"$(SUPABASE_URL)/auth/v1/signup")
 
-test-env: set-supabase prompt-email prompt-password
+# Setup for pipeline tests with no interactive terminal
+test-user-pipeline: set-supabase
+	$(call get_jwt_token,$(SUPABASE_EMAIL),$(SUPABASE_PASS),"$(SUPABASE_URL)/auth/v1/signup")
+	$(call get_jwt_token,$(SUPABASE_EMAIL),$(SUPABASE_PASS),"$(SUPABASE_URL)/auth/v1/token?grant_type=password")
+
+test-env: test-user
 	SUPABASE_EMAIL=$$(cat .env.email | tr -d '\n'); \
 	SUPABASE_PASS=$$(cat .env.password | tr -d '\n'); \
 	$(call get_jwt_token,$$SUPABASE_EMAIL,$$SUPABASE_PASS,"$(SUPABASE_URL)/auth/v1/token?grant_type=password")

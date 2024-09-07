@@ -1,12 +1,13 @@
 name: pytest
+
 on:
   pull_request:
     types:
-      - opened            # default trigger
-      - reopened          # default trigger
-      - synchronize       # default trigger
-      - ready_for_review  # don't run on draft PRs
-      - milestoned        # allows us to trigger on bot PRs
+      - opened # default trigger
+      - reopened # default trigger
+      - synchronize # default trigger
+      - ready_for_review # don't run on draft PRs
+      - milestoned # allows us to trigger on bot PRs
     paths:
       - "**"
       - "!.github/**"
@@ -46,7 +47,7 @@ jobs:
 
       - uses: actions/setup-python@0a5c61591373683505ea898e09a3ea4f39ef2b9c #v5.0.0
         with:
-          python-version-file: 'pyproject.toml'
+          python-version-file: "pyproject.toml"
 
       - name: Build Repeater
         env:
@@ -63,3 +64,61 @@ jobs:
         run: python -m pytest tests/pytest -v
         env:
           LFAI_RUN_REPEATER_TESTS: true
+
+  integration:
+    runs-on: ai-ubuntu-big-boy-8-core
+
+    steps:
+      - name: Checkout Repo
+        uses: actions/checkout@b4ffde65f46336ab88eb53be808477a3936bae11 # v4.1.1
+
+      - name: Setup Python
+        uses: ./.github/actions/python
+
+      - name: Setup UDS Cluster
+        uses: ./.github/actions/uds-cluster
+        with:
+          registry1Username: ${{ secrets.IRON_BANK_ROBOT_USERNAME }}
+          registry1Password: ${{ secrets.IRON_BANK_ROBOT_PASSWORD }}
+          ghToken: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Setup API and Supabase
+        uses: ./.github/actions/lfai-core
+
+      - name: Deploy text-embeddings
+        run: |
+          make build-text-embeddings LOCAL_VERSION=e2e-test
+          docker image prune -af
+          uds zarf package deploy packages/text-embeddings/zarf-package-text-embeddings-amd64-e2e-test.tar.zst -l=trace --confirm
+          rm packages/text-embeddings/zarf-package-text-embeddings-amd64-e2e-test.tar.zst
+
+      - name: Build Repeater
+        env:
+          LOCAL_VERSION: dev
+        run: |
+          make docker-repeater
+      - name: Run Repeater
+        run: docker run -p 50051:50051 -d --name=repeater ghcr.io/defenseunicorns/leapfrogai/repeater:dev
+
+      - name: Generate Secrets
+        id: generate_secrets
+        run: |
+          SUPABASE_PASS=$(cat <(openssl rand -base64 32 | tr -dc 'a-zA-Z0-9!@#$%^&*()_+-=[]{}|;:,.<>?' | head -c 20) <(echo '!@1Aa') | fold -w1 | shuf | tr -d '\n')
+          echo "::add-mask::$SUPABASE_PASS"
+          echo "SUPABASE_PASS=$SUPABASE_PASS" >> $GITHUB_OUTPUT
+          SUPABASE_ANON_KEY=$(uds zarf tools kubectl get secret supabase-bootstrap-jwt -n leapfrogai -o jsonpath='{.data.anon-key}' | base64 -d)
+          echo P"::add-mask::$SUPABASE_ANON_KEY"
+          echo "SUPABASE_ANON_KEY=$SUPABASE_ANON_KEY" >> $GITHUB_OUTPUT
+
+      - name: Verify Secrets
+        run: |
+          echo "SUPABASE_ANON_KEY is set: ${{ steps.generate_secrets.outputs.SUPABASE_ANON_KEY != '' }}"
+          echo "SUPABASE_PASS is set: ${{ steps.generate_secrets.outputs.SUPABASE_PASS != '' }}"
+
+      - name: Run Integration Tests
+        env:
+          SUPABASE_ANON_KEY: ${{ steps.generate_secrets.outputs.SUPABASE_ANON_KEY }}
+          SUPABASE_PASS: ${{ steps.generate_secrets.outputs.SUPABASE_PASS }}
+          SUPABASE_EMAIL: "test@test.test"
+        run: |
+          env $$(cat .env | xargs) python -m pytest -v -s tests/integration/api

@@ -17,7 +17,7 @@ help: ## Display this help information
 		{printf "\033[36m%-30s\033[0m %s\n", $$1, $$2}'
 
 clean: ## Clean up all the things (test artifacts, packages, build dirs, compiled .whl files, python eggs)
-	-rm .env.email .env.password .pytest_cache
+	-rm .env .env.email .env.password .pytest_cache
 	-rm -rf .logs
 	-rm zarf-package-*.tar.zst
 	-rm packages/**/zarf-package-*.tar.zst

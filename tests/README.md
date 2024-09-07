@@ -27,16 +27,18 @@ Please see the [Makefile](./Makefile) for more details. Below is a quick synopsi
 python -m pip install ".[dev]"
 
 # create a test user for the tests
-make test-user SUPABASE_URL=https://supabase-kong.uds.dev
+# prompts for a password and email
+make test-user
 
 # setup the environment variables for the tests
-make test-env SUPABASE_URL=https://supabase-kong.uds.dev
+# prompts for the previous step's password and email
+make test-env
 
 # run the unit tests
-make test-api-unit SUPABASE_URL=https://supabase-kong.uds.dev
+make test-api-unit
 
 # run the integration tests
-make test-api-integration SUPABASE_URL=https://supabase-kong.uds.dev
+make test-api-integration
 ```
 
 ## Load Tests
