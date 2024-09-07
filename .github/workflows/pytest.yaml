@@ -33,12 +33,13 @@ on:
 # Declare default permissions as read only.
 permissions: read-all
 
-concurrency:
-  group: pytest-${{ github.ref }}
-  cancel-in-progress: true
-
 jobs:
   pytest:
+
+    concurrency:
+      group: pytest-${{ github.ref }}
+      cancel-in-progress: true
+
     runs-on: ubuntu-latest
 
     steps:
@@ -85,6 +86,10 @@ jobs:
 
     # If basic unit tests fail, do not run this job
     needs: pytest
+
+    concurrency:
+      group: integration-${{ github.ref }}
+      cancel-in-progress: true
 
     steps:
       - name: Checkout Repo
