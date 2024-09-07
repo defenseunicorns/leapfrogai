@@ -145,5 +145,8 @@ jobs:
           SUPABASE_ANON_KEY: ${{ steps.generate_secrets.outputs.SUPABASE_ANON_KEY }}
           SUPABASE_PASS: ${{ steps.generate_secrets.outputs.SUPABASE_PASS }}
           SUPABASE_EMAIL: "doug@uds.dev"
+          # Turn off non-deterministic tests that require a working LLM in-cluster for evaluation
+          LFAI_RUN_NIAH_TESTS: "false"
         run: |
-          env $(cat .env | xargs) python -m pytest -v -s tests/integration/api
+          make test-user-pipeline
+          env $(cat .env | xargs)  python -m pytest -v -s tests/integration/api

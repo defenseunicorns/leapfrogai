@@ -1,5 +1,7 @@
 SUPABASE_URL ?= https://supabase-kong.uds.dev
 LEAPFROGAI_MODEL ?= llama-cpp-python
+LFAI_RUN_NIAH_TESTS ?= false
+LFAI_RUN_REPEATER_TESTS ?= true
 
 set-supabase:
 	$(eval SUPABASE_ANON_KEY := $(shell uds zarf tools kubectl get secret -n leapfrogai supabase-bootstrap-jwt -o json | uds zarf tools yq '.data.anon-key' | base64 -d))
@@ -7,7 +9,7 @@ set-supabase:
 	@echo "Supabase Anon Key: $(SUPABASE_ANON_KEY)"
 
 define get_jwt_token
-	echo "Getting JWT token from $(SUPABASE_URL)..."; \
+	echo "Getting JWT token from $(3)..."; \
 	echo "Email: $(1)"; \
 	echo "Password: $(2)"; \
 	TOKEN_RESPONSE=$$(curl -s -X POST $(3) \
@@ -17,7 +19,7 @@ define get_jwt_token
 	echo "Extracting token from $$TOKEN_RESPONSE"; \
 	JWT=$$(echo $$TOKEN_RESPONSE | grep -o '"access_token":"[^"]*' | cut -d '"' -f 4); \
 	echo "SUPABASE_USER_JWT=$$JWT" > .env; \
-	echo "SUPABASE_URL=$(SUPABASE_URL)" >> .env; \
+	echo "SUPABASE_URL=$(3)" >> .env; \
 	echo "SUPABASE_ANON_KEY=$(SUPABASE_ANON_KEY)" >> .env; \
 	echo "LEAPFROGAI_MODEL=$(LEAPFROGAI_MODEL)" >> .env
 	echo "DONE - variables exported to .env file"
@@ -57,10 +59,10 @@ test-api-integration:
 		echo "Required environment variables (SUPABASE_USER_JWT, SUPABASE_URL, SUPABASE_ANON_KEY) are missing in .env!"; \
 		exit 1; \
 	fi
-	@env $$(cat .env | xargs) PYTHONPATH=$$(pwd) pytest -vv -s tests/integration/api
+	@env $$(cat .env | xargs) LFAI_RUN_NIAH_TESTS=$(LFAI_RUN_NIAH_TESTS) PYTHONPATH=$$(pwd) pytest -vv -s tests/integration/api
 
 test-api-unit: set-supabase
-	PYTHONPATH=$$(pwd) pytest -vv -s tests/unit
+	LFAI_RUN_REPEATER_TESTS=$(LFAI_RUN_REPEATER_TESTS) PYTHONPATH=$$(pwd) pytest -vv -s tests/unit
 
 test-load:
 	locust -f $$(pwd)/tests/load/loadtest.py --web-port 8089

@@ -20,7 +20,7 @@ uds zarf connect --name=vllm-model --namespace=leapfrogai --local-port=50051 --r
 
 If running everything via Docker containers or in a local Python environment, then ensure they are accessible based on the test configurations in each testing target's sub-directory.
 
-Please see the [Makefile](./Makefile) for more details. Below is a quick synopsis of the available Make targets that are **run from the root of the entire repository**:
+Please see the [Makefile](./Makefile) for more details on turning tests on/off and for setting test parameters like the default model to use. Below is a quick synopsis of the available Make targets that are **run from the root of the entire repository**:
 
 ```bash
 # Install the python dependencies
