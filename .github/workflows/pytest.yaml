@@ -42,6 +42,9 @@ jobs:
 
     runs-on: ubuntu-latest
 
+    outputs:
+      repeater_container_id: ${{ steps.run_repeater.outputs.REPEATER_CONTAINER_ID }}
+
     steps:
       - name: Checkout Repo
         uses: actions/checkout@b4ffde65f46336ab88eb53be808477a3936bae11 # v4.1.1
@@ -71,8 +74,8 @@ jobs:
       - name: Run Repeater
         id: run_repeater
         run: |
-          docker run -p 50051:50051 -d --name=repeater ghcr.io/defenseunicorns/leapfrogai/repeater:dev
-          echo "REPEATER_CONTAINER_ID=${REPEATER_CONTAINER_ID}" >> $GITHUB_ENV
+          REPEATER_CONTAINER_ID=$(docker run -p 50051:50051 -d --name=repeater ghcr.io/defenseunicorns/leapfrogai/repeater:dev)
+          echo "REPEATER_CONTAINER_ID=$REPEATER_CONTAINER_ID" >> $GITHUB_OUTPUT
 
       - name: Run Pytest
         run: python -m pytest tests/pytest -v
@@ -107,7 +110,7 @@ jobs:
 
       - name: Use Repeater from Previous job
         run: |
-          docker start $REPEATER_CONTAINER_ID
+          docker start ${{ needs.pytest.outputs.REPEATER_CONTAINER_ID }}
 
       - name: Setup UDS Cluster
         uses: ./.github/actions/uds-cluster
@@ -145,6 +148,6 @@ jobs:
         env:
           SUPABASE_ANON_KEY: ${{ steps.generate_secrets.outputs.SUPABASE_ANON_KEY }}
           SUPABASE_PASS: ${{ steps.generate_secrets.outputs.SUPABASE_PASS }}
-          SUPABASE_EMAIL: "test@test.test"
+          SUPABASE_EMAIL: "doug@uds.dev"
         run: |
           env $$(cat .env | xargs) python -m pytest -v -s tests/integration/api
