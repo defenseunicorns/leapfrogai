@@ -61,16 +61,12 @@ jobs:
       - name: Install Python Deps
         run: pip install ".[dev]" "src/leapfrogai_api" "src/leapfrogai_sdk"
 
-      - name: Build Repeater
+      - name: Build and Run Repeater
         env:
-          LOCAL_VERSION: dev
+          LOCAL_VERSION: e2e-test
         run: |
           make docker-repeater
-
-      - name: Run Repeater
-        id: run_repeater
-        run: |
-          docker run -p 50051:50051 -d --name=repeater ghcr.io/defenseunicorns/leapfrogai/repeater:e2e-test
+          docker run -p 50051:50051 -d --name=repeater ghcr.io/defenseunicorns/leapfrogai/repeater:$LOCAL_VERSION
 
       - name: Run Pytest
         run: python -m pytest tests/pytest -v
@@ -103,10 +99,12 @@ jobs:
       - name: Install Python Deps
         run: pip install ".[dev]" "src/leapfrogai_api" "src/leapfrogai_sdk"
 
-      - name: Run Repeater
-        id: run_repeater
+      - name: Build and Run Repeater
+        env:
+          LOCAL_VERSION: e2e-test
         run: |
-          docker run -p 50051:50051 -d --name=repeater ghcr.io/defenseunicorns/leapfrogai/repeater:e2e-test
+          make docker-repeater
+          docker run -p 50051:50051 -d --name=repeater ghcr.io/defenseunicorns/leapfrogai/repeater:$LOCAL_VERSION
 
       - name: Setup UDS Cluster
         uses: ./.github/actions/uds-cluster
