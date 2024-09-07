@@ -6,6 +6,7 @@ on:
       - opened # default trigger
       - reopened # default trigger
       - synchronize # default trigger
+      - ready_for_review  # don't run on draft PRs
       - milestoned # allows us to trigger on bot PRs
     paths:
       - "**"
@@ -25,7 +26,7 @@ on:
       - "!.gitignore"
       - "!LICENSE"
 
-      # Ignore LFAI-UI things (no Python)
+      # Ignore UI things (no Python)
       - "!src/leapfrogai_ui/**"
       - "!packages/ui/**"
 
@@ -51,9 +52,9 @@ jobs:
             ~/.cache/pip
             **/src/leapfrogai_api
             **/src/leapfrogai_sdk
-          key: ${{ pytest }}-pip-${{ hashFiles('**/requirements.txt') }}
+          key: ${{ runner.os }}-pip-${{ hashFiles('**/requirements.txt') }}
           restore-keys: |
-            ${{ pytest }}-pip-
+            ${{ runner.os }}-pip-
 
       - uses: actions/setup-python@0a5c61591373683505ea898e09a3ea4f39ef2b9c #v5.0.0
         with:
@@ -100,9 +101,9 @@ jobs:
             ~/.cache/pip
             **/src/leapfrogai_api
             **/src/leapfrogai_sdk
-          key: ${{ pytest }}-pip-${{ hashFiles('**/requirements.txt') }}
+          key: ${{ runner.os }}-pip-${{ hashFiles('**/requirements.txt') }}
           restore-keys: |
-            ${{ pytest }}-pip-
+            ${{ runner.os }}-pip-
 
       - uses: actions/setup-python@0a5c61591373683505ea898e09a3ea4f39ef2b9c #v5.0.0
         with:

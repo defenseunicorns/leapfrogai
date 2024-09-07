@@ -38,12 +38,12 @@ permissions:
 # https://docs.github.com/en/pull-requests/collaborating-with-pull-requests/collaborating-on-repositories-with-code-quality-features/troubleshooting-required-status-checks#handling-skipped-but-required-checks
 
 # Abort prior jobs in the same workflow / PR
-concurrency:
-  group: pytest-skip-${{ github.ref }}
-  cancel-in-progress: true
 
 jobs:
   pytest:
+    concurrency:
+      group: pytest-skip-${{ github.ref }}
+      cancel-in-progress: true
     runs-on: ubuntu-latest
     steps:
       - name: Skipped
@@ -51,6 +51,9 @@ jobs:
           echo skipped
 
   integration:
+    concurrency:
+      group: integration-skip-${{ github.ref }}
+      cancel-in-progress: true
     runs-on: ubuntu-latest
     steps:
       - name: Skipped
