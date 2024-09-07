@@ -6,7 +6,6 @@ on:
       - opened # default trigger
       - reopened # default trigger
       - synchronize # default trigger
-      - ready_for_review # don't run on draft PRs
       - milestoned # allows us to trigger on bot PRs
     paths:
       - "**"
@@ -35,7 +34,6 @@ permissions: read-all
 
 jobs:
   pytest:
-
     concurrency:
       group: pytest-${{ github.ref }}
       cancel-in-progress: true
