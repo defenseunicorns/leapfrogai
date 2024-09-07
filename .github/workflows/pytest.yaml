@@ -68,6 +68,9 @@ jobs:
   integration:
     runs-on: ai-ubuntu-big-boy-8-core
 
+    # If basic unit tests fail, do not run this job
+    needs: pytest
+
     steps:
       - name: Checkout Repo
         uses: actions/checkout@b4ffde65f46336ab88eb53be808477a3936bae11 # v4.1.1
