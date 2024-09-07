@@ -45,20 +45,35 @@ jobs:
       - name: Checkout Repo
         uses: actions/checkout@b4ffde65f46336ab88eb53be808477a3936bae11 # v4.1.1
 
+      - name: Cache Python Dependencies
+        uses: actions/cache@v3
+        with:
+          path: |
+            ~/.cache/pip
+            **/src/leapfrogai_api
+            **/src/leapfrogai_sdk
+          key: ${{ pytest }}-pip-${{ hashFiles('**/requirements.txt') }}
+          restore-keys: |
+            ${{ pytest }}-pip-
+
       - uses: actions/setup-python@0a5c61591373683505ea898e09a3ea4f39ef2b9c #v5.0.0
         with:
           python-version-file: "pyproject.toml"
+
+      - name: Install Python Deps
+        run: pip install ".[dev]" "src/leapfrogai_api" "src/leapfrogai_sdk"
 
       - name: Build Repeater
         env:
           LOCAL_VERSION: dev
         run: |
           make docker-repeater
-      - name: Run Repeater
-        run: docker run -p 50051:50051 -d --name=repeater ghcr.io/defenseunicorns/leapfrogai/repeater:dev
 
-      - name: Install Python Deps
-        run: pip install ".[dev]" "src/leapfrogai_api" "src/leapfrogai_sdk"
+      - name: Run Repeater
+        id: run_repeater
+        run: |
+          docker run -p 50051:50051 -d --name=repeater ghcr.io/defenseunicorns/leapfrogai/repeater:dev
+          echo "REPEATER_CONTAINER_ID=${REPEATER_CONTAINER_ID}" >> $GITHUB_ENV
 
       - name: Run Pytest
         run: python -m pytest tests/pytest -v
@@ -75,8 +90,23 @@ jobs:
       - name: Checkout Repo
         uses: actions/checkout@b4ffde65f46336ab88eb53be808477a3936bae11 # v4.1.1
 
-      - name: Setup Python
-        uses: ./.github/actions/python
+      - name: Use Cached Python Dependencies
+        uses: actions/cache@v3
+        with:
+          path: |
+            ~/.cache/pip
+            **/src/leapfrogai_api
+            **/src/leapfrogai_sdk
+          key: ${{ pytest }}-pip-${{ hashFiles('**/requirements.txt') }}
+          restore-keys: |
+            ${{ pytest }}-pip-
+
+      - uses: actions/setup-python@0a5c61591373683505ea898e09a3ea4f39ef2b9c #v5.0.0
+        with:
+          python-version-file: "pyproject.toml"
+
+      - name: Install Python Deps
+        run: pip install ".[dev]" "src/leapfrogai_api" "src/leapfrogai_sdk"
 
       - name: Setup UDS Cluster
         uses: ./.github/actions/uds-cluster
@@ -95,13 +125,9 @@ jobs:
           uds zarf package deploy packages/text-embeddings/zarf-package-text-embeddings-amd64-e2e-test.tar.zst -l=trace --confirm
           rm packages/text-embeddings/zarf-package-text-embeddings-amd64-e2e-test.tar.zst
 
-      - name: Build Repeater
-        env:
-          LOCAL_VERSION: dev
+      - name: Use Repeater from Previous job
         run: |
-          make docker-repeater
-      - name: Run Repeater
-        run: docker run -p 50051:50051 -d --name=repeater ghcr.io/defenseunicorns/leapfrogai/repeater:dev
+          docker start $REPEATER_CONTAINER_ID
 
       - name: Generate Secrets
         id: generate_secrets
