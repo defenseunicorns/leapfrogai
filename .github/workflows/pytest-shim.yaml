@@ -39,22 +39,22 @@ permissions:
 
 # Abort prior jobs in the same workflow / PR
 
+concurrency:
+  group: pytest-integration-skip-${{ github.ref }}
+  cancel-in-progress: true
+
 jobs:
   pytest:
-    concurrency:
-      group: pytest-skip-${{ github.ref }}
-      cancel-in-progress: true
     runs-on: ubuntu-latest
+
     steps:
       - name: Skipped
         run: |
           echo skipped
 
   integration:
-    concurrency:
-      group: integration-skip-${{ github.ref }}
-      cancel-in-progress: true
     runs-on: ubuntu-latest
+
     steps:
       - name: Skipped
         run: |
