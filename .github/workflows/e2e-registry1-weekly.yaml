@@ -72,14 +72,14 @@ jobs:
       - name: Mutation to Registry1 Bundle
         # TODO: fix bundle path
         run: |
-          uds zarf tools yq -i '.packages[1] |= del(.repository)' uds-bundles/latest/cpu/uds-bundle.yaml
-          uds zarf tools yq -i '.packages[1] |= .ref = "registry1"' uds-bundles/latest/cpu/uds-bundle.yaml
-          uds zarf tools yq -i '.packages[1] |= .path = "../../../packages/api"' uds-bundles/latest/cpu/uds-bundle.yaml
-          uds zarf tools yq -i '.metadata.version = "registry1"' uds-bundles/latest/cpu/uds-bundle.yaml
+          uds zarf tools yq -i '.packages[1] |= del(.repository)' bundles/latest/cpu/uds-bundle.yaml
+          uds zarf tools yq -i '.packages[1] |= .ref = "registry1"' bundles/latest/cpu/uds-bundle.yaml
+          uds zarf tools yq -i '.packages[1] |= .path = "../../../packages/api"' bundles/latest/cpu/uds-bundle.yaml
+          uds zarf tools yq -i '.metadata.version = "registry1"' bundles/latest/cpu/uds-bundle.yaml
 
       - name: Create and Deploy Bundle
         run: |
-          cd uds-bundles/latest/cpu
+          cd bundles/latest/cpu
           uds create . --confirm && \
             uds deploy --set DISABLE_KEYCLOAK=true uds-bundle-leapfrogai-amd64-registry1.tar.zst --confirm --no-progress && \
             rm -rf uds-bundle-leapfrogai-amd64-registry1.tar.zst && \
