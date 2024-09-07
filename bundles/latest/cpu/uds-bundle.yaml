@@ -5,36 +5,36 @@ metadata:
   name: leapfrogai
   description: A UDS bundle for deploying LeapfrogAI
   # x-release-please-start-version
-  version: 0.11.0
+  version: 0.12.2
   # x-release-please-end
 
 packages:
   # Supabase backend for the UI and API to interface with Postgresql
   - name: supabase
     repository: ghcr.io/defenseunicorns/packages/leapfrogai/supabase
-    ref: 0.11.0
+    ref: 0.12.2
 
   # OpenAI-like API
   - name: leapfrogai-api
     repository: ghcr.io/defenseunicorns/packages/leapfrogai/leapfrogai-api
-    ref: 0.11.0
+    ref: 0.12.2
 
   # Model for generic chat and summarization
   - name: llama-cpp-python
     repository: ghcr.io/defenseunicorns/packages/leapfrogai/llama-cpp-python
-    ref: 0.11.0
+    ref: 0.12.2
 
   # Model for providing vector embeddings for text
   - name: text-embeddings
     repository: ghcr.io/defenseunicorns/packages/leapfrogai/text-embeddings
-    ref: 0.11.0
+    ref: 0.12.2
 
   # Model for converting audio to text
   - name: whisper
     repository: ghcr.io/defenseunicorns/packages/leapfrogai/whisper
-    ref: 0.11.0
+    ref: 0.12.2
 
   # UI
   - name: leapfrogai-ui
     repository: ghcr.io/defenseunicorns/packages/leapfrogai/leapfrogai-ui
-    ref: 0.11.0
+    ref: 0.12.2
