@@ -70,7 +70,7 @@ jobs:
           docker run -p 50051:50051 -d --name=repeater ghcr.io/defenseunicorns/leapfrogai/repeater:$LOCAL_VERSION
 
       - name: Run Pytest
-        run: python -m pytest tests/pytest -v
+        run: make test-api-unit
         env:
           LFAI_RUN_REPEATER_TESTS: true
 

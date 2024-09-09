@@ -62,6 +62,7 @@ test-api-integration:
 
 test-api-unit: set-supabase
 	LFAI_RUN_REPEATER_TESTS=$(LFAI_RUN_REPEATER_TESTS) PYTHONPATH=$$(pwd) pytest -vv -s tests/unit
+	LFAI_RUN_REPEATER_TESTS=$(LFAI_RUN_REPEATER_TESTS) PYTHONPATH=$$(pwd) python -m pytest -vv -s tests/pytest
 
 test-load:
 	locust -f $$(pwd)/tests/load/loadtest.py --web-port 8089
