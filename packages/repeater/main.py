@@ -38,8 +38,7 @@ class Model(
         self, prompt: str, config: GenerationConfig
     ) -> AsyncGenerator[str, Any]:
         logger.info("Begin generating streamed response")
-        for char in prompt:
-            yield char  # type: ignore
+        yield prompt  # type: ignore
         logger.info("Streamed response complete")
 
     async def count_tokens(self, raw_text: str) -> int:
