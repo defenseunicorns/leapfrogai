@@ -3,6 +3,9 @@ LEAPFROGAI_MODEL ?= llama-cpp-python
 LFAI_RUN_NIAH_TESTS ?= false
 LFAI_RUN_REPEATER_TESTS ?= true
 
+install:
+	pip install ".[dev]" "src/leapfrogai_api" "src/leapfrogai_sdk" "packages/repeater"
+
 set-supabase:
 	$(eval SUPABASE_URL := $(SUPABASE_URL))
 	$(eval SUPABASE_ANON_KEY := $(shell uds zarf tools kubectl get secret -n leapfrogai supabase-bootstrap-jwt -o json | uds zarf tools yq '.data.anon-key' | base64 -d))

@@ -15,7 +15,8 @@ For the unit and integration tests within this directory, the following componen
 If you are running everything in a [UDS Kubernetes cluster](../k3d-gpu/README.md), you must port-forward your model (e.g., Repeater, vLLM, etc.) using the following command:
 
 ```bash
-uds zarf connect --name=vllm-model --namespace=leapfrogai --local-port=50051 --remote-port=50051
+# may be named repeater OR repeater-model depending on the rendered Helm manifests
+uds zarf connect --name=repeater-model --namespace=leapfrogai --local-port=50051 --remote-port=50051
 ```
 
 If running everything via Docker containers or in a local Python environment, then ensure they are accessible based on the test configurations in each testing target's sub-directory.
@@ -24,7 +25,7 @@ Please see the [Makefile](./Makefile) for more details on turning tests on/off a
 
 ```bash
 # Install the python dependencies
-python -m pip install ".[dev]"
+make install
 
 # create a test user for the tests
 # prompts for a password and email
