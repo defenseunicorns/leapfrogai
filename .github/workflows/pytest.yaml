@@ -125,7 +125,7 @@ jobs:
           echo "::add-mask::$SUPABASE_PASS"
           echo "SUPABASE_PASS=$SUPABASE_PASS" >> $GITHUB_OUTPUT
           SUPABASE_ANON_KEY=$(uds zarf tools kubectl get secret supabase-bootstrap-jwt -n leapfrogai -o jsonpath='{.data.anon-key}' | base64 -d)
-          echo P"::add-mask::$SUPABASE_ANON_KEY"
+          echo "::add-mask::$SUPABASE_ANON_KEY"
           echo "SUPABASE_ANON_KEY=$SUPABASE_ANON_KEY" >> $GITHUB_OUTPUT
 
       - name: Verify Secrets
@@ -144,9 +144,10 @@ jobs:
         env:
           SUPABASE_ANON_KEY: ${{ steps.generate_secrets.outputs.SUPABASE_ANON_KEY }}
           SUPABASE_PASS: ${{ steps.generate_secrets.outputs.SUPABASE_PASS }}
-          SUPABASE_EMAIL: "doug@uds.dev"
-          # Turn off non-deterministic tests that require a working LLM in-cluster for evaluation
+          SUPABASE_EMAIL: doug@uds.dev
+          SUPABASE_URL: https://supabase-kong.uds.dev
+          # Turn off NIAH tests that are not applicable for integration testing using the Repeater model
           LFAI_RUN_NIAH_TESTS: "false"
         run: |
           make test-user-pipeline
-          env $(cat .env | xargs)  python -m pytest -v -s tests/integration/api
+          env $(cat .env | xargs) python -m pytest -v -s tests/integration/api

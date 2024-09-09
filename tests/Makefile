@@ -5,7 +5,6 @@ LFAI_RUN_REPEATER_TESTS ?= true
 
 set-supabase:
 	$(eval SUPABASE_ANON_KEY := $(shell uds zarf tools kubectl get secret -n leapfrogai supabase-bootstrap-jwt -o json | uds zarf tools yq '.data.anon-key' | base64 -d))
-	@echo "Supabase URL: $(SUPABASE_URL)"
 	@echo "Supabase Anon Key: $(SUPABASE_ANON_KEY)"
 
 define get_jwt_token
@@ -19,7 +18,7 @@ define get_jwt_token
 	echo "Extracting token from $$TOKEN_RESPONSE"; \
 	JWT=$$(echo $$TOKEN_RESPONSE | grep -o '"access_token":"[^"]*' | cut -d '"' -f 4); \
 	echo "SUPABASE_USER_JWT=$$JWT" > .env; \
-	echo "SUPABASE_URL=$(3)" >> .env; \
+	echo "SUPABASE_URL=$(SUPABASE_URL)" >> .env; \
 	echo "SUPABASE_ANON_KEY=$(SUPABASE_ANON_KEY)" >> .env; \
 	echo "LEAPFROGAI_MODEL=$(LEAPFROGAI_MODEL)" >> .env
 	echo "DONE - variables exported to .env file"
@@ -66,7 +65,3 @@ test-api-unit: set-supabase
 
 test-load:
 	locust -f $$(pwd)/tests/load/loadtest.py --web-port 8089
-
-debug: set-supabase
-	@echo $(SUPABASE_URL)
-	@echo $(SUPABASE_ANON_KEY)
