@@ -4,7 +4,6 @@ import shutil
 import time
 from typing import Optional
 
-from leapfrogai_sdk.llm import FinishReason
 import pytest
 from fastapi.applications import BaseHTTPMiddleware
 from fastapi.security import HTTPBearer
@@ -261,7 +260,7 @@ def test_chat_completion(dummy_auth_middleware):
 
         # parse finish reason
         assert "finish_reason" in response_choices[0]
-        assert FinishReason.STOP == response_choices[0].get("finish_reason")
+        assert "FinishReason.STOP" == response_choices[0].get("finish_reason")
 
         # parse usage data
         response_usage = response_obj.get("usage")
@@ -319,7 +318,7 @@ def test_stream_chat_completion(dummy_auth_middleware):
                     iter_length += 1
                     # parse finish reason
                     assert "finish_reason" in choices[0]
-                    assert "stop" == choices[0].get("finish_reason")
+                    assert "FinishReason.STOP" == choices[0].get("finish_reason")
                     # parse usage data
                     response_usage = stream_response.get("usage")
                     prompt_tokens = response_usage.get("prompt_tokens")

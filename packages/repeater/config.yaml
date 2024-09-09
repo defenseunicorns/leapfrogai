@@ -6,9 +6,9 @@ stop_tokens:
   - "</s>"
 prompt_format:
   chat:
-    system: "{}\n"
-    assistant: "{}\n"
-    user: "{}\n"
+    system: "{}"
+    assistant: "{}"
+    user: "{}"
 defaults:
   top_p: 1.0
   top_k: 0
