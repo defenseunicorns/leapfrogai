@@ -2,16 +2,22 @@ import logging
 import os
 from typing import Any, AsyncGenerator
 
-from leapfrogai_sdk.audio.audio_pb2 import AudioRequest, AudioResponse
-from leapfrogai_sdk.embeddings.embeddings_pb2 import (
-    Embedding,
+from leapfrogai_sdk import (
+    CompletionServiceServicer,
+    EmbeddingsServiceServicer,
+    ChatCompletionServiceServicer,
+    ChatCompletionStreamServiceServicer,
+    AudioServicer,
+    GrpcContext,
     EmbeddingRequest,
     EmbeddingResponse,
-    GrpcContext,
+    Embedding,
+    AudioRequest,
+    AudioResponse,
+    NameResponse,
+    serve,
 )
-
 from leapfrogai_sdk.llm import LLM, GenerationConfig
-from leapfrogai_sdk.name.name_pb2 import NameResponse
 
 logging.basicConfig(
     level=os.getenv("LFAI_LOG_LEVEL", logging.INFO),
@@ -21,7 +27,13 @@ logger = logging.getLogger(__name__)
 
 
 @LLM
-class Model:
+class Model(
+    CompletionServiceServicer,
+    EmbeddingsServiceServicer,
+    ChatCompletionServiceServicer,
+    ChatCompletionStreamServiceServicer,
+    AudioServicer,
+):
     async def generate(
         self, prompt: str, config: GenerationConfig
     ) -> AsyncGenerator[str, Any]:
@@ -53,3 +65,7 @@ class Model:
 
     async def Name(self, request, context):
         return NameResponse(name="repeater")
+
+
+if __name__ == "__main__":
+    serve(Model())
