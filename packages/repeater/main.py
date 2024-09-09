@@ -2,7 +2,16 @@ import logging
 import os
 from typing import Any, AsyncGenerator
 
+from leapfrogai_sdk.audio.audio_pb2 import AudioRequest, AudioResponse
+from leapfrogai_sdk.embeddings.embeddings_pb2 import (
+    Embedding,
+    EmbeddingRequest,
+    EmbeddingResponse,
+    GrpcContext,
+)
+
 from leapfrogai_sdk.llm import LLM, GenerationConfig
+from leapfrogai_sdk.name.name_pb2 import NameResponse
 
 logging.basicConfig(
     level=os.getenv("LFAI_LOG_LEVEL", logging.INFO),
@@ -23,3 +32,24 @@ class Model:
 
     async def count_tokens(self, raw_text: str) -> int:
         return len(raw_text)
+
+    async def CreateEmbedding(
+        self,
+        request: EmbeddingRequest,
+        context: GrpcContext,
+    ) -> EmbeddingResponse:
+        return EmbeddingResponse(
+            embeddings=[Embedding(embedding=[0.0 for _ in range(10)])]
+        )
+
+    async def Transcribe(
+        self, request: AudioRequest, context: GrpcContext
+    ) -> AudioResponse:
+        return AudioResponse(
+            text="The repeater model received a transcribe request",
+            duration=1,
+            language="en",
+        )
+
+    async def Name(self, request, context):
+        return NameResponse(name="repeater")
