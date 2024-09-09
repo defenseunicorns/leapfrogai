@@ -5,6 +5,7 @@ from postgrest.base_request_builder import SingleAPIResponse
 from leapfrogai_api.backend.rag.query import QueryService
 from leapfrogai_api.backend.types import SearchResponse
 from leapfrogai_api.routers.supabase_session import Session
+from leapfrogai_api.data.crud_vector_content import CRUDVectorContent, Vector
 
 router = APIRouter(
     prefix="/leapfrogai/v1/vector_stores", tags=["leapfrogai/vector_stores"]
@@ -38,3 +39,24 @@ async def search(
     )
 
     return SearchResponse(data=result.data)
+
+
+@router.get("/vector/{vector_id}")
+async def get_vector(
+    session: Session,
+    vector_id: str,
+) -> Vector:
+    """
+    Get a specfic vector by its ID.
+
+    Args:
+        session (Session): The database session.
+        vector_id (str): The ID of the vector.
+
+    Returns:
+        Vector: The vector object.
+    """
+    crud_vector_content = CRUDVectorContent(db=session)
+    vector = await crud_vector_content.get_vector(vector_id=vector_id)
+
+    return vector
