@@ -16,6 +16,7 @@ from leapfrogai_api.backend.types import (
     EmbeddingResponseData,
     Usage,
     CreateTranslationResponse,
+    TokenCountResponse,
 )
 from leapfrogai_sdk.chat.chat_pb2 import (
     ChatCompletionResponse as ProtobufChatCompletionResponse,
@@ -160,3 +161,17 @@ async def create_translation(model: Model, request: Iterator[lfai.AudioRequest])
         response: lfai.AudioResponse = await stub.Translate(request)
 
         return CreateTranslationResponse(text=response.text)
+
+
+# # TODO: Finish implementation
+async def token_count(model: Model, request: lfai.TokenCountRequest):
+    """Perform token count using the specified model"""
+    async with grpc.aio.insecure_channel(model.backend) as channel:
+        stub = lfai.TokenCountServiceStub(channel)
+        response: lfai.TokenCountResponse = stub.CountTokens(request)
+
+        return TokenCountResponse(
+            model=model.name,
+            count=response.count,
+            text=request.text,
+        )
