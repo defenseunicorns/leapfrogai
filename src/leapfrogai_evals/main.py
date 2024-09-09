@@ -30,9 +30,9 @@ class RAGEvaluator:
         self.niah_test_cases = None
         self.eval_results = dict()
 
-    def set_evaluations(self, eval_list=[]) -> None:
+    def set_evaluations(self, eval_list: List[str] = None) -> None:
         """Set the evaluations that will be run via a list"""
-        if len(eval_list) == 0:
+        if not eval_list:
             logging.info("Setting eval list to ALL")
             self.eval_list = ALL_EVALS
         else:
