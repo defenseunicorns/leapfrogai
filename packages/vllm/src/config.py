@@ -5,7 +5,7 @@ from pydantic import Field
 
 
 class ConfigOptions(BaseConfig):
-    model_path: str = Field(
+    model_source: str = Field(
         title="Model Files Location",
         description="Location of the model files to be loaded into the vLLM engine.",
         examples=["/data/.model"],
@@ -86,7 +86,7 @@ class AppConfig(BaseConfig):
             allow_all=True,
             prefix="LAI_",
             remap={
-                "model_path": "backend_options.model_path",
+                "model_source": "backend_options.model_source",
                 "tensor_parallel_size": "backend_options.tensor_parallel_size",
                 "trust_remote_code": "backend_options.trust_remote_code",
                 "enforce_eager": "backend_options.enforce_eager",
