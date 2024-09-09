@@ -28,26 +28,12 @@ from postgrest.base_request_builder import SingleAPIResponse
 from pydantic import BaseModel
 from starlette.responses import StreamingResponse
 
-from leapfrogai_api.types.constants import (
-    DEFAULT_MAX_COMPLETION_TOKENS,
-    DEFAULT_MAX_PROMPT_TOKENS,
-)
 from leapfrogai_api.backend.converters import (
     from_assistant_stream_event_to_str,
     from_text_to_message,
     from_chat_completion_choice_to_thread_message_delta,
 )
 from leapfrogai_api.backend.rag.query import QueryService
-<<<<<<<< HEAD:src/leapfrogai_api/backend/composer.py
-========
-from leapfrogai_api.backend.types import (
-    ChatMessage,
-    SearchResponse,
-    ChatCompletionResponse,
-    ChatCompletionRequest,
-    ChatChoice,
-)
->>>>>>>> 24d9074d (chore: New 'types' module):src/leapfrogai_api/types/request/run_create_params_base.py
 from leapfrogai_api.data.crud_assistant import CRUDAssistant, FilterAssistant
 from leapfrogai_api.data.crud_message import CRUDMessage
 from leapfrogai_api.routers.openai.chat import chat_complete, chat_complete_stream_raw

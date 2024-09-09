@@ -8,13 +8,8 @@ from openai.types.beta.threads.run_create_params import (
     AdditionalMessageAttachmentToolFileSearch,
 )
 from pydantic import Field
-<<<<<<<< HEAD:src/leapfrogai_api/typedef/runs/run_create.py
 
 from .run_create_base import (
-========
-from starlette.responses import StreamingResponse
-from leapfrogai_api.types.request.run_create_params_base import (
->>>>>>>> 24d9074d (chore: New 'types' module):src/leapfrogai_api/types/request/run_create_params.py
     RunCreateParamsRequestBase,
 )
 from leapfrogai_api.typedef.messages import (
