@@ -139,6 +139,7 @@ class Composer(BaseModel):
                 BetaThreadToolResourcesFileSearch, tool_resources.file_search
             )
             vector_store_ids: list[str] = cast(list[str], file_search.vector_store_ids)
+
             for vector_store_id in vector_store_ids:
                 rag_results_raw: SingleAPIResponse[
                     SearchResponse
