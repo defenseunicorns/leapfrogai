@@ -4,4 +4,4 @@ install:
 
 dev:
 	make install
-	python -m leapfrogai_sdk.cli --app-dir=. main:Model
+	python -m repeater

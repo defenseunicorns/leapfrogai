@@ -33,4 +33,4 @@ COPY packages/repeater/repeater.py .
 EXPOSE 50051:50051
 
 # Run the repeater model
-ENTRYPOINT ["python", "-u", "repeater.py"]
+ENTRYPOINT ["python", "-m", "repeater"]

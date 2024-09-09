@@ -4,8 +4,8 @@ LFAI_RUN_NIAH_TESTS ?= false
 LFAI_RUN_REPEATER_TESTS ?= true
 
 set-supabase:
-	SUPABASE_URL := ${SUPABASE_URL}
-	SUPABASE_ANON_KEY := $(shell uds zarf tools kubectl get secret -n leapfrogai supabase-bootstrap-jwt -o json | uds zarf tools yq '.data.anon-key' | base64 -d)
+	$(eval SUPABASE_URL := $(SUPABASE_URL))
+	$(eval SUPABASE_ANON_KEY := $(shell uds zarf tools kubectl get secret -n leapfrogai supabase-bootstrap-jwt -o json | uds zarf tools yq '.data.anon-key' | base64 -d))
 
 define get_jwt_token
 	echo "Getting JWT token from $(3)..."; \
