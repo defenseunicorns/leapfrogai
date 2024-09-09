@@ -2,7 +2,7 @@ from pydantic import BaseModel, Field
 from typing import Literal
 
 from ..common import Usage
-from ..constants import DEFAULT_MAX_COMPLETION_TOKENS
+from ...backend.constants import DEFAULT_MAX_COMPLETION_TOKENS
 
 
 class CompletionChoice(BaseModel):

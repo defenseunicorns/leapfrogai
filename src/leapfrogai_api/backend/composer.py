@@ -53,7 +53,7 @@ from leapfrogai_api.typedef.messages import CreateMessageRequest
 from leapfrogai_api.typedef.vectorstores import SearchResponse
 
 
-class ThreadRunner(BaseModel):
+class Composer(BaseModel):
     @staticmethod
     async def list_messages(thread_id: str, session: Session) -> list[Message]:
         """List all the messages in a thread."""
@@ -108,8 +108,6 @@ class ThreadRunner(BaseModel):
                     )
                 )
 
-        first_message: ChatMessage = chat_thread_messages[0]
-
         # Holds the converted thread's messages, this will be built up with a series of push operations
         chat_messages: list[ChatMessage] = []
 
@@ -126,16 +124,15 @@ class ThreadRunner(BaseModel):
             )
 
         # 3 - The existing messages with everything after the first message
-        for message in chat_thread_messages:
-            chat_messages.append(message)
-
-        use_rag: bool = request.can_use_rag(tool_resources)
-
-        rag_message: str = "Here are relevant docs needed to reply:\n"
+        chat_messages.extend(chat_thread_messages)
 
         # 4 - The RAG results are appended behind the user's query
         file_ids: set[str] = set()
-        if use_rag:
+        if request.can_use_rag(tool_resources) and chat_thread_messages:
+            rag_message: str = "Here are relevant docs needed to reply:\n"
+
+            query_message: ChatMessage = chat_thread_messages[-1]
+
             query_service = QueryService(db=session)
             file_search: BetaThreadToolResourcesFileSearch = cast(
                 BetaThreadToolResourcesFileSearch, tool_resources.file_search
@@ -146,7 +143,7 @@ class ThreadRunner(BaseModel):
                 rag_results_raw: SingleAPIResponse[
                     SearchResponse
                 ] = await query_service.query_rag(
-                    query=first_message.content,
+                    query=query_message.content,
                     vector_store_id=vector_store_id,
                 )
                 rag_responses: SearchResponse = SearchResponse(
@@ -154,7 +151,7 @@ class ThreadRunner(BaseModel):
                 )
 
                 # Insert the RAG response messages just before the user's query
-                for count, rag_response in enumerate(rag_responses.data):
+                for rag_response in rag_responses.data:
                     file_ids.add(rag_response.file_id)
                     response_with_instructions: str = f"{rag_response.content}"
                     rag_message += f"{response_with_instructions}\n"

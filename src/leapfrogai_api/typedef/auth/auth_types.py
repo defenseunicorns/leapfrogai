@@ -1,7 +1,7 @@
 from pydantic import BaseModel, Field
 import time
 
-from leapfrogai_api.typedef.constants import THIRTY_DAYS
+from leapfrogai_api.backend.constants import THIRTY_DAYS_SECONDS
 
 
 class CreateAPIKeyRequest(BaseModel):
@@ -14,9 +14,9 @@ class CreateAPIKeyRequest(BaseModel):
     )
 
     expires_at: int = Field(
-        default=int(time.time()) + THIRTY_DAYS,
+        default=int(time.time()) + THIRTY_DAYS_SECONDS,
         description="The time at which the API key expires, in seconds since the Unix epoch.",
-        examples=[int(time.time()) + THIRTY_DAYS],
+        examples=[int(time.time()) + THIRTY_DAYS_SECONDS],
     )
 
 
@@ -32,5 +32,5 @@ class ModifyAPIKeyRequest(BaseModel):
     expires_at: int | None = Field(
         default=None,
         description="The time at which the API key expires, in seconds since the Unix epoch. If not provided, the expiration time will not be changed.",
-        examples=[int(time.time()) + THIRTY_DAYS],
+        examples=[int(time.time()) + THIRTY_DAYS_SECONDS],
     )
