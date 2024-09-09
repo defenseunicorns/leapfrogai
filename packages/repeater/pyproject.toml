@@ -3,7 +3,7 @@ name = "lfai-repeater"
 description = "A LeapfrogAI API-compatible pseudo-model for testing the API."
 
 # x-release-please-start-version
-version = "0.11.0"
+version = "0.12.2"
 # x-release-please-end
 
 dependencies = ["leapfrogai-sdk"]
