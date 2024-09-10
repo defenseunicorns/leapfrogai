@@ -23,7 +23,7 @@ To build and deploy the API Zarf package into an existing [UDS Kubernetes cluste
 > Execute the following commands from the root of the LeapfrogAI repository
 
 ```bash
-make build-api LOCAL_VERSION=dev
+make build-api LOCAL_VERSION=dev FLAVOR=upstream
 uds zarf package deploy packages/api/zarf-package-leapfrogai-api-*-dev.tar.zst --confirm
 ```
 

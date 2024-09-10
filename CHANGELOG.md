@@ -1,5 +1,67 @@
 # Changelog
 
+## [0.12.2](https://github.com/defenseunicorns/leapfrogai/compare/v0.12.1...v0.12.2) (2024-09-06)
+
+
+### Bug Fixes
+
+* hotfix fix typo in release pipeline (again) ([#1003](https://github.com/defenseunicorns/leapfrogai/issues/1003)) ([be91e75](https://github.com/defenseunicorns/leapfrogai/commit/be91e75f330175b214ea574cccdf19ef1ee6e3bd))
+
+## [0.12.1](https://github.com/defenseunicorns/leapfrogai/compare/v0.12.0...v0.12.1) (2024-09-06)
+
+
+### Bug Fixes
+
+* hotfix fix typo in release pipeline ([#999](https://github.com/defenseunicorns/leapfrogai/issues/999)) ([5f6536f](https://github.com/defenseunicorns/leapfrogai/commit/5f6536f98d4e1db145ab13e525113cb9554bb247))
+
+## [0.12.0](https://github.com/defenseunicorns/leapfrogai/compare/v0.11.0...v0.12.0) (2024-09-06)
+
+
+### ⚠ BREAKING CHANGES
+
+* standardize flavors, bundle dir and ghcr namespace ([#933](https://github.com/defenseunicorns/leapfrogai/issues/933))
+* **api:** initial integration of registry1 api flavor ([#920](https://github.com/defenseunicorns/leapfrogai/issues/920))
+
+### Features
+
+* add RAG Evals Runner and Needle in a Haystack Evaluation ([#945](https://github.com/defenseunicorns/leapfrogai/issues/945)) ([c191b54](https://github.com/defenseunicorns/leapfrogai/commit/c191b54a361edf0694ec56722f149d866c27ac2e))
+* **api:** adds migration for tracking vector store indexing status ([#830](https://github.com/defenseunicorns/leapfrogai/issues/830)) ([eee3ed7](https://github.com/defenseunicorns/leapfrogai/commit/eee3ed7b570d728cc10a2e4a9dec6bfdb38de2c4))
+* **api:** initial integration of registry1 api flavor ([#920](https://github.com/defenseunicorns/leapfrogai/issues/920)) ([a8e93fb](https://github.com/defenseunicorns/leapfrogai/commit/a8e93fbab123b6cf90cbe102077a61ed76cfeb8e))
+* **ui:** chat completion with files ([#951](https://github.com/defenseunicorns/leapfrogai/issues/951)) ([020dc07](https://github.com/defenseunicorns/leapfrogai/commit/020dc07c11105444dd33abf1195af8007f5eb876))
+* **ui:** persist file upload status ([#967](https://github.com/defenseunicorns/leapfrogai/issues/967)) ([cb0650d](https://github.com/defenseunicorns/leapfrogai/commit/cb0650d40d5dcab80a86ed36f2fa2321e96864e7))
+* **ui:** refresh token early ([#922](https://github.com/defenseunicorns/leapfrogai/issues/922)) ([4f0449d](https://github.com/defenseunicorns/leapfrogai/commit/4f0449dbe4609468a8a9d2b7a4775e6b3fadec89))
+
+
+### Bug Fixes
+
+* **api:** search vectorstore using only last message ([#939](https://github.com/defenseunicorns/leapfrogai/issues/939)) ([8a1d61e](https://github.com/defenseunicorns/leapfrogai/commit/8a1d61e1f91282689e4e0196524aba4dc8291939))
+* correct fsGroup configuration in various deployments ([#974](https://github.com/defenseunicorns/leapfrogai/issues/974)) ([86766db](https://github.com/defenseunicorns/leapfrogai/commit/86766db8b2d423a3dfbf60483e720971f05a088a))
+* run on thread containing an assistant without files ([#995](https://github.com/defenseunicorns/leapfrogai/issues/995)) ([1072654](https://github.com/defenseunicorns/leapfrogai/commit/10726542ae8aca2d0a83ea01fb3277b6c12e6cb2))
+* **ui:** csp prevents iframe content from showing ([ff71c56](https://github.com/defenseunicorns/leapfrogai/commit/ff71c5629404e109be2d580801c67a8f889a372d))
+* **ui:** file upload data shows 1970 ([#941](https://github.com/defenseunicorns/leapfrogai/issues/941)) ([1a80646](https://github.com/defenseunicorns/leapfrogai/commit/1a8064678a550471c843d9e2d2728bdf2122a38f))
+* **ui:** playwright logout causes others to fail ([#923](https://github.com/defenseunicorns/leapfrogai/issues/923)) ([464ddbd](https://github.com/defenseunicorns/leapfrogai/commit/464ddbd104aaf6b7bb11da6cbd26c18ea811a5f9))
+* **vllm:** initializes dictionary entry prior to usage ([#959](https://github.com/defenseunicorns/leapfrogai/issues/959)) ([d0e09cf](https://github.com/defenseunicorns/leapfrogai/commit/d0e09cf2ac989dc71386ef113c81d4fc31c21174))
+
+
+### Miscellaneous
+
+* add logger configuration to our various main entrypoints ([#918](https://github.com/defenseunicorns/leapfrogai/issues/918)) ([03bf0fd](https://github.com/defenseunicorns/leapfrogai/commit/03bf0fd7e42fe64b9c2dc234b9ee9433f62401bc))
+* **api:** add background task for processing vectors ([#942](https://github.com/defenseunicorns/leapfrogai/issues/942)) ([5f259f1](https://github.com/defenseunicorns/leapfrogai/commit/5f259f1f406bff422102a0ba5708571798d0e9e0))
+* commitlint and labelint workflows ([#931](https://github.com/defenseunicorns/leapfrogai/issues/931)) ([186a92c](https://github.com/defenseunicorns/leapfrogai/commit/186a92c76102dbe7617b3faf7750f87e9c7ae0de))
+* **deps:** pin all python deps and standardize pyprojects ([#929](https://github.com/defenseunicorns/leapfrogai/issues/929)) ([af74924](https://github.com/defenseunicorns/leapfrogai/commit/af74924171ef55b08f30f33593f75d8f7b28781f))
+* **docs:** markdown linting and improved documentation ([#902](https://github.com/defenseunicorns/leapfrogai/issues/902)) ([046a466](https://github.com/defenseunicorns/leapfrogai/commit/046a466fe60746eb90ca62031c3d3a139a022d6d))
+* pin python dependencies in root pyproject ([#958](https://github.com/defenseunicorns/leapfrogai/issues/958)) ([cef1535](https://github.com/defenseunicorns/leapfrogai/commit/cef15357faf429b5df142f3a7dde12b46b3df408))
+* release 0.12.0 ([#993](https://github.com/defenseunicorns/leapfrogai/issues/993)) ([547988f](https://github.com/defenseunicorns/leapfrogai/commit/547988f1ff9e1157643d35e22de47ee2519570e6))
+* rename indexing_status migration version ([#996](https://github.com/defenseunicorns/leapfrogai/issues/996)) ([c39ff94](https://github.com/defenseunicorns/leapfrogai/commit/c39ff948fbf7d27457a880ed98c5d3bff29263ab))
+* standardize flavors, bundle dir and ghcr namespace ([#933](https://github.com/defenseunicorns/leapfrogai/issues/933)) ([985642a](https://github.com/defenseunicorns/leapfrogai/commit/985642afccb25d347971e6e581a6e3bcb73bbe58))
+* **supabase:** enable realtime for the file_objects table ([#985](https://github.com/defenseunicorns/leapfrogai/issues/985)) ([38e9705](https://github.com/defenseunicorns/leapfrogai/commit/38e9705645a99818b63b48da0023cefce41b3d96))
+* **supabase:** fix supabase-realtime ([#855](https://github.com/defenseunicorns/leapfrogai/issues/855)) ([b1ee076](https://github.com/defenseunicorns/leapfrogai/commit/b1ee0769f51bd5ffbf5df6cec23520469db406a5))
+* **tests:** Conformance testing templates ([#910](https://github.com/defenseunicorns/leapfrogai/issues/910)) ([b9f8d6a](https://github.com/defenseunicorns/leapfrogai/commit/b9f8d6a022757be917d90a7b56dacc9764c3f70c))
+* **ui:** add test for assistant with no files ([#997](https://github.com/defenseunicorns/leapfrogai/issues/997)) ([d9b9361](https://github.com/defenseunicorns/leapfrogai/commit/d9b93612935a8bba13102b835735939c87787b48))
+* **ui:** use keycloak for e2es in workflow ([#909](https://github.com/defenseunicorns/leapfrogai/issues/909)) ([cdd3e61](https://github.com/defenseunicorns/leapfrogai/commit/cdd3e615549b6bed2033223aee2372937a774095))
+* Update CODEOWNERS ([#971](https://github.com/defenseunicorns/leapfrogai/issues/971)) ([ae203b6](https://github.com/defenseunicorns/leapfrogai/commit/ae203b600e55fbd514fbd7d4628eac9e65aeaf6f))
+* update release workflow trigger type ([#988](https://github.com/defenseunicorns/leapfrogai/issues/988)) ([ce4952b](https://github.com/defenseunicorns/leapfrogai/commit/ce4952be3cf55220c5c888172562afd24afc9cba))
+
 ## [0.11.0](https://github.com/defenseunicorns/leapfrogai/compare/v0.10.0...v0.11.0) (2024-08-16)
 
 

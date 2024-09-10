@@ -12,6 +12,8 @@ from supabase import acreate_client
 import gotrue
 from leapfrogai_api.backend.security.api_key import APIKey
 
+logger = logging.getLogger(__name__)
+
 security = HTTPBearer()
 
 
@@ -61,19 +63,19 @@ async def init_supabase_client(
                 access_token=auth_creds.credentials, refresh_token="dummy"
             )
         except gotrue.errors.AuthApiError as e:
-            logging.exception("\t%s", e)
+            logger.exception("\t%s", e)
             raise HTTPException(
                 detail="Token has expired or is not valid. Generate a new token",
                 status_code=status.HTTP_401_UNAUTHORIZED,
             ) from e
         except binascii.Error as e:
-            logging.exception("\t%s", e)
+            logger.exception("\t%s", e)
             raise HTTPException(
                 detail="Failed to validate Authentication Token",
                 status_code=status.HTTP_401_UNAUTHORIZED,
             ) from e
         except Exception as e:
-            logging.exception("\t%s", e)
+            logger.exception("\t%s", e)
             raise HTTPException(
                 detail="Failed to create Supabase session",
                 status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
@@ -97,7 +99,7 @@ async def init_supabase_client(
 
         return client
     except ValueError as e:
-        logging.exception("\t%s", e)
+        logger.exception("\t%s", e)
         raise HTTPException(
             detail="Failed to validate API Key",
             status_code=status.HTTP_401_UNAUTHORIZED,

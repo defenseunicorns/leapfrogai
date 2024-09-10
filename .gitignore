@@ -20,6 +20,8 @@ build/
 **/*.whl
 .model/
 *.gguf
+.env.password
+.env.email
 .env
 .ruff_cache
 .branches
@@ -44,3 +46,6 @@ vocabulary.json
 
 # go binaries
 api/main
+
+# evaluation artifacts
+.deepeval-cache.json

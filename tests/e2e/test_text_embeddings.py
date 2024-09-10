@@ -3,16 +3,10 @@ from pathlib import Path
 import pytest
 from openai import InternalServerError, OpenAI
 
-from .utils import create_test_user
-
-client = OpenAI(
-    base_url="https://leapfrogai-api.uds.dev/openai/v1", api_key=create_test_user()
-)
-
 model_name = "text-embeddings"
 
 
-def test_completions():
+def test_completions(client: OpenAI):
     with pytest.raises(InternalServerError) as excinfo:
         client.completions.create(
             model=model_name,
@@ -21,7 +15,7 @@ def test_completions():
     assert str(excinfo.value) == "Internal Server Error"
 
 
-def test_chat_completions():
+def test_chat_completions(client: OpenAI):
     messages = [
         {"role": "system", "content": "You are a helpful assistant."},
         {"role": "user", "content": "This should result in a failure"},
@@ -32,7 +26,7 @@ def test_chat_completions():
     assert str(excinfo.value) == "Internal Server Error"
 
 
-def test_embeddings():
+def test_embeddings(client: OpenAI):
     embedding_response = client.embeddings.create(
         model=model_name,
         input="This should result in a failure",
@@ -44,7 +38,7 @@ def test_embeddings():
     assert len(embedding_response.data[0].embedding) < 1000
 
 
-def test_transcriptions():
+def test_transcriptions(client: OpenAI):
     with pytest.raises(InternalServerError) as excinfo:
         client.audio.transcriptions.create(
             model=model_name, file=Path("tests/data/0min12sec.wav")

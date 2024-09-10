@@ -12,13 +12,15 @@ constants:
 components:
   - name: repeater
     required: true
+    only:
+      flavor: upstream
     charts:
       - name: repeater
         namespace: leapfrogai
         localPath: chart
         releaseName: repeater
         # x-release-please-start-version
-        version: 0.11.0
+        version: 0.12.2
         # x-release-please-end
         valuesFiles:
           - "repeater-values.yaml"

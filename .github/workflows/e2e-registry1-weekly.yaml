@@ -1,0 +1,128 @@
+name: e2e-registry1-weekly
+
+on:
+  schedule:
+    - cron: "0 0 * * 6" # Run every Sunday at 12 AM EST
+  workflow_dispatch: # trigger manually as needed
+  pull_request:
+    types:
+      - opened # default trigger
+      - reopened # default trigger
+      - synchronize # default trigger
+      - ready_for_review # don't run on draft PRs
+      - milestoned # allows us to trigger on bot PRs
+    paths:
+      - .github/workflows/e2e-registry1-weekly.yaml
+      - bundles/latest/**
+
+concurrency:
+  group: e2e-registry1-weekly-${{ github.ref }}
+  cancel-in-progress: true
+
+defaults:
+  run:
+    shell: bash
+
+jobs:
+  test-flavors:
+    runs-on: ai-ubuntu-big-boy-8-core
+    name: e2e_registry1_weekly
+    if: ${{ !github.event.pull_request.draft }}
+
+    permissions:
+      contents: read
+      packages: write
+      id-token: write # This is needed for OIDC federation.
+
+    steps:
+      - name: Checkout Repo
+        uses: actions/checkout@b4ffde65f46336ab88eb53be808477a3936bae11 # v4.1.1
+
+      - name: Setup Python
+        uses: ./.github/actions/python
+
+      - name: Setup UDS Cluster
+        uses: ./.github/actions/uds-cluster
+        with:
+          registry1Username: ${{ secrets.IRON_BANK_ROBOT_USERNAME }}
+          registry1Password: ${{ secrets.IRON_BANK_ROBOT_PASSWORD }}
+          ghToken: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Setup Playwright
+        run: |
+          npm --prefix src/leapfrogai_ui ci
+          npx --prefix src/leapfrogai_ui playwright install
+
+      - name: Create Registry1 Packages
+        run: |
+          LOCAL_VERSION=registry1 FLAVOR=registry1 make build-api
+
+      # Mutate UDS bundle definition to use Registry1 packages
+      - name: Mutation to Registry1 Bundle
+        run: |
+          uds zarf tools yq -i '.packages[1] |= del(.repository)' bundles/latest/cpu/uds-bundle.yaml
+          uds zarf tools yq -i '.packages[1] |= .ref = "registry1"' bundles/latest/cpu/uds-bundle.yaml
+          uds zarf tools yq -i '.packages[1] |= .path = "../../../packages/api"' bundles/latest/cpu/uds-bundle.yaml
+          uds zarf tools yq -i '.metadata.version = "registry1"' bundles/latest/cpu/uds-bundle.yaml
+
+      - name: Create and Deploy Bundle
+        run: |
+          cd bundles/latest/cpu
+          uds create . --confirm && \
+            uds deploy uds-bundle-leapfrogai-amd64-registry1.tar.zst \
+              --set LEAPFROGAI_API_BASE_URL="http://leapfrogai-api.leapfrogai.svc.cluster.local:8080" --confirm --no-progress && \
+            rm -rf uds-bundle-leapfrogai-amd64-registry1.tar.zst && \
+            docker system prune -af
+
+      - name: Generate Secrets
+        id: generate_secrets
+        run: |
+          PASSWORD=$(cat <(openssl rand -base64 32 | tr -dc 'a-zA-Z0-9!@#$%^&*()_+-=[]{}|;:,.<>?' | head -c 20) <(echo '!@1Aa') | fold -w1 | shuf | tr -d '\n')
+          echo "::add-mask::$PASSWORD"
+          echo "FAKE_E2E_USER_PASSWORD=$PASSWORD" >> $GITHUB_OUTPUT
+          ANON_KEY=$(uds zarf tools kubectl get secret supabase-bootstrap-jwt -n leapfrogai -o jsonpath='{.data.anon-key}' | base64 -d)
+          echo "::add-mask::$ANON_KEY"
+          echo "ANON_KEY=$ANON_KEY" >> $GITHUB_OUTPUT
+          SERVICE_ROLE_KEY=$(uds zarf tools kubectl get secret -n leapfrogai supabase-bootstrap-jwt -o jsonpath={.data.service-key} | base64 -d)
+          echo "::add-mask::$SERVICE_ROLE_KEY"
+          echo "SERVICE_ROLE_KEY=$SERVICE_ROLE_KEY" >> $GITHUB_OUTPUT
+
+      - name: Verify Secrets
+        run: |
+          echo "FAKE_E2E_USER_PASSWORD is set: ${{ steps.generate_secrets.outputs.FAKE_E2E_USER_PASSWORD != '' }}"
+          echo "ANON_KEY is set: ${{ steps.generate_secrets.outputs.ANON_KEY != '' }}"
+          echo "SERVICE_ROLE_KEY is set: ${{ steps.generate_secrets.outputs.SERVICE_ROLE_KEY != '' }}"
+
+      # Backends
+      - name: Run Backend Tests
+        env:
+          ANON_KEY: ${{ steps.generate_secrets.outputs.ANON_KEY }}
+        run: |
+          python -m pytest ./tests/e2e/test_llama.py -v
+          python -m pytest ./tests/e2e/test_text_embeddings.py -v
+          python -m pytest ./tests/e2e/test_whisper.py -v
+          python -m pytest ./tests/e2e/test_supabase.py -v
+          python -m pytest ./tests/e2e/test_api.py -v
+
+      - name: Run Playwright E2E Tests
+        env:
+          SERVICE_ROLE_KEY: ${{ steps.generate_secrets.outputs.SERVICE_ROLE_KEY }}
+          FAKE_E2E_USER_PASSWORD: ${{ steps.generate_secrets.outputs.FAKE_E2E_USER_PASSWORD }}
+          ANON_KEY: ${{ steps.generate_secrets.outputs.ANON_KEY }}
+        run: |
+          chmod +x ./.github/scripts/createUser.sh
+          ./.github/scripts/createUser.sh
+
+          cp src/leapfrogai_ui/.env.example src/leapfrogai_ui/.env
+          mkdir -p playwright/auth
+          touch playwright/auth.user.json
+
+          SERVICE_ROLE_KEY=$SERVICE_ROLE_KEY TEST_ENV=CI USERNAME=doug PASSWORD=$FAKE_E2E_USER_PASSWORD PUBLIC_SUPABASE_ANON_KEY=$ANON_KEY npm --prefix src/leapfrogai_ui run test:integration:ci
+
+      - name: Archive Playwright Report
+        uses: actions/upload-artifact@834a144ee995460fba8ed112a2fc961b36a5ec5a # v4.3.6
+        if: ${{ !cancelled() }}
+        with:
+          name: playwright-report
+          path: src/leapfrogai_ui/e2e-report/
+          retention-days: 30

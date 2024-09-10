@@ -1,5 +1,5 @@
 import { expect, test } from './fixtures';
-import { getSimpleMathQuestion, loadChatPage } from './helpers/helpers';
+import { getSimpleMathQuestion, normalizeWhitespace } from './helpers/helpers';
 import { delay } from 'msw';
 import { createAssistantWithApi, deleteAssistantWithApi } from './helpers/assistantHelpers';
 import {
@@ -7,6 +7,7 @@ import {
   sendMessage,
   waitForResponseToComplete
 } from './helpers/threadHelpers';
+import { loadChatPage } from './helpers/navigationHelpers';
 
 const newMessage1 = getSimpleMathQuestion();
 const newMessage2 = getSimpleMathQuestion();
@@ -34,12 +35,12 @@ test('editing a message', async ({ page, openAIClient }) => {
   // Ensure original first message was deleted and is now the second message
   const firstMessage = page.getByTestId('message').first();
   const firstMessageTextContent = await firstMessage.textContent();
-  expect(firstMessageTextContent?.trim()).toEqual(`You ${newMessage2}`); // 'You' is card header for the user message
+  expect(normalizeWhitespace(firstMessageTextContent!)).toEqual(`You ${newMessage2}`); // 'You' is card header for the user message
 
   // Check the third message is now the edited message
   const editedMessage = page.getByTestId('message').nth(2);
   const textContent = await editedMessage.textContent();
-  expect(textContent?.trim()).toEqual('You edited message');
+  expect(normalizeWhitespace(textContent!)).toEqual('You edited message');
   await deleteActiveThread(page, openAIClient);
 });
 
@@ -87,12 +88,12 @@ test('editing a message when an AI response is missing', async ({ page, openAICl
   // Ensure original first message was deleted and is now the second message
   const firstMessage = page.getByTestId('message').first();
   const firstMessageTextContent = await firstMessage.textContent();
-  expect(firstMessageTextContent?.trim()).toEqual(`You ${newMessage2}`); // 'You' is card header for the user message
+  expect(normalizeWhitespace(firstMessageTextContent!)).toEqual(`You ${newMessage2}`); // 'You' is card header for the user message
 
   // Check the third message is now the edited message
   const editedMessage = page.getByTestId('message').nth(2);
   const textContent = await editedMessage.textContent();
-  expect(textContent?.trim()).toEqual('You edited message');
+  expect(normalizeWhitespace(textContent!)).toEqual('You edited message');
   await deleteActiveThread(page, openAIClient);
 });
 
@@ -169,12 +170,12 @@ test('editing an assistant message', async ({ page, openAIClient }) => {
   // Ensure original first message was deleted and is now the second message
   const firstMessage = page.getByTestId('message').first();
   const firstMessageTextContent = await firstMessage.textContent();
-  expect(firstMessageTextContent?.trim()).toEqual(`You ${newMessage2}`); // 'You' is card header for the user message
+  expect(normalizeWhitespace(firstMessageTextContent!)).toEqual(`You ${newMessage2}`); // 'You' is card header for the user message
 
   // Check the third message is now the edited message
   const editedMessage = page.getByTestId('message').nth(2);
   const textContent = await editedMessage.textContent();
-  expect(textContent?.trim()).toEqual('You edited message');
+  expect(normalizeWhitespace(textContent!)).toEqual('You edited message');
 
   await expect(page.getByTestId('user-icon')).toHaveCount(2);
   await expect(page.getByTestId('assistant-icon')).toHaveCount(2);

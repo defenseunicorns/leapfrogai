@@ -48,7 +48,6 @@ export const test = base.extend<MyFixtures>({
   // eslint-disable-next-line  no-empty-pattern
   openAIClient: async ({}, use) => {
     const client = await getOpenAIClient();
-    console.log('client', client);
     await use(client);
   }
 });
