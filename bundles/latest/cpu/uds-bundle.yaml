@@ -5,7 +5,7 @@ metadata:
   name: leapfrogai
   description: A UDS bundle for deploying LeapfrogAI
   # x-release-please-start-version
-  version: 0.12.0
+  version: 0.12.2
   # x-release-please-end
 
 packages:
