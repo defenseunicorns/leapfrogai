@@ -23,7 +23,7 @@ DRAFT
 
 ## Context
 
-LeapfrogAI uses RAG to provide context-aware responses to users who have specific data they need to reference. In order to make sure RAG is operating at the levels we need it to, we need to get measurable feedback from our RAG pipeline to make it better. We also need a standard to show to mission heroes that we are in fact operating at that level. We do this with RAG-focused evaluations. This ADR documents all of the decisions and lessons learned for enabling a full-scale RAG evaluations pipeline MVP.
+LeapfrogAI uses RAG to provide context-aware responses to users who have specific data they need to reference. In order to make sure RAG is operating at the levels we need it to, we need to get measurable feedback from our RAG pipeline to make it better. We also need a standard to show to mission heroes that we are in fact operating at that level. We do this with RAG-focused evaluations. Additionally, utilizing evaluations as a whole and developing a standard approach will allow customizations of RAG and its components (for various deployment scenarios) to be better tested and evaluated against. This ADR documents all of the decisions and lessons learned for enabling a full-scale RAG evaluations pipeline MVP.
 
 ## Decisions and Rationale
 
