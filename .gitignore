@@ -20,6 +20,8 @@ build/
 **/*.whl
 .model/
 *.gguf
+.env.password
+.env.email
 .env
 .ruff_cache
 .branches

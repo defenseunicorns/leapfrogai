@@ -29,11 +29,11 @@ ENV PATH="/leapfrogai/.venv/bin:$PATH"
 WORKDIR /leapfrogai
 
 COPY --from=builder /leapfrogai/.venv/ /leapfrogai/.venv/
-
-COPY packages/repeater/repeater.py .
+COPY packages/repeater/main.py .
+COPY packages/repeater/config.yaml .
 
 # Publish port
 EXPOSE 50051
 
 # Run the repeater model
-ENTRYPOINT ["python", "-u", "repeater.py"]
+ENTRYPOINT ["python", "-m", "leapfrogai_sdk.cli", "--app-dir=.", "main:Model"]

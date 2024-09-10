@@ -260,7 +260,7 @@ def test_chat_completion(dummy_auth_middleware):
 
         # parse finish reason
         assert "finish_reason" in response_choices[0]
-        assert "stop" == response_choices[0].get("finish_reason")
+        assert "FinishReason.STOP" == response_choices[0].get("finish_reason")
 
         # parse usage data
         response_usage = response_obj.get("usage")
@@ -283,6 +283,7 @@ def test_stream_chat_completion(dummy_auth_middleware):
     """Test the stream chat completion endpoint."""
     with TestClient(app) as client:
         input_content = "this is the stream chat completion input."
+        input_length = len(input_content)
 
         chat_completion_request = lfai_types.ChatCompletionRequest(
             model="repeater",
@@ -314,19 +315,32 @@ def test_stream_chat_completion(dummy_auth_middleware):
                     assert len(choices) == 1
                     assert "delta" in choices[0]
                     assert "content" in choices[0].get("delta")
-                    assert choices[0].get("delta").get("content") == input_content
+                    assert (
+                        choices[0].get("delta").get("content")
+                        == input_content[iter_length]
+                    )
                     iter_length += 1
                     # parse finish reason
                     assert "finish_reason" in choices[0]
-                    assert "stop" == choices[0].get("finish_reason")
+                    # in streaming responses, the stop reason is not STOP until the last iteration (token) is sent back
+                    if iter_length == input_length:
+                        assert "FinishReason.STOP" == choices[0].get("finish_reason")
+                    else:
+                        assert "FinishReason.NONE" == choices[0].get("finish_reason")
                     # parse usage data
                     response_usage = stream_response.get("usage")
                     prompt_tokens = response_usage.get("prompt_tokens")
                     completion_tokens = response_usage.get("completion_tokens")
                     total_tokens = response_usage.get("total_tokens")
-                    assert prompt_tokens == len(input_content)
-                    assert completion_tokens == len(input_content)
-                    assert total_tokens == len(input_content) * 2
+                    # in streaming responses, the length is not returned until the last iteration (token) is sent back
+                    if iter_length == input_length:
+                        assert prompt_tokens == input_length
+                        assert completion_tokens == input_length
+                        assert total_tokens == input_length * 2
+                    else:
+                        assert total_tokens == 0
+                        assert completion_tokens == 0
+                        assert total_tokens == 0
 
-        # The repeater only response with 5 messages
-        assert iter_length == 5
+        # The repeater only responds with 1 message, the exact one that was prompted
+        assert iter_length == input_length

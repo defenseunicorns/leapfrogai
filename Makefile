@@ -16,7 +16,8 @@ help: ## Display this help information
 		| sort | awk 'BEGIN {FS = ":.*?## "}; \
 		{printf "\033[36m%-30s\033[0m %s\n", $$1, $$2}'
 
-clean: ## Clean up all the things (packages, build dirs, compiled .whl files, python eggs)
+clean: ## Clean up all the things (test artifacts, packages, build dirs, compiled .whl files, python eggs)
+	-rm -rf .env .env.email .env.password .pytest_cache
 	-rm -rf .logs
 	-rm -rf ./packages/**/.model/
 	-rm -rf ./**/__pycache__/
