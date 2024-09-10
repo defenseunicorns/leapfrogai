@@ -1,5 +1,10 @@
 import { expect, test } from './fixtures';
-import {deleteActiveThread, getLastUrlParam, sendMessage, waitForResponseToComplete} from './helpers/threadHelpers';
+import {
+  deleteActiveThread,
+  getLastUrlParam,
+  sendMessage,
+  waitForResponseToComplete
+} from './helpers/threadHelpers';
 import { getSimpleMathQuestion } from './helpers/helpers';
 
 test('it only shows the open/close sidebar button on small screens', async ({ page }) => {
