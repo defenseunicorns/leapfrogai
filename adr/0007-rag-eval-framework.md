@@ -108,7 +108,7 @@ As time goes on, additional models will be considered and added as comparison po
   
   There are two points to rationalize; the model choice and the decision to use a single judge.
 
-  In order to reach an MVP product, a single LLM judge will be utilized for the evaluations that require it. This will be the first stage so that the evaluation framework can begin recieving results. As progress is made, additional LLM-based judges will be incorporated to develop an LLM-jury styled approach. For context, please see the following [paper](https://arxiv.org/pdf/2404.18796).
+  In order to reach an MVP product, a single LLM judge will be utilized for the evaluations that require it. This will be the first stage so that the evaluation framework can begin receiving results. As progress is made, additional LLM-based judges will be incorporated to develop an LLM-jury styled approach. For context, please see the following [paper](https://arxiv.org/pdf/2404.18796).
 
   Claude 3.5 Sonnet was chosen to be used as the first judge due to it's high levels of [performance](https://artificialanalysis.ai/models/claude-35-sonnet), which is crucial when utilizing an LLM judge. Additionally, it exists outside the family of models that will be evaluated against, which has been shown to be effective in comparison to using models of the same family due to [self-enhancement bias](https://arxiv.org/pdf/2306.05685).
 
