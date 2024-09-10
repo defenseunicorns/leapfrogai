@@ -7,15 +7,16 @@
 
   let signOutForm: HTMLFormElement;
 
-  $: innerWidth = 0;
+  let innerWidth: number;
+  $: innerWidth;
+
+  const threadId = $page.params.thread_id;
 
   const handleLogOut = (e) => {
     e.preventDefault();
 
     signOutForm.submit();
   };
-
-  $: console.log('$uiStore.openSidebar', $uiStore.openSidebar)
 </script>
 
 <svelte:window bind:innerWidth />
@@ -28,7 +29,7 @@
         : '/chat'}
       data-testid="logo-link"
     >
-      {#if innerWidth < 1024 && $page.url.pathname === '/chat'}
+      {#if innerWidth !== undefined && innerWidth < 1024 && ($page.url.pathname === '/chat' || `${$page.url.pathname}/${threadId}`)}
         <Button
           outline={true}
           class="mr-2 !p-2"
