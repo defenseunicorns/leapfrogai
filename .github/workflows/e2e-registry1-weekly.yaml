@@ -27,6 +27,7 @@ jobs:
   test-flavors:
     runs-on: ai-ubuntu-big-boy-8-core
     name: e2e_registry1_weekly
+    if: ${{ !github.event.pull_request.draft }}
 
     permissions:
       contents: read

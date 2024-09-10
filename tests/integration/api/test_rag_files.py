@@ -1,6 +1,7 @@
 import os
 from pathlib import Path
 from openai.types.beta.threads.text import Text
+import pytest
 
 from ...utils.client import client_config_factory
 
@@ -23,6 +24,10 @@ def make_test_run(client, assistant, thread):
     return run
 
 
+@pytest.mark.skipif(
+    os.environ.get("LFAI_RUN_NIAH_TESTS") != "true",
+    reason="LFAI_RUN_NIAH_TESTS envvar was not set to true",
+)
 def test_rag_needle_haystack():
     config = client_config_factory("leapfrogai")
     client = config.client
