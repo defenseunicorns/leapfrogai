@@ -102,7 +102,7 @@ setup('authenticate', async ({ page }) => {
     // will invalidate the session and cause other tests to fail
     await logout(page);
 
-    if (process.env.PUBLIC_DISABLE_KEYCLOAK === 'false') await delay(31000); // prevent logging back in too quickly and getting denied
+    if (process.env.PUBLIC_DISABLE_KEYCLOAK !== 'true') await delay(31000); // prevent logging back in too quickly and getting denied
     // Log back in to begin rest of tests
     await login(page);
 
