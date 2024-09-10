@@ -1,0 +1,14 @@
+# for testing purposes, not actually used by Repeater
+model:
+  source: "."
+max_context_length: 10000000000000
+stop_tokens:
+  - "</s>"
+prompt_format:
+  chat:
+    system: "{}"
+    assistant: "{}"
+    user: "{}"
+defaults:
+  top_p: 1.0
+  top_k: 0
