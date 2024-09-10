@@ -14,6 +14,8 @@
 
     signOutForm.submit();
   };
+
+  $: console.log('$uiStore.openSidebar', $uiStore.openSidebar)
 </script>
 
 <svelte:window bind:innerWidth />
