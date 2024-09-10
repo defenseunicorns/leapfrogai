@@ -83,7 +83,7 @@ jobs:
           uds create . --confirm && \
             uds deploy uds-bundle-leapfrogai-amd64-registry1.tar.zst --confirm --no-progress && \
             rm -rf uds-bundle-leapfrogai-amd64-registry1.tar.zst && \
-            docker system prune -af
+            docker system prune -af && cd ../../../
 
       - name: Generate Secrets
         id: generate_secrets
