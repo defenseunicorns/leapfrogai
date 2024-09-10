@@ -19,28 +19,33 @@ type Cookie = {
 
 // Gets an access token from cookie
 export const getAccessToken = async () => {
-  const authData = JSON.parse(
-    fs.readFileSync(`${process.cwd()}/playwright/.auth/user.json`, 'utf-8')
-  );
-  const cookie = authData.cookies.find(
-    (cookie: Cookie) =>
-      cookie.name === 'sb-supabase-kong-auth-token' ||
-      cookie.name === 'sb-supabase-kong-auth-token.0' ||
-      cookie.name === 'sb-supabase-kong-auth-token.1'
-  );
-  const cookieStripped = cookie.value.replace('base64-', '');
-  // Decode the base64 string
-  const convertedCookie = Buffer.from(cookieStripped, 'base64').toString('utf-8');
-  // When using Keycloak, the converted cookie may not be a valid JSON string, when only using Supabase, it is
-  let parsedCookie;
   try {
-    // Attempt to parse the JSON string as is
-    parsedCookie = JSON.parse(convertedCookie);
-  } catch (error) {
-    // Attempt to parse the JSON string with added closing characters
-    parsedCookie = JSON.parse(convertedCookie + '"}}');
+    const authData = JSON.parse(
+      fs.readFileSync(`${process.cwd()}/playwright/.auth/user.json`, 'utf-8')
+    );
+    const cookie = authData.cookies.find(
+      (cookie: Cookie) =>
+        cookie.name === 'sb-supabase-kong-auth-token' ||
+        cookie.name === 'sb-supabase-kong-auth-token.0' ||
+        cookie.name === 'sb-supabase-kong-auth-token.1'
+    );
+    const cookieStripped = cookie.value.replace('base64-', '');
+    // Decode the base64 string
+    const convertedCookie = Buffer.from(cookieStripped, 'base64').toString('utf-8');
+    // When using Keycloak, the converted cookie may not be a valid JSON string, when only using Supabase, it is
+    let parsedCookie;
+    try {
+      // Attempt to parse the JSON string as is
+      parsedCookie = JSON.parse(convertedCookie);
+    } catch (error) {
+      // Attempt to parse the JSON string with added closing characters
+      parsedCookie = JSON.parse(convertedCookie + '"}}');
+    }
+    return parsedCookie.access_token;
+  } catch (e) {
+    console.error('Error getting access token', e);
+    return '';
   }
-  return parsedCookie.access_token;
 };
 
 export const getOpenAIClient = async () => {
