@@ -76,6 +76,7 @@ jobs:
 
   integration:
     runs-on: ai-ubuntu-big-boy-8-core
+    if: ${{ !github.event.pull_request.draft }}
 
     # If basic unit tests fail, do not run this job
     needs: pytest
