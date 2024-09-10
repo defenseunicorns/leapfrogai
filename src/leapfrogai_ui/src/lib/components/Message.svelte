@@ -180,8 +180,8 @@
               <!--eslint-disable-next-line svelte/no-at-html-tags -- We use DomPurity to sanitize the code snippet-->
               {@html DOMPurify.sanitize(md.render(messageText), {
                 CUSTOM_ELEMENT_HANDLING: {
-                  tagNameCheck: (tagName) => tagName.match(/code-block/),
-                  attributeNameCheck: (attr) => attr.match(/code/) || attr.match(/language/),
+                  tagNameCheck: /^code-block$/,
+                  attributeNameCheck: /^(code|language)$/,
                   allowCustomizedBuiltInElements: false
                 }
               })}
