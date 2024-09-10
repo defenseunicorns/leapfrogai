@@ -1,9 +1,6 @@
 import { expect, type Page } from '@playwright/test';
 import { faker } from '@faker-js/faker';
 import { createClient } from '@supabase/supabase-js';
-import { getAccessToken } from '../fixtures';
-
-const token = await getAccessToken();
 
 export const supabase = createClient(
   process.env.PUBLIC_SUPABASE_URL!,
