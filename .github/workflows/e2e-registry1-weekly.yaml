@@ -41,19 +41,16 @@ jobs:
       - name: Setup Python
         uses: ./.github/actions/python
 
-      # TODO: remove hardcoded uds-cluster action due to incorrect usage in v0.12.2
-      - name: Setup UDS Environment
-        uses: defenseunicorns/uds-common/.github/actions/setup@822dac4452e6815aadcf09f487406ff258756a0c # v0.14.0
+      - name: Install API and SDK Dev Dependencies
+        run : |
+          make install
+
+      - name: Setup UDS Cluster
+        uses: ./.github/actions/uds-cluster
         with:
           registry1Username: ${{ secrets.IRON_BANK_ROBOT_USERNAME }}
           registry1Password: ${{ secrets.IRON_BANK_ROBOT_PASSWORD }}
           ghToken: ${{ secrets.GITHUB_TOKEN }}
-          udsCliVersion: 0.14.0
-
-      - name: Create UDS Cluster
-        shell: bash
-        run: |
-          UDS_CONFIG=.github/config/uds-config.yaml make create-uds-cpu-cluster
 
       - name: Setup Playwright
         run: |
@@ -66,7 +63,6 @@ jobs:
 
       # Mutate UDS bundle definition to use Registry1 packages
       - name: Mutation to Registry1 Bundle
-        # TODO: fix bundle path
         run: |
           uds zarf tools yq -i '.packages[1] |= del(.repository)' bundles/latest/cpu/uds-bundle.yaml
           uds zarf tools yq -i '.packages[1] |= .ref = "registry1"' bundles/latest/cpu/uds-bundle.yaml
