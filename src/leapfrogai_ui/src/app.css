@@ -78,6 +78,11 @@
     z-index: 9000;
   }
 
+  /* prevents "random" shrinking of sidebar with some messages */
+  .full-width-minus-sidebar {
+    max-width: calc(100% - var(--sidebar-width));
+  }
+
   /*Note - tailwind has a truncate class that sets these properties, but for an unknown reason, it was
    not working.
    */
