@@ -82,15 +82,11 @@ jobs:
           ANON_KEY=$(uds zarf tools kubectl get secret supabase-bootstrap-jwt -n leapfrogai -o jsonpath='{.data.anon-key}' | base64 -d)
           echo "::add-mask::$ANON_KEY"
           echo "ANON_KEY=$ANON_KEY" >> $GITHUB_OUTPUT
-          SERVICE_ROLE_KEY=$(uds zarf tools kubectl get secret -n leapfrogai supabase-bootstrap-jwt -o jsonpath={.data.service-key} | base64 -d)
-          echo "::add-mask::$SERVICE_ROLE_KEY"
-          echo "SERVICE_ROLE_KEY=$SERVICE_ROLE_KEY" >> $GITHUB_OUTPUT
 
       - name: Verify Secrets
         run: |
           echo "FAKE_E2E_USER_PASSWORD is set: ${{ steps.generate_secrets.outputs.FAKE_E2E_USER_PASSWORD != '' }}"
           echo "ANON_KEY is set: ${{ steps.generate_secrets.outputs.ANON_KEY != '' }}"
-          echo "SERVICE_ROLE_KEY is set: ${{ steps.generate_secrets.outputs.SERVICE_ROLE_KEY != '' }}"
 
       # Backends
       - name: Run Backend Tests
@@ -105,7 +101,6 @@ jobs:
 
       - name: Run Playwright E2E Tests
         env:
-          SERVICE_ROLE_KEY: ${{ steps.generate_secrets.outputs.SERVICE_ROLE_KEY }}
           FAKE_E2E_USER_PASSWORD: ${{ steps.generate_secrets.outputs.FAKE_E2E_USER_PASSWORD }}
           ANON_KEY: ${{ steps.generate_secrets.outputs.ANON_KEY }}
         run: |
@@ -116,7 +111,7 @@ jobs:
           mkdir -p playwright/auth
           touch playwright/auth.user.json
 
-          SERVICE_ROLE_KEY=$SERVICE_ROLE_KEY TEST_ENV=CI USERNAME=doug PASSWORD=$FAKE_E2E_USER_PASSWORD PUBLIC_SUPABASE_ANON_KEY=$ANON_KEY npm --prefix src/leapfrogai_ui run test:integration:ci
+          TEST_ENV=CI USERNAME=doug PASSWORD=$FAKE_E2E_USER_PASSWORD PUBLIC_SUPABASE_ANON_KEY=$ANON_KEY npm --prefix src/leapfrogai_ui run test:integration:ci
 
       - name: Archive Playwright Report
         uses: actions/upload-artifact@834a144ee995460fba8ed112a2fc961b36a5ec5a # v4.3.6

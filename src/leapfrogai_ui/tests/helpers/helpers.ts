@@ -1,11 +1,11 @@
 import { expect, type Page } from '@playwright/test';
 import { faker } from '@faker-js/faker';
 import { createClient } from '@supabase/supabase-js';
+import { getAccessToken } from '../fixtures';
 
-export const supabase = createClient(
-  process.env.PUBLIC_SUPABASE_URL!,
-  process.env.SERVICE_ROLE_KEY!
-);
+const token = await getAccessToken();
+
+export const supabase = createClient(process.env.PUBLIC_SUPABASE_URL!, token);
 
 export const SHORT_RESPONSE_PROMPT = 'respond with no more than one sentence';
 export const LONG_RESPONSE_PROMPT = 'write me a long poem';

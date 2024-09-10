@@ -2,10 +2,15 @@ import { expect, test as setup } from './fixtures';
 import * as OTPAuth from 'otpauth';
 import { delay } from 'msw';
 import type { Page } from '@playwright/test';
+import { faker } from '@faker-js/faker';
 
 const authFile = 'playwright/.auth/user.json';
 
 const doSupabaseLogin = async (page: Page) => {
+  // The fake keycloak user does not have a password stored in supabase, so login with that user will not work
+  // we create a separate user when keycloak is disabled
+  const supabaseUsername = faker.internet.email();
+  const supabasePassword = faker.internet.password();
   await page.goto('/'); // go to the home page
   await delay(2000); // allow page to fully hydrate
   // when running in Github CI, create a new account because we don't have seed migrations
@@ -13,14 +18,14 @@ const doSupabaseLogin = async (page: Page) => {
   const passwordField = page.getByTestId('password-input');
 
   await emailField.click();
-  await emailField.fill(process.env.USERNAME!);
+  await emailField.fill(supabaseUsername);
   await passwordField.click();
-  await passwordField.fill(process.env.PASSWORD!);
+  await passwordField.fill(supabasePassword);
 
   const emailText = await emailField.innerText();
   const passwordText = await passwordField.innerText();
-  if (emailText !== process.env.USERNAME!) await emailField.fill(process.env.USERNAME!);
-  if (passwordText !== process.env.PASSWORD!) await passwordField.fill(process.env.PASSWORD!);
+  if (emailText !== supabaseUsername) await emailField.fill(supabaseUsername);
+  if (passwordText !== supabasePassword) await passwordField.fill(supabasePassword);
 
   await page.getByTestId('submit-btn').click();
 
@@ -30,7 +35,6 @@ const doSupabaseLogin = async (page: Page) => {
     await page.getByTestId('toggle-submit-btn').click();
     await page.getByTestId('submit-btn').click();
   }
-  // }
 };
 
 const doKeycloakLogin = async (page: Page) => {
