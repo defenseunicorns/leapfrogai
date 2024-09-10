@@ -32,16 +32,12 @@ export const getAccessToken = async () => {
     const cookieStripped = cookie.value.replace('base64-', '');
     // Decode the base64 string
     const convertedCookie = Buffer.from(cookieStripped, 'base64').toString('utf-8');
-    // When using Keycloak, the converted cookie may not be a valid JSON string, when only using Supabase, it is
-    let parsedCookie;
-    try {
-      // Attempt to parse the JSON string as is
-      parsedCookie = JSON.parse(convertedCookie);
-    } catch (error) {
-      // Attempt to parse the JSON string with added closing characters
-      parsedCookie = JSON.parse(convertedCookie + '"}}');
+    const accessTokenMatch = convertedCookie.match(/"access_token":"(.*?)"/);
+    if (!accessTokenMatch) {
+      console.log('Access token not found in cookie');
+      return '';
     }
-    return parsedCookie.access_token;
+    return accessTokenMatch[1];
   } catch (e) {
     console.error('Error getting access token', e);
     return '';
