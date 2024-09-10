@@ -29,7 +29,7 @@
         : '/chat'}
       data-testid="logo-link"
     >
-      {#if innerWidth !== undefined && innerWidth < 1024 && ($page.url.pathname === '/chat' || `${$page.url.pathname}/${threadId}`)}
+      {#if innerWidth !== undefined && innerWidth < 1024 && ($page.url.pathname === '/chat' || $page.url.pathname === `/chat/${threadId}`)}
         <Button
           outline={true}
           class="mr-2 !p-2"
