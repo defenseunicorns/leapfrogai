@@ -23,6 +23,7 @@ def test_file_upload(client_name):
     assert isinstance(vector_store, VectorStore)
     assert isinstance(vector_store_file, VectorStoreFile)
 
+
 @pytest.mark.xfail(reason="File Batch Upload is not yet implemented in LeapfrogAI")
 @pytest.mark.parametrize("client_name", ["openai", "leapfrogai"])
 def test_file_upload_batches(client_name):
