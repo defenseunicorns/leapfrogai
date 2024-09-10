@@ -1,4 +1,4 @@
-<script>
+<script lang="ts">
   import '../app.css';
   import { invalidate } from '$app/navigation';
   import { onMount } from 'svelte';
@@ -6,6 +6,8 @@
   import { page } from '$app/stores';
   import '$webComponents/CodeBlock';
   import { browser } from '$app/environment';
+  import { filesStore, uiStore } from '$stores';
+  import vectorStatusStore from '$stores/vectorStatusStore';
 
   export let data;
 
@@ -29,14 +31,58 @@
     }
   }
 
+  const handleVectorStoreTableUpdate = (payload) => {
+    const newFile = payload.new;
+    if (payload.eventType === 'DELETE') {
+      vectorStatusStore.removeVectorStoreStatusFromFile(
+        payload.old.id,
+        payload.old.vector_store_id
+      );
+    } else {
+      vectorStatusStore.updateFileVectorStatus(newFile.id, newFile.vector_store_id, newFile.status);
+    }
+  };
+  const handleFileTableUpdate = (payload) => {
+    filesStore.updateWithUploadSuccess([payload.new]);
+  };
+
   onMount(() => {
+    let vectorStoreChannel;
+    let fileChannel;
     const { data } = supabase.auth.onAuthStateChange((_, newSession) => {
       if (newSession?.expires_at !== session?.expires_at) {
         invalidate('supabase:auth');
       }
+      if (!$uiStore.isUsingOpenAI) {
+        //*** REALTIME LISTENERS ***//
+        vectorStoreChannel = supabase
+          .channel('vector_store_file')
+          .on(
+            'postgres_changes',
+            { event: '*', schema: 'public', table: 'vector_store_file' },
+            handleVectorStoreTableUpdate
+          )
+          .subscribe();
+        fileChannel = supabase
+          .channel('file_objects')
+          .on(
+            'postgres_changes',
+            { event: 'INSERT', schema: 'public', table: 'file_objects' },
+            handleFileTableUpdate
+          )
+          .subscribe();
+        //*** END REALTIME LISTENERS ***//
+      }
     });
 
-    return () => data.subscription.unsubscribe();
+    // Cleanup
+    return () => {
+      data.subscription.unsubscribe();
+      if (!$uiStore.isUsingOpenAI) {
+        supabase.removeChannel(vectorStoreChannel);
+        supabase.removeChannel(fileChannel);
+      }
+    };
   });
 </script>
 

@@ -2,6 +2,8 @@ import type { SuperValidated } from 'sveltekit-superforms';
 
 export type FileUploadStatus = 'uploading' | 'complete' | 'error' | 'hide';
 
+export type VectorStatus = 'in_progress' | 'completed' | 'cancelled' | 'failed';
+
 export type FileRow = {
   id: string;
   filename: string;
@@ -16,3 +18,12 @@ export type FilesForm = SuperValidated<
   any,
   { files?: (File | null | undefined)[] | undefined }
 >;
+
+export type FileMetadata = {
+  id?: string;
+  name: string;
+  type: string;
+  status: FileUploadStatus;
+  text: string;
+  errorText?: string;
+};

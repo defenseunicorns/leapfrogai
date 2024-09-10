@@ -5,6 +5,7 @@
   import { ExclamationCircleOutline } from 'flowbite-svelte-icons';
   import { invalidate } from '$app/navigation';
   import { createEventDispatcher } from 'svelte';
+  import vectorStatusStore from '$stores/vectorStatusStore';
 
   export let open;
   export let affectedAssistantsLoading: boolean;
@@ -42,6 +43,8 @@
         title: `Error Deleting ${isMultipleFiles ? 'Files' : 'File'}`
       });
     }
+
+    vectorStatusStore.removeFiles($filesStore.selectedFileManagementFileIds);
     filesStore.setSelectedFileManagementFileIds([]);
     deleting = false;
     dispatch('delete');

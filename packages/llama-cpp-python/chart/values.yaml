@@ -9,7 +9,7 @@ image:
   pullPolicy: Always
   # Overrides the image tag whose default is the chart appVersion.
   # x-release-please-start-version
-  tag: 0.11.0
+  tag: 0.12.2
   # x-release-please-end
 
 nameOverride: llama-cpp-python

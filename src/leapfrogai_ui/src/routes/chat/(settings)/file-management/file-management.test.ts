@@ -20,6 +20,7 @@ import { filesSchema } from '$schemas/files';
 import type { SupabaseClient } from '@supabase/supabase-js';
 import type { FilesForm } from '$lib/types/files';
 import { tick } from 'svelte';
+import vectorStatusStore from '$stores/vectorStatusStore';
 
 describe('file management', () => {
   const files = getFakeFiles();
@@ -85,6 +86,7 @@ describe('file management', () => {
   });
 
   it('confirms the files and affected assistants, then deletes them', async () => {
+    const vectorStatusStoreSpy = vi.spyOn(vectorStatusStore, 'removeFiles');
     const assistant1 = getFakeAssistant();
     const assistant2 = getFakeAssistant();
     const toastSpy = vi.spyOn(toastStore, 'addToast');
@@ -124,6 +126,7 @@ describe('file management', () => {
       kind: 'success',
       title: 'Files Deleted'
     });
+    expect(vectorStatusStoreSpy).toHaveBeenCalledWith(files.map((file) => file.id));
   });
 
   it('replaces the delete button with a disabled loading spinner button while deleting', async () => {

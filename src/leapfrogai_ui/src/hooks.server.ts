@@ -101,7 +101,8 @@ const csp: Handle = async ({ event, resolve }) => {
       "'self'",
       process.env.LEAPFROGAI_API_BASE_URL,
       process.env.PUBLIC_SUPABASE_URL,
-      process.env.SUPABASE_AUTH_EXTERNAL_KEYCLOAK_URL
+      process.env.SUPABASE_AUTH_EXTERNAL_KEYCLOAK_URL,
+      `wss://${process.env.PUBLIC_SUPABASE_URL!.replace('https://', '')}` // supabase realtime websocket
     ],
     'child-src': ["'none'"],
     'frame-src': [`blob: 'self'`],
