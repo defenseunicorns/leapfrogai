@@ -39,15 +39,18 @@ jobs:
         uses: actions/checkout@b4ffde65f46336ab88eb53be808477a3936bae11 # v4.1.1
         with:
           # x-release-please-start-version
-          ref: "v0.12.2"
+          ref: "caf4f9c3093a55a003b49fcbf05c03221be6a232" # 0.12.2 w/ integration tests turned-on
           # x-release-please-end
 
       - name: Setup Python
         uses: ./.github/actions/python
 
-      # TODO: remove hardcoded uds-cluster action due to incorrect usage in v0.12.2
-      - name: Setup UDS Environment
-        uses: defenseunicorns/uds-common/.github/actions/setup@822dac4452e6815aadcf09f487406ff258756a0c # v0.14.0
+      - name: Install API and SDK Dev Dependencies
+        run : |
+          make install
+
+      - name: Setup UDS Cluster
+        uses: ./.github/actions/uds-cluster
         with:
           registry1Username: ${{ secrets.IRON_BANK_ROBOT_USERNAME }}
           registry1Password: ${{ secrets.IRON_BANK_ROBOT_PASSWORD }}
@@ -104,22 +107,20 @@ jobs:
           echo "ANON_KEY is set: ${{ steps.generate_secrets.outputs.ANON_KEY != '' }}"
           echo "SERVICE_KEY is set: ${{ steps.generate_secrets.outputs.SERVICE_KEY != '' }}"
 
-      # TODO: enable for post-0.12.2 release of LeapfrogAI
-      # - name: Run Integration Tests
-      #   if: github.sha == 'YOUR_SPECIFIC_COMMIT_SHA'
-      #   env:
-      #     SUPABASE_ANON_KEY: ${{ steps.generate_secrets.outputs.ANON_KEY }}
-      #     SUPABASE_PASS: ${{ steps.generate_secrets.outputs.FAKE_PASSWORD }}
-      #     SUPABASE_EMAIL: integration@uds.dev
-      #     SUPABASE_URL: https://supabase-kong.uds.dev
-      #     # Turn off NIAH tests that are not applicable for integration testing using the Repeater model
-      #     LFAI_RUN_NIAH_TESTS: "false"
-      #   run: |
-      #     uds zarf connect --name=llama-cpp-python-model --namespace=leapfrogai --local-port=50051 --remote-port=50051 &
-      #     while ! nc -z localhost 50051; do sleep 1; done
+      - name: Run Integration Tests
+        env:
+          SUPABASE_ANON_KEY: ${{ steps.generate_secrets.outputs.ANON_KEY }}
+          SUPABASE_PASS: ${{ steps.generate_secrets.outputs.FAKE_PASSWORD }}
+          SUPABASE_EMAIL: integration@uds.dev
+          SUPABASE_URL: https://supabase-kong.uds.dev
+          # Turn off NIAH tests that are not applicable for integration testing using the Repeater model
+          LFAI_RUN_NIAH_TESTS: "false"
+        run: |
+          uds zarf connect --name=llama-cpp-python-model --namespace=leapfrogai --local-port=50051 --remote-port=50051 &
+          while ! nc -z localhost 50051; do sleep 1; done
 
-      #     make test-user-pipeline
-      #     env $(cat .env | xargs) python -m pytest -v -s tests/integration/api
+          make test-user-pipeline
+          env $(cat .env | xargs) python -m pytest -v -s tests/integration/api
 
       # Backends
       - name: Run Backend E2E Tests
