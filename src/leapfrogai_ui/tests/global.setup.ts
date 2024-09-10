@@ -2,15 +2,13 @@ import { expect, test as setup } from './fixtures';
 import * as OTPAuth from 'otpauth';
 import { delay } from 'msw';
 import type { Page } from '@playwright/test';
-import { faker } from '@faker-js/faker';
 
-const authFile = 'playwright/.auth/user.json';
+// The fake keycloak user does not have a password stored in supabase, so login with that user will not work
+// we create a separate user when keycloak is disabled (or use existing one)
+export const supabaseUsername = 'fakesupabaseuser@test.com';
+const supabasePassword = 'fakepass';
 
 const doSupabaseLogin = async (page: Page) => {
-  // The fake keycloak user does not have a password stored in supabase, so login with that user will not work
-  // we create a separate user when keycloak is disabled
-  const supabaseUsername = faker.internet.email();
-  const supabasePassword = faker.internet.password();
   await page.goto('/'); // go to the home page
   await delay(2000); // allow page to fully hydrate
   // when running in Github CI, create a new account because we don't have seed migrations
@@ -118,5 +116,5 @@ setup('authenticate', async ({ page }) => {
 
   // End of authentication steps.
 
-  await page.context().storageState({ path: authFile });
+  await page.context().storageState({ path: 'playwright/.auth/user.json' });
 });

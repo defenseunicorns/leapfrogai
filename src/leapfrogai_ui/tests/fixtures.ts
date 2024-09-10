@@ -19,7 +19,9 @@ type Cookie = {
 
 // Gets an access token from cookie
 export const getAccessToken = async () => {
-  const authData = JSON.parse(fs.readFileSync('playwright/.auth/user.json', 'utf-8'));
+  const authData = JSON.parse(
+    fs.readFileSync(`${process.cwd()}/playwright/.auth/user.json`, 'utf-8')
+  );
   const cookie = authData.cookies.find(
     (cookie: Cookie) =>
       cookie.name === 'sb-supabase-kong-auth-token' ||
