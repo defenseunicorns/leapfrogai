@@ -22,11 +22,6 @@ const doSupabaseLogin = async (page: Page) => {
   await passwordField.click();
   await passwordField.fill(supabasePassword);
 
-  const emailText = await emailField.innerText();
-  const passwordText = await passwordField.innerText();
-  if (emailText !== supabaseUsername) await emailField.fill(supabaseUsername);
-  if (passwordText !== supabasePassword) await passwordField.fill(supabasePassword);
-
   await page.getByTestId('submit-btn').click();
 
   await delay(2000);
