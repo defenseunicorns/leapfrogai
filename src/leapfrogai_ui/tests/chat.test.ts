@@ -29,6 +29,9 @@ test('it saves in progress responses when interrupted by a page reload', async (
   page,
   openAIClient
 }) => {
+  if (process.env.DEFAULT_MODEL === 'llama-cpp-python') {
+    test.skip();
+  }
   const uniqueLongMessagePrompt = `${LONG_RESPONSE_PROMPT} ${new Date().toISOString()}`;
   await loadChatPage(page);
   const messages = page.getByTestId('message');
@@ -43,6 +46,9 @@ test('it saves in progress responses when interrupted by changing threads', asyn
   page,
   openAIClient
 }) => {
+  if (process.env.DEFAULT_MODEL === 'llama-cpp-python') {
+    test.skip();
+  }
   const uniqueLongMessagePrompt = `${LONG_RESPONSE_PROMPT} ${new Date().toISOString()}`;
   await loadChatPage(page);
   const messages = page.getByTestId('message');
@@ -64,6 +70,9 @@ function countWords(str: string) {
 }
 
 test('it cancels responses', async ({ page, openAIClient }) => {
+  if (process.env.DEFAULT_MODEL === 'llama-cpp-python') {
+    test.skip();
+  }
   await loadChatPage(page);
   const messages = page.getByTestId('message');
   await sendMessage(page, LONG_RESPONSE_PROMPT);
@@ -83,6 +92,9 @@ test('it cancels responses when clicking enter instead of pause button and does 
   page,
   openAIClient
 }) => {
+  if (process.env.DEFAULT_MODEL === 'llama-cpp-python') {
+    test.skip();
+  }
   await loadChatPage(page);
   const messages = page.getByTestId('message');
   await sendMessage(page, LONG_RESPONSE_PROMPT); // response must take a long time for this test to work

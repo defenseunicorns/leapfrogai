@@ -1,7 +1,9 @@
-import { test as teardown } from './fixtures';
+import { test } from '@playwright/test';
 import { cleanup } from './helpers/cleanup';
+import { getOpenAIClient } from './fixtures';
 
-teardown('teardown', async ({ openAIClient }) => {
+test('teardown', async () => {
+  const openAIClient = await getOpenAIClient();
   console.log('cleaning up...');
   await cleanup(openAIClient);
   console.log('clean up complete');

@@ -4,7 +4,7 @@ import { deleteAllTestThreadsWithApi } from './threadHelpers';
 import type OpenAI from 'openai';
 import { deleteAllTestAPIKeys } from './apiHelpers';
 import { createClient } from '@supabase/supabase-js';
-import { supabaseUsername } from '../global.setup';
+import { supabaseUsername } from '../constants';
 
 export const cleanup = async (openAIClient: OpenAI) => {
   deleteAllGeneratedFixtureFiles();

@@ -2,13 +2,11 @@ import { expect, test as setup } from './fixtures';
 import * as OTPAuth from 'otpauth';
 import { delay } from 'msw';
 import type { Page } from '@playwright/test';
-
-// The fake keycloak user does not have a password stored in supabase, so login with that user will not work
-// we create a separate user when keycloak is disabled (or use existing one)
-export const supabaseUsername = 'fakesupabaseuser@test.com';
-const supabasePassword = 'fakepass';
+import { supabasePassword, supabaseUsername } from './constants';
 
 const doSupabaseLogin = async (page: Page) => {
+  // The fake keycloak user does not have a password stored in supabase, so login with that user will not work
+  // we create a separate user when keycloak is disabled (or use existing one)
   await page.goto('/'); // go to the home page
   await delay(2000); // allow page to fully hydrate
   // when running in Github CI, create a new account because we don't have seed migrations
