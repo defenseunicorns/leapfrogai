@@ -41,6 +41,7 @@
 
   // used for code formatting and handling
   const md = markdownit({
+    html: true,
     highlight: function (str: string, language: string) {
       let code: string;
       if (language && hljs.getLanguage(language)) {
