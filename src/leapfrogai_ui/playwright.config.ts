@@ -78,7 +78,8 @@ const CI_Config: PlaywrightTestConfig = {
   use: {
     baseURL: 'https://ai.uds.dev',
     screenshot: 'only-on-failure',
-    video: 'retain-on-failure'
+    video: 'retain-on-failure',
+    trace: 'on-first-retry',
   },
   reporter: [['html', { outputFolder: 'e2e-report' }]]
 };
