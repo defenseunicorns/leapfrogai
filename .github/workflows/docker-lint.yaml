@@ -1,0 +1,40 @@
+name: Docker Lint
+
+on:
+  pull_request:
+    branches:
+      - "main"
+    paths:
+      - "**/Dockerfile"
+      - "**/Dockerfile.migrations"
+      - "**/.dockerignore"
+      - ".github/workflows/docker-lint.yaml"
+
+concurrency:
+  group: docker-lint-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  docker-lint:
+    runs-on: ubuntu-latest
+    name: Lint Docker Manifest
+
+    permissions:
+      contents: write
+
+    steps:
+      - name: Login to GitHub Container Registry
+        uses: docker/login-action@343f7c4344506bcbf9b4de18042ae17996df046d # v3.0.0
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Checkout Repo
+        uses: actions/checkout@b4ffde65f46336ab88eb53be808477a3936bae11 # v4.1.1
+
+      - uses: hadolint/hadolint-action@54c9adbab1582c2ef04b2016b760714a4bfde3cf # v3.1.0
+        with:
+          dockerfile: "*Dockerfile*"
+          recursive: true
+          config: .hadolint.yaml

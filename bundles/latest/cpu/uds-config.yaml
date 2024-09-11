@@ -1,11 +1,11 @@
 # see individual zarf packaging configuration for more variables and variable descriptions
 variables:
   text-embeddings:
-    gpu_class_name: "" # Leave blank if nvidia runtimeClass is not present in cluster
+    gpu_runtime: "" # Leave blank if nvidia runtimeClass is not present in cluster
     gpu_limit: 0
 
   whisper:
-    gpu_class_name: "" # Leave blank if nvidia runtimeClass is not present in cluster
+    gpu_runtime: "" # Leave blank if nvidia runtimeClass is not present in cluster
     gpu_limit: 0
 
   supabase:

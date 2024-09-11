@@ -1,19 +1,20 @@
-FROM --platform=$TARGETPLATFORM cgr.dev/chainguard/bash:latest
-ARG TARGETPLATFORM
-ARG version="1.169.8"
-ARG MIGRATIONS_DIR
+FROM cgr.dev/chainguard/bash:latest
 
-RUN test -n "$MIGRATIONS_DIR" || (echo "MIGRATIONS_PATH is required" && false)
+ARG TARGETPLATFORM \
+    SUPABASE_CLI_VERSION="1.169.8" \
+    MIGRATIONS_DIR
+
+RUN test -n "$MIGRATIONS_DIR" || (echo "MIGRATIONS_DIR is required" && false)
 
 # Download the supabase cli
-RUN mkdir -p /usr/local/bin
-RUN ARCH=$(echo $TARGETPLATFORM | cut -d '/' -f2) \
-    && curl -LO https://github.com/supabase/cli/releases/download/v${version}/supabase_linux_${ARCH}.tar.gz \
-    && tar -xzf supabase_linux_${ARCH}.tar.gz -C /usr/local/bin/ \
-    && rm supabase_linux_${ARCH}.tar.gz
+RUN mkdir -p /usr/local/bin && \
+    ARCH=$(echo $TARGETPLATFORM | cut -d "/" -f2) && \
+    curl -LO https://github.com/supabase/cli/releases/download/v${SUPABASE_CLI_VERSION}/supabase_linux_${ARCH}.tar.gz && \
+    tar -xzf supabase_linux_${ARCH}.tar.gz -C /usr/local/bin/ && \
+    rm supabase_linux_${ARCH}.tar.gz
 
 # 65532 is the UID of the `nonroot` user in chainguard/static.  See: https://edu.chainguard.dev/chainguard/chainguard-images/reference/static/overview/#users
 USER 65532:65532
 
 # Download the migration scripts
-COPY --chown=65532:65532 ${MIGRATIONS_DIR}/*.sql supabase/migrations/
+COPY --chown=65532:65532 ${MIGRATIONS_DIR}/*.sql /supabase/migrations/
