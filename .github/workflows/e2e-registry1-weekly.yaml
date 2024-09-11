@@ -90,7 +90,6 @@ jobs:
           echo "::add-mask::$SERVICE_KEY"
           echo "SERVICE_KEY=$SERVICE_KEY" >> $GITHUB_OUTPUT
 
-
       - name: Verify Secrets
         run: |
           echo "FAKE_PASSWORD is set: ${{ steps.generate_secrets.outputs.FAKE_PASSWORD != '' }}"
@@ -111,7 +110,6 @@ jobs:
 
           make test-user-pipeline
           env $(cat .env | xargs) python -m pytest -v -s tests/integration/api
-
 
       # Backends
       - name: Run Backend E2E Tests
