@@ -17,7 +17,7 @@ help: ## Display this help information
 		{printf "\033[36m%-30s\033[0m %s\n", $$1, $$2}'
 
 ## Clean up targets for test artifacts, cachce, etc.
-include mk-clean.mk 
+include mk-clean.mk
 
 gen-python: ## Generate the protobufs for the OpenAI typing within the leapfrogai_api module
 	python3 -m grpc_tools.protoc -I src/leapfrogai_sdk/proto \
