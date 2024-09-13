@@ -7,10 +7,10 @@ from fastapi import status, HTTPException
 from fastapi.testclient import TestClient
 from leapfrogai_api.routers.leapfrogai.auth import (
     router,
-    THIRTY_DAYS_SECONDS,
     APIKeyItem,
 )
 from leapfrogai_api.backend.security.api_key import APIKey
+from leapfrogai_api.backend.constants import THIRTY_DAYS_SECONDS
 
 
 class MissingEnvironmentVariable(Exception):

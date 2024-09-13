@@ -9,7 +9,7 @@ from openai.types.beta.thread import ToolResources, ToolResourcesFileSearch
 from openai.types.beta.threads import Message, Text, TextContentBlock, Run
 
 from leapfrogai_api.main import app
-from leapfrogai_api.routers.openai.requests.create_modify_assistant_request import (
+from leapfrogai_api.typedef.assistants import (
     CreateAssistantRequest,
 )
 from leapfrogai_api.typedef.messages import (
