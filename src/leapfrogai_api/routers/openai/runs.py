@@ -85,7 +85,10 @@ async def create_thread_and_run(
 
     try:
         return await Composer().generate_response(
-            request=request, exising_thread=new_thread, new_run=new_run, session=session
+            request=request,
+            existing_thread=new_thread,
+            new_run=new_run,
+            session=session,
         )
     except Exception as exc:
         traceback.print_exc()
