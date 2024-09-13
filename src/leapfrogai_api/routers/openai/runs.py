@@ -57,7 +57,7 @@ async def create_run(
     try:
         return await Composer().generate_response(
             request=request,
-            existing_thread=existing_thread,
+            new_thread=existing_thread,
             new_run=new_run,
             session=session,
         )
@@ -86,7 +86,7 @@ async def create_thread_and_run(
     try:
         return await Composer().generate_response(
             request=request,
-            existing_thread=new_thread,
+            new_thread=new_thread,
             new_run=new_run,
             session=session,
         )
