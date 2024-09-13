@@ -4,17 +4,17 @@ import os
 import pytest
 from fastapi import HTTPException, status
 from fastapi.testclient import TestClient
+
 from openai.types.beta import Thread, ThreadDeleted
 from openai.types.beta.thread import ToolResourcesCodeInterpreter, ToolResources
 from openai.types.beta.threads import TextContentBlock, Text
-from leapfrogai_api.backend.types import (
+
+from leapfrogai_api.typedef.threads import (
+    CreateThreadRequest,
     ModifyThreadRequest,
 )
-from leapfrogai_api.routers.openai.requests.create_message_request import (
+from leapfrogai_api.typedef.messages import (
     CreateMessageRequest,
-)
-from leapfrogai_api.routers.openai.requests.create_thread_request import (
-    CreateThreadRequest,
 )
 from leapfrogai_api.routers.openai.threads import router
 

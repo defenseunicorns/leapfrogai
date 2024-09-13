@@ -2,23 +2,14 @@ import fnmatch
 import glob
 import logging
 import os
-from typing import List
-
 import toml
 import yaml
 from watchfiles import Change, awatch
 
+from leapfrogai_api.typedef.models import Model
+
 
 logger = logging.getLogger(__name__)
-
-
-class Model:
-    name: str
-    backend: str
-
-    def __init__(self, name: str, backend: str, capabilities: List[str] | None = None):
-        self.name = name
-        self.backend = backend
 
 
 class Config:

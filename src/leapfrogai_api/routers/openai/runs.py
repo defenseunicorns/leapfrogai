@@ -5,15 +5,7 @@ from fastapi import HTTPException, APIRouter, status
 from fastapi.responses import StreamingResponse
 from openai.types.beta.threads import Run
 from openai.pagination import SyncCursorPage
-from leapfrogai_api.backend.types import (
-    ModifyRunRequest,
-)
-from leapfrogai_api.routers.openai.requests.thread_run_create_params_request import (
-    ThreadRunCreateParamsRequest,
-)
-from leapfrogai_api.routers.openai.requests.run_create_params_request import (
-    RunCreateParamsRequest,
-)
+
 from leapfrogai_api.data.crud_run import CRUDRun
 from leapfrogai_api.data.crud_thread import CRUDThread
 from leapfrogai_api.routers.supabase_session import Session
@@ -21,6 +13,9 @@ from leapfrogai_api.utils.validate_tools import (
     validate_assistant_tool,
     validate_assistant_tool_choice_option,
 )
+from leapfrogai_api.typedef.threads import ThreadRunCreateParamsRequest
+from leapfrogai_api.typedef.runs import RunCreateParamsRequest, ModifyRunRequest
+from leapfrogai_api.backend.composer import Composer
 
 router = APIRouter(prefix="/openai/v1/threads", tags=["openai/threads/runs"])
 
@@ -60,7 +55,12 @@ async def create_run(
         )
 
     try:
-        return await request.generate_response(existing_thread, new_run, session)
+        return await Composer().generate_response(
+            request=request,
+            existing_thread=existing_thread,
+            new_run=new_run,
+            session=session,
+        )
     except Exception as exc:
         traceback.print_exc()
         raise HTTPException(
@@ -84,7 +84,12 @@ async def create_thread_and_run(
         )
 
     try:
-        return await request.generate_response(new_run, new_thread, session)
+        return await Composer().generate_response(
+            request=request,
+            existing_thread=new_thread,
+            new_run=new_run,
+            session=session,
+        )
     except Exception as exc:
         traceback.print_exc()
         raise HTTPException(

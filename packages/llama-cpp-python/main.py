@@ -7,10 +7,6 @@ from llama_cpp import Llama
 from leapfrogai_sdk import BackendConfig
 from leapfrogai_sdk.llm import LLM, GenerationConfig
 
-GPU_ENABLED = (
-    False if os.environ.get("GPU_ENABLED", "False").lower() != "true" else True
-)
-
 logging.basicConfig(
     level=os.getenv("LFAI_LOG_LEVEL", logging.INFO),
     format="%(name)s: %(asctime)s | %(levelname)s | %(filename)s:%(lineno)s >>> %(message)s",
@@ -28,7 +24,7 @@ class Model:
     llm = Llama(
         model_path=backend_config.model.source,
         n_ctx=backend_config.max_context_length,
-        n_gpu_layers=-1 if GPU_ENABLED is True else 0,
+        n_gpu_layers=0,
     )
 
     async def generate(

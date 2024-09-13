@@ -3,43 +3,14 @@
 import time
 from typing import Annotated
 from fastapi import APIRouter, HTTPException, status
-from pydantic import BaseModel, Field
+from pydantic import Field
+
 from leapfrogai_api.routers.supabase_session import Session
-from leapfrogai_api.data.crud_api_key import APIKeyItem, CRUDAPIKey, THIRTY_DAYS
+from leapfrogai_api.data.crud_api_key import APIKeyItem, CRUDAPIKey
+from leapfrogai_api.typedef.auth import CreateAPIKeyRequest, ModifyAPIKeyRequest
+
 
 router = APIRouter(prefix="/leapfrogai/v1/auth", tags=["leapfrogai/auth"])
-
-
-class CreateAPIKeyRequest(BaseModel):
-    """Request body for creating an API key."""
-
-    name: str | None = Field(
-        default=None,
-        description="The name of the API key.",
-        examples=["API Key 1"],
-    )
-
-    expires_at: int = Field(
-        default=int(time.time()) + THIRTY_DAYS,
-        description="The time at which the API key expires, in seconds since the Unix epoch.",
-        examples=[int(time.time()) + THIRTY_DAYS],
-    )
-
-
-class ModifyAPIKeyRequest(BaseModel):
-    """Request body for modifying an API key."""
-
-    name: str | None = Field(
-        default=None,
-        description="The name of the API key. If not provided, the name will not be changed.",
-        examples=["API Key 1"],
-    )
-
-    expires_at: int | None = Field(
-        default=None,
-        description="The time at which the API key expires, in seconds since the Unix epoch. If not provided, the expiration time will not be changed.",
-        examples=[int(time.time()) + THIRTY_DAYS],
-    )
 
 
 @router.post("/api-keys")

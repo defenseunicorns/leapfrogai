@@ -9,7 +9,7 @@ from leapfrogai_api.backend.grpc_client import (
     stream_chat_completion_raw,
 )
 from leapfrogai_api.backend.helpers import grpc_chat_role
-from leapfrogai_api.backend.types import ChatCompletionRequest
+from leapfrogai_api.typedef.chat import ChatCompletionRequest
 from leapfrogai_api.routers.supabase_session import Session
 from leapfrogai_api.utils import get_model_config
 from leapfrogai_api.utils.config import Config

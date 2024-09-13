@@ -5,8 +5,12 @@ import time
 import pytest
 from fastapi import status, HTTPException
 from fastapi.testclient import TestClient
-from leapfrogai_api.routers.leapfrogai.auth import router, THIRTY_DAYS, APIKeyItem
+from leapfrogai_api.routers.leapfrogai.auth import (
+    router,
+    APIKeyItem,
+)
 from leapfrogai_api.backend.security.api_key import APIKey
+from leapfrogai_api.backend.constants import THIRTY_DAYS_SECONDS
 
 
 class MissingEnvironmentVariable(Exception):
@@ -32,7 +36,7 @@ def create_api_key():
 
     request = {
         "name": "API Keys Are Cool!",
-        "expires_at": int(time.time()) + THIRTY_DAYS,
+        "expires_at": int(time.time()) + THIRTY_DAYS_SECONDS,
     }
 
     response = client.post("/leapfrogai/v1/auth/api-keys", json=request)

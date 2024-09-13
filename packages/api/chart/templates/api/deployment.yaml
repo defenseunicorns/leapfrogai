@@ -2,20 +2,24 @@ apiVersion: apps/v1
 kind: Deployment
 metadata:
   name: {{ include "chart.fullname" . }}
-  namespace: {{ .Release.Namespace }}
+  namespace: {{ .Release.Namespace | default "leapfrogai" }}
   labels:
     {{- include "chart.labels" . | nindent 4 }}
 spec:
-  replicas: {{ .Values.api.replicas }}
+  replicas: {{ .Values.replicaCount }}
+  {{- with .Values.strategy }}
   strategy:
-    rollingUpdate:
-      maxUnavailable: 0
-    type: RollingUpdate
+    {{- toYaml . | nindent 8 }}
+  {{- end }}
   selector:
     matchLabels:
       {{- include "chart.selectorLabels" . | nindent 6 }}
   template:
     metadata:
+      {{- with .Values.podAnnotations }}
+      annotations:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
       labels:
         {{- include "chart.selectorLabels" . | nindent 8 }}
     spec:
@@ -27,60 +31,52 @@ spec:
           image: "{{ .Values.kiwigrid.image.repository }}:{{ .Values.kiwigrid.image.tag }}"
           imagePullPolicy: {{ .Values.kiwigrid.image.imagePullPolicy }}
           volumeMounts:
-            - name: api-model
+            - name: {{ include "chart.fullname" . }}-model
               mountPath: /config/
+          {{- with .Values.kiwigrid.env }}
           env:
-            - name: LABEL
-              value: "leapfrogai"
-            - name: FOLDER
-              value: /config/
-            - name: RESOURCE
-              value: both
-            - name: UNIQUE_FILENAMES
-              value: "true"
-            - name: NAMESPACE
-              value: leapfrogai
+            {{- toYaml . | nindent 12 }}
+          {{- end }}
           securityContext:
             {{- toYaml .Values.kiwigrid.securityContext | nindent 12 }}
-        - name: api-container
+        - name: {{ include "chart.fullname" . }}-container
           image: "{{ .Values.api.image.repository }}:{{ .Values.api.image.tag | default .Chart.AppVersion }}"
           imagePullPolicy: {{ .Values.api.image.imagePullPolicy }}
+          {{- with .Values.api.env }}
           env:
-            - name: LFAI_CONFIG_PATH
-              value: /config/
-            - name: LFAI_CONFIG_FILENAME
-              value: "*.toml"
-            - name: DEFAULT_EMBEDDINGS_MODEL
-              value: "{{ .Values.api.env.defaultEmbeddingsModel }}"
-            - name: PORT
-              value: "{{ .Values.api.port }}"
-            - name: SUPABASE_URL
-              value: "{{ .Values.supabase.env.url }}"
-            - name: SUPABASE_ANON_KEY
-              valueFrom:
-                secretKeyRef:
-                  name: supabase-bootstrap-jwt
-                  key: anon-key
-                  optional: true
+            {{- toYaml . | nindent 12 }}
+          {{- end }}
           ports:
-            - containerPort: {{ .Values.api.port }}
+            - containerPort: {{ .Values.api.service.port }}
           livenessProbe:
             httpGet:
               path: /healthz
-              port: {{ .Values.api.port }}
+              port: {{ .Values.api.service.port }}
             initialDelaySeconds: 10
             periodSeconds: 10
           readinessProbe:
             httpGet:
               path: /healthz
-              port: {{ .Values.api.port }}
+              port: {{ .Values.api.service.port }}
             initialDelaySeconds: 10
             periodSeconds: 10
           securityContext:
             {{- toYaml .Values.api.securityContext | nindent 12 }}
           volumeMounts:
-            - name: api-model
+            - name: {{ include "chart.fullname" . }}-model
               mountPath: /config
       volumes:
-        - name: api-model
+        - name: {{ include "chart.fullname" . }}-model
           emptyDir: {}
+      {{- with .Values.nodeSelector }}
+      nodeSelector:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with .Values.affinity }}
+      affinity:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with .Values.tolerations }}
+      tolerations:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}

@@ -1,9 +1,9 @@
-{{- if .Values.api.env.exposeAPI }}
+{{- if .Values.api.expose }}
 apiVersion: uds.dev/v1alpha1
 kind: Package
 metadata:
   name: {{ include "chart.fullname" . }}
-  namespace: {{ .Release.Namespace }}
+  namespace: {{ .Release.Namespace | default "leapfrogai" }}
   labels:
     {{- include "chart.labels" . | nindent 4 }}
 spec:
@@ -14,7 +14,7 @@ spec:
           {{- include "chart.selectorLabels" . | nindent 10 }}
         host: {{ include "chart.fullname" . }}
         gateway: tenant
-        port: {{ .Values.api.port }}
+        port: {{ .Values.api.service.port }}
 
     allow:
       - direction: Ingress

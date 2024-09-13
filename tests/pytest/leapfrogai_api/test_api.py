@@ -10,7 +10,8 @@ from fastapi.security import HTTPBearer
 from fastapi.testclient import TestClient
 from starlette.middleware.base import _CachedRequest
 from supabase import ClientOptions
-import leapfrogai_api.backend.types as lfai_types
+from leapfrogai_api.typedef.chat import ChatCompletionRequest, ChatMessage
+from leapfrogai_api.typedef.embeddings import CreateEmbeddingRequest
 from leapfrogai_api.main import app
 from leapfrogai_api.routers.supabase_session import init_supabase_client
 
@@ -209,7 +210,7 @@ def test_embedding(dummy_auth_middleware):
 
     with TestClient(app) as client:
         # Send request to client
-        embedding_request = lfai_types.CreateEmbeddingRequest(
+        embedding_request = CreateEmbeddingRequest(
             model="repeater",
             input="This is the embedding input text.",
         )
@@ -237,9 +238,9 @@ def test_chat_completion(dummy_auth_middleware):
     """Test the chat completion endpoint."""
     with TestClient(app) as client:
         input_content = "this is the chat completion input."
-        chat_completion_request = lfai_types.ChatCompletionRequest(
+        chat_completion_request = ChatCompletionRequest(
             model="repeater",
-            messages=[lfai_types.ChatMessage(role="user", content=input_content)],
+            messages=[ChatMessage(role="user", content=input_content)],
         )
         response = client.post(
             "/openai/v1/chat/completions", json=chat_completion_request.model_dump()
@@ -285,9 +286,9 @@ def test_stream_chat_completion(dummy_auth_middleware):
         input_content = "this is the stream chat completion input."
         input_length = len(input_content)
 
-        chat_completion_request = lfai_types.ChatCompletionRequest(
+        chat_completion_request = ChatCompletionRequest(
             model="repeater",
-            messages=[lfai_types.ChatMessage(role="user", content=input_content)],
+            messages=[ChatMessage(role="user", content=input_content)],
             stream=True,
         )
 
