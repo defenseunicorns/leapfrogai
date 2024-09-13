@@ -2,7 +2,7 @@ apiVersion: batch/v1
 kind: Job
 metadata:
   name: {{ include "chart.fullname" . }}-migrations-{{ .Values.api.migration.image.tag | default .Chart.AppVersion }}
-  namespace: {{ .Release.Namespace }}
+  namespace: {{ .Release.Namespace | default "leapfrogai" }}
   labels:
     {{- include "chart.labels" . | nindent 4 }}
 spec:
@@ -16,18 +16,12 @@ spec:
       containers:
         - name: supabase-cli
           image: "{{ .Values.api.migration.image.repository }}:{{ .Values.api.migration.image.tag | default .Chart.AppVersion }}"
+          {{- with .Values.api.migration.env }}
           env:
-            - name: POSTGRES_PASSWORD
-              valueFrom:
-                secretKeyRef:
-                  name: supabase-postgresql
-                  key: postgres-password
+            {{- toYaml . | nindent 12 }}
             - name: MIGRATION_NAMESPACE
-              value: "{{ .Release.Namespace }}"
-            - name: MIGRATION_SERVICE_NAME
-              value: "{{ .Values.api.migration.env.serviceName }}"
-            - name: MIGRATION_SERVICE_PORT
-              value: "{{ .Values.api.migration.env.servicePort }}"
+              value: "{{ default "leapfrogai" $.Release.Namespace }}"
+          {{- end }}
           command: ["/bin/sh"]
           args:
             - -c

@@ -50,6 +50,7 @@ RUN curl https://pyenv.run | bash && \
     echo 'eval "$(pyenv init -)"' >> ~/.bashrc && \
     echo 'eval "$(pyenv virtualenv-init -)"' >> ~/.bashrc
 
+
 # Set environment variables
 ENV PYENV_ROOT="/home/nonroot/.pyenv" \
     PATH="/home/nonroot/.pyenv/bin:$PATH"
@@ -130,6 +131,6 @@ ENV LAI_TRUST_REMOTE_CODE=${TRUST_REMOTE_CODE} \
 
 ENV PATH="/home/leapfrogai/.venv/bin:$PATH"
 
-EXPOSE 50051:50051
+EXPOSE 50051
 
 ENTRYPOINT ["python", "-m", "leapfrogai_sdk.cli", "--app-dir=packages/vllm/src/", "main:Model"]

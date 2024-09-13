@@ -1,11 +1,11 @@
 # see individual zarf packaging configuration for more variables and variable descriptions
 variables:
   text-embeddings:
-    gpu_class_name: "nvidia"  # Set to ensure the nvidia runtimeClass is present in case GPU limit is increased
+    gpu_runtime: "nvidia"  # Set to ensure the nvidia runtimeClass is present in case GPU limit is increased
     gpu_limit: 0  # runs on CPU until GPU limit is increased
 
   whisper:
-    gpu_class_name: "nvidia"  # Set to ensure the nvidia runtimeClass is present in case GPU limit is increased
+    gpu_runtime: "nvidia"  # Set to ensure the nvidia runtimeClass is present in case GPU limit is increased
     gpu_limit: 0  # runs on CPU until GPU limit is increased
 
   vllm:

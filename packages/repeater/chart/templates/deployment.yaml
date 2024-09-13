@@ -2,16 +2,14 @@ apiVersion: apps/v1
 kind: Deployment
 metadata:
   name: {{ include "chart.fullname" . }}
-  namespace: {{ .Release.Namespace }}
+  namespace: {{ .Release.Namespace | default "leapfrogai" }}
   labels:
     {{- include "chart.labels" . | nindent 4 }}
 spec:
-  strategy:
-    rollingUpdate:
-      maxUnavailable: 0
-    type: RollingUpdate
-  {{- if not .Values.autoscaling.enabled }}
   replicas: {{ .Values.replicaCount }}
+  {{- with .Values.strategy }}
+  strategy:
+    {{- toYaml . | nindent 8 }}
   {{- end }}
   selector:
     matchLabels:
@@ -23,6 +21,7 @@ spec:
         {{- toYaml . | nindent 8 }}
       {{- end }}
       labels:
+        app: lfai-{{ .Values.nameOverride }}
         {{- include "chart.selectorLabels" . | nindent 8 }}
     spec:
       securityContext:
