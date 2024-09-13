@@ -133,6 +133,7 @@ async def modify_run(
     thread_id: str, run_id: str, request: ModifyRunRequest, session: Session
 ) -> Run:
     """Modify a run."""
+
     crud_run = CRUDRun(db=session)
 
     if not (run := await crud_run.get(filters={"id": run_id, "thread_id": thread_id})):
