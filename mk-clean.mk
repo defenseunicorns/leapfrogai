@@ -23,7 +23,7 @@ clean-env:
 	rm -f .env.password
 
 clean-logs:
-	-rm -rf logs
+	-rm -rf ./.logs/
 
 clean-models:
 	-rm -rf ./packages/**/.model/
