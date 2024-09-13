@@ -2,9 +2,7 @@
 """Client and server classes corresponding to protobuf-defined services."""
 import grpc
 
-from leapfrogai_sdk.completion import (
-    completion_pb2 as leapfrogai__sdk_dot_completion_dot_completion__pb2,
-)
+from leapfrogai_sdk.completion import completion_pb2 as leapfrogai__sdk_dot_completion_dot_completion__pb2
 
 
 class CompletionServiceStub(object):
@@ -17,10 +15,10 @@ class CompletionServiceStub(object):
             channel: A grpc.Channel.
         """
         self.Complete = channel.unary_unary(
-            "/completion.CompletionService/Complete",
-            request_serializer=leapfrogai__sdk_dot_completion_dot_completion__pb2.CompletionRequest.SerializeToString,
-            response_deserializer=leapfrogai__sdk_dot_completion_dot_completion__pb2.CompletionResponse.FromString,
-        )
+                '/completion.CompletionService/Complete',
+                request_serializer=leapfrogai__sdk_dot_completion_dot_completion__pb2.CompletionRequest.SerializeToString,
+                response_deserializer=leapfrogai__sdk_dot_completion_dot_completion__pb2.CompletionResponse.FromString,
+                )
 
 
 class CompletionServiceServicer(object):
@@ -29,56 +27,43 @@ class CompletionServiceServicer(object):
     def Complete(self, request, context):
         """Missing associated documentation comment in .proto file."""
         context.set_code(grpc.StatusCode.UNIMPLEMENTED)
-        context.set_details("Method not implemented!")
-        raise NotImplementedError("Method not implemented!")
+        context.set_details('Method not implemented!')
+        raise NotImplementedError('Method not implemented!')
 
 
 def add_CompletionServiceServicer_to_server(servicer, server):
     rpc_method_handlers = {
-        "Complete": grpc.unary_unary_rpc_method_handler(
-            servicer.Complete,
-            request_deserializer=leapfrogai__sdk_dot_completion_dot_completion__pb2.CompletionRequest.FromString,
-            response_serializer=leapfrogai__sdk_dot_completion_dot_completion__pb2.CompletionResponse.SerializeToString,
-        ),
+            'Complete': grpc.unary_unary_rpc_method_handler(
+                    servicer.Complete,
+                    request_deserializer=leapfrogai__sdk_dot_completion_dot_completion__pb2.CompletionRequest.FromString,
+                    response_serializer=leapfrogai__sdk_dot_completion_dot_completion__pb2.CompletionResponse.SerializeToString,
+            ),
     }
     generic_handler = grpc.method_handlers_generic_handler(
-        "completion.CompletionService", rpc_method_handlers
-    )
+            'completion.CompletionService', rpc_method_handlers)
     server.add_generic_rpc_handlers((generic_handler,))
 
 
-# This class is part of an EXPERIMENTAL API.
+ # This class is part of an EXPERIMENTAL API.
 class CompletionService(object):
     """Missing associated documentation comment in .proto file."""
 
     @staticmethod
-    def Complete(
-        request,
-        target,
-        options=(),
-        channel_credentials=None,
-        call_credentials=None,
-        insecure=False,
-        compression=None,
-        wait_for_ready=None,
-        timeout=None,
-        metadata=None,
-    ):
-        return grpc.experimental.unary_unary(
-            request,
+    def Complete(request,
             target,
-            "/completion.CompletionService/Complete",
+            options=(),
+            channel_credentials=None,
+            call_credentials=None,
+            insecure=False,
+            compression=None,
+            wait_for_ready=None,
+            timeout=None,
+            metadata=None):
+        return grpc.experimental.unary_unary(request, target, '/completion.CompletionService/Complete',
             leapfrogai__sdk_dot_completion_dot_completion__pb2.CompletionRequest.SerializeToString,
             leapfrogai__sdk_dot_completion_dot_completion__pb2.CompletionResponse.FromString,
-            options,
-            channel_credentials,
-            insecure,
-            call_credentials,
-            compression,
-            wait_for_ready,
-            timeout,
-            metadata,
-        )
+            options, channel_credentials,
+            insecure, call_credentials, compression, wait_for_ready, timeout, metadata)
 
 
 class CompletionStreamServiceStub(object):
@@ -91,10 +76,10 @@ class CompletionStreamServiceStub(object):
             channel: A grpc.Channel.
         """
         self.CompleteStream = channel.unary_stream(
-            "/completion.CompletionStreamService/CompleteStream",
-            request_serializer=leapfrogai__sdk_dot_completion_dot_completion__pb2.CompletionRequest.SerializeToString,
-            response_deserializer=leapfrogai__sdk_dot_completion_dot_completion__pb2.CompletionResponse.FromString,
-        )
+                '/completion.CompletionStreamService/CompleteStream',
+                request_serializer=leapfrogai__sdk_dot_completion_dot_completion__pb2.CompletionRequest.SerializeToString,
+                response_deserializer=leapfrogai__sdk_dot_completion_dot_completion__pb2.CompletionResponse.FromString,
+                )
 
 
 class CompletionStreamServiceServicer(object):
@@ -103,53 +88,40 @@ class CompletionStreamServiceServicer(object):
     def CompleteStream(self, request, context):
         """Missing associated documentation comment in .proto file."""
         context.set_code(grpc.StatusCode.UNIMPLEMENTED)
-        context.set_details("Method not implemented!")
-        raise NotImplementedError("Method not implemented!")
+        context.set_details('Method not implemented!')
+        raise NotImplementedError('Method not implemented!')
 
 
 def add_CompletionStreamServiceServicer_to_server(servicer, server):
     rpc_method_handlers = {
-        "CompleteStream": grpc.unary_stream_rpc_method_handler(
-            servicer.CompleteStream,
-            request_deserializer=leapfrogai__sdk_dot_completion_dot_completion__pb2.CompletionRequest.FromString,
-            response_serializer=leapfrogai__sdk_dot_completion_dot_completion__pb2.CompletionResponse.SerializeToString,
-        ),
+            'CompleteStream': grpc.unary_stream_rpc_method_handler(
+                    servicer.CompleteStream,
+                    request_deserializer=leapfrogai__sdk_dot_completion_dot_completion__pb2.CompletionRequest.FromString,
+                    response_serializer=leapfrogai__sdk_dot_completion_dot_completion__pb2.CompletionResponse.SerializeToString,
+            ),
     }
     generic_handler = grpc.method_handlers_generic_handler(
-        "completion.CompletionStreamService", rpc_method_handlers
-    )
+            'completion.CompletionStreamService', rpc_method_handlers)
     server.add_generic_rpc_handlers((generic_handler,))
 
 
-# This class is part of an EXPERIMENTAL API.
+ # This class is part of an EXPERIMENTAL API.
 class CompletionStreamService(object):
     """Missing associated documentation comment in .proto file."""
 
     @staticmethod
-    def CompleteStream(
-        request,
-        target,
-        options=(),
-        channel_credentials=None,
-        call_credentials=None,
-        insecure=False,
-        compression=None,
-        wait_for_ready=None,
-        timeout=None,
-        metadata=None,
-    ):
-        return grpc.experimental.unary_stream(
-            request,
+    def CompleteStream(request,
             target,
-            "/completion.CompletionStreamService/CompleteStream",
+            options=(),
+            channel_credentials=None,
+            call_credentials=None,
+            insecure=False,
+            compression=None,
+            wait_for_ready=None,
+            timeout=None,
+            metadata=None):
+        return grpc.experimental.unary_stream(request, target, '/completion.CompletionStreamService/CompleteStream',
             leapfrogai__sdk_dot_completion_dot_completion__pb2.CompletionRequest.SerializeToString,
             leapfrogai__sdk_dot_completion_dot_completion__pb2.CompletionResponse.FromString,
-            options,
-            channel_credentials,
-            insecure,
-            call_credentials,
-            compression,
-            wait_for_ready,
-            timeout,
-            metadata,
-        )
+            options, channel_credentials,
+            insecure, call_credentials, compression, wait_for_ready, timeout, metadata)
