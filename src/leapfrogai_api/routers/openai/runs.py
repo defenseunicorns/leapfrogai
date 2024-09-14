@@ -57,7 +57,7 @@ async def create_run(
     try:
         return await Composer().generate_response(
             request=request,
-            existing_thread=existing_thread,
+            new_thread=existing_thread,
             new_run=new_run,
             session=session,
         )
@@ -86,7 +86,7 @@ async def create_thread_and_run(
     try:
         return await Composer().generate_response(
             request=request,
-            existing_thread=new_thread,
+            new_thread=new_thread,
             new_run=new_run,
             session=session,
         )
@@ -133,6 +133,7 @@ async def modify_run(
     thread_id: str, run_id: str, request: ModifyRunRequest, session: Session
 ) -> Run:
     """Modify a run."""
+
     crud_run = CRUDRun(db=session)
 
     if not (run := await crud_run.get(filters={"id": run_id, "thread_id": thread_id})):

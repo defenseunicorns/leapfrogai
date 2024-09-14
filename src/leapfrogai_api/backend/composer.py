@@ -358,7 +358,7 @@ class Composer(BaseModel):
     async def generate_response(
         self,
         request: RunCreateParamsRequest,
-        existing_thread,
+        new_thread: Thread,
         new_run: Run,
         session: Session,
     ):
@@ -374,7 +374,7 @@ class Composer(BaseModel):
                 request=request,
                 session=session,
                 initial_messages=initial_messages,
-                thread=existing_thread,
+                thread=new_thread,
                 ending_messages=ending_messages,
                 run_id=new_run.id,
                 additional_instructions=request.additional_instructions,
@@ -385,7 +385,7 @@ class Composer(BaseModel):
             await self.generate_message_for_thread(
                 request=request,
                 session=session,
-                thread=existing_thread,
+                thread=new_thread,
                 run_id=new_run.id,
                 additional_instructions=request.additional_instructions,
             )
