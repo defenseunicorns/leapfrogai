@@ -358,7 +358,7 @@ class Composer(BaseModel):
     async def generate_response(
         self,
         request: RunCreateParamsRequest,
-        new_thread,
+        new_thread: Thread,
         new_run: Run,
         session: Session,
     ):
