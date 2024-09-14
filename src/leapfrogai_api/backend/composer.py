@@ -145,10 +145,8 @@ class Composer(BaseModel):
                 ] = await query_service.query_rag(
                     query=query_message.content,
                     vector_store_id=vector_store_id,
-                )
-                rag_responses: SearchResponse = SearchResponse(
-                    data=rag_results_raw.data
-                )
+                )  # TODO: We get the relevant chunk data here, but then we don't use it. We want to add the id to the metadata of the message
+                rag_responses: SearchResponse = rag_results_raw.data
 
                 # Insert the RAG response messages just before the user's query
                 for rag_response in rag_responses.data:

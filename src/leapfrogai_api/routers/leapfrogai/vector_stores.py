@@ -38,7 +38,7 @@ async def search(
         k=k,
     )
 
-    return SearchResponse(data=result.data)
+    return result.data
 
 
 @router.get("/vector/{vector_id}")
