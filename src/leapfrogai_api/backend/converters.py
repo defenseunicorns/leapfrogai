@@ -4,6 +4,7 @@ from typing import Iterable
 from openai.types.beta import AssistantStreamEvent
 from openai.types.beta.assistant_stream_event import ThreadMessageDelta
 from openai.types.beta.threads.file_citation_annotation import FileCitation
+from openai.types.beta.threads.file_path_annotation import FilePathAnnotation
 from openai.types.beta.threads import (
     MessageContentPartParam,
     MessageContent,
@@ -16,6 +17,8 @@ from openai.types.beta.threads import (
     TextDelta,
     FileCitationAnnotation,
 )
+
+from leapfrogai_api.typedef.vectorstores.search_types import SearchResponse
 
 
 def from_assistant_stream_event_to_str(stream_event: AssistantStreamEvent):
@@ -44,23 +47,29 @@ def from_content_param_to_content(
         )
 
 
-def from_text_to_message(text: str, file_ids: list[str]) -> Message:
+def from_text_to_message(text: str, search_responses: SearchResponse) -> Message:
     all_file_ids: str = ""
+    all_vector_ids: list[str] = []
+    annotations: list[FileCitationAnnotation | FilePathAnnotation] = []
 
-    all_file_ids = " ".join([f"[{file_id}]" for file_id in file_ids])
+    for i, search_response in search_responses:
+        all_file_ids += f"[{search_response.file_id}]"
+        all_vector_ids.append(search_response.vector_id)
+        annotations.append(
+            FileCitationAnnotation(
+                text=f"【{i}:0†source】",
+                file_citation=FileCitation(
+                    file_id=search_response.file_id, quote=search_response.content
+                ),
+                start_index=0,
+                end_index=0,
+                type="file_citation",
+            )
+        )
 
     message_content: TextContentBlock = TextContentBlock(
         text=Text(
-            annotations=[
-                FileCitationAnnotation(
-                    text=f"【{i}:0†source】",  # document_index:section_index
-                    file_citation=FileCitation(file_id=file_id, quote=""),
-                    start_index=0,
-                    end_index=0,
-                    type="file_citation",
-                )
-                for i, file_id in enumerate(file_ids)
-            ],
+            annotations=annotations,
             value=text + all_file_ids,
         ),
         type="text",
@@ -74,7 +83,9 @@ def from_text_to_message(text: str, file_ids: list[str]) -> Message:
         thread_id="",
         content=[message_content],
         role="assistant",
-        metadata=None,
+        metadata={
+            "vector_ids": all_vector_ids,
+        },
     )
 
     return new_message
