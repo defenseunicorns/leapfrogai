@@ -41,7 +41,6 @@ generate-hashes = true
 [tool.ruff]
 target-version = "py311"
 fix = true
-prefer-double = true
 
 [tool.pytest.ini_options]
 addopts = ["--import-mode=importlib"]
