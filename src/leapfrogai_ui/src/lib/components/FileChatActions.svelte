@@ -1,5 +1,5 @@
 <script lang="ts">
-  import { Button } from 'flowbite-svelte';
+  import { Button, Spinner } from 'flowbite-svelte';
   import { shortenFileName } from '$helpers/stringHelpers';
   import { saveMessage } from '$helpers/chatHelpers';
   import type { FileMetadata, LFFile } from '$lib/types/files';
@@ -11,6 +11,7 @@
   export let uploadedFiles: LFFile[];
   export let attachedFileMetadata: FileMetadata[];
   export let threadId: string;
+  export let translating: boolean;
 
   $: audioFiles = attachedFileMetadata.filter((file) => file.type.startsWith('audio/'));
 
@@ -18,6 +19,7 @@
     'rounded text-xs px-2.5 py-0.5 text-gray-500 bg-gray-100 hover:bg-gray-400 dark:bg-gray-100 dark:text-gray-900 dark:hover:bg-gray-300 ';
 
   const translateFile = async (fileMetadata: FileMetadata) => {
+    translating = true;
     await threadsStore.setSendingBlocked(true);
     try {
       if (!threadId) {
@@ -42,10 +44,7 @@
       // TODO - need to add to $chatMessages?
 
       // translate
-      console.log('files', uploadedFiles);
-      console.log('file id', fileMetadata.id);
       const file = uploadedFiles.find((f) => f.id === fileMetadata.id);
-      console.log('found file', file);
       if (!file) throw Error('File not found');
 
       const formData = new FormData();
@@ -55,7 +54,6 @@
         body: formData
       });
       const translateResJson = await translateRes.json();
-      console.log('translateResJson', translateResJson);
 
       // save translation response
       const translationMessage = await saveMessage({
@@ -64,12 +62,16 @@
         role: 'assistant'
       });
       await threadsStore.addMessageToStore(translationMessage);
+
+      uploadedFiles = uploadedFiles.filter((file) => file.id !== fileMetadata.id);
+      attachedFileMetadata = attachedFileMetadata.filter((file) => file.id !== fileMetadata.id);
     } catch (e) {
       console.error(e);
       toastStore.addToast(FILE_TRANSLATION_ERROR());
       await threadsStore.setSendingBlocked(false);
     }
     await threadsStore.setSendingBlocked(false);
+    translating = false;
   };
 </script>
 
@@ -80,8 +82,18 @@
     : 'hidden'}
 >
   {#each audioFiles as file}
-    <Button color="dark" class={customBtnClass} on:click={() => translateFile(file)}
-      >{`Translate ${shortenFileName(file.name)}`}</Button
+    <Button
+      color="dark"
+      class={customBtnClass}
+      on:click={() => translateFile(file)}
+      disabled={translating}
+    >
+      {#if translating}
+        <Spinner class="me-3" size="4" color="white" /><span
+          >{`Translating ${shortenFileName(file.name)}`}</span
+        >
+      {:else}
+        {`Translate ${shortenFileName(file.name)}`}{/if}</Button
     >
   {/each}
 </div>

@@ -1,4 +1,5 @@
 import type { LFAssistant } from '$lib/types/assistants';
+import {env} from "$env/dynamic/public";
 
 export const MAX_LABEL_SIZE = 100;
 export const DEFAULT_ASSISTANT_TEMP = 0.2;
@@ -13,9 +14,12 @@ export const ASSISTANTS_NAME_MAX_LENGTH = 256;
 export const ASSISTANTS_DESCRIPTION_MAX_LENGTH = 512;
 export const ASSISTANTS_INSTRUCTIONS_MAX_LENGTH = 256000;
 
+
+
 // 1 token is approx 4 characters, whenever our max context window changes, this value will need to change
 // leave a small buffer to prevent overflowing context (ex. 32k context window, set here to 31.750k)
 export const APPROX_MAX_CHARACTERS = 31750;
+
 
 // TODO - once using API to save, these defaults should be returned by the POST call and would not need to be supplied
 // We only need to default the model and tools
@@ -112,3 +116,6 @@ export const INVALID_AUDIO_FILE_TYPE_ERROR_TEXT = `Invalid file type, accepted t
 export const NO_SELECTED_ASSISTANT_ID = 'noSelectedAssistantId';
 
 export const FILE_UPLOAD_PROMPT = "The following are the user's files: ";
+
+export const ADJUSTED_MAX_CHARACTERS =
+    APPROX_MAX_CHARACTERS - Number(env.PUBLIC_MESSAGE_LENGTH_LIMIT) - FILE_UPLOAD_PROMPT.length - 2;

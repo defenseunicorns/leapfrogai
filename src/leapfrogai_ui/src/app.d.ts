@@ -9,7 +9,9 @@ import type { APIKeyRow } from '$lib/types/apiKeys';
 
 declare global {
   namespace App {
-    // interface Error {}
+    interface Error {
+      id?: string;
+    }
     interface Locals {
       supabase: SupabaseClient;
       safeGetSession: () => Promise<{ session: Session | null; user: User | null }>;

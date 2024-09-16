@@ -30,7 +30,7 @@
   import FileChatActions from '$components/FileChatActions.svelte';
 
   export let data;
-  $: console.log('attachedFileMetadata', attachedFileMetadata)
+  $: console.log('$chatMessages', $chatMessages)
 
   /** LOCAL VARS **/
   let lengthInvalid: boolean; // bound to child LFTextArea
@@ -408,7 +408,7 @@
           >
         {/if}
       </div>
-      <FileChatActions {attachedFileMetadata} threadId={data.thread?.id} bind:uploadedFiles/>
+      <FileChatActions bind:attachedFileMetadata threadId={data.thread?.id} bind:uploadedFiles/>
     </div>
   </div>
   <PoweredByDU />

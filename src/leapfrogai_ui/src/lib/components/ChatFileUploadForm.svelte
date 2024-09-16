@@ -1,5 +1,5 @@
 <script lang="ts">
-  import { ACCEPTED_FILE_TYPES, MAX_NUM_FILES_UPLOAD } from '$constants';
+  import { ACCEPTED_FILE_TYPES, ADJUSTED_MAX_CHARACTERS, MAX_NUM_FILES_UPLOAD } from '$constants';
   import { PaperClipOutline } from 'flowbite-svelte-icons';
   import { v4 as uuidv4 } from 'uuid';
   import LFFileUploadBtn from '$components/LFFileUploadBtn.svelte';
@@ -11,7 +11,9 @@
     ERROR_PROCESSING_FILE_MSG_TOAST,
     MAX_NUM_FILES_UPLOAD_MSG_TOAST
   } from '$constants/toastMessages';
-  import type {LFFile} from "$lib/types/files";
+  import type { LFFile } from '$lib/types/files';
+  import { ERROR_UPLOADING_FILE_MSG, FILE_CONTEXT_TOO_LARGE_ERROR_MSG } from '$constants/errors';
+  import { shortenFileName } from '$helpers/stringHelpers';
 
   export let form;
   export let uploadingFiles;
@@ -27,11 +29,7 @@
     });
   };
 
-  const {
-    form: storeForm,
-    enhance,
-    submit
-  } = superForm(form, {
+  const { enhance, submit } = superForm(form, {
     validators: yup(filesSchema),
     invalidateAll: false,
     onResult({ result, cancel }) {
@@ -48,6 +46,87 @@
       uploadingFiles = false;
     }
   });
+
+  const convertFiles = (files: LFFile[]) => {
+    const promises = [];
+    const parsedFiles = [];
+
+    for (const file of files) {
+      if (file.type.startsWith('audio/')) {
+        parsedFiles.push({
+          id: file.id,
+          name: shortenFileName(file.name),
+          type: file.type,
+          text: 'Audio file contents were not processed',
+          status: 'complete'
+        });
+      } else {
+        const formData = new FormData();
+        formData.append('file', file);
+
+        const promise = fetch('/api/files/parse-text', {
+          method: 'POST',
+          body: formData
+        })
+          .then(async (response) => {
+            if (!response.ok) {
+              return {
+                id: file.id,
+                name: shortenFileName(file.name),
+                type: file.type,
+                text: '',
+                status: 'error',
+                errorText: ERROR_UPLOADING_FILE_MSG
+              };
+            }
+
+            const result = await response.json();
+            return {
+              id: file.id,
+              name: shortenFileName(file.name),
+              type: file.type,
+              text: result.text,
+              status: 'complete'
+            };
+          })
+          .catch(() => {
+            return {
+              id: file.id,
+              name: shortenFileName(file.name),
+              type: file.type,
+              text: '',
+              status: 'error',
+              errorText: ERROR_UPLOADING_FILE_MSG
+            };
+          });
+
+        promises.push(promise);
+      }
+    }
+
+    Promise.all(promises).then((results) => {
+      parsedFiles.push(...results);
+      const totalTextLength = parsedFiles.reduce(
+        (acc, fileMetadata) => acc + JSON.stringify(fileMetadata).length,
+        0
+      );
+
+      // If this file adds too much text (larger than allowed max), remove the text and set to error status
+      if (totalTextLength > ADJUSTED_MAX_CHARACTERS) {
+        let lastFile = parsedFiles[parsedFiles.length - 1];
+        lastFile = {
+          id: lastFile.id,
+          name: shortenFileName(lastFile.name),
+          type: lastFile.type,
+          text: '',
+          status: 'error',
+          errorText: FILE_CONTEXT_TOO_LARGE_ERROR_MSG
+        };
+      }
+
+      attachedFileMetadata = parsedFiles;
+    });
+  };
 </script>
 
 <form method="POST" enctype="multipart/form-data" use:enhance>
@@ -77,10 +156,9 @@
           }
         ];
       }
-      $storeForm.files = e.detail;
-      console.log("$storeForm.files", $storeForm.files)
+
       uploadedFiles = [...e.detail];
-      submit(e.detail);
+      convertFiles(e.detail);
     }}
     accept={ACCEPTED_FILE_TYPES}
     disabled={uploadingFiles}
