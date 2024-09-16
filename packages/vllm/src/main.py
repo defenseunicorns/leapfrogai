@@ -97,14 +97,7 @@ def get_backend_configs():
         allow_all=True,
         prefix="LFAI_",
         remap={
-            "model_source": "model.source",
-            "max_context_length": "max_context_length",
             "stop_tokens": "stop_tokens",
-            "prompt_format_chat_system": "prompt_format.chat.system",
-            "prompt_format_chat_assistant": "prompt_format.chat.assistant",
-            "prompt_format_chat_user": "prompt_format.chat.user",
-            "prompt_format_defaults_top_p": "prompt_format.defaults.top_p",
-            "prompt_format_defaults_top_k": "prompt_format.defaults.top_k",
         },
     )
 

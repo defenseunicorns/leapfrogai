@@ -39,6 +39,14 @@ uds zarf package deploy packages/vllm/zarf-package-vllm-*-dev.tar.zst --confirm
 
 ### Local Development
 
+The [config.yaml](./config.yaml) and [.env.example](./.env.example) must be modified if the model has changed away from the default.
+
+Create a `.env` file based on the [.env.example](./.env.example):
+
+```bash
+cp .env.example .env
+```
+
 To run the vllm backend locally:
 
 > [!IMPORTANT]

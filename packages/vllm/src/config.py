@@ -74,12 +74,13 @@ class DownloadOptions(BaseConfig):
     )
 
 
+# vLLM specific runtime configuration options
 class AppConfig(BaseConfig):
     backend_options: ConfigOptions
     CONFIG_SOURCES = [
         EnvSource(
             allow_all=True,
-            prefix="LFAI_",
+            prefix="VLLM_",
             remap={
                 "tensor_parallel_size": "backend_options.tensor_parallel_size",
                 "trust_remote_code": "backend_options.trust_remote_code",

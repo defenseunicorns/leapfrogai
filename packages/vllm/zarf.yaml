@@ -19,7 +19,7 @@ constants:
     value: "/data/.model/"
 
 variables:
-  # vLLM runtime configuration
+  # vLLM runtime configuration (usually influenced by .env in local development)
   - name: TRUST_REMOTE_CODE
     description: "If True, allows the execution of code within the model files directory"
     default: "True"
@@ -47,7 +47,7 @@ variables:
   - name: QUANTIZATION
     description: "If None, allows vLLM to automatically detect via model files and configuration"
     default: "None"
-  # LeapfrogAI SDK runtime configuration
+  # LeapfrogAI SDK runtime configuration (usually influenced by config.yaml in development)
   - name: MAX_CONTEXT_LENGTH
     description: "The maximum number of tokens the model can process in a single input before the inferencing engine's overflow strategy is used"
     default: "32768"
@@ -132,5 +132,5 @@ components:
           # NOTE: This assumes python is installed and in $PATH and 'huggingface_hub[cli,hf_transfer]' has been installed
           - cmd: "python src/model_download.py"
             env:
-              - LFAI_REPO_ID=###ZARF_CONST_MODEL_REPO_ID###
-              - LFAI_REVISION=###ZARF_CONST_MODEL_REVISION###
+              - LFAI_REPO_ID="###ZARF_CONST_MODEL_REPO_ID###"
+              - LFAI_REVISION="###ZARF_CONST_MODEL_REVISION###"
