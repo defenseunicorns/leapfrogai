@@ -18,6 +18,9 @@ constants:
   - name: MODEL_PATH
     description: "Defines the location of the Zarf Injected model files in the vLLM container"
     value: "###ZARF_PKG_TMPL_MODEL_PATH###"
+  - name: NAME_OVERRIDE
+    description: "Provide an override for the name of the deployment (e.g., the model name)"
+    value: "###ZARF_PKG_TMPL_NAME_OVERRIDE###"
 
 variables:
   # vLLM runtime configuration (usually influenced by .env in local development)
@@ -84,9 +87,6 @@ variables:
     description: "The GPU runtime name for the model inferencing."
     default: "nvidia"
     pattern: "^(nvidia)?$"
-  - name: NAME_OVERRIDE
-    description: "Provide an override for the name of the deployment (e.g., the model name)"
-    default: "vllm"
   - name: PVC_SIZE
     description: "Size of the PVC used for model storage."
     default: "15Gi"
@@ -105,10 +105,10 @@ components:
     only:
       flavor: upstream
     charts:
-      - name: "###ZARF_VAR_NAME_OVERRIDE###-model"
+      - name: "###ZARF_PKG_TMPL_NAME_OVERRIDE###-model"
         namespace: leapfrogai
         localPath: chart
-        releaseName: "###ZARF_VAR_NAME_OVERRIDE###-model"
+        releaseName: "###ZARF_PKG_TMPL_NAME_OVERRIDE###-model"
         # x-release-please-start-version
         version: 0.12.2
         # x-release-please-end
@@ -122,10 +122,10 @@ components:
       - source: ".model/"
         target:
           namespace: "leapfrogai"
-          selector: "app=lfai-###ZARF_VAR_NAME_OVERRIDE###"
+          selector: "app=lfai-###ZARF_PKG_TMPL_NAME_OVERRIDE###"
           container: "data-loader"
           # location in the container for injection of the model files
-          path: "###ZARF_CONST_MODEL_PATH###"
+          path: "###ZARF_PKG_TMPL_MODEL_PATH###"
         compress: true
     actions:
       onCreate:
