@@ -13,20 +13,20 @@ Please first see the pre-requisites listed on the LeapfrogAI documentation websi
 
 It is **_HIGHLY RECOMMENDED_** that PyEnv be installed on your machine, and a new virtual environment is created for every new development branch.
 
-Follow the installation instructions outlined in the [pyenv](https://github.com/pyenv/pyenv?tab=readme-ov-file#installation) repository to install Python 3.11.6:
+Follow the installation instructions outlined in the [pyenv](https://github.com/pyenv/pyenv?tab=readme-ov-file#installation) repository to install Python 3.11.9:
 
   ```bash
   # install the correct python version
-  pyenv install 3.11.6
+  pyenv install 3.11.9
 
   # create a new virtual environment named "leapfrogai"
-  pyenv virtualenv 3.11.6 leapfrogai
+  pyenv virtualenv 3.11.9 leapfrogai
 
   # activate the virtual environment
   pyenv activate leapfrogai
   ```
 
-If your installation process completes successfully but indicates missing packages such as `sqlite3`, execute the following command to install the required packages then proceed with the reinstallation of Python 3.11.6:
+If your installation process completes successfully but indicates missing packages such as `sqlite3`, execute the following command to install the required packages then proceed with the reinstallation of Python 3.11.9:
 
   ```bash
   sudo apt-get install build-essential zlib1g-dev libffi-dev \

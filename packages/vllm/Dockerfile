@@ -6,7 +6,7 @@ FROM nvidia/cuda:12.2.2-devel-ubuntu22.04 AS builder
 # set SDK location
 # set the pyenv and Python versions
 ARG SDK_DEST=src/leapfrogai_sdk/build \
-    PYTHON_VERSION=3.11.6 \
+    PYTHON_VERSION=3.11.9 \
     PYENV_GIT_TAG=v2.4.8
 
 # use root user for deps installation and nonroot user creation
@@ -54,10 +54,10 @@ RUN curl https://pyenv.run | bash && \
 ENV PYENV_ROOT="/home/nonroot/.pyenv" \
     PATH="/home/nonroot/.pyenv/bin:$PATH"
 
-# Install Python 3.11.6, set it as global, and create a venv
+# Install Python 3.11.9, set it as global, and create a venv
 RUN . ~/.bashrc && \
-    PYTHON_CONFIGURE_OPTS="--enable-shared" pyenv install 3.11.6 && \
-    pyenv global 3.11.6 && \
+    PYTHON_CONFIGURE_OPTS="--enable-shared" pyenv install 3.11.9 && \
+    pyenv global 3.11.9 && \
     pyenv exec python -m venv .venv
 
 # set path to venv python
@@ -90,7 +90,7 @@ COPY --from=sdk --chown=nonroot:nonroot /leapfrogai/${SDK_DEST} ./${SDK_DEST}
 COPY --from=builder --chown=nonroot:nonroot /home/leapfrogai/.venv /home/leapfrogai/.venv
 COPY --from=builder --chown=nonroot:nonroot /home/leapfrogai/packages/vllm/src /home/leapfrogai/packages/vllm/src
 # copy-in python binaries
-COPY --from=builder --chown=nonroot:nonroot /home/nonroot/.pyenv/versions/3.11.6/ /home/nonroot/.pyenv/versions/3.11.6/
+COPY --from=builder --chown=nonroot:nonroot /home/nonroot/.pyenv/versions/3.11.9/ /home/nonroot/.pyenv/versions/3.11.9/
 
 # remove vLLM callback to stats server
 ENV VLLM_NO_USAGE_STATS=1
