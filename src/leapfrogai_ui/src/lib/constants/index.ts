@@ -4,6 +4,7 @@ export const MAX_LABEL_SIZE = 100;
 export const DEFAULT_ASSISTANT_TEMP = 0.2;
 export const MAX_AVATAR_SIZE = 5000000;
 export const MAX_FILE_SIZE = 512000000;
+export const MAX_AUDIO_FILE_SIZE = 25000000;
 export const MAX_FILE_NAME_SIZE = 27;
 export const MAX_NUM_FILES_UPLOAD = 50; // for chat completion
 
@@ -100,6 +101,7 @@ export const FILE_TYPE_MAP = {
 export const NO_FILE_ERROR_TEXT = 'Please upload an image or select a pictogram';
 export const AVATAR_FILE_SIZE_ERROR_TEXT = `File must be less than ${MAX_AVATAR_SIZE / 1000000} MB`;
 export const FILE_SIZE_ERROR_TEXT = `File must be less than ${MAX_FILE_SIZE / 1000000} MB`;
+export const AUDIO_FILE_SIZE_ERROR_TEXT = `Audio file must be less than ${MAX_AUDIO_FILE_SIZE / 1000000} MB`;
 export const INVALID_FILE_TYPE_ERROR_TEXT = `Invalid file type, accepted types are: ${ACCEPTED_FILE_TYPES.join(', ')}`;
 export const INVALID_AUDIO_FILE_TYPE_ERROR_TEXT = `Invalid file type, accepted types are: ${ACCEPTED_AUDIO_FILE_TYPES.join(', ')}`;
 export const NO_SELECTED_ASSISTANT_ID = 'noSelectedAssistantId';

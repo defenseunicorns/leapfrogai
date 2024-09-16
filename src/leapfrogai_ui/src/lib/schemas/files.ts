@@ -2,9 +2,11 @@ import { array, mixed, object, string, ValidationError } from 'yup';
 import {
   ACCEPTED_AUDIO_FILE_MIME_TYPES,
   ACCEPTED_MIME_TYPES,
+  AUDIO_FILE_SIZE_ERROR_TEXT,
   FILE_SIZE_ERROR_TEXT,
   INVALID_AUDIO_FILE_TYPE_ERROR_TEXT,
   INVALID_FILE_TYPE_ERROR_TEXT,
+  MAX_AUDIO_FILE_SIZE,
   MAX_FILE_SIZE
 } from '$constants';
 
@@ -71,12 +73,12 @@ export const fileSchema = object({
 export const audioFileSchema = object({
   file: mixed<File>()
     .test('fileType', 'File is required.', (value) => value == null || value instanceof File)
-    .test('fileSize', FILE_SIZE_ERROR_TEXT, (value) => {
+    .test('fileSize', AUDIO_FILE_SIZE_ERROR_TEXT, (value) => {
       if (value == null) {
         return true;
       }
-      if (value.size > MAX_FILE_SIZE) {
-        return new ValidationError(FILE_SIZE_ERROR_TEXT);
+      if (value.size > MAX_AUDIO_FILE_SIZE) {
+        return new ValidationError(AUDIO_FILE_SIZE_ERROR_TEXT);
       }
       return true;
     })
