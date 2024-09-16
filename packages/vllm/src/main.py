@@ -3,7 +3,6 @@ import logging
 import os
 import queue
 import random
-import sys
 import threading
 import time
 from typing import Any, Dict, AsyncGenerator
@@ -16,15 +15,8 @@ from vllm.outputs import RequestOutput
 from vllm.utils import random_uuid
 
 from config import AppConfig
-from leapfrogai_sdk import (
-    BackendConfig,
-    ChatCompletionRequest,
-    CompletionRequest,
-)
-from leapfrogai_sdk.llm import (
-    GenerationConfig,
-    LLM,
-)
+from leapfrogai_sdk import BackendConfig
+from leapfrogai_sdk.llm import GenerationConfig, LLM
 
 load_dotenv()
 
@@ -82,27 +74,6 @@ class RandomAsyncIterator:
             pass  # If the iterable is not found, ignore the error
 
 
-def get_config_from_request(request: ChatCompletionRequest | CompletionRequest):
-    return GenerationConfig(
-        max_new_tokens=request.max_new_tokens,
-        temperature=request.temperature,
-        top_k=request.top_k,
-        top_p=request.top_p,
-        do_sample=request.do_sample,
-        n=request.n,
-        stop=list(request.stop),
-        repetition_penalty=request.repetition_penalty,
-        presence_penalty=request.presence_penalty,
-        best_of=str(request.best_of),
-        logit_bias=request.logit_bias,
-        return_full_text=request.return_full_text,
-        truncate=request.truncate,
-        typical_p=request.typical_p,
-        watermark=request.watermark,
-        seed=request.seed,
-    )
-
-
 @LLM
 class Model:
     """Implements an LLM model with concurrent output generation and management."""
@@ -123,13 +94,6 @@ class Model:
             else AppConfig().backend_options.quantization
         )
 
-        # Ray permissions for the engine and worker are set via environment variables and not AsyncLLMEngine arguments
-        if AppConfig().backend_options.engine_use_ray:
-            os.environ["VLLM_ALLOW_ENGINE_USE_RAY"] = "1"
-
-        if AppConfig().backend_options.worker_use_ray:
-            os.environ["VLLM_ALLOW_WORKER_USE_RAY"] = "1"
-
         self.engine_args = AsyncEngineArgs(
             # Taken from the LFAI SDK general LLM configuration
             model=BackendConfig().model.source,
@@ -138,9 +102,9 @@ class Model:
             # Taken from the vLLM-specific configuration
             enforce_eager=AppConfig().backend_options.enforce_eager,
             quantization=quantization,
+            tensor_parallel_size=AppConfig().backend_options.tensor_parallel_size,
             engine_use_ray=AppConfig().backend_options.engine_use_ray,
             worker_use_ray=AppConfig().backend_options.worker_use_ray,
-            tensor_parallel_size=AppConfig().backend_options.tensor_parallel_size,
             gpu_memory_utilization=AppConfig().backend_options.gpu_memory_utilization,
             trust_remote_code=AppConfig().backend_options.trust_remote_code,
         )
@@ -206,22 +170,17 @@ class Model:
         """Initiate a response generation for the given prompt and configuration, adding the result to the iterator
         pool."""
 
-        request = get_config_from_request(self.request)
-
-        # Collect parameters from request, with default fallbacks defined in the LeapfrogAI SDK BackendConfig (config.yaml, ConfigMap)
+        # Collect LeapfrogAI SDK-defined parameters not aligned with vLLM SamplingParams
         params = {
-            "temperature": request.get("temperature", config.temperature),
-            "top_p": clamp(
-                request.get("top_p", config.top_p), 0.0 + sys.float_info.epsilon, 1.0
-            ),
-            "top_k": request.get("top_k", config.top_k if config.top_k >= 1 else -1),
-            "stop": self.backend_config.stop_tokens,
-            "max_tokens": request.get("max_tokens", config.max_new_tokens),
-            "skip_special_tokens": request.get("skip_special_tokens", False),
+            "max_tokens": getattr(config, "max_new_tokens", 8192),
         }
 
-        # Optional parameters that come from the request object and should be gracefully omitted if not present
+        # Collect LeapfrogAI SDK-defined parameters directly aligned with vLLM SamplingParams
         optional_params = [
+            "temperature",
+            "top_p",
+            "top_k",
+            "stop",
             "n",
             "repetition_penalty",
             "presence_penalty",
@@ -233,12 +192,13 @@ class Model:
             "seed",
         ]
 
-        # Add only the optional parameters that exist in the request
+        # Add only the parameters that exist in the request
+        # vLLM will provide defaults for the rest, if not specified
         for param in optional_params:
-            if param in request:
-                params[param] = request[param]
+            if param in config:
+                params[param] = config[param]
 
-        # Pass the collected params to SamplingParams
+        # Pass the collected params to vLLM SamplingParams
         sampling_params = SamplingParams(**params)
 
         logger.info(f"Begin generation for request {request_id}")
