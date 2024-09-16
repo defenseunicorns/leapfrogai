@@ -6,7 +6,7 @@ export const MAX_AVATAR_SIZE = 5000000;
 export const MAX_FILE_SIZE = 512000000;
 export const MAX_AUDIO_FILE_SIZE = 25000000;
 export const MAX_FILE_NAME_SIZE = 27;
-export const MAX_NUM_FILES_UPLOAD = 50; // for chat completion
+export const MAX_NUM_FILES_UPLOAD = 10; // for chat completion
 
 // PER OPENAI SPEC
 export const ASSISTANTS_NAME_MAX_LENGTH = 256;
@@ -38,18 +38,6 @@ export const assistantDefaults: Omit<LFAssistant, 'id' | 'created_at'> = {
   temperature: 0.2,
   response_format: 'auto'
 };
-export const ACCEPTED_FILE_TYPES = [
-  '.pdf',
-  '.txt',
-  '.text',
-  '.xls',
-  '.xlsx',
-  '.ppt',
-  '.pptx',
-  '.doc',
-  '.docx',
-  '.csv'
-];
 
 export const ACCEPTED_AUDIO_FILE_TYPES = [
   '.flac',
@@ -63,10 +51,25 @@ export const ACCEPTED_AUDIO_FILE_TYPES = [
   '.webm'
 ];
 
+export const ACCEPTED_FILE_TYPES = [
+  '.pdf',
+  '.txt',
+  '.text',
+  '.xls',
+  '.xlsx',
+  '.ppt',
+  '.pptx',
+  '.doc',
+  '.docx',
+  '.csv',
+  ...ACCEPTED_AUDIO_FILE_TYPES
+];
+
 export const ACCEPTED_AUDIO_FILE_MIME_TYPES = [
   'audio/flac',
   'audio/mpeg',
   'audio/mp4',
+  'audio/x-m4a',
   'audio/mpeg',
   'audio/ogg',
   'audio/wav',
@@ -82,7 +85,8 @@ export const ACCEPTED_MIME_TYPES = [
   'application/vnd.openxmlformats-officedocument.presentationml.presentation', // .pptx
   'application/msword', // .doc
   'application/vnd.openxmlformats-officedocument.wordprocessingml.document', //.docx,
-  'text/csv'
+  'text/csv',
+  ...ACCEPTED_AUDIO_FILE_MIME_TYPES
 ];
 
 export const FILE_TYPE_MAP = {
@@ -95,7 +99,8 @@ export const FILE_TYPE_MAP = {
   'application/vnd.openxmlformats-officedocument.presentationml.presentation': 'PPTX',
   'application/msword': 'DOC',
   'application/vnd.openxmlformats-officedocument.wordprocessingml.document': 'DOCX',
-  'text/csv': 'CSV'
+  'text/csv': 'CSV',
+  ...ACCEPTED_AUDIO_FILE_MIME_TYPES.reduce((acc, type) => ({ ...acc, [type]: 'AUDIO' }), {})
 };
 
 export const NO_FILE_ERROR_TEXT = 'Please upload an image or select a pictogram';

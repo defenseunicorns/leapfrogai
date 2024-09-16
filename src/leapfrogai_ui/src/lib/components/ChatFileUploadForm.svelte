@@ -11,10 +11,12 @@
     ERROR_PROCESSING_FILE_MSG_TOAST,
     MAX_NUM_FILES_UPLOAD_MSG_TOAST
   } from '$constants/toastMessages';
+  import type {LFFile} from "$lib/types/files";
 
   export let form;
   export let uploadingFiles;
   export let attachedFileMetadata;
+  export let uploadedFiles: LFFile[];
 
   const handleUploadError = (errorMsg) => {
     uploadingFiles = false;
@@ -25,24 +27,20 @@
     });
   };
 
-  const { enhance, submit } = superForm(form, {
+  const {
+    form: storeForm,
+    enhance,
+    submit
+  } = superForm(form, {
     validators: yup(filesSchema),
     invalidateAll: false,
     onResult({ result, cancel }) {
       uploadingFiles = false;
       if (result.type === 'success') {
-        attachedFileMetadata = attachedFileMetadata.filter((file) => file.status !== 'uploading');
-        attachedFileMetadata = [
-          ...attachedFileMetadata,
-          ...result.data.extractedFilesText.map((file) => ({
-            id: uuidv4().substring(0, 8),
-            ...file
-          }))
-        ];
+        attachedFileMetadata = result.data.extractedFilesText;
       } else {
         handleUploadError('Internal Error');
       }
-
       cancel(); // cancel the rest of the event chain and any form updates to prevent losing focus of chat input
     },
     onError(e) {
@@ -65,14 +63,23 @@
         return;
       }
       uploadingFiles = true;
-      // Metadata is limited to 512 characters, we use a short id to save space
       for (const file of e.detail) {
+        // Metadata is limited to 512 characters, we use a short id to save space
+        const id = uuidv4().substring(0, 8);
+        file.id = id;
         attachedFileMetadata = [
           ...attachedFileMetadata,
-          { id: uuidv4().substring(0, 8), name: file.name, type: file.type, status: 'uploading' }
+          {
+            id,
+            name: file.name,
+            type: file.type,
+            status: 'uploading'
+          }
         ];
       }
-
+      $storeForm.files = e.detail;
+      console.log("$storeForm.files", $storeForm.files)
+      uploadedFiles = [...e.detail];
       submit(e.detail);
     }}
     accept={ACCEPTED_FILE_TYPES}

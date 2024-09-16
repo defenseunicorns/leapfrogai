@@ -1,6 +1,6 @@
 <script lang="ts">
   import { fade } from 'svelte/transition';
-  import { CloseOutline, FileOutline } from 'flowbite-svelte-icons';
+  import { CloseOutline, FileMusicOutline, FileOutline } from 'flowbite-svelte-icons';
   import { getFileType } from '$lib/utils/files.js';
   import { Card, Spinner, ToolbarButton } from 'flowbite-svelte';
   import { createEventDispatcher } from 'svelte';
@@ -34,6 +34,12 @@
               data-testid={`${fileMetadata.name}-error`}
               size="lg"
               class="text-red-400 "
+            />
+          {:else if fileMetadata.type.startsWith('audio/')}
+            <FileMusicOutline
+              data-testid={`${fileMetadata.name}-uploaded`}
+              size="lg"
+              color="white"
             />
           {:else}
             <FileOutline data-testid={`${fileMetadata.name}-uploaded`} size="lg" color="white" />

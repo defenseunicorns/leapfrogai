@@ -8,6 +8,7 @@ import { env } from '$env/dynamic/public';
 import { shortenFileName } from '$helpers/stringHelpers';
 import { APPROX_MAX_CHARACTERS, FILE_UPLOAD_PROMPT } from '$constants';
 import { ERROR_UPLOADING_FILE_MSG, FILE_CONTEXT_TOO_LARGE_ERROR_MSG } from '$constants/errors';
+import { v4 as uuidv4 } from 'uuid';
 
 // Ensure length of file context message does not exceed total context window when including the
 // file upload prompt, user's message, and string quotes
@@ -38,11 +39,24 @@ export const actions: Actions = {
 
     if (form.data.files && form.data.files.length > 0) {
       for (const file of form.data.files) {
+        console.log("Server side file", file)
         let text = '';
         if (file) {
           try {
             let buffer: ArrayBuffer;
             const contentType = file.type;
+
+            // Skip audio files
+            if (contentType.startsWith('audio/')) {
+              extractedFilesText.push({
+                id: file.id,
+                name: shortenFileName(file.name),
+                type: file.type,
+                text: 'Audio file contents were not processed',
+                status: 'complete'
+              });
+              continue;
+            }
             if (contentType !== 'application/pdf') {
               // Convert file to PDF
               const formData = new FormData();
@@ -74,6 +88,7 @@ export const actions: Actions = {
             }
 
             extractedFilesText.push({
+              id: file.id,
               name: shortenFileName(file.name),
               type: file.type,
               text,
@@ -87,6 +102,7 @@ export const actions: Actions = {
             );
             if (totalTextLength > ADJUSTED_MAX) {
               extractedFilesText[extractedFilesText.length - 1] = {
+                id: file.id,
                 name: shortenFileName(file.name),
                 type: file.type,
                 text: '',
@@ -97,6 +113,7 @@ export const actions: Actions = {
           } catch (e) {
             console.error(`Error uploading file: ${file}: ${e}`);
             extractedFilesText.push({
+              id: file.id,
               name: shortenFileName(file.name),
               type: file.type,
               text: '',

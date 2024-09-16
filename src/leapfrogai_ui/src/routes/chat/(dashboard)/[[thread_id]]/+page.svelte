@@ -24,17 +24,20 @@
   } from '$constants/toastMessages';
   import SelectAssistantDropdown from '$components/SelectAssistantDropdown.svelte';
   import { PaperPlaneOutline, StopOutline } from 'flowbite-svelte-icons';
-  import type { FileMetadata } from '$lib/types/files';
+  import type {FileMetadata, LFFile} from '$lib/types/files';
   import UploadedFileCards from '$components/UploadedFileCards.svelte';
   import ChatFileUploadForm from '$components/ChatFileUploadForm.svelte';
+  import FileChatActions from '$components/FileChatActions.svelte';
 
   export let data;
+  $: console.log('attachedFileMetadata', attachedFileMetadata)
 
   /** LOCAL VARS **/
   let lengthInvalid: boolean; // bound to child LFTextArea
   let assistantsList: Array<{ id: string; text: string }>;
   let uploadingFiles = false;
   let attachedFileMetadata: FileMetadata[] = [];
+  let uploadedFiles: LFFile[] = [];
   /** END LOCAL VARS **/
 
   /** REACTIVE STATE **/
@@ -236,7 +239,6 @@
         }
 
         // Save with API
-
         const newMessage = await saveMessage({
           thread_id: data.thread.id,
           content: $chatInput,
@@ -355,12 +357,17 @@
   <div id="chat-tools" class="flex flex-col gap-2 px-8">
     <SelectAssistantDropdown assistants={data?.assistants || []} />
 
-    <div class="flex flex-grow flex-col rounded-lg bg-gray-50 px-2 dark:bg-gray-700">
+    <div
+      class={twMerge(
+        'flex flex-grow flex-col gap-2.5 rounded-lg bg-gray-50 px-4 py-0 dark:bg-gray-700',
+        attachedFileMetadata.length > 0 && 'py-4'
+      )}
+    >
       <UploadedFileCards bind:attachedFileMetadata />
 
       <div id="chat-row" class="flex w-full items-center gap-1">
         {#if !assistantMode}
-          <ChatFileUploadForm bind:form={data.form} bind:uploadingFiles bind:attachedFileMetadata />
+          <ChatFileUploadForm bind:form={data.form} bind:uploadingFiles bind:uploadedFiles bind:attachedFileMetadata />
         {/if}
         <LFTextArea
           id="chat"
@@ -372,7 +379,7 @@
           {onSubmit}
           maxRows={10}
           innerWrappedClass="p-px bg-white dark:bg-gray-700"
-        ></LFTextArea>
+        />
 
         {#if !$isLoading && $status !== 'in_progress'}
           <ToolbarButton
@@ -401,6 +408,7 @@
           >
         {/if}
       </div>
+      <FileChatActions {attachedFileMetadata} threadId={data.thread?.id} bind:uploadedFiles/>
     </div>
   </div>
   <PoweredByDU />

@@ -15,6 +15,7 @@ export const POST: RequestHandler = async ({ request, locals: { session } }) => 
   try {
     const formData = await request.formData();
     file = formData.get('file') as File;
+
     await audioFileSchema.validate({ file }, { abortEarly: false });
   } catch (e) {
     console.error('Validation error:', e);

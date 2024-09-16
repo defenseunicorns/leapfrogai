@@ -71,3 +71,10 @@ export const FILE_VECTOR_TIMEOUT_MSG_TOAST = (override: Partial<ToastData> = {})
   subtitle: 'There was an error processing assistant files',
   ...override
 });
+
+export const FILE_TRANSLATION_ERROR = (override: Partial<ToastData> = {}): ToastData => ({
+  kind: 'error',
+  title: 'Translation Error',
+  subtitle: 'There was an error translating your audio file',
+  ...override
+});
