@@ -2,7 +2,7 @@ image:
   repository: "ghcr.io/defenseunicorns/leapfrogai/vllm"
   tag: "###ZARF_CONST_IMAGE_VERSION###"
 
-nameOverride: "###ZARF_VAR_NAME_OVERRIDE###"
+nameOverride: "###ZARF_CONST_NAME_OVERRIDE###"
 
 leapfrogaiConfig:
   model:

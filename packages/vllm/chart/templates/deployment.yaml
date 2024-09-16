@@ -44,8 +44,8 @@ spec:
             {{- toYaml .Values.modelInjectionContainer.volumeMounts | nindent 12 }}
       volumes:
         - name: leapfrogai-pv-storage
-          persistentVolumeCLFAIm:
-            cLFAImName: lfai-{{ .Values.nameOverride }}-pv-cLFAIm
+          persistentVolumeClaim:
+            claimName: lfai-{{ .Values.nameOverride }}-pv-claim
         - name: leapfrogai-sdk-configmap
           configMap:
             name: "{{ .Values.nameOverride }}-sdk-configmap"
