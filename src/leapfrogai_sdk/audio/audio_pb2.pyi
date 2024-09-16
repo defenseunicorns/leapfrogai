@@ -29,6 +29,7 @@ class AudioMetadata(_message.Message):
         SRT: _ClassVar[AudioMetadata.AudioFormat]
         VERBOSE_JSON: _ClassVar[AudioMetadata.AudioFormat]
         VTT: _ClassVar[AudioMetadata.AudioFormat]
+
     JSON: AudioMetadata.AudioFormat
     TEXT: AudioMetadata.AudioFormat
     SRT: AudioMetadata.AudioFormat
@@ -114,6 +115,7 @@ class AudioResponse(_message.Message):
             no_speech_prob: _Optional[float] = ...,
             transient: bool = ...,
         ) -> None: ...
+
     TASK_FIELD_NUMBER: _ClassVar[int]
     LANGUAGE_FIELD_NUMBER: _ClassVar[int]
     DURATION_FIELD_NUMBER: _ClassVar[int]

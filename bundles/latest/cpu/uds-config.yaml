@@ -1,0 +1,19 @@
+# see individual zarf packaging configuration for more variables and variable descriptions
+variables:
+  text-embeddings:
+    gpu_runtime: "" # Leave blank if nvidia runtimeClass is not present in cluster
+    gpu_limit: 0
+
+  whisper:
+    gpu_runtime: "" # Leave blank if nvidia runtimeClass is not present in cluster
+    gpu_limit: 0
+
+  supabase:
+    domain: "uds.dev"
+
+  leapfrogai-ui:
+    subdomain: ai
+    domain: uds.dev
+    model: llama-cpp-python
+    disable_keycloak: false # If this package is deployed as a bundle, keycloak is assumed default
+    supabase_anon_key: ''

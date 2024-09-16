@@ -28,6 +28,7 @@
   import TextareaV2 from '$components/LFTextArea.svelte';
   import IconButton from '$components/IconButton.svelte';
   import MessagePendingSkeleton from '$components/MessagePendingSkeleton.svelte';
+  import UploadedFileCard from '$components/UploadedFileCard.svelte';
 
   export let message: OpenAIMessage;
   export let messages: OpenAIMessage[] = [];
@@ -40,6 +41,7 @@
 
   // used for code formatting and handling
   const md = markdownit({
+    html: true,
     highlight: function (str: string, language: string) {
       let code: string;
       if (language && hljs.getLanguage(language)) {
@@ -107,6 +109,10 @@
       });
     }
   };
+
+  $: fileMetadata = message.metadata?.filesMetadata
+    ? JSON.parse(message.metadata.filesMetadata)
+    : null;
 </script>
 
 <div
@@ -162,11 +168,24 @@
             <div class="font-bold">
               {message.role === 'user' ? 'You' : getAssistantName(message.assistant_id)}
             </div>
+            {#if fileMetadata}
+              <div id="uploaded-files" class={'flex max-w-full  gap-2 overflow-x-auto bg-gray-900'}>
+                {#each fileMetadata as file}
+                  <UploadedFileCard fileMetadata={file} disableDelete />
+                {/each}
+              </div>
+            {/if}
             {#if message.role !== 'user' && !messageText}
               <MessagePendingSkeleton size="sm" class="mt-4" darkColor="bg-gray-500" />
             {:else}
               <!--eslint-disable-next-line svelte/no-at-html-tags -- We use DomPurity to sanitize the code snippet-->
-              {@html md.render(DOMPurify.sanitize(messageText))}
+              {@html DOMPurify.sanitize(md.render(messageText), {
+                CUSTOM_ELEMENT_HANDLING: {
+                  tagNameCheck: /^code-block$/,
+                  attributeNameCheck: /^(code|language)$/,
+                  allowCustomizedBuiltInElements: false
+                }
+              })}
               <div class="flex flex-col items-start">
                 {#each getCitations(message, $page.data.files) as { component: Component, props }}
                   <svelte:component this={Component} {...props} />

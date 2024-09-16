@@ -70,7 +70,7 @@ For example, the LeapfrogAI API requires a `config.yaml` be supplied when spun u
 
 ## Package Development
 
-If you don't want to [build an entire bundle](#bundle-development), or you want to "dev-loop" on a single package in an existing [UDS Kubernetes cluster](../packages/k3d-gpu/README.md) you can do so by performing the following.
+If you don't want to [build an entire bundle](#bundle-development), or you want to "dev-loop" on a single package in an existing [UDS Kubernetes cluster](../packages/k3d-gpu/README.md) you can do so by following the instructions below.
 
 For example, this is how you build and (re)deploy a local DEV version of a package:
 
@@ -80,8 +80,9 @@ uds zarf package remove leapfrogai-api --confirm
 uds zarf tools registry prune --confirm
 
 # create and deploy the new package
-LOCAL_VERSION=dev REGISTRY_PORT=5000 ARCH=amd64 make build-api
-LOCAL_VERSION=dev REGISTRY_PORT=5000 ARCH=amd64 make deploy-api
+# FLAVOR can be upstream (default) or registry1 - see README for availability details
+LOCAL_VERSION=dev FLAVOR=upstream REGISTRY_PORT=5000 ARCH=amd64 make build-api
+LOCAL_VERSION=dev FLAVOR=upstream REGISTRY_PORT=5000 ARCH=amd64 make deploy-api
 ```
 
 For example, this is how you pull and deploy a LATEST version of a package:
@@ -97,17 +98,20 @@ uds zarf package deploy zarf-package-*.tar.zst --confirm
 1. Install all the necessary package creation dependencies:
 
     ```bash
-    python -m pip install "huggingface_hub[cli,hf_transfer]" "transformers[torch]" ctranslate2
+    python -m pip install ".[dev]"
+    python -m pip install ".[dev-whisper]"
+    python -m pip install ".[dev-vllm]"
     ```
 
 2. Build all of the packages you need at once with **ONE** of the following Make targets:
 
     ```bash
-    LOCAL_VERSION=dev ARCH=amd64 make build-cpu    # ui, api, llama-cpp-python, text-embeddings, whisper, supabase
+    # FLAVOR can be upstream (default) or registry1 - see README for availability details
+    LOCAL_VERSION=dev FLAVOR=upstream ARCH=amd64 make build-cpu    # ui, api, llama-cpp-python, text-embeddings, whisper, supabase
     # OR
-    LOCAL_VERSION=dev ARCH=amd64 make build-gpu    # ui, api, vllm, text-embeddings, whisper, supabase
+    LOCAL_VERSION=dev FLAVOR=upstream ARCH=amd64 make build-gpu    # ui, api, vllm, text-embeddings, whisper, supabase
     # OR
-    LOCAL_VERSION=dev ARCH=amd64 make build-all    # all of the components
+    LOCAL_VERSION=dev FLAVOR=upstream ARCH=amd64 make build-all    # all of the components
     ```
 
     **OR**
@@ -115,28 +119,62 @@ uds zarf package deploy zarf-package-*.tar.zst --confirm
     You can build components individually using the following Make targets:
 
     ```bash
-    LOCAL_VERSION=dev ARCH=amd64 make build-ui
-    LOCAL_VERSION=dev ARCH=amd64 make build-api
-    LOCAL_VERSION=dev ARCH=amd64 make build-supabase
-    LOCAL_VERSION=dev ARCH=amd64 make build-vllm                 # if you have NVIDIA GPUs (AMR64 not supported)
-    LOCAL_VERSION=dev ARCH=amd64 make build-llama-cpp-python     # if you have CPU only
-    LOCAL_VERSION=dev ARCH=amd64 make build-text-embeddings
-    LOCAL_VERSION=dev ARCH=amd64 make build-whisper
+    # FLAVOR can be upstream (default) or registry1 - see README for availability details
+    LOCAL_VERSION=dev FLAVOR=upstream ARCH=amd64 make build-ui
+    LOCAL_VERSION=dev FLAVOR=upstream ARCH=amd64 make build-api
+    LOCAL_VERSION=dev FLAVOR=upstream ARCH=amd64 make build-supabase
+    LOCAL_VERSION=dev FLAVOR=upstream ARCH=amd64 make build-vllm                 # if you have NVIDIA GPUs (AMR64 not supported)
+    LOCAL_VERSION=dev FLAVOR=upstream ARCH=amd64 make build-llama-cpp-python     # if you have CPU only
+    LOCAL_VERSION=dev FLAVOR=upstream ARCH=amd64 make build-text-embeddings
+    LOCAL_VERSION=dev FLAVOR=upstream ARCH=amd64 make build-whisper
     ```
 
 3. Create the UDS bundle, modifying the `uds-config.yaml` as required:
 
   ```bash
-  cd uds-bundles/dev/<cpu or gpu>
+  cd bundles/dev/<cpu or gpu>
   uds create . --confirm
   ```
 
 4. Deploy the UDS bundle to an existing [UDS Kubernetes cluster](../packages/k3d-gpu/README.md):
 
   ```bash
-  cd uds-bundles/dev/<cpu or gpu>
+  cd bundles/dev/<cpu or gpu>
   uds deploy <insert bundle name> --confirm
   ```
+
+### Bundle Overrides
+
+Although not provided in the example UDS bundle manifests found in this repository's `bundles/`, the `uds-bundle.yaml` and `uds-config.yaml` can be modified to override values files of a component's deployment. For example, when using UDS CLI to deploy the `bundles/latest/gpu/uds-bundle.yaml` you can add the following lines to the following files to influence a value that is not accessible by any other means (e.g., setting a  Zarf variable):
+
+#### _uds-bundle.yaml_
+
+```yaml
+  # OpenAI-like API
+  - name: leapfrogai-api
+    repository: ghcr.io/defenseunicorns/packages/leapfrogai/leapfrogai-api
+    # x-release-please-start-version
+    ref: 0.12.2
+    # x-release-please-end
+
+    # THE BELOW LINES WERE ADDED FOR DEMONSTRATION PURPOSES
+    overrides:
+      leapfrogai-api:
+        leapfrogai:
+          variables:
+            name: API_REPLICAS
+            description: "Default number of API replicas to deploy"
+            path: api.replicas # the path to the value you want to override in packages/api/chart/values.yaml
+```
+
+#### _uds-config.yaml_
+
+```yaml
+variables:
+  # THE BELOW LINES WERE ADDED FOR DEMONSTRATION PURPOSES
+  leapfrogai-api:
+    api_replicas: 2 # overriding the default value of 1 in the packages/api/chart/values.yaml
+```
 
 ### MacOS Specifics
 
@@ -148,14 +186,16 @@ To run the same commands in MacOS, you will need to prepend your command with a 
 
 To demonstrate what this would look like for an Apple Silicon Mac:
 
-``` shell
-REG_PORT=5001 ARCH=arm64 LOCAL_VERSION=dev make build-cpu
+```bash
+# FLAVOR can be upstream (default) or registry1 - see README for availability details
+REG_PORT=5001 ARCH=arm64 LOCAL_VERSION=dev FLAVOR=upstream make build-cpu
 ```
 
 To demonstrate what this would look like for an older Intel Mac:
 
-``` shell
-REG_PORT=5001 ARCH=arm64 LOCAL_VERSION=dev make build-cpu
+```bash
+# FLAVOR can be upstream (default) or registry1 - see README for availability details
+REG_PORT=5001 ARCH=arm64 LOCAL_VERSION=dev FLAVOR=upstream make build-cpu
 ```
 
 ## Access

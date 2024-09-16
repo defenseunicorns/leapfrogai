@@ -52,7 +52,7 @@ proxy = "direct"
   github_project_repo = "https://github.com/defenseunicorns/leapfrogai"
   github_repo         = "https://github.com/defenseunicorns/leapfrogai"
   # x-release-please-start-version
-  version             = "v0.11.0"
+  version             = "v0.12.2"
   # x-release-please-end
 
   # version_menu = "v1"

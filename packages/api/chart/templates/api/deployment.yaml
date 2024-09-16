@@ -1,81 +1,82 @@
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: api-deployment
-  namespace: {{ .Release.Namespace }}
+  name: {{ include "chart.fullname" . }}
+  namespace: {{ .Release.Namespace | default "leapfrogai" }}
+  labels:
+    {{- include "chart.labels" . | nindent 4 }}
 spec:
-  replicas: {{ .Values.api.replcias }}
+  replicas: {{ .Values.replicaCount }}
+  {{- with .Values.strategy }}
   strategy:
-    rollingUpdate:
-      maxUnavailable: 0
-    type: RollingUpdate
+    {{- toYaml . | nindent 8 }}
+  {{- end }}
   selector:
     matchLabels:
-      app: api
+      {{- include "chart.selectorLabels" . | nindent 6 }}
   template:
     metadata:
+      {{- with .Values.podAnnotations }}
+      annotations:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
       labels:
-        app: api
+        {{- include "chart.selectorLabels" . | nindent 8 }}
     spec:
-      serviceAccountName: read-configmaps
+      serviceAccountName: {{ include "chart.serviceAccountName" . }}
+      securityContext:
+        {{- toYaml .Values.podSecurityContext | nindent 8 }}
       containers:
         - name: sidecar
-          image: kiwigrid/k8s-sidecar:{{ .Values.image.kiwigridTag }}
+          image: "{{ .Values.kiwigrid.image.repository }}:{{ .Values.kiwigrid.image.tag }}"
+          imagePullPolicy: {{ .Values.kiwigrid.image.imagePullPolicy }}
           volumeMounts:
-          - name:  api-model
-            mountPath: /config/
+            - name: {{ include "chart.fullname" . }}-model
+              mountPath: /config/
+          {{- with .Values.kiwigrid.env }}
           env:
-          - name: LABEL
-            value: "leapfrogai"
-          - name: FOLDER
-            value: /config/
-          - name: RESOURCE
-            value: both
-          - name: UNIQUE_FILENAMES
-            value: "true"
-          - name: NAMESPACE
-            value: leapfrogai
-        - name: api-container
-          image: ghcr.io/defenseunicorns/leapfrogai/leapfrogai-api:{{ .Values.image.lfaiAPITag }}
-          imagePullPolicy: Always
+            {{- toYaml . | nindent 12 }}
+          {{- end }}
+          securityContext:
+            {{- toYaml .Values.kiwigrid.securityContext | nindent 12 }}
+        - name: {{ include "chart.fullname" . }}-container
+          image: "{{ .Values.api.image.repository }}:{{ .Values.api.image.tag | default .Chart.AppVersion }}"
+          imagePullPolicy: {{ .Values.api.image.imagePullPolicy }}
+          {{- with .Values.api.env }}
           env:
-          - name: LFAI_CONFIG_PATH
-            value: /config/
-          - name: LFAI_CONFIG_FILENAME
-            value: "*.toml"
-          - name: DEFAULT_EMBEDDINGS_MODEL
-            value: "{{ .Values.api.defaultEmbeddingsModel }}"
-          - name: PORT
-            value: "{{ .Values.api.port }}"
-          - name: SUPABASE_URL
-            value: "{{ .Values.supabase.url }}"
-          - name: SUPABASE_ANON_KEY
-            valueFrom:
-              secretKeyRef:
-                name: supabase-bootstrap-jwt
-                key: anon-key
-                optional: true
+            {{- toYaml . | nindent 12 }}
+          {{- end }}
           ports:
-            - containerPort: 8080
+            - containerPort: {{ .Values.api.service.port }}
           livenessProbe:
             httpGet:
               path: /healthz
-              port: 8080
+              port: {{ .Values.api.service.port }}
             initialDelaySeconds: 10
             periodSeconds: 10
           readinessProbe:
             httpGet:
               path: /healthz
-              port: 8080
+              port: {{ .Values.api.service.port }}
             initialDelaySeconds: 10
             periodSeconds: 10
           securityContext:
-            runAsUser: 65532
-            runAsGroup: 65532
-            fsGroup: 65532
+            {{- toYaml .Values.api.securityContext | nindent 12 }}
           volumeMounts:
-          - name: api-model
-            mountPath: /config
+            - name: {{ include "chart.fullname" . }}-model
+              mountPath: /config
       volumes:
-      - name: api-model
-        emptyDir: {}
+        - name: {{ include "chart.fullname" . }}-model
+          emptyDir: {}
+      {{- with .Values.nodeSelector }}
+      nodeSelector:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with .Values.affinity }}
+      affinity:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with .Values.tolerations }}
+      tolerations:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}

@@ -15,7 +15,7 @@ export const deleteAllTestAPIKeys = async () => {
         fetch(`${process.env.LEAPFROGAI_API_BASE_URL}/leapfrogai/v1/auth/api-keys/${key.id}`, {
           method: 'DELETE',
           headers: {
-            Authorization: `Bearer ${process.env.SERVICE_ROLE_KEY}`,
+            Authorization: `Bearer ${token}`,
             'Content-Type': 'application/json'
           }
         })

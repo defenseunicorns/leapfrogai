@@ -1,0 +1,23 @@
+# see individual zarf packaging configuration for more variables and variable descriptions
+variables:
+  text-embeddings:
+    gpu_runtime: "nvidia"  # Set to ensure the nvidia runtimeClass is present in case GPU limit is increased
+    gpu_limit: 0  # runs on CPU until GPU limit is increased
+
+  whisper:
+    gpu_runtime: "nvidia"  # Set to ensure the nvidia runtimeClass is present in case GPU limit is increased
+    gpu_limit: 0  # runs on CPU until GPU limit is increased
+
+  vllm:
+    gpu_limit: 1 # if <1, vllm won't work, VLLM is GPU only
+    #tensor_parallel_size: 1   # TODO: reintroduce when vllm changes get pulled in
+
+  supabase:
+    domain: "uds.dev"
+
+  leapfrogai-ui:
+    subdomain: ai
+    domain: uds.dev
+    model: vllm
+    disable_keycloak: false # If this package is deployed as a bundle, keycloak is assumed default
+    supabase_anon_key: ''

@@ -1,4 +1,5 @@
 name: pytest
+
 on:
   pull_request:
     types:
@@ -25,7 +26,7 @@ on:
       - "!.gitignore"
       - "!LICENSE"
 
-      # Ignore LFAI-UI things (no Python)
+      # Ignore UI things (no Python)
       - "!src/leapfrogai_ui/**"
       - "!packages/ui/**"
 
@@ -33,7 +34,7 @@ on:
 permissions: read-all
 
 concurrency:
-  group: pytest-${{ github.ref }}
+  group: pytest-integration-${{ github.ref }}
   cancel-in-progress: true
 
 jobs:
@@ -44,22 +45,110 @@ jobs:
       - name: Checkout Repo
         uses: actions/checkout@b4ffde65f46336ab88eb53be808477a3936bae11 # v4.1.1
 
-      - uses: actions/setup-python@0a5c61591373683505ea898e09a3ea4f39ef2b9c #v5.0.0
+      - name: Cache Python Dependencies
+        uses: actions/cache@0c45773b623bea8c8e75f6c82b208c3cf94ea4f9 # v4.0.2
         with:
-          python-version-file: 'pyproject.toml'
+          path: |
+            ~/.cache/pip
+            **/src/leapfrogai_api
+            **/src/leapfrogai_sdk
+          key: pytest-integration-pip-${{ github.ref }}
 
-      - name: Build Repeater
+      - name: Setup Python
+        uses: actions/setup-python@0a5c61591373683505ea898e09a3ea4f39ef2b9c #v5.0.0
+        with:
+          python-version-file: "pyproject.toml"
+
+      - name: Install Python Dependencies
+        run: pip install ".[dev]" "src/leapfrogai_api" "src/leapfrogai_sdk"
+
+      - name: Setup Repeater
         env:
-          LOCAL_VERSION: dev
+          LOCAL_VERSION: e2e-test
         run: |
           make docker-repeater
-      - name: Run Repeater
-        run: docker run -p 50051:50051 -d --name=repeater ghcr.io/defenseunicorns/leapfrogai/repeater:dev
+          docker run -p 50051:50051 -d --name=repeater ghcr.io/defenseunicorns/leapfrogai/repeater:$LOCAL_VERSION
+
+      - name: Run Pytest
+        run: make test-api-unit
+        env:
+          LFAI_RUN_REPEATER_TESTS: true
+
+  integration:
+    runs-on: ai-ubuntu-big-boy-8-core
+    if: ${{ !github.event.pull_request.draft }}
+
+    # If basic unit tests fail, do not run this job
+    needs: pytest
+
+    steps:
+      - name: Checkout Repo
+        uses: actions/checkout@b4ffde65f46336ab88eb53be808477a3936bae11 # v4.1.1
+
+      - name: Use Cached Python Dependencies
+        uses: actions/cache@0c45773b623bea8c8e75f6c82b208c3cf94ea4f9 # v4.0.2
+        with:
+          path: |
+            ~/.cache/pip
+            **/src/leapfrogai_api
+            **/src/leapfrogai_sdk
+          key: pytest-integration-pip-${{ github.ref }}
+
+      - name: Setup Python
+        uses: actions/setup-python@0a5c61591373683505ea898e09a3ea4f39ef2b9c #v5.0.0
+        with:
+          python-version-file: "pyproject.toml"
 
       - name: Install Python Deps
         run: pip install ".[dev]" "src/leapfrogai_api" "src/leapfrogai_sdk"
 
-      - name: Run Pytest
-        run: python -m pytest tests/pytest -v
+      - name: Setup Repeater
         env:
-          LFAI_RUN_REPEATER_TESTS: true
+          LOCAL_VERSION: e2e-test
+        run: |
+          make docker-repeater
+          docker run -p 50051:50051 -d --name=repeater ghcr.io/defenseunicorns/leapfrogai/repeater:$LOCAL_VERSION
+
+      - name: Setup UDS Cluster
+        uses: ./.github/actions/uds-cluster
+        with:
+          registry1Username: ${{ secrets.IRON_BANK_ROBOT_USERNAME }}
+          registry1Password: ${{ secrets.IRON_BANK_ROBOT_PASSWORD }}
+          ghToken: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Setup API and Supabase
+        uses: ./.github/actions/lfai-core
+
+      - name: Generate Secrets
+        id: generate_secrets
+        run: |
+          SUPABASE_PASS=$(cat <(openssl rand -base64 32 | tr -dc 'a-zA-Z0-9!@#$%^&*()_+-=[]{}|;:,.<>?' | head -c 20) <(echo '!@1Aa') | fold -w1 | shuf | tr -d '\n')
+          echo "::add-mask::$SUPABASE_PASS"
+          echo "SUPABASE_PASS=$SUPABASE_PASS" >> $GITHUB_OUTPUT
+          SUPABASE_ANON_KEY=$(uds zarf tools kubectl get secret supabase-bootstrap-jwt -n leapfrogai -o jsonpath='{.data.anon-key}' | base64 -d)
+          echo "::add-mask::$SUPABASE_ANON_KEY"
+          echo "SUPABASE_ANON_KEY=$SUPABASE_ANON_KEY" >> $GITHUB_OUTPUT
+
+      - name: Verify Secrets
+        run: |
+          echo "SUPABASE_ANON_KEY is set: ${{ steps.generate_secrets.outputs.SUPABASE_ANON_KEY != '' }}"
+          echo "SUPABASE_PASS is set: ${{ steps.generate_secrets.outputs.SUPABASE_PASS != '' }}"
+
+      - name: Setup Text-Embeddings
+        run: |
+          make build-text-embeddings LOCAL_VERSION=e2e-test
+          docker image prune -af
+          uds zarf package deploy packages/text-embeddings/zarf-package-text-embeddings-amd64-e2e-test.tar.zst -l=trace --confirm
+          rm packages/text-embeddings/zarf-package-text-embeddings-amd64-e2e-test.tar.zst
+
+      - name: Run Integration Tests
+        env:
+          SUPABASE_ANON_KEY: ${{ steps.generate_secrets.outputs.SUPABASE_ANON_KEY }}
+          SUPABASE_PASS: ${{ steps.generate_secrets.outputs.SUPABASE_PASS }}
+          SUPABASE_EMAIL: doug@uds.dev
+          SUPABASE_URL: https://supabase-kong.uds.dev
+          # Turn off NIAH tests that are not applicable for integration testing using the Repeater model
+          LFAI_RUN_NIAH_TESTS: "false"
+        run: |
+          make test-user-pipeline
+          env $(cat .env | xargs) python -m pytest -v -s tests/integration/api

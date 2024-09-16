@@ -1,34 +1,40 @@
 apiVersion: v1
 kind: ServiceAccount
 metadata:
-  name: read-configmaps
-  namespace: {{ .Release.Namespace }}
+  name: {{ include "chart.serviceAccountName" . }}
+  namespace: {{ .Release.Namespace | default "leapfrogai" }}
+  labels:
+    {{- include "chart.labels" . | nindent 4 }}
 ---
 apiVersion: rbac.authorization.k8s.io/v1
 kind: Role
 metadata:
-  name: read-configmaps
-  namespace: {{ .Release.Namespace }}
+  name: {{ include "chart.fullname" . }}-read-configmaps
+  namespace: {{ .Release.Namespace | default "leapfrogai" }}
+  labels:
+    {{- include "chart.labels" . | nindent 4 }}
 rules:
-- apiGroups:
-  - ""
-  resources:
-  - configmaps
-  - secrets
-  verbs:
-  - get
-  - list
-  - watch
+  - apiGroups:
+      - ""
+    resources:
+      - configmaps
+      - secrets
+    verbs:
+      - get
+      - list
+      - watch
 ---
 apiVersion: rbac.authorization.k8s.io/v1
 kind: RoleBinding
 metadata:
-  name: read-configmaps
-  namespace: {{ .Release.Namespace }}
+  name: {{ include "chart.fullname" . }}-read-configmaps
+  namespace: {{ .Release.Namespace | default "leapfrogai" }}
+  labels:
+    {{- include "chart.labels" . | nindent 4 }}
 roleRef:
   apiGroup: rbac.authorization.k8s.io
   kind: Role
-  name: read-configmaps
+  name: {{ include "chart.fullname" . }}-read-configmaps
 subjects:
-- kind: ServiceAccount
-  name: read-configmaps
+  - kind: ServiceAccount
+    name: {{ include "chart.serviceAccountName" . }}

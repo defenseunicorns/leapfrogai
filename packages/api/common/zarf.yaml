@@ -1,0 +1,28 @@
+# yaml-language-server: $schema=https://raw.githubusercontent.com/defenseunicorns/uds-cli/v0.14.0/zarf.schema.json
+
+kind: ZarfPackageConfig
+metadata:
+  description: "LeapfrogAI API common"
+  name: leapfrogai-api-common
+  version: "###ZARF_PKG_TMPL_IMAGE_VERSION###"
+
+components:
+  - name: leapfrogai-api
+    description: "The LeapfrogAI Python API that shadows the OpenAI API specification"
+    required: true
+    charts:
+      - name: leapfrogai
+        namespace: leapfrogai
+        localPath: ../chart
+        # x-release-please-start-version
+        version: 0.12.2
+        # x-release-please-end
+    actions:
+      onDeploy:
+        after:
+          - wait:
+              cluster:
+                kind: Job
+                name: leapfrogai-api-migrations-###ZARF_PKG_TMPL_IMAGE_VERSION###
+                namespace: leapfrogai
+                condition: complete

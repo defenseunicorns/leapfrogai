@@ -20,6 +20,8 @@ build/
 **/*.whl
 .model/
 *.gguf
+.env.password
+.env.email
 .env
 .ruff_cache
 .branches
@@ -30,6 +32,7 @@ src/leapfrogai_api/config.yaml
 node_modules
 package.json
 package-lock.json
+**/*.schema.json
 
 # local model and tokenizer files
 *.bin
