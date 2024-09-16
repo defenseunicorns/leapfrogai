@@ -5,11 +5,6 @@ from pydantic import Field
 
 
 class ConfigOptions(BaseConfig):
-    model_source: str = Field(
-        title="Model Files Location",
-        description="Location of the model files to be loaded into the vLLM engine.",
-        examples=["/data/.model"],
-    )
     tensor_parallel_size: int = Field(
         title="GPU Utilization Count",
         description="The number of gpus to spread the tensor processing across."

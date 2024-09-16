@@ -14,24 +14,15 @@ See the LeapfrogAI documentation website for [system requirements](https://docs.
 
 ### Model Selection
 
-The default model that comes with this backend in this repository's officially released images is a [4-bit quantization of the Hermes-2-Pro-Mistral-7B model](https://huggingface.co/defenseunicorns/Hermes-2-Pro-Mistral-7B-4bit-32g).
+The default model that comes with this backend in this repository's officially released images is a [4-bit quantization of the Synthia-7b model](https://huggingface.co/TheBloke/SynthIA-7B-v2.0-GPTQ).
 
-You can optionally specify different models or quantization types using the following Docker build arguments:
+You can, optionally, specify different models during Zarf create:
 
-- `--build-arg MAX_CONTEXT_LENGTH="32768"`: Max context length, cannot exceed model's max length - the greater length the greater the vRAM requirements
-- `--build-arg TENSOR_PARALLEL_SIZE="1"`: The number of gpus to spread the tensor processing across
-- `--build-arg TRUST_REMOTE_CODE="True"`: Whether to trust inferencing code downloaded as part of the model download
-- `--build-arg ENGINE_USE_RAY="False"`: Distributed, multi-node inferencing mode for the engine
-- `--build-arg WORKER_USE_RAY="False"`: Distributed, multi-node inferencing mode for the worker(s)
-- `--build-arg GPU_MEMORY_UTILIZATION="0.90"`: Max memory utilization (fraction, out of 1.0) for the vLLM process
-- `--build-arg ENFORCE_EAGER="False"`: Disable CUDA graphs for faster time-to-first-token inferencing speed at the cost of more GPU memory (set to False for production)
-- `--build-arg QUANTIZATION="None"`: None is recommended, as vLLM auto-detect model configuration and optimizes from there. For example, GPTQ can be converted to GPTQ Marlin, in certain cases, increasing time-to-first-token and tokens/second performance.
+```bash
+uds zarf package create --confirm --set MODEL_REPO_ID=defenseunicorns/Hermes-2-Pro-Mistral-7B-4bit-32g --set MODEL_REVISION=main
+```
 
-## Prompt Formats
-
-The pre-packaged model, defenseunicorns/Hermes-2-Pro-Mistral-7B-4bit-32g, contains special prompt templates for activating the function calling and JSON response modes. The default prompt template is the ChatML format.
-
-These are a result of its training data and process. Please refer to [this section of the Hugging Face model card](https://huggingface.co/defenseunicorns/Hermes-2-Pro-Mistral-7B-4bit-32g#prompt-format-for-function-calling) for more details.
+If your model changes there will likely be a need to change generation and engine runtime configurations, please see the [Zarf package definition](./zarf.yaml) and [values override file](./values/upstream-values.yaml) for details on what runtime parameters can be modified. These parameters are model-specific, and can be found in the HuggingFace model cards and/or configuration files (e.g., prompt templates).
 
 ### Deployment
 
