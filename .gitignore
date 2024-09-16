@@ -32,6 +32,7 @@ src/leapfrogai_api/config.yaml
 node_modules
 package.json
 package-lock.json
+**/*.schema.json
 
 # local model and tokenizer files
 *.bin

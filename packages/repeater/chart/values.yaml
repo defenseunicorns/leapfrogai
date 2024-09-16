@@ -2,8 +2,6 @@
 # This is a YAML-formatted file.
 # Declare variables to be passed into your templates.
 
-replicaCount: 1
-
 image:
   repository: "ghcr.io/defenseunicorns/leapfrogai/repeater"
   pullPolicy: Always
@@ -12,10 +10,8 @@ image:
   tag: 0.12.2
   # x-release-please-end
 
-nameOverride: repeater
+nameOverride: "repeater"
 fullnameOverride: ""
-
-podAnnotations: {}
 
 podSecurityContext:
   runAsNonRoot: true
@@ -24,6 +20,10 @@ podSecurityContext:
 securityContext:
   runAsUser: 65532
   runAsGroup: 65532
+  runAsNonRoot: true
+  capabilities:
+    drop:
+      - ALL
 
 service:
   type: ClusterIP
@@ -43,14 +43,17 @@ resources:
     memory: 0
     nvidia.com/gpu: 0
 
-autoscaling:
-  enabled: false
-  minReplicas: 1
-  maxReplicas: 100
-  targetCPUUtilizationPercentage: 80
+replicaCount: 1
+
+podAnnotations: {}
 
 nodeSelector: {}
 
 tolerations: []
 
 affinity: {}
+
+strategy:
+  rollingUpdate:
+    maxUnavailable: 0
+  type: RollingUpdate

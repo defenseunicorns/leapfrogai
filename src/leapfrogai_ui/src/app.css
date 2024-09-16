@@ -83,14 +83,6 @@
     max-width: calc(100% - var(--sidebar-width));
   }
 
-  /*Note - tailwind has a truncate class that sets these properties, but for an unknown reason, it was
-   not working.
-   */
-  .truncate {
-    overflow: hidden;
-    text-overflow: ellipsis;
-    white-space: nowrap;
-  }
 }
 
 @layer components {

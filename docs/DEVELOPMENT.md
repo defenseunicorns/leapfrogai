@@ -143,6 +143,39 @@ uds zarf package deploy zarf-package-*.tar.zst --confirm
   uds deploy <insert bundle name> --confirm
   ```
 
+### Bundle Overrides
+
+Although not provided in the example UDS bundle manifests found in this repository's `bundles/`, the `uds-bundle.yaml` and `uds-config.yaml` can be modified to override values files of a component's deployment. For example, when using UDS CLI to deploy the `bundles/latest/gpu/uds-bundle.yaml` you can add the following lines to the following files to influence a value that is not accessible by any other means (e.g., setting a  Zarf variable):
+
+#### _uds-bundle.yaml_
+
+```yaml
+  # OpenAI-like API
+  - name: leapfrogai-api
+    repository: ghcr.io/defenseunicorns/packages/leapfrogai/leapfrogai-api
+    # x-release-please-start-version
+    ref: 0.12.2
+    # x-release-please-end
+
+    # THE BELOW LINES WERE ADDED FOR DEMONSTRATION PURPOSES
+    overrides:
+      leapfrogai-api:
+        leapfrogai:
+          variables:
+            name: API_REPLICAS
+            description: "Default number of API replicas to deploy"
+            path: api.replicas # the path to the value you want to override in packages/api/chart/values.yaml
+```
+
+#### _uds-config.yaml_
+
+```yaml
+variables:
+  # THE BELOW LINES WERE ADDED FOR DEMONSTRATION PURPOSES
+  leapfrogai-api:
+    api_replicas: 2 # overriding the default value of 1 in the packages/api/chart/values.yaml
+```
+
 ### MacOS Specifics
 
 To run the same commands in MacOS, you will need to prepend your command with a couple of env vars like so:

@@ -19,6 +19,9 @@ help: ## Display this help information
 clean: ## Clean up all the things (test artifacts, packages, build dirs, compiled .whl files, python eggs)
 	-rm -rf .env .env.email .env.password .pytest_cache
 	-rm -rf .logs
+	-rm -rf ./packages/**/.model/
+	-rm -rf ./**/__pycache__/
+	-rm -rf ./**/.ruff_cache ./.ruff_cache
 	-rm zarf-package-*.tar.zst
 	-rm packages/**/zarf-package-*.tar.zst
 	-rm -rf build/*
@@ -302,8 +305,8 @@ silent-deploy-gpu:
 	@$(MAKE) -j${MAX_JOBS} \
 		silent-deploy-api-package ZARF_FLAGS="${ZARF_FLAGS} ${SILENT_ZARF_FLAGS}" \
 		silent-deploy-vllm-package ZARF_FLAGS="${ZARF_FLAGS} ${SILENT_ZARF_FLAGS}" \
-		silent-deploy-text-embeddings-package ZARF_FLAGS="${ZARF_FLAGS} ${SILENT_ZARF_FLAGS} --set=GPU_CLASS_NAME='nvidia'" \
-		silent-deploy-whisper-package ZARF_FLAGS="${ZARF_FLAGS} ${SILENT_ZARF_FLAGS} --set=GPU_CLASS_NAME='nvidia'"
+		silent-deploy-text-embeddings-package ZARF_FLAGS="${ZARF_FLAGS} ${SILENT_ZARF_FLAGS} --set=GPU_RUNTIME='nvidia'" \
+		silent-deploy-whisper-package ZARF_FLAGS="${ZARF_FLAGS} ${SILENT_ZARF_FLAGS} --set=GPU_RUNTIME='nvidia'"
 	@echo "Deploying UI..."
 	@$(MAKE) silent-deploy-ui-package ZARF_FLAGS="${ZARF_FLAGS} ${SILENT_ZARF_FLAGS} --set=MODEL='vllm'"
 	@echo "All deployments completed"
