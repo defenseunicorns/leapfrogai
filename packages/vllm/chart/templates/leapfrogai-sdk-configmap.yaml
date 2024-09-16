@@ -16,18 +16,18 @@ data:
     prompt_format:
     {{- with .Values.leapfrogaiConfig.promptFormat.chat }}
       chat:
-    {{- if .system }}
-      system: {{ .system }}
-    {{- end }}
-    {{- if .assistant }}
-      assistant: {{ .assistant }}
-    {{- end }}
-    {{- if .user }}
-      user: {{ .user }}
-    {{- end }}
-    {{- if .function }}
-      function: {{ .function }}
-    {{- end }}
+      {{- if .system }}
+        system: {{ .system }}
+      {{- end }}
+      {{- if .assistant }}
+        assistant: {{ .assistant }}
+      {{- end }}
+      {{- if .user }}
+        user: {{ .user }}
+      {{- end }}
+      {{- if .function }}
+        function: {{ .function }}
+      {{- end }}
     {{- end }}
     defaults:
       temperature: {{ .Values.leapfrogaiConfig.defaults.temperature }}

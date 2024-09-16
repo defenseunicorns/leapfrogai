@@ -4,10 +4,10 @@ metadata:
   name: "{{ .Values.nameOverride }}-engine-configmap"
   namespace: {{ .Release.Namespace | default "leapfrogai" }}
 data:
-  LFAI_TRUST_REMOTE_CODE: "{{ .Values.vllmConfig.trustRemoteCode }}"
-  LFAI_TENSOR_PARALLEL_SIZE: "{{ .Values.vllmConfig.tensorParallelSize }}"
-  LFAI_ENFORCE_EAGER: "{{ .Values.vllmConfig.enforceEager }}"
-  LFAI_GPU_MEMORY_UTILIZATION: "{{ .Values.vllmConfig.gpuMemoryUtilization }}"
-  LFAI_WORKER_USE_RAY: "{{ .Values.vllmConfig.workerUseRay }}"
-  LFAI_ENGINE_USE_RAY: "{{ .Values.vllmConfig.engineUseRay }}"
-  LFAI_QUANTIZATION: "{{ .Values.vllmConfig.quantization }}"
+  VLLM_TRUST_REMOTE_CODE: "{{ .Values.vllmConfig.trustRemoteCode }}"
+  VLLM_TENSOR_PARALLEL_SIZE: "{{ .Values.vllmConfig.tensorParallelSize }}"
+  VLLM_ENFORCE_EAGER: "{{ .Values.vllmConfig.enforceEager }}"
+  VLLM_GPU_MEMORY_UTILIZATION: "{{ .Values.vllmConfig.gpuMemoryUtilization }}"
+  VLLM_WORKER_USE_RAY: "{{ .Values.vllmConfig.workerUseRay }}"
+  VLLM_ENGINE_USE_RAY: "{{ .Values.vllmConfig.engineUseRay }}"
+  VLLM_QUANTIZATION: "{{ .Values.vllmConfig.quantization }}"

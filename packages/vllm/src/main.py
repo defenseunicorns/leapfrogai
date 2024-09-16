@@ -1,5 +1,4 @@
 import asyncio
-import json
 import logging
 import os
 import queue
@@ -9,7 +8,6 @@ import threading
 import time
 from typing import Any, Dict, AsyncGenerator
 
-from confz import EnvSource
 from dotenv import load_dotenv
 from vllm import SamplingParams
 from vllm.engine.arg_utils import AsyncEngineArgs
@@ -84,32 +82,6 @@ class RandomAsyncIterator:
             pass  # If the iterable is not found, ignore the error
 
 
-def get_backend_configs():
-    # Manually load env var as ConfZ does not handle complex types (list)
-    stop_tokens: str | None = os.getenv("LFAI_STOP_TOKENS")
-    if stop_tokens:
-        processed_stop_tokens = json.loads(stop_tokens)
-    else:
-        processed_stop_tokens = []
-    del os.environ["LFAI_STOP_TOKENS"]
-
-    env_source = EnvSource(
-        allow_all=True,
-        prefix="LFAI_",
-        remap={
-            "stop_tokens": "stop_tokens",
-        },
-    )
-
-    BackendConfig.CONFIG_SOURCES = env_source
-    # Initialize an immutable config from env variables without stop_tokens list
-    backend_configs: BackendConfig = BackendConfig()
-    # Updates "processed_stop_tokens" without triggering Pydantic validation errors
-    backend_configs.model_copy(update={"stop_tokens": processed_stop_tokens})
-
-    return backend_configs
-
-
 def get_config_from_request(request: ChatCompletionRequest | CompletionRequest):
     return GenerationConfig(
         max_new_tokens=request.max_new_tokens,
@@ -158,13 +130,11 @@ class Model:
         if AppConfig().backend_options.worker_use_ray:
             os.environ["VLLM_ALLOW_WORKER_USE_RAY"] = "1"
 
-        self.backend_config = get_backend_configs()
-        self.model = self.backend_config.model.source
         self.engine_args = AsyncEngineArgs(
             # Taken from the LFAI SDK general LLM configuration
-            model=self.model,
-            max_seq_len_to_capture=self.backend_config.max_context_length,
-            max_model_len=self.backend_config.max_context_length,
+            model=BackendConfig().model.source,
+            max_seq_len_to_capture=BackendConfig().max_context_length,
+            max_model_len=BackendConfig().max_context_length,
             # Taken from the vLLM-specific configuration
             enforce_eager=AppConfig().backend_options.enforce_eager,
             quantization=quantization,
@@ -272,7 +242,7 @@ class Model:
         sampling_params = SamplingParams(**params)
 
         logger.info(f"Begin generation for request {request_id}")
-        logger.debug(f"{request_id} sampling_paramms: {sampling_params}")
+        logger.debug(f"{request_id} sampling_params: {sampling_params}")
 
         # Generate texts from the prompts. The output is a list of RequestOutput objects
         # that contain the prompt, generated text, and other information.

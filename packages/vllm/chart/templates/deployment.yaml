@@ -63,7 +63,7 @@ spec:
           {{- end }}
           envFrom:
             - configMapRef:
-                name: "{{ .Values.nameOverride }}-env-configmap"
+                name: "{{ .Values.nameOverride }}-engine-configmap"
           ports:
             - name: http
               containerPort: {{ .Values.service.port }}
