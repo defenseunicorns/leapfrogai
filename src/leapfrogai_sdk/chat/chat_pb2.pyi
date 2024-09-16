@@ -67,6 +67,7 @@ class ChatCompletionRequest(_message.Message):
         def __init__(
             self, key: _Optional[str] = ..., value: _Optional[int] = ...
         ) -> None: ...
+
     CHAT_ITEMS_FIELD_NUMBER: _ClassVar[int]
     MAX_NEW_TOKENS_FIELD_NUMBER: _ClassVar[int]
     TEMPERATURE_FIELD_NUMBER: _ClassVar[int]
