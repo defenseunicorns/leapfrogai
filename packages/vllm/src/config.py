@@ -6,6 +6,7 @@ from pydantic import Field
 
 class ConfigOptions(BaseConfig):
     tensor_parallel_size: int = Field(
+        default=1,
         title="GPU Utilization Count",
         description="The number of gpus to spread the tensor processing across."
         "This must be divisible to the number of attention heads in the model",
