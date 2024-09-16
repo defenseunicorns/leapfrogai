@@ -172,11 +172,11 @@ class Model:
 
         # Collect LeapfrogAI SDK-defined parameters not aligned with vLLM SamplingParams
         params = {
-            "max_tokens": getattr(config, "max_new_tokens", 8192),
+            "max_tokens": getattr(config, "max_new_tokens"),
         }
 
         # Collect LeapfrogAI SDK-defined parameters directly aligned with vLLM SamplingParams
-        optional_params = [
+        aligned_params = [
             "temperature",
             "top_p",
             "top_k",
@@ -194,7 +194,7 @@ class Model:
 
         # Add only the parameters that exist in the request
         # vLLM will provide defaults for the rest, if not specified
-        for param in optional_params:
+        for param in aligned_params:
             if param in config:
                 params[param] = config[param]
 

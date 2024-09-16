@@ -45,12 +45,12 @@ class ConfigOptions(BaseConfig):
     )
     engine_use_ray: bool = Field(
         title="Use Ray for Engine",
-        description="Enable distributed inferencing for multi-node situations.",
+        description="If True, uses Ray for managing the execution engine. Allows for distributed inferencing in multi-node situations.",
         examples=[True, False],
     )
     worker_use_ray: bool = Field(
         title="Use Ray for Worker",
-        description="Enable distributed inferencing for multi-node situations.",
+        description="If True, uses Ray for distributed worker management. Allows for distributed inferencing in multi-node situations.",
         examples=[True, False],
     )
     trust_remote_code: bool = Field(

@@ -101,7 +101,6 @@ def LLM(_cls):
 
     class NewClass(_cls):
         config: BackendConfig
-        request_config: GenerationConfig
 
         def __init__(self, *args, **kwargs):
             super().__init__(*args, **kwargs)
@@ -128,7 +127,6 @@ def LLM(_cls):
                 watermark=request.watermark,
                 seed=request.seed,
             )
-            self.request_config = config
             return self.generate(prompt, config)
 
         async def ChatComplete(
