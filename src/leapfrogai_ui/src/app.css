@@ -82,7 +82,6 @@
   .full-width-minus-sidebar {
     max-width: calc(100% - var(--sidebar-width));
   }
-
 }
 
 @layer components {
