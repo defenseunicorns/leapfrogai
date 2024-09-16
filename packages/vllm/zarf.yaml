@@ -11,12 +11,13 @@ constants:
     value: "###ZARF_PKG_TMPL_IMAGE_VERSION###"
   - name: MODEL_REPO_ID
     description: "The HuggingFace repository ID"
-    value: "TheBloke/Synthia-7B-v2.0-GPTQ"
+    value: "###ZARF_PKG_TMPL_MODEL_REPO_ID###"
   - name: MODEL_REVISION
-    value: "gptq-4bit-32g-actorder_True"
+    description: "The HuggingFace git branch or commit hash"
+    value: "###ZARF_PKG_TMPL_MODEL_REVISION###"
   - name: MODEL_PATH
-    description: "Location of the Zarf Injected model files"
-    value: "/data/.model/"
+    description: "Defines the location of the Zarf Injected model files in the vLLM container"
+    value: "###ZARF_PKG_TMPL_MODEL_PATH###"
 
 variables:
   # vLLM runtime configuration (usually influenced by .env in local development)
@@ -132,5 +133,5 @@ components:
           # NOTE: This assumes python is installed and in $PATH and 'huggingface_hub[cli,hf_transfer]' has been installed
           - cmd: "python src/model_download.py"
             env:
-              - LFAI_REPO_ID="###ZARF_CONST_MODEL_REPO_ID###"
-              - LFAI_REVISION="###ZARF_CONST_MODEL_REVISION###"
+              - LFAI_REPO_ID=###ZARF_PKG_TMPL_MODEL_REPO_ID###
+              - LFAI_REVISION=###ZARF_PKG_TMPL_MODEL_REVISION###

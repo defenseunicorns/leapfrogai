@@ -1,0 +1,10 @@
+package:
+  create:
+    set:
+      # x-release-please-start-version
+      image_version: "0.12.2"
+      # x-release-please-end
+
+      model_repo_id: "TheBloke/Synthia-7B-v2.0-GPTQ"
+      model_revision: "gptq-4bit-32g-actorder_True"
+      model_path: "/data/.model/"
