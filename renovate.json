@@ -33,21 +33,21 @@
           "matchHost": "registry1.dso.mil",
           "hostType": "docker",
           "description": "Encrypted creds for registry1, scoped to this Github org using: https://docs.renovatebot.com/getting-started/migrating-secrets/#migrate-your-secrets-in-encrypted-form",
-          "username": "{{ secrets.IRONBANK_USERNAME }}",
-          "password": "{{ secrets.IRONBANK_PASSWORD }}"
+          "username": "",
+          "password": ""
       },
       {
           "matchHost": "cgr.dev",
           "description": "Encrypted creds for cgr.dev, scoped to this Github org using: https://docs.renovatebot.com/getting-started/migrating-secrets/#migrate-your-secrets-in-encrypted-form",
-          "username": "{{ secrets.CHAINGUARD_USERNAME }}",
-          "password": "{{ secrets.CHAINGUARD_PASSWORD }}"
+          "username": "",
+          "password": ""
       },
       {
           "matchHost": "ghcr.io",
           "hostType": "docker",
           "description": "Encrypted creds for ghcr.io, scoped to this Github org using: https://docs.renovatebot.com/getting-started/migrating-secrets/#migrate-your-secrets-in-encrypted-form",
           "username": "renovate",
-          "password": "{{ secrets.DEFENSEUNICORNS_PACKAGE_READ_PAT }}"
+          "password": ""
       }
   ],
   "regexManagers": [
