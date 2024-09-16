@@ -65,7 +65,7 @@ class NIAH_Runner:
         self.current_file = None
         self.current_assistant = None
         self.message_prompt = os.environ.get("NIAH_MESSAGE_PROMPT", message_prompt)
-        self.model = model or os.environ.get("MODEL_TO_EVALUATE")
+        self.model = os.environ.get("MODEL_TO_EVALUATE", model)
         self.temperature = float(os.environ.get("TEMPERATURE", temperature))
         self.add_padding = (
             bool(strtobool(os.environ.get("NIAH_ADD_PADDING")))
