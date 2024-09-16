@@ -143,7 +143,7 @@ class Composer(BaseModel):
                 rag_results_raw: SingleAPIResponse[
                     SearchResponse
                 ] = await query_service.query_rag(
-                    query=query_message.content,
+                    query=query_message.content_as_str(),
                     vector_store_id=vector_store_id,
                 )
                 rag_responses: SearchResponse = rag_results_raw.data
@@ -210,7 +210,7 @@ class Composer(BaseModel):
 
         choice: ChatChoice = cast(ChatChoice, chat_response.choices[0])
 
-        message = from_text_to_message(choice.message.content, file_ids)
+        message = from_text_to_message(choice.message.content_as_str(), file_ids)
 
         create_message_request = CreateMessageRequest(
             role=message.role,
