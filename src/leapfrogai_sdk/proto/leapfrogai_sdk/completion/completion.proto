@@ -27,7 +27,7 @@ message CompletionRequest {
     optional float repetition_penalty = 12;
     optional float presence_penalty = 13;
     optional float frequence_penalty = 14;
-    optional int32 best_of = 15;
+    optional string best_of = 15;
     map<string, int32> logit_bias = 16;  // Maps are represented as a pair of a key type and a value type.
     optional bool return_full_text = 17;
     optional int32 truncate = 18;

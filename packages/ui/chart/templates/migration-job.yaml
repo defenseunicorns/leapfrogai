@@ -1,0 +1,34 @@
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: {{ include "chart.fullname" . }}-migrations-{{ .Values.migration.image.tag | default .Chart.AppVersion }}
+  namespace: {{ .Release.Namespace | default "leapfrogai" }}
+  labels:
+    {{- include "chart.labels" . | nindent 4 }}
+spec:
+  template:
+    metadata:
+      labels:
+        {{- include "chart.selectorLabels" . | nindent 8 }}
+    spec:
+      securityContext:
+        {{- toYaml .Values.podSecurityContext | nindent 8 }}
+      containers:
+        - name: supabase-cli
+          image: "{{ .Values.migration.image.repository }}:{{ .Values.migration.image.tag | default .Chart.AppVersion }}"
+          {{- with .Values.migration.env }}
+          env:
+            {{- toYaml . | nindent 12 }}
+            - name: MIGRATION_NAMESPACE
+              value: "{{ default "leapfrogai" $.Release.Namespace }}"
+          {{- end }}
+          command: ["/bin/sh"]
+          args:
+            - -c
+            - >-
+              supabase migration fetch --db-url="postgresql://postgres:$POSTGRES_PASSWORD@$MIGRATION_SERVICE_NAME.$MIGRATION_NAMESPACE.svc.cluster.local:$MIGRATION_SERVICE_PORT/postgres" --debug || true &&
+              supabase db push --db-url="postgresql://postgres:$POSTGRES_PASSWORD@$MIGRATION_SERVICE_NAME.$MIGRATION_NAMESPACE.svc.cluster.local:$MIGRATION_SERVICE_PORT/postgres" --include-all --debug
+          securityContext:
+            {{- toYaml .Values.migration.securityContext | nindent 12 }}
+      restartPolicy: Never
+  backoffLimit: 4

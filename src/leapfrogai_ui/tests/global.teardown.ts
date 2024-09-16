@@ -1,11 +1,10 @@
-import { test as teardown } from './fixtures';
+import { test } from '@playwright/test';
 import { cleanup } from './helpers/cleanup';
+import { getOpenAIClient } from './fixtures';
 
-// teardown not necessary in CI testing envs
-if (process.env.TEST_ENV !== 'CI') {
-  teardown('teardown', async ({ openAIClient }) => {
-    console.log('cleaning up...');
-    await cleanup(openAIClient);
-    console.log('clean up complete');
-  });
-}
+test('teardown', async () => {
+  const openAIClient = await getOpenAIClient();
+  console.log('cleaning up...');
+  await cleanup(openAIClient);
+  console.log('clean up complete');
+});
