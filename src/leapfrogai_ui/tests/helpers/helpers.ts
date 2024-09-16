@@ -4,7 +4,13 @@ import { createClient } from '@supabase/supabase-js';
 
 export const supabase = createClient(
   process.env.PUBLIC_SUPABASE_URL!,
-  process.env.SERVICE_ROLE_KEY!
+  process.env.SERVICE_ROLE_KEY!,
+  {
+    auth: {
+      autoRefreshToken: false,
+      persistSession: false
+    }
+  }
 );
 
 export const SHORT_RESPONSE_PROMPT = 'respond with no more than one sentence';
