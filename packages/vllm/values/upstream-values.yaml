@@ -2,6 +2,39 @@ image:
   repository: "ghcr.io/defenseunicorns/leapfrogai/vllm"
   tag: "###ZARF_CONST_IMAGE_VERSION###"
 
+nameOverride: "###ZARF_VAR_NAME_OVERRIDE###"
+
+leapfrogaiConfig:
+  model:
+    source: "###ZARF_CONST_MODEL_PATH###"
+  maxContextLength: "32768"
+  stopTokens: "###ZARF_VAR_STOP_TOKENS###"
+  promptFormat:
+    chat:
+      system: "###ZARF_VAR_PROMPT_FORMAT_CHAT_SYSTEM###"
+      assistant: "###ZARF_VAR_PROMPT_FORMAT_CHAT_ASSISTANT###"
+      user: "###ZARF_VAR_PROMPT_FORMAT_CHAT_USER###"
+  defaults:
+    temperature: "###ZARF_VAR_TEMPERATURE###"
+    topP: "###ZARF_VAR_TOP_P###"
+    topK: "###ZARF_VAR_TOP_K###"
+    repetitionPenalty: "###ZARF_VAR_REPETITION_PENALTY###"
+    maxNewTokens: "###ZARF_VAR_MAX_NEW_TOKENS###"
+
+
+vllmConfig:
+  trustRemoteCode: "###ZARF_VAR_TRUST_REMOTE_CODE###"
+  tensorParallelSize: "###ZARF_VAR_TENSOR_PARALLEL_SIZE###"
+  enforceEager: "###ZARF_VAR_ENFORCE_EAGER###"
+  gpuMemoryUtilization: "###ZARF_VAR_GPU_MEMORY_UTILIZATION###"
+  workerUseRay: "###ZARF_VAR_WORKER_USE_RAY###"
+  engineUseRay: "###ZARF_VAR_ENGINE_USE_RAY###"
+  quantization: "###ZARF_VAR_QUANTIZATION###"
+
+env:
+  - name: LFAI_LOG_LEVEL
+    value: "INFO"
+
 gpu:
   runtimeClassName: "###ZARF_VAR_GPU_RUNTIME###"
 

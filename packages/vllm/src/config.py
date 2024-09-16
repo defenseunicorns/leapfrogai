@@ -84,9 +84,8 @@ class AppConfig(BaseConfig):
     CONFIG_SOURCES = [
         EnvSource(
             allow_all=True,
-            prefix="LAI_",
+            prefix="LFAI_",
             remap={
-                "model_source": "backend_options.model_source",
                 "tensor_parallel_size": "backend_options.tensor_parallel_size",
                 "trust_remote_code": "backend_options.trust_remote_code",
                 "enforce_eager": "backend_options.enforce_eager",
@@ -104,7 +103,7 @@ class DownloadConfig(BaseConfig):
     CONFIG_SOURCES = [
         EnvSource(
             allow_all=True,
-            prefix="LAI_",
+            prefix="LFAI_",
             remap={
                 "repo_id": "download_options.repo_id",
                 "revision": "download_options.revision",

@@ -77,23 +77,6 @@ FROM nvidia/cuda:12.2.2-runtime-ubuntu22.04
 # set SDK location
 ARG SDK_DEST=src/leapfrogai_sdk/build
 
-# model-specific arguments
-ARG TRUST_REMOTE_CODE="True" \
-    MODEL_SOURCE="/data/.model/" \
-    MAX_CONTEXT_LENGTH=32768 \
-    STOP_TOKENS='["</s>"]' \
-    PROMPT_FORMAT_CHAT_SYSTEM="<|im_start|>system\n{}<|im_end|>\n" \
-    PROMPT_FORMAT_CHAT_USER="<|im_start|>user\n{}<|im_end|>\n" \
-    PROMPT_FORMAT_CHAT_ASSISTANT="<|im_start|>assistant\n{}<|im_end|>\n" \
-    PROMPT_FORMAT_DEFAULTS_TOP_P=1.0 \
-    PROMPT_FORMAT_DEFAULTS_TOP_K=0 \
-    TENSOR_PARALLEL_SIZE=1 \
-    ENFORCE_EAGER=False \
-    QUANTIZATION="None" \
-    GPU_MEMORY_UTILIZATION=0.90 \
-    WORKER_USE_RAY=True \
-    ENGINE_USE_RAY=True
-
 # setup nonroot user and permissions
 USER root
 RUN groupadd -g 65532 vglusers && \
@@ -110,24 +93,8 @@ COPY --from=builder --chown=nonroot:nonroot /home/leapfrogai/packages/vllm/src /
 # copy-in python binaries
 COPY --from=builder --chown=nonroot:nonroot /home/nonroot/.pyenv/versions/3.11.6/ /home/nonroot/.pyenv/versions/3.11.6/
 
-# load ARG values into env variables for pickup by confz
-ENV LAI_TRUST_REMOTE_CODE=${TRUST_REMOTE_CODE} \
-    LAI_MODEL_SOURCE=${MODEL_SOURCE} \
-    LAI_MAX_CONTEXT_LENGTH=${MAX_CONTEXT_LENGTH} \
-    LAI_STOP_TOKENS=${STOP_TOKENS} \
-    LAI_PROMPT_FORMAT_CHAT_SYSTEM=${PROMPT_FORMAT_CHAT_SYSTEM} \
-    LAI_PROMPT_FORMAT_CHAT_USER=${PROMPT_FORMAT_CHAT_USER} \
-    LAI_PROMPT_FORMAT_CHAT_ASSISTANT=${PROMPT_FORMAT_CHAT_ASSISTANT} \
-    LAI_PROMPT_FORMAT_DEFAULTS_TOP_P=${PROMPT_FORMAT_DEFAULTS_TOP_P} \
-    LAI_PROMPT_FORMAT_DEFAULTS_TOP_K=${PROMPT_FORMAT_DEFAULTS_TOP_K} \
-    LAI_TENSOR_PARALLEL_SIZE=${TENSOR_PARALLEL_SIZE} \
-    LAI_QUANTIZATION=${QUANTIZATION} \
-    LAI_ENFORCE_EAGER=${ENFORCE_EAGER} \
-    LAI_GPU_MEMORY_UTILIZATION=${GPU_MEMORY_UTILIZATION} \
-    LAI_WORKER_USE_RAY=${WORKER_USE_RAY} \
-    LAI_ENGINE_USE_RAY=${ENGINE_USE_RAY} \
-    # remove vLLM callback to stats server
-    VLLM_NO_USAGE_STATS=1
+# remove vLLM callback to stats server
+ENV VLLM_NO_USAGE_STATS=1
 
 ENV PATH="/home/leapfrogai/.venv/bin:$PATH"
 

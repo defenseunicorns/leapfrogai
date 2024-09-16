@@ -9,26 +9,93 @@ metadata:
 constants:
   - name: IMAGE_VERSION
     value: "###ZARF_PKG_TMPL_IMAGE_VERSION###"
+  - name: MODEL_REPO_ID
+    description: "The HuggingFace repository ID"
+    value: "TheBloke/Synthia-7B-v2.0-GPTQ"
+  - name: MODEL_REVISION
+    value: "gptq-4bit-32g-actorder_True"
+  - name: MODEL_PATH
+    description: "Location of the Zarf Injected model files"
+    value: "/data/.model/"
 
 variables:
+  # vLLM runtime configuration
+  - name: TRUST_REMOTE_CODE
+    description: "If True, allows the execution of code within the model files directory"
+    default: "True"
+    pattern: "^(True|False)$"
+  - name: TENSOR_PARALLEL_SIZE
+    description: "The number of tensor parallelism splits, typically used for model parallelism across GPUs"
+    default: "1"
+    pattern: "^[1-9][0-9]*$"
+  - name: ENFORCE_EAGER
+    description: "If set to True, enforces eager execution mode instead of lazy execution, impacting performance"
+    default: "False"
+    pattern: "^(True|False)$"
+  - name: GPU_MEMORY_UTILIZATION
+    description: "The fraction of GPU memory to be utilized, expressed as a decimal value between 0.01 and 0.99"
+    default: "0.90"
+    pattern: ^0\.(0[1-9]|[1-9][0-9])$
+  - name: WORKER_USE_RAY
+    description: "If True, uses Ray for distributed worker management"
+    default: "True"
+    pattern: "^(True|False)$"
+  - name: ENGINE_USE_RAY
+    description: "If True, uses Ray for managing the execution engine"
+    default: "True"
+    pattern: "^(True|False)$"
+  - name: QUANTIZATION
+    description: "If None, allows vLLM to automatically detect via model files and configuration"
+    default: "None"
+  # LeapfrogAI SDK runtime configuration
+  - name: MAX_CONTEXT_LENGTH
+    description: "The maximum number of tokens the model can process in a single input before the inferencing engine's overflow strategy is used"
+    default: "32768"
+    pattern: "^[1-9][0-9]*$"
+  - name: STOP_TOKENS
+    description: "A set of special tokens that signal the model to stop producing further output, delimited using a comma and space"
+    default: "</s>, <|im_end|>, <|endoftext|>"
+    pattern: ^(<[^,]+>\s*,\s*)*<[^,]+>\s*$
+  - name: PROMPT_FORMAT_CHAT_SYSTEM
+    default: "SYSTEM: {}\n"
+  - name: PROMPT_FORMAT_CHAT_USER
+    default: "USER: {}\n"
+  - name: PROMPT_FORMAT_CHAT_ASSISTANT
+    default: "ASSISTANT: {}\n"
+  - name: PROMPT_FORMAT_DEFAULTS_TOP_P
+    description: "The cumulative probability threshold for token sampling, where 1.0 represents no restriction"
+    default: "1.0"
+    pattern: ^(0(\.\d+)?|1(\.0+)?)$
+  - name: PROMPT_FORMAT_DEFAULTS_TOP_K
+    description: "The number of top-K tokens to consider during sampling, where 0 disables top-K sampling"
+    default: "0"
+    pattern: ^\d+$
+  - name: TEMPERATURE
+    description: "Controls the randomness of the model's output"
+    default: "0.1"
+    pattern: ^(0(\.\d+)?|1(\.0+)?)$
+  # Pod deployment configuration
   - name: GPU_LIMIT
-    description: The GPU limit for the model inferencing. Must be 1 or more.
+    description: "The GPU limit for the model inferencing. Must be 1 or more."
     default: "1"
     pattern: "^[1-9][0-9]*$"
   - name: GPU_RUNTIME
-    description: The GPU runtime name for the model inferencing.
+    description: "The GPU runtime name for the model inferencing."
     default: "nvidia"
     pattern: "^(nvidia)?$"
+  - name: NAME_OVERRIDE
+    description: "Provide an override for the name of the deployment (e.g., the model name)"
+    default: "vllm"
   - name: PVC_SIZE
-    description: Size of the PVC used for model storage.
+    description: "Size of the PVC used for model storage."
     default: "15Gi"
     pattern: "^[0-9]+[a-zA-Z]+$"
   - name: PVC_ACCESS_MODE
-    description: Access mode of the PVC used for model storage.
+    description: "Access mode of the PVC used for model storage."
     default: "ReadWriteOnce"
     pattern: "^(ReadWriteOnce|ReadOnlyMany|ReadWriteMany)$"
   - name: PVC_STORAGE_CLASS
-    description: Storage class of the PVC used for model storage.
+    description: "Storage class of the PVC used for model storage."
     default: "local-path"
 
 components:
@@ -37,31 +104,33 @@ components:
     only:
       flavor: upstream
     charts:
-      - name: vllm-model
+      - name: "###ZARF_VAR_NAME_OVERRIDE###-model"
         namespace: leapfrogai
         localPath: chart
-        releaseName: vllm-model
+        releaseName: "###ZARF_VAR_NAME_OVERRIDE###-model"
         # x-release-please-start-version
         version: 0.12.2
         # x-release-please-end
         valuesFiles:
           - "values/upstream-values.yaml"
     images:
-      - ghcr.io/defenseunicorns/leapfrogai/vllm:###ZARF_PKG_TMPL_IMAGE_VERSION###
-      - cgr.dev/chainguard/bash:latest
+      - "ghcr.io/defenseunicorns/leapfrogai/vllm:###ZARF_PKG_TMPL_IMAGE_VERSION###"
+      - "cgr.dev/chainguard/bash:latest"
     dataInjections:
-      - source: .model/
+      # location where locally downloaded model files are located
+      - source: ".model/"
         target:
-          namespace: leapfrogai
-          selector: app=lfai-vllm
-          container: data-loader
-          path: /data/.model
+          namespace: "leapfrogai"
+          selector: "app=lfai-###ZARF_VAR_NAME_OVERRIDE###"
+          container: "data-loader"
+          # location in the container for injection of the model files
+          path: "###ZARF_CONST_MODEL_PATH###"
         compress: true
     actions:
       onCreate:
         before:
           # NOTE: This assumes python is installed and in $PATH and 'huggingface_hub[cli,hf_transfer]' has been installed
-          - cmd: python src/model_download.py
+          - cmd: "python src/model_download.py"
             env:
-              - LAI_REPO_ID=defenseunicorns/Hermes-2-Pro-Mistral-7B-4bit-32g
-              - LAI_REVISION=main
+              - LFAI_REPO_ID=###ZARF_CONST_MODEL_REPO_ID###
+              - LFAI_REVISION=###ZARF_CONST_MODEL_REVISION###

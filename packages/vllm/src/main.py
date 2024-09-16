@@ -86,17 +86,18 @@ class RandomAsyncIterator:
 
 def get_backend_configs():
     # Manually load env var as ConfZ does not handle complex types (list)
-    stop_tokens: str | None = os.getenv("LAI_STOP_TOKENS")
+    stop_tokens: str | None = os.getenv("LFAI_STOP_TOKENS")
     if stop_tokens:
         processed_stop_tokens = json.loads(stop_tokens)
     else:
         processed_stop_tokens = []
-    del os.environ["LAI_STOP_TOKENS"]
+    del os.environ["LFAI_STOP_TOKENS"]
 
     env_source = EnvSource(
         allow_all=True,
-        prefix="LAI_",
+        prefix="LFAI_",
         remap={
+            "model_source": "model.source",
             "max_context_length": "max_context_length",
             "stop_tokens": "stop_tokens",
             "prompt_format_chat_system": "prompt_format.chat.system",
@@ -165,12 +166,13 @@ class Model:
             os.environ["VLLM_ALLOW_WORKER_USE_RAY"] = "1"
 
         self.backend_config = get_backend_configs()
+        self.model = self.backend_config.model.source
         self.engine_args = AsyncEngineArgs(
             # Taken from the LFAI SDK general LLM configuration
+            model=self.model,
             max_seq_len_to_capture=self.backend_config.max_context_length,
             max_model_len=self.backend_config.max_context_length,
             # Taken from the vLLM-specific configuration
-            model=AppConfig().backend_options.model_source,
             enforce_eager=AppConfig().backend_options.enforce_eager,
             quantization=quantization,
             engine_use_ray=AppConfig().backend_options.engine_use_ray,
@@ -241,16 +243,41 @@ class Model:
         """Initiate a response generation for the given prompt and configuration, adding the result to the iterator
         pool."""
 
-        sampling_params = SamplingParams(
-            temperature=config.temperature,
-            # Clamp top_p value to prevent float errors
-            top_p=clamp(config.top_p, 0.0 + sys.float_info.epsilon, 1.0),
-            # Restrict top_k to valid values, -1 disables top_k
-            top_k=config.top_k if config.top_k >= 1 else -1,
-            stop=self.backend_config.stop_tokens,
-            max_tokens=config.max_new_tokens,
-            skip_special_tokens=False,
-        )
+        request = get_config_from_request(self.request)
+
+        # Collect parameters from request, with default fallbacks defined in the LeapfrogAI SDK BackendConfig (config.yaml, ConfigMap)
+        params = {
+            "temperature": request.get("temperature", config.temperature),
+            "top_p": clamp(
+                request.get("top_p", config.top_p), 0.0 + sys.float_info.epsilon, 1.0
+            ),
+            "top_k": request.get("top_k", config.top_k if config.top_k >= 1 else -1),
+            "stop": self.backend_config.stop_tokens,
+            "max_tokens": request.get("max_tokens", config.max_new_tokens),
+            "skip_special_tokens": request.get("skip_special_tokens", False),
+        }
+
+        # Optional parameters that come from the request object and should be gracefully omitted if not present
+        optional_params = [
+            "n",
+            "repetition_penalty",
+            "presence_penalty",
+            "best_of",
+            "logit_bias",
+            "return_full_text",
+            "truncate",
+            "typical_p",
+            "seed",
+        ]
+
+        # Add only the optional parameters that exist in the request
+        for param in optional_params:
+            if param in request:
+                params[param] = request[param]
+
+        # Pass the collected params to SamplingParams
+        sampling_params = SamplingParams(**params)
+
         logger.info(f"Begin generation for request {request_id}")
         logger.debug(f"{request_id} sampling_paramms: {sampling_params}")
 
