@@ -9,10 +9,10 @@ The LeapfrogAI RAG evaluation system assumes the following:
 - A valid LeapfrogAI API key is set (for more info, see the [API README](/src/leapfrogai_api/README.md))
 - For all LLM-enabled metrics, a valid Anthropic API key is set
 
-For the easiest setup, copy the `.env-example` file:
+For the easiest setup, copy the `.env.example` file:
 
 ```bash
-cp .env-example .env
+cp .env.example .env
 ```
 
 Within `.env`, replace the necessary environment variables:
