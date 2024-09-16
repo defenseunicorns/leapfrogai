@@ -30,7 +30,6 @@
   import FileChatActions from '$components/FileChatActions.svelte';
 
   export let data;
-  $: console.log('$chatMessages', $chatMessages)
 
   /** LOCAL VARS **/
   let lengthInvalid: boolean; // bound to child LFTextArea
@@ -367,7 +366,7 @@
 
       <div id="chat-row" class="flex w-full items-center gap-1">
         {#if !assistantMode}
-          <ChatFileUploadForm bind:form={data.form} bind:uploadingFiles bind:uploadedFiles bind:attachedFileMetadata />
+          <ChatFileUploadForm bind:uploadingFiles bind:uploadedFiles bind:attachedFileMetadata />
         {/if}
         <LFTextArea
           id="chat"

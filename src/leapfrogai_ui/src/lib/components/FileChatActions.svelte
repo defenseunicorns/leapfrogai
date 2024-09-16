@@ -1,5 +1,6 @@
 <script lang="ts">
   import { Button, Spinner } from 'flowbite-svelte';
+  import { fade } from 'svelte/transition';
   import { shortenFileName } from '$helpers/stringHelpers';
   import { saveMessage } from '$helpers/chatHelpers';
   import type { FileMetadata, LFFile } from '$lib/types/files';
@@ -11,15 +12,16 @@
   export let uploadedFiles: LFFile[];
   export let attachedFileMetadata: FileMetadata[];
   export let threadId: string;
-  export let translating: boolean;
+
+  let translatingId: string;
 
   $: audioFiles = attachedFileMetadata.filter((file) => file.type.startsWith('audio/'));
 
   const customBtnClass =
-    'rounded text-xs px-2.5 py-0.5 text-gray-500 bg-gray-100 hover:bg-gray-400 dark:bg-gray-100 dark:text-gray-900 dark:hover:bg-gray-300 ';
+    'rounded text-xs px-2.5 py-0.5 text-gray-500 bg-gray-100 hover:bg-gray-400 dark:bg-gray-100 dark:text-gray-900 dark:hover:bg-gray-300 truncate';
 
   const translateFile = async (fileMetadata: FileMetadata) => {
-    translating = true;
+    translatingId = fileMetadata.id || 'unknown';
     await threadsStore.setSendingBlocked(true);
     try {
       if (!threadId) {
@@ -65,35 +67,37 @@
 
       uploadedFiles = uploadedFiles.filter((file) => file.id !== fileMetadata.id);
       attachedFileMetadata = attachedFileMetadata.filter((file) => file.id !== fileMetadata.id);
-    } catch (e) {
-      console.error(e);
+    } catch {
+      translatingId = '';
       toastStore.addToast(FILE_TRANSLATION_ERROR());
       await threadsStore.setSendingBlocked(false);
     }
     await threadsStore.setSendingBlocked(false);
-    translating = false;
+    translatingId = '';
   };
 </script>
 
 <div
   id="uploaded-files-actions"
   class={audioFiles.length > 0
-    ? 'ml-6 flex max-w-full  gap-2 overflow-x-auto bg-gray-700'
+    ? 'ml-6 flex max-w-full gap-2 overflow-x-auto bg-gray-700'
     : 'hidden'}
 >
   {#each audioFiles as file}
-    <Button
-      color="dark"
-      class={customBtnClass}
-      on:click={() => translateFile(file)}
-      disabled={translating}
-    >
-      {#if translating}
-        <Spinner class="me-3" size="4" color="white" /><span
-          >{`Translating ${shortenFileName(file.name)}`}</span
-        >
-      {:else}
-        {`Translate ${shortenFileName(file.name)}`}{/if}</Button
-    >
+    <div in:fade={{ duration: 150 }} out:fade={{ duration: 150 }}>
+      <Button
+        color="dark"
+        class={customBtnClass}
+        on:click={() => translateFile(file)}
+        disabled={translatingId}
+      >
+        {#if translatingId === file.id}
+          <Spinner class="me-2" size="2" color="white" /><span
+            >{`Translating ${shortenFileName(file.name)}`}</span
+          >
+        {:else}
+          {`Translate ${shortenFileName(file.name)}`}{/if}</Button
+      >
+    </div>
   {/each}
 </div>

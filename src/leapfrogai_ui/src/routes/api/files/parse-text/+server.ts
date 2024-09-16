@@ -2,7 +2,6 @@ import type { RequestHandler } from './$types';
 import * as mupdf from 'mupdf';
 import { error, json } from '@sveltejs/kit';
 import { fileSchema } from '$schemas/files';
-import { shortenFileName } from '$helpers/stringHelpers';
 import type { LFFile } from '$lib/types/files';
 
 export const POST: RequestHandler = async ({ request, fetch, locals: { session } }) => {
