@@ -1,7 +1,9 @@
 import { array, mixed, object, string, ValidationError } from 'yup';
 import {
+  ACCEPTED_AUDIO_FILE_MIME_TYPES,
   ACCEPTED_MIME_TYPES,
   FILE_SIZE_ERROR_TEXT,
+  INVALID_AUDIO_FILE_TYPE_ERROR_TEXT,
   INVALID_FILE_TYPE_ERROR_TEXT,
   MAX_FILE_SIZE
 } from '$constants';
@@ -57,6 +59,33 @@ export const fileSchema = object({
       }
       if (!ACCEPTED_MIME_TYPES.includes(value.type)) {
         return new ValidationError(INVALID_FILE_TYPE_ERROR_TEXT);
+      }
+      return true;
+    })
+})
+  .noUnknown(true)
+  .strict();
+
+// TODO - max file size?
+// TODO - validate lf api accepted file types
+export const audioFileSchema = object({
+  file: mixed<File>()
+    .test('fileType', 'File is required.', (value) => value == null || value instanceof File)
+    .test('fileSize', FILE_SIZE_ERROR_TEXT, (value) => {
+      if (value == null) {
+        return true;
+      }
+      if (value.size > MAX_FILE_SIZE) {
+        return new ValidationError(FILE_SIZE_ERROR_TEXT);
+      }
+      return true;
+    })
+    .test('type', INVALID_AUDIO_FILE_TYPE_ERROR_TEXT, (value) => {
+      if (value == null) {
+        return true;
+      }
+      if (!ACCEPTED_AUDIO_FILE_MIME_TYPES.includes(value.type)) {
+        return new ValidationError(INVALID_AUDIO_FILE_TYPE_ERROR_TEXT);
       }
       return true;
     })

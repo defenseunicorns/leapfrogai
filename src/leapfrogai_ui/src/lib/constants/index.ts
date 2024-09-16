@@ -49,6 +49,29 @@ export const ACCEPTED_FILE_TYPES = [
   '.docx',
   '.csv'
 ];
+
+export const ACCEPTED_AUDIO_FILE_TYPES = [
+  '.flac',
+  '.mp3',
+  '.mp4',
+  '.mpeg',
+  '.mpga',
+  '.m4a',
+  '.ogg',
+  '.wav',
+  '.webm'
+];
+
+export const ACCEPTED_AUDIO_FILE_MIME_TYPES = [
+  'audio/flac',
+  'audio/mpeg',
+  'audio/mp4',
+  'audio/mpeg',
+  'audio/ogg',
+  'audio/wav',
+  'audio/webm'
+];
+
 export const ACCEPTED_MIME_TYPES = [
   'application/pdf', // .pdf
   'text/plain', // .txt, .text
@@ -78,6 +101,7 @@ export const NO_FILE_ERROR_TEXT = 'Please upload an image or select a pictogram'
 export const AVATAR_FILE_SIZE_ERROR_TEXT = `File must be less than ${MAX_AVATAR_SIZE / 1000000} MB`;
 export const FILE_SIZE_ERROR_TEXT = `File must be less than ${MAX_FILE_SIZE / 1000000} MB`;
 export const INVALID_FILE_TYPE_ERROR_TEXT = `Invalid file type, accepted types are: ${ACCEPTED_FILE_TYPES.join(', ')}`;
+export const INVALID_AUDIO_FILE_TYPE_ERROR_TEXT = `Invalid file type, accepted types are: ${ACCEPTED_AUDIO_FILE_TYPES.join(', ')}`;
 export const NO_SELECTED_ASSISTANT_ID = 'noSelectedAssistantId';
 
 export const FILE_UPLOAD_PROMPT = "The following are the user's files: ";
