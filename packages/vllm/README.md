@@ -16,13 +16,13 @@ See the LeapfrogAI documentation website for [system requirements](https://docs.
 
 The default model that comes with this backend in this repository's officially released images is a [4-bit quantization of the Synthia-7b model](https://huggingface.co/TheBloke/SynthIA-7B-v2.0-GPTQ).
 
-You can, optionally, specify different models during Zarf create:
+Optionally, you can specify a different model during Zarf create:
 
 ```bash
 uds zarf package create --confirm --set MODEL_REPO_ID=defenseunicorns/Hermes-2-Pro-Mistral-7B-4bit-32g --set MODEL_REVISION=main
 ```
 
-If your model changes there will likely be a need to change generation and engine runtime configurations, please see the [Zarf package definition](./zarf.yaml) and [values override file](./values/upstream-values.yaml) for details on what runtime parameters can be modified. These parameters are model-specific, and can be found in the HuggingFace model cards and/or configuration files (e.g., prompt templates).
+If you decide to use a different model, there will likely be a need to change generation and engine runtime configurations, please see the [Zarf package definition](./zarf.yaml) and [values override file](./values/upstream-values.yaml) for details on what runtime parameters can be modified. These parameters are model-specific, and can be found in the HuggingFace model cards and/or configuration files (e.g., prompt templates).
 
 ### Deployment
 
