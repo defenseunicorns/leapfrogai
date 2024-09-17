@@ -98,3 +98,19 @@ export const mockGetThread = (thread: LFThread) => {
     })
   );
 };
+
+export const mockTranslation = () => {
+  server.use(
+    http.post('/api/audio/translation', () => {
+      return HttpResponse.json({ text: 'fake translation' });
+    })
+  );
+};
+
+export const mockTranslationError = () => {
+  server.use(
+    http.post('/api/audio/translation', () => {
+      return new HttpResponse(null, { status: 500 });
+    })
+  );
+};

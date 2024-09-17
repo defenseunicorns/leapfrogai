@@ -72,7 +72,6 @@
       });
       await threadsStore.addMessageToStore(translationMessage);
       threadsStore.updateMessagesState(originalMessages, setMessages, translationMessage);
-
       attachedFiles = attachedFiles.filter((file) => file.id !== fileMetadata.id);
       attachedFileMetadata = attachedFileMetadata.filter((file) => file.id !== fileMetadata.id);
     } catch {
