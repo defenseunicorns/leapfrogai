@@ -54,7 +54,7 @@ concurrency:
 jobs:
   e2e_vllm:
     runs-on: ai-linux-x64-gpu
-    if: ${{ !github.event.pull_request.draft }}
+    # if: ${{ !github.event.pull_request.draft }}
 
     steps:
       - name: Checkout Repo
@@ -118,7 +118,7 @@ jobs:
 
           for node in $(uds zarf tools kubectl get nodes -o jsonpath='{.items[*].metadata.name}'); do
             echo "Checking GPU resources on node: $node"
-            uds zarf tools kubectl describe node $node | grep -i nvidia.com/gpu
+            uds zarf tools kubectl describe node $node
             echo "Checking taints on node: $node"
             uds zarf tools kubectl describe node $node | grep Taints
           done
