@@ -14,7 +14,9 @@
 
   export let uploadingFiles;
   export let attachedFileMetadata;
-  export let uploadedFiles: LFFile[];
+  export let attachedFiles: LFFile[];
+
+  let fileUploadBtnRef: HTMLInputElement;
 
   const handleUploadError = (errorMsg) => {
     uploadingFiles = false;
@@ -54,7 +56,7 @@
                   id: file.id,
                   name: shortenFileName(file.name),
                   type: file.type,
-                  text: '',
+                  text: ERROR_UPLOADING_FILE_MSG,
                   status: 'error',
                   errorText: ERROR_UPLOADING_FILE_MSG
                 };
@@ -74,7 +76,7 @@
                 id: file.id,
                 name: shortenFileName(file.name),
                 type: file.type,
-                text: '',
+                text: ERROR_UPLOADING_FILE_MSG,
                 status: 'error',
                 errorText: ERROR_UPLOADING_FILE_MSG
               };
@@ -113,40 +115,45 @@
   };
 </script>
 
-<LFFileUploadBtn
-  testId="upload-file-btn"
-  name="files"
-  outline
-  multiple
-  size="sm"
-  on:change={(e) => {
-    if (e.detail.length > MAX_NUM_FILES_UPLOAD) {
-      toastStore.addToast(MAX_NUM_FILES_UPLOAD_MSG_TOAST());
-      return;
-    }
-    uploadingFiles = true;
-    for (const file of e.detail) {
-      // Metadata is limited to 512 characters, we use a short id to save space
-      const id = uuidv4().substring(0, 8);
-      file.id = id;
-      attachedFileMetadata = [
-        ...attachedFileMetadata,
-        {
-          id,
-          name: file.name,
-          type: file.type,
-          status: 'uploading'
-        }
-      ];
-    }
 
-    uploadedFiles = [...e.detail];
-    convertFiles(e.detail);
-  }}
-  accept={ACCEPTED_FILE_TYPES}
-  disabled={uploadingFiles}
-  class="remove-btn-style flex  rounded-lg  p-1.5 text-gray-500 hover:bg-inherit dark:hover:bg-inherit"
->
-  <PaperClipOutline class="text-gray-300" />
-  <span class="sr-only">Attach file</span>
-</LFFileUploadBtn>
+  <LFFileUploadBtn
+    bind:ref={fileUploadBtnRef}
+    testId="upload-file-btn"
+    name="files"
+    outline
+    multiple
+    size="sm"
+    on:change={(e) => {
+      if (e.detail.length > MAX_NUM_FILES_UPLOAD) {
+        e.detail.pop();
+        toastStore.addToast(MAX_NUM_FILES_UPLOAD_MSG_TOAST());
+        return;
+      }
+      uploadingFiles = true;
+      for (const file of e.detail) {
+        // Metadata is limited to 512 characters, we use a short id to save space
+        const id = uuidv4().substring(0, 8);
+        file.id = id;
+        attachedFileMetadata = [
+          ...attachedFileMetadata,
+          {
+            id,
+            name: file.name,
+            type: file.type,
+            status: 'uploading'
+          }
+        ];
+      }
+
+      attachedFiles = [...e.detail];
+      convertFiles(e.detail);
+      fileUploadBtnRef.value = '';
+    }}
+    accept={ACCEPTED_FILE_TYPES}
+    disabled={uploadingFiles}
+    class="remove-btn-style flex  rounded-lg  p-1.5 text-gray-500 hover:bg-inherit dark:hover:bg-inherit"
+  >
+    <PaperClipOutline class="text-gray-300" />
+    <span class="sr-only">Attach file</span>
+  </LFFileUploadBtn>
+

@@ -26,7 +26,7 @@
   import { PaperPlaneOutline, StopOutline } from 'flowbite-svelte-icons';
   import type {FileMetadata, LFFile} from '$lib/types/files';
   import UploadedFileCards from '$components/UploadedFileCards.svelte';
-  import ChatFileUploadForm from '$components/ChatFileUploadForm.svelte';
+  import ChatFileUploadForm from '$components/ChatFileUpload.svelte';
   import FileChatActions from '$components/FileChatActions.svelte';
 
   export let data;
@@ -35,8 +35,8 @@
   let lengthInvalid: boolean; // bound to child LFTextArea
   let assistantsList: Array<{ id: string; text: string }>;
   let uploadingFiles = false;
-  let attachedFileMetadata: FileMetadata[] = [];
-  let uploadedFiles: LFFile[] = [];
+  let attachedFiles: LFFile[] = []; // the actual files uploaded
+  let attachedFileMetadata: FileMetadata[] = []; // metadata about the files uploaded, e.g. upload status, extracted text, etc...
   /** END LOCAL VARS **/
 
   /** REACTIVE STATE **/
@@ -231,10 +231,7 @@
             },
             lengthOverride: true
           });
-          setChatMessages([
-            ...$chatMessages,
-            { ...contextMsg, content: getMessageText(contextMsg) }
-          ]);
+          threadsStore.updateMessagesState($chatMessages, setChatMessages, contextMsg)
         }
 
         // Save with API
@@ -362,11 +359,11 @@
         attachedFileMetadata.length > 0 && 'py-4'
       )}
     >
-      <UploadedFileCards bind:attachedFileMetadata />
+      <UploadedFileCards bind:attachedFileMetadata bind:attachedFiles/>
 
       <div id="chat-row" class="flex w-full items-center gap-1">
         {#if !assistantMode}
-          <ChatFileUploadForm bind:uploadingFiles bind:uploadedFiles bind:attachedFileMetadata />
+          <ChatFileUploadForm bind:uploadingFiles bind:attachedFiles bind:attachedFileMetadata />
         {/if}
         <LFTextArea
           id="chat"
@@ -407,7 +404,7 @@
           >
         {/if}
       </div>
-      <FileChatActions bind:attachedFileMetadata threadId={data.thread?.id} bind:uploadedFiles/>
+      <FileChatActions bind:attachedFileMetadata threadId={data.thread?.id} bind:attachedFiles originalMessages={$chatMessages} setMessages={setChatMessages}/>
     </div>
   </div>
   <PoweredByDU />

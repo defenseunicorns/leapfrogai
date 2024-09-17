@@ -8,6 +8,7 @@ import type { LFThread, NewThreadInput } from '$lib/types/threads';
 import type { LFMessage } from '$lib/types/messages';
 import { getMessageText } from '$helpers/threads';
 import { saveMessage } from '$helpers/chatHelpers';
+import type { Message } from 'ai';
 
 type ThreadsStore = {
   threads: LFThread[];
@@ -207,6 +208,13 @@ const createThreadsStore = () => {
           subtitle: `Error creating message.`
         });
       }
+    },
+    updateMessagesState: (
+      originalMessages: Message[],
+      setMessages: (messages: Message[]) => void,
+      newMessage: LFMessage
+    ) => {
+      setMessages([...originalMessages, { ...newMessage, content: getMessageText(newMessage) }]);
     },
     deleteThread: async (id: string) => {
       try {

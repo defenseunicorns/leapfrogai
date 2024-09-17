@@ -1,11 +1,13 @@
 <script lang="ts">
   import UploadedFileCard from '$components/UploadedFileCard.svelte';
-  import type { FileMetadata } from '$lib/types/files';
+  import type {FileMetadata, LFFile} from '$lib/types/files';
 
+  export let attachedFiles: LFFile[];
   export let attachedFileMetadata: FileMetadata[];
 
   const handleRemoveFile = (id: string) => {
     attachedFileMetadata = attachedFileMetadata.filter((file) => file.id !== id);
+    attachedFiles = attachedFiles.filter((file) => file.id !== id);
   };
 </script>
 

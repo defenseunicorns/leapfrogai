@@ -20,7 +20,7 @@
     data-testid={`${fileMetadata.name}-file-uploaded-card`}
     horizontal
     padding="xs"
-    class="w-80 min-w-72"
+    class="w-80 min-w-72 border-none"
     on:mouseenter={() => (hovered = true)}
     on:mouseleave={() => (hovered = false)}
   >
