@@ -4,11 +4,11 @@ name: e2e-vllm
 on:
   pull_request:
     types:
-      - opened            # default trigger
-      - reopened          # default trigger
-      - synchronize       # default trigger
-      - ready_for_review  # don't run on draft PRs
-      - milestoned        # allows us to trigger on bot PRs
+      - opened # default trigger
+      - reopened # default trigger
+      - synchronize # default trigger
+      - ready_for_review # don't run on draft PRs
+      - milestoned # allows us to trigger on bot PRs
     paths:
       # Catch-all
       - "**"
@@ -149,6 +149,30 @@ jobs:
           docker image prune -af
           uds zarf package deploy packages/vllm/zarf-package-vllm-amd64-e2e-test.tar.zst -l=trace --confirm
           rm packages/vllm/zarf-package-vllm-amd64-e2e-test.tar.zst
+
+          # Check on pods being scheduled on GPUs
+          uds zarf tools kubectl get pods \
+            --all-namespaces \
+            --output=yaml \
+            | uds zarf tools yq eval -o=json '
+              ["Pod", "Namespace", "Container", "GPU"] as $header |
+              [$header] + [
+                .items[] |
+                .metadata as $metadata |
+                .spec.containers[] |
+                select(.resources.requests["nvidia.com/gpu"]) |
+                [
+                  $metadata.name,
+                  $metadata.namespace,
+                  .name,
+                  .resources.requests["nvidia.com/gpu"]
+                ]
+              ]' - \
+            | uds zarf tools yq -r '(.[0] | @tsv), (.[1:][] | @tsv)' \
+            | column -t -s $'\t'
+
+          # Check vLLM deployment logs for issues
+          uds zarf tools kubectl logs -n leapfrogai deployment/vllm-model
 
       - name: Test vLLM
         env:
