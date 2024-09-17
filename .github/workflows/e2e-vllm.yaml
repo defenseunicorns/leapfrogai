@@ -93,6 +93,9 @@ jobs:
           nvidia-smi
           nvidia-ctk --version
 
+      - name: Setup LFAI-API and Supabase
+        uses: ./.github/actions/lfai-core
+
       #######
       # vllm
       #######
