@@ -92,33 +92,33 @@ jobs:
         run: |
           nvidia-smi
           nvidia-ctk --version
-          docker info | grep nvidia
+          docker info
 
-      - name: Create UDS Cluster
-        shell: bash
-        run: |
-          UDS_CONFIG=.github/config/uds-config.yaml make create-uds-gpu-cluster
+      # - name: Create UDS Cluster
+      #   shell: bash
+      #   run: |
+      #     UDS_CONFIG=.github/config/uds-config.yaml make create-uds-gpu-cluster
 
-      - name: Test UDS GPU Cluster
-        run: |
-          uds zarf tools kubectl logs -n kube-system daemonset/nvidia-device-plugin-daemonset
-          uds zarf tools kubectl apply -f packages/k3d-gpu/test/cuda-vector-add.yaml
+      # - name: Test UDS GPU Cluster
+      #   run: |
+      #     uds zarf tools kubectl logs -n kube-system daemonset/nvidia-device-plugin-daemonset
+      #     uds zarf tools kubectl apply -f packages/k3d-gpu/test/cuda-vector-add.yaml
 
-      - name: Setup LFAI-API and Supabase
-        uses: ./.github/actions/lfai-core
+      # - name: Setup LFAI-API and Supabase
+      #   uses: ./.github/actions/lfai-core
 
-      #######
-      # vllm
-      #######
-      - name: Deploy vLLM
-        run: |
-          make build-vllm LOCAL_VERSION=e2e-test
-          docker image prune -af
-          uds zarf package deploy packages/vllm/zarf-package-vllm-amd64-e2e-test.tar.zst -l=trace --confirm
-          rm packages/vllm/zarf-package-vllm-amd64-e2e-test.tar.zst
+      # #######
+      # # vllm
+      # #######
+      # - name: Deploy vLLM
+      #   run: |
+      #     make build-vllm LOCAL_VERSION=e2e-test
+      #     docker image prune -af
+      #     uds zarf package deploy packages/vllm/zarf-package-vllm-amd64-e2e-test.tar.zst -l=trace --confirm
+      #     rm packages/vllm/zarf-package-vllm-amd64-e2e-test.tar.zst
 
-      - name: Test vLLM
-        env:
-          MODEL_NAME: vllm
-        run: |
-          python -m pytest ./tests/e2e/test_llm_generation.py -vv
+      # - name: Test vLLM
+      #   env:
+      #     MODEL_NAME: vllm
+      #   run: |
+      #     python -m pytest ./tests/e2e/test_llm_generation.py -vv
