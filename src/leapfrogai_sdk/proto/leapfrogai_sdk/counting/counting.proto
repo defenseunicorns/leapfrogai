@@ -13,14 +13,9 @@ message TokenCountResponse {
   int32 count = 1;
 }
 
-message TokenCountUsage {
-  int32 total_tokens = 1;
-}
-
 // TokenCountResponse is what's returned by the gRPC service
 message TokenCountResult {
   TokenCountResponse result = 1;
-  optional TokenCountUsage usage = 2;
 }
 
 service TokenCountService {

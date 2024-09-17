@@ -14,6 +14,8 @@ from leapfrogai_sdk import (
     CompletionResponse,
     GrpcContext,
     CompletionUsage,
+    TokenCountRequest,
+    TokenCountResponse,
 )
 from leapfrogai_sdk.chat.chat_pb2 import Usage
 from enum import Enum
@@ -253,40 +255,11 @@ def LLM(_cls):
             yield last_response
 
         async def TokenCount(
-            self, request: CompletionRequest, context: GrpcContext
-        ) -> AsyncGenerator[CompletionResponse, Any]:
-            gen_stream = self._build_gen_stream(request.prompt, request)
-            last_delta: str | None = None
-            response_str: str = ""
+            self, request: TokenCountRequest, context: GrpcContext
+        ) -> TokenCountResponse:
+            token_count: int = await self.count_tokens(request.text)
 
-            async for text_chunk in gen_stream:
-                if last_delta:
-                    last_response = create_completion_response(
-                        text=last_delta, finish_reason=FinishReason.NONE
-                    )
-                    response_str += last_delta
-
-                    yield last_response
-
-                last_delta = text_chunk
-
-            if last_delta:
-                response_str += last_delta
-
-            completion_token_count: int = await self.count_tokens(response_str)
-
-            if completion_token_count < request.max_new_tokens:
-                finish_reason: FinishReason = FinishReason.STOP
-            else:
-                finish_reason: FinishReason = FinishReason.LENGTH
-
-            prompt_token_count: int = await self.count_tokens(request.prompt)
-
-            last_response = create_completion_response(
-                last_delta, finish_reason, prompt_token_count, completion_token_count
-            )
-
-            yield last_response
+            return TokenCountResponse(count=token_count)
 
     NewClass.__name__ = _cls.__name__
     return NewClass

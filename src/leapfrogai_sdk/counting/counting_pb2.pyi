@@ -21,20 +21,10 @@ class TokenCountResponse(_message.Message):
     count: int
     def __init__(self, count: _Optional[int] = ...) -> None: ...
 
-class TokenCountUsage(_message.Message):
-    __slots__ = ("total_tokens",)
-    TOTAL_TOKENS_FIELD_NUMBER: _ClassVar[int]
-    total_tokens: int
-    def __init__(self, total_tokens: _Optional[int] = ...) -> None: ...
-
 class TokenCountResult(_message.Message):
-    __slots__ = ("result", "usage")
+    __slots__ = ("result",)
     RESULT_FIELD_NUMBER: _ClassVar[int]
-    USAGE_FIELD_NUMBER: _ClassVar[int]
     result: TokenCountResponse
-    usage: TokenCountUsage
     def __init__(
-        self,
-        result: _Optional[_Union[TokenCountResponse, _Mapping]] = ...,
-        usage: _Optional[_Union[TokenCountUsage, _Mapping]] = ...,
+        self, result: _Optional[_Union[TokenCountResponse, _Mapping]] = ...
     ) -> None: ...

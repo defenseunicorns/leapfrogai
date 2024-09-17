@@ -1,10 +1,6 @@
 import logging
 import os
 from typing import Any, AsyncGenerator
-import grpc
-from concurrent import futures
-import leapfrogai_pb2
-import leapfrogai_pb2_grpc
 
 from llama_cpp import Llama
 
@@ -51,37 +47,3 @@ class Model:
         string_bytes: bytes = bytes(raw_text, "utf-8")
         tokens: list[int] = self.llm.tokenize(string_bytes)
         return len(tokens)
-
-
-class TokenCountService(leapfrogai_pb2_grpc.LLMServicer):
-    def __init__(self, model: Model):
-        self.model = model
-
-    async def CountTokens(self, request, context):
-        try:
-            token_count = await self.model.count_tokens(request.text)
-            return leapfrogai_pb2.TokenCountResponse(count=token_count)
-        except Exception as e:
-            context.set_code(grpc.StatusCode.INTERNAL)
-            context.set_details(f"Error counting tokens: {str(e)}")
-            return leapfrogai_pb2.TokenCountResponse()
-
-
-def serve(model: Model):
-    server = grpc.aio.server(futures.ThreadPoolExecutor(max_workers=10))
-    leapfrogai_pb2_grpc.add_LLMServicer_to_server(TokenCountService(model), server)
-    server.add_insecure_port("[::]:50051")
-    return server
-
-
-async def main():
-    model = Model()
-    server = serve(model)
-    await server.start()
-    await server.wait_for_termination()
-
-
-if __name__ == "__main__":
-    import asyncio
-
-    asyncio.run(main())

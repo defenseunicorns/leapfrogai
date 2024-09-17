@@ -28,6 +28,10 @@ from leapfrogai_api.typedef.embeddings import (
     CreateEmbeddingResponse,
     EmbeddingResponseData,
 )
+from leapfrogai_api.typedef.counting import (
+    TokenCountResponse,
+    TokenCountRequest,
+)
 
 
 async def stream_completion(model: Model, request: lfai.CompletionRequest):
@@ -169,25 +173,12 @@ async def create_translation(model: Model, request: Iterator[lfai.AudioRequest])
         return CreateTranslationResponse(text=response.text)
 
 
-async def token_count(model: Model, request: lfai.CompletionRequest):
-    """Complete using the specified model."""
+async def token_count(model: Model, request: lfai.TokenCountRequest):
+    """Count tokens using the specified model backend."""
     async with grpc.aio.insecure_channel(model.backend) as channel:
-        stub = lfai.CompletionServiceStub(channel)
-        response: lfai.CompletionResponse = await stub.Complete(request)
+        stub = lfai.TokenCountServiceStub(channel)
+        response: lfai.TokenCountResponse = await stub.CountTokens(request)
 
-        return CompletionResponse(
-            model=model.name,
-            choices=[
-                CompletionChoice(
-                    index=0,
-                    text=response.choices[0].text,
-                    finish_reason=str(response.choices[0].finish_reason),
-                    logprobs=None,
-                )
-            ],
-            usage=Usage(
-                prompt_tokens=response.usage.prompt_tokens,
-                completion_tokens=response.usage.completion_tokens,
-                total_tokens=response.usage.total_tokens,
-            ),
+        return TokenCountResponse(
+            token_count=response.count,
         )
