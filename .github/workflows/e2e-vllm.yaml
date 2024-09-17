@@ -54,7 +54,7 @@ concurrency:
 jobs:
   e2e_vllm:
     runs-on: ai-linux-x64-gpu
-    if: ${{ !github.event.pull_request.draft }}
+    # if: ${{ !github.event.pull_request.draft }} # TODO: turn this back on!
 
     steps:
       - name: Checkout Repo
@@ -84,12 +84,15 @@ jobs:
           sudo mv uds /usr/local/bin/
 
           uds version
+          nvidia-smi
 
       #######
       # vllm
       #######
       - name: Deploy vLLM
         run: |
+          make create-gpu-cluster
+
           make build-vllm LOCAL_VERSION=e2e-test
           docker image prune -af
           uds zarf package deploy packages/vllm/zarf-package-vllm-amd64-e2e-test.tar.zst -l=trace --confirm
