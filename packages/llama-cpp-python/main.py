@@ -52,6 +52,7 @@ class Model:
         tokens: list[int] = self.llm.tokenize(string_bytes)
         return len(tokens)
 
+
 class TokenCountService(leapfrogai_pb2_grpc.LLMServicer):
     def __init__(self, model: Model):
         self.model = model
@@ -65,11 +66,13 @@ class TokenCountService(leapfrogai_pb2_grpc.LLMServicer):
             context.set_details(f"Error counting tokens: {str(e)}")
             return leapfrogai_pb2.TokenCountResponse()
 
+
 def serve(model: Model):
     server = grpc.aio.server(futures.ThreadPoolExecutor(max_workers=10))
     leapfrogai_pb2_grpc.add_LLMServicer_to_server(TokenCountService(model), server)
-    server.add_insecure_port('[::]:50051')
+    server.add_insecure_port("[::]:50051")
     return server
+
 
 async def main():
     model = Model()
@@ -77,6 +80,8 @@ async def main():
     await server.start()
     await server.wait_for_termination()
 
-if __name__ == '__main__':
+
+if __name__ == "__main__":
     import asyncio
+
     asyncio.run(main())

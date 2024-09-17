@@ -1,4 +1,3 @@
-
 import asyncio
 import json
 import logging
@@ -34,36 +33,6 @@ import grpc
 from concurrent import futures
 import leapfrogai_pb2
 import leapfrogai_pb2_grpc
-
-load_dotenv()
-import json
-import logging
-import os
-import queue
-import random
-import sys
-import threading
-import time
-from typing import Any, Dict, AsyncGenerator
-
-from confz import EnvSource
-from dotenv import load_dotenv
-from vllm import SamplingParams
-from vllm.engine.arg_utils import AsyncEngineArgs
-from vllm.engine.async_llm_engine import AsyncLLMEngine
-from vllm.outputs import RequestOutput
-from vllm.utils import random_uuid
-
-from config import AppConfig
-from leapfrogai_sdk import (
-    BackendConfig,
-    ChatCompletionRequest,
-    CompletionRequest,
-)
-from leapfrogai_sdk.llm import (
-    GenerationConfig,
-    LLM,
-)
 
 load_dotenv()
 
@@ -333,13 +302,9 @@ class Model:
         )
         return len(tokens)
 
-from transformers import AutoTokenizer
-import grpc
-from concurrent import futures
-import leapfrogai_pb2
-import leapfrogai_pb2_grpc
 
 # ... (existing code) ...
+
 
 class LLM(LLM):
     def __init__(self, config: BackendConfig):
@@ -350,6 +315,7 @@ class LLM(LLM):
 
     async def count_tokens(self, text: str) -> int:
         return len(self.tokenizer.encode(text))
+
 
 class TokenCountService(leapfrogai_pb2_grpc.LLMServicer):
     def __init__(self, llm: LLM):
@@ -364,11 +330,13 @@ class TokenCountService(leapfrogai_pb2_grpc.LLMServicer):
             context.set_details(f"Error counting tokens: {str(e)}")
             return leapfrogai_pb2.TokenCountResponse()
 
+
 def serve(llm: LLM):
     server = grpc.aio.server(futures.ThreadPoolExecutor(max_workers=10))
     leapfrogai_pb2_grpc.add_LLMServicer_to_server(TokenCountService(llm), server)
-    server.add_insecure_port('[::]:50051')
+    server.add_insecure_port("[::]:50051")
     return server
+
 
 async def main():
     config = get_backend_configs()
@@ -379,5 +347,6 @@ async def main():
     await server.start()
     await server.wait_for_termination()
 
-if __name__ == '__main__':
+
+if __name__ == "__main__":
     asyncio.run(main())

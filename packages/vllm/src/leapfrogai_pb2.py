@@ -4,37 +4,34 @@
 # source: leapfrogai.proto
 # Protobuf Python Version: 5.27.2
 """Generated protocol buffer code."""
+
 from google.protobuf import descriptor as _descriptor
 from google.protobuf import descriptor_pool as _descriptor_pool
 from google.protobuf import runtime_version as _runtime_version
 from google.protobuf import symbol_database as _symbol_database
 from google.protobuf.internal import builder as _builder
+
 _runtime_version.ValidateProtobufRuntimeVersion(
-    _runtime_version.Domain.PUBLIC,
-    5,
-    27,
-    2,
-    '',
-    'leapfrogai.proto'
+    _runtime_version.Domain.PUBLIC, 5, 27, 2, "", "leapfrogai.proto"
 )
 # @@protoc_insertion_point(imports)
 
 _sym_db = _symbol_database.Default()
 
 
-
-
-DESCRIPTOR = _descriptor_pool.Default().AddSerializedFile(b'\n\x10leapfrogai.proto\x12\nleapfrogai\"!\n\x11TokenCountRequest\x12\x0c\n\x04text\x18\x01 \x01(\t\"#\n\x12TokenCountResponse\x12\r\n\x05\x63ount\x18\x01 \x01(\x05\x32U\n\x03LLM\x12N\n\x0b\x43ountTokens\x12\x1d.leapfrogai.TokenCountRequest\x1a\x1e.leapfrogai.TokenCountResponse\"\x00\x62\x06proto3')
+DESCRIPTOR = _descriptor_pool.Default().AddSerializedFile(
+    b'\n\x10leapfrogai.proto\x12\nleapfrogai"!\n\x11TokenCountRequest\x12\x0c\n\x04text\x18\x01 \x01(\t"#\n\x12TokenCountResponse\x12\r\n\x05\x63ount\x18\x01 \x01(\x05\x32U\n\x03LLM\x12N\n\x0b\x43ountTokens\x12\x1d.leapfrogai.TokenCountRequest\x1a\x1e.leapfrogai.TokenCountResponse"\x00\x62\x06proto3'
+)
 
 _globals = globals()
 _builder.BuildMessageAndEnumDescriptors(DESCRIPTOR, _globals)
-_builder.BuildTopDescriptorsAndMessages(DESCRIPTOR, 'leapfrogai_pb2', _globals)
+_builder.BuildTopDescriptorsAndMessages(DESCRIPTOR, "leapfrogai_pb2", _globals)
 if not _descriptor._USE_C_DESCRIPTORS:
-  DESCRIPTOR._loaded_options = None
-  _globals['_TOKENCOUNTREQUEST']._serialized_start=32
-  _globals['_TOKENCOUNTREQUEST']._serialized_end=65
-  _globals['_TOKENCOUNTRESPONSE']._serialized_start=67
-  _globals['_TOKENCOUNTRESPONSE']._serialized_end=102
-  _globals['_LLM']._serialized_start=104
-  _globals['_LLM']._serialized_end=189
+    DESCRIPTOR._loaded_options = None
+    _globals["_TOKENCOUNTREQUEST"]._serialized_start = 32
+    _globals["_TOKENCOUNTREQUEST"]._serialized_end = 65
+    _globals["_TOKENCOUNTRESPONSE"]._serialized_start = 67
+    _globals["_TOKENCOUNTRESPONSE"]._serialized_end = 102
+    _globals["_LLM"]._serialized_start = 104
+    _globals["_LLM"]._serialized_end = 189
 # @@protoc_insertion_point(module_scope)
