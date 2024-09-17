@@ -95,7 +95,7 @@ jobs:
           nvidia-ctk --version
 
           # Configure Docker with the NVIDIA Container Toolkit
-          nvidia-ctk runtime configure --runtime=docker
+          sudo nvidia-ctk runtime configure --runtime=docker
 
           # Check Docker GPU runtime selection and access
           docker info | grep nvidia
