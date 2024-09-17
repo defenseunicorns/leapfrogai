@@ -4,11 +4,11 @@ name: e2e-llama-cpp-python
 on:
   pull_request:
     types:
-      - opened            # default trigger
-      - reopened          # default trigger
-      - synchronize       # default trigger
-      - ready_for_review  # don't run on draft PRs
-      - milestoned        # allows us to trigger on bot PRs
+      - opened # default trigger
+      - reopened # default trigger
+      - synchronize # default trigger
+      - ready_for_review # don't run on draft PRs
+      - milestoned # allows us to trigger on bot PRs
     paths:
       # Catch-all
       - "**"
@@ -54,37 +54,38 @@ concurrency:
 jobs:
   e2e_llama:
     runs-on: ai-ubuntu-big-boy-8-core
-    if: ${{ !github.event.pull_request.draft }}
+    # if: ${{ !github.event.pull_request.draft }} # TODO: turn this back on!
 
     steps:
-        - name: Checkout Repo
-          uses: actions/checkout@b4ffde65f46336ab88eb53be808477a3936bae11 # v4.1.1
+      - name: Checkout Repo
+        uses: actions/checkout@b4ffde65f46336ab88eb53be808477a3936bae11 # v4.1.1
 
-        - name: Setup Python
-          uses: ./.github/actions/python
+      - name: Setup Python
+        uses: ./.github/actions/python
 
-        - name: Setup UDS Cluster
-          uses: ./.github/actions/uds-cluster
-          with:
-            registry1Username: ${{ secrets.IRON_BANK_ROBOT_USERNAME }}
-            registry1Password: ${{ secrets.IRON_BANK_ROBOT_PASSWORD }}
-            ghToken: ${{ secrets.GITHUB_TOKEN }}
+      - name: Setup UDS Environment
+        uses: defenseunicorns/uds-common/.github/actions/setup@822dac4452e6815aadcf09f487406ff258756a0c # v0.14.0
+        with:
+          registry1Username: ${{ secrets.IRON_BANK_ROBOT_USERNAME }}
+          registry1Password: ${{ secrets.IRON_BANK_ROBOT_PASSWORD }}
+          ghToken: ${{ secrets.GITHUB_TOKEN }}
+          udsCliVersion: 0.14.0
 
-        - name: Setup LFAI-API and Supabase
-          uses: ./.github/actions/lfai-core
+      - name: Setup LFAI-API and Supabase
+        uses: ./.github/actions/lfai-core
 
-        ##########
-        # llama
-        ##########
-        - name: Deploy llama-cpp-python
-          run: |
-            make build-llama-cpp-python LOCAL_VERSION=e2e-test
-            docker image prune -af
-            uds zarf package deploy packages/llama-cpp-python/zarf-package-llama-cpp-python-amd64-e2e-test.tar.zst -l=trace --confirm
-            rm packages/llama-cpp-python/zarf-package-llama-cpp-python-amd64-e2e-test.tar.zst
+      ##########
+      # llama
+      ##########
+      - name: Deploy llama-cpp-python
+        run: |
+          make build-llama-cpp-python LOCAL_VERSION=e2e-test
+          docker image prune -af
+          uds zarf package deploy packages/llama-cpp-python/zarf-package-llama-cpp-python-amd64-e2e-test.tar.zst -l=trace --confirm
+          rm packages/llama-cpp-python/zarf-package-llama-cpp-python-amd64-e2e-test.tar.zst
 
-        - name: Test llama-cpp-python
-          env:
-            MODEL_NAME: llama-cpp-python
-          run: |
-            python -m pytest ./tests/e2e/test_llm_generation.py -vv
+      - name: Test llama-cpp-python
+        env:
+          MODEL_NAME: llama-cpp-python
+        run: |
+          python -m pytest ./tests/e2e/test_llm_generation.py -vv

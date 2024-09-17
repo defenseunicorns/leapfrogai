@@ -72,7 +72,7 @@ jobs:
           registry1Password: ${{ secrets.IRON_BANK_ROBOT_PASSWORD }}
           ghToken: ${{ secrets.GITHUB_TOKEN }}
           udsCliVersion: 0.14.0
-        continue-on-error: true
+        continue-on-error: true # workaround for permissions issues
 
       - name: Setup UDS Workaround
         env:
@@ -85,7 +85,7 @@ jobs:
 
           uds version
 
-      - name: Setup NVIDIA Dependencies
+      - name: Check NVIDIA Dependencies
         run: |
           nvidia-smi
           nvidia-ctk --version
@@ -95,7 +95,7 @@ jobs:
       #######
       - name: Deploy vLLM
         run: |
-          make create-gpu-cluster
+          make create-uds-gpu-cluster
 
           make build-vllm LOCAL_VERSION=e2e-test
           docker image prune -af

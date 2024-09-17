@@ -51,7 +51,7 @@ def test_chat_completions(client: OpenAI, model_name: str):
 def test_completions(client: OpenAI, model_name: str):
     completion = client.completions.create(
         model=model_name,
-        prompt="What is your name?",
+        prompt="Only return 1 word",
         max_tokens=128,
     )
     assert completion.model == model_name
