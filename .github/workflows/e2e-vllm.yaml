@@ -123,6 +123,10 @@ jobs:
             uds zarf tools kubectl describe node $node | grep Taints
           done
 
+          uds zarf tools kubectl get runtimeclass
+          uds zarf tools kubectl logs -n kube-system daemonset/nvidia-device-plugin-daemonset
+          uds zarf tools journalctl -u kubelet
+
           # Use a CUDA test pod in-cluster to ensure GPUs can be scheduled
           uds zarf tools kubectl apply -f packages/k3d-gpu/test/cuda-vector-add.yaml
 
