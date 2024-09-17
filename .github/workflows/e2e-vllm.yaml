@@ -93,6 +93,11 @@ jobs:
           nvidia-smi
           nvidia-ctk --version
 
+      - name: Create UDS Cluster
+        shell: bash
+        run: |
+          UDS_CONFIG=.github/config/uds-config.yaml make create-uds-gpu-cluster
+
       - name: Setup LFAI-API and Supabase
         uses: ./.github/actions/lfai-core
 
@@ -101,8 +106,6 @@ jobs:
       #######
       - name: Deploy vLLM
         run: |
-          make create-uds-gpu-cluster
-
           make build-vllm LOCAL_VERSION=e2e-test
           docker image prune -af
           uds zarf package deploy packages/vllm/zarf-package-vllm-amd64-e2e-test.tar.zst -l=trace --confirm
