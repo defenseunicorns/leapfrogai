@@ -394,25 +394,6 @@ class IndexingService:
             ids.extend([item.id for item in response])
         return ids
 
-    async def asimilarity_search(self, query: str, vector_store_id: str, k: int = 4):
-        """Searches for similar documents.
-
-        Args:
-            query (str): The query string.
-            vector_store_id (str): The ID of the vector store to search in.
-            k (int, optional): The number of similar documents to retrieve. Defaults to 4.
-
-        Returns:
-            The response from the database after executing the similarity search.
-
-        """
-        vector = await self.embeddings.aembed_query(query)
-
-        crud_vector_content = CRUDVectorContent(db=self.db)
-        return await crud_vector_content.similarity_search(
-            query=vector, vector_store_id=vector_store_id, k=k
-        )
-
     async def _increment_vector_store_file_status(
         self, vector_store: VectorStore, file_response: VectorStoreFile
     ):

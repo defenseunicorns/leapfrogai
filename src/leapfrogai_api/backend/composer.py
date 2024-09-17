@@ -24,7 +24,6 @@ from openai.types.beta.threads import (
     Message,
     TextContentBlock,
 )
-from postgrest.base_request_builder import SingleAPIResponse
 from pydantic import BaseModel
 from starlette.responses import StreamingResponse
 
@@ -50,7 +49,7 @@ from leapfrogai_api.typedef.chat import (
 )
 from leapfrogai_api.typedef.runs import RunCreateParamsRequest
 from leapfrogai_api.typedef.messages import CreateMessageRequest
-from leapfrogai_api.typedef.vectorstores import SearchResponse
+from leapfrogai_api.typedef.vectorstores import SearchResponse, SearchItem
 
 
 class Composer(BaseModel):
@@ -140,15 +139,13 @@ class Composer(BaseModel):
             vector_store_ids: list[str] = cast(list[str], file_search.vector_store_ids)
 
             for vector_store_id in vector_store_ids:
-                rag_results_raw: SingleAPIResponse[
-                    SearchResponse
-                ] = await query_service.query_rag(
+                rag_responses: SearchResponse = await query_service.query_rag(
                     query=query_message.content_as_str(),
                     vector_store_id=vector_store_id,
                 )
-                rag_responses: SearchResponse = rag_results_raw.data
 
                 # Insert the RAG response messages just before the user's query
+                rag_response: SearchItem
                 for rag_response in rag_responses.data:
                     file_ids.add(rag_response.file_id)
                     response_with_instructions: str = f"{rag_response.content}"

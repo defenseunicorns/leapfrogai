@@ -4,6 +4,8 @@ from pydantic import BaseModel
 from supabase import AClient as AsyncClient
 from leapfrogai_api.data.crud_base import get_user_id
 import ast
+from leapfrogai_api.typedef.vectorstores import SearchResponse
+from postgrest.base_request_builder import SingleAPIResponse
 
 
 class Vector(BaseModel):
@@ -77,7 +79,9 @@ class CRUDVectorContent:
 
         return bool(response)
 
-    async def similarity_search(self, query: list[float], vector_store_id: str, k: int):
+    async def similarity_search(
+        self, query: list[float], vector_store_id: str, k: int
+    ) -> SearchResponse:
         user_id = await get_user_id(self.db)
 
         params = {
@@ -87,7 +91,11 @@ class CRUDVectorContent:
             "user_id": user_id,
         }
 
-        return await self.db.rpc("match_vectors", params).execute()
+        response: SingleAPIResponse[SearchResponse] = await self.db.rpc(
+            "match_vectors", params
+        ).execute()
+
+        return response.data
 
     @staticmethod
     def string_to_float_list(s: str) -> list[float]:
