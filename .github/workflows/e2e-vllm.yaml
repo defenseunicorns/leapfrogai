@@ -116,6 +116,13 @@ jobs:
           uds zarf tools kubectl logs -n kube-system daemonset/nvidia-device-plugin-daemonset
           uds zarf tools kubectl exec -it daemonset/nvidia-device-plugin-daemonset -n kube-system -c nvidia-device-plugin-ctr -- nvidia-smi
 
+          for node in $(uds zarf tools kubectl get nodes -o jsonpath='{.items[*].metadata.name}'); do
+            echo "Checking GPU resources on node: $node"
+            uds zarf tools kubectl describe node $node | grep -i nvidia.com/gpu
+            echo "Checking taints on node: $node"
+            uds zarf tools kubectl describe node $node | grep Taints
+          done
+
           # Use a CUDA test pod in-cluster to ensure GPUs can be scheduled
           uds zarf tools kubectl apply -f packages/k3d-gpu/test/cuda-vector-add.yaml
 
