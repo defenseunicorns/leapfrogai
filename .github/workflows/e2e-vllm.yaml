@@ -112,8 +112,9 @@ jobs:
 
       - name: Test UDS GPU Cluster
         run: |
-          # Check NVIDIA plugin daemonset logs for issues
+          # Check NVIDIA plugin daemonset logs and container for issues
           uds zarf tools kubectl logs -n kube-system daemonset/nvidia-device-plugin-daemonset
+          uds zarf tools kubectl exec -it daemonset/nvidia-device-plugin-daemonset -n kube-system -c nvidia-device-plugin-ctr -- nvidia-smi
 
           # Use a CUDA test pod in-cluster to ensure GPUs can be scheduled
           uds zarf tools kubectl apply -f packages/k3d-gpu/test/cuda-vector-add.yaml
