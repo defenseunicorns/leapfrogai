@@ -85,4 +85,4 @@ jobs:
 
         - name: Test llama-cpp-python
           run: |
-            python -m pytest ./tests/e2e/test_llama.py -v
+            python -m pytest --model_name=llama-cpp-python -vv

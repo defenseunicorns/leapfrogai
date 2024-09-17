@@ -4,11 +4,11 @@ name: e2e-vllm
 on:
   pull_request:
     types:
-      - opened            # default trigger
-      - reopened          # default trigger
-      - synchronize       # default trigger
-      - ready_for_review  # don't run on draft PRs
-      - milestoned        # allows us to trigger on bot PRs
+      - opened # default trigger
+      - reopened # default trigger
+      - synchronize # default trigger
+      - ready_for_review # don't run on draft PRs
+      - milestoned # allows us to trigger on bot PRs
     paths:
       # Catch-all
       - "**"
@@ -47,8 +47,6 @@ on:
       - "!packages/ui/**"
       - "!packages/whisper/**"
 
-
-
 concurrency:
   group: e2e-vllm-${{ github.ref }}
   cancel-in-progress: true
@@ -59,32 +57,32 @@ jobs:
     if: ${{ !github.event.pull_request.draft }}
 
     steps:
-        - name: Checkout Repo
-          uses: actions/checkout@b4ffde65f46336ab88eb53be808477a3936bae11 # v4.1.1
+      - name: Checkout Repo
+        uses: actions/checkout@b4ffde65f46336ab88eb53be808477a3936bae11 # v4.1.1
 
-        - name: Setup Python
-          uses: ./.github/actions/python
-          with:
-            additionalOptionalDep: dev-vllm
+      - name: Setup Python
+        uses: ./.github/actions/python
+        with:
+          additionalOptionalDep: dev-vllm
 
-        - name: Setup UDS Environment
-          uses: defenseunicorns/uds-common/.github/actions/setup@822dac4452e6815aadcf09f487406ff258756a0c # v0.14.0
-          with:
-            registry1Username: ${{ secrets.IRON_BANK_ROBOT_USERNAME }}
-            registry1Password: ${{ secrets.IRON_BANK_ROBOT_PASSWORD }}
-            ghToken: ${{ secrets.GITHUB_TOKEN }}
-            udsCliVersion: 0.14.0
+      - name: Setup UDS Environment
+        uses: defenseunicorns/uds-common/.github/actions/setup@822dac4452e6815aadcf09f487406ff258756a0c # v0.14.0
+        with:
+          registry1Username: ${{ secrets.IRON_BANK_ROBOT_USERNAME }}
+          registry1Password: ${{ secrets.IRON_BANK_ROBOT_PASSWORD }}
+          ghToken: ${{ secrets.GITHUB_TOKEN }}
+          udsCliVersion: 0.14.0
 
-        #######
-        # vllm
-        #######
-        - name: Deploy vLLM
-          run: |
-            make build-vllm LOCAL_VERSION=e2e-test
-            docker image prune -af
-            uds zarf package deploy packages/vllm/zarf-package-vllm-amd64-e2e-test.tar.zst -l=trace --confirm
-            rm packages/vllm/zarf-package-vllm-amd64-e2e-test.tar.zst
+      #######
+      # vllm
+      #######
+      - name: Deploy vLLM
+        run: |
+          make build-vllm LOCAL_VERSION=e2e-test
+          docker image prune -af
+          uds zarf package deploy packages/vllm/zarf-package-vllm-amd64-e2e-test.tar.zst -l=trace --confirm
+          rm packages/vllm/zarf-package-vllm-amd64-e2e-test.tar.zst
 
-        - name: Test vLLM
-          run: |
-            python -m pytest ./tests/e2e/test_vllm.py -v
+      - name: Test vLLM
+        run: |
+          python -m pytest --model_name=vllm -vv
