@@ -33,7 +33,9 @@ def test_chat_completions(client: OpenAI, model_name: str):
     ]
 
     chat_completion = client.chat.completions.create(
-        model=model_name, messages=messages, max_tokens=128
+        model=model_name,
+        messages=messages,
+        max_tokens=128,
     )
     assert chat_completion.model == model_name
     assert len(chat_completion.choices) == 1
@@ -48,7 +50,9 @@ def test_chat_completions(client: OpenAI, model_name: str):
 
 def test_completions(client: OpenAI, model_name: str):
     completion = client.completions.create(
-        model=model_name, prompt="What is your name?", max_tokens=128
+        model=model_name,
+        prompt="What is your name?",
+        max_tokens=128,
     )
     assert completion.model == model_name
     assert len(completion.choices) == 1

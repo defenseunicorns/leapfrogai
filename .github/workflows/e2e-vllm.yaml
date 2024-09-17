@@ -4,11 +4,11 @@ name: e2e-vllm
 on:
   pull_request:
     types:
-      - opened            # default trigger
-      - reopened          # default trigger
-      - synchronize       # default trigger
-      - ready_for_review  # don't run on draft PRs
-      - milestoned        # allows us to trigger on bot PRs
+      - opened # default trigger
+      - reopened # default trigger
+      - synchronize # default trigger
+      - ready_for_review # don't run on draft PRs
+      - milestoned # allows us to trigger on bot PRs
     paths:
       # Catch-all
       - "**"
@@ -72,6 +72,15 @@ jobs:
           registry1Password: ${{ secrets.IRON_BANK_ROBOT_PASSWORD }}
           ghToken: ${{ secrets.GITHUB_TOKEN }}
           udsCliVersion: 0.14.0
+        continue-on-error: true
+
+      - name: Setup UDS Workaround
+        env:
+          UDS_VERSION: 0.14.0
+        run: |
+          sudo wget -O uds https://github.com/defenseunicorns/uds-cli/releases/download/$UDS_VERSION/uds-cli_$UDS_VERSION_Linux_amd64 && \
+            sudo chmod +x uds && \
+            sudo mv uds /usr/local/bin/
 
       #######
       # vllm
