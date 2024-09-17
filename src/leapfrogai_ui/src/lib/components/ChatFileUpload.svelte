@@ -1,5 +1,5 @@
 <script lang="ts">
-  import { ACCEPTED_FILE_TYPES, ADJUSTED_MAX_CHARACTERS, MAX_NUM_FILES_UPLOAD } from '$constants';
+  import { ACCEPTED_FILE_TYPES, MAX_NUM_FILES_UPLOAD } from '$constants';
   import { PaperClipOutline } from 'flowbite-svelte-icons';
   import { v4 as uuidv4 } from 'uuid';
   import LFFileUploadBtn from '$components/LFFileUploadBtn.svelte';
@@ -9,8 +9,9 @@
     MAX_NUM_FILES_UPLOAD_MSG_TOAST
   } from '$constants/toastMessages';
   import type { LFFile } from '$lib/types/files';
-  import { ERROR_UPLOADING_FILE_MSG, FILE_CONTEXT_TOO_LARGE_ERROR_MSG } from '$constants/errors';
+  import { ERROR_UPLOADING_FILE_MSG } from '$constants/errors';
   import { shortenFileName } from '$helpers/stringHelpers';
+  import { removeFilesUntilUnderLimit } from '$helpers/fileHelpers';
 
   export let uploadingFiles;
   export let attachedFileMetadata;
@@ -88,23 +89,9 @@
 
       Promise.all(promises).then((results) => {
         parsedFiles.push(...results);
-        const totalTextLength = parsedFiles.reduce(
-          (acc, fileMetadata) => acc + JSON.stringify(fileMetadata).length,
-          0
-        );
 
         // If this file adds too much text (larger than allowed max), remove the text and set to error status
-        if (totalTextLength > ADJUSTED_MAX_CHARACTERS) {
-          let lastFile = parsedFiles[parsedFiles.length - 1];
-          parsedFiles[parsedFiles.length - 1] = {
-            id: lastFile.id,
-            name: shortenFileName(lastFile.name),
-            type: lastFile.type,
-            text: '',
-            status: 'error',
-            errorText: FILE_CONTEXT_TOO_LARGE_ERROR_MSG
-          };
-        }
+        removeFilesUntilUnderLimit(parsedFiles);
 
         attachedFileMetadata = parsedFiles;
       });

@@ -1,12 +1,12 @@
 import FileChatActions from '$components/FileChatActions.svelte';
-import { render, screen, within } from '@testing-library/svelte';
+import { render, screen } from '@testing-library/svelte';
 import type { FileMetadata, LFFile } from '$lib/types/files';
 import userEvent from '@testing-library/user-event';
 import { mockConvertFileNoId } from '$lib/mocks/file-mocks';
-import {mockNewMessage, mockTranslation, mockTranslationError} from '$lib/mocks/chat-mocks';
-import {vi} from "vitest";
-import {toastStore} from "$stores";
-import {FILE_TRANSLATION_ERROR} from "$constants/toastMessages";
+import { mockNewMessage, mockTranslation, mockTranslationError } from '$lib/mocks/chat-mocks';
+import { vi } from 'vitest';
+import { toastStore } from '$stores';
+import { FILE_TRANSLATION_ERROR } from '$constants/toastMessages';
 
 const mockFile1: LFFile = new File([], 'test1.mpeg', { type: 'audio/mpeg' });
 const mockFile2: LFFile = new File([], 'test1.mp4', { type: 'audio/mp4' });
@@ -14,7 +14,7 @@ const mockFile2: LFFile = new File([], 'test1.mp4', { type: 'audio/mp4' });
 mockFile1.id = '1';
 mockFile2.id = '2';
 
-const mockMetadata1: FileMetadata = {
+const mockMetadata1: FileMetadata = {c
   id: mockFile1.id,
   name: mockFile1.name,
   type: 'audio/mpeg',

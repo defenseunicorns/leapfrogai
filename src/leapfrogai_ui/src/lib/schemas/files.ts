@@ -19,7 +19,6 @@ export const filesSchema = object({
         if (value == null) {
           return true;
         }
-        // TODO - test that this error msg is used and not the one above
         if (ACCEPTED_AUDIO_FILE_MIME_TYPES.includes(value.type)) {
           if (value.size > MAX_AUDIO_FILE_SIZE) {
             return new ValidationError(AUDIO_FILE_SIZE_ERROR_TEXT);
