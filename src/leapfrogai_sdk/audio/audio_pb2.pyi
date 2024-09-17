@@ -22,6 +22,7 @@ TRANSLATE: AudioTask
 
 class AudioMetadata(_message.Message):
     __slots__ = ("prompt", "temperature", "inputlanguage", "format")
+
     class AudioFormat(int, metaclass=_enum_type_wrapper.EnumTypeWrapper):
         __slots__ = ()
         JSON: _ClassVar[AudioMetadata.AudioFormat]
@@ -65,6 +66,7 @@ class AudioRequest(_message.Message):
 
 class AudioResponse(_message.Message):
     __slots__ = ("task", "language", "duration", "segments", "text")
+
     class Segment(_message.Message):
         __slots__ = (
             "id",

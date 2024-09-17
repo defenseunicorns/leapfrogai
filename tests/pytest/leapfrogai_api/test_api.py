@@ -260,7 +260,7 @@ def test_chat_completion(dummy_auth_middleware):
 
         # parse finish reason
         assert "finish_reason" in response_choices[0]
-        assert "FinishReason.STOP" == response_choices[0].get("finish_reason")
+        assert "stop" == response_choices[0].get("finish_reason")
 
         # parse usage data
         response_usage = response_obj.get("usage")
@@ -324,9 +324,9 @@ def test_stream_chat_completion(dummy_auth_middleware):
                     assert "finish_reason" in choices[0]
                     # in streaming responses, the stop reason is not STOP until the last iteration (token) is sent back
                     if iter_length == input_length:
-                        assert "FinishReason.STOP" == choices[0].get("finish_reason")
+                        assert "stop" == choices[0].get("finish_reason")
                     else:
-                        assert "FinishReason.NONE" == choices[0].get("finish_reason")
+                        assert None is choices[0].get("finish_reason")
                     # parse usage data
                     response_usage = stream_response.get("usage")
                     prompt_tokens = response_usage.get("prompt_tokens")

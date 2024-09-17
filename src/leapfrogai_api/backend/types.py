@@ -49,6 +49,22 @@ class Usage(BaseModel):
     )
 
 
+class FinishReason(Enum):
+    NONE = 0  # Maps to "None"
+    STOP = 1  # Maps to "stop"
+    LENGTH = 2  # Maps to "length"
+
+    def to_string(self) -> str:
+        if self == FinishReason.NONE:
+            return None
+        elif self == FinishReason.STOP:
+            return "stop"
+        elif self == FinishReason.LENGTH:
+            return "length"
+        else:
+            raise ValueError(f"Unsupported finish reason: {self}")
+
+
 ##########
 # MODELS
 ##########
@@ -132,7 +148,9 @@ class CompletionChoice(BaseModel):
         description="Log probabilities for the generated tokens. Only returned if requested.",
     )
     finish_reason: str = Field(
-        "", description="The reason why the completion finished.", example="length"
+        default="stop",
+        description="The reason why the model stopped generating tokens.",
+        examples=["stop", "length"],
     )
 
 
@@ -252,9 +270,9 @@ class ChatChoice(BaseModel):
         default=ChatMessage(), description="The message content for this choice."
     )
     finish_reason: str | None = Field(
-        default="",
+        default=None,
         description="The reason why the model stopped generating tokens.",
-        examples=["stop", "length"],
+        examples=["stop", "length", None],
     )
 
 
@@ -268,9 +286,9 @@ class ChatStreamChoice(BaseModel):
         default=ChatDelta(), description="The delta content for this streaming choice."
     )
     finish_reason: str | None = Field(
-        default="",
+        default=None,
         description="The reason why the model stopped generating tokens.",
-        examples=["stop", "length"],
+        examples=["stop", "length", None],
     )
 
 

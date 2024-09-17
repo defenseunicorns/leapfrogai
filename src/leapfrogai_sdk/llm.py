@@ -20,9 +20,9 @@ from enum import Enum
 
 
 class FinishReason(Enum):
-    NONE = ""
-    STOP = "stop"
-    LENGTH = "length"
+    NONE = 0
+    STOP = 1
+    LENGTH = 2
 
 
 class GenerationConfig(BaseModel):
@@ -73,7 +73,7 @@ def LLM(_cls):
             choices=[choice], usage=usage
         )
 
-        response.choices[0].finish_reason = str(finish_reason)
+        response.choices[0].finish_reason = finish_reason.value
 
         return response
 
@@ -95,7 +95,7 @@ def LLM(_cls):
 
         response: CompletionResponse = CompletionResponse(choices=[choice], usage=usage)
 
-        response.choices[0].finish_reason = str(finish_reason)
+        response.choices[0].finish_reason = finish_reason.value
 
         return response
 

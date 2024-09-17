@@ -11,6 +11,7 @@ from leapfrogai_api.backend.types import (
     ChatStreamChoice,
     CompletionChoice,
     CompletionResponse,
+    FinishReason,
     Usage,
 )
 
@@ -20,6 +21,8 @@ async def recv_completion(
     model: str,
 ):
     async for c in stream:
+        finish_reason_enum = FinishReason(c.choices[0].finish_reason)
+
         yield (
             "data: "
             + CompletionResponse(
@@ -32,7 +35,7 @@ async def recv_completion(
                         index=0,
                         text=c.choices[0].text,
                         logprobs=None,
-                        finish_reason=c.choices[0].finish_reason,
+                        finish_reason=finish_reason_enum.to_string(),
                     )
                 ],
                 usage=Usage(
@@ -55,6 +58,8 @@ async def recv_chat(
 ) -> AsyncGenerator[str, Any]:
     """Generator that yields chat completion responses as Server-Sent Events."""
     async for c in stream:
+        finish_reason_enum = FinishReason(c.choices[0].finish_reason)
+
         yield (
             "data: "
             + ChatCompletionResponse(
@@ -68,7 +73,7 @@ async def recv_chat(
                         delta=ChatDelta(
                             role="assistant", content=c.choices[0].chat_item.content
                         ),
-                        finish_reason=c.choices[0].finish_reason,
+                        finish_reason=finish_reason_enum.to_string(),
                     )
                 ],
                 usage=Usage(

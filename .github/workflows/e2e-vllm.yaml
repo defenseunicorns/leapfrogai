@@ -55,7 +55,7 @@ concurrency:
 
 jobs:
   e2e_vllm:
-    runs-on: ai-ubuntu-big-boy-8-core
+    runs-on: ai-linux-x64-gpu
     if: ${{ !github.event.pull_request.draft }}
 
     steps:
@@ -75,11 +75,16 @@ jobs:
             ghToken: ${{ secrets.GITHUB_TOKEN }}
             udsCliVersion: 0.14.0
 
-        ########## c
-        # vLLM
-        # NOTE: We are not deploying and testing vLLM in this workflow because it requires a GPU
-        #     : This workflow simply verifies that the vLLM package can be built
-        ##########
-        - name: Build vLLM
+        #######
+        # vllm
+        #######
+        - name: Deploy vLLM
           run: |
             make build-vllm LOCAL_VERSION=e2e-test
+            docker image prune -af
+            uds zarf package deploy packages/vllm/zarf-package-vllm-amd64-e2e-test.tar.zst -l=trace --confirm
+            rm packages/vllm/zarf-package-vllm-amd64-e2e-test.tar.zst
+
+        - name: Test vLLM
+          run: |
+            python -m pytest ./tests/e2e/test_vllm.py -v

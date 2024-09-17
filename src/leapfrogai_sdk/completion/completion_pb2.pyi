@@ -14,9 +14,11 @@ DESCRIPTOR: _descriptor.FileDescriptor
 
 class CompletionFinishReason(int, metaclass=_enum_type_wrapper.EnumTypeWrapper):
     __slots__ = ()
+    NONE: _ClassVar[CompletionFinishReason]
     STOP: _ClassVar[CompletionFinishReason]
     LENGTH: _ClassVar[CompletionFinishReason]
 
+NONE: CompletionFinishReason
 STOP: CompletionFinishReason
 LENGTH: CompletionFinishReason
 
@@ -45,6 +47,7 @@ class CompletionRequest(_message.Message):
         "seed",
         "user",
     )
+
     class LogitBiasEntry(_message.Message):
         __slots__ = ("key", "value")
         KEY_FIELD_NUMBER: _ClassVar[int]

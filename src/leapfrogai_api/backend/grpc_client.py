@@ -14,6 +14,7 @@ from leapfrogai_api.backend.types import (
     CreateEmbeddingResponse,
     CreateTranscriptionResponse,
     EmbeddingResponseData,
+    FinishReason,
     Usage,
     CreateTranslationResponse,
 )
@@ -41,6 +42,7 @@ async def completion(model: Model, request: lfai.CompletionRequest):
     async with grpc.aio.insecure_channel(model.backend) as channel:
         stub = lfai.CompletionServiceStub(channel)
         response: lfai.CompletionResponse = await stub.Complete(request)
+        finish_reason_enum = FinishReason(response.choices[0].finish_reason)
 
         return CompletionResponse(
             model=model.name,
@@ -48,7 +50,7 @@ async def completion(model: Model, request: lfai.CompletionRequest):
                 CompletionChoice(
                     index=0,
                     text=response.choices[0].text,
-                    finish_reason=str(response.choices[0].finish_reason),
+                    finish_reason=finish_reason_enum.to_string(),
                     logprobs=None,
                 )
             ],
@@ -94,6 +96,8 @@ async def chat_completion(model: Model, request: lfai.ChatCompletionRequest):
     async with grpc.aio.insecure_channel(model.backend) as channel:
         stub = lfai.ChatCompletionServiceStub(channel)
         response: lfai.ChatCompletionResponse = await stub.ChatComplete(request)
+        finish_reason_enum = FinishReason(response.choices[0].finish_reason)
+
         return ChatCompletionResponse(
             model=model.name,
             choices=[
@@ -105,7 +109,7 @@ async def chat_completion(model: Model, request: lfai.ChatCompletionRequest):
                         ).lower(),
                         content=response.choices[0].chat_item.content,
                     ),
-                    finish_reason=response.choices[0].finish_reason,
+                    finish_reason=finish_reason_enum.to_string(),
                 )
             ],
             usage=Usage(
