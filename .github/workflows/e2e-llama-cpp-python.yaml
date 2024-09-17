@@ -54,7 +54,7 @@ concurrency:
 jobs:
   e2e_llama:
     runs-on: ai-ubuntu-big-boy-8-core
-    # if: ${{ !github.event.pull_request.draft }} # TODO: turn this back on!
+    if: ${{ !github.event.pull_request.draft }}
 
     steps:
       - name: Checkout Repo
@@ -62,7 +62,7 @@ jobs:
 
       - name: Setup Python
         uses: ./.github/actions/python
-        
+
       - name: Setup UDS Cluster
         uses: ./.github/actions/uds-cluster
         with:

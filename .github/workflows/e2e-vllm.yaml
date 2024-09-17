@@ -92,11 +92,17 @@ jobs:
         run: |
           nvidia-smi
           nvidia-ctk --version
+          docker info | grep nvidia
 
       - name: Create UDS Cluster
         shell: bash
         run: |
           UDS_CONFIG=.github/config/uds-config.yaml make create-uds-gpu-cluster
+
+      - name: Test UDS GPU Cluster
+        run: |
+          uds zarf tools kubectl logs -n kube-system daemonset/nvidia-device-plugin-daemonset
+          uds zarf tools kubectl apply -f packages/k3d-gpu/test/cuda-vector-add.yaml
 
       - name: Setup LFAI-API and Supabase
         uses: ./.github/actions/lfai-core
