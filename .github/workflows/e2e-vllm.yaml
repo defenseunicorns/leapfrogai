@@ -76,7 +76,7 @@ jobs:
 
       - name: Setup UDS Workaround
         env:
-          UDS_VERSION: 0.14.0
+          UDS_VERSION: v0.14.0
         run: |
           sudo wget -O uds https://github.com/defenseunicorns/uds-cli/releases/download/${{ env.UDS_VERSION }}/uds-cli_${{ env.UDS_VERSION }}_Linux_amd64 && \
           sudo chmod +x uds && \
