@@ -118,12 +118,12 @@ jobs:
           # Use a CUDA test pod in-cluster to ensure GPUs can be scheduled
           uds zarf tools kubectl apply -f packages/k3d-gpu/test/cuda-vector-add.yaml
 
-          while [[ $(kubectl get pod -l app=gpu-pod --namespace=default -o jsonpath='{.items[*].status.phase}') != "Succeeded" ]]; do
+          while [[ $(uds zarf tools kubectl get pod -l app=gpu-pod --namespace=default -o jsonpath='{.items[*].status.phase}') != "Succeeded" ]]; do
               echo "Waiting for pod to complete..."
               sleep 10
           done
 
-          kubectl logs -l app=gpu-pod --namespace=default
+          uds zarf tools kubectl logs -l app=gpu-pod --namespace=default
 
       - name: Setup API and Supabase
         uses: ./.github/actions/lfai-core
@@ -170,7 +170,7 @@ jobs:
             | column -t -s $'\t'
 
           # Check vLLM deployment logs for issues
-          while [[ $(kubectl get pod -l app=lfai-vllm --namespace=leapfrogai -o jsonpath='{.items[*].status.phase}') != "Running" ]]; do
+          while [[ $(uds zarf tools kubectl get pod -l app=lfai-vllm --namespace=leapfrogai -o jsonpath='{.items[*].status.phase}') != "Running" ]]; do
               echo "Waiting for pod to be ready..."
               sleep 10
           done
