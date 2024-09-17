@@ -154,6 +154,22 @@ class CompletionChoice(BaseModel):
     )
 
 
+class CompletionStreamChoice(BaseModel):
+    """Stream choice object for completion."""
+
+    index: int = Field(..., description="The index of this completion choice.")
+    text: str = Field(..., description="The generated text for this completion choice.")
+    logprobs: object | None = Field(
+        None,
+        description="Log probabilities for the generated tokens. Only returned if requested.",
+    )
+    finish_reason: str | None = Field(
+        default=None,
+        description="The reason why the model stopped generating tokens.",
+        examples=["stop", "length", None],
+    )
+
+
 class CompletionResponse(BaseModel):
     """Response object for completion."""
 
@@ -167,8 +183,9 @@ class CompletionResponse(BaseModel):
         description="The Unix timestamp (in seconds) of when the completion was created.",
     )
     model: str = Field("", description="The ID of the model used for the completion.")
-    choices: list[CompletionChoice] = Field(
-        ..., description="A list of generated completions."
+    choices: list[CompletionChoice] | list[CompletionStreamChoice] = Field(
+        default=[],
+        description="A list of completion choices. Can be either CompletionChoice or CompletionStreamChoice depending on whether streaming is enabled.",
     )
     usage: Usage | None = Field(
         None, description="Usage statistics for the completion request."
@@ -270,9 +287,9 @@ class ChatChoice(BaseModel):
         default=ChatMessage(), description="The message content for this choice."
     )
     finish_reason: str | None = Field(
-        default=None,
+        default="stop",
         description="The reason why the model stopped generating tokens.",
-        examples=["stop", "length", None],
+        examples=["stop", "length"],
     )
 
 

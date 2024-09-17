@@ -22,6 +22,14 @@ def test_chat_completions(client: OpenAI):
     assert len(chat_completion.choices[0].message.content) < 500
 
 
+def test_completions(client: OpenAI):
+    completion = client.completions.create(model=model_name, prompt="Say hello to me.")
+    assert completion.model == model_name
+    assert len(completion.choices) == 1
+    assert len(completion.choices[0].text) > 0
+    assert len(completion.choices[0].text) < 500
+
+
 def test_embeddings(client: OpenAI):
     with pytest.raises(InternalServerError) as excinfo:
         client.embeddings.create(
