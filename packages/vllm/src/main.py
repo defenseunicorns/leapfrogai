@@ -28,11 +28,6 @@ from leapfrogai_sdk.llm import (
     LLM,
 )
 
-from transformers import AutoTokenizer
-import grpc
-from concurrent import futures
-import leapfrogai_pb2
-import leapfrogai_pb2_grpc
 
 load_dotenv()
 
@@ -301,52 +296,3 @@ class Model:
             raw_text
         )
         return len(tokens)
-
-
-# ... (existing code) ...
-
-
-class LLM(LLM):
-    def __init__(self, config: BackendConfig):
-        super().__init__(config)
-        self.tokenizer = AutoTokenizer.from_pretrained(config.model.source)
-
-    # ... (existing methods) ...
-
-    async def count_tokens(self, text: str) -> int:
-        return len(self.tokenizer.encode(text))
-
-
-class TokenCountService(leapfrogai_pb2_grpc.LLMServicer):
-    def __init__(self, llm: LLM):
-        self.llm = llm
-
-    async def CountTokens(self, request, context):
-        try:
-            token_count = await self.llm.count_tokens(request.text)
-            return leapfrogai_pb2.TokenCountResponse(count=token_count)
-        except Exception as e:
-            context.set_code(grpc.StatusCode.INTERNAL)
-            context.set_details(f"Error counting tokens: {str(e)}")
-            return leapfrogai_pb2.TokenCountResponse()
-
-
-def serve(llm: LLM):
-    server = grpc.aio.server(futures.ThreadPoolExecutor(max_workers=10))
-    leapfrogai_pb2_grpc.add_LLMServicer_to_server(TokenCountService(llm), server)
-    server.add_insecure_port("[::]:50051")
-    return server
-
-
-async def main():
-    config = get_backend_configs()
-    llm = LLM(config)
-    await llm.start()
-
-    server = serve(llm)
-    await server.start()
-    await server.wait_for_termination()
-
-
-if __name__ == "__main__":
-    asyncio.run(main())

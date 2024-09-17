@@ -1,0 +1,28 @@
+syntax = "proto3";
+
+package counting;
+
+option go_package = "github.com/defenseunicorns/leapfrogai/pkg/client/counting";
+
+// TokenCountRequest is the payload to request token counting
+message TokenCountRequest {
+  string text = 1;
+}
+
+message TokenCountResponse {
+  int32 count = 1;
+}
+
+message TokenCountUsage {
+  int32 total_tokens = 1;
+}
+
+// TokenCountResponse is what's returned by the gRPC service
+message TokenCountResult {
+  TokenCountResponse result = 1;
+  optional TokenCountUsage usage = 2;
+}
+
+service TokenCountService {
+  rpc CountTokens (TokenCountRequest) returns (TokenCountResult) {}
+}
