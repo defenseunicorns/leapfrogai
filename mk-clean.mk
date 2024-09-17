@@ -16,6 +16,7 @@ clean-artifacts: # Zarf packages, UDS bundles, Python build artifacts, etc.
 clean-cache:
 	-rm -rf ./**/__pycache__/
 	-rm -rf ./**/.ruff_cache ./.ruff_cache
+	-rm -rf ./**/.pytest_cache ./.pytest_cache
 
 clean-env:
 	rm -f .env
