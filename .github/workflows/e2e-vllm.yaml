@@ -84,5 +84,7 @@ jobs:
           rm packages/vllm/zarf-package-vllm-amd64-e2e-test.tar.zst
 
       - name: Test vLLM
+        env:
+          MODEL_NAME: vllm
         run: |
-          python -m pytest ./tests/e2e/test_llm_generation.py -v --model_name=vllm -vv
+          python -m pytest ./tests/e2e/test_llm_generation.py -vv

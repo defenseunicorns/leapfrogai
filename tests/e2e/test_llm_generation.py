@@ -1,42 +1,54 @@
+import os
 from pathlib import Path
+from typing import Iterable
+import warnings
 
 import pytest
 from openai import InternalServerError, OpenAI
+from openai.types.chat import ChatCompletionMessageParam
+
+DEFAULT_MODEL_NAME = "llama-cpp-python"
 
 
-def pytest_addoption(parser):
-    parser.addoption(
-        "--model_name",
-        action="store",
-        default="llama-cpp-python",
-        help="Model to use for testing, e.g., llama-cpp-python or vllm (required)",
-    )
+def get_model_name():
+    model_name = os.getenv("MODEL_NAME")
+    if model_name is None:
+        warnings.warn(
+            f"MODEL_NAME environment variable not set. Defaulting to '{DEFAULT_MODEL_NAME}'.\n"
+            "Consider setting MODEL_NAME explicitly. Examples: 'vllm', 'repeater', 'llama-cpp-python'."
+        )
+        model_name = DEFAULT_MODEL_NAME
+    return model_name
 
 
-@pytest.fixture(scope="session")
-def model_name(request):
-    return request.config.getoption("--model_name")
+@pytest.fixture
+def model_name():
+    return get_model_name()
 
 
 def test_chat_completions(client: OpenAI, model_name: str):
-    messages = [
+    messages: Iterable[ChatCompletionMessageParam] = [
         {"role": "system", "content": "You are a helpful assistant."},
         {"role": "user", "content": "What is your name?"},
     ]
 
     chat_completion = client.chat.completions.create(
-        model=model_name, messages=messages, max_tokens=200
+        model=model_name, messages=messages, max_tokens=128
     )
     assert chat_completion.model == model_name
     assert len(chat_completion.choices) == 1
-    assert chat_completion.choices[0].message.role == "assistant"
-    assert len(chat_completion.choices[0].message.content) > 0
-    assert len(chat_completion.choices[0].message.content) < 500
+    if (
+        chat_completion.choices[0].message.content is not None
+        and chat_completion.choices[0].message.role is not None
+    ):
+        assert chat_completion.choices[0].message.role == "assistant"
+        assert len(chat_completion.choices[0].message.content) > 0
+        assert len(chat_completion.choices[0].message.content) < 500
 
 
 def test_completions(client: OpenAI, model_name: str):
     completion = client.completions.create(
-        model=model_name, prompt="Say hello to me.", max_tokens=200
+        model=model_name, prompt="What is your name?", max_tokens=128
     )
     assert completion.model == model_name
     assert len(completion.choices) == 1

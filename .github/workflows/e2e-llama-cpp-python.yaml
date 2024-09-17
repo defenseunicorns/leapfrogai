@@ -84,5 +84,7 @@ jobs:
             rm packages/llama-cpp-python/zarf-package-llama-cpp-python-amd64-e2e-test.tar.zst
 
         - name: Test llama-cpp-python
+          env:
+            MODEL_NAME: llama-cpp-python
           run: |
-            python -m pytest ./tests/e2e/test_llm_generation.py -v --model_name=llama-cpp-python -vv
+            python -m pytest ./tests/e2e/test_llm_generation.py -vv
