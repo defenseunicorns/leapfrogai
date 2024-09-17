@@ -247,8 +247,12 @@ class Model:
             request_id
         ):
             result = ""
-            if not self.is_queue_empty(request_id):
-                result = self.delta_queue_by_id.get(request_id).get()
+
+            # Ensure that the queue is not None and contains items before calling .get()
+            cur_queue = self.delta_queue_by_id.get(request_id)
+            if cur_queue is not None and not cur_queue.empty():
+                result = cur_queue.get()
+
             yield result
 
         logger.info(f"Finished request {request_id}")
