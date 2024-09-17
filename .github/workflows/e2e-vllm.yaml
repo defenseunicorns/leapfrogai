@@ -145,7 +145,7 @@ jobs:
       #######
       - name: Deploy vLLM
         run: |
-          make build-vllm LOCAL_VERSION=e2e-test
+          make build-vllm LOCAL_VERSION=e2e-test DOCKER_FLAGS="--build-arg MAX_CONTEXT_LENGTH=500"
           docker image prune -af
           uds zarf package deploy packages/vllm/zarf-package-vllm-amd64-e2e-test.tar.zst -l=trace --confirm
           rm packages/vllm/zarf-package-vllm-amd64-e2e-test.tar.zst
