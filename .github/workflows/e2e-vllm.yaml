@@ -88,37 +88,44 @@ jobs:
           uds version
           k3d version
 
-      - name: Check NVIDIA Dependencies
+      - name: Setup and Check NVIDIA Dependencies
         run: |
+          # Check the NVIDIA driver and container toolkit versions
           nvidia-smi
           nvidia-ctk --version
-          docker info
 
-      # - name: Create UDS Cluster
-      #   shell: bash
-      #   run: |
-      #     UDS_CONFIG=.github/config/uds-config.yaml make create-uds-gpu-cluster
+          # Configure Docker with the NVIDIA Container Toolkit
+          nvidia-ctk runtime configure --runtime=docker
 
-      # - name: Test UDS GPU Cluster
-      #   run: |
-      #     uds zarf tools kubectl logs -n kube-system daemonset/nvidia-device-plugin-daemonset
-      #     uds zarf tools kubectl apply -f packages/k3d-gpu/test/cuda-vector-add.yaml
+          # Check Docker GPU runtime selection and access
+          docker info | grep nvidia
+          docker run --rm --runtime=nvidia --gpus all ubuntu nvidia-smi
 
-      # - name: Setup LFAI-API and Supabase
-      #   uses: ./.github/actions/lfai-core
+      - name: Create UDS Cluster
+        shell: bash
+        run: |
+          UDS_CONFIG=.github/config/uds-config.yaml make create-uds-gpu-cluster
 
-      # #######
-      # # vllm
-      # #######
-      # - name: Deploy vLLM
-      #   run: |
-      #     make build-vllm LOCAL_VERSION=e2e-test
-      #     docker image prune -af
-      #     uds zarf package deploy packages/vllm/zarf-package-vllm-amd64-e2e-test.tar.zst -l=trace --confirm
-      #     rm packages/vllm/zarf-package-vllm-amd64-e2e-test.tar.zst
+      - name: Test UDS GPU Cluster
+        run: |
+          uds zarf tools kubectl logs -n kube-system daemonset/nvidia-device-plugin-daemonset
+          uds zarf tools kubectl apply -f packages/k3d-gpu/test/cuda-vector-add.yaml
 
-      # - name: Test vLLM
-      #   env:
-      #     MODEL_NAME: vllm
-      #   run: |
-      #     python -m pytest ./tests/e2e/test_llm_generation.py -vv
+      - name: Setup LFAI-API and Supabase
+        uses: ./.github/actions/lfai-core
+
+      #######
+      # vllm
+      #######
+      - name: Deploy vLLM
+        run: |
+          make build-vllm LOCAL_VERSION=e2e-test
+          docker image prune -af
+          uds zarf package deploy packages/vllm/zarf-package-vllm-amd64-e2e-test.tar.zst -l=trace --confirm
+          rm packages/vllm/zarf-package-vllm-amd64-e2e-test.tar.zst
+
+      - name: Test vLLM
+        env:
+          MODEL_NAME: vllm
+        run: |
+          python -m pytest ./tests/e2e/test_llm_generation.py -vv
