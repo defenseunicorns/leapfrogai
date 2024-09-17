@@ -83,7 +83,10 @@ jobs:
           sudo chown $(whoami) uds && \
           sudo mv uds /usr/local/bin/
 
+          sudo chown $(whoami) k3d
+
           uds version
+          k3d version
 
       - name: Check NVIDIA Dependencies
         run: |
