@@ -85,4 +85,4 @@ jobs:
 
       - name: Test vLLM
         run: |
-          python -m pytest --model_name=vllm -vv
+          python -m pytest ./tests/e2e/test_llm_generation.py -v --model_name=vllm -vv
