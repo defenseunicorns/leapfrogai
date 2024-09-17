@@ -54,7 +54,7 @@ concurrency:
 jobs:
   e2e_vllm:
     runs-on: ai-linux-x64-gpu
-    # if: ${{ !github.event.pull_request.draft }} # TODO: turn this back on!
+    if: ${{ !github.event.pull_request.draft }}
 
     steps:
       - name: Checkout Repo
@@ -112,9 +112,13 @@ jobs:
 
       - name: Test UDS GPU Cluster
         run: |
+          # Check NVIDIA plugin daemonset logs for issues
           uds zarf tools kubectl logs -n kube-system daemonset/nvidia-device-plugin-daemonset
+
+          # Use CUDA tests in-cluster to ensure GPUs can be scheduled
           uds zarf tools kubectl apply -f packages/k3d-gpu/test/cuda-vector-add.yaml
-          uds zarf tools kubectl logs -n default pod/gpu-pod
+          uds zarf tools wait-for -n default pod/gpu-pod && \
+            uds zarf tools kubectl logs -n default pod/gpu-pod
 
       - name: Setup LFAI-API and Supabase
         uses: ./.github/actions/lfai-core
