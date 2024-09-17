@@ -62,9 +62,9 @@ jobs:
 
       - name: Setup Python
         uses: ./.github/actions/python
-
-      - name: Setup UDS Environment
-        uses: defenseunicorns/uds-common/.github/actions/setup@822dac4452e6815aadcf09f487406ff258756a0c # v0.14.0
+        
+      - name: Setup UDS Cluster
+        uses: ./.github/actions/uds-cluster
         with:
           registry1Username: ${{ secrets.IRON_BANK_ROBOT_USERNAME }}
           registry1Password: ${{ secrets.IRON_BANK_ROBOT_PASSWORD }}
