@@ -92,13 +92,16 @@ jobs:
         env:
           UDS_VERSION: v0.14.0
         run: |
+          # Use sudo permissions to allow installation of UDS
           sudo wget -O uds https://github.com/defenseunicorns/uds-cli/releases/download/${{ env.UDS_VERSION }}/uds-cli_${{ env.UDS_VERSION }}_Linux_amd64 && \
           sudo chmod +x uds && \
-          sudo chown $(whoami) uds && \
-          sudo mv uds /usr/local/bin/
+          sudo chown $(whoami) uds
 
+          # CHange ownership to current runner user
+          sudo mv uds /usr/local/bin/
           sudo chown $(whoami) /usr/local/bin/k3d
 
+          # Check runner user access to the binaries
           uds version
           k3d version
 
