@@ -70,7 +70,7 @@ jobs:
           registry1Password: ${{ secrets.IRON_BANK_ROBOT_PASSWORD }}
           ghToken: ${{ secrets.GITHUB_TOKEN }}
 
-      - name: Setup LFAI-API and Supabase
+      - name: Setup API and Supabase
         uses: ./.github/actions/lfai-core
 
       ##########

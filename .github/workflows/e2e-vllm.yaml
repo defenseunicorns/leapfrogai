@@ -4,11 +4,11 @@ name: e2e-vllm
 on:
   pull_request:
     types:
-      - opened            # default trigger
-      - reopened          # default trigger
-      - synchronize       # default trigger
-      - ready_for_review  # don't run on draft PRs
-      - milestoned        # allows us to trigger on bot PRs
+      - opened # default trigger
+      - reopened # default trigger
+      - synchronize # default trigger
+      - ready_for_review # don't run on draft PRs
+      - milestoned # allows us to trigger on bot PRs
     paths:
       # Catch-all
       - "**"
@@ -117,27 +117,15 @@ jobs:
 
           # Use a CUDA test pod in-cluster to ensure GPUs can be scheduled
           uds zarf tools kubectl apply -f packages/k3d-gpu/test/cuda-vector-add.yaml
-          uds zarf tools kubectl get pods \
-            --all-namespaces \
-            --output=yaml \
-            | uds zarf tools yq eval -o=json '
-              ["Pod", "Namespace", "Container", "GPU"] as $header |
-              [$header] + [
-                .items[] |
-                .metadata as $metadata |
-                .spec.containers[] |
-                select(.resources.requests["nvidia.com/gpu"]) |
-                [
-                  $metadata.name,
-                  $metadata.namespace,
-                  .name,
-                  .resources.requests["nvidia.com/gpu"]
-                ]
-              ]' - \
-            | uds zarf tools yq -r '(.[0] | @tsv), (.[1:][] | @tsv)' \
-            | column -t -s $'\t'
 
-      - name: Setup LFAI-API and Supabase
+          while [[ $(kubectl get pod -l app=gpu-pod --namespace=default -o jsonpath='{.items[*].status.phase}') != "Succeeded" ]]; do
+              echo "Waiting for pod to complete..."
+              sleep 10
+          done
+
+          kubectl logs -l app=gpu-pod --namespace=default
+
+      - name: Setup API and Supabase
         uses: ./.github/actions/lfai-core
 
       #######
@@ -146,7 +134,17 @@ jobs:
       - name: Deploy vLLM
         run: |
           make build-vllm LOCAL_VERSION=e2e-test DOCKER_FLAGS="--build-arg MAX_CONTEXT_LENGTH=500"
+
+          make local-registry
+          make sdk-wheel LOCAL_VERSION=e2e-test
+          docker build --build-arg MAX_CONTEXT_LENGTH=500 --build-arg LOCAL_VERSION=e2e-test -t ghcr.io/defenseunicorns/leapfrogai/vllm:e2e-test -f packages/vllm/Dockerfile .
+          docker tag ghcr.io/defenseunicorns/leapfrogai/vllm:e2e-test localhost:5000/defenseunicorns/leapfrogai/vllm:e2e-test
+          docker push localhost:5000/defenseunicorns/leapfrogai/vllm:e2e-test
+
+          uds zarf package create packages/vllm --flavor upstream -o packages/vllm --registry-override=ghcr.io=localhost:5000 --insecure --set IMAGE_VERSION=e2e-test --confirm
+
           docker image prune -af
+
           uds zarf package deploy packages/vllm/zarf-package-vllm-amd64-e2e-test.tar.zst -l=trace --confirm
           rm packages/vllm/zarf-package-vllm-amd64-e2e-test.tar.zst
 
@@ -172,6 +170,11 @@ jobs:
             | column -t -s $'\t'
 
           # Check vLLM deployment logs for issues
+          while [[ $(kubectl get pod -l app=lfai-vllm --namespace=leapfrogai -o jsonpath='{.items[*].status.phase}') != "Running" ]]; do
+              echo "Waiting for pod to be ready..."
+              sleep 10
+          done
+
           uds zarf tools kubectl logs -n leapfrogai deployment/vllm-model
 
       - name: Test vLLM
