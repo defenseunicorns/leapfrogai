@@ -4,6 +4,20 @@ import pytest
 from openai import InternalServerError, OpenAI
 
 
+def pytest_addoption(parser):
+    parser.addoption(
+        "--model_name",
+        action="store",
+        default="llama-cpp-python",
+        help="Model to use for testing, e.g., llama-cpp-python or vllm (required)",
+    )
+
+
+@pytest.fixture(scope="session")
+def model_name(request):
+    return request.config.getoption("--model_name")
+
+
 def test_chat_completions(client: OpenAI, model_name: str):
     messages = [
         {"role": "system", "content": "You are a helpful assistant."},
