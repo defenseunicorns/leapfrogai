@@ -115,10 +115,27 @@ jobs:
           # Check NVIDIA plugin daemonset logs for issues
           uds zarf tools kubectl logs -n kube-system daemonset/nvidia-device-plugin-daemonset
 
-          # Use CUDA tests in-cluster to ensure GPUs can be scheduled
+          # Use a CUDA test pod in-cluster to ensure GPUs can be scheduled
           uds zarf tools kubectl apply -f packages/k3d-gpu/test/cuda-vector-add.yaml
-          uds zarf tools wait-for -n default pod/gpu-pod && \
-            uds zarf tools kubectl logs -n default pod/gpu-pod
+          uds zarf tools kubectl get pods \
+            --all-namespaces \
+            --output=yaml \
+            | uds zarf tools yq eval -o=json '
+              ["Pod", "Namespace", "Container", "GPU"] as $header |
+              [$header] + [
+                .items[] |
+                .metadata as $metadata |
+                .spec.containers[] |
+                select(.resources.requests["nvidia.com/gpu"]) |
+                [
+                  $metadata.name,
+                  $metadata.namespace,
+                  .name,
+                  .resources.requests["nvidia.com/gpu"]
+                ]
+              ]' - \
+            | uds zarf tools yq -r '(.[0] | @tsv), (.[1:][] | @tsv)' \
+            | column -t -s $'\t'
 
       - name: Setup LFAI-API and Supabase
         uses: ./.github/actions/lfai-core
