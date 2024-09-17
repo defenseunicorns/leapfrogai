@@ -1,6 +1,6 @@
 import { expect, test } from './fixtures';
 import { loadChatPage } from './helpers/navigationHelpers';
-import { createPDF, uploadFiles } from './helpers/fileHelpers';
+import {createPDF, deleteFixtureFile, uploadFiles} from './helpers/fileHelpers';
 import { deleteActiveThread } from './helpers/threadHelpers';
 import { faker } from '@faker-js/faker';
 
@@ -62,5 +62,7 @@ test('it can removes the audio file but keeps other files after translating', as
   await expect(messagesContainer.getByTestId('spanish.m4a-file-uploaded-card')).toBeVisible();
   await expect(chatToolsPDFFileCard).toBeVisible();
 
+  // cleanup
+  deleteFixtureFile(pdfFilename);
   await deleteActiveThread(page, openAIClient);
 });
