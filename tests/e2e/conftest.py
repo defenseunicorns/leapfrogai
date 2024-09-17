@@ -16,7 +16,7 @@ def pytest_addoption(parser):
     parser.addoption(
         "--model_name",
         action="append",
-        help="Model name to test, e.g., vllm or llama-cpp-python",
+        help="Model name(s) to test, e.g., vllm or llama-cpp-python (required)",
     )
 
 
@@ -29,4 +29,9 @@ def model_name(request):
             "Error: --model_name is required. Please provide at least one model name."
         )
 
+    # If a single model name is provided, return it directly
+    if len(model_names) == 1:
+        return model_names[0]
+
+    # If multiple model names are provided, return the list (for future use if needed)
     return model_names
