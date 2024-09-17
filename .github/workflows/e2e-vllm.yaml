@@ -97,8 +97,10 @@ jobs:
           # Configure Docker with the NVIDIA Container Toolkit
           sudo nvidia-ctk runtime configure --runtime=docker
 
-          # Check Docker GPU runtime selection and access
-          docker info | grep nvidia
+          # Check Docker GPU info and access
+          docker info
+          sudo docker info
+          sudo docker run --rm --runtime=nvidia --gpus all ubuntu nvidia-smi
           docker run --rm --runtime=nvidia --gpus all ubuntu nvidia-smi
 
       - name: Create UDS Cluster
