@@ -84,7 +84,11 @@ jobs:
           sudo mv uds /usr/local/bin/
 
           uds version
+
+      - name: Setup NVIDIA Dependencies
+        run: |
           nvidia-smi
+          nvidia-ctk --version
 
       #######
       # vllm
