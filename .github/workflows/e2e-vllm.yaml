@@ -80,7 +80,10 @@ jobs:
         run: |
           sudo wget -O uds https://github.com/defenseunicorns/uds-cli/releases/download/${{ env.UDS_VERSION }}/uds-cli_${{ env.UDS_VERSION }}_Linux_amd64 && \
           sudo chmod +x uds && \
+          sudo chown $(whoami) uds && \
           sudo mv uds /usr/local/bin/
+
+          uds version
 
       #######
       # vllm
