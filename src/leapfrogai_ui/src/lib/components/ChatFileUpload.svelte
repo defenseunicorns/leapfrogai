@@ -96,7 +96,7 @@
         // If this file adds too much text (larger than allowed max), remove the text and set to error status
         if (totalTextLength > ADJUSTED_MAX_CHARACTERS) {
           let lastFile = parsedFiles[parsedFiles.length - 1];
-          lastFile = {
+          parsedFiles[parsedFiles.length - 1] = {
             id: lastFile.id,
             name: shortenFileName(lastFile.name),
             type: lastFile.type,
@@ -115,45 +115,43 @@
   };
 </script>
 
+<LFFileUploadBtn
+  bind:ref={fileUploadBtnRef}
+  testId="upload-file-btn"
+  name="files"
+  outline
+  multiple
+  size="sm"
+  on:change={(e) => {
+    if (e.detail.length > MAX_NUM_FILES_UPLOAD) {
+      e.detail.pop();
+      toastStore.addToast(MAX_NUM_FILES_UPLOAD_MSG_TOAST());
+      return;
+    }
+    uploadingFiles = true;
+    for (const file of e.detail) {
+      // Metadata is limited to 512 characters, we use a short id to save space
+      const id = uuidv4().substring(0, 8);
+      file.id = id;
+      attachedFileMetadata = [
+        ...attachedFileMetadata,
+        {
+          id,
+          name: file.name,
+          type: file.type,
+          status: 'uploading'
+        }
+      ];
+    }
 
-  <LFFileUploadBtn
-    bind:ref={fileUploadBtnRef}
-    testId="upload-file-btn"
-    name="files"
-    outline
-    multiple
-    size="sm"
-    on:change={(e) => {
-      if (e.detail.length > MAX_NUM_FILES_UPLOAD) {
-        e.detail.pop();
-        toastStore.addToast(MAX_NUM_FILES_UPLOAD_MSG_TOAST());
-        return;
-      }
-      uploadingFiles = true;
-      for (const file of e.detail) {
-        // Metadata is limited to 512 characters, we use a short id to save space
-        const id = uuidv4().substring(0, 8);
-        file.id = id;
-        attachedFileMetadata = [
-          ...attachedFileMetadata,
-          {
-            id,
-            name: file.name,
-            type: file.type,
-            status: 'uploading'
-          }
-        ];
-      }
-
-      attachedFiles = [...e.detail];
-      convertFiles(e.detail);
-      fileUploadBtnRef.value = '';
-    }}
-    accept={ACCEPTED_FILE_TYPES}
-    disabled={uploadingFiles}
-    class="remove-btn-style flex  rounded-lg  p-1.5 text-gray-500 hover:bg-inherit dark:hover:bg-inherit"
-  >
-    <PaperClipOutline class="text-gray-300" />
-    <span class="sr-only">Attach file</span>
-  </LFFileUploadBtn>
-
+    attachedFiles = [...e.detail];
+    convertFiles(e.detail);
+    fileUploadBtnRef.value = '';
+  }}
+  accept={ACCEPTED_FILE_TYPES}
+  disabled={uploadingFiles}
+  class="remove-btn-style flex  rounded-lg  p-1.5 text-gray-500 hover:bg-inherit dark:hover:bg-inherit"
+>
+  <PaperClipOutline class="text-gray-300" />
+  <span class="sr-only">Attach file</span>
+</LFFileUploadBtn>

@@ -24,7 +24,7 @@
   } from '$constants/toastMessages';
   import SelectAssistantDropdown from '$components/SelectAssistantDropdown.svelte';
   import { PaperPlaneOutline, StopOutline } from 'flowbite-svelte-icons';
-  import type {FileMetadata, LFFile} from '$lib/types/files';
+  import type { FileMetadata, LFFile } from '$lib/types/files';
   import UploadedFileCards from '$components/UploadedFileCards.svelte';
   import ChatFileUploadForm from '$components/ChatFileUpload.svelte';
   import FileChatActions from '$components/FileChatActions.svelte';
@@ -231,7 +231,7 @@
             },
             lengthOverride: true
           });
-          threadsStore.updateMessagesState($chatMessages, setChatMessages, contextMsg)
+          threadsStore.updateMessagesState($chatMessages, setChatMessages, contextMsg);
         }
 
         // Save with API
@@ -359,7 +359,7 @@
         attachedFileMetadata.length > 0 && 'py-4'
       )}
     >
-      <UploadedFileCards bind:attachedFileMetadata bind:attachedFiles/>
+      <UploadedFileCards bind:attachedFileMetadata bind:attachedFiles />
 
       <div id="chat-row" class="flex w-full items-center gap-1">
         {#if !assistantMode}
@@ -404,7 +404,13 @@
           >
         {/if}
       </div>
-      <FileChatActions bind:attachedFileMetadata threadId={data.thread?.id} bind:attachedFiles originalMessages={$chatMessages} setMessages={setChatMessages}/>
+      <FileChatActions
+        bind:attachedFileMetadata
+        threadId={data.thread?.id}
+        bind:attachedFiles
+        originalMessages={$chatMessages}
+        setMessages={setChatMessages}
+      />
     </div>
   </div>
   <PoweredByDU />

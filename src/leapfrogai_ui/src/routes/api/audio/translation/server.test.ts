@@ -3,6 +3,7 @@ import type { RequestEvent } from '@sveltejs/kit';
 import type { RouteParams } from './$types';
 import { POST } from './+server';
 import { mockOpenAI } from '../../../../../vitest-setup';
+import { requestWithFormData } from '$helpers/apiHelpers';
 
 describe('/api/audio/translation', () => {
   it('returns a 401 when there is no session', async () => {
@@ -70,13 +71,7 @@ describe('/api/audio/translation', () => {
 
     const fileContent = new Blob(['dummy content'], { type: 'audio/mp4' });
     const testFile = new File([fileContent], 'test.txt', { type: 'audio/mp4' });
-    // In the test environment, formData.get('file') does not return a file of type File, so we mock it differently
-    // here
-    const request = {
-      formData: vi.fn().mockResolvedValue({
-        get: vi.fn().mockReturnValue(testFile)
-      })
-    } as unknown as Request;
+    const request = requestWithFormData(testFile);
 
     await expect(
       POST({ request, params: {}, locals: getLocalsMock() } as RequestEvent<
@@ -91,13 +86,7 @@ describe('/api/audio/translation', () => {
   it('should return translated text', async () => {
     const fileContent = new Blob(['dummy content'], { type: 'audio/mp4' });
     const testFile = new File([fileContent], 'test.txt', { type: 'audio/mp4' });
-    // In the test environment, formData.get('file') does not return a file of type File, so we mock it differently
-    // here
-    const request = {
-      formData: vi.fn().mockResolvedValue({
-        get: vi.fn().mockReturnValue(testFile)
-      })
-    } as unknown as Request;
+    const request = requestWithFormData(testFile);
 
     const res = await POST({ request, params: {}, locals: getLocalsMock() } as RequestEvent<
       RouteParams,

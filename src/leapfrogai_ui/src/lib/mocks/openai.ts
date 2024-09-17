@@ -121,13 +121,12 @@ class OpenAI {
 
   audio = {
     translations: {
-      create: vi.fn().mockImplementation(() =>
-      {
+      create: vi.fn().mockImplementation(() => {
         if (this.errors.translation) this.throwError('translation');
         return Promise.resolve({
           text: 'Fake translation'
-        })}
-      )
+        });
+      })
     }
   };
 

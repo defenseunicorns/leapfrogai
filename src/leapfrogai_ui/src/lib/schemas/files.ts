@@ -9,7 +9,7 @@ import {
   MAX_AUDIO_FILE_SIZE,
   MAX_FILE_SIZE
 } from '$constants';
-import type {LFFile} from "$lib/types/files";
+import type { LFFile } from '$lib/types/files';
 
 export const filesSchema = object({
   files: array().of(

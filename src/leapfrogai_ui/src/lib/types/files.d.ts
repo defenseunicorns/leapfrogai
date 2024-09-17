@@ -30,4 +30,4 @@ export type FileMetadata = {
 
 export type LFFile = File & {
   id?: string;
-}
+};

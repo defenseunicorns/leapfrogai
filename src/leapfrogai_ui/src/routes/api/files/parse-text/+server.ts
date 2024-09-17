@@ -3,7 +3,12 @@ import * as mupdf from 'mupdf';
 import { error, json } from '@sveltejs/kit';
 import { fileSchema } from '$schemas/files';
 import type { LFFile } from '$lib/types/files';
+import { handleError } from '$helpers/apiHelpers';
 
+/**
+ * Parses text from a file. If the file is not a PDF, it will first convert the file to a
+ * PDF before parsing the text.
+ */
 export const POST: RequestHandler = async ({ request, fetch, locals: { session } }) => {
   if (!session) {
     error(401, 'Unauthorized');
@@ -34,7 +39,7 @@ export const POST: RequestHandler = async ({ request, fetch, locals: { session }
       });
 
       if (!convertRes.ok) {
-        return error(500, { message: 'Error converting file', id: file.id });
+        error(500, { message: 'Error converting file', id: file.id });
       }
 
       const convertedFileBlob = await convertRes.blob();
@@ -58,7 +63,6 @@ export const POST: RequestHandler = async ({ request, fetch, locals: { session }
       text
     });
   } catch (e) {
-    console.error('file parse error', e);
-    error(500, { message: 'Internal Error', id: file.id });
+    handleError(e, { id: file.id });
   }
 };
