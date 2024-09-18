@@ -80,7 +80,6 @@ def test_non_english_transcription(client: OpenAI):
     arabic_transcription = client.audio.transcriptions.create(
         model="whisper",
         file=Path("tests/data/arabic-audio.wav"),
-        language="ar",
         response_format="json",
         temperature=0.5,
         timestamp_granularities=["word", "segment"],
@@ -107,7 +106,6 @@ def test_non_english_transcription(client: OpenAI):
     russian_transcription = client.audio.transcriptions.create(
         model="whisper",
         file=Path("tests/data/russian.mp3"),
-        language="ru",
         response_format="json",
         temperature=0.5,
         timestamp_granularities=["word", "segment"],

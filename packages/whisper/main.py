@@ -67,19 +67,27 @@ def call_whisper(
     prompt = ""
     temperature = 0.0
     # By default, automatically detect the language
-    inputLanguage = ""
+    inputLanguage = None
 
     for request in request_iterator:
-        if (
-            request.metadata.prompt
-            or request.metadata.temperature
-            or request.metadata.inputlanguage
-        ):
-            prompt = request.metadata.prompt
-            temperature = request.metadata.temperature
-            inputLanguage = request.metadata.inputlanguage
+        metadata = request.metadata
+        updated = False
+
+        if metadata.prompt:
+            prompt = metadata.prompt
+            updated = True
+
+        if metadata.temperature:
+            temperature = metadata.temperature
+            updated = True
+
+        if metadata.inputlanguage:
+            inputLanguage = metadata.inputlanguage
+            updated = True
+
+        if updated:
             logger.info(
-                f"Setting metadata: Prompt='{prompt}', Temperature={temperature}, Input Language='{inputLanguage}'"
+                f"Updated metadata: Prompt='{prompt}', Temperature={temperature}, Input Language='{inputLanguage}'"
             )
         else:
             data.extend(request.chunk_data)
