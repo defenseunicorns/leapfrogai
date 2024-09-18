@@ -27,18 +27,22 @@ def make_transcribe_request(filename, task, language, temperature, prompt):
     if task:
         if task in ["transcribe", "translate"]:
             kwargs["task"] = task
+            logger.info(f"Task {task} is starting")
         else:
             logger.error(f"Task {task} is not supported")
             return {"text": ""}
     if language:
         if language in model.supported_languages:
             kwargs["language"] = language
+            logger.info(f"Language {language} is supported")
         else:
             logger.error(f"Language {language} is not supported")
     if temperature:
         kwargs["temperature"] = temperature
+        logger.info(f"Temperature {temperature} is set")
     if prompt:
         kwargs["initial_prompt"] = prompt
+        logger.info(f"Prompt {prompt} is set")
 
     try:
         # Call transcribe with only non-None parameters
@@ -65,17 +69,15 @@ def call_whisper(
     inputLanguage = "en"
 
     for request in request_iterator:
-        if (
-            request.metadata.prompt
-            and request.metadata.temperature
-            and request.metadata.inputlanguage
-        ):
+        if request.metadata:
             prompt = request.metadata.prompt
             temperature = request.metadata.temperature
             inputLanguage = request.metadata.inputlanguage
-            continue
-
-        data.extend(request.chunk_data)
+            logger.info(
+                f"Setting metadata: Prompt='{prompt}', Temperature={temperature}, Input Language='{inputLanguage}'"
+            )
+        else:
+            data.extend(request.chunk_data)
 
     with tempfile.NamedTemporaryFile("wb") as f:
         f.write(data)
