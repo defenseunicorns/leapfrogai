@@ -26,86 +26,64 @@ variables:
   # vLLM runtime configuration (usually influenced by .env in local development)
   - name: TRUST_REMOTE_CODE
     description: "If True, allows the execution of code within the model files directory"
-    default: "True"
     pattern: "^(True|False)$"
   - name: TENSOR_PARALLEL_SIZE
     description: "The number of tensor parallelism splits, typically used for model parallelism across GPUs"
-    default: "1"
     pattern: "^[1-9][0-9]*$"
   - name: ENFORCE_EAGER
     description: "If set to True, enforces eager execution mode instead of lazy execution, impacting performance"
-    default: "False"
     pattern: "^(True|False)$"
   - name: GPU_MEMORY_UTILIZATION
     description: "The fraction of GPU memory to be utilized, expressed as a decimal value between 0.01 and 0.99"
-    default: "0.90"
     pattern: ^0\.(0[1-9]|[1-9][0-9])$
   - name: WORKER_USE_RAY
     description: "If True, uses Ray for distributed worker management"
-    default: "True"
     pattern: "^(True|False)$"
   - name: ENGINE_USE_RAY
     description: "If True, uses Ray for managing the execution engine"
-    default: "True"
     pattern: "^(True|False)$"
   - name: QUANTIZATION
     description: "If None, allows vLLM to automatically detect via model files and configuration"
-    default: "None"
   # LeapfrogAI SDK runtime configuration (usually influenced by config.yaml in development)
   - name: MAX_CONTEXT_LENGTH
     description: "The maximum number of tokens the model can process in a single input before the inferencing engine's overflow strategy is used"
-    default: "32768"
     pattern: "^[1-9][0-9]*$"
   - name: STOP_TOKENS
     description: "A set of special tokens that signal the model to stop producing further output, delimited using a comma and space"
-    default: "</s>, <|im_end|>, <|endoftext|>"
     pattern: ^(<[^,]+>\s*,\s*)*<[^,]+>\s*$
   - name: PROMPT_FORMAT_CHAT_SYSTEM
-    default: "SYSTEM: {}\n"
   - name: PROMPT_FORMAT_CHAT_USER
-    default: "USER: {}\n"
   - name: PROMPT_FORMAT_CHAT_ASSISTANT
-    default: "ASSISTANT: {}\n"
   - name: TEMPERATURE
     description: "Controls the randomness of the model's output"
-    default: "0.1"
     pattern: ^(0(\.\d+)?|1(\.0+)?)$
   - name: TOP_P
     description: "The cumulative probability threshold for token sampling, where 1.0 represents no restriction"
-    default: "1.0"
     pattern: ^(0(\.\d+)?|1(\.0+)?)$
   - name: TOP_K
     description: "The number of top-K tokens to consider during sampling, where 0 disables top-K sampling"
-    default: "0"
     pattern: ^\d+$
   - name: REPETITION_PENALTY
     description: "The penalty value for repetition in generation"
-    default: "1.0"
     pattern: ^(0(\.\d+)?|1(\.0+)?)$
   - name: MAX_NEW_TOKENS
     description: "Maximum new tokens to generate"
-    default: "8192"
     pattern: ^\d+$
   # Pod deployment configuration
   - name: GPU_LIMIT
     description: "The GPU limit for the model inferencing. Must be 1 or more."
-    default: "1"
     pattern: "^[1-9][0-9]*$"
   - name: GPU_RUNTIME
     description: "The GPU runtime name for the model inferencing."
-    default: "nvidia"
     pattern: "^(nvidia)?$"
   - name: PVC_SIZE
     description: "Size of the PVC used for model storage."
-    default: "15Gi"
     pattern: "^[0-9]+[a-zA-Z]+$"
   - name: PVC_ACCESS_MODE
     description: "Access mode of the PVC used for model storage."
-    default: "ReadWriteOnce"
     pattern: "^(ReadWriteOnce|ReadOnlyMany|ReadWriteMany)$"
   - name: PVC_STORAGE_CLASS
     description: "Storage class of the PVC used for model storage."
-    default: "local-path"
 
 components:
   - name: vllm-model
