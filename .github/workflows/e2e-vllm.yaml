@@ -96,7 +96,7 @@ jobs:
           chown $(whoami) uds
 
           # # Change ownership of required binaries to current runner user
-          # sudo mv uds /usr/local/bin/
+          mv uds /usr/local/bin/
           # sudo chown $(whoami) /usr/local/bin/k3d
 
           # Check runner user access to the binaries
