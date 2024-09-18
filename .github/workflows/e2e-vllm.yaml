@@ -111,7 +111,7 @@ jobs:
         run: |
           # Apply the tests in-cluster to ensure GPUs can be scheduled
           uds zarf tools kubectl get nodes -o=custom-columns=NAME:.metadata.name,GPU:.status.allocatable.nvidia\.com/gpu
-          kubectl get daemonset nvidia-device-plugin-daemonset -n kube-system
+          uds zarf tools kubectl get daemonset nvidia-device-plugin-daemonset -n kube-system
 
           uds zarf tools kubectl apply -f packages/k3d-gpu/test/cuda-vector-add.yaml
 
