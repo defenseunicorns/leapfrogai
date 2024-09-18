@@ -71,11 +71,9 @@ jobs:
           sudo nvidia-ctk runtime configure --runtime=docker --set-as-default
           sudo systemctl restart docker
 
-          # Unload NVIDIA mods
+          # Reload NVIDIA mods
           sudo chmod +x .github/scripts/reloadNvidiaDrivers.sh
           sudo .github/scripts/reloadNvidiaDrivers.sh
-
-          # Reload NVIDIA again
           nvidia-smi
 
           # Test Docker GPU access and capability
@@ -122,7 +120,7 @@ jobs:
       - name: Test UDS GPU Cluster
         run: |
           # Apply the tests in-cluster to ensure GPUs can be scheduled
-          uds zarf tools kubectl describe node k3d-uds-server-0
+          uds zarf tools kubectl describe node k3d-k3s-default-server-0
           uds zarf tools kubectl get pods -o wide --all-namespaces
           uds zarf tools kubectl exec -it daemonset/nvidia-device-plugin-daemonset -n kube-system -c nvidia-device-plugin-ctr -- nvidia-smi
           uds zarf tools kubectl logs -l name=nvidia-device-plugin-daemonset -n kube-system
