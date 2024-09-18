@@ -237,4 +237,7 @@ describe('FileChatActions', () => {
     expect(file2TranslateBtn).toBeDisabled();
     expect(file2TranscribeBtn).toBeDisabled();
   });
+
+  // TODO- test actions not shown until file status === complete
+  // TODO - test summarization
 });

@@ -4,7 +4,7 @@ export const MAX_LABEL_SIZE = 100;
 export const DEFAULT_ASSISTANT_TEMP = 0.2;
 export const MAX_AVATAR_SIZE = 5000000;
 export const MAX_FILE_SIZE = 512000000;
-export const MAX_AUDIO_FILE_SIZE = 25000000;
+export const MAX_AUDIO_FILE_SIZE = 2;
 export const MAX_FILE_NAME_SIZE = 27;
 export const MAX_NUM_FILES_UPLOAD = 10; // for chat completion
 

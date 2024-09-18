@@ -30,10 +30,6 @@
   $: audioFiles = attachedFileMetadata.filter((file) => file.type.startsWith('audio/'));
   $: nonAudioFiles = attachedFileMetadata.filter((file) => !file.type.startsWith('audio/'));
 
-  $: console.log('audioFiles', audioFiles);
-  $: console.log('nonAudioFiles', nonAudioFiles);
-  $: console.log('file chat actions attachedFileMetadata', attachedFileMetadata);
-
   const customBtnClass =
     'rounded text-xs px-2.5 py-0.5 text-gray-500 bg-gray-100 hover:bg-gray-400 dark:bg-gray-100 dark:text-gray-900 dark:hover:bg-gray-300 truncate';
 
@@ -209,54 +205,60 @@
     : 'hidden'}
 >
   {#each audioFiles as file}
-    <div in:fade={{ duration: 150 }} out:fade={{ duration: 150 }}>
-      <Button
-        color="dark"
-        class={customBtnClass}
-        on:click={() => transcribeOrTranslate(file, 'translation')}
-        disabled={processing.fileId}
-      >
-        {#if processing.fileId === file.id && processing.method === 'translation'}
-          <Spinner class="me-2" size="2" color="white" data-testid="translation-spinner" /><span
-            >{`Translating ${shortenFileName(file.name)}`}</span
-          >
-        {:else}
-          {`Translate ${shortenFileName(file.name)}`}{/if}</Button
-      >
-    </div>
+    {#if file.status === 'complete'}
+      <div in:fade={{ duration: 150 }} out:fade={{ duration: 150 }}>
+        <Button
+          color="dark"
+          class={customBtnClass}
+          on:click={() => transcribeOrTranslate(file, 'translation')}
+          disabled={processing.fileId}
+        >
+          {#if processing.fileId === file.id && processing.method === 'translation'}
+            <Spinner class="me-2" size="2" color="white" data-testid="translation-spinner" /><span
+              >{`Translating ${shortenFileName(file.name)}`}</span
+            >
+          {:else}
+            {`Translate ${shortenFileName(file.name)}`}{/if}</Button
+        >
+      </div>
+    {/if}
   {/each}
   {#each audioFiles as file}
-    <div in:fade={{ duration: 150 }} out:fade={{ duration: 150 }}>
-      <Button
-        color="dark"
-        class={customBtnClass}
-        on:click={() => transcribeOrTranslate(file, 'transcription')}
-        disabled={processing.fileId}
-      >
-        {#if processing.fileId === file.id && processing.method === 'transcription'}
-          <Spinner class="me-2" size="2" color="white" data-testid="transcription-spinner" /><span
-            >{`Transcribing ${shortenFileName(file.name)}`}</span
-          >
-        {:else}
-          {`Transcribe ${shortenFileName(file.name)}`}{/if}</Button
-      >
-    </div>
+    {#if file.status === 'complete'}
+      <div in:fade={{ duration: 150 }} out:fade={{ duration: 150 }}>
+        <Button
+          color="dark"
+          class={customBtnClass}
+          on:click={() => transcribeOrTranslate(file, 'transcription')}
+          disabled={processing.fileId}
+        >
+          {#if processing.fileId === file.id && processing.method === 'transcription'}
+            <Spinner class="me-2" size="2" color="white" data-testid="transcription-spinner" /><span
+              >{`Transcribing ${shortenFileName(file.name)}`}</span
+            >
+          {:else}
+            {`Transcribe ${shortenFileName(file.name)}`}{/if}</Button
+        >
+      </div>
+    {/if}
   {/each}
   {#each nonAudioFiles as file}
-    <div in:fade={{ duration: 150 }} out:fade={{ duration: 150 }}>
-      <Button
-        color="dark"
-        class={customBtnClass}
-        on:click={() => summarize(file)}
-        disabled={processing.fileId}
-      >
-        {#if processing.fileId === file.id && processing.method === 'summarization'}
-          <Spinner class="me-2" size="2" color="white" data-testid="summarization-spinner" /><span
-            >{`Summarizing ${shortenFileName(file.name)}`}</span
-          >
-        {:else}
-          {`Summarize ${shortenFileName(file.name)}`}{/if}</Button
-      >
-    </div>
+    {#if file.status === 'complete'}
+      <div in:fade={{ duration: 150 }} out:fade={{ duration: 150 }}>
+        <Button
+          color="dark"
+          class={customBtnClass}
+          on:click={() => summarize(file)}
+          disabled={processing.fileId}
+        >
+          {#if processing.fileId === file.id && processing.method === 'summarization'}
+            <Spinner class="me-2" size="2" color="white" data-testid="summarization-spinner" /><span
+              >{`Summarizing ${shortenFileName(file.name)}`}</span
+            >
+          {:else}
+            {`Summarize ${shortenFileName(file.name)}`}{/if}</Button
+        >
+      </div>
+    {/if}
   {/each}
 </div>
