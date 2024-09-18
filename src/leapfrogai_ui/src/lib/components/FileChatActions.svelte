@@ -5,7 +5,11 @@
   import { saveMessage } from '$helpers/chatHelpers';
   import type { FileMetadata, LFFile } from '$lib/types/files';
   import { threadsStore, toastStore } from '$stores';
-  import { AUDIO_FILE_SIZE_ERROR_TOAST, FILE_TRANSLATION_ERROR } from '$constants/toastMessages';
+  import {
+    AUDIO_FILE_SIZE_ERROR_TOAST,
+    FILE_TRANSCRIPTION_ERROR,
+    FILE_TRANSLATION_ERROR
+  } from '$constants/toastMessages';
   import { tick } from 'svelte';
   import { page } from '$app/stores';
   import type { Message } from 'ai';
@@ -17,7 +21,7 @@
   export let originalMessages: Message[];
   export let setMessages: (messages: Message[]) => void;
 
-  let translatingId: string;
+  let fileId: string;
 
   $: audioFiles = attachedFileMetadata.filter((file) => file.type.startsWith('audio/'));
 
@@ -26,13 +30,13 @@
 
   const reset = async () => {
     await threadsStore.setSendingBlocked(false);
-    translatingId = '';
+    fileId = '';
   };
 
-  const handleTranslationError = async (toastData: ToastData) => {
+  const handleGeneralError = async (toastData: ToastData) => {
     toastStore.addToast(toastData);
-    if (translatingId) {
-      const fileMetadataIndex = attachedFiles.findIndex((f) => f.id === translatingId);
+    if (fileId) {
+      const fileMetadataIndex = attachedFiles.findIndex((f) => f.id === fileId);
       attachedFileMetadata[fileMetadataIndex] = {
         ...attachedFileMetadata[fileMetadataIndex],
         status: 'error',
@@ -42,27 +46,40 @@
     await reset();
   };
 
-  const translateFile = async (fileMetadata: FileMetadata) => {
+  const transcribeOrTranslate = async (
+    fileMetadata: FileMetadata,
+    method: 'translation' | 'transcription'
+  ) => {
+    const toastError =
+      method === 'translation' ? FILE_TRANSLATION_ERROR() : FILE_TRANSCRIPTION_ERROR();
+
+    const adjective = method === 'translation' ? ' Translate' : 'Transcribe'
+
     if (!fileMetadata.id) {
-      await handleTranslationError(FILE_TRANSLATION_ERROR());
+      await handleGeneralError(toastError);
       return;
     }
-    translatingId = fileMetadata.id;
+    fileId = fileMetadata.id;
     await threadsStore.setSendingBlocked(true);
     try {
       if (!threadId) {
         // create new thread
-        await threadsStore.newThread(`Translate ${fileMetadata.name}`);
+        await threadsStore.newThread(
+          `${adjective} ${fileMetadata.name}`
+        );
         await tick(); // allow store to update
         threadId = $page.params.thread_id;
       }
 
       const metadataToSave = attachedFileMetadata.find((f) => f.id === fileMetadata.id);
-      if (!metadataToSave) throw Error('Error getting file metadata');
+      if (!metadataToSave) {
+        await handleGeneralError(toastError);
+        return;
+      }
       // Save new user message
       const newMessage = await saveMessage({
         thread_id: threadId,
-        content: `Translate ${fileMetadata.name}`,
+        content: `${adjective} ${fileMetadata.name}`,
         role: 'user',
         metadata: {
           filesMetadata: JSON.stringify([metadataToSave])
@@ -74,39 +91,39 @@
       // translate
       const file = attachedFiles.find((f) => f.id === fileMetadata.id);
       if (!file) {
-        await handleTranslationError(FILE_TRANSLATION_ERROR());
+        await handleGeneralError(toastError);
         return;
       }
 
       const formData = new FormData();
       formData.append('file', file);
-      const translateRes = await fetch(`/api/audio/translation`, {
+      const res = await fetch(`/api/audio/${method}`, {
         method: 'POST',
         body: formData
       });
 
-      const translateResJson = await translateRes.json();
-      if (!translateRes.ok) {
-        if (translateResJson.message === `ValidationError: ${AUDIO_FILE_SIZE_ERROR_TEXT}`) {
-          await handleTranslationError(AUDIO_FILE_SIZE_ERROR_TOAST());
+      const resJson = await res.json();
+      if (!res.ok) {
+        if (resJson.message === `ValidationError: ${AUDIO_FILE_SIZE_ERROR_TEXT}`) {
+          await handleGeneralError(AUDIO_FILE_SIZE_ERROR_TOAST());
         } else {
-          await handleTranslationError(FILE_TRANSLATION_ERROR());
+          await handleGeneralError(toastError);
         }
         return;
       }
 
       // save translation response
-      const translationMessage = await saveMessage({
+      const responseMessage = await saveMessage({
         thread_id: threadId,
-        content: translateResJson.text,
+        content: resJson.text,
         role: 'assistant'
       });
-      await threadsStore.addMessageToStore(translationMessage);
-      threadsStore.updateMessagesState(originalMessages, setMessages, translationMessage);
+      await threadsStore.addMessageToStore(responseMessage);
+      threadsStore.updateMessagesState(originalMessages, setMessages, responseMessage);
       attachedFiles = attachedFiles.filter((file) => file.id !== fileMetadata.id);
       attachedFileMetadata = attachedFileMetadata.filter((file) => file.id !== fileMetadata.id);
     } catch {
-      await handleTranslationError(FILE_TRANSLATION_ERROR());
+      await handleGeneralError(toastError);
       return;
     }
 
@@ -125,15 +142,32 @@
       <Button
         color="dark"
         class={customBtnClass}
-        on:click={() => translateFile(file)}
-        disabled={translatingId}
+        on:click={() => transcribeOrTranslate(file, 'translation')}
+        disabled={fileId}
       >
-        {#if translatingId === file.id}
+        {#if fileId === file.id}
           <Spinner class="me-2" size="2" color="white" /><span
             >{`Translating ${shortenFileName(file.name)}`}</span
           >
         {:else}
           {`Translate ${shortenFileName(file.name)}`}{/if}</Button
+      >
+    </div>
+  {/each}
+  {#each audioFiles as file}
+    <div in:fade={{ duration: 150 }} out:fade={{ duration: 150 }}>
+      <Button
+        color="dark"
+        class={customBtnClass}
+        on:click={() => transcribeOrTranslate(file, 'transcription')}
+        disabled={fileId}
+      >
+        {#if fileId === file.id}
+          <Spinner class="me-2" size="2" color="white" /><span
+            >{`Transcribing ${shortenFileName(file.name)}`}</span
+          >
+        {:else}
+          {`Transcribe ${shortenFileName(file.name)}`}{/if}</Button
       >
     </div>
   {/each}
