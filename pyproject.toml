@@ -4,7 +4,7 @@ description = "OpenAI-like capabilities for secure, local, air-gapped systems."
 authors = [{ name = "LeapfrogAI Team", email = "ai@defenseunicorns.com" }]
 
 # x-release-please-start-version
-version = "0.11.0"
+version = "0.12.2"
 # x-release-please-end
 
 readme = "README.md"
@@ -26,6 +26,7 @@ dev = [
     "requests",
     "requests-toolbelt",
     "pytest",
+    "supabase == 2.6.0",
     "huggingface_hub[cli,hf_transfer] == 0.24.5",
     "fastapi == 0.109.1",
 ]
@@ -39,6 +40,11 @@ generate-hashes = true
 
 [tool.ruff]
 target-version = "py311"
+
+[tool.ruff.format]
+quote-style = "double"
+indent-style = "space"
+line-ending = "auto"
 
 [tool.pytest.ini_options]
 addopts = ["--import-mode=importlib"]

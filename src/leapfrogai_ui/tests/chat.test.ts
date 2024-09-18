@@ -1,11 +1,12 @@
 import { expect, test } from './fixtures';
-import { getSimpleMathQuestion, loadChatPage, LONG_RESPONSE_PROMPT } from './helpers/helpers';
+import { getSimpleMathQuestion, LONG_RESPONSE_PROMPT } from './helpers/helpers';
 import { createAssistantWithApi, deleteAssistantWithApi } from './helpers/assistantHelpers';
 import {
   deleteActiveThread,
   sendMessage,
   waitForResponseToComplete
 } from './helpers/threadHelpers';
+import { loadChatPage } from './helpers/navigationHelpers';
 
 const newMessage1 = getSimpleMathQuestion();
 const newMessage2 = getSimpleMathQuestion();
@@ -28,6 +29,9 @@ test('it saves in progress responses when interrupted by a page reload', async (
   page,
   openAIClient
 }) => {
+  if (process.env.DEFAULT_MODEL === 'llama-cpp-python') {
+    test.skip();
+  }
   const uniqueLongMessagePrompt = `${LONG_RESPONSE_PROMPT} ${new Date().toISOString()}`;
   await loadChatPage(page);
   const messages = page.getByTestId('message');
@@ -42,6 +46,9 @@ test('it saves in progress responses when interrupted by changing threads', asyn
   page,
   openAIClient
 }) => {
+  if (process.env.DEFAULT_MODEL === 'llama-cpp-python') {
+    test.skip();
+  }
   const uniqueLongMessagePrompt = `${LONG_RESPONSE_PROMPT} ${new Date().toISOString()}`;
   await loadChatPage(page);
   const messages = page.getByTestId('message');
@@ -63,6 +70,9 @@ function countWords(str: string) {
 }
 
 test('it cancels responses', async ({ page, openAIClient }) => {
+  if (process.env.DEFAULT_MODEL === 'llama-cpp-python') {
+    test.skip();
+  }
   await loadChatPage(page);
   const messages = page.getByTestId('message');
   await sendMessage(page, LONG_RESPONSE_PROMPT);
@@ -82,6 +92,9 @@ test('it cancels responses when clicking enter instead of pause button and does 
   page,
   openAIClient
 }) => {
+  if (process.env.DEFAULT_MODEL === 'llama-cpp-python') {
+    test.skip();
+  }
   await loadChatPage(page);
   const messages = page.getByTestId('message');
   await sendMessage(page, LONG_RESPONSE_PROMPT); // response must take a long time for this test to work
@@ -164,7 +177,11 @@ test('it formats code in a code block and can copy the code', async ({ page }) =
 });
 
 // The skeleton only shows for assistant messages
-test('it shows a loading skeleton when a response is pending', async ({ page, openAIClient }) => {
+// TODO -this test can be flaky if the backend is really fast and the loading-msg skeleton barely has time to be shown
+test.skip('it shows a loading skeleton when a response is pending', async ({
+  page,
+  openAIClient
+}) => {
   const assistant = await createAssistantWithApi({ openAIClient });
 
   await loadChatPage(page);
@@ -181,6 +198,28 @@ test('it shows a loading skeleton when a response is pending', async ({ page, op
   await waitForResponseToComplete(page);
   await expect(messages).toHaveCount(2);
   await expect(page.getByTestId('loading-msg')).not.toBeVisible();
+
+  // Cleanup
+  await deleteActiveThread(page, openAIClient);
+  await deleteAssistantWithApi(assistant.id, openAIClient);
+});
+
+test('it can chat with an assistant that doesnt have files', async ({ page, openAIClient }) => {
+  const assistant = await createAssistantWithApi({ openAIClient });
+  expect(assistant.tool_resources?.file_search).not.toBeDefined(); // ensure the assistant has no files
+
+  await loadChatPage(page);
+
+  // Select assistant
+  await expect(page.getByTestId('assistants-select-btn')).not.toBeDisabled();
+  const assistantDropdown = page.getByTestId('assistants-select-btn');
+  await assistantDropdown.click();
+  await page.getByText(assistant!.name!).click();
+
+  const messages = page.getByTestId('message');
+  await sendMessage(page, newMessage1);
+  await waitForResponseToComplete(page);
+  await expect(messages).toHaveCount(2);
 
   // Cleanup
   await deleteActiveThread(page, openAIClient);

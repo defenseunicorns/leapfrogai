@@ -3,7 +3,7 @@ import os
 from pathlib import Path
 
 
-LEAPFROGAI_MODEL = "llama-cpp-python"
+LEAPFROGAI_MODEL = os.getenv("LEAPFROGAI_MODEL", "llama-cpp-python")
 OPENAI_MODEL = "gpt-4o-mini"
 
 
@@ -17,7 +17,9 @@ def openai_client():
 
 def leapfrogai_client():
     return OpenAI(
-        base_url=os.getenv("LEAPFROGAI_API_URL"),
+        base_url=os.getenv(
+            "LEAPFROGAI_API_URL", "https://leapfrogai-api.uds.dev/openai/v1"
+        ),
         api_key=os.getenv("SUPABASE_USER_JWT"),
     )
 
@@ -31,7 +33,7 @@ class ClientConfig:
         self.model = model
 
 
-def client_config_factory(client_name) -> ClientConfig:
+def client_config_factory(client_name: str) -> ClientConfig:
     if client_name == "openai":
         return ClientConfig(client=openai_client(), model=OPENAI_MODEL)
     elif client_name == "leapfrogai":

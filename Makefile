@@ -16,18 +16,8 @@ help: ## Display this help information
 		| sort | awk 'BEGIN {FS = ":.*?## "}; \
 		{printf "\033[36m%-30s\033[0m %s\n", $$1, $$2}'
 
-clean: ## Clean up all the things (packages, build dirs, compiled .whl files, python eggs)
-	-rm -rf .logs
-	-rm zarf-package-*.tar.zst
-	-rm packages/**/zarf-package-*.tar.zst
-	-rm -rf build/*
-	-rm -rf src/**/build/*
-	-rm -rf packages/**/build/*
-	find . -name 'uds-bundle-*-*.tar.zst' -delete
-	find . -type d -name 'zarf-sbom' -exec rm -rf {} +
-	find . -name '*.whl' -delete
-	find . -type d -name '*.egg-info' -exec rm -rf {} +
-
+## Clean up targets for test artifacts, cachce, etc.
+include mk-clean.mk
 
 gen-python: ## Generate the protobufs for the OpenAI typing within the leapfrogai_api module
 	python3 -m grpc_tools.protoc -I src/leapfrogai_sdk/proto \
@@ -301,8 +291,8 @@ silent-deploy-gpu:
 	@$(MAKE) -j${MAX_JOBS} \
 		silent-deploy-api-package ZARF_FLAGS="${ZARF_FLAGS} ${SILENT_ZARF_FLAGS}" \
 		silent-deploy-vllm-package ZARF_FLAGS="${ZARF_FLAGS} ${SILENT_ZARF_FLAGS}" \
-		silent-deploy-text-embeddings-package ZARF_FLAGS="${ZARF_FLAGS} ${SILENT_ZARF_FLAGS} --set=GPU_CLASS_NAME='nvidia'" \
-		silent-deploy-whisper-package ZARF_FLAGS="${ZARF_FLAGS} ${SILENT_ZARF_FLAGS} --set=GPU_CLASS_NAME='nvidia'"
+		silent-deploy-text-embeddings-package ZARF_FLAGS="${ZARF_FLAGS} ${SILENT_ZARF_FLAGS} --set=GPU_RUNTIME='nvidia'" \
+		silent-deploy-whisper-package ZARF_FLAGS="${ZARF_FLAGS} ${SILENT_ZARF_FLAGS} --set=GPU_RUNTIME='nvidia'"
 	@echo "Deploying UI..."
 	@$(MAKE) silent-deploy-ui-package ZARF_FLAGS="${ZARF_FLAGS} ${SILENT_ZARF_FLAGS} --set=MODEL='vllm'"
 	@echo "All deployments completed"

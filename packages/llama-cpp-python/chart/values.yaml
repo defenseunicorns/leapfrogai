@@ -2,20 +2,20 @@
 # This is a YAML-formatted file.
 # Declare variables to be passed into your templates.
 
-replicaCount: 1
-
 image:
   repository: "ghcr.io/defenseunicorns/leapfrogai/llama-cpp-python"
   pullPolicy: Always
   # Overrides the image tag whose default is the chart appVersion.
   # x-release-please-start-version
-  tag: 0.11.0
+  tag: 0.12.2
   # x-release-please-end
 
-nameOverride: llama-cpp-python
+nameOverride: "llama-cpp-python"
 fullnameOverride: ""
 
-podAnnotations: {}
+env:
+  - name: LFAI_LOG_LEVEL
+    value: "INFO"
 
 podSecurityContext:
   runAsNonRoot: true
@@ -24,6 +24,10 @@ podSecurityContext:
 securityContext:
   runAsUser: 65532
   runAsGroup: 65532
+  runAsNonRoot: true
+  capabilities:
+    drop:
+      - ALL
 
 service:
   type: ClusterIP
@@ -43,11 +47,9 @@ resources:
     memory: 0
     nvidia.com/gpu: 0
 
-autoscaling:
-  enabled: false
-  minReplicas: 1
-  maxReplicas: 100
-  targetCPUUtilizationPercentage: 80
+replicaCount: 1
+
+podAnnotations: {}
 
 nodeSelector: {}
 
@@ -55,7 +57,29 @@ tolerations: []
 
 affinity: {}
 
+strategy:
+  rollingUpdate:
+    maxUnavailable: 0
+  type: RollingUpdate
+
 persistence:
   size: 15Gi
   accessModes: ReadWriteOnce
   storageClass: "local-path"
+
+modelInjectionContainer:
+  securityContext:
+    runAsUser: 65532
+    runAsGroup: 65532
+
+  resources:
+    limits:
+      memory: "128Mi"
+      cpu: "500m"
+    requests:
+      memory: "64Mi"
+      cpu: "200m"
+
+  volumeMounts:
+    - name: leapfrogai-pv-storage
+      mountPath: /data

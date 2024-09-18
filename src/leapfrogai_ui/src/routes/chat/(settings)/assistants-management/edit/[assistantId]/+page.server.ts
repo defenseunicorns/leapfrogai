@@ -1,5 +1,5 @@
 import { error, fail, redirect } from '@sveltejs/kit';
-import { superValidate } from 'sveltekit-superforms';
+import { superValidate, withFiles } from 'sveltekit-superforms';
 import { yup } from 'sveltekit-superforms/adapters';
 import { editAssistantInputSchema } from '$lib/schemas/assistants';
 import { env } from '$env/dynamic/private';
@@ -36,7 +36,9 @@ export const load: PageServerLoad = async ({ params, locals: { session } }) => {
   if (vectorStoreId) {
     try {
       const vectorStoreFiles = await openai.beta.vectorStores.files.list(vectorStoreId);
-      file_ids = vectorStoreFiles.data.map((file) => file.id);
+      file_ids = vectorStoreFiles.data
+        .filter((file) => file.status === 'completed')
+        .map((file) => file.id);
     } catch (e) {
       console.error(`Error getting vector store files: ${e}`);
     }
@@ -109,57 +111,45 @@ export const actions: Actions = {
 
     let vectorStoreId = form.data.vectorStoreId;
     if (vectorStoreId === 'undefined') vectorStoreId = undefined;
-    if (data_sources.length > 0 && !vectorStoreId) {
-      try {
-        const vectorStore = await openai.beta.vectorStores.create({
-          name: `${form.data.name}-vector-store`
-        });
-        vectorStoreId = vectorStore.id;
-      } catch (e) {
-        console.error('Error creating vector store', e);
-        return fail(500, { message: 'Error creating vector store.' });
-      }
-    }
 
-    // undefined vector store id from form is passed as a string
     if (vectorStoreId) {
       try {
         const vectorStoreFilesPage = await openai.beta.vectorStores.files.list(vectorStoreId);
         const vectorStoreFiles = vectorStoreFilesPage.data;
-        if (vectorStoreFiles) {
-          const vectorStoreFileIds = vectorStoreFiles.map((file) => file.id);
-          // delete and add files to vector store
-          const filesToDelete = vectorStoreFileIds.filter(
-            (fileId) => !data_sources.includes(fileId)
-          );
-          const filesToAdd = data_sources.filter((fileId) => !vectorStoreFileIds.includes(fileId));
-          const promises: APIPromise<VectorStoreFileDeleted | VectorStoreFile>[] = [];
 
-          for (const file_id of filesToDelete) {
-            await openai.beta.vectorStores.files.del(vectorStoreId, file_id);
-          }
-          for (const file_id of filesToAdd) {
-            await openai.beta.vectorStores.files.create(vectorStoreId, {
-              file_id
-            });
-          }
-          await Promise.all(promises);
+        const vectorStoreFileIds = vectorStoreFiles.map((file) => file.id);
+        // delete and add files to vector store
+        const filesToDelete = vectorStoreFileIds.filter((fileId) => !data_sources.includes(fileId));
+        const filesToAdd = data_sources.filter((fileId) => !vectorStoreFileIds.includes(fileId));
+        const promises: APIPromise<VectorStoreFileDeleted | VectorStoreFile>[] = [];
+
+        for (const file_id of filesToDelete) {
+          await openai.beta.vectorStores.files.del(vectorStoreId, file_id);
         }
+        for (const file_id of filesToAdd) {
+          await openai.beta.vectorStores.files.create(vectorStoreId, {
+            file_id
+          });
+        }
+
+        await Promise.all(promises);
       } catch (e) {
         console.error('Error updating vector store', e);
         return fail(500, { message: 'Error updating assistant.' });
       }
-    }
-
-    if (data_sources && data_sources.length > 0 && !vectorStoreId) {
-      try {
-        const vectorStore = await openai.beta.vectorStores.create({
-          name: `${form.data.name}-vector-store`,
-          file_ids: data_sources
-        });
-        vectorStoreId = vectorStore.id;
-      } catch (e) {
-        console.error('Error creating vector store', e);
+    } else {
+      // Create new vector store with files
+      if (data_sources.length > 0) {
+        try {
+          const vectorStore = await openai.beta.vectorStores.create({
+            name: `${form.data.name}-vector-store`,
+            file_ids: data_sources
+          });
+          vectorStoreId = vectorStore.id;
+        } catch (e) {
+          console.error('Error creating vector store', e);
+          return fail(500, { message: 'Error creating vector store.' });
+        }
       }
     }
 
@@ -193,7 +183,11 @@ export const actions: Actions = {
       console.error(`Error updating assistant: ${e}`);
       return fail(500, { message: 'Error updating assistant.' });
     }
-
-    return redirect(303, '/chat/assistants-management');
+    return withFiles({
+      form,
+      assistant,
+      fileIds: data_sources,
+      redirectUrl: '/chat/assistants-management'
+    });
   }
 };

@@ -5,7 +5,10 @@ type ToastNotificationProps = {
   kind: ToastKind;
   title: string;
   subtitle?: string;
-  timeout?: number; // milliseconds
+  timeout?: number; // milliseconds, set to -1 for no expiration
+  variant?: 'default' | 'assistant-progress';
+  fileIds?: string[]; // required for assistant-progress variant
+  vectorStoreId?: string; // required for assistant-progress variant
 };
 
 type ToastStore = {

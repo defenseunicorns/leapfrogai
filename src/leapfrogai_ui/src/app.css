@@ -24,6 +24,10 @@
     height: calc(100vh - var(--header-height));
   }
 
+  .max-height-sidebar-height {
+    max-height: calc(100vh - var(--header-height));
+  }
+
   .no-scrollbar {
     scrollbar-width: none;
   }
@@ -68,6 +72,15 @@
 
   .z-max {
     z-index: 9999;
+  }
+
+  .z-max-1 {
+    z-index: 9000;
+  }
+
+  /* prevents "random" shrinking of sidebar with some messages */
+  .full-width-minus-sidebar {
+    max-width: calc(100% - var(--sidebar-width));
   }
 }
 

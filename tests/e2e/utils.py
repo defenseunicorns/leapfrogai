@@ -6,7 +6,8 @@ import pytest
 import requests
 
 # This is the anon_key for supabase, it provides access to the endpoints that would otherwise be inaccessible
-ANON_KEY = os.getenv("ANON_KEY")
+ANON_KEY = os.environ["ANON_KEY"]
+SERVICE_KEY = os.environ["SERVICE_KEY"]
 DEFAULT_TEST_EMAIL = "fakeuser1@test.com"
 DEFAULT_TEST_PASSWORD = "password"
 

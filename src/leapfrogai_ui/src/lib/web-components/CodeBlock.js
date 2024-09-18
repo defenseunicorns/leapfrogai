@@ -79,7 +79,7 @@ export class CodeBlock extends LitElement {
 
   removeHtml = () => {
     const tmp = document.createElement('DIV');
-    tmp.innerHTML = this.code;
+    tmp.innerHTML = DOMPurify.sanitize(this.code);
     return tmp.textContent || tmp.innerText || '';
   };
 

@@ -3,7 +3,7 @@ name = "lfai-vllm"
 description = "A LeapfrogAI API-compatible VLLM wrapper for quantized and un-quantized model inferencing across GPU infrastructures."
 
 # x-release-please-start-version
-version = "0.11.0"
+version = "0.12.2"
 # x-release-please-end
 
 dependencies = [

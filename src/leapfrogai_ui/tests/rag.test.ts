@@ -19,12 +19,13 @@ import {
   deleteAssistantWithApi,
   editAssistantCard
 } from './helpers/assistantHelpers';
-import { getSimpleMathQuestion, loadChatPage } from './helpers/helpers';
+import { getSimpleMathQuestion } from './helpers/helpers';
 import {
   deleteActiveThread,
   sendMessage,
   waitForResponseToComplete
 } from './helpers/threadHelpers';
+import { loadChatPage } from './helpers/navigationHelpers';
 
 test.afterAll(() => {
   deleteAllGeneratedFixtureFiles(); // cleanup any files that were not deleted during tests (e.g. due to test failure)
@@ -47,42 +48,12 @@ test('can edit an assistant and attach files to it', async ({ page, openAIClient
   await fileSelectContainer.getByTestId(`${uploadedFile1.id}-checkbox`).check();
   await fileSelectContainer.getByTestId(`${uploadedFile2.id}-checkbox`).check();
   await page.getByRole('button', { name: 'Save' }).click();
-  await expect(page.getByText('Assistant Updated')).toBeVisible();
+  await expect(page.getByTestId('assistant-progress-toast')).toBeVisible();
 
   // Cleanup
   await deleteFileWithApi(uploadedFile1.id, openAIClient);
   await deleteFileWithApi(uploadedFile2.id, openAIClient);
   await deleteAssistantWithApi(assistant.id, openAIClient);
-  deleteFixtureFile(filename1);
-  deleteFixtureFile(filename2);
-});
-
-test('can create a new assistant and attach files to it', async ({ page, openAIClient }) => {
-  const assistantInput = getFakeAssistantInput();
-  const filename1 = `${faker.word.noun()}-test.pdf`;
-  const filename2 = `${faker.word.noun()}-test.pdf`;
-  await createPDF({ filename: filename1 });
-  await createPDF({ filename: filename2 });
-  const uploadedFile1 = await uploadFileWithApi(filename1, 'application/pdf', openAIClient);
-  const uploadedFile2 = await uploadFileWithApi(filename2, 'application/pdf', openAIClient);
-  await page.goto(`/chat/assistants-management/new`);
-
-  await page.getByLabel('name').fill(assistantInput.name);
-  await page.getByLabel('tagline').fill(assistantInput.description);
-  await page.getByPlaceholder("You'll act as...").fill(assistantInput.instructions);
-
-  await page.getByTestId('file-select-dropdown-btn').click();
-  const fileSelectContainer = page.getByTestId('file-select-container');
-  await fileSelectContainer.getByTestId(`${uploadedFile1.id}-checkbox`).check();
-  await fileSelectContainer.getByTestId(`${uploadedFile2.id}-checkbox`).check();
-  await page.getByRole('button', { name: 'Save' }).click();
-  await expect(page.getByText('Assistant Created')).toBeVisible();
-
-  // Cleanup
-  expect(page.waitForURL('/chat/assistants-management'));
-  await deleteAssistantCard(assistantInput.name, page);
-  await deleteFileWithApi(uploadedFile1.id, openAIClient);
-  await deleteFileWithApi(uploadedFile2.id, openAIClient);
   deleteFixtureFile(filename1);
   deleteFixtureFile(filename2);
 });
@@ -103,7 +74,8 @@ test('it can edit an assistant and remove a file', async ({ page, openAIClient }
   await fileSelectContainer.getByTestId(`${uploadedFile1.id}-checkbox`).check();
   await fileSelectContainer.getByTestId(`${uploadedFile2.id}-checkbox`).check();
   await page.getByRole('button', { name: 'Save' }).click();
-  await expect(page.getByText('Assistant Updated')).toBeVisible();
+  await expect(page.getByTestId('assistant-progress-toast')).toBeVisible();
+  await delay(5000); // allow file to be vectorized (see note in assistant-progress.test.ts for testing issues)
 
   await editAssistantCard(assistant.name!, page);
 
@@ -113,7 +85,7 @@ test('it can edit an assistant and remove a file', async ({ page, openAIClient }
   await page.getByTestId('file-select-dropdown-btn').click();
   await fileSelectContainer.getByTestId(`${uploadedFile1.id}-checkbox`).uncheck();
   await page.getByRole('button', { name: 'Save' }).click();
-  await expect(page.getByText('Assistant Updated')).toBeVisible();
+  await expect(page.getByText('Assistant Updated')).toBeVisible(); // also tests no assistant progress toast when no files
 
   // Cleanup
   await deleteFileWithApi(uploadedFile1.id, openAIClient);
@@ -123,14 +95,13 @@ test('it can edit an assistant and remove a file', async ({ page, openAIClient }
   deleteFixtureFile(filename2);
 });
 
-test('while creating an assistant, it can upload new files and save the assistant', async ({
+test('while creating an assistant, it can UPLOAD NEW files and save the assistant', async ({
   page,
   openAIClient
 }) => {
   const assistantInput = getFakeAssistantInput();
   const filename = `${faker.word.noun()}-test.pdf`;
-  await createPDF({ filename: filename });
-
+  await createPDF({ filename });
   await page.goto('/chat/assistants-management/new');
 
   await page.getByLabel('name').fill(assistantInput.name);
@@ -146,17 +117,18 @@ test('while creating an assistant, it can upload new files and save the assistan
 
   await saveBtn.click();
   await expect(page.getByText(`${filename} imported successfully.`)).toBeVisible();
-  await expect(page.getByText('Assistant Created')).toBeVisible();
+  await page.waitForURL('/chat/assistants-management');
+  await expect(page.getByTestId('assistant-progress-toast')).toBeVisible();
 
   // Cleanup
   expect(page.waitForURL('/chat/assistants-management'));
+  deleteFixtureFile(filename);
   await deleteAssistantCard(assistantInput.name, page);
   await deleteTestFilesWithApi(openAIClient);
-  deleteFixtureFile(filename);
   await deleteFileByName(filename, openAIClient);
 });
 
-test('while editing an assistant, it can upload new files and save the assistant', async ({
+test('while editing an assistant, it can UPLOAD NEW files and save the assistant', async ({
   page,
   openAIClient
 }) => {
@@ -175,7 +147,8 @@ test('while editing an assistant, it can upload new files and save the assistant
 
   await saveBtn.click();
   await expect(page.getByText(`${filename} imported successfully.`)).toBeVisible();
-  await expect(page.getByText('Assistant Updated')).toBeVisible();
+  await page.waitForURL('/chat/assistants-management');
+  await expect(page.getByTestId('assistant-progress-toast')).toBeVisible();
 
   // Cleanup
   await deleteAssistantWithApi(assistant.id, openAIClient);

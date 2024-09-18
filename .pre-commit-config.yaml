@@ -9,9 +9,6 @@ repos:
         name: Large Files Check
         args: ["--maxkb=1024"]
 
-      - id: check-merge-conflict
-        name: Check for Upstream Merge Conflicts
-
       - id: detect-aws-credentials
         name: Check AWS Credentials
         args:
@@ -61,6 +58,13 @@ repos:
       - id: markdownlint-cli2
         name: Markdown Lint
 
+  - repo: https://github.com/hadolint/hadolint
+    rev: v2.12.0
+    hooks:
+      - id: hadolint-docker
+        name: Dockerfile Lint
+        args: ["--config", ".hadolint.yaml"]
+
   - repo: local
     hooks:
       - id: eslint
@@ -76,3 +80,60 @@ repos:
         name: Ruff Lint
       - id: ruff-format # Run the formatter.
         name: Ruff Format
+
+  - repo: https://github.com/gruntwork-io/pre-commit
+    rev: v0.1.23
+    hooks:
+      - id: helmlint
+        name: Helm Lint
+        exclude: "packages/supabase"
+
+  #############
+  # UDS v0.14.0
+  #############
+
+  # ZARF PACKAGE CHECK
+  - repo: local
+    hooks:
+      - id: download-schema
+        name: "Download Zarf Schema"
+        entry: |
+          bash -c 'FILE="zarf-v0.14.0.schema.json"
+          if [ -f "$(git rev-parse --show-toplevel)/$FILE" ]; then
+            echo "$FILE already exists in the root of the git project, skipping download."
+          else
+            curl -o "$FILE" https://raw.githubusercontent.com/defenseunicorns/uds-cli/v0.14.0/zarf.schema.json
+          fi'
+        language: system
+
+  - repo: https://github.com/python-jsonschema/check-jsonschema
+    rev: 0.14.0
+    hooks:
+      - id: check-jsonschema
+        name: "Validate Zarf Configs Against Schema"
+        files: "zarf.yaml"
+        types: [yaml]
+        args: ["--schemafile", "zarf-v0.14.0.schema.json"]
+
+  # UDS BUNDLE CHECK
+  - repo: local
+    hooks:
+      - id: download-schema
+        name: "Download UDS Bundle Schema"
+        entry: |
+          bash -c 'FILE="uds-v0.14.0.schema.json"
+          if [ -f "$(git rev-parse --show-toplevel)/$FILE" ]; then
+            echo "$FILE already exists in the root of the git project, skipping download."
+          else
+            curl -o "$FILE" https://raw.githubusercontent.com/defenseunicorns/uds-cli/v0.14.0/uds.schema.json
+          fi'
+        language: system
+
+  - repo: https://github.com/python-jsonschema/check-jsonschema
+    rev: 0.14.0
+    hooks:
+      - id: check-jsonschema
+        name: "Validate UDS Bundles Against Schema"
+        files: "uds-bundle.yaml"
+        types: [yaml]
+        args: ["--schemafile", "uds-v0.14.0.schema.json"]

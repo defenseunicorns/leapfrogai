@@ -1,4 +1,4 @@
-# yaml-language-server: $schema=https://raw.githubusercontent.com/zarf-dev/zarf/main/zarf.schema.json
+# yaml-language-server: $schema=https://raw.githubusercontent.com/defenseunicorns/uds-cli/v0.14.0/zarf.schema.json
 
 kind: ZarfPackageConfig
 metadata:
@@ -35,10 +35,10 @@ components:
         localPath: chart
         releaseName: llama-cpp-python-model
         # x-release-please-start-version
-        version: 0.11.0
+        version: 0.12.2
         # x-release-please-end
         valuesFiles:
-          - "llama-cpp-python-values.yaml"
+          - "values/upstream-values.yaml"
     images:
       - ghcr.io/defenseunicorns/leapfrogai/llama-cpp-python:###ZARF_PKG_TMPL_IMAGE_VERSION###
       - cgr.dev/chainguard/bash:latest
@@ -46,7 +46,7 @@ components:
       - source: .model/
         target:
           namespace: leapfrogai
-          selector: app=lfai-llama
+          selector: app=lfai-llama-cpp-python
           container: data-loader
           path: /data/.model
         compress: true

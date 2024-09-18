@@ -6,11 +6,11 @@
   } from '$lib/constants';
   import { superForm } from 'sveltekit-superforms';
   import { page } from '$app/stores';
-  import { beforeNavigate, goto } from '$app/navigation';
+  import { beforeNavigate, goto, invalidate } from '$app/navigation';
   import { Button, Modal, P } from 'flowbite-svelte';
   import Slider from '$components/Slider.svelte';
   import { yup } from 'sveltekit-superforms/adapters';
-  import { filesStore, toastStore } from '$stores';
+  import { filesStore, toastStore, uiStore } from '$stores';
   import { assistantInputSchema, editAssistantInputSchema } from '$lib/schemas/assistants';
   import type { NavigationTarget } from '@sveltejs/kit';
   import { onMount } from 'svelte';
@@ -18,23 +18,45 @@
   import LFInput from '$components/LFInput.svelte';
   import LFLabel from '$components/LFLabel.svelte';
   import AssistantAvatar from '$components/AssistantAvatar.svelte';
+  import vectorStatusStore from '$stores/vectorStatusStore.js';
 
   export let data;
+  export let isEditMode = $page.url.pathname.includes('edit');
 
-  let isEditMode = $page.url.pathname.includes('edit');
   let bypassCancelWarning = false;
 
   const { form, errors, enhance, submitting, isTainted, delayed } = superForm(data.form, {
     invalidateAll: false,
     validators: yup(isEditMode ? editAssistantInputSchema : assistantInputSchema),
-    onResult({ result }) {
-      if (result.type === 'redirect') {
-        toastStore.addToast({
-          kind: 'success',
-          title: `Assistant ${isEditMode ? 'Updated' : 'Created'}.`
-        });
+    onResult: async ({ result }) => {
+      if (result.type === 'success') {
+        const vectorStoreId = result.data.assistant?.tool_resources?.file_search
+          ?.vector_store_ids?.[0] as string;
+
+        if (!uiStore.isUsingOpenAI && vectorStoreId) {
+          toastStore.addToast({
+            kind: 'info',
+            title: `Updating Assistant Files`,
+            subtitle: result.data.assistant.name,
+            fileIds: result.data.fileIds,
+            vectorStoreId: vectorStoreId,
+            variant: 'assistant-progress',
+            timeout: -1 // no expiration
+          });
+          // If the assistant is being edited and previously had files with "completed" vector status,
+          // we need to fetch those statuses. The realtime listener will not detect a change for those old files and
+          // will not update the vectorStatusStore.
+          await vectorStatusStore.updateAllStatusesForVector(vectorStoreId);
+        } else {
+          toastStore.addToast({
+            kind: 'success',
+            title: `Assistant ${isEditMode ? 'Updated' : 'Created'}.`
+          });
+        }
+
         bypassCancelWarning = true;
-        goto(result.location);
+        await invalidate('lf:assistants');
+        goto(result.data.redirectUrl);
       } else if (result.type === 'failure') {
         // 400 errors will show errors for the respective fields, do not show toast
         if (result.status !== 400) {

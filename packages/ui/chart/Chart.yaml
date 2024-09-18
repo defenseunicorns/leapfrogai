@@ -1,6 +1,6 @@
 apiVersion: v2
 name: leapfrogai-ui
-description: UI to interact with LFAI tools
+description: "A Svelte UI to interact with the LeapfrogAI stack"
 
 # A chart can be either an 'application' or a 'library' chart.
 #
@@ -16,11 +16,13 @@ type: application
 # to the chart and its templates, including the app version.
 # Versions are expected to follow Semantic Versioning (https://semver.org/)
 # x-release-please-start-version
-version: 0.11.0
+version: 0.12.2
 # x-release-please-end
 
 # This is the version number of the application being deployed. This version number should be
 # incremented each time you make changes to the application. Versions are not expected to
 # follow Semantic Versioning. They should reflect the version the application is using.
 # It is recommended to use it with quotes.
-appVersion: "0.1.8"
+# x-release-please-start-version
+appVersion: 0.12.2
+# x-release-please-end

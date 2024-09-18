@@ -1,7 +1,7 @@
 import { expect, test } from './fixtures';
-import { loadChatPage } from './helpers/helpers';
 import { getFakeThread } from '../testUtils/fakeData';
 import type { LFThread } from '$lib/types/threads';
+import { loadChatPage } from './helpers/navigationHelpers';
 
 test('it can import and exports threads', async ({ page }) => {
   const thread = getFakeThread();

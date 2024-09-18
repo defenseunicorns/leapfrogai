@@ -44,7 +44,7 @@
     if (result.type === 'success') {
       const idsToSelect: string[] = [];
       const uploadedFiles = result.data?.uploadedFiles;
-      filesStore.updateWithUploadResults(result.data?.uploadedFiles);
+      filesStore.updateWithUploadErrors(result.data?.uploadedFiles);
       for (const uploadedFile of uploadedFiles) {
         idsToSelect.push(uploadedFile.id);
       }
@@ -88,7 +88,7 @@
             data-testid={`${file.id}-checkbox`}
             on:click={() => handleClick(file.id)}
             checked={$filesStore.selectedAssistantFileIds.includes(file.id)}
-            class="overflow-hidden text-ellipsis whitespace-nowrap">{file.text}</Checkbox
+            class="truncate">{file.text}</Checkbox
           >
         </li>
       {/each}

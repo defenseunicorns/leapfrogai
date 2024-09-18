@@ -4,20 +4,13 @@ import os
 import openai
 
 from datasets import load_dataset, concatenate_datasets
-from dotenv import load_dotenv
+from distutils.util import strtobool
 from tqdm import tqdm
 
 from openai.types.beta.assistant import Assistant
 from openai.types.beta.vector_store import VectorStore
 
-load_dotenv()
-
-DEFAULT_INSTRUCTION_TEMPLATE = """
-                You are a helpful AI bot that answers questions for a user. Keep your response short and direct.
-                You will receive a set of context and a question that will relate to the context.
-                Do not give information outside the document or repeat your findings.
-                If the information is not available in the context respond UNANSWERABLE.
-                """
+from utils.defaults import DEFAULT_INSTRUCTION_TEMPLATE
 
 
 class NIAH_Runner:
@@ -50,14 +43,14 @@ class NIAH_Runner:
         add_padding: bool = True,
         base_url: str = None,
         api_key: str = None,
-        model: str = None,
-        message_prompt: str = "What is Doug's secret code?",
+        model: str = "vllm",
+        message_prompt: str = "What is the secret code?",
         instruction_template: str = DEFAULT_INSTRUCTION_TEMPLATE,
         min_doc_length: int = 4096,
         max_doc_length: int = 4096,
         min_depth: float = 0.0,
         max_depth: float = 1.0,
-        num_copies: int = 2,
+        num_copies: int = 3,
     ):
         """Initialize the Assistant with an API key and the path to the text file"""
 
@@ -66,23 +59,36 @@ class NIAH_Runner:
         self.vector_store = None
         self.current_file = None
         self.current_assistant = None
-        self.message_prompt = message_prompt
-        self.instruction_template = instruction_template
-        self.model = model or os.environ.get("MODEL_TO_EVALUATE")
-        self.temperature = temperature
-        self.add_padding = add_padding
+        self.message_prompt = os.environ.get("NIAH_MESSAGE_PROMPT", message_prompt)
+        self.model = os.environ.get("MODEL_TO_EVALUATE", model)
+        self.temperature = float(os.environ.get("TEMPERATURE", temperature))
+        self.add_padding = (
+            bool(strtobool(os.environ.get("NIAH_ADD_PADDING")))
+            if os.environ.get("NIAH_ADD_PADDING") is not None
+            else add_padding
+        )
+        try:
+            self.instruction_template = globals()[
+                os.environ.get("NIAH_INSTRUCTION_TEMPLATE")
+            ]
+        except KeyError:
+            logging.debug("Instruction template not in globals; setting as a string")
+            self.instruction_template = os.environ.get(
+                "NIAH_INSTRUCTION_TEMPLATE", instruction_template
+            )
+
         self.client = openai.OpenAI(
             base_url=base_url or os.environ.get("LEAPFROGAI_API_URL"),
             api_key=api_key or os.environ.get("LEAPFROGAI_API_KEY"),
         )
         logging.info(f"client url: {self.client.base_url}")
         self._load_niah_dataset(
-            dataset,
-            min_doc_length=min_doc_length,
-            max_doc_length=max_doc_length,
-            min_depth=min_depth,
-            max_depth=max_depth,
-            num_copies=num_copies,
+            dataset_name=os.environ.get("NIAH_DATASET", dataset),
+            min_doc_length=int(os.environ.get("NIAH_MIN_DOC_LENGTH", min_doc_length)),
+            max_doc_length=int(os.environ.get("NIAH_MAX_DOC_LENGTH", max_doc_length)),
+            min_depth=float(os.environ.get("NIAH_MIN_DEPTH", min_depth)),
+            max_depth=float(os.environ.get("NIAH_MAX_DEPTH", max_depth)),
+            num_copies=int(os.environ.get("NIAH_NUM_COPIES", num_copies)),
         )
         self._create_vector_store()
         self.retrieval_score = None

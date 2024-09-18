@@ -1,5 +1,6 @@
 import { expect, test } from './fixtures';
-import { getTableRow, loadApiKeyPage, loadChatPage } from './helpers/helpers';
+import { getTableRow } from './helpers/helpers';
+import { loadApiKeyPage, loadChatPage } from './helpers/navigationHelpers';
 
 test('it can navigate to the API key page', async ({ page }) => {
   await loadChatPage(page);

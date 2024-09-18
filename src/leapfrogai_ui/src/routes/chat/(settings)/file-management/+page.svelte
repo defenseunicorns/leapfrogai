@@ -17,7 +17,7 @@
   import { superForm } from 'sveltekit-superforms';
   import { convertToMilliseconds, formatDate } from '$helpers/dates';
   import { filesSchema } from '$schemas/files';
-  import { filesStore, toastStore } from '$stores';
+  import { filesStore, toastStore, uiStore } from '$stores';
   import { ACCEPTED_FILE_TYPES } from '$constants';
   import { afterNavigate, invalidate } from '$app/navigation';
   import type { Assistant } from 'openai/resources/beta/assistants';
@@ -158,7 +158,14 @@
     },
     onResult: async ({ result }) => {
       if (result.type === 'success') {
-        filesStore.updateWithUploadResults(result.data?.uploadedFiles);
+        if ($uiStore.isUsingOpenAI) {
+          filesStore.updateWithUploadErrors(result.data?.uploadedFiles);
+          filesStore.updateWithUploadSuccess(result.data?.uploadedFiles);
+        } else {
+          // File upload call has completed, check for any files that had errors and update the store
+          // Successful uploads are handled by realtime listener
+          filesStore.updateWithUploadErrors(result.data?.uploadedFiles);
+        }
       }
       filesStore.setUploading(false);
     }
@@ -229,7 +236,8 @@
   afterNavigate(() => {
     // Remove files with "uploading" status from store and invalidate the route so files are re-fetched
     // when the page is loaded again
-    // If we want to persist the uploading status, we will have to use event streaming/supabase realtime
+    // If we want to persist the uploading status, the backend will need to implement this endpoint:
+    // https://platform.openai.com/docs/api-reference/uploads
     filesStore.setPendingUploads(
       $filesStore.pendingUploads.filter((file) => file.status === 'error')
     );

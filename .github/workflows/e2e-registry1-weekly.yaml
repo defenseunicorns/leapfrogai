@@ -27,6 +27,7 @@ jobs:
   test-flavors:
     runs-on: ai-ubuntu-big-boy-8-core
     name: e2e_registry1_weekly
+    if: ${{ !github.event.pull_request.draft }}
 
     permissions:
       contents: read
@@ -36,9 +37,17 @@ jobs:
     steps:
       - name: Checkout Repo
         uses: actions/checkout@b4ffde65f46336ab88eb53be808477a3936bae11 # v4.1.1
+        with:
+          # x-release-please-start-version
+          ref: "caf4f9c3093a55a003b49fcbf05c03221be6a232" # 0.12.2 w/ integration tests turned-on
+          # x-release-please-end
 
       - name: Setup Python
         uses: ./.github/actions/python
+
+      - name: Install API and SDK Dev Dependencies
+        run : |
+          make install
 
       - name: Setup UDS Cluster
         uses: ./.github/actions/uds-cluster
@@ -46,6 +55,12 @@ jobs:
           registry1Username: ${{ secrets.IRON_BANK_ROBOT_USERNAME }}
           registry1Password: ${{ secrets.IRON_BANK_ROBOT_PASSWORD }}
           ghToken: ${{ secrets.GITHUB_TOKEN }}
+          udsCliVersion: 0.14.0
+
+      - name: Create UDS Cluster
+        shell: bash
+        run: |
+          UDS_CONFIG=.github/config/uds-config.yaml make create-uds-cpu-cluster
 
       - name: Setup Playwright
         run: |
@@ -58,6 +73,7 @@ jobs:
 
       # Mutate UDS bundle definition to use Registry1 packages
       - name: Mutation to Registry1 Bundle
+        # TODO: fix bundle path
         run: |
           uds zarf tools yq -i '.packages[1] |= del(.repository)' bundles/latest/cpu/uds-bundle.yaml
           uds zarf tools yq -i '.packages[1] |= .ref = "registry1"' bundles/latest/cpu/uds-bundle.yaml
@@ -68,45 +84,60 @@ jobs:
         run: |
           cd bundles/latest/cpu
           uds create . --confirm && \
-            uds deploy uds-bundle-leapfrogai-amd64-registry1.tar.zst \
-              --set LEAPFROGAI_API_BASE_URL="http://leapfrogai-api.leapfrogai.svc.cluster.local:8080" --confirm --no-progress && \
+            uds deploy uds-bundle-leapfrogai-amd64-registry1.tar.zst --confirm --no-progress && \
             rm -rf uds-bundle-leapfrogai-amd64-registry1.tar.zst && \
             docker system prune -af
 
       - name: Generate Secrets
         id: generate_secrets
         run: |
-          PASSWORD=$(cat <(openssl rand -base64 32 | tr -dc 'a-zA-Z0-9!@#$%^&*()_+-=[]{}|;:,.<>?' | head -c 20) <(echo '!@1Aa') | fold -w1 | shuf | tr -d '\n')
-          echo "::add-mask::$PASSWORD"
-          echo "FAKE_E2E_USER_PASSWORD=$PASSWORD" >> $GITHUB_OUTPUT
           ANON_KEY=$(uds zarf tools kubectl get secret supabase-bootstrap-jwt -n leapfrogai -o jsonpath='{.data.anon-key}' | base64 -d)
           echo "::add-mask::$ANON_KEY"
           echo "ANON_KEY=$ANON_KEY" >> $GITHUB_OUTPUT
-          SERVICE_ROLE_KEY=$(uds zarf tools kubectl get secret -n leapfrogai supabase-bootstrap-jwt -o jsonpath={.data.service-key} | base64 -d)
-          echo "::add-mask::$SERVICE_ROLE_KEY"
-          echo "SERVICE_ROLE_KEY=$SERVICE_ROLE_KEY" >> $GITHUB_OUTPUT
+          FAKE_PASSWORD=$(cat <(openssl rand -base64 32 | tr -dc 'a-zA-Z0-9!@#$%^&*()_+-=[]{}|;:,.<>?' | head -c 20) <(echo '!@1Aa') | fold -w1 | shuf | tr -d '\n')
+          echo "::add-mask::$FAKE_PASSWORD"
+          echo "FAKE_PASSWORD=$FAKE_PASSWORD" >> $GITHUB_OUTPUT
+          SERVICE_KEY=$(uds zarf tools kubectl get secret -n leapfrogai supabase-bootstrap-jwt -o jsonpath={.data.service-key} | base64 -d)
+          echo "::add-mask::$SERVICE_KEY"
+          echo "SERVICE_KEY=$SERVICE_KEY" >> $GITHUB_OUTPUT
 
       - name: Verify Secrets
         run: |
-          echo "FAKE_E2E_USER_PASSWORD is set: ${{ steps.generate_secrets.outputs.FAKE_E2E_USER_PASSWORD != '' }}"
+          echo "FAKE_PASSWORD is set: ${{ steps.generate_secrets.outputs.FAKE_PASSWORD != '' }}"
           echo "ANON_KEY is set: ${{ steps.generate_secrets.outputs.ANON_KEY != '' }}"
-          echo "SERVICE_ROLE_KEY is set: ${{ steps.generate_secrets.outputs.SERVICE_ROLE_KEY != '' }}"
+          echo "SERVICE_KEY is set: ${{ steps.generate_secrets.outputs.SERVICE_KEY != '' }}"
+
+      - name: Run Integration Tests
+        env:
+          SUPABASE_ANON_KEY: ${{ steps.generate_secrets.outputs.ANON_KEY }}
+          SUPABASE_PASS: ${{ steps.generate_secrets.outputs.FAKE_PASSWORD }}
+          SUPABASE_EMAIL: integration@uds.dev
+          SUPABASE_URL: https://supabase-kong.uds.dev
+          # Turn off NIAH tests that are not applicable for integration testing using the Repeater model
+          LFAI_RUN_NIAH_TESTS: "false"
+        run: |
+          uds zarf connect --name=llama-cpp-python-model --namespace=leapfrogai --local-port=50051 --remote-port=50051 &
+          while ! nc -z localhost 50051; do sleep 1; done
+
+          make test-user-pipeline
+          env $(cat .env | xargs) python -m pytest -v -s tests/integration/api
 
       # Backends
-      - name: Run Backend Tests
+      - name: Run Backend E2E Tests
         env:
           ANON_KEY: ${{ steps.generate_secrets.outputs.ANON_KEY }}
+          SERVICE_KEY: ${{ steps.generate_secrets.outputs.SERVICE_KEY }}
         run: |
-          python -m pytest ./tests/e2e/test_llama.py -v
-          python -m pytest ./tests/e2e/test_text_embeddings.py -v
-          python -m pytest ./tests/e2e/test_whisper.py -v
-          python -m pytest ./tests/e2e/test_supabase.py -v
-          python -m pytest ./tests/e2e/test_api.py -v
+          python -m pytest ./tests/e2e/test_llama.py -vv
+          python -m pytest ./tests/e2e/test_text_embeddings.py -vv
+          python -m pytest ./tests/e2e/test_whisper.py -vv
+          python -m pytest ./tests/e2e/test_supabase.py -vv
+          python -m pytest ./tests/e2e/test_api.py -vv
 
       - name: Run Playwright E2E Tests
         env:
-          SERVICE_ROLE_KEY: ${{ steps.generate_secrets.outputs.SERVICE_ROLE_KEY }}
-          FAKE_E2E_USER_PASSWORD: ${{ steps.generate_secrets.outputs.FAKE_E2E_USER_PASSWORD }}
+          SERVICE_ROLE_KEY: ${{ steps.generate_secrets.outputs.SERVICE_KEY }}
+          FAKE_E2E_USER_PASSWORD: ${{ steps.generate_secrets.outputs.FAKE_PASSWORD }}
           ANON_KEY: ${{ steps.generate_secrets.outputs.ANON_KEY }}
         run: |
           chmod +x ./.github/scripts/createUser.sh
@@ -116,7 +147,7 @@ jobs:
           mkdir -p playwright/auth
           touch playwright/auth.user.json
 
-          SERVICE_ROLE_KEY=$SERVICE_ROLE_KEY TEST_ENV=CI USERNAME=doug PASSWORD=$FAKE_E2E_USER_PASSWORD PUBLIC_SUPABASE_ANON_KEY=$ANON_KEY npm --prefix src/leapfrogai_ui run test:integration:ci
+          SERVICE_ROLE_KEY=$SERVICE_ROLE_KEY TEST_ENV=CI USERNAME=doug PASSWORD=$FAKE_E2E_USER_PASSWORD PUBLIC_SUPABASE_ANON_KEY=$ANON_KEY DEFAULT_MODEL=llama-cpp-python npm --prefix src/leapfrogai_ui run test:integration:ci
 
       - name: Archive Playwright Report
         uses: actions/upload-artifact@834a144ee995460fba8ed112a2fc961b36a5ec5a # v4.3.6

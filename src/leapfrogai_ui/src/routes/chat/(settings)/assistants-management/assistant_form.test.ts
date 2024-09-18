@@ -3,14 +3,21 @@ import userEvent from '@testing-library/user-event';
 import { afterAll, beforeAll, type MockInstance, vi } from 'vitest';
 import * as navigation from '$app/navigation';
 import { ASSISTANTS_DESCRIPTION_MAX_LENGTH, ASSISTANTS_NAME_MAX_LENGTH } from '$lib/constants';
-import { actions as editActions } from './edit/[assistantId]/+page.server';
+import { actions as editActions, load as editLoad } from './edit/[assistantId]/+page.server';
 import { actions as newActions, load as newLoad } from './new/+page.server';
 import {
   storageRemoveMock,
   supabaseInsertSingleMock,
   supabaseStorageMockWrapper
 } from '$lib/mocks/supabase-mocks';
-import { getFakeAssistant, getFakeAssistantInput, getFakeFileObject } from '$testUtils/fakeData';
+import {
+  getFakeAssistant,
+  getFakeAssistantInput,
+  getFakeFileObject,
+  getFakeFiles,
+  getFakeVectorStore,
+  getFakeVectorStoreFile
+} from '$testUtils/fakeData';
 import AssistantForm from '$components/AssistantForm.svelte';
 import { mockOpenAI } from '../../../../../vitest-setup';
 import { mockGetAssistants } from '$lib/mocks/chat-mocks';
@@ -18,6 +25,9 @@ import { mockGetFiles } from '$lib/mocks/file-mocks';
 import { getLocalsMock } from '$lib/mocks/misc';
 import type { ActionFailure, RequestEvent } from '@sveltejs/kit';
 import type { RouteParams } from './$types';
+import filesStore from '$stores/filesStore';
+import { convertFileObjectToFileRows } from '$helpers/fileHelpers';
+import vectorStatusStore from '$stores/vectorStatusStore';
 
 describe('Assistant Form', () => {
   let goToSpy: MockInstance;
@@ -31,6 +41,44 @@ describe('Assistant Form', () => {
   });
   afterAll(() => {
     vi.restoreAllMocks();
+  });
+
+  it("does not show a file if it's vector status is failed", async () => {
+    /* --- SETUP
+      This extensive setup is an example of why E2E tests are sometimes preferred to unit tests. In this situation,
+      getting a vector file with status of 'failed' in an E2E is not feasible, so we have to unit test it
+    --- */
+    const files = getFakeFiles({ numFiles: 2 });
+    const vectorStore = getFakeVectorStore();
+    const vectorStoreFile1 = getFakeVectorStoreFile({
+      id: files[0].id,
+      vector_store_id: vectorStore.id
+    });
+    const vectorStoreFile2 = getFakeVectorStoreFile({
+      id: files[1].id,
+      vector_store_id: vectorStore.id
+    });
+    vectorStoreFile2.status = 'failed';
+
+    const assistant = getFakeAssistant({ vectorStoreId: vectorStore.id });
+
+    mockOpenAI.setVectorStoreFiles([vectorStoreFile1, vectorStoreFile2]);
+    mockOpenAI.setAssistants([assistant]);
+    mockGetAssistants([]);
+    mockGetFiles(files);
+    filesStore.setFiles(convertFileObjectToFileRows(files));
+
+    vectorStatusStore.set({
+      [files[0].id]: { [vectorStore.id]: 'completed' },
+      [files[1].id]: { [vectorStore.id]: 'failed' }
+    });
+    // @ts-expect-error: overcomplicated to mock out load function arguments and they are not used
+    const data = await editLoad({ params: { assistantId: assistant.id }, locals: getLocalsMock() });
+    /* --- END SETUP --- */
+
+    render(AssistantForm, { data, isEditMode: true });
+    screen.getByTestId(`${files[0].filename}-hide-uploader-item`);
+    expect(screen.queryByTestId(`${files[1].filename}-hide-uploader-item`)).not.toBeInTheDocument();
   });
 
   it('has a cancel btn that navigates back to the management page', async () => {

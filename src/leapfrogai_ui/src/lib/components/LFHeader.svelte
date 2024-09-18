@@ -7,7 +7,10 @@
 
   let signOutForm: HTMLFormElement;
 
-  $: innerWidth = 0;
+  let innerWidth: number;
+  $: innerWidth;
+
+  const threadId = $page.params.thread_id;
 
   const handleLogOut = (e) => {
     e.preventDefault();
@@ -26,7 +29,7 @@
         : '/chat'}
       data-testid="logo-link"
     >
-      {#if innerWidth < 1024 && $page.url.pathname === '/chat'}
+      {#if innerWidth !== undefined && innerWidth < 1024 && ($page.url.pathname === '/chat' || $page.url.pathname === `/chat/${threadId}`)}
         <Button
           outline={true}
           class="mr-2 !p-2"
@@ -49,7 +52,7 @@
         data-testid="header-settings-btn"
         class="settings-menu cursor-pointer dark:text-white"
       />
-      <Dropdown triggeredBy=".settings-menu" data-testid="settings-dropdown">
+      <Dropdown triggeredBy=".settings-menu" data-testid="settings-dropdown" classContainer="z-max">
         <DropdownItem href="/chat/assistants-management">Assistants Management</DropdownItem>
         <DropdownItem href="/chat/file-management">File Management</DropdownItem>
         {#if !$uiStore.isUsingOpenAI}
@@ -61,7 +64,7 @@
         data-testid="header-profile-btn"
         class="profile-menu cursor-pointer dark:text-white"
       />
-      <Dropdown triggeredBy=".profile-menu" data-testid="profile-dropdown">
+      <Dropdown triggeredBy=".profile-menu" data-testid="profile-dropdown" classContainer="z-max">
         <DropdownItem on:click={handleLogOut}
           >Log Out <form bind:this={signOutForm} method="post" action="/auth?/signout" />
         </DropdownItem>

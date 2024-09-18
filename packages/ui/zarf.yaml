@@ -1,22 +1,24 @@
+# yaml-language-server: $schema=https://raw.githubusercontent.com/defenseunicorns/uds-cli/v0.14.0/zarf.schema.json
+
 kind: ZarfPackageConfig
 metadata:
   name: leapfrogai-ui
-  version: '###ZARF_PKG_TMPL_IMAGE_VERSION###'
+  version: "###ZARF_PKG_TMPL_IMAGE_VERSION###"
   description: >
     A UI for LeapfrogAI
 
 constants:
   - name: IMAGE_VERSION
-    value: '###ZARF_PKG_TMPL_IMAGE_VERSION###'
+    value: "###ZARF_PKG_TMPL_IMAGE_VERSION###"
 
 variables:
-  - name: LEAPFROGAI_API_BASE_URL #LEAPFROGAI_API_BASE_URL
+  - name: LEAPFROGAI_API_BASE_URL
     description: The base URL for the LeapfrogAI API
     default: http://leapfrogai-api.leapfrogai.svc.cluster.local:8080
     prompt: true
     sensitive: true
   - name: OPENAI_API_KEY
-    description: OpenAI API Key. If specified, app will use OpenAI instead of LeapfrogAI
+    description: OpenAI API key - if specified, the UI will use OpenAI instead of LeapfrogAI
     prompt: true
     default: ""
     sensitive: true
@@ -35,27 +37,27 @@ variables:
     sensitive: false
   - name: SYSTEM_PROMPT
     description: The default system prompt to use for the LLM
-    default: 'You may be provided with a list of files and their content in the following structure: [{"filename": "test.pdf","text": "some fake text"}]. Using the content of these files as context, you should refer to specific files by their filename when relevant and use the text content to provide detailed, accurate, and relevant information or answers. If the user asks questions that can be answered based on the content of the provided files, use the appropriate files text in your response. If the user requests clarification, further details, or specific information about a file, respond using the most relevant file or files. If necessary, combine information from multiple files to form a comprehensive response.'
+    default: "You may be provided with a list of files and their content in the following structure: [{filename: test.pdf, text: some fake text}]. Using the content of these files as context, you should refer to specific files by their filename when relevant and use the text content to provide detailed, accurate, and relevant information or answers. If the user asks questions that can be answered based on the content of the provided files, use the appropriate files text in your response. If the user requests clarification, further details, or specific information about a file, respond using the most relevant file or files. If necessary, combine information from multiple files to form a comprehensive response."
     prompt: true
     sensitive: false
   - name: TEMPERATURE
     description: The default temperature for the LLM
-    default: '0.1'
+    default: "0.1"
     prompt: true
     sensitive: false
   - name: SUPABASE_ANON_KEY
-    default: ''
-    description: Public key for Supabase
+    default: ""
+    description: Public key for Supabase when hosted outside of the cluster on PaaS
     prompt: true
     sensitive: false
   - name: DISABLE_KEYCLOAK
     description: Disable keycloak true or false
-    default: 'true'
+    default: "true"
     prompt: true
     sensitive: false
   - name: MESSAGE_LENGTH_LIMIT
     description: The maximum length of a message to allow from the user to the backend
-    default: '10000'
+    default: "10000"
     prompt: true
     sensitive: false
 
@@ -69,9 +71,9 @@ components:
         namespace: leapfrogai
         localPath: chart
         valuesFiles:
-          - 'chart/ui-values.yaml'
+          - "values/upstream-values.yaml"
         # x-release-please-start-version
-        version: 0.11.0
+        version: 0.12.2
         # x-release-please-end
     images:
       - ghcr.io/defenseunicorns/leapfrogai/leapfrogai-ui:###ZARF_PKG_TMPL_IMAGE_VERSION###
@@ -82,7 +84,7 @@ components:
           - wait:
               cluster:
                 kind: Job
-                name: ui-migrations-###ZARF_PKG_TMPL_IMAGE_VERSION###
+                name: leapfrogai-ui-migrations-###ZARF_PKG_TMPL_IMAGE_VERSION###
                 namespace: leapfrogai
                 condition: complete
           - wait:

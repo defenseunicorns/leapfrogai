@@ -4,7 +4,13 @@ import { createClient } from '@supabase/supabase-js';
 
 export const supabase = createClient(
   process.env.PUBLIC_SUPABASE_URL!,
-  process.env.SERVICE_ROLE_KEY!
+  process.env.SERVICE_ROLE_KEY!,
+  {
+    auth: {
+      autoRefreshToken: false,
+      persistSession: false
+    }
+  }
 );
 
 export const SHORT_RESPONSE_PROMPT = 'respond with no more than one sentence';
@@ -24,17 +30,6 @@ export const getSimpleMathQuestion = () => {
   return `${randomOperation.operation} ${randomNumber1} ${randomOperation.preposition} ${randomNumber2}, ${SHORT_RESPONSE_PROMPT}`;
 };
 
-export const loadChatPage = async (page: Page) => {
-  await page.goto('/chat');
-  await page.waitForURL('/chat');
-  await expect(page).toHaveTitle('LeapfrogAI - Chat');
-};
-
-export const loadApiKeyPage = async (page: Page) => {
-  await page.goto('/chat/api-keys');
-  await page.waitForURL('/chat/api-keys');
-  await expect(page).toHaveTitle('LeapfrogAI - API Keys');
-};
 export const getTableRow = async (page: Page, textToSearchWith: string, tableTestId = '') => {
   if (tableTestId) {
     await expect(page.getByTestId(tableTestId).getByText(textToSearchWith)).toBeVisible();

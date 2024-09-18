@@ -27,6 +27,7 @@ const createFilesStore = () => {
     set,
     update,
     setUploading: (status: boolean) => update((old) => ({ ...old, uploading: status })),
+
     setFiles: (newFiles: FileRow[]) => {
       update((old) => ({ ...old, files: [...newFiles] }));
     },
@@ -86,31 +87,24 @@ const createFilesStore = () => {
         };
       });
     },
-    updateWithUploadResults: (newFiles: Array<FileObject | FileRow>) => {
+    updateWithUploadErrors: (newFiles: Array<FileObject | FileRow>) => {
       update((old) => {
-        const successRows = [...old.files];
         const failedRows: FileRow[] = [];
 
         for (const file of newFiles) {
-          const row: FileRow = {
-            id: file.id,
-            filename: file.filename,
-            created_at: file.created_at,
-            status: file.status === 'error' ? 'error' : 'complete'
-          };
           if (file.status === 'error') {
+            const row: FileRow = {
+              id: file.id,
+              filename: file.filename,
+              created_at: file.created_at,
+              status: 'error'
+            };
+
             failedRows.push(row);
             toastStore.addToast({
               kind: 'error',
               title: 'Import Failed',
               subtitle: `${file.filename} import failed.`
-            });
-          } else {
-            successRows.push(row);
-            toastStore.addToast({
-              kind: 'success',
-              title: 'Imported Successfully',
-              subtitle: `${file.filename} imported successfully.`
             });
           }
         }
@@ -128,8 +122,44 @@ const createFilesStore = () => {
 
         return {
           ...old,
-          files: successRows,
           pendingUploads: failedRows
+        };
+      });
+    },
+    updateWithUploadSuccess: (newFiles: Array<FileObject | FileRow>) => {
+      update((old) => {
+        const successRows = [...old.files];
+
+        for (const file of newFiles) {
+          const row: FileRow = {
+            id: file.id,
+            filename: file.filename,
+            created_at: file.created_at,
+            status: 'complete'
+          };
+
+          successRows.push(row);
+          toastStore.addToast({
+            kind: 'success',
+            title: 'Imported Successfully',
+            subtitle: `${file.filename} imported successfully.`
+          });
+
+          // Remove the error files after 1.5 seconds
+          new Promise((resolve) => setTimeout(resolve, 1500)).then(() => {
+            update((old) => {
+              const index = old.files.findIndex((f) => f.id === file.id);
+              old.files[index] = { ...old.files[index], status: 'hide' };
+              return {
+                ...old
+              };
+            });
+          });
+        }
+
+        return {
+          ...old,
+          files: successRows
         };
       });
     },
