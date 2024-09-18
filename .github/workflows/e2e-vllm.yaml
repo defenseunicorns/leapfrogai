@@ -120,6 +120,7 @@ jobs:
 
       - name: Test UDS GPU Cluster
         run: |
+          which -a k3d
           sudo chown $(whoami) ~/.kube/config
           # Apply the tests in-cluster to ensure GPUs can be scheduled
           uds zarf tools kubectl describe nodes
