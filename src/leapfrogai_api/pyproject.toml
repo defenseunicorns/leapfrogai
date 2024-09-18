@@ -16,7 +16,7 @@ dependencies = [
     "watchfiles == 0.21.0",
     "leapfrogai_sdk",
     "supabase == 2.6.0",
-    "langchain == 0.2.11",
+    "langchain == 0.2.12",
     "langchain-community == 0.2.11",
     "unstructured[md,xlsx,pptx] == 0.15.9", # Only specify necessary filetypes to prevent package bloat (e.g. 130MB vs 6GB)
     "nltk == 3.9.1",                        # Required for pickled code containing .pptx parsing dependencies
