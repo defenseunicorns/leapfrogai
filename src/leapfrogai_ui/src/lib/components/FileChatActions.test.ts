@@ -3,10 +3,15 @@ import { render, screen } from '@testing-library/svelte';
 import type { FileMetadata, LFFile } from '$lib/types/files';
 import userEvent from '@testing-library/user-event';
 import { mockConvertFileNoId } from '$lib/mocks/file-mocks';
-import { mockNewMessage, mockTranslation, mockTranslationError } from '$lib/mocks/chat-mocks';
+import {
+  mockNewMessage,
+  mockTranslation,
+  mockTranslationError,
+  mockTranslationFileSizeError
+} from '$lib/mocks/chat-mocks';
 import { vi } from 'vitest';
 import { toastStore } from '$stores';
-import { FILE_TRANSLATION_ERROR } from '$constants/toastMessages';
+import { AUDIO_FILE_SIZE_ERROR_TOAST, FILE_TRANSLATION_ERROR } from '$constants/toastMessages';
 
 const mockFile1: LFFile = new File([], 'test1.mpeg', { type: 'audio/mpeg' });
 const mockFile2: LFFile = new File([], 'test1.mp4', { type: 'audio/mp4' });
@@ -97,5 +102,24 @@ describe('FileChatActions', () => {
 
     await userEvent.click(screen.getByRole('button', { name: `Translate ${mockMetadata2.name}` }));
     expect(toastSpy).toHaveBeenCalledWith(FILE_TRANSLATION_ERROR());
+  });
+
+  it('dispatches a toast if the file is too big', async () => {
+    mockConvertFileNoId('');
+    mockNewMessage();
+    mockTranslationFileSizeError();
+
+    const toastSpy = vi.spyOn(toastStore, 'addToast');
+
+    render(FileChatActions, {
+      attachedFiles: [mockFile1, mockFile2],
+      attachedFileMetadata: [mockMetadata1, mockMetadata2],
+      threadId: '123',
+      originalMessages: [],
+      setMessages: vi.fn()
+    });
+
+    await userEvent.click(screen.getByRole('button', { name: `Translate ${mockMetadata2.name}` }));
+    expect(toastSpy).toHaveBeenCalledWith(AUDIO_FILE_SIZE_ERROR_TOAST());
   });
 });

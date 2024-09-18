@@ -24,7 +24,7 @@
     on:mouseenter={() => (hovered = true)}
     on:mouseleave={() => (hovered = false)}
   >
-    <div class="flex w-full flex-row items-center justify-between">
+    <div class="flex w-full flex-row items-center justify-between truncate">
       <div class="flex gap-2">
         <div class="flex items-center rounded-lg bg-gray-700 px-2">
           {#if fileMetadata.status === 'uploading'}
@@ -33,7 +33,7 @@
             <CloseOutline
               data-testid={`${fileMetadata.name}-error`}
               size="lg"
-              class="text-red-400 "
+              class="text-red-400"
             />
           {:else if fileMetadata.type.startsWith('audio/')}
             <FileMusicOutline

@@ -3,6 +3,7 @@ import type { RequestHandler } from './$types';
 import { getOpenAiClient } from '$lib/server/constants';
 import { audioFileSchema } from '$schemas/files';
 import { env } from '$env/dynamic/private';
+import { handleError } from '$helpers/apiHelpers';
 
 export const POST: RequestHandler = async ({ request, locals: { session } }) => {
   if (!session) {
@@ -18,8 +19,8 @@ export const POST: RequestHandler = async ({ request, locals: { session } }) => 
 
     await audioFileSchema.validate({ file }, { abortEarly: false });
   } catch (e) {
-    console.error('Validation error:', e);
-    error(400, `Bad Request, File invalid: ${e}`);
+    console.error(e);
+    error(400, { message: `${e}` });
   }
 
   try {
@@ -30,7 +31,6 @@ export const POST: RequestHandler = async ({ request, locals: { session } }) => 
     });
     return json({ text: translation.text });
   } catch (e) {
-    console.error('file translation error', e);
-    error(500, 'Internal Error');
+    return handleError(e);
   }
 };

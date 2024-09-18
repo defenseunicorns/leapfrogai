@@ -4,6 +4,15 @@ import type { RouteParams } from './$types';
 import { POST } from './+server';
 import { mockOpenAI } from '../../../../../vitest-setup';
 import { requestWithFormData } from '$helpers/apiHelpers';
+import * as constants from '$constants';
+
+// Allows mocking important constants and only overriding values for specific tests
+vi.mock('$constants', async () => {
+  const actualConstants = await vi.importActual<typeof import('$constants')>('$constants');
+  return {
+    ...actualConstants
+  };
+});
 
 describe('/api/audio/translation', () => {
   it('returns a 401 when there is no session', async () => {
@@ -64,6 +73,26 @@ describe('/api/audio/translation', () => {
     ).rejects.toMatchObject({
       status: 400
     });
+  });
+
+  it('should return 400 if the file is too big', async () => {
+    // @ts-expect-error - intentionally overriding a constant for testing
+    vi.spyOn(constants, 'MAX_AUDIO_FILE_SIZE', 'get').mockReturnValueOnce(1);
+
+    const fileContent = new Blob(['dummy content'], { type: 'audio/mp4' });
+    const testFile = new File([fileContent], 'test.txt', { type: 'audio/mp4' });
+    const request = requestWithFormData(testFile);
+
+    await expect(
+      POST({ request, params: {}, locals: getLocalsMock() } as RequestEvent<
+        RouteParams,
+        '/api/audio/translation'
+      >)
+    ).rejects.toMatchObject({
+      status: 400
+    });
+    // Reset the mock after this test
+    vi.resetModules();
   });
 
   it('should return a 500 if there is an error translating the file', async () => {

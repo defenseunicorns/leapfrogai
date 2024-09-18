@@ -5,10 +5,11 @@
   import { saveMessage } from '$helpers/chatHelpers';
   import type { FileMetadata, LFFile } from '$lib/types/files';
   import { threadsStore, toastStore } from '$stores';
-  import { FILE_TRANSLATION_ERROR } from '$constants/toastMessages';
+  import { AUDIO_FILE_SIZE_ERROR_TOAST, FILE_TRANSLATION_ERROR } from '$constants/toastMessages';
   import { tick } from 'svelte';
   import { page } from '$app/stores';
   import type { Message } from 'ai';
+  import { AUDIO_FILE_SIZE_ERROR_TEXT } from '$constants';
 
   export let attachedFiles: LFFile[];
   export let attachedFileMetadata: FileMetadata[];
@@ -23,9 +24,27 @@
   const customBtnClass =
     'rounded text-xs px-2.5 py-0.5 text-gray-500 bg-gray-100 hover:bg-gray-400 dark:bg-gray-100 dark:text-gray-900 dark:hover:bg-gray-300 truncate';
 
+  const reset = async () => {
+    await threadsStore.setSendingBlocked(false);
+    translatingId = '';
+  };
+
+  const handleTranslationError = async (toastData: ToastData) => {
+    toastStore.addToast(toastData);
+    if (translatingId) {
+      const fileMetadataIndex = attachedFiles.findIndex((f) => f.id === translatingId);
+      attachedFileMetadata[fileMetadataIndex] = {
+        ...attachedFileMetadata[fileMetadataIndex],
+        status: 'error',
+        errorText: toastData.subtitle
+      };
+    }
+    await reset();
+  };
+
   const translateFile = async (fileMetadata: FileMetadata) => {
     if (!fileMetadata.id) {
-      toastStore.addToast(FILE_TRANSLATION_ERROR());
+      await handleTranslationError(FILE_TRANSLATION_ERROR());
       return;
     }
     translatingId = fileMetadata.id;
@@ -54,7 +73,10 @@
 
       // translate
       const file = attachedFiles.find((f) => f.id === fileMetadata.id);
-      if (!file) throw Error('File not found');
+      if (!file) {
+        await handleTranslationError(FILE_TRANSLATION_ERROR());
+        return;
+      }
 
       const formData = new FormData();
       formData.append('file', file);
@@ -62,7 +84,16 @@
         method: 'POST',
         body: formData
       });
+
       const translateResJson = await translateRes.json();
+      if (!translateRes.ok) {
+        if (translateResJson.message === `ValidationError: ${AUDIO_FILE_SIZE_ERROR_TEXT}`) {
+          await handleTranslationError(AUDIO_FILE_SIZE_ERROR_TOAST());
+        } else {
+          await handleTranslationError(FILE_TRANSLATION_ERROR());
+        }
+        return;
+      }
 
       // save translation response
       const translationMessage = await saveMessage({
@@ -75,10 +106,11 @@
       attachedFiles = attachedFiles.filter((file) => file.id !== fileMetadata.id);
       attachedFileMetadata = attachedFileMetadata.filter((file) => file.id !== fileMetadata.id);
     } catch {
-      toastStore.addToast(FILE_TRANSLATION_ERROR());
+      await handleTranslationError(FILE_TRANSLATION_ERROR());
+      return;
     }
-    await threadsStore.setSendingBlocked(false);
-    translatingId = '';
+
+    await reset();
   };
 </script>
 

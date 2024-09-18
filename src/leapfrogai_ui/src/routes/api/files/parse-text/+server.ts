@@ -39,7 +39,7 @@ export const POST: RequestHandler = async ({ request, fetch, locals: { session }
       });
 
       if (!convertRes.ok) {
-        return error(500, { message: 'Error converting file', id: file.id });
+        return error(500, { message: 'Error converting file' });
       }
 
       const convertedFileBlob = await convertRes.blob();
@@ -63,6 +63,6 @@ export const POST: RequestHandler = async ({ request, fetch, locals: { session }
       text
     });
   } catch (e) {
-    return handleError(e, { id: file.id });
+    return handleError(e);
   }
 };

@@ -95,7 +95,7 @@ describe('/api/files/parse-text', () => {
       >)
     ).rejects.toMatchObject({
       status: 500,
-      body: { message: 'Error converting file', id: '1' }
+      body: { message: 'Error converting file' }
     });
   });
 
