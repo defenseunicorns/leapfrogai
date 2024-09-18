@@ -87,3 +87,28 @@ test('it can removes the audio file but keeps other files after translating', as
   deleteFixtureFile(pdfFilename);
   await deleteActiveThread(page, openAIClient);
 });
+
+test("it can summarize a file's content", async ({ page, openAIClient }) => {
+  await loadChatPage(page);
+  const fakeContent = faker.word.words(3);
+  const pdfFilename = await createPDF({ content: fakeContent, filename: 'shortname.pdf' });
+
+  await uploadFiles({
+    page,
+    filenames: ['spanish.m4a', pdfFilename],
+    testId: 'upload-file-btn'
+  });
+
+  const messagesContainer = page.getByTestId('messages-container');
+  const chatToolsContainer = page.getByTestId('chat-tools');
+
+  const summarizeBtn = chatToolsContainer.getByRole('button', { name: `Summarize ${pdfFilename}` });
+  await summarizeBtn.click();
+
+  await expect(messagesContainer.getByText(`Summarize ${pdfFilename}`)).toBeVisible();
+  await expect(page.getByTestId('message')).toHaveCount(2);
+
+  // cleanup
+  deleteFixtureFile(pdfFilename);
+  await deleteActiveThread(page, openAIClient);
+});

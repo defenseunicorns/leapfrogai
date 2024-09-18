@@ -410,6 +410,7 @@
         bind:attachedFiles
         originalMessages={$chatMessages}
         setMessages={setChatMessages}
+        append={chatAppend}
       />
     </div>
   </div>
