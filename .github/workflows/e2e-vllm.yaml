@@ -65,7 +65,6 @@ jobs:
           # Check the NVIDIA driver and container toolkit versions
           nvidia-smi
           nvidia-ctk --version
-          nvcc --version
 
           # Configure Docker with the NVIDIA Container Toolkit
           sudo nvidia-ctk runtime configure --runtime=docker --set-as-default
