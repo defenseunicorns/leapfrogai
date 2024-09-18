@@ -1,10 +1,8 @@
 from __future__ import annotations
-
 import logging
-from typing import Iterable, AsyncGenerator, Any
+from typing import Iterable
+from pydantic import Field
 
-from openai.types.beta import Thread
-from openai.types.beta.assistant_stream_event import ThreadCreated
 from openai.types.beta.thread import (
     ToolResources as BetaThreadToolResources,
     ToolResourcesFileSearch as BetaThreadToolResourcesFileSearch,
@@ -18,23 +16,18 @@ from openai.types.beta.thread_create_and_run_params import (
     ThreadMessageAttachmentToolFileSearch,
 )
 from openai.types.beta.threads import MessageContent, Message, Run
-from pydantic import Field
-from starlette.responses import StreamingResponse
 
-from leapfrogai_api.routers.openai.requests.create_message_request import (
+from leapfrogai_api.typedef.messages import (
     CreateMessageRequest,
 )
-from leapfrogai_api.routers.openai.requests.run_create_params_request_base import (
+from leapfrogai_api.typedef.runs import (
     RunCreateParamsRequestBase,
 )
 from leapfrogai_api.data.crud_run import CRUDRun
 from leapfrogai_api.backend.converters import (
     from_content_param_to_content,
-    from_assistant_stream_event_to_str,
 )
-from leapfrogai_api.routers.openai.requests.create_thread_request import (
-    CreateThreadRequest,
-)
+from leapfrogai_api.typedef.threads import CreateThreadRequest
 
 from leapfrogai_api.routers.supabase_session import Session
 
@@ -152,31 +145,3 @@ class ThreadRunCreateParamsRequest(RunCreateParamsRequestBase):
             )
 
         return new_run, new_thread
-
-    async def generate_response(
-        self, new_run: Run, new_thread: Thread, session: Session
-    ):
-        if self.stream:
-            initial_messages: list[str] = [
-                from_assistant_stream_event_to_str(
-                    ThreadCreated(data=new_thread, event="thread.created")
-                )
-            ] + RunCreateParamsRequestBase.get_initial_messages_base(new_run)
-            ending_messages: list[str] = (
-                RunCreateParamsRequestBase.get_ending_messages_base(new_run)
-            )
-            # Generate a new response based on the existing thread
-            stream: AsyncGenerator[str, Any] = (
-                super().stream_generate_message_for_thread(session=session, initial_messages=initial_messages, thread=new_thread, ending_messages=ending_messages, run_id=new_run.id, tool_resources=self.tool_resources)
-            )
-
-            return StreamingResponse(stream, media_type="text/event-stream")
-        else:
-            await super().generate_message_for_thread(
-                session=session,
-                thread=new_thread,
-                run_id=new_run.id,
-                tool_resources=self.tool_resources,
-            )
-
-            return new_run
