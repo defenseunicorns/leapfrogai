@@ -114,9 +114,14 @@ jobs:
           uds zarf tools kubectl describe node k3d-uds-server-0
           uds zarf tools kubectl get daemonset nvidia-device-plugin-daemonset -n kube-system
 
+          # Apply the CUDA test pod
           uds zarf tools kubectl apply -f packages/k3d-gpu/test/cuda-device-query.yaml
 
-          # While loop to check the pod status and show events and details
+          # Set a max number of retries
+          max_retries=5
+          retry_count=0
+
+          # While loop to check the pod status (retry max 5 times)
           while [[ $(uds zarf tools kubectl get pod -l app=gpu-pod --namespace=default -o jsonpath='{.items[*].status.phase}') != "Succeeded" ]]; do
               echo "Waiting for pod to complete..."
 
@@ -125,10 +130,29 @@ jobs:
               uds zarf tools kubectl describe pod -l app=gpu-pod --namespace=default
 
               sleep 5
+              ((retry_count++))
+
+              # Break the loop after 5 retries
+              if [[ $retry_count -ge $max_retries ]]; then
+                  echo "Max retries reached. Fetching pod logs and failure reason..."
+
+                  # Fetch pod logs
+                  uds zarf tools kubectl logs -l app=gpu-pod --namespace=default
+
+                  # Fetch the reason for failure
+                  echo "Fetching failure reason..."
+                  uds zarf tools kubectl get pod -l app=gpu-pod --namespace=default -o jsonpath='{.items[*].status.containerStatuses[*].state.terminated.reason}'
+
+                  break
+              fi
           done
 
-          # Display logs of the completed pod
-          uds zarf tools kubectl logs -l app=gpu-pod --namespace=default
+          # If pod succeeded, display logs
+          if [[ $(uds zarf tools kubectl get pod -l app=gpu-pod --namespace=default -o jsonpath='{.items[*].status.phase}') == "Succeeded" ]]; then
+              echo "Pod completed successfully!"
+              uds zarf tools kubectl logs -l app=gpu-pod --namespace=default
+          fi
+
 
       # - name: Setup API and Supabase
       #   uses: ./.github/actions/lfai-core
