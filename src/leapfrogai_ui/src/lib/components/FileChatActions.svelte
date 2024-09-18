@@ -21,7 +21,8 @@
   export let originalMessages: Message[];
   export let setMessages: (messages: Message[]) => void;
 
-  let fileId: string;
+  type MethodType = 'translation' | 'transcription';
+  let processing: { fileId: string; method: MethodType } = {};
 
   $: audioFiles = attachedFileMetadata.filter((file) => file.type.startsWith('audio/'));
 
@@ -30,13 +31,13 @@
 
   const reset = async () => {
     await threadsStore.setSendingBlocked(false);
-    fileId = '';
+    processing = {};
   };
 
   const handleGeneralError = async (toastData: ToastData) => {
     toastStore.addToast(toastData);
-    if (fileId) {
-      const fileMetadataIndex = attachedFiles.findIndex((f) => f.id === fileId);
+    if (processing.fileId) {
+      const fileMetadataIndex = attachedFiles.findIndex((f) => f.id === processing.fileId);
       attachedFileMetadata[fileMetadataIndex] = {
         ...attachedFileMetadata[fileMetadataIndex],
         status: 'error',
@@ -46,27 +47,23 @@
     await reset();
   };
 
-  const transcribeOrTranslate = async (
-    fileMetadata: FileMetadata,
-    method: 'translation' | 'transcription'
-  ) => {
+  const transcribeOrTranslate = async (fileMetadata: FileMetadata, method: MethodType) => {
     const toastError =
       method === 'translation' ? FILE_TRANSLATION_ERROR() : FILE_TRANSCRIPTION_ERROR();
 
-    const adjective = method === 'translation' ? ' Translate' : 'Transcribe'
+    const adjective = method === 'translation' ? ' Translate' : 'Transcribe';
 
     if (!fileMetadata.id) {
       await handleGeneralError(toastError);
       return;
     }
-    fileId = fileMetadata.id;
+    processing = { fileId: fileMetadata.id, method };
+
     await threadsStore.setSendingBlocked(true);
     try {
       if (!threadId) {
         // create new thread
-        await threadsStore.newThread(
-          `${adjective} ${fileMetadata.name}`
-        );
+        await threadsStore.newThread(`${adjective} ${fileMetadata.name}`);
         await tick(); // allow store to update
         threadId = $page.params.thread_id;
       }
@@ -143,9 +140,9 @@
         color="dark"
         class={customBtnClass}
         on:click={() => transcribeOrTranslate(file, 'translation')}
-        disabled={fileId}
+        disabled={processing.fileId}
       >
-        {#if fileId === file.id}
+        {#if processing.fileId === file.id && processing.method === 'translation'}
           <Spinner class="me-2" size="2" color="white" /><span
             >{`Translating ${shortenFileName(file.name)}`}</span
           >
@@ -160,9 +157,9 @@
         color="dark"
         class={customBtnClass}
         on:click={() => transcribeOrTranslate(file, 'transcription')}
-        disabled={fileId}
+        disabled={processing.fileId}
       >
-        {#if fileId === file.id}
+        {#if processing.fileId === file.id && processing.method === 'transcription'}
           <Spinner class="me-2" size="2" color="white" /><span
             >{`Transcribing ${shortenFileName(file.name)}`}</span
           >
