@@ -104,7 +104,7 @@ jobs:
       - name: Create UDS Cluster
         shell: bash
         run: |
-          UDS_CONFIG=.github/config/uds-config.yaml make create-uds-gpu-cluster
+          UDS_CONFIG=.github/config/uds-config.yaml DOCKER_FLAGS="--build-arg CUDA_TAG=12.2.0-base-ubuntu22.04" make create-uds-gpu-cluster
 
       - name: Test UDS GPU Cluster
         run: |
