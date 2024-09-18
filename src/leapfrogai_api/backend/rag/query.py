@@ -5,6 +5,7 @@ from langchain_core.embeddings import Embeddings
 from leapfrogai_api.backend.rag.leapfrogai_embeddings import LeapfrogAIEmbeddings
 from leapfrogai_api.data.crud_vector_content import CRUDVectorContent
 from leapfrogai_api.typedef.vectorstores.search_types import SearchResponse
+from leapfrogai_api.backend.constants import TOP_K
 
 # Allows for overwriting type of embeddings that will be instantiated
 embeddings_type: type[Embeddings] | type[LeapfrogAIEmbeddings] | None = (
@@ -21,7 +22,10 @@ class QueryService:
         self.embeddings = embeddings_type()
 
     async def query_rag(
-        self, query: str, vector_store_id: str, k: int = 5
+        self,
+        query: str,
+        vector_store_id: str,
+        k: int = TOP_K
     ) -> SearchResponse:
         """
         Query the Vector Store.
@@ -29,7 +33,7 @@ class QueryService:
         Args:
             query (str): The input query string.
             vector_store_id (str): The ID of the vector store.
-            k (int, optional): The number of results to retrieve. Defaults to 5.
+            k (int, optional): The number of results to retrieve.
 
         Returns:
             SearchResponse: The search response from the vector store.

@@ -5,6 +5,7 @@ from supabase import AClient as AsyncClient
 from leapfrogai_api.data.crud_base import get_user_id
 import ast
 from leapfrogai_api.typedef.vectorstores import SearchItem, SearchResponse
+from leapfrogai_api.backend.constants import TOP_K
 
 
 class Vector(BaseModel):
@@ -79,7 +80,7 @@ class CRUDVectorContent:
         return bool(response)
 
     async def similarity_search(
-        self, query: list[float], vector_store_id: str, k: int
+        self, query: list[float], vector_store_id: str, k: int = TOP_K
     ) -> SearchResponse:
         user_id = await get_user_id(self.db)
 
