@@ -15,9 +15,9 @@ runs:
 
     - name: Install Python Deps
       shell: bash
-      run: python -m pip install ".[dev]" --no-cache-dir
+      run: python -m pip install ".[dev]"
 
     - name: Install additionalDeps
       if: ${{ inputs.additionalOptionalDep != '' }}
       shell: bash
-      run: python -m pip install ".[${{ inputs.additionalOptionalDep }}]" --no-cache-dir
+      run: python -m pip install ".[${{ inputs.additionalOptionalDep }}]"

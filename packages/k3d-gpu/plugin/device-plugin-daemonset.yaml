@@ -31,7 +31,7 @@ spec:
       # See https://kubernetes.io/docs/tasks/administer-cluster/guaranteed-scheduling-critical-addon-pods/
       priorityClassName: "system-node-critical"
       containers:
-      - image: nvcr.io/nvidia/k8s-device-plugin:v0.16.2
+      - image: nvcr.io/nvidia/k8s-device-plugin:v0.15.0-rc.2
         name: nvidia-device-plugin-ctr
         env:
           - name: PASS_DEVICE_SPECS
@@ -41,13 +41,13 @@ spec:
           - name: DEVICE_LIST_STRATEGY
             value: envvar
           - name: DEVICE_ID_STRATEGY
-            value: "uuid"
+            value: uuid
           - name: NVIDIA_VISIBLE_DEVICES
-            value: "all"
+            value: all
           - name: NVIDIA_DRIVER_CAPABILITIES
-            value: "compute,utility"
+            value: compute,utility
           - name: MPS_ROOT
-            value: "/run/nvidia/mps"
+            value: /run/nvidia/mps
         securityContext:
           allowPrivilegeEscalation: false
           capabilities:

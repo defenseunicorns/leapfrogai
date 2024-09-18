@@ -51,7 +51,7 @@ jobs:
           python-version-file: "pyproject.toml"
 
       - name: Install Python Dependencies
-        run: pip install ".[dev]" "src/leapfrogai_api" "src/leapfrogai_sdk" --no-cache-dir
+        run: pip install ".[dev]" "src/leapfrogai_api" "src/leapfrogai_sdk"
 
       - name: Setup Repeater
         env:
@@ -82,7 +82,7 @@ jobs:
           python-version-file: "pyproject.toml"
 
       - name: Install Python Deps
-        run: pip install ".[dev]" "src/leapfrogai_api" "src/leapfrogai_sdk" --no-cache-dir
+        run: pip install ".[dev]" "src/leapfrogai_api" "src/leapfrogai_sdk"
 
       - name: Setup Repeater
         env:

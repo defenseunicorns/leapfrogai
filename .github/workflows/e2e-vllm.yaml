@@ -4,11 +4,11 @@ name: e2e-vllm
 on:
   pull_request:
     types:
-      - opened # default trigger
-      - reopened # default trigger
-      - synchronize # default trigger
-      - ready_for_review # don't run on draft PRs
-      - milestoned # allows us to trigger on bot PRs
+      - opened            # default trigger
+      - reopened          # default trigger
+      - synchronize       # default trigger
+      - ready_for_review  # don't run on draft PRs
+      - milestoned        # allows us to trigger on bot PRs
     paths:
       # Catch-all
       - "**"
@@ -47,130 +47,39 @@ on:
       - "!packages/ui/**"
       - "!packages/whisper/**"
 
+
+
 concurrency:
   group: e2e-vllm-${{ github.ref }}
   cancel-in-progress: true
 
 jobs:
   e2e_vllm:
-    runs-on: ai-linux-x64-gpu
-    # if: ${{ !github.event.pull_request.draft }}
+    runs-on: ai-ubuntu-big-boy-8-core
+    if: ${{ !github.event.pull_request.draft }}
 
     steps:
-      - name: Checkout Repo
-        uses: actions/checkout@b4ffde65f46336ab88eb53be808477a3936bae11 # v4.1.1
+        - name: Checkout Repo
+          uses: actions/checkout@b4ffde65f46336ab88eb53be808477a3936bae11 # v4.1.1
 
-      - name: Setup NVIDIA Dependencies
-        run: |
-          sudo sh -c '
-            # Check the host, NVIDIA driver and container toolkit versions
-            whoami
-            lsb_release -a
-            nvidia-smi
-            nvidia-ctk --version
+        - name: Setup Python
+          uses: ./.github/actions/python
+          with:
+            additionalOptionalDep: dev-vllm
 
-            # Configure Docker with the NVIDIA Container Toolkit
-            nvidia-ctk runtime configure --runtime=docker --set-as-default
-            systemctl restart docker
+        - name: Setup UDS Environment
+          uses: defenseunicorns/uds-common/.github/actions/setup@822dac4452e6815aadcf09f487406ff258756a0c # v0.12.0
+          with:
+            registry1Username: ${{ secrets.IRON_BANK_ROBOT_USERNAME }}
+            registry1Password: ${{ secrets.IRON_BANK_ROBOT_PASSWORD }}
+            ghToken: ${{ secrets.GITHUB_TOKEN }}
+            udsCliVersion: 0.14.0
 
-            # Test Docker GPU access and capability
-            docker info | grep nvidia
-            docker run --gpus all nvidia/cuda:12.4.1-base-ubuntu22.04 nvidia-smi
-            docker run --rm --runtime=nvidia --gpus all nvcr.io/nvidia/k8s/cuda-sample:vectoradd-cuda11.7.1-ubuntu20.04
-            docker run --rm --runtime=nvidia --gpus all nvcr.io/nvidia/k8s/cuda-sample:devicequery-cuda11.7.1-ubuntu20.04
-          '
-
-      - name: Setup UDS Workaround
-        run: |
-          sudo chown $(whoami) /usr/local/bin/
-
-      - name: Setup UDS Environment
-        uses: defenseunicorns/uds-common/.github/actions/setup@822dac4452e6815aadcf09f487406ff258756a0c # v0.12.0
-        with:
-          registry1Username: ${{ secrets.IRON_BANK_ROBOT_USERNAME }}
-          registry1Password: ${{ secrets.IRON_BANK_ROBOT_PASSWORD }}
-          ghToken: ${{ secrets.GITHUB_TOKEN }}
-          udsCliVersion: 0.14.0
-        continue-on-error: true # see next step for permissions issues workarounds
-
-      - name: Create UDS Cluster
-        shell: bash
-        run: |
-          sudo sh -c '
-            # UDS_CONFIG=.github/config/uds-config.yaml make create-uds-gpu-cluster
-            cd packages/k3d-gpu && docker build \
-              --platform linux/amd64 \
-              -t ghcr.io/defenseunicorns/leapfrogai/k3d-gpu:e2e-test .
-            cd ../../
-            k3d cluster create \
-              -p "80:80@server:*" \
-              -p "443:443@server:*" \
-              --api-port 6550 \
-              --k3s-arg "--disable=traefik@server:*" \
-              --k3s-arg "--disable=metrics-server@server:*" \
-              --k3s-arg "--disable=servicelb@server:*" \
-              --k3s-arg "--disable=local-storage@server:*" \
-              --gpus=all --image=ghcr.io/defenseunicorns/leapfrogai/k3d-gpu:e2e-test
-          '
-
-      - name: Test UDS GPU Cluster
-        run: |
-          sudo sh -c '
-          # Apply the tests in-cluster to ensure GPUs can be scheduled
-          uds zarf tools kubectl describe nodes
-          sleep 20
-          uds zarf tools kubectl get pods -o wide -A
-          uds zarf tools kubectl wait --for=condition=Ready Pod -l name=nvidia-device-plugin-daemonset --namespace=kube-system --timeout=600s
-          uds zarf tools kubectl exec -it daemonset/nvidia-device-plugin-daemonset -n kube-system -c nvidia-device-plugin-ctr -- nvidia-smi
-          uds zarf tools kubectl logs -l name=nvidia-device-plugin-daemonset -n kube-system
-
-          # Apply the CUDA test pod
-          uds zarf tools kubectl apply -f packages/k3d-gpu/test/cuda-device-query.yaml
-          sleep 20
-          uds zarf tools kubectl logs -l app=gpu-pod --namespace=default
-
-          uds zarf tools kubectl apply -f packages/k3d-gpu/test/cuda-vector-add.yaml
-          sleep 20
-          uds zarf tools kubectl logs -l app=gpu-pod --namespace=default
-          '
-      # - name: Setup API and Supabase
-      #   uses: ./.github/actions/lfai-core
-
-      # - name: Setup Python
-      #   uses: ./.github/actions/python
-      #   with:
-      #     additionalOptionalDep: dev-vllm
-
-      # #######
-      # # vllm
-      # #######
-      # - name: Deploy vLLM
-      #   run: |
-      #     make build-vllm LOCAL_VERSION=e2e-test DOCKER_FLAGS="--build-arg MAX_CONTEXT_LENGTH=500"
-
-      #     make local-registry
-      #     make sdk-wheel LOCAL_VERSION=e2e-test
-      #     docker build --build-arg MAX_CONTEXT_LENGTH=500 --build-arg LOCAL_VERSION=e2e-test -t ghcr.io/defenseunicorns/leapfrogai/vllm:e2e-test -f packages/vllm/Dockerfile .
-      #     docker tag ghcr.io/defenseunicorns/leapfrogai/vllm:e2e-test localhost:5000/defenseunicorns/leapfrogai/vllm:e2e-test
-      #     docker push localhost:5000/defenseunicorns/leapfrogai/vllm:e2e-test
-
-      #     uds zarf package create packages/vllm --flavor upstream -o packages/vllm --registry-override=ghcr.io=localhost:5000 --insecure --set IMAGE_VERSION=e2e-test --confirm
-
-      #     docker image prune -af
-
-      #     uds zarf package deploy packages/vllm/zarf-package-vllm-amd64-e2e-test.tar.zst -l=trace --confirm
-      #     rm packages/vllm/zarf-package-vllm-amd64-e2e-test.tar.zst
-
-      #     # Check vLLM deployment logs for issues
-      #     while [[ $(uds zarf tools kubectl get pod -l app=lfai-vllm --namespace=leapfrogai -o jsonpath='{.items[*].status.phase}') != "Running" ]]; do
-      #         echo "Waiting for pod to be ready..."
-      #         sleep 5
-      #     done
-
-      #     uds zarf tools kubectl logs -n leapfrogai deployment/vllm-model
-
-      # - name: Test vLLM
-      #   env:
-      #     MODEL_NAME: vllm
-      #   run: |
-      #     python -m pytest ./tests/e2e/test_llm_generation.py -vv
+        ##########
+        # vLLM
+        # NOTE: We are not deploying and testing vLLM in this workflow because it requires a GPU
+        #     : This workflow simply verifies that the vLLM package can be built
+        ##########
+        - name: Build vLLM
+          run: |
+            make build-vllm LOCAL_VERSION=e2e-test
