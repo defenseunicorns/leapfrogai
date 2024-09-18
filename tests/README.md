@@ -76,9 +76,9 @@ make test-user
 make test-env
 
 # run the e2e tests associated with a package
-# choices: vllm, llama-cpp-python, api, supabase, text-embeddings, or whisper
-# pattern: make test-e2e-<INSERT PACKAGE NAME>
-PACKAGE=vllm make test-e2e
+# below is a non-exhaustive list of example test runs
+env $(cat .env | xargs) python -m pytest tests/e2e/test_api.py -vvv
+env $(cat .env | xargs) LEAPFROGAI_MODEL=vllm python -m pytest tests/e2e/test_llm_generation.py -vvv
 ```
 
 ### Running Tests

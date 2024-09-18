@@ -28,7 +28,7 @@ define get_jwt_token
 	echo "ANON_KEY=$(SUPABASE_ANON_KEY)" >> .env; \
 	echo "SUPABASE_SERVICE_KEY=$(SUPABASE_SERVICE_KEY)" >> .env; \
 	echo "SERVICE_KEY=$(SUPABASE_SERVICE_KEY)" >> .env; \
-	echo "LEAPFROGAI_MODEL=$(LEAPFROGAI_MODEL)" >> .env \
+	echo "LEAPFROGAI_MODEL=$(LEAPFROGAI_MODEL)" >> .env; \
 	echo "DONE - variables exported to .env file"
 endef
 
@@ -66,30 +66,11 @@ test-api-integration:
 		echo "Required environment variables (SUPABASE_USER_JWT, SUPABASE_URL, SUPABASE_ANON_KEY) are missing in .env!"; \
 		exit 1; \
 	fi
-	@env $$(cat .env | xargs) LFAI_RUN_NIAH_TESTS=$(LFAI_RUN_NIAH_TESTS) PYTHONPATH=$$(pwd) pytest -vv -s tests/integration/api
+	@env $$(cat .env | xargs) LFAI_RUN_NIAH_TESTS=$(LFAI_RUN_NIAH_TESTS) PYTHONPATH=$$(pwd) python -m pytest -vv -s tests/integration/api
 
 test-api-unit: set-supabase
-	LFAI_RUN_REPEATER_TESTS=$(LFAI_RUN_REPEATER_TESTS) PYTHONPATH=$$(pwd) pytest -vv -s tests/unit
+	LFAI_RUN_REPEATER_TESTS=$(LFAI_RUN_REPEATER_TESTS) PYTHONPATH=$$(pwd) python -m pytest -vv -s tests/unit
 	LFAI_RUN_REPEATER_TESTS=$(LFAI_RUN_REPEATER_TESTS) PYTHONPATH=$$(pwd) python -m pytest -vv -s tests/pytest
 
 test-load:
-	locust -f $$(pwd)/tests/load/loadtest.py --web-port 8089
-
-test-e2e:
-	ifeq ($(PACKAGE), api)
-		python -m pytest test_api.py -vvv
-	else ifeq ($(PACKAGE), supabase)
-		python -m pytest test_supabase.py -vvv
-	else ifeq ($(PACKAGE), text-embeddings)
-		python -m pytest test_text_embeddings.py -vvv
-		python -m pytest test_text_backend_full.py -vvv
-	else ifeq ($(PACKAGE), whisper)
-		python -m pytest test_whisper.py -vvv
-	else ifeq ($(PACKAGE), vllm)
-		LEAPFROGAI_MODEL=vllm python -m pytest test_llm_generation.py -vvv
-	else ifeq ($(PACKAGE), llama-cpp-python)
-		LEAPFROGAI_MODEL=llama-cpp-python python -m pytest test_llm_generation.py -vvv
-	else
-		@echo "Invalid PACKAGE value. Please specify one of: vllm, llama-cpp-python, api, supabase, text-embeddings, or whisper."
-		@exit 1
-	endif
+	python -m locust -f $$(pwd)/tests/load/loadtest.py --web-port 8089
