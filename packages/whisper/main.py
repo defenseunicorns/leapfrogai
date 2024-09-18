@@ -69,7 +69,11 @@ def call_whisper(
     inputLanguage = "en"
 
     for request in request_iterator:
-        if request.metadata:
+        if (
+            request.metadata.prompt
+            or request.metadata.temperature
+            or request.metadata.inputlanguage
+        ):
             prompt = request.metadata.prompt
             temperature = request.metadata.temperature
             inputLanguage = request.metadata.inputlanguage
