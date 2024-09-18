@@ -109,7 +109,15 @@ jobs:
             --platform linux/amd64 \
             -t ghcr.io/defenseunicorns/leapfrogai/k3d-gpu:e2e-test .
           cd ../../
-          k3d cluster create uds --gpus=all --image=ghcr.io/defenseunicorns/leapfrogai/k3d-gpu:e2e-test
+          k3d cluster create \
+            -p "80:80@server:*" \
+            -p "443:443@server:*" \
+            --api-port 6550 \
+            --k3s-arg "--disable=traefik@server:*" \
+            --k3s-arg "--disable=metrics-server@server:*" \
+            --k3s-arg "--disable=servicelb@server:*" \
+            --k3s-arg "--disable=local-storage@server:*" \
+            --gpus=all --image=ghcr.io/defenseunicorns/leapfrogai/k3d-gpu:e2e-test
 
       - name: Test UDS GPU Cluster
         run: |
