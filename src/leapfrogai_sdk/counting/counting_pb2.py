@@ -14,7 +14,7 @@ _sym_db = _symbol_database.Default()
 
 
 DESCRIPTOR = _descriptor_pool.Default().AddSerializedFile(
-    b'\n&leapfrogai_sdk/counting/counting.proto\x12\x08\x63ounting"!\n\x11TokenCountRequest\x12\x0c\n\x04text\x18\x01 \x01(\t"#\n\x12TokenCountResponse\x12\r\n\x05\x63ount\x18\x01 \x01(\x05"@\n\x10TokenCountResult\x12,\n\x06result\x18\x01 \x01(\x0b\x32\x1c.counting.TokenCountResponse2]\n\x11TokenCountService\x12H\n\x0b\x43ountTokens\x12\x1b.counting.TokenCountRequest\x1a\x1a.counting.TokenCountResult"\x00\x42;Z9github.com/defenseunicorns/leapfrogai/pkg/client/countingb\x06proto3'
+    b'\n&leapfrogai_sdk/counting/counting.proto\x12\x08\x63ounting"!\n\x11TokenCountRequest\x12\x0c\n\x04text\x18\x01 \x01(\t"#\n\x12TokenCountResponse\x12\r\n\x05\x63ount\x18\x01 \x01(\x05"@\n\x10TokenCountResult\x12,\n\x06result\x18\x01 \x01(\x0b\x32\x1c.counting.TokenCountResponse2[\n\x11TokenCountService\x12\x46\n\x0b\x43ountTokens\x12\x1b.counting.TokenCountRequest\x1a\x1a.counting.TokenCountResultB;Z9github.com/defenseunicorns/leapfrogai/pkg/client/countingb\x06proto3'
 )
 
 _globals = globals()
@@ -36,5 +36,5 @@ if not _descriptor._USE_C_DESCRIPTORS:
     _globals["_TOKENCOUNTRESULT"]._serialized_start = 124
     _globals["_TOKENCOUNTRESULT"]._serialized_end = 188
     _globals["_TOKENCOUNTSERVICE"]._serialized_start = 190
-    _globals["_TOKENCOUNTSERVICE"]._serialized_end = 283
+    _globals["_TOKENCOUNTSERVICE"]._serialized_end = 281
 # @@protoc_insertion_point(module_scope)

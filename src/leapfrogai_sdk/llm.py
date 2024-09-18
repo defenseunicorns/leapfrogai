@@ -254,7 +254,7 @@ def LLM(_cls):
 
             yield last_response
 
-        async def TokenCount(
+        async def CountTokens(
             self, request: TokenCountRequest, context: GrpcContext
         ) -> TokenCountResponse:
             token_count: int = await self.count_tokens(request.text)

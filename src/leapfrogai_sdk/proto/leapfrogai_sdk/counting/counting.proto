@@ -19,5 +19,5 @@ message TokenCountResult {
 }
 
 service TokenCountService {
-  rpc CountTokens (TokenCountRequest) returns (TokenCountResult) {}
+  rpc CountTokens (TokenCountRequest) returns (TokenCountResult);
 }
