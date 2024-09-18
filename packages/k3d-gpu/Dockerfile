@@ -14,8 +14,7 @@ RUN apt-get update && \
     tee /etc/apt/sources.list.d/nvidia-container-toolkit.list \
     apt-get update && \
     apt-get install -y nvidia-container-toolkit-base nvidia-container-toolkit nvidia-container-runtime util-linux && \
-    nvidia-ctk runtime configure --runtime=containerd --set-as-default && \
-    systemctl restart containerd
+    nvidia-ctk runtime configure --runtime=containerd --set-as-default
 
 COPY --from=k3s / / --exclude=/bin/
 COPY --from=k3s /bin /bin
