@@ -120,8 +120,9 @@ jobs:
       - name: Test UDS GPU Cluster
         run: |
           # Apply the tests in-cluster to ensure GPUs can be scheduled
+          uds zarf tools kubectl get pods -o wide -A
           uds zarf tools kubectl wait --for=condition=Ready Pod -l name=nvidia-device-plugin-daemonset --namespace=kube-system --timeout=600s
-
+          sleep 20
           uds zarf tools kubectl exec -it daemonset/nvidia-device-plugin-daemonset -n kube-system -c nvidia-device-plugin-ctr -- nvidia-smi
           uds zarf tools kubectl logs -l name=nvidia-device-plugin-daemonset -n kube-system
 
