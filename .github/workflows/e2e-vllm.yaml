@@ -72,7 +72,7 @@ jobs:
 
           # Test Docker GPU access and capability
           docker info | grep nvidia
-          docker run --rm --runtime=nvidia --gpus all ubuntu nvidia-smi
+          docker run --gpus all nvidia/cuda:12.4.1-base-ubuntu22.04 nvidia-smi
           docker run --rm --runtime=nvidia --gpus all nvcr.io/nvidia/k8s/cuda-sample:vectoradd-cuda11.7.1-ubuntu20.04
           docker run --rm --runtime=nvidia --gpus all nvcr.io/nvidia/k8s/cuda-sample:devicequery-cuda11.7.1-ubuntu20.04
 
@@ -106,6 +106,7 @@ jobs:
         shell: bash
         run: |
           UDS_CONFIG=.github/config/uds-config.yaml DOCKER_FLAGS="--build-arg CUDA_TAG=12.2.0-base-ubuntu22.04" make create-uds-gpu-cluster
+          uds zarf tools kubectl label nodes k3d-uds-server-0 nvidia.com/gpu=true
 
       - name: Test UDS GPU Cluster
         run: |
@@ -113,6 +114,7 @@ jobs:
           uds zarf tools kubectl describe node k3d-uds-server-0
           uds zarf tools kubectl get pods -o wide --all-namespaces
           uds zarf tools kubectl exec -it daemonset/nvidia-device-plugin-daemonset -n kube-system -c nvidia-device-plugin-ctr -- nvidia-smi
+          uds zarf tools kubectl logs -l name=nvidia-device-plugin-daemonset -n kube-system
 
           # Apply the CUDA test pod
           uds zarf tools kubectl apply -f packages/k3d-gpu/test/cuda-device-query.yaml
