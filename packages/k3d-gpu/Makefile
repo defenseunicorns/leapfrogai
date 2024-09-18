@@ -1,6 +1,6 @@
 MAKEFILE_DIR := $(dir $(abspath $(lastword $(MAKEFILE_LIST))))
 
-UDS_VERSION := k3d-core-slim-dev:0.27.1
+UDS_VERSION := k3d-core-slim-dev:0.26.1
 LOCAL_VERSION ?= $(shell git rev-parse --short HEAD)
 DOCKER_FLAGS :=
 ZARF_FLAGS :=
