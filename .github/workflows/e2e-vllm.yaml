@@ -97,11 +97,19 @@ jobs:
           udsCliVersion: 0.14.0
         continue-on-error: true # see next step for permissions issues workarounds
 
+      - name: Setup UDS Workaround
+        run: |
+          sudo chown $(whoami) /usr/local/bin/k3d
+
       - name: Create UDS Cluster
         shell: bash
         run: |
           # UDS_CONFIG=.github/config/uds-config.yaml make create-uds-gpu-cluster
-          k3d cluster create
+          cd packages/k3d-gpu && docker build \
+            --platform linux/amd64 \
+            -t ghcr.io/defenseunicorns/leapfrogai/k3d-gpu:e2e-test .
+          cd ../../
+          k3d cluster create uds --gpus=all --image=ghcr.io/defenseunicorns/leapfrogai/k3d-gpu:e2e-test
 
       - name: Test UDS GPU Cluster
         run: |
