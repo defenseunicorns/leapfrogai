@@ -9,9 +9,13 @@ spec:
   restartPolicy: Never
   containers:
     - name: cuda-container
-      image: nvcr.io/nvidia/k8s/cuda-sample:vectoradd-cuda11.0
+      image: nvcr.io/nvidia/k8s/cuda-sample:vectoradd-cuda11.7.1-ubuntu20.04
       resources:
         limits:
           nvidia.com/gpu: "1" # requesting 1 GPU
-          cpu: "0"
-          memory: "0"
+          cpu: "1"
+          memory: 0.5Gi
+  tolerations:
+  - key: nvidia.com/gpu
+    operator: Exists
+    effect: NoSchedule
