@@ -86,9 +86,9 @@ test-e2e:
 	else ifeq ($(PACKAGE), whisper)
 		python -m pytest test_whisper.py -vvv
 	else ifeq ($(PACKAGE), vllm)
-		MODEL_NAME=vllm python -m pytest test_llm_generation.py -vvv
+		LEAPFROGAI_MODEL=vllm python -m pytest test_llm_generation.py -vvv
 	else ifeq ($(PACKAGE), llama-cpp-python)
-		MODEL_NAME=llama-cpp-python python -m pytest test_llm_generation.py -vvv
+		LEAPFROGAI_MODEL=llama-cpp-python python -m pytest test_llm_generation.py -vvv
 	else
 		@echo "Invalid PACKAGE value. Please specify one of: vllm, llama-cpp-python, api, supabase, text-embeddings, or whisper."
 		@exit 1
