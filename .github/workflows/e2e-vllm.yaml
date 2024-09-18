@@ -110,18 +110,15 @@ jobs:
       - name: Test UDS GPU Cluster
         run: |
           # Apply the tests in-cluster to ensure GPUs can be scheduled
-          uds zarf tools kubectl get nodes -o=custom-columns=NAME:.metadata.name,GPU:.status.allocatable.nvidia\.com/gpu
+          uds zarf tools kubectl get nodes
+          uds zarf tools kubectl describe node k3d-uds-server-0
           uds zarf tools kubectl get daemonset nvidia-device-plugin-daemonset -n kube-system
 
-          uds zarf tools kubectl apply -f packages/k3d-gpu/test/cuda-vector-add.yaml
+          uds zarf tools kubectl apply -f packages/k3d-gpu/test/cuda-device-query.yaml
 
           # While loop to check the pod status and show events and details
           while [[ $(uds zarf tools kubectl get pod -l app=gpu-pod --namespace=default -o jsonpath='{.items[*].status.phase}') != "Succeeded" ]]; do
               echo "Waiting for pod to complete..."
-
-              # Display the latest pod events
-              echo "Fetching pod events..."
-              uds zarf tools kubectl get events --namespace=default --sort-by='.lastTimestamp'
 
               # Display pod details
               echo "Fetching pod details..."
