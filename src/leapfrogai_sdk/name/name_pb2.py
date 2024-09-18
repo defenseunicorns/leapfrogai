@@ -3,11 +3,11 @@
 # source: leapfrogai_sdk/name/name.proto
 # Protobuf Python Version: 4.25.1
 """Generated protocol buffer code."""
+
 from google.protobuf import descriptor as _descriptor
 from google.protobuf import descriptor_pool as _descriptor_pool
 from google.protobuf import symbol_database as _symbol_database
 from google.protobuf.internal import builder as _builder
-
 # @@protoc_insertion_point(imports)
 
 _sym_db = _symbol_database.Default()
@@ -27,9 +27,9 @@ _builder.BuildTopDescriptorsAndMessages(
 )
 if _descriptor._USE_C_DESCRIPTORS == False:
     _globals["DESCRIPTOR"]._options = None
-    _globals["DESCRIPTOR"]._serialized_options = (
-        b"Z5github.com/defenseunicorns/leapfrogai/pkg/client/name"
-    )
+    _globals[
+        "DESCRIPTOR"
+    ]._serialized_options = b"Z5github.com/defenseunicorns/leapfrogai/pkg/client/name"
     _globals["_NAMERESPONSE"]._serialized_start = 69
     _globals["_NAMERESPONSE"]._serialized_end = 97
     _globals["_NAMESERVICE"]._serialized_start = 99
