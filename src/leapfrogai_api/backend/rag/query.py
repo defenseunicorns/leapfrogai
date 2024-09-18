@@ -22,10 +22,7 @@ class QueryService:
         self.embeddings = embeddings_type()
 
     async def query_rag(
-        self,
-        query: str,
-        vector_store_id: str,
-        k: int = TOP_K
+        self, query: str, vector_store_id: str, k: int = TOP_K
     ) -> SearchResponse:
         """
         Query the Vector Store.
