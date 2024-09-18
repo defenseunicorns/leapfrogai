@@ -63,6 +63,7 @@ jobs:
       - name: Setup NVIDIA Dependencies
         run: |
           # Check the host, NVIDIA driver and container toolkit versions
+          whoami
           lsb_release -a
           nvidia-smi
           nvidia-ctk --version
@@ -119,7 +120,9 @@ jobs:
 
       - name: Test UDS GPU Cluster
         run: |
+          sudo chown $(whoami) ~/.kube/config
           # Apply the tests in-cluster to ensure GPUs can be scheduled
+          uds zarf tools kubectl describe nodes
           uds zarf tools kubectl get pods -o wide -A
           uds zarf tools kubectl wait --for=condition=Ready Pod -l name=nvidia-device-plugin-daemonset --namespace=kube-system --timeout=600s
           sleep 20
