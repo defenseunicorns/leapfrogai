@@ -143,7 +143,7 @@
         disabled={processing.fileId}
       >
         {#if processing.fileId === file.id && processing.method === 'translation'}
-          <Spinner class="me-2" size="2" color="white" /><span
+          <Spinner class="me-2" size="2" color="white" data-testid="translation-spinner" /><span
             >{`Translating ${shortenFileName(file.name)}`}</span
           >
         {:else}
@@ -160,7 +160,7 @@
         disabled={processing.fileId}
       >
         {#if processing.fileId === file.id && processing.method === 'transcription'}
-          <Spinner class="me-2" size="2" color="white" /><span
+          <Spinner class="me-2" size="2" color="white" data-testid="transcription-spinner" /><span
             >{`Transcribing ${shortenFileName(file.name)}`}</span
           >
         {:else}

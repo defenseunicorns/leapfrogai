@@ -73,7 +73,6 @@ export const FILE_TRANSLATION_ERROR = (override: Partial<ToastData> = {}): Toast
   ...override
 });
 
-
 export const FILE_TRANSCRIPTION_ERROR = (override: Partial<ToastData> = {}): ToastData => ({
   kind: 'error',
   title: 'Transcription Error',
