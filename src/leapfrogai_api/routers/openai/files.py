@@ -8,10 +8,10 @@ from leapfrogai_api.backend.rag.document_loader import (
     is_supported_mime_type,
     get_mime_type_from_filename,
 )
-from leapfrogai_api.backend.types import ListFilesResponse, UploadFileRequest
 from leapfrogai_api.data.crud_file_bucket import CRUDFileBucket
 from leapfrogai_api.data.crud_file_object import CRUDFileObject, FilterFileObject
 from leapfrogai_api.routers.supabase_session import Session
+from leapfrogai_api.typedef.files import ListFilesResponse, UploadFileRequest
 
 router = APIRouter(prefix="/openai/v1/files", tags=["openai/files"])
 

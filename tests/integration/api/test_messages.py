@@ -7,13 +7,9 @@ from fastapi import status
 from fastapi.testclient import TestClient
 from openai.types.beta import Thread, ThreadDeleted
 from openai.types.beta.threads import TextContentBlock, Text, Message, MessageDeleted
-from leapfrogai_api.backend.types import (
-    ModifyMessageRequest,
-)
-from leapfrogai_api.routers.openai.requests.create_message_request import (
-    CreateMessageRequest,
-)
-from leapfrogai_api.routers.openai.requests.create_thread_request import (
+
+from leapfrogai_api.typedef.messages import CreateMessageRequest, ModifyMessageRequest
+from leapfrogai_api.typedef.threads import (
     CreateThreadRequest,
 )
 from leapfrogai_api.main import app
