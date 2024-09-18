@@ -37,6 +37,10 @@ jobs:
     steps:
       - name: Checkout Repo
         uses: actions/checkout@b4ffde65f46336ab88eb53be808477a3936bae11 # v4.1.1
+        with:
+          # x-release-please-start-version
+          ref: "caf4f9c3093a55a003b49fcbf05c03221be6a232" # 0.12.2 w/ integration tests turned-on
+          # x-release-please-end
 
       - name: Setup Python
         uses: ./.github/actions/python
@@ -51,6 +55,12 @@ jobs:
           registry1Username: ${{ secrets.IRON_BANK_ROBOT_USERNAME }}
           registry1Password: ${{ secrets.IRON_BANK_ROBOT_PASSWORD }}
           ghToken: ${{ secrets.GITHUB_TOKEN }}
+          udsCliVersion: 0.14.0
+
+      - name: Create UDS Cluster
+        shell: bash
+        run: |
+          UDS_CONFIG=.github/config/uds-config.yaml make create-uds-cpu-cluster
 
       - name: Setup Playwright
         run: |
@@ -63,6 +73,7 @@ jobs:
 
       # Mutate UDS bundle definition to use Registry1 packages
       - name: Mutation to Registry1 Bundle
+        # TODO: fix bundle path
         run: |
           uds zarf tools yq -i '.packages[1] |= del(.repository)' bundles/latest/cpu/uds-bundle.yaml
           uds zarf tools yq -i '.packages[1] |= .ref = "registry1"' bundles/latest/cpu/uds-bundle.yaml
@@ -136,7 +147,7 @@ jobs:
           mkdir -p playwright/auth
           touch playwright/auth.user.json
 
-          SERVICE_ROLE_KEY=$SERVICE_ROLE_KEY TEST_ENV=CI USERNAME=doug PASSWORD=$FAKE_E2E_USER_PASSWORD PUBLIC_SUPABASE_ANON_KEY=$ANON_KEY npm --prefix src/leapfrogai_ui run test:integration:ci
+          SERVICE_ROLE_KEY=$SERVICE_ROLE_KEY TEST_ENV=CI USERNAME=doug PASSWORD=$FAKE_E2E_USER_PASSWORD PUBLIC_SUPABASE_ANON_KEY=$ANON_KEY DEFAULT_MODEL=llama-cpp-python npm --prefix src/leapfrogai_ui run test:integration:ci
 
       - name: Archive Playwright Report
         uses: actions/upload-artifact@834a144ee995460fba8ed112a2fc961b36a5ec5a # v4.3.6

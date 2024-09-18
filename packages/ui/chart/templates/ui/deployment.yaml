@@ -1,42 +1,41 @@
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: {{ .Values.package.name }}
-  namespace: leapfrogai
+  name: {{ include "chart.fullname" . }}
+  namespace: {{ .Release.Namespace | default "leapfrogai" }}
+  labels:
+    {{- include "chart.labels" . | nindent 4 }}
 spec:
+  replicas: {{ .Values.replicaCount }}
+  {{- with .Values.strategy }}
+  strategy:
+    {{- toYaml . | nindent 8 }}
+  {{- end }}
   selector:
     matchLabels:
-      app: {{ .Values.package.name }}
-  replicas: 1
+      {{- include "chart.selectorLabels" . | nindent 6 }}
   template:
     metadata:
+      {{- with .Values.podAnnotations }}
+      annotations:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
       labels:
-        app: {{ .Values.package.name }}
+        {{- include "chart.selectorLabels" . | nindent 8 }}
     spec:
+      serviceAccountName: {{ include "chart.serviceAccountName" . }}
+      securityContext:
+        {{- toYaml .Values.podSecurityContext | nindent 8 }}
       containers:
-        - name: {{ .Values.package.name }}
+        - name: {{ include "chart.fullname" . }}-container
           image: "{{ .Values.image.repository }}:{{ .Values.image.tag | default .Chart.AppVersion }}"
-          imagePullPolicy: {{ .Values.image.pullPolicy }}
-          ports:
-            - containerPort: 3000
+          imagePullPolicy: {{ .Values.image.imagePullPolicy }}
+          {{- with .Values.env }}
           env:
-            - name: LEAPFROGAI_API_BASE_URL
-              value: '###ZARF_VAR_LEAPFROGAI_API_BASE_URL###'
-            - name: ORIGIN
-              value: "https://{{ .Values.package.subdomain }}.{{ .Values.package.domain }}"
-            - name: DEFAULT_MODEL
-              value: '###ZARF_VAR_MODEL###'
-            - name: DEFAULT_SYSTEM_PROMPT
-              value: '###ZARF_VAR_SYSTEM_PROMPT###'
-            - name: DEFAULT_TEMPERATURE
-              value: '###ZARF_VAR_TEMPERATURE###'
-            - name: OPENAI_API_KEY
-              value: '###ZARF_VAR_OPENAI_API_KEY###'
-            - name: PUBLIC_SUPABASE_URL
-              value: {{ .Values.package.supabase_url }}
+            {{- toYaml . | nindent 12 }}
             - name: PUBLIC_SUPABASE_ANON_KEY
-              {{ if .Values.package.supabase_anon_key  }}
-              value: {{ .Values.package.supabase_anon_key }}
+              {{ if $.Values.extraEnv.supabaseAnonKey  }}
+              value: {{ $.Values.extraEnv.supabaseAnonKey }}
               {{ else }}
               valueFrom:
                 secretKeyRef:
@@ -44,26 +43,20 @@ spec:
                   key: anon-key
                   optional: true
               {{ end }}
-            - name: PUBLIC_DISABLE_KEYCLOAK
-              value: '###ZARF_VAR_DISABLE_KEYCLOAK###'
-            - name: PUBLIC_MESSAGE_LENGTH_LIMIT
-              value: '###ZARF_VAR_MESSAGE_LENGTH_LIMIT###'
-            - name: SUPABASE_AUTH_EXTERNAL_KEYCLOAK_URL
-              value: "https://sso.{{ .Values.package.domain }}/realms/uds"
-            - name: SUPABASE_AUTH_KEYCLOAK_CLIENT_ID
-              valueFrom:
-                secretKeyRef:
-                  name: sso-client-uds-supabase
-                  key: clientId
-            - name: SUPABASE_AUTH_KEYCLOAK_SECRET
-              valueFrom:
-                secretKeyRef:
-                  name: sso-client-uds-supabase
-                  key: secret
-          resources:
-            requests:
-              memory: '0'
-              cpu: '0'
-            limits:
-              memory: '0'
-              cpu: '0'
+          {{- end }}
+          ports:
+            - containerPort: {{ .Values.service.port }}
+          securityContext:
+            {{- toYaml .Values.securityContext | nindent 12 }}
+      {{- with .Values.nodeSelector }}
+      nodeSelector:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with .Values.affinity }}
+      affinity:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with .Values.tolerations }}
+      tolerations:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}

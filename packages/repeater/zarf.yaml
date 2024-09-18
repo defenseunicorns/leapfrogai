@@ -1,9 +1,11 @@
+# yaml-language-server: $schema=https://raw.githubusercontent.com/defenseunicorns/uds-cli/v0.14.0/zarf.schema.json
+
 kind: ZarfPackageConfig
 metadata:
   name: repeater
   version: "###ZARF_PKG_TMPL_IMAGE_VERSION###"
   description: >
-    repeater
+    repeater model
 
 constants:
   - name: IMAGE_VERSION
@@ -23,6 +25,6 @@ components:
         version: 0.12.2
         # x-release-please-end
         valuesFiles:
-          - "repeater-values.yaml"
+          - "values/upstream-values.yaml"
     images:
       - ghcr.io/defenseunicorns/leapfrogai/repeater:###ZARF_PKG_TMPL_IMAGE_VERSION###

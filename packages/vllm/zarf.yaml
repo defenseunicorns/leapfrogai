@@ -1,4 +1,4 @@
-# yaml-language-server: $schema=https://raw.githubusercontent.com/zarf-dev/zarf/main/zarf.schema.json
+# yaml-language-server: $schema=https://raw.githubusercontent.com/defenseunicorns/uds-cli/v0.14.0/zarf.schema.json
 kind: ZarfPackageConfig
 metadata:
   name: vllm
@@ -11,6 +11,14 @@ constants:
     value: "###ZARF_PKG_TMPL_IMAGE_VERSION###"
 
 variables:
+  - name: GPU_LIMIT
+    description: The GPU limit for the model inferencing. Must be 1 or more.
+    default: "1"
+    pattern: "^[1-9][0-9]*$"
+  - name: GPU_RUNTIME
+    description: The GPU runtime name for the model inferencing.
+    default: "nvidia"
+    pattern: "^(nvidia)?$"
   - name: PVC_SIZE
     description: Size of the PVC used for model storage.
     default: "15Gi"
@@ -37,7 +45,7 @@ components:
         version: 0.12.2
         # x-release-please-end
         valuesFiles:
-          - "vllm-values.yaml"
+          - "values/upstream-values.yaml"
     images:
       - ghcr.io/defenseunicorns/leapfrogai/vllm:###ZARF_PKG_TMPL_IMAGE_VERSION###
       - cgr.dev/chainguard/bash:latest

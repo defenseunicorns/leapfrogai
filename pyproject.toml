@@ -41,6 +41,11 @@ generate-hashes = true
 [tool.ruff]
 target-version = "py311"
 
+[tool.ruff.format]
+quote-style = "double"
+indent-style = "space"
+line-ending = "auto"
+
 [tool.pytest.ini_options]
 addopts = ["--import-mode=importlib"]
 

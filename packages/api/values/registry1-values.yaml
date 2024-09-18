@@ -1,21 +1,39 @@
 api:
   image:
-    repository: registry1.dso.mil/ironbank/opensource/defenseunicorns/leapfrogai/api
+    repository: "registry1.dso.mil/ironbank/opensource/defenseunicorns/leapfrogai/api"
     # x-release-please-start-version
     tag: v0.12.2
     # x-release-please-end
 
+  expose: "###ZARF_VAR_EXPOSE_API###"
+
   env:
-    exposeAPI: "###ZARF_VAR_EXPOSE_API###"
-    defaultEmbeddingsModel: "###ZARF_VAR_DEFAULT_EMBEDDINGS_MODEL###"
+    - name: LFAI_LOG_LEVEL
+      value: "INFO"
+    - name: LFAI_CONFIG_PATH
+      value: /config/
+    - name: LFAI_CONFIG_FILENAME
+      value: "*.toml"
+    - name: DEFAULT_EMBEDDINGS_MODEL
+      value: "###ZARF_VAR_DEFAULT_EMBEDDINGS_MODEL###"
+    - name: PORT
+      value: "8080"
+    - name: SUPABASE_URL
+      value: "http://supabase-kong.leapfrogai.svc.cluster.local:80"
+    - name: SUPABASE_ANON_KEY
+      valueFrom:
+        secretKeyRef:
+          name: supabase-bootstrap-jwt
+          key: anon-key
+          optional: true
 
   migration:
     image:
       # TODO: replace with Ironbank image once hardened: registry1.dso.mil/ironbank/opensource/defenseunicorns/leapfrogai/api/migrations
-      repository: ghcr.io/defenseunicorns/leapfrogai/api-migrations
-      tag: ###ZARF_CONST_IMAGE_VERSION###
+      repository: "ghcr.io/defenseunicorns/leapfrogai/api-migrations"
+      tag: "###ZARF_CONST_IMAGE_VERSION###"
 
 kiwigrid:
   image:
-    repository: registry1.dso.mil/ironbank/kiwigrid/k8s-sidecar
-    tag: 1.23.3
+    repository: "registry1.dso.mil/ironbank/kiwigrid/k8s-sidecar"
+    tag: "1.23.3"

@@ -1,0 +1,13 @@
+failure-threshold: error
+# TODO: slowly burn down these lower priority container warnings and errors, issue #984
+ignored:
+  - DL3007 # use of latest image
+  - DL3042 # pip --no-cache-dir
+  - DL4006 # shell usage warning
+  - DL3009 # apt-get list
+  - DL3015 # --no-install-recommends
+  - DL3018 # pinning distro package versions
+  - DL3008 # pinning distro package versions
+  - DL3045 # usage of relative COPY
+  - DL3002 # last user as root
+  - SC2086 # double quote vs single quote usage

@@ -1,4 +1,4 @@
-# yaml-language-server: $schema=https://raw.githubusercontent.com/zarf-dev/zarf/main/zarf.schema.json
+# yaml-language-server: $schema=https://raw.githubusercontent.com/defenseunicorns/uds-cli/v0.14.0/zarf.schema.json
 
 kind: ZarfPackageConfig
 metadata:
@@ -16,7 +16,7 @@ variables:
     description: The GPU limit for the model inferencing.
     default: "0"
     pattern: "^[0-9]+$"
-  - name: GPU_CLASS_NAME
+  - name: GPU_RUNTIME
     description: The GPU class name for the model inferencing. Leave blank for CPU-only.
     default: ""
     pattern: "^(nvidia)?$"
@@ -46,7 +46,7 @@ components:
         version: 0.12.2
         # x-release-please-end
         valuesFiles:
-          - "embedding-values.yaml"
+          - "values/upstream-values.yaml"
     images:
       - ghcr.io/defenseunicorns/leapfrogai/text-embeddings:###ZARF_PKG_TMPL_IMAGE_VERSION###
       - cgr.dev/chainguard/bash:latest

@@ -2,16 +2,14 @@ apiVersion: apps/v1
 kind: Deployment
 metadata:
   name: {{ include "chart.fullname" . }}
-  namespace: {{ .Release.Namespace }}
+  namespace: {{ .Release.Namespace | default "leapfrogai" }}
   labels:
     {{- include "chart.labels" . | nindent 4 }}
 spec:
-  strategy:
-    rollingUpdate:
-      maxUnavailable: 0
-    type: RollingUpdate
-  {{- if not .Values.autoscaling.enabled }}
   replicas: {{ .Values.replicaCount }}
+  {{- with .Values.strategy }}
+  strategy:
+    {{- toYaml . | nindent 8 }}
   {{- end }}
   selector:
     matchLabels:
@@ -23,21 +21,25 @@ spec:
         {{- toYaml . | nindent 8 }}
       {{- end }}
       labels:
-        app: lfai-text-embeddings
+        app: lfai-{{ .Values.nameOverride }}
         {{- include "chart.selectorLabels" . | nindent 8 }}
     spec:
-      {{- if gt (index .Values.resources.limits "nvidia.com/gpu") 0.0 }}
-      runtimeClassName: nvidia
+      # handle the case where limit is a number or a string, else comparison fails on helm install
+      {{- $gpuLimit := index .Values.resources.limits "nvidia.com/gpu" }}
+      {{- if kindIs "string" $gpuLimit }}
+        {{- $gpuLimit = $gpuLimit | float64 }}
+      {{- end }}
+      {{- if gt $gpuLimit 0.0 }}
+        runtimeClassName: nvidia
       {{- else if .Values.gpu.runtimeClassName }}
-      runtimeClassName: {{ .Values.gpu.runtimeClassName }}
+        runtimeClassName: {{ .Values.gpu.runtimeClassName }}
       {{- end }}
       # It's necessary to include the ###ZARF_DATA_INJECTION_MARKER### somewhere in the podspec, otherwise data injections will not occur.
       initContainers:
         - name: data-loader
           image: cgr.dev/chainguard/bash:latest
           securityContext:
-            runAsUser: 65532
-            runAsGroup: 65532
+            {{- toYaml .Values.modelInjectionContainer.securityContext | nindent 12 }}
           # This command looks for the Zarf "data injection marker" which is a timestamped file that is injected after everything else and marks the injection as complete.
           command:
             [
@@ -46,19 +48,13 @@ spec:
               'while [ ! -f /data/.model/###ZARF_DATA_INJECTION_MARKER### ]; do echo "waiting for zarf data sync" && sleep 1; done; echo "we are done waiting!"',
             ]
           resources:
-            requests:
-              memory: "64Mi"
-              cpu: "200m"
-            limits:
-              memory: "128Mi"
-              cpu: "500m"
+            {{- toYaml .Values.modelInjectionContainer.resources | nindent 12 }}
           volumeMounts:
-            - name: leapfrogai-pv-storage
-              mountPath: /data
+            {{- toYaml .Values.modelInjectionContainer.volumeMounts | nindent 12 }}
       volumes:
         - name: leapfrogai-pv-storage
           persistentVolumeClaim:
-            claimName: lfai-text-embeddings-pv-claim
+            claimName: lfai-{{ .Values.nameOverride }}-pv-claim
       securityContext:
         {{- toYaml .Values.podSecurityContext | nindent 8 }}
       containers:
@@ -67,6 +63,10 @@ spec:
             {{- toYaml .Values.securityContext | nindent 12 }}
           image: "{{ .Values.image.repository }}:{{ .Values.image.tag | default .Chart.AppVersion }}"
           imagePullPolicy: {{ .Values.image.pullPolicy }}
+          {{- with .Values.env }}
+          env:
+            {{- toYaml . | nindent 12 }}
+          {{- end }}
           ports:
             - name: http
               containerPort: {{ .Values.service.port }}
