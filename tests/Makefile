@@ -9,7 +9,9 @@ install:
 set-supabase:
 	$(eval SUPABASE_URL := $(SUPABASE_URL))
 	$(eval SUPABASE_ANON_KEY := $(shell uds zarf tools kubectl get secret -n leapfrogai supabase-bootstrap-jwt -o json | uds zarf tools yq '.data.anon-key' | base64 -d))
+	$(eval SUPABASE_SERVICE_KEY := $(shell uds zarf tools kubectl get secret supabase-bootstrap-jwt -n leapfrogai -o jsonpath='{.data.service-key}' | base64 -d))
 
+# .env file covers all possible tests use cases where the same variable is named differently
 define get_jwt_token
 	echo "Getting JWT token from $(3)..."; \
 	echo "Email: $(1)"; \
@@ -23,7 +25,10 @@ define get_jwt_token
 	echo "SUPABASE_USER_JWT=$$JWT" > .env; \
 	echo "SUPABASE_URL=$(SUPABASE_URL)" >> .env; \
 	echo "SUPABASE_ANON_KEY=$(SUPABASE_ANON_KEY)" >> .env; \
-	echo "LEAPFROGAI_MODEL=$(LEAPFROGAI_MODEL)" >> .env
+	echo "ANON_KEY=$(SUPABASE_ANON_KEY)" >> .env; \
+	echo "SUPABASE_SERVICE_KEY=$(SUPABASE_SERVICE_KEY)" >> .env; \
+	echo "SERVICE_KEY=$(SUPABASE_SERVICE_KEY)" >> .env; \
+	echo "LEAPFROGAI_MODEL=$(LEAPFROGAI_MODEL)" >> .env \
 	echo "DONE - variables exported to .env file"
 endef
 
@@ -69,3 +74,22 @@ test-api-unit: set-supabase
 
 test-load:
 	locust -f $$(pwd)/tests/load/loadtest.py --web-port 8089
+
+test-e2e:
+	ifeq ($(PACKAGE), api)
+		python -m pytest test_api.py -vvv
+	else ifeq ($(PACKAGE), supabase)
+		python -m pytest test_supabase.py -vvv
+	else ifeq ($(PACKAGE), text-embeddings)
+		python -m pytest test_text_embeddings.py -vvv
+		python -m pytest test_text_backend_full.py -vvv
+	else ifeq ($(PACKAGE), whisper)
+		python -m pytest test_whisper.py -vvv
+	else ifeq ($(PACKAGE), vllm)
+		MODEL_NAME=vllm python -m pytest test_llm_generation.py -vvv
+	else ifeq ($(PACKAGE), llama-cpp-python)
+		MODEL_NAME=llama-cpp-python python -m pytest test_llm_generation.py -vvv
+	else
+		@echo "Invalid PACKAGE value. Please specify one of: vllm, llama-cpp-python, api, supabase, text-embeddings, or whisper."
+		@exit 1
+	endif

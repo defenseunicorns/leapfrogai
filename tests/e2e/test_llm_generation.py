@@ -7,17 +7,17 @@ import pytest
 from openai import InternalServerError, OpenAI
 from openai.types.chat import ChatCompletionMessageParam
 
-DEFAULT_MODEL_NAME = "llama-cpp-python"
+DEFAULT_LEAPFROGAI_MODEL = "llama-cpp-python"
 
 
 def get_model_name():
-    model_name = os.getenv("MODEL_NAME")
+    model_name = os.getenv("LEAPFROGAI_MODEL")
     if model_name is None:
         warnings.warn(
-            f"MODEL_NAME environment variable not set. Defaulting to '{DEFAULT_MODEL_NAME}'.\n"
-            "Consider setting MODEL_NAME explicitly. Examples: 'vllm', 'repeater', 'llama-cpp-python'."
+            f"LEAPFROGAI_MODEL environment variable not set. Defaulting to '{DEFAULT_LEAPFROGAI_MODEL}'.\n"
+            "Consider setting LEAPFROGAI_MODEL explicitly. Examples: 'vllm', 'repeater', 'llama-cpp-python'."
         )
-        model_name = DEFAULT_MODEL_NAME
+        model_name = DEFAULT_LEAPFROGAI_MODEL
     return model_name
 
 
