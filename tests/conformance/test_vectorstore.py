@@ -3,7 +3,7 @@ import pytest
 from openai.types.beta.vector_store import VectorStore
 from openai.types.beta.vector_store_deleted import VectorStoreDeleted
 
-from ..utils.client import client_config_factory
+from tests.utils.client import client_config_factory
 
 
 @pytest.mark.parametrize("client_name", ["openai", "leapfrogai"])

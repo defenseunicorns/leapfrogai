@@ -1,7 +1,7 @@
 import pytest
 from openai.types.beta.assistant import Assistant
 
-from ..utils.client import client_config_factory
+from tests.utils.client import client_config_factory
 
 
 @pytest.mark.parametrize("client_name", ["openai", "leapfrogai"])

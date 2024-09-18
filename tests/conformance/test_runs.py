@@ -1,7 +1,7 @@
 import pytest
 from openai.types.beta.threads import Run, Message, TextContentBlock, Text
 
-from .utils import client_config_factory
+from tests.utils.client import client_config_factory
 
 
 def make_mock_message_object(role, message_text):

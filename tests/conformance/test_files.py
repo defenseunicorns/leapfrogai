@@ -6,7 +6,7 @@ from openai.types.beta.vector_stores.vector_store_file_deleted import (
 )
 from openai.types.beta.vector_stores.vector_store_file import VectorStoreFile
 
-from ..utils.client import client_config_factory, text_file_path
+from tests.utils.client import client_config_factory, text_file_path
 
 
 @pytest.mark.parametrize("client_name", ["openai", "leapfrogai"])
