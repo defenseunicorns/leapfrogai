@@ -27,7 +27,7 @@ from leapfrogai_api.routers.openai import (
     threads,
     vector_stores,
 )
-from leapfrogai_api.routers import token_count
+from leapfrogai_api.routers.leapfrogai import token_count
 from leapfrogai_api.utils import get_model_config
 
 logging.basicConfig(
