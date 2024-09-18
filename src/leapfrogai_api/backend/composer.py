@@ -1,5 +1,4 @@
 from __future__ import annotations
-
 import time
 import uuid
 from typing import cast, AsyncGenerator, Any
@@ -49,7 +48,7 @@ from leapfrogai_api.typedef.chat import (
 )
 from leapfrogai_api.typedef.runs import RunCreateParamsRequest
 from leapfrogai_api.typedef.messages import CreateMessageRequest
-from leapfrogai_api.typedef.vectorstores import SearchResponse, SearchItem
+from leapfrogai_api.typedef.vectorstores import SearchResponse
 
 
 class Composer(BaseModel):
@@ -143,9 +142,7 @@ class Composer(BaseModel):
                     query=query_message.content_as_str(),
                     vector_store_id=vector_store_id,
                 )
-
                 # Insert the RAG response messages just before the user's query
-                rag_response: SearchItem
                 for rag_response in rag_responses.data:
                     file_ids.add(rag_response.file_id)
                     response_with_instructions: str = f"{rag_response.content}"

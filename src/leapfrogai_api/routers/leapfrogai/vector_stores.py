@@ -1,7 +1,6 @@
 """LeapfrogAI endpoints for RAG."""
 
 from fastapi import APIRouter
-from postgrest.base_request_builder import SingleAPIResponse
 from leapfrogai_api.backend.rag.query import QueryService
 from leapfrogai_api.typedef.vectorstores import SearchResponse
 from leapfrogai_api.routers.supabase_session import Session
@@ -31,10 +30,8 @@ async def search(
         SearchResponse: The search response from the vector store.
     """
     query_service = QueryService(db=session)
-    result: SingleAPIResponse[SearchResponse] = await query_service.query_rag(
+    return await query_service.query_rag(
         query=query,
         vector_store_id=vector_store_id,
         k=k,
     )
-
-    return SearchResponse(data=result.data)

@@ -27,12 +27,12 @@ class QueryService:
         Query the Vector Store.
 
         Args:
-            query (str): The query string.
+            query (str): The input query string.
             vector_store_id (str): The ID of the vector store.
             k (int, optional): The number of results to retrieve. Defaults to 5.
 
         Returns:
-            dict: The response from the RAG model.
+            SearchResponse: The search response from the vector store.
         """
 
         # 1. Embed query

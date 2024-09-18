@@ -4,8 +4,7 @@ from pydantic import BaseModel
 from supabase import AClient as AsyncClient
 from leapfrogai_api.data.crud_base import get_user_id
 import ast
-from leapfrogai_api.typedef.vectorstores import SearchResponse
-from postgrest.base_request_builder import SingleAPIResponse
+from leapfrogai_api.typedef.vectorstores import SearchItem, SearchResponse
 
 
 class Vector(BaseModel):
@@ -91,11 +90,13 @@ class CRUDVectorContent:
             "user_id": user_id,
         }
 
-        response: SingleAPIResponse[SearchResponse] = await self.db.rpc(
-            "match_vectors", params
-        ).execute()
+        result = await self.db.rpc("match_vectors", params).execute()
 
-        return response.data
+        try:
+            response = result.data
+            return SearchResponse(data=[SearchItem(**item) for item in response])
+        except Exception as e:
+            raise e
 
     @staticmethod
     def string_to_float_list(s: str) -> list[float]:
