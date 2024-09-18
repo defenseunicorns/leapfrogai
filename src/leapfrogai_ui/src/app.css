@@ -77,6 +77,11 @@
   .z-max-1 {
     z-index: 9000;
   }
+
+  /* prevents "random" shrinking of sidebar with some messages */
+  .full-width-minus-sidebar {
+    max-width: calc(100% - var(--sidebar-width));
+  }
 }
 
 @layer components {

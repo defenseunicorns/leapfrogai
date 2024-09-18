@@ -7,7 +7,10 @@
 
   let signOutForm: HTMLFormElement;
 
-  $: innerWidth = 0;
+  let innerWidth: number;
+  $: innerWidth;
+
+  const threadId = $page.params.thread_id;
 
   const handleLogOut = (e) => {
     e.preventDefault();
@@ -26,7 +29,7 @@
         : '/chat'}
       data-testid="logo-link"
     >
-      {#if innerWidth < 1024 && $page.url.pathname === '/chat'}
+      {#if innerWidth !== undefined && innerWidth < 1024 && ($page.url.pathname === '/chat' || $page.url.pathname === `/chat/${threadId}`)}
         <Button
           outline={true}
           class="mr-2 !p-2"
