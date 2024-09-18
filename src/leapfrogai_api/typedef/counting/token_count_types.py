@@ -1,5 +1,6 @@
 from pydantic import BaseModel, Field
 
+
 class TokenCountResponse(BaseModel):
     """Response object for token count."""
 
