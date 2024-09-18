@@ -72,8 +72,8 @@ jobs:
           sudo systemctl restart docker
 
           # Unload NVIDIA mods
-          sudo chmod +x kill_nvidia.sh
-          sudo ./kill_nvidia.sh
+          sudo chmod +x reloadNvidiaDrivers.sh
+          sudo ./reloadNvidiaDrivers.sh
 
           # Reload NVIDIA again
           nvidia-smi
