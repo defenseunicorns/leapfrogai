@@ -66,7 +66,8 @@ def call_whisper(
     data = bytearray()
     prompt = ""
     temperature = 0.0
-    inputLanguage = "en"
+    # By default, automatically detect the language
+    inputLanguage = ""
 
     for request in request_iterator:
         if (
