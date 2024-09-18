@@ -72,8 +72,8 @@ jobs:
           sudo systemctl restart docker
 
           # Unload NVIDIA mods
-          sudo chmod +x reloadNvidiaDrivers.sh
-          sudo ./reloadNvidiaDrivers.sh
+          sudo chmod +x .github/scripts/reloadNvidiaDrivers.sh
+          sudo .github/scripts/reloadNvidiaDrivers.sh
 
           # Reload NVIDIA again
           nvidia-smi
@@ -86,7 +86,7 @@ jobs:
 
       - name: Setup UDS Workaround
         run: |
-          sudo chown $(whoami) /usr/local/bin/k3d
+          sudo chown $(whoami) /usr/local/bin/
 
       - name: Setup UDS Environment
         uses: defenseunicorns/uds-common/.github/actions/setup@822dac4452e6815aadcf09f487406ff258756a0c # v0.12.0
@@ -100,7 +100,8 @@ jobs:
       - name: Create UDS Cluster
         shell: bash
         run: |
-          UDS_CONFIG=.github/config/uds-config.yaml make create-uds-gpu-cluster
+          # UDS_CONFIG=.github/config/uds-config.yaml make create-uds-gpu-cluster
+          k3d cluster create
 
       - name: Test UDS GPU Cluster
         run: |
