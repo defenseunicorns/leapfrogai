@@ -71,10 +71,10 @@ jobs:
           sudo systemctl restart docker
 
           # Test Docker GPU access and capability
-          docker info | grep nvidia
-          docker run --rm --runtime=nvidia --gpus all ubuntu nvidia-smi
-          docker run --rm --runtime=nvidia --gpus all nvcr.io/nvidia/k8s/cuda-sample:vectoradd-cuda11.7.1-ubuntu20.04
-          docker run --rm --runtime=nvidia --gpus all nvcr.io/nvidia/k8s/cuda-sample:devicequery-cuda11.7.1-ubuntu20.04
+          sudo docker info | grep nvidia
+          sudo docker run --rm --runtime=nvidia --gpus all ubuntu nvidia-smi
+          sudo docker run --rm --runtime=nvidia --gpus all nvcr.io/nvidia/k8s/cuda-sample:vectoradd-cuda11.7.1-ubuntu20.04
+          sudo docker run --rm --runtime=nvidia --gpus all nvcr.io/nvidia/k8s/cuda-sample:devicequery-cuda11.7.1-ubuntu20.04
 
       - name: Setup UDS Environment
         uses: defenseunicorns/uds-common/.github/actions/setup@822dac4452e6815aadcf09f487406ff258756a0c # v0.14.0
@@ -89,35 +89,38 @@ jobs:
         env:
           UDS_VERSION: v0.14.0
         run: |
+          sudo su
           # Use root permissions to allow installation of UDS CLI binary
-          sudo wget -O uds https://github.com/defenseunicorns/uds-cli/releases/download/${{ env.UDS_VERSION }}/uds-cli_${{ env.UDS_VERSION }}_Linux_amd64 && \
-          sudo chmod +x uds && \
-          sudo chown $(whoami) uds
+          wget -O uds https://github.com/defenseunicorns/uds-cli/releases/download/${{ env.UDS_VERSION }}/uds-cli_${{ env.UDS_VERSION }}_Linux_amd64 && \
+          chmod +x uds && \
+          chown $(whoami) uds
 
           # # Change ownership of required binaries to current runner user
           # sudo mv uds /usr/local/bin/
           # sudo chown $(whoami) /usr/local/bin/k3d
 
           # Check runner user access to the binaries
-          sudo uds version
-          sudo k3d version
+          uds version
+          k3d version
 
       - name: Create UDS Cluster
         shell: bash
         run: |
-          sudo su && UDS_CONFIG=.github/config/uds-config.yaml DOCKER_FLAGS="--build-arg CUDA_TAG=12.1.0-base-ubuntu22.04" make create-uds-gpu-cluster
+          sudo su
+          UDS_CONFIG=.github/config/uds-config.yaml DOCKER_FLAGS="--build-arg CUDA_TAG=12.1.0-base-ubuntu22.04" make create-uds-gpu-cluster
 
       - name: Test UDS GPU Cluster
         run: |
+          sudo su
           # Use a CUDA test pod in-cluster to ensure GPUs can be scheduled
-          sudo uds zarf tools kubectl apply -f packages/k3d-gpu/test/cuda-vector-add.yaml
+          uds zarf tools kubectl apply -f packages/k3d-gpu/test/cuda-vector-add.yaml
 
-          while [[ $(sudo uds zarf tools kubectl get pod -l app=gpu-pod --namespace=default -o jsonpath='{.items[*].status.phase}') != "Succeeded" ]]; do
+          while [[ $(sudo su && uds zarf tools kubectl get pod -l app=gpu-pod --namespace=default -o jsonpath='{.items[*].status.phase}') != "Succeeded" ]]; do
               echo "Waiting for pod to complete..."
               sleep 5
           done
 
-          sudo uds zarf tools kubectl logs -l app=gpu-pod --namespace=default
+          uds zarf tools kubectl logs -l app=gpu-pod --namespace=default
 
       # - name: Setup API and Supabase
       #   uses: ./.github/actions/lfai-core
