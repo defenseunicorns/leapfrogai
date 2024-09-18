@@ -63,19 +63,16 @@ jobs:
       - name: Setup NVIDIA Dependencies
         run: |
           # Check the host, NVIDIA driver and container toolkit versions
+          sudo su
+
           whoami
           lsb_release -a
           nvidia-smi
           nvidia-ctk --version
 
           # Configure Docker with the NVIDIA Container Toolkit
-          sudo nvidia-ctk runtime configure --runtime=docker --set-as-default
-          sudo systemctl restart docker
-
-          # Reload NVIDIA mods
-          sudo chmod +x .github/scripts/reloadNvidiaDrivers.sh
-          sudo .github/scripts/reloadNvidiaDrivers.sh
-          nvidia-smi
+          nvidia-ctk runtime configure --runtime=docker --set-as-default
+          systemctl restart docker
 
           # Test Docker GPU access and capability
           docker info | grep nvidia
@@ -96,13 +93,11 @@ jobs:
           udsCliVersion: 0.14.0
         continue-on-error: true # see next step for permissions issues workarounds
 
-      - name: Setup UDS Workaround
-        run: |
-          sudo chown $(whoami) /usr/local/bin/k3d
-
       - name: Create UDS Cluster
         shell: bash
         run: |
+          sudo su
+
           # UDS_CONFIG=.github/config/uds-config.yaml make create-uds-gpu-cluster
           cd packages/k3d-gpu && docker build \
             --platform linux/amd64 \
@@ -120,8 +115,8 @@ jobs:
 
       - name: Test UDS GPU Cluster
         run: |
-          which -a k3d
-          sudo chown $(whoami) ~/.kube/config
+          sudo su
+
           # Apply the tests in-cluster to ensure GPUs can be scheduled
           uds zarf tools kubectl describe nodes
           sleep 20
