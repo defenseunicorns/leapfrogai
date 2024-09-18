@@ -30,7 +30,6 @@ from leapfrogai_api.typedef.embeddings import (
 )
 from leapfrogai_api.typedef.counting import (
     TokenCountResponse,
-    TokenCountRequest,
 )
 
 
