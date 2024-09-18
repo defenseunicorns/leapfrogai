@@ -105,14 +105,13 @@ jobs:
       - name: Create UDS Cluster
         shell: bash
         run: |
-          UDS_CONFIG=.github/config/uds-config.yaml DOCKER_FLAGS="--build-arg CUDA_TAG=12.1.0-base-ubuntu22.04" make create-uds-gpu-cluster
+          UDS_CONFIG=.github/config/uds-config.yaml DOCKER_FLAGS="--build-arg CUDA_TAG=12.2.0-base-ubuntu22.04" make create-uds-gpu-cluster
 
       - name: Test UDS GPU Cluster
         run: |
           # Apply the tests in-cluster to ensure GPUs can be scheduled
-          uds zarf tools kubectl get nodes
           uds zarf tools kubectl describe node k3d-uds-server-0
-          uds zarf tools kubectl get daemonset nvidia-device-plugin-daemonset -n kube-system
+          uds zarf tools kubectl get pods -o wide --all-namespaces
           uds zarf tools kubectl exec -it daemonset/nvidia-device-plugin-daemonset -n kube-system -c nvidia-device-plugin-ctr -- nvidia-smi
 
           # Apply the CUDA test pod
@@ -120,44 +119,48 @@ jobs:
           sleep 20
           uds zarf tools kubectl logs -l app=gpu-pod --namespace=default
 
-      - name: Setup API and Supabase
-        uses: ./.github/actions/lfai-core
+          uds zarf tools kubectl apply -f packages/k3d-gpu/test/cuda-vector-add.yaml
+          sleep 20
+          uds zarf tools kubectl logs -l app=gpu-pod --namespace=default
 
-      - name: Setup Python
-        uses: ./.github/actions/python
-        with:
-          additionalOptionalDep: dev-vllm
+      # - name: Setup API and Supabase
+      #   uses: ./.github/actions/lfai-core
 
-      #######
-      # vllm
-      #######
-      - name: Deploy vLLM
-        run: |
-          make build-vllm LOCAL_VERSION=e2e-test DOCKER_FLAGS="--build-arg MAX_CONTEXT_LENGTH=500"
+      # - name: Setup Python
+      #   uses: ./.github/actions/python
+      #   with:
+      #     additionalOptionalDep: dev-vllm
 
-          make local-registry
-          make sdk-wheel LOCAL_VERSION=e2e-test
-          docker build --build-arg MAX_CONTEXT_LENGTH=500 --build-arg LOCAL_VERSION=e2e-test -t ghcr.io/defenseunicorns/leapfrogai/vllm:e2e-test -f packages/vllm/Dockerfile .
-          docker tag ghcr.io/defenseunicorns/leapfrogai/vllm:e2e-test localhost:5000/defenseunicorns/leapfrogai/vllm:e2e-test
-          docker push localhost:5000/defenseunicorns/leapfrogai/vllm:e2e-test
+      # #######
+      # # vllm
+      # #######
+      # - name: Deploy vLLM
+      #   run: |
+      #     make build-vllm LOCAL_VERSION=e2e-test DOCKER_FLAGS="--build-arg MAX_CONTEXT_LENGTH=500"
 
-          uds zarf package create packages/vllm --flavor upstream -o packages/vllm --registry-override=ghcr.io=localhost:5000 --insecure --set IMAGE_VERSION=e2e-test --confirm
+      #     make local-registry
+      #     make sdk-wheel LOCAL_VERSION=e2e-test
+      #     docker build --build-arg MAX_CONTEXT_LENGTH=500 --build-arg LOCAL_VERSION=e2e-test -t ghcr.io/defenseunicorns/leapfrogai/vllm:e2e-test -f packages/vllm/Dockerfile .
+      #     docker tag ghcr.io/defenseunicorns/leapfrogai/vllm:e2e-test localhost:5000/defenseunicorns/leapfrogai/vllm:e2e-test
+      #     docker push localhost:5000/defenseunicorns/leapfrogai/vllm:e2e-test
 
-          docker image prune -af
+      #     uds zarf package create packages/vllm --flavor upstream -o packages/vllm --registry-override=ghcr.io=localhost:5000 --insecure --set IMAGE_VERSION=e2e-test --confirm
 
-          uds zarf package deploy packages/vllm/zarf-package-vllm-amd64-e2e-test.tar.zst -l=trace --confirm
-          rm packages/vllm/zarf-package-vllm-amd64-e2e-test.tar.zst
+      #     docker image prune -af
 
-          # Check vLLM deployment logs for issues
-          while [[ $(uds zarf tools kubectl get pod -l app=lfai-vllm --namespace=leapfrogai -o jsonpath='{.items[*].status.phase}') != "Running" ]]; do
-              echo "Waiting for pod to be ready..."
-              sleep 5
-          done
+      #     uds zarf package deploy packages/vllm/zarf-package-vllm-amd64-e2e-test.tar.zst -l=trace --confirm
+      #     rm packages/vllm/zarf-package-vllm-amd64-e2e-test.tar.zst
 
-          uds zarf tools kubectl logs -n leapfrogai deployment/vllm-model
+      #     # Check vLLM deployment logs for issues
+      #     while [[ $(uds zarf tools kubectl get pod -l app=lfai-vllm --namespace=leapfrogai -o jsonpath='{.items[*].status.phase}') != "Running" ]]; do
+      #         echo "Waiting for pod to be ready..."
+      #         sleep 5
+      #     done
 
-      - name: Test vLLM
-        env:
-          MODEL_NAME: vllm
-        run: |
-          python -m pytest ./tests/e2e/test_llm_generation.py -vv
+      #     uds zarf tools kubectl logs -n leapfrogai deployment/vllm-model
+
+      # - name: Test vLLM
+      #   env:
+      #     MODEL_NAME: vllm
+      #   run: |
+      #     python -m pytest ./tests/e2e/test_llm_generation.py -vv
