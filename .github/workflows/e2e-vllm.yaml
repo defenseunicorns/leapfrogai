@@ -62,7 +62,8 @@ jobs:
 
       - name: Setup NVIDIA Dependencies
         run: |
-          # Check the NVIDIA driver and container toolkit versions
+          # Check the host, NVIDIA driver and container toolkit versions
+          lsb_release -a
           nvidia-smi
           nvidia-ctk --version
 
