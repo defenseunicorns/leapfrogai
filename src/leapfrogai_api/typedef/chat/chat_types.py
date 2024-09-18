@@ -31,6 +31,16 @@ class ChatMessage(BaseModel):
         ],
     )
 
+    def content_as_str(self) -> str:
+        """If content is a string, return it. Otherwise, concatenate the text fields of the list of TextContentBlockParam objects.
+
+        Returns:
+            str: content as a string
+        """
+        if isinstance(self.content, str):
+            return self.content
+        return "".join([(part.get("text") or "") for part in self.content])
+
 
 class ChatDelta(BaseModel):
     """Delta object for chat completion."""

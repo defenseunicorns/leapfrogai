@@ -85,7 +85,9 @@ async def create_thread_and_run(
 
     try:
         return await Composer().generate_response(
-            request=request,
+            request=RunCreateParamsRequest(
+                **request.__dict__,
+            ),
             new_thread=new_thread,
             new_run=new_run,
             session=session,

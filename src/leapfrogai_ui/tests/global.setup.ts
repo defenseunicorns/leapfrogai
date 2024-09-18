@@ -2,10 +2,11 @@ import { expect, test as setup } from './fixtures';
 import * as OTPAuth from 'otpauth';
 import { delay } from 'msw';
 import type { Page } from '@playwright/test';
-
-const authFile = 'playwright/.auth/user.json';
+import { supabasePassword, supabaseUsername } from './constants';
 
 const doSupabaseLogin = async (page: Page) => {
+  // The fake keycloak user does not have a password stored in supabase, so login with that user will not work
+  // we create a separate user when keycloak is disabled (or use existing one)
   await page.goto('/'); // go to the home page
   await delay(2000); // allow page to fully hydrate
   // when running in Github CI, create a new account because we don't have seed migrations
@@ -13,14 +14,9 @@ const doSupabaseLogin = async (page: Page) => {
   const passwordField = page.getByTestId('password-input');
 
   await emailField.click();
-  await emailField.fill(process.env.USERNAME!);
+  await emailField.fill(supabaseUsername);
   await passwordField.click();
-  await passwordField.fill(process.env.PASSWORD!);
-
-  const emailText = await emailField.innerText();
-  const passwordText = await passwordField.innerText();
-  if (emailText !== process.env.USERNAME!) await emailField.fill(process.env.USERNAME!);
-  if (passwordText !== process.env.PASSWORD!) await passwordField.fill(process.env.PASSWORD!);
+  await passwordField.fill(supabasePassword);
 
   await page.getByTestId('submit-btn').click();
 
@@ -30,7 +26,6 @@ const doSupabaseLogin = async (page: Page) => {
     await page.getByTestId('toggle-submit-btn').click();
     await page.getByTestId('submit-btn').click();
   }
-  // }
 };
 
 const doKeycloakLogin = async (page: Page) => {
@@ -107,7 +102,7 @@ setup('authenticate', async ({ page }) => {
     // will invalidate the session and cause other tests to fail
     await logout(page);
 
-    if (process.env.PUBLIC_DISABLE_KEYCLOAK === 'false') await delay(31000); // prevent logging back in too quickly and getting denied
+    if (process.env.PUBLIC_DISABLE_KEYCLOAK !== 'true') await delay(31000); // prevent logging back in too quickly and getting denied
     // Log back in to begin rest of tests
     await login(page);
 
@@ -119,5 +114,5 @@ setup('authenticate', async ({ page }) => {
 
   // End of authentication steps.
 
-  await page.context().storageState({ path: authFile });
+  await page.context().storageState({ path: 'playwright/.auth/user.json' });
 });

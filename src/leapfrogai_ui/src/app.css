@@ -78,13 +78,9 @@
     z-index: 9000;
   }
 
-  /*Note - tailwind has a truncate class that sets these properties, but for an unknown reason, it was
-   not working.
-   */
-  .truncate {
-    overflow: hidden;
-    text-overflow: ellipsis;
-    white-space: nowrap;
+  /* prevents "random" shrinking of sidebar with some messages */
+  .full-width-minus-sidebar {
+    max-width: calc(100% - var(--sidebar-width));
   }
 }
 

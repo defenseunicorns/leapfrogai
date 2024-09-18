@@ -15,6 +15,7 @@
   - [UI](#ui)
   - [Backends](#backends)
     - [Repeater](#repeater)
+  - [Evaluations](#evaluations)
 - [Usage](#usage)
 - [Local Development](#local-development)
 - [Contributing](#contributing)
@@ -58,6 +59,7 @@ The LeapfrogAI repository follows a monorepo structure based around an [API](#ap
 leapfrogai/
 ├── src/
 │   ├── leapfrogai_api/   # source code for the API
+│   ├── leapfrogai_evals/ # source code for the LeapfrogAI evaluation framework
 │   ├── leapfrogai_sdk/   # source code for the SDK
 │   └── leapfrogai_ui/    # source code for the UI
 ├── packages/
@@ -114,6 +116,10 @@ LeapfrogAI provides several backends for a variety of use cases. Below is the ba
 #### Repeater
 
 The [repeater](packages/repeater/) "model" is a basic "backend" that parrots all inputs it receives back to the user. It is built out the same way all the actual backends are and it is primarily used for testing the API.
+
+### Evaluations
+
+LeapfrogAI comes with an evaluation framework that is integrated with [DeepEval](https://docs.confident-ai.com/). For more information on running and utilizing evaluations in LeapfrogAI, please see the [Evals README](/src/leapfrogai_evals/README.md).
 
 ### Flavors
 

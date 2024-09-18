@@ -37,16 +37,9 @@ async def chat_complete(
 
     chat_items: list[lfai.ChatItem] = []
     for m in req.messages:
-        content: str = ""
-        if isinstance(m.content, str):
-            content = m.content
-        else:
-            message_content: str = ""
-            for part in m.content:
-                message_content += part.get("text")
-            content = message_content
-
-        chat_items.append(lfai.ChatItem(role=grpc_chat_role(m.role), content=content))
+        chat_items.append(
+            lfai.ChatItem(role=grpc_chat_role(m.role), content=m.content_as_str())
+        )
     request = lfai.ChatCompletionRequest(
         chat_items=chat_items,
         max_new_tokens=req.max_tokens,
@@ -74,7 +67,9 @@ async def chat_complete_stream_raw(
 
     chat_items: list[lfai.ChatItem] = []
     for m in req.messages:
-        chat_items.append(lfai.ChatItem(role=grpc_chat_role(m.role), content=m.content))
+        chat_items.append(
+            lfai.ChatItem(role=grpc_chat_role(m.role), content=m.content_as_str())
+        )
     request = lfai.ChatCompletionRequest(
         chat_items=chat_items,
         max_new_tokens=req.max_tokens,

@@ -13,7 +13,7 @@ runs:
   using: composite
   steps:
     - name: Setup UDS Environment
-      uses: defenseunicorns/uds-common/.github/actions/setup@822dac4452e6815aadcf09f487406ff258756a0c # v0.14.0
+      uses: defenseunicorns/uds-common/.github/actions/setup@822dac4452e6815aadcf09f487406ff258756a0c # v0.12.0
       with:
         registry1Username: ${{ inputs.registry1Username }}
         registry1Password: ${{ inputs.registry1Password }}

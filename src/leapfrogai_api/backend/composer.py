@@ -1,5 +1,4 @@
 from __future__ import annotations
-
 import time
 import uuid
 from typing import cast, AsyncGenerator, Any
@@ -24,7 +23,6 @@ from openai.types.beta.threads import (
     Message,
     TextContentBlock,
 )
-from postgrest.base_request_builder import SingleAPIResponse
 from pydantic import BaseModel
 from starlette.responses import StreamingResponse
 
@@ -152,13 +150,10 @@ class Composer(BaseModel):
             vector_store_ids: list[str] = cast(list[str], file_search.vector_store_ids)
 
             for vector_store_id in vector_store_ids:
-                rag_results_raw: SingleAPIResponse[
-                    SearchResponse
-                ] = await query_service.query_rag(
-                    query=query_message.content,
+                rag_responses = await query_service.query_rag(
+                    query=query_message.content_as_str(),
                     vector_store_id=vector_store_id,
-                )  # TODO: We get the relevant chunk data here, but then we don't use it. We want to add the id to the metadata of the message
-                rag_responses = rag_results_raw.data
+                )
 
                 # Insert the RAG response messages just before the user's query
                 for rag_response in rag_responses.data:
@@ -168,7 +163,7 @@ class Composer(BaseModel):
             chat_messages.insert(
                 len(chat_messages) - 1,  # Insert right before the user message
                 ChatMessage(role="user", content=rag_message),
-            )  # TODO: Should this go in user or something else like function?
+            )
 
         return chat_messages, rag_responses
 
@@ -222,7 +217,7 @@ class Composer(BaseModel):
         choice: ChatChoice = cast(ChatChoice, chat_response.choices[0])
 
         message: Message = from_text_to_message(
-            text=choice.message.content, search_responses=rag_responses
+            text=choice.message.content_as_str(), search_responses=rag_responses
         )
 
         create_message_request = CreateMessageRequest(
@@ -268,7 +263,6 @@ class Composer(BaseModel):
             else:
                 tool_resources = None
 
-        # TODO: Fix this when I break it
         chat_messages, rag_responses = await self.create_chat_messages(
             request, session, thread, additional_instructions, tool_resources
         )

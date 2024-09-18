@@ -54,7 +54,7 @@ class RunCreateParamsRequest(RunCreateParamsRequestBase):
     stream: bool | None = Field(
         default=None,
         description="If set to true, the response will be streamed as it's generated.",
-        example=False,
+        examples=[False],
     )
 
     async def create_additional_messages(self, session: Session, thread_id: str):
