@@ -14,6 +14,7 @@ class ConfigOptions(BaseConfig):
     )
     quantization: Literal[
         "aqlm",
+        "bitsandbytes",
         "awq",
         "deepspeedfp",
         "fp8",
@@ -30,6 +31,11 @@ class ConfigOptions(BaseConfig):
         description="Quantization type of the model"
         "Force GPTQ instead of GPTQ_Marlin by explicitly providing `gptq` as value.",
         examples=["awq", "fp8", "gptq_marlin", "gptq", "squeezellm", "None"],
+    )
+    load_format: Literal["auto", "safetensors", "npz", "pt", "bitsandbytes"] = Field(
+        title="quantization",
+        description="Load format for the type model and files",
+        examples=["auto", "safetensors", "npz", "pt", "bitsandbytes"],
     )
     enforce_eager: bool = Field(
         title="Enable Eager Mode",

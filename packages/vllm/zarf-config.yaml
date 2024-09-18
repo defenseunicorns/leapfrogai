@@ -19,6 +19,7 @@ package:
       worker_use_ray: "True"
       engine_use_ray: "True"
       quantization: "None"
+      load_format: "auto"
       # LeapfrogAI SDK runtime configuration (usually influenced by config.yaml in development)
       max_context_length: "32768"
       stop_tokens: "</s>, <|im_end|>, <|endoftext|>"

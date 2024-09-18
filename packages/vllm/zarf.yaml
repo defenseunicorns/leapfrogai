@@ -44,6 +44,8 @@ variables:
     pattern: "^(True|False)$"
   - name: QUANTIZATION
     description: "If None, allows vLLM to automatically detect via model files and configuration"
+  - name: LOAD_FORMAT
+    description: "If auto, allows vLLM to automatically detect via model files and configuration"
   # LeapfrogAI SDK runtime configuration (usually influenced by config.yaml in development)
   - name: MAX_CONTEXT_LENGTH
     description: "The maximum number of tokens the model can process in a single input before the inferencing engine's overflow strategy is used"

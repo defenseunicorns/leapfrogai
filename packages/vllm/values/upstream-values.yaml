@@ -30,6 +30,7 @@ vllmConfig:
   workerUseRay: "###ZARF_VAR_WORKER_USE_RAY###"
   engineUseRay: "###ZARF_VAR_ENGINE_USE_RAY###"
   quantization: "###ZARF_VAR_QUANTIZATION###"
+  loadFormat: "###ZARF_VAR_LOAD_FORMAT###"
 
 env:
   - name: LFAI_LOG_LEVEL

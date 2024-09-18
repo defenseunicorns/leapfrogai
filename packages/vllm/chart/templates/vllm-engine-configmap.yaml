@@ -11,3 +11,4 @@ data:
   VLLM_WORKER_USE_RAY: "{{ .Values.vllmConfig.workerUseRay }}"
   VLLM_ENGINE_USE_RAY: "{{ .Values.vllmConfig.engineUseRay }}"
   VLLM_QUANTIZATION: "{{ .Values.vllmConfig.quantization }}"
+  VLLM_LOAD_FORMAT: "{{ .Values.vllmConfig.loadFormat }}"

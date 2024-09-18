@@ -102,6 +102,7 @@ class Model:
             # Taken from the vLLM-specific configuration
             enforce_eager=AppConfig().backend_options.enforce_eager,
             quantization=quantization,
+            load_format=AppConfig().backend_options.load_format,
             tensor_parallel_size=AppConfig().backend_options.tensor_parallel_size,
             engine_use_ray=AppConfig().backend_options.engine_use_ray,
             worker_use_ray=AppConfig().backend_options.worker_use_ray,

@@ -38,6 +38,7 @@ vllmConfig:
   workerUseRay: "True"
   engineUseRay: "True"
   quantization: "None"
+  loadFormat: "auto"
 
 env:
   - name: LFAI_LOG_LEVEL
