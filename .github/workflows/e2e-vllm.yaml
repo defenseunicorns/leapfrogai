@@ -113,85 +113,51 @@ jobs:
           uds zarf tools kubectl get nodes
           uds zarf tools kubectl describe node k3d-uds-server-0
           uds zarf tools kubectl get daemonset nvidia-device-plugin-daemonset -n kube-system
+          uds zarf tools kubectl exec -it daemonset/nvidia-device-plugin-daemonset -n kube-system -c nvidia-device-plugin-ctr -- nvidia-smi
 
           # Apply the CUDA test pod
           uds zarf tools kubectl apply -f packages/k3d-gpu/test/cuda-device-query.yaml
+          sleep 20
+          uds zarf tools kubectl logs -l app=gpu-pod --namespace=default
 
-          # Set a max number of retries
-          max_retries=5
-          retry_count=0
+      - name: Setup API and Supabase
+        uses: ./.github/actions/lfai-core
 
-          # While loop to check the pod status (retry max 5 times)
-          while [[ $(uds zarf tools kubectl get pod -l app=gpu-pod --namespace=default -o jsonpath='{.items[*].status.phase}') != "Succeeded" ]]; do
-              echo "Waiting for pod to complete..."
+      - name: Setup Python
+        uses: ./.github/actions/python
+        with:
+          additionalOptionalDep: dev-vllm
 
-              # Display pod details
-              echo "Fetching pod details..."
-              uds zarf tools kubectl describe pod -l app=gpu-pod --namespace=default
+      #######
+      # vllm
+      #######
+      - name: Deploy vLLM
+        run: |
+          make build-vllm LOCAL_VERSION=e2e-test DOCKER_FLAGS="--build-arg MAX_CONTEXT_LENGTH=500"
 
+          make local-registry
+          make sdk-wheel LOCAL_VERSION=e2e-test
+          docker build --build-arg MAX_CONTEXT_LENGTH=500 --build-arg LOCAL_VERSION=e2e-test -t ghcr.io/defenseunicorns/leapfrogai/vllm:e2e-test -f packages/vllm/Dockerfile .
+          docker tag ghcr.io/defenseunicorns/leapfrogai/vllm:e2e-test localhost:5000/defenseunicorns/leapfrogai/vllm:e2e-test
+          docker push localhost:5000/defenseunicorns/leapfrogai/vllm:e2e-test
+
+          uds zarf package create packages/vllm --flavor upstream -o packages/vllm --registry-override=ghcr.io=localhost:5000 --insecure --set IMAGE_VERSION=e2e-test --confirm
+
+          docker image prune -af
+
+          uds zarf package deploy packages/vllm/zarf-package-vllm-amd64-e2e-test.tar.zst -l=trace --confirm
+          rm packages/vllm/zarf-package-vllm-amd64-e2e-test.tar.zst
+
+          # Check vLLM deployment logs for issues
+          while [[ $(uds zarf tools kubectl get pod -l app=lfai-vllm --namespace=leapfrogai -o jsonpath='{.items[*].status.phase}') != "Running" ]]; do
+              echo "Waiting for pod to be ready..."
               sleep 5
-              ((retry_count++))
-
-              # Break the loop after 5 retries
-              if [[ $retry_count -ge $max_retries ]]; then
-                  echo "Max retries reached. Fetching pod logs and failure reason..."
-
-                  # Fetch pod logs
-                  uds zarf tools kubectl logs -l app=gpu-pod --namespace=default
-
-                  # Fetch the reason for failure
-                  echo "Fetching failure reason..."
-                  uds zarf tools kubectl get pod -l app=gpu-pod --namespace=default -o jsonpath='{.items[*].status.containerStatuses[*].state.terminated.reason}'
-
-                  break
-              fi
           done
 
-          # If pod succeeded, display logs
-          if [[ $(uds zarf tools kubectl get pod -l app=gpu-pod --namespace=default -o jsonpath='{.items[*].status.phase}') == "Succeeded" ]]; then
-              echo "Pod completed successfully!"
-              uds zarf tools kubectl logs -l app=gpu-pod --namespace=default
-          fi
+          uds zarf tools kubectl logs -n leapfrogai deployment/vllm-model
 
-
-      # - name: Setup API and Supabase
-      #   uses: ./.github/actions/lfai-core
-
-      # - name: Setup Python
-      #   uses: ./.github/actions/python
-      #   with:
-      #     additionalOptionalDep: dev-vllm
-
-      # #######
-      # # vllm
-      # #######
-      # - name: Deploy vLLM
-      #   run: |
-      #     make build-vllm LOCAL_VERSION=e2e-test DOCKER_FLAGS="--build-arg MAX_CONTEXT_LENGTH=500"
-
-      #     make local-registry
-      #     make sdk-wheel LOCAL_VERSION=e2e-test
-      #     docker build --build-arg MAX_CONTEXT_LENGTH=500 --build-arg LOCAL_VERSION=e2e-test -t ghcr.io/defenseunicorns/leapfrogai/vllm:e2e-test -f packages/vllm/Dockerfile .
-      #     docker tag ghcr.io/defenseunicorns/leapfrogai/vllm:e2e-test localhost:5000/defenseunicorns/leapfrogai/vllm:e2e-test
-      #     docker push localhost:5000/defenseunicorns/leapfrogai/vllm:e2e-test
-
-      #     uds zarf package create packages/vllm --flavor upstream -o packages/vllm --registry-override=ghcr.io=localhost:5000 --insecure --set IMAGE_VERSION=e2e-test --confirm
-
-      #     docker image prune -af
-
-      #     uds zarf package deploy packages/vllm/zarf-package-vllm-amd64-e2e-test.tar.zst -l=trace --confirm
-      #     rm packages/vllm/zarf-package-vllm-amd64-e2e-test.tar.zst
-
-      #     # Check vLLM deployment logs for issues
-      #     while [[ $(uds zarf tools kubectl get pod -l app=lfai-vllm --namespace=leapfrogai -o jsonpath='{.items[*].status.phase}') != "Running" ]]; do
-      #         echo "Waiting for pod to be ready..."
-      #         sleep 5
-      #     done
-
-      #     uds zarf tools kubectl logs -n leapfrogai deployment/vllm-model
-
-      # - name: Test vLLM
-      #   env:
-      #     MODEL_NAME: vllm
-      #   run: |
-      #     python -m pytest ./tests/e2e/test_llm_generation.py -vv
+      - name: Test vLLM
+        env:
+          MODEL_NAME: vllm
+        run: |
+          python -m pytest ./tests/e2e/test_llm_generation.py -vv
