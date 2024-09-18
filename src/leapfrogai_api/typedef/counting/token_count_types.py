@@ -9,5 +9,13 @@ class TokenCountResponse(BaseModel):
 class TokenCountRequest(BaseModel):
     """Request object for token count."""
 
-    model: str = Field(..., description="The ID of the model to use for token count.")
-    text: str = Field(..., description="The text to count the tokens of.")
+    model: str = Field(
+        ...,
+        examples=["llama-cpp-python", "vllm"],
+        description="The ID of the model to use for token count.",
+    )
+    text: str = Field(
+        ...,
+        examples=["Once upon a time,"],
+        description="The text to count the tokens of.",
+    )
