@@ -14,7 +14,7 @@ const mockFile2: LFFile = new File([], 'test1.mp4', { type: 'audio/mp4' });
 mockFile1.id = '1';
 mockFile2.id = '2';
 
-const mockMetadata1: FileMetadata = {c
+const mockMetadata1: FileMetadata = {
   id: mockFile1.id,
   name: mockFile1.name,
   type: 'audio/mpeg',

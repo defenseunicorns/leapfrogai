@@ -1,6 +1,6 @@
 import { expect, test } from './fixtures';
 import { loadChatPage } from './helpers/navigationHelpers';
-import {createPDF, deleteFixtureFile, uploadFiles} from './helpers/fileHelpers';
+import { createPDF, deleteFixtureFile, uploadFiles } from './helpers/fileHelpers';
 import { deleteActiveThread } from './helpers/threadHelpers';
 import { faker } from '@faker-js/faker';
 

@@ -1,5 +1,11 @@
 <script lang="ts">
-  import { ACCEPTED_FILE_TYPES, MAX_NUM_FILES_UPLOAD } from '$constants';
+  import { env } from '$env/dynamic/public';
+  import {
+    ACCEPTED_FILE_TYPES,
+    APPROX_MAX_CHARACTERS,
+    FILE_UPLOAD_PROMPT,
+    MAX_NUM_FILES_UPLOAD
+  } from '$constants';
   import { PaperClipOutline } from 'flowbite-svelte-icons';
   import { v4 as uuidv4 } from 'uuid';
   import LFFileUploadBtn from '$components/LFFileUploadBtn.svelte';
@@ -16,6 +22,9 @@
   export let uploadingFiles;
   export let attachedFileMetadata;
   export let attachedFiles: LFFile[];
+
+  const ADJUSTED_MAX_CHARACTERS =
+    APPROX_MAX_CHARACTERS - Number(env.PUBLIC_MESSAGE_LENGTH_LIMIT) - FILE_UPLOAD_PROMPT.length - 2;
 
   let fileUploadBtnRef: HTMLInputElement;
 
@@ -91,7 +100,7 @@
         parsedFiles.push(...results);
 
         // If this file adds too much text (larger than allowed max), remove the text and set to error status
-        removeFilesUntilUnderLimit(parsedFiles);
+        removeFilesUntilUnderLimit(parsedFiles, ADJUSTED_MAX_CHARACTERS);
 
         attachedFileMetadata = parsedFiles;
       });

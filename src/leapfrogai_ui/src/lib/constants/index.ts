@@ -1,5 +1,4 @@
 import type { LFAssistant } from '$lib/types/assistants';
-import { env } from '$env/dynamic/public';
 
 export const MAX_LABEL_SIZE = 100;
 export const DEFAULT_ASSISTANT_TEMP = 0.2;
@@ -113,6 +112,3 @@ export const INVALID_AUDIO_FILE_TYPE_ERROR_TEXT = `Invalid file type, accepted t
 export const NO_SELECTED_ASSISTANT_ID = 'noSelectedAssistantId';
 
 export const FILE_UPLOAD_PROMPT = "The following are the user's files: ";
-
-export const ADJUSTED_MAX_CHARACTERS =
-  APPROX_MAX_CHARACTERS - Number(env.PUBLIC_MESSAGE_LENGTH_LIMIT) - FILE_UPLOAD_PROMPT.length - 2;

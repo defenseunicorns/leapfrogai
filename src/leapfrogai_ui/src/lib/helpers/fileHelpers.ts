@@ -1,6 +1,5 @@
 import type { FileMetadata, FileRow } from '$lib/types/files';
 import type { FileObject } from 'openai/resources/files';
-import { ADJUSTED_MAX_CHARACTERS } from '$constants';
 import { FILE_CONTEXT_TOO_LARGE_ERROR_MSG } from '$constants/errors';
 
 export const convertFileObjectToFileRows = (files: FileObject[]): FileRow[] =>
@@ -11,22 +10,30 @@ export const convertFileObjectToFileRows = (files: FileObject[]): FileRow[] =>
     status: 'hide'
   }));
 
-export const removeFilesUntilUnderLimit = (parsedFiles: FileMetadata[]) => {
+export const removeFilesUntilUnderLimit = (parsedFiles: FileMetadata[], max: number) => {
+  const numFiles = parsedFiles.length;
+  let numFilesReset = 0;
   let totalTextLength = parsedFiles.reduce((total, file) => total + JSON.stringify(file).length, 0);
-
-  // Sort the files in descending order based on their size
-  parsedFiles.sort((a, b) => JSON.stringify(b).length - JSON.stringify(a).length);
-
   // Remove the largest files until the total size is within the allowed limit
-  while (totalTextLength > ADJUSTED_MAX_CHARACTERS) {
-    const largestFile = parsedFiles[0]; // The largest file after sorting
+  while (totalTextLength > max) {
+    if (numFilesReset === numFiles) break;
+    let largestIndex = 0;
+    for (let i = 1; i < numFiles; i++) {
+      const item = JSON.stringify(parsedFiles[i]);
+      const largestItem = JSON.stringify(parsedFiles[largestIndex]);
+      if (item.length > largestItem.length) {
+        largestIndex = i;
+      }
+    }
+
     // remove the text and set to error status
-    parsedFiles[0] = {
-      ...parsedFiles[0],
+    parsedFiles[largestIndex] = {
+      ...parsedFiles[largestIndex],
       text: '',
       status: 'error',
       errorText: FILE_CONTEXT_TOO_LARGE_ERROR_MSG
     };
-    totalTextLength -= JSON.stringify(parsedFiles[0]).length; // recalculate the total size
+    numFilesReset += 1;
+    totalTextLength = parsedFiles.reduce((total, file) => total + JSON.stringify(file).length, 0); //recalculate total size
   }
 };
