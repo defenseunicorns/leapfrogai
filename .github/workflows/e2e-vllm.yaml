@@ -106,8 +106,8 @@ jobs:
       - name: Create UDS Cluster
         shell: bash
         run: |
-          UDS_CONFIG=.github/config/uds-config.yaml DOCKER_FLAGS="--build-arg CUDA_TAG=12.2.0-base-ubuntu22.04" make create-uds-gpu-cluster
-          uds zarf tools kubectl label nodes k3d-uds-server-0 nvidia.com/gpu=true
+          UDS_CONFIG=.github/config/uds-config.yaml make create-uds-gpu-cluster
+          uds zarf tools kubectl apply -k https://github.com/kubernetes-sigs/node-feature-discovery/deployment/overlays/default?ref=v0.16.4
 
       - name: Test UDS GPU Cluster
         run: |

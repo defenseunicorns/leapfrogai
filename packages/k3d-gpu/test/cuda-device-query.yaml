@@ -14,7 +14,7 @@ spec:
         limits:
           nvidia.com/gpu: "1"
           cpu: "1"
-          memory: 0.5Gi
+          memory: "0.5Gi"
   tolerations:
   - key: nvidia.com/gpu
     operator: Exists
