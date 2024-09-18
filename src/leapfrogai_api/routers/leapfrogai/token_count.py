@@ -7,7 +7,7 @@ from leapfrogai_api.typedef.counting import TokenCountRequest, TokenCountRespons
 from leapfrogai_api.backend.grpc_client import token_count as count_tokens
 import leapfrogai_sdk as lfai
 
-router = APIRouter()
+router = APIRouter(prefix="/leapfrogai/v1/token_count", tags=["leapfrogai/token_count"])
 
 
 @router.post("/token_count", response_model=TokenCountResponse)

@@ -9,7 +9,7 @@ from leapfrogai_sdk.counting import (
 
 
 class TokenCountServiceStub(object):
-    """Missing associated documentation comment in .proto file."""
+    """TokenCountService is the gRPC service for token counting"""
 
     def __init__(self, channel):
         """Constructor.
@@ -20,12 +20,12 @@ class TokenCountServiceStub(object):
         self.CountTokens = channel.unary_unary(
             "/counting.TokenCountService/CountTokens",
             request_serializer=leapfrogai__sdk_dot_counting_dot_counting__pb2.TokenCountRequest.SerializeToString,
-            response_deserializer=leapfrogai__sdk_dot_counting_dot_counting__pb2.TokenCountResult.FromString,
+            response_deserializer=leapfrogai__sdk_dot_counting_dot_counting__pb2.TokenCountResponse.FromString,
         )
 
 
 class TokenCountServiceServicer(object):
-    """Missing associated documentation comment in .proto file."""
+    """TokenCountService is the gRPC service for token counting"""
 
     def CountTokens(self, request, context):
         """Missing associated documentation comment in .proto file."""
@@ -39,7 +39,7 @@ def add_TokenCountServiceServicer_to_server(servicer, server):
         "CountTokens": grpc.unary_unary_rpc_method_handler(
             servicer.CountTokens,
             request_deserializer=leapfrogai__sdk_dot_counting_dot_counting__pb2.TokenCountRequest.FromString,
-            response_serializer=leapfrogai__sdk_dot_counting_dot_counting__pb2.TokenCountResult.SerializeToString,
+            response_serializer=leapfrogai__sdk_dot_counting_dot_counting__pb2.TokenCountResponse.SerializeToString,
         ),
     }
     generic_handler = grpc.method_handlers_generic_handler(
@@ -50,7 +50,7 @@ def add_TokenCountServiceServicer_to_server(servicer, server):
 
 # This class is part of an EXPERIMENTAL API.
 class TokenCountService(object):
-    """Missing associated documentation comment in .proto file."""
+    """TokenCountService is the gRPC service for token counting"""
 
     @staticmethod
     def CountTokens(
@@ -70,7 +70,7 @@ class TokenCountService(object):
             target,
             "/counting.TokenCountService/CountTokens",
             leapfrogai__sdk_dot_counting_dot_counting__pb2.TokenCountRequest.SerializeToString,
-            leapfrogai__sdk_dot_counting_dot_counting__pb2.TokenCountResult.FromString,
+            leapfrogai__sdk_dot_counting_dot_counting__pb2.TokenCountResponse.FromString,
             options,
             channel_credentials,
             insecure,
