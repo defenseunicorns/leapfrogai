@@ -45,7 +45,7 @@ spec:
           - name: NVIDIA_VISIBLE_DEVICES
             value: all
           - name: NVIDIA_DRIVER_CAPABILITIES
-            value: compute,utility
+            value: all
           - name: MPS_ROOT
             value: /run/nvidia/mps
         securityContext:
