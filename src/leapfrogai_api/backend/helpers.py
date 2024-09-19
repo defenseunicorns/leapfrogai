@@ -5,12 +5,16 @@ import uuid
 import grpc
 from typing import BinaryIO, Iterator, AsyncGenerator, Any
 import leapfrogai_sdk as lfai
-from leapfrogai_api.backend.types import (
+from leapfrogai_api.typedef.chat import (
     ChatCompletionResponse,
     ChatDelta,
     ChatStreamChoice,
+)
+from leapfrogai_api.typedef.completion import (
     CompletionChoice,
     CompletionResponse,
+)
+from leapfrogai_api.typedef import (
     Usage,
 )
 
