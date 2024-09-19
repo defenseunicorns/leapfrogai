@@ -60,6 +60,14 @@ class Model(
         return AudioResponse(
             text="The repeater model received a transcribe request",
             duration=1,
+        )
+
+    async def Translate(
+        self, request: AudioRequest, context: GrpcContext
+    ) -> AudioResponse:
+        return AudioResponse(
+            text="The repeater model received a translation request",
+            duration=1,
             language="en",
         )
 

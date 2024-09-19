@@ -31,7 +31,7 @@ async def recv_completion(
             "data: "
             + CompletionResponse(
                 id=str(uuid.uuid4()),
-                object="completion.chunk",
+                object="text_completion",
                 created=int(time.time()),
                 model=model,
                 choices=[

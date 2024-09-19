@@ -1,28 +1,35 @@
 """gRPC client for OpenAI models."""
 
+import time
 from typing import Iterator, AsyncGenerator, Any, List
 import grpc
 from fastapi.responses import StreamingResponse
 
 import leapfrogai_sdk as lfai
 from leapfrogai_api.backend.helpers import recv_chat, recv_completion
-from leapfrogai_api.backend.types import (
-    ChatChoice,
-    ChatCompletionResponse,
-    ChatMessage,
-    CompletionChoice,
-    CompletionResponse,
-    CreateEmbeddingResponse,
-    CreateTranscriptionResponse,
-    EmbeddingResponseData,
-    FinishReason,
-    Usage,
-    CreateTranslationResponse,
-)
 from leapfrogai_sdk.chat.chat_pb2 import (
     ChatCompletionResponse as ProtobufChatCompletionResponse,
 )
 from leapfrogai_api.utils.config import Model
+from leapfrogai_api.typedef.audio import (
+    CreateTranscriptionResponse,
+    CreateTranslationResponse,
+)
+from leapfrogai_api.typedef.chat import (
+    ChatChoice,
+    ChatCompletionResponse,
+    ChatMessage,
+)
+from leapfrogai_api.typedef.completion import (
+    CompletionChoice,
+    CompletionResponse,
+    FinishReason,
+)
+from leapfrogai_api.typedef import Usage
+from leapfrogai_api.typedef.embeddings import (
+    CreateEmbeddingResponse,
+    EmbeddingResponseData,
+)
 
 
 async def stream_completion(model: Model, request: lfai.CompletionRequest):
@@ -37,7 +44,6 @@ async def stream_completion(model: Model, request: lfai.CompletionRequest):
         )
 
 
-# TODO: Clean up completion() and stream_completion() to reduce code duplication
 async def completion(model: Model, request: lfai.CompletionRequest):
     """Complete using the specified model."""
     async with grpc.aio.insecure_channel(model.backend) as channel:
@@ -46,7 +52,10 @@ async def completion(model: Model, request: lfai.CompletionRequest):
         finish_reason_enum = FinishReason(response.choices[0].finish_reason)
 
         return CompletionResponse(
+            id=None,
+            object="text_completion",
             model=model.name,
+            created=int(time.time()),
             choices=[
                 CompletionChoice(
                     index=0,

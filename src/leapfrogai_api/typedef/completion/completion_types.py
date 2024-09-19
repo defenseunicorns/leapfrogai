@@ -1,6 +1,6 @@
 from enum import Enum
 from pydantic import BaseModel, Field
-from typing import Literal
+from typing import Literal, Optional
 
 from ..common import Usage
 from ...backend.constants import DEFAULT_MAX_COMPLETION_TOKENS
@@ -31,7 +31,7 @@ class CompletionChoice(BaseModel):
         None,
         description="Log probabilities for the generated tokens. Only returned if requested.",
     )
-    finish_reason: str = Field(
+    finish_reason: str | None = Field(
         "", description="The reason why the completion finished.", examples=["length"]
     )
 
@@ -67,10 +67,12 @@ class CompletionRequest(BaseModel):
 class CompletionResponse(BaseModel):
     """Response object for completion."""
 
-    id: str = Field("", description="A unique identifier for this completion response.")
-    object: Literal["completion"] = Field(
-        "completion",
-        description="The object type, which is always 'completion' for this response.",
+    id: Optional[str] = Field(
+        "", description="A unique identifier for this completion response."
+    )
+    object: Literal["text_completion"] = Field(
+        "text_completion",
+        description="The object type, which is always 'text_completion' for this response.",
     )
     created: int = Field(
         0,
