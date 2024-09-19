@@ -78,7 +78,7 @@ class Config:
         if fnmatch.fnmatch(file_name, self.filename):
             self.remove_model_by_config(file_name)
 
-    def load_config_file(self, directory: str, config_file: str):
+    async def load_config_file(self, directory: str, config_file: str):
         logger.info("Loading config file: {}/{}".format(directory, config_file))
 
         # load the config file into the config object
