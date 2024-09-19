@@ -54,7 +54,7 @@ async def lifespan(app: FastAPI):
             await config_task
         except asyncio.CancelledError:
             pass  # Task was cancelled, which is expected during shutdown
-        await config.clear_all_models()
+        config.clear_all_models()
 
 
 app = FastAPI(lifespan=lifespan)
