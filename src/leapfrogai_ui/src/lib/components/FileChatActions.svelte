@@ -57,6 +57,7 @@
 
     translatingId = fileMetadata.id;
     await threadsStore.setSendingBlocked(true);
+    let tempId: string;
     try {
       if (!threadId) {
         // create new thread
@@ -79,7 +80,7 @@
       await threadsStore.addMessageToStore(newMessage);
       threadsStore.updateMessagesState(originalMessages, setMessages, newMessage);
 
-      const tempId = uuidv4();
+      tempId = uuidv4();
       await threadsStore.addTempEmptyMessage(threadId, tempId);
 
       // translate
@@ -105,14 +106,27 @@
       }
 
       // save translation response
-      const translationMessage = await saveMessage({
-        thread_id: threadId,
-        content: translateResJson.text,
-        role: 'assistant'
-      });
+      let translationMessage;
+      try {
+        translationMessage = await saveMessage({
+          thread_id: '123',
+          content: translateResJson.text,
+          role: 'assistant'
+        });
+      } catch {
+        translationMessage = await saveMessage({
+          thread_id: threadId,
+          content: 'There was an error translating the file',
+          role: 'assistant'
+        });
+      }
+
       threadsStore.replaceTempMessageWithActual(threadId, tempId, translationMessage);
       threadsStore.updateMessagesState(originalMessages, setMessages, translationMessage);
     } catch {
+      if (tempId) {
+        threadsStore.removeMessageFromStore(threadId, tempId);
+      }
       await handleTranslationError(FILE_TRANSLATION_ERROR());
       return;
     }

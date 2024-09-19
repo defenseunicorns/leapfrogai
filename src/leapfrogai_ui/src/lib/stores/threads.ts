@@ -236,7 +236,7 @@ const createThreadsStore = () => {
         const tempMessageIndex = old.threads[threadIndex].messages?.findIndex(
           (m) => m.id === tempId
         );
-        if (!tempMessageIndex || tempMessageIndex === -1) return old;
+        if (!tempMessageIndex || tempMessageIndex === -1) return { ...old };
         const oldThread = old.threads[threadIndex];
         const messagesCopy = [...(oldThread.messages || [])];
         messagesCopy[tempMessageIndex] = newMessage;
@@ -248,6 +248,15 @@ const createThreadsStore = () => {
           ...old,
           threads: updatedThreads
         };
+      });
+    },
+    removeMessageFromStore: (threadId: string, messageId: string) => {
+      update((old) => {
+        const updatedThreads = [...old.threads];
+        const threadIndex = old.threads.findIndex((c) => c.id === threadId);
+        updatedThreads[threadIndex].messages =
+          old.threads[threadIndex].messages?.filter((m) => m.id !== messageId) || [];
+        return { ...old, thread: updatedThreads };
       });
     },
     updateMessagesState: (
