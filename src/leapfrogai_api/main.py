@@ -42,7 +42,7 @@ async def lifespan(app: FastAPI):
     """Handle startup and shutdown tasks for the FastAPI app."""
     # startup
     logger.info("Starting to watch for configs with this being an info")
-    asyncio.ensure_future(get_model_config().watch_and_load_configs())
+    await get_model_config().watch_and_load_configs()
     yield
     # shutdown
     logger.info("Clearing model configs")
