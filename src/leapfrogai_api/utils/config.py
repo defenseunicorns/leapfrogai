@@ -2,14 +2,32 @@ import fnmatch
 import glob
 import logging
 import os
+import time
 import toml
 import yaml
-from watchfiles import Change, awatch
+from watchdog.observers import Observer
+from watchdog.events import FileSystemEventHandler
 
 from leapfrogai_api.typedef.models import Model
 
-
 logger = logging.getLogger(__name__)
+
+
+class ConfigHandler(FileSystemEventHandler):
+    def __init__(self, config):
+        self.config = config
+
+    def on_created(self, event):
+        if not event.is_directory:
+            self.config.handle_file_change(event.src_path)
+
+    def on_modified(self, event):
+        if not event.is_directory:
+            self.config.handle_file_change(event.src_path)
+
+    def on_deleted(self, event):
+        if not event.is_directory:
+            self.config.handle_file_deletion(event.src_path)
 
 
 class Config:
@@ -37,41 +55,28 @@ class Config:
         # Process all the configs that were already in the directory
         self.load_all_configs(directory, filename)
 
-        # Watch the directory for changes until the end of time
-        while True:
-            async for changes in awatch(
-                directory, recursive=False, step=50, raise_interrupt=False
-            ):
-                # get two unique lists of files that have been (updated files and deleted files)
-                # (awatch can return duplicates depending on the type of updates that happen)
-                logger.info("Config changes detected: {}".format(changes))
-                unique_new_files = set()
-                unique_deleted_files = set()
-                for change in changes:
-                    if change[0] == Change.deleted:
-                        unique_deleted_files.add(os.path.basename(change[1]))
-                    else:
-                        unique_new_files.add(os.path.basename(change[1]))
+        # Set up the watchdog observer
+        event_handler = ConfigHandler(self)
+        observer = Observer()
+        observer.schedule(event_handler, directory, recursive=False)
+        observer.start()
 
-                # filter the files to those that match the filename or glob pattern
-                filtered_new_matches = fnmatch.filter(unique_new_files, filename)
-                filtered_deleted_matches = fnmatch.filter(
-                    unique_deleted_files, filename
-                )
+        try:
+            while True:
+                time.sleep(1)
+        except KeyboardInterrupt:
+            observer.stop()
+        observer.join()
 
-                # load all the updated config files
-                for match in filtered_new_matches:
-                    self.load_config_file(directory, match)
+    def handle_file_change(self, file_path):
+        directory, file_name = os.path.split(file_path)
+        if fnmatch.fnmatch(file_name, self.filename):
+            self.load_config_file(directory, file_name)
 
-                # remove deleted models
-                for match in filtered_deleted_matches:
-                    self.remove_model_by_config(match)
-
-    async def clear_all_models(self):
-        # reset the model config on shutdown (so old model configs don't get cached)
-        self.models = {}
-        self.config_sources = {}
-        logger.info("All models have been removed")
+    def handle_file_deletion(self, file_path):
+        file_name = os.path.basename(file_path)
+        if fnmatch.fnmatch(file_name, self.filename):
+            self.remove_model_by_config(file_name)
 
     def load_config_file(self, directory: str, config_file: str):
         logger.info("Loading config file: {}/{}".format(directory, config_file))
@@ -140,3 +145,9 @@ class Config:
 
         # clear config once all corresponding models are deleted
         self.config_sources.pop(config_file)
+
+    def clear_all_models(self):
+        # reset the model config on shutdown (so old model configs don't get cached)
+        self.models = {}
+        self.config_sources = {}
+        logger.info("All models have been removed")
