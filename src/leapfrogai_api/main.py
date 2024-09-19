@@ -13,7 +13,7 @@ from leapfrogai_api.routers.base import router as base_router
 from leapfrogai_api.routers.leapfrogai import auth
 from leapfrogai_api.routers.leapfrogai import models as lfai_models
 from leapfrogai_api.routers.leapfrogai import vector_stores as lfai_vector_stores
-from leapfrogai_api.routers.leapfrogai import token_count as lfai_token_count
+from leapfrogai_api.routers.leapfrogai import count as lfai_token_count
 from leapfrogai_api.routers.openai import (
     assistants,
     audio,
