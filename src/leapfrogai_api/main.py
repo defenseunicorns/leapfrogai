@@ -2,6 +2,8 @@
 
 import logging
 import os
+import asyncio
+from concurrent.futures import ThreadPoolExecutor
 
 from fastapi import FastAPI
 from fastapi.exception_handlers import request_validation_exception_handler
@@ -78,9 +80,13 @@ app.include_router(threads.router)
 
 @app.on_event("startup")
 async def startup_event():
-    await get_model_config().watch_and_load_configs()
+    loop = asyncio.get_running_loop()
+    with ThreadPoolExecutor() as pool:
+        await loop.run_in_executor(pool, get_model_config().watch_and_load_configs())
 
 
 @app.on_event("shutdown")
 async def shutdown_event():
-    await get_model_config().clear_all_models()
+    loop = asyncio.get_running_loop()
+    with ThreadPoolExecutor() as pool:
+        await loop.run_in_executor(pool, get_model_config().clear_all_models())
