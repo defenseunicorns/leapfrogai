@@ -17,7 +17,7 @@
   import type { LFFile } from '$lib/types/files';
   import { ERROR_UPLOADING_FILE_MSG } from '$constants/errors';
   import { shortenFileName } from '$helpers/stringHelpers';
-  import { removeFilesUntilUnderLimit } from '$helpers/fileHelpers';
+  import { removeFilesUntilUnderLimit, updateFileMetadata } from '$helpers/fileHelpers';
 
   export let uploadingFiles;
   export let attachedFileMetadata;
@@ -102,7 +102,7 @@
         // If this file adds too much text (larger than allowed max), remove the text and set to error status
         removeFilesUntilUnderLimit(parsedFiles, ADJUSTED_MAX_CHARACTERS);
 
-        attachedFileMetadata = parsedFiles;
+        attachedFileMetadata = updateFileMetadata(attachedFileMetadata, parsedFiles);
       });
     } catch {
       handleUploadError('Internal Error');
@@ -135,12 +135,12 @@
           id,
           name: file.name,
           type: file.type,
-          status: 'uploading'
+          status: file.type.startsWith('audio/') ? 'complete' : 'uploading'
         }
       ];
     }
 
-    attachedFiles = [...e.detail];
+    attachedFiles = [...attachedFiles, ...e.detail];
     convertFiles(e.detail);
     fileUploadBtnRef.value = '';
   }}

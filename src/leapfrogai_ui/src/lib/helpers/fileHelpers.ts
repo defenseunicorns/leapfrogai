@@ -37,3 +37,26 @@ export const removeFilesUntilUnderLimit = (parsedFiles: FileMetadata[], max: num
     totalTextLength = parsedFiles.reduce((total, file) => total + JSON.stringify(file).length, 0); //recalculate total size
   }
 };
+
+// Combines old and new file metadata, updating the old metadata with new metadata
+export const updateFileMetadata = (
+  oldMetadata: FileMetadata[],
+  newMetadata: FileMetadata[]
+): FileMetadata[] => {
+  // Create a map of new metadata
+  const newMetadataMap = new Map(newMetadata.map((file) => [file.id, file]));
+
+  // Update and keep the original order from old metadata
+  const updatedMetadata = oldMetadata.map((oldFile) => {
+    const newFile = newMetadataMap.get(oldFile.id);
+    return newFile ? { ...oldFile, ...newFile } : oldFile;
+  });
+
+  // Filter out new files that aren't already in the old metadata
+  const newFilesToAdd = newMetadata.filter(
+    (newFile) => !oldMetadata.some((oldFile) => oldFile.id === newFile.id)
+  );
+
+  // Append new files at the end while keeping the original order of oldMetadata
+  return [...updatedMetadata, ...newFilesToAdd];
+};
