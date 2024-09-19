@@ -3,7 +3,7 @@ from typing import Annotated
 from leapfrogai_api.routers.supabase_session import Session
 from leapfrogai_api.utils.config import Config
 from leapfrogai_api.utils import get_model_config
-from leapfrogai_api.typedef.counting.token_count_types import (
+from leapfrogai_api.typedef.counting import (
     TokenCountRequestHttp,
     TokenCountResponseHttp,
 )
