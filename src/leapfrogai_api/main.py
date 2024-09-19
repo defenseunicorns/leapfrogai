@@ -13,7 +13,6 @@ from leapfrogai_api.routers.base import router as base_router
 from leapfrogai_api.routers.leapfrogai import auth
 from leapfrogai_api.routers.leapfrogai import models as lfai_models
 from leapfrogai_api.routers.leapfrogai import vector_stores as lfai_vector_stores
-from leapfrogai_api.routers.leapfrogai import token_count as lfai_token_count
 from leapfrogai_api.routers.openai import (
     assistants,
     audio,
@@ -73,7 +72,6 @@ app.include_router(runs.router)
 app.include_router(messages.router)
 app.include_router(runs_steps.router)
 app.include_router(lfai_vector_stores.router)
-app.include_router(lfai_token_count.router)
 app.include_router(lfai_models.router)
 # This should be at the bottom to prevent it preempting more specific runs endpoints
 # https://fastapi.tiangolo.com/tutorial/path-params/#order-matters
