@@ -53,7 +53,11 @@ class LFAI_Model(DeepEvalBaseLLM):
             top_p=top_p,
             stop=stop,
         )
-        return response.choices[0].message.content
+        response_text = response.choices[0].message.content
+        if response_text.endswith(stop):
+            response_text = response_text[: -len(stop)]
+        response_text = response_text.strip()
+        return response_text
 
     def generate_samples(self, n: int, *args, **kwargs) -> List[str]:
         """Generates a list of n responses using the generate() function"""

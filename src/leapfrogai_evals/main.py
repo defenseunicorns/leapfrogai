@@ -1,7 +1,7 @@
 from deepeval.test_case import LLMTestCase
 from deepeval.metrics import AnswerRelevancyMetric
-from deepeval.benchmarks import MMLU
-from deepeval.benchmarks.tasks import MMLUTask
+from deepeval.benchmarks import MMLU, HumanEval
+from deepeval.benchmarks.tasks import MMLUTask  # , HumanEvalTask
 
 import logging
 import numpy as np
@@ -18,7 +18,7 @@ from leapfrogai_evals.metrics.niah_metrics import NIAH_Retrieval, NIAH_Response
 from leapfrogai_evals.runners.niah_runner import NIAH_Runner
 from leapfrogai_evals.runners.qa_runner import QA_Runner
 
-ALL_EVALS = ["niah_eval", "qa_eval", "mmlu"]
+ALL_EVALS = ["niah_eval", "qa_eval", "mmlu", "human_eval"]
 
 
 class RAGEvaluator:
@@ -185,6 +185,30 @@ class RAGEvaluator:
 
         # add the evaluation score to the final results
         self.eval_results["MMLU"] = mmlu_benchmark.overall_score
+
+    def human_eval(
+        self,
+        num_samples: Optional[int] = None,
+        k: Optional[int] = None,
+    ):
+        """Runs the HumanEval benchmark"""
+        # tasks = [
+        #     HumanEvalTask.TRUNCATE_NUMBER,
+        #     HumanEvalTask.BELOW_ZERO,
+        #     HumanEvalTask.INTERSPERSE,
+        # ]
+        human_eval_benchmark = HumanEval(
+            n=num_samples or int(os.getenv("HUMAN_EVAL_NUM_SAMPLES_PER_TASK")),
+            # tasks=tasks
+        )
+        human_eval_benchmark.evaluate(
+            model=LFAI_Model(), k=k or int(os.getenv("HUMAN_EVAL_K"))
+        )
+        logging.info(f"HumanEval overall score: {human_eval_benchmark.overall_score}")
+        logging.info(f"HumanEval task scores:\n {human_eval_benchmark.task_scores}")
+
+        # add the evaluation score to the final results
+        self.eval_results["HumanEval"] = human_eval_benchmark.overall_score
 
 
 if __name__ == "__main__":
