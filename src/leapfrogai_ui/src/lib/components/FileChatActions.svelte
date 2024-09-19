@@ -55,6 +55,13 @@
       return;
     }
 
+    const file = attachedFilesCopy.find((f) => f.id === fileMetadata.id);
+    const metadataToSave = attachedFileMetadataCopy.find((f) => f.id === fileMetadata.id);
+    if (!file || !metadataToSave) {
+      await handleTranslationError(FILE_TRANSLATION_ERROR());
+      return;
+    }
+
     translatingId = fileMetadata.id;
     await threadsStore.setSendingBlocked(true);
     let tempId: string;
@@ -66,15 +73,14 @@
         threadId = $page.params.thread_id;
       }
 
-      const metadataToSave = attachedFileMetadataCopy.find((f) => f.id === fileMetadata.id);
-      if (!metadataToSave) throw Error('Error getting file metadata');
       // Save new user message
       const newMessage = await saveMessage({
         thread_id: threadId,
-        content: `Translate ${fileMetadata.name}`,
+        content: `Translate ${file.name}`, // use full name instead of metadata name which might be truncated
         role: 'user',
         metadata: {
-          filesMetadata: JSON.stringify([metadataToSave])
+          filesMetadata: JSON.stringify([metadataToSave]),
+          wasTranscriptionOrTranslation: 'true'
         }
       });
       await threadsStore.addMessageToStore(newMessage);
@@ -84,11 +90,6 @@
       await threadsStore.addTempEmptyMessage(threadId, tempId);
 
       // translate
-      const file = attachedFilesCopy.find((f) => f.id === fileMetadata.id);
-      if (!file) {
-        await handleTranslationError(FILE_TRANSLATION_ERROR());
-        return;
-      }
       const formData = new FormData();
       formData.append('file', file);
       const translateRes = await fetch(`/api/audio/translation`, {
@@ -111,14 +112,20 @@
         translationMessage = await saveMessage({
           thread_id: threadId,
           content: translateResJson.text,
-          role: 'assistant'
+          role: 'assistant',
+          metadata: {
+            wasTranscriptionOrTranslation: 'true'
+          }
         });
       } catch {
         await handleTranslationError(FILE_TRANSLATION_ERROR());
         translationMessage = await saveMessage({
           thread_id: threadId,
           content: 'There was an error translating the file',
-          role: 'assistant'
+          role: 'assistant',
+          metadata: {
+            wasTranscriptionOrTranslation: 'true'
+          }
         });
       }
 

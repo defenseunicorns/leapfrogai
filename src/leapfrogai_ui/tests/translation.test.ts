@@ -19,6 +19,9 @@ test('it can translate an audio file', async ({ page, openAIClient }) => {
   await expect(page.getByTestId('loading-msg')).toHaveCount(1); // loading skeleton
   await expect(page.getByTestId('loading-msg')).not.toBeVisible();
   await expect(page.getByTestId('message')).toHaveCount(2);
+  // Edit and regen disabled for translated messages
+  await expect(page.getByTestId('edit-message')).not.toBeVisible();
+  await expect(page.getByTestId('regenerate btn')).not.toBeVisible();
   const messages = await page.getByTestId('message').all();
   const responseText = await messages[1].innerText();
   expect(responseText).toContain('unicorn');
