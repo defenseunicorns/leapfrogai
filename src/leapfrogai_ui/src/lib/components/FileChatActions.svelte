@@ -17,6 +17,7 @@
   import type { Message } from 'ai';
   import { AUDIO_FILE_SIZE_ERROR_TEXT, STANDARD_FADE_DURATION } from '$constants';
   import type { AppendFunction } from '$lib/types/messages';
+  import LFCarousel from '$components/LFCarousel.svelte';
 
   export let attachedFiles: LFFile[];
   export let attachedFileMetadata: FileMetadata[];
@@ -223,51 +224,51 @@
   };
 </script>
 
-<div
-  id="uploaded-files-actions"
-  class={nonAudioFiles.length + audioFiles.length > 0
-    ? 'ml-6 flex max-w-full gap-2 overflow-x-auto bg-gray-700'
-    : 'hidden'}
->
-  {#each audioFiles as file}
-    {#if file.status === 'complete'}
-      <div in:fade={{ duration: STANDARD_FADE_DURATION }}>
-        <Button
-          color="dark"
-          class={customBtnClass}
-          on:click={() => transcribeOrTranslate(file, 'translation')}
-          disabled={processing.fileId}
+<LFCarousel hidden={nonAudioFiles.length + audioFiles.length === 0}>
+  <div
+    id="uploaded-files-actions"
+    class={nonAudioFiles.length + audioFiles.length > 0 ? 'flex gap-2  py-2' : 'hidden'}
+  >
+    {#each audioFiles as file}
+      {#if file.status === 'complete'}
+        <div in:fade={{ duration: STANDARD_FADE_DURATION }}>
+          <Button
+            color="dark"
+            class={customBtnClass}
+            on:click={() => transcribeOrTranslate(file, 'translation')}
+            disabled={processing.fileId}
+          >
+            {`Translate ${shortenFileName(file.name)}`}</Button
+          >
+        </div>
+        <div in:fade={{ duration: STANDARD_FADE_DURATION }}>
+          <Button
+            color="dark"
+            class={customBtnClass}
+            on:click={() => transcribeOrTranslate(file, 'transcription')}
+            disabled={processing.fileId}
+          >
+            {`Transcribe ${shortenFileName(file.name)}`}</Button
+          >
+        </div>
+      {/if}
+    {/each}
+    {#each nonAudioFiles as file}
+      {#if file.status === 'complete'}
+        <div
+          in:fade={{ duration: STANDARD_FADE_DURATION }}
+          out:fade={{ duration: STANDARD_FADE_DURATION }}
         >
-          {`Translate ${shortenFileName(file.name)}`}</Button
-        >
-      </div>
-      <div in:fade={{ duration: STANDARD_FADE_DURATION }}>
-        <Button
-          color="dark"
-          class={customBtnClass}
-          on:click={() => transcribeOrTranslate(file, 'transcription')}
-          disabled={processing.fileId}
-        >
-          {`Transcribe ${shortenFileName(file.name)}`}</Button
-        >
-      </div>
-    {/if}
-  {/each}
-  {#each nonAudioFiles as file}
-    {#if file.status === 'complete'}
-      <div
-        in:fade={{ duration: STANDARD_FADE_DURATION }}
-        out:fade={{ duration: STANDARD_FADE_DURATION }}
-      >
-        <Button
-          color="dark"
-          class={customBtnClass}
-          on:click={() => summarize(file)}
-          disabled={processing.fileId}
-        >
-          {`Summarize ${shortenFileName(file.name)}`}</Button
-        >
-      </div>
-    {/if}
-  {/each}
-</div>
+          <Button
+            color="dark"
+            class={customBtnClass}
+            on:click={() => summarize(file)}
+            disabled={processing.fileId}
+          >
+            {`Summarize ${shortenFileName(file.name)}`}</Button
+          >
+        </div>
+      {/if}
+    {/each}
+  </div>
+</LFCarousel>
