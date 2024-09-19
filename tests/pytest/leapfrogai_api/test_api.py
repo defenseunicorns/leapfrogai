@@ -96,15 +96,10 @@ def test_config_delete(tmp_path):
         response = client.get("/leapfrogai/v1/models")
         assert response.status_code == 200
 
-        # assert response.json() == {
-        #    "config_sources": {"repeater-test-config.yaml": [MODEL]},
-        #    "models": {MODEL: {"backend": "localhost:50051", "name": MODEL}},
-        # }
-
         expected_response = {
             "config_sources": {"repeater-test-config.yaml": [MODEL]},
             "models": {MODEL: {"backend": "localhost:50051", "name": MODEL}},
-            "directory": LFAI_CONFIG_PATH,
+            "directory": os.environ["LFAI_CONFIG_PATH"],
             "filename": LFAI_CONFIG_FILENAME,
         }
         assert response.json() == expected_response
@@ -121,7 +116,7 @@ def test_config_delete(tmp_path):
         expected_empty_response = {
             "config_sources": {},
             "models": {},
-            "directory": LFAI_CONFIG_PATH,
+            "directory": os.environ["LFAI_CONFIG_PATH"],
             "filename": LFAI_CONFIG_FILENAME,
         }
         assert response.json() == expected_empty_response
