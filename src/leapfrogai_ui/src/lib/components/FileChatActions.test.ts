@@ -217,7 +217,7 @@ describe('FileChatActions', () => {
     expect(toastSpy).toHaveBeenCalledWith(AUDIO_FILE_SIZE_ERROR_TOAST());
   });
 
-  it('disables all buttons while a file is being processed, but only adds a spinner to the active action btn', async () => {
+  it('disables all buttons while a file is being processed', async () => {
     mockConvertFileNoId('');
     mockNewMessage();
     mockTranslation({ delay: 50 });
@@ -230,25 +230,27 @@ describe('FileChatActions', () => {
       setMessages: vi.fn()
     });
 
-    const file1TranslateBtn = screen.getByRole('button', {
-      name: `Translate ${mockMetadata1.name}`
-    });
-    const file1TranscribeBtn = screen.getByRole('button', {
-      name: `Transcribe ${mockMetadata1.name}`
-    });
-    const file2TranslateBtn = screen.getByRole('button', {
-      name: `Translate ${mockMetadata2.name}`
-    });
-    const file2TranscribeBtn = screen.getByRole('button', {
-      name: `Transcribe ${mockMetadata2.name}`
-    });
-
     await userEvent.click(screen.getByRole('button', { name: `Translate ${mockMetadata1.name}` }));
-    expect(screen.getByTestId('translation-spinner')).toBeInTheDocument();
-    expect(screen.queryByTestId('transcription-spinner')).not.toBeInTheDocument();
-    expect(file1TranslateBtn).toBeDisabled();
-    expect(file1TranscribeBtn).toBeDisabled();
-    expect(file2TranslateBtn).toBeDisabled();
-    expect(file2TranscribeBtn).toBeDisabled();
+    expect(
+      screen.queryByRole('button', {
+        name: `Translate ${mockMetadata1.name}`
+      })
+    ).not.toBeInTheDocument();
+    expect(
+      screen.queryByRole('button', {
+        name: `Transcribe ${mockMetadata1.name}`
+      })
+    ).not.toBeInTheDocument();
+
+    expect(
+      screen.getByRole('button', {
+        name: `Translate ${mockMetadata2.name}`
+      })
+    ).toBeDisabled();
+    expect(
+      screen.getByRole('button', {
+        name: `Transcribe ${mockMetadata2.name}`
+      })
+    ).toBeDisabled();
   });
 });

@@ -26,6 +26,7 @@ test('it can translate an audio file', async ({ page, openAIClient }) => {
   const responseText = await messages[1].innerText();
   expect(responseText).toContain('unicorn');
 
+  //cleanup
   await deleteActiveThread(page, openAIClient);
 });
 
@@ -41,12 +42,17 @@ test('it can transcribe an audio file', async ({ page, openAIClient }) => {
   const chatTools = page.getByTestId('chat-tools');
   await chatTools.getByRole('button', { name: 'Transcribe spanish.m4a' }).click();
 
-  await expect(page.getByText(`Transcribing spanish.m4a`)).toBeVisible();
+  await expect(page.getByTestId('loading-msg')).toHaveCount(1); // loading skeleton
+  await expect(page.getByTestId('loading-msg')).not.toBeVisible();
   await expect(page.getByTestId('message')).toHaveCount(2);
+  // Edit and regen disabled for translated messages
+  await expect(page.getByTestId('edit-message')).not.toBeVisible();
+  await expect(page.getByTestId('regenerate btn')).not.toBeVisible();
   const messages = await page.getByTestId('message').all();
   const responseText = await messages[1].innerText();
-  expect(responseText).toContain('gato');
+  expect(responseText).toContain('unicorn');
 
+  //cleanup
   await deleteActiveThread(page, openAIClient);
 });
 

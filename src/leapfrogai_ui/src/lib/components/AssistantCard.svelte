@@ -5,7 +5,7 @@
   import { DotsHorizontalOutline, ExclamationCircleOutline } from 'flowbite-svelte-icons';
   import DynamicPictogram from '$components/DynamicPictogram.svelte';
   import { threadsStore, toastStore } from '$stores';
-  import { NO_SELECTED_ASSISTANT_ID } from '$constants';
+  import { NO_SELECTED_ASSISTANT_ID, STANDARD_FADE_DURATION } from '$constants';
   import type { LFAssistant } from '$lib/types/assistants';
 
   export let assistant: LFAssistant;
@@ -43,7 +43,7 @@
   };
 </script>
 
-<div transition:fade={{ duration: 150 }}>
+<div transition:fade={{ duration: STANDARD_FADE_DURATION }}>
   <Card data-testid={`assistant-card-${assistant.name}`} padding="md" class="h-full">
     <div class="flex justify-end">
       <DotsHorizontalOutline data-testid="assistant-edit-icon" />

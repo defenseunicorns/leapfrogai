@@ -14,7 +14,7 @@
   import { tick } from 'svelte';
   import { page } from '$app/stores';
   import type { Message } from 'ai';
-  import { AUDIO_FILE_SIZE_ERROR_TEXT } from '$constants';
+  import { AUDIO_FILE_SIZE_ERROR_TEXT, STANDARD_FADE_DURATION } from '$constants';
 
   export let attachedFiles: LFFile[];
   export let attachedFileMetadata: FileMetadata[];
@@ -54,17 +54,17 @@
 
     const adjective = method === 'translation' ? ' Translate' : 'Transcribe';
 
-      const attachedFileMetadataCopy = [...attachedFileMetadata];
-      const attachedFilesCopy = [...attachedFiles];
-      // Remove the file and file metadata to hide the actions since the response will stream in this case
-      attachedFiles = attachedFiles.filter((file) => file.id !== fileMetadata.id);
-      attachedFileMetadata = attachedFileMetadata.filter((file) => file.id !== fileMetadata.id);
+    const attachedFileMetadataCopy = [...attachedFileMetadata];
+    const attachedFilesCopy = [...attachedFiles];
+    // Remove the file and file metadata to hide the actions since the response will stream in this case
+    attachedFiles = attachedFiles.filter((file) => file.id !== fileMetadata.id);
+    attachedFileMetadata = attachedFileMetadata.filter((file) => file.id !== fileMetadata.id);
 
-      if (!fileMetadata.id) {
+    if (!fileMetadata.id) {
       await handleGeneralError(toastError);
       return;
     }
-      processing = { fileId: fileMetadata.id, method };
+    processing = { fileId: fileMetadata.id, method };
 
     const file = attachedFilesCopy.find((f) => f.id === fileMetadata.id);
     const metadataToSave = attachedFileMetadataCopy.find((f) => f.id === fileMetadata.id);
@@ -117,7 +117,7 @@
       }
 
       // save translation response
-        let responseMessage;
+      let responseMessage;
       try {
         responseMessage = await saveMessage({
           thread_id: threadId,
@@ -160,7 +160,7 @@
     : 'hidden'}
 >
   {#each audioFiles as file}
-    <div in:fade={{ duration: 150 }} out:fade={{ duration: 150 }}>
+    <div in:fade={{ duration: STANDARD_FADE_DURATION }}>
       <Button
         color="dark"
         class={customBtnClass}
@@ -170,17 +170,14 @@
         {`Translate ${shortenFileName(file.name)}`}</Button
       >
     </div>
-  {/each}
-  {#each audioFiles as file}
-    <div in:fade={{ duration: 150 }} out:fade={{ duration: 150 }}>
+    <div in:fade={{ duration: STANDARD_FADE_DURATION }}>
       <Button
         color="dark"
         class={customBtnClass}
         on:click={() => transcribeOrTranslate(file, 'transcription')}
         disabled={processing.fileId}
       >
-
-          {`Transcribe ${shortenFileName(file.name)}`}</Button
+        {`Transcribe ${shortenFileName(file.name)}`}</Button
       >
     </div>
   {/each}
