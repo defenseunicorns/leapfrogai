@@ -16,6 +16,8 @@ from leapfrogai_sdk import (
     AudioRequest,
     AudioResponse,
     NameResponse,
+    TokenCountRequest,
+    TokenCountResponse,
     serve,
 )
 from leapfrogai_sdk.llm import LLM, GenerationConfig
@@ -46,6 +48,11 @@ class Model(
 
     async def count_tokens(self, raw_text: str) -> int:
         return len(raw_text)
+
+    async def CountTokens(
+        self, request: TokenCountRequest, context: GrpcContext
+    ) -> TokenCountResponse:
+        return TokenCountResponse(count=await self.count_tokens(request.text))
 
     async def CreateEmbedding(
         self,
