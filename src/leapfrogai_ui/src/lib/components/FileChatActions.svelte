@@ -1,5 +1,6 @@
 <script lang="ts">
-  import { Button, Spinner } from 'flowbite-svelte';
+  import { Button } from 'flowbite-svelte';
+  import { v4 as uuidv4 } from 'uuid';
   import { fade } from 'svelte/transition';
   import { shortenFileName } from '$helpers/stringHelpers';
   import { saveMessage } from '$helpers/chatHelpers';
@@ -43,10 +44,17 @@
   };
 
   const translateFile = async (fileMetadata: FileMetadata) => {
+    const attachedFileMetadataCopy = [...attachedFileMetadata];
+    const attachedFilesCopy = [...attachedFiles];
+    // Remove the file and file metadata to hide the actions since the response will stream in this case
+    attachedFiles = attachedFiles.filter((file) => file.id !== fileMetadata.id);
+    attachedFileMetadata = attachedFileMetadata.filter((file) => file.id !== fileMetadata.id);
+
     if (!fileMetadata.id) {
       await handleTranslationError(FILE_TRANSLATION_ERROR());
       return;
     }
+
     translatingId = fileMetadata.id;
     await threadsStore.setSendingBlocked(true);
     try {
@@ -57,7 +65,7 @@
         threadId = $page.params.thread_id;
       }
 
-      const metadataToSave = attachedFileMetadata.find((f) => f.id === fileMetadata.id);
+      const metadataToSave = attachedFileMetadataCopy.find((f) => f.id === fileMetadata.id);
       if (!metadataToSave) throw Error('Error getting file metadata');
       // Save new user message
       const newMessage = await saveMessage({
@@ -71,32 +79,21 @@
       await threadsStore.addMessageToStore(newMessage);
       threadsStore.updateMessagesState(originalMessages, setMessages, newMessage);
 
-
-      // This is used to create a "skeleton" message while the file is being translated
-      // It is deleted once the translation is complete
-      const emptyResponse = await saveMessage({
-        thread_id: threadId,
-        content: '',
-        role: 'assistant',
-      });
-      await threadsStore.addMessageToStore(emptyResponse);
-      threadsStore.updateMessagesState(originalMessages, setMessages, emptyResponse);
-
+      const tempId = uuidv4();
+      await threadsStore.addTempEmptyMessage(threadId, tempId);
 
       // translate
-      const file = attachedFiles.find((f) => f.id === fileMetadata.id);
+      const file = attachedFilesCopy.find((f) => f.id === fileMetadata.id);
       if (!file) {
         await handleTranslationError(FILE_TRANSLATION_ERROR());
         return;
       }
-
       const formData = new FormData();
       formData.append('file', file);
       const translateRes = await fetch(`/api/audio/translation`, {
         method: 'POST',
         body: formData
       });
-
       const translateResJson = await translateRes.json();
       if (!translateRes.ok) {
         if (translateResJson.message === `ValidationError: ${AUDIO_FILE_SIZE_ERROR_TEXT}`) {
@@ -107,18 +104,14 @@
         return;
       }
 
-      await threadsStore.deleteMessage(threadId, emptyResponse.id);
-
       // save translation response
       const translationMessage = await saveMessage({
         thread_id: threadId,
         content: translateResJson.text,
         role: 'assistant'
       });
-      await threadsStore.addMessageToStore(translationMessage);
+      threadsStore.replaceTempMessageWithActual(threadId, tempId, translationMessage);
       threadsStore.updateMessagesState(originalMessages, setMessages, translationMessage);
-      attachedFiles = attachedFiles.filter((file) => file.id !== fileMetadata.id);
-      attachedFileMetadata = attachedFileMetadata.filter((file) => file.id !== fileMetadata.id);
     } catch {
       await handleTranslationError(FILE_TRANSLATION_ERROR());
       return;
@@ -142,12 +135,7 @@
         on:click={() => translateFile(file)}
         disabled={translatingId}
       >
-        {#if translatingId === file.id}
-          <Spinner class="me-2" size="2" color="white" /><span
-            >{`Translating ${shortenFileName(file.name)}`}</span
-          >
-        {:else}
-          {`Translate ${shortenFileName(file.name)}`}{/if}</Button
+        {`Translate ${shortenFileName(file.name)}`}</Button
       >
     </div>
   {/each}
