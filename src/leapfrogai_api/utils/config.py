@@ -145,18 +145,20 @@ class Config:
         return self.models.get(model)
 
     def parse_models(self, loaded_artifact, config_file):
-        for m in loaded_artifact.get("models", []):
+        for m in loaded_artifact["models"]:
             model_config = Model(name=m["name"], backend=m["backend"])
 
             self.models[m["name"]] = model_config
-            self.config_sources.setdefault(config_file, []).append(m["name"])
-            logger.info(f"Added {m['name']} to model config")
+            try:
+                self.config_sources[config_file].append(m["name"])
+            except KeyError:
+                self.config_sources[config_file] = [m["name"]]
+            logger.info("added {} to model config".format(m["name"]))
 
     def remove_model_by_config(self, config_file):
-        model_names = self.config_sources.get(config_file, [])
-        for model_name in model_names:
-            self.models.pop(model_name, None)
-            logger.info(f"Removed {model_name} from model config")
+        for model_name in self.config_sources[config_file]:
+            self.models.pop(model_name)
+            logger.info("removed {} from model config".format(model_name))
 
-        # Clear config once all corresponding models are deleted
-        self.config_sources.pop(config_file, None)
+        # clear config once all corresponding models are deleted
+        self.config_sources.pop(config_file)
