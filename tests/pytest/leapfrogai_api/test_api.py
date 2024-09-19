@@ -24,6 +24,12 @@ LFAI_CONFIG_PATH = os.environ["LFAI_CONFIG_PATH"] = os.path.join(
 )
 LFAI_CONFIG_FILEPATH = os.path.join(LFAI_CONFIG_PATH, LFAI_CONFIG_FILENAME)
 
+MODEL = "repeater"
+TEXT_INPUT = (
+    "This is the input content for completions, embeddings, and chat completions"
+)
+TEXT_INPUT_LEN = len(TEXT_INPUT)
+
 
 #########################
 #########################
