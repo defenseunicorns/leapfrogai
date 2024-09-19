@@ -1,5 +1,7 @@
 from deepeval.test_case import LLMTestCase
 from deepeval.metrics import AnswerRelevancyMetric
+from deepeval.benchmarks import MMLU
+from deepeval.benchmarks.tasks import MMLUTask
 
 import logging
 import numpy as np
@@ -8,14 +10,15 @@ from dotenv import load_dotenv
 import time
 from typing import Optional, List
 
-from leapfrogai_evals.judges.claude_sonnet import ClaudeSonnet  # noqa
+from leapfrogai_evals.models.claude_sonnet import ClaudeSonnet  # noqa
+from leapfrogai_evals.models.lfai import LFAI_Model
 from leapfrogai_evals.metrics.annotation_relevancy import AnnotationRelevancyMetric
 from leapfrogai_evals.metrics.correctness import CorrectnessMetric
 from leapfrogai_evals.metrics.niah_metrics import NIAH_Retrieval, NIAH_Response
 from leapfrogai_evals.runners.niah_runner import NIAH_Runner
 from leapfrogai_evals.runners.qa_runner import QA_Runner
 
-ALL_EVALS = ["niah_eval", "qa_eval"]
+ALL_EVALS = ["niah_eval", "qa_eval", "mmlu"]
 
 
 class RAGEvaluator:
@@ -163,10 +166,30 @@ class RAGEvaluator:
             logging.info(f"successes: {successes}")
             logging.info(f"reasons: {reasons}")
 
+    def mmlu(self, n_shots: Optional[int] = None):
+        """Runs the Massive Multitask Language Understanding (MMLU) benchmark on a subset of tasks"""
+        tasks = [
+            MMLUTask.COLLEGE_COMPUTER_SCIENCE,
+            MMLUTask.US_FOREIGN_POLICY,
+            MMLUTask.HIGH_SCHOOL_GOVERNMENT_AND_POLITICS,
+            MMLUTask.FORMAL_LOGIC,
+            MMLUTask.COMPUTER_SECURITY,
+            MMLUTask.SECURITY_STUDIES,
+        ]
+        mmlu_benchmark = MMLU(
+            tasks=tasks, n_shots=n_shots or int(os.getenv("MMLU_NUM_SHOTS"))
+        )
+        mmlu_benchmark.evaluate(model=LFAI_Model())
+        logging.info(f"MMLU overall score: {mmlu_benchmark.overall_score}")
+        logging.info(f"MMLU task scores:\n {mmlu_benchmark.task_scores}")
+
+        # add the evaluation score to the final results
+        self.eval_results["MMLU"] = mmlu_benchmark.overall_score
+
 
 if __name__ == "__main__":
     logging.basicConfig(level=logging.INFO)
     load_dotenv()
     evaluator = RAGEvaluator()
-    evaluator.set_evaluations()
+    evaluator.set_evaluations(eval_list=["human_eval"])
     evaluator.run_evals()

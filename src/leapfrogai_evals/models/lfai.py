@@ -4,7 +4,7 @@ import openai
 from pydantic import BaseModel
 from deepeval.models.base_model import DeepEvalBaseLLM
 import asyncio
-from typing import Optional
+from typing import Optional, List
 
 
 class LFAI_Model(DeepEvalBaseLLM):
@@ -20,9 +20,9 @@ class LFAI_Model(DeepEvalBaseLLM):
         self,
         api_key: Optional[str] = None,
         base_url: Optional[str] = None,
-        model: str = "vllm",
+        model: Optional[str] = None,
     ):
-        self.model = model
+        self.model = model or os.getenv("MODEL_TO_EVALUATE")
         self.api_key = api_key or os.getenv("LEAPFROGAI_API_KEY")
         self.base_url = base_url or os.getenv("LEAPFROGAI_API_URL")
         self.client = openai.OpenAI(api_key=self.api_key, base_url=self.base_url)
@@ -54,6 +54,11 @@ class LFAI_Model(DeepEvalBaseLLM):
             stop=stop,
         )
         return response.choices[0].message.content
+
+    def generate_samples(self, n: int, *args, **kwargs) -> List[str]:
+        """Generates a list of n responses using the generate() function"""
+        samples = [self.generate(*args, **kwargs) for ii in range(n)]
+        return samples
 
     async def a_generate(self, prompt: str, *args, **kwargs) -> BaseModel:
         """Async implementation of the generate function"""
