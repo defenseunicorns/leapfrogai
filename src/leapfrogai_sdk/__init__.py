@@ -3,6 +3,15 @@
 
 from grpc import ServicerContext as GrpcContext
 
+from leapfrogai_sdk.counting.counting_pb2 import (
+    TokenCountRequest,
+    TokenCountResponse,
+)
+from leapfrogai_sdk.counting.counting_pb2_grpc import (
+    TokenCountService,
+    TokenCountServiceServicer,
+    TokenCountServiceStub,
+)
 from leapfrogai_sdk.audio.audio_pb2 import (
     AudioMetadata,
     AudioRequest,
@@ -55,15 +64,6 @@ from leapfrogai_sdk.name.name_pb2_grpc import (
     NameService,
     NameServiceServicer,
     NameServiceStub,
-)
-from leapfrogai_sdk.counting.counting_pb2 import (
-    TokenCountRequest,
-    TokenCountResponse,
-)
-from leapfrogai_sdk.counting.counting_pb2_grpc import (
-    TokenCountService,
-    TokenCountServiceServicer,
-    TokenCountServiceStub,
 )
 from leapfrogai_sdk.serve import serve
 
