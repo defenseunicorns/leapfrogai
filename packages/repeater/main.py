@@ -8,6 +8,7 @@ from leapfrogai_sdk import (
     ChatCompletionServiceServicer,
     ChatCompletionStreamServiceServicer,
     AudioServicer,
+    TokenCountServiceServicer,
     GrpcContext,
     EmbeddingRequest,
     EmbeddingResponse,
@@ -33,6 +34,7 @@ class Model(
     ChatCompletionServiceServicer,
     ChatCompletionStreamServiceServicer,
     AudioServicer,
+    TokenCountServiceServicer,
 ):
     async def generate(
         self, prompt: str, config: GenerationConfig
