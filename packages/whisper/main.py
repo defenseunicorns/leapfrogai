@@ -67,7 +67,7 @@ def call_whisper(
     prompt = ""
     temperature = 0.0
     # By default, automatically detect the language
-    inputLanguage = "en"
+    inputLanguage = None
 
     for request in request_iterator:
         metadata = request.metadata
