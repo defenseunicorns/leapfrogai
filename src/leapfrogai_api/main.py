@@ -1,6 +1,5 @@
 """Main FastAPI application for the LeapfrogAI API."""
 
-import asyncio
 import logging
 import os
 from contextlib import asynccontextmanager
@@ -46,7 +45,7 @@ async def lifespan(app: FastAPI):
     yield
     # shutdown
     logger.info("Clearing model configs")
-    asyncio.ensure_future(get_model_config().clear_all_models())
+    await get_model_config().clear_all_models()
 
 
 app = FastAPI(lifespan=lifespan)
@@ -76,3 +75,13 @@ app.include_router(lfai_models.router)
 # This should be at the bottom to prevent it preempting more specific runs endpoints
 # https://fastapi.tiangolo.com/tutorial/path-params/#order-matters
 app.include_router(threads.router)
+
+
+@app.on_event("startup")
+async def startup_event():
+    await get_model_config().watch_and_load_configs()
+
+
+@app.on_event("shutdown")
+async def shutdown_event():
+    await get_model_config().clear_all_models()
