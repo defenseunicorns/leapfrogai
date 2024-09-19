@@ -159,7 +159,6 @@
         await handleGeneralError(toastError);
         return;
       }
-
       // Save file info to context
       await saveMessage({
         thread_id: threadId,
@@ -181,6 +180,7 @@
           filesMetadata: JSON.stringify([metadataToSave])
         }
       });
+
       await threadsStore.addMessageToStore(newMessage);
 
       // Append will handle state update, threadsStore.updateMessagesState not necessary

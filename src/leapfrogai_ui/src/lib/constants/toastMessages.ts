@@ -90,6 +90,6 @@ export const AUDIO_FILE_SIZE_ERROR_TOAST = (override: Partial<ToastData> = {}): 
 export const FILE_SUMMARIZATION_ERROR = (override: Partial<ToastData> = {}): ToastData => ({
   kind: 'error',
   title: 'Summarization Error',
-  subtitle: 'Error summarizing audio file',
+  subtitle: 'Error summarizing file',
   ...override
 });
