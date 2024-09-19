@@ -1,4 +1,4 @@
 from .token_count_types import (
-    TokenCountResponse as TokenCountResponse,
-    TokenCountRequest as TokenCountRequest,
+    TokenCountResponseHttp as TokenCountResponseHttp,
+    TokenCountRequestHttp as TokenCountRequestHttp,
 )
