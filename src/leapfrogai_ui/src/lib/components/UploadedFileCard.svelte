@@ -46,9 +46,7 @@
           {/if}
         </div>
         <h5 class="flex flex-col">
-          <div
-            class={`max-w-56 overflow-hidden text-ellipsis whitespace-nowrap text-sm font-bold text-gray-900 dark:text-white `}
-          >
+          <div class={`max-w-56 truncate text-sm font-bold text-gray-900 dark:text-white `}>
             {fileMetadata.name}
           </div>
 

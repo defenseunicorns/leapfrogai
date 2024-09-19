@@ -109,11 +109,12 @@
       let translationMessage;
       try {
         translationMessage = await saveMessage({
-          thread_id: '123',
+          thread_id: threadId,
           content: translateResJson.text,
           role: 'assistant'
         });
       } catch {
+        await handleTranslationError(FILE_TRANSLATION_ERROR());
         translationMessage = await saveMessage({
           thread_id: threadId,
           content: 'There was an error translating the file',

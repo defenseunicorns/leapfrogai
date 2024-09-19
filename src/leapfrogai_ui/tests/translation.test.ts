@@ -16,11 +16,12 @@ test('it can translate an audio file', async ({ page, openAIClient }) => {
   const chatTools = page.getByTestId('chat-tools');
   await chatTools.getByRole('button', { name: 'Translate spanish.m4a' }).click();
 
-  await expect(page.getByText(`Translating spanish.m4a`)).toBeVisible();
+  await expect(page.getByTestId('loading-msg')).toHaveCount(1); // loading skeleton
+  await expect(page.getByTestId('loading-msg')).not.toBeVisible();
   await expect(page.getByTestId('message')).toHaveCount(2);
   const messages = await page.getByTestId('message').all();
   const responseText = await messages[1].innerText();
-  expect(responseText).toContain('cat');
+  expect(responseText).toContain('unicorn');
 
   await deleteActiveThread(page, openAIClient);
 });

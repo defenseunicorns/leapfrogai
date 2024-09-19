@@ -10,8 +10,12 @@ import {
   mockTranslationFileSizeError
 } from '$lib/mocks/chat-mocks';
 import { vi } from 'vitest';
-import { toastStore } from '$stores';
+import { threadsStore, toastStore } from '$stores';
 import { AUDIO_FILE_SIZE_ERROR_TOAST, FILE_TRANSLATION_ERROR } from '$constants/toastMessages';
+import { getFakeThread } from '$testUtils/fakeData';
+import { NO_SELECTED_ASSISTANT_ID } from '$constants';
+
+const thread = getFakeThread();
 
 const mockFile1: LFFile = new File([], 'test1.mpeg', { type: 'audio/mpeg' });
 const mockFile2: LFFile = new File([], 'test1.mp4', { type: 'audio/mp4' });
@@ -36,11 +40,21 @@ const mockMetadata2: FileMetadata = {
 };
 
 describe('FileChatActions', () => {
+  beforeEach(() => {
+    threadsStore.set({
+      threads: [thread], // uses date override starting in March
+      sendingBlocked: false,
+      selectedAssistantId: NO_SELECTED_ASSISTANT_ID,
+      lastVisitedThreadId: '',
+      streamingMessage: null
+    });
+  });
+
   it('should render a translate button for each audio file', () => {
     render(FileChatActions, {
       attachedFiles: [mockFile1, mockFile2],
       attachedFileMetadata: [mockMetadata1, mockMetadata2],
-      threadId: '123',
+      threadId: thread.id,
       originalMessages: [],
       setMessages: vi.fn()
     });
@@ -62,7 +76,7 @@ describe('FileChatActions', () => {
     render(FileChatActions, {
       attachedFiles: [mockFile1, mockFile2],
       attachedFileMetadata: [mockMetadata1, mockMetadata2],
-      threadId: '123',
+      threadId: thread.id,
       originalMessages: [],
       setMessages: vi.fn()
     });
@@ -95,7 +109,7 @@ describe('FileChatActions', () => {
     render(FileChatActions, {
       attachedFiles: [mockFile1, mockFile2],
       attachedFileMetadata: [mockMetadata1, mockMetadata2],
-      threadId: '123',
+      threadId: thread.id,
       originalMessages: [],
       setMessages: vi.fn()
     });
@@ -114,7 +128,7 @@ describe('FileChatActions', () => {
     render(FileChatActions, {
       attachedFiles: [mockFile1, mockFile2],
       attachedFileMetadata: [mockMetadata1, mockMetadata2],
-      threadId: '123',
+      threadId: thread.id,
       originalMessages: [],
       setMessages: vi.fn()
     });
