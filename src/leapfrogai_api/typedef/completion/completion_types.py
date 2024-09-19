@@ -1,8 +1,25 @@
+from enum import Enum
 from pydantic import BaseModel, Field
 from typing import Literal
 
 from ..common import Usage
 from ...backend.constants import DEFAULT_MAX_COMPLETION_TOKENS
+
+
+class FinishReason(Enum):
+    NONE = 0  # Maps to "None"
+    STOP = 1  # Maps to "stop"
+    LENGTH = 2  # Maps to "length"
+
+    def to_string(self) -> str | None:
+        if self == FinishReason.NONE:
+            return None
+        elif self == FinishReason.STOP:
+            return "stop"
+        elif self == FinishReason.LENGTH:
+            return "length"
+        else:
+            raise ValueError(f"Unsupported finish reason: {self}")
 
 
 class CompletionChoice(BaseModel):
@@ -15,7 +32,7 @@ class CompletionChoice(BaseModel):
         description="Log probabilities for the generated tokens. Only returned if requested.",
     )
     finish_reason: str = Field(
-        "", description="The reason why the completion finished.", example="length"
+        "", description="The reason why the completion finished.", examples=["length"]
     )
 
 
@@ -25,7 +42,7 @@ class CompletionRequest(BaseModel):
     model: str = Field(
         ...,
         description="The ID of the model to use for completion.",
-        example="llama-cpp-python",
+        examples=["llama-cpp-python"],
     )
     prompt: str | list[int] = Field(
         ...,
