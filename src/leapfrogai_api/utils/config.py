@@ -1,8 +1,8 @@
+import asyncio
 import fnmatch
 import glob
 import logging
 import os
-import time
 import toml
 import yaml
 from watchdog.observers import Observer
@@ -63,8 +63,8 @@ class Config:
 
         try:
             while True:
-                time.sleep(1)
-        except KeyboardInterrupt:
+                await asyncio.sleep(1)
+        except asyncio.CancelledError:
             observer.stop()
         observer.join()
 
@@ -78,7 +78,7 @@ class Config:
         if fnmatch.fnmatch(file_name, self.filename):
             self.remove_model_by_config(file_name)
 
-    async def load_config_file(self, directory: str, config_file: str):
+    def load_config_file(self, directory: str, config_file: str):
         logger.info("Loading config file: {}/{}".format(directory, config_file))
 
         # load the config file into the config object
