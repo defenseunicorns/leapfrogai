@@ -1,10 +1,10 @@
-import fnmatch
+# import fnmatch
 import glob
 import logging
 import os
 import toml
 import yaml
-from watchfiles import Change, awatch
+# from watchfiles import Change, awatch
 
 from leapfrogai_api.typedef.models import Model
 
@@ -38,34 +38,34 @@ class Config:
         self.load_all_configs(directory, filename)
 
         # Watch the directory for changes until the end of time
-        while True:
-            async for changes in awatch(
-                directory, recursive=False, step=50, raise_interrupt=False
-            ):
-                # get two unique lists of files that have been (updated files and deleted files)
-                # (awatch can return duplicates depending on the type of updates that happen)
-                logger.info("Config changes detected: {}".format(changes))
-                unique_new_files = set()
-                unique_deleted_files = set()
-                for change in changes:
-                    if change[0] == Change.deleted:
-                        unique_deleted_files.add(os.path.basename(change[1]))
-                    else:
-                        unique_new_files.add(os.path.basename(change[1]))
+        # while True:
+        #     async for changes in awatch(
+        #         directory, recursive=False, step=50, raise_interrupt=False
+        #     ):
+        #         # get two unique lists of files that have been (updated files and deleted files)
+        #         # (awatch can return duplicates depending on the type of updates that happen)
+        #         logger.info("Config changes detected: {}".format(changes))
+        #         unique_new_files = set()
+        #         unique_deleted_files = set()
+        #         for change in changes:
+        #             if change[0] == Change.deleted:
+        #                 unique_deleted_files.add(os.path.basename(change[1]))
+        #             else:
+        #                 unique_new_files.add(os.path.basename(change[1]))
 
-                # filter the files to those that match the filename or glob pattern
-                filtered_new_matches = fnmatch.filter(unique_new_files, filename)
-                filtered_deleted_matches = fnmatch.filter(
-                    unique_deleted_files, filename
-                )
+        #         # filter the files to those that match the filename or glob pattern
+        #         filtered_new_matches = fnmatch.filter(unique_new_files, filename)
+        #         filtered_deleted_matches = fnmatch.filter(
+        #             unique_deleted_files, filename
+        #         )
 
-                # load all the updated config files
-                for match in filtered_new_matches:
-                    self.load_config_file(directory, match)
+        #         # load all the updated config files
+        #         for match in filtered_new_matches:
+        #             self.load_config_file(directory, match)
 
-                # remove deleted models
-                for match in filtered_deleted_matches:
-                    self.remove_model_by_config(match)
+        #         # remove deleted models
+        #         for match in filtered_deleted_matches:
+        #             self.remove_model_by_config(match)
 
     async def clear_all_models(self):
         # reset the model config on shutdown (so old model configs don't get cached)
