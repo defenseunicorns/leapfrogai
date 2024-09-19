@@ -33,12 +33,17 @@ class ConfigHandler(FileSystemEventHandler):
             return
 
         filename = os.path.basename(event.src_path)
+        logger.debug(f"Processing event '{event.event_type}' for file '{filename}'")
 
         # Check if the file matches the config filename or pattern
         if fnmatch.fnmatch(filename, self.config.filename):
             if event.event_type == "deleted":
+                logger.info(f"Detected deletion of config file '{filename}'")
                 self.config.remove_model_by_config(filename)
             else:
+                logger.info(
+                    f"Detected modification/creation of config file '{filename}'"
+                )
                 self.config.load_config_file(self.config.directory, filename)
 
 
