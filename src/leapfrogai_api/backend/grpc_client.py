@@ -172,7 +172,7 @@ async def create_translation(model: Model, request: Iterator[lfai.AudioRequest])
         return CreateTranslationResponse(text=response.text)
 
 
-async def token_count(model: Model, request: lfai.TokenCountRequest):
+async def create_token_count(model: Model, request: lfai.TokenCountRequest):
     """Count tokens using the specified model backend."""
     async with grpc.aio.insecure_channel(model.backend) as channel:
         stub = lfai.TokenCountServiceStub(channel)
