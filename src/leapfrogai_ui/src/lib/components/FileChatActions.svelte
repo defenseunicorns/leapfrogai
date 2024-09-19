@@ -71,6 +71,18 @@
       await threadsStore.addMessageToStore(newMessage);
       threadsStore.updateMessagesState(originalMessages, setMessages, newMessage);
 
+
+      // This is used to create a "skeleton" message while the file is being translated
+      // It is deleted once the translation is complete
+      const emptyResponse = await saveMessage({
+        thread_id: threadId,
+        content: '',
+        role: 'assistant',
+      });
+      await threadsStore.addMessageToStore(emptyResponse);
+      threadsStore.updateMessagesState(originalMessages, setMessages, emptyResponse);
+
+
       // translate
       const file = attachedFiles.find((f) => f.id === fileMetadata.id);
       if (!file) {
@@ -94,6 +106,8 @@
         }
         return;
       }
+
+      await threadsStore.deleteMessage(threadId, emptyResponse.id);
 
       // save translation response
       const translationMessage = await saveMessage({
