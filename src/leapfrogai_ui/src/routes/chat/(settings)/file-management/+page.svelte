@@ -18,7 +18,7 @@
   import { convertToMilliseconds, formatDate } from '$helpers/dates';
   import { filesSchema } from '$schemas/files';
   import { filesStore, toastStore, uiStore } from '$stores';
-  import { ACCEPTED_FILE_TYPES } from '$constants';
+  import { ACCEPTED_FILE_TYPES, STANDARD_FADE_DURATION } from '$constants';
   import { afterNavigate, invalidate } from '$app/navigation';
   import type { Assistant } from 'openai/resources/beta/assistants';
   import { tableStyles } from '$lib/styles/tables';
@@ -262,7 +262,7 @@
         <!-- Button with color="alternative" adds two pixels to btn height, border-box does not prevent this. h-[42px] prevents slight screen jump-->
         <div class="h-[42px]">
           {#if editMode}
-            <div in:fade={{ duration: 150 }} class="flex items-center gap-2">
+            <div in:fade={{ duration: STANDARD_FADE_DURATION }} class="flex items-center gap-2">
               <Button color="blue" on:click={handleDownload}>Download</Button>
               {#if deleting}
                 <Button color="red" disabled>
@@ -275,7 +275,7 @@
               <Button color="alternative" on:click={handleClose}>Cancel</Button>
             </div>
           {:else}
-            <div in:fade={{ duration: 150 }}>
+            <div in:fade={{ duration: STANDARD_FADE_DURATION }}>
               {#if $submitting}
                 <Button disabled>
                   <Spinner class="me-3" size="4" color="white" />Uploading...

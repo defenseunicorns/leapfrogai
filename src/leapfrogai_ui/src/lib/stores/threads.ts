@@ -209,6 +209,56 @@ const createThreadsStore = () => {
         });
       }
     },
+    // The following temp empty message methods are for showing a message skeleton in the messages window
+    // while waiting for a full response (e.g. waiting for translation response)
+    addTempEmptyMessage: (threadId: string, tempId: string) => {
+      update((old) => {
+        const updatedThreads = [...old.threads];
+        const threadIndex = old.threads.findIndex((c) => c.id === threadId);
+        const oldThread = old.threads[threadIndex];
+        updatedThreads[threadIndex] = {
+          ...oldThread,
+          messages: [
+            ...(oldThread.messages || []),
+            { id: tempId, role: 'assistant', content: '', createdAt: new Date() }
+          ]
+        };
+        return {
+          ...old,
+          threads: updatedThreads
+        };
+      });
+    },
+    replaceTempMessageWithActual: (threadId: string, tempId: string, newMessage: LFMessage) => {
+      update((old) => {
+        const updatedThreads = [...old.threads];
+        const threadIndex = old.threads.findIndex((c) => c.id === threadId);
+        const tempMessageIndex = old.threads[threadIndex].messages?.findIndex(
+          (m) => m.id === tempId
+        );
+        if (!tempMessageIndex || tempMessageIndex === -1) return { ...old };
+        const oldThread = old.threads[threadIndex];
+        const messagesCopy = [...(oldThread.messages || [])];
+        messagesCopy[tempMessageIndex] = newMessage;
+        updatedThreads[threadIndex] = {
+          ...oldThread,
+          messages: messagesCopy
+        };
+        return {
+          ...old,
+          threads: updatedThreads
+        };
+      });
+    },
+    removeMessageFromStore: (threadId: string, messageId: string) => {
+      update((old) => {
+        const updatedThreads = [...old.threads];
+        const threadIndex = old.threads.findIndex((c) => c.id === threadId);
+        updatedThreads[threadIndex].messages =
+          old.threads[threadIndex].messages?.filter((m) => m.id !== messageId) || [];
+        return { ...old, thread: updatedThreads };
+      });
+    },
     updateMessagesState: (
       originalMessages: Message[],
       setMessages: (messages: Message[]) => void,

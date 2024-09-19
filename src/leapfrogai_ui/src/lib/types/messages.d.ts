@@ -8,7 +8,7 @@ import type { ChatRequestOptions, CreateMessage } from 'ai';
 
 export type NewMessageInput = {
   thread_id: string;
-  content: string;
+  content?: string;
   role: 'user' | 'assistant';
   assistantId?: string;
   metadata?: unknown;

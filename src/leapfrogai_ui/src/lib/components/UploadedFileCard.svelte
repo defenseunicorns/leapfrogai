@@ -5,6 +5,7 @@
   import { Card, Spinner, ToolbarButton } from 'flowbite-svelte';
   import { createEventDispatcher } from 'svelte';
   import type { FileMetadata } from '$lib/types/files';
+  import { STANDARD_FADE_DURATION } from '$constants';
 
   export let fileMetadata: FileMetadata;
   export let disableDelete = false;
@@ -14,7 +15,7 @@
   $: hovered = false;
 </script>
 
-<div in:fade={{ duration: 150 }} out:fade={{ duration: 150 }}>
+<div in:fade={{ duration: STANDARD_FADE_DURATION }} out:fade={{ duration: STANDARD_FADE_DURATION }}>
   <Card
     id="card"
     data-testid={`${fileMetadata.name}-file-uploaded-card`}
@@ -46,9 +47,7 @@
           {/if}
         </div>
         <h5 class="flex flex-col">
-          <div
-            class={`max-w-56 overflow-hidden text-ellipsis whitespace-nowrap text-sm font-bold text-gray-900 dark:text-white `}
-          >
+          <div class={`max-w-56 truncate text-sm font-bold text-gray-900 dark:text-white `}>
             {fileMetadata.name}
           </div>
 

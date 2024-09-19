@@ -50,8 +50,6 @@ jobs:
         with:
           path: |
             ~/.cache/pip
-            **/src/leapfrogai_api
-            **/src/leapfrogai_sdk
           key: pytest-integration-pip-${{ github.ref }}
 
       - name: Setup Python
@@ -90,8 +88,6 @@ jobs:
         with:
           path: |
             ~/.cache/pip
-            **/src/leapfrogai_api
-            **/src/leapfrogai_sdk
           key: pytest-integration-pip-${{ github.ref }}
 
       - name: Setup Python
