@@ -69,8 +69,8 @@ jobs:
 
       - name: Run Pytest
         run: |
-          pytest -vv -s tests/unit
-          pytest -vv -s tests/pytest
+          python -m pytest -vv -s tests/unit
+          python -m pytest -vv -s tests/pytest
         env:
           LFAI_RUN_REPEATER_TESTS: true
 
