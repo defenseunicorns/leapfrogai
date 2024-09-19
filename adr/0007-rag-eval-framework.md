@@ -154,17 +154,23 @@ As time goes on, additional models will be considered and added as comparison po
 
 </details>
 
-### Execution
+### Execution/Delivery
 <details>
   <summary>Details</summary>
 
   #### Decision
+  For MVP status, we will be running the evaluation framework in one-off instances utilizing the `leapfrogai_evals` module. This module contains the runners for the current evaluations and measures the metrics that have been established thus far.
 
   #### Rationale
+  In order to start getting feedback from evaluations, we simply need to get the results in whatever form we can. Since there is not an established cadence for how often evals will be run (a determination for post MVP), the storage of said evals does not need to be consistent at this time.
+
+  The next steps for the execution and delivery of evals will likely be the following:
+  - Using the `leapfrogai_evals` module, evaluations will be run at a regular cadence in a Github workflow so that we have a standardized way of running evaluations that we can compare against.
+  - These evaluation results will be stored as artifacts in Github so that peformance can be tracked over time across version releases.
 
 </details>
 
-### Delivery
+### Model Card
 <details>
   <summary>Details</summary>
 
