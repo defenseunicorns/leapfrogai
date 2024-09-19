@@ -1,8 +1,9 @@
 """Main FastAPI application for the LeapfrogAI API."""
 
+import asyncio
 import logging
 import os
-import asyncio
+from contextlib import asynccontextmanager
 
 from fastapi import FastAPI
 from fastapi.exception_handlers import request_validation_exception_handler
@@ -36,19 +37,19 @@ logger = logging.getLogger(__name__)
 
 
 # handle startup & shutdown tasks
-# @asynccontextmanager
-# async def lifespan(app: FastAPI):
-#     """Handle startup and shutdown tasks for the FastAPI app."""
-#     # startup
-#     logger.info("Starting to watch for configs with this being an info")
-#     await get_model_config().watch_and_load_configs()
-#     yield
-#     # shutdown
-#     logger.info("Clearing model configs")
-#     await get_model_config().clear_all_models()
+@asynccontextmanager
+async def lifespan(app: FastAPI):
+    """Handle startup and shutdown tasks for the FastAPI app."""
+    # startup
+    logger.info("Starting to watch for configs with this being an info")
+    asyncio.create_task(get_model_config().watch_and_load_configs())
+    yield
+    # shutdown
+    logger.info("Clearing model configs")
+    asyncio.create_task(get_model_config().clear_all_models())
 
 
-app = FastAPI()
+app = FastAPI(lifespan=lifespan)
 
 
 @app.exception_handler(RequestValidationError)
@@ -75,13 +76,3 @@ app.include_router(lfai_models.router)
 # This should be at the bottom to prevent it preempting more specific runs endpoints
 # https://fastapi.tiangolo.com/tutorial/path-params/#order-matters
 app.include_router(threads.router)
-
-
-@app.on_event("startup")
-async def startup_event():
-    asyncio.create_task(get_model_config().watch_and_load_configs())
-
-
-@app.on_event("shutdown")
-async def shutdown_event():
-    asyncio.create_task(get_model_config().clear_all_models())
