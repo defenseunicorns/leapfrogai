@@ -39,8 +39,9 @@ To run the vllm backend locally without K8s (starting from the root directory of
 make install
 
 # Download and convert model
-# Change the value for --model to change the whisper base
-ct2-transformers-converter --model openai/whisper-base --output_dir .model --copy_files tokenizer.json --quantization float32
+# Change the MODEL_NAME to change the whisper base
+export MODEL_NAME=openai/whisper-base
+make download-model
 
 # Start the model backend
 make dev
