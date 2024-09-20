@@ -16,8 +16,9 @@ docker: download
 	docker build ${DOCKER_FLAGS} \
 		--platform=linux/${ARCH} \
 		--build-arg LOCAL_VERSION=${LOCAL_VERSION} \
+		--build-arg COMPONENT_DIRECTORY="./" \
 		-t ghcr.io/defenseunicorns/leapfrogai/vllm:${LOCAL_VERSION} \
-		-f packages/vllm/Dockerfile .
+		-f ./Dockerfile .
 
 	docker run -it --rm \
 		--env-file ./.env \

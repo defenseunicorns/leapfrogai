@@ -73,7 +73,15 @@ make dev
 
 #### Local Docker Container
 
-To run the Docker container, use the following Makefile command in the root of this sub-directory:
+To run the Docker container, use the following Makefile commands. `LOCAL_VERSION` must be consistent across the two Make commands.
+
+In the root of the LeapfrogAI repository:
+
+```bash
+LOCAL_VERSION=dev make sdk-wheel
+```
+
+In the root of this vLLM sub-directory:
 
 ```bash
 LOCAL_VERSION=dev make docker

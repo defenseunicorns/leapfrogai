@@ -7,7 +7,8 @@ FROM nvidia/cuda:12.2.2-devel-ubuntu22.04 AS builder
 # set the pyenv and Python versions
 ARG SDK_DEST=src/leapfrogai_sdk/build \
     PYTHON_VERSION=3.11.9 \
-    PYENV_GIT_TAG=v2.4.8
+    PYENV_GIT_TAG=v2.4.8\
+    COMPONENT_DIRECTORY="packages/vllm"
 
 # use root user for deps installation and nonroot user creation
 USER root
@@ -41,7 +42,7 @@ USER nonroot
 # copy-in SDK from sdk stage and vllm source code from host
 WORKDIR /home/leapfrogai
 COPY --from=sdk --chown=nonroot:nonroot /leapfrogai/${SDK_DEST} ./${SDK_DEST}
-COPY --chown=nonroot:nonroot packages/vllm packages/vllm
+COPY --chown=nonroot:nonroot ${COMPONENT_DIRECTORY} packages/vllm
 
 # create virtual environment for light-weight portability and minimal libraries
 RUN curl https://pyenv.run | bash && \
