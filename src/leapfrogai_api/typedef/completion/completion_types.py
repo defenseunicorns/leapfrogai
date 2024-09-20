@@ -1,8 +1,25 @@
+from enum import Enum
 from pydantic import BaseModel, Field
-from typing import Literal
+from typing import Literal, Optional
 
 from ..common import Usage
 from ...backend.constants import DEFAULT_MAX_COMPLETION_TOKENS
+
+
+class FinishReason(Enum):
+    NONE = 0  # Maps to "None"
+    STOP = 1  # Maps to "stop"
+    LENGTH = 2  # Maps to "length"
+
+    def to_string(self) -> str | None:
+        if self == FinishReason.NONE:
+            return None
+        elif self == FinishReason.STOP:
+            return "stop"
+        elif self == FinishReason.LENGTH:
+            return "length"
+        else:
+            raise ValueError(f"Unsupported finish reason: {self}")
 
 
 class CompletionChoice(BaseModel):
@@ -14,8 +31,8 @@ class CompletionChoice(BaseModel):
         None,
         description="Log probabilities for the generated tokens. Only returned if requested.",
     )
-    finish_reason: str = Field(
-        "", description="The reason why the completion finished.", example="length"
+    finish_reason: str | None = Field(
+        "", description="The reason why the completion finished.", examples=["length"]
     )
 
 
@@ -25,7 +42,7 @@ class CompletionRequest(BaseModel):
     model: str = Field(
         ...,
         description="The ID of the model to use for completion.",
-        example="llama-cpp-python",
+        examples=["llama-cpp-python"],
     )
     prompt: str | list[int] = Field(
         ...,
@@ -50,10 +67,12 @@ class CompletionRequest(BaseModel):
 class CompletionResponse(BaseModel):
     """Response object for completion."""
 
-    id: str = Field("", description="A unique identifier for this completion response.")
-    object: Literal["completion"] = Field(
-        "completion",
-        description="The object type, which is always 'completion' for this response.",
+    id: Optional[str] = Field(
+        "", description="A unique identifier for this completion response."
+    )
+    object: Literal["text_completion"] = Field(
+        "text_completion",
+        description="The object type, which is always 'text_completion' for this response.",
     )
     created: int = Field(
         0,

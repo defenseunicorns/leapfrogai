@@ -57,32 +57,34 @@ jobs:
     if: ${{ !github.event.pull_request.draft }}
 
     steps:
-        - name: Checkout Repo
-          uses: actions/checkout@b4ffde65f46336ab88eb53be808477a3936bae11 # v4.1.1
+      - name: Checkout Repo
+        uses: actions/checkout@b4ffde65f46336ab88eb53be808477a3936bae11 # v4.1.1
 
-        - name: Setup Python
-          uses: ./.github/actions/python
+      - name: Setup Python
+        uses: ./.github/actions/python
 
-        - name: Setup UDS Cluster
-          uses: ./.github/actions/uds-cluster
-          with:
-            registry1Username: ${{ secrets.IRON_BANK_ROBOT_USERNAME }}
-            registry1Password: ${{ secrets.IRON_BANK_ROBOT_PASSWORD }}
-            ghToken: ${{ secrets.GITHUB_TOKEN }}
+      - name: Setup UDS Cluster
+        uses: ./.github/actions/uds-cluster
+        with:
+          registry1Username: ${{ secrets.IRON_BANK_ROBOT_USERNAME }}
+          registry1Password: ${{ secrets.IRON_BANK_ROBOT_PASSWORD }}
+          ghToken: ${{ secrets.GITHUB_TOKEN }}
 
-        - name: Setup LFAI-API and Supabase
-          uses: ./.github/actions/lfai-core
+      - name: Setup API and Supabase
+        uses: ./.github/actions/lfai-core
 
-        ##########
-        # llama
-        ##########
-        - name: Deploy llama-cpp-python
-          run: |
-            make build-llama-cpp-python LOCAL_VERSION=e2e-test
-            docker image prune -af
-            uds zarf package deploy packages/llama-cpp-python/zarf-package-llama-cpp-python-amd64-e2e-test.tar.zst -l=trace --confirm
-            rm packages/llama-cpp-python/zarf-package-llama-cpp-python-amd64-e2e-test.tar.zst
+      ##########
+      # llama
+      ##########
+      - name: Deploy llama-cpp-python
+        run: |
+          make build-llama-cpp-python LOCAL_VERSION=e2e-test
+          docker image prune -af
+          uds zarf package deploy packages/llama-cpp-python/zarf-package-llama-cpp-python-amd64-e2e-test.tar.zst -l=trace --confirm
+          rm packages/llama-cpp-python/zarf-package-llama-cpp-python-amd64-e2e-test.tar.zst
 
-        - name: Test llama-cpp-python
-          run: |
-            python -m pytest ./tests/e2e/test_llama.py -v
+      - name: Test llama-cpp-python
+        env:
+          LEAPFROGAI_MODEL: llama-cpp-python
+        run: |
+          python -m pytest ./tests/e2e/test_llm_generation.py -vv

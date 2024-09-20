@@ -9,7 +9,9 @@ install:
 set-supabase:
 	$(eval SUPABASE_URL := $(SUPABASE_URL))
 	$(eval SUPABASE_ANON_KEY := $(shell uds zarf tools kubectl get secret -n leapfrogai supabase-bootstrap-jwt -o json | uds zarf tools yq '.data.anon-key' | base64 -d))
+	$(eval SUPABASE_SERVICE_KEY := $(shell uds zarf tools kubectl get secret supabase-bootstrap-jwt -n leapfrogai -o jsonpath='{.data.service-key}' | base64 -d))
 
+# .env file covers all possible tests use cases where the same variable is named differently
 define get_jwt_token
 	echo "Getting JWT token from $(3)..."; \
 	echo "Email: $(1)"; \
@@ -23,7 +25,10 @@ define get_jwt_token
 	echo "SUPABASE_USER_JWT=$$JWT" > .env; \
 	echo "SUPABASE_URL=$(SUPABASE_URL)" >> .env; \
 	echo "SUPABASE_ANON_KEY=$(SUPABASE_ANON_KEY)" >> .env; \
-	echo "LEAPFROGAI_MODEL=$(LEAPFROGAI_MODEL)" >> .env
+	echo "ANON_KEY=$(SUPABASE_ANON_KEY)" >> .env; \
+	echo "SUPABASE_SERVICE_KEY=$(SUPABASE_SERVICE_KEY)" >> .env; \
+	echo "SERVICE_KEY=$(SUPABASE_SERVICE_KEY)" >> .env; \
+	echo "LEAPFROGAI_MODEL=$(LEAPFROGAI_MODEL)" >> .env; \
 	echo "DONE - variables exported to .env file"
 endef
 
@@ -61,11 +66,11 @@ test-api-integration:
 		echo "Required environment variables (SUPABASE_USER_JWT, SUPABASE_URL, SUPABASE_ANON_KEY) are missing in .env!"; \
 		exit 1; \
 	fi
-	@env $$(cat .env | xargs) LFAI_RUN_NIAH_TESTS=$(LFAI_RUN_NIAH_TESTS) PYTHONPATH=$$(pwd) pytest -vv -s tests/integration/api
+	@env $$(cat .env | xargs) LFAI_RUN_NIAH_TESTS=$(LFAI_RUN_NIAH_TESTS) PYTHONPATH=$$(pwd) python -m pytest -vv -s tests/integration/api
 
 test-api-unit: set-supabase
-	LFAI_RUN_REPEATER_TESTS=$(LFAI_RUN_REPEATER_TESTS) PYTHONPATH=$$(pwd) pytest -vv -s tests/unit
+	LFAI_RUN_REPEATER_TESTS=$(LFAI_RUN_REPEATER_TESTS) PYTHONPATH=$$(pwd) python -m pytest -vv -s tests/unit
 	LFAI_RUN_REPEATER_TESTS=$(LFAI_RUN_REPEATER_TESTS) PYTHONPATH=$$(pwd) python -m pytest -vv -s tests/pytest
 
 test-load:
-	locust -f $$(pwd)/tests/load/loadtest.py --web-port 8089
+	python -m locust -f $$(pwd)/tests/load/loadtest.py --web-port 8089
