@@ -46,22 +46,12 @@ jobs:
       - name: Setup Python
         uses: ./.github/actions/python
 
-      - name: Install API and SDK Dev Dependencies
-        run : |
-          make install
-
       - name: Setup UDS Cluster
         uses: ./.github/actions/uds-cluster
         with:
           registry1Username: ${{ secrets.IRON_BANK_ROBOT_USERNAME }}
           registry1Password: ${{ secrets.IRON_BANK_ROBOT_PASSWORD }}
           ghToken: ${{ secrets.GITHUB_TOKEN }}
-          udsCliVersion: 0.14.0
-
-      - name: Create UDS Cluster
-        shell: bash
-        run: |
-          UDS_CONFIG=.github/config/uds-config.yaml make create-uds-cpu-cluster
 
       - name: Setup Playwright
         run: |
