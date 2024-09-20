@@ -35,7 +35,7 @@ export const actions: Actions = {
     if (!form.valid) {
       return fail(400, { form });
     }
-
+    console.log('Form data:', form.data);
     const data_sources =
       form.data.data_sources &&
       form.data.data_sources.length > 0 &&
