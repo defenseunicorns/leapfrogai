@@ -5,6 +5,7 @@ import type { LFMessage, NewMessageInput } from '$lib/types/messages';
 import type { LFAssistant } from '$lib/types/assistants';
 import { createStreamDataTransformer, StreamingTextResponse } from 'ai';
 import type { LFThread } from '$lib/types/threads';
+import { AUDIO_FILE_SIZE_ERROR_TEXT } from '$constants';
 
 type MockChatCompletionOptions = {
   responseMsg?: string[];
@@ -95,6 +96,33 @@ export const mockGetThread = (thread: LFThread) => {
   server.use(
     http.get(`/api/threads/${thread.id}`, () => {
       return HttpResponse.json(thread);
+    })
+  );
+};
+
+export const mockTranslation = () => {
+  server.use(
+    http.post('/api/audio/translation', () => {
+      return HttpResponse.json({ text: 'fake translation' });
+    })
+  );
+};
+
+export const mockTranslationError = () => {
+  server.use(
+    http.post('/api/audio/translation', () => {
+      return new HttpResponse(null, { status: 500 });
+    })
+  );
+};
+
+export const mockTranslationFileSizeError = () => {
+  server.use(
+    http.post('/api/audio/translation', () => {
+      return HttpResponse.json(
+        { message: `ValidationError: ${AUDIO_FILE_SIZE_ERROR_TEXT}` },
+        { status: 400 }
+      );
     })
   );
 };

@@ -24,9 +24,10 @@
   } from '$constants/toastMessages';
   import SelectAssistantDropdown from '$components/SelectAssistantDropdown.svelte';
   import { PaperPlaneOutline, StopOutline } from 'flowbite-svelte-icons';
-  import type { FileMetadata } from '$lib/types/files';
+  import type { FileMetadata, LFFile } from '$lib/types/files';
   import UploadedFileCards from '$components/UploadedFileCards.svelte';
-  import ChatFileUploadForm from '$components/ChatFileUploadForm.svelte';
+  import ChatFileUploadForm from '$components/ChatFileUpload.svelte';
+  import FileChatActions from '$components/FileChatActions.svelte';
 
   export let data;
 
@@ -34,7 +35,8 @@
   let lengthInvalid: boolean; // bound to child LFTextArea
   let assistantsList: Array<{ id: string; text: string }>;
   let uploadingFiles = false;
-  let attachedFileMetadata: FileMetadata[] = [];
+  let attachedFiles: LFFile[] = []; // the actual files uploaded
+  let attachedFileMetadata: FileMetadata[] = []; // metadata about the files uploaded, e.g. upload status, extracted text, etc...
   /** END LOCAL VARS **/
 
   /** REACTIVE STATE **/
@@ -229,14 +231,10 @@
             },
             lengthOverride: true
           });
-          setChatMessages([
-            ...$chatMessages,
-            { ...contextMsg, content: getMessageText(contextMsg) }
-          ]);
+          threadsStore.updateMessagesState($chatMessages, setChatMessages, contextMsg);
         }
 
         // Save with API
-
         const newMessage = await saveMessage({
           thread_id: data.thread.id,
           content: $chatInput,
@@ -331,7 +329,7 @@
 
 <form on:submit={onSubmit} class="flex h-full flex-col">
   <div class="no-scrollbar flex flex-grow flex-col-reverse overflow-auto px-8">
-    <div id="messages-container">
+    <div id="messages-container" data-testid="messages-container">
       {#each activeThreadMessages as message, index (message.id)}
         {#if message.metadata?.hideMessage !== 'true'}
           <Message
@@ -352,15 +350,20 @@
     </div>
   </div>
   <Hr classHr="my-2" />
-  <div id="chat-tools" class="flex flex-col gap-2 px-8">
+  <div id="chat-tools" data-testid="chat-tools" class="flex flex-col gap-2 px-8">
     <SelectAssistantDropdown assistants={data?.assistants || []} />
 
-    <div class="flex flex-grow flex-col rounded-lg bg-gray-50 px-2 dark:bg-gray-700">
-      <UploadedFileCards bind:attachedFileMetadata />
+    <div
+      class={twMerge(
+        'flex flex-grow flex-col gap-2.5 rounded-lg bg-gray-50 px-4 py-0 dark:bg-gray-700',
+        attachedFileMetadata.length > 0 && 'py-4'
+      )}
+    >
+      <UploadedFileCards bind:attachedFileMetadata bind:attachedFiles />
 
       <div id="chat-row" class="flex w-full items-center gap-1">
         {#if !assistantMode}
-          <ChatFileUploadForm bind:form={data.form} bind:uploadingFiles bind:attachedFileMetadata />
+          <ChatFileUploadForm bind:uploadingFiles bind:attachedFiles bind:attachedFileMetadata />
         {/if}
         <LFTextArea
           id="chat"
@@ -372,7 +375,7 @@
           {onSubmit}
           maxRows={10}
           innerWrappedClass="p-px bg-white dark:bg-gray-700"
-        ></LFTextArea>
+        />
 
         {#if !$isLoading && $status !== 'in_progress'}
           <ToolbarButton
@@ -401,6 +404,13 @@
           >
         {/if}
       </div>
+      <FileChatActions
+        bind:attachedFileMetadata
+        threadId={data.thread?.id}
+        bind:attachedFiles
+        originalMessages={$chatMessages}
+        setMessages={setChatMessages}
+      />
     </div>
   </div>
   <PoweredByDU />

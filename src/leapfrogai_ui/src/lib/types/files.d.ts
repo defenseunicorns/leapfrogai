@@ -27,3 +27,7 @@ export type FileMetadata = {
   text: string;
   errorText?: string;
 };
+
+export type LFFile = File & {
+  id?: string;
+};

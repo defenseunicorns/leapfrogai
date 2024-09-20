@@ -1,6 +1,6 @@
 <script lang="ts">
   import { fade } from 'svelte/transition';
-  import { CloseOutline, FileOutline } from 'flowbite-svelte-icons';
+  import { CloseOutline, FileMusicOutline, FileOutline } from 'flowbite-svelte-icons';
   import { getFileType } from '$lib/utils/files.js';
   import { Card, Spinner, ToolbarButton } from 'flowbite-svelte';
   import { createEventDispatcher } from 'svelte';
@@ -20,11 +20,11 @@
     data-testid={`${fileMetadata.name}-file-uploaded-card`}
     horizontal
     padding="xs"
-    class="w-80 min-w-72"
+    class="w-80 min-w-72 border-none"
     on:mouseenter={() => (hovered = true)}
     on:mouseleave={() => (hovered = false)}
   >
-    <div class="flex w-full flex-row items-center justify-between">
+    <div class="flex w-full flex-row items-center justify-between truncate">
       <div class="flex gap-2">
         <div class="flex items-center rounded-lg bg-gray-700 px-2">
           {#if fileMetadata.status === 'uploading'}
@@ -33,16 +33,20 @@
             <CloseOutline
               data-testid={`${fileMetadata.name}-error`}
               size="lg"
-              class="text-red-400 "
+              class="text-red-400"
+            />
+          {:else if fileMetadata.type.startsWith('audio/')}
+            <FileMusicOutline
+              data-testid={`${fileMetadata.name}-uploaded`}
+              size="lg"
+              color="white"
             />
           {:else}
             <FileOutline data-testid={`${fileMetadata.name}-uploaded`} size="lg" color="white" />
           {/if}
         </div>
         <h5 class="flex flex-col">
-          <div
-            class={`max-w-56 overflow-hidden text-ellipsis whitespace-nowrap text-sm font-bold text-gray-900 dark:text-white `}
-          >
+          <div class={`max-w-56 truncate text-sm font-bold text-gray-900 dark:text-white `}>
             {fileMetadata.name}
           </div>
 
