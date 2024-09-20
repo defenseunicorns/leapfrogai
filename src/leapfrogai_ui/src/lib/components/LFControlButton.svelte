@@ -1,6 +1,8 @@
 <script lang="ts">
+  import { fade } from 'svelte/transition';
   import { twMerge } from 'tailwind-merge';
   import { ChevronLeftOutline, ChevronRightOutline } from 'flowbite-svelte-icons';
+  import { STANDARD_FADE_DURATION } from '$constants';
 
   export let forward: boolean;
   export let name: string;
@@ -15,7 +17,13 @@
   );
 </script>
 
-<button on:click type="button" class={buttonCls}>
+<button
+  on:click
+  type="button"
+  class={buttonCls}
+  in:fade={{ duration: STANDARD_FADE_DURATION }}
+  out:fade={{ duration: STANDARD_FADE_DURATION }}
+>
   <slot>
     <span
       class={`inline-flex items-center justify-center w-${btnWidth} h-${btnHeight} rounded-full group-hover:bg-white/50 group-focus:outline-none group-focus:ring-4 group-focus:ring-white dark:group-hover:bg-gray-800/60 dark:group-focus:ring-gray-800/70`}

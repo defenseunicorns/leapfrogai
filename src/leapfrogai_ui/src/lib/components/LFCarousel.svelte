@@ -6,8 +6,8 @@
   export let hidden = false;
   export let innerDivClass = '';
   export let scrollAmount = 250;
-  export let btnHeight = '8px';
-  export let btnWidth = '8px';
+  export let btnHeight = null;
+  export let btnWidth = null;
 
   let scrollContainerRef: HTMLDivElement;
   let resizeObserver: ResizeObserver;
@@ -59,7 +59,7 @@
     if (scrollContainerRef) scrollContainerRef.removeEventListener('scroll', checkOverflow);
   });
 
-  $: console.log(isOverflowing);
+
 </script>
 
 <svelte:window on:resize={checkOverflow} />
