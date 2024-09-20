@@ -102,6 +102,8 @@
       threadsStore.updateMessagesState(originalMessages, setMessages, newMessage);
 
       tempId = uuidv4();
+      // We add a temporary message to put a message with loading skeleton on screen
+      // The message content is then replaced with the actual response
       await threadsStore.addTempEmptyMessage(threadId, tempId);
 
       // translate
