@@ -73,6 +73,13 @@ export const FILE_TRANSLATION_ERROR = (override: Partial<ToastData> = {}): Toast
   ...override
 });
 
+export const FILE_TRANSCRIPTION_ERROR = (override: Partial<ToastData> = {}): ToastData => ({
+  kind: 'error',
+  title: 'Transcription Error',
+  subtitle: 'Error transcribing audio file',
+  ...override
+});
+
 export const AUDIO_FILE_SIZE_ERROR_TOAST = (override: Partial<ToastData> = {}): ToastData => ({
   kind: 'error',
   title: 'File Too Large',
