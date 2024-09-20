@@ -29,7 +29,7 @@ from leapfrogai_api.typedef.embeddings import (
     EmbeddingResponseData,
 )
 from leapfrogai_api.typedef.counting import (
-    TokenCountResponseHttp,
+    TokenCountResponse,
 )
 
 
@@ -178,6 +178,6 @@ async def create_token_count(model: Model, request: lfai.TokenCountRequest):
         stub = lfai.TokenCountServiceStub(channel)
         response: lfai.TokenCountResponse = await stub.CountTokens(request)
 
-        return TokenCountResponseHttp(
+        return TokenCountResponse(
             token_count=response.count,
         )
