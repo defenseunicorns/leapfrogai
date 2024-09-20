@@ -40,10 +40,16 @@ message ChatCompletionRequest {
     optional string user = 19;
 }
 
+enum ChatCompletionFinishReason {
+    NONE = 0; // for streaming responses
+    STOP = 1;
+    LENGTH = 2;
+}
+
 message ChatCompletionChoice {
     int32 index = 1;
     ChatItem chat_item = 2;
-    string finish_reason = 3;
+    ChatCompletionFinishReason finish_reason = 3;
 }
 
 message Usage {

@@ -1,5 +1,6 @@
 """gRPC client for OpenAI models."""
 
+import time
 from typing import Iterator, AsyncGenerator, Any, List
 import grpc
 from fastapi.responses import StreamingResponse
@@ -22,6 +23,7 @@ from leapfrogai_api.typedef.chat import (
 from leapfrogai_api.typedef.completion import (
     CompletionChoice,
     CompletionResponse,
+    FinishReason,
 )
 from leapfrogai_api.typedef import Usage
 from leapfrogai_api.typedef.embeddings import (
@@ -42,20 +44,23 @@ async def stream_completion(model: Model, request: lfai.CompletionRequest):
         )
 
 
-# TODO: Clean up completion() and stream_completion() to reduce code duplication
 async def completion(model: Model, request: lfai.CompletionRequest):
     """Complete using the specified model."""
     async with grpc.aio.insecure_channel(model.backend) as channel:
         stub = lfai.CompletionServiceStub(channel)
         response: lfai.CompletionResponse = await stub.Complete(request)
+        finish_reason_enum = FinishReason(response.choices[0].finish_reason)
 
         return CompletionResponse(
+            id=None,
+            object="text_completion",
             model=model.name,
+            created=int(time.time()),
             choices=[
                 CompletionChoice(
                     index=0,
                     text=response.choices[0].text,
-                    finish_reason=str(response.choices[0].finish_reason),
+                    finish_reason=finish_reason_enum.to_string(),
                     logprobs=None,
                 )
             ],
@@ -101,6 +106,8 @@ async def chat_completion(model: Model, request: lfai.ChatCompletionRequest):
     async with grpc.aio.insecure_channel(model.backend) as channel:
         stub = lfai.ChatCompletionServiceStub(channel)
         response: lfai.ChatCompletionResponse = await stub.ChatComplete(request)
+        finish_reason_enum = FinishReason(response.choices[0].finish_reason)
+
         return ChatCompletionResponse(
             model=model.name,
             choices=[
@@ -112,7 +119,7 @@ async def chat_completion(model: Model, request: lfai.ChatCompletionRequest):
                         ).lower(),
                         content=response.choices[0].chat_item.content,
                     ),
-                    finish_reason=response.choices[0].finish_reason,
+                    finish_reason=finish_reason_enum.to_string(),
                 )
             ],
             usage=Usage(
