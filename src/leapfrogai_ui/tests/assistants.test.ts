@@ -7,7 +7,8 @@ import {
   createAssistantWithApi,
   deleteAssistantCard,
   deleteAssistantWithApi,
-  editAssistantCard
+  editAssistantCard,
+  getAssistantWithApi
 } from './helpers/assistantHelpers';
 import { deleteActiveThread, getLastUrlParam, sendMessage } from './helpers/threadHelpers';
 import { loadChatPage } from './helpers/navigationHelpers';
@@ -29,7 +30,10 @@ test('it has a button that navigates to the new assistant page', async ({ page }
   await expect(page).toHaveTitle('LeapfrogAI - New Assistant');
 });
 
-test('it creates an assistant and navigates back to the management page', async ({ page }) => {
+test('it creates an assistant and navigates back to the management page', async ({
+  page,
+  openAIClient
+}) => {
   const assistantInput = getFakeAssistantInput();
 
   await createAssistant(assistantInput, page);
@@ -38,8 +42,18 @@ test('it creates an assistant and navigates back to the management page', async 
   await page.waitForURL('/chat/assistants-management');
   await expect(page.getByTestId(`assistant-card-${assistantInput.name}`)).toBeVisible();
 
+  // Verify created assistant has the correct attributes
+  await editAssistantCard(assistantInput.name, page);
+  await page.waitForURL('/chat/assistants-management/edit/**/*');
+  const assistantId = getLastUrlParam(page);
+  const assistant = await getAssistantWithApi(assistantId, openAIClient);
+  expect(assistant.name).toEqual(assistantInput.name);
+  expect(assistant.description).toEqual(assistantInput.description);
+  expect(assistant.instructions).toEqual(assistantInput.instructions);
+  expect(assistant.temperature).toBeCloseTo(assistantInput.temperature, 0.1);
+
   // cleanup
-  await deleteAssistantCard(assistantInput.name, page);
+  await deleteAssistantWithApi(assistantId, openAIClient);
 });
 
 test('displays an error toast when there is an error creating an assistant and remains on the assistant page', async ({
