@@ -299,7 +299,7 @@ silent-deploy-gpu:
 
 silent-fresh-leapfrogai-gpu:
 	@echo "Cleaning up previous artifacts..."
-	@$(MAKE) clean > /dev/null 2>&1
+	@$(MAKE) clean-artifacts > /dev/null 2>&1
 	@echo "Logs at .logs/*.log"
 	@mkdir -p .logs
 	@echo "Creating a uds gpu enabled cluster..."
@@ -316,7 +316,7 @@ silent-fresh-leapfrogai-gpu:
 
 silent-fresh-leapfrogai-cpu:
 	@echo "Cleaning up previous artifacts..."
-	@$(MAKE) clean > /dev/null 2>&1
+	@$(MAKE) clean-artifacts > /dev/null 2>&1
 	@echo "Logs at .logs/*.log"
 	@mkdir -p .logs
 	@echo "Creating a uds cpu-only cluster..."
