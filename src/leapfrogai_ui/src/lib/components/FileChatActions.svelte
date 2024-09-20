@@ -33,7 +33,7 @@
   $: nonAudioFiles = attachedFileMetadata.filter((file) => !file.type.startsWith('audio/'));
 
   const customBtnClass =
-    'rounded text-xs px-2.5 py-0.5 text-gray-500 bg-gray-100 hover:bg-gray-400 dark:bg-gray-100 dark:text-gray-900 dark:hover:bg-gray-300 truncate';
+    'h-5 rounded text-xs px-2.5 py-0.5 text-gray-500 bg-gray-100 hover:bg-gray-400 dark:bg-gray-100 dark:text-gray-900 dark:hover:bg-gray-300 truncate';
 
   const reset = async () => {
     await threadsStore.setSendingBlocked(false);
@@ -229,6 +229,8 @@
 <LFCarousel
   data-testid="file-actions-carousel"
   hidden={nonAudioFiles.length + audioFiles.length === 0}
+  btnHeight={5}
+  btnWidth={6}
 >
   <div
     id="uploaded-files-actions"

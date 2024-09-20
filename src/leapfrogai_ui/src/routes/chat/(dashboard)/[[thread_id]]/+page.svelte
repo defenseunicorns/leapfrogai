@@ -356,11 +356,16 @@
 
     <div
       class={twMerge(
-        'flex flex-grow flex-col gap-2.5 rounded-lg bg-gray-50 px-4 py-0 dark:bg-gray-700',
+        'flex flex-grow flex-col gap-1 rounded-lg bg-gray-50 px-4 py-0 dark:bg-gray-700',
         attachedFileMetadata.length > 0 && 'py-4'
       )}
     >
-      <LFCarousel data-testid="uploaded-files-carousel" hidden={attachedFileMetadata.length === 0}>
+      <LFCarousel
+        data-testid="uploaded-files-carousel"
+        hidden={attachedFileMetadata.length === 0}
+        btnHeight={14}
+        btnWidth={6}
+      >
         <UploadedFileCards bind:attachedFileMetadata bind:attachedFiles />
       </LFCarousel>
 

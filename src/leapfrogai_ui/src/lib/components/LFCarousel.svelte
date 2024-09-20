@@ -1,16 +1,21 @@
 <script lang="ts">
   import { onDestroy } from 'svelte';
-  import ControlButton from 'flowbite-svelte/ControlButton.svelte';
   import { twMerge } from 'tailwind-merge';
+  import LFControlButton from '$components/LFControlButton.svelte';
 
   export let hidden = false;
   export let innerDivClass = '';
   export let scrollAmount = 250;
+  export let btnHeight = '8px';
+  export let btnWidth = '8px';
 
   let scrollContainerRef: HTMLDivElement;
   let resizeObserver: ResizeObserver;
 
-  let hideButtons = true;
+  let canScrollLeft = false;
+  let canScrollRight = false;
+
+  let isOverflowing = false;
 
   const scrollLeft = () => {
     scrollContainerRef.scrollBy({
@@ -28,8 +33,14 @@
   const checkOverflow = () => {
     if (scrollContainerRef) {
       // Check if the scroll container is overflowing horizontally
-      const isOverflowing = scrollContainerRef.scrollWidth > scrollContainerRef.clientWidth;
-      hideButtons = !isOverflowing; // Show/hide buttons based on overflow
+      isOverflowing = scrollContainerRef.scrollWidth > scrollContainerRef.clientWidth;
+
+      const scrollLeftPos = scrollContainerRef.scrollLeft;
+      const maxScrollLeft = scrollContainerRef.scrollWidth - scrollContainerRef.clientWidth;
+
+      // Check if the container can scroll left or right
+      canScrollLeft = scrollLeftPos > 0;
+      canScrollRight = scrollLeftPos < maxScrollLeft;
     }
   };
 
@@ -47,6 +58,8 @@
   onDestroy(() => {
     if (scrollContainerRef) scrollContainerRef.removeEventListener('scroll', checkOverflow);
   });
+
+  $: console.log(isOverflowing);
 </script>
 
 <svelte:window on:resize={checkOverflow} />
@@ -54,26 +67,41 @@
 {#if hidden}
   <slot {...$$props} />
 {:else}
-  <div class={twMerge('relative flex items-center gap-2')} {...$$props}>
-    <ControlButton
+  <div
+    class={twMerge(
+      'relative flex items-center gap-1',
+      !canScrollLeft && 'ml-7',
+      !canScrollRight && 'me-7'
+    )}
+    {...$$props}
+  >
+    <LFControlButton
       name="Previous"
       forward={false}
       on:click={scrollLeft}
-      class={twMerge(hideButtons ? 'hidden' : 'static block p-0')}
+      class={twMerge(!canScrollLeft ? 'hidden' : 'static block p-0')}
+      {btnHeight}
+      {btnWidth}
     />
 
     <div
       bind:this={scrollContainerRef}
       data-testid="scroll-container"
-      class={twMerge('flex max-w-full overflow-x-auto bg-gray-700', innerDivClass)}
+      class={twMerge(
+        'flex max-w-full flex-col overflow-x-auto bg-gray-700',
+        !isOverflowing && 'mb-[15px]',
+        innerDivClass
+      )}
     >
       <slot />
     </div>
-    <ControlButton
+    <LFControlButton
       name="Next"
       forward={true}
       on:click={scrollRight}
-      class={twMerge(hideButtons ? 'hidden' : 'static block p-0')}
+      class={twMerge(!canScrollRight ? 'hidden' : 'static block p-0')}
+      {btnHeight}
+      {btnWidth}
     />
   </div>
 {/if}
