@@ -21,7 +21,7 @@ async def configure(session: Session, configuration: Configuration):
     Configuration.enable_reranking = configuration.enable_reranking
 
 
-@router.get("/configuration")
+@router.get("/configure")
 async def get_configuration(session: Session = Depends(get_session)):
     """
     Retrieves the current RAG configuration.
