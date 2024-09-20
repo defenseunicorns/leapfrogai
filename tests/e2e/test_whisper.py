@@ -56,7 +56,7 @@ def test_translations(client: OpenAI):
         file=Path("tests/data/arabic-audio.wav"),
         prompt="This is a test translation.",
         response_format="json",
-        temperature=0.5,
+        temperature=0.0,
     )
 
     assert len(translation.text) > 0, "The translation should not be empty"
