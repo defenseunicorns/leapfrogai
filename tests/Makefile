@@ -63,8 +63,8 @@ test-api-integration:
 	fi
 	@env $$(cat .env | xargs) LFAI_RUN_NIAH_TESTS=$(LFAI_RUN_NIAH_TESTS) PYTHONPATH=$$(pwd) pytest -vv -s tests/integration/api
 
-test-api-unit: set-supabase
-	LFAI_RUN_REPEATER_TESTS=$(LFAI_RUN_REPEATER_TESTS) PYTHONPATH=$$(pwd) pytest -vv -s tests/unit
+test-api-unit:
+	LFAI_RUN_REPEATER_TESTS=$(LFAI_RUN_REPEATER_TESTS) PYTHONPATH=$$(pwd) python -m pytest -vv -s tests/unit
 	LFAI_RUN_REPEATER_TESTS=$(LFAI_RUN_REPEATER_TESTS) PYTHONPATH=$$(pwd) python -m pytest -vv -s tests/pytest
 
 test-load:

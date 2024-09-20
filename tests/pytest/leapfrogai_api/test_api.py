@@ -24,6 +24,12 @@ LFAI_CONFIG_PATH = os.environ["LFAI_CONFIG_PATH"] = os.path.join(
 )
 LFAI_CONFIG_FILEPATH = os.path.join(LFAI_CONFIG_PATH, LFAI_CONFIG_FILENAME)
 
+MODEL = "repeater"
+TEXT_INPUT = (
+    "This is the input content for completions, embeddings, and chat completions"
+)
+TEXT_INPUT_LEN = len(TEXT_INPUT)
+
 
 #########################
 #########################
@@ -74,39 +80,54 @@ def test_config_load():
         response = client.get("/leapfrogai/v1/models")
 
         assert response.status_code == 200
-        assert response.json() == {
-            "config_sources": {"repeater-test-config.yaml": ["repeater"]},
-            "models": {"repeater": {"backend": "localhost:50051", "name": "repeater"}},
+        expected_response = {
+            "config_sources": {"repeater-test-config.yaml": [MODEL]},
+            "models": {MODEL: {"backend": "localhost:50051", "name": MODEL}},
+            "directory": LFAI_CONFIG_PATH,
+            "filename": LFAI_CONFIG_FILENAME,
         }
+        assert response.json() == expected_response
 
 
 def test_config_delete(tmp_path):
     """Test that the config is deleted correctly."""
-    # move repeater-test-config.yaml to temp dir so that we can remove it at a later step
+    # Move repeater-test-config.yaml to temp dir so that we can remove it at a later step
     tmp_config_filepath = shutil.copyfile(
         LFAI_CONFIG_FILEPATH, os.path.join(tmp_path, LFAI_CONFIG_FILENAME)
     )
     os.environ["LFAI_CONFIG_PATH"] = str(tmp_path)
 
     with TestClient(app) as client:
-        # ensure the API loads the temp config
+        # Ensure the API loads the temp config
         response = client.get("/leapfrogai/v1/models")
         assert response.status_code == 200
 
-        assert response.json() == {
-            "config_sources": {"repeater-test-config.yaml": ["repeater"]},
-            "models": {"repeater": {"backend": "localhost:50051", "name": "repeater"}},
+        expected_response = {
+            "config_sources": {"repeater-test-config.yaml": [MODEL]},
+            "models": {MODEL: {"backend": "localhost:50051", "name": MODEL}},
+            "directory": os.environ["LFAI_CONFIG_PATH"],
+            "filename": LFAI_CONFIG_FILENAME,
         }
-        # delete source config from temp dir
+        assert response.json() == expected_response
+
+        # Delete source config from temp dir
         os.remove(tmp_config_filepath)
 
-        # wait for the api to be able to detect the change
+        # Wait for the API to detect the change
         time.sleep(0.5)
-        # assert response is now empty
+
+        # Assert response is now empty
         response = client.get("/leapfrogai/v1/models")
         assert response.status_code == 200
-        assert response.json() == {"config_sources": {}, "models": {}}
+        expected_empty_response = {
+            "config_sources": {},
+            "models": {},
+            "directory": os.environ["LFAI_CONFIG_PATH"],
+            "filename": LFAI_CONFIG_FILENAME,
+        }
+        assert response.json() == expected_empty_response
 
+    # Reset the environment variable
     os.environ["LFAI_CONFIG_PATH"] = os.path.join(os.path.dirname(__file__), "fixtures")
 
 
