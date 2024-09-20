@@ -14,9 +14,9 @@ clean-artifacts: # Zarf packages, UDS bundles, Python build artifacts, etc.
 	find . -type d -name '*.egg-info' -exec rm -rf {} +
 
 clean-cache:
-	-rm -rf ./**/__pycache__ ./src/**/__pycache__ ./tests/**/*/__pycache__
-	-rm -rf ./**/.ruff_cache ./src/**/.ruff_cache ./.ruff_cache
-	-rm -rf ./**/.pytest_cache ./.pytest_cache
+	-rm -rf ./**/__pycache__ ./**/*/__pycache__ ./**/**/*/__pycache__
+	-rm -rf ./**/*/.ruff_cache ./**/.ruff_cache
+	-rm -rf ./**/.pytest_cache ./**/*/.pytest_cache
 	-rm -rf ./.mypy_cache
 
 clean-env:

@@ -14,12 +14,7 @@ class FinishReason(Enum):
     def to_string(self) -> str | None:
         if self == FinishReason.NONE:
             return None
-        elif self == FinishReason.STOP:
-            return "stop"
-        elif self == FinishReason.LENGTH:
-            return "length"
-        else:
-            raise ValueError(f"Unsupported finish reason: {self}")
+        return self.name.lower()
 
 
 class CompletionChoice(BaseModel):
