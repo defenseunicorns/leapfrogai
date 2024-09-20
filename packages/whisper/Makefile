@@ -14,4 +14,4 @@ download-model:
 
 dev:
 	make install
-	python -u main.py
+	python -m leapfrogai_sdk.cli --app-dir=src/ main:Model
