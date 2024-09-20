@@ -54,8 +54,11 @@ variables:
     description: "A set of special tokens that signal the model to stop producing further output, delimited using a comma and space"
     pattern: ^(<[^,]+>\s*,\s*)*<[^,]+>\s*$
   - name: PROMPT_FORMAT_CHAT_SYSTEM
+    description: "Prompt template format for the LeapfrogAI SDK to consume and wrap"
   - name: PROMPT_FORMAT_CHAT_USER
+    description: "Prompt template format for the LeapfrogAI SDK to consume and wrap"
   - name: PROMPT_FORMAT_CHAT_ASSISTANT
+    description: "Prompt template format for the LeapfrogAI SDK to consume and wrap"
   - name: TEMPERATURE
     description: "Controls the randomness of the model's output"
     pattern: ^(0(\.\d+)?|1(\.0+)?)$
