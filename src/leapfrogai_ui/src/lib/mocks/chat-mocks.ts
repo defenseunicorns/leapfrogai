@@ -100,9 +100,12 @@ export const mockGetThread = (thread: LFThread) => {
   );
 };
 
-export const mockTranslation = () => {
+export const mockTranslation = ({ delay: delayTime = 0 } = {}) => {
   server.use(
-    http.post('/api/audio/translation', () => {
+    http.post('/api/audio/translation', async () => {
+      if (delayTime) {
+        await delay(delayTime);
+      }
       return HttpResponse.json({ text: 'fake translation' });
     })
   );
@@ -119,6 +122,36 @@ export const mockTranslationError = () => {
 export const mockTranslationFileSizeError = () => {
   server.use(
     http.post('/api/audio/translation', () => {
+      return HttpResponse.json(
+        { message: `ValidationError: ${AUDIO_FILE_SIZE_ERROR_TEXT}` },
+        { status: 400 }
+      );
+    })
+  );
+};
+
+export const mockTranscription = ({ delay: delayTime = 0 } = {}) => {
+  server.use(
+    http.post('/api/audio/transcription', async () => {
+      if (delayTime) {
+        await delay(delayTime);
+      }
+      return HttpResponse.json({ text: 'fake transcription' });
+    })
+  );
+};
+
+export const mockTranscriptionError = () => {
+  server.use(
+    http.post('/api/audio/transcription', () => {
+      return new HttpResponse(null, { status: 500 });
+    })
+  );
+};
+
+export const mockTranscriptionFileSizeError = () => {
+  server.use(
+    http.post('/api/audio/transcription', () => {
       return HttpResponse.json(
         { message: `ValidationError: ${AUDIO_FILE_SIZE_ERROR_TEXT}` },
         { status: 400 }
