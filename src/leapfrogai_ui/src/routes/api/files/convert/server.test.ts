@@ -3,6 +3,7 @@ import { getLocalsMock } from '$lib/mocks/misc';
 import type { RequestEvent } from '@sveltejs/kit';
 import type { RouteParams } from './$types';
 import { afterAll } from 'vitest';
+import { requestWithFormData } from '$helpers/apiHelpers';
 
 // Allows swapping out the mock per test
 const mocks = vi.hoisted(() => {
@@ -93,14 +94,7 @@ describe('/api/files/convert', () => {
 
     const fileContent = new Blob(['dummy content'], { type: 'text/plain' });
     const testFile = new File([fileContent], 'test.txt', { type: 'text/plain' });
-
-    // In the test environment, formData.get('file') does not return a file of type File, so we mock it differently
-    // here
-    const request = {
-      formData: vi.fn().mockResolvedValue({
-        get: vi.fn().mockReturnValue(testFile)
-      })
-    } as unknown as Request;
+    const request = requestWithFormData(testFile);
 
     await expect(
       POST({ request, params: {}, locals: getLocalsMock() } as RequestEvent<
@@ -125,13 +119,7 @@ describe('/api/files/convert', () => {
     const testFile = new File([fileContent], 'test.txt', { type: 'text/plain' });
     testFile.arrayBuffer = async () => fileContent.buffer;
 
-    // In the test environment, formData.get('file') does not return a file of type File, so we mock it differently
-    // here
-    const request = {
-      formData: vi.fn().mockResolvedValue({
-        get: vi.fn().mockReturnValue(testFile)
-      })
-    } as unknown as Request;
+    const request = requestWithFormData(testFile);
 
     const res = await POST({ request, params: {}, locals: getLocalsMock() } as RequestEvent<
       RouteParams,
