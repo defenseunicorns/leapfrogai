@@ -4,8 +4,8 @@ from leapfrogai_api.routers.supabase_session import Session
 from leapfrogai_api.utils.config import Config
 from leapfrogai_api.utils import get_model_config
 from leapfrogai_api.typedef.counting import (
-    TokenCountRequestHttp,
-    TokenCountResponseHttp,
+    TokenCountRequest,
+    TokenCountResponse,
 )
 from leapfrogai_api.backend.grpc_client import create_token_count
 import leapfrogai_sdk as lfai
@@ -17,8 +17,8 @@ router = APIRouter(prefix="/leapfrogai/v1/count", tags=["leapfrogai/count"])
 async def tokens(
     session: Session,
     model_config: Annotated[Config, Depends(get_model_config)],
-    request: TokenCountRequestHttp,
-) -> TokenCountResponseHttp:
+    request: TokenCountRequest,
+) -> TokenCountResponse:
     model = model_config.get_model_backend(request.model)
 
     if not model:

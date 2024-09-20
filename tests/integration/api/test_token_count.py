@@ -6,8 +6,8 @@ from fastapi.testclient import TestClient
 
 from leapfrogai_api.routers.leapfrogai.count import router
 from leapfrogai_api.typedef.counting import (
-    TokenCountRequestHttp,
-    TokenCountResponseHttp,
+    TokenCountRequest,
+    TokenCountResponse,
 )
 
 CHAT_MODEL = "test-chat"
@@ -33,25 +33,25 @@ client = TestClient(router, headers=headers)
 
 def test_token_count():
     """Test token counting"""
-    request = TokenCountRequestHttp(
+    request = TokenCountRequest(
         model=CHAT_MODEL, text="This is a test sentence for token counting."
     )
 
     response = client.post("/leapfrogai/v1/count/tokens", json=request.model_dump())
 
     assert response.status_code == status.HTTP_200_OK
-    token_count_response = TokenCountResponseHttp.model_validate(response.json())
+    token_count_response = TokenCountResponse.model_validate(response.json())
     assert token_count_response.token_count > 0, "Token count should be greater than 0"
 
 
 def test_token_count_empty_text():
     """Test token counting with empty text"""
-    request = TokenCountRequestHttp(model=CHAT_MODEL, text="")
+    request = TokenCountRequest(model=CHAT_MODEL, text="")
 
     response = client.post("/leapfrogai/v1/count/tokens", json=request.model_dump())
 
     assert response.status_code == status.HTTP_200_OK
-    token_count_response = TokenCountResponseHttp.model_validate(response.json())
+    token_count_response = TokenCountResponse.model_validate(response.json())
     assert (
         token_count_response.token_count == 0
     ), "Token count should be 0 for empty text"
@@ -59,9 +59,7 @@ def test_token_count_empty_text():
 
 def test_token_count_invalid_model():
     """Test token counting with an invalid model"""
-    request = TokenCountRequestHttp(
-        model=INVALID_MODEL, text="This is a test sentence."
-    )
+    request = TokenCountRequest(model=INVALID_MODEL, text="This is a test sentence.")
 
     response = client.post("/leapfrogai/v1/count/tokens", json=request.model_dump())
 
@@ -80,12 +78,12 @@ def test_token_count_various_lengths():
     token_counts = []
 
     for text in texts:
-        request = TokenCountRequestHttp(model=CHAT_MODEL, text=text)
+        request = TokenCountRequest(model=CHAT_MODEL, text=text)
 
         response = client.post("/leapfrogai/v1/count/tokens", json=request.model_dump())
 
         assert response.status_code == status.HTTP_200_OK
-        token_count_response = TokenCountResponseHttp.model_validate(response.json())
+        token_count_response = TokenCountResponse.model_validate(response.json())
         token_counts.append(token_count_response.token_count)
 
     # Assert that each text has more tokens than the previous one

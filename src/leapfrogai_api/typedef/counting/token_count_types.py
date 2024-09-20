@@ -1,13 +1,13 @@
 from pydantic import BaseModel, Field
 
 
-class TokenCountResponseHttp(BaseModel):
+class TokenCountResponse(BaseModel):
     """Response object for token count."""
 
     token_count: int = Field(..., description="The number of tokens in the text.")
 
 
-class TokenCountRequestHttp(BaseModel):
+class TokenCountRequest(BaseModel):
     """Request object for token count."""
 
     model: str = Field(
