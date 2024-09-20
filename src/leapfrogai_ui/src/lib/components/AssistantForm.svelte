@@ -156,12 +156,12 @@
 
     <Slider
       id="temperature"
-      name="temperature"
       label="Temperature"
       bind:value={$form.temperature}
       tooltipText="Adjust the slider to set the creativity level of your assistant's responses"
       showThumb={false}
     />
+    <input type="hidden" name="temperature" value={$form.temperature} />
 
     <div class="mb-6">
       <LFLabel
