@@ -3,6 +3,8 @@
 import os
 from fastapi import status
 from fastapi.testclient import TestClient
+import pytest
+from fastapi import HTTPException
 
 from leapfrogai_api.routers.leapfrogai.count import router
 from leapfrogai_api.typedef.counting import (
@@ -61,10 +63,11 @@ def test_token_count_invalid_model():
     """Test token counting with an invalid model"""
     request = TokenCountRequest(model=INVALID_MODEL, text="This is a test sentence.")
 
-    response = client.post("/leapfrogai/v1/count/tokens", json=request.model_dump())
+    with pytest.raises(HTTPException) as excinfo:
+        client.post("/leapfrogai/v1/count/tokens", json=request.model_dump())
 
-    assert response.status_code == status.HTTP_404_NOT_FOUND
-    assert response.json()["detail"] == "Model 'invalid-model' not found"
+    assert excinfo.value.status_code == status.HTTP_404_NOT_FOUND
+    assert excinfo.value.detail == f"Model '{INVALID_MODEL}' not found"
 
 
 def test_token_count_various_lengths():
