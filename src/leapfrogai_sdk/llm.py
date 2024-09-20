@@ -14,6 +14,8 @@ from leapfrogai_sdk import (
     CompletionResponse,
     GrpcContext,
     CompletionUsage,
+    TokenCountRequest,
+    TokenCountResponse,
 )
 from leapfrogai_sdk.chat.chat_pb2 import Usage
 from enum import Enum
@@ -251,6 +253,13 @@ def LLM(_cls):
             )
 
             yield last_response
+
+        async def CountTokens(
+            self, request: TokenCountRequest, context: GrpcContext
+        ) -> TokenCountResponse:
+            token_count: int = await self.count_tokens(request.text)
+
+            return TokenCountResponse(count=token_count)
 
     NewClass.__name__ = _cls.__name__
     return NewClass
