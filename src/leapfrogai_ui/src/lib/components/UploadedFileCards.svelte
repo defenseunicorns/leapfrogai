@@ -11,7 +11,11 @@
   };
 </script>
 
-<div id="uploaded-files" class={attachedFileMetadata.length > 0 ? ' flex  gap-2 py-2' : 'hidden'}>
+<div
+  id="uploaded-files"
+  data-testid="uploaded-files"
+  class={attachedFileMetadata.length > 0 ? ' flex  gap-2 py-2' : 'hidden'}
+>
   {#each attachedFileMetadata as fileMetadata}
     <UploadedFileCard {fileMetadata} on:delete={() => handleRemoveFile(fileMetadata.id)} />
   {/each}

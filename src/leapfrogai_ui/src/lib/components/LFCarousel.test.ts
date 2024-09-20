@@ -101,4 +101,35 @@ describe('LFCarousel', () => {
 
     expect(removeEventListenerSpy).toHaveBeenCalledWith('scroll', expect.any(Function));
   });
+
+  it('hides buttons when the window is resized', async () => {
+    render(LFCarousel);
+
+    const scrollContainer = screen.getByTestId('scroll-container') as HTMLDivElement;
+
+    // create an overflow condition
+    Object.defineProperty(scrollContainer, 'scrollWidth', { value: 1000, configurable: true });
+    Object.defineProperty(scrollContainer, 'clientWidth', { value: 500, configurable: true });
+
+    // Trigger the checkOverflow to ensure buttons are initially visible
+    await fireEvent.scroll(scrollContainer);
+    let previousButton = screen.getByText('Previous').parentElement?.parentElement;
+    let nextButton = screen.getByText('Next').parentElement?.parentElement;
+    expect(previousButton?.classList.contains('hidden')).toBe(false);
+    expect(nextButton?.classList.contains('hidden')).toBe(false);
+
+    // remove overflow condition
+    Object.defineProperty(scrollContainer, 'scrollWidth', { value: 500, configurable: true });
+    Object.defineProperty(scrollContainer, 'clientWidth', { value: 500, configurable: true });
+
+    // Simulate window resize event
+    await fireEvent(window, new Event('resize'));
+
+    previousButton = screen.getByText('Previous').parentElement?.parentElement;
+    nextButton = screen.getByText('Next').parentElement?.parentElement;
+
+    // buttons are hidden after resize
+    expect(previousButton?.classList.contains('hidden')).toBe(true);
+    expect(nextButton?.classList.contains('hidden')).toBe(true);
+  });
 });

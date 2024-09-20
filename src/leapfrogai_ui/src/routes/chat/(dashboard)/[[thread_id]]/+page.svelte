@@ -360,7 +360,7 @@
         attachedFileMetadata.length > 0 && 'py-4'
       )}
     >
-      <LFCarousel hidden={attachedFileMetadata.length === 0}>
+      <LFCarousel data-testid="uploaded-files-carousel" hidden={attachedFileMetadata.length === 0}>
         <UploadedFileCards bind:attachedFileMetadata bind:attachedFiles />
       </LFCarousel>
 

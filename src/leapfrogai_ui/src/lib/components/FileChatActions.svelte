@@ -224,7 +224,10 @@
   };
 </script>
 
-<LFCarousel hidden={nonAudioFiles.length + audioFiles.length === 0}>
+<LFCarousel
+  data-testid="file-actions-carousel"
+  hidden={nonAudioFiles.length + audioFiles.length === 0}
+>
   <div
     id="uploaded-files-actions"
     class={nonAudioFiles.length + audioFiles.length > 0 ? 'flex gap-2  py-2' : 'hidden'}

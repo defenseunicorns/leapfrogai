@@ -47,15 +47,14 @@
   onDestroy(() => {
     if (scrollContainerRef) scrollContainerRef.removeEventListener('scroll', checkOverflow);
   });
-
 </script>
 
 <svelte:window on:resize={checkOverflow} />
 
 {#if hidden}
-  <slot />
+  <slot {...$$props} />
 {:else}
-  <div class={twMerge('relative flex items-center gap-2')}>
+  <div class={twMerge('relative flex items-center gap-2')} {...$$props}>
     <ControlButton
       name="Previous"
       forward={false}

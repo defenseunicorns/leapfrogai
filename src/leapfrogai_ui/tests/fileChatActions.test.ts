@@ -122,3 +122,43 @@ test("it can summarize a file's content", async ({ page, openAIClient }) => {
   deleteFixtureFile(pdfFilename);
   await deleteActiveThread(page, openAIClient);
 });
+
+test('has buttons to scroll when there are lots of files for both the list of uploaded files and file actions', async ({
+  page
+}) => {
+  const fakeContent = faker.word.words(3);
+  const fileNames: string[] = [];
+  for (let i = 0; i < 10; i++) {
+    const fileName = await createPDF({
+      content: fakeContent,
+      filename: `${faker.word.noun()}.pdf`
+    });
+    fileNames.push(fileName);
+  }
+
+  await loadChatPage(page);
+
+  const fileActionsCarousel = page.getByTestId('file-actions-carousel');
+  const uploadedFilesCarousel = page.getByTestId('uploaded-files-carousel');
+
+  await expect(fileActionsCarousel.getByText('Previous')).not.toBeVisible();
+  await expect(fileActionsCarousel.getByText('Next')).not.toBeVisible();
+  await expect(uploadedFilesCarousel.getByText('Previous')).not.toBeVisible();
+  await expect(uploadedFilesCarousel.getByText('Next')).not.toBeVisible();
+
+  await uploadFiles({
+    page,
+    filenames: fileNames,
+    testId: 'upload-file-btn'
+  });
+
+  await expect(fileActionsCarousel.getByText('Previous')).toBeVisible();
+  await expect(fileActionsCarousel.getByText('Next')).toBeVisible();
+  await expect(uploadedFilesCarousel.getByText('Previous')).toBeVisible();
+  await expect(uploadedFilesCarousel.getByText('Next')).toBeVisible();
+
+  //cleanup
+  for (const filename of fileNames) {
+    deleteFixtureFile(filename);
+  }
+});
