@@ -47,7 +47,6 @@ test('it creates an assistant and navigates back to the management page', async 
   await page.waitForURL('/chat/assistants-management/edit/**/*');
   const assistantId = getLastUrlParam(page);
   const assistant = await getAssistantWithApi(assistantId, openAIClient);
-  console.log('assistant', assistant);
   expect(assistant.name).toEqual(assistantInput.name);
   expect(assistant.description).toEqual(assistantInput.description);
   expect(assistant.instructions).toEqual(assistantInput.instructions);
