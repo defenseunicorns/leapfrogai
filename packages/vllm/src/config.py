@@ -96,6 +96,7 @@ class AppConfig(BaseConfig):
                 "gpu_memory_utilization": "backend_options.gpu_memory_utilization",
                 "worker_use_ray": "backend_options.worker_use_ray",
                 "engine_use_ray": "backend_options.engine_use_ray",
+                "load_format": "backend_options.load_format",
             },
         )
     ]
