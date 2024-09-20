@@ -1,11 +1,17 @@
 """Service for querying the RAG model."""
 
+from typing import Annotated, List
+from fastapi import Depends
 from supabase import AClient as AsyncClient
 from langchain_core.embeddings import Embeddings
 from leapfrogai_api.backend.rag.leapfrogai_embeddings import LeapfrogAIEmbeddings
+from leapfrogai_api.backend.rag.reranker import Reranker
 from leapfrogai_api.data.crud_vector_content import CRUDVectorContent
+from leapfrogai_api.typedef.rag.rag_types import Configuration
 from leapfrogai_api.typedef.vectorstores.search_types import SearchResponse
 from leapfrogai_api.backend.constants import TOP_K
+from leapfrogai_api.utils import get_model_config
+from leapfrogai_api.utils.config import Config
 
 # Allows for overwriting type of embeddings that will be instantiated
 embeddings_type: type[Embeddings] | type[LeapfrogAIEmbeddings] | None = (
@@ -22,7 +28,11 @@ class QueryService:
         self.embeddings = embeddings_type()
 
     async def query_rag(
-        self, query: str, vector_store_id: str, k: int = TOP_K
+        self,
+        query: str,
+        vector_store_id: str,
+        model_config: Annotated[Config, Depends(get_model_config)],
+        k: int = TOP_K,
     ) -> SearchResponse:
         """
         Query the Vector Store.
@@ -36,11 +46,50 @@ class QueryService:
             SearchResponse: The search response from the vector store.
         """
 
+        results = SearchResponse(data=[])
+
         # 1. Embed query
         vector = await self.embeddings.aembed_query(query)
 
         # 2. Perform similarity search
         crud_vector_content = CRUDVectorContent(db=self.db)
-        return await crud_vector_content.similarity_search(
+        results = await crud_vector_content.similarity_search(
             query=vector, vector_store_id=vector_store_id, k=k
         )
+
+        # 3. Rerank results
+        if Configuration.enable_reranking:
+            reranker = Reranker(model_config=model_config)
+            reranked_results: list[str] = await reranker.rerank(
+                query, [result.content for result in results.data]
+            )
+            results = rerank_search_response(results, reranked_results)
+
+        return results
+
+
+def rerank_search_response(
+    original_response: SearchResponse, reranked_results: List[str]
+) -> SearchResponse:
+    """
+    Reorder the SearchResponse based on reranked results.
+
+    Args:
+        original_response (SearchResponse): The original search response.
+        reranked_results (List[str]): List of reranked content strings.
+
+    Returns:
+        SearchResponse: A new SearchResponse with reordered items.
+    """
+    # Create a mapping of content to original SearchItem
+    content_to_item = {item.content: item for item in original_response.data}
+
+    # Create new SearchItems based on reranked results
+    reranked_items = []
+    for content in reranked_results:
+        if content in content_to_item:
+            item = content_to_item[content]
+            reranked_items.append(item)
+
+    # Create a new SearchResponse with reranked items
+    return SearchResponse(data=reranked_items)
