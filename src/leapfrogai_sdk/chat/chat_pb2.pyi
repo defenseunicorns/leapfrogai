@@ -19,10 +19,19 @@ class ChatRole(int, metaclass=_enum_type_wrapper.EnumTypeWrapper):
     FUNCTION: _ClassVar[ChatRole]
     ASSISTANT: _ClassVar[ChatRole]
 
+class ChatCompletionFinishReason(int, metaclass=_enum_type_wrapper.EnumTypeWrapper):
+    __slots__ = ()
+    NONE: _ClassVar[ChatCompletionFinishReason]
+    STOP: _ClassVar[ChatCompletionFinishReason]
+    LENGTH: _ClassVar[ChatCompletionFinishReason]
+
 USER: ChatRole
 SYSTEM: ChatRole
 FUNCTION: ChatRole
 ASSISTANT: ChatRole
+NONE: ChatCompletionFinishReason
+STOP: ChatCompletionFinishReason
+LENGTH: ChatCompletionFinishReason
 
 class ChatItem(_message.Message):
     __slots__ = ("role", "content")
@@ -58,6 +67,7 @@ class ChatCompletionRequest(_message.Message):
         "seed",
         "user",
     )
+
     class LogitBiasEntry(_message.Message):
         __slots__ = ("key", "value")
         KEY_FIELD_NUMBER: _ClassVar[int]
@@ -136,12 +146,12 @@ class ChatCompletionChoice(_message.Message):
     FINISH_REASON_FIELD_NUMBER: _ClassVar[int]
     index: int
     chat_item: ChatItem
-    finish_reason: str
+    finish_reason: ChatCompletionFinishReason
     def __init__(
         self,
         index: _Optional[int] = ...,
         chat_item: _Optional[_Union[ChatItem, _Mapping]] = ...,
-        finish_reason: _Optional[str] = ...,
+        finish_reason: _Optional[_Union[ChatCompletionFinishReason, str]] = ...,
     ) -> None: ...
 
 class Usage(_message.Message):
