@@ -38,8 +38,9 @@ jobs:
       - name: Checkout Repo
         uses: actions/checkout@b4ffde65f46336ab88eb53be808477a3936bae11 # v4.1.1
         with:
+          # LeapfrogAI 0.12.2 + integration tests PR
           # x-release-please-start-version
-          ref: "caf4f9c3093a55a003b49fcbf05c03221be6a232" # 0.12.2 w/ integration tests turned-on
+          ref: "11526e8fe28d7699f8a7bf115d7920f95f66ea8e"
           # x-release-please-end
 
       - name: Setup Python
@@ -79,6 +80,7 @@ jobs:
           uds zarf tools yq -i '.packages[1] |= .ref = "registry1"' bundles/latest/cpu/uds-bundle.yaml
           uds zarf tools yq -i '.packages[1] |= .path = "../../../packages/api"' bundles/latest/cpu/uds-bundle.yaml
           uds zarf tools yq -i '.metadata.version = "registry1"' bundles/latest/cpu/uds-bundle.yaml
+          cat bundles/latest/cpu/uds-bundle.yaml
 
       - name: Create and Deploy Bundle
         run: |
