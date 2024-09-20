@@ -70,3 +70,11 @@ python src/model_download.py
 # Start the model backend
 make dev
 ```
+
+#### Local Docker Container
+
+To run the Docker container, use the following Makefile command in the root of this sub-directory:
+
+```bash
+LOCAL_VERSION=dev make docker
+```
