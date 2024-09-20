@@ -42,6 +42,7 @@ class OpenAI {
     listAssistants: boolean;
     deleteFile: boolean;
     fileContent: boolean;
+    translation: boolean;
   };
 
   constructor({ apiKey, baseURL }: { apiKey: string; baseURL: string }) {
@@ -71,7 +72,8 @@ class OpenAI {
       updateAssistant: false,
       listAssistants: false,
       deleteFile: false,
-      fileContent: false
+      fileContent: false,
+      translation: false
     };
   }
 
@@ -116,6 +118,17 @@ class OpenAI {
   private resetError(key: keyof typeof this.errors) {
     this.errors[key] = false;
   }
+
+  audio = {
+    translations: {
+      create: vi.fn().mockImplementation(() => {
+        if (this.errors.translation) this.throwError('translation');
+        return Promise.resolve({
+          text: 'Fake translation'
+        });
+      })
+    }
+  };
 
   files = {
     retrieve: vi.fn().mockImplementation((id) => {

@@ -16,7 +16,6 @@ export const POST: RequestHandler = async ({ request, locals: { session } }) => 
   try {
     requestData = (await request.json()) as NewMessageInput;
     if (requestData.lengthOverride) {
-      // TODO
       await messageInputSchema.validate(requestData, { abortEarly: false });
     } else {
       await messageInputSchema.validate(requestData, { abortEarly: false });
