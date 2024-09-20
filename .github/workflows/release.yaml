@@ -128,7 +128,7 @@ jobs:
         run: |
           docker buildx build --build-arg LOCAL_VERSION=${{ steps.get_version.outputs.LFAI_VERSION }} -t ghcr.io/defenseunicorns/leapfrogai/vllm:${{ steps.get_version.outputs.LFAI_VERSION }} --push -f packages/vllm/Dockerfile .
 
-          zarf package create packages/vllm --set=IMAGE_VERSION=${{ steps.get_version.outputs.LFAI_VERSION }} --flavor upstream --confirm
+          ZARF_CONFIG=packages/vllm/zarf-config.yaml zarf package create packages/vllm --set=IMAGE_VERSION=${{ steps.get_version.outputs.LFAI_VERSION }} --flavor upstream --confirm
 
           zarf package publish zarf-package-vllm-amd64-${{ steps.get_version.outputs.LFAI_VERSION }}.tar.zst oci://ghcr.io/defenseunicorns/packages/uds/leapfrogai
 
