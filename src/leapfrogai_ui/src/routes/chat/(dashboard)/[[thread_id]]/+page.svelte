@@ -28,6 +28,7 @@
   import UploadedFileCards from '$components/UploadedFileCards.svelte';
   import ChatFileUploadForm from '$components/ChatFileUpload.svelte';
   import FileChatActions from '$components/FileChatActions.svelte';
+  import LFCarousel from '$components/LFCarousel.svelte';
 
   export let data;
 
@@ -355,11 +356,18 @@
 
     <div
       class={twMerge(
-        'flex flex-grow flex-col gap-2.5 rounded-lg bg-gray-50 px-4 py-0 dark:bg-gray-700',
+        'flex flex-grow flex-col gap-1 rounded-lg bg-gray-50 px-4 py-0 dark:bg-gray-700',
         attachedFileMetadata.length > 0 && 'py-4'
       )}
     >
-      <UploadedFileCards bind:attachedFileMetadata bind:attachedFiles />
+      <LFCarousel
+        data-testid="uploaded-files-carousel"
+        hidden={attachedFileMetadata.length === 0}
+        btnHeight={14}
+        btnWidth={6}
+      >
+        <UploadedFileCards bind:attachedFileMetadata bind:attachedFiles />
+      </LFCarousel>
 
       <div id="chat-row" class="flex w-full items-center gap-1">
         {#if !assistantMode}
@@ -410,6 +418,7 @@
         bind:attachedFiles
         originalMessages={$chatMessages}
         setMessages={setChatMessages}
+        append={chatAppend}
       />
     </div>
   </div>
