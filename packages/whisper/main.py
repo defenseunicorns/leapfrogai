@@ -18,7 +18,7 @@ model_path = os.environ.get("LFAI_MODEL_PATH", ".model")
 GPU_ENABLED = True if int(os.environ.get("GPU_REQUEST", 0)) > 0 else False
 
 
-def make_transcribe_request(filename, task, language, temperature, prompt):
+def make_whisper_request(filename, task, language, temperature, prompt):
     device = "cuda" if GPU_ENABLED else "cpu"
     model = WhisperModel(model_path, device=device, compute_type="float32")
 
@@ -67,7 +67,7 @@ def call_whisper(
     prompt = ""
     temperature = 0.0
     # By default, automatically detect the language
-    inputLanguage = None
+    input_language = None
 
     for request in request_iterator:
         metadata = request.metadata
@@ -82,21 +82,19 @@ def call_whisper(
             updated = True
 
         if metadata.inputlanguage:
-            inputLanguage = metadata.inputlanguage
+            input_language = metadata.inputlanguage
             updated = True
 
         if updated:
             logger.info(
-                f"Updated metadata: Prompt='{prompt}', Temperature={temperature}, Input Language='{inputLanguage}'"
+                f"Updated metadata: Prompt='{prompt}', Temperature={temperature}, Input Language='{input_language}'"
             )
         else:
             data.extend(request.chunk_data)
 
     with tempfile.NamedTemporaryFile("wb") as f:
         f.write(data)
-        result = make_transcribe_request(
-            f.name, task, inputLanguage, temperature, prompt
-        )
+        result = make_whisper_request(f.name, task, input_language, temperature, prompt)
         text = str(result["text"])
 
         if task == "transcribe":
