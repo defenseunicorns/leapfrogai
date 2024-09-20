@@ -11,7 +11,7 @@
 
   let buttonCls: string;
   $: buttonCls = twMerge(
-    'flex absolute top-0 z-30 justify-center items-center px-4 h-full group focus:outline-none text-white dark:text-gray-300',
+    'flex top-0 z-30 justify-center items-center px-4 h-full group focus:outline-none text-white dark:text-gray-300',
     forward ? 'end-0' : 'start-0',
     $$props.class
   );
@@ -26,7 +26,7 @@
 >
   <slot>
     <span
-      class={`inline-flex items-center justify-center w-${btnWidth} h-${btnHeight} rounded-full group-hover:bg-white/50 group-focus:outline-none group-focus:ring-4 group-focus:ring-white dark:group-hover:bg-gray-800/60 dark:group-focus:ring-gray-800/70`}
+      class={`inline-flex items-center justify-center w-${btnWidth} h-${btnHeight} group-hover:bg-white/50 group-focus:outline-none dark:group-hover:bg-gray-800/60 dark:group-focus:ring-gray-800/70`}
     >
       {#if forward}
         <ChevronRightOutline class="h-4 w-4" />

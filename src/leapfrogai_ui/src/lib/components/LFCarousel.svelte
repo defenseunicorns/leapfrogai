@@ -67,9 +67,9 @@
 {:else}
   <div
     class={twMerge(
-      'relative flex items-center gap-1',
-      !canScrollLeft && 'ml-7',
-      !canScrollRight && 'me-7'
+      'relative flex items-center ',
+      !canScrollLeft && 'ml-6',
+      !canScrollRight && 'me-6'
     )}
     {...$$props}
   >
@@ -77,7 +77,7 @@
       name="Previous"
       forward={false}
       on:click={scrollLeft}
-      class={twMerge(!canScrollLeft ? 'hidden' : 'static block p-0')}
+      class={twMerge(!canScrollLeft ? 'hidden' : 'static flex  p-0 ')}
       {btnHeight}
       {btnWidth}
     />
@@ -86,8 +86,8 @@
       bind:this={scrollContainerRef}
       data-testid="scroll-container"
       class={twMerge(
-        'flex max-w-full flex-col overflow-x-auto bg-gray-700',
-        !isOverflowing && 'mb-[15px]',
+        'no-scrollbar flex max-w-full flex-col overflow-x-auto bg-gray-700',
+        !isOverflowing,
         innerDivClass
       )}
     >
@@ -97,7 +97,7 @@
       name="Next"
       forward={true}
       on:click={scrollRight}
-      class={twMerge(!canScrollRight ? 'hidden' : 'static block p-0')}
+      class={twMerge(!canScrollRight ? 'hidden' : 'static flex  p-0')}
       {btnHeight}
       {btnWidth}
     />

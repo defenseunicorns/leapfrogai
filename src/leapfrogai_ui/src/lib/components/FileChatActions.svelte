@@ -238,7 +238,10 @@
   >
     {#each audioFiles as file}
       {#if file.status === 'complete'}
-        <div in:fade={{ duration: STANDARD_FADE_DURATION }}>
+        <div
+          in:fade={{ duration: STANDARD_FADE_DURATION }}
+          class="flex items-center justify-center"
+        >
           <Button
             color="dark"
             class={customBtnClass}
@@ -248,7 +251,10 @@
             {`Translate ${shortenFileName(file.name)}`}</Button
           >
         </div>
-        <div in:fade={{ duration: STANDARD_FADE_DURATION }}>
+        <div
+          in:fade={{ duration: STANDARD_FADE_DURATION }}
+          class="flex items-center justify-center"
+        >
           <Button
             color="dark"
             class={customBtnClass}
@@ -265,6 +271,7 @@
         <div
           in:fade={{ duration: STANDARD_FADE_DURATION }}
           out:fade={{ duration: STANDARD_FADE_DURATION }}
+          class="flex items-center justify-center"
         >
           <Button
             color="dark"
