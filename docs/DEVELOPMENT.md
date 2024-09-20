@@ -316,7 +316,7 @@ docker info | grep "nvidia"
 Try running the CUDA sample tests in the cluster: [CUDA Vector Add](../packages/k3d-gpu/test/cuda-vector-add.yaml). This can be deployed by executing the following on an existing cluster with NVIDIA GPU operator and/or NVIDIA device plugin daemonset installed:
 
 ```bash
-uds zarf tools kubectl apply -f packages/k3d-gpu/test/cuda-vector-add.yaml
+make test-uds-gpu-cluster
 ```
 
 #### Memory Errors or Process Locks
