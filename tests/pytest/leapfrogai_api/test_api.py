@@ -151,6 +151,7 @@ def test_routes():
         "/openai/v1/audio/translations": ["POST"],
         "/openai/v1/files": ["POST"],
         "/openai/v1/assistants": ["POST"],
+        "/leapfrogai/v1/count/tokens": ["POST"],
     }
 
     openai_routes = [
@@ -521,3 +522,21 @@ def test_stream_chat_completion(dummy_auth_middleware):
 
         # The repeater only responds with 1 message, the exact one that was prompted
         assert iter_length == input_length
+
+
+@pytest.mark.skipif(
+    os.environ.get("LFAI_RUN_REPEATER_TESTS") != "true",
+    reason="LFAI_RUN_REPEATER_TESTS envvar was not set to true",
+)
+def test_token_count(dummy_auth_middleware):
+    """Test the token count endpoint."""
+    with TestClient(app) as client:
+        input_text = "This is a test sentence for token counting."
+        token_count_request = {"model": "repeater", "text": input_text}
+        response = client.post("/leapfrogai/v1/count/tokens", json=token_count_request)
+        assert response.status_code == 200
+
+        response_data = response.json()
+        assert "token_count" in response_data
+        assert isinstance(response_data["token_count"], int)
+        assert response_data["token_count"] == len(input_text)
