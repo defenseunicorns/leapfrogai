@@ -165,6 +165,7 @@ export const handleMessageEdit = async ({
       metadata: message.metadata
     });
     await threadsStore.addMessageToStore(newMessage);
+
     await append(cMessage);
   }
 };
