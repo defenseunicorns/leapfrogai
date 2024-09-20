@@ -52,12 +52,12 @@ def from_text_to_message(text: str, search_responses: SearchResponse) -> Message
     all_vector_ids: list[str] = []
     annotations: list[FileCitationAnnotation | FilePathAnnotation] = []
 
-    for i, search_response in search_responses:
+    for search_response in search_responses.data:
         all_file_ids += f"[{search_response.file_id}]"
-        all_vector_ids.append(search_response.vector_id)
+        all_vector_ids.append(search_response.id)
         annotations.append(
             FileCitationAnnotation(
-                text=f"【{i}:0†source】",
+                text="【4:0†source】",  # TODO: What should these numbers be? Who even knows...
                 file_citation=FileCitation(
                     file_id=search_response.file_id, quote=search_response.content
                 ),
