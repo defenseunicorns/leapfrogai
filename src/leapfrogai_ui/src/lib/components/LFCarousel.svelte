@@ -5,6 +5,7 @@
 
   export let hidden = false;
   export let innerDivClass = '';
+  export let scrollAmount = 250;
 
   let scrollContainerRef: HTMLDivElement;
   let resizeObserver: ResizeObserver;
@@ -13,13 +14,13 @@
 
   const scrollLeft = () => {
     scrollContainerRef.scrollBy({
-      left: -250,
+      left: scrollAmount * -1,
       behavior: 'smooth'
     });
   };
   const scrollRight = () => {
     scrollContainerRef.scrollBy({
-      left: 250,
+      left: scrollAmount,
       behavior: 'smooth'
     });
   };
@@ -46,6 +47,7 @@
   onDestroy(() => {
     if (scrollContainerRef) scrollContainerRef.removeEventListener('scroll', checkOverflow);
   });
+
 </script>
 
 <svelte:window on:resize={checkOverflow} />
@@ -63,6 +65,7 @@
 
     <div
       bind:this={scrollContainerRef}
+      data-testid="scroll-container"
       class={twMerge('flex max-w-full overflow-x-auto bg-gray-700', innerDivClass)}
     >
       <slot />
