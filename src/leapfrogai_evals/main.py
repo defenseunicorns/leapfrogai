@@ -1,7 +1,7 @@
 from deepeval.test_case import LLMTestCase
 from deepeval.metrics import AnswerRelevancyMetric
 from deepeval.benchmarks import MMLU, HumanEval
-from deepeval.benchmarks.tasks import MMLUTask  # , HumanEvalTask
+from deepeval.benchmarks.tasks import MMLUTask, HumanEvalTask
 
 import logging
 import numpy as np
@@ -166,8 +166,9 @@ class RAGEvaluator:
             logging.info(f"successes: {successes}")
             logging.info(f"reasons: {reasons}")
 
-    def mmlu(self, n_shots: Optional[int] = None):
+    def mmlu(self, n_shots: Optional[int] = None) -> None:
         """Runs the Massive Multitask Language Understanding (MMLU) benchmark on a subset of tasks"""
+        # TODO: make task selection more flexible
         tasks = [
             MMLUTask.COLLEGE_COMPUTER_SCIENCE,
             MMLUTask.US_FOREIGN_POLICY,
@@ -190,25 +191,39 @@ class RAGEvaluator:
         self,
         num_samples: Optional[int] = None,
         k: Optional[int] = None,
-    ):
+        num_tasks: Optional[int] = None,
+    ) -> None:
         """Runs the HumanEval benchmark"""
-        # tasks = [
-        #     HumanEvalTask.TRUNCATE_NUMBER,
-        #     HumanEvalTask.BELOW_ZERO,
-        #     HumanEvalTask.INTERSPERSE,
-        # ]
-        human_eval_benchmark = HumanEval(
-            n=num_samples or int(os.getenv("HUMAN_EVAL_NUM_SAMPLES_PER_TASK")),
-            # tasks=tasks
+        task_scores = dict()
+        num_tasks = num_tasks or int(
+            os.getenv("HUMAN_EVAL_NUM_TASKS", default=len(list(HumanEvalTask)))
         )
-        human_eval_benchmark.evaluate(
-            model=LFAI_Model(), k=k or int(os.getenv("HUMAN_EVAL_K"))
-        )
-        logging.info(f"HumanEval overall score: {human_eval_benchmark.overall_score}")
-        logging.info(f"HumanEval task scores:\n {human_eval_benchmark.task_scores}")
+        logging.info(f"Running the HumanEval benchmark on {num_tasks} tasks")
+        failed_tasks = 0
+        for task in list(HumanEvalTask)[:num_tasks]:
+            task_benchmark = HumanEval(
+                n=num_samples or int(os.getenv("HUMAN_EVAL_NUM_SAMPLES_PER_TASK")),
+                tasks=[task],
+            )
+            try:
+                task_benchmark.evaluate(
+                    model=LFAI_Model(), k=k or int(os.getenv("HUMAN_EVAL_K"))
+                )
+                task_scores[task.name] = task_benchmark.overall_score
+            except Exception as exc:
+                logging.info(
+                    f"HumanEval task {task.name} failed with error {exc}", exc_info=exc
+                )
+                task_scores[task.name] = 0.0
+                failed_tasks += 1
+
+        human_eval_avg_score = np.mean(list(task_scores.values()))
+        logging.info(f"HumanEval overall score: {human_eval_avg_score}")
+        logging.info(f"HumanEval failed task count: {failed_tasks}")
+        logging.info(f"HumanEval task scores:\n {task_scores}")
 
         # add the evaluation score to the final results
-        self.eval_results["HumanEval"] = human_eval_benchmark.overall_score
+        self.eval_results["HumanEval"] = human_eval_avg_score
 
 
 if __name__ == "__main__":
