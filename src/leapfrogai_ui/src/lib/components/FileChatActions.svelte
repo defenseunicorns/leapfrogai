@@ -6,11 +6,15 @@
   import { saveMessage } from '$helpers/chatHelpers';
   import type { FileMetadata, LFFile } from '$lib/types/files';
   import { threadsStore, toastStore } from '$stores';
-  import { AUDIO_FILE_SIZE_ERROR_TOAST, FILE_TRANSLATION_ERROR } from '$constants/toastMessages';
+  import {
+    AUDIO_FILE_SIZE_ERROR_TOAST,
+    FILE_TRANSCRIPTION_ERROR,
+    FILE_TRANSLATION_ERROR
+  } from '$constants/toastMessages';
   import { tick } from 'svelte';
   import { page } from '$app/stores';
   import type { Message } from 'ai';
-  import { AUDIO_FILE_SIZE_ERROR_TEXT } from '$constants';
+  import { AUDIO_FILE_SIZE_ERROR_TEXT, STANDARD_FADE_DURATION } from '$constants';
 
   export let attachedFiles: LFFile[];
   export let attachedFileMetadata: FileMetadata[];
@@ -18,7 +22,8 @@
   export let originalMessages: Message[];
   export let setMessages: (messages: Message[]) => void;
 
-  let translatingId: string;
+  type MethodType = 'translation' | 'transcription';
+  let processing: { fileId: string; method: MethodType } = {};
 
   $: audioFiles = attachedFileMetadata.filter((file) => file.type.startsWith('audio/'));
 
@@ -27,13 +32,13 @@
 
   const reset = async () => {
     await threadsStore.setSendingBlocked(false);
-    translatingId = '';
+    processing = {};
   };
 
-  const handleTranslationError = async (toastData: ToastData) => {
+  const handleGeneralError = async (toastData: ToastData) => {
     toastStore.addToast(toastData);
-    if (translatingId) {
-      const fileMetadataIndex = attachedFiles.findIndex((f) => f.id === translatingId);
+    if (processing.fileId) {
+      const fileMetadataIndex = attachedFiles.findIndex((f) => f.id === processing.fileId);
       attachedFileMetadata[fileMetadataIndex] = {
         ...attachedFileMetadata[fileMetadataIndex],
         status: 'error',
@@ -43,7 +48,12 @@
     await reset();
   };
 
-  const translateFile = async (fileMetadata: FileMetadata) => {
+  const transcribeOrTranslate = async (fileMetadata: FileMetadata, method: MethodType) => {
+    const toastError =
+      method === 'translation' ? FILE_TRANSLATION_ERROR() : FILE_TRANSCRIPTION_ERROR();
+
+    const adjective = method === 'translation' ? ' Translate' : 'Transcribe';
+
     const attachedFileMetadataCopy = [...attachedFileMetadata];
     const attachedFilesCopy = [...attachedFiles];
     // Remove the file and file metadata to hide the actions since the response will stream in this case
@@ -51,24 +61,24 @@
     attachedFileMetadata = attachedFileMetadata.filter((file) => file.id !== fileMetadata.id);
 
     if (!fileMetadata.id) {
-      await handleTranslationError(FILE_TRANSLATION_ERROR());
+      await handleGeneralError(toastError);
       return;
     }
+    processing = { fileId: fileMetadata.id, method };
 
     const file = attachedFilesCopy.find((f) => f.id === fileMetadata.id);
     const metadataToSave = attachedFileMetadataCopy.find((f) => f.id === fileMetadata.id);
     if (!file || !metadataToSave) {
-      await handleTranslationError(FILE_TRANSLATION_ERROR());
+      await handleGeneralError(toastError);
       return;
     }
 
-    translatingId = fileMetadata.id;
     await threadsStore.setSendingBlocked(true);
     let tempId: string;
     try {
       if (!threadId) {
         // create new thread
-        await threadsStore.newThread(`Translate ${fileMetadata.name}`);
+        await threadsStore.newThread(`${adjective} ${fileMetadata.name}`);
         await tick(); // allow store to update
         threadId = $page.params.thread_id;
       }
@@ -76,7 +86,7 @@
       // Save new user message
       const newMessage = await saveMessage({
         thread_id: threadId,
-        content: `Translate ${file.name}`, // use full name instead of metadata name which might be truncated
+        content: `${adjective} ${file.name}`, // use full name instead of metadata name which might be truncated
         role: 'user',
         metadata: {
           filesMetadata: JSON.stringify([metadataToSave]),
@@ -92,34 +102,34 @@
       // translate
       const formData = new FormData();
       formData.append('file', file);
-      const translateRes = await fetch(`/api/audio/translation`, {
+      const res = await fetch(`/api/audio/${method}`, {
         method: 'POST',
         body: formData
       });
-      const translateResJson = await translateRes.json();
-      if (!translateRes.ok) {
-        if (translateResJson.message === `ValidationError: ${AUDIO_FILE_SIZE_ERROR_TEXT}`) {
-          await handleTranslationError(AUDIO_FILE_SIZE_ERROR_TOAST());
+      const resJson = await res.json();
+      if (!res.ok) {
+        if (resJson.message === `ValidationError: ${AUDIO_FILE_SIZE_ERROR_TEXT}`) {
+          await handleGeneralError(AUDIO_FILE_SIZE_ERROR_TOAST());
         } else {
-          await handleTranslationError(FILE_TRANSLATION_ERROR());
+          await handleGeneralError(toastError);
         }
         return;
       }
 
       // save translation response
-      let translationMessage;
+      let responseMessage;
       try {
-        translationMessage = await saveMessage({
+        responseMessage = await saveMessage({
           thread_id: threadId,
-          content: translateResJson.text,
+          content: resJson.text,
           role: 'assistant',
           metadata: {
             wasTranscriptionOrTranslation: 'true'
           }
         });
       } catch {
-        await handleTranslationError(FILE_TRANSLATION_ERROR());
-        translationMessage = await saveMessage({
+        await handleGeneralError(toastError);
+        responseMessage = await saveMessage({
           thread_id: threadId,
           content: 'There was an error translating the file',
           role: 'assistant',
@@ -129,13 +139,13 @@
         });
       }
 
-      threadsStore.replaceTempMessageWithActual(threadId, tempId, translationMessage);
-      threadsStore.updateMessagesState(originalMessages, setMessages, translationMessage);
+      threadsStore.replaceTempMessageWithActual(threadId, tempId, responseMessage);
+      threadsStore.updateMessagesState(originalMessages, setMessages, responseMessage);
     } catch {
       if (tempId) {
         threadsStore.removeMessageFromStore(threadId, tempId);
       }
-      await handleTranslationError(FILE_TRANSLATION_ERROR());
+      await handleGeneralError(toastError);
       return;
     }
 
@@ -150,14 +160,24 @@
     : 'hidden'}
 >
   {#each audioFiles as file}
-    <div in:fade={{ duration: 150 }} out:fade={{ duration: 150 }}>
+    <div in:fade={{ duration: STANDARD_FADE_DURATION }}>
       <Button
         color="dark"
         class={customBtnClass}
-        on:click={() => translateFile(file)}
-        disabled={translatingId}
+        on:click={() => transcribeOrTranslate(file, 'translation')}
+        disabled={processing.fileId}
       >
         {`Translate ${shortenFileName(file.name)}`}</Button
+      >
+    </div>
+    <div in:fade={{ duration: STANDARD_FADE_DURATION }}>
+      <Button
+        color="dark"
+        class={customBtnClass}
+        on:click={() => transcribeOrTranslate(file, 'transcription')}
+        disabled={processing.fileId}
+      >
+        {`Transcribe ${shortenFileName(file.name)}`}</Button
       >
     </div>
   {/each}

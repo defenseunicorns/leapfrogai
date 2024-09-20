@@ -1,5 +1,6 @@
 import type { LFAssistant } from '$lib/types/assistants';
 
+export const STANDARD_FADE_DURATION = 150;
 export const MAX_LABEL_SIZE = 100;
 export const DEFAULT_ASSISTANT_TEMP = 0.2;
 export const MAX_AVATAR_SIZE = 5000000;
