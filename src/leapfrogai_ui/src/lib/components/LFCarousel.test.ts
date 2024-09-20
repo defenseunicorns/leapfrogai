@@ -1,6 +1,7 @@
 import { vi } from 'vitest';
 import { fireEvent, render, screen } from '@testing-library/svelte';
 import LFCarousel from './LFCarousel.svelte';
+import LFCarouselWithSlot from './LFCarouselWithSlot.test.svelte';
 
 describe('LFCarousel', () => {
   beforeEach(() => {
@@ -21,6 +22,16 @@ describe('LFCarousel', () => {
     // Next and Previous have sr-only tailwind class for this text
     expect(screen.getByText('Previous')).toBeInTheDocument();
     expect(screen.getByText('Next')).toBeInTheDocument();
+  });
+
+  it('does not render buttons but just renders slot when hidden to set to true', () => {
+    render(LFCarouselWithSlot, {
+      props: { hidden: true }
+    });
+
+    expect(screen.queryByText('Previous')).not.toBeInTheDocument();
+    expect(screen.queryByText('Next')).not.toBeInTheDocument();
+    expect(screen.getByText('test content')).toBeInTheDocument();
   });
 
   it('hides buttons when the content is not overflowing with a scrollbar', async () => {
@@ -52,6 +63,7 @@ describe('LFCarousel', () => {
     Object.defineProperty(scrollContainer, 'clientWidth', { value: 500, configurable: true });
 
     // Trigger checkOverflow and verify buttons are shown
+    scrollContainer.scrollLeft = 100; // Simulate a right scroll, scrollBy does not exist in JSDOM
     await fireEvent.scroll(scrollContainer);
 
     const previousButton = screen.getByText('Previous').parentElement?.parentElement; // Navigate up to the button element
@@ -113,15 +125,20 @@ describe('LFCarousel', () => {
 
     // Trigger the checkOverflow to ensure buttons are initially visible
     await fireEvent.scroll(scrollContainer);
-    let previousButton = screen.getByText('Previous').parentElement?.parentElement;
     let nextButton = screen.getByText('Next').parentElement?.parentElement;
-    expect(previousButton?.classList.contains('hidden')).toBe(false);
     expect(nextButton?.classList.contains('hidden')).toBe(false);
+
+    // Previous button will not show until it has been scrolled right
+    let previousButton = screen.getByText('Previous').parentElement?.parentElement;
+    expect(previousButton?.classList.contains('hidden')).toBe(true);
+    scrollContainer.scrollLeft = 100; // Simulate a right scroll, scrollBy does not exist in JSDOM
+    await fireEvent.scroll(scrollContainer);
+    expect(previousButton?.classList.contains('hidden')).toBe(false);
 
     // remove overflow condition
     Object.defineProperty(scrollContainer, 'scrollWidth', { value: 500, configurable: true });
     Object.defineProperty(scrollContainer, 'clientWidth', { value: 500, configurable: true });
-
+    scrollContainer.scrollLeft = 0;
     // Simulate window resize event
     await fireEvent(window, new Event('resize'));
 

@@ -62,6 +62,15 @@ const appendMock = vi.fn();
 
 describe('FileChatActions', () => {
   beforeEach(() => {
+    // Mock the ResizeObserver since it's a browser API that isn't available in tests
+    vi.stubGlobal(
+      'ResizeObserver',
+      class {
+        observe() {}
+        disconnect() {}
+      }
+    );
+
     threadsStore.set({
       threads: [thread], // uses date override starting in March
       sendingBlocked: false,
@@ -120,7 +129,9 @@ describe('FileChatActions', () => {
       append: appendMock
     });
 
-    await userEvent.click(screen.getByRole('button', { name: `Translate ${mockMetadata2.name}` }));
+    await userEvent.click(
+      screen.getByRole('button', { name: `Translate ${mockMetadata2.name}`, hidden: true })
+    );
     expect(fetchSpy).toHaveBeenNthCalledWith(
       1,
       expect.stringContaining('/api/messages/new'),
@@ -154,7 +165,9 @@ describe('FileChatActions', () => {
       append: appendMock
     });
 
-    await userEvent.click(screen.getByRole('button', { name: `Transcribe ${mockMetadata2.name}` }));
+    await userEvent.click(
+      screen.getByRole('button', { name: `Transcribe ${mockMetadata2.name}`, hidden: true })
+    );
     expect(fetchSpy).toHaveBeenNthCalledWith(
       1,
       expect.stringContaining('/api/messages/new'),
@@ -188,7 +201,9 @@ describe('FileChatActions', () => {
       append: appendMock
     });
 
-    await userEvent.click(screen.getByRole('button', { name: `Summarize ${mockMetadata3.name}` }));
+    await userEvent.click(
+      screen.getByRole('button', { name: `Summarize ${mockMetadata3.name}`, hidden: true })
+    );
 
     expect(fetchSpy).toHaveBeenNthCalledWith(
       1,
@@ -223,7 +238,9 @@ describe('FileChatActions', () => {
       append: appendMock
     });
 
-    await userEvent.click(screen.getByRole('button', { name: `Translate ${mockMetadata2.name}` }));
+    await userEvent.click(
+      screen.getByRole('button', { name: `Translate ${mockMetadata2.name}`, hidden: true })
+    );
     expect(toastSpy).toHaveBeenCalledWith(FILE_TRANSLATION_ERROR());
   });
   it('dispatches a toast if there is an error transcribing a file', async () => {
@@ -242,7 +259,9 @@ describe('FileChatActions', () => {
       append: appendMock
     });
 
-    await userEvent.click(screen.getByRole('button', { name: `Transcribe ${mockMetadata2.name}` }));
+    await userEvent.click(
+      screen.getByRole('button', { name: `Transcribe ${mockMetadata2.name}`, hidden: true })
+    );
     expect(toastSpy).toHaveBeenCalledWith(FILE_TRANSCRIPTION_ERROR());
   });
 
@@ -262,7 +281,9 @@ describe('FileChatActions', () => {
       append: vi.fn().mockRejectedValueOnce(new Error('error'))
     });
 
-    await userEvent.click(screen.getByRole('button', { name: `Summarize ${mockMetadata3.name}` }));
+    await userEvent.click(
+      screen.getByRole('button', { name: `Summarize ${mockMetadata3.name}`, hidden: true })
+    );
     expect(toastSpy).toHaveBeenCalledWith(FILE_SUMMARIZATION_ERROR());
   });
 
@@ -282,7 +303,9 @@ describe('FileChatActions', () => {
       append: appendMock
     });
 
-    await userEvent.click(screen.getByRole('button', { name: `Translate ${mockMetadata2.name}` }));
+    await userEvent.click(
+      screen.getByRole('button', { name: `Translate ${mockMetadata2.name}`, hidden: true })
+    );
     expect(toastSpy).toHaveBeenCalledWith(AUDIO_FILE_SIZE_ERROR_TOAST());
   });
 
@@ -302,7 +325,9 @@ describe('FileChatActions', () => {
       append: appendMock
     });
 
-    await userEvent.click(screen.getByRole('button', { name: `Transcribe ${mockMetadata2.name}` }));
+    await userEvent.click(
+      screen.getByRole('button', { name: `Transcribe ${mockMetadata2.name}`, hidden: true })
+    );
     expect(toastSpy).toHaveBeenCalledWith(AUDIO_FILE_SIZE_ERROR_TOAST());
   });
 
@@ -320,7 +345,9 @@ describe('FileChatActions', () => {
       append: appendMock
     });
 
-    await userEvent.click(screen.getByRole('button', { name: `Translate ${mockMetadata1.name}` }));
+    await userEvent.click(
+      screen.getByRole('button', { name: `Translate ${mockMetadata1.name}`, hidden: true })
+    );
     expect(
       screen.queryByRole('button', {
         name: `Translate ${mockMetadata1.name}`
@@ -334,17 +361,20 @@ describe('FileChatActions', () => {
 
     expect(
       screen.getByRole('button', {
-        name: `Translate ${mockMetadata2.name}`
+        name: `Translate ${mockMetadata2.name}`,
+        hidden: true
       })
     ).toBeDisabled();
     expect(
       screen.getByRole('button', {
-        name: `Transcribe ${mockMetadata2.name}`
+        name: `Transcribe ${mockMetadata2.name}`,
+        hidden: true
       })
     ).toBeDisabled();
     expect(
       screen.getByRole('button', {
-        name: `Summarize ${mockMetadata3.name}`
+        name: `Summarize ${mockMetadata3.name}`,
+        hidden: true
       })
     ).toBeDisabled();
   });
@@ -384,21 +414,33 @@ describe('FileChatActions', () => {
     });
 
     expect(
-      screen.queryByRole('button', { name: `Translate ${errorAudioFileMetadata.name}` })
+      screen.queryByRole('button', {
+        name: `Translate ${errorAudioFileMetadata.name}`,
+        hidden: true
+      })
     ).not.toBeInTheDocument();
     expect(
-      screen.queryByRole('button', { name: `Transcribe ${errorAudioFileMetadata.name}` })
+      screen.queryByRole('button', {
+        name: `Transcribe ${errorAudioFileMetadata.name}`,
+        hidden: true
+      })
     ).not.toBeInTheDocument();
 
     expect(
-      screen.queryByRole('button', { name: `Translate ${uploadingAudioFileMetadata.name}` })
+      screen.queryByRole('button', {
+        name: `Translate ${uploadingAudioFileMetadata.name}`,
+        hidden: true
+      })
     ).not.toBeInTheDocument();
     expect(
-      screen.queryByRole('button', { name: `Transcribe ${uploadingAudioFileMetadata.name}` })
+      screen.queryByRole('button', {
+        name: `Transcribe ${uploadingAudioFileMetadata.name}`,
+        hidden: true
+      })
     ).not.toBeInTheDocument();
 
     expect(
-      screen.queryByRole('button', { name: `Summarize ${errorPdfMetadata.name}` })
+      screen.queryByRole('button', { name: `Summarize ${errorPdfMetadata.name}`, hidden: true })
     ).not.toBeInTheDocument();
   });
 });

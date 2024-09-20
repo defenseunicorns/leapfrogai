@@ -58,8 +58,6 @@
   onDestroy(() => {
     if (scrollContainerRef) scrollContainerRef.removeEventListener('scroll', checkOverflow);
   });
-
-
 </script>
 
 <svelte:window on:resize={checkOverflow} />
