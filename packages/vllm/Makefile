@@ -12,7 +12,7 @@ download:
 dev: download
 	@env $$(cat .env | xargs) python -m leapfrogai_sdk.cli --app-dir=src/ main:Model
 
-docker:
+docker: download
 	docker build ${DOCKER_FLAGS} \
 		--platform=linux/${ARCH} \
 		--build-arg LOCAL_VERSION=${LOCAL_VERSION} \
