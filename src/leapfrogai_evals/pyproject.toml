@@ -3,7 +3,7 @@ name = "leapfrogai-evals"
 description = "A framework for running evaluations in LeapfrogAI"
 
 # x-release-please-start-version
-version = "0.12.2"
+version = "0.13.0"
 # x-release-please-end
 
 dependencies = [
