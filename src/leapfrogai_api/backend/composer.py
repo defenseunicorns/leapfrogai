@@ -224,7 +224,7 @@ class Composer(BaseModel):
             role=message.role,
             content=message.content,
             attachments=message.attachments,
-            metadata=message.metadata.__dict__ if message.metadata else {},
+            metadata=vars(message.metadata),
         )
 
         await create_message_request.create_message(
@@ -296,7 +296,7 @@ class Composer(BaseModel):
             role=new_message.role,
             content=new_message.content,
             attachments=new_message.attachments,
-            metadata=new_message.metadata.__dict__ or {},
+            metadata=vars(new_message.metadata),
         )
 
         new_message = await create_message_request.create_message(
