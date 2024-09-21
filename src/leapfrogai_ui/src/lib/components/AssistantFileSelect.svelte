@@ -2,7 +2,7 @@
   import { fade } from 'svelte/transition';
   import { filesStore } from '$stores';
   import type { FilesForm } from '$lib/types/files';
-  import { ACCEPTED_FILE_TYPES } from '$constants';
+  import { ACCEPTED_FILE_TYPES, STANDARD_FADE_DURATION } from '$constants';
   import AssistantFileDropdown from '$components/AssistantFileDropdown.svelte';
   import FileUploaderItem from '$components/FileUploaderItem.svelte';
 
@@ -21,7 +21,7 @@
 
 <div class="grid grid-cols-2 gap-4">
   {#each filteredStoreFiles as file}
-    <div transition:fade={{ duration: 150 }}>
+    <div transition:fade={{ duration: STANDARD_FADE_DURATION }}>
       <FileUploaderItem
         id={file.id}
         data-testid={`${file.filename}-${file.status}-uploader-item`}

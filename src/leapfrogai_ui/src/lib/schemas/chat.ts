@@ -15,8 +15,8 @@ export const stringIdArraySchema = object({
   .noUnknown(true)
   .strict();
 
-const contentInputSchema = string().max(Number(env.PUBLIC_MESSAGE_LENGTH_LIMIT)).required();
-const contentInputSchemaNoLength = string().required();
+const contentInputSchema = string().max(Number(env.PUBLIC_MESSAGE_LENGTH_LIMIT));
+const contentInputSchemaNoLength = string();
 
 export const messageInputSchema: ObjectSchema<NewMessageInput> = object({
   thread_id: string().required(),
