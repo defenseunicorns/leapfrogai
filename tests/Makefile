@@ -77,7 +77,3 @@ test-load:
 
 test-conformance:
 	source .env; PYTHONPATH=$$(pwd) pytest -vv -s tests/conformance
-
-debug: set-supabase
-	@echo ${SUPABASE_URL}
-	@echo ${SUPABASE_ANON_KEY}	

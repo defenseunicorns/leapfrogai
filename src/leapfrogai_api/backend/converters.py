@@ -19,6 +19,7 @@ from openai.types.beta.threads import (
 )
 
 from leapfrogai_api.typedef.vectorstores.search_types import SearchResponse
+from leapfrogai_api.typedef.common import MetadataObject
 
 
 def from_assistant_stream_event_to_str(stream_event: AssistantStreamEvent):
@@ -47,25 +48,36 @@ def from_content_param_to_content(
         )
 
 
-def from_text_to_message(text: str, search_responses: SearchResponse) -> Message:
+def from_text_to_message(text: str, search_responses: SearchResponse | None) -> Message:
+    """Loads text and RAG search responses into a Message object
+
+    Args:
+        text: The text to load into the message
+        search_responses: The RAG search responses to load into the message
+
+    Returns:
+        The OpenAI compliant Message object
+    """
+
     all_file_ids: str = ""
     all_vector_ids: list[str] = []
     annotations: list[FileCitationAnnotation | FilePathAnnotation] = []
 
-    for search_response in search_responses.data:
-        all_file_ids += f"[{search_response.file_id}]"
-        all_vector_ids.append(search_response.id)
-        annotations.append(
-            FileCitationAnnotation(
-                text="【4:0†source】",  # TODO: What should these numbers be? Who even knows...
-                file_citation=FileCitation(
-                    file_id=search_response.file_id, quote=search_response.content
-                ),
-                start_index=0,
-                end_index=0,
-                type="file_citation",
+    if search_responses:
+        for search_response in search_responses.data:
+            all_file_ids += f"[{search_response.file_id}]"
+            all_vector_ids.append(search_response.id)
+            annotations.append(
+                FileCitationAnnotation(
+                    text="【4:0†source】",  # TODO: What should these numbers be? Who even knows...
+                    file_citation=FileCitation(
+                        file_id=search_response.file_id, quote=search_response.content
+                    ),
+                    start_index=0,
+                    end_index=0,
+                    type="file_citation",
+                )
             )
-        )
 
     message_content: TextContentBlock = TextContentBlock(
         text=Text(
@@ -89,15 +101,6 @@ def from_text_to_message(text: str, search_responses: SearchResponse) -> Message
     )
 
     return new_message
-
-
-class MetadataObject:
-    def __init__(self, **kwargs):
-        for key, value in kwargs.items():
-            setattr(self, key, value)
-
-    def __getattr__(self, key):
-        return self.__dict__.get(key)
 
 
 async def from_chat_completion_choice_to_thread_message_delta(
