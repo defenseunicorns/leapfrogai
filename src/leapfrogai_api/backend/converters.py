@@ -84,7 +84,7 @@ def from_text_to_message(text: str, search_responses: SearchResponse) -> Message
         content=[message_content],
         role="assistant",
         metadata={
-            "vector_ids": all_vector_ids,
+            "vector_ids": all_vector_ids.__str__(),
         },
     )
 

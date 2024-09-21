@@ -296,7 +296,7 @@ class Composer(BaseModel):
             role=new_message.role,
             content=new_message.content,
             attachments=new_message.attachments,
-            metadata=new_message.metadata.__dict__ if new_message.metadata else None,
+            metadata=new_message.metadata.__dict__ or {},
         )
 
         new_message = await create_message_request.create_message(
