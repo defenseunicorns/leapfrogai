@@ -1,5 +1,6 @@
 """Converters for the LeapfrogAI API"""
 
+from collections import namedtuple
 from typing import Iterable
 from openai.types.beta import AssistantStreamEvent
 from openai.types.beta.assistant_stream_event import ThreadMessageDelta
@@ -83,9 +84,7 @@ def from_text_to_message(text: str, search_responses: SearchResponse) -> Message
         thread_id="",
         content=[message_content],
         role="assistant",
-        metadata={
-            "vector_ids": all_vector_ids.__str__(),
-        },
+        metadata=namedtuple("vector_ids", all_vector_ids),
     )
 
     return new_message
