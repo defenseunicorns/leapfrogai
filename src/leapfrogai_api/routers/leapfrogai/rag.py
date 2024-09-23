@@ -33,4 +33,4 @@ async def get_configuration(session: Session):
         Configuration: The current RAG configuration.
     """
 
-    return Configuration(enable_reranking=Configuration.enable_reranking)
+    return Configuration()
