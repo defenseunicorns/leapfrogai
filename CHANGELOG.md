@@ -1,5 +1,50 @@
 # Changelog
 
+## [0.13.0](https://github.com/defenseunicorns/leapfrogai/compare/v0.12.2...v0.13.0) (2024-09-20)
+
+
+### ⚠ BREAKING CHANGES
+
+* add containerization and packaging manifest lints ([#937](https://github.com/defenseunicorns/leapfrogai/issues/937))
+* uds bundle refs for upstream flavor and namespace ([#977](https://github.com/defenseunicorns/leapfrogai/issues/977))
+
+### Features
+
+* add LLM as judge evaluations ([#960](https://github.com/defenseunicorns/leapfrogai/issues/960)) ([3e5f1e0](https://github.com/defenseunicorns/leapfrogai/commit/3e5f1e0dd60fc451b3462c617c2a351e6a34467f))
+* **api,vllm,llama-cpp-python:** add token counting feature with gRPC support ([#964](https://github.com/defenseunicorns/leapfrogai/issues/964)) ([e45caef](https://github.com/defenseunicorns/leapfrogai/commit/e45caef8d579020a1938ee00c97fa7955168a41a))
+* **ui:** summarization ([#1087](https://github.com/defenseunicorns/leapfrogai/issues/1087)) ([ee0d8d8](https://github.com/defenseunicorns/leapfrogai/commit/ee0d8d8f116019b3150f275759679ba5107d6982))
+* **ui:** transcription ([#1062](https://github.com/defenseunicorns/leapfrogai/issues/1062)) ([8e1641d](https://github.com/defenseunicorns/leapfrogai/commit/8e1641d0f1f58520f2a3d7f829d53a674c0556a3))
+* **ui:** translation ([#1046](https://github.com/defenseunicorns/leapfrogai/issues/1046)) ([d954c33](https://github.com/defenseunicorns/leapfrogai/commit/d954c33681128a3c0db851fdccef84d79129a0aa))
+
+
+### Bug Fixes
+
+* **api, tests:** configmap reloading core dump ([#1085](https://github.com/defenseunicorns/leapfrogai/issues/1085)) ([4a19c8e](https://github.com/defenseunicorns/leapfrogai/commit/4a19c8e1ad1954e7c090e762b57a6736ef8d17b1))
+* **make:** make clean changed to make clean-artifacts ([#1073](https://github.com/defenseunicorns/leapfrogai/issues/1073)) ([480a35b](https://github.com/defenseunicorns/leapfrogai/commit/480a35b88fc9170d6432601d022363d908742764))
+* **sdk:** best_of in completions was an int and should be a string ([#1031](https://github.com/defenseunicorns/leapfrogai/issues/1031)) ([4e5c1b6](https://github.com/defenseunicorns/leapfrogai/commit/4e5c1b6a35a9a86fa928466572adb2535519312c))
+* **ui:** broken playwright authentication for cleanup ([#1016](https://github.com/defenseunicorns/leapfrogai/issues/1016)) ([6d17187](https://github.com/defenseunicorns/leapfrogai/commit/6d1718738c6bdc7c6714a3ee12bada88380800d1))
+* **ui:** delete avatar ([#978](https://github.com/defenseunicorns/leapfrogai/issues/978)) ([3ddb98c](https://github.com/defenseunicorns/leapfrogai/commit/3ddb98ccb307cbe89810879f4d1586ec7c7d609e))
+* **ui:** header flicker and hamburger on thread page ([#1024](https://github.com/defenseunicorns/leapfrogai/issues/1024)) ([84a6d70](https://github.com/defenseunicorns/leapfrogai/commit/84a6d70fdac7c131c9ee4516ee99b88454dad6d7))
+* **ui:** small screen chat page style ([#1025](https://github.com/defenseunicorns/leapfrogai/issues/1025)) ([8fee760](https://github.com/defenseunicorns/leapfrogai/commit/8fee760d55918726a33932a001094d60bb4e5f39))
+* **ui:** temperature slider ([#1086](https://github.com/defenseunicorns/leapfrogai/issues/1086)) ([f7a37c4](https://github.com/defenseunicorns/leapfrogai/commit/f7a37c448b22a1c4a4611f21e76ce39f723dd37a))
+
+
+### Miscellaneous
+
+* add containerization and packaging manifest lints ([#937](https://github.com/defenseunicorns/leapfrogai/issues/937)) ([c4d0835](https://github.com/defenseunicorns/leapfrogai/commit/c4d08355d81e57a61dcbd95d80cc346c55084c63))
+* **api:** update langchain to 0.2.12 ([#1048](https://github.com/defenseunicorns/leapfrogai/issues/1048)) ([3994547](https://github.com/defenseunicorns/leapfrogai/commit/3994547593a0e0d4bcc037aa9eca34f888c5b38e))
+* **deps:** ensure a dependency workflow checks all upstream resources and dependencies ([#1042](https://github.com/defenseunicorns/leapfrogai/issues/1042)) ([c37c698](https://github.com/defenseunicorns/leapfrogai/commit/c37c69805be3a68501039b3ef04846f360a03577))
+* new 'types' module ([#1009](https://github.com/defenseunicorns/leapfrogai/issues/1009)) ([a6ad11c](https://github.com/defenseunicorns/leapfrogai/commit/a6ad11cf91b2ac61e336f436528bd497a53ed32e))
+* release 0.13.0 ([#1088](https://github.com/defenseunicorns/leapfrogai/issues/1088)) ([a343a8d](https://github.com/defenseunicorns/leapfrogai/commit/a343a8de5f7a3753988b9aa3b2da78db46a886b8))
+* **sdk, api:** fix types, enhance chat, audio and completion tests ([#1038](https://github.com/defenseunicorns/leapfrogai/issues/1038)) ([014329c](https://github.com/defenseunicorns/leapfrogai/commit/014329c84fd9a7f429fbf79353edeefd72748b4c))
+* split up make clean target ([#1029](https://github.com/defenseunicorns/leapfrogai/issues/1029)) ([2d9cff2](https://github.com/defenseunicorns/leapfrogai/commit/2d9cff2eb62cd6940270337d2b45fa5f9266d037))
+* **test:** fix and re-activate integration and unit tests ([#1004](https://github.com/defenseunicorns/leapfrogai/issues/1004)) ([d32bd72](https://github.com/defenseunicorns/leapfrogai/commit/d32bd72dc0d05b4a1e3cf299040ff5bb3d15ba47))
+* **test:** prevent E2E tests from running in draft PRs ([#1015](https://github.com/defenseunicorns/leapfrogai/issues/1015)) ([11526e8](https://github.com/defenseunicorns/leapfrogai/commit/11526e8fe28d7699f8a7bf115d7920f95f66ea8e))
+* uds bundle refs for upstream flavor and namespace ([#977](https://github.com/defenseunicorns/leapfrogai/issues/977)) ([caf4f9c](https://github.com/defenseunicorns/leapfrogai/commit/caf4f9c3093a55a003b49fcbf05c03221be6a232))
+* **ui:** html/markdown security ([#1006](https://github.com/defenseunicorns/leapfrogai/issues/1006)) ([6a0038a](https://github.com/defenseunicorns/leapfrogai/commit/6a0038ab44d9fca35dd014a17f3f5c89ebe8a6d0))
+* **ui:** package updates ([8fbe561](https://github.com/defenseunicorns/leapfrogai/commit/8fbe561ee7d29b883b306db863875d780431bcb1))
+* variablize uds distro for uds make target ([#1065](https://github.com/defenseunicorns/leapfrogai/issues/1065)) ([eb35830](https://github.com/defenseunicorns/leapfrogai/commit/eb358309db669ff062ca6a834d4718e9ed54515a))
+
 ## [0.12.2](https://github.com/defenseunicorns/leapfrogai/compare/v0.12.1...v0.12.2) (2024-09-06)
 
 
