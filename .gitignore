@@ -23,6 +23,7 @@ build/
 .env.password
 .env.email
 .env
+.mypy_cache
 .ruff_cache
 .branches
 .temp

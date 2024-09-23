@@ -8,6 +8,7 @@ from leapfrogai_sdk import (
     ChatCompletionServiceServicer,
     ChatCompletionStreamServiceServicer,
     AudioServicer,
+    TokenCountServiceServicer,
     GrpcContext,
     EmbeddingRequest,
     EmbeddingResponse,
@@ -15,6 +16,8 @@ from leapfrogai_sdk import (
     AudioRequest,
     AudioResponse,
     NameResponse,
+    TokenCountRequest,
+    TokenCountResponse,
     serve,
 )
 from leapfrogai_sdk.llm import LLM, GenerationConfig
@@ -33,6 +36,7 @@ class Model(
     ChatCompletionServiceServicer,
     ChatCompletionStreamServiceServicer,
     AudioServicer,
+    TokenCountServiceServicer,
 ):
     async def generate(
         self, prompt: str, config: GenerationConfig
@@ -44,6 +48,11 @@ class Model(
 
     async def count_tokens(self, raw_text: str) -> int:
         return len(raw_text)
+
+    async def CountTokens(
+        self, request: TokenCountRequest, context: GrpcContext
+    ) -> TokenCountResponse:
+        return TokenCountResponse(count=await self.count_tokens(request.text))
 
     async def CreateEmbedding(
         self,
@@ -59,6 +68,14 @@ class Model(
     ) -> AudioResponse:
         return AudioResponse(
             text="The repeater model received a transcribe request",
+            duration=1,
+        )
+
+    async def Translate(
+        self, request: AudioRequest, context: GrpcContext
+    ) -> AudioResponse:
+        return AudioResponse(
+            text="The repeater model received a translation request",
             duration=1,
             language="en",
         )

@@ -38,8 +38,9 @@ message CompletionRequest {
 }
 
 enum CompletionFinishReason {
-    STOP = 0;
-    LENGTH = 1;
+    NONE = 0; // for streaming responses
+    STOP = 1;
+    LENGTH = 2;
 }
 
 message CompletionChoice {

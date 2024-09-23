@@ -9,6 +9,7 @@ from grpc_reflection.v1alpha import reflection
 from leapfrogai_sdk.audio import audio_pb2_grpc
 from leapfrogai_sdk.chat import chat_pb2_grpc
 from leapfrogai_sdk.completion import completion_pb2_grpc
+from leapfrogai_sdk.counting import counting_pb2_grpc
 from leapfrogai_sdk.embeddings import embeddings_pb2_grpc
 from leapfrogai_sdk.name import name_pb2_grpc
 
@@ -47,6 +48,10 @@ async def serve(o, host="0.0.0.0", port=50051):
     if hasattr(o, "Transcribe") and hasattr(o, "Translate"):
         audio_pb2_grpc.add_AudioServicer_to_server(o, server)
         services += ("audio.Audio",)
+
+    if hasattr(o, "CountTokens"):
+        counting_pb2_grpc.add_TokenCountServiceServicer_to_server(o, server)
+        services += ("counting.TokenCountService",)
 
     # Do reflection things to list all the gRPC services (allows for `grpcurl --plaintext localhost:50051 list`)
     reflection.enable_server_reflection(services, server)

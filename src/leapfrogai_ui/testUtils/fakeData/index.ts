@@ -16,6 +16,7 @@ import type { Assistant } from 'openai/resources/beta/assistants';
 import type { VectorStore } from 'openai/resources/beta/vector-stores/index';
 import type { VectorStoreFile } from 'openai/resources/beta/vector-stores/files';
 import { type APIKeyRow, PERMISSIONS } from '../../src/lib/types/apiKeys';
+import type { FileMetadata, FileUploadStatus } from '$lib/types/files';
 
 const todayOverride = new Date('2024-03-20T00:00');
 
@@ -346,3 +347,18 @@ export const getFakeApiKeys = (options: GetFakeApiKeysOptions = {}): APIKeyRow[]
 };
 
 export const fakeKeys = getFakeApiKeys({ numKeys: 4 });
+
+type GetMockFileMetadataOptions = {
+  text?: string;
+  status?: FileUploadStatus;
+};
+export const getMockFileMetadata = (options: GetMockFileMetadataOptions = {}): FileMetadata => {
+  const { text = faker.word.noun(), status = 'complete' } = options;
+  return {
+    id: faker.string.uuid().substring(0, 8),
+    name: 'fake-file.pdf',
+    type: 'application/pdf',
+    text,
+    status
+  };
+};

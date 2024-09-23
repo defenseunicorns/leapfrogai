@@ -39,7 +39,10 @@ make test-env
 make test-api-unit
 
 # run the integration tests
-make test-api-integration
+# choices: vllm or llama-cpp-python
+LEAPFROGAI_MODEL=vllm make test-api-integration
+# OR
+LEAPFROGAI_MODEL=llama-cpp-python make test-api-integration
 ```
 
 ## Load Tests
@@ -49,6 +52,34 @@ Please see the [Load Test documentation](./load/README.md) and directory for mor
 ## End-To-End Tests
 
 End-to-End (E2E) tests are located in the `e2e/` sub-directory. Each E2E test runs independently based on the model backend that is to be tested.
+
+The E2E tests run in CI pipelines, with the exception of vLLM, which requires a GPU runner.
+
+For the E2E tests, the following components must be running and accessible in a [UDS Kubernetes cluster](../k3d-gpu/README.md):
+
+- [LeapfrogAI API](../src/leapfrogai_api/README.md)
+- [Supabase](../packages/supabase/README.md)
+- Package to be tested (e.g., [vLLM](../packages/vllm/))
+
+An example of running the vLLM E2E tests locally is as follows:
+
+```bash
+# Install the python dependencies
+make install
+
+# create a test user for the tests
+# prompts for a password and email
+make test-user
+
+# setup the environment variables for the tests
+# prompts for the previous step's password and email
+make test-env
+
+# run the e2e tests associated with a package
+# below is a non-exhaustive list of example test runs
+env $(cat .env | xargs) python -m pytest tests/e2e/test_api.py -vvv
+env $(cat .env | xargs) LEAPFROGAI_MODEL=vllm python -m pytest tests/e2e/test_llm_generation.py -vvv
+```
 
 ### Running Tests
 

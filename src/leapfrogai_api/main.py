@@ -13,6 +13,7 @@ from leapfrogai_api.routers.base import router as base_router
 from leapfrogai_api.routers.leapfrogai import auth
 from leapfrogai_api.routers.leapfrogai import models as lfai_models
 from leapfrogai_api.routers.leapfrogai import vector_stores as lfai_vector_stores
+from leapfrogai_api.routers.leapfrogai import count as lfai_token_count
 from leapfrogai_api.routers.openai import (
     assistants,
     audio,
@@ -36,17 +37,25 @@ logging.basicConfig(
 logger = logging.getLogger(__name__)
 
 
-# handle startup & shutdown tasks
+# Handle startup & shutdown tasks
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     """Handle startup and shutdown tasks for the FastAPI app."""
-    # startup
-    logger.info("Starting to watch for configs with this being an info")
-    asyncio.create_task(get_model_config().watch_and_load_configs())
-    yield
-    # shutdown
-    logger.info("Clearing model configs")
-    asyncio.create_task(get_model_config().clear_all_models())
+    # Startup
+    logger.info("Starting to watch for configs.")
+    config = get_model_config()
+    config_task = asyncio.create_task(config.watch_and_load_configs())
+    try:
+        yield
+    finally:
+        # Shutdown
+        logger.info("Stopping config watcher and clearing model configs.")
+        config_task.cancel()
+        try:
+            await config_task
+        except asyncio.CancelledError:
+            pass  # Task was cancelled, which is expected during shutdown
+        await config.clear_all_models()
 
 
 app = FastAPI(lifespan=lifespan)
@@ -72,6 +81,7 @@ app.include_router(runs.router)
 app.include_router(messages.router)
 app.include_router(runs_steps.router)
 app.include_router(lfai_vector_stores.router)
+app.include_router(lfai_token_count.router)
 app.include_router(lfai_models.router)
 # This should be at the bottom to prevent it preempting more specific runs endpoints
 # https://fastapi.tiangolo.com/tutorial/path-params/#order-matters
