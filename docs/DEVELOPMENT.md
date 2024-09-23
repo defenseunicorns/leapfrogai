@@ -154,7 +154,7 @@ Although not provided in the example UDS bundle manifests found in this reposito
   - name: leapfrogai-api
     repository: ghcr.io/defenseunicorns/packages/leapfrogai/leapfrogai-api
     # x-release-please-start-version
-    ref: 0.12.2
+    ref: 0.13.0
     # x-release-please-end
 
     # THE BELOW LINES WERE ADDED FOR DEMONSTRATION PURPOSES

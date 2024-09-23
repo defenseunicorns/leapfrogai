@@ -38,8 +38,9 @@ jobs:
       - name: Checkout Repo
         uses: actions/checkout@b4ffde65f46336ab88eb53be808477a3936bae11 # v4.1.1
         with:
+          fetch-tags: true
           # x-release-please-start-version
-          ref: "caf4f9c3093a55a003b49fcbf05c03221be6a232" # 0.12.2 w/ integration tests turned-on
+          ref: "v0.13.0"
           # x-release-please-end
 
       - name: Setup Python
