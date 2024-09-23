@@ -72,7 +72,7 @@
   },
   "type": "module",
   "dependencies": {
-    "@ai-sdk/openai": "^0.0.58",
+    "@ai-sdk/openai": "^0.0.61",
     "@ai-sdk/svelte": "^0.0.46",
     "@supabase/ssr": "^0.5.1",
     "@supabase/supabase-js": "^2.45.4",
