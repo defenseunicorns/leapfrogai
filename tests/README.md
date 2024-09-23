@@ -45,6 +45,26 @@ LEAPFROGAI_MODEL=vllm make test-api-integration
 LEAPFROGAI_MODEL=llama-cpp-python make test-api-integration
 ```
 
+## Conformance Testing
+
+We include a set of conformance tests to verify our spec against OpenAI to gaurantee interoperability with tools that support OpenAI's API (MatterMost, Continue.dev, etc.) and SDKs (Vercel, Azure, etc.). To run these tests the environment variables need to be set:
+
+```bash
+LEAPFROGAI_API_KEY="<api key>" # this can be created via the LeapfrogAI UI or Supabase
+LEAPFROGAI_API_URL="https://leapfrogai-api.uds.dev/openai/v1" # This is the default when using a UDS-bundle locally
+LEAPFROGAI_MODEL="vllm" # or whatever model you have installed
+OPENAI_API_KEY="<api key>" # you need a funded OpenAI account for this
+OPENAI_MODEL="gpt-4o-mini" # or whatever model you prefer
+```
+
+To run the tests, from the root directory of the LeapfrogAI project:
+
+```bash
+make install # to ensure all python dependencies are install
+
+make test-conformance # runs the entire suite
+```
+
 ## Load Tests
 
 Please see the [Load Test documentation](./load/README.md) and directory for more details.
