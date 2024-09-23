@@ -14,15 +14,17 @@ from leapfrogai_sdk import (
     CompletionResponse,
     GrpcContext,
     CompletionUsage,
+    TokenCountRequest,
+    TokenCountResponse,
 )
 from leapfrogai_sdk.chat.chat_pb2 import Usage
 from enum import Enum
 
 
 class FinishReason(Enum):
-    NONE = ""
-    STOP = "stop"
-    LENGTH = "length"
+    NONE = 0
+    STOP = 1
+    LENGTH = 2
 
 
 class GenerationConfig(BaseModel):
@@ -73,7 +75,7 @@ def LLM(_cls):
             choices=[choice], usage=usage
         )
 
-        response.choices[0].finish_reason = str(finish_reason)
+        response.choices[0].finish_reason = finish_reason.value
 
         return response
 
@@ -95,7 +97,7 @@ def LLM(_cls):
 
         response: CompletionResponse = CompletionResponse(choices=[choice], usage=usage)
 
-        response.choices[0].finish_reason = str(finish_reason)
+        response.choices[0].finish_reason = finish_reason.value
 
         return response
 
@@ -251,6 +253,13 @@ def LLM(_cls):
             )
 
             yield last_response
+
+        async def CountTokens(
+            self, request: TokenCountRequest, context: GrpcContext
+        ) -> TokenCountResponse:
+            token_count: int = await self.count_tokens(request.text)
+
+            return TokenCountResponse(count=token_count)
 
     NewClass.__name__ = _cls.__name__
     return NewClass

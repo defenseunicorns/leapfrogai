@@ -4,7 +4,7 @@ api:
   image:
     repository: "ghcr.io/defenseunicorns/leapfrogai/leapfrogai-api"
     # x-release-please-start-version
-    tag: 0.12.2
+    tag: 0.13.0
     # x-release-please-end
     imagePullPolicy: Always
 
@@ -47,7 +47,7 @@ api:
     image:
       repository: "ghcr.io/defenseunicorns/leapfrogai/api-migrations"
       # x-release-please-start-version
-      tag: 0.12.2
+      tag: 0.13.0
       # x-release-please-end
       imagePullPolicy: Always
 

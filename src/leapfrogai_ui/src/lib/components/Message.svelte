@@ -197,7 +197,7 @@
       {/if}
 
       <div class="flex gap-1 pl-4">
-        {#if message.role === 'user' && !editMode}
+        {#if message.role === 'user' && !editMode && !message.metadata?.wasTranscriptionOrTranslation}
           <IconButton
             class={!messageIsHovered && 'hide'}
             on:click={() => (editMode = true)}
@@ -219,7 +219,7 @@
             <FileCopyOutline />
           </IconButton>
         {/if}
-        {#if message.role !== 'user' && isLastMessage && !$threadsStore.sendingBlocked}
+        {#if message.role !== 'user' && isLastMessage && !$threadsStore.sendingBlocked && !message.metadata?.wasTranscriptionOrTranslation}
           <IconButton
             data-testid="regenerate btn"
             class={!messageIsHovered && 'hide'}

@@ -1,26 +1,28 @@
 from __future__ import annotations
 
 import logging
-
 from contextlib import suppress
 from fastapi import HTTPException, status
-from pydantic import BaseModel, Field
 from typing import Literal
+from pydantic import BaseModel, Field
 
-from leapfrogai_api.backend.rag.index import IndexingService
-from leapfrogai_api.backend.types import CreateVectorStoreRequest
-from leapfrogai_api.data.crud_vector_store import CRUDVectorStore, FilterVectorStore
-from leapfrogai_api.routers.supabase_session import Session
-from leapfrogai_api.utils.validate_tools import (
-    validate_assistant_tool,
-    validate_tool_resources,
-)
+from openai.types.beta import Assistant
 from openai.types.beta import AssistantTool
 from openai.types.beta.assistant import (
     ToolResources as BetaAssistantToolResources,
     ToolResourcesFileSearch,
 )
 from openai.types.beta.assistant_tool import FileSearchTool
+
+from leapfrogai_api.backend.rag.index import IndexingService
+from leapfrogai_api.typedef.vectorstores import CreateVectorStoreRequest
+from leapfrogai_api.data.crud_vector_store import CRUDVectorStore, FilterVectorStore
+from leapfrogai_api.routers.supabase_session import Session
+from leapfrogai_api.utils.validate_tools import (
+    validate_assistant_tool,
+    validate_tool_resources,
+)
+
 
 logger = logging.getLogger(__name__)
 
@@ -205,3 +207,13 @@ class ModifyAssistantRequest(CreateAssistantRequest):
 
     # Inherits all fields from CreateAssistantRequest
     # All fields are optional for modification
+
+
+class ListAssistantsResponse(BaseModel):
+    """Response object for listing assistants."""
+
+    object: Literal["list"] = Field(
+        default="list",
+        description="The type of object. Always 'list' for this response.",
+    )
+    data: list[Assistant] = Field(description="A list of Assistant objects.")

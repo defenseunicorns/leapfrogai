@@ -3,7 +3,7 @@ name = "leapfrogai-api"
 description = "An API for LeapfrogAI that allows LeapfrogAI backends to connect seamlessly"
 
 # x-release-please-start-version
-version = "0.12.2"
+version = "0.13.0"
 # x-release-please-end
 
 dependencies = [
@@ -13,7 +13,7 @@ dependencies = [
     "uvicorn == 0.23.2",
     "docx2txt == 0.8",
     "python-multipart == 0.0.7",            #indirect dep of FastAPI to receive form data for file uploads
-    "watchfiles == 0.21.0",
+    "watchdog == 5.0.2",
     "leapfrogai_sdk",
     "supabase == 2.6.0",
     "langchain == 0.2.12",

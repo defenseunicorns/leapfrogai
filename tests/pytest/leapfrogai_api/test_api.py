@@ -10,7 +10,9 @@ from fastapi.security import HTTPBearer
 from fastapi.testclient import TestClient
 from starlette.middleware.base import _CachedRequest
 from supabase import ClientOptions
-import leapfrogai_api.backend.types as lfai_types
+from leapfrogai_api.typedef.chat import ChatCompletionRequest, ChatMessage
+from leapfrogai_api.typedef.completion import CompletionRequest
+from leapfrogai_api.typedef.embeddings import CreateEmbeddingRequest
 from leapfrogai_api.main import app
 from leapfrogai_api.routers.supabase_session import init_supabase_client
 
@@ -23,6 +25,11 @@ LFAI_CONFIG_PATH = os.environ["LFAI_CONFIG_PATH"] = os.path.join(
 )
 LFAI_CONFIG_FILEPATH = os.path.join(LFAI_CONFIG_PATH, LFAI_CONFIG_FILENAME)
 
+MODEL = "repeater"
+TEXT_INPUT = (
+    "This is the input content for completions, embeddings, and chat completions"
+)
+TEXT_INPUT_LEN = len(TEXT_INPUT)
 
 #########################
 #########################
@@ -58,6 +65,12 @@ async def pack_dummy_bearer_token(request: _CachedRequest, call_next):
     return await call_next(request)
 
 
+def load_audio_file(path: str):
+    file_path = os.path.join("tests", "data", path)
+    with open(file_path, "rb") as file:
+        return file.read()
+
+
 @pytest.fixture
 def dummy_auth_middleware():
     app.dependency_overrides[init_supabase_client] = mock_init_supabase_client
@@ -73,39 +86,54 @@ def test_config_load():
         response = client.get("/leapfrogai/v1/models")
 
         assert response.status_code == 200
-        assert response.json() == {
-            "config_sources": {"repeater-test-config.yaml": ["repeater"]},
-            "models": {"repeater": {"backend": "localhost:50051", "name": "repeater"}},
+        expected_response = {
+            "config_sources": {"repeater-test-config.yaml": [MODEL]},
+            "models": {MODEL: {"backend": "localhost:50051", "name": MODEL}},
+            "directory": LFAI_CONFIG_PATH,
+            "filename": LFAI_CONFIG_FILENAME,
         }
+        assert response.json() == expected_response
 
 
 def test_config_delete(tmp_path):
     """Test that the config is deleted correctly."""
-    # move repeater-test-config.yaml to temp dir so that we can remove it at a later step
+    # Move repeater-test-config.yaml to temp dir so that we can remove it at a later step
     tmp_config_filepath = shutil.copyfile(
         LFAI_CONFIG_FILEPATH, os.path.join(tmp_path, LFAI_CONFIG_FILENAME)
     )
     os.environ["LFAI_CONFIG_PATH"] = str(tmp_path)
 
     with TestClient(app) as client:
-        # ensure the API loads the temp config
+        # Ensure the API loads the temp config
         response = client.get("/leapfrogai/v1/models")
         assert response.status_code == 200
 
-        assert response.json() == {
-            "config_sources": {"repeater-test-config.yaml": ["repeater"]},
-            "models": {"repeater": {"backend": "localhost:50051", "name": "repeater"}},
+        expected_response = {
+            "config_sources": {"repeater-test-config.yaml": [MODEL]},
+            "models": {MODEL: {"backend": "localhost:50051", "name": MODEL}},
+            "directory": os.environ["LFAI_CONFIG_PATH"],
+            "filename": LFAI_CONFIG_FILENAME,
         }
-        # delete source config from temp dir
+        assert response.json() == expected_response
+
+        # Delete source config from temp dir
         os.remove(tmp_config_filepath)
 
-        # wait for the api to be able to detect the change
+        # Wait for the API to detect the change
         time.sleep(0.5)
-        # assert response is now empty
+
+        # Assert response is now empty
         response = client.get("/leapfrogai/v1/models")
         assert response.status_code == 200
-        assert response.json() == {"config_sources": {}, "models": {}}
+        expected_empty_response = {
+            "config_sources": {},
+            "models": {},
+            "directory": os.environ["LFAI_CONFIG_PATH"],
+            "filename": LFAI_CONFIG_FILENAME,
+        }
+        assert response.json() == expected_empty_response
 
+    # Reset the environment variable
     os.environ["LFAI_CONFIG_PATH"] = os.path.join(os.path.dirname(__file__), "fixtures")
 
 
@@ -116,11 +144,14 @@ def test_routes():
         "/healthz": ["GET"],
         "/leapfrogai/v1/models": ["GET"],
         "/openai/v1/models": ["GET"],
+        "/openai/v1/completions": ["POST"],
         "/openai/v1/chat/completions": ["POST"],
         "/openai/v1/embeddings": ["POST"],
         "/openai/v1/audio/transcriptions": ["POST"],
+        "/openai/v1/audio/translations": ["POST"],
         "/openai/v1/files": ["POST"],
         "/openai/v1/assistants": ["POST"],
+        "/leapfrogai/v1/count/tokens": ["POST"],
     }
 
     openai_routes = [
@@ -209,9 +240,9 @@ def test_embedding(dummy_auth_middleware):
 
     with TestClient(app) as client:
         # Send request to client
-        embedding_request = lfai_types.CreateEmbeddingRequest(
-            model="repeater",
-            input="This is the embedding input text.",
+        embedding_request = CreateEmbeddingRequest(
+            model=MODEL,
+            input=TEXT_INPUT,
         )
         response = client.post(
             "/openai/v1/embeddings", json=embedding_request.model_dump()
@@ -233,13 +264,160 @@ def test_embedding(dummy_auth_middleware):
     os.environ.get("LFAI_RUN_REPEATER_TESTS") != "true",
     reason="LFAI_RUN_REPEATER_TESTS envvar was not set to true",
 )
+def test_transcription(dummy_auth_middleware):
+    """Test the transcription endpoint."""
+    expected_transcription = "The repeater model received a transcribe request"
+
+    with TestClient(app) as client:
+        audio_filename = "0min12sec.wav"
+        audio_content = load_audio_file(audio_filename)
+        files = {"file": (audio_filename, audio_content, "audio/mpeg")}
+        data = {"model": MODEL}
+        response = client.post(
+            "/openai/v1/audio/transcriptions", files=files, data=data
+        )
+
+        assert response.status_code == 200
+
+        response_obj = response.json()
+        assert response_obj["text"] == expected_transcription
+
+
+@pytest.mark.skipif(
+    os.environ.get("LFAI_RUN_REPEATER_TESTS") != "true",
+    reason="LFAI_RUN_REPEATER_TESTS envvar was not set to true",
+)
+def test_translation(dummy_auth_middleware):
+    """Test the translation endpoint."""
+    expected_translation = "The repeater model received a translation request"
+
+    with TestClient(app) as client:
+        audio_filename = "arabic-audio.wav"
+        audio_content = load_audio_file(audio_filename)
+        files = {"file": (audio_filename, audio_content, "audio/mpeg")}
+        data = {"model": MODEL}
+        response = client.post("/openai/v1/audio/translations", files=files, data=data)
+
+        assert response.status_code == 200
+
+        response_obj = response.json()
+        assert response_obj["text"] == expected_translation
+
+
+@pytest.mark.skipif(
+    os.environ.get("LFAI_RUN_REPEATER_TESTS") != "true",
+    reason="LFAI_RUN_REPEATER_TESTS envvar was not set to true",
+)
+def test_completion(dummy_auth_middleware):
+    """Test the completion endpoint."""
+    with TestClient(app) as client:
+        completion_request = CompletionRequest(
+            model=MODEL,
+            prompt=TEXT_INPUT,
+        )
+        response = client.post(
+            "/openai/v1/completions", json=completion_request.model_dump()
+        )
+        assert response.status_code == 200
+
+        assert response
+
+        # parse through the completion response
+        response_obj = response.json()
+        assert "choices" in response_obj
+
+        # parse the choices from the response
+        response_choices = response_obj.get("choices")
+        assert len(response_choices) == 1
+        assert "text" in response_choices[0]
+
+        # parse finish reason
+        assert "finish_reason" in response_choices[0]
+        assert "stop" == response_choices[0].get("finish_reason")
+        # parse usage data
+        response_usage = response_obj.get("usage")
+        prompt_tokens = response_usage.get("prompt_tokens")
+        completion_tokens = response_usage.get("completion_tokens")
+        total_tokens = response_usage.get("total_tokens")
+        assert prompt_tokens == TEXT_INPUT_LEN
+        assert completion_tokens == TEXT_INPUT_LEN
+        assert total_tokens == TEXT_INPUT_LEN * 2
+
+        # validate that the repeater repeated
+        assert response_choices[0].get("text") == TEXT_INPUT
+
+
+@pytest.mark.skipif(
+    os.environ.get("LFAI_RUN_REPEATER_TESTS") != "true",
+    reason="LFAI_RUN_REPEATER_TESTS envvar was not set to true",
+)
+def test_stream_completion(dummy_auth_middleware):
+    """Test the stream completion endpoint."""
+    with TestClient(app) as client:
+        completion_request = CompletionRequest(
+            model=MODEL, prompt=TEXT_INPUT, stream=True
+        )
+
+        response = client.post(
+            "/openai/v1/completions", json=completion_request.model_dump()
+        )
+        assert response.status_code == 200
+        assert (
+            response.headers.get("content-type") == "text/event-stream; charset=utf-8"
+        )
+
+        # parse through the streamed response
+        iter_length = 0
+        iter_lines = response.iter_lines()
+        for line in iter_lines:
+            # skip the empty, and non-data lines
+            if ": " in line:
+                strings = line.split(": ", 1)
+
+                # Process all the data responses that is not the sig_stop signal
+                if strings[0] == "data" and strings[1] != "[DONE]":
+                    stream_response = json.loads(strings[1])
+                    assert "choices" in stream_response
+                    choices = stream_response.get("choices")
+                    assert len(choices) == 1
+                    iter_length += 1
+                    # parse finish reason
+                    assert "finish_reason" in choices[0]
+                    # in streaming responses, the stop reason is not STOP until the last iteration (token) is sent back
+                    if iter_length == TEXT_INPUT_LEN:
+                        assert "stop" == choices[0].get("finish_reason")
+                    else:
+                        assert None is choices[0].get("finish_reason")
+                    # parse usage data
+                    response_usage = stream_response.get("usage")
+                    prompt_tokens = response_usage.get("prompt_tokens")
+                    completion_tokens = response_usage.get("completion_tokens")
+                    total_tokens = response_usage.get("total_tokens")
+                    # in streaming responses, the length is not returned until the last iteration (token) is sent back
+                    if iter_length == TEXT_INPUT_LEN:
+                        assert prompt_tokens == TEXT_INPUT_LEN
+                        assert completion_tokens == TEXT_INPUT_LEN
+                        assert total_tokens == TEXT_INPUT_LEN * 2
+                    else:
+                        assert total_tokens == 0
+                        assert completion_tokens == 0
+                        assert total_tokens == 0
+
+        # The repeater only responds with 1 message, the exact one that was prompted
+        assert iter_length == TEXT_INPUT_LEN
+
+
+@pytest.mark.skipif(
+    os.environ.get("LFAI_RUN_REPEATER_TESTS") != "true",
+    reason="LFAI_RUN_REPEATER_TESTS envvar was not set to true",
+)
 def test_chat_completion(dummy_auth_middleware):
     """Test the chat completion endpoint."""
     with TestClient(app) as client:
         input_content = "this is the chat completion input."
-        chat_completion_request = lfai_types.ChatCompletionRequest(
-            model="repeater",
-            messages=[lfai_types.ChatMessage(role="user", content=input_content)],
+        chat_completion_request = ChatCompletionRequest(
+            model=MODEL,
+            messages=[ChatMessage(role="user", content=input_content)],
         )
         response = client.post(
             "/openai/v1/chat/completions", json=chat_completion_request.model_dump()
@@ -260,7 +438,7 @@ def test_chat_completion(dummy_auth_middleware):
 
         # parse finish reason
         assert "finish_reason" in response_choices[0]
-        assert "FinishReason.STOP" == response_choices[0].get("finish_reason")
+        assert "stop" == response_choices[0].get("finish_reason")
 
         # parse usage data
         response_usage = response_obj.get("usage")
@@ -285,9 +463,9 @@ def test_stream_chat_completion(dummy_auth_middleware):
         input_content = "this is the stream chat completion input."
         input_length = len(input_content)
 
-        chat_completion_request = lfai_types.ChatCompletionRequest(
-            model="repeater",
-            messages=[lfai_types.ChatMessage(role="user", content=input_content)],
+        chat_completion_request = ChatCompletionRequest(
+            model=MODEL,
+            messages=[ChatMessage(role="user", content=input_content)],
             stream=True,
         )
 
@@ -324,9 +502,9 @@ def test_stream_chat_completion(dummy_auth_middleware):
                     assert "finish_reason" in choices[0]
                     # in streaming responses, the stop reason is not STOP until the last iteration (token) is sent back
                     if iter_length == input_length:
-                        assert "FinishReason.STOP" == choices[0].get("finish_reason")
+                        assert "stop" == choices[0].get("finish_reason")
                     else:
-                        assert "FinishReason.NONE" == choices[0].get("finish_reason")
+                        assert None is choices[0].get("finish_reason")
                     # parse usage data
                     response_usage = stream_response.get("usage")
                     prompt_tokens = response_usage.get("prompt_tokens")
@@ -344,3 +522,21 @@ def test_stream_chat_completion(dummy_auth_middleware):
 
         # The repeater only responds with 1 message, the exact one that was prompted
         assert iter_length == input_length
+
+
+@pytest.mark.skipif(
+    os.environ.get("LFAI_RUN_REPEATER_TESTS") != "true",
+    reason="LFAI_RUN_REPEATER_TESTS envvar was not set to true",
+)
+def test_token_count(dummy_auth_middleware):
+    """Test the token count endpoint."""
+    with TestClient(app) as client:
+        input_text = "This is a test sentence for token counting."
+        token_count_request = {"model": "repeater", "text": input_text}
+        response = client.post("/leapfrogai/v1/count/tokens", json=token_count_request)
+        assert response.status_code == 200
+
+        response_data = response.json()
+        assert "token_count" in response_data
+        assert isinstance(response_data["token_count"], int)
+        assert response_data["token_count"] == len(input_text)
