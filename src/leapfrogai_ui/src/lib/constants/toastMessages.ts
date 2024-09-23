@@ -1,10 +1,4 @@
-import { MAX_NUM_FILES_UPLOAD } from '$constants/index';
-
-type ToastData = {
-  kind: ToastKind;
-  title: string;
-  subtitle?: string;
-};
+import { AUDIO_FILE_SIZE_ERROR_TEXT, MAX_NUM_FILES_UPLOAD } from '$constants/index';
 
 export const ERROR_SAVING_MSG_TOAST = (override: Partial<ToastData> = {}): ToastData => ({
   kind: 'error',
@@ -69,5 +63,33 @@ export const FILE_VECTOR_TIMEOUT_MSG_TOAST = (override: Partial<ToastData> = {})
   kind: 'error',
   title: 'Timeout',
   subtitle: 'There was an error processing assistant files',
+  ...override
+});
+
+export const FILE_TRANSLATION_ERROR = (override: Partial<ToastData> = {}): ToastData => ({
+  kind: 'error',
+  title: 'Translation Error',
+  subtitle: 'Error translating audio file',
+  ...override
+});
+
+export const FILE_TRANSCRIPTION_ERROR = (override: Partial<ToastData> = {}): ToastData => ({
+  kind: 'error',
+  title: 'Transcription Error',
+  subtitle: 'Error transcribing audio file',
+  ...override
+});
+
+export const AUDIO_FILE_SIZE_ERROR_TOAST = (override: Partial<ToastData> = {}): ToastData => ({
+  kind: 'error',
+  title: 'File Too Large',
+  subtitle: AUDIO_FILE_SIZE_ERROR_TEXT,
+  ...override
+});
+
+export const FILE_SUMMARIZATION_ERROR = (override: Partial<ToastData> = {}): ToastData => ({
+  kind: 'error',
+  title: 'Summarization Error',
+  subtitle: 'Error summarizing file',
   ...override
 });

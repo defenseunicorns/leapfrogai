@@ -2,13 +2,9 @@ import type { PageLoad } from './$types';
 import { browser } from '$app/environment';
 import type { LFThread } from '$lib/types/threads';
 import { threadsStore } from '$stores';
-import { superValidate } from 'sveltekit-superforms';
-import { yup } from 'sveltekit-superforms/adapters';
-import { filesSchema } from '$schemas/files';
 
 export const load: PageLoad = async ({ params, fetch }) => {
   const promises = [fetch('/api/assistants'), fetch('/api/files')];
-  const form = await superValidate(yup(filesSchema));
 
   if (params.thread_id) promises.push(fetch(`/api/threads/${params.thread_id}`));
 
@@ -29,5 +25,5 @@ export const load: PageLoad = async ({ params, fetch }) => {
     }
   }
 
-  return { thread, assistants, files, form };
+  return { thread, assistants, files };
 };

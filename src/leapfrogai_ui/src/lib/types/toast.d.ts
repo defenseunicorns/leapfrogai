@@ -14,3 +14,9 @@ type ToastNotificationProps = {
 type ToastStore = {
   toasts: ToastNotificationProps[];
 };
+
+type ToastData = {
+  kind: ToastKind;
+  title: string;
+  subtitle?: string;
+};

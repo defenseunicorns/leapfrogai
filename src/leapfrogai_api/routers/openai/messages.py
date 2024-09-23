@@ -3,12 +3,7 @@
 from fastapi import HTTPException, APIRouter, status
 from openai.types.beta.threads import Message, MessageDeleted
 from openai.pagination import SyncCursorPage
-from leapfrogai_api.backend.types import (
-    ModifyMessageRequest,
-)
-from leapfrogai_api.routers.openai.requests.create_message_request import (
-    CreateMessageRequest,
-)
+from leapfrogai_api.typedef.messages import CreateMessageRequest, ModifyMessageRequest
 from leapfrogai_api.data.crud_message import CRUDMessage
 from leapfrogai_api.routers.supabase_session import Session
 

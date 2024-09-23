@@ -10,12 +10,13 @@ from openai.types.beta.vector_store import FileCounts, VectorStore
 from openai.types.beta.vector_stores import VectorStoreFile
 from openai.types.beta.vector_stores.vector_store_file import LastError
 from supabase import AClient as AsyncClient
+
 from leapfrogai_api.backend.rag.document_loader import load_file, split
 from leapfrogai_api.backend.rag.leapfrogai_embeddings import LeapfrogAIEmbeddings
 from leapfrogai_api.data.crud_file_bucket import CRUDFileBucket
 from leapfrogai_api.data.crud_file_object import CRUDFileObject, FilterFileObject
 from leapfrogai_api.data.crud_vector_store import CRUDVectorStore, FilterVectorStore
-from leapfrogai_api.backend.types import (
+from leapfrogai_api.typedef.vectorstores import (
     VectorStoreStatus,
     VectorStoreFileStatus,
     CreateVectorStoreRequest,
@@ -55,10 +56,12 @@ class IndexingService:
         crud_vector_store_file = CRUDVectorStoreFile(db=self.db)
         crud_vector_store = CRUDVectorStore(db=self.db)
 
-        if file_existing := await crud_vector_store_file.get(
+        if existing_file := await crud_vector_store_file.get(
             filters=FilterVectorStoreFile(vector_store_id=vector_store_id, id=file_id)
         ):
-            return file_existing
+            logger.warning("File already indexed: %s", file_id)
+            return existing_file
+
         if not (
             await crud_vector_store.get(filters=FilterVectorStore(id=vector_store_id))
         ):
@@ -390,25 +393,6 @@ class IndexingService:
             response = await crud_vector_content.add_vectors(batch)
             ids.extend([item.id for item in response])
         return ids
-
-    async def asimilarity_search(self, query: str, vector_store_id: str, k: int = 4):
-        """Searches for similar documents.
-
-        Args:
-            query (str): The query string.
-            vector_store_id (str): The ID of the vector store to search in.
-            k (int, optional): The number of similar documents to retrieve. Defaults to 4.
-
-        Returns:
-            The response from the database after executing the similarity search.
-
-        """
-        vector = await self.embeddings.aembed_query(query)
-
-        crud_vector_content = CRUDVectorContent(db=self.db)
-        return await crud_vector_content.similarity_search(
-            query=vector, vector_store_id=vector_store_id, k=k
-        )
 
     async def _increment_vector_store_file_status(
         self, vector_store: VectorStore, file_response: VectorStoreFile

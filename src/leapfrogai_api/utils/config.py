@@ -1,24 +1,50 @@
+import asyncio
 import fnmatch
 import glob
 import logging
 import os
-from typing import List
-
 import toml
 import yaml
-from watchfiles import Change, awatch
+from watchdog.observers import Observer
+from watchdog.events import FileSystemEventHandler
 
+from leapfrogai_api.typedef.models import Model
 
 logger = logging.getLogger(__name__)
 
 
-class Model:
-    name: str
-    backend: str
+class ConfigHandler(FileSystemEventHandler):
+    def __init__(self, config):
+        self.config = config
+        super().__init__()
 
-    def __init__(self, name: str, backend: str, capabilities: List[str] | None = None):
-        self.name = name
-        self.backend = backend
+    def on_created(self, event):
+        self.process(event)
+
+    def on_modified(self, event):
+        self.process(event)
+
+    def on_deleted(self, event):
+        self.process(event)
+
+    def process(self, event):
+        # Ignore directory events
+        if event.is_directory:
+            return
+
+        filename = os.path.basename(event.src_path)
+        logger.debug(f"Processing event '{event.event_type}' for file '{filename}'")
+
+        # Check if the file matches the config filename or pattern
+        if fnmatch.fnmatch(filename, self.config.filename):
+            if event.event_type == "deleted":
+                logger.info(f"Detected deletion of config file '{filename}'")
+                self.config.remove_model_by_config(filename)
+            else:
+                logger.info(
+                    f"Detected modification/creation of config file '{filename}'"
+                )
+                self.config.load_config_file(self.config.directory, filename)
 
 
 class Config:
@@ -30,6 +56,8 @@ class Config:
     ):
         self.models = models
         self.config_sources = config_sources
+        self.directory = "."
+        self.filename = "config.yaml"
 
     def __str__(self):
         return f"Models: {self.models}"
@@ -37,82 +65,74 @@ class Config:
     async def watch_and_load_configs(self, directory=".", filename="config.yaml"):
         # Get the config directory and filename from the environment variables if provided
         env_directory = os.environ.get("LFAI_CONFIG_PATH", directory)
-        if env_directory is not None and env_directory != "":
+        if env_directory:
             directory = env_directory
         env_filename = os.environ.get("LFAI_CONFIG_FILENAME", filename)
-        if env_filename is not None and env_filename != "":
+        if env_filename:
             filename = env_filename
+
+        self.directory = directory
+        self.filename = filename
 
         # Process all the configs that were already in the directory
         self.load_all_configs(directory, filename)
 
-        # Watch the directory for changes until the end of time
-        while True:
-            async for changes in awatch(directory, recursive=False, step=50):
-                # get two unique lists of files that have been (updated files and deleted files)
-                # (awatch can return duplicates depending on the type of updates that happen)
-                logger.info("Config changes detected: {}".format(changes))
-                unique_new_files = set()
-                unique_deleted_files = set()
-                for change in changes:
-                    if change[0] == Change.deleted:
-                        unique_deleted_files.add(os.path.basename(change[1]))
-                    else:
-                        unique_new_files.add(os.path.basename(change[1]))
+        # Set up the event handler and observer
+        event_handler = ConfigHandler(self)
+        observer = Observer()
+        observer.schedule(event_handler, path=directory, recursive=False)
 
-                # filter the files to those that match the filename or glob pattern
-                filtered_new_matches = fnmatch.filter(unique_new_files, filename)
-                filtered_deleted_matches = fnmatch.filter(
-                    unique_deleted_files, filename
-                )
+        # Start the observer
+        observer.start()
+        logger.info(f"Started watching directory: {directory}")
 
-                # load all the updated config files
-                for match in filtered_new_matches:
-                    self.load_config_file(directory, match)
+        try:
+            while True:
+                await asyncio.sleep(1)
+        except (KeyboardInterrupt, asyncio.CancelledError):
+            # Stop the observer if the script is interrupted
+            observer.stop()
+            logger.info(f"Stopped watching directory: {directory}")
 
-                # remove deleted models
-                for match in filtered_deleted_matches:
-                    self.remove_model_by_config(match)
+        # Wait for the observer to finish
+        observer.join()
 
     async def clear_all_models(self):
-        # reset the model config on shutdown (so old model configs don't get cached)
+        # Reset the model config on shutdown (so old model configs don't get cached)
         self.models = {}
         self.config_sources = {}
         logger.info("All models have been removed")
 
     def load_config_file(self, directory: str, config_file: str):
-        logger.info("Loading config file: {}/{}".format(directory, config_file))
+        logger.info(f"Loading config file: {directory}/{config_file}")
 
-        # load the config file into the config object
+        # Load the config file into the config object
         config_path = os.path.join(directory, config_file)
-        with open(config_path) as c:
-            # Load the file into a python object
-            loaded_artifact = {}
-            if config_path.endswith(".toml"):
-                loaded_artifact = toml.load(c)
-            elif config_path.endswith(".yaml"):
-                loaded_artifact = yaml.safe_load(c)
-            else:
-                # TODO: Return an error ???
-                logger.error(f"Unsupported file type: {config_path}")
-                return
+        try:
+            with open(config_path) as c:
+                # Load the file into a python object
+                if config_path.endswith(".toml"):
+                    loaded_artifact = toml.load(c)
+                elif config_path.endswith(".yaml"):
+                    loaded_artifact = yaml.safe_load(c)
+                else:
+                    logger.error(f"Unsupported file type: {config_path}")
+                    return
 
-            # parse the object into our config
-            self.parse_models(loaded_artifact, config_file)
+                # Parse the object into our config
+                self.parse_models(loaded_artifact, config_file)
 
-        logger.info("loaded artifact at {}".format(config_path))
-
-        return
+            logger.info(f"Loaded artifact at {config_path}")
+        except Exception as e:
+            logger.error(f"Failed to load config file {config_path}: {e}")
 
     def load_all_configs(self, directory="", filename="config.yaml"):
         logger.info(
-            "Loading all configs in {} that match the name '{}'".format(
-                directory, filename
-            )
+            f"Loading all configs in {directory} that match the name '{filename}'"
         )
 
         if not os.path.exists(directory):
-            logger.error("The config directory ({}) does not exist".format(directory))
+            logger.error(f"The config directory ({directory}) does not exist")
             return "THE CONFIG DIRECTORY DOES NOT EXIST"
 
         # Get all config files and load them into the config object
@@ -121,13 +141,8 @@ class Config:
             dir_path, file_path = os.path.split(config_path)
             self.load_config_file(directory=dir_path, config_file=file_path)
 
-        return
-
     def get_model_backend(self, model: str) -> Model | None:
-        if model in self.models:
-            return self.models[model]
-        else:
-            return None
+        return self.models.get(model)
 
     def parse_models(self, loaded_artifact, config_file):
         for m in loaded_artifact["models"]:

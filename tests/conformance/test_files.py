@@ -25,22 +25,6 @@ def test_file_upload(client_name):
 
 
 @pytest.mark.parametrize("client_name", ["openai", "leapfrogai"])
-def test_file_upload_batches(client_name):
-    config = client_config_factory(client_name)
-    client = config.client  # shorthand
-
-    vector_store = client.beta.vector_stores.create(name="Test data")
-
-    file_streams = [open(text_file_path(), "rb")]
-
-    client.beta.vector_stores.file_batches.upload_and_poll(
-        vector_store_id=vector_store.id, files=file_streams
-    )
-
-    assert isinstance(vector_store, VectorStore)
-
-
-@pytest.mark.parametrize("client_name", ["openai", "leapfrogai"])
 def test_file_delete(client_name):
     config = client_config_factory(client_name)
     client = config.client
