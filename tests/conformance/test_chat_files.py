@@ -8,36 +8,24 @@ from openai.types.beta.threads.annotation import (
 )
 from openai.types.beta.threads.text import Text
 from openai.types.beta.threads.message import Message
-from openai import OpenAI
-
-
-LEAPFROGAI_MODEL = "llama-cpp-python"
-OPENAI_MODEL = "gpt-4o-mini"
+from tests.utils.client import client_config_factory
 
 
 def text_file_path():
     return Path(os.path.dirname(__file__) + "/../../data/test_with_data.txt")
 
 
-def openai_client():
-    return OpenAI(api_key=os.getenv("OPENAI_API_KEY"))
+def validate_annotation_format(annotation):
+    pattern = r"【\d+:\d+†source】"
+    match = re.fullmatch(pattern, annotation)
+    return match is not None
 
 
-def leapfrogai_client():
-    return OpenAI(
-        base_url=os.getenv("LEAPFROGAI_API_URL"),
-        api_key=os.getenv("LEAPFROGAI_API_KEY"),
-    )
+@pytest.mark.parametrize("client_name", ["openai", "leapfrogai"])
+def make_vector_store_with_file(client_name):
+    config = client_config_factory(client_name)
+    client = config.client
 
-
-def client_config_factory(client_name):
-    if client_name == "openai":
-        return dict(client=openai_client(), model=OPENAI_MODEL)
-    elif client_name == "leapfrogai":
-        return dict(client=leapfrogai_client(), model=LEAPFROGAI_MODEL)
-
-
-def make_vector_store_with_file(client):
     vector_store = client.beta.vector_stores.create(name="Test data")
     with open(text_file_path(), "rb") as file:
         client.beta.vector_stores.files.upload(
@@ -46,7 +34,11 @@ def make_vector_store_with_file(client):
     return vector_store
 
 
-def make_test_assistant(client, model, vector_store_id):
+@pytest.mark.parametrize("client_name", ["openai", "leapfrogai"])
+def make_test_assistant(client_name, model, vector_store_id):
+    config = client_config_factory(client_name)
+    client = config.client
+
     assistant = client.beta.assistants.create(
         name="Test Assistant",
         instructions="You must provide a response based on the attached files.",
@@ -57,23 +49,21 @@ def make_test_assistant(client, model, vector_store_id):
     return assistant
 
 
-def make_test_run(client, assistant, thread):
+@pytest.mark.parametrize("client_name", ["openai", "leapfrogai"])
+def make_test_run(client_name, assistant, thread):
+    config = client_config_factory(client_name)
+    client = config.client
+
     run = client.beta.threads.runs.create_and_poll(
         assistant_id=assistant.id, thread_id=thread.id
     )
     return run
 
 
-def validate_annotation_format(annotation):
-    pattern = r"【\d+:\d+†source】"
-    match = re.fullmatch(pattern, annotation)
-    return match is not None
-
-
 @pytest.mark.parametrize("client_name", ["openai", "leapfrogai"])
 def test_thread_file_annotations(client_name):
     config = client_config_factory(client_name)
-    client = config["client"]  # shorthand
+    client = config.client
 
     vector_store = make_vector_store_with_file(client)
     assistant = make_test_assistant(client, config["model"], vector_store.id)
