@@ -26,7 +26,7 @@
   },
   "devDependencies": {
     "@faker-js/faker": "^8.4.1",
-    "@playwright/test": "^1.47.0",
+    "@playwright/test": "^1.47.2",
     "@sveltejs/adapter-auto": "^3.2.4",
     "@sveltejs/adapter-node": "^5.2.2",
     "@sveltejs/kit": "^2.5.26",
@@ -73,7 +73,7 @@
   "type": "module",
   "dependencies": {
     "@ai-sdk/openai": "^0.0.61",
-    "@ai-sdk/svelte": "^0.0.46",
+    "@ai-sdk/svelte": "^0.0.49",
     "@supabase/ssr": "^0.5.1",
     "@supabase/supabase-js": "^2.45.4",
     "@sveltejs/vite-plugin-svelte": "^3.1.2",
