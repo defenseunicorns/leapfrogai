@@ -14,7 +14,7 @@ dependencies = [
     "seaborn == 0.13.2",
     "datasets == 2.21.0",
     "huggingface-hub == 0.24.6",
-    "anthropic == 0.34.1",
+    "anthropic ==0.34.2",
     "instructor == 1.4.0",
     "pyPDF2 == 3.0.1"
 ]
