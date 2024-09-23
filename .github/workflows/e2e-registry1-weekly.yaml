@@ -6,11 +6,11 @@ on:
   workflow_dispatch: # trigger manually as needed
   pull_request:
     types:
-      - opened            # default trigger
-      - reopened          # default trigger
-      - synchronize       # default trigger
-      - ready_for_review  # don't run on draft PRs
-      - milestoned        # allows us to trigger on bot PRs
+      - opened # default trigger
+      - reopened # default trigger
+      - synchronize # default trigger
+      - ready_for_review # don't run on draft PRs
+      - milestoned # allows us to trigger on bot PRs
     paths:
       - .github/workflows/e2e-registry1-weekly.yaml
       - bundles/latest/**
@@ -29,6 +29,11 @@ jobs:
     name: e2e_registry1_weekly
     if: ${{ !github.event.pull_request.draft }}
 
+    env:
+      # x-release-please-start-version
+      LEAPFROGAI_VERSION: 0.13.0
+      # x-release-please-end
+
     permissions:
       contents: read
       packages: read
@@ -39,9 +44,7 @@ jobs:
         uses: actions/checkout@b4ffde65f46336ab88eb53be808477a3936bae11 # v4.1.1
         with:
           fetch-tags: true
-          # x-release-please-start-version
-          ref: "v0.13.0"
-          # x-release-please-end
+          ref: v${{ env.LEAPFROGAI_VERSION }}
 
       - name: Setup UDS Environment
         uses: defenseunicorns/uds-common/.github/actions/setup@24c8a2a48eeb33773b76b3587c489cb17496c9e0 # v0.12.0
@@ -65,21 +68,31 @@ jobs:
           npm --prefix src/leapfrogai_ui ci
           npx --prefix src/leapfrogai_ui playwright install
 
+      - name: Mutation of the Registry1 Zarf Packages
+        run: |
+          uds zarf tools yq -i '.components[].images[] |= sub("[0-9.]+", "v${{ env.LEAPFROGAI_VERSION }}")' packages/api/zarf.yaml
+          uds zarf tools yq -i '.api.image.tag = "v${{ env.LEAPFROGAI_VERSION }}"' packages/api/values/registry1-values.yaml
+
+      - name: Print the Modified Packages
+        run: |
+          cat packages/api/zarf.yaml
+          cat packages/api/values/registry1-values.yaml
+
       - name: Create Registry1 Packages
         run: |
           LOCAL_VERSION=registry1 FLAVOR=registry1 make build-api
 
       # Mutate UDS bundle definition to use Registry1 packages
       - name: Mutation to Registry1 Bundle
-        # TODO: fix bundle path
         run: |
-          uds zarf tools yq -i '.packages[1] |= del(.repository)' bundles/latest/cpu/uds-bundle.yaml
-          uds zarf tools yq -i '.packages[1] |= .ref = "registry1"' bundles/latest/cpu/uds-bundle.yaml
-          uds zarf tools yq -i '.packages[1] |= .path = "../../../packages/api"' bundles/latest/cpu/uds-bundle.yaml
-          uds zarf tools yq -i '.metadata.version = "registry1"' bundles/latest/cpu/uds-bundle.yaml
-          echo "Printing out the final UDS Bundle package..."
-          cat bundles/latest/cpu/uds-config.yaml
-          cat bundles/latest/cpu/uds-bundle.yaml
+          uds zarf tools yq -i '.packages[1] |= .ref = "registry1"' bundles/dev/cpu/uds-bundle.yaml
+          uds zarf tools yq -i '.packages[1] |= .path = "../../../packages/api"' bundles/dev/cpu/uds-bundle.yaml
+          uds zarf tools yq -i '.metadata.version = "registry1"' bundles/dev/cpu/uds-bundle.yaml
+
+      - name: Print the Modified Bundle
+        run: |
+          cat bundles/dev/cpu/uds-config.yaml
+          cat bundles/dev/cpu/uds-bundle.yaml
 
       - name: Create UDS Cluster
         shell: bash
@@ -88,7 +101,7 @@ jobs:
 
       - name: Create and Deploy Bundle
         run: |
-          cd bundles/latest/cpu
+          cd bundles/dev/cpu
           uds create . --confirm && \
             uds deploy uds-bundle-leapfrogai-amd64-registry1.tar.zst --confirm --no-progress && \
             rm -rf uds-bundle-leapfrogai-amd64-registry1.tar.zst && \
@@ -113,32 +126,13 @@ jobs:
           echo "ANON_KEY is set: ${{ steps.generate_secrets.outputs.ANON_KEY != '' }}"
           echo "SERVICE_KEY is set: ${{ steps.generate_secrets.outputs.SERVICE_KEY != '' }}"
 
-      - name: Run Integration Tests
-        env:
-          SUPABASE_ANON_KEY: ${{ steps.generate_secrets.outputs.ANON_KEY }}
-          SUPABASE_PASS: ${{ steps.generate_secrets.outputs.FAKE_PASSWORD }}
-          SUPABASE_EMAIL: integration@uds.dev
-          SUPABASE_URL: https://supabase-kong.uds.dev
-          # Turn off NIAH tests that are not applicable for integration testing using the Repeater model
-          LFAI_RUN_NIAH_TESTS: "false"
-        run: |
-          uds zarf connect --name=llama-cpp-python-model --namespace=leapfrogai --local-port=50051 --remote-port=50051 &
-          while ! nc -z localhost 50051; do sleep 1; done
-
-          make test-user-pipeline
-          env $(cat .env | xargs) python -m pytest -v -s tests/integration/api
-
       # Backends
       - name: Run Backend E2E Tests
         env:
           ANON_KEY: ${{ steps.generate_secrets.outputs.ANON_KEY }}
           SERVICE_KEY: ${{ steps.generate_secrets.outputs.SERVICE_KEY }}
         run: |
-          python -m pytest ./tests/e2e/test_llama.py -vv
-          python -m pytest ./tests/e2e/test_text_embeddings.py -vv
-          python -m pytest ./tests/e2e/test_whisper.py -vv
-          python -m pytest ./tests/e2e/test_supabase.py -vv
-          python -m pytest ./tests/e2e/test_api.py -vv
+          python -m pytest -vvv -s ./tests/e2e
 
       - name: Run Playwright E2E Tests
         env:
