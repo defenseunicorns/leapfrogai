@@ -1,35 +1,15 @@
-import os
 from pathlib import Path
 from typing import Iterable
-import warnings
 
 import pytest
 from openai import InternalServerError, OpenAI
 from openai.types.chat import ChatCompletionMessageParam
-
-DEFAULT_LEAPFROGAI_MODEL = "llama-cpp-python"
 
 # Test generation parameters
 SYSTEM_PROMPT = "You are a helpful assistant."
 USER_PROMPT = "Only return 1 word"
 MAX_TOKENS = 128
 TEMPERATURE = 0
-
-
-def get_model_name():
-    model_name = os.getenv("LEAPFROGAI_MODEL")
-    if model_name is None:
-        warnings.warn(
-            f"LEAPFROGAI_MODEL environment variable not set. Defaulting to '{DEFAULT_LEAPFROGAI_MODEL}'.\n"
-            "Consider setting LEAPFROGAI_MODEL explicitly. Examples: 'vllm', 'repeater', 'llama-cpp-python'."
-        )
-        model_name = DEFAULT_LEAPFROGAI_MODEL
-    return model_name
-
-
-@pytest.fixture
-def model_name():
-    return get_model_name()
 
 
 def test_chat_completions(client: OpenAI, model_name: str):
