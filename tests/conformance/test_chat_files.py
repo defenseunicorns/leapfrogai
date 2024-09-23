@@ -12,7 +12,7 @@ from tests.utils.client import client_config_factory
 
 
 def text_file_path():
-    return Path(os.path.dirname(__file__) + "/../../data/test_with_data.txt")
+    return Path(os.path.dirname(__file__) + "/../data/test_with_data.txt")
 
 
 def validate_annotation_format(annotation):
@@ -65,8 +65,8 @@ def test_thread_file_annotations(client_name):
     config = client_config_factory(client_name)
     client = config.client
 
-    vector_store = make_vector_store_with_file(client)
-    assistant = make_test_assistant(client, config["model"], vector_store.id)
+    vector_store = make_vector_store_with_file(client_name)
+    assistant = make_test_assistant(client_name, config.model, vector_store.id)
     thread = client.beta.threads.create()
 
     client.beta.threads.messages.create(
@@ -74,7 +74,7 @@ def test_thread_file_annotations(client_name):
         role="user",
         content="Who is Sam?",
     )
-    run = make_test_run(client, assistant, thread)
+    run = make_test_run(client_name, assistant, thread)
 
     messages = client.beta.threads.messages.list(
         thread_id=thread.id, run_id=run.id
