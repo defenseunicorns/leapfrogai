@@ -6,11 +6,11 @@ on:
   workflow_dispatch: # trigger manually as needed
   pull_request:
     types:
-      - opened # default trigger
-      - reopened # default trigger
-      - synchronize # default trigger
-      - ready_for_review # don't run on draft PRs
-      - milestoned # allows us to trigger on bot PRs
+      - opened            # default trigger
+      - reopened          # default trigger
+      - synchronize       # default trigger
+      - ready_for_review  # don't run on draft PRs
+      - milestoned        # allows us to trigger on bot PRs
     paths:
       - .github/workflows/e2e-registry1-weekly.yaml
       - bundles/latest/**
