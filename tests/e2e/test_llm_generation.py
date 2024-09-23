@@ -5,17 +5,24 @@ import pytest
 from openai import InternalServerError, OpenAI
 from openai.types.chat import ChatCompletionMessageParam
 
+# Test generation parameters
+SYSTEM_PROMPT = "You are a helpful assistant."
+USER_PROMPT = "Only return 1 word"
+MAX_TOKENS = 128
+TEMPERATURE = 0
+
 
 def test_chat_completions(client: OpenAI, model_name: str):
     messages: Iterable[ChatCompletionMessageParam] = [
-        {"role": "system", "content": "You are a helpful assistant."},
-        {"role": "user", "content": "What is your name?"},
+        {"role": "system", "content": SYSTEM_PROMPT},
+        {"role": "user", "content": USER_PROMPT},
     ]
 
     chat_completion = client.chat.completions.create(
         model=model_name,
         messages=messages,
-        max_tokens=128,
+        max_tokens=MAX_TOKENS,
+        temperature=TEMPERATURE,
     )
     assert chat_completion.model == model_name
     assert len(chat_completion.choices) == 1
@@ -31,8 +38,9 @@ def test_chat_completions(client: OpenAI, model_name: str):
 def test_completions(client: OpenAI, model_name: str):
     completion = client.completions.create(
         model=model_name,
-        prompt="Only return 1 word",
-        max_tokens=128,
+        prompt=USER_PROMPT,
+        max_tokens=MAX_TOKENS,
+        temperature=TEMPERATURE,
     )
     assert completion.model == model_name
     assert len(completion.choices) == 1
