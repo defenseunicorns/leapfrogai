@@ -21,7 +21,7 @@ def download_arxiv_pdf():
         )
 
 
-def test_run_with_background_task(client: OpenAI):
+def test_run_with_background_task(client: OpenAI, model_name: str):
     """
     This test confirms whether a vector store for an assistant can index files
     while chatting at the same time.
@@ -52,7 +52,7 @@ def test_run_with_background_task(client: OpenAI):
 
     # Create an assistant
     assistant = client.beta.assistants.create(
-        model="llama-cpp-python",
+        model=model_name,
         name="Test Assistant",
         instructions="You are a helpful assistant with access to a knowledge base about AI and machine learning.",
         tools=[{"type": "file_search"}],
