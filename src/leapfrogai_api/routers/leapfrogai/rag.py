@@ -1,8 +1,8 @@
 """LeapfrogAI endpoints for RAG."""
 
-from fastapi import APIRouter, Depends
+from fastapi import APIRouter
 from leapfrogai_api.typedef.rag.rag_types import Configuration
-from leapfrogai_api.routers.supabase_session import Session, get_session
+from leapfrogai_api.routers.supabase_session import Session
 
 router = APIRouter(prefix="/leapfrogai/v1/rag", tags=["leapfrogai/rag"])
 
@@ -22,7 +22,7 @@ async def configure(session: Session, configuration: Configuration):
 
 
 @router.get("/configure")
-async def get_configuration(session: Session = Depends(get_session)):
+async def get_configuration(session: Session):
     """
     Retrieves the current RAG configuration.
 
