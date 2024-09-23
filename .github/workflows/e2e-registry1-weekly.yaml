@@ -6,11 +6,11 @@ on:
   workflow_dispatch: # trigger manually as needed
   pull_request:
     types:
-      - opened # default trigger
-      - reopened # default trigger
-      - synchronize # default trigger
-      - ready_for_review # don't run on draft PRs
-      - milestoned # allows us to trigger on bot PRs
+      - opened            # default trigger
+      - reopened          # default trigger
+      - synchronize       # default trigger
+      - ready_for_review  # don't run on draft PRs
+      - milestoned        # allows us to trigger on bot PRs
     paths:
       - .github/workflows/e2e-registry1-weekly.yaml
       - bundles/latest/**
@@ -43,25 +43,20 @@ jobs:
           ref: "v0.13.0"
           # x-release-please-end
 
-      - name: Setup Python
-        uses: ./.github/actions/python
-
-      - name: Install API and SDK Dev Dependencies
-        run : |
-          make install
-
       - name: Setup UDS Cluster
         uses: ./.github/actions/uds-cluster
         with:
           registry1Username: ${{ secrets.IRON_BANK_ROBOT_USERNAME }}
           registry1Password: ${{ secrets.IRON_BANK_ROBOT_PASSWORD }}
           ghToken: ${{ secrets.GITHUB_TOKEN }}
-          udsCliVersion: 0.14.0
 
-      - name: Create UDS Cluster
-        shell: bash
-        run: |
-          UDS_CONFIG=.github/config/uds-config.yaml make create-uds-cpu-cluster
+      - name: Setup Python
+        uses: actions/setup-python@0a5c61591373683505ea898e09a3ea4f39ef2b9c #v5.0.0
+        with:
+          python-version-file: "pyproject.toml"
+
+      - name: Install Python Dependencies
+        run: pip install ".[dev]" "src/leapfrogai_api" "src/leapfrogai_sdk"
 
       - name: Setup Playwright
         run: |
@@ -80,6 +75,9 @@ jobs:
           uds zarf tools yq -i '.packages[1] |= .ref = "registry1"' bundles/latest/cpu/uds-bundle.yaml
           uds zarf tools yq -i '.packages[1] |= .path = "../../../packages/api"' bundles/latest/cpu/uds-bundle.yaml
           uds zarf tools yq -i '.metadata.version = "registry1"' bundles/latest/cpu/uds-bundle.yaml
+          echo "Printing out the final UDS Bundle package..."
+          cat bundles/latest/cpu/uds-config.yaml
+          cat bundles/latest/cpu/uds-bundle.yaml
 
       - name: Create and Deploy Bundle
         run: |
