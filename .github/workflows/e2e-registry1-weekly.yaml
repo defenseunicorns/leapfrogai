@@ -82,7 +82,7 @@ jobs:
 
       - name: Create Registry1 Zarf Packages
         run: |
-          LOCAL_VERSION=registry1 FLAVOR=registry1 make build-api
+          zarf package create packages/api --confirm --flavor registry1 --set IMAGE_VERSION=${{ env.LEAPFROGAI_VERSION }}
 
       # Mutate UDS bundle definition to use Registry1 packages
       # Mutate mon-Registry1 packages to be the current tagged version
