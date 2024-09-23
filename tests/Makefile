@@ -76,4 +76,4 @@ test-load:
 	python -m locust -f $$(pwd)/tests/load/loadtest.py --web-port 8089
 
 test-conformance:
-	source .env; PYTHONPATH=$$(pwd) pytest -vv -s tests/conformance
+	PYTHONPATH=$$(pwd) pytest -vv -s tests/conformance
