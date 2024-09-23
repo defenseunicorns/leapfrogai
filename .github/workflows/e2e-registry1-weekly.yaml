@@ -116,7 +116,7 @@ jobs:
         run: |
           cd bundles/latest/cpu
           uds create . --confirm && \
-            uds deploy uds-bundle-leapfrogai-amd64-registry1.tar.zst --confirm --no-progress && \
+            uds deploy uds-bundle-leapfrogai-amd64-registry1.tar.zst --confirm --no-progress --log-level debug && \
             rm -rf uds-bundle-leapfrogai-amd64-registry1.tar.zst && \
             docker system prune -af
 
