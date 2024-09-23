@@ -31,7 +31,10 @@ on:
       - "!packages/ui/**"
 
 # Declare default permissions as read only.
-permissions: read-all
+permissions:
+  contents: read
+  packages: read
+  id-token: write # This is needed for OIDC federation.
 
 concurrency:
   group: pytest-integration-${{ github.ref }}
