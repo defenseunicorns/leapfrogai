@@ -67,7 +67,7 @@ def from_text_to_message(text: str, search_responses: SearchResponse | None) -> 
         for search_response in search_responses.data:
             all_file_ids += f"[{search_response.file_id}]"
             all_vector_ids.append(search_response.id)
-            file_name = search_response.metadata.get("source")
+            file_name = search_response.metadata.get("source", "source")
             annotations.append(
                 FileCitationAnnotation(
                     text=f"【4:0†{file_name}】",  # TODO: What should these numbers be? Who even knows...

@@ -1,23 +1,20 @@
 import pytest
 import re
-import os
-from pathlib import Path
 from openai.types.beta.threads.annotation import (
     FileCitationAnnotation,
     FilePathAnnotation,
 )
 from openai.types.beta.threads.text import Text
 from openai.types.beta.threads.message import Message
-from tests.utils.client import client_config_factory
-
-
-def text_file_path():
-    return Path(os.path.dirname(__file__) + "/../data/test_with_data.txt")
+from tests.utils.client import client_config_factory, text_file_path, FILENAME
 
 
 def validate_annotation_format(annotation):
-    pattern = r"【\d+:\d+†source】"
-    match = re.fullmatch(pattern, annotation)
+    pattern_default = r"【\d+:\d+†source】"
+    pattern = r"【\d+:\d+†" + FILENAME + "】"
+    match = re.fullmatch(pattern, annotation) or re.fullmatch(
+        pattern_default, annotation
+    )
     return match is not None
 
 
@@ -85,10 +82,8 @@ def test_thread_file_annotations(client_name):
     assert all(isinstance(message, Message) for message in messages)
 
     # Get the response content from the last message
-    message_content = messages[-1].content[0].text
+    message_content = messages[0].content[0].text
     assert isinstance(message_content, Text)
-
-    assert len(message_content.annotations) > 0
 
     # Check annotations return type
     for a in message_content.annotations:

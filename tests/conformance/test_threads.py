@@ -39,6 +39,8 @@ def test_thread(client_name, test_messages):
     config = client_config_factory(client_name)
     client = config.client
 
-    thread = client.beta.threads.create(messages=test_messages)
+    thread = client.beta.threads.create(
+        messages=test_messages
+    )  # TODO: This breaks with LeapfrogAI
 
     assert isinstance(thread, Thread)
