@@ -31,7 +31,7 @@ jobs:
 
     permissions:
       contents: read
-      packages: write
+      packages: read
       id-token: write # This is needed for OIDC federation.
 
     steps:
