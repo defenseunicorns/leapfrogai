@@ -43,12 +43,14 @@ jobs:
           ref: "v0.13.0"
           # x-release-please-end
 
-      - name: Setup UDS Cluster
-        uses: ./.github/actions/uds-cluster
+      - name: Setup UDS Environment
+        uses: defenseunicorns/uds-common/.github/actions/setup@24c8a2a48eeb33773b76b3587c489cb17496c9e0 # v0.12.0
         with:
           registry1Username: ${{ secrets.IRON_BANK_ROBOT_USERNAME }}
           registry1Password: ${{ secrets.IRON_BANK_ROBOT_PASSWORD }}
           ghToken: ${{ secrets.GITHUB_TOKEN }}
+          chainguardIdentity: ${{ secrets.CHAINGUARD_IDENTITY }}
+          udsCliVersion: 0.14.0
 
       - name: Setup Python
         uses: actions/setup-python@0a5c61591373683505ea898e09a3ea4f39ef2b9c #v5.0.0
@@ -78,6 +80,11 @@ jobs:
           echo "Printing out the final UDS Bundle package..."
           cat bundles/latest/cpu/uds-config.yaml
           cat bundles/latest/cpu/uds-bundle.yaml
+
+      - name: Create UDS Cluster
+        shell: bash
+        run: |
+          UDS_CONFIG=.github/config/uds-config.yaml make create-uds-cpu-cluster
 
       - name: Create and Deploy Bundle
         run: |
