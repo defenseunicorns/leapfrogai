@@ -77,7 +77,7 @@
     "@supabase/ssr": "^0.5.1",
     "@supabase/supabase-js": "^2.45.4",
     "@sveltejs/vite-plugin-svelte": "^3.1.2",
-    "ai": "^3.3.33",
+    "ai": "^3.4.0",
     "carbon-pictograms-svelte": "^12.11.0",
     "concurrently": "^8.2.2",
     "dompurify": "^3.1.6",
