@@ -9,7 +9,7 @@ version = "0.13.0"
 dependencies = [
     "InstructorEmbedding == 1.0.1",
     "torch == 2.2.0",
-    "numpy == 1.26.3",
+    "numpy ==1.26.4",
     "tqdm == 4.66.3",
     "sentence-transformers == 2.2.2",
     "transformers == 4.38.0",
