@@ -2,7 +2,7 @@ api:
   image:
     repository: "registry1.dso.mil/ironbank/opensource/defenseunicorns/leapfrogai/api"
     # x-release-please-start-version
-    tag: v0.12.2
+    tag: v0.13.0
     # x-release-please-end
 
   expose: "###ZARF_VAR_EXPOSE_API###"

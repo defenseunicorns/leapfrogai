@@ -11,6 +11,7 @@
       "versioning": "default",
       "extra-files": [
         "pyproject.toml",
+        "docs/DEVELOPMENT.md",
         {
           "type": "generic",
           "path": "**/Chart.yaml",

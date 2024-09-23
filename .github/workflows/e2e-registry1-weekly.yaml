@@ -6,11 +6,11 @@ on:
   workflow_dispatch: # trigger manually as needed
   pull_request:
     types:
-      - opened # default trigger
-      - reopened # default trigger
-      - synchronize # default trigger
-      - ready_for_review # don't run on draft PRs
-      - milestoned # allows us to trigger on bot PRs
+      - opened            # default trigger
+      - reopened          # default trigger
+      - synchronize       # default trigger
+      - ready_for_review  # don't run on draft PRs
+      - milestoned        # allows us to trigger on bot PRs
     paths:
       - .github/workflows/e2e-registry1-weekly.yaml
       - bundles/latest/**
@@ -38,9 +38,9 @@ jobs:
       - name: Checkout Repo
         uses: actions/checkout@b4ffde65f46336ab88eb53be808477a3936bae11 # v4.1.1
         with:
-          # LeapfrogAI 0.12.2 + integration tests PR
+          fetch-tags: true
           # x-release-please-start-version
-          ref: "11526e8fe28d7699f8a7bf115d7920f95f66ea8e"
+          ref: "v0.13.0"
           # x-release-please-end
 
       - name: Setup UDS Cluster
@@ -75,6 +75,8 @@ jobs:
           uds zarf tools yq -i '.packages[1] |= .ref = "registry1"' bundles/latest/cpu/uds-bundle.yaml
           uds zarf tools yq -i '.packages[1] |= .path = "../../../packages/api"' bundles/latest/cpu/uds-bundle.yaml
           uds zarf tools yq -i '.metadata.version = "registry1"' bundles/latest/cpu/uds-bundle.yaml
+          echo "Printing out the final UDS Bundle package..."
+          cat bundles/latest/cpu/uds-config.yaml
           cat bundles/latest/cpu/uds-bundle.yaml
 
       - name: Create and Deploy Bundle
