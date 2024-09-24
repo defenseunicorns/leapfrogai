@@ -11,10 +11,9 @@ class FinishReason(Enum):
     STOP = 1  # Maps to "stop"
     LENGTH = 2  # Maps to "length"
 
-    def __new__(cls, value):
+    def __init__(self, value):
         if value not in {0, 1, 2}:
             raise ValueError(f"Invalid FinishReason value: {value}")
-        return super().__new__(cls, value)
 
     def to_string(self) -> str | None:
         if self == FinishReason.NONE:
