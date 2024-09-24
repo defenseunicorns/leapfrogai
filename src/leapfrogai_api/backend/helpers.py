@@ -39,7 +39,7 @@ async def recv_completion(
                         index=0,
                         text=c.choices[0].text,
                         logprobs=None,
-                        finish_reason=finish_reason_enum.to_string(),
+                        finish_reason=finish_reason_enum.to_finish_reason(),
                     )
                 ],
                 usage=Usage(
@@ -77,7 +77,7 @@ async def recv_chat(
                         delta=ChatDelta(
                             role="assistant", content=c.choices[0].chat_item.content
                         ),
-                        finish_reason=finish_reason_enum.to_string(),
+                        finish_reason=finish_reason_enum.to_finish_reason(),
                     )
                 ],
                 usage=Usage(

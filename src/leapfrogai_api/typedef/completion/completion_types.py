@@ -15,7 +15,7 @@ class FinishReason(Enum):
         if value not in {0, 1, 2}:
             raise ValueError(f"Invalid FinishReason value: {value}")
 
-    def to_string(self) -> str | None:
+    def to_finish_reason(self) -> str | None:
         if self == FinishReason.NONE:
             return None
         return self.name.lower()
