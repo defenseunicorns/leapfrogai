@@ -59,6 +59,8 @@ class QueryService:
             SearchResponse: The search response from the vector store.
         """
 
+        logger.info("Beginning RAG query...")
+
         # 1. Embed query
         vector = await self.embeddings.aembed_query(query)
 
@@ -76,6 +78,8 @@ class QueryService:
             )
             results = rerank_search_response(results, reranked_results)
             logger.info(f"Reranking complete {results}")
+
+        logger.info("Ending RAG query...")
 
         return results
 
