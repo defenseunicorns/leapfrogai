@@ -12,7 +12,7 @@ dependencies = [
     "openai == 1.32.1",
     "uvicorn == 0.23.2",
     "docx2txt == 0.8",
-    "python-multipart == 0.0.7",            #indirect dep of FastAPI to receive form data for file uploads
+    "python-multipart ==0.0.10",            #indirect dep of FastAPI to receive form data for file uploads
     "watchdog == 5.0.2",
     "leapfrogai_sdk",
     "supabase == 2.6.0",
