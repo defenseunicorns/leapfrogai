@@ -75,6 +75,7 @@ class QueryService:
                 query, [result.content for result in results.data]
             )
             results = rerank_search_response(results, reranked_results)
+            logger.info(f"Reranking complete {results}")
 
         return results
 
