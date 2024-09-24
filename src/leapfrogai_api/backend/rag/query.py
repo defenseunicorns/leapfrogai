@@ -12,18 +12,7 @@ from leapfrogai_api.typedef.vectorstores.search_types import SearchResponse
 from leapfrogai_api.backend.constants import TOP_K
 from leapfrogai_api.utils import get_model_config
 from leapfrogai_api.utils.config import Config
-import os
-import logging
-from dotenv import load_dotenv
-
-load_dotenv()
-
-logging.basicConfig(
-    level=os.getenv("LFAI_LOG_LEVEL", logging.INFO),
-    format="%(name)s: %(asctime)s | %(levelname)s | %(filename)s:%(lineno)s >>> %(message)s",
-)
-
-logger = logging.getLogger(__name__)
+from leapfrogai_api.utils.logging_tools import logger
 
 # Allows for overwriting type of embeddings that will be instantiated
 embeddings_type: type[Embeddings] | type[LeapfrogAIEmbeddings] | None = (
@@ -107,7 +96,7 @@ def rerank_search_response(
             item = content_to_item[content]
             reranked_items.append(item)
 
-    logging.info(f"Reranked documents {reranked_items}")
+    logger.info(f"Reranked documents {reranked_items}")
 
     # Create a new SearchResponse with reranked items
     return SearchResponse(data=reranked_items)

@@ -3,6 +3,7 @@
 from fastapi import APIRouter
 from leapfrogai_api.typedef.rag.rag_types import Configuration, ConfigurationPayload
 from leapfrogai_api.routers.supabase_session import Session
+from leapfrogai_api.utils.logging_tools import logger
 
 router = APIRouter(prefix="/leapfrogai/v1/rag", tags=["leapfrogai/rag"])
 
@@ -33,4 +34,10 @@ async def get_configuration(session: Session) -> ConfigurationPayload:
         Configuration: The current RAG configuration.
     """
 
-    return ConfigurationPayload(enable_reranking=Configuration.enable_reranking)
+    new_configuration = ConfigurationPayload(
+        enable_reranking=Configuration.enable_reranking
+    )
+
+    logger.info(f"The current configuration has been set to {new_configuration}")
+
+    return new_configuration

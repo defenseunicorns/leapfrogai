@@ -3,18 +3,7 @@ import leapfrogai_sdk as lfai
 from leapfrogai_api.backend.grpc_client import chat_completion
 from leapfrogai_api.backend.helpers import grpc_chat_role
 from leapfrogai_api.utils.config import Config
-import os
-import logging
-from dotenv import load_dotenv
-
-load_dotenv()
-
-logging.basicConfig(
-    level=os.getenv("LFAI_LOG_LEVEL", logging.INFO),
-    format="%(name)s: %(asctime)s | %(levelname)s | %(filename)s:%(lineno)s >>> %(message)s",
-)
-
-logger = logging.getLogger(__name__)
+from leapfrogai_api.utils.logging_tools import logger
 
 
 def _create_rerank_prompt(query: str, documents: List[str]) -> str:
