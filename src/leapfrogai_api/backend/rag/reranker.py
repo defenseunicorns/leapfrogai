@@ -42,6 +42,7 @@ class Reranker:
     async def rerank(self, query: str, documents: List[str]) -> List[str]:
         prompt = _create_rerank_prompt(query, documents)
 
+        # TODO: System prompt needed
         chat_items = [lfai.ChatItem(role=grpc_chat_role("user"), content=prompt)]
         request = lfai.ChatCompletionRequest(
             chat_items=chat_items,
@@ -54,6 +55,8 @@ class Reranker:
             raise ValueError(f"Model {self.model} not found in configuration")
 
         response = await chat_completion(model_backend, request)
+
+        logger.info(f"The reranking request has returned {response}")
 
         reranked_indices = _parse_rerank_response(
             str(response.choices[0].message.content_as_str()), documents
