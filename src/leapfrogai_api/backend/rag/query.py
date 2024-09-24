@@ -8,7 +8,7 @@ from leapfrogai_api.backend.rag.leapfrogai_embeddings import LeapfrogAIEmbedding
 from leapfrogai_api.backend.rag.reranker import Reranker
 from leapfrogai_api.data.crud_vector_content import CRUDVectorContent
 from leapfrogai_api.typedef.rag.rag_types import Configuration
-from leapfrogai_api.typedef.vectorstores.search_types import SearchResponse
+from leapfrogai_api.typedef.vectorstores.search_types import SearchResponse, SearchItem
 from leapfrogai_api.backend.constants import TOP_K
 from leapfrogai_api.utils import get_model_config
 from leapfrogai_api.utils.config import Config
@@ -91,12 +91,16 @@ def rerank_search_response(
 
     # Create new SearchItems based on reranked results
     reranked_items = []
-    for content in reranked_results:
+    for idx, content in enumerate(reranked_results):
         if content in content_to_item:
-            item = content_to_item[content]
+            item: SearchItem = content_to_item[content]
+            # Update the similarity to maintain the new order
+            item.similarity = 1.0 - ((1.0 / len(reranked_results)) * idx)
             reranked_items.append(item)
 
-    logger.info(f"Reranked documents {reranked_items}")
+    logger.info(
+        f"Original documents: {original_response}\nReranked documents {reranked_items}"
+    )
 
     # Create a new SearchResponse with reranked items
     return SearchResponse(data=reranked_items)

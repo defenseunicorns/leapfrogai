@@ -16,10 +16,13 @@ def _parse_rerank_response(response: str | None, documents: List[str]) -> List[i
     # Parse the response to get the reranked indices
     try:
         if response is None:
+            logger.info("Failed to parse the reranked documents, received no response")
             return list(range(len(documents)))
         return [int(i.strip()) - 1 for i in response.split(",")]
-    except ValueError:
-        logger.info("Failed to parse the reranked documents")
+    except ValueError as e:
+        logger.exception(
+            f"Failed to parse the reranked documents, an error occurred\n{e}"
+        )
         return list(range(len(documents)))  # Return original order if parsing fails
 
 
