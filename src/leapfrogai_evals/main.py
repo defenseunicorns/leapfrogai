@@ -166,17 +166,15 @@ class RAGEvaluator:
             logging.info(f"successes: {successes}")
             logging.info(f"reasons: {reasons}")
 
-    def mmlu(self, n_shots: Optional[int] = None) -> None:
+    def mmlu(
+        self, num_tasks: Optional[int] = None, n_shots: Optional[int] = None
+    ) -> None:
         """Runs the Massive Multitask Language Understanding (MMLU) benchmark on a subset of tasks"""
-        # TODO: make task selection more flexible
-        tasks = [
-            MMLUTask.COLLEGE_COMPUTER_SCIENCE,
-            MMLUTask.US_FOREIGN_POLICY,
-            MMLUTask.HIGH_SCHOOL_GOVERNMENT_AND_POLITICS,
-            MMLUTask.FORMAL_LOGIC,
-            MMLUTask.COMPUTER_SECURITY,
-            MMLUTask.SECURITY_STUDIES,
-        ]
+        num_tasks = num_tasks or int(
+            os.getenv("MMLU_NUM_TASKS", default=len(list(MMLUTask)))
+        )
+        logging.info(f"Running the MMLU benchmark on {num_tasks} tasks")
+        tasks = list(MMLUTask)[:num_tasks]
         mmlu_benchmark = MMLU(
             tasks=tasks, n_shots=n_shots or int(os.getenv("MMLU_NUM_SHOTS"))
         )
@@ -193,7 +191,7 @@ class RAGEvaluator:
         k: Optional[int] = None,
         num_tasks: Optional[int] = None,
     ) -> None:
-        """Runs the HumanEval benchmark"""
+        """Runs the HumanEval benchmark on a subset of tasks"""
         task_scores = dict()
         num_tasks = num_tasks or int(
             os.getenv("HUMAN_EVAL_NUM_TASKS", default=len(list(HumanEvalTask)))
