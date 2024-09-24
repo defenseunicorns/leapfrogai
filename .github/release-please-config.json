@@ -29,6 +29,11 @@
         },
         {
           "type": "generic",
+          "path": "**/zarf-config.yaml",
+          "glob": true
+        },
+        {
+          "type": "generic",
           "path": "**/uds-bundle.yaml",
           "glob": true
         },

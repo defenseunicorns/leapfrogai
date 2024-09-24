@@ -68,42 +68,52 @@ jobs:
           npm --prefix src/leapfrogai_ui ci
           npx --prefix src/leapfrogai_ui playwright install
 
-      - name: Mutation of the Registry1 Zarf Packages
+      - name: Mutation of the Zarf Packages
         run: |
-          uds zarf tools yq -i '.components[].images[] |= sub("[0-9.]+", "v${{ env.LEAPFROGAI_VERSION }}")' packages/api/zarf.yaml
+          uds zarf tools yq -i '
+            .components[].images[0] |= sub(":v[0-9\.]+$", ":v${{env.LEAPFROGAI_VERSION}}")
+          ' packages/api/zarf.yaml
           uds zarf tools yq -i '.api.image.tag = "v${{ env.LEAPFROGAI_VERSION }}"' packages/api/values/registry1-values.yaml
 
-      - name: Print the Modified Packages
+      - name: Print the Modified Zarf Packages
         run: |
           cat packages/api/zarf.yaml
           cat packages/api/values/registry1-values.yaml
 
-      - name: Create Registry1 Packages
+      - name: Create Registry1 Zarf Packages
         run: |
-          LOCAL_VERSION=registry1 FLAVOR=registry1 make build-api
+          FLAVOR=registry1 make build-api
 
       # Mutate UDS bundle definition to use Registry1 packages
-      - name: Mutation to Registry1 Bundle
+      # Mutate mon-Registry1 packages to be the current tagged version
+      - name: Mutation of the UDS Bundle
         run: |
-          uds zarf tools yq -i '.packages[1] |= .ref = "registry1"' bundles/dev/cpu/uds-bundle.yaml
-          uds zarf tools yq -i '.packages[1] |= .path = "../../../packages/api"' bundles/dev/cpu/uds-bundle.yaml
-          uds zarf tools yq -i '.metadata.version = "registry1"' bundles/dev/cpu/uds-bundle.yaml
+          uds zarf tools yq -i '.packages[1] |= del(.repository)' bundles/latest/cpu/uds-bundle.yaml
+          uds zarf tools yq -i '.packages[1] |= .ref = "${{ env.LEAPFROGAI_VERSION }}"' bundles/latest/cpu/uds-bundle.yaml
+          uds zarf tools yq -i '.packages[1] |= .path = "../../../"' bundles/latest/cpu/uds-bundle.yaml
+          uds zarf tools yq -i '.metadata.version = "registry1"' bundles/latest/cpu/uds-bundle.yaml
 
-      - name: Print the Modified Bundle
+          uds zarf tools yq -i '.packages[0] |= .ref = "${{ env.LEAPFROGAI_VERSION }}-upstream"' bundles/latest/cpu/uds-bundle.yaml
+          uds zarf tools yq -i '.packages[2] |= .ref = "${{ env.LEAPFROGAI_VERSION }}-upstream"' bundles/latest/cpu/uds-bundle.yaml
+          uds zarf tools yq -i '.packages[3] |= .ref = "${{ env.LEAPFROGAI_VERSION }}-upstream"' bundles/latest/cpu/uds-bundle.yaml
+          uds zarf tools yq -i '.packages[4] |= .ref = "${{ env.LEAPFROGAI_VERSION }}-upstream"' bundles/latest/cpu/uds-bundle.yaml
+          uds zarf tools yq -i '.packages[5] |= .ref = "${{ env.LEAPFROGAI_VERSION }}-upstream"' bundles/latest/cpu/uds-bundle.yaml
+
+      - name: Print the Modified UDS Bundle
         run: |
-          cat bundles/dev/cpu/uds-config.yaml
-          cat bundles/dev/cpu/uds-bundle.yaml
+          cat bundles/latest/cpu/uds-config.yaml
+          cat bundles/latest/cpu/uds-bundle.yaml
 
       - name: Create UDS Cluster
         shell: bash
         run: |
           UDS_CONFIG=.github/config/uds-config.yaml make create-uds-cpu-cluster
 
-      - name: Create and Deploy Bundle
+      - name: Create and Deploy Registry1 Bundle
         run: |
-          cd bundles/dev/cpu
+          cd bundles/latest/cpu
           uds create . --confirm && \
-            uds deploy uds-bundle-leapfrogai-amd64-registry1.tar.zst --confirm --no-progress && \
+            uds deploy uds-bundle-leapfrogai-amd64-registry1.tar.zst --confirm --no-progress --log-level debug && \
             rm -rf uds-bundle-leapfrogai-amd64-registry1.tar.zst && \
             docker system prune -af
 

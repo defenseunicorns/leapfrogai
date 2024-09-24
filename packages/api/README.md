@@ -27,6 +27,13 @@ make build-api LOCAL_VERSION=dev FLAVOR=upstream
 uds zarf package deploy packages/api/zarf-package-leapfrogai-api-*-dev.tar.zst --confirm
 ```
 
+For other package flavors, use the following example:
+
+```bash
+make build-api FLAVOR=registry1
+uds zarf package deploy packages/api/zarf-package-leapfrogai-api-*-dev.tar.zst --confirm
+```
+
 ### Local Development
 
 See the [source code documentation](../../src/leapfrogai_api/README.md) for running the API from the source code for local Python environment development.
