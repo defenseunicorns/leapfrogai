@@ -12,6 +12,18 @@ from leapfrogai_api.typedef.vectorstores.search_types import SearchResponse
 from leapfrogai_api.backend.constants import TOP_K
 from leapfrogai_api.utils import get_model_config
 from leapfrogai_api.utils.config import Config
+import os
+import logging
+from dotenv import load_dotenv
+
+load_dotenv()
+
+logging.basicConfig(
+    level=os.getenv("LFAI_LOG_LEVEL", logging.INFO),
+    format="%(name)s: %(asctime)s | %(levelname)s | %(filename)s:%(lineno)s >>> %(message)s",
+)
+
+logger = logging.getLogger(__name__)
 
 # Allows for overwriting type of embeddings that will be instantiated
 embeddings_type: type[Embeddings] | type[LeapfrogAIEmbeddings] | None = (
@@ -29,15 +41,16 @@ class QueryService:
 
     async def query_rag(
         self,
+        model_config: Annotated[Config, Depends(get_model_config)],
         query: str,
         vector_store_id: str,
-        model_config: Annotated[Config, Depends(get_model_config)],
         k: int = TOP_K,
     ) -> SearchResponse:
         """
         Query the Vector Store.
 
         Args:
+            model_config (Config): The current model configuration.
             query (str): The input query string.
             vector_store_id (str): The ID of the vector store.
             k (int, optional): The number of results to retrieve.
@@ -45,8 +58,6 @@ class QueryService:
         Returns:
             SearchResponse: The search response from the vector store.
         """
-
-        results = SearchResponse(data=[])
 
         # 1. Embed query
         vector = await self.embeddings.aembed_query(query)
@@ -90,6 +101,8 @@ def rerank_search_response(
         if content in content_to_item:
             item = content_to_item[content]
             reranked_items.append(item)
+
+    logging.info(f"Reranked documents {reranked_items}")
 
     # Create a new SearchResponse with reranked items
     return SearchResponse(data=reranked_items)
