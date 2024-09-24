@@ -1,10 +1,10 @@
 import logging
 import numpy as np
 import os
-import tqdm
 
 from deepeval.benchmarks import HumanEval
 from deepeval.benchmarks.tasks import HumanEvalTask
+from tqdm import tqdm
 from typing import Optional
 
 from leapfrogai_evals.models import LFAI_Model
