@@ -1,6 +1,6 @@
 from typing import ClassVar
 
-from pydantic import BaseModel
+from pydantic import BaseModel, Field
 
 
 class Configuration(BaseModel):
@@ -14,13 +14,11 @@ class Configuration(BaseModel):
     # If you need an instance variable, you should declare it separately
 
 
-class ConfigurationResponse(BaseModel):
+class ConfigurationPayload(BaseModel):
     """Response for RAG configuration."""
 
-    # This is an instance variable, specific to each ConfigurationResponse object
+    # This is an instance variable, specific to each ConfigurationPayload object
     # It will be included in the JSON output when the model is serialized
-    enable_reranking: bool
-
-
-# The separation of Configuration and ConfigurationResponse allows for
-# different behavior in input (Configuration) vs output (ConfigurationResponse)
+    enable_reranking: bool = Field(
+        default=False, description="Enables reranking for RAG queries"
+    )

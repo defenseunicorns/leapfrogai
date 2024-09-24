@@ -1,14 +1,14 @@
 """LeapfrogAI endpoints for RAG."""
 
 from fastapi import APIRouter
-from leapfrogai_api.typedef.rag.rag_types import Configuration, ConfigurationResponse
+from leapfrogai_api.typedef.rag.rag_types import Configuration, ConfigurationPayload
 from leapfrogai_api.routers.supabase_session import Session
 
 router = APIRouter(prefix="/leapfrogai/v1/rag", tags=["leapfrogai/rag"])
 
 
 @router.patch("/configure")
-async def configure(session: Session, configuration: Configuration) -> None:
+async def configure(session: Session, configuration: ConfigurationPayload) -> None:
     """
     Configures the RAG settings at runtime.
 
@@ -22,7 +22,7 @@ async def configure(session: Session, configuration: Configuration) -> None:
 
 
 @router.get("/configure")
-async def get_configuration(session: Session) -> ConfigurationResponse:
+async def get_configuration(session: Session) -> ConfigurationPayload:
     """
     Retrieves the current RAG configuration.
 
@@ -33,4 +33,4 @@ async def get_configuration(session: Session) -> ConfigurationResponse:
         Configuration: The current RAG configuration.
     """
 
-    return ConfigurationResponse(enable_reranking=Configuration.enable_reranking)
+    return ConfigurationPayload(enable_reranking=Configuration.enable_reranking)
