@@ -70,7 +70,7 @@ def from_text_to_message(text: str, search_responses: SearchResponse | None) -> 
             file_name = search_response.metadata.get("source", "source")
             annotations.append(
                 FileCitationAnnotation(
-                    text=f"【4:0†{file_name}】",  # TODO: What should these numbers be? Who even knows...
+                    text=f"【4:0†{file_name}】",  # TODO: What should these numbers be? https://github.com/defenseunicorns/leapfrogai/issues/1110
                     file_citation=FileCitation(
                         file_id=search_response.file_id, quote=search_response.content
                     ),
