@@ -8,7 +8,7 @@ import {
   deleteFixtureFile,
   uploadFileWithApi
 } from './helpers/fileHelpers';
-import {loadNewAssistantPage} from "./helpers/navigationHelpers";
+import { loadNewAssistantPage } from './helpers/navigationHelpers';
 
 // Note - fully testing the assistant progress toast has proven difficult with Playwright. Sometimes the websocket
 // connection for the Supabase realtime listeners works, and sometimes it does not. Here we test that the

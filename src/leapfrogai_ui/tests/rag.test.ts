@@ -25,7 +25,11 @@ import {
   sendMessage,
   waitForResponseToComplete
 } from './helpers/threadHelpers';
-import {loadChatPage, loadNewAssistantPage} from './helpers/navigationHelpers';
+import {
+  loadChatPage,
+  loadEditAssistantPage,
+  loadNewAssistantPage
+} from './helpers/navigationHelpers';
 
 test.afterAll(() => {
   deleteAllGeneratedFixtureFiles(); // cleanup any files that were not deleted during tests (e.g. due to test failure)
@@ -41,7 +45,7 @@ test('can edit an assistant and attach files to it', async ({ page, openAIClient
   const uploadedFile2 = await uploadFileWithApi(filename2, 'application/pdf', openAIClient);
   const assistant = await createAssistantWithApi({ openAIClient });
 
-  await page.goto(`/chat/assistants-management/edit/${assistant.id}`);
+  await loadEditAssistantPage(assistant.id, page);
 
   await page.getByTestId('file-select-dropdown-btn').click();
   const fileSelectContainer = page.getByTestId('file-select-container');
@@ -66,7 +70,7 @@ test('it can edit an assistant and remove a file', async ({ page, openAIClient }
   const uploadedFile1 = await uploadFileWithApi(filename1, 'application/pdf', openAIClient);
   const uploadedFile2 = await uploadFileWithApi(filename2, 'application/pdf', openAIClient);
   const assistant = await createAssistantWithApi({ openAIClient });
-  await page.goto(`/chat/assistants-management/edit/${assistant.id}`);
+  await loadEditAssistantPage(assistant.id, page);
 
   // Create assistant with files
   await page.getByTestId('file-select-dropdown-btn').click();
@@ -136,7 +140,7 @@ test('while editing an assistant, it can UPLOAD NEW files and save the assistant
   await createPDF({ filename: filename });
 
   const assistant = await createAssistantWithApi({ openAIClient });
-  await page.goto(`/chat/assistants-management/edit/${assistant.id}`);
+  await loadEditAssistantPage(assistant.id, page);
 
   await page.getByTestId('file-select-dropdown-btn').click();
   await uploadFiles({ page, filenames: [filename], btnName: 'Upload new data source' });

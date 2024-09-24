@@ -11,7 +11,11 @@ import {
   getAssistantWithApi
 } from './helpers/assistantHelpers';
 import { deleteActiveThread, getLastUrlParam, sendMessage } from './helpers/threadHelpers';
-import {loadAssistantsManagementPage, loadChatPage, loadNewAssistantPage} from './helpers/navigationHelpers';
+import {
+  loadAssistantsManagementPage,
+  loadChatPage,
+  loadNewAssistantPage
+} from './helpers/navigationHelpers';
 
 test('it navigates to the assistants page', async ({ page }) => {
   await loadChatPage(page);
@@ -226,7 +230,7 @@ test('it DOES NOT confirm you want to navigate away if you DONT have changes', a
 test('it DOES NOT confirm you want to navigate away if you click the cancel button', async ({
   page
 }) => {
-  await loadAssistantsManagementPage(page);
+  await loadNewAssistantPage(page);
   await page.getByLabel('name').fill('my assistant');
 
   await page.getByRole('button', { name: 'Cancel' }).click();

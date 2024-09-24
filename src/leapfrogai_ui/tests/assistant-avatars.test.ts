@@ -12,7 +12,7 @@ import {
   savePictogram,
   uploadAvatar
 } from './helpers/assistantHelpers';
-import {loadNewAssistantPage} from "./helpers/navigationHelpers";
+import { loadEditAssistantPage, loadNewAssistantPage } from './helpers/navigationHelpers';
 
 test.afterEach(async ({ openAIClient }) => {
   await deleteAllAssistants(openAIClient);
@@ -233,7 +233,7 @@ test('it can upload an image, then change to a pictogram, then change to an imag
 
 test('it deletes the avatar image from storage when the avatar', async ({ page, openAIClient }) => {
   const assistant = await createAssistantWithApi({ openAIClient });
-  await page.goto(`/chat/assistants-management/edit/${assistant.id}`);
+  await loadEditAssistantPage(assistant.id, page);
   await saveAvatarImage(page);
   const saveButton = page.getByRole('button', { name: 'Save' }).nth(0);
   await saveButton.click();
@@ -247,7 +247,7 @@ test('it deletes the avatar image from storage when the avatar', async ({ page, 
   const contentType = res.headers.get('content-type');
   expect(contentType).toMatch(/^image\//);
 
-  await page.goto(`/chat/assistants-management/edit/${assistant.id}`);
+  await loadEditAssistantPage(assistant.id, page);
   await savePictogram(getRandomPictogramName(), page);
   await saveButton.click();
   await expect(page.getByText('Assistant Updated')).toBeVisible();

@@ -1,8 +1,7 @@
 import { expect, type Page } from '@playwright/test';
 import OpenAI from 'openai';
 import type { Profile } from '$lib/types/profile';
-import { LONG_RESPONSE_PROMPT, SHORT_RESPONSE_PROMPT, supabase } from './helpers';
-import type { LFThread } from '$lib/types/threads';
+import { supabase } from './helpers';
 
 export const clickToDeleteThread = async (page: Page, label: string) => {
   await page.getByTestId(`thread-menu-btn-${label}`).click();
