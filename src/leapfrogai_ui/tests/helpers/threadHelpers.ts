@@ -13,8 +13,10 @@ export const clickToDeleteThread = async (page: Page, label: string) => {
 };
 
 export const sendMessage = async (page: Page, message = 'Who are Defense Unicorns?') => {
-  await page.getByTestId('chat-input').fill(message);
-  await page.click('button[type="submit"]');
+  const chatInput = page.getByTestId('chat-input');
+  await expect(chatInput).toBeVisible();
+  await chatInput.fill(message);
+  await page.getByTestId('send message').click();
 };
 
 export const getLastUrlParam = (page: Page) => {
@@ -66,33 +68,19 @@ export const waitForResponseToComplete = async (page: Page) => {
   await expect(page.getByTestId('send message')).toHaveCount(1, { timeout: 60000 });
 };
 
-export const deleteAllTestThreadsWithApi = async (openAIClient: OpenAI) => {
+export const deleteAllThreads = async (openAIClient: OpenAI) => {
   try {
     const userId = await getUserId();
     const threadIds = await getUserThreadIds(userId);
     for (const id of threadIds) {
-      let thread: LFThread | undefined = undefined;
       try {
-        thread = (await openAIClient.beta.threads.retrieve(id)) as LFThread;
+        await openAIClient.beta.threads.del(id);
       } catch (e) {
-        console.error(`Error fetching thread: ${id}`);
+        console.error(`Error deleting thread: ${threadIds}`);
         console.error(`Error: ${e}`);
       }
-
-      if (
-        thread?.metadata?.label.includes(SHORT_RESPONSE_PROMPT) ||
-        thread?.metadata?.label.includes(LONG_RESPONSE_PROMPT)
-      ) {
-        try {
-          await openAIClient.beta.threads.del(id);
-          const updatedThreadIds = threadIds?.filter((existingId) => existingId !== id);
-          await supabase.from('profiles').update({ thread_ids: updatedThreadIds }).eq('id', userId);
-        } catch (e) {
-          console.error(`Error deleting thread: ${threadIds}`);
-          console.error(`Error: ${e}`);
-        }
-      }
     }
+    await supabase.from('profiles').update({ thread_ids: [] }).eq('id', userId);
   } catch (e) {
     console.error(`Error deleting test threads`, e);
   }

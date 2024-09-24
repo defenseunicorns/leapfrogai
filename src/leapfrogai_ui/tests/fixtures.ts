@@ -23,12 +23,12 @@ export const getAccessToken = async () => {
     const authData = JSON.parse(
       fs.readFileSync(`${process.cwd()}/playwright/.auth/user.json`, 'utf-8')
     );
+    // user.json can have multiple sb-supabase-kong-auth-token cookies, we need to find the right one
     const cookie = authData.cookies.find(
       (cookie: Cookie) =>
-        cookie.name === 'sb-supabase-kong-auth-token' ||
-        cookie.name === 'sb-supabase-kong-auth-token.0' ||
-        cookie.name === 'sb-supabase-kong-auth-token.1'
+        cookie.name.startsWith('sb-supabase-kong-auth-token') && cookie.value.startsWith('base64-')
     );
+    if (!cookie) throw new Error('error getting cookie');
     const cookieStripped = cookie.value.replace('base64-', '');
     // Decode the base64 string
     const convertedCookie = Buffer.from(cookieStripped, 'base64').toString('utf-8');

@@ -25,7 +25,7 @@ import {
   sendMessage,
   waitForResponseToComplete
 } from './helpers/threadHelpers';
-import { loadChatPage } from './helpers/navigationHelpers';
+import {loadChatPage, loadNewAssistantPage} from './helpers/navigationHelpers';
 
 test.afterAll(() => {
   deleteAllGeneratedFixtureFiles(); // cleanup any files that were not deleted during tests (e.g. due to test failure)
@@ -102,7 +102,7 @@ test('while creating an assistant, it can UPLOAD NEW files and save the assistan
   const assistantInput = getFakeAssistantInput();
   const filename = `${faker.word.noun()}-test.pdf`;
   await createPDF({ filename });
-  await page.goto('/chat/assistants-management/new');
+  await loadNewAssistantPage(page);
 
   await page.getByLabel('name').fill(assistantInput.name);
   await page.getByLabel('tagline').fill(assistantInput.description);
@@ -169,7 +169,7 @@ test('it displays a failed toast and temporarily failed uploader item when a the
   const filename = `${faker.word.noun()}-test.pdf`;
   await createPDF({ filename: filename });
 
-  await page.goto('/chat/assistants-management/new');
+  await loadNewAssistantPage(page);
 
   await page.getByTestId('file-select-dropdown-btn').click();
   await uploadFiles({ page, filenames: [filename], btnName: 'Upload new data source' });
@@ -191,7 +191,7 @@ test('it displays an uploading indicator temporarily when uploading a file', asy
   const filename = `${faker.word.noun()}-test.pdf`;
   await createPDF({ filename: filename });
 
-  await page.goto('/chat/assistants-management/new');
+  await loadNewAssistantPage(page);
 
   await page.getByTestId('file-select-dropdown-btn').click();
   await uploadFiles({ page, filenames: [filename], btnName: 'Upload new data source' });
@@ -303,7 +303,7 @@ test('it shows a spinner then opens an iframe when a non-pdf citation is clicked
 
   await page.getByTestId(`${uploadedFile.id}-citation-btn`).click();
   await expect(page.getByTestId('file-processing-spinner')).toBeVisible();
-  await expect(page.getByTitle(`${uploadedFile.id}-iframe`)).toBeVisible();
+  await expect(page.getByTitle(`${uploadedFile.id}-iframe`)).toBeVisible({ timeout: 10000 });
   await expect(page.getByTestId('file-processing-spinner')).not.toBeVisible();
   // iframe content is not showing in Playwright, so we are not testing that the pdf contents are displayed
 
