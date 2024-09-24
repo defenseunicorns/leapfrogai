@@ -8,7 +8,7 @@ from typing import Optional
 from leapfrogai_evals.models import LFAI_Model
 
 
-def mmlu(self, num_tasks: Optional[int] = None, n_shots: Optional[int] = None) -> dict:
+def mmlu(num_tasks: Optional[int] = None, n_shots: Optional[int] = None) -> dict:
     """Runs the Massive Multitask Language Understanding (MMLU) benchmark on a subset of tasks"""
     eval_results = dict()
     num_tasks = num_tasks or int(

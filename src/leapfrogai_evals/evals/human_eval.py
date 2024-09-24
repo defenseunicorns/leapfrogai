@@ -11,7 +11,6 @@ from leapfrogai_evals.models import LFAI_Model
 
 
 def human_eval(
-    self,
     num_samples: Optional[int] = None,
     k: Optional[int] = None,
     num_tasks: Optional[int] = None,
