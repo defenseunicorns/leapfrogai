@@ -41,6 +41,6 @@ def test_thread(client_name, test_messages):
 
     thread = client.beta.threads.create(
         messages=test_messages
-    )  # TODO: This breaks with LeapfrogAI
+    )  # TODO: Pydantic type problems with LeapfrogAI #https://github.com/defenseunicorns/leapfrogai/issues/1107
 
     assert isinstance(thread, Thread)
