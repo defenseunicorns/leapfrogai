@@ -3,7 +3,7 @@ import { server } from '../../../vitest-setup';
 import { getFakeOpenAIMessage } from '$testUtils/fakeData';
 import type { LFMessage, NewMessageInput } from '$lib/types/messages';
 import type { LFAssistant } from '$lib/types/assistants';
-import { createStreamDataTransformer, StreamingTextResponse } from 'ai';
+import { createStreamDataTransformer } from 'ai';
 import type { LFThread } from '$lib/types/threads';
 import { AUDIO_FILE_SIZE_ERROR_TEXT } from '$constants';
 
@@ -22,7 +22,9 @@ const returnStreamResponse = (responseMsg: string[]) => {
       controller.close();
     }
   });
-  return new StreamingTextResponse(stream.pipeThrough(createStreamDataTransformer()));
+  return new HttpResponse(stream.pipeThrough(createStreamDataTransformer()), {
+    headers: { 'Content-Type': 'text/event-stream' }
+  });
 };
 export const mockChatCompletion = (options: MockChatCompletionOptions = {}) => {
   const { delayTime = 0, responseMsg = ['Fake', 'AI', 'Response'] } = options;
