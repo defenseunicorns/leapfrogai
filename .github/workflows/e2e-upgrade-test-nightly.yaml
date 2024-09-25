@@ -59,11 +59,6 @@ jobs:
           ghToken: ${{ secrets.GITHUB_TOKEN }}
           chainguardIdentity: ${{ secrets.CHAINGUARD_IDENTITY }}
 
-      - name: Create UDS Cluster
-        shell: bash
-        run: |
-          UDS_CONFIG=.github/config/uds-config.yaml make create-uds-cpu-cluster
-
       - name: Create and Deploy UDS Bundle (${{ env.LEAPFROGAI_VERSION }})
         run: |
           cd bundles/latest/cpu
