@@ -1,0 +1,32 @@
+name: Made for UDS Badge Verification
+
+on:
+  pull_request:
+    branches:
+      - "main"
+    paths:
+      - "packages/"
+      - ".github/workflows/made-for-uds-verification.yaml"
+
+concurrency:
+  group: uds-badge-verification-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  uds-badge-verification:
+    runs-on: ubuntu-latest
+    name: UDS Badge Verification
+
+    permissions:
+      contents: read
+
+    steps:
+      - name: Checkout Repo
+        uses: actions/checkout@b4ffde65f46336ab88eb53be808477a3936bae11 # v4.1.1
+
+      - name: Verify API
+        uses: defenseunicorns/uds-common/.github/actions/verify-badge@e3008473beab00b12a94f9fcc7340124338d5c08 # v0.13.1
+        with:
+          chartPath: ""
+          groupName: ""
+          commonZarf: ""
