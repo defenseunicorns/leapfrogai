@@ -26,7 +26,7 @@ class ConfigurationPayload(BaseModel):
     # https://pypi.org/project/rerankers/
     ranking_model: str = Field(
         default="flashrank",
-        description="What model to use for reranking",
+        description="What model to use for reranking. Some options may require additional python dependencies.",
         examples=["flashrank", "rankllm", "cross-encoder", "colbert"],
     )
     rag_top_k_when_reranking: int = Field(
