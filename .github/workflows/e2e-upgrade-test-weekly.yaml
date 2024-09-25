@@ -1,8 +1,8 @@
-name: e2e-upgrade-test-weekly
+name: e2e-upgrade-test-nightly
 
 on:
   schedule:
-    - cron: "0 0 * * 6" # Run every Sunday at 12 AM EST
+    - cron: "0 8 * * *" # Runs daily at 12 AM PST
   workflow_dispatch: # trigger manually as needed
   pull_request:
     types:
@@ -12,10 +12,10 @@ on:
       - ready_for_review  # don't run on draft PRs
       - milestoned        # allows us to trigger on bot PRs
     paths:
-      - .github/workflows/e2e-upgrade-test-weekly.yaml
+      - .github/workflows/e2e-upgrade-test-nightly.yaml
 
 concurrency:
-  group: e2e-upgrade-test-weekly-${{ github.ref }}
+  group: e2e-upgrade-test-nightly-${{ github.ref }}
   cancel-in-progress: true
 
 defaults:
@@ -25,7 +25,7 @@ defaults:
 jobs:
   test-upgrade:
     runs-on: ai-ubuntu-big-boy-8-core
-    name: e2e_upgrade_test_weekly
+    name: e2e_upgrade_test_nightly
     if: ${{ !github.event.pull_request.draft }}
 
     env:
