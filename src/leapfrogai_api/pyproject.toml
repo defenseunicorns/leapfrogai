@@ -12,18 +12,18 @@ dependencies = [
     "openai == 1.32.1",
     "uvicorn == 0.23.2",
     "docx2txt == 0.8",
-    "python-multipart == 0.0.7",            #indirect dep of FastAPI to receive form data for file uploads
+    "python-multipart ==0.0.10",            #indirect dep of FastAPI to receive form data for file uploads
     "watchdog == 5.0.2",
     "leapfrogai_sdk",
     "supabase == 2.6.0",
     "langchain == 0.2.12",
     "langchain-community == 0.2.11",
-    "unstructured[md,xlsx,pptx] == 0.15.9", # Only specify necessary filetypes to prevent package bloat (e.g. 130MB vs 6GB)
+    "unstructured[md,xlsx,pptx] ==0.15.13", # Only specify necessary filetypes to prevent package bloat (e.g. 130MB vs 6GB)
     "nltk == 3.9.1",                        # Required for pickled code containing .pptx parsing dependencies
     "pylibmagic == 0.5.0",                  # Resolves issue with libmagic not being bundled with OS - https://github.com/ahupp/python-magic/issues/233, may not be needed after this is merged https://github.com/ahupp/python-magic/pull/294
     "python-magic == 0.4.27",
-    "storage3==0.7.6",                      # required by supabase, bug when using previous versions
-    "postgrest==0.16.8",                    # required by supabase, bug when using previous versions
+    "storage3==0.7.7",                      # required by supabase, bug when using previous versions
+    "postgrest==0.16.11",                    # required by supabase, bug when using previous versions
     "openpyxl == 3.1.5",
     "psutil == 6.0.0",
 ]
