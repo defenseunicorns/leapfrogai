@@ -42,8 +42,8 @@ class Reranker:
     async def rerank(self, query: str, documents: List[str]) -> List[str]:
         prompt = _create_rerank_prompt(query, documents)
 
-        # TODO: System prompt needed
-        chat_items = [lfai.ChatItem(role=grpc_chat_role("user"), content=prompt)]
+        # TODO: Should a system prompt + user prompt be used here?
+        chat_items = [lfai.ChatItem(role=grpc_chat_role("system"), content=prompt)]
         request = lfai.ChatCompletionRequest(
             chat_items=chat_items,
             max_new_tokens=self.max_tokens,
