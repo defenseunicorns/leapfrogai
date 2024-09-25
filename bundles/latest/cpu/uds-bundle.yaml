@@ -20,7 +20,7 @@ packages:
   # Chat Model
   - name: llama-cpp-python
     repository: ghcr.io/defenseunicorns/packages/uds/leapfrogai/llama-cpp-python
-    ref: 0.12.2-upstream
+    ref: 0.13.0-upstream
 
   # Text Embeddings Model
   - name: text-embeddings
