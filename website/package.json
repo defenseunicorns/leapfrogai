@@ -21,7 +21,7 @@
     "update": "hugo mod get -u ./... && hugo mod tidy && npx npm-check-updates -u && npm install"
   },
   "devDependencies": {
-    "@fontsource/roboto": "^5.0.8",
+    "@fontsource/roboto": "^5.1.0",
     "@taplo/cli": "^0.7.0",
     "autoprefixer": "^10.4.17",
     "hugo-extended": "^0.123.1",
