@@ -30,7 +30,7 @@ jobs:
 
     env:
       # x-release-please-start-version
-      LEAPFROGAI_VERSION: 0.13.0
+      LEAPFROGAI_VERSION: v0.13.0
       # x-release-please-end
 
     permissions:
