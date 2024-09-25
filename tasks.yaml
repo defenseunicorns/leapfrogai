@@ -1,7 +1,16 @@
 # yaml-language-server: $schema=https://raw.githubusercontent.com/defenseunicorns/uds-cli/v0.14.0/tasks.schema.json
 
 includes:
-  - badge: https://raw.githubusercontent.com/defenseunicorns/uds-common/refs/heads/main/tasks/badge.yaml
+  - badge: ./tasks/badge.yaml
 
 tasks:
-  - name: default
+  - name: verify-uds-badge
+    actions:
+      - description: Verify API
+        cmd: |
+          uds run badge:verify-badge \
+            --set CHART_PATH="chart" \
+            --set GROUP_NAME="package" \
+            --set COMMON_ZARF="true" \
+            --set PACKAGE_DIR="packages/api/" \
+            --no-progress
