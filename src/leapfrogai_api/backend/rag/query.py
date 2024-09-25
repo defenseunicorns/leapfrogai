@@ -57,9 +57,9 @@ class QueryService:
         # 2. Perform similarity search
         _k: int = k
         if ConfigurationSingleton.get_instance().enable_reranking:
-            # Use the user specified top-k value unless reranking
-            # When reranking, use the reranking top-k value to get the initial results
-            # Then filter the list down later to just the k that  the user has requested
+            """Use the user specified top-k value unless reranking.
+            When reranking, use the reranking top-k value to get the initial results.
+            Then filter the list down later to just the k that the user has requested after reranking."""
             _k = ConfigurationSingleton.get_instance().rag_top_k_when_reranking
 
         crud_vector_content = CRUDVectorContent(db=self.db)
