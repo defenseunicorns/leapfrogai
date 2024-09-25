@@ -10,7 +10,7 @@ packages:
   # Supabase backend for the UI and API to interface with Postgresql
   - name: supabase
     repository: ghcr.io/defenseunicorns/packages/uds/leapfrogai/supabase
-    ref: 0.12.2-upstream
+    ref: 0.13.0-upstream
 
   # API
   - name: leapfrogai-api
