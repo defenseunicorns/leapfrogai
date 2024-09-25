@@ -154,7 +154,7 @@ export const actions: Actions = {
     }
 
     // Create assistant object
-    const assistant: AssistantCreateParams = {
+    const updatedAssistantParams: AssistantCreateParams = {
       name: form.data.name,
       description: form.data.description,
       instructions: form.data.instructions,
@@ -177,15 +177,19 @@ export const actions: Actions = {
     };
 
     // Update assistant
+    let updatedAssistant: LFAssistant;
     try {
-      await openai.beta.assistants.update(form.data.id, assistant);
+      updatedAssistant = (await openai.beta.assistants.update(
+        form.data.id,
+        updatedAssistantParams
+      )) as LFAssistant;
     } catch (e) {
       console.error(`Error updating assistant: ${e}`);
       return fail(500, { message: 'Error updating assistant.' });
     }
     return withFiles({
       form,
-      assistant,
+      assistant: updatedAssistant,
       fileIds: data_sources,
       redirectUrl: '/chat/assistants-management'
     });

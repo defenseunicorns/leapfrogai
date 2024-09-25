@@ -61,24 +61,23 @@
             body: formData
           })
             .then(async (response) => {
-              if (!response.ok) {
+              if (response.ok) {
+                const result = await response.json();
                 return {
                   id: file.id,
                   name: shortenFileName(file.name),
                   type: file.type,
-                  text: ERROR_UPLOADING_FILE_MSG,
-                  status: 'error',
-                  errorText: ERROR_UPLOADING_FILE_MSG
+                  text: result.text,
+                  status: 'complete'
                 };
               }
-
-              const result = await response.json();
               return {
                 id: file.id,
                 name: shortenFileName(file.name),
                 type: file.type,
-                text: result.text,
-                status: 'complete'
+                text: ERROR_UPLOADING_FILE_MSG,
+                status: 'error',
+                errorText: ERROR_UPLOADING_FILE_MSG
               };
             })
             .catch(() => {

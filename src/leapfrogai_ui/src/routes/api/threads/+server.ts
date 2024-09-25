@@ -1,29 +1,8 @@
 import type { RequestHandler } from './$types';
-import { error, json, redirect } from '@sveltejs/kit';
-import { getOpenAiClient } from '$lib/server/constants';
+import { error, json } from '@sveltejs/kit';
 import type { Profile } from '$lib/types/profile';
 import type { LFThread } from '$lib/types/threads';
-import type { LFMessage } from '$lib/types/messages';
-
-const getThreadWithMessages = async (
-  thread_id: string,
-  access_token: string
-): Promise<LFThread | null> => {
-  try {
-    const openai = getOpenAiClient(access_token);
-    const thread = (await openai.beta.threads.retrieve(thread_id)) as LFThread;
-    if (!thread) {
-      return null;
-    }
-    const messagesPage = await openai.beta.threads.messages.list(thread.id);
-    const messages = messagesPage.data as LFMessage[];
-    messages.sort((a, b) => a.created_at - b.created_at);
-    return { ...thread, messages: messages };
-  } catch (e) {
-    console.error(`Error fetching thread or messages: ${e}`);
-    return null;
-  }
-};
+import { getThreadWithMessages } from '../helpers';
 
 export const GET: RequestHandler = async ({ locals: { session, supabase, user } }) => {
   if (!session) {
@@ -41,7 +20,7 @@ export const GET: RequestHandler = async ({ locals: { session, supabase, user } 
     console.error(
       `error getting user profile for user_id: ${user?.id}. ${JSON.stringify(profileError)}`
     );
-    throw redirect(303, '/');
+    error(500, 'Internal Error');
   }
 
   const threads: LFThread[] = [];
@@ -51,7 +30,6 @@ export const GET: RequestHandler = async ({ locals: { session, supabase, user } 
         getThreadWithMessages(thread_id, session.access_token)
       );
       const results = await Promise.allSettled(threadPromises);
-
       results.forEach((result) => {
         if (result.status === 'fulfilled' && result.value) {
           threads.push(result.value);
@@ -59,7 +37,7 @@ export const GET: RequestHandler = async ({ locals: { session, supabase, user } 
       });
     } catch (e) {
       console.error(`Error fetching threads: ${e}`);
-      error(500, 'Internal Error');
+      return json([]);
     }
   }
 

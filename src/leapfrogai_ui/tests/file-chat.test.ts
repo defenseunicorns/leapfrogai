@@ -17,17 +17,16 @@ import {
 import { faker } from '@faker-js/faker';
 import { getFakeAssistantInput } from '../testUtils/fakeData';
 import { createAssistantWithApi } from './helpers/assistantHelpers';
-import {
-  ERROR_PROCESSING_FILE_MSG_TOAST,
-  MAX_NUM_FILES_UPLOAD_MSG_TOAST
-} from '../src/lib/constants/toastMessages';
-import type { ActionResult } from '@sveltejs/kit';
+import { MAX_NUM_FILES_UPLOAD_MSG_TOAST } from '../src/lib/constants/toastMessages';
 import {
   APPROX_MAX_CHARACTERS,
   FILE_UPLOAD_PROMPT,
   MAX_NUM_FILES_UPLOAD
 } from '../src/lib/constants';
-import { FILE_CONTEXT_TOO_LARGE_ERROR_MSG } from '../src/lib/constants/errors';
+import {
+  ERROR_UPLOADING_FILE_MSG,
+  FILE_CONTEXT_TOO_LARGE_ERROR_MSG
+} from '../src/lib/constants/errors';
 import { shortenFileName } from '../src/lib/helpers/stringHelpers';
 import { loadChatPage } from './helpers/navigationHelpers';
 
@@ -112,8 +111,9 @@ test('it can remove attached files', async ({ page }) => {
   await expect(page.getByTestId(`${pdfFilename1}-uploaded`)).toBeVisible();
   await expect(page.getByTestId(`${pdfFilename2}-uploaded`)).toBeVisible();
 
-  await page.getByText(pdfFilename2).hover();
-  await page.getByTestId(`${pdfFilename2}-remove-btn`).click();
+  const card = page.getByTestId(`${pdfFilename2}-file-uploaded-card`);
+  await card.getByText(pdfFilename2).hover();
+  await card.getByTestId(`${pdfFilename2}-remove-btn`).click();
 
   await expect(page.getByTestId(`${pdfFilename1}-uploaded`)).toBeVisible();
   await expect(page.getByTestId(`${pdfFilename2}-uploaded`)).not.toBeVisible();
@@ -148,25 +148,13 @@ test('it removes the file btn and attached files when switching to an assistant'
   deleteFixtureFile(filename);
 });
 
-test('it displays a toast and removes files when there is an error processing the pdf', async ({
-  page
-}) => {
+test('it shows an error on the file if there is an error processing a file', async ({ page }) => {
   const filename = createWordFile(); // this file is first converted to pdf which we are mocking to fail
 
   await loadChatPage(page);
 
-  await page.route('*/**/chat', async (route) => {
-    if (route.request().method() === 'POST') {
-      const result: ActionResult = {
-        type: 'failure',
-        status: 500
-      };
-
-      await route.fulfill({ json: result });
-    } else {
-      const response = await route.fetch();
-      await route.fulfill({ response });
-    }
+  await page.route('*/**/api/files/parse-text', async (route) => {
+    await route.abort('failed');
   });
 
   await uploadFiles({
@@ -175,7 +163,7 @@ test('it displays a toast and removes files when there is an error processing th
     testId: 'upload-file-btn'
   });
 
-  await expect(page.getByText(ERROR_PROCESSING_FILE_MSG_TOAST().title)).toBeVisible();
+  await expect(page.getByText(ERROR_UPLOADING_FILE_MSG)).toBeVisible();
 
   // cleanup
   deleteFixtureFile(filename);

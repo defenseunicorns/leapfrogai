@@ -13,33 +13,38 @@
   let deleteModalOpen = false;
 
   const handleDelete = async () => {
-    const res = await fetch('/api/assistants/delete', {
-      method: 'DELETE',
-      body: JSON.stringify({ id: assistant.id }),
-      headers: {
-        'Content-Type': 'application/json'
-      }
-    });
-    if ($assistantsStore.selectedAssistantId === assistant.id)
-      assistantsStore.setSelectedAssistantId(NO_SELECTED_ASSISTANT_ID);
-
-    deleteModalOpen = false;
-
-    if (res.ok) {
-      assistantsStore.removeAssistant(assistant.id);
-      toastStore.addToast({
-        kind: 'info',
-        title: 'Assistant Deleted.',
-        subtitle: `${assistant.name} Assistant deleted.`
+    try {
+      const res = await fetch('/api/assistants/delete', {
+        method: 'DELETE',
+        body: JSON.stringify({ id: assistant.id }),
+        headers: {
+          'Content-Type': 'application/json'
+        }
       });
-      return;
+      if (res.ok) {
+        assistantsStore.removeAssistant(assistant.id);
+        if ($assistantsStore.selectedAssistantId === assistant.id)
+          assistantsStore.setSelectedAssistantId(NO_SELECTED_ASSISTANT_ID);
+        toastStore.addToast({
+          kind: 'info',
+          title: 'Assistant Deleted.',
+          subtitle: `${assistant.name} Assistant deleted.`
+        });
+      } else {
+        toastStore.addToast({
+          kind: 'error',
+          title: 'Error',
+          subtitle: 'Error deleting Assistant.'
+        });
+      }
+    } catch {
+      toastStore.addToast({
+        kind: 'error',
+        title: 'Error',
+        subtitle: 'Error deleting Assistant.'
+      });
     }
-
-    toastStore.addToast({
-      kind: 'error',
-      title: 'Error',
-      subtitle: 'Error deleting Assistant.'
-    });
+    deleteModalOpen = false;
   };
 </script>
 

@@ -175,7 +175,7 @@
   const handleDelete = async () => {
     affectedAssistantsLoading = true;
     confirmDeleteModalOpen = true;
-    const getAffectedAssistants = await fetch(`/api/files/delete-check/`, {
+    const getAffectedAssistants = await fetch(`/api/files/delete/check`, {
       method: 'POST',
       body: JSON.stringify({ fileIds: $filesStore.selectedFileManagementFileIds })
     });
@@ -269,7 +269,11 @@
         <!-- Button with color="alternative" adds two pixels to btn height, border-box does not prevent this. h-[42px] prevents slight screen jump-->
         <div class="h-[42px]">
           {#if editMode}
-            <div in:fade={{ duration: STANDARD_FADE_DURATION }} class="flex items-center gap-2">
+            <div
+              in:fade={{ duration: STANDARD_FADE_DURATION }}
+              class="flex items-center gap-2"
+              data-testid="table-actions"
+            >
               <Button color="blue" on:click={handleDownload}>Download</Button>
               {#if deleting}
                 <Button color="red" disabled>
