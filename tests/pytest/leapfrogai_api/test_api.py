@@ -31,6 +31,7 @@ TEXT_INPUT = (
 )
 TEXT_INPUT_LEN = len(TEXT_INPUT)
 
+
 #########################
 #########################
 
@@ -152,6 +153,7 @@ def test_routes():
         "/openai/v1/files": ["POST"],
         "/openai/v1/assistants": ["POST"],
         "/leapfrogai/v1/count/tokens": ["POST"],
+        "/leapfrogai/v1/rag/configure": ["PATCH", "GET"],
     }
 
     openai_routes = [
@@ -540,3 +542,34 @@ def test_token_count(dummy_auth_middleware):
         assert "token_count" in response_data
         assert isinstance(response_data["token_count"], int)
         assert response_data["token_count"] == len(input_text)
+
+
+@pytest.mark.skipif(
+    os.environ.get("LFAI_RUN_REPEATER_TESTS") != "true",
+    reason="LFAI_RUN_REPEATER_TESTS envvar was not set to true",
+)
+def test_configure(dummy_auth_middleware):
+    """Test the RAG configuration endpoints."""
+    with TestClient(app) as client:
+        token_count_request = {
+            "enable_reranking": True,
+            "ranking_model": "rankllm",
+            "rag_top_k_when_reranking": 50,
+        }
+        response = client.patch(
+            "/leapfrogai/v1/rag/configure", json=token_count_request
+        )
+        assert response.status_code == 200
+
+        response = client.get("/leapfrogai/v1/rag/configure")
+        assert response.status_code == 200
+        response_data = response.json()
+        assert "enable_reranking" in response_data
+        assert "ranking_model" in response_data
+        assert "rag_top_k_when_reranking" in response_data
+        assert isinstance(response_data["enable_reranking"], bool)
+        assert isinstance(response_data["ranking_model"], str)
+        assert isinstance(response_data["rag_top_k_when_reranking"], int)
+        assert response_data["enable_reranking"] is True
+        assert response_data["ranking_model"] == "rankllm"
+        assert response_data["rag_top_k_when_reranking"] == 50
