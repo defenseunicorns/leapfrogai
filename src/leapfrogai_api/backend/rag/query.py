@@ -62,7 +62,7 @@ class QueryService:
 
         # 3. Rerank results
         if Configuration.enable_reranking:
-            ranker = Reranker("flashrank")
+            ranker = Reranker(Configuration.ranking_model)
             ranked_results: RankedResults = ranker.rank(
                 query=query,
                 docs=[result.content for result in results.data],
