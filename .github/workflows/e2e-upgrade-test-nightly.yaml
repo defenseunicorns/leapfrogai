@@ -44,7 +44,7 @@ jobs:
         with:
           ref: ${{ env.LEAPFROGAI_VERSION }}
 
-      - name: Setup Python
+      - name: Setup Python (${{ env.LEAPFROGAI_VERSION }})
         uses: ./.github/actions/python
 
       - name: Install Dev Dependencies
@@ -82,7 +82,7 @@ jobs:
           COMMIT_SHA=$(git rev-parse HEAD)
           echo "The latest commit on the main branch is: $COMMIT_SHA"
 
-      - name: Install Dev Dependencies
+      - name: Install Dev Dependencies (main)
         run: |
           python -m pip install ".[dev]" ".[dev-vllm]" ".[dev-whisper]" "src/leapfrogai_api" "src/leapfrogai_sdk" \
             --force-reinstall --no-cache-dir
