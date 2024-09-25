@@ -66,7 +66,7 @@ class QueryService:
                 query, [result.content for result in results.data]
             )
             results = rerank_search_response(results, reranked_results)
-            logger.info(f"Reranking complete {results.get_response_without_content()}")
+            logger.info(f"Reranking complete {results.get_simple_response()}")
 
         logger.info("Ending RAG query...")
 
@@ -101,7 +101,7 @@ def rerank_search_response(
     reranked_response = SearchResponse(data=reranked_items)
 
     logger.info(
-        f"Original documents: {original_response.get_response_without_content()}\nReranked documents {reranked_response.get_response_without_content()}"
+        f"Original documents: {original_response.get_simple_response()}\nReranked documents {reranked_response.get_simple_response()}"
     )
 
     # Create a new SearchResponse with reranked items

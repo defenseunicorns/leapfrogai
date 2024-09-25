@@ -27,18 +27,9 @@ class SearchResponse(BaseModel):
         min_length=0,
     )
 
-    def get_response_without_content(self):
-        response_without_content: SearchResponse = SearchResponse(
-            data=[
-                SearchItem(
-                    id=item.id,
-                    vector_store_id=item.vector_store_id,
-                    file_id=item.file_id,
-                    content="",
-                    metadata=item.metadata,
-                    similarity=item.similarity,
-                )
-                for item in self.data
-            ]
-        )
+    def get_simple_response(self):
+        response_without_content = [
+            {"id": item.id, "similarity": item.similarity} for item in self.data
+        ]
+
         return response_without_content
