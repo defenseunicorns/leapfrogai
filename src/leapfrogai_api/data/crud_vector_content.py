@@ -1,20 +1,11 @@
 """CRUD Operations for VectorStore."""
 
-from pydantic import BaseModel
 from supabase import AClient as AsyncClient
 from leapfrogai_api.data.crud_base import get_user_id
 import ast
 from leapfrogai_api.typedef.vectorstores import SearchItem, SearchResponse
 from leapfrogai_api.backend.constants import TOP_K
-
-
-class Vector(BaseModel):
-    id: str = ""
-    vector_store_id: str
-    file_id: str
-    content: str
-    metadata: dict
-    embedding: list[float]
+from leapfrogai_api.typedef.vectorstores import Vector
 
 
 class CRUDVectorContent:
