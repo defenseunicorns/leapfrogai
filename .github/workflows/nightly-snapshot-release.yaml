@@ -36,7 +36,7 @@ permissions:
 jobs:
   snapshot-release:
     runs-on: ai-ubuntu-big-boy-8-core
-    name: snapshot_release
+    name: nightly_snapshot_release
 
     steps:
       - name: Checkout Repo
@@ -58,7 +58,7 @@ jobs:
 
   test-snapshot:
     runs-on: ai-ubuntu-big-boy-8-core
-    name: e2e_upgrade_test_nightly
+    name: nightly_test_snapshot
     if: ${{ !github.event.pull_request.draft }}
     needs: snapshot-release
 
