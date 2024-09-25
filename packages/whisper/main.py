@@ -74,22 +74,22 @@ def call_whisper(
         updated = False
 
         if metadata.prompt:
+            logger.info(f"Updated metadata: Prompt='{prompt}'")
             prompt = metadata.prompt
             updated = True
 
         if metadata.temperature:
+            logger.info(f"Updated metadata: Temperature={temperature}")
             temperature = metadata.temperature
             updated = True
 
         if metadata.inputlanguage:
+            logger.info(f"Updated metadata: Input Language='{input_language}'")
             input_language = metadata.inputlanguage
             updated = True
 
-        if updated:
-            logger.info(
-                f"Updated metadata: Prompt='{prompt}', Temperature={temperature}, Input Language='{input_language}'"
-            )
-        else:
+        # Metadata updates are done separate from data updates
+        if not updated:
             data.extend(request.chunk_data)
 
     with tempfile.NamedTemporaryFile("wb") as f:
