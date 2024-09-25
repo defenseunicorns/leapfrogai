@@ -56,7 +56,7 @@
 
         bypassCancelWarning = true;
         await invalidate('lf:assistants');
-        goto(result.data.redirectUrl);
+        await goto(result.data.redirectUrl);
       } else if (result.type === 'failure') {
         // 400 errors will show errors for the respective fields, do not show toast
         if (result.status !== 400) {
