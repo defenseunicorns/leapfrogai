@@ -20,6 +20,7 @@ async def configure(session: Session, configuration: ConfigurationPayload) -> No
 
     # We set the class variable to update the configuration globally
     Configuration.enable_reranking = configuration.enable_reranking
+    Configuration.ranking_model = configuration.ranking_model
 
 
 @router.get("/configure")
@@ -35,7 +36,8 @@ async def get_configuration(session: Session) -> ConfigurationPayload:
     """
 
     new_configuration = ConfigurationPayload(
-        enable_reranking=Configuration.enable_reranking
+        enable_reranking=Configuration.enable_reranking,
+        ranking_model=Configuration.ranking_model,
     )
 
     logger.info(f"The current configuration has been set to {new_configuration}")
