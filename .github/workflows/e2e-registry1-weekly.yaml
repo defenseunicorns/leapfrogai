@@ -63,11 +63,6 @@ jobs:
       - name: Install Python Dependencies
         run: pip install ".[dev]" "src/leapfrogai_api" "src/leapfrogai_sdk" --no-cache-dir
 
-      - name: Setup Playwright
-        run: |
-          npm --prefix src/leapfrogai_ui ci
-          npx --prefix src/leapfrogai_ui playwright install
-
       - name: Mutation of the Zarf Packages
         run: |
           uds zarf tools yq -i '
@@ -143,6 +138,11 @@ jobs:
           SERVICE_KEY: ${{ steps.generate_secrets.outputs.SERVICE_KEY }}
         run: |
           python -m pytest -vvv -s ./tests/e2e
+
+      - name: Setup Playwright
+        run: |
+          npm --prefix src/leapfrogai_ui ci
+          npx --prefix src/leapfrogai_ui playwright install
 
       - name: Run Playwright E2E Tests
         env:
