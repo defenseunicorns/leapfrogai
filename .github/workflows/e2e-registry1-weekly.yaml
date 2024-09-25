@@ -79,7 +79,7 @@ jobs:
           FLAVOR=registry1 make build-api
 
       # Mutate UDS bundle definition to use Registry1 packages
-      # Mutate mon-Registry1 packages to be the current tagged version
+      # Mutate non-Registry1 packages to be the current tagged version
       - name: Mutation of the UDS Bundle
         run: |
           uds zarf tools yq -i '.packages[1] |= del(.repository)' bundles/latest/cpu/uds-bundle.yaml
