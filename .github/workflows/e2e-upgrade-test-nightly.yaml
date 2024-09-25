@@ -59,6 +59,17 @@ jobs:
           ghToken: ${{ secrets.GITHUB_TOKEN }}
           chainguardIdentity: ${{ secrets.CHAINGUARD_IDENTITY }}
 
+      - name: Mutation of the UDS Bundle
+        run: |
+          uds zarf tools yq -i '.metadata.version = "${{ env.LEAPFROGAI_VERSION }}"' bundles/latest/cpu/uds-bundle.yaml
+
+          uds zarf tools yq -i '.packages[0] |= .ref = "${{ env.LEAPFROGAI_VERSION }}-upstream"' bundles/latest/cpu/uds-bundle.yaml
+          uds zarf tools yq -i '.packages[1] |= .ref = "${{ env.LEAPFROGAI_VERSION }}-upstream"' bundles/latest/cpu/uds-bundle.yaml
+          uds zarf tools yq -i '.packages[2] |= .ref = "${{ env.LEAPFROGAI_VERSION }}-upstream"' bundles/latest/cpu/uds-bundle.yaml
+          uds zarf tools yq -i '.packages[3] |= .ref = "${{ env.LEAPFROGAI_VERSION }}-upstream"' bundles/latest/cpu/uds-bundle.yaml
+          uds zarf tools yq -i '.packages[4] |= .ref = "${{ env.LEAPFROGAI_VERSION }}-upstream"' bundles/latest/cpu/uds-bundle.yaml
+          uds zarf tools yq -i '.packages[5] |= .ref = "${{ env.LEAPFROGAI_VERSION }}-upstream"' bundles/latest/cpu/uds-bundle.yaml
+
       - name: Create and Deploy UDS Bundle (${{ env.LEAPFROGAI_VERSION }})
         run: |
           cd bundles/latest/cpu
