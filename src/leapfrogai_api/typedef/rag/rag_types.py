@@ -29,3 +29,7 @@ class ConfigurationPayload(BaseModel):
         description="What model to use for reranking",
         examples=["flashrank", "rankllm", "cross-encoder", "colbert"],
     )
+    rag_top_k_when_reranking: int = Field(
+        default=100,
+        description="The top-k results returned from the RAG call before reranking",
+    )

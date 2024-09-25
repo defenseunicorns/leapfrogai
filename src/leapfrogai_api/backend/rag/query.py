@@ -55,9 +55,16 @@ class QueryService:
         vector = await self.embeddings.aembed_query(query)
 
         # 2. Perform similarity search
+        _k: int = k
+        if ConfigurationSingleton.get_instance().enable_reranking:
+            # Use the user specified top-k value unless reranking
+            # When reranking, use the reranking top-k value to get the initial results
+            # Then filter the list down later to just the k that  the user has requested
+            _k = ConfigurationSingleton.get_instance().rag_top_k_when_reranking
+
         crud_vector_content = CRUDVectorContent(db=self.db)
         results = await crud_vector_content.similarity_search(
-            query=vector, vector_store_id=vector_store_id, k=k
+            query=vector, vector_store_id=vector_store_id, k=_k
         )
 
         # 3. Rerank results
@@ -69,6 +76,8 @@ class QueryService:
                 doc_ids=[result.id for result in results.data],
             )
             results = rerank_search_response(results, ranked_results)
+            # Narrow down the results to the top-k value specified by the user
+            results.data = results.data[0:k]
             logger.info(f"Reranking complete {results.get_simple_response()}")
 
         logger.info("Ending RAG query...")

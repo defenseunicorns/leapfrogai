@@ -26,6 +26,9 @@ async def configure(session: Session, configuration: ConfigurationPayload) -> No
         configuration.enable_reranking
     )
     ConfigurationSingleton.get_instance().ranking_model = configuration.ranking_model
+    ConfigurationSingleton.get_instance().rag_top_k_when_reranking = (
+        configuration.rag_top_k_when_reranking
+    )
 
 
 @router.get("/configure")
@@ -43,6 +46,7 @@ async def get_configuration(session: Session) -> ConfigurationPayload:
     new_configuration = ConfigurationPayload(
         enable_reranking=ConfigurationSingleton.get_instance().enable_reranking,
         ranking_model=ConfigurationSingleton.get_instance().ranking_model,
+        rag_top_k_when_reranking=ConfigurationSingleton.get_instance().rag_top_k_when_reranking,
     )
 
     logger.info(f"The current configuration has been set to {new_configuration}")
