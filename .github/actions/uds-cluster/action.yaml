@@ -18,6 +18,7 @@ runs:
         registry1Username: ${{ inputs.registry1Username }}
         registry1Password: ${{ inputs.registry1Password }}
         ghToken: ${{ inputs.ghToken }}
+        udsCliVersion: 0.14.0
 
     - name: Checkout Repo
       uses: actions/checkout@b4ffde65f46336ab88eb53be808477a3936bae11 # v4.1.1
