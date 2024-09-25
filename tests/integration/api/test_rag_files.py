@@ -1,8 +1,12 @@
 import os
 from pathlib import Path
+from typing import Optional
+
+import requests
 from openai.types.beta.threads.text import Text
 import pytest
 
+from leapfrogai_api.typedef.rag.rag_types import ConfigurationPayload
 from ...utils.client import client_config_factory
 
 
@@ -80,3 +84,71 @@ def test_rag_needle_haystack():
 
     for a in message_content.annotations:
         print(a.text)
+
+
+def configure_rag(
+    base_url: str,
+    enable_reranking: bool,
+    ranking_model: str,
+    rag_top_k_when_reranking: int,
+):
+    """
+    Configures the RAG settings.
+
+    Args:
+        base_url: The base URL of the API (e.g., "http://localhost:8000").
+        enable_reranking: Whether to enable reranking.
+        ranking_model: The ranking model to use.
+        rag_top_k_when_reranking: The top-k results to return before reranking.
+    """
+
+    url = f"{base_url}/leapfrogai/v1/rag/configure"
+    configuration = ConfigurationPayload(
+        enable_reranking=enable_reranking,
+        ranking_model=ranking_model,
+        rag_top_k_when_reranking=rag_top_k_when_reranking,
+    )
+
+    try:
+        response = requests.patch(url, json=configuration.model_dump())
+        response.raise_for_status()  # Raise an exception for bad status codes (4xx or 5xx)
+        print("RAG configuration updated successfully.")
+    except requests.exceptions.RequestException as e:
+        print(f"Error configuring RAG: {e}")
+
+
+def get_rag_configuration(base_url: str) -> Optional[ConfigurationPayload]:
+    """
+    Retrieves the current RAG configuration.
+
+    Args:
+        base_url: The base URL of the API.
+
+    Returns:
+        The RAG configuration, or None if there was an error.
+    """
+    url = f"{base_url}/leapfrogai/v1/rag/configure"
+
+    try:
+        response = requests.get(url)
+        response.raise_for_status()
+        config = ConfigurationPayload.model_validate_json(response.text)
+        print(f"Current RAG configuration: {config}")
+        return config
+    except requests.exceptions.RequestException as e:
+        print(f"Error getting RAG configuration: {e}")
+        return None
+
+
+@pytest.mark.skipif(
+    os.environ.get("LFAI_RUN_NIAH_TESTS") != "true",
+    reason="LFAI_RUN_NIAH_TESTS envvar was not set to true",
+)
+def test_rag_needle_haystack_with_reranking():
+    base_url = os.getenv(
+        "LEAPFROGAI_API_URL", "https://leapfrogai-api.uds.dev/openai/v1"
+    )
+    configure_rag(base_url, True, "flashrank", 100)
+    config_result = get_rag_configuration(base_url)
+    assert config_result.enable_reranking is True
+    test_rag_needle_haystack()
