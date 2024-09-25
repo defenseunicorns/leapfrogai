@@ -56,7 +56,7 @@ test('it can transcribe an audio file', async ({ page, openAIClient }) => {
   await deleteActiveThread(page, openAIClient);
 });
 
-test('it can removes the audio file but keeps other files after translating', async ({
+test('it can remove the audio file but keeps other files after translating', async ({
   page,
   openAIClient
 }) => {

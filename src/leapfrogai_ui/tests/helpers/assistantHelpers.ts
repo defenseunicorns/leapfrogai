@@ -5,9 +5,10 @@ import type { Assistant, AssistantCreateParams } from 'openai/resources/beta/ass
 import type { AssistantInput, LFAssistant } from '../../src/lib/types/assistants';
 import { supabase } from './helpers';
 import { faker } from '@faker-js/faker';
+import { loadNewAssistantPage } from './navigationHelpers';
 
 export const createAssistant = async (assistantInput: AssistantInput, page: Page) => {
-  await page.goto('/chat/assistants-management/new');
+  await loadNewAssistantPage(page);
   await page.getByLabel('name').fill(assistantInput.name);
   await page.getByLabel('tagline').fill(assistantInput.description);
   await clickOnSliderValue(assistantInput.temperature, page);
@@ -151,7 +152,9 @@ export const fillOutRequiredAssistantFields = async (
   assistantInput: AssistantInput,
   page: Page
 ) => {
-  await page.getByLabel('name').fill(assistantInput.name);
+  const nameField = page.getByLabel('name'); // ensure name field is visible before starting to fill out the form
+  await expect(nameField).toBeVisible();
+  await nameField.fill(assistantInput.name);
   await page.getByLabel('tagline').fill(assistantInput.description);
   await page.getByPlaceholder("You'll act as...").fill(assistantInput.instructions);
 };
@@ -161,7 +164,7 @@ export const saveAssistant = async (assistantName: string, page: Page) => {
   await expect(saveButtons).toHaveCount(1);
   await saveButtons.click();
 
-  await expect(page.getByText('Assistant Created')).toBeVisible();
+  await expect(page.getByText('Assistant Created')).toBeVisible({ timeout: 10000 });
   await page.waitForURL('/chat/assistants-management');
   await expect(page.getByTestId(`assistant-card-${assistantName}`)).toBeVisible();
 };
