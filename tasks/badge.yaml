@@ -12,7 +12,7 @@ variables:
     default: "true"
   - name: PACKAGE_DIR
     description: Base directory where packages are located, relative to the root of the repository
-    default: ./
+    default: .
 
 tasks:
   - name: verify-badge
@@ -75,7 +75,7 @@ tasks:
           gh_notice "  ℹ️  Group Name: $GROUP_NAME"
           COMMON_ZARF=${COMMON_ZARF:-true}
           gh_notice "  ℹ️  Common Zarf: $COMMON_ZARF"
-          PACKAGE_DIR=${PACKAGE_DIR:-"./"}
+          PACKAGE_DIR=${PACKAGE_DIR:-"."}
           gh_notice "  ℹ️  Package Directory: $PACKAGE_DIR"
 
           # Cover when GOBIN isn't set
@@ -89,10 +89,10 @@ tasks:
           fi
 
           if [[ "${COMMON_ZARF}" == "true" ]]; then
-            NAMESPACE=$(uds zarf tools yq '.components[].charts[].namespace' "${PACKAGE_DIR}common/zarf.yaml" | uniq)
+            NAMESPACE=$(uds zarf tools yq '.components[].charts[].namespace' "${PACKAGE_DIR}/common/zarf.yaml" | uniq)
           else
             gh_warning "  ⚠️  There is no common zarf.yaml file"
-            NAMESPACE=$(uds zarf tools yq '.components[].charts[].namespace' "${PACKAGE_DIR}zarf.yaml" | uniq)
+            NAMESPACE=$(uds zarf tools yq '.components[].charts[].namespace' "${PACKAGE_DIR}/zarf.yaml" | uniq)
           fi
           gh_notice "  ℹ️  Namespace: $NAMESPACE"
 
@@ -110,7 +110,7 @@ tasks:
 
           gh_notice "  ℹ️  Validating uds-config chart..."
           printf "\033[A"
-          if ${GOBIN}/kubectl-validate <(helm template "${PACKAGE_DIR}${CHART_PATH}" | grep -v '^ *#' | perl -p0e 's/---[\s---]*---/---/sg') &> /tmp/validate-output; then
+          if ${GOBIN}/kubectl-validate <(helm template "${PACKAGE_DIR}/${CHART_PATH}" | grep -v '^ *#' | perl -p0e 's/---[\s---]*---/---/sg') &> /tmp/validate-output; then
             gh_notice "  ✅ uds-config chart is valid"
           else
             gh_error "  ❌ uds-config chart is invalid"
@@ -309,7 +309,7 @@ tasks:
           ## Should expose all configuration (uds.dev CRs, additional Secrets/ConfigMaps, etc) through a Helm chart (ideally in a chart or charts directory).
 
           if [ "${COMMON_ZARF}" == "true" ]; then
-            COMMON_ZARF_MANIFEST_COUNT=$(cat "${PACKAGE_DIR}common/zarf.yaml" | uds zarf tools yq '.components[] | select(.manifests != null) | length' | wc -l)
+            COMMON_ZARF_MANIFEST_COUNT=$(cat "${PACKAGE_DIR}/common/zarf.yaml" | uds zarf tools yq '.components[] | select(.manifests != null) | length' | wc -l)
             if [ "$COMMON_ZARF_MANIFEST_COUNT" -gt 0 ]; then
               gh_error "  ❌ Manifests present in common/zarf.yaml"
             else
@@ -317,7 +317,7 @@ tasks:
             fi
           fi
 
-          MAIN_ZARF_MANIFEST_COUNT=$(cat "${PACKAGE_DIR}zarf.yaml" | uds zarf tools yq '.components[] | select(.manifests != null) | length' | wc -l)
+          MAIN_ZARF_MANIFEST_COUNT=$(cat "${PACKAGE_DIR}/zarf.yaml" | uds zarf tools yq '.components[] | select(.manifests != null) | length' | wc -l)
           if [ "$MAIN_ZARF_MANIFEST_COUNT" -gt 0 ]; then
             gh_error "  ❌ Manifests present in zarf.yaml"
           else
@@ -326,7 +326,7 @@ tasks:
 
           ## Should implement or allow for multiple flavors (ideally with common definitions in a common directory)
 
-          ZARF_COMPONENTS_FLAVOR_COUNT=$(cat "${PACKAGE_DIR}zarf.yaml" | uds zarf tools yq '.components[] | select(.only.flavor != null) | length' | wc -l)
+          ZARF_COMPONENTS_FLAVOR_COUNT=$(cat "${PACKAGE_DIR}/zarf.yaml" | uds zarf tools yq '.components[] | select(.only.flavor != null) | length' | wc -l)
           if [ "$ZARF_COMPONENTS_FLAVOR_COUNT" -eq 0 ]; then
             gh_error "  ❌ No flavors defined in zarf.yaml"
           else
@@ -339,8 +339,8 @@ tasks:
 
           ## Must implement Journey Testing to cover the basic user flows and features of the application, especially where an application interacts with an external service / interface.
 
-          if [ -d "${PACKAGE_DIR}tests" ]; then
-            if [ "$(ls -A ${PACKAGE_DIR}tests)" ]; then
+          if [ -d "${PACKAGE_DIR}/tests" ]; then
+            if [ "$(ls -A ${PACKAGE_DIR}/tests)" ]; then
               gh_notice "  ✅ Tests folder exists and has files"
             else
               gh_error "  ❌ Tests folder exists but is empty"
@@ -355,8 +355,8 @@ tasks:
 
           # Must be consistently versioned across flavors - this can take many forms but flavors should differ in image bases/builds not application versions.
 
-          ZARF_PKG_VERSION=$(uds zarf tools yq '.metadata.version' "${PACKAGE_DIR}zarf.yaml" | cut -d '-' -f1)
-          IMAGE_WITH_ZARF_VERSION_COUNT=$(cat "${PACKAGE_DIR}zarf.yaml" | uds zarf tools yq '.components[].images' | grep -o "${ZARF_PKG_VERSION}" | wc -l)
+          ZARF_PKG_VERSION=$(uds zarf tools yq '.metadata.version' "${PACKAGE_DIR}/zarf.yaml" | cut -d '-' -f1)
+          IMAGE_WITH_ZARF_VERSION_COUNT=$(cat "${PACKAGE_DIR}/zarf.yaml" | uds zarf tools yq '.components[].images' | grep -o "${ZARF_PKG_VERSION}" | wc -l)
 
           if [ "$IMAGE_WITH_ZARF_VERSION_COUNT" -ge "$ZARF_COMPONENTS_FLAVOR_COUNT" ]; then
             gh_notice "  ✅ Version is consistent across flavors and package"
