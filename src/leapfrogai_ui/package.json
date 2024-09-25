@@ -45,7 +45,7 @@
     "dotenv": "^16.4.5",
     "eslint": "^8.57.0",
     "eslint-config-prettier": "^9.1.0",
-    "eslint-plugin-svelte": "^2.42.0",
+    "eslint-plugin-svelte": "^2.43.0",
     "flowbite": "^2.5.1",
     "flowbite-svelte": "^0.46.16",
     "flowbite-svelte-icons": "^1.6.1",
