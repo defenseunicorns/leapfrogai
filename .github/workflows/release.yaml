@@ -32,4 +32,4 @@ jobs:
       - name: Release LeapfrogAI ${{ steps.get_version.outputs.LFAI_VERSION }}
         uses: ./.github/actions/release
         with:
-          version: ${{ steps.get_version.outputs.LFAI_VERSION }}
+          releaseTag: ${{ steps.get_version.outputs.LFAI_VERSION }}

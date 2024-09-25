@@ -53,7 +53,7 @@ jobs:
       - name: Release LeapfrogAI ${{ env.SNAPSHOT_VERSION }}
         uses: ./.github/actions/release
         with:
-          version: ${{ env.SNAPSHOT_VERSION }}
+          releaseTag: ${{ env.SNAPSHOT_VERSION }}
           subRepository: /uds/snapshots/
 
   test-snapshot:
