@@ -6,11 +6,11 @@ on:
   workflow_dispatch: # trigger manually as needed
   pull_request:
     types:
-      - opened            # default trigger
-      - reopened          # default trigger
-      - synchronize       # default trigger
-      - ready_for_review  # don't run on draft PRs
-      - milestoned        # allows us to trigger on bot PRs
+      - opened # default trigger
+      - reopened # default trigger
+      - synchronize # default trigger
+      - ready_for_review # don't run on draft PRs
+      - milestoned # allows us to trigger on bot PRs
     paths:
       - .github/workflows/e2e-registry1-weekly.yaml
       - bundles/latest/**
@@ -82,16 +82,13 @@ jobs:
       # Mutate non-Registry1 packages to be the current tagged version
       - name: Mutation of the UDS Bundle
         run: |
+          uds zarf tools yq -i '.metadata.version = "registry1"' bundles/latest/cpu/uds-bundle.yaml
+
+          uds zarf tools yq -i '.packages[].ref |= sub("^[^ ]+-upstream$", "${{ env.LEAPFROGAI_VERSION }}-upstream")' bundles/latest/cpu/uds-bundle.yaml
+
           uds zarf tools yq -i '.packages[1] |= del(.repository)' bundles/latest/cpu/uds-bundle.yaml
           uds zarf tools yq -i '.packages[1] |= .ref = "v${{ env.LEAPFROGAI_VERSION }}"' bundles/latest/cpu/uds-bundle.yaml
           uds zarf tools yq -i '.packages[1] |= .path = "../../../"' bundles/latest/cpu/uds-bundle.yaml
-          uds zarf tools yq -i '.metadata.version = "registry1"' bundles/latest/cpu/uds-bundle.yaml
-
-          uds zarf tools yq -i '.packages[0] |= .ref = "${{ env.LEAPFROGAI_VERSION }}-upstream"' bundles/latest/cpu/uds-bundle.yaml
-          uds zarf tools yq -i '.packages[2] |= .ref = "${{ env.LEAPFROGAI_VERSION }}-upstream"' bundles/latest/cpu/uds-bundle.yaml
-          uds zarf tools yq -i '.packages[3] |= .ref = "${{ env.LEAPFROGAI_VERSION }}-upstream"' bundles/latest/cpu/uds-bundle.yaml
-          uds zarf tools yq -i '.packages[4] |= .ref = "${{ env.LEAPFROGAI_VERSION }}-upstream"' bundles/latest/cpu/uds-bundle.yaml
-          uds zarf tools yq -i '.packages[5] |= .ref = "${{ env.LEAPFROGAI_VERSION }}-upstream"' bundles/latest/cpu/uds-bundle.yaml
 
       - name: Print the Modified UDS Bundle
         run: |
