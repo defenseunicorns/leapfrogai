@@ -25,3 +25,7 @@ jobs:
         uses: ./.github/actions/release
         with:
           releaseTag: ${{ steps.get_version.outputs.LFAI_VERSION }}
+          registry1Username: ${{ secrets.IRON_BANK_ROBOT_USERNAME }}
+          registry1Password: ${{ secrets.IRON_BANK_ROBOT_PASSWORD }}
+          ghToken: ${{ secrets.GITHUB_TOKEN }}
+          chainguardIdentity: ${{ secrets.CHAINGUARD_IDENTITY }}

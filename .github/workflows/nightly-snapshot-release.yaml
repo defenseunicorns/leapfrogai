@@ -47,6 +47,10 @@ jobs:
         with:
           releaseTag: ${{ env.SNAPSHOT_VERSION }}
           subRepository: /uds/snapshots/
+          registry1Username: ${{ secrets.IRON_BANK_ROBOT_USERNAME }}
+          registry1Password: ${{ secrets.IRON_BANK_ROBOT_PASSWORD }}
+          ghToken: ${{ secrets.GITHUB_TOKEN }}
+          chainguardIdentity: ${{ secrets.CHAINGUARD_IDENTITY }}
 
   test-snapshot:
     runs-on: ai-ubuntu-big-boy-8-core

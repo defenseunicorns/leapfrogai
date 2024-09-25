@@ -9,6 +9,14 @@ inputs:
     description: The sub-repository to publish the artifacts to
     required: false
     default: /uds/
+  registry1Username:
+    description: Registry1 Username
+  registry1Password:
+    description: Registry1 Password
+  ghToken:
+    description: GitHub Token
+  chainguardIdentity:
+    description: Chainguard login identity
 
 runs:
   using: composite
@@ -17,10 +25,10 @@ runs:
     - name: Setup UDS Environment
       uses: defenseunicorns/uds-common/.github/actions/setup@e3008473beab00b12a94f9fcc7340124338d5c08 # v0.13.1
       with:
-        registry1Username: ${{ secrets.IRON_BANK_ROBOT_USERNAME }}
-        registry1Password: ${{ secrets.IRON_BANK_ROBOT_PASSWORD }}
-        ghToken: ${{ secrets.GITHUB_TOKEN }}
-        chainguardIdentity: ${{ secrets.CHAINGUARD_IDENTITY }}
+        registry1Username: ${{ inputs.registry1Username }}
+        registry1Password: ${{ inputs.registry1Password }}
+        ghToken: ${{ inputs.ghToken }}
+        chainguardIdentity: ${{ inputs.chainguardIdentity }}
 
     - name: Set up QEMU
       uses: docker/setup-qemu-action@68827325e0b33c7199eb31dd4e31fbe9023e06e3 # v3.0.0
