@@ -12,6 +12,7 @@
       "extra-files": [
         "pyproject.toml",
         "docs/DEVELOPMENT.md",
+        ".github/workflows/e2e-registry1-weekly.yaml",
         {
           "type": "generic",
           "path": "**/Chart.yaml",

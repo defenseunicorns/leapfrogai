@@ -2,15 +2,15 @@ name: e2e-registry1-weekly
 
 on:
   schedule:
-    - cron: "0 0 * * 6" # Run every Sunday at 12 AM EST
+    - cron: "0 8 * * 0" # Run every Sunday at 12 AM PST
   workflow_dispatch: # trigger manually as needed
   pull_request:
     types:
-      - opened            # default trigger
-      - reopened          # default trigger
-      - synchronize       # default trigger
-      - ready_for_review  # don't run on draft PRs
-      - milestoned        # allows us to trigger on bot PRs
+      - opened # default trigger
+      - reopened # default trigger
+      - synchronize # default trigger
+      - ready_for_review # don't run on draft PRs
+      - milestoned # allows us to trigger on bot PRs
     paths:
       - .github/workflows/e2e-registry1-weekly.yaml
       - bundles/latest/**
@@ -53,7 +53,6 @@ jobs:
           registry1Password: ${{ secrets.IRON_BANK_ROBOT_PASSWORD }}
           ghToken: ${{ secrets.GITHUB_TOKEN }}
           chainguardIdentity: ${{ secrets.CHAINGUARD_IDENTITY }}
-          udsCliVersion: 0.14.0
 
       - name: Setup Python
         uses: actions/setup-python@0a5c61591373683505ea898e09a3ea4f39ef2b9c #v5.0.0
@@ -62,11 +61,6 @@ jobs:
 
       - name: Install Python Dependencies
         run: pip install ".[dev]" "src/leapfrogai_api" "src/leapfrogai_sdk" --no-cache-dir
-
-      - name: Setup Playwright
-        run: |
-          npm --prefix src/leapfrogai_ui ci
-          npx --prefix src/leapfrogai_ui playwright install
 
       - name: Mutation of the Zarf Packages
         run: |
@@ -85,19 +79,16 @@ jobs:
           FLAVOR=registry1 make build-api
 
       # Mutate UDS bundle definition to use Registry1 packages
-      # Mutate mon-Registry1 packages to be the current tagged version
+      # Mutate non-Registry1 packages to be the current tagged version
       - name: Mutation of the UDS Bundle
         run: |
-          uds zarf tools yq -i '.packages[1] |= del(.repository)' bundles/latest/cpu/uds-bundle.yaml
-          uds zarf tools yq -i '.packages[1] |= .ref = "${{ env.LEAPFROGAI_VERSION }}"' bundles/latest/cpu/uds-bundle.yaml
-          uds zarf tools yq -i '.packages[1] |= .path = "../../../"' bundles/latest/cpu/uds-bundle.yaml
           uds zarf tools yq -i '.metadata.version = "registry1"' bundles/latest/cpu/uds-bundle.yaml
 
-          uds zarf tools yq -i '.packages[0] |= .ref = "${{ env.LEAPFROGAI_VERSION }}-upstream"' bundles/latest/cpu/uds-bundle.yaml
-          uds zarf tools yq -i '.packages[2] |= .ref = "${{ env.LEAPFROGAI_VERSION }}-upstream"' bundles/latest/cpu/uds-bundle.yaml
-          uds zarf tools yq -i '.packages[3] |= .ref = "${{ env.LEAPFROGAI_VERSION }}-upstream"' bundles/latest/cpu/uds-bundle.yaml
-          uds zarf tools yq -i '.packages[4] |= .ref = "${{ env.LEAPFROGAI_VERSION }}-upstream"' bundles/latest/cpu/uds-bundle.yaml
-          uds zarf tools yq -i '.packages[5] |= .ref = "${{ env.LEAPFROGAI_VERSION }}-upstream"' bundles/latest/cpu/uds-bundle.yaml
+          uds zarf tools yq -i '.packages[].ref |= sub("^[^ ]+-upstream$", "${{ env.LEAPFROGAI_VERSION }}-upstream")' bundles/latest/cpu/uds-bundle.yaml
+
+          uds zarf tools yq -i '.packages[1] |= del(.repository)' bundles/latest/cpu/uds-bundle.yaml
+          uds zarf tools yq -i '.packages[1] |= .ref = "v${{ env.LEAPFROGAI_VERSION }}"' bundles/latest/cpu/uds-bundle.yaml
+          uds zarf tools yq -i '.packages[1] |= .path = "../../../"' bundles/latest/cpu/uds-bundle.yaml
 
       - name: Print the Modified UDS Bundle
         run: |
@@ -143,6 +134,11 @@ jobs:
           SERVICE_KEY: ${{ steps.generate_secrets.outputs.SERVICE_KEY }}
         run: |
           python -m pytest -vvv -s ./tests/e2e
+
+      - name: Setup Playwright
+        run: |
+          npm --prefix src/leapfrogai_ui ci
+          npx --prefix src/leapfrogai_ui playwright install
 
       - name: Run Playwright E2E Tests
         env:
