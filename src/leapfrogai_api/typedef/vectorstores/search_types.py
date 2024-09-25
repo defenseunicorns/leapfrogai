@@ -26,3 +26,19 @@ class SearchResponse(BaseModel):
         description="List of RAG items returned as a result of the query.",
         min_length=0,
     )
+
+    def get_response_without_content(self):
+        response_without_content: SearchResponse = SearchResponse(
+            data=[
+                SearchItem(
+                    id=item.id,
+                    vector_store_id=item.vector_store_id,
+                    file_id=item.file_id,
+                    content="",
+                    metadata=item.metadata,
+                    similarity=item.similarity,
+                )
+                for item in self.data
+            ]
+        )
+        return response_without_content
