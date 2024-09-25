@@ -128,12 +128,12 @@ jobs:
         run: |
           uds zarf tools yq -i '.metadata.version = "${{ env.SNAPSHOT_VERSION }}"' bundles/latest/cpu/uds-bundle.yaml
 
-          uds zarf tools yq -i '.packages[0] |= .ref = "${{ env.SNAPSHOT_VERSION }}"' bundles/latest/cpu/uds-bundle.yaml
-          uds zarf tools yq -i '.packages[1] |= .ref = "${{ env.SNAPSHOT_VERSION }}"' bundles/latest/cpu/uds-bundle.yaml
-          uds zarf tools yq -i '.packages[2] |= .ref = "${{ env.SNAPSHOT_VERSION }}"' bundles/latest/cpu/uds-bundle.yaml
-          uds zarf tools yq -i '.packages[3] |= .ref = "${{ env.SNAPSHOT_VERSION }}"' bundles/latest/cpu/uds-bundle.yaml
-          uds zarf tools yq -i '.packages[4] |= .ref = "${{ env.SNAPSHOT_VERSION }}"' bundles/latest/cpu/uds-bundle.yaml
-          uds zarf tools yq -i '.packages[5] |= .ref = "${{ env.SNAPSHOT_VERSION }}"' bundles/latest/cpu/uds-bundle.yaml
+          uds zarf tools yq -i '.packages[0] |= .ref = "${{ env.SNAPSHOT_VERSION }}-upstream"' bundles/latest/cpu/uds-bundle.yaml
+          uds zarf tools yq -i '.packages[1] |= .ref = "${{ env.SNAPSHOT_VERSION }}-upstream"' bundles/latest/cpu/uds-bundle.yaml
+          uds zarf tools yq -i '.packages[2] |= .ref = "${{ env.SNAPSHOT_VERSION }}-upstream"' bundles/latest/cpu/uds-bundle.yaml
+          uds zarf tools yq -i '.packages[3] |= .ref = "${{ env.SNAPSHOT_VERSION }}-upstream"' bundles/latest/cpu/uds-bundle.yaml
+          uds zarf tools yq -i '.packages[4] |= .ref = "${{ env.SNAPSHOT_VERSION }}-upstream"' bundles/latest/cpu/uds-bundle.yaml
+          uds zarf tools yq -i '.packages[5] |= .ref = "${{ env.SNAPSHOT_VERSION }}-upstream"' bundles/latest/cpu/uds-bundle.yaml
 
           uds zarf tools yq -i '.packages[0] |= .repository = "ghcr.io/defenseunicorns/packages/uds/snapshots/leapfrogai/supabase"' bundles/latest/cpu/uds-bundle.yaml
           uds zarf tools yq -i '.packages[1] |= .repository = "ghcr.io/defenseunicorns/packages/uds/snapshots/leapfrogai/leapfrogai-api"' bundles/latest/cpu/uds-bundle.yaml
