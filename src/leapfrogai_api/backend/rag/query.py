@@ -99,7 +99,8 @@ def rerank_search_response(
             item: SearchItem = content_to_item[content.document.doc_id]
             # TODO: Find a better way to handle this
             # Update the similarity to instead be the rank
-            item.similarity = content.rank
+            item.rank = content.rank
+            item.score = content.score
             reranked_items.append(item)
 
     reranked_response = SearchResponse(data=reranked_items)
