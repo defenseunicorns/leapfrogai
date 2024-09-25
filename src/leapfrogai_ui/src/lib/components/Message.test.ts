@@ -255,5 +255,12 @@ describe('Message component', () => {
       });
       screen.getByText(assistant.name!);
     });
+    it('shows a loading skeleton if the message text is empty', () => {
+      render(Message, {
+        ...getDefaultMessageProps(),
+        message: getFakeMessage({ role: 'assistant', content: '' })
+      });
+      expect(screen.getByTestId('loading-msg')).toBeInTheDocument();
+    });
   });
 });

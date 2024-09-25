@@ -16,7 +16,7 @@ readme = "README.md"
 
 [project.optional-dependencies]
 
-dev = ["ctranslate2 == 4.1.0", "transformers[torch] == 4.39.3"]
+dev = ["ctranslate2 ==4.4.0", "transformers[torch] == 4.39.3"]
 
 [tool.pip-tools]
 generate-hashes = true

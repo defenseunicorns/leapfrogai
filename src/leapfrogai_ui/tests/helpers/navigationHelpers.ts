@@ -11,6 +11,7 @@ export const loadChatPage = async (page: Page) => {
   await page.goto('/chat');
   await page.waitForURL('/chat');
   await expect(page).toHaveTitle('LeapfrogAI - Chat');
+  await delay(1000); // wait for page to hydrate
 };
 
 export const loadFileManagementPage = async (page: Page) => {
@@ -22,6 +23,28 @@ export const loadApiKeyPage = async (page: Page) => {
   await page.goto('/chat/api-keys');
   await page.waitForURL('/chat/api-keys');
   await expect(page).toHaveTitle('LeapfrogAI - API Keys');
+  await delay(1000); // wait for page to hydrate
+};
+
+export const loadAssistantsManagementPage = async (page: Page) => {
+  await page.goto('/chat/assistants-management');
+  await page.waitForURL('/chat/assistants-management');
+  await expect(page).toHaveTitle('LeapfrogAI - Assistants Management');
+  await delay(1000); // wait for page to hydrate
+};
+
+export const loadNewAssistantPage = async (page: Page) => {
+  await page.goto('/chat/assistants-management/new');
+  await page.waitForURL('/chat/assistants-management/new');
+  await expect(page).toHaveTitle('LeapfrogAI - New Assistant');
+  await delay(1000); // wait for page to hydrate
+};
+
+export const loadEditAssistantPage = async (assistantId: string, page: Page) => {
+  await page.goto(`/chat/assistants-management/edit/${assistantId}`);
+  await page.waitForURL(`/chat/assistants-management/edit/${assistantId}`);
+  await expect(page).toHaveTitle('LeapfrogAI - Edit Assistant');
+  await delay(1000); // wait for page to hydrate
 };
 
 // These navigation helpers do not trigger an app reload

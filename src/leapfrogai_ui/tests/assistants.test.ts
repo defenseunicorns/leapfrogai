@@ -11,7 +11,11 @@ import {
   getAssistantWithApi
 } from './helpers/assistantHelpers';
 import { deleteActiveThread, getLastUrlParam, sendMessage } from './helpers/threadHelpers';
-import { loadChatPage } from './helpers/navigationHelpers';
+import {
+  loadAssistantsManagementPage,
+  loadChatPage,
+  loadNewAssistantPage
+} from './helpers/navigationHelpers';
 
 test('it navigates to the assistants page', async ({ page }) => {
   await loadChatPage(page);
@@ -23,8 +27,7 @@ test('it navigates to the assistants page', async ({ page }) => {
 });
 
 test('it has a button that navigates to the new assistant page', async ({ page }) => {
-  await page.goto('/chat/assistants-management');
-
+  await loadAssistantsManagementPage(page);
   await page.getByRole('button', { name: 'New Assistant' }).click();
   await page.waitForURL('**/assistants-management/new');
   await expect(page).toHaveTitle('LeapfrogAI - New Assistant');
@@ -38,7 +41,7 @@ test('it creates an assistant and navigates back to the management page', async 
 
   await createAssistant(assistantInput, page);
 
-  await expect(page.getByText('Assistant Created')).toBeVisible();
+  await expect(page.getByText('Assistant Created')).toBeVisible({ timeout: 10000 });
   await page.waitForURL('/chat/assistants-management');
   await expect(page.getByTestId(`assistant-card-${assistantInput.name}`)).toBeVisible();
 
@@ -86,7 +89,7 @@ test('displays an error toast when there is an error editing an assistant and re
   const assistant = await createAssistantWithApi({ openAIClient });
   const newAssistantAttributes = getFakeAssistantInput();
 
-  await page.goto('/chat/assistants-management');
+  await loadAssistantsManagementPage(page);
 
   await editAssistantCard(assistant.name!, page);
 
@@ -126,21 +129,19 @@ test('it can search for assistants', async ({ page, openAIClient }) => {
   const assistant1 = await createAssistantWithApi({ openAIClient });
   const assistant2 = await createAssistantWithApi({ openAIClient });
 
-  await page.goto('/chat/assistants-management');
+  await loadAssistantsManagementPage(page);
+
+  const searchBox = page.getByRole('textbox', {
+    name: /search/i
+  });
+  await expect(searchBox).toBeVisible();
   // Search by name
-  await page
-    .getByRole('textbox', {
-      name: /search/i
-    })
-    .fill(assistant1.name!);
+  await searchBox.fill(assistant1.name!);
 
   await expect(page.getByTestId(`assistant-card-${assistant2.name}`)).not.toBeVisible();
   await expect(page.getByTestId(`assistant-card-${assistant1.name}`)).toBeVisible();
 
   // search by description
-  const searchBox = page.getByRole('textbox', {
-    name: /search/i
-  });
   await searchBox.clear();
   await searchBox.fill(assistant2.description!);
 
@@ -188,7 +189,7 @@ test('it can navigate to the last visited thread with breadcrumbs', async ({
 });
 
 test('it validates input', async ({ page }) => {
-  await page.goto('/chat/assistants-management/new');
+  await loadNewAssistantPage(page);
   await page.getByLabel('name').fill('my assistant');
   const saveButton = page.getByRole('button', { name: 'Save' });
 
@@ -206,7 +207,7 @@ test('it validates input', async ({ page }) => {
 });
 
 test('it confirms you want to navigate away if you have changes', async ({ page }) => {
-  await page.goto('/chat/assistants-management/new');
+  await loadNewAssistantPage(page);
   await page.getByLabel('name').fill('my assistant');
 
   await page.getByRole('link', { name: 'Assistants Management' }).click();
@@ -220,8 +221,7 @@ test('it confirms you want to navigate away if you have changes', async ({ page 
 });
 
 test('it DOES NOT confirm you want to navigate away if you DONT have changes', async ({ page }) => {
-  await page.goto('/chat/assistants-management/new');
-
+  await loadNewAssistantPage(page);
   await page.getByRole('link', { name: 'Assistants Management' }).click();
 
   await page.waitForURL('/chat/assistants-management');
@@ -230,7 +230,7 @@ test('it DOES NOT confirm you want to navigate away if you DONT have changes', a
 test('it DOES NOT confirm you want to navigate away if you click the cancel button', async ({
   page
 }) => {
-  await page.goto('/chat/assistants-management/new');
+  await loadNewAssistantPage(page);
   await page.getByLabel('name').fill('my assistant');
 
   await page.getByRole('button', { name: 'Cancel' }).click();
@@ -243,7 +243,7 @@ test('it allows you to edit an assistant', async ({ page, openAIClient }) => {
   const assistant1 = await createAssistantWithApi({ openAIClient });
   const newAssistantAttributes = getFakeAssistantInput();
 
-  await page.goto('/chat/assistants-management');
+  await loadAssistantsManagementPage(page);
 
   await editAssistantCard(assistant1.name!, page);
 
@@ -274,7 +274,7 @@ test("it populates the assistants values when editing an assistant's details", a
 }) => {
   const assistant = await createAssistantWithApi({ openAIClient });
 
-  await page.goto('/chat/assistants-management');
+  await loadAssistantsManagementPage(page);
 
   await editAssistantCard(assistant.name!, page);
 
@@ -289,7 +289,7 @@ test("it populates the assistants values when editing an assistant's details", a
 test('it can delete assistants', async ({ page, openAIClient }) => {
   const assistant = await createAssistantWithApi({ openAIClient });
 
-  await page.goto('/chat/assistants-management');
+  await loadAssistantsManagementPage(page);
 
   await deleteAssistantCard(assistant.name!, page);
 

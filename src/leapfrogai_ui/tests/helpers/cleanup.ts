@@ -1,6 +1,6 @@
 import { deleteAllGeneratedFixtureFiles, deleteAllTestFilesWithApi } from './fileHelpers';
 import { deleteAllAssistants, deleteAssistantAvatars } from './assistantHelpers';
-import { deleteAllTestThreadsWithApi } from './threadHelpers';
+import { deleteAllThreads } from './threadHelpers';
 import type OpenAI from 'openai';
 import { deleteAllTestAPIKeys } from './apiHelpers';
 import { createClient } from '@supabase/supabase-js';
@@ -8,10 +8,10 @@ import { supabaseUsername } from '../constants';
 
 export const cleanup = async (openAIClient: OpenAI) => {
   deleteAllGeneratedFixtureFiles();
-  await deleteAllTestFilesWithApi(openAIClient);
+  await deleteAllThreads(openAIClient);
   await deleteAllAssistants(openAIClient);
-  await deleteAllTestThreadsWithApi(openAIClient);
   await deleteAssistantAvatars();
+  await deleteAllTestFilesWithApi(openAIClient);
   await deleteAllTestAPIKeys();
   if (process.env.PUBLIC_DISABLE_KEYCLOAK === 'true') {
     const supabase = createClient(process.env.PUBLIC_SUPABASE_URL!, process.env.SERVICE_ROLE_KEY!, {
