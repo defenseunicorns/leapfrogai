@@ -46,3 +46,11 @@ jobs:
         run: |
           check-jsonschema bundles/latest/gpu/uds-bundle.yaml --schemafile uds.schema.json
           check-jsonschema bundles/latest/cpu/uds-bundle.yaml --schemafile uds.schema.json
+
+      - name: Download UDS Tasks Schema
+        run: curl -o uds.schema.json https://raw.githubusercontent.com/defenseunicorns/uds-cli/v0.14.0/tasks.schema.json
+
+      - name: Validate tasks.yaml
+        if: always()
+        run: |
+          check-jsonschema tasks.yaml --schemafile tasks.schema.json
