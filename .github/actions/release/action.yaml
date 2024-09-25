@@ -1,5 +1,5 @@
 name: release
-description: "Cut a release all LeapfrogAI packages"
+description: "Cut a release of all LeapfrogAI packages"
 
 inputs:
   releaseTag:
