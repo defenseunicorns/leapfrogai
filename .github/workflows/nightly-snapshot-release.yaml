@@ -6,11 +6,11 @@ on:
   workflow_dispatch: # trigger manually as needed
   pull_request:
     types:
-      - opened # default trigger
-      - reopened # default trigger
-      - synchronize # default trigger
-      - ready_for_review # don't run on draft PRs
-      - milestoned # allows us to trigger on bot PRs
+      - opened            # default trigger
+      - reopened          # default trigger
+      - synchronize       # default trigger
+      - ready_for_review  # don't run on draft PRs
+      - milestoned        # allows us to trigger on bot PRs
     paths:
       - .github/workflows/nightly-snapshot-release.yaml
 
@@ -39,6 +39,9 @@ jobs:
     name: snapshot_release
 
     steps:
+      - name: Checkout Repo
+        uses: actions/checkout@b4ffde65f46336ab88eb53be808477a3936bae11 # v4.1.1
+
       - name: Release LeapfrogAI ${{ env.SNAPSHOT_VERSION }}
         uses: ./.github/actions/release
         with:
