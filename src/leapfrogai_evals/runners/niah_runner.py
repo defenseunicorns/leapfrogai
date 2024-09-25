@@ -181,7 +181,7 @@ class NIAH_Runner:
                     # # response_score
                     # # 1 if needle text was returned by the LLM's final response else 0
                     secret_code = row["secret_code"]
-                    logging.debug(f"Response message: {response.content[0].text.value}")
+                    logging.info(f"Response message: {response.content[0].text.value}")
                     if secret_code in response.content[0].text.value:
                         logging.debug("Setting response_score to 1.0")
                         response_score = 1.0
