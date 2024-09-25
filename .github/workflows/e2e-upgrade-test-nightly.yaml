@@ -30,7 +30,7 @@ jobs:
 
     env:
       # x-release-please-start-version
-      LEAPFROGAI_VERSION: v0.13.0
+      LEAPFROGAI_VERSION: 0.13.0
       # x-release-please-end
 
     permissions:
@@ -42,9 +42,9 @@ jobs:
       - name: Checkout Repo (${{ env.LEAPFROGAI_VERSION }})
         uses: actions/checkout@b4ffde65f46336ab88eb53be808477a3936bae11 # v4.1.1
         with:
-          ref: ${{ env.LEAPFROGAI_VERSION }}
+          ref: v${{ env.LEAPFROGAI_VERSION }}
 
-      - name: Setup Python (${{ env.LEAPFROGAI_VERSION }})
+      - name: Setup Python (v${{ env.LEAPFROGAI_VERSION }})
         uses: ./.github/actions/python
 
       - name: Install Dev Dependencies
@@ -61,7 +61,7 @@ jobs:
 
       - name: Mutation of the UDS Bundle
         run: |
-          uds zarf tools yq -i '.metadata.version = "${{ env.LEAPFROGAI_VERSION }}"' bundles/latest/cpu/uds-bundle.yaml
+          uds zarf tools yq -i '.metadata.version = "v${{ env.LEAPFROGAI_VERSION }}"' bundles/latest/cpu/uds-bundle.yaml
 
           uds zarf tools yq -i '.packages[0] |= .ref = "${{ env.LEAPFROGAI_VERSION }}-upstream"' bundles/latest/cpu/uds-bundle.yaml
           uds zarf tools yq -i '.packages[1] |= .ref = "${{ env.LEAPFROGAI_VERSION }}-upstream"' bundles/latest/cpu/uds-bundle.yaml
@@ -70,12 +70,12 @@ jobs:
           uds zarf tools yq -i '.packages[4] |= .ref = "${{ env.LEAPFROGAI_VERSION }}-upstream"' bundles/latest/cpu/uds-bundle.yaml
           uds zarf tools yq -i '.packages[5] |= .ref = "${{ env.LEAPFROGAI_VERSION }}-upstream"' bundles/latest/cpu/uds-bundle.yaml
 
-      - name: Create and Deploy UDS Bundle (${{ env.LEAPFROGAI_VERSION }})
+      - name: Create and Deploy UDS Bundle (v${{ env.LEAPFROGAI_VERSION }})
         run: |
           cd bundles/latest/cpu
           uds create . --confirm && \
-            uds deploy uds-bundle-leapfrogai-amd64-${{ env.LEAPFROGAI_VERSION }}.tar.zst --confirm --no-progress && \
-            rm -rf uds-bundle-leapfrogai-amd64-${{ env.LEAPFROGAI_VERSION }}.tar.zst && \
+            uds deploy uds-bundle-leapfrogai-amd64-v${{ env.LEAPFROGAI_VERSION }}.tar.zst --confirm --no-progress && \
+            rm -rf uds-bundle-leapfrogai-amd64-v${{ env.LEAPFROGAI_VERSION }}.tar.zst && \
             docker system prune -af
 
       - name: Checkout Repo (main)
