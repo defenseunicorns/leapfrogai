@@ -135,7 +135,8 @@ As time goes on, additional models will be considered and added as comparison po
   - Total Execution Runtime
   
   Non-RAG LLM benchmarks:
-  - [HumanEval](https://docs.confident-ai.com/docs/benchmarks-human-eval) (for evaluating generation)
+  - [HumanEval](https://docs.confident-ai.com/docs/benchmarks-human-eval) (for evaluating code generation)
+  - [MMLU](https://docs.confident-ai.com/docs/benchmarks-mmlu) (for evaluating reasoning across multiple subjects; generation only)
 
   #### Rationale
 
