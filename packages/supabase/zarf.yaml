@@ -68,7 +68,7 @@ components:
         namespace: leapfrogai
         url: oci://registry-1.docker.io/bitnamicharts/supabase
         releaseName: supabase-bootstrap
-        version: 5.3.3
+        version: 5.3.6
         valuesFiles:
           - "bitnami-values.yaml"
           - "bitnami-values-bootstrap.yaml"
@@ -83,7 +83,7 @@ components:
         namespace: leapfrogai
         url: oci://registry-1.docker.io/bitnamicharts/supabase
         releaseName: supabase
-        version: 5.3.3
+        version: 5.3.6
         valuesFiles:
           - "bitnami-values.yaml"
     images:
