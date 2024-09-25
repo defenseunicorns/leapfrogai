@@ -11,7 +11,7 @@
       "versioning": "default",
       "extra-files": [
         "pyproject.toml",
-        ".github/workflows/e2e-upgrade-test-nightly.yaml",
+        ".github/workflows/nightly-snapshot-release.yaml",
         {
           "type": "generic",
           "path": "**/Chart.yaml",

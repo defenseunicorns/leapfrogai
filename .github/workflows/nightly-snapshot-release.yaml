@@ -1,4 +1,4 @@
-name: e2e-upgrade-test-nightly
+name: nightly-snapshot-release
 
 on:
   schedule:
@@ -6,32 +6,50 @@ on:
   workflow_dispatch: # trigger manually as needed
   pull_request:
     types:
-      - opened            # default trigger
-      - reopened          # default trigger
-      - synchronize       # default trigger
-      - ready_for_review  # don't run on draft PRs
-      - milestoned        # allows us to trigger on bot PRs
+      - opened # default trigger
+      - reopened # default trigger
+      - synchronize # default trigger
+      - ready_for_review # don't run on draft PRs
+      - milestoned # allows us to trigger on bot PRs
     paths:
-      - .github/workflows/e2e-upgrade-test-nightly.yaml
+      - .github/workflows/nightly-snapshot-release.yaml
 
 concurrency:
-  group: e2e-upgrade-test-nightly-${{ github.ref }}
+  group: nightly-snapshot-release-${{ github.ref }}
   cancel-in-progress: true
 
 defaults:
   run:
     shell: bash
 
+env:
+  # x-release-please-start-version
+  LEAPFROGAI_VERSION: 0.13.0
+  # x-release-please-end
+  SNAPSHOT_VERSION: snapshot-latest
+
+permissions:
+  contents: read
+  packages: write
+  id-token: write # This is needed for OIDC federation.
+
 jobs:
-  test-upgrade:
+  snapshot-release:
+    runs-on: ai-ubuntu-big-boy-8-core
+    name: snapshot_release
+
+    steps:
+      - name: Release LeapfrogAI ${{ env.SNAPSHOT_VERSION }}
+        uses: ./.github/actions/release
+        with:
+          version: ${{ env.SNAPSHOT_VERSION }}
+          subRepository: /uds/snapshots/
+
+  test-snapshot:
     runs-on: ai-ubuntu-big-boy-8-core
     name: e2e_upgrade_test_nightly
     if: ${{ !github.event.pull_request.draft }}
-
-    env:
-      # x-release-please-start-version
-      LEAPFROGAI_VERSION: 0.13.0
-      # x-release-please-end
+    needs: snapshot-release
 
     permissions:
       contents: read
@@ -49,7 +67,7 @@ jobs:
 
       - name: Install Dev Dependencies
         run: |
-          python -m pip install ".[dev]" ".[dev-vllm]" ".[dev-whisper]" "src/leapfrogai_api" "src/leapfrogai_sdk"
+          python -m pip install ".[dev]" ".[dev-vllm]" ".[dev-whisper]"
 
       - name: Setup UDS Cluster
         uses: ./.github/actions/uds-cluster
@@ -59,7 +77,7 @@ jobs:
           ghToken: ${{ secrets.GITHUB_TOKEN }}
           chainguardIdentity: ${{ secrets.CHAINGUARD_IDENTITY }}
 
-      # This is needed due to delay in tagged release versus 
+      # This is needed due to delay in tagged release versus
       # package publishing and the latest versions of each package in the UDS bundle
       - name: Mutation of the UDS Bundle
         run: |
@@ -92,28 +110,26 @@ jobs:
 
       - name: Install Dev Dependencies (main)
         run: |
-          python -m pip install ".[dev]" ".[dev-vllm]" ".[dev-whisper]" "src/leapfrogai_api" "src/leapfrogai_sdk" \
-            --force-reinstall --no-cache-dir
+          python -m pip install ".[dev]" ".[dev-vllm]" ".[dev-whisper]" --force-reinstall --no-cache-dir
 
-      - name: Create and Deploy Bundle (main)
-        env:
-          VERSION: dev
+      # Set versions to the snapshot-latest
+      - name: Mutation of the UDS Bundle
         run: |
-          LOCAL_VERSION=${{ env.VERSION }} make build-gpu
-          cd bundles/dev/cpu
-          uds create . --confirm
+          uds zarf tools yq -i '.metadata.version = "${{ env.SNAPSHOT_VERSION }}"' bundles/latest/cpu/uds-bundle.yaml
 
-          rm -f zarf-package-*.tar.zst
-          rm -f packages/**/zarf-package-*.tar.zst
-          rm -rf build
-          rm -rf src/**/build
-          rm -rf packages/**/build
-          find . -type d -name 'zarf-sbom' -exec rm -rf {} +
-          find . -name '*.whl' -delete
-          find . -type d -name '*.egg-info' -exec rm -rf {} +
+          uds zarf tools yq -i '.packages[0] |= .ref = "${{ env.SNAPSHOT_VERSION }}"' bundles/latest/cpu/uds-bundle.yaml
+          uds zarf tools yq -i '.packages[1] |= .ref = "${{ env.SNAPSHOT_VERSION }}"' bundles/latest/cpu/uds-bundle.yaml
+          uds zarf tools yq -i '.packages[2] |= .ref = "${{ env.SNAPSHOT_VERSION }}"' bundles/latest/cpu/uds-bundle.yaml
+          uds zarf tools yq -i '.packages[3] |= .ref = "${{ env.SNAPSHOT_VERSION }}"' bundles/latest/cpu/uds-bundle.yaml
+          uds zarf tools yq -i '.packages[4] |= .ref = "${{ env.SNAPSHOT_VERSION }}"' bundles/latest/cpu/uds-bundle.yaml
+          uds zarf tools yq -i '.packages[5] |= .ref = "${{ env.SNAPSHOT_VERSION }}"' bundles/latest/cpu/uds-bundle.yaml
 
-          uds deploy uds-bundle-leapfrogai-amd64-${{ env.VERSION }}.tar.zst --confirm --no-progress && \
-            rm -f uds-bundle-leapfrogai-amd64-${{ env.VERSION }}.tar.zst && \
+      - name: Create and Deploy UDS Bundle (${{ env.SNAPSHOT_VERSION }})
+        run: |
+          cd bundles/latest/cpu
+          uds create . --confirm && \
+            uds deploy uds-bundle-leapfrogai-amd64-${{ env.SNAPSHOT_VERSION }}.tar.zst --confirm --no-progress && \
+            rm -rf uds-bundle-leapfrogai-amd64-${{ env.SNAPSHOT_VERSION }}.tar.zst && \
             docker system prune -af
 
       - name: Generate Secrets
@@ -170,3 +186,12 @@ jobs:
           name: playwright-report
           path: src/leapfrogai_ui/e2e-report/
           retention-days: 30
+
+      - name: Get Cluster Debug Information
+        id: debug
+        if: ${{ !cancelled() }}
+        uses: defenseunicorns/uds-common/.github/actions/debug-output@e3008473beab00b12a94f9fcc7340124338d5c08 # v0.13.1
+
+      - name: Get Cluster Debug Information
+        if: ${{ !cancelled() && steps.debug.conclusion == 'success' }}
+        uses: defenseunicorns/uds-common/.github/actions/save-logs@e3008473beab00b12a94f9fcc7340124338d5c08 # v0.13.1
