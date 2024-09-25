@@ -1,28 +1,20 @@
-from typing import ClassVar
-
 from pydantic import BaseModel, Field
 
 
-class Configuration(BaseModel):
-    """Configuration for RAG."""
+class ConfigurationSingleton:
+    """Singleton manager for ConfigurationPayload."""
 
-    # This is a class variable, shared by all instances of Configuration
-    # It sets a default value, but doesn't create an instance variable
-    enable_reranking: ClassVar[bool] = False
-    # More model info can be found here:
-    # https://github.com/AnswerDotAI/rerankers?tab=readme-ov-file
-    # https://pypi.org/project/rerankers/
-    ranking_model: ClassVar[str] = "flashrank"
+    _instance = None
 
-    # Note: Pydantic will not create an instance variable for ClassVar fields
-    # If you need an instance variable, you should declare it separately
+    @classmethod
+    def get_instance(cls, **kwargs):
+        if cls._instance is None:
+            cls._instance = ConfigurationPayload(**kwargs)
+        return cls._instance
 
 
 class ConfigurationPayload(BaseModel):
     """Response for RAG configuration."""
-
-    # Singleton instance of this class
-    instance: ClassVar[any] = None
 
     # This is an instance variable, specific to each ConfigurationPayload object
     # It will be included in the JSON output when the model is serialized

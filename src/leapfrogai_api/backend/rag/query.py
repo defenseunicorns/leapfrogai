@@ -7,7 +7,7 @@ from supabase import AClient as AsyncClient
 from langchain_core.embeddings import Embeddings
 from leapfrogai_api.backend.rag.leapfrogai_embeddings import LeapfrogAIEmbeddings
 from leapfrogai_api.data.crud_vector_content import CRUDVectorContent
-from leapfrogai_api.typedef.rag.rag_types import Configuration
+from leapfrogai_api.typedef.rag.rag_types import ConfigurationSingleton
 from leapfrogai_api.typedef.vectorstores.search_types import SearchResponse, SearchItem
 from leapfrogai_api.backend.constants import TOP_K
 from leapfrogai_api.utils import get_model_config
@@ -61,8 +61,8 @@ class QueryService:
         )
 
         # 3. Rerank results
-        if Configuration.enable_reranking:
-            ranker = Reranker(Configuration.ranking_model)
+        if ConfigurationSingleton.get_instance().enable_reranking:
+            ranker = Reranker(ConfigurationSingleton.get_instance().ranking_model)
             ranked_results: RankedResults = ranker.rank(
                 query=query,
                 docs=[result.content for result in results.data],
