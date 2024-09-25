@@ -1,0 +1,97 @@
+name: Made for UDS Badge Verification
+
+on:
+  pull_request:
+    branches:
+      - "main"
+    paths:
+      - "packages/"
+      - ".github/workflows/uds-verification.yaml"
+
+concurrency:
+  group: uds-verification-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  uds-verification:
+    runs-on: ubuntu-latest
+    name: Made for UDS Badge Verification
+
+    permissions:
+      contents: read
+
+    steps:
+      - name: Checkout Repo
+        uses: actions/checkout@b4ffde65f46336ab88eb53be808477a3936bae11 # v4.1.1
+
+      - name: Setup UDS Environment
+        uses: defenseunicorns/uds-common/.github/actions/setup@e3008473beab00b12a94f9fcc7340124338d5c08 # v0.13.1
+        with:
+          registry1Username: ${{ secrets.IRON_BANK_ROBOT_USERNAME }}
+          registry1Password: ${{ secrets.IRON_BANK_ROBOT_PASSWORD }}
+          ghToken: ${{ secrets.GITHUB_TOKEN }}
+          chainguardIdentity: ${{ secrets.CHAINGUARD_IDENTITY }}
+
+      - name: Verify API
+        continue-on-error: true
+        uses: defenseunicorns/uds-common/.github/actions/verify-badge@e3008473beab00b12a94f9fcc7340124338d5c08 # v0.13.1
+        with:
+          chartPath: "packages/api/chart"
+          groupName: "lfai"
+          commonZarf: "true"
+
+      - name: Verify UI
+        continue-on-error: true
+        uses: defenseunicorns/uds-common/.github/actions/verify-badge@e3008473beab00b12a94f9fcc7340124338d5c08 # v0.13.1
+        with:
+          chartPath: "packages/ui/chart"
+          groupName: "lfai"
+          commonZarf: "false"
+
+      - name: Verify vLLM
+        continue-on-error: true
+        uses: defenseunicorns/uds-common/.github/actions/verify-badge@e3008473beab00b12a94f9fcc7340124338d5c08 # v0.13.1
+        with:
+          chartPath: "packages/vllm/chart"
+          groupName: "lfai"
+          commonZarf: "false"
+
+      - name: Verify LLaMA-CPP-Python
+        continue-on-error: true
+        uses: defenseunicorns/uds-common/.github/actions/verify-badge@e3008473beab00b12a94f9fcc7340124338d5c08 # v0.13.1
+        with:
+          chartPath: "packages/llama-cpp-python/chart"
+          groupName: "lfai"
+          commonZarf: "false"
+
+      - name: Verify Whisper
+        continue-on-error: true
+        uses: defenseunicorns/uds-common/.github/actions/verify-badge@e3008473beab00b12a94f9fcc7340124338d5c08 # v0.13.1
+        with:
+          chartPath: "packages/whisper/chart"
+          groupName: "lfai"
+          commonZarf: "false"
+
+      - name: Verify Text-Embeddings
+        continue-on-error: true
+        uses: defenseunicorns/uds-common/.github/actions/verify-badge@e3008473beab00b12a94f9fcc7340124338d5c08 # v0.13.1
+        with:
+          chartPath: "packages/text-embeddings/chart"
+          groupName: "lfai"
+          commonZarf: "false"
+
+      - name: Verify Repeater
+        continue-on-error: true
+        uses: defenseunicorns/uds-common/.github/actions/verify-badge@e3008473beab00b12a94f9fcc7340124338d5c08 # v0.13.1
+        with:
+          chartPath: "packages/repeater/chart"
+          groupName: "lfai"
+          commonZarf: "false"
+
+      - name: Verify Supabase
+        continue-on-error: true
+        uses: defenseunicorns/uds-common/.github/actions/verify-badge@e3008473beab00b12a94f9fcc7340124338d5c08 # v0.13.1
+        with:
+          chartPath: "packages/supabase/chart"
+          groupName: "lfai"
+          commonZarf: "false"
