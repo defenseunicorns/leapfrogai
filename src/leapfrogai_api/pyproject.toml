@@ -18,7 +18,7 @@ dependencies = [
     "supabase == 2.6.0",
     "langchain == 0.2.12",
     "langchain-community == 0.2.11",
-    "unstructured[md,xlsx,pptx] == 0.15.9", # Only specify necessary filetypes to prevent package bloat (e.g. 130MB vs 6GB)
+    "unstructured[md,xlsx,pptx] ==0.15.13", # Only specify necessary filetypes to prevent package bloat (e.g. 130MB vs 6GB)
     "nltk == 3.9.1",                        # Required for pickled code containing .pptx parsing dependencies
     "pylibmagic == 0.5.0",                  # Resolves issue with libmagic not being bundled with OS - https://github.com/ahupp/python-magic/issues/233, may not be needed after this is merged https://github.com/ahupp/python-magic/pull/294
     "python-magic == 0.4.27",
