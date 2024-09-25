@@ -40,7 +40,6 @@ describe('file management', () => {
         ...data,
         form,
         session: getFakeSession(),
-        assistants: [],
         supabase: {} as unknown as SupabaseClient
       }
     });
@@ -227,7 +226,6 @@ describe('table pagination', () => {
         ...data,
         form,
         session: getFakeSession(),
-        assistants: [],
         supabase: {} as unknown as SupabaseClient
       }
     });

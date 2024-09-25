@@ -1,10 +1,9 @@
 <script lang="ts">
   import { goto } from '$app/navigation';
-  import { threadsStore } from '$stores';
+  import { assistantsStore } from '$stores';
   import { NO_SELECTED_ASSISTANT_ID } from '$constants';
   import { Button, Dropdown, DropdownItem } from 'flowbite-svelte';
   import { CheckOutline, ChevronDownOutline, UserSettingsOutline } from 'flowbite-svelte-icons';
-  import { assistantsStore } from '$stores';
 
   let assistantSelectDropdownOpen = false;
 

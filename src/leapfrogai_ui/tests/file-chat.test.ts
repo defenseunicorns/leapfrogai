@@ -1,5 +1,5 @@
 import { expect, test } from './fixtures';
-import { getSimpleMathQuestion, loadChatPage } from './helpers/helpers';
+import { getSimpleMathQuestion } from './helpers/helpers';
 import {
   createPDF,
   createTextFile,
@@ -29,6 +29,7 @@ import {
 } from '../src/lib/constants';
 import { FILE_CONTEXT_TOO_LARGE_ERROR_MSG } from '../src/lib/constants/errors';
 import { shortenFileName } from '../src/lib/helpers/stringHelpers';
+import { loadChatPage } from './helpers/navigationHelpers';
 
 test('it attaches multiple files of different types and creates a hidden message with their content', async ({
   page,

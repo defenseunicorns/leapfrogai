@@ -32,9 +32,7 @@ const createAssistantsStore = () => {
     removeAssistant: (id: string) => {
       update((old) => {
         const updatedAssistants = [...old.assistants];
-        const assistantIndex = updatedAssistants.findIndex(
-          (assistant) => assistant.id === id
-        );
+        const assistantIndex = updatedAssistants.findIndex((assistant) => assistant.id === id);
         if (assistantIndex > -1) {
           updatedAssistants.splice(assistantIndex, 1);
         }

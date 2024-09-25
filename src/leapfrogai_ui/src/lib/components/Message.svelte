@@ -69,7 +69,8 @@
   const getAssistantName = (id?: string) => {
     if (!id) return 'LeapfrogAI Bot';
     return (
-      $assistantsStore.assistants?.find((assistant) => assistant.id === id)?.name || 'LeapfrogAI Bot'
+      $assistantsStore.assistants?.find((assistant) => assistant.id === id)?.name ||
+      'LeapfrogAI Bot'
     );
   };
 

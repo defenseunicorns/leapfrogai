@@ -3,7 +3,7 @@
   import { LFTextArea, PoweredByDU } from '$components';
   import { Hr, ToolbarButton } from 'flowbite-svelte';
   import { onMount, tick } from 'svelte';
-  import { filesStore, threadsStore, toastStore, assistantsStore } from '$stores';
+  import { assistantsStore, threadsStore, toastStore } from '$stores';
   import { type Message as VercelAIMessage, useAssistant, useChat } from '@ai-sdk/svelte';
   import { page } from '$app/stores';
   import Message from '$components/Message.svelte';
@@ -24,15 +24,12 @@
   } from '$constants/toastMessages';
   import SelectAssistantDropdown from '$components/SelectAssistantDropdown.svelte';
   import { PaperPlaneOutline, StopOutline } from 'flowbite-svelte-icons';
-  import type { FileMetadata, LFFileObject, LFFile } from '$lib/types/files';
+  import type { FileMetadata, LFFile } from '$lib/types/files';
   import UploadedFileCards from '$components/UploadedFileCards.svelte';
   import ChatFileUploadForm from '$components/ChatFileUpload.svelte';
   import FileChatActions from '$components/FileChatActions.svelte';
   import LFCarousel from '$components/LFCarousel.svelte';
-  import { convertFileObjectToLFFileObject } from '$helpers/fileHelpers';
   import type { LFThread } from '$lib/types/threads';
-
-  export let data;
 
   /** LOCAL VARS **/
   let lengthInvalid: boolean; // bound to child LFTextArea

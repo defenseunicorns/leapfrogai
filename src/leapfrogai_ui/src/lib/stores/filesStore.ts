@@ -1,6 +1,6 @@
 import { derived, writable } from 'svelte/store';
 import type { FileObject } from 'openai/resources/files';
-import type {LFFileObject, PendingOrErrorFile} from '$lib/types/files';
+import type { LFFileObject, PendingOrErrorFile } from '$lib/types/files';
 import { toastStore } from '$stores/index';
 import { getUnixSeconds } from '$helpers/dates';
 
