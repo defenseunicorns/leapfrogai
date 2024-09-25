@@ -21,14 +21,6 @@ jobs:
           LFAI_VERSION=$(jq -r '.["."]' .github/.release-please-manifest.json)
           echo "LFAI_VERSION=$LFAI_VERSION" >> $GITHUB_OUTPUT
 
-      - name: Setup UDS Environment
-        uses: defenseunicorns/uds-common/.github/actions/setup@e3008473beab00b12a94f9fcc7340124338d5c08 # v0.13.1
-        with:
-          registry1Username: ${{ secrets.IRON_BANK_ROBOT_USERNAME }}
-          registry1Password: ${{ secrets.IRON_BANK_ROBOT_PASSWORD }}
-          ghToken: ${{ secrets.GITHUB_TOKEN }}
-          chainguardIdentity: ${{ secrets.CHAINGUARD_IDENTITY }}
-
       - name: Release LeapfrogAI ${{ steps.get_version.outputs.LFAI_VERSION }}
         uses: ./.github/actions/release
         with:

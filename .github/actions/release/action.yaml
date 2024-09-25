@@ -1,5 +1,5 @@
 name: release
-description: "Cut a release of all LeapfrogAI packages"
+description: "Cut a release of all LeapfrogAI artifacts"
 
 inputs:
   releaseTag:
@@ -14,6 +14,14 @@ runs:
   using: composite
 
   steps:
+    - name: Setup UDS Environment
+      uses: defenseunicorns/uds-common/.github/actions/setup@e3008473beab00b12a94f9fcc7340124338d5c08 # v0.13.1
+      with:
+        registry1Username: ${{ secrets.IRON_BANK_ROBOT_USERNAME }}
+        registry1Password: ${{ secrets.IRON_BANK_ROBOT_PASSWORD }}
+        ghToken: ${{ secrets.GITHUB_TOKEN }}
+        chainguardIdentity: ${{ secrets.CHAINGUARD_IDENTITY }}
+
     - name: Set up QEMU
       uses: docker/setup-qemu-action@68827325e0b33c7199eb31dd4e31fbe9023e06e3 # v3.0.0
 
