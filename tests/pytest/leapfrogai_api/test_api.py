@@ -153,7 +153,7 @@ def test_routes():
         "/openai/v1/files": ["POST"],
         "/openai/v1/assistants": ["POST"],
         "/leapfrogai/v1/count/tokens": ["POST"],
-        "/leapfrogai/v1/rag/configure": ["PATCH", "GET"],
+        "/leapfrogai/v1/rag/configure": ["GET", "PATCH"],
     }
 
     openai_routes = [
