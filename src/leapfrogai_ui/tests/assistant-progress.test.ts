@@ -8,6 +8,7 @@ import {
   deleteFixtureFile,
   uploadFileWithApi
 } from './helpers/fileHelpers';
+import { loadNewAssistantPage } from './helpers/navigationHelpers';
 
 // Note - fully testing the assistant progress toast has proven difficult with Playwright. Sometimes the websocket
 // connection for the Supabase realtime listeners works, and sometimes it does not. Here we test that the
@@ -24,7 +25,7 @@ test('when creating an assistant with files, an assistant progress toast is disp
   const uploadedFile1 = await uploadFileWithApi(filename1, 'application/pdf', openAIClient);
   const uploadedFile2 = await uploadFileWithApi(filename2, 'application/pdf', openAIClient);
 
-  await page.goto('/chat/assistants-management/new');
+  await loadNewAssistantPage(page);
 
   await page.getByLabel('name').fill(assistantInput.name);
   await page.getByLabel('tagline').fill(assistantInput.description);
