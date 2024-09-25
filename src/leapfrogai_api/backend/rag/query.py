@@ -1,11 +1,11 @@
 """Service for querying the RAG model."""
 
-from typing import Annotated, List
+from typing import Annotated
 from fastapi import Depends
+from rerankers.results import RankedResults
 from supabase import AClient as AsyncClient
 from langchain_core.embeddings import Embeddings
 from leapfrogai_api.backend.rag.leapfrogai_embeddings import LeapfrogAIEmbeddings
-from leapfrogai_api.backend.rag.reranker import Reranker
 from leapfrogai_api.data.crud_vector_content import CRUDVectorContent
 from leapfrogai_api.typedef.rag.rag_types import Configuration
 from leapfrogai_api.typedef.vectorstores.search_types import SearchResponse, SearchItem
@@ -13,6 +13,7 @@ from leapfrogai_api.backend.constants import TOP_K
 from leapfrogai_api.utils import get_model_config
 from leapfrogai_api.utils.config import Config
 from leapfrogai_api.utils.logging_tools import logger
+from rerankers import Reranker
 
 # Allows for overwriting type of embeddings that will be instantiated
 embeddings_type: type[Embeddings] | type[LeapfrogAIEmbeddings] | None = (
@@ -61,11 +62,13 @@ class QueryService:
 
         # 3. Rerank results
         if Configuration.enable_reranking:
-            reranker = Reranker(model_config=model_config)
-            reranked_results: list[str] = await reranker.rerank(
-                query, [result.content for result in results.data]
+            ranker = Reranker("flashrank")
+            ranked_results: RankedResults = ranker.rank(
+                query=query,
+                docs=[result.content for result in results.data],
+                doc_ids=[result.id for result in results.data],
             )
-            results = rerank_search_response(results, reranked_results)
+            results = rerank_search_response(results, ranked_results)
             logger.info(f"Reranking complete {results.get_simple_response()}")
 
         logger.info("Ending RAG query...")
@@ -74,28 +77,29 @@ class QueryService:
 
 
 def rerank_search_response(
-    original_response: SearchResponse, reranked_results: List[str]
+    original_response: SearchResponse, ranked_results: RankedResults
 ) -> SearchResponse:
     """
     Reorder the SearchResponse based on reranked results.
 
     Args:
         original_response (SearchResponse): The original search response.
-        reranked_results (List[str]): List of reranked content strings.
+        ranked_results (List[str]): List of ranked content strings.
 
     Returns:
         SearchResponse: A new SearchResponse with reordered items.
     """
-    # Create a mapping of content to original SearchItem
-    content_to_item = {item.content: item for item in original_response.data}
+    # Create a mapping of id to original SearchItem
+    content_to_item = {item.id: item for item in original_response.data}
 
     # Create new SearchItems based on reranked results
     reranked_items = []
-    for idx, content in enumerate(reranked_results):
-        if content in content_to_item:
+    for content in ranked_results.results:
+        if content.document.doc_id in content_to_item:
             item: SearchItem = content_to_item[content]
-            # Update the similarity to maintain the new order
-            item.similarity = 1.0 - ((1.0 / len(reranked_results)) * idx)
+            # TODO: Find a better way to handle this
+            # Update the similarity to instead be the rank
+            item.similarity = content.rank
             reranked_items.append(item)
 
     reranked_response = SearchResponse(data=reranked_items)
