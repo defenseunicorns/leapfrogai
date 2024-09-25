@@ -42,9 +42,7 @@ jobs:
       - name: Checkout Repo
         uses: actions/checkout@b4ffde65f46336ab88eb53be808477a3936bae11 # v4.1.1
         with:
-          # x-release-please-start-version
-          ref: "caf4f9c3093a55a003b49fcbf05c03221be6a232" # 0.12.2 w/ integration tests turned-on
-          # x-release-please-end
+          ref: ${{ env.LEAPFROGAI_VERSION }}
 
       - name: Setup Python
         uses: ./.github/actions/python
@@ -65,11 +63,6 @@ jobs:
         shell: bash
         run: |
           UDS_CONFIG=.github/config/uds-config.yaml make create-uds-cpu-cluster
-
-      - name: Setup Playwright
-        run: |
-          npm --prefix src/leapfrogai_ui ci
-          npx --prefix src/leapfrogai_ui playwright install
 
       - name: Create and Deploy Bundle
         run: |
@@ -124,6 +117,11 @@ jobs:
           python -m pytest ./tests/e2e/test_whisper.py -vv
           python -m pytest ./tests/e2e/test_supabase.py -vv
           python -m pytest ./tests/e2e/test_api.py -vv
+
+      - name: Setup Playwright
+        run: |
+          npm --prefix src/leapfrogai_ui ci
+          npx --prefix src/leapfrogai_ui playwright install
 
       - name: Run Playwright E2E Tests
         env:
