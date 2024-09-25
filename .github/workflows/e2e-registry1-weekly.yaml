@@ -83,7 +83,7 @@ jobs:
       - name: Mutation of the UDS Bundle
         run: |
           uds zarf tools yq -i '.packages[1] |= del(.repository)' bundles/latest/cpu/uds-bundle.yaml
-          uds zarf tools yq -i '.packages[1] |= .ref = "${{ env.LEAPFROGAI_VERSION }}"' bundles/latest/cpu/uds-bundle.yaml
+          uds zarf tools yq -i '.packages[1] |= .ref = "v${{ env.LEAPFROGAI_VERSION }}"' bundles/latest/cpu/uds-bundle.yaml
           uds zarf tools yq -i '.packages[1] |= .path = "../../../"' bundles/latest/cpu/uds-bundle.yaml
           uds zarf tools yq -i '.metadata.version = "registry1"' bundles/latest/cpu/uds-bundle.yaml
 
