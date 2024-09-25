@@ -79,7 +79,6 @@ jobs:
             registry1Password: ${{ secrets.IRON_BANK_ROBOT_PASSWORD }}
             ghToken: ${{ secrets.GITHUB_TOKEN }}
             chainguardIdentity: ${{ secrets.CHAINGUARD_IDENTITY }}
-            udsCliVersion: 0.14.0
 
         ##########
         # vLLM
