@@ -1,7 +1,7 @@
 <script lang="ts">
   import { env } from '$env/dynamic/public';
   import {
-    ACCEPTED_FILE_TYPES,
+    ACCEPTED_DOC_AND_AUDIO_FILE_TYPES,
     APPROX_MAX_CHARACTERS,
     FILE_UPLOAD_PROMPT,
     MAX_NUM_FILES_UPLOAD
@@ -144,7 +144,7 @@
     convertFiles(e.detail);
     fileUploadBtnRef.value = '';
   }}
-  accept={ACCEPTED_FILE_TYPES}
+  accept={ACCEPTED_DOC_AND_AUDIO_FILE_TYPES}
   disabled={uploadingFiles}
   class="remove-btn-style flex  rounded-lg  p-1.5 text-gray-500 hover:bg-inherit dark:hover:bg-inherit"
 >

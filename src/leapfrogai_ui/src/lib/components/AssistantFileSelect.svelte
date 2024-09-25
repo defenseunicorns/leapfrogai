@@ -2,7 +2,7 @@
   import { fade } from 'svelte/transition';
   import { filesStore } from '$stores';
   import type { FilesForm } from '$lib/types/files';
-  import { ACCEPTED_FILE_TYPES, STANDARD_FADE_DURATION } from '$constants';
+  import { ACCEPTED_DOC_TYPES, ACCEPTED_DOC_AND_AUDIO_FILE_TYPES, STANDARD_FADE_DURATION } from '$constants';
   import AssistantFileDropdown from '$components/AssistantFileDropdown.svelte';
   import FileUploaderItem from '$components/FileUploaderItem.svelte';
 
@@ -17,7 +17,7 @@
     .filter((id) => $filesStore.selectedAssistantFileIds.includes(id));
 </script>
 
-<AssistantFileDropdown accept={ACCEPTED_FILE_TYPES} {filesForm} class="mb-6" />
+<AssistantFileDropdown accept={ACCEPTED_DOC_TYPES} {filesForm} class="mb-6" />
 
 <div class="grid grid-cols-2 gap-4">
   {#each filteredStoreFiles as file}

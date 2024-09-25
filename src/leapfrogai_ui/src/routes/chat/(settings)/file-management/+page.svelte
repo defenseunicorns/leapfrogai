@@ -18,8 +18,8 @@
   import { convertToMilliseconds, formatDate } from '$helpers/dates';
   import { filesSchema } from '$schemas/files';
   import { filesStore, toastStore, uiStore } from '$stores';
-  import { ACCEPTED_FILE_TYPES, STANDARD_FADE_DURATION } from '$constants';
-  import { afterNavigate, invalidate } from '$app/navigation';
+  import { ACCEPTED_DOC_TYPES, STANDARD_FADE_DURATION } from '$constants';
+  import { beforeNavigate } from '$app/navigation';
   import type { Assistant } from 'openai/resources/beta/assistants';
   import { tableStyles } from '$lib/styles/tables';
   import { filterTable } from '$lib/utils/tables';
@@ -30,11 +30,12 @@
     CloseCircleOutline,
     UploadOutline
   } from 'flowbite-svelte-icons';
-  import type { FileRow } from '$lib/types/files';
+  import type { LFFileObject } from '$lib/types/files';
   import LFFileUploadBtn from '$components/LFFileUploadBtn.svelte';
   import ConfirmFilesDeleteModal from '$components/modals/ConfirmFilesDeleteModal.svelte';
   import { allFilesAndPendingUploads } from '$stores/filesStore';
   import { browser } from '$app/environment';
+  import { onMount } from 'svelte';
 
   export let data;
 
@@ -50,7 +51,7 @@
   // Form error in form action (e.g. validation failure)
   $: $errors._errors && $errors._errors.length > 0 && handleFormError();
 
-  const FILTER_KEYS: Array<keyof FileRow> = ['filename', 'created_at'];
+  const FILTER_KEYS: Array<keyof LFFileObject> = ['filename', 'created_at'];
   const { divClass, innerDivClass, searchClass, classInput, headerClass } = tableStyles;
   const itemsPerPage = 10;
   let pageItems;
@@ -232,16 +233,22 @@
       }
     }
   };
-
-  afterNavigate(() => {
-    // Remove files with "uploading" status from store and invalidate the route so files are re-fetched
+  onMount(() => {
+    if ($filesStore.needsUpdate) {
+      filesStore.fetchFiles();
+    }
+  });
+  beforeNavigate(() => {
+    // Remove files with "uploading" status from store and set needsUpdate true so files are re-fetched
     // when the page is loaded again
     // If we want to persist the uploading status, the backend will need to implement this endpoint:
     // https://platform.openai.com/docs/api-reference/uploads
-    filesStore.setPendingUploads(
-      $filesStore.pendingUploads.filter((file) => file.status === 'error')
-    );
-    invalidate('lf:files');
+    if ($filesStore.pendingUploads.length > 0) {
+      filesStore.setPendingUploads(
+        $filesStore.pendingUploads.filter((file) => file.status === 'error')
+      );
+      filesStore.setNeedsUpdate(true);
+    }
   });
 </script>
 
@@ -284,7 +291,7 @@
                 <LFFileUploadBtn
                   name="files"
                   multiple
-                  accept={ACCEPTED_FILE_TYPES}
+                  accept={ACCEPTED_DOC_TYPES}
                   on:change={(e) => {
                     const fileList = e.detail;
                     handleUpload(fileList);

@@ -1,6 +1,6 @@
 import { writable } from 'svelte/store';
-import { MAX_LABEL_SIZE, NO_SELECTED_ASSISTANT_ID } from '$lib/constants';
-import { goto, invalidate } from '$app/navigation';
+import { MAX_LABEL_SIZE } from '$lib/constants';
+import { goto } from '$app/navigation';
 import { error } from '@sveltejs/kit';
 import { type Message as VercelAIMessage } from '@ai-sdk/svelte';
 import { toastStore } from '$stores';
@@ -12,7 +12,6 @@ import type { Message } from 'ai';
 
 type ThreadsStore = {
   threads: LFThread[];
-  selectedAssistantId: string;
   sendingBlocked: boolean;
   lastVisitedThreadId: string;
   streamingMessage: VercelAIMessage | null;
@@ -20,7 +19,6 @@ type ThreadsStore = {
 
 const defaultValues: ThreadsStore = {
   threads: [],
-  selectedAssistantId: NO_SELECTED_ASSISTANT_ID,
   sendingBlocked: false,
   lastVisitedThreadId: '',
   streamingMessage: null
@@ -96,11 +94,6 @@ const createThreadsStore = () => {
     },
     setLastVisitedThreadId: (id: string) => {
       update((old) => ({ ...old, lastVisitedThreadId: id }));
-    },
-    setSelectedAssistantId: (selectedAssistantId: string) => {
-      update((old) => {
-        return { ...old, selectedAssistantId };
-      });
     },
     // Important - this method has a built in delay to ensure next user message has a different timestamp when setting to false (unblocking)
     setSendingBlocked: async (status: boolean) => {
@@ -303,7 +296,6 @@ const createThreadsStore = () => {
           title: 'Error',
           subtitle: `Error deleting message.`
         });
-        await invalidate('lf:threads');
       }
     },
     updateThreadLabel: async (id: string, newLabel: string) => {

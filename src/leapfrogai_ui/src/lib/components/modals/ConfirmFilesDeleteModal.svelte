@@ -3,7 +3,6 @@
   import type { Assistant } from 'openai/resources/beta/assistants';
   import { filesStore, toastStore } from '$stores';
   import { ExclamationCircleOutline } from 'flowbite-svelte-icons';
-  import { invalidate } from '$app/navigation';
   import { createEventDispatcher } from 'svelte';
   import vectorStatusStore from '$stores/vectorStatusStore';
 
@@ -31,7 +30,10 @@
       }
     });
     open = false;
-    await invalidate('lf:files');
+    for (const id of $filesStore.selectedFileManagementFileIds) {
+      filesStore.removeFile(id);
+    }
+
     if (res.ok) {
       toastStore.addToast({
         kind: 'success',

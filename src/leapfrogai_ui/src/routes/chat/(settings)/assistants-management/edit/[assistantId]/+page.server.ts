@@ -59,7 +59,7 @@ export const load: PageServerLoad = async ({ params, locals: { session } }) => {
   const form = await superValidate(assistantFormData, yup(editAssistantInputSchema));
   const filesForm = await superValidate({}, yup(filesSchema), { errors: false });
 
-  return { title: 'LeapfrogAI - Edit Assistant', form, filesForm, assistant };
+  return { title: 'LeapfrogAI - Edit Assistant', form, filesForm };
 };
 
 export const actions: Actions = {

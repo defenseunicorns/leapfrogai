@@ -3,7 +3,7 @@
   import { LFTextArea, PoweredByDU } from '$components';
   import { Hr, ToolbarButton } from 'flowbite-svelte';
   import { onMount, tick } from 'svelte';
-  import { filesStore, threadsStore, toastStore } from '$stores';
+  import { filesStore, threadsStore, toastStore, assistantsStore } from '$stores';
   import { type Message as VercelAIMessage, useAssistant, useChat } from '@ai-sdk/svelte';
   import { page } from '$app/stores';
   import Message from '$components/Message.svelte';
@@ -24,19 +24,18 @@
   } from '$constants/toastMessages';
   import SelectAssistantDropdown from '$components/SelectAssistantDropdown.svelte';
   import { PaperPlaneOutline, StopOutline } from 'flowbite-svelte-icons';
-  import type { FileMetadata, FileRow, LFFile } from '$lib/types/files';
+  import type { FileMetadata, LFFileObject, LFFile } from '$lib/types/files';
   import UploadedFileCards from '$components/UploadedFileCards.svelte';
   import ChatFileUploadForm from '$components/ChatFileUpload.svelte';
   import FileChatActions from '$components/FileChatActions.svelte';
   import LFCarousel from '$components/LFCarousel.svelte';
-  import { convertFileObjectToFileRows } from '$helpers/fileHelpers';
+  import { convertFileObjectToLFFileObject } from '$helpers/fileHelpers';
   import type { LFThread } from '$lib/types/threads';
 
   export let data;
 
   /** LOCAL VARS **/
   let lengthInvalid: boolean; // bound to child LFTextArea
-  let assistantsList: Array<{ id: string; text: string }>;
   let uploadingFiles = false;
   let attachedFiles: LFFile[] = []; // the actual files uploaded
   let attachedFileMetadata: FileMetadata[] = []; // metadata about the files uploaded, e.g. upload status, extracted text, etc...
@@ -53,8 +52,8 @@
   $: latestChatMessage = $chatMessages[$chatMessages.length - 1];
   $: latestAssistantMessage = $assistantMessages[$assistantMessages.length - 1];
   $: assistantMode =
-    $threadsStore.selectedAssistantId !== NO_SELECTED_ASSISTANT_ID &&
-    $threadsStore.selectedAssistantId !== 'manage-assistants';
+    $assistantsStore.selectedAssistantId !== NO_SELECTED_ASSISTANT_ID &&
+    $assistantsStore.selectedAssistantId !== 'manage-assistants';
 
   $: if (messageStreaming) threadsStore.setSendingBlocked(true);
 
@@ -117,13 +116,13 @@
         );
         const message = await messageRes.json();
         // store the assistant id on the user msg to know it's associated with an assistant
-        message.metadata.assistant_id = $threadsStore.selectedAssistantId;
+        message.metadata.assistant_id = $assistantsStore.selectedAssistantId;
         await threadsStore.addMessageToStore(message);
       } else if (latestAssistantMessage?.role !== 'user') {
         // Streamed assistant responses don't contain an assistant_id, so we add it here
         // and also add a createdAt date if not present
         if (!latestAssistantMessage.assistant_id) {
-          latestAssistantMessage.assistant_id = $threadsStore.selectedAssistantId;
+          latestAssistantMessage.assistant_id = $assistantsStore.selectedAssistantId;
         }
 
         if (!latestAssistantMessage.createdAt)
@@ -223,7 +222,7 @@
         // submit to AI (/api/chat/assistants)
         data: {
           message: $chatInput,
-          assistantId: $threadsStore.selectedAssistantId,
+          assistantId: $assistantsStore.selectedAssistantId,
           threadId: activeThread.id
         }
       });
@@ -321,23 +320,6 @@
   };
 
   onMount(async () => {
-    // Convert files to fileRows and set in store
-    let fileRows: FileRow[] = [];
-    if (data.files && data.files.length > 0) {
-      fileRows = convertFileObjectToFileRows(data.files);
-    }
-    filesStore.setFiles(fileRows);
-    // Set threads in store
-    threadsStore.setThreads(data?.threads || []);
-
-    // Setup assistants list
-    assistantsList = [...(data.assistants || [])].map((assistant) => ({
-      id: assistant.id,
-      text: assistant.name || 'unknown'
-    }));
-    assistantsList.unshift({ id: NO_SELECTED_ASSISTANT_ID, text: 'Select assistant...' }); // add dropdown item for no assistant selected
-    assistantsList.unshift({ id: `manage-assistants`, text: 'Manage assistants' }); // add dropdown item for manage assistants button
-
     componentHasMounted = true;
   });
 
@@ -382,7 +364,7 @@
   </div>
   <Hr classHr="my-2" />
   <div id="chat-tools" data-testid="chat-tools" class="flex flex-col gap-2 px-8">
-    <SelectAssistantDropdown assistants={data?.assistants || []} />
+    <SelectAssistantDropdown />
 
     <div
       class={twMerge(
