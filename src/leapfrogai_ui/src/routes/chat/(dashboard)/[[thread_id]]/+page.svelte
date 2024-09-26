@@ -76,6 +76,8 @@
     resetFiles(); // attachment of files w/assistants disabled
   }
 
+  $: if ($assistantError) handleAssistantResponseError();
+
   /** END REACTIVE STATE **/
 
   const resetFiles = () => {
@@ -121,14 +123,43 @@
 
   const handleCompletedAssistantResponse = async () => {
     if (componentHasMounted && $status === 'awaiting_message') {
-      const assistantResponseId = $assistantMessages[$assistantMessages.length - 1].id;
+      if ($assistantError) return;
+      if (latestAssistantMessage.role === 'user') {
+        await handleAssistantResponseError();
+        return;
+      }
+
+      const assistantResponseId = latestAssistantMessage.id;
       const messageRes = await fetch(
         `/api/messages?thread_id=${$page.params.thread_id}&message_id=${assistantResponseId}`
       );
+      if (!messageRes.ok) {
+        //useAssistants onError hook will handle this
+        return;
+      }
+
       const message = await messageRes.json();
-      await threadsStore.addMessageToStore(message);
-      threadsStore.setStreamingMessage(null);
+      if (message && !getMessageText(message)) {
+        // error with response(empty response)/timeout
+        await handleAssistantResponseError();
+      } else {
+        await threadsStore.addMessageToStore(message);
+        threadsStore.setStreamingMessage(null);
+      }
     }
+  };
+
+  const handleAssistantResponseError = async () => {
+    toastStore.addToast({
+      ...ERROR_GETTING_ASSISTANT_MSG_TOAST()
+    });
+    if (latestAssistantMessage.role === 'assistant') {
+      await threadsStore.deleteMessage($page.params.thread_id, latestAssistantMessage.id);
+      threadsStore.removeMessageFromStore($page.params.thread_id, latestAssistantMessage.id);
+      $assistantMessages = [...$assistantMessages.splice(-1)];
+    }
+    threadsStore.setStreamingMessage(null);
+    await threadsStore.setSendingBlocked(false);
   };
 
   /** useChat - streams messages with the /api/chat route**/
@@ -180,19 +211,11 @@
     submitMessage: submitAssistantMessage,
     stop: assistantStop,
     setMessages: setAssistantMessages,
-    append: assistantAppend
+    append: assistantAppend,
+    error: assistantError
   } = useAssistant({
     api: '/api/chat/assistants',
-    threadId: data.thread?.id,
-    onError: async (e) => {
-      // ignore this error b/c it is expected on cancel
-      if (e.message !== 'BodyStreamBuffer was aborted') {
-        toastStore.addToast({
-          ...ERROR_GETTING_ASSISTANT_MSG_TOAST()
-        });
-      }
-      await threadsStore.setSendingBlocked(false);
-    }
+    threadId: data.thread?.id
   });
 
   const sendAssistantMessage = async (e: SubmitEvent | KeyboardEvent) => {
