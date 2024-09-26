@@ -74,7 +74,8 @@ jobs:
 
       - name: Run UDS Badge Verification Task
         run: |
-          uds run verify-uds-badge-cpu 2>&1 | tee temp/output.txt
+          mkdir -p temp/
+          uds run verify-uds-badge-cpu --no-progress 2>&1 | tee temp/output.txt
 
       - name: Pretty Summary of UDS Badge Verification
         run: |
