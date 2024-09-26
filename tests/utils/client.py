@@ -1,6 +1,7 @@
 from urllib.parse import urljoin
 from openai import OpenAI
 import os
+from requests import Response
 
 import requests
 
@@ -83,30 +84,30 @@ class LeapfrogAIClient:
             "Authorization": f"Bearer {self.api_key}",
         }
 
-    def get(self, endpoint, params=None):
+    def get(self, endpoint, params=None) -> Response | None:
         url = urljoin(self.base_url, endpoint)
         response = requests.get(url, headers=self.headers, params=params)
         return self._handle_response(response)
 
-    def post(self, endpoint, params=None, data=None, json=None):
+    def post(self, endpoint, params=None, data=None, json=None) -> Response | None:
         url = urljoin(self.base_url, endpoint)
         response = requests.post(
             url, headers=self.headers, params=params, data=data, json=json
         )
         return self._handle_response(response)
 
-    def put(self, endpoint, data=None, json=None):
+    def put(self, endpoint, data=None, json=None) -> Response | None:
         url = urljoin(self.base_url, endpoint)
         response = requests.put(url, headers=self.headers, data=data, json=json)
         return self._handle_response(response)
 
-    def delete(self, endpoint, params=None):
+    def delete(self, endpoint, params=None) -> Response | None:
         url = urljoin(self.base_url, endpoint)
         response = requests.delete(url, headers=self.headers, params=params)
         return self._handle_response(response)
 
-    def _handle_response(self, response):
-        response.raise_for_status()
+    def _handle_response(self, response) -> Response | None:
+        # response.raise_for_status()
         if response.content:
-            return response.json()
+            return response
         return None
