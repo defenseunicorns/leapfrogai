@@ -42,15 +42,16 @@ jobs:
       - name: Checkout Repo
         uses: actions/checkout@b4ffde65f46336ab88eb53be808477a3936bae11 # v4.1.1
 
-      - name: Release LeapfrogAI ${{ env.SNAPSHOT_VERSION }}
-        uses: ./.github/actions/release
-        with:
-          releaseTag: ${{ env.SNAPSHOT_VERSION }}
-          subRepository: /uds/snapshots/
-          registry1Username: ${{ secrets.IRON_BANK_ROBOT_USERNAME }}
-          registry1Password: ${{ secrets.IRON_BANK_ROBOT_PASSWORD }}
-          ghToken: ${{ secrets.GITHUB_TOKEN }}
-          chainguardIdentity: ${{ secrets.CHAINGUARD_IDENTITY }}
+      # TODO: uncomment this out!
+      #- name: Release LeapfrogAI ${{ env.SNAPSHOT_VERSION }}
+      #  uses: ./.github/actions/release
+      #  with:
+      #    releaseTag: ${{ env.SNAPSHOT_VERSION }}
+      #    subRepository: /uds/snapshots/
+      #    registry1Username: ${{ secrets.IRON_BANK_ROBOT_USERNAME }}
+      #    registry1Password: ${{ secrets.IRON_BANK_ROBOT_PASSWORD }}
+      #    ghToken: ${{ secrets.GITHUB_TOKEN }}
+      #    chainguardIdentity: ${{ secrets.CHAINGUARD_IDENTITY }}
 
   test-snapshot:
     runs-on: ai-ubuntu-big-boy-8-core
@@ -121,7 +122,7 @@ jobs:
 
           uds zarf tools yq -i '.packages[].ref |= sub("^[^ ]+-upstream$", "${{ env.SNAPSHOT_VERSION }}-upstream")' bundles/latest/cpu/uds-bundle.yaml
 
-          uds zarf tools yq -i '.packages[].repository |= sub("/uds/", "/uds/snapshot/")' bundles/latest/cpu/uds-bundle.yaml
+          uds zarf tools yq -i '.packages[].repository |= sub("/uds/", "/uds/snapshots/")' bundles/latest/cpu/uds-bundle.yaml
 
       - name: Create and Deploy UDS Bundle (${{ env.SNAPSHOT_VERSION }})
         run: |
