@@ -1,12 +1,10 @@
 """Test the API endpoints for files."""
 
-import os
 import pytest
-from fastapi import HTTPException, Response, status
+from requests import HTTPError
+from fastapi import Response, status
 from openai.types import FileDeleted, FileObject
-from leapfrogai_api.routers.openai.files import router
 from leapfrogai_api.backend.rag.document_loader import load_file, split
-from fastapi.testclient import TestClient
 from tests.utils.data_path import (
     data_path,
     TXT_FILE_NAME,
@@ -14,27 +12,16 @@ from tests.utils.data_path import (
     WAV_FILE_NAME,
     XLSX_FILE_NAME,
 )
+from tests.utils.client import LeapfrogAIClient
+
+
+@pytest.fixture(scope="session")
+def client():
+    yield LeapfrogAIClient()
 
 
 file_response: Response
 testfile_content: bytes
-
-
-class MissingEnvironmentVariable(Exception):
-    pass
-
-
-headers: dict[str, str] = {}
-
-try:
-    headers = {"Authorization": f"Bearer {os.environ['SUPABASE_USER_JWT']}"}
-except KeyError as exc:
-    raise MissingEnvironmentVariable(
-        "SUPABASE_USER_JWT must be defined for the test to pass. "
-        "Please check the api README for instructions on obtaining this token."
-    ) from exc
-
-client = TestClient(router, headers=headers)
 
 
 @pytest.fixture(scope="session", autouse=True)
@@ -46,7 +33,7 @@ def read_testfile():
 
 
 @pytest.fixture(scope="session", autouse=True)
-def create_file(read_testfile):  # pylint: disable=redefined-outer-name, unused-argument
+def create_file(client, read_testfile):  # pylint: disable=redefined-outer-name, unused-argument
     """Create a file for testing. Requires a running Supabase instance."""
 
     global file_response  # pylint: disable=global-statement
@@ -68,7 +55,7 @@ def test_create():
     assert "user_id" not in file_response.json(), "Create should not return a user_id."
 
 
-def test_get():
+def test_get(client):
     """Test getting a file. Requires a running Supabase instance."""
     file_id = file_response.json()["id"]
     get_response = client.get(f"/openai/v1/files/{file_id}")
@@ -78,7 +65,7 @@ def test_get():
     ), f"Get should return FileObject {file_id}."
 
 
-def test_get_content():
+def test_get_content(client):
     """Test getting file content. Requires a running Supabase instance."""
     file_id = file_response.json()["id"]
     get_content_response = client.get(f"/openai/v1/files/{file_id}/content")
@@ -88,7 +75,7 @@ def test_get_content():
     ), f"get_content should return the content for File {file_id}."
 
 
-def test_list():
+def test_list(client):
     """Test listing files. Requires a running Supabase instance."""
     list_response = client.get("/openai/v1/files")
     assert list_response.status_code is status.HTTP_200_OK
@@ -98,7 +85,7 @@ def test_list():
         ), "List should return a list of FileObjects."
 
 
-def test_delete():
+def test_delete(client):
     """Test deleting a file. Requires a running Supabase instance."""
     file_id = file_response.json()["id"]
 
@@ -112,7 +99,7 @@ def test_delete():
     ), f"Delete should be able to delete File {file_id}."
 
 
-def test_delete_twice():
+def test_delete_twice(client):
     """Test deleting a file twice. Requires a running Supabase instance."""
     file_id = file_response.json()["id"]
     delete_response = client.delete(f"/openai/v1/files/{file_id}")
@@ -125,7 +112,7 @@ def test_delete_twice():
     ), f"Delete should not be able to delete File {file_id} twice."
 
 
-def test_get_nonexistent():
+def test_get_nonexistent(client):
     """Test getting a nonexistent file. Requires a running Supabase instance."""
     file_id = file_response.json()["id"]
 
@@ -136,10 +123,10 @@ def test_get_nonexistent():
     ), f"Get should not return deleted FileObject {file_id}."
 
 
-def test_invalid_file_type():
+def test_invalid_file_type(client):
     """Test creating uploading an invalid file type."""
 
-    with pytest.raises(HTTPException) as exception:
+    with pytest.raises(HTTPError) as exception:
         with open(data_path(WAV_FILE_NAME), "rb") as testfile:
             _ = client.post(
                 "/openai/v1/files",
@@ -150,7 +137,7 @@ def test_invalid_file_type():
 
 
 @pytest.mark.asyncio
-async def test_excel_file_handling():
+async def test_excel_file_handling(client):
     """Test handling of an Excel file including upload, retrieval, and deletion."""
     # Test file loading and splitting
     documents = await load_file(data_path(XLSX_FILE_NAME))
@@ -221,7 +208,7 @@ async def test_excel_file_handling():
 
 
 @pytest.mark.asyncio
-async def test_powerpoint_file_handling():
+async def test_powerpoint_file_handling(client):
     """Test handling of a PowerPoint file including upload, retrieval, and deletion."""
     # Test file loading and splitting
     documents = await load_file(data_path(PPTX_FILE_NAME))

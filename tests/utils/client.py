@@ -84,30 +84,28 @@ class LeapfrogAIClient:
             "Authorization": f"Bearer {self.api_key}",
         }
 
-    def get(self, endpoint, params=None) -> Response | None:
+    def get(self, endpoint, **kwargs) -> Response | None:
         url = urljoin(self.base_url, endpoint)
-        response = requests.get(url, headers=self.headers, params=params)
+        response = requests.get(url, headers=self.headers, **kwargs)
         return self._handle_response(response)
 
-    def post(self, endpoint, params=None, data=None, json=None) -> Response | None:
+    def post(self, endpoint, **kwargs) -> Response | None:
         url = urljoin(self.base_url, endpoint)
-        response = requests.post(
-            url, headers=self.headers, params=params, data=data, json=json
-        )
+        response = requests.post(url, headers=self.headers, **kwargs)
         return self._handle_response(response)
 
-    def put(self, endpoint, data=None, json=None) -> Response | None:
+    def put(self, endpoint, **kwargs) -> Response | None:
         url = urljoin(self.base_url, endpoint)
-        response = requests.put(url, headers=self.headers, data=data, json=json)
+        response = requests.put(url, headers=self.headers, **kwargs)
         return self._handle_response(response)
 
-    def delete(self, endpoint, params=None) -> Response | None:
+    def delete(self, endpoint, **kwargs) -> Response | None:
         url = urljoin(self.base_url, endpoint)
-        response = requests.delete(url, headers=self.headers, params=params)
+        response = requests.delete(url, headers=self.headers, **kwargs)
         return self._handle_response(response)
 
     def _handle_response(self, response) -> Response | None:
-        # response.raise_for_status()
+        response.raise_for_status()
         if response.content:
             return response
         return None

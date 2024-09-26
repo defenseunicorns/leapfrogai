@@ -1,10 +1,7 @@
 """Test the API endpoints for assistants."""
 
-import os
-
 import pytest
 from fastapi import status
-from fastapi.testclient import TestClient
 from openai.types.beta import Thread, ThreadDeleted
 from openai.types.beta.threads import TextContentBlock, Text, Message, MessageDeleted
 
@@ -12,28 +9,12 @@ from leapfrogai_api.typedef.messages import CreateMessageRequest, ModifyMessageR
 from leapfrogai_api.typedef.threads import (
     CreateThreadRequest,
 )
-from leapfrogai_api.main import app
-
-
-class MissingEnvironmentVariable(Exception):
-    pass
-
-
-headers: dict[str, str] = {}
-
-try:
-    headers = {"Authorization": f"Bearer {os.environ['SUPABASE_USER_JWT']}"}
-except KeyError as exc:
-    raise MissingEnvironmentVariable(
-        "SUPABASE_USER_JWT must be defined for the test to pass. "
-        "Please check the api README for instructions on obtaining this token."
-    ) from exc
+from tests.utils.client import LeapfrogAIClient
 
 
 @pytest.fixture(scope="session")
 def app_client():
-    with TestClient(app, headers=headers) as client:
-        yield client
+    yield LeapfrogAIClient()
 
 
 # Create a thread with the previously created file and fake embeddings

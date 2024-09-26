@@ -1,14 +1,11 @@
 """Test the API endpoints for assistants."""
 
-import os
 import pytest
-from fastapi import HTTPException, status
-from fastapi.testclient import TestClient
-
+from fastapi import status
 from openai.types.beta import Thread, ThreadDeleted
 from openai.types.beta.thread import ToolResourcesCodeInterpreter, ToolResources
 from openai.types.beta.threads import TextContentBlock, Text
-
+from requests import HTTPError
 from leapfrogai_api.typedef.threads import (
     CreateThreadRequest,
     ModifyThreadRequest,
@@ -16,28 +13,12 @@ from leapfrogai_api.typedef.threads import (
 from leapfrogai_api.typedef.messages import (
     CreateMessageRequest,
 )
-from leapfrogai_api.routers.openai.threads import router
-
-
-class MissingEnvironmentVariable(Exception):
-    pass
-
-
-headers: dict[str, str] = {}
-
-try:
-    headers = {"Authorization": f"Bearer {os.environ['SUPABASE_USER_JWT']}"}
-except KeyError as exc:
-    raise MissingEnvironmentVariable(
-        "SUPABASE_USER_JWT must be defined for the test to pass. "
-        "Please check the api README for instructions on obtaining this token."
-    ) from exc
+from tests.utils.client import LeapfrogAIClient
 
 
 @pytest.fixture(scope="session")
 def app_client():
-    with TestClient(router, headers=headers) as client:
-        yield client
+    yield LeapfrogAIClient()
 
 
 # Create a thread with the previously created file and fake embeddings
@@ -88,11 +69,14 @@ def test_code_interpreter_fails(app_client):
         metadata={},
     )
 
-    with pytest.raises(HTTPException) as code_exc:
+    with pytest.raises(HTTPError) as code_exc:
         app_client.post("/openai/v1/threads", json=request.model_dump())
 
-    assert code_exc.value.status_code == status.HTTP_400_BAD_REQUEST
-    assert code_exc.value.detail == f"Unsupported tool resource: {tool_resources}"
+    assert code_exc.value.response.status_code == status.HTTP_400_BAD_REQUEST
+    assert (
+        code_exc.value.response.json().get("detail")
+        == f"Unsupported tool resource: {tool_resources}"
+    )
 
 
 def test_create_thread(create_thread):
