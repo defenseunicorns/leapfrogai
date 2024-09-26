@@ -1,7 +1,5 @@
 """Service for querying the RAG model."""
 
-from typing import Annotated
-from fastapi import Depends
 from rerankers.results import RankedResults
 from supabase import AClient as AsyncClient
 from langchain_core.embeddings import Embeddings
@@ -10,8 +8,6 @@ from leapfrogai_api.data.crud_vector_content import CRUDVectorContent
 from leapfrogai_api.typedef.rag.rag_types import ConfigurationSingleton
 from leapfrogai_api.typedef.vectorstores.search_types import SearchResponse, SearchItem
 from leapfrogai_api.backend.constants import TOP_K
-from leapfrogai_api.utils import get_model_config
-from leapfrogai_api.utils.config import Config
 from leapfrogai_api.utils.logging_tools import logger
 from rerankers import Reranker
 
@@ -31,7 +27,6 @@ class QueryService:
 
     async def query_rag(
         self,
-        model_config: Annotated[Config, Depends(get_model_config)],
         query: str,
         vector_store_id: str,
         k: int = TOP_K,
@@ -40,7 +35,6 @@ class QueryService:
         Query the Vector Store.
 
         Args:
-            model_config (Config): The current model configuration.
             query (str): The input query string.
             vector_store_id (str): The ID of the vector store.
             k (int, optional): The number of results to retrieve.
