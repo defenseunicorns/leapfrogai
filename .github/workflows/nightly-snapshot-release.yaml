@@ -42,16 +42,15 @@ jobs:
       - name: Checkout Repo
         uses: actions/checkout@b4ffde65f46336ab88eb53be808477a3936bae11 # v4.1.1
 
-      # TODO: uncomment this out!
-      #- name: Release LeapfrogAI ${{ env.SNAPSHOT_VERSION }}
-      #  uses: ./.github/actions/release
-      #  with:
-      #    releaseTag: ${{ env.SNAPSHOT_VERSION }}
-      #    subRepository: /uds/snapshots/
-      #    registry1Username: ${{ secrets.IRON_BANK_ROBOT_USERNAME }}
-      #    registry1Password: ${{ secrets.IRON_BANK_ROBOT_PASSWORD }}
-      #    ghToken: ${{ secrets.GITHUB_TOKEN }}
-      #    chainguardIdentity: ${{ secrets.CHAINGUARD_IDENTITY }}
+      - name: Release LeapfrogAI ${{ env.SNAPSHOT_VERSION }}
+        uses: ./.github/actions/release
+        with:
+          releaseTag: ${{ env.SNAPSHOT_VERSION }}
+          subRepository: /uds/snapshots/
+          registry1Username: ${{ secrets.IRON_BANK_ROBOT_USERNAME }}
+          registry1Password: ${{ secrets.IRON_BANK_ROBOT_PASSWORD }}
+          ghToken: ${{ secrets.GITHUB_TOKEN }}
+          chainguardIdentity: ${{ secrets.CHAINGUARD_IDENTITY }}
 
   test-snapshot:
     runs-on: ai-ubuntu-big-boy-8-core
