@@ -132,17 +132,14 @@ export const deleteFixtureFile = (filename: string) => {
 };
 
 // Deletes files created in the ./tests/fixtures directory
+const permanentFixtureFiles = ['Doug.png', 'frog.png', 'spanish.m4a'];
 export const deleteAllGeneratedFixtureFiles = () => {
   fs.readdir('./tests/fixtures', (err, files) => {
     if (err) {
       return;
     } else {
-      const testPdfFiles = files.filter((file) => file.includes('test'));
-      const testTextFiles = files.filter((file) => file.endsWith('-test.pdf'));
-      testPdfFiles.forEach((file) => {
-        deleteFixtureFile(file);
-      });
-      testTextFiles.forEach((file) => {
+      const filesToDelete = files.filter((file) => !permanentFixtureFiles.includes(file));
+      filesToDelete.forEach((file) => {
         deleteFixtureFile(file);
       });
     }
