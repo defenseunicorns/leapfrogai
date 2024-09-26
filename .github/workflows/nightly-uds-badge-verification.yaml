@@ -74,4 +74,9 @@ jobs:
 
       - name: Run UDS Badge Verification Task
         run: |
-          uds run verify-uds-badge-cpu
+          uds run verify-uds-badge-cpu >> output.txt
+
+      - name: Pretty Summary of UDS Badge Verification
+        run: |
+          chmod +x .github/scripts/summarizeVerification.sh
+          .github/scripts/summarizeVerification.sh

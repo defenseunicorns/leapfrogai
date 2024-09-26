@@ -34,6 +34,7 @@ node_modules
 package.json
 package-lock.json
 **/*.schema.json
+output.txt
 
 # local model and tokenizer files
 *.bin
