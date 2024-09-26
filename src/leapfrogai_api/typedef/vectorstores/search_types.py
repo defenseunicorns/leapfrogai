@@ -36,10 +36,3 @@ class SearchResponse(BaseModel):
         description="List of RAG items returned as a result of the query.",
         min_length=0,
     )
-
-    def get_simple_response(self):
-        response_without_content = [
-            {"id": item.id, "similarity": item.similarity} for item in self.data
-        ]
-
-        return response_without_content
