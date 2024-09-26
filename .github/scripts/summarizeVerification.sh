@@ -1,130 +1,105 @@
 #!/bin/bash
 
+# Remove ANSI escape sequences from the data
+clean_data=$(sed -r 's/\x1b\[[0-9;]*[a-zA-Z]//g' output.txt)
+
 # Initialize variables
-in_package=false
 package_name=""
-error_count=0
-warning_count=0
+failures_count=0
+errors_count=0
+warnings_count=0
+failure_descriptions=()
 error_descriptions=()
 warning_descriptions=()
 
-# Function to strip ANSI escape sequences
-strip_ansi() {
-	echo -e "$1" | sed -r 's/\x1B\[[0-9;]*[a-zA-Z]//g'
+# Function to print package information
+print_package_info() {
+	if [[ -n $package_name ]]; then
+		echo "-----------------------------"
+		echo "Package: $package_name"
+		if ((failures_count > 0)); then
+			echo "⛔ Failures: $failures_count"
+		fi
+		if ((errors_count > 0)); then
+			echo "❌ Errors: $errors_count"
+		fi
+		if ((warnings_count > 0)); then
+			echo "⚠️  Warnings: $warnings_count"
+		fi
+
+		if ((failures_count > 0)); then
+			echo
+			echo "⛔ Failure Descriptions:"
+			for desc in "${failure_descriptions[@]}"; do
+				echo "  - $desc"
+			done
+		fi
+		if ((errors_count > 0)); then
+			echo
+			echo "❌ Error Descriptions:"
+			for desc in "${error_descriptions[@]}"; do
+				echo "  - $desc"
+			done
+		fi
+		if ((warnings_count > 0)); then
+			echo
+			echo "⚠️  Warning Descriptions:"
+			for desc in "${warning_descriptions[@]}"; do
+				echo "  - $desc"
+			done
+		fi
+	fi
 }
 
+# Process each line of the cleaned data
 while IFS= read -r line; do
-	# Strip ANSI escape sequences
-	clean_line=$(strip_ansi "$line")
-	# Remove leading/trailing whitespace
-	clean_line=$(echo "$clean_line" | sed 's/^[[:space:]]*//;s/[[:space:]]*$//')
+	# Remove leading and trailing whitespace
+	line=$(echo "$line" | sed 's/^[ \t]*//;s/[ \t]*$//')
 
-	# Check for the start of a new package
-	if [[ $clean_line =~ ^•[[:space:]]+Running\ \"Verify\ ([^\"]+)\"$ ]]; then
-		new_package_name="${BASH_REMATCH[1]}"
-		if [[ $new_package_name != "that the package meets UDS badging standards" ]]; then
-			# If we're already in a package, print its summary
-			if [ "$in_package" = true ]; then
-				echo -e "Package: $package_name"
-				echo -e "❌ Errors: $error_count"
-				echo -e "⚠️  Warnings: $warning_count"
-				if [ $error_count -gt 0 ]; then
-					echo "❌ Error Descriptions:"
-					for err in "${error_descriptions[@]}"; do
-						echo "  - $err"
-					done
-				fi
-				if [ $warning_count -gt 0 ]; then
-					echo "⚠️  Warning Descriptions:"
-					for warn in "${warning_descriptions[@]}"; do
-						echo "  - $warn"
-					done
-				fi
-				echo "-----------------------------"
-			fi
-			# Start new package
-			in_package=true
-			package_name="$new_package_name"
-			error_count=0
-			warning_count=0
-			error_descriptions=()
-			warning_descriptions=()
-		fi
+	# Match and extract the package name
+	if [[ $line =~ ^ℹ️[[:space:]]+Package[[:space:]]+Name:[[:space:]]+(.*)$ ]]; then
+		# Print the previous package's info before starting a new one
+		print_package_info
+		# Reset variables for the new package
+		package_name="${BASH_REMATCH[1]}"
+		failures_count=0
+		errors_count=0
+		warnings_count=0
+		failure_descriptions=()
+		error_descriptions=()
+		warning_descriptions=()
+	# Match and extract counts for failures, errors, and warnings
+	elif [[ $line =~ ^(❌|⚠️|⛔)[[:space:]]+([0-9]+)[[:space:]]+([a-z]+)[[:space:]]+found$ ]]; then
+		count="${BASH_REMATCH[2]}"
+		type="${BASH_REMATCH[3]}"
+		case "$type" in
+		"errors")
+			errors_count=$count
+			;;
+		"warnings")
+			warnings_count=$count
+			;;
+		"failures")
+			failures_count=$count
+			;;
+		esac
+	# Match and collect issue descriptions
+	elif [[ $line =~ ^(❌|⚠️|⛔)[[:space:]]+(.*)$ ]]; then
+		emoji="${BASH_REMATCH[1]}"
+		description="${BASH_REMATCH[2]}"
+		case "$emoji" in
+		"❌")
+			error_descriptions+=("$description")
+			;;
+		"⚠️")
+			warning_descriptions+=("$description")
+			;;
+		"⛔")
+			failure_descriptions+=("$description")
+			;;
+		esac
 	fi
+done <<<"$clean_data"
 
-	# Capture error descriptions
-	if [[ $in_package == true && $clean_line =~ ^❌ ]]; then
-		# Ignore summary lines
-		if [[ $clean_line =~ errors\ found$ ]]; then
-			# Extract the error count from the line
-			error_count_line=$(echo "$clean_line" | grep -oP '(?<=❌ )[0-9]+(?= errors found)')
-			if [[ -n $error_count_line ]]; then
-				error_count="$error_count_line"
-			fi
-		elif [[ $clean_line =~ ^❌[[:space:]][0-9]+ ]]; then
-			continue
-		else
-			error_descriptions+=("$(echo "$clean_line" | sed 's/^❌[[:space:]]*//')")
-			((error_count++))
-		fi
-	fi
-
-	# Capture warning descriptions
-	if [[ $in_package == true && $clean_line =~ ^⚠️ ]]; then
-		# Ignore summary lines
-		if [[ $clean_line =~ warnings\ found$ ]]; then
-			# Extract the warning count from the line
-			warning_count_line=$(echo "$clean_line" | grep -oP '(?<=⚠️  )[0-9]+(?= warnings found)')
-			if [[ -n $warning_count_line ]]; then
-				warning_count="$warning_count_line"
-			fi
-		elif [[ $clean_line =~ ^⚠️[[:space:]][0-9]+ ]]; then
-			continue
-		else
-			warning_descriptions+=("$(echo "$clean_line" | sed 's/^⚠️[[:space:]]*//')")
-			((warning_count++))
-		fi
-	fi
-
-	# Check for the end of a package
-	if [[ $in_package == true && $clean_line =~ ^✔[[:space:]]+Completed\ \"Verify\ $package_name\"$ ]]; then
-		# Print summary
-		echo -e "Package: $package_name"
-		echo -e "❌ Errors: $error_count"
-		echo -e "⚠️  Warnings: $warning_count"
-		if [ $error_count -gt 0 ]; then
-			echo "❌ Error Descriptions:"
-			for err in "${error_descriptions[@]}"; do
-				echo "  - $err"
-			done
-		fi
-		if [ $warning_count -gt 0 ]; then
-			echo "⚠️  Warning Descriptions:"
-			for warn in "${warning_descriptions[@]}"; do
-				echo "  - $warn"
-			done
-		fi
-		echo "-----------------------------"
-		in_package=false
-	fi
-done <output.txt
-
-# If we're still in a package after the loop, print its summary
-if [ "$in_package" = true ]; then
-	echo -e "Package: $package_name"
-	echo -e "❌ Errors: $error_count"
-	echo -e "⚠️  Warnings: $warning_count"
-	if [ $error_count -gt 0 ]; then
-		echo "❌ Error Descriptions:"
-		for err in "${error_descriptions[@]}"; do
-			echo "  - $err"
-		done
-	fi
-	if [ $warning_count -gt 0 ]; then
-		echo "⚠️  Warning Descriptions:"
-		for warn in "${warning_descriptions[@]}"; do
-			echo "  - $warn"
-		done
-	fi
-	echo "-----------------------------"
-fi
+# Print the last package's information
+print_package_info
