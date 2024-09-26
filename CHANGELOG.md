@@ -1,5 +1,44 @@
 # Changelog
 
+## [0.13.1](https://github.com/defenseunicorns/leapfrogai/compare/v0.13.0...v0.13.1) (2024-09-26)
+
+
+### Features
+
+* 1049 add standard evaluation benchmarks to lfai evals ([#1078](https://github.com/defenseunicorns/leapfrogai/issues/1078)) ([8e68b8b](https://github.com/defenseunicorns/leapfrogai/commit/8e68b8bfbf9566e4e9a0639187b935c9526c4339))
+
+
+### Bug Fixes
+
+* fix indientation in text-embeddings and whisper deployments ([#1155](https://github.com/defenseunicorns/leapfrogai/issues/1155)) ([c47add1](https://github.com/defenseunicorns/leapfrogai/commit/c47add16010c4d1734367bba1d3068868a09c982))
+* **whisper:** fix whisper transcription of non-english audio ([#1066](https://github.com/defenseunicorns/leapfrogai/issues/1066)) ([8dd467a](https://github.com/defenseunicorns/leapfrogai/commit/8dd467a6b48e9496dacb1bf37351ccdfa06c0e9b))
+
+
+### Miscellaneous
+
+* **deps:** update actions/setup-node action to v4.0.4 ([#1060](https://github.com/defenseunicorns/leapfrogai/issues/1060)) ([69e7358](https://github.com/defenseunicorns/leapfrogai/commit/69e7358b48c613e83aeb2c235eb2dd69e41fd3c3))
+* **deps:** update actions/setup-python action to v5.2.0 ([#1132](https://github.com/defenseunicorns/leapfrogai/issues/1132)) ([5f58be0](https://github.com/defenseunicorns/leapfrogai/commit/5f58be0b08672d8b25297b1a9e59eddf9cc0b985))
+* **deps:** update davidanson/markdownlint-cli2-action action to v17 ([#1112](https://github.com/defenseunicorns/leapfrogai/issues/1112)) ([438553e](https://github.com/defenseunicorns/leapfrogai/commit/438553eb3ac76bb151f32b64196a322f33efa3bf))
+* **deps:** update defenseunicorns/uds-common action to v0.13.1 ([#1134](https://github.com/defenseunicorns/leapfrogai/issues/1134)) ([3150873](https://github.com/defenseunicorns/leapfrogai/commit/3150873e0f3a95d7dd22b84742f0bc238fa70def))
+* **deps:** update defenseunicorns/uds-common digest to 24c8a2a ([#1058](https://github.com/defenseunicorns/leapfrogai/issues/1058)) ([605b942](https://github.com/defenseunicorns/leapfrogai/commit/605b9427b32f3915a02d554bc08b2e15ecb48093))
+* **deps:** update dependency @ai-sdk/openai to ^0.0.61 ([#1061](https://github.com/defenseunicorns/leapfrogai/issues/1061)) ([78222dd](https://github.com/defenseunicorns/leapfrogai/commit/78222dd6a69b8ca33adfe1258eb959b058676c64))
+* **deps:** update dependency aiostream to v0.6.2 ([#1136](https://github.com/defenseunicorns/leapfrogai/issues/1136)) ([e0845ab](https://github.com/defenseunicorns/leapfrogai/commit/e0845abefab1577a6b13d56e10effaa014b9079b))
+* **deps:** update dependency anthropic to v0.34.2 ([#1069](https://github.com/defenseunicorns/leapfrogai/issues/1069)) ([0e08480](https://github.com/defenseunicorns/leapfrogai/commit/0e08480e17efa1e2ef71fa305c7f1166bffb1c83))
+* **deps:** update dependency ctranslate2 to v4.4.0 ([#1137](https://github.com/defenseunicorns/leapfrogai/issues/1137)) ([3fa92ea](https://github.com/defenseunicorns/leapfrogai/commit/3fa92eabb4dc85a5bf4b5684c8c9e0c15ed66af1))
+* **deps:** update dependency eslint to ^8.57.0 ([#1070](https://github.com/defenseunicorns/leapfrogai/issues/1070)) ([a51ed24](https://github.com/defenseunicorns/leapfrogai/commit/a51ed24bee034371505f451855b5a54c9d870fe0))
+* **deps:** update dependency instructor to v1.4.3 ([#1071](https://github.com/defenseunicorns/leapfrogai/issues/1071)) ([7c9d855](https://github.com/defenseunicorns/leapfrogai/commit/7c9d85518ac337d5fe33e7d3a3243100cad7af49))
+* **deps:** update dependency markdownlint-cli to v0.42.0 ([#1111](https://github.com/defenseunicorns/leapfrogai/issues/1111)) ([ae5af5d](https://github.com/defenseunicorns/leapfrogai/commit/ae5af5dc38a452fea3c3689da4929fec6b2af92b))
+* **deps:** update dependency numpy to v1.26.4 ([#1092](https://github.com/defenseunicorns/leapfrogai/issues/1092)) ([2ca0b70](https://github.com/defenseunicorns/leapfrogai/commit/2ca0b70595040bc81ffde8c2b0f95c3dd5a82566))
+* **deps:** update dependency playwright to ^1.47.0 ([#1093](https://github.com/defenseunicorns/leapfrogai/issues/1093)) ([28898ff](https://github.com/defenseunicorns/leapfrogai/commit/28898ff704e21dee6a2571ad956bd26c69845746))
+* **deps:** update dependency postgrest to v0.16.11 ([#1096](https://github.com/defenseunicorns/leapfrogai/issues/1096)) ([41fea26](https://github.com/defenseunicorns/leapfrogai/commit/41fea2659cf1d414588a882161814d0b37f28926))
+* **deps:** update dependency python-multipart to v0.0.10 ([#1097](https://github.com/defenseunicorns/leapfrogai/issues/1097)) ([7e6027e](https://github.com/defenseunicorns/leapfrogai/commit/7e6027e36bf0db83a5e2176ca4f26d9466464350))
+* **deps:** update dependency storage3 to v0.7.7 ([#1099](https://github.com/defenseunicorns/leapfrogai/issues/1099)) ([fb2b437](https://github.com/defenseunicorns/leapfrogai/commit/fb2b4372b1bc077e11f8d6c2e0f6997655f59129))
+* **deps:** update dependency tqdm to v4.66.5 ([#1100](https://github.com/defenseunicorns/leapfrogai/issues/1100)) ([be5bf2c](https://github.com/defenseunicorns/leapfrogai/commit/be5bf2ce5046fa4a5e4931e8f6e64b13b2375c98))
+* **deps:** update dependency unstructured to v0.15.13 ([#1102](https://github.com/defenseunicorns/leapfrogai/issues/1102)) ([590e946](https://github.com/defenseunicorns/leapfrogai/commit/590e946647a82100448e18225090f3ea3aa38a7f))
+* release 0.13.1 ([#1157](https://github.com/defenseunicorns/leapfrogai/issues/1157)) ([a0d9bc0](https://github.com/defenseunicorns/leapfrogai/commit/a0d9bc0e901309d1387b5909872b67caf086fdce))
+* **ui:** improve e2e playwright test stability ([#1116](https://github.com/defenseunicorns/leapfrogai/issues/1116)) ([c4c7e9d](https://github.com/defenseunicorns/leapfrogai/commit/c4c7e9d678f39a107e542c3d0aa0708e0c7b4041))
+* **ui:** streaming text response deprecated ([#1104](https://github.com/defenseunicorns/leapfrogai/issues/1104)) ([b360d15](https://github.com/defenseunicorns/leapfrogai/commit/b360d15e991b8f3405049fc1a9d3c464dc55b63c))
+
 ## [0.13.0](https://github.com/defenseunicorns/leapfrogai/compare/v0.12.2...v0.13.0) (2024-09-20)
 
 
