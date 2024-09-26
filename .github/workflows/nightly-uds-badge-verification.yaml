@@ -76,9 +76,11 @@ jobs:
         run: |
           mkdir -p temp/
           uds run verify-uds-badge-cpu --no-progress 2>&1 | tee temp/output.txt
-
-      - name: Pretty Summary of UDS Badge Verification
-        run: |
+          echo
+          echo "================================================================"
+          echo "=========================== SUMMARY ============================"
+          echo "================================================================"
+          echo
           chmod +x .github/scripts/summarizeVerification.sh
           .github/scripts/summarizeVerification.sh 2>&1 | tee temp/report.txt
 

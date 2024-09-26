@@ -154,7 +154,7 @@ tasks:
 
           gh_failure() {
               if [[ "${CI}" == "true" ]]; then
-                  printf "::failure::"
+                  printf "::error::"
               fi
               FAILURES_COUNT=$((FAILURES_COUNT + 1))
               echo "$1"
