@@ -2,22 +2,117 @@
 
 variables:
   - name: CHART_PATH
-    description: Relative path to the directory with the uds-config chart
+    description: "Relative path to the directory with the uds-config chart"
     default: chart/
   - name: GROUP_NAME
-    description: The name of the niche/group that the package fits into. E.g. package,swf,lfai
+    description: "The name of the niche/group that the package fits into. E.g. package,swf,lfai"
     default: package
   - name: COMMON_ZARF
-    description: Whether or not there is a common zarf.yaml file
+    description: "Whether or not there is a common zarf.yaml file"
     default: "true"
   - name: PACKAGE_DIR
-    description: Base directory where packages are located, relative to the root of the repository
+    description: "Base directory where packages are located, relative to the root of the repository"
     default: .
 
 tasks:
+  ##############
+  # PACKAGE-LEVEL
+  ##############
+
+  - name: verify-uds-badge-api
+    actions:
+      - description: "Verify API"
+        cmd: |
+          uds run badge:verify-badge \
+            --set CHART_PATH="chart" \
+            --set GROUP_NAME="package" \
+            --set COMMON_ZARF="true" \
+            --set PACKAGE_DIR="packages/api" \
+            --no-progress
+
+  - name: verify-uds-badge-ui
+    actions:
+      - description: "Verify UI"
+        cmd: |
+          uds run badge:verify-badge \
+            --set CHART_PATH="chart" \
+            --set GROUP_NAME="package" \
+            --set COMMON_ZARF="false" \
+            --set PACKAGE_DIR="packages/ui" \
+            --no-progress
+
+  - name: verify-uds-badge-llama-cpp-python
+    actions:
+      - description: "Verify LLaMA-CPP-Python"
+        cmd: |
+          uds run badge:verify-badge \
+            --set CHART_PATH="chart" \
+            --set GROUP_NAME="package" \
+            --set COMMON_ZARF="false" \
+            --set PACKAGE_DIR="packages/llama-cpp-python" \
+            --no-progress
+
+  - name: verify-uds-badge-vllm
+    actions:
+      - description: "Verify vLLM"
+        cmd: |
+          uds run badge:verify-badge \
+            --set CHART_PATH="chart" \
+            --set GROUP_NAME="package" \
+            --set COMMON_ZARF="false" \
+            --set PACKAGE_DIR="packages/vllm" \
+            --no-progress
+
+  - name: verify-uds-badge-text-embeddings
+    actions:
+      - description: "Verify Text-Embeddings"
+        cmd: |
+          uds run badge:verify-badge \
+            --set CHART_PATH="chart" \
+            --set GROUP_NAME="package" \
+            --set COMMON_ZARF="false" \
+            --set PACKAGE_DIR="packages/text-embeddings" \
+            --no-progress
+
+  - name: verify-uds-badge-whisper
+    actions:
+      - description: "Verify Whisper"
+        cmd: |
+          uds run badge:verify-badge \
+            --set CHART_PATH="chart" \
+            --set GROUP_NAME="package" \
+            --set COMMON_ZARF="false" \
+            --set PACKAGE_DIR="packages/whisper" \
+            --no-progress
+
+  - name: verify-uds-badge-repeater
+    actions:
+      - description: "Verify Repeater"
+        cmd: |
+          uds run badge:verify-badge \
+            --set CHART_PATH="chart" \
+            --set GROUP_NAME="package" \
+            --set COMMON_ZARF="false" \
+            --set PACKAGE_DIR="packages/repeater" \
+            --no-progress
+
+  - name: verify-uds-badge-supabase
+    actions:
+      - description: "Verify Supabase"
+        cmd: |
+          uds run badge:verify-badge \
+            --set CHART_PATH="chart" \
+            --set GROUP_NAME="package" \
+            --set COMMON_ZARF="false" \
+            --set PACKAGE_DIR="packages/supabase" \
+            --no-progress
+
+  ###########
+  # RE-USABLE
+  ###########
   - name: verify-badge
     actions:
-      - description: Verify that the package meets uds badging standards
+      - description: "Verify that the package meets UDS badging standards"
         shell:
           linux: bash
           darwin: bash

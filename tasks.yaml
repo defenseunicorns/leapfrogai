@@ -4,90 +4,27 @@ includes:
   - badge: ./tasks/badge.yaml
 
 tasks:
-  - name: verify-uds-badge-api
+  #############
+  # Badge Tasks
+  #############
+  - name: verify-uds-badge-cpu
+    description: "Runs through all CPU UDS bundle packages with the UDS badge verification test"
     actions:
-      - description: Verify API
-        cmd: |
-          uds run badge:verify-badge \
-            --set CHART_PATH="chart" \
-            --set GROUP_NAME="package" \
-            --set COMMON_ZARF="true" \
-            --set PACKAGE_DIR="packages/api" \
-            --no-progress
+      - task: badge:verify-uds-badge-api
+      - task: badge:verify-uds-badge-ui
+      - task: badge:verify-uds-badge-llama-cpp-python
+      - task: badge:verify-uds-badge-vllm
+      - task: badge:verify-uds-badge-text-embeddings
+      - task: badge:verify-uds-badge-whisper
+      - task: badge:verify-uds-badge-repeater
+      - task: badge:verify-uds-badge-supabase
 
-  - name: verify-uds-badge-ui
+  - name: verify-uds-badge-gpu
+    description: "Runs through all GPU UDS bundle packages with the UDS badge verification test"
     actions:
-      - description: Verify UI
-        cmd: |
-          uds run badge:verify-badge \
-            --set CHART_PATH="chart" \
-            --set GROUP_NAME="package" \
-            --set COMMON_ZARF="false" \
-            --set PACKAGE_DIR="packages/ui" \
-            --no-progress
-
-  - name: verify-uds-badge-llama-cpp-python
-    actions:
-      - description: Verify LLaMA-CPP-Python
-        cmd: |
-          uds run badge:verify-badge \
-            --set CHART_PATH="chart" \
-            --set GROUP_NAME="package" \
-            --set COMMON_ZARF="false" \
-            --set PACKAGE_DIR="packages/llama-cpp-python" \
-            --no-progress
-
-  - name: verify-uds-badge-vllm
-    actions:
-      - description: Verify vLLM
-        cmd: |
-          uds run badge:verify-badge \
-            --set CHART_PATH="chart" \
-            --set GROUP_NAME="package" \
-            --set COMMON_ZARF="false" \
-            --set PACKAGE_DIR="packages/vllm" \
-            --no-progress
-
-  - name: verify-uds-badge-text-embeddings
-    actions:
-      - description: Verify Text-Embeddings
-        cmd: |
-          uds run badge:verify-badge \
-            --set CHART_PATH="chart" \
-            --set GROUP_NAME="package" \
-            --set COMMON_ZARF="false" \
-            --set PACKAGE_DIR="packages/text-embeddings" \
-            --no-progress
-
-  - name: verify-uds-badge-whisper
-    actions:
-      - description: Verify Whisper
-        cmd: |
-          uds run badge:verify-badge \
-            --set CHART_PATH="chart" \
-            --set GROUP_NAME="package" \
-            --set COMMON_ZARF="false" \
-            --set PACKAGE_DIR="packages/whisper" \
-            --no-progress
-
-  - name: verify-uds-badge-repeater
-    actions:
-      - description: Verify Repeater
-        cmd: |
-          uds run badge:verify-badge \
-            --set CHART_PATH="chart" \
-            --set GROUP_NAME="package" \
-            --set COMMON_ZARF="false" \
-            --set PACKAGE_DIR="packages/repeater" \
-            --no-progress
-
-  - name: verify-uds-badge-supabase
-    actions:
-      - description: Verify Supabase
-        cmd: |
-          uds run badge:verify-badge \
-            --set CHART_PATH="chart" \
-            --set GROUP_NAME="package" \
-            --set COMMON_ZARF="false" \
-            --set PACKAGE_DIR="packages/supabase" \
-            --no-progress
+      - task: badge:verify-uds-badge-api
+      - task: badge:verify-uds-badge-ui
+      - task: badge:verify-uds-badge-vllm
+      - task: badge:verify-uds-badge-text-embeddings
+      - task: badge:verify-uds-badge-whisper
+      - task: badge:verify-uds-badge-supabase

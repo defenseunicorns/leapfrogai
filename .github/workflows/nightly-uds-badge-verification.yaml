@@ -1,0 +1,77 @@
+name: nightly-uds-badge-verification
+
+on:
+  schedule:
+    - cron: "0 8 * * *" # Runs daily at 12 AM PST
+  workflow_dispatch: # trigger manually as needed
+  pull_request:
+    types:
+      - opened # default trigger
+      - reopened # default trigger
+      - synchronize # default trigger
+      - ready_for_review # don't run on draft PRs
+      - milestoned # allows us to trigger on bot PRs
+    paths:
+      - .github/workflows/nightly-uds-badge-verification.yaml
+
+concurrency:
+  group: nightly-uds-badge-verification-${{ github.ref }}
+  cancel-in-progress: true
+
+defaults:
+  run:
+    shell: bash
+
+env:
+  SNAPSHOT_VERSION: snapshot-latest
+
+permissions:
+  contents: read
+  packages: read
+  id-token: write # This is needed for OIDC federation.
+
+jobs:
+  uds-badge-verification:
+    runs-on: ai-ubuntu-big-boy-8-core
+    name: nightly_uds_badge_verification
+    if: ${{ !github.event.pull_request.draft }}
+
+    steps:
+      - name: Checkout Repo
+        uses: actions/checkout@b4ffde65f46336ab88eb53be808477a3936bae11 # v4.1.1
+        with:
+          ref: main
+
+      - name: Setup UDS Cluster
+        uses: ./.github/actions/uds-cluster
+        with:
+          registry1Username: ${{ secrets.IRON_BANK_ROBOT_USERNAME }}
+          registry1Password: ${{ secrets.IRON_BANK_ROBOT_PASSWORD }}
+          ghToken: ${{ secrets.GITHUB_TOKEN }}
+          chainguardIdentity: ${{ secrets.CHAINGUARD_IDENTITY }}
+
+      - name: Print the Commit SHA
+        run: |
+          COMMIT_SHA=$(git rev-parse HEAD)
+          echo "The latest commit on the main branch is: $COMMIT_SHA"
+
+      # Set UDS CPU bundle refs and repositories to snapshot-latest
+      - name: Mutation of the UDS Bundle
+        run: |
+          uds zarf tools yq -i '.metadata.version = "${{ env.SNAPSHOT_VERSION }}"' bundles/latest/cpu/uds-bundle.yaml
+
+          uds zarf tools yq -i '.packages[].ref |= sub("^[^ ]+-upstream$", "${{ env.SNAPSHOT_VERSION }}-upstream")' bundles/latest/cpu/uds-bundle.yaml
+
+          uds zarf tools yq -i '.packages[].repository |= sub("/uds/", "/uds/snapshots/")' bundles/latest/cpu/uds-bundle.yaml
+
+      - name: Create and Deploy UDS Bundle (${{ env.SNAPSHOT_VERSION }})
+        run: |
+          cd bundles/latest/cpu
+          uds create . --confirm && \
+            uds deploy uds-bundle-leapfrogai-amd64-${{ env.SNAPSHOT_VERSION }}.tar.zst --confirm --no-progress && \
+            rm -rf uds-bundle-leapfrogai-amd64-${{ env.SNAPSHOT_VERSION }}.tar.zst && \
+            docker system prune -af
+
+      - name: Run UDS Badge Verification Task
+        run: |
+          uds run verify-uds-badge-cpu
