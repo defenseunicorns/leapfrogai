@@ -1,7 +1,7 @@
 #!/bin/bash
 
 # Remove ANSI escape sequences from the data
-clean_data=$(sed -r 's/\x1b\[[0-9;]*[a-zA-Z]//g' temp/output.txt)
+clean_data=$(sed -r 's/\x1b\[[0-9;]*[a-zA-Z]//g')
 
 # Initialize variables
 package_name=""
@@ -14,17 +14,30 @@ warning_descriptions=()
 
 # Function to print package information
 print_package_info() {
+	if [[ ${CI} == "true" ]]; then
+		echo "::group::$package_name"
+	fi
 	if [[ -n $package_name ]]; then
 		echo "-----------------------------"
 		echo "Package: $package_name"
 		if ((failures_count > 0)); then
+			if [[ ${CI} == "true" ]]; then
+				printf "::error::"
+			fi
 			echo "⛔ Failures: $failures_count"
-		fi
-		if ((errors_count > 0)); then
-			echo "❌ Errors: $errors_count"
-		fi
-		if ((warnings_count > 0)); then
-			echo "⚠️  Warnings: $warnings_count"
+		else
+			if ((errors_count > 0)); then
+				if [[ ${CI} == "true" ]]; then
+					printf "::error::"
+				fi
+				echo "❌ Errors: $errors_count"
+			fi
+			if ((warnings_count > 0)); then
+				if [[ ${CI} == "true" ]]; then
+					printf "::warning::"
+				fi
+				echo "⚠️  Warnings: $warnings_count"
+			fi
 		fi
 
 		if ((failures_count > 0)); then
@@ -33,21 +46,25 @@ print_package_info() {
 			for desc in "${failure_descriptions[@]}"; do
 				echo "  - $desc"
 			done
+		else
+			if ((errors_count > 0)); then
+				echo
+				echo "❌ Error Descriptions:"
+				for desc in "${error_descriptions[@]}"; do
+					echo "  - $desc"
+				done
+			fi
+			if ((warnings_count > 0)); then
+				echo
+				echo "⚠️  Warning Descriptions:"
+				for desc in "${warning_descriptions[@]}"; do
+					echo "  - $desc"
+				done
+			fi
 		fi
-		if ((errors_count > 0)); then
-			echo
-			echo "❌ Error Descriptions:"
-			for desc in "${error_descriptions[@]}"; do
-				echo "  - $desc"
-			done
-		fi
-		if ((warnings_count > 0)); then
-			echo
-			echo "⚠️  Warning Descriptions:"
-			for desc in "${warning_descriptions[@]}"; do
-				echo "  - $desc"
-			done
-		fi
+	fi
+	if [[ ${CI} == "true" ]]; then
+		echo "::endgroup::"
 	fi
 }
 

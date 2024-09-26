@@ -74,19 +74,14 @@ jobs:
 
       - name: Run UDS Badge Verification Task
         run: |
-          mkdir -p temp/
-          uds run verify-uds-badge-cpu --no-progress 2>&1 | tee temp/output.txt
-          echo
-          echo "================================================================"
-          echo "=========================== SUMMARY ============================"
-          echo "================================================================"
-          echo
-          chmod +x .github/scripts/summarizeVerification.sh
-          .github/scripts/summarizeVerification.sh 2>&1 | tee temp/report.txt
+          mkdir -p temp/report
+          uds run verify-uds-badge-cpu --no-progress 2>&1 | sed -r 's/\x1b\[[0-9;]*[a-zA-Z]//g' \
+            | tee temp/report/intermediate-report.txt \
+            | .github/scripts/summarizeVerification.sh | tee temp/report/final-report.txt
 
       - name: Archive UDS Badge Verification Report
         uses: actions/upload-artifact@834a144ee995460fba8ed112a2fc961b36a5ec5a # v4.3.6
         with:
           name: uds-badge-verification-report
-          path: temp/report.txt
+          path: temp/report
           retention-days: 30
