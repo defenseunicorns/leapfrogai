@@ -2,16 +2,16 @@
 
 variables:
   - name: CHART_PATH
-    description: "Relative path to the directory with the uds-config chart"
+    description: Relative path to the directory with the uds-config chart
     default: chart/
   - name: GROUP_NAME
-    description: "The name of the niche/group that the package fits into. E.g. package,swf,lfai"
+    description: The name of the niche/group that the package fits into. E.g. package,swf,lfai
     default: package
   - name: COMMON_ZARF
-    description: "Whether or not there is a common zarf.yaml file"
+    description: Whether or not there is a common zarf.yaml file
     default: "true"
   - name: PACKAGE_DIR
-    description: "Base directory where packages are located, relative to the root of the repository"
+    description: Base directory where packages are located, relative to the root of the repository
     default: .
 
 tasks:
@@ -112,7 +112,7 @@ tasks:
   ###########
   - name: verify-badge
     actions:
-      - description: "Verify that the package meets UDS badging standards"
+      - description: Verify that the package meets UDS badging standards
         shell:
           linux: bash
           darwin: bash
@@ -191,11 +191,13 @@ tasks:
           fi
           gh_notice "  ℹ️  Namespace: $NAMESPACE"
 
-          UDS_PACKAGE_JSON=$(kubectl get Packages -n "${NAMESPACE}" -o jsonpath='{.items[]}')
-          gh_notice "  ℹ️  Retrieved UDS Package JSON"
-
-          UDS_PACKAGE_NAME=$(echo "$UDS_PACKAGE_JSON" | jq -r '.metadata.name')
+          # Extract UDS_PACKAGE_NAME from zarf.yaml
+          UDS_PACKAGE_NAME=$(uds zarf tools yq '.metadata.name' "${PACKAGE_DIR}/zarf.yaml")
           gh_notice "  ℹ️  Package Name: $UDS_PACKAGE_NAME"
+
+          # Retrieve the specific Package resource
+          UDS_PACKAGE_JSON=$(kubectl get Package "$UDS_PACKAGE_NAME" -n "${NAMESPACE}" -o json)
+          gh_notice "  ℹ️  Retrieved UDS Package JSON for $UDS_PACKAGE_NAME"
 
           gh_endgroup
 
@@ -236,7 +238,7 @@ tasks:
           ## Must deploy and operate successfully with Istio injection enabled in the namespace.
 
           POD_COUNT=$(kubectl get pods -n "${NAMESPACE}" --no-headers | wc -l)
-          POD_SIDECAR_COUNT=$(kubectl get pods -n "${NAMESPACE}" -o json | jq '.items[].spec.containers[] | select(.name=="istio-proxy") | length' | wc -l)
+          POD_SIDECAR_COUNT=$(kubectl get pods -n "${NAMESPACE}" -o json | jq '.items[] | select(.spec.containers[].name == "istio-proxy")' | wc -l)
 
           if [ "$POD_COUNT" -ne "$POD_SIDECAR_COUNT" ]; then
             gh_error "  ❌ Not all pods have the istio sidecar"
@@ -272,10 +274,10 @@ tasks:
 
           ## Should minimize network policies to specific selectors needed for Ingress/Egress traffic.
 
-          NETPOL_EXT_COUNT=$(echo "$UDS_PACKAGE_JSON" | jq -r '.spec.network.allow[] | select(.remoteGenerated != "IntraNamespace") | length' | wc -l)
+          NETPOL_EXT_COUNT=$(echo "$UDS_PACKAGE_JSON" | jq -r '.spec.network.allow[] | select(.remoteGenerated != "IntraNamespace")' | jq -s 'length')
           gh_notice "  ℹ️  Non-IntraNamespace network policies: $NETPOL_EXT_COUNT"
 
-          NETPOL_EXT_SELECTOR_COUNT=$(echo "$UDS_PACKAGE_JSON" | jq -r '.spec.network.allow[] | select(.remoteGenerated != "IntraNamespace") | select(.selector != null) | length' | wc -l)
+          NETPOL_EXT_SELECTOR_COUNT=$(echo "$UDS_PACKAGE_JSON" | jq -r '.spec.network.allow[] | select(.remoteGenerated != "IntraNamespace") | select(.selector != null)' | jq -s 'length')
           gh_notice "  ℹ️  Non-IntraNamespace network policies with selectors: $NETPOL_EXT_SELECTOR_COUNT"
 
           if [ "$NETPOL_EXT_COUNT" -ne "$NETPOL_EXT_SELECTOR_COUNT" ]; then
@@ -284,10 +286,10 @@ tasks:
             gh_notice "  ✅ All applicable network policies are using selectors"
           fi
 
-          NETPOL_EXT_NOTKUBE_COUNT=$(echo "$UDS_PACKAGE_JSON" | jq -r '.spec.network.allow[] | select(.remoteGenerated != "IntraNamespace") | select(.remoteGenerated != "KubeAPI") | length' | wc -l)
+          NETPOL_EXT_NOTKUBE_COUNT=$(echo "$UDS_PACKAGE_JSON" | jq -r '.spec.network.allow[] | select(.remoteGenerated != "IntraNamespace" and .remoteGenerated != "KubeAPI")' | jq -s 'length')
           gh_notice "  ℹ️  Non-IntraNamespace, non-KubeAPI network policies: $NETPOL_EXT_NOTKUBE_COUNT"
 
-          NETPOL_EXT_NOTKUBE_PORT_COUNT=$(echo "$UDS_PACKAGE_JSON" | jq -r '.spec.network.allow[] | select(.remoteGenerated != "IntraNamespace") | select(.remoteGenerated != "KubeAPI") | select(.ports != null or .port != null) | length' | wc -l)
+          NETPOL_EXT_NOTKUBE_PORT_COUNT=$(echo "$UDS_PACKAGE_JSON" | jq -r '.spec.network.allow[] | select(.remoteGenerated != "IntraNamespace" and .remoteGenerated != "KubeAPI") | select(.ports != null or .port != null)' | jq -s 'length')
           gh_notice "  ℹ️  Non-IntraNamespace, non-KubeAPI network policies with ports: $NETPOL_EXT_NOTKUBE_PORT_COUNT"
 
           if [ "$NETPOL_EXT_NOTKUBE_COUNT" -ne "$NETPOL_EXT_NOTKUBE_PORT_COUNT" ]; then
@@ -296,7 +298,7 @@ tasks:
             gh_notice "  ✅ All applicable network policies are using ports"
           fi
 
-          NETPOL_ANYWHERE_COUNT=$(echo "$UDS_PACKAGE_JSON" | jq -r '.spec.network.allow[] | select(.remoteGenerated == "Anywhere") | length' | wc -l)
+          NETPOL_ANYWHERE_COUNT=$(echo "$UDS_PACKAGE_JSON" | jq -r '.spec.network.allow[] | select(.remoteGenerated == "Anywhere")' | jq -s 'length')
           if [ "$NETPOL_ANYWHERE_COUNT" -gt 0 ]; then
             gh_warning "  ⚠️  Network policies with 'remoteGenerated: Anywhere' are present, review needed"
           else
@@ -307,7 +309,7 @@ tasks:
 
           gh_group "🔍 Keycloak/SSO Validation"
 
-          SSO_CLIENT_COUNT=$(echo "$UDS_PACKAGE_JSON" |  jq -r '.spec.sso | length')
+          SSO_CLIENT_COUNT=$(echo "$UDS_PACKAGE_JSON" | jq -r '.spec.sso | length')
 
           ## Must use and create a Keycloak client through the sso key if the application provides a user login.
           if [ "$SSO_CLIENT_COUNT" -gt 0 ]; then
@@ -323,16 +325,18 @@ tasks:
 
             # Should name the client <App> Login (i.e. Mattermost Login) to provide login UX consistency.
             SSO_CLIENT_NAME=$(echo "$UDS_PACKAGE_JSON" | jq -r '.spec.sso[].name')
-            if [ "$SSO_CLIENT_NAME" != "${UDS_PACKAGE_NAME^} Login" ]; then
+            EXPECTED_CLIENT_NAME="${UDS_PACKAGE_NAME^} Login"
+            if [ "$SSO_CLIENT_NAME" != "$EXPECTED_CLIENT_NAME" ]; then
               gh_warning "  ⚠️  SSO client name not in preferred format, review needed"
             else
               gh_notice "  ✅ SSO client name is correct"
             fi
 
-            # Should clearly mark the client id with the group and app name uds-<group>-<application> (i.e. uds-swf-mattermost) to provide consistency in the Keycloak UI.
+            # Should clearly mark the client id with the group and app name uds-<group>-<application>-<protocol> (i.e. uds-swf-mattermost-saml) to provide consistency in the Keycloak UI.
             SSO_CLIENT_ID=$(echo "$UDS_PACKAGE_JSON" | jq -r '.spec.sso[].clientId')
-            if [ "$SSO_CLIENT_ID" != "uds-${GROUP_NAME})-${UDS_PACKAGE_NAME}-${SSO_CLIENT_PROTOCOL}" ]; then
-              gh_warning "  ⚠️  SSO client id not in the format uds-<group>-<application>-protocol, review needed"
+            EXPECTED_CLIENT_ID="uds-${GROUP_NAME}-${UDS_PACKAGE_NAME}-${SSO_CLIENT_PROTOCOL}"
+            if [ "$SSO_CLIENT_ID" != "$EXPECTED_CLIENT_ID" ]; then
+              gh_warning "  ⚠️  SSO client id not in the format uds-<group>-<application>-<protocol>, review needed"
             else
               gh_notice "  ✅ SSO client id is correct"
             fi
@@ -355,19 +359,19 @@ tasks:
 
           gh_group "🔍 Monitoring Validation"
 
-          ## Must implement monitors for each application metrics endpoint using it's built-in chart monitors, the Package CR monitor key, or manual monitors in the config chart.
+          ## Must implement monitors for each application metrics endpoint using its built-in chart monitors, the Package CR monitor key, or manual monitors in the config chart.
 
           PKG_MONITOR_COUNT=$(echo "$UDS_PACKAGE_JSON" | jq -r '.spec.monitor | length')
 
           if [ "$PKG_MONITOR_COUNT" -eq 0 ]; then
             gh_notice "  ℹ️  No monitors defined in the package, checking for ServiceMonitors"
 
-            # Check for built-in serviceMonitors
+            # Check for built-in ServiceMonitors
             SERVICE_MONITOR_COUNT=$(kubectl get ServiceMonitor -n "${NAMESPACE}" -o json | jq -r '.items | length')
             if [ "$SERVICE_MONITOR_COUNT" -eq 0 ]; then
               gh_notice "  ℹ️  No ServiceMonitors defined, checking for PodMonitors"
 
-              # Check for built-in podMonitors
+              # Check for built-in PodMonitors
               POD_MONITOR_COUNT=$(kubectl get PodMonitor -n "${NAMESPACE}" -o json | jq -r '.items | length')
               if [ "$POD_MONITOR_COUNT" -eq 0 ]; then
                 gh_error "  ❌ No monitors defined"
@@ -404,7 +408,7 @@ tasks:
           ## Should expose all configuration (uds.dev CRs, additional Secrets/ConfigMaps, etc) through a Helm chart (ideally in a chart or charts directory).
 
           if [ "${COMMON_ZARF}" == "true" ]; then
-            COMMON_ZARF_MANIFEST_COUNT=$(cat "${PACKAGE_DIR}/common/zarf.yaml" | uds zarf tools yq '.components[] | select(.manifests != null) | length' | wc -l)
+            COMMON_ZARF_MANIFEST_COUNT=$(uds zarf tools yq '.components[] | select(.manifests != null)' "${PACKAGE_DIR}/common/zarf.yaml" | wc -l)
             if [ "$COMMON_ZARF_MANIFEST_COUNT" -gt 0 ]; then
               gh_error "  ❌ Manifests present in common/zarf.yaml"
             else
@@ -412,7 +416,7 @@ tasks:
             fi
           fi
 
-          MAIN_ZARF_MANIFEST_COUNT=$(cat "${PACKAGE_DIR}/zarf.yaml" | uds zarf tools yq '.components[] | select(.manifests != null) | length' | wc -l)
+          MAIN_ZARF_MANIFEST_COUNT=$(uds zarf tools yq '.components[] | select(.manifests != null)' "${PACKAGE_DIR}/zarf.yaml" | wc -l)
           if [ "$MAIN_ZARF_MANIFEST_COUNT" -gt 0 ]; then
             gh_error "  ❌ Manifests present in zarf.yaml"
           else
@@ -421,7 +425,7 @@ tasks:
 
           ## Should implement or allow for multiple flavors (ideally with common definitions in a common directory)
 
-          ZARF_COMPONENTS_FLAVOR_COUNT=$(cat "${PACKAGE_DIR}/zarf.yaml" | uds zarf tools yq '.components[] | select(.only.flavor != null) | length' | wc -l)
+          ZARF_COMPONENTS_FLAVOR_COUNT=$(uds zarf tools yq '.components[] | select(.only.flavor != null)' "${PACKAGE_DIR}/zarf.yaml" | wc -l)
           if [ "$ZARF_COMPONENTS_FLAVOR_COUNT" -eq 0 ]; then
             gh_error "  ❌ No flavors defined in zarf.yaml"
           else
@@ -432,10 +436,10 @@ tasks:
 
           gh_group "🔍 Package Testing Validation"
 
-          ## Must implement Journey Testing to cover the basic user flows and features of the application, especially where an application interacts with an external service / interface.
+          ## Must implement Journey Testing to cover the basic user flows and features of the application, especially where an application interacts with an external service/interface.
 
           if [ -d "${PACKAGE_DIR}/tests" ]; then
-            if [ "$(ls -A ${PACKAGE_DIR}/tests)" ]; then
+            if [ "$(ls -A "${PACKAGE_DIR}/tests")" ]; then
               gh_notice "  ✅ Tests folder exists and has files"
             else
               gh_error "  ❌ Tests folder exists but is empty"
@@ -451,7 +455,7 @@ tasks:
           # Must be consistently versioned across flavors - this can take many forms but flavors should differ in image bases/builds not application versions.
 
           ZARF_PKG_VERSION=$(uds zarf tools yq '.metadata.version' "${PACKAGE_DIR}/zarf.yaml" | cut -d '-' -f1)
-          IMAGE_WITH_ZARF_VERSION_COUNT=$(cat "${PACKAGE_DIR}/zarf.yaml" | uds zarf tools yq '.components[].images' | grep -o "${ZARF_PKG_VERSION}" | wc -l)
+          IMAGE_WITH_ZARF_VERSION_COUNT=$(uds zarf tools yq '.components[].images[]' "${PACKAGE_DIR}/zarf.yaml" | grep -o "${ZARF_PKG_VERSION}" | wc -l)
 
           if [ "$IMAGE_WITH_ZARF_VERSION_COUNT" -ge "$ZARF_COMPONENTS_FLAVOR_COUNT" ]; then
             gh_notice "  ✅ Version is consistent across flavors and package"
