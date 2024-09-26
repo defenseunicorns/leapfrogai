@@ -56,7 +56,7 @@ def test_translations(client: OpenAI):
         file=Path("tests/data/arabic-audio.wav"),
         prompt="This is a test translation.",
         response_format="json",
-        temperature=0.3,
+        temperature=0.0,
     )
 
     assert len(translation.text) > 0, "The translation should not be empty"
@@ -73,3 +73,57 @@ def test_translations(client: OpenAI):
     english_chars = [is_english_or_punctuation(c) for c in translation.text]
 
     assert all(english_chars), "Non-English characters have been returned"
+
+
+def test_non_english_transcription(client: OpenAI):
+    # Arabic transcription
+    arabic_transcription = client.audio.transcriptions.create(
+        model="whisper",
+        file=Path("tests/data/arabic-audio.wav"),
+        response_format="json",
+        temperature=0.5,
+        timestamp_granularities=["word", "segment"],
+    )
+
+    assert (
+        len(arabic_transcription.text) > 0
+    ), "The Arabic transcription should not be empty"
+    assert (
+        len(arabic_transcription.text) < 500
+    ), "The Arabic transcription should not be too long"
+
+    def is_arabic_or_punctuation(c):
+        if c in string.punctuation or c.isspace():
+            return True
+        return unicodedata.name(c).startswith("ARABIC")
+
+    arabic_chars = [is_arabic_or_punctuation(c) for c in arabic_transcription.text]
+    assert all(
+        arabic_chars
+    ), "Non-Arabic characters have been returned in Arabic transcription"
+
+    # Russian transcription
+    russian_transcription = client.audio.transcriptions.create(
+        model="whisper",
+        file=Path("tests/data/russian.mp3"),
+        response_format="json",
+        temperature=0.5,
+        timestamp_granularities=["word", "segment"],
+    )
+
+    assert (
+        len(russian_transcription.text) > 0
+    ), "The Russian transcription should not be empty"
+    assert (
+        len(russian_transcription.text) < 500
+    ), "The Russian transcription should not be too long"
+
+    def is_russian_or_punctuation(c):
+        if c in string.punctuation or c.isspace():
+            return True
+        return unicodedata.name(c).startswith("CYRILLIC")
+
+    russian_chars = [is_russian_or_punctuation(c) for c in russian_transcription.text]
+    assert all(
+        russian_chars
+    ), "Non-Russian characters have been returned in Russian transcription"
