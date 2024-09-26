@@ -49,7 +49,7 @@ class QueryService:
             SearchResponse: The search response from the vector store.
         """
 
-        logger.info("Beginning RAG query...")
+        logger.debug("Beginning RAG query...")
 
         # 1. Embed query
         vector = await self.embeddings.aembed_query(query)
@@ -78,9 +78,8 @@ class QueryService:
             results = rerank_search_response(results, ranked_results)
             # Narrow down the results to the top-k value specified by the user
             results.data = results.data[0:k]
-            logger.info(f"Reranking complete {results.get_simple_response()}")
 
-        logger.info("Ending RAG query...")
+        logger.debug("Ending RAG query...")
 
         return results
 
@@ -102,19 +101,15 @@ def rerank_search_response(
     content_to_item = {item.id: item for item in original_response.data}
 
     # Create new SearchItems based on reranked results
-    reranked_items = []
+    ranked_items = []
     for content in ranked_results.results:
         if content.document.doc_id in content_to_item:
             item: SearchItem = content_to_item[content.document.doc_id]
             item.rank = content.rank
             item.score = content.score
-            reranked_items.append(item)
+            ranked_items.append(item)
 
-    reranked_response = SearchResponse(data=reranked_items)
-
-    logger.info(
-        f"Original documents: {original_response.get_simple_response()}\nReranked documents {reranked_response.get_simple_response()}"
-    )
+    ranked_response = SearchResponse(data=ranked_items)
 
     # Create a new SearchResponse with reranked items
-    return reranked_response
+    return ranked_response
