@@ -74,17 +74,16 @@ jobs:
 
       - name: Run UDS Badge Verification Task
         run: |
-          uds run verify-uds-badge-cpu 2>&1 | tee output.txt
+          uds run verify-uds-badge-cpu 2>&1 | tee temp/output.txt
 
       - name: Pretty Summary of UDS Badge Verification
         run: |
           chmod +x .github/scripts/summarizeVerification.sh
-          .github/scripts/summarizeVerification.sh >> report.txt
+          .github/scripts/summarizeVerification.sh 2>&1 | tee temp/report.txt
 
       - name: Archive UDS Badge Verification Report
         uses: actions/upload-artifact@834a144ee995460fba8ed112a2fc961b36a5ec5a # v4.3.6
-        if: ${{ !cancelled() }}
         with:
           name: uds-badge-verification-report
-          path: report.txt
+          path: temp/report.txt
           retention-days: 30

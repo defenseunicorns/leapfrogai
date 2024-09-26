@@ -1,7 +1,7 @@
 #!/bin/bash
 
 # Remove ANSI escape sequences from the data
-clean_data=$(sed -r 's/\x1b\[[0-9;]*[a-zA-Z]//g' output.txt)
+clean_data=$(sed -r 's/\x1b\[[0-9;]*[a-zA-Z]//g' temp/output.txt)
 
 # Initialize variables
 package_name=""
