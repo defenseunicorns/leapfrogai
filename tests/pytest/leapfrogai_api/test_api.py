@@ -547,7 +547,8 @@ def test_token_count(dummy_auth_middleware):
 
 
 @pytest.mark.skipif(
-    os.environ.get("LFAI_RUN_REPEATER_TESTS") != "true",
+    os.environ.get("LFAI_RUN_REPEATER_TESTS") != "true"
+    or os.environ.get("DEV") != "true",
     reason="LFAI_RUN_REPEATER_TESTS envvar was not set to true",
 )
 def test_configure(dummy_auth_middleware):

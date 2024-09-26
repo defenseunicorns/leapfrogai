@@ -19,7 +19,7 @@ class ConfigurationPayload(BaseModel):
     # This is an instance variable, specific to each ConfigurationPayload object
     # It will be included in the JSON output when the model is serialized
     enable_reranking: bool = Field(
-        default=False, description="Enables reranking for RAG queries"
+        default=True, description="Enables reranking for RAG queries"
     )
     # More model info can be found here:
     # https://github.com/AnswerDotAI/rerankers?tab=readme-ov-file
