@@ -1,14 +1,11 @@
 """Test the API endpoints for assistants."""
 
-import os
 import pytest
 from fastapi import status
-from fastapi.testclient import TestClient
 from openai.types.beta import Assistant, Thread, AssistantDeleted, ThreadDeleted
 from openai.types.beta.thread import ToolResources, ToolResourcesFileSearch
 from openai.types.beta.threads import Message, Text, TextContentBlock, Run
 
-from leapfrogai_api.main import app
 from leapfrogai_api.typedef.assistants import (
     CreateAssistantRequest,
 )
@@ -22,29 +19,7 @@ from leapfrogai_api.typedef.threads import (
     CreateThreadRequest,
     ThreadRunCreateParamsRequest,
 )
-
-CHAT_MODEL = "test-chat"
-
-LFAI_CONFIG_FILENAME = os.environ["LFAI_CONFIG_FILENAME"] = "test-config.yaml"
-LFAI_CONFIG_PATH = os.environ["LFAI_CONFIG_PATH"] = os.path.join(
-    os.path.dirname(__file__), "fixtures"
-)
-LFAI_CONFIG_FILEPATH = os.path.join(LFAI_CONFIG_PATH, LFAI_CONFIG_FILENAME)
-
-
-class MissingEnvironmentVariable(Exception):
-    pass
-
-
-headers: dict[str, str] = {}
-
-try:
-    headers = {"Authorization": f"Bearer {os.environ['SUPABASE_USER_JWT']}"}
-except KeyError as exc:
-    raise MissingEnvironmentVariable(
-        "SUPABASE_USER_JWT must be defined for the test to pass. "
-        "Please check the api README for instructions on obtaining this token."
-    ) from exc
+from tests.utils.client import LeapfrogAIClient, get_leapfrogai_model
 
 starting_assistant = Assistant(
     id="",
@@ -52,7 +27,7 @@ starting_assistant = Assistant(
     name="test",
     description="test",
     instructions="test",
-    model=CHAT_MODEL,
+    model=get_leapfrogai_model(),
     object="assistant",
     tools=[],
     tool_resources=None,
@@ -65,8 +40,7 @@ starting_assistant = Assistant(
 
 @pytest.fixture(scope="session")
 def app_client():
-    with TestClient(app, headers=headers) as client:
-        yield client
+    yield LeapfrogAIClient()
 
 
 @pytest.fixture(scope="session")
@@ -85,7 +59,7 @@ def create_assistant(app_client):
         response_format=starting_assistant.response_format,
     )
 
-    return app_client.post(url="/openai/v1/assistants", json=request.model_dump())
+    return app_client.post("/openai/v1/assistants", json=request.model_dump())
 
 
 @pytest.fixture(scope="session")
