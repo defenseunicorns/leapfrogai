@@ -6,12 +6,13 @@ from openai.types.beta.threads.annotation import (
 )
 from openai.types.beta.threads.text import Text
 from openai.types.beta.threads.message import Message
-from tests.utils.client import client_config_factory, text_file_path, FILENAME
+from tests.utils.client import client_config_factory
+from tests.utils.data_path import data_path, TXT_FILE_NAME
 
 
 def validate_annotation_format(annotation):
     pattern_default = r"【\d+:\d+†source】"
-    pattern = r"【\d+:\d+†" + FILENAME + "】"
+    pattern = r"【\d+:\d+†" + TXT_FILE_NAME + "】"
     match = re.fullmatch(pattern, annotation) or re.fullmatch(
         pattern_default, annotation
     )
@@ -24,7 +25,7 @@ def make_vector_store_with_file(client_name):
     client = config.client
 
     vector_store = client.beta.vector_stores.create(name="Test data")
-    with open(text_file_path(), "rb") as file:
+    with open(data_path(TXT_FILE_NAME), "rb") as file:
         client.beta.vector_stores.files.upload(
             vector_store_id=vector_store.id, file=file
         )

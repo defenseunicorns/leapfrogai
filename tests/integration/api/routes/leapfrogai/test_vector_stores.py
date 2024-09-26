@@ -1,5 +1,6 @@
 from leapfrogai_api.typedef.vectorstores.search_types import SearchItem
-from tests.utils.client import client_config_factory, text_file_path
+from tests.utils.client import client_config_factory
+from tests.utils.data_path import data_path, TXT_FILE_NAME
 from leapfrogai_api.typedef.vectorstores import SearchResponse
 from leapfrogai_api.typedef.vectorstores import Vector
 import pytest
@@ -17,7 +18,7 @@ def make_test_vector_store():
     client = config.client
     vector_store = client.beta.vector_stores.create(name="Test data")
 
-    with open(text_file_path(), "rb") as file:
+    with open(data_path(TXT_FILE_NAME), "rb") as file:
         client.beta.vector_stores.files.upload(
             vector_store_id=vector_store.id, file=file
         )

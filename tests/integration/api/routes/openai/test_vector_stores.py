@@ -19,6 +19,7 @@ from leapfrogai_api.typedef.vectorstores import (
 )
 from leapfrogai_api.routers.openai.vector_stores import router as vector_store_router
 from leapfrogai_api.routers.openai.files import router as files_router
+from tests.utils.data_path import data_path, TXT_FILE_NAME
 
 INSTRUCTOR_XL_EMBEDDING_SIZE: int = 768
 
@@ -52,9 +53,7 @@ files_client = TestClient(files_router, headers=headers)
 def read_testfile():
     """Read the test file content."""
 
-    with open(
-        os.path.dirname(__file__) + "/../../../tests/data/test.txt", "rb"
-    ) as testfile:
+    with open(data_path(TXT_FILE_NAME), "rb") as testfile:
         testfile_content = testfile.read()
 
     return testfile_content
@@ -67,7 +66,7 @@ def create_file(read_testfile):  # pylint: disable=redefined-outer-name, unused-
 
     file_response = files_client.post(
         "/openai/v1/files",
-        files={"file": ("test.txt", read_testfile, "text/plain")},
+        files={"file": (TXT_FILE_NAME, read_testfile, "text/plain")},
         data={"purpose": "assistants"},
     )
 

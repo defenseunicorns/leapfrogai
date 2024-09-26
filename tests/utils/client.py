@@ -1,10 +1,8 @@
 from urllib.parse import urljoin
 from openai import OpenAI
 import os
-from pathlib import Path
-import requests
 
-FILENAME = "test_with_data.txt"
+import requests
 
 
 def get_leapfrogai_model():
@@ -42,10 +40,6 @@ def get_leapfrogai_api_url_other():
         return os.getenv("LEAPFROGAI_API_URL_OTHER", "https://leapfrogai-api.uds.dev")
     except KeyError:
         raise ValueError("LEAPFROGAI_API_URL_OTHER not set")
-
-
-def text_file_path():
-    return Path(os.path.dirname(__file__) + f"/../data/{FILENAME}")
 
 
 def openai_client():
