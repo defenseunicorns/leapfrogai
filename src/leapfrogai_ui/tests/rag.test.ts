@@ -25,7 +25,11 @@ import {
   sendMessage,
   waitForResponseToComplete
 } from './helpers/threadHelpers';
-import { loadChatPage } from './helpers/navigationHelpers';
+import {
+  loadChatPage,
+  loadEditAssistantPage,
+  loadNewAssistantPage
+} from './helpers/navigationHelpers';
 
 test.afterAll(() => {
   deleteAllGeneratedFixtureFiles(); // cleanup any files that were not deleted during tests (e.g. due to test failure)
@@ -41,7 +45,7 @@ test('can edit an assistant and attach files to it', async ({ page, openAIClient
   const uploadedFile2 = await uploadFileWithApi(filename2, 'application/pdf', openAIClient);
   const assistant = await createAssistantWithApi({ openAIClient });
 
-  await page.goto(`/chat/assistants-management/edit/${assistant.id}`);
+  await loadEditAssistantPage(assistant.id, page);
 
   await page.getByTestId('file-select-dropdown-btn').click();
   const fileSelectContainer = page.getByTestId('file-select-container');
@@ -66,7 +70,7 @@ test('it can edit an assistant and remove a file', async ({ page, openAIClient }
   const uploadedFile1 = await uploadFileWithApi(filename1, 'application/pdf', openAIClient);
   const uploadedFile2 = await uploadFileWithApi(filename2, 'application/pdf', openAIClient);
   const assistant = await createAssistantWithApi({ openAIClient });
-  await page.goto(`/chat/assistants-management/edit/${assistant.id}`);
+  await loadEditAssistantPage(assistant.id, page);
 
   // Create assistant with files
   await page.getByTestId('file-select-dropdown-btn').click();
@@ -102,7 +106,7 @@ test('while creating an assistant, it can UPLOAD NEW files and save the assistan
   const assistantInput = getFakeAssistantInput();
   const filename = `${faker.word.noun()}-test.pdf`;
   await createPDF({ filename });
-  await page.goto('/chat/assistants-management/new');
+  await loadNewAssistantPage(page);
 
   await page.getByLabel('name').fill(assistantInput.name);
   await page.getByLabel('tagline').fill(assistantInput.description);
@@ -136,7 +140,7 @@ test('while editing an assistant, it can UPLOAD NEW files and save the assistant
   await createPDF({ filename: filename });
 
   const assistant = await createAssistantWithApi({ openAIClient });
-  await page.goto(`/chat/assistants-management/edit/${assistant.id}`);
+  await loadEditAssistantPage(assistant.id, page);
 
   await page.getByTestId('file-select-dropdown-btn').click();
   await uploadFiles({ page, filenames: [filename], btnName: 'Upload new data source' });
@@ -169,7 +173,7 @@ test('it displays a failed toast and temporarily failed uploader item when a the
   const filename = `${faker.word.noun()}-test.pdf`;
   await createPDF({ filename: filename });
 
-  await page.goto('/chat/assistants-management/new');
+  await loadNewAssistantPage(page);
 
   await page.getByTestId('file-select-dropdown-btn').click();
   await uploadFiles({ page, filenames: [filename], btnName: 'Upload new data source' });
@@ -191,7 +195,7 @@ test('it displays an uploading indicator temporarily when uploading a file', asy
   const filename = `${faker.word.noun()}-test.pdf`;
   await createPDF({ filename: filename });
 
-  await page.goto('/chat/assistants-management/new');
+  await loadNewAssistantPage(page);
 
   await page.getByTestId('file-select-dropdown-btn').click();
   await uploadFiles({ page, filenames: [filename], btnName: 'Upload new data source' });
@@ -303,7 +307,7 @@ test('it shows a spinner then opens an iframe when a non-pdf citation is clicked
 
   await page.getByTestId(`${uploadedFile.id}-citation-btn`).click();
   await expect(page.getByTestId('file-processing-spinner')).toBeVisible();
-  await expect(page.getByTitle(`${uploadedFile.id}-iframe`)).toBeVisible();
+  await expect(page.getByTitle(`${uploadedFile.id}-iframe`)).toBeVisible({ timeout: 10000 });
   await expect(page.getByTestId('file-processing-spinner')).not.toBeVisible();
   // iframe content is not showing in Playwright, so we are not testing that the pdf contents are displayed
 

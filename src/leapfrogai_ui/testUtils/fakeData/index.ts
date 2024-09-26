@@ -32,8 +32,11 @@ type FakeMessageOptions = {
   created_at?: number;
 };
 export const getFakeMessage = (options: FakeMessageOptions = {}): LFMessage => {
+  //allow empty string for content
+  if (options.content === undefined || options.content === null)
+    options.content = faker.lorem.lines(1);
   const messageContent: MessageContent[] = [
-    { type: 'text', text: { value: options.content || faker.lorem.lines(1), annotations: [] } }
+    { type: 'text', text: { value: options.content, annotations: [] } }
   ];
 
   const {
