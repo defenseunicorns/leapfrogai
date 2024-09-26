@@ -152,7 +152,6 @@ export const actions: Actions = {
         }
       }
     }
-
     // Create assistant object
     const updatedAssistantParams: AssistantCreateParams = {
       name: form.data.name,

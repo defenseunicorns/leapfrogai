@@ -102,7 +102,6 @@ export const actions: Actions = {
         console.error('Error saving assistant avatar:', error);
         return fail(500, { message: 'Error saving assistant avatar.' });
       }
-
       // update assistant with saved avatar path
       try {
         createdAssistant = (await openai.beta.assistants.update(createdAssistant.id, {
