@@ -30,9 +30,9 @@ spec:
         {{- $gpuLimit = $gpuLimit | float64 }}
       {{- end }}
       {{- if gt $gpuLimit 0.0 }}
-        runtimeClassName: nvidia
+      runtimeClassName: nvidia
       {{- else if .Values.gpu.runtimeClassName }}
-        runtimeClassName: {{ .Values.gpu.runtimeClassName }}
+      runtimeClassName: {{ .Values.gpu.runtimeClassName }}
       {{- end }}
       # It's necessary to include the ###ZARF_DATA_INJECTION_MARKER### somewhere in the podspec, otherwise data injections will not occur.
       initContainers:
