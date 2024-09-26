@@ -11,8 +11,8 @@ from leapfrogai_api.typedef.counting import (
     TokenCountRequest,
     TokenCountResponse,
 )
+from tests.utils.client import get_leapfrogai_model
 
-CHAT_MODEL = "test-chat"
 INVALID_MODEL = "invalid-model"
 
 
@@ -36,7 +36,7 @@ client = TestClient(router, headers=headers)
 def test_token_count():
     """Test token counting"""
     request = TokenCountRequest(
-        model=CHAT_MODEL, text="This is a test sentence for token counting."
+        model=get_leapfrogai_model(), text="This is a test sentence for token counting."
     )
 
     response = client.post("/leapfrogai/v1/count/tokens", json=request.model_dump())
@@ -48,7 +48,7 @@ def test_token_count():
 
 def test_token_count_empty_text():
     """Test token counting with empty text"""
-    request = TokenCountRequest(model=CHAT_MODEL, text="")
+    request = TokenCountRequest(model=get_leapfrogai_model(), text="")
 
     response = client.post("/leapfrogai/v1/count/tokens", json=request.model_dump())
 
@@ -81,7 +81,7 @@ def test_token_count_various_lengths():
     token_counts = []
 
     for text in texts:
-        request = TokenCountRequest(model=CHAT_MODEL, text=text)
+        request = TokenCountRequest(model=get_leapfrogai_model(), text=text)
 
         response = client.post("/leapfrogai/v1/count/tokens", json=request.model_dump())
 
