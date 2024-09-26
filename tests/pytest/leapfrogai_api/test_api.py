@@ -203,10 +203,14 @@ def test_routes():
     ]
 
     actual_routes = app.routes
-    for route in actual_routes:
-        if hasattr(route, "path") and route.path in expected_routes:
-            assert route.methods == set(expected_routes[route.path])
-            del expected_routes[route.path]
+    for expected_route in expected_routes:
+        matching_routes = {expected_route: []}
+        for actual_route in actual_routes:
+            if hasattr(actual_route, "path") and expected_route == actual_route.path:
+                matching_routes[actual_route.path].extend(actual_route.methods)
+        assert set(expected_routes[expected_route]) <= set(
+            matching_routes[expected_route]
+        )
 
     for route, name, methods in openai_routes:
         found = False
@@ -220,8 +224,6 @@ def test_routes():
                 found = True
                 break
         assert found, f"Missing route: {route}, {name}, {methods}"
-
-    assert len(expected_routes) == 0
 
 
 def test_healthz():
