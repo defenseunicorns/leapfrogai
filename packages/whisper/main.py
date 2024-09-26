@@ -18,7 +18,7 @@ model_path = os.environ.get("LFAI_MODEL_PATH", ".model")
 GPU_ENABLED = True if int(os.environ.get("GPU_REQUEST", 0)) > 0 else False
 
 
-def make_transcribe_request(filename, task, language, temperature, prompt):
+def make_whisper_request(filename, task, language, temperature, prompt):
     device = "cuda" if GPU_ENABLED else "cpu"
     model = WhisperModel(model_path, device=device, compute_type="float32")
 
@@ -27,18 +27,22 @@ def make_transcribe_request(filename, task, language, temperature, prompt):
     if task:
         if task in ["transcribe", "translate"]:
             kwargs["task"] = task
+            logger.info(f"Task {task} is starting")
         else:
             logger.error(f"Task {task} is not supported")
             return {"text": ""}
     if language:
         if language in model.supported_languages:
             kwargs["language"] = language
+            logger.info(f"Language {language} is supported")
         else:
             logger.error(f"Language {language} is not supported")
     if temperature:
         kwargs["temperature"] = temperature
+        logger.info(f"Temperature {temperature} is set")
     if prompt:
         kwargs["initial_prompt"] = prompt
+        logger.info(f"Prompt {prompt} is set")
 
     try:
         # Call transcribe with only non-None parameters
@@ -62,26 +66,35 @@ def call_whisper(
     data = bytearray()
     prompt = ""
     temperature = 0.0
-    inputLanguage = "en"
+    # By default, automatically detect the language
+    input_language = None
 
     for request in request_iterator:
-        if (
-            request.metadata.prompt
-            and request.metadata.temperature
-            and request.metadata.inputlanguage
-        ):
-            prompt = request.metadata.prompt
-            temperature = request.metadata.temperature
-            inputLanguage = request.metadata.inputlanguage
-            continue
+        metadata = request.metadata
+        updated = False
 
-        data.extend(request.chunk_data)
+        if metadata.prompt:
+            logger.info(f"Updated metadata: Prompt='{prompt}'")
+            prompt = metadata.prompt
+            updated = True
+
+        if metadata.temperature:
+            logger.info(f"Updated metadata: Temperature={temperature}")
+            temperature = metadata.temperature
+            updated = True
+
+        if metadata.inputlanguage:
+            logger.info(f"Updated metadata: Input Language='{input_language}'")
+            input_language = metadata.inputlanguage
+            updated = True
+
+        # Metadata updates are done separate from data updates
+        if not updated:
+            data.extend(request.chunk_data)
 
     with tempfile.NamedTemporaryFile("wb") as f:
         f.write(data)
-        result = make_transcribe_request(
-            f.name, task, inputLanguage, temperature, prompt
-        )
+        result = make_whisper_request(f.name, task, input_language, temperature, prompt)
         text = str(result["text"])
 
         if task == "transcribe":
