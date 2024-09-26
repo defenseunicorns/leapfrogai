@@ -3,7 +3,7 @@ from pathlib import Path
 from openai.types.beta.threads.text import Text
 import pytest
 
-from ...utils.client import client_config_factory
+from tests.utils.client import client_config_factory
 
 
 def make_test_assistant(client, model, vector_store_id):
