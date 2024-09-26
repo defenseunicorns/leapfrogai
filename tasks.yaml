@@ -1,7 +1,7 @@
 # yaml-language-server: $schema=https://raw.githubusercontent.com/defenseunicorns/uds-cli/v0.14.0/tasks.schema.json
 
 includes:
-  - badge: https://raw.githubusercontent.com/defenseunicorns/uds-common/refs/heads/main/tasks/badge.yaml
+  - badge: https://raw.githubusercontent.com/defenseunicorns/uds-common/82e63be82766a2e550a847af904b2d738c9d3478/tasks/badge.yaml
 
 tasks:
   #############
