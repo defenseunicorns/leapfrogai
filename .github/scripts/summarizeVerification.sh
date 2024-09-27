@@ -14,11 +14,11 @@ warning_descriptions=()
 
 # Function to print package information
 print_package_info() {
-	if [[ ${CI} == "true" ]]; then
-		echo "::group::$package_name"
-	fi
 	if [[ -n $package_name ]]; then
 		echo "-----------------------------"
+		if [[ ${CI} == "true" ]]; then
+			echo "::group::$package_name"
+		fi
 		echo "Package: $package_name"
 		if ((failures_count > 0)); then
 			if [[ ${CI} == "true" ]]; then

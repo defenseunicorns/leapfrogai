@@ -4,6 +4,20 @@ includes:
   - badge: https://raw.githubusercontent.com/defenseunicorns/uds-common/82e63be82766a2e550a847af904b2d738c9d3478/tasks/badge.yaml
 
 tasks:
+  - name: nightly-uds-badge-verification
+    description: "Runs in a pipeline and produces a report for archiving"
+    actions:
+      - description: "Create Reports Directory"
+        cmd: |
+          mkdir -p temp/report
+      - description: "Run Upstream UDS Badge Verification Task"
+        cmd: |
+          uds run verify-uds-badge-cpu --no-progress 2>&1 | sed -r 's/\x1b\[[0-9;]*[a-zA-Z]//g' 2>&1 | tee temp/report/intermediate-report.txt > /dev/null
+      - description: "Clean Up Final Report"
+        cmd: |
+          chmod +x .github/scripts/summarizeVerification.sh
+          cat temp/report/intermediate-report.txt 2>&1 | .github/scripts/summarizeVerification.sh | tee temp/report/final-report.txt
+
   #############
   # BADGE TASKS
   #############

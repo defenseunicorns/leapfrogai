@@ -7,6 +7,7 @@ on:
   pull_request:
     paths:
       - .github/workflows/nightly-uds-badge-verification.yaml
+      - tasks.yaml
 
 concurrency:
   group: nightly-uds-badge-verification-${{ github.ref }}
@@ -68,12 +69,7 @@ jobs:
 
       - name: Run UDS Badge Verification Task
         run: |
-          mkdir -p temp/report
-          chmod +x .github/scripts/summarizeVerification.sh
-          uds run verify-uds-badge-cpu --no-progress 2>&1 | sed -r 's/\x1b\[[0-9;]*[a-zA-Z]//g' 2>&1 \
-            | tee temp/report/intermediate-report.txt
-          cat temp/report/intermediate-report.txt 2>&1 | .github/scripts/summarizeVerification.sh \
-            | tee temp/report/final-report.txt
+          uds run nightly-uds-badge-verification --no-progress
 
       - name: Archive UDS Badge Verification Report
         uses: actions/upload-artifact@834a144ee995460fba8ed112a2fc961b36a5ec5a # v4.3.6
