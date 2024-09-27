@@ -1,8 +1,8 @@
-name: weekly-registry1-flavor-test
+name: nightly-snapshot-release
 
 on:
   schedule:
-    - cron: "0 8 * * 0" # Run every Sunday at 12 AM PST
+    - cron: "0 8 * * *" # Runs daily at 12 AM PST
   workflow_dispatch: # trigger manually as needed
   pull_request:
     types:
@@ -12,111 +12,124 @@ on:
       - ready_for_review # don't run on draft PRs
       - milestoned # allows us to trigger on bot PRs
     paths:
-      - .github/workflows/weekly-registry1-flavor-test.yaml
-      - bundles/latest/**
+      - .github/workflows/nightly-snapshot-release.yaml
 
 concurrency:
-  group: weekly-registry1-flavor-test-${{ github.ref }}
+  group: nightly-snapshot-release-${{ github.ref }}
   cancel-in-progress: true
 
 defaults:
   run:
     shell: bash
 
+env:
+  # x-release-please-start-version
+  LEAPFROGAI_VERSION: 0.13.0
+  # x-release-please-end
+  SNAPSHOT_VERSION: snapshot-latest
+
+permissions:
+  contents: read
+  packages: write
+  id-token: write # This is needed for OIDC federation.
+
 jobs:
-  registry1-flavor-test:
+  snapshot-release:
     runs-on: ai-ubuntu-big-boy-8-core
-    name: weekly_registry1_flavor_test
+    name: nightly_snapshot_release
     if: ${{ !github.event.pull_request.draft }}
+
+    steps:
+      - name: Checkout Repo
+        uses: actions/checkout@b4ffde65f46336ab88eb53be808477a3936bae11 # v4.1.1
+
+      - name: Release LeapfrogAI ${{ env.SNAPSHOT_VERSION }}
+        uses: ./.github/actions/release
+        with:
+          releaseTag: ${{ env.SNAPSHOT_VERSION }}
+          subRepository: /uds/snapshots/
+          registry1Username: ${{ secrets.IRON_BANK_ROBOT_USERNAME }}
+          registry1Password: ${{ secrets.IRON_BANK_ROBOT_PASSWORD }}
+          ghToken: ${{ secrets.GITHUB_TOKEN }}
+          chainguardIdentity: ${{ secrets.CHAINGUARD_IDENTITY }}
+
+  test-snapshot:
+    runs-on: ai-ubuntu-big-boy-8-core
+    name: nightly_test_snapshot
+    if: ${{ !github.event.pull_request.draft }}
+    needs: snapshot-release
 
     permissions:
       contents: read
-      packages: read
+      packages: write
       id-token: write # This is needed for OIDC federation.
 
     steps:
-      # Checkout main just to see the latest release in the release-please manifest
-      - name: Checkout Repo (main)
+      - name: Checkout Repo (v${{ env.LEAPFROGAI_VERSION }})
         uses: actions/checkout@b4ffde65f46336ab88eb53be808477a3936bae11 # v4.1.1
         with:
-          ref: main
+          ref: v${{ env.LEAPFROGAI_VERSION }}
 
-      - name: Get Latest Release Version
-        id: get_version
+      - name: Setup Python (v${{ env.LEAPFROGAI_VERSION }})
+        uses: ./.github/actions/python
+
+      - name: Install Dev Dependencies
         run: |
-          LFAI_VERSION=$(jq -r '.["."]' .github/.release-please-manifest.json)
-          echo "LFAI_VERSION=$LFAI_VERSION" >> $GITHUB_OUTPUT
+          python -m pip install ".[dev]" ".[dev-vllm]" ".[dev-whisper]"
 
-      ################
-      # LATEST RELEASE
-      ################
-
-      - name: Checkout Repo
-        uses: actions/checkout@b4ffde65f46336ab88eb53be808477a3936bae11 # v4.1.1
-        with:
-          fetch-tags: true
-          ref: v${{ steps.get_version.outputs.LFAI_VERSION }}
-
-      - name: Setup UDS Environment
-        uses: defenseunicorns/uds-common/.github/actions/setup@24c8a2a48eeb33773b76b3587c489cb17496c9e0 # v0.12.0
+      - name: Setup UDS Cluster
+        uses: ./.github/actions/uds-cluster
         with:
           registry1Username: ${{ secrets.IRON_BANK_ROBOT_USERNAME }}
           registry1Password: ${{ secrets.IRON_BANK_ROBOT_PASSWORD }}
           ghToken: ${{ secrets.GITHUB_TOKEN }}
           chainguardIdentity: ${{ secrets.CHAINGUARD_IDENTITY }}
 
-      - name: Setup Python
-        uses: actions/setup-python@0a5c61591373683505ea898e09a3ea4f39ef2b9c #v5.0.0
-        with:
-          python-version-file: "pyproject.toml"
-
-      - name: Install Python Dependencies
-        run: pip install ".[dev]" "src/leapfrogai_api" "src/leapfrogai_sdk" --no-cache-dir
-
-      - name: Mutation of the Zarf Packages
-        run: |
-          uds zarf tools yq -i '
-            .components[].images[0] |= sub(":v[0-9\.]+$", ":v${{ steps.get_version.outputs.LFAI_VERSION }}")
-          ' packages/api/zarf.yaml
-          uds zarf tools yq -i '.api.image.tag = "v${{ steps.get_version.outputs.LFAI_VERSION }}"' packages/api/values/registry1-values.yaml
-
-      - name: Print the Modified Zarf Packages
-        run: |
-          cat packages/api/zarf.yaml
-          cat packages/api/values/registry1-values.yaml
-
-      - name: Create Registry1 Zarf Packages
-        run: |
-          uds zarf package create packages/api --set image_version="${{ steps.get_version.outputs.LFAI_VERSION }}" --flavor registry1 -a amd64 --confirm
-
-      # Mutate UDS bundle definition to use Registry1 packages
-      # Mutate non-Registry1 packages to be the current tagged version
+      # This is needed due to delay in tagged release versus
+      # package publishing and the latest versions of each package in the UDS bundle
       - name: Mutation of the UDS Bundle
         run: |
-          uds zarf tools yq -i '.metadata.version = "registry1"' bundles/latest/cpu/uds-bundle.yaml
+          uds zarf tools yq -i '.metadata.version = "v${{ env.LEAPFROGAI_VERSION }}"' bundles/latest/cpu/uds-bundle.yaml
 
-          uds zarf tools yq -i '.packages[].ref |= sub("^[^ ]+-upstream$", "${{ steps.get_version.outputs.LFAI_VERSION }}-upstream")' bundles/latest/cpu/uds-bundle.yaml
+          uds zarf tools yq -i '.packages[].ref |= sub("^[^ ]+-upstream$", "${{ env.LEAPFROGAI_VERSION }}-upstream")' bundles/latest/cpu/uds-bundle.yaml
 
-          uds zarf tools yq -i '.packages[1] |= del(.repository)' bundles/latest/cpu/uds-bundle.yaml
-          uds zarf tools yq -i '.packages[1] |= .ref = "v${{ steps.get_version.outputs.LFAI_VERSION }}"' bundles/latest/cpu/uds-bundle.yaml
-          uds zarf tools yq -i '.packages[1] |= .path = "../../../"' bundles/latest/cpu/uds-bundle.yaml
-
-      - name: Print the Modified UDS Bundle
-        run: |
-          cat bundles/latest/cpu/uds-config.yaml
-          cat bundles/latest/cpu/uds-bundle.yaml
-
-      - name: Create UDS Cluster
-        shell: bash
-        run: |
-          UDS_CONFIG=.github/config/uds-config.yaml make create-uds-cpu-cluster
-
-      - name: Create and Deploy Registry1 Bundle
+      - name: Create and Deploy UDS Bundle (v${{ env.LEAPFROGAI_VERSION }})
         run: |
           cd bundles/latest/cpu
           uds create . --confirm && \
-            uds deploy uds-bundle-leapfrogai-amd64-registry1.tar.zst --confirm --no-progress --log-level debug && \
-            rm -rf uds-bundle-leapfrogai-amd64-registry1.tar.zst && \
+            uds deploy uds-bundle-leapfrogai-amd64-v${{ env.LEAPFROGAI_VERSION }}.tar.zst --confirm --no-progress && \
+            rm -rf uds-bundle-leapfrogai-amd64-v${{ env.LEAPFROGAI_VERSION }}.tar.zst && \
+            docker system prune -af
+
+      - name: Checkout Repo (main)
+        uses: actions/checkout@b4ffde65f46336ab88eb53be808477a3936bae11 # v4.1.1
+        with:
+          ref: main
+
+      - name: Print the Commit SHA
+        run: |
+          COMMIT_SHA=$(git rev-parse HEAD)
+          echo "The latest commit on the main branch is: $COMMIT_SHA"
+
+      - name: Install Dev Dependencies (main)
+        run: |
+          python -m pip install ".[dev]" ".[dev-vllm]" ".[dev-whisper]" --force-reinstall --no-cache-dir
+
+      # Set UDS CPU bundle refs and repositories to snapshot-latest
+      - name: Mutation of the UDS Bundle
+        run: |
+          uds zarf tools yq -i '.metadata.version = "${{ env.SNAPSHOT_VERSION }}"' bundles/latest/cpu/uds-bundle.yaml
+
+          uds zarf tools yq -i '.packages[].ref |= sub("^[^ ]+-upstream$", "${{ env.SNAPSHOT_VERSION }}-upstream")' bundles/latest/cpu/uds-bundle.yaml
+
+          uds zarf tools yq -i '.packages[].repository |= sub("/uds/", "/uds/snapshots/")' bundles/latest/cpu/uds-bundle.yaml
+
+      - name: Create and Deploy UDS Bundle (${{ env.SNAPSHOT_VERSION }})
+        run: |
+          cd bundles/latest/cpu
+          uds create . --confirm && \
+            uds deploy uds-bundle-leapfrogai-amd64-${{ env.SNAPSHOT_VERSION }}.tar.zst --confirm --no-progress && \
+            rm -rf uds-bundle-leapfrogai-amd64-${{ env.SNAPSHOT_VERSION }}.tar.zst && \
             docker system prune -af
 
       - name: Generate Secrets

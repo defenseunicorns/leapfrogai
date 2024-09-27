@@ -1,0 +1,174 @@
+name: release
+description: "Cut a release of all LeapfrogAI artifacts"
+
+inputs:
+  releaseTag:
+    description: The release tag to be published, cannot be left empty
+    required: true
+  subRepository:
+    description: The sub-repository to publish the artifacts to
+    required: false
+    default: /uds/
+  registry1Username:
+    description: Registry1 Username
+  registry1Password:
+    description: Registry1 Password
+  ghToken:
+    description: GitHub Token
+  chainguardIdentity:
+    description: Chainguard login identity
+
+runs:
+  using: composite
+
+  steps:
+    - name: Setup UDS Environment
+      uses: defenseunicorns/uds-common/.github/actions/setup@e3008473beab00b12a94f9fcc7340124338d5c08 # v0.13.1
+      with:
+        registry1Username: ${{ inputs.registry1Username }}
+        registry1Password: ${{ inputs.registry1Password }}
+        ghToken: ${{ inputs.ghToken }}
+        chainguardIdentity: ${{ inputs.chainguardIdentity }}
+
+    - name: Set up QEMU
+      uses: docker/setup-qemu-action@68827325e0b33c7199eb31dd4e31fbe9023e06e3 # v3.0.0
+
+    - name: Set up Docker Buildx
+      uses: docker/setup-buildx-action@0d103c3126aa41d772a8362f6aa67afac040f80c # v3.1.0
+
+    - name: Setup Python
+      uses: actions/setup-python@f677139bbe7f9c59b41e40162b753c062f5d49a3 # v5.2.0
+      with:
+        python-version-file: "pyproject.toml"
+
+    - name: Install Dev Dependencies
+      shell: bash
+      run: |
+        python -m pip install ".[dev]" ".[dev-vllm]" ".[dev-whisper]"
+
+    - name: Build and Publish K3d GPU
+      shell: bash
+      run: |
+        cd packages/k3d-gpu
+        docker build \
+          --platform linux/amd64 \
+          -t ghcr.io/defenseunicorns/leapfrogai/k3d-gpu:${{ inputs.releaseTag }} .
+        docker push ghcr.io/defenseunicorns/leapfrogai/k3d-gpu:${{ inputs.releaseTag }}
+        cd ../..
+
+    - name: Download Python Wheels and Publish Builder Image
+      shell: bash
+      run: |
+        docker buildx build --platform amd64,arm64 -t ghcr.io/defenseunicorns/leapfrogai/leapfrogai-sdk:${{ inputs.releaseTag }} --push -f src/leapfrogai_sdk/Dockerfile .
+
+    - name: Install Zarf
+      uses: defenseunicorns/setup-zarf@10e539efed02f75ec39eb8823e22a5c795f492ae #v1.0.1
+
+    - name: Build and Publish API
+      shell: bash
+      run: |
+        docker buildx build --platform amd64,arm64 --build-arg LOCAL_VERSION=${{ inputs.releaseTag }} -t ghcr.io/defenseunicorns/leapfrogai/leapfrogai-api:${{ inputs.releaseTag }} --push -f packages/api/Dockerfile .
+        docker buildx build --platform amd64,arm64 -t ghcr.io/defenseunicorns/leapfrogai/api-migrations:${{ inputs.releaseTag }} --push -f Dockerfile.migrations --build-arg="MIGRATIONS_DIR=packages/api/supabase/migrations" .
+
+        zarf package create packages/api --set=IMAGE_VERSION=${{ inputs.releaseTag }} --architecture amd64 --flavor upstream --confirm
+        zarf package create packages/api --set=IMAGE_VERSION=${{ inputs.releaseTag }} --architecture arm64 --flavor upstream --confirm
+
+        zarf package publish zarf-package-leapfrogai-api-amd64-${{ inputs.releaseTag }}.tar.zst oci://ghcr.io/defenseunicorns/packages${{ inputs.subRepository }}leapfrogai
+        zarf package publish zarf-package-leapfrogai-api-arm64-${{ inputs.releaseTag }}.tar.zst oci://ghcr.io/defenseunicorns/packages${{ inputs.subRepository }}leapfrogai
+
+        docker image prune -af
+        rm zarf-package-leapfrogai-api-*.tar.zst
+
+    - name: Build and Publish UI
+      shell: bash
+      run: |
+        docker buildx build --platform amd64,arm64 -t ghcr.io/defenseunicorns/leapfrogai/leapfrogai-ui:${{ inputs.releaseTag }} --push src/leapfrogai_ui
+        docker buildx build --platform amd64,arm64 -t ghcr.io/defenseunicorns/leapfrogai/ui-migrations:${{ inputs.releaseTag }} --push -f Dockerfile.migrations --build-arg="MIGRATIONS_DIR=src/leapfrogai_ui/supabase/migrations" .
+
+        zarf package create packages/ui --set=IMAGE_VERSION=${{ inputs.releaseTag }} --architecture amd64 --flavor upstream --confirm
+        zarf package create packages/ui --set=IMAGE_VERSION=${{ inputs.releaseTag }} --architecture arm64 --flavor upstream --confirm
+
+        zarf package publish zarf-package-leapfrogai-ui-amd64-${{ inputs.releaseTag }}.tar.zst oci://ghcr.io/defenseunicorns/packages${{ inputs.subRepository }}leapfrogai
+        zarf package publish zarf-package-leapfrogai-ui-arm64-${{ inputs.releaseTag }}.tar.zst oci://ghcr.io/defenseunicorns/packages${{ inputs.subRepository }}leapfrogai
+
+        docker image prune -af
+        rm zarf-package-leapfrogai-ui-*.tar.zst
+
+    - name: Build and Publish Supabase
+      shell: bash
+      run: |
+        docker buildx build --platform amd64,arm64 -t ghcr.io/defenseunicorns/leapfrogai/supabase-migrations:${{ inputs.releaseTag }} --push -f Dockerfile.migrations --build-arg="MIGRATIONS_DIR=packages/supabase/migrations" .
+
+        zarf package create packages/supabase --set=IMAGE_VERSION=${{ inputs.releaseTag }} --architecture amd64 --flavor upstream --confirm
+        zarf package create packages/supabase --set=IMAGE_VERSION=${{ inputs.releaseTag }} --architecture arm64 --flavor upstream --confirm
+
+        zarf package publish zarf-package-supabase-amd64-${{ inputs.releaseTag }}.tar.zst oci://ghcr.io/defenseunicorns/packages${{ inputs.subRepository }}leapfrogai
+        zarf package publish zarf-package-supabase-arm64-${{ inputs.releaseTag }}.tar.zst oci://ghcr.io/defenseunicorns/packages${{ inputs.subRepository }}leapfrogai
+
+    - name: Build and Publish Repeater
+      shell: bash
+      run: |
+        docker buildx build --platform amd64,arm64 --build-arg LOCAL_VERSION=${{ inputs.releaseTag }} -t ghcr.io/defenseunicorns/leapfrogai/repeater:${{ inputs.releaseTag }} --push -f packages/repeater/Dockerfile .
+
+        zarf package create packages/repeater --set=IMAGE_VERSION=${{ inputs.releaseTag }} --architecture amd64 --flavor upstream --confirm
+        zarf package create packages/repeater --set=IMAGE_VERSION=${{ inputs.releaseTag }} --architecture arm64 --flavor upstream --confirm
+
+        zarf package publish zarf-package-repeater-amd64-${{ inputs.releaseTag }}.tar.zst oci://ghcr.io/defenseunicorns/packages${{ inputs.subRepository }}leapfrogai
+        zarf package publish zarf-package-repeater-arm64-${{ inputs.releaseTag }}.tar.zst oci://ghcr.io/defenseunicorns/packages${{ inputs.subRepository }}leapfrogai
+
+        docker image prune -af
+        rm zarf-package-repeater-*.tar.zst
+
+    - name: Build and Publish LLaMA-CPP-Python
+      shell: bash
+      run: |
+        docker buildx build --platform amd64,arm64 --build-arg LOCAL_VERSION=${{ inputs.releaseTag }} -t ghcr.io/defenseunicorns/leapfrogai/llama-cpp-python:${{ inputs.releaseTag }} --push -f packages/llama-cpp-python/Dockerfile .
+
+        zarf package create packages/llama-cpp-python --set=IMAGE_VERSION=${{ inputs.releaseTag }} --architecture amd64 --flavor upstream --confirm
+        zarf package create packages/llama-cpp-python --set=IMAGE_VERSION=${{ inputs.releaseTag }} --architecture arm64 --flavor upstream --confirm
+
+        zarf package publish zarf-package-llama-cpp-python-amd64-${{ inputs.releaseTag }}.tar.zst oci://ghcr.io/defenseunicorns/packages${{ inputs.subRepository }}leapfrogai
+        zarf package publish zarf-package-llama-cpp-python-arm64-${{ inputs.releaseTag }}.tar.zst oci://ghcr.io/defenseunicorns/packages${{ inputs.subRepository }}leapfrogai
+
+        docker image prune -af
+        rm zarf-package-llama-*.tar.zst
+
+    - name: Build and Publish vLLM
+      shell: bash
+      run: |
+        docker buildx build --build-arg LOCAL_VERSION=${{ inputs.releaseTag }} -t ghcr.io/defenseunicorns/leapfrogai/vllm:${{ inputs.releaseTag }} --push -f packages/vllm/Dockerfile .
+
+        ZARF_CONFIG=packages/vllm/zarf-config.yaml zarf package create packages/vllm --set=IMAGE_VERSION=${{ inputs.releaseTag }} --flavor upstream --confirm
+
+        zarf package publish zarf-package-vllm-amd64-${{ inputs.releaseTag }}.tar.zst oci://ghcr.io/defenseunicorns/packages${{ inputs.subRepository }}leapfrogai
+
+        docker image prune -af
+        rm zarf-package-vllm-*.tar.zst
+
+    - name: Build and Publish Text-Embeddings
+      shell: bash
+      run: |
+        docker buildx build --platform amd64,arm64 --build-arg LOCAL_VERSION=${{ inputs.releaseTag }} -t ghcr.io/defenseunicorns/leapfrogai/text-embeddings:${{ inputs.releaseTag }} --push -f packages/text-embeddings/Dockerfile .
+
+        zarf package create packages/text-embeddings --set=IMAGE_VERSION=${{ inputs.releaseTag }} --architecture amd64 --flavor upstream --confirm
+        zarf package create packages/text-embeddings --set=IMAGE_VERSION=${{ inputs.releaseTag }} --architecture arm64 --flavor upstream --confirm
+
+        zarf package publish zarf-package-text-embeddings-amd64-${{ inputs.releaseTag }}.tar.zst oci://ghcr.io/defenseunicorns/packages${{ inputs.subRepository }}leapfrogai
+        zarf package publish zarf-package-text-embeddings-arm64-${{ inputs.releaseTag }}.tar.zst oci://ghcr.io/defenseunicorns/packages${{ inputs.subRepository }}leapfrogai
+
+        docker image prune -af
+        rm zarf-package-text-embeddings-*.tar.zst
+
+    - name: Build and Publish Whisper
+      shell: bash
+      run: |
+        docker buildx build --platform amd64,arm64 --build-arg LOCAL_VERSION=${{ inputs.releaseTag }} -t ghcr.io/defenseunicorns/leapfrogai/whisper:${{ inputs.releaseTag }} --push -f packages/whisper/Dockerfile .
+
+        zarf package create packages/whisper --set=IMAGE_VERSION=${{ inputs.releaseTag }} --architecture amd64 --flavor upstream --confirm
+        zarf package create packages/whisper --set=IMAGE_VERSION=${{ inputs.releaseTag }} --architecture arm64 --flavor upstream --confirm
+
+        zarf package publish zarf-package-whisper-amd64-${{ inputs.releaseTag }}.tar.zst oci://ghcr.io/defenseunicorns/packages${{ inputs.subRepository }}leapfrogai
+        zarf package publish zarf-package-whisper-arm64-${{ inputs.releaseTag }}.tar.zst oci://ghcr.io/defenseunicorns/packages${{ inputs.subRepository }}leapfrogai
+
+        docker image prune -af
+        rm zarf-package-whisper-*.tar.zst

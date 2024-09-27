@@ -9,7 +9,7 @@ inputs:
   ghToken:
     description: GitHub Token
   chainguardIdentity:
-    description: Chainguard Identity
+    description: Chainguard login identity
 
 runs:
   using: composite
