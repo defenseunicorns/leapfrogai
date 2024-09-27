@@ -6,11 +6,11 @@ on:
   workflow_dispatch: # trigger manually as needed
   pull_request:
     types:
-      - opened # default trigger
-      - reopened # default trigger
-      - synchronize # default trigger
-      - ready_for_review # don't run on draft PRs
-      - milestoned # allows us to trigger on bot PRs
+      - opened            # default trigger
+      - reopened          # default trigger
+      - synchronize       # default trigger
+      - ready_for_review  # don't run on draft PRs
+      - milestoned        # allows us to trigger on bot PRs
     paths:
       - .github/workflows/nightly-snapshot-release.yaml
 
@@ -23,10 +23,8 @@ defaults:
     shell: bash
 
 env:
-  # x-release-please-start-version
-  LEAPFROGAI_VERSION: 0.13.0
-  # x-release-please-end
   SNAPSHOT_VERSION: snapshot-latest
+  SNAPSHOT_SUB_REPOSITORY: /uds/snapshots
 
 permissions:
   contents: read
@@ -47,7 +45,7 @@ jobs:
         uses: ./.github/actions/release
         with:
           releaseTag: ${{ env.SNAPSHOT_VERSION }}
-          subRepository: /uds/snapshots/
+          subRepository: ${{ env.SNAPSHOT_SUB_REPOSITORY }}
           registry1Username: ${{ secrets.IRON_BANK_ROBOT_USERNAME }}
           registry1Password: ${{ secrets.IRON_BANK_ROBOT_PASSWORD }}
           ghToken: ${{ secrets.GITHUB_TOKEN }}
@@ -65,19 +63,29 @@ jobs:
       id-token: write # This is needed for OIDC federation.
 
     steps:
-      - name: Checkout Repo (v${{ env.LEAPFROGAI_VERSION }})
+      # Checkout main just to see the latest release in the release-please manifest
+      - name: Checkout Repo (main)
         uses: actions/checkout@b4ffde65f46336ab88eb53be808477a3936bae11 # v4.1.1
         with:
-          ref: v${{ env.LEAPFROGAI_VERSION }}
+          ref: main
 
-      - name: Setup Python (v${{ env.LEAPFROGAI_VERSION }})
-        uses: ./.github/actions/python
-
-      - name: Install Dev Dependencies
+      - name: Get Latest Release Version
+        id: get_version
         run: |
-          python -m pip install ".[dev]" ".[dev-vllm]" ".[dev-whisper]"
+          LFAI_VERSION=$(jq -r '.["."]' .github/.release-please-manifest.json)
+          echo "LFAI_VERSION=$LFAI_VERSION" >> $GITHUB_OUTPUT
 
-      - name: Setup UDS Cluster
+      ################
+      # LATEST RELEASE
+      ################
+
+      # Checkout the latest release in the release-please manifest
+      - name: Checkout Repo (v${{ steps.get_version.outputs.LFAI_VERSION }})
+        uses: actions/checkout@b4ffde65f46336ab88eb53be808477a3936bae11 # v4.1.1
+        with:
+          ref: v${{ steps.get_version.outputs.LFAI_VERSION }}
+
+      - name: Setup UDS Cluster (v${{ steps.get_version.outputs.LFAI_VERSION }})
         uses: ./.github/actions/uds-cluster
         with:
           registry1Username: ${{ secrets.IRON_BANK_ROBOT_USERNAME }}
@@ -85,38 +93,40 @@ jobs:
           ghToken: ${{ secrets.GITHUB_TOKEN }}
           chainguardIdentity: ${{ secrets.CHAINGUARD_IDENTITY }}
 
-      # This is needed due to delay in tagged release versus
-      # package publishing and the latest versions of each package in the UDS bundle
-      - name: Mutation of the UDS Bundle
+      # This is needed due to delay in tagged releases versus the version refs within the UDS bundles
+      - name: Mutation of the UDS Bundle (v${{ steps.get_version.outputs.LFAI_VERSION }})
         run: |
-          uds zarf tools yq -i '.metadata.version = "v${{ env.LEAPFROGAI_VERSION }}"' bundles/latest/cpu/uds-bundle.yaml
+          uds zarf tools yq -i '.metadata.version = "v${{ steps.get_version.outputs.LFAI_VERSION }}"' bundles/latest/cpu/uds-bundle.yaml
 
-          uds zarf tools yq -i '.packages[].ref |= sub("^[^ ]+-upstream$", "${{ env.LEAPFROGAI_VERSION }}-upstream")' bundles/latest/cpu/uds-bundle.yaml
+          uds zarf tools yq -i '.packages[].ref |= sub("^[^ ]+-upstream$", "${{ steps.get_version.outputs.LFAI_VERSION }}-upstream")' bundles/latest/cpu/uds-bundle.yaml
 
-      - name: Create and Deploy UDS Bundle (v${{ env.LEAPFROGAI_VERSION }})
+      - name: Create and Deploy UDS Bundle (v${{ steps.get_version.outputs.LFAI_VERSION }})
         run: |
           cd bundles/latest/cpu
           uds create . --confirm && \
-            uds deploy uds-bundle-leapfrogai-amd64-v${{ env.LEAPFROGAI_VERSION }}.tar.zst --confirm --no-progress && \
-            rm -rf uds-bundle-leapfrogai-amd64-v${{ env.LEAPFROGAI_VERSION }}.tar.zst && \
+            uds deploy uds-bundle-leapfrogai-amd64-v${{ steps.get_version.outputs.LFAI_VERSION }}.tar.zst --confirm --no-progress && \
+            rm -rf uds-bundle-leapfrogai-amd64-v${{ steps.get_version.outputs.LFAI_VERSION }}.tar.zst && \
             docker system prune -af
+
+      #################
+      # MAIN (SNAPSHOT)
+      #################
 
       - name: Checkout Repo (main)
         uses: actions/checkout@b4ffde65f46336ab88eb53be808477a3936bae11 # v4.1.1
         with:
           ref: main
 
-      - name: Print the Commit SHA
+      - name: Print the Commit SHA (main)
         run: |
           COMMIT_SHA=$(git rev-parse HEAD)
           echo "The latest commit on the main branch is: $COMMIT_SHA"
 
-      - name: Install Dev Dependencies (main)
-        run: |
-          python -m pip install ".[dev]" ".[dev-vllm]" ".[dev-whisper]" --force-reinstall --no-cache-dir
+      - name: Setup Python (main)
+        uses: ./.github/actions/python
 
       # Set UDS CPU bundle refs and repositories to snapshot-latest
-      - name: Mutation of the UDS Bundle
+      - name: Mutation of the UDS Bundle (main)
         run: |
           uds zarf tools yq -i '.metadata.version = "${{ env.SNAPSHOT_VERSION }}"' bundles/latest/cpu/uds-bundle.yaml
 
@@ -124,13 +134,17 @@ jobs:
 
           uds zarf tools yq -i '.packages[].repository |= sub("/uds/", "/uds/snapshots/")' bundles/latest/cpu/uds-bundle.yaml
 
-      - name: Create and Deploy UDS Bundle (${{ env.SNAPSHOT_VERSION }})
+      - name: Create and Deploy UDS Bundle (main)
         run: |
           cd bundles/latest/cpu
           uds create . --confirm && \
             uds deploy uds-bundle-leapfrogai-amd64-${{ env.SNAPSHOT_VERSION }}.tar.zst --confirm --no-progress && \
             rm -rf uds-bundle-leapfrogai-amd64-${{ env.SNAPSHOT_VERSION }}.tar.zst && \
             docker system prune -af
+
+      #########
+      # TESTING
+      #########
 
       - name: Generate Secrets
         id: generate_secrets
