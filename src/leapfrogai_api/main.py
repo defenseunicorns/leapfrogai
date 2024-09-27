@@ -82,7 +82,8 @@ app.include_router(runs.router)
 app.include_router(messages.router)
 app.include_router(runs_steps.router)
 app.include_router(lfai_vector_stores.router)
-app.include_router(lfai_rag.router)
+if os.environ.get("DEV"):
+    app.include_router(lfai_rag.router)
 app.include_router(lfai_token_count.router)
 app.include_router(lfai_models.router)
 # This should be at the bottom to prevent it preempting more specific runs endpoints

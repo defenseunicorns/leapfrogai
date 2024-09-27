@@ -6,13 +6,11 @@ from leapfrogai_api.typedef.rag.rag_types import (
     ConfigurationPayload,
 )
 from leapfrogai_api.routers.supabase_session import Session
-from leapfrogai_api.utils.decorators import dev_only
 from leapfrogai_api.utils.logging_tools import logger
 
 router = APIRouter(prefix="/leapfrogai/v1/rag", tags=["leapfrogai/rag"])
 
 
-@dev_only
 @router.patch("/configure")
 async def configure(session: Session, configuration: ConfigurationPayload) -> None:
     """
@@ -33,7 +31,6 @@ async def configure(session: Session, configuration: ConfigurationPayload) -> No
     )
 
 
-@dev_only
 @router.get("/configure")
 async def get_configuration(session: Session) -> ConfigurationPayload:
     """
