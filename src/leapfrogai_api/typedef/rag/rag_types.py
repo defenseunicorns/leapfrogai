@@ -14,11 +14,6 @@ class ConfigurationSingleton:
             cls._instance = ConfigurationPayload(**kwargs)
         return cls._instance
 
-    @classmethod
-    def update_instance(cls, configuration):
-        for key, value in configuration.items():
-            setattr(cls._instance, key, value)
-
 
 class ConfigurationPayload(BaseModel):
     """Response for RAG configuration."""
@@ -38,3 +33,7 @@ class ConfigurationPayload(BaseModel):
         default=100,
         description="The top-k results returned from the RAG call before reranking",
     )
+
+    def update_instance(self, configuration):
+        for key, value in configuration.items():
+            setattr(self._instance, key, value)
