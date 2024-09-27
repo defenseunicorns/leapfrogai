@@ -4,35 +4,35 @@ kind: UDSBundle
 metadata:
   name: leapfrogai
   description: A UDS bundle for deploying LeapfrogAI
-  version: 0.13.0-upstream
+  version: 0.13.1-upstream
 
 packages:
   # Supabase backend for the UI and API to interface with Postgresql
   - name: supabase
     repository: ghcr.io/defenseunicorns/packages/uds/leapfrogai/supabase
-    ref: 0.13.0-upstream
+    ref: 0.13.1-upstream
 
   # API
   - name: leapfrogai-api
     repository: ghcr.io/defenseunicorns/packages/uds/leapfrogai/leapfrogai-api
-    ref: 0.13.0-upstream
+    ref: 0.13.1-upstream
 
   # Chat Model
   - name: llama-cpp-python
     repository: ghcr.io/defenseunicorns/packages/uds/leapfrogai/llama-cpp-python
-    ref: 0.13.0-upstream
+    ref: 0.13.1-upstream
 
   # Text Embeddings Model
   - name: text-embeddings
     repository: ghcr.io/defenseunicorns/packages/uds/leapfrogai/text-embeddings
-    ref: 0.13.0-upstream
+    ref: 0.13.1-upstream
 
   # Transcription Model
   - name: whisper
     repository: ghcr.io/defenseunicorns/packages/uds/leapfrogai/whisper
-    ref: 0.13.0-upstream
+    ref: 0.13.1-upstream
 
   # UI
   - name: leapfrogai-ui
     repository: ghcr.io/defenseunicorns/packages/uds/leapfrogai/leapfrogai-ui
-    ref: 0.13.0-upstream
+    ref: 0.13.1-upstream
