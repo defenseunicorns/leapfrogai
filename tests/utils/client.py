@@ -22,9 +22,9 @@ def get_openai_model():
 
 def get_leapfrogai_api_key():
     try:
-        return os.getenv("LEAPFROGAI_API_KEY")
+        return os.getenv("LEAPFROGAI_API_KEY") or os.getenv("SUPABASE_USER_JWT")
     except KeyError:
-        raise ValueError("LEAPFROGAI_API_KEY not set")
+        raise ValueError("LEAPFROGAI_API_KEY or SUPABASE_USER_JWT not set")
 
 
 def get_leapfrogai_api_url():
