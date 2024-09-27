@@ -11,6 +11,7 @@
       "versioning": "default",
       "extra-files": [
         "pyproject.toml",
+        ".github/workflows/nightly-snapshot-release.yaml",
         {
           "type": "generic",
           "path": "**/Chart.yaml",

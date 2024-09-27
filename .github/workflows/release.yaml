@@ -1,12 +1,11 @@
 name: Publish Release Artifacts
 
-on:
-  workflow_call
+on: workflow_call
 
 permissions:
   contents: read
   packages: write
-
+  id-token: write # This is needed for OIDC federation.
 
 jobs:
   build-and-publish-artifacts:
@@ -16,147 +15,17 @@ jobs:
       - name: Checkout Repo
         uses: actions/checkout@b4ffde65f46336ab88eb53be808477a3936bae11 # v4.1.1
 
-      - name: Login to GitHub Container Registry
-        uses: docker/login-action@343f7c4344506bcbf9b4de18042ae17996df046d # v3.0.0
-        with:
-          registry: ghcr.io
-          username: ${{ github.actor }}
-          password: ${{ secrets.GITHUB_TOKEN }}
-
-      - name: Set up QEMU
-        uses: docker/setup-qemu-action@68827325e0b33c7199eb31dd4e31fbe9023e06e3 # v3.0.0
-
-      - name: Set up Docker Buildx
-        uses: docker/setup-buildx-action@0d103c3126aa41d772a8362f6aa67afac040f80c # v3.1.0
-
-      - name: Setup Python
-        uses: actions/setup-python@f677139bbe7f9c59b41e40162b753c062f5d49a3 # v5.2.0
-        with:
-          python-version-file: "pyproject.toml"
-
       - name: Get Version
         id: get_version
         run: |
           LFAI_VERSION=$(jq -r '.["."]' .github/.release-please-manifest.json)
           echo "LFAI_VERSION=$LFAI_VERSION" >> $GITHUB_OUTPUT
 
-      - name: Instal Python Deps
-        run: |
-          python -m pip install ".[dev,dev-whisper,dev-vllm]"
-
-      - name: Build and Publish k3d-gpu image
-        run: |
-          cd packages/k3d-gpu
-          docker build \
-            --platform linux/amd64 \
-            -t ghcr.io/defenseunicorns/leapfrogai/k3d-gpu:${{ steps.get_version.outputs.LFAI_VERSION }} .
-          docker push ghcr.io/defenseunicorns/leapfrogai/k3d-gpu:${{ steps.get_version.outputs.LFAI_VERSION }}
-          cd ../..
-
-      - name: Download Python Wheels and Publish Builder Image
-        run: |
-          docker buildx build --platform amd64,arm64 -t ghcr.io/defenseunicorns/leapfrogai/leapfrogai-sdk:${{ steps.get_version.outputs.LFAI_VERSION }} --push -f src/leapfrogai_sdk/Dockerfile .
-
-      - name: Install Zarf
-        uses: defenseunicorns/setup-zarf@10e539efed02f75ec39eb8823e22a5c795f492ae #v1.0.1
-
-      - name: Build and Publish API
-        run: |
-          docker buildx build --platform amd64,arm64 --build-arg LOCAL_VERSION=${{ steps.get_version.outputs.LFAI_VERSION }} -t ghcr.io/defenseunicorns/leapfrogai/leapfrogai-api:${{ steps.get_version.outputs.LFAI_VERSION }} --push -f packages/api/Dockerfile .
-          docker buildx build --platform amd64,arm64 -t ghcr.io/defenseunicorns/leapfrogai/api-migrations:${{ steps.get_version.outputs.LFAI_VERSION }} --push -f Dockerfile.migrations --build-arg="MIGRATIONS_DIR=packages/api/supabase/migrations" .
-
-          zarf package create packages/api --set=IMAGE_VERSION=${{ steps.get_version.outputs.LFAI_VERSION }} --architecture amd64 --flavor upstream --confirm
-          zarf package create packages/api --set=IMAGE_VERSION=${{ steps.get_version.outputs.LFAI_VERSION }} --architecture arm64 --flavor upstream --confirm
-
-          zarf package publish zarf-package-leapfrogai-api-amd64-${{ steps.get_version.outputs.LFAI_VERSION }}.tar.zst oci://ghcr.io/defenseunicorns/packages/uds/leapfrogai
-          zarf package publish zarf-package-leapfrogai-api-arm64-${{ steps.get_version.outputs.LFAI_VERSION }}.tar.zst oci://ghcr.io/defenseunicorns/packages/uds/leapfrogai
-
-          docker image prune -af
-          rm zarf-package-leapfrogai-api-*.tar.zst
-
-      - name: Build and Publish UI
-        run: |
-          docker buildx build --platform amd64,arm64 -t ghcr.io/defenseunicorns/leapfrogai/leapfrogai-ui:${{ steps.get_version.outputs.LFAI_VERSION }} --push src/leapfrogai_ui
-          docker buildx build --platform amd64,arm64 -t ghcr.io/defenseunicorns/leapfrogai/ui-migrations:${{ steps.get_version.outputs.LFAI_VERSION }} --push -f Dockerfile.migrations --build-arg="MIGRATIONS_DIR=src/leapfrogai_ui/supabase/migrations" .
-
-          zarf package create packages/ui --set=IMAGE_VERSION=${{ steps.get_version.outputs.LFAI_VERSION }} --architecture amd64 --flavor upstream --confirm
-          zarf package create packages/ui --set=IMAGE_VERSION=${{ steps.get_version.outputs.LFAI_VERSION }} --architecture arm64 --flavor upstream --confirm
-
-          zarf package publish zarf-package-leapfrogai-ui-amd64-${{ steps.get_version.outputs.LFAI_VERSION }}.tar.zst oci://ghcr.io/defenseunicorns/packages/uds/leapfrogai
-          zarf package publish zarf-package-leapfrogai-ui-arm64-${{ steps.get_version.outputs.LFAI_VERSION }}.tar.zst oci://ghcr.io/defenseunicorns/packages/uds/leapfrogai
-
-          docker image prune -af
-          rm zarf-package-leapfrogai-ui-*.tar.zst
-
-      - name: Build and Publish Supabase
-        run: |
-          docker buildx build --platform amd64,arm64 -t ghcr.io/defenseunicorns/leapfrogai/supabase-migrations:${{ steps.get_version.outputs.LFAI_VERSION }} --push -f Dockerfile.migrations --build-arg="MIGRATIONS_DIR=packages/supabase/migrations" .
-
-          zarf package create packages/supabase --set=IMAGE_VERSION=${{ steps.get_version.outputs.LFAI_VERSION }} --architecture amd64 --flavor upstream --confirm
-          zarf package create packages/supabase --set=IMAGE_VERSION=${{ steps.get_version.outputs.LFAI_VERSION }} --architecture arm64 --flavor upstream --confirm
-
-          zarf package publish zarf-package-supabase-amd64-${{ steps.get_version.outputs.LFAI_VERSION }}.tar.zst oci://ghcr.io/defenseunicorns/packages/uds/leapfrogai
-          zarf package publish zarf-package-supabase-arm64-${{ steps.get_version.outputs.LFAI_VERSION }}.tar.zst oci://ghcr.io/defenseunicorns/packages/uds/leapfrogai
-
-      - name: Build and Publish repeater
-        run: |
-          docker buildx build --platform amd64,arm64 --build-arg LOCAL_VERSION=${{ steps.get_version.outputs.LFAI_VERSION }} -t ghcr.io/defenseunicorns/leapfrogai/repeater:${{ steps.get_version.outputs.LFAI_VERSION }} --push -f packages/repeater/Dockerfile .
-
-          zarf package create packages/repeater --set=IMAGE_VERSION=${{ steps.get_version.outputs.LFAI_VERSION }} --architecture amd64 --flavor upstream --confirm
-          zarf package create packages/repeater --set=IMAGE_VERSION=${{ steps.get_version.outputs.LFAI_VERSION }} --architecture arm64 --flavor upstream --confirm
-
-          zarf package publish zarf-package-repeater-amd64-${{ steps.get_version.outputs.LFAI_VERSION }}.tar.zst oci://ghcr.io/defenseunicorns/packages/uds/leapfrogai
-          zarf package publish zarf-package-repeater-arm64-${{ steps.get_version.outputs.LFAI_VERSION }}.tar.zst oci://ghcr.io/defenseunicorns/packages/uds/leapfrogai
-
-          docker image prune -af
-          rm zarf-package-repeater-*.tar.zst
-
-      - name: Build and Publish llama
-        run: |
-          docker buildx build --platform amd64,arm64 --build-arg LOCAL_VERSION=${{ steps.get_version.outputs.LFAI_VERSION }} -t ghcr.io/defenseunicorns/leapfrogai/llama-cpp-python:${{ steps.get_version.outputs.LFAI_VERSION }} --push -f packages/llama-cpp-python/Dockerfile .
-
-          zarf package create packages/llama-cpp-python --set=IMAGE_VERSION=${{ steps.get_version.outputs.LFAI_VERSION }} --architecture amd64 --flavor upstream --confirm
-          zarf package create packages/llama-cpp-python --set=IMAGE_VERSION=${{ steps.get_version.outputs.LFAI_VERSION }} --architecture arm64 --flavor upstream --confirm
-
-          zarf package publish zarf-package-llama-cpp-python-amd64-${{ steps.get_version.outputs.LFAI_VERSION }}.tar.zst oci://ghcr.io/defenseunicorns/packages/uds/leapfrogai
-          zarf package publish zarf-package-llama-cpp-python-arm64-${{ steps.get_version.outputs.LFAI_VERSION }}.tar.zst oci://ghcr.io/defenseunicorns/packages/uds/leapfrogai
-
-          docker image prune -af
-          rm zarf-package-llama-*.tar.zst
-
-      - name: Build and Publish vLLM
-        run: |
-          docker buildx build --build-arg LOCAL_VERSION=${{ steps.get_version.outputs.LFAI_VERSION }} -t ghcr.io/defenseunicorns/leapfrogai/vllm:${{ steps.get_version.outputs.LFAI_VERSION }} --push -f packages/vllm/Dockerfile .
-
-          zarf package create packages/vllm --set=IMAGE_VERSION=${{ steps.get_version.outputs.LFAI_VERSION }} --flavor upstream --confirm
-
-          zarf package publish zarf-package-vllm-amd64-${{ steps.get_version.outputs.LFAI_VERSION }}.tar.zst oci://ghcr.io/defenseunicorns/packages/uds/leapfrogai
-
-          docker image prune -af
-          rm zarf-package-vllm-*.tar.zst
-
-      - name: Build and Publish Text-Embeddings
-        run: |
-          docker buildx build --platform amd64,arm64 --build-arg LOCAL_VERSION=${{ steps.get_version.outputs.LFAI_VERSION }} -t ghcr.io/defenseunicorns/leapfrogai/text-embeddings:${{ steps.get_version.outputs.LFAI_VERSION }} --push -f packages/text-embeddings/Dockerfile .
-
-          zarf package create packages/text-embeddings --set=IMAGE_VERSION=${{ steps.get_version.outputs.LFAI_VERSION }} --architecture amd64 --flavor upstream --confirm
-          zarf package create packages/text-embeddings --set=IMAGE_VERSION=${{ steps.get_version.outputs.LFAI_VERSION }} --architecture arm64 --flavor upstream --confirm
-
-          zarf package publish zarf-package-text-embeddings-amd64-${{ steps.get_version.outputs.LFAI_VERSION }}.tar.zst oci://ghcr.io/defenseunicorns/packages/uds/leapfrogai
-          zarf package publish zarf-package-text-embeddings-arm64-${{ steps.get_version.outputs.LFAI_VERSION }}.tar.zst oci://ghcr.io/defenseunicorns/packages/uds/leapfrogai
-
-          docker image prune -af
-          rm zarf-package-text-embeddings-*.tar.zst
-
-      - name: Build and Publish whisper
-        run: |
-          docker buildx build --platform amd64,arm64 --build-arg LOCAL_VERSION=${{ steps.get_version.outputs.LFAI_VERSION }} -t ghcr.io/defenseunicorns/leapfrogai/whisper:${{ steps.get_version.outputs.LFAI_VERSION }} --push -f packages/whisper/Dockerfile .
-
-          zarf package create packages/whisper --set=IMAGE_VERSION=${{ steps.get_version.outputs.LFAI_VERSION }} --architecture amd64 --flavor upstream --confirm
-          zarf package create packages/whisper --set=IMAGE_VERSION=${{ steps.get_version.outputs.LFAI_VERSION }} --architecture arm64 --flavor upstream --confirm
-
-          zarf package publish zarf-package-whisper-amd64-${{ steps.get_version.outputs.LFAI_VERSION }}.tar.zst oci://ghcr.io/defenseunicorns/packages/uds/leapfrogai
-          zarf package publish zarf-package-whisper-arm64-${{ steps.get_version.outputs.LFAI_VERSION }}.tar.zst oci://ghcr.io/defenseunicorns/packages/uds/leapfrogai
-
-          docker image prune -af
-          rm zarf-package-whisper-*.tar.zst
+      - name: Release LeapfrogAI ${{ steps.get_version.outputs.LFAI_VERSION }}
+        uses: ./.github/actions/release
+        with:
+          releaseTag: ${{ steps.get_version.outputs.LFAI_VERSION }}
+          registry1Username: ${{ secrets.IRON_BANK_ROBOT_USERNAME }}
+          registry1Password: ${{ secrets.IRON_BANK_ROBOT_PASSWORD }}
+          ghToken: ${{ secrets.GITHUB_TOKEN }}
+          chainguardIdentity: ${{ secrets.CHAINGUARD_IDENTITY }}
