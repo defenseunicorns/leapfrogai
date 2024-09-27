@@ -62,7 +62,10 @@ class QueryService:
         )
 
         # 3. Rerank results
-        if ConfigurationSingleton.get_instance().enable_reranking:
+        if (
+            ConfigurationSingleton.get_instance().enable_reranking
+            and len(results.data) > 0
+        ):
             ranker = Reranker(ConfigurationSingleton.get_instance().ranking_model)
             ranked_results: RankedResults = ranker.rank(
                 query=query,

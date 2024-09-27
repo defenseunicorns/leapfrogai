@@ -16,8 +16,6 @@ class ConfigurationSingleton:
 class ConfigurationPayload(BaseModel):
     """Response for RAG configuration."""
 
-    # This is an instance variable, specific to each ConfigurationPayload object
-    # It will be included in the JSON output when the model is serialized
     enable_reranking: bool = Field(
         default=True, description="Enables reranking for RAG queries"
     )
