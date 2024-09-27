@@ -76,4 +76,4 @@ jobs:
         with:
           name: uds-badge-verification-report
           path: temp/report
-          retention-days: 30
+          retention-days: 7
