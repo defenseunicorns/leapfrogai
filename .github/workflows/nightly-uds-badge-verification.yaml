@@ -5,12 +5,6 @@ on:
     - cron: "0 11 * * *" # Runs daily at 12 AM PST
   workflow_dispatch: # trigger manually as needed
   pull_request:
-    types:
-      - opened # default trigger
-      - reopened # default trigger
-      - synchronize # default trigger
-      - ready_for_review # don't run on draft PRs
-      - milestoned # allows us to trigger on bot PRs
     paths:
       - .github/workflows/nightly-uds-badge-verification.yaml
 
@@ -76,9 +70,9 @@ jobs:
         run: |
           mkdir -p temp/report
           chmod +x .github/scripts/summarizeVerification.sh
-          uds run verify-uds-badge-cpu --no-progress 2>&1 | sed -r 's/\x1b\[[0-9;]*[a-zA-Z]//g' \
+          uds run verify-uds-badge-cpu --no-progress 2>&1 | sed -r 's/\x1b\[[0-9;]*[a-zA-Z]//g' 2>&1 \
             | tee temp/report/intermediate-report.txt
-          echo temp/report/intermediate-report.txt 2>&1 | .github/scripts/summarizeVerification.sh \
+          cat temp/report/intermediate-report.txt 2>&1 | .github/scripts/summarizeVerification.sh \
             | tee temp/report/final-report.txt
 
       - name: Archive UDS Badge Verification Report
