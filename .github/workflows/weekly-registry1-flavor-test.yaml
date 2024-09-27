@@ -75,10 +75,8 @@ jobs:
           cat packages/api/values/registry1-values.yaml
 
       - name: Create Registry1 Zarf Packages
-        env:
-          FLAVOR: registry1
         run: |
-          make build-api
+          ZARF_CONFIG=packages/api/zarf-config.yaml uds zarf package create packages/api --flavor registry1 -a amd64 --confirm
 
       # Mutate UDS bundle definition to use Registry1 packages
       # Mutate non-Registry1 packages to be the current tagged version
