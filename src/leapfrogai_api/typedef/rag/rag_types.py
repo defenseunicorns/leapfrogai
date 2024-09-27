@@ -19,21 +19,24 @@ class ConfigurationPayload(BaseModel):
     """Response for RAG configuration."""
 
     enable_reranking: Optional[bool] = Field(
-        default=True, description="Enables reranking for RAG queries"
+        default=None,
+        examples=[True, False],
+        description="Enables reranking for RAG queries",
     )
     # More model info can be found here:
     # https://github.com/AnswerDotAI/rerankers?tab=readme-ov-file
     # https://pypi.org/project/rerankers/
     ranking_model: Optional[str] = Field(
-        default="flashrank",
+        default=None,
         description="What model to use for reranking. Some options may require additional python dependencies.",
         examples=["flashrank", "rankllm", "cross-encoder", "colbert"],
     )
     rag_top_k_when_reranking: Optional[int] = Field(
-        default=100,
+        default=None,
         description="The top-k results returned from the RAG call before reranking",
     )
 
-    def update_instance(self, configuration):
-        for key, value in configuration.items():
-            setattr(self._instance, key, value)
+    def update_instance(self, configuration: BaseModel):
+        for key, value in configuration.model_dump().items():
+            if value is not None:
+                setattr(self, key, value)
