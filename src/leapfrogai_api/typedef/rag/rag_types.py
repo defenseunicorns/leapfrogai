@@ -1,3 +1,4 @@
+import copy
 from typing import Optional
 
 from pydantic import BaseModel, Field
@@ -13,6 +14,11 @@ class ConfigurationSingleton:
         if cls._instance is None:
             cls._instance = ConfigurationPayload(**kwargs)
         return cls._instance
+
+    @classmethod
+    def update_instance(cls, configuration):
+        cls._instance = copy.deepcopy(cls.get_instance())
+        cls._instance.model_validate(configuration.__dict__)
 
 
 class ConfigurationPayload(BaseModel):
