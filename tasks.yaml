@@ -17,7 +17,6 @@ tasks:
       - description: "Clean Up Final Report"
         cmd: |
           chmod +x .github/scripts/summarizeVerification.sh
-          cat ./reports/intermediate-report.txt
           cat ./reports/intermediate-report.txt 2>&1 | .github/scripts/summarizeVerification.sh | tee ./reports/final-report.txt
 
   #############

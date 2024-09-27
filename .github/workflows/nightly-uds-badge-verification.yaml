@@ -29,7 +29,7 @@ jobs:
   uds-badge-verification:
     runs-on: ai-ubuntu-big-boy-8-core
     name: nightly_uds_badge_verification
-    # TODO: make this not run on draft PRs
+    if: ${{ !github.event.pull_request.draft }}
 
     steps:
       - name: Checkout Repo
@@ -69,14 +69,13 @@ jobs:
           export LANGUAGE=en_US:en
           export LC_ALL=en_US.UTF-8
 
-      # TODO: add this back in!
-      # - name: Create and Deploy UDS Bundle (${{ env.SNAPSHOT_VERSION }})
-      #   run: |
-      #     cd bundles/latest/cpu
-      #     uds create . --confirm && \
-      #       uds deploy uds-bundle-leapfrogai-amd64-${{ env.SNAPSHOT_VERSION }}.tar.zst --confirm --no-progress && \
-      #       rm -rf uds-bundle-leapfrogai-amd64-${{ env.SNAPSHOT_VERSION }}.tar.zst && \
-      #       docker system prune -af
+      - name: Create and Deploy UDS Bundle (${{ env.SNAPSHOT_VERSION }})
+        run: |
+          cd bundles/latest/cpu
+          uds create . --confirm && \
+            uds deploy uds-bundle-leapfrogai-amd64-${{ env.SNAPSHOT_VERSION }}.tar.zst --confirm --no-progress && \
+            rm -rf uds-bundle-leapfrogai-amd64-${{ env.SNAPSHOT_VERSION }}.tar.zst && \
+            docker system prune -af
 
       - name: Run UDS Badge Verification Task
         run: |

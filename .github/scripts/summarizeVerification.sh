@@ -74,8 +74,7 @@ while IFS= read -r line; do
 	line=$(echo "$line" | sed 's/^[ \t]*//;s/[ \t]*$//')
 
 	# Match and extract the package name
-	# ℹ️ emoji in UTF-8 hex encoding
-	if [[ $line =~ ^\xE2\x84\xB9[[:space:]]+Package[[:space:]]+Name:[[:space:]]+(.*)$ ]]; then
+	if [[ $line =~ ^ℹ️[[:space:]]+Package[[:space:]]+Name:[[:space:]]+(.*)$ ]]; then
 		# Print the previous package's info before starting a new one
 		print_package_info
 		# Reset variables for the new package
