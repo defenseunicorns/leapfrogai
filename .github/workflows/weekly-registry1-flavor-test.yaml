@@ -6,11 +6,11 @@ on:
   workflow_dispatch: # trigger manually as needed
   pull_request:
     types:
-      - opened            # default trigger
-      - reopened          # default trigger
-      - synchronize       # default trigger
-      - ready_for_review  # don't run on draft PRs
-      - milestoned        # allows us to trigger on bot PRs
+      - opened # default trigger
+      - reopened # default trigger
+      - synchronize # default trigger
+      - ready_for_review # don't run on draft PRs
+      - milestoned # allows us to trigger on bot PRs
     paths:
       - .github/workflows/weekly-registry1-flavor-test.yaml
       - bundles/latest/**
@@ -75,8 +75,10 @@ jobs:
           cat packages/api/values/registry1-values.yaml
 
       - name: Create Registry1 Zarf Packages
+        env:
+          FLAVOR: registry1
         run: |
-          FLAVOR=registry1 LOCAL_VERSION=v0.13.0 make build-api
+          make build-api
 
       # Mutate UDS bundle definition to use Registry1 packages
       # Mutate non-Registry1 packages to be the current tagged version
