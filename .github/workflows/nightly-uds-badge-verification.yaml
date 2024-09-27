@@ -59,13 +59,13 @@ jobs:
 
           uds zarf tools yq -i '.packages[].repository |= sub("/uds/", "/uds/snapshots/")' bundles/latest/cpu/uds-bundle.yaml
 
-      - name: Create and Deploy UDS Bundle (${{ env.SNAPSHOT_VERSION }})
-        run: |
-          cd bundles/latest/cpu
-          uds create . --confirm && \
-            uds deploy uds-bundle-leapfrogai-amd64-${{ env.SNAPSHOT_VERSION }}.tar.zst --confirm --no-progress && \
-            rm -rf uds-bundle-leapfrogai-amd64-${{ env.SNAPSHOT_VERSION }}.tar.zst && \
-            docker system prune -af
+      # - name: Create and Deploy UDS Bundle (${{ env.SNAPSHOT_VERSION }})
+      #   run: |
+      #     cd bundles/latest/cpu
+      #     uds create . --confirm && \
+      #       uds deploy uds-bundle-leapfrogai-amd64-${{ env.SNAPSHOT_VERSION }}.tar.zst --confirm --no-progress && \
+      #       rm -rf uds-bundle-leapfrogai-amd64-${{ env.SNAPSHOT_VERSION }}.tar.zst && \
+      #       docker system prune -af
 
       - name: Run UDS Badge Verification Task
         run: |
