@@ -1,4 +1,4 @@
-name: weekly-registry1-e2e-testing
+name: weekly-registry1-flavor-test
 
 on:
   schedule:
@@ -12,11 +12,11 @@ on:
       - ready_for_review  # don't run on draft PRs
       - milestoned        # allows us to trigger on bot PRs
     paths:
-      - .github/workflows/weekly-registry1-e2e-testing.yaml
+      - .github/workflows/weekly-registry1-flavor-test.yaml
       - bundles/latest/**
 
 concurrency:
-  group: weekly-registry1-e2e-testing${{ github.ref }}
+  group: weekly-registry1-flavor-test-${{ github.ref }}
   cancel-in-progress: true
 
 defaults:
@@ -24,9 +24,9 @@ defaults:
     shell: bash
 
 jobs:
-  test-registry1-flavor:
+  registry1-flavor-test:
     runs-on: ai-ubuntu-big-boy-8-core
-    name: weekly_registry1_e2e_testing
+    name: weekly_registry1_flavor_test
     if: ${{ !github.event.pull_request.draft }}
 
     env:
