@@ -554,13 +554,13 @@ def test_token_count(dummy_auth_middleware):
 def test_configure(dummy_auth_middleware):
     """Test the RAG configuration endpoints."""
     with TestClient(app) as client:
-        token_count_request = {
+        rag_configuration_request = {
             "enable_reranking": True,
             "ranking_model": "rankllm",
             "rag_top_k_when_reranking": 50,
         }
         response = client.patch(
-            "/leapfrogai/v1/rag/configure", json=token_count_request
+            "/leapfrogai/v1/rag/configure", json=rag_configuration_request
         )
         assert response.status_code == 200
 
@@ -575,4 +575,24 @@ def test_configure(dummy_auth_middleware):
         assert isinstance(response_data["rag_top_k_when_reranking"], int)
         assert response_data["enable_reranking"] is True
         assert response_data["ranking_model"] == "rankllm"
+        assert response_data["rag_top_k_when_reranking"] == 50
+
+        # Update only some of the configs to see if the existing ones persist
+        rag_configuration_request = {"ranking_model": "flashrank"}
+        response = client.patch(
+            "/leapfrogai/v1/rag/configure", json=rag_configuration_request
+        )
+        assert response.status_code == 200
+
+        response = client.get("/leapfrogai/v1/rag/configure")
+        assert response.status_code == 200
+        response_data = response.json()
+        assert "enable_reranking" in response_data
+        assert "ranking_model" in response_data
+        assert "rag_top_k_when_reranking" in response_data
+        assert isinstance(response_data["enable_reranking"], bool)
+        assert isinstance(response_data["ranking_model"], str)
+        assert isinstance(response_data["rag_top_k_when_reranking"], int)
+        assert response_data["enable_reranking"] is True
+        assert response_data["ranking_model"] == "flashrank"
         assert response_data["rag_top_k_when_reranking"] == 50
