@@ -21,10 +21,8 @@ async def configure(session: Session, configuration: ConfigurationPayload) -> No
         configuration (Configuration): The configuration to update.
     """
 
-    current_configuration = ConfigurationSingleton.get_instance()
-
     # We set the class variable to update the configuration globally
-    current_configuration._instance = current_configuration.copy(
+    ConfigurationSingleton._instance = ConfigurationSingleton.get_instance().copy(
         update=configuration.__dict__
     )
 
