@@ -41,9 +41,17 @@ async def get_configuration(session: Session) -> ConfigurationPayload:
         Configuration: The current RAG configuration.
     """
 
-    new_configuration = ConfigurationPayload.copy(
-        update=ConfigurationSingleton.get_instance().__dict__
-    )
+    instance = ConfigurationSingleton.get_instance()
+
+    # Create a new dictionary with only the relevant attributes
+    config_dict = {
+        key: value
+        for key, value in instance.__dict__.items()
+        if not key.startswith("_")  # Exclude private attributes
+    }
+
+    # Create a new ConfigurationPayload instance with the filtered dictionary
+    new_configuration = ConfigurationPayload(**config_dict)
 
     logger.info(f"The current configuration has been set to {new_configuration}")
 
