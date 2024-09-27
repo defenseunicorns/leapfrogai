@@ -3,7 +3,7 @@ name = "lfai-whisper"
 description = "A LeapfrogAI API-compatible faster-whisper wrapper for audio transcription generation across CPU and GPU infrastructures."
 
 # x-release-please-start-version
-version = "0.13.0"
+version = "0.13.1"
 # x-release-please-end
 
 dependencies = [
