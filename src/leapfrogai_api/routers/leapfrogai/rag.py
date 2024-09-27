@@ -21,13 +21,11 @@ async def configure(session: Session, configuration: ConfigurationPayload) -> No
         configuration (Configuration): The configuration to update.
     """
 
+    current_configuration = ConfigurationSingleton.get_instance()
+
     # We set the class variable to update the configuration globally
-    ConfigurationSingleton.get_instance().enable_reranking = (
-        configuration.enable_reranking
-    )
-    ConfigurationSingleton.get_instance().ranking_model = configuration.ranking_model
-    ConfigurationSingleton.get_instance().rag_top_k_when_reranking = (
-        configuration.rag_top_k_when_reranking
+    current_configuration._instance = current_configuration.copy(
+        update=configuration.__dict__
     )
 
 
@@ -43,10 +41,8 @@ async def get_configuration(session: Session) -> ConfigurationPayload:
         Configuration: The current RAG configuration.
     """
 
-    new_configuration = ConfigurationPayload(
-        enable_reranking=ConfigurationSingleton.get_instance().enable_reranking,
-        ranking_model=ConfigurationSingleton.get_instance().ranking_model,
-        rag_top_k_when_reranking=ConfigurationSingleton.get_instance().rag_top_k_when_reranking,
+    new_configuration = ConfigurationPayload.copy(
+        update=ConfigurationSingleton.get_instance().__dict__
     )
 
     logger.info(f"The current configuration has been set to {new_configuration}")
