@@ -1,4 +1,3 @@
-import copy
 from typing import Optional
 
 from pydantic import BaseModel, Field
@@ -17,8 +16,8 @@ class ConfigurationSingleton:
 
     @classmethod
     def update_instance(cls, configuration):
-        cls._instance = copy.deepcopy(cls.get_instance())
-        cls._instance.model_validate(configuration.__dict__)
+        for key, value in configuration.items():
+            setattr(cls._instance, key, value)
 
 
 class ConfigurationPayload(BaseModel):
