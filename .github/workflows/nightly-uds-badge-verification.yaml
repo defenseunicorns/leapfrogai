@@ -59,6 +59,16 @@ jobs:
 
           uds zarf tools yq -i '.packages[].repository |= sub("/uds/", "/uds/snapshots/")' bundles/latest/cpu/uds-bundle.yaml
 
+      # Workaround for summarizeVerification.sh
+      - name: Set Locale to UTF-8
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y locales
+          sudo locale-gen en_US.UTF-8
+          export LANG=en_US.UTF-8
+          export LANGUAGE=en_US:en
+          export LC_ALL=en_US.UTF-8
+
       # TODO: add this back in!
       # - name: Create and Deploy UDS Bundle (${{ env.SNAPSHOT_VERSION }})
       #   run: |
