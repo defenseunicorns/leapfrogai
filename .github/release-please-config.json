@@ -11,8 +11,6 @@
       "versioning": "default",
       "extra-files": [
         "pyproject.toml",
-        "docs/DEVELOPMENT.md",
-        ".github/workflows/weekly-registry1-flavor-test.yaml",
         {
           "type": "generic",
           "path": "**/Chart.yaml",
