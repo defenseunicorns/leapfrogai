@@ -76,7 +76,7 @@ jobs:
 
       - name: Create Registry1 Zarf Packages
         run: |
-          ZARF_CONFIG=packages/api/zarf-config.yaml uds zarf package create packages/api --flavor registry1 -a amd64 --confirm
+          uds zarf package create packages/api --set image_version="0.13.1" --flavor registry1 -a amd64 --confirm
 
       # Mutate UDS bundle definition to use Registry1 packages
       # Mutate non-Registry1 packages to be the current tagged version
