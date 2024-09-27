@@ -1,7 +1,9 @@
 ![LeapfrogAI](https://github.com/defenseunicorns/leapfrogai/raw/main/docs/imgs/leapfrogai.png)
 
 [![OpenSSF Scorecard](https://api.securityscorecards.dev/projects/github.com/defenseunicorns/leapfrogai/badge)](https://api.securityscorecards.dev/projects/github.com/defenseunicorns/leapfrogai)
-[![Nightly Snapshot Release](https://github.com/defenseunicorns/leapfrogai/actions/workflows/nightly-snapshot-release.yaml/badge.svg)](https://github.com/defenseunicorns/leapfrogai/actions/workflows/nightly-snapshot-release.yaml)
+[![Nightly Snapshot and Upgrade Tests](https://github.com/defenseunicorns/leapfrogai/actions/workflows/nightly-snapshot-release.yaml/badge.svg)](https://github.com/defenseunicorns/leapfrogai/actions/workflows/nightly-snapshot-release.yaml)
+[![Registry1 Weekly Tests](https://github.com/defenseunicorns/leapfrogai/actions/workflows/e2e-registry1-weekly.yaml/badge.svg)](https://github.com/defenseunicorns/leapfrogai/actions/workflows/e2e-registry1-weekly.yaml)
+
 
 ## Table of Contents
 
