@@ -76,7 +76,7 @@ jobs:
 
       - name: Create Registry1 Zarf Packages
         run: |
-          FLAVOR=registry1 make build-api
+          FLAVOR=registry1 LOCAL_VERSION=v0.13.0 make build-api
 
       # Mutate UDS bundle definition to use Registry1 packages
       # Mutate non-Registry1 packages to be the current tagged version
