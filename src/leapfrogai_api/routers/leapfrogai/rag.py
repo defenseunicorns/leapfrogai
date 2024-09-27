@@ -22,7 +22,9 @@ async def configure(session: Session, configuration: ConfigurationPayload) -> No
     """
 
     # We set the class variable to update the configuration globally
-    ConfigurationSingleton.get_instance().update_instance(configuration)
+    ConfigurationSingleton._instance = ConfigurationSingleton.get_instance().copy(
+        update=configuration.dict(exclude_none=True)
+    )
 
 
 @router.get("/configure")

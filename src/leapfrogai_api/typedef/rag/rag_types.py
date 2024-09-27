@@ -9,9 +9,12 @@ class ConfigurationSingleton:
     _instance = None
 
     @classmethod
-    def get_instance(cls, **kwargs):
+    def get_instance(cls):
         if cls._instance is None:
-            cls._instance = ConfigurationPayload(**kwargs)
+            cls._instance = ConfigurationPayload()
+            cls._instance.enable_reranking = True
+            cls._instance.rag_top_k_when_reranking = 100
+            cls._instance.ranking_model = "flashrank"
         return cls._instance
 
 
@@ -35,8 +38,3 @@ class ConfigurationPayload(BaseModel):
         default=None,
         description="The top-k results returned from the RAG call before reranking",
     )
-
-    def update_instance(self, configuration: BaseModel):
-        for key, value in configuration.model_dump().items():
-            if value is not None:
-                setattr(self, key, value)
