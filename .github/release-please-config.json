@@ -12,7 +12,7 @@
       "extra-files": [
         "pyproject.toml",
         "docs/DEVELOPMENT.md",
-        ".github/workflows/e2e-registry1-weekly.yaml",
+        ".github/workflows/weekly-registry1-flavor-test.yaml",
         {
           "type": "generic",
           "path": "**/Chart.yaml",
