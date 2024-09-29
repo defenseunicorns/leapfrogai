@@ -7,12 +7,13 @@ from openai.types.beta.threads.text import Text
 from openai.types.beta.threads.message import Message
 import re
 
-from tests.utils.client import client_config_factory, text_file_path
+from tests.utils.client import client_config_factory
+from tests.utils.data_path import data_path, TXT_DATA_FILE
 
 
 def make_vector_store_with_file(client):
     vector_store = client.beta.vector_stores.create(name="Test data")
-    with open(text_file_path(), "rb") as file:
+    with open(data_path(TXT_DATA_FILE), "rb") as file:
         client.beta.vector_stores.files.upload(
             vector_store_id=vector_store.id, file=file
         )
