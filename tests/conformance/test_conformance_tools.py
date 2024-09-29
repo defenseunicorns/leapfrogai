@@ -7,7 +7,7 @@ from openai.types.beta.threads.text import Text
 from openai.types.beta.threads.message import Message
 import re
 
-from ..utils.client import client_config_factory, text_file_path
+from tests.utils.client import client_config_factory, text_file_path
 
 
 def make_vector_store_with_file(client):
