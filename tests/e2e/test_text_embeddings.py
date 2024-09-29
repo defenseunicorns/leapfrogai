@@ -1,7 +1,6 @@
-from pathlib import Path
-
 import pytest
 from openai import InternalServerError, OpenAI
+from tests.utils.data_path import data_path, WAV_FILE
 
 model_name = "text-embeddings"
 
@@ -41,6 +40,7 @@ def test_embeddings(client: OpenAI):
 def test_transcriptions(client: OpenAI):
     with pytest.raises(InternalServerError) as excinfo:
         client.audio.transcriptions.create(
-            model=model_name, file=Path("tests/data/0min12sec.wav")
+            model=model_name,
+            file=data_path(WAV_FILE),
         )
     assert str(excinfo.value) == "Internal Server Error"
