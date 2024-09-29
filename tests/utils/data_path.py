@@ -6,6 +6,7 @@ TXT_DATA_FILE = "test_with_data.txt"
 PPTX_FILE = "test.pptx"
 WAV_FILE = "0min12sec.wav"
 WAV_FILE_ARABIC = "arabic-audio.wav"
+MP3_FILE_RUSSIAN = "russian.mp3"
 XLSX_FILE = "test.xlsx"
 
 
