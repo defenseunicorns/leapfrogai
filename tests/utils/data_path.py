@@ -10,7 +10,7 @@ MP3_FILE_RUSSIAN = "russian.mp3"
 XLSX_FILE = "test.xlsx"
 
 
-def data_path(filename: str):
+def data_path(filename: str) -> Path:
     """Return the path to a test file in the data directory. (See constants for specific files.)
 
     Args:
