@@ -9,14 +9,14 @@ WAV_FILE_ARABIC = "arabic-audio.wav"
 XLSX_FILE_NAME = "test.xlsx"
 
 
-def data_path(filename: str | None = None):
-    """Return the path to the data directory or a specific file within it.
+def data_path(filename: str):
+    """Return the path to a test file in the data directory. (See constants for specific files.)
 
     Args:
-        filename (str): The name of the file to return the path to (see constants). Defaults to None.
+        filename (str): The name of the file to return the path.
 
     Returns:
-        Path: The path to the data directory or a specific file within it.
+        Path: The path to the file in the data directory.
 
     Raises:
         FileNotFoundError: If the file does not exist in the data directory.
