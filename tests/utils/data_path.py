@@ -3,10 +3,10 @@ from pathlib import Path
 
 TXT_FILE = "test.txt"
 TXT_DATA_FILE = "test_with_data.txt"
-PPTX_FILE_NAME = "test.pptx"
+PPTX_FILE = "test.pptx"
 WAV_FILE = "0min12sec.wav"
 WAV_FILE_ARABIC = "arabic-audio.wav"
-XLSX_FILE_NAME = "test.xlsx"
+XLSX_FILE = "test.xlsx"
 
 
 def data_path(filename: str):
@@ -22,7 +22,9 @@ def data_path(filename: str):
         FileNotFoundError: If the file does not exist in the data directory.
     """
 
-    data_path = Path(os.path.dirname(__file__) + f"/../data/{filename}")
+    data_path = Path(
+        os.path.realpath(os.path.dirname(__file__) + f"/../data/{filename}")
+    )
 
     try:
         # Check if the file exists
