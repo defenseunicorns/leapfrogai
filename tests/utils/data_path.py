@@ -1,7 +1,8 @@
 import os
 from pathlib import Path
 
-TXT_FILE_NAME = "test_with_data.txt"
+TXT_FILE = "test.txt"
+TXT_DATA_FILE = "test_with_data.txt"
 PPTX_FILE_NAME = "test.pptx"
 WAV_FILE = "0min12sec.wav"
 WAV_FILE_ARABIC = "arabic-audio.wav"

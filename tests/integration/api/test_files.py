@@ -8,7 +8,7 @@ from openai.types import FileDeleted, FileObject
 
 from leapfrogai_api.backend.rag.document_loader import load_file, split
 from leapfrogai_api.routers.openai.files import router
-from tests.utils.data_path import data_path, WAV_FILE
+from tests.utils.data_path import data_path, WAV_FILE, TXT_FILE
 
 file_response: Response
 testfile_content: bytes
@@ -35,7 +35,7 @@ client = TestClient(router, headers=headers)
 def read_testfile():
     """Read the test file content."""
     global testfile_content  # pylint: disable=global-statement
-    with open(os.path.dirname(__file__) + "/../../data/test.txt", "rb") as testfile:
+    with open(data_path(TXT_FILE), "rb") as testfile:
         testfile_content = testfile.read()
 
 
@@ -47,7 +47,7 @@ def create_file(read_testfile):  # pylint: disable=redefined-outer-name, unused-
 
     file_response = client.post(
         "/openai/v1/files",
-        files={"file": ("test.txt", testfile_content, "text/plain")},
+        files={"file": (TXT_FILE, testfile_content, "text/plain")},
         data={"purpose": "assistants"},
     )
 
