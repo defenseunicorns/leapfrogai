@@ -47,7 +47,7 @@ def validate_annotation_format(annotation):
 @pytest.mark.parametrize("client_name", ["openai", "leapfrogai"])
 def test_thread_file_annotations(client_name):
     config = client_config_factory(client_name)
-    client = config.client  # shorthand
+    client = config.client
 
     vector_store = make_vector_store_with_file(client)
     assistant = make_test_assistant(client, config.model, vector_store.id)

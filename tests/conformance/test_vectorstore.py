@@ -9,7 +9,7 @@ from tests.utils.client import client_config_factory
 @pytest.mark.parametrize("client_name", ["openai", "leapfrogai"])
 def test_vector_store_create(client_name):
     config = client_config_factory(client_name)
-    client = config.client  # shorthand
+    client = config.client
 
     vector_store = client.beta.vector_stores.create(name="Test data")
 
@@ -19,7 +19,7 @@ def test_vector_store_create(client_name):
 @pytest.mark.parametrize("client_name", ["openai", "leapfrogai"])
 def test_vector_store_list(client_name):
     config = client_config_factory(client_name)
-    client = config.client  # shorthand
+    client = config.client
 
     client.beta.vector_stores.create(name="Test data")
 
