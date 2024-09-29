@@ -8,6 +8,7 @@ from openai.types import FileDeleted, FileObject
 
 from leapfrogai_api.backend.rag.document_loader import load_file, split
 from leapfrogai_api.routers.openai.files import router
+from tests.utils.data_path import data_path, WAV_FILE
 
 file_response: Response
 testfile_content: bytes
@@ -132,15 +133,11 @@ def test_get_nonexistent():
 def test_invalid_file_type():
     """Test creating uploading an invalid file type."""
 
-    file_path = "../../../tests/data/0min12sec.wav"
-    dir_path = os.path.dirname(os.path.realpath(__file__))
-    relative_file_path = os.path.join(dir_path, file_path)
-
     with pytest.raises(HTTPException) as exception:
-        with open(relative_file_path, "rb") as testfile:
+        with open(data_path(WAV_FILE), "rb") as testfile:
             _ = client.post(
                 "/openai/v1/files",
-                files={"file": ("0min12sec.wav", testfile, "audio/wav")},
+                files={"file": (WAV_FILE, testfile, "audio/wav")},
                 data={"purpose": "assistants"},
             )
             assert exception.status_code == status.HTTP_415_UNSUPPORTED_MEDIA_TYPE

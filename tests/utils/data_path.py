@@ -3,7 +3,8 @@ from pathlib import Path
 
 TXT_FILE_NAME = "test_with_data.txt"
 PPTX_FILE_NAME = "test.pptx"
-WAV_FILE_NAME = "0min12sec.wav"
+WAV_FILE = "0min12sec.wav"
+WAV_FILE_ARABIC = "arabic-audio.wav"
 XLSX_FILE_NAME = "test.xlsx"
 
 
