@@ -1,1 +1,4 @@
-from .common import Usage as Usage
+from .common import (
+    Usage as Usage,
+    MetadataObject as MetadataObject,
+)
