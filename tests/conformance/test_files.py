@@ -13,7 +13,7 @@ from tests.utils.data_path import data_path, TXT_DATA_FILE
 @pytest.mark.parametrize("client_name", ["openai", "leapfrogai"])
 def test_file_upload(client_name):
     config = client_config_factory(client_name)
-    client = config.client  # shorthand
+    client = config.client
 
     vector_store = client.beta.vector_stores.create(name="Test data")
     with open(data_path(TXT_DATA_FILE), "rb") as file:
