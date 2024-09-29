@@ -219,7 +219,7 @@ async def test_powerpoint_file_handling():
     """Test handling of a PowerPoint file including upload, retrieval, and deletion."""
 
     # Test file loading and splitting
-    documents = await load_file(data_path(PPTX_FILE))
+    documents = await load_file(data_path(PPTX_FILE).__str__())
     assert len(documents) > 0, "No documents were loaded from the PowerPoint file"
     assert documents[0].page_content, "The first document has no content"
 
