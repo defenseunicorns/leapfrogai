@@ -12,6 +12,7 @@
   export let size: 'xs' | 'sm' | 'md' | 'lg' | 'xl' | 'none' = 'sm';
   export let outline: boolean = false;
   export let testId: string | null = null; // for the button element
+  export let btnColor = "primary"
 
   const dispatch = createEventDispatcher();
 </script>
@@ -38,6 +39,7 @@
   />
   <Button
     data-testid={testId}
+    color={btnColor}
     {outline}
     {size}
     {disabled}
