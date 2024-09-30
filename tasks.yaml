@@ -15,7 +15,7 @@ tasks:
           uds run verify-uds-badge-cpu --no-progress 2>&1 | tee ./reports/intermediate-report.txt > /dev/null
       - description: "Clean Up Final Report"
         cmd: |
-          cat ./reports/intermediate-report.txt 2>&1 | python3 .github/scripts/uds_verification_report.py | tee ./reports/final-report.txt
+          python3 .github/scripts/uds_verification_report.py | tee ./reports/final-report.txt
 
   #############
   # BADGE TASKS
