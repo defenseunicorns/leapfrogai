@@ -1,11 +1,11 @@
 import os
-from pathlib import Path
 from typing import Iterable
 import warnings
 
 import pytest
 from openai import InternalServerError, OpenAI
 from openai.types.chat import ChatCompletionMessageParam
+from tests.utils.data_path import data_path, WAV_FILE
 
 DEFAULT_LEAPFROGAI_MODEL = "llama-cpp-python"
 
@@ -72,7 +72,8 @@ def test_embeddings(client: OpenAI, model_name: str):
 def test_transcriptions(client: OpenAI, model_name: str):
     with pytest.raises(InternalServerError) as excinfo:
         client.audio.transcriptions.create(
-            model=model_name, file=Path("tests/data/0min12sec.wav")
+            model=model_name,
+            file=data_path(WAV_FILE),
         )
 
     assert str(excinfo.value) == "Internal Server Error"
