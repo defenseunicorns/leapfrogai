@@ -23,7 +23,6 @@ declare global {
       profile?: Profile;
       threads?: LFThread[];
       assistants?: LFAssistant[];
-      assistant?: LFAssistant;
       files?: FileObject[];
       keys?: APIKeyRow[];
     }

@@ -10,7 +10,6 @@ describe('LFHeader', () => {
     threadsStore.set({
       threads: [thread],
       lastVisitedThreadId: thread.id,
-      selectedAssistantId: '',
       sendingBlocked: false,
       streamingMessage: null
     });

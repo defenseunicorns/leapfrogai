@@ -8,7 +8,6 @@ export const DELETE: RequestHandler = async ({ request, locals: { session } }) =
     error(401, 'Unauthorized');
   }
   let requestData: { ids: string[] };
-
   // Validate request body
   try {
     requestData = await request.json();

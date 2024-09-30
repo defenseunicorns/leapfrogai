@@ -22,7 +22,7 @@ import {
   FILE_TRANSLATION_ERROR
 } from '$constants/toastMessages';
 import { getFakeThread } from '$testUtils/fakeData';
-import { AUDIO_FILE_SIZE_ERROR_TEXT, NO_SELECTED_ASSISTANT_ID } from '$constants';
+import { AUDIO_FILE_SIZE_ERROR_TEXT } from '$constants';
 
 const thread = getFakeThread();
 
@@ -74,7 +74,6 @@ describe('FileChatActions', () => {
     threadsStore.set({
       threads: [thread], // uses date override starting in March
       sendingBlocked: false,
-      selectedAssistantId: NO_SELECTED_ASSISTANT_ID,
       lastVisitedThreadId: '',
       streamingMessage: null
     });

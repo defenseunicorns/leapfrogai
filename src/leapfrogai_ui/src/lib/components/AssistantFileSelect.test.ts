@@ -4,14 +4,14 @@ import AssistantFileSelect from '$components/AssistantFileSelect.svelte';
 import { superValidate } from 'sveltekit-superforms';
 import { yup } from 'sveltekit-superforms/adapters';
 import { filesSchema } from '$schemas/files';
-import type { FileRow } from '$lib/types/files';
+import type { LFFileObject } from '$lib/types/files';
 import { getUnixSeconds } from '$helpers/dates';
 import userEvent from '@testing-library/user-event';
 
 const filesForm = await superValidate({}, yup(filesSchema), { errors: false });
 
 describe('AssistantFileSelect', () => {
-  const mockFiles: FileRow[] = [
+  const mockFiles: LFFileObject[] = [
     { id: '1', filename: 'file1.pdf', status: 'complete', created_at: getUnixSeconds(new Date()) },
     { id: '2', filename: 'file2.pdf', status: 'error', created_at: getUnixSeconds(new Date()) },
     { id: '3', filename: 'file3.txt', status: 'uploading', created_at: getUnixSeconds(new Date()) }
