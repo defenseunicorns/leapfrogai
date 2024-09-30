@@ -1,20 +1,11 @@
 """CRUD Operations for VectorStore."""
 
-from pydantic import BaseModel
 from supabase import AClient as AsyncClient
 from leapfrogai_api.data.crud_base import get_user_id
 import ast
 from leapfrogai_api.typedef.vectorstores import SearchItem, SearchResponse
 from leapfrogai_api.backend.constants import TOP_K
-
-
-class Vector(BaseModel):
-    id: str = ""
-    vector_store_id: str
-    file_id: str
-    content: str
-    metadata: dict
-    embedding: list[float]
+from leapfrogai_api.typedef.vectorstores import Vector
 
 
 class CRUDVectorContent:
@@ -64,6 +55,30 @@ class CRUDVectorContent:
             return final_response
         except Exception as e:
             raise e
+
+    async def get_vector(self, vector_id: str) -> Vector:
+        """Get a vector by its ID."""
+        data, _count = (
+            await self.db.table(self.table_name)
+            .select("*")
+            .eq("id", vector_id)
+            .single()
+            .execute()
+        )
+
+        _, response = data
+
+        if isinstance(response["embedding"], str):
+            response["embedding"] = self.string_to_float_list(response["embedding"])
+
+        return Vector(
+            id=response["id"],
+            vector_store_id=response["vector_store_id"],
+            file_id=response["file_id"],
+            content=response["content"],
+            metadata=response["metadata"],
+            embedding=response["embedding"],
+        )
 
     async def delete_vectors(self, vector_store_id: str, file_id: str) -> bool:
         """Delete a vector store file by its ID."""
