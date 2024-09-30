@@ -66,7 +66,6 @@ def print_package_info(
 
 def main():
     # Read data from the specified file instead of stdin
-    # Use the GitHub runner ENV to find the file, if in CI
     file_path = os.path.join(
         os.getenv("GITHUB_WORKSPACE", ""), "reports/intermediate-report.txt"
     )

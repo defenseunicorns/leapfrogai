@@ -12,8 +12,7 @@ tasks:
           mkdir -p reports
       - description: "Run UDS Badge Verification Task"
         cmd: |
-          uds run verify-uds-badge-cpu --no-progress 2>&1 | tee ./reports/intermediate-report.txt > /dev/null
-          chmod 644 reports/intermediate-report.txt
+          uds run verify-uds-badge-cpu --no-progress 2>&1 | tee ./reports/intermediate-report.txt
       - description: "Clean Up Final Report"
         cmd: |
           python3 .github/scripts/uds_verification_report.py | tee ./reports/final-report.txt
