@@ -122,7 +122,6 @@
         }
         return;
       }
-      console.log(resJson.text);
       // save translation response
       let responseMessage;
       try {

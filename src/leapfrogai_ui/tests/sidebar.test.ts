@@ -33,6 +33,8 @@ test('can edit thread labels', async ({ page, openAIClient }) => {
   await sendMessage(page, newMessage1);
   await expect(messages).toHaveCount(2);
 
+  const threads = page.getByTestId('threads');
+  await threads.getByText(newMessage1).hover();
   const threadMenuBtn = page.getByTestId(`thread-menu-btn-${newMessage1}`);
   await threadMenuBtn.click();
 
