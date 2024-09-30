@@ -4,6 +4,7 @@ from typing import Iterable
 from openai.types.beta import AssistantStreamEvent
 from openai.types.beta.assistant_stream_event import ThreadMessageDelta
 from openai.types.beta.threads.file_citation_annotation import FileCitation
+from openai.types.beta.threads.file_path_annotation import FilePathAnnotation
 from openai.types.beta.threads import (
     MessageContentPartParam,
     MessageContent,
@@ -16,6 +17,9 @@ from openai.types.beta.threads import (
     TextDelta,
     FileCitationAnnotation,
 )
+
+from leapfrogai_api.typedef.vectorstores.search_types import SearchResponse
+from leapfrogai_api.typedef.common import MetadataObject
 
 
 def from_assistant_stream_event_to_str(stream_event: AssistantStreamEvent):
@@ -44,24 +48,41 @@ def from_content_param_to_content(
         )
 
 
-def from_text_to_message(text: str, file_ids: list[str]) -> Message:
+def from_text_to_message(text: str, search_responses: SearchResponse | None) -> Message:
+    """Loads text and RAG search responses into a Message object
+
+    Args:
+        text: The text to load into the message
+        search_responses: The RAG search responses to load into the message
+
+    Returns:
+        The OpenAI compliant Message object
+    """
+
     all_file_ids: str = ""
+    all_vector_ids: list[str] = []
+    annotations: list[FileCitationAnnotation | FilePathAnnotation] = []
 
-    for file_id in file_ids:
-        all_file_ids += f" [{file_id}]"
-
-    message_content: TextContentBlock = TextContentBlock(
-        text=Text(
-            annotations=[
+    if search_responses:
+        for search_response in search_responses.data:
+            all_file_ids += f"[{search_response.file_id}]"
+            all_vector_ids.append(search_response.id)
+            file_name = search_response.metadata.get("source", "source")
+            annotations.append(
                 FileCitationAnnotation(
-                    text=f"[{file_id}]",
-                    file_citation=FileCitation(file_id=file_id, quote=""),
+                    text=f"【4:0†{file_name}】",  # TODO: What should these numbers be? https://github.com/defenseunicorns/leapfrogai/issues/1110
+                    file_citation=FileCitation(
+                        file_id=search_response.file_id, quote=search_response.content
+                    ),
                     start_index=0,
                     end_index=0,
                     type="file_citation",
                 )
-                for file_id in file_ids
-            ],
+            )
+
+    message_content: TextContentBlock = TextContentBlock(
+        text=Text(
+            annotations=annotations,
             value=text + all_file_ids,
         ),
         type="text",
@@ -75,7 +96,9 @@ def from_text_to_message(text: str, file_ids: list[str]) -> Message:
         thread_id="",
         content=[message_content],
         role="assistant",
-        metadata=None,
+        metadata=MetadataObject(
+            vector_ids=all_vector_ids.__str__(),
+        ),
     )
 
     return new_message
