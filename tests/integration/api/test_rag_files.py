@@ -7,7 +7,7 @@ import pytest
 from tests.utils.data_path import data_path
 
 from leapfrogai_api.typedef.rag.rag_types import ConfigurationPayload
-from tests.utils.client import client_config_factory
+from tests.utils.client import ROOT_URL, client_config_factory
 
 
 def make_test_assistant(client, model, vector_store_id):
@@ -84,7 +84,6 @@ def test_rag_needle_haystack():
 
 
 def configure_rag(
-    base_url: str,
     enable_reranking: bool,
     ranking_model: str,
     rag_top_k_when_reranking: int,
@@ -93,13 +92,11 @@ def configure_rag(
     Configures the RAG settings.
 
     Args:
-        base_url: The base URL of the API (e.g., "http://localhost:8000").
         enable_reranking: Whether to enable reranking.
         ranking_model: The ranking model to use.
         rag_top_k_when_reranking: The top-k results to return before reranking.
     """
-
-    url = f"{base_url}/leapfrogai/v1/rag/configure"
+    url = f"{ROOT_URL}/leapfrogai/v1/rag/configure"
     configuration = ConfigurationPayload(
         enable_reranking=enable_reranking,
         ranking_model=ranking_model,
@@ -114,7 +111,7 @@ def configure_rag(
         print(f"Error configuring RAG: {e}")
 
 
-def get_rag_configuration(base_url: str) -> Optional[ConfigurationPayload]:
+def get_rag_configuration() -> Optional[ConfigurationPayload]:
     """
     Retrieves the current RAG configuration.
 
@@ -124,7 +121,7 @@ def get_rag_configuration(base_url: str) -> Optional[ConfigurationPayload]:
     Returns:
         The RAG configuration, or None if there was an error.
     """
-    url = f"{base_url}/leapfrogai/v1/rag/configure"
+    url = f"{ROOT_URL}/leapfrogai/v1/rag/configure"
 
     try:
         response = requests.get(url)
@@ -142,10 +139,8 @@ def get_rag_configuration(base_url: str) -> Optional[ConfigurationPayload]:
     reason="LFAI_RUN_NIAH_TESTS envvar was not set to true",
 )
 def test_rag_needle_haystack_with_reranking():
-    base_url = os.getenv(
-        "LEAPFROGAI_API_URL", "https://leapfrogai-api.uds.dev/openai/v1"
-    )
-    configure_rag(base_url, True, "flashrank", 100)
-    config_result = get_rag_configuration(base_url)
+    configure_rag(True, "flashrank", 100)
+    config_result = get_rag_configuration()
+    assert config_result is not None
     assert config_result.enable_reranking is True
     test_rag_needle_haystack()
