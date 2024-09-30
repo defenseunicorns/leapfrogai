@@ -60,8 +60,8 @@
   <SidebarWrapper class="flex w-full flex-col px-0">
     <SidebarGroup>
       <div class="flex flex-col gap-2 px-3">
-        <Button on:click={() => threadsStore.changeThread('')}>
-          <PlusOutline />New Chat
+        <Button on:click={() => threadsStore.changeThread('')} class="justify-between">
+          New chat <PlusOutline />
         </Button>
         <Input type="txt" placeholder="Search..." bind:value={searchText} maxlength={25}></Input>
       </div>
@@ -70,12 +70,18 @@
     <SidebarGroup class="no-scrollbar flex-grow overflow-y-scroll px-3" data-testid="threads">
       {#each organizedThreads as category}
         {#if category.threads.length > 0}
-          <SidebarDropdownWrapper label={category.label} isOpen={true}>
+          <SidebarDropdownWrapper
+            label={category.label}
+            isOpen={true}
+            spanClass="flex-1 text-left whitespace-nowrap"
+          >
             {#each category.threads as thread (thread.id)}
               <LFSidebarDropdownItem
                 threadId={thread.id}
                 label={thread.metadata.label}
                 active={activeThreadId === thread.id}
+                labelClass="ps-4"
+                class="ms-0"
               />
             {/each}
           </SidebarDropdownWrapper>

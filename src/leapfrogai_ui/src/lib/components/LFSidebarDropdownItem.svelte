@@ -1,6 +1,7 @@
 <!--
 This is a modified version of Flowbite Svelte's SidebarDropdownItem.svelte component
 It adds a "three-dot" menu button with Popover, and delete confirmation Modal
+It may also contain modified sytles.
 -->
 <script lang="ts">
   import { twMerge } from 'tailwind-merge';
@@ -13,12 +14,13 @@ It adds a "three-dot" menu button with Popover, and delete confirmation Modal
   import { Modal } from 'flowbite-svelte';
 
   export let sClass: string =
-    'flex items-center p-2 ps-11 w-full text-base font-normal text-gray-900 rounded-lg transition duration-75 group hover:bg-gray-100 dark:text-white dark:hover:bg-gray-700';
+    'flex items-center p-2 ps-4 w-full text-base font-normal text-gray-900 rounded-lg transition duration-75 group hover:bg-gray-100 dark:text-white dark:hover:bg-gray-700';
   export let threadId: string;
   export let label: string = '';
   export let activeClass: string =
-    'flex items-center p-2 ps-11 text-base font-normal text-gray-900 bg-gray-200 dark:bg-gray-700 rounded-lg dark:text-white hover:bg-gray-100 dark:hover:bg-gray-700';
+    'flex items-center p-2 ps-4 text-base font-normal text-gray-900 bg-gray-200 dark:bg-gray-700 rounded-lg dark:text-white hover:bg-gray-100 dark:hover:bg-gray-700';
   export let active: boolean = false;
+  export let labelClass: string = '';
   let deleteModalOpen = false;
   let editLabelText: string | undefined = label;
   let editLabelInputDisabled = false;
@@ -116,7 +118,7 @@ It adds a "three-dot" menu button with Popover, and delete confirmation Modal
         $$props.class
       )}
     >
-      <P size="sm" class="truncate whitespace-nowrap">
+      <P size="sm" class={twMerge("truncate whitespace-nowrap", labelClass)}>
         {label}
       </P>
     </button>
@@ -162,7 +164,7 @@ It adds a "three-dot" menu button with Popover, and delete confirmation Modal
 >
   <div class="flex flex-col gap-4">
     <ExclamationCircleOutline class="mx-auto  h-12 w-12 text-gray-400 dark:text-white" />
-    <P size="xl" class="text-center dark:text-gray-400">
+    <P size="xl" class={twMerge("text-center dark:text-gray-400", labelClass)}>
       Are you sure you want to delete your <strong>{label.substring(0, MAX_LABEL_SIZE)}</strong> chat?
     </P>
     <div class="flex justify-end gap-2">

@@ -60,7 +60,7 @@ test('Can switch threads', async ({ page, openAIClient }) => {
   await waitForResponseToComplete(page);
   await expect(messages).toHaveCount(4);
 
-  await page.getByText('New Chat').click();
+  await page.getByText('New chat').click();
   await expect(messages).toHaveCount(0);
   await sendMessage(page, newMessage3);
   await waitForResponseToComplete(page);
