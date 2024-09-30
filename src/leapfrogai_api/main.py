@@ -8,6 +8,7 @@ from contextlib import asynccontextmanager
 from fastapi import FastAPI
 from fastapi.exception_handlers import request_validation_exception_handler
 from fastapi.exceptions import RequestValidationError
+from fastapi.responses import RedirectResponse
 
 from leapfrogai_api.routers.base import router as base_router
 from leapfrogai_api.routers.leapfrogai import auth
@@ -62,6 +63,11 @@ async def lifespan(app: FastAPI):
 app = FastAPI(lifespan=lifespan)
 
 Instrumentator().instrument(app).expose(app)
+
+
+@app.get("/")
+async def root():
+    return RedirectResponse(url="/redoc")
 
 
 @app.exception_handler(RequestValidationError)
