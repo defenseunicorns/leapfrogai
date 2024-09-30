@@ -66,9 +66,11 @@ def print_package_info(
 
 def main():
     # Read data from the specified file instead of stdin
-    with open(
-        "reports/intermediate-report.txt", mode="r", encoding="utf-8", errors="ignore"
-    ) as file:
+    # Use the GitHub runner ENV to find the file, if in CI
+    file_path = os.path.join(
+        os.getenv("GITHUB_WORKSPACE", ""), "reports/intermediate-report.txt"
+    )
+    with open(file_path, mode="r", encoding="utf-8", errors="ignore") as file:
         data = file.read()
     # Remove ANSI escape sequences
     clean_data = remove_ansi_escape_sequences(data)
