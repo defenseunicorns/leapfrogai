@@ -110,7 +110,7 @@ k3d cluster delete uds
 
 ## Conformance Testing
 
-We include a set of conformance tests to verify our spec against OpenAI to gaurantee interoperability with tools that support OpenAI's API (MatterMost, Continue.dev, etc.) and SDKs (Vercel, Azure, etc.). To run these tests the environment variables need to be set:
+We include a set of conformance tests to verify our spec against OpenAI to guarantee interoperability with tools that support OpenAI's API (MatterMost, Continue.dev, etc.) and SDKs (Vercel, Azure, etc.). To run these tests the environment variables need to be set:
 
 ```bash
 LEAPFROGAI_API_KEY="<api key>" # this can be created via the LeapfrogAI UI or Supabase
