@@ -1,8 +1,8 @@
-# LeapfrogAI RAG Evaluation Framework
+# LeapfrogAI RAG Evaluation Framework MVP
 
 ## Table of Contents
 
-- [LeapfrogAI RAG Evaluation Framework](#leapfrogai-rag-evaluation-framework)
+- [LeapfrogAI RAG Evaluation Framework MVP](#leapfrogai-rag-evaluation-framework-mvp)
   - [Table of Contents](#table-of-contents)
   - [Status](#status)
   - [Context](#context)
@@ -12,14 +12,14 @@
     - [Models to Evaluate](#models-to-evaluate)
     - [LLM-as-Judge / LLMs-as-Jury](#llm-as-judge--llms-as-jury)
     - [Metrics / Evaluations](#metrics--evaluations)
-    - [Execution](#execution)
-    - [Delivery](#delivery)
+    - [Execution / Delivery](#execution--delivery)
+    - [Model Card](#model-card)
   - [Related ADRs](#related-adrs)
   - [References](#references)
 
 ## Status
 
-DRAFT
+APPROVED
 
 ## Context
 
@@ -155,7 +155,7 @@ As time goes on, additional models will be considered and added as comparison po
 
 </details>
 
-### Execution/Delivery
+### Execution / Delivery
 <details>
   <summary>Details</summary>
 
@@ -176,8 +176,28 @@ As time goes on, additional models will be considered and added as comparison po
   <summary>Details</summary>
 
   #### Decision
+  
+  The model card will ultimately exist in a few forms:
+
+  - A tabular representation that shows for a given model (or hyperparameter configuration) as a row, the columns consist of all of the scored metrics that were applied to that configuration.
+  - A deployed instance of LeapfrogAI will likely always accompany UDS runtime. The evaluation results for a deployment will live in a table under its corresponding UDS runtime page.
+    - The evaluation outputs themselves will eventually be provided in `json` format for easier ingestion into observability tools or other additional frameworks.
+    - This will likely become more relevant after MVP status.
+
+  A model card report will consist of the table of evaluation metrics as well as a written summary of what the metrics mean, how they relate to specific performance considerations, as well as model recommendations. Therefore, this report can be   generalized for a wide audience, but will need to be customized for a given potential deployment scenario. A metrics table may look something like this:
+  ![Screenshot from 2024-09-18 18-03-18](https://github.com/user-attachments/assets/479f385b-1d09-4842-b1f0-e2d8992b0b3d)
 
   #### Rationale
+
+  The needs of the model card will likely evolve over time as the needs of delivering evaluations changes. This can be observed in three potential stages:
+  - Near-term: evaluations benefit the product team to help identify new model choices for new defaults, diagnose implementation bugs, and evaluate upgrades to the RAG pipeline.
+    - Data format needed: raw numbers, potentially in tabular format for ease of ingesting
+  - Mid-term: evaluations on default model options for mission heroes are part of the delivery process. These recommendations are provided to assist mission heroes in selecting the models they want in their deployments.
+    - Data format needed: same as near-term, but a higher emphasis on the report will be necessary
+  - Long-term: evaluations are ingrained within all LeapfrogAI deployments to diagnose potential runtime issues and to evaluate multiple model options directly within the cluster
+    - Data format needed: evaluations will need to be directly tied into other metrics-measuring tools, such as prometheus, to integrate directly into UDS runtime.
+   
+  By providing an iterable approach to delivering evaluation results, the model card's use-case will be able to evolve over time to scale to meet the needs of the product team, delivery team, and mission heroes.
 
 </details>
 
