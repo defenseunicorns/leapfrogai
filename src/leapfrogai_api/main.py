@@ -8,6 +8,7 @@ from contextlib import asynccontextmanager
 from fastapi import FastAPI
 from fastapi.exception_handlers import request_validation_exception_handler
 from fastapi.exceptions import RequestValidationError
+from fastapi.responses import RedirectResponse
 from leapfrogai_api.routers.base import router as base_router
 from leapfrogai_api.routers.leapfrogai import auth
 from leapfrogai_api.routers.leapfrogai import models as lfai_models
@@ -59,6 +60,13 @@ async def lifespan(app: FastAPI):
 
 
 app = FastAPI(lifespan=lifespan)
+
+
+@app.get("")
+async def root():
+    """Intercepts the root path and redirects to the API documentation."""
+    return RedirectResponse(url="/redoc")
+
 
 Instrumentator(
     excluded_handlers=["/healthz", "/metrics"],
