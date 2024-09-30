@@ -29,6 +29,7 @@ from leapfrogai_api.routers.openai import (
     vector_stores,
 )
 from leapfrogai_api.utils import get_model_config
+from prometheus_fastapi_instrumentator import Instrumentator
 
 logging.basicConfig(
     level=os.getenv("LFAI_LOG_LEVEL", logging.INFO),
@@ -59,6 +60,8 @@ async def lifespan(app: FastAPI):
 
 
 app = FastAPI(lifespan=lifespan)
+
+Instrumentator().instrument(app).expose(app)
 
 
 @app.exception_handler(RequestValidationError)
