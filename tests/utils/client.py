@@ -1,9 +1,8 @@
 from urllib.parse import urljoin
 from openai import OpenAI
 import os
-from requests import Response
-
 import requests
+from requests import Response
 
 
 def get_leapfrogai_model() -> str:
