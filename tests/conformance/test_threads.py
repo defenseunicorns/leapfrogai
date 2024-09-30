@@ -2,7 +2,7 @@ import pytest
 from openai.types.beta.thread import Thread
 from openai.types.beta.threads import Message, TextContentBlock, Text
 
-from ..utils.client import client_config_factory
+from tests.utils.client import client_config_factory
 
 
 def make_mock_message_object(role, message_text):
@@ -39,6 +39,8 @@ def test_thread(client_name, test_messages):
     config = client_config_factory(client_name)
     client = config.client
 
-    thread = client.beta.threads.create(messages=test_messages)
+    thread = client.beta.threads.create(
+        messages=test_messages
+    )  # TODO: Pydantic type problems with LeapfrogAI #https://github.com/defenseunicorns/leapfrogai/issues/1107
 
     assert isinstance(thread, Thread)
