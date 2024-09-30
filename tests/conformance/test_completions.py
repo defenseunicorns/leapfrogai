@@ -1,7 +1,7 @@
 import pytest
 from openai.types.beta.threads import Run, Message, TextContentBlock, Text
 
-from .utils import client_config_factory
+from tests.utils.client import client_config_factory
 
 
 def make_mock_message_object(role, message_text):
@@ -37,12 +37,12 @@ mock_message = make_mock_message_simple(role="user", message_text="Hello world!"
 def test_run_completion(client_name, test_messages):
     # Setup
     config = client_config_factory(client_name)
-    client = config["client"]
+    client = config.client
 
     assistant = client.beta.assistants.create(
         name="Test Assistant",
         instructions="You must provide a response based on the attached files.",
-        model=config["model"],
+        model=config.model,
     )
     thread = client.beta.threads.create()
 

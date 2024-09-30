@@ -78,12 +78,25 @@ class Composer(BaseModel):
         thread: Thread,
         additional_instructions: str | None,
         tool_resources: BetaThreadToolResources | None = None,
-    ) -> tuple[list[ChatMessage], list[str]]:
+    ) -> tuple[list[ChatMessage], SearchResponse]:
+        """Create chat message list for consumption by the LLM backend.
+
+        Args:
+            request (RunCreateParamsRequest): The request object.
+            session (Session): The database session.
+            thread (Thread): The thread object.
+            additional_instructions (str | None): Additional instructions.
+            tool_resources (BetaThreadToolResources | None): The tool resources.
+
+        Returns:
+            tuple[list[ChatMessage], SearchResponse]: The chat messages and any RAG responses.
+        """
         # Get existing messages
         thread_messages: list[Message] = await self.list_messages(thread.id, session)
+        rag_responses: SearchResponse = SearchResponse(data=[])
 
         if len(thread_messages) == 0:
-            return [], []
+            return [], rag_responses
 
         def sort_by_created_at(msg: Message):
             return msg.created_at
@@ -125,7 +138,6 @@ class Composer(BaseModel):
         chat_messages.extend(chat_thread_messages)
 
         # 4 - The RAG results are appended behind the user's query
-        file_ids: set[str] = set()
         if request.can_use_rag(tool_resources) and chat_thread_messages:
             rag_message: str = "Here are relevant docs needed to reply:\n"
 
@@ -138,22 +150,22 @@ class Composer(BaseModel):
             vector_store_ids: list[str] = cast(list[str], file_search.vector_store_ids)
 
             for vector_store_id in vector_store_ids:
-                rag_responses: SearchResponse = await query_service.query_rag(
+                rag_responses = await query_service.query_rag(
                     query=query_message.content_as_str(),
                     vector_store_id=vector_store_id,
                 )
+
                 # Insert the RAG response messages just before the user's query
                 for rag_response in rag_responses.data:
-                    file_ids.add(rag_response.file_id)
                     response_with_instructions: str = f"{rag_response.content}"
                     rag_message += f"{response_with_instructions}\n"
 
             chat_messages.insert(
                 len(chat_messages) - 1,  # Insert right before the user message
                 ChatMessage(role="user", content=rag_message),
-            )  # TODO: Should this go in user or something else like function?
+            )
 
-        return chat_messages, list(file_ids)
+        return chat_messages, rag_responses
 
     async def generate_message_for_thread(
         self,
@@ -182,7 +194,7 @@ class Composer(BaseModel):
             else:
                 tool_resources = None
 
-        chat_messages, file_ids = await self.create_chat_messages(
+        chat_messages, rag_responses = await self.create_chat_messages(
             request, session, thread, additional_instructions, tool_resources
         )
 
@@ -204,13 +216,15 @@ class Composer(BaseModel):
 
         choice: ChatChoice = cast(ChatChoice, chat_response.choices[0])
 
-        message = from_text_to_message(choice.message.content_as_str(), file_ids)
+        message: Message = from_text_to_message(
+            text=choice.message.content_as_str(), search_responses=rag_responses
+        )
 
         create_message_request = CreateMessageRequest(
             role=message.role,
             content=message.content,
             attachments=message.attachments,
-            metadata=message.metadata.__dict__ if message.metadata else None,
+            metadata=vars(message.metadata),
         )
 
         await create_message_request.create_message(
@@ -249,7 +263,7 @@ class Composer(BaseModel):
             else:
                 tool_resources = None
 
-        chat_messages, file_ids = await self.create_chat_messages(
+        chat_messages, rag_responses = await self.create_chat_messages(
             request, session, thread, additional_instructions, tool_resources
         )
 
@@ -274,13 +288,15 @@ class Composer(BaseModel):
             yield "\n\n"
 
         # Create an empty message
-        new_message: Message = from_text_to_message("", [])
+        new_message: Message = from_text_to_message(
+            text="", search_responses=SearchResponse(data=[])
+        )
 
         create_message_request = CreateMessageRequest(
             role=new_message.role,
             content=new_message.content,
             attachments=new_message.attachments,
-            metadata=new_message.metadata.__dict__ if new_message.metadata else None,
+            metadata=vars(new_message.metadata),
         )
 
         new_message = await create_message_request.create_message(
@@ -319,7 +335,9 @@ class Composer(BaseModel):
             yield "\n\n"
             index += 1
 
-        new_message.content = from_text_to_message(response, file_ids).content
+        new_message.content = from_text_to_message(
+            text=response, search_responses=rag_responses
+        ).content
         new_message.created_at = int(time.time())
 
         crud_message = CRUDMessage(db=session)

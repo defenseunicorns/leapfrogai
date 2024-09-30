@@ -81,6 +81,8 @@ class IndexingService:
             temp_file.write(file_bytes)
             temp_file.seek(0)
             documents = await load_file(temp_file.name)
+            for document in documents:
+                document.metadata["source"] = file_object.filename
             chunks = await split(documents)
 
             if len(chunks) == 0:
