@@ -26,7 +26,7 @@ import { getLocalsMock } from '$lib/mocks/misc';
 import type { ActionFailure, RequestEvent } from '@sveltejs/kit';
 import type { RouteParams } from './$types';
 import filesStore from '$stores/filesStore';
-import { convertFileObjectToFileRows } from '$helpers/fileHelpers';
+import { convertFileObjectToLFFileObject } from '$helpers/fileHelpers';
 import vectorStatusStore from '$stores/vectorStatusStore';
 
 describe('Assistant Form', () => {
@@ -66,7 +66,7 @@ describe('Assistant Form', () => {
     mockOpenAI.setAssistants([assistant]);
     mockGetAssistants([]);
     mockGetFiles(files);
-    filesStore.setFiles(convertFileObjectToFileRows(files));
+    filesStore.setFiles(convertFileObjectToLFFileObject(files));
 
     vectorStatusStore.set({
       [files[0].id]: { [vectorStore.id]: 'completed' },

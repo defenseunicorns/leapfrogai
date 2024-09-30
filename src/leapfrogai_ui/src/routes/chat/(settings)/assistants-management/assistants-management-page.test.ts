@@ -1,7 +1,7 @@
 import { render, screen } from '@testing-library/svelte';
 import AssistantsManagementPage from './+page.svelte';
-import { getFakeAssistant, getFakeSession } from '$testUtils/fakeData';
-import type { SupabaseClient } from '@supabase/supabase-js';
+import { getFakeAssistant } from '$testUtils/fakeData';
+import { assistantsStore } from '$stores';
 
 describe('Assistants management page', () => {
   // Assistant search tested with e2e
@@ -10,14 +10,8 @@ describe('Assistants management page', () => {
     const assistant1 = getFakeAssistant();
     const assistant2 = getFakeAssistant();
 
-    render(AssistantsManagementPage, {
-      data: {
-        assistants: [assistant1, assistant2],
-        session: getFakeSession(),
-        title: 'Fake title',
-        supabase: {} as unknown as SupabaseClient
-      }
-    });
+    assistantsStore.setAssistants([assistant1, assistant2]);
+    render(AssistantsManagementPage);
 
     screen.getByTestId(`assistant-card-${assistant1.name!}`);
     screen.getByTestId(`assistant-card-${assistant2.name!}`);

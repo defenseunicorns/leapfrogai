@@ -10,7 +10,7 @@ import AssistantProgressToast from '$components/AssistantProgressToast.svelte';
 import { render, screen } from '@testing-library/svelte';
 import filesStore from '$stores/filesStore';
 import { getFakeFiles } from '$testUtils/fakeData';
-import { convertFileObjectToFileRows } from '$helpers/fileHelpers';
+import { convertFileObjectToLFFileObject } from '$helpers/fileHelpers';
 import { delay } from 'msw';
 import { vi } from 'vitest';
 import { toastStore } from '$stores';
@@ -27,7 +27,7 @@ describe('AssistantProgressToast', () => {
       fileIds: files.map((file) => file.id),
       vectorStoreId: '123'
     };
-    filesStore.setFiles(convertFileObjectToFileRows(files));
+    filesStore.setFiles(convertFileObjectToLFFileObject(files));
 
     const timeout = 10; //10ms
     render(AssistantProgressToast, { timeout, toast }); //10ms timeout

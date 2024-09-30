@@ -13,7 +13,7 @@
     UserCircleOutline
   } from 'flowbite-svelte-icons';
   import { twMerge } from 'tailwind-merge';
-  import { threadsStore, toastStore } from '$stores';
+  import { assistantsStore, threadsStore, toastStore } from '$stores';
   import { convertTextToMessageContentArr, getMessageText } from '$helpers/threads';
   import type { Message as OpenAIMessage } from 'openai/resources/beta/threads/messages';
   import {
@@ -60,7 +60,7 @@
 
   let assistantImage = isRunAssistantMessage(message)
     ? getAssistantImage(
-        $page.data.assistants || [],
+        $assistantsStore.assistants || [],
         message.assistant_id || message.metadata?.assistant_id
       )
     : null;
@@ -72,7 +72,8 @@
   const getAssistantName = (id?: string) => {
     if (!id) return 'LeapfrogAI Bot';
     return (
-      $page.data.assistants?.find((assistant) => assistant.id === id)?.name || 'LeapfrogAI Bot'
+      $assistantsStore.assistants?.find((assistant) => assistant.id === id)?.name ||
+      'LeapfrogAI Bot'
     );
   };
 
@@ -86,7 +87,7 @@
       message: { ...message, content: convertTextToMessageContentArr($value) },
       setMessages: setMessages!,
       append: append!,
-      selectedAssistantId: $threadsStore.selectedAssistantId
+      selectedAssistantId: $assistantsStore.selectedAssistantId
     });
   };
 
@@ -238,7 +239,7 @@
                 message: messages[messages.length - 2],
                 setMessages,
                 append: append,
-                selectedAssistantId: $threadsStore.selectedAssistantId
+                selectedAssistantId: $assistantsStore.selectedAssistantId
               })}
             aria-label="regenerate message"
             tabindex="0"

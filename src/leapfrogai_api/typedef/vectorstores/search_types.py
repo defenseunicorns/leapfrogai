@@ -1,6 +1,15 @@
 from pydantic import BaseModel, Field
 
 
+class Vector(BaseModel):
+    id: str = ""
+    vector_store_id: str
+    file_id: str
+    content: str
+    metadata: dict
+    embedding: list[float]
+
+
 class SearchItem(BaseModel):
     """Object representing a single item in a search result."""
 
