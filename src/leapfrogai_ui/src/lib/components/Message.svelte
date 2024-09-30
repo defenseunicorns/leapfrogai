@@ -179,14 +179,16 @@
             {#if message.role !== 'user' && !messageText}
               <MessagePendingSkeleton size="sm" class="mt-4" darkColor="bg-gray-500" />
             {:else}
-              <!--eslint-disable-next-line svelte/no-at-html-tags -- We use DomPurity to sanitize the code snippet-->
-              {@html DOMPurify.sanitize(md.render(messageText), {
-                CUSTOM_ELEMENT_HANDLING: {
-                  tagNameCheck: /^code-block$/,
-                  attributeNameCheck: /^(code|language)$/,
-                  allowCustomizedBuiltInElements: false
-                }
-              })}
+              <div id="message-content-container">
+                <!--eslint-disable-next-line svelte/no-at-html-tags -- We use DomPurity to sanitize the code snippet-->
+                {@html DOMPurify.sanitize(md.render(messageText), {
+                  CUSTOM_ELEMENT_HANDLING: {
+                    tagNameCheck: /^code-block$/,
+                    attributeNameCheck: /^(code|language)$/,
+                    allowCustomizedBuiltInElements: false
+                  }
+                })}
+              </div>
               <div class="flex flex-col items-start">
                 {#each getCitations(message, $page.data.files) as { component: Component, props }}
                   <svelte:component this={Component} {...props} />

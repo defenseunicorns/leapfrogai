@@ -20,7 +20,7 @@ def leapfrogai_client():
         base_url=os.getenv(
             "LEAPFROGAI_API_URL", "https://leapfrogai-api.uds.dev/openai/v1"
         ),
-        api_key=os.getenv("SUPABASE_USER_JWT"),
+        api_key=os.getenv("LEAPFROGAI_API_KEY") or os.getenv("SUPABASE_USER_JWT"),
     )
 
 
