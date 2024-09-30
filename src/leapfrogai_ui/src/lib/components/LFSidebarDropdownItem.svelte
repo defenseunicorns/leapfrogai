@@ -71,7 +71,6 @@ It adds a "three-dot" menu button with Dropdown, and delete confirmation Modal
     if (threadId === $page.params.thread_id) await goto('/chat');
   };
 
-  $: console.log('hovered', hovered);
 </script>
 
 <li

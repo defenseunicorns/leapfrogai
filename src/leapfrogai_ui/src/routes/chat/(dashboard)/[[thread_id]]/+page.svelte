@@ -360,7 +360,7 @@
     </div>
   </div>
   <Hr classHr="my-2" />
-  <div id="chat-tools" data-testid="chat-tools" class="flex flex-col gap-2 px-8">
+  <div id="chat-tools" data-testid="chat-tools" class="flex gap-2 px-8">
     <SelectAssistantDropdown />
 
     <div

@@ -10,7 +10,7 @@
   $: selectedAssistantName =
     $assistantsStore.assistants.find(
       (assistant) => assistant.id === $assistantsStore.selectedAssistantId
-    )?.name || 'Select assistant...';
+    )?.name || 'No Assistant';
 
   const handleSelectAssistant = (e) => {
     e.preventDefault();
@@ -27,7 +27,7 @@
   };
 </script>
 
-<Button class="w-48 justify-between "
+<Button color="dark" class="w-48 justify-between dark:bg-gray-700 dark:focus-within:ring-0"
   ><span class="truncate">{selectedAssistantName}</span><ChevronDownOutline
     class="ms-2 h-6 w-6 text-white dark:text-white"
     data-testid="assistants-select-btn"

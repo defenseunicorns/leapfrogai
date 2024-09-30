@@ -74,7 +74,7 @@
             label={category.label}
             isOpen={true}
             spanClass="flex-1 text-left whitespace-nowrap"
-
+            ulClass="pt-0.5 pb-1 space-y-2"
           >
             {#each category.threads as thread (thread.id)}
               <LFSidebarDropdownItem
@@ -82,7 +82,6 @@
                 label={thread.metadata.label}
                 active={activeThreadId === thread.id}
                 labelClass="ps-4"
-                class="ms-0"
               />
             {/each}
           </SidebarDropdownWrapper>
