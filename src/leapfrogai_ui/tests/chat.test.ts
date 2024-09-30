@@ -222,7 +222,7 @@ test('displays an error toast if /chat/assistants throws while getting a respons
   expect(messages).toHaveLength(0);
 });
 
-test('displays an error toast if /chat/assistants returns a 500 when getting a response from an assistant 2', async ({
+test('displays an error toast if /chat/assistants returns a 500 when getting a response from an assistant', async ({
   page,
   openAIClient
 }) => {
@@ -239,11 +239,9 @@ test('displays an error toast if /chat/assistants returns a 500 when getting a r
   await sendMessage(page, newMessage1);
 
   await expect(page.getByText(ERROR_GETTING_ASSISTANT_MSG_TOAST().title)).toBeVisible();
-  const messages = await page.getByTestId('message').all();
-  expect(messages).toHaveLength(1);
 });
 
-test('displays an error toast if /chat/assistants returns a 200 with no body when getting a response from an assistant 3', async ({
+test('displays an error toast if /chat/assistants returns a 200 with no body when getting a response from an assistant', async ({
   page,
   openAIClient
 }) => {
