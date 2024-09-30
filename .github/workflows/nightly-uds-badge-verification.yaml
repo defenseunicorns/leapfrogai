@@ -59,7 +59,15 @@ jobs:
 
           uds zarf tools yq -i '.packages[].repository |= sub("/uds/", "/uds/snapshots/")' bundles/latest/cpu/uds-bundle.yaml
 
-      # Workaround for summarizeVerification.sh
+      - name: Create and Deploy UDS Bundle (${{ env.SNAPSHOT_VERSION }})
+        run: |
+          cd bundles/latest/cpu
+          uds create . --confirm && \
+          uds deploy uds-bundle-leapfrogai-amd64-${{ env.SNAPSHOT_VERSION }}.tar.zst --confirm --no-progress && \
+          rm -rf uds-bundle-leapfrogai-amd64-${{ env.SNAPSHOT_VERSION }}.tar.zst && \
+          docker system prune -af
+
+      # Workaround for handling emojis in the upstream badge verification UDS task
       - name: Set Locale to UTF-8
         run: |
           sudo apt-get update
@@ -69,13 +77,11 @@ jobs:
           export LANGUAGE=en_US:en
           export LC_ALL=en_US.UTF-8
 
-      - name: Create and Deploy UDS Bundle (${{ env.SNAPSHOT_VERSION }})
-        run: |
-          cd bundles/latest/cpu
-          uds create . --confirm && \
-            uds deploy uds-bundle-leapfrogai-amd64-${{ env.SNAPSHOT_VERSION }}.tar.zst --confirm --no-progress && \
-            rm -rf uds-bundle-leapfrogai-amd64-${{ env.SNAPSHOT_VERSION }}.tar.zst && \
-            docker system prune -af
+      # Setup Python for the report cleaning script in the next step
+      - name: Set up Python
+        uses: actions/setup-python@f677139bbe7f9c59b41e40162b753c062f5d49a3 # v5.2.0
+        with:
+          python-version-file: "pyproject.toml"
 
       - name: Run UDS Badge Verification Task
         run: |

@@ -11,13 +11,11 @@ tasks:
         cmd: |
           mkdir -p reports
       - description: "Run UDS Badge Verification Task"
-        # to clean the intermediate-report.txt, use the `sed` command seen in `clean_data` of summarizeVerification.sh
         cmd: |
           uds run verify-uds-badge-cpu --no-progress 2>&1 | tee ./reports/intermediate-report.txt > /dev/null
       - description: "Clean Up Final Report"
         cmd: |
-          chmod +x .github/scripts/summarizeVerification.sh
-          cat ./reports/intermediate-report.txt 2>&1 | .github/scripts/summarizeVerification.sh | tee ./reports/final-report.txt
+          cat ./reports/intermediate-report.txt 2>&1 | python3 .github/scripts/uds_verification_report.py | tee ./reports/final-report.txt
 
   #############
   # BADGE TASKS
