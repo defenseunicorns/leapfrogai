@@ -21,17 +21,10 @@ import { mockOpenAI } from '../../../../../vitest-setup';
 import { ERROR_GETTING_AI_RESPONSE_TOAST, ERROR_SAVING_MSG_TOAST } from '$constants/toastMessages';
 
 import { faker } from '@faker-js/faker';
-import type { LFThread } from '$lib/types/threads';
-import type { LFAssistant } from '$lib/types/assistants';
 import { delay } from '$helpers/chatHelpers';
 import { mockGetFiles } from '$lib/mocks/file-mocks';
 import { threadsStore } from '$stores';
 
-type LayoutServerLoad = {
-  threads: LFThread[];
-  assistants: LFAssistant[];
-} | null;
-let data: LayoutServerLoad;
 const question = 'What is AI?';
 
 const assistant1 = getFakeAssistant();
@@ -71,7 +64,7 @@ describe('when there is an active thread selected', () => {
   });
 
   it('it renders all the messages', async () => {
-    render(ChatPage, { data });
+    render(ChatPage);
 
     for (let i = 0; i < fakeThreads[0].messages!.length; i++) {
       await screen.findByText(getMessageText(fakeThreads[0].messages![i]));
@@ -79,7 +72,7 @@ describe('when there is an active thread selected', () => {
   });
 
   test('the send button is disabled when there is no text in the input', () => {
-    render(ChatPage, { data });
+    render(ChatPage);
     const submitBtn = screen.getByTestId('send message');
     expect(submitBtn).toHaveProperty('disabled', true);
   });
@@ -88,7 +81,7 @@ describe('when there is an active thread selected', () => {
     mockChatCompletion();
     mockNewMessage();
 
-    const { getByTestId } = render(ChatPage, { data });
+    const { getByTestId } = render(ChatPage);
 
     const input = getByTestId('chat-input') as HTMLInputElement;
     const submitBtn = getByTestId('send message');
@@ -109,7 +102,7 @@ describe('when there is an active thread selected', () => {
     mockNewMessage();
     mockChatCompletion({ delayTime });
 
-    const { getByTestId } = render(ChatPage, { data });
+    const { getByTestId } = render(ChatPage);
 
     const input = getByTestId('chat-input') as HTMLInputElement;
     const submitBtn = getByTestId('send message');
@@ -125,7 +118,7 @@ describe('when there is an active thread selected', () => {
   });
 
   it('disables the send button if the message length is too long', async () => {
-    const { getByTestId } = render(ChatPage, { data });
+    const { getByTestId } = render(ChatPage);
     const input = getByTestId('chat-input') as HTMLInputElement;
     const submitBtn = getByTestId('send message');
     const limitText = faker.string.alpha({ length: 101 });
@@ -139,7 +132,7 @@ describe('when there is an active thread selected', () => {
   it.skip('displays a toast error notification when there is an error with the AI response', async () => {
     mockChatCompletionError();
     mockNewMessage();
-    const { getByTestId } = render(ChatPageWithToast, { data });
+    const { getByTestId } = render(ChatPageWithToast);
 
     const input = getByTestId('chat-input') as HTMLInputElement;
     const submitBtn = getByTestId('send message');
@@ -152,7 +145,7 @@ describe('when there is an active thread selected', () => {
 
   it('displays an error message when there is an error saving the response', async () => {
     mockNewMessageError();
-    const { getByTestId } = render(ChatPageWithToast, { data });
+    const { getByTestId } = render(ChatPageWithToast);
 
     const input = getByTestId('chat-input') as HTMLInputElement;
     const submitBtn = getByTestId('send message');
@@ -173,7 +166,7 @@ describe('when there is an active thread selected', () => {
     });
     mockNewMessage();
 
-    const { getByTestId } = render(ChatPageWithToast, { data });
+    const { getByTestId } = render(ChatPageWithToast);
 
     const input = getByTestId('chat-input') as HTMLInputElement;
     const submitBtn = getByTestId('send message');
@@ -190,7 +183,7 @@ describe('when there is an active thread selected', () => {
   it('has a button to go to the assistants management page in the assistant dropdown', async () => {
     const goToSpy = vi.spyOn(navigation, 'goto');
 
-    const { getByRole, getByTestId } = render(ChatPage, { data });
+    const { getByRole, getByTestId } = render(ChatPage);
 
     const assistantSelect = getByTestId('assistants-select-btn');
     await userEvent.click(assistantSelect);

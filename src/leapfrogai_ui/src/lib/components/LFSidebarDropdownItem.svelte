@@ -70,13 +70,14 @@ It adds a "three-dot" menu button with Dropdown, and delete confirmation Modal
     await threadsStore.deleteThread(threadId);
     if (threadId === $page.params.thread_id) await goto('/chat');
   };
-
 </script>
 
 <li
   class="flex flex-grow justify-between"
   on:mouseover={() => (hovered = true)}
   on:mouseout={() => (hovered = false)}
+  on:focus
+  on:blur
 >
   {#if editMode}
     <Input
@@ -114,6 +115,7 @@ It adds a "three-dot" menu button with Dropdown, and delete confirmation Modal
       on:click={async () => {
         await threadsStore.changeThread(threadId);
       }}
+      aria-label={label}
       class={twMerge(
         active ? activeClass : sClass,
         'truncate',

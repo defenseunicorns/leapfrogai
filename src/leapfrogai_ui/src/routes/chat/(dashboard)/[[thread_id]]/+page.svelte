@@ -1,7 +1,7 @@
 <script lang="ts">
   import { beforeNavigate } from '$app/navigation';
   import { LFTextArea, PoweredByDU } from '$components';
-  import { Hr, ToolbarButton } from 'flowbite-svelte';
+  import { Hr } from 'flowbite-svelte';
   import { onMount, tick } from 'svelte';
   import { assistantsStore, threadsStore, toastStore } from '$stores';
   import { type Message as VercelAIMessage, useAssistant, useChat } from '@ai-sdk/svelte';
@@ -23,7 +23,7 @@
     ERROR_SAVING_MSG_TOAST
   } from '$constants/toastMessages';
   import SelectAssistantDropdown from '$components/SelectAssistantDropdown.svelte';
-  import { PaperPlaneOutline, StopOutline } from 'flowbite-svelte-icons';
+  import { ArrowUpOutline, StopOutline } from 'flowbite-svelte-icons';
   import type { FileMetadata, LFFile } from '$lib/types/files';
   import UploadedFileCards from '$components/UploadedFileCards.svelte';
   import ChatFileUploadForm from '$components/ChatFileUpload.svelte';
@@ -395,30 +395,25 @@
         />
 
         {#if !$isLoading && $status !== 'in_progress'}
-          <ToolbarButton
+          <button
             data-testid="send message"
             type="submit"
-            color="blue"
-            class={twMerge(
-              'rounded-full text-primary-600 dark:text-primary-500',
-              sendDisabled && 'hover:dark:bg-gray-700 '
-            )}
+            class="remove-btn-style"
             disabled={sendDisabled}
           >
-            <PaperPlaneOutline
-              class={twMerge('h-6 w-6 rotate-45', sendDisabled && 'text-primary-100')}
-            />
-            <span class="sr-only">Send message</span>
-          </ToolbarButton>
+            <ArrowUpOutline
+              class={twMerge(
+                'h-6 w-6',
+                'dark:text-gray-400',
+                !sendDisabled && 'dark:hover:text-gray-300'
+              )}
+            /> <span class="sr-only">Send message</span>
+          </button>
         {:else}
-          <ToolbarButton
-            data-testid="cancel message"
-            type="submit"
-            color="gray"
-            class="rounded-full text-primary-600 dark:text-primary-500"
-            ><StopOutline class="h-6 w-6" color="red" /><span class="sr-only">Cancel message</span
-            ></ToolbarButton
-          >
+          <button data-testid="cancel message" type="submit" class="remove-btn-style">
+            <StopOutline class={twMerge('h-6 w-6', 'dark:text-red-600 dark:hover:text-red-500')} />
+            <span class="sr-only">Cancel message</span>
+          </button>
         {/if}
       </div>
       <FileChatActions
