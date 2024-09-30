@@ -78,7 +78,7 @@ export const mockConvertFileErrorNoId = () => {
 
 export const mockDeleteCheck = (assistantsToReturn: LFAssistant[]) => {
   server.use(
-    http.post('/api/files/delete-check', async () => {
+    http.post('/api/files/delete/check', async () => {
       await delay(100);
       return HttpResponse.json(assistantsToReturn);
     })

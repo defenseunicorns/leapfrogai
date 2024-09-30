@@ -1,7 +1,7 @@
 <script lang="ts">
   import { env } from '$env/dynamic/public';
   import {
-    ACCEPTED_FILE_TYPES,
+    ACCEPTED_DOC_AND_AUDIO_FILE_TYPES,
     APPROX_MAX_CHARACTERS,
     FILE_UPLOAD_PROMPT,
     MAX_NUM_FILES_UPLOAD
@@ -61,24 +61,23 @@
             body: formData
           })
             .then(async (response) => {
-              if (!response.ok) {
+              if (response.ok) {
+                const result = await response.json();
                 return {
                   id: file.id,
                   name: shortenFileName(file.name),
                   type: file.type,
-                  text: ERROR_UPLOADING_FILE_MSG,
-                  status: 'error',
-                  errorText: ERROR_UPLOADING_FILE_MSG
+                  text: result.text,
+                  status: 'complete'
                 };
               }
-
-              const result = await response.json();
               return {
                 id: file.id,
                 name: shortenFileName(file.name),
                 type: file.type,
-                text: result.text,
-                status: 'complete'
+                text: ERROR_UPLOADING_FILE_MSG,
+                status: 'error',
+                errorText: ERROR_UPLOADING_FILE_MSG
               };
             })
             .catch(() => {
@@ -144,7 +143,7 @@
     convertFiles(e.detail);
     fileUploadBtnRef.value = '';
   }}
-  accept={ACCEPTED_FILE_TYPES}
+  accept={ACCEPTED_DOC_AND_AUDIO_FILE_TYPES}
   disabled={uploadingFiles}
   class="remove-btn-style flex  rounded-lg  p-1.5 text-gray-500 hover:bg-inherit dark:hover:bg-inherit"
 >
