@@ -123,7 +123,7 @@ OPENAI_MODEL="gpt-4o-mini" # or whatever model you prefer
 To run the tests, from the root directory of the LeapfrogAI project:
 
 ```bash
-make install # to ensure all python dependencies are install
+make install # to ensure all python dependencies are installed
 
 make test-conformance # runs the entire suite
 ```
