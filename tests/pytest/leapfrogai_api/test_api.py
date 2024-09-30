@@ -15,6 +15,7 @@ from leapfrogai_api.typedef.completion import CompletionRequest
 from leapfrogai_api.typedef.embeddings import CreateEmbeddingRequest
 from leapfrogai_api.main import app
 from leapfrogai_api.routers.supabase_session import init_supabase_client
+from tests.utils.data_path import data_path, WAV_FILE, WAV_FILE_ARABIC
 
 security = HTTPBearer()
 
@@ -63,12 +64,6 @@ async def pack_dummy_bearer_token(request: _CachedRequest, call_next):
         )
     )
     return await call_next(request)
-
-
-def load_audio_file(path: str):
-    file_path = os.path.join("tests", "data", path)
-    with open(file_path, "rb") as file:
-        return file.read()
 
 
 @pytest.fixture
@@ -269,13 +264,12 @@ def test_transcription(dummy_auth_middleware):
     expected_transcription = "The repeater model received a transcribe request"
 
     with TestClient(app) as client:
-        audio_filename = "0min12sec.wav"
-        audio_content = load_audio_file(audio_filename)
-        files = {"file": (audio_filename, audio_content, "audio/mpeg")}
-        data = {"model": MODEL}
-        response = client.post(
-            "/openai/v1/audio/transcriptions", files=files, data=data
-        )
+        with open(data_path(WAV_FILE), "rb") as audio_content:
+            files = {"file": (WAV_FILE, audio_content, "audio/mpeg")}
+            data = {"model": MODEL}
+            response = client.post(
+                "/openai/v1/audio/transcriptions", files=files, data=data
+            )
 
         assert response.status_code == 200
 
@@ -292,11 +286,12 @@ def test_translation(dummy_auth_middleware):
     expected_translation = "The repeater model received a translation request"
 
     with TestClient(app) as client:
-        audio_filename = "arabic-audio.wav"
-        audio_content = load_audio_file(audio_filename)
-        files = {"file": (audio_filename, audio_content, "audio/mpeg")}
-        data = {"model": MODEL}
-        response = client.post("/openai/v1/audio/translations", files=files, data=data)
+        with open(data_path(WAV_FILE_ARABIC), "rb") as audio_content:
+            files = {"file": (WAV_FILE_ARABIC, audio_content, "audio/mpeg")}
+            data = {"model": MODEL}
+            response = client.post(
+                "/openai/v1/audio/translations", files=files, data=data
+            )
 
         assert response.status_code == 200
 

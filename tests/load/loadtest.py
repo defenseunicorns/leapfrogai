@@ -8,6 +8,7 @@ from locust import HttpUser, task, between, SequentialTaskSet
 import warnings
 import tempfile
 import uuid
+from tests.utils.data_path import data_path, MP3_FILE_RUSSIAN
 
 # Suppress SSL-related warnings
 warnings.filterwarnings("ignore", category=Warning)
@@ -59,9 +60,7 @@ def download_arxiv_pdf():
 
 
 def load_audio_file():
-    script_dir = os.path.dirname(os.path.abspath(__file__))
-    file_path = os.path.join(script_dir, "..", "data", "russian.mp3")
-    with open(file_path, "rb") as file:
+    with open(data_path(MP3_FILE_RUSSIAN), "rb") as file:
         return file.read()
 
 
@@ -211,14 +210,14 @@ class LeapfrogAIUser(HttpUser):
     @task
     def test_transcribe(self):
         audio_content = load_audio_file()
-        files = {"file": ("russian.mp3", audio_content, "audio/mpeg")}
+        files = {"file": (MP3_FILE_RUSSIAN, audio_content, "audio/mpeg")}
         data = {"model": "whisper", "language": "ru"}
         self.client.post("/openai/v1/audio/transcriptions", files=files, data=data)
 
     @task
     def test_translate(self):
         audio_content = load_audio_file()
-        files = {"file": ("russian.mp3", audio_content, "audio/mpeg")}
+        files = {"file": (MP3_FILE_RUSSIAN, audio_content, "audio/mpeg")}
         data = {"model": "whisper"}
         self.client.post("/openai/v1/audio/translations", files=files, data=data)
 

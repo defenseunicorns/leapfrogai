@@ -4,6 +4,7 @@ from pathlib import Path
 import pytest
 from openai import InternalServerError, OpenAI
 import unicodedata
+from tests.utils.data_path import data_path, WAV_FILE, WAV_FILE_ARABIC
 
 
 def test_completions(client: OpenAI):
@@ -38,7 +39,7 @@ def test_embeddings(client: OpenAI):
 def test_transcriptions(client: OpenAI):
     transcription = client.audio.transcriptions.create(
         model="whisper",
-        file=Path("tests/data/0min12sec.wav"),
+        file=data_path(WAV_FILE),
         language="en",
         prompt="This is a test transcription.",
         response_format="json",
@@ -53,7 +54,7 @@ def test_transcriptions(client: OpenAI):
 def test_translations(client: OpenAI):
     translation = client.audio.translations.create(
         model="whisper",
-        file=Path("tests/data/arabic-audio.wav"),
+        file=data_path(WAV_FILE_ARABIC),
         prompt="This is a test translation.",
         response_format="json",
         temperature=0.0,
@@ -79,7 +80,7 @@ def test_non_english_transcription(client: OpenAI):
     # Arabic transcription
     arabic_transcription = client.audio.transcriptions.create(
         model="whisper",
-        file=Path("tests/data/arabic-audio.wav"),
+        file=data_path(WAV_FILE_ARABIC),
         response_format="json",
         temperature=0.5,
         timestamp_granularities=["word", "segment"],
