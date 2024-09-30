@@ -1,14 +1,8 @@
 from openai import OpenAI
 import os
-from pathlib import Path
-
 
 LEAPFROGAI_MODEL = os.getenv("LEAPFROGAI_MODEL", "llama-cpp-python")
 OPENAI_MODEL = "gpt-4o-mini"
-
-
-def text_file_path():
-    return Path(os.path.dirname(__file__) + "/../data/test_with_data.txt")
 
 
 def openai_client():

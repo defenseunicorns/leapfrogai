@@ -5,9 +5,10 @@ from typing import Optional
 import requests
 from openai.types.beta.threads.text import Text
 import pytest
+from tests.utils.data_path import data_path
 
 from leapfrogai_api.typedef.rag.rag_types import ConfigurationPayload
-from ...utils.client import client_config_factory
+from tests.utils.client import client_config_factory
 
 
 def make_test_assistant(client, model, vector_store_id):
@@ -37,7 +38,6 @@ def test_rag_needle_haystack():
     client = config.client
 
     vector_store = client.beta.vector_stores.create(name="Test data")
-    file_path = "../../data"
     file_names = [
         "test_rag_1.1.txt",
         "test_rag_1.2.txt",
@@ -48,9 +48,7 @@ def test_rag_needle_haystack():
     ]
     vector_store_files = []
     for file_name in file_names:
-        with open(
-            f"{Path(os.path.dirname(__file__))}/{file_path}/{file_name}", "rb"
-        ) as file:
+        with open(data_path(file_name), "rb") as file:
             vector_store_files.append(
                 client.beta.vector_stores.files.upload(
                     vector_store_id=vector_store.id, file=file
