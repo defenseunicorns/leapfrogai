@@ -60,7 +60,10 @@ async def lifespan(app: FastAPI):
 
 app = FastAPI(lifespan=lifespan)
 
-Instrumentator().instrument(app).expose(app)
+Instrumentator(
+    excluded_handlers=["/healthz", "/metrics"],
+    should_group_status_codes=False,
+).instrument(app).expose(app)
 
 
 @app.exception_handler(RequestValidationError)
