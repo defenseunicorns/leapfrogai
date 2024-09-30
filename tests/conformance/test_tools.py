@@ -7,12 +7,13 @@ from openai.types.beta.threads.text import Text
 from openai.types.beta.threads.message import Message
 import re
 
-from ..utils.client import client_config_factory, text_file_path
+from tests.utils.client import client_config_factory
+from tests.utils.data_path import data_path, TXT_DATA_FILE
 
 
 def make_vector_store_with_file(client):
     vector_store = client.beta.vector_stores.create(name="Test data")
-    with open(text_file_path(), "rb") as file:
+    with open(data_path(TXT_DATA_FILE), "rb") as file:
         client.beta.vector_stores.files.upload(
             vector_store_id=vector_store.id, file=file
         )
@@ -46,7 +47,7 @@ def validate_annotation_format(annotation):
 @pytest.mark.parametrize("client_name", ["openai", "leapfrogai"])
 def test_thread_file_annotations(client_name):
     config = client_config_factory(client_name)
-    client = config.client  # shorthand
+    client = config.client
 
     vector_store = make_vector_store_with_file(client)
     assistant = make_test_assistant(client, config.model, vector_store.id)
