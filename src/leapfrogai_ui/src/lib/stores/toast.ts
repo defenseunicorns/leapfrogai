@@ -21,7 +21,8 @@ const createToastsStore = () => {
       const newToast: ToastNotificationProps = {
         id,
         ...toastDefaults,
-        ...toast
+        ...toast,
+        timeout: toast.kind === 'error' ? -1 : toastDefaults.timeout
       };
       update((old) => ({
         ...old,
