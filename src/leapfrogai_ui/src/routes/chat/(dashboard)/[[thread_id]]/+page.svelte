@@ -13,6 +13,7 @@
   import { twMerge } from 'tailwind-merge';
   import {
     isRunAssistantMessage,
+    refetchThread,
     resetMessages,
     saveMessage,
     stopThenSave
@@ -29,6 +30,8 @@
   import ChatFileUploadForm from '$components/ChatFileUpload.svelte';
   import FileChatActions from '$components/FileChatActions.svelte';
   import LFCarousel from '$components/LFCarousel.svelte';
+  import { ASSISTANT_ERROR_MSG } from '$constants/errors';
+  import { delay } from 'msw';
 
   export let data;
 
@@ -149,7 +152,22 @@
     }
   };
 
+  const createAssistantErrorResponse = async () => {
+    await delay(1000); // ensure error response timestamp is after user's msg
+    const newMessage = await saveMessage({
+      thread_id: data.thread.id,
+      content: ASSISTANT_ERROR_MSG,
+      role: 'assistant',
+      metadata: {
+        assistant_id: latestAssistantMessage.assistant_id || $threadsStore.selectedAssistantId
+      }
+    });
+
+    await threadsStore.addMessageToStore(newMessage);
+  };
+
   const handleAssistantResponseError = async () => {
+    await refetchThread($page.params.thread_id); // if there was an error in the stream, we need to re-fetch to get the user's msg from the db
     toastStore.addToast({
       ...ERROR_GETTING_ASSISTANT_MSG_TOAST()
     });
@@ -158,6 +176,8 @@
       threadsStore.removeMessageFromStore($page.params.thread_id, latestAssistantMessage.id);
       $assistantMessages = [...$assistantMessages.splice(-1)];
     }
+    await createAssistantErrorResponse();
+
     threadsStore.setStreamingMessage(null);
     await threadsStore.setSendingBlocked(false);
   };

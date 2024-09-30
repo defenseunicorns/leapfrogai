@@ -263,3 +263,11 @@ export const getCitations = (message: OpenAIMessage, files: FileObject[]) => {
   }
   return [];
 };
+
+export const refetchThread = async (threadId: string) => {
+  const res = await fetch(`/api/threads/${threadId}`);
+  if (res.ok) {
+    const thread = await res.json();
+    threadsStore.updateThread(thread);
+  }
+};

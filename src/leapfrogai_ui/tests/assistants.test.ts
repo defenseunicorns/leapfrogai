@@ -16,6 +16,10 @@ import {
   loadChatPage,
   loadNewAssistantPage
 } from './helpers/navigationHelpers';
+import { ERROR_GETTING_ASSISTANT_MSG_TOAST } from '$constants/toastMessages';
+import { ASSISTANT_ERROR_MSG } from '$constants/errors';
+
+const newMessage1 = getSimpleMathQuestion();
 
 test('it navigates to the assistants page', async ({ page }) => {
   await loadChatPage(page);
@@ -294,4 +298,66 @@ test('it can delete assistants', async ({ page, openAIClient }) => {
   await deleteAssistantCard(assistant.name!, page);
 
   await expect(page.getByText(`${assistant.name} Assistant deleted.`)).toBeVisible();
+});
+
+// Note - these error cases do not test all edge cases. ex. completed response comes back empty, /chat/assistants
+// partially completes then fails, stream fails, etc...
+test('displays an error toast if /chat/assistants throws while getting a response from an assistant', async ({
+  page,
+  openAIClient
+}) => {
+  const assistant = await createAssistantWithApi({ openAIClient });
+  await loadChatPage(page);
+
+  const assistantDropdown = page.getByTestId('assistants-select-btn');
+  await assistantDropdown.click();
+  await page.getByText(assistant!.name!).click();
+
+  await page.route('*/**/chat/assistants', async (route) => {
+    await route.abort('failed');
+  });
+  await sendMessage(page, newMessage1);
+
+  await expect(page.getByText(ERROR_GETTING_ASSISTANT_MSG_TOAST().title)).toBeVisible();
+  await expect(page.getByText(ASSISTANT_ERROR_MSG)).toBeVisible();
+});
+
+test('displays an error toast if /chat/assistants returns a 500 when getting a response from an assistant', async ({
+  page,
+  openAIClient
+}) => {
+  const assistant = await createAssistantWithApi({ openAIClient });
+  await loadChatPage(page);
+
+  const assistantDropdown = page.getByTestId('assistants-select-btn');
+  await assistantDropdown.click();
+  await page.getByText(assistant!.name!).click();
+
+  await page.route('*/**/chat/assistants', async (route) => {
+    await route.fulfill({ status: 500 });
+  });
+  await sendMessage(page, newMessage1);
+
+  await expect(page.getByText(ERROR_GETTING_ASSISTANT_MSG_TOAST().title)).toBeVisible();
+  await expect(page.getByText(ASSISTANT_ERROR_MSG)).toBeVisible();
+});
+
+test('displays an error toast if /chat/assistants returns a 200 with no body when getting a response from an assistant', async ({
+  page,
+  openAIClient
+}) => {
+  const assistant = await createAssistantWithApi({ openAIClient });
+  await loadChatPage(page);
+
+  const assistantDropdown = page.getByTestId('assistants-select-btn');
+  await assistantDropdown.click();
+  await page.getByText(assistant!.name!).click();
+
+  await page.route('*/**/chat/assistants', async (route) => {
+    await route.fulfill({ status: 200 });
+  });
+  await sendMessage(page, newMessage1);
+
+  await expect(page.getByText(ERROR_GETTING_ASSISTANT_MSG_TOAST().title)).toBeVisible();
+  await expect(page.getByText(ASSISTANT_ERROR_MSG)).toBeVisible();
 });
