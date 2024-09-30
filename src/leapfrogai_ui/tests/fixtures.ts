@@ -1,41 +1,51 @@
 import { test as base } from '@playwright/test';
 import OpenAI from 'openai';
+import fs from 'node:fs';
 
 type MyFixtures = {
   openAIClient: OpenAI;
 };
 
-export async function getAccessToken() {
-  const supabaseUrl = process.env.PUBLIC_SUPABASE_URL;
-  const serviceRoleKey = process.env.SERVICE_ROLE_KEY;
+type Cookie = {
+  name: string;
+  value: string;
+  domain: string;
+  path: string;
+  expires: number;
+  httpOnly: boolean;
+  secure: boolean;
+  sameSite: string;
+};
 
-  const response = await fetch(`${supabaseUrl}/auth/v1/token?grant_type=password`, {
-    method: 'POST',
-    // @ts-expect-error: apikey is a required header for this request
-    headers: {
-      'Content-Type': 'application/json',
-      apikey: serviceRoleKey,
-      Authorization: `Bearer ${serviceRoleKey}`
-    },
-    body: JSON.stringify({
-      email: process.env.USERNAME,
-      password: process.env.PASSWORD
-    })
-  });
-
-  const data = await response.json();
-
-  if (response.ok) {
-    return data.access_token;
-  } else {
-    console.error('Error fetching access token:', data);
-    throw new Error(data.error_description || 'Failed to fetch access token');
+// Gets an access token from cookie
+export const getAccessToken = async () => {
+  try {
+    const authData = JSON.parse(
+      fs.readFileSync(`${process.cwd()}/playwright/.auth/user.json`, 'utf-8')
+    );
+    const cookie = authData.cookies.find(
+      (cookie: Cookie) =>
+        cookie.name === 'sb-supabase-kong-auth-token' ||
+        cookie.name === 'sb-supabase-kong-auth-token.0' ||
+        cookie.name === 'sb-supabase-kong-auth-token.1'
+    );
+    const cookieStripped = cookie.value.replace('base64-', '');
+    // Decode the base64 string
+    const convertedCookie = Buffer.from(cookieStripped, 'base64').toString('utf-8');
+    const accessTokenMatch = convertedCookie.match(/"access_token":"(.*?)"/);
+    if (!accessTokenMatch) {
+      console.log('Access token not found in cookie');
+      return '';
+    }
+    return accessTokenMatch[1];
+  } catch (e) {
+    console.error('Error getting access token', e);
+    return '';
   }
-}
+};
 
 export const getOpenAIClient = async () => {
   const token = await getAccessToken();
-
   return new OpenAI({
     apiKey: process.env.OPENAI_API_KEY || token,
     baseURL: process.env.OPENAI_API_KEY

@@ -4,6 +4,7 @@ from pathlib import Path
 import pytest
 from openai import InternalServerError, OpenAI
 import unicodedata
+from tests.utils.data_path import data_path, WAV_FILE, WAV_FILE_ARABIC
 
 
 def test_completions(client: OpenAI):
@@ -38,7 +39,7 @@ def test_embeddings(client: OpenAI):
 def test_transcriptions(client: OpenAI):
     transcription = client.audio.transcriptions.create(
         model="whisper",
-        file=Path("tests/data/0min12sec.wav"),
+        file=data_path(WAV_FILE),
         language="en",
         prompt="This is a test transcription.",
         response_format="json",
@@ -53,10 +54,10 @@ def test_transcriptions(client: OpenAI):
 def test_translations(client: OpenAI):
     translation = client.audio.translations.create(
         model="whisper",
-        file=Path("tests/data/arabic-audio.wav"),
+        file=data_path(WAV_FILE_ARABIC),
         prompt="This is a test translation.",
         response_format="json",
-        temperature=0.3,
+        temperature=0.0,
     )
 
     assert len(translation.text) > 0, "The translation should not be empty"
@@ -73,3 +74,57 @@ def test_translations(client: OpenAI):
     english_chars = [is_english_or_punctuation(c) for c in translation.text]
 
     assert all(english_chars), "Non-English characters have been returned"
+
+
+def test_non_english_transcription(client: OpenAI):
+    # Arabic transcription
+    arabic_transcription = client.audio.transcriptions.create(
+        model="whisper",
+        file=data_path(WAV_FILE_ARABIC),
+        response_format="json",
+        temperature=0.5,
+        timestamp_granularities=["word", "segment"],
+    )
+
+    assert (
+        len(arabic_transcription.text) > 0
+    ), "The Arabic transcription should not be empty"
+    assert (
+        len(arabic_transcription.text) < 500
+    ), "The Arabic transcription should not be too long"
+
+    def is_arabic_or_punctuation(c):
+        if c in string.punctuation or c.isspace():
+            return True
+        return unicodedata.name(c).startswith("ARABIC")
+
+    arabic_chars = [is_arabic_or_punctuation(c) for c in arabic_transcription.text]
+    assert all(
+        arabic_chars
+    ), "Non-Arabic characters have been returned in Arabic transcription"
+
+    # Russian transcription
+    russian_transcription = client.audio.transcriptions.create(
+        model="whisper",
+        file=Path("tests/data/russian.mp3"),
+        response_format="json",
+        temperature=0.5,
+        timestamp_granularities=["word", "segment"],
+    )
+
+    assert (
+        len(russian_transcription.text) > 0
+    ), "The Russian transcription should not be empty"
+    assert (
+        len(russian_transcription.text) < 500
+    ), "The Russian transcription should not be too long"
+
+    def is_russian_or_punctuation(c):
+        if c in string.punctuation or c.isspace():
+            return True
+        return unicodedata.name(c).startswith("CYRILLIC")
+
+    russian_chars = [is_russian_or_punctuation(c) for c in russian_transcription.text]
+    assert all(
+        russian_chars
+    ), "Non-Russian characters have been returned in Russian transcription"

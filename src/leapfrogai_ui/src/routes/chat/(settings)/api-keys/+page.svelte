@@ -21,6 +21,7 @@
   import { tableStyles } from '$lib/styles/tables';
   import DeleteApiKeyModal from '$components/modals/DeleteApiKeyModal.svelte';
   import CreateApiKeyModal from '$components/modals/CreateApiKeyModal.svelte';
+  import { STANDARD_FADE_DURATION } from '$constants';
 
   export let data;
 
@@ -136,7 +137,11 @@
       <!-- Button with color="alternative" adds two pixels to btn height, border-box does not prevent this. h-[42px] prevents slight screen jump-->
       <div class="h-[42px]">
         {#if editMode}
-          <div in:fade={{ duration: 150 }} class="flex items-center gap-2">
+          <div
+            in:fade={{ duration: STANDARD_FADE_DURATION }}
+            class="flex items-center gap-2"
+            data-testid="table-actions"
+          >
             {#if deleting}
               <Button color="red" disabled>
                 <Spinner class="me-3" size="4" color="white" />Deleting...
@@ -148,7 +153,7 @@
             <Button color="alternative" on:click={handleClose}>Cancel</Button>
           </div>
         {:else}
-          <div in:fade={{ duration: 150 }}>
+          <div in:fade={{ duration: STANDARD_FADE_DURATION }}>
             <Button on:click={() => (createApiKeyModalOpen = true)} aria-label="create new">
               <PlusOutline class="mr-2 h-3.5 w-3.5" />Create new
             </Button>

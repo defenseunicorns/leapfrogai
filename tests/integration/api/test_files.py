@@ -8,6 +8,7 @@ from openai.types import FileDeleted, FileObject
 
 from leapfrogai_api.backend.rag.document_loader import load_file, split
 from leapfrogai_api.routers.openai.files import router
+from tests.utils.data_path import data_path, WAV_FILE, TXT_FILE, PPTX_FILE, XLSX_FILE
 
 file_response: Response
 testfile_content: bytes
@@ -34,7 +35,7 @@ client = TestClient(router, headers=headers)
 def read_testfile():
     """Read the test file content."""
     global testfile_content  # pylint: disable=global-statement
-    with open(os.path.dirname(__file__) + "/../../data/test.txt", "rb") as testfile:
+    with open(data_path(TXT_FILE), "rb") as testfile:
         testfile_content = testfile.read()
 
 
@@ -46,7 +47,7 @@ def create_file(read_testfile):  # pylint: disable=redefined-outer-name, unused-
 
     file_response = client.post(
         "/openai/v1/files",
-        files={"file": ("test.txt", testfile_content, "text/plain")},
+        files={"file": (TXT_FILE, testfile_content, "text/plain")},
         data={"purpose": "assistants"},
     )
 
@@ -132,15 +133,11 @@ def test_get_nonexistent():
 def test_invalid_file_type():
     """Test creating uploading an invalid file type."""
 
-    file_path = "../../../tests/data/0min12sec.wav"
-    dir_path = os.path.dirname(os.path.realpath(__file__))
-    relative_file_path = os.path.join(dir_path, file_path)
-
     with pytest.raises(HTTPException) as exception:
-        with open(relative_file_path, "rb") as testfile:
+        with open(data_path(WAV_FILE), "rb") as testfile:
             _ = client.post(
                 "/openai/v1/files",
-                files={"file": ("0min12sec.wav", testfile, "audio/wav")},
+                files={"file": (WAV_FILE, testfile, "audio/wav")},
                 data={"purpose": "assistants"},
             )
             assert exception.status_code == status.HTTP_415_UNSUPPORTED_MEDIA_TYPE
@@ -149,16 +146,8 @@ def test_invalid_file_type():
 @pytest.mark.asyncio
 async def test_excel_file_handling():
     """Test handling of an Excel file including upload, retrieval, and deletion."""
-    # Path to the test Excel file
-    excel_file_path = os.path.join(os.path.dirname(__file__), "../../data/test.xlsx")
-
-    # Ensure the file exists
-    assert os.path.exists(
-        excel_file_path
-    ), f"Test Excel file not found at {excel_file_path}"
-
     # Test file loading and splitting
-    documents = await load_file(excel_file_path)
+    documents = await load_file(data_path(XLSX_FILE))
     assert len(documents) > 0, "No documents were loaded from the Excel file"
     assert documents[0].page_content, "The first document has no content"
 
@@ -167,12 +156,12 @@ async def test_excel_file_handling():
     assert split_documents[0].page_content, "The first split document has no content"
 
     # Test file upload via API
-    with open(excel_file_path, "rb") as excel_file:
+    with open(data_path(XLSX_FILE), "rb") as excel_file:
         response = client.post(
             "/openai/v1/files",
             files={
                 "file": (
-                    "test.xlsx",
+                    XLSX_FILE,
                     excel_file,
                     "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
                 )
@@ -228,16 +217,9 @@ async def test_excel_file_handling():
 @pytest.mark.asyncio
 async def test_powerpoint_file_handling():
     """Test handling of a PowerPoint file including upload, retrieval, and deletion."""
-    # Path to the test PowerPoint file
-    pptx_file_path = os.path.join(os.path.dirname(__file__), "../../data/test.pptx")
-
-    # Ensure the file exists
-    assert os.path.exists(
-        pptx_file_path
-    ), f"Test PowerPoint file not found at {pptx_file_path}"
 
     # Test file loading and splitting
-    documents = await load_file(pptx_file_path)
+    documents = await load_file(data_path(PPTX_FILE).__str__())
     assert len(documents) > 0, "No documents were loaded from the PowerPoint file"
     assert documents[0].page_content, "The first document has no content"
 
@@ -246,13 +228,13 @@ async def test_powerpoint_file_handling():
     assert split_documents[0].page_content, "The first split document has no content"
 
     # Test file upload via API
-    with open(pptx_file_path, "rb") as pptx_file:
+    with open(data_path(PPTX_FILE), "rb") as file:
         response = client.post(
             "/openai/v1/files",
             files={
                 "file": (
-                    "test.pptx",
-                    pptx_file,
+                    PPTX_FILE,
+                    file,
                     "application/vnd.openxmlformats-officedocument.presentationml.presentation",
                 )
             },

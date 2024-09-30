@@ -1,16 +1,12 @@
-podSecurityContext:
-  runAsNonRoot: true
-  fsGroup: 65532
-
 api:
+  expose: true
+
   image:
-    repository: ghcr.io/defenseunicorns/leapfrogai/leapfrogai-api
+    repository: "ghcr.io/defenseunicorns/leapfrogai/leapfrogai-api"
     # x-release-please-start-version
-    tag: 0.12.2
+    tag: 0.13.1
     # x-release-please-end
     imagePullPolicy: Always
-
-  replicas: 1
 
   securityContext:
     runAsUser: 65532
@@ -20,43 +16,60 @@ api:
       drop:
         - ALL
 
-  port: 8080
-
   env:
-    exposeAPI: "true"
-    defaultEmbeddingsModel: "text-embeddings"
+    - name: LFAI_LOG_LEVEL
+      value: "INFO"
+    - name: LFAI_CONFIG_PATH
+      value: /config/
+    - name: LFAI_CONFIG_FILENAME
+      value: "*.toml"
+    - name: DEFAULT_EMBEDDINGS_MODEL
+      value: "text-embeddings"
+    - name: PORT
+      value: "8080"
+    - name: SUPABASE_URL
+      value: "http://supabase-kong.leapfrogai.svc.cluster.local:80"
+    - name: SUPABASE_ANON_KEY
+      valueFrom:
+        secretKeyRef:
+          name: supabase-bootstrap-jwt
+          key: anon-key
+          optional: true
+
+  service:
+    port: 8080
 
   serviceAccount:
-    name: leapfrogai-api
+    name: "leapfrogai-api"
     create: true
 
   migration:
     image:
-      repository: ghcr.io/defenseunicorns/leapfrogai/api-migrations
+      repository: "ghcr.io/defenseunicorns/leapfrogai/api-migrations"
       # x-release-please-start-version
-      tag: 0.12.2
+      tag: 0.13.1
       # x-release-please-end
       imagePullPolicy: Always
+
     securityContext:
       runAsUser: 65532
       runAsGroup: 65532
-      runAsNonRoot: true
-      capabilities:
-        drop:
-          - ALL
 
     env:
-      serviceName: "supabase-postgresql"
-      servicePort: 5432
-
-supabase:
-  env:
-    url: "http://supabase-kong.leapfrogai.svc.cluster.local:80"
+      - name: POSTGRES_PASSWORD
+        valueFrom:
+          secretKeyRef:
+            name: supabase-postgresql
+            key: postgres-password
+      - name: MIGRATION_SERVICE_NAME
+        value: "supabase-postgresql"
+      - name: MIGRATION_SERVICE_PORT
+        value: "5432"
 
 kiwigrid:
   image:
-    repository: kiwigrid/k8s-sidecar
-    tag: 1.23.3
+    repository: "kiwigrid/k8s-sidecar"
+    tag: "1.23.3"
     imagePullPolicy: Always
 
   securityContext:
@@ -66,3 +79,34 @@ kiwigrid:
     capabilities:
       drop:
         - ALL
+
+  env:
+    - name: LABEL
+      value: "leapfrogai"
+    - name: FOLDER
+      value: /config/
+    - name: RESOURCE
+      value: both
+    - name: UNIQUE_FILENAMES
+      value: "true"
+    - name: NAMESPACE
+      value: leapfrogai
+
+podSecurityContext:
+  runAsNonRoot: true
+  fsGroup: 65532
+
+replicaCount: 1
+
+podAnnotations: {}
+
+nodeSelector: {}
+
+tolerations: []
+
+affinity: {}
+
+strategy:
+  rollingUpdate:
+    maxUnavailable: 0
+  type: RollingUpdate

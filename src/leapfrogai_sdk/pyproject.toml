@@ -3,11 +3,11 @@ name = "leapfrogai-sdk"
 description = "A tool for building gRPC-based model backends for LeapfrogAI"
 
 # x-release-please-start-version
-version = "0.12.2"
+version = "0.13.1"
 # x-release-please-end
 
 dependencies = [
-    "grpcio == 1.62.1.0",
+    "grpcio ==1.66.1",
     "grpcio-tools == 1.62.1",
     "protobuf == 4.23.3",
     "grpcio-reflection == 1.62.1.0",

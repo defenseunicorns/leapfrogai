@@ -1,0 +1,113 @@
+image:
+  repository: "ghcr.io/defenseunicorns/leapfrogai/leapfrogai-ui"
+  pullPolicy: Always
+  # x-release-please-start-version
+  tag: 0.13.1
+  # x-release-please-end
+
+service:
+  port: 3000
+
+serviceAccount:
+  name: leapfrogai-ui
+  create: true
+
+podSecurityContext:
+  runAsNonRoot: true
+  fsGroup: 65532
+
+securityContext:
+  runAsUser: 65532
+  runAsGroup: 65532
+  runAsNonRoot: true
+  capabilities:
+    drop:
+      - ALL
+
+env:
+  - name: LEAPFROGAI_API_BASE_URL
+    value: "http://leapfrogai-api.leapfrogai.svc.cluster.local:8080"
+  - name: ORIGIN
+    value: "https://ai.uds.dev"
+  - name: DEFAULT_MODEL
+    value: "llama-cpp-python"
+  - name: DEFAULT_SYSTEM_PROMPT
+    value: "You may be provided with a list of files and their content in the following structure: [{filename: test.pdf, text: some fake text}]. Using the content of these files as context, you should refer to specific files by their filename when relevant and use the text content to provide detailed, accurate, and relevant information or answers. If the user asks questions that can be answered based on the content of the provided files, use the appropriate files text in your response. If the user requests clarification, further details, or specific information about a file, respond using the most relevant file or files. If necessary, combine information from multiple files to form a comprehensive response."
+  - name: DEFAULT_TEMPERATURE
+    value: "0.1"
+  - name: OPENAI_API_KEY
+    value: ""
+  - name: PUBLIC_SUPABASE_URL
+    value: "https://supabase-kong.uds.dev"
+  - name: PUBLIC_DISABLE_KEYCLOAK
+    value: "true"
+  - name: PUBLIC_MESSAGE_LENGTH_LIMIT
+    value: "10000"
+  - name: SUPABASE_AUTH_EXTERNAL_KEYCLOAK_URL
+    value: "https://sso.uds.dev/realms/uds"
+  - name: SUPABASE_AUTH_KEYCLOAK_CLIENT_ID
+    valueFrom:
+      secretKeyRef:
+        name: sso-client-uds-supabase
+        key: clientId
+  - name: SUPABASE_AUTH_KEYCLOAK_SECRET
+    valueFrom:
+      secretKeyRef:
+        name: sso-client-uds-supabase
+        key: secret
+
+extraEnv:
+  # Only required when Supabase is hosted via PaaS outside of the cluster
+  supabaseAnonKey: ""
+  # UDS package CR hosting subdomain (e.g. `ai` will produce a VirtualService with `ai.uds.dev`)
+  host: "ai"
+
+migration:
+  image:
+    repository: ghcr.io/defenseunicorns/leapfrogai/ui-migrations
+    # x-release-please-start-version
+    tag: 0.13.1
+    # x-release-please-end
+    imagePullPolicy: Always
+
+  env:
+    - name: POSTGRES_PASSWORD
+      valueFrom:
+        secretKeyRef:
+          name: supabase-postgresql
+          key: postgres-password
+    - name: MIGRATION_SERVICE_NAME
+      value: "supabase-postgresql"
+    - name: MIGRATION_SERVICE_PORT
+      value: "5432"
+
+  securityContext:
+    runAsUser: 65532
+    runAsGroup: 65532
+
+resources:
+  # We usually recommend not to specify default resources and to leave this as a conscious
+  # choice for the user. This also increases chances charts run on environments with little
+  # resources, such as Minikube. If you do want to specify resources, uncomment the following
+  # lines, adjust them as necessary, and remove the curly braces after "resources:".
+  limits:
+    cpu: 0
+    memory: 0
+  requests:
+    cpu: 0
+    memory: 0
+
+replicaCount: 1
+
+podAnnotations: {}
+
+nodeSelector: {}
+
+tolerations: []
+
+affinity: {}
+
+strategy:
+  rollingUpdate:
+    maxUnavailable: 0
+  type: RollingUpdate

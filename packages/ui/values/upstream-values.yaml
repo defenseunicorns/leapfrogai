@@ -1,0 +1,47 @@
+image:
+  repository: "ghcr.io/defenseunicorns/leapfrogai/leapfrogai-ui"
+  tag: "###ZARF_CONST_IMAGE_VERSION###"
+
+env:
+  - name: LEAPFROGAI_API_BASE_URL
+    value: "###ZARF_VAR_LEAPFROGAI_API_BASE_URL###"
+  - name: ORIGIN
+    value: "https://###ZARF_VAR_SUBDOMAIN###.###ZARF_VAR_DOMAIN###"
+  - name: DEFAULT_MODEL
+    value: "###ZARF_VAR_MODEL###"
+  - name: DEFAULT_SYSTEM_PROMPT
+    value: "###ZARF_VAR_SYSTEM_PROMPT###"
+  - name: DEFAULT_TEMPERATURE
+    value: "###ZARF_VAR_TEMPERATURE###"
+  - name: OPENAI_API_KEY
+    value: "###ZARF_VAR_OPENAI_API_KEY###"
+  - name: PUBLIC_SUPABASE_URL
+    value: "https://supabase-kong.###ZARF_VAR_DOMAIN###"
+  - name: PUBLIC_DISABLE_KEYCLOAK
+    value: "###ZARF_VAR_DISABLE_KEYCLOAK###"
+  - name: PUBLIC_MESSAGE_LENGTH_LIMIT
+    value: "10000"
+  - name: SUPABASE_AUTH_EXTERNAL_KEYCLOAK_URL
+    value: "https://sso.uds.dev/realms/uds"
+  - name: SUPABASE_AUTH_KEYCLOAK_CLIENT_ID
+    valueFrom:
+      secretKeyRef:
+        name: sso-client-uds-supabase
+        key: clientId
+  - name: SUPABASE_AUTH_KEYCLOAK_SECRET
+    valueFrom:
+      secretKeyRef:
+        name: sso-client-uds-supabase
+        key: secret
+
+extraEnv:
+  # Only required when Supabase is hosted via PaaS outside of the cluster
+  supabaseAnonKey: "###ZARF_VAR_SUPABASE_ANON_KEY###"
+  # UDS package CR hosting subdomain (e.g. `ai` will produce a VirtualService with `ai.uds.dev`)
+  host: "###ZARF_VAR_SUBDOMAIN###"
+
+migration:
+  image:
+    repository: ghcr.io/defenseunicorns/leapfrogai/ui-migrations
+    tag: "###ZARF_CONST_IMAGE_VERSION###"
+    imagePullPolicy: Always

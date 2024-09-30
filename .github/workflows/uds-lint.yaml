@@ -1,0 +1,48 @@
+name: UDS Lint
+
+on:
+  pull_request:
+    branches:
+      - "main"
+    paths:
+      - "bundles/**"
+      - ".github/workflows/uds-lint.yaml"
+
+concurrency:
+  group: uds-lint-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  uds-lint:
+    runs-on: ubuntu-latest
+    name: Lint UDS Manifest
+
+    permissions:
+      contents: read
+
+    steps:
+      - name: Checkout Repo
+        uses: actions/checkout@b4ffde65f46336ab88eb53be808477a3936bae11 # v4.1.1
+
+      - name: Set up Python
+        uses: actions/setup-python@f677139bbe7f9c59b41e40162b753c062f5d49a3 # v5.2.0
+        with:
+          python-version-file: "pyproject.toml"
+
+      - name: Install jsonschema
+        run: pip install check-jsonschema==0.28.0
+
+      - name: Download UDS Bundle Schema
+        run: curl -o uds.schema.json https://raw.githubusercontent.com/defenseunicorns/uds-cli/v0.14.0/uds.schema.json
+
+      - name: Validate uds-bundle.yaml (dev)
+        if: always()
+        run: |
+          check-jsonschema bundles/dev/gpu/uds-bundle.yaml --schemafile uds.schema.json
+          check-jsonschema bundles/dev/cpu/uds-bundle.yaml --schemafile uds.schema.json
+
+      - name: Validate uds-bundle.yaml (latest)
+        if: always()
+        run: |
+          check-jsonschema bundles/latest/gpu/uds-bundle.yaml --schemafile uds.schema.json
+          check-jsonschema bundles/latest/cpu/uds-bundle.yaml --schemafile uds.schema.json

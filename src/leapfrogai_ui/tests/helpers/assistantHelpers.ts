@@ -1,31 +1,18 @@
 import OpenAI from 'openai';
 import { expect, type Page } from '@playwright/test';
 import { getFakeAssistantInput } from '../../testUtils/fakeData';
-import type { AssistantCreateParams } from 'openai/resources/beta/assistants';
+import type { Assistant, AssistantCreateParams } from 'openai/resources/beta/assistants';
 import type { AssistantInput, LFAssistant } from '../../src/lib/types/assistants';
 import { supabase } from './helpers';
 import { faker } from '@faker-js/faker';
+import { loadNewAssistantPage } from './navigationHelpers';
 
-// Note - this will not apply the temperature slider value provided, it only clicks on the 0.5 increment
 export const createAssistant = async (assistantInput: AssistantInput, page: Page) => {
-  await page.goto('/chat/assistants-management/new');
+  await loadNewAssistantPage(page);
   await page.getByLabel('name').fill(assistantInput.name);
   await page.getByLabel('tagline').fill(assistantInput.description);
+  await clickOnSliderValue(assistantInput.temperature, page);
   await page.getByPlaceholder("You'll act as...").fill(assistantInput.instructions);
-
-  const slider = page.getByRole('slider');
-  const sliderButton = slider.getByRole('button');
-  const box = await sliderButton.boundingBox();
-  if (box) {
-    const startX = box.x + box.width / 2;
-    const startY = box.y + box.height / 2;
-    const endX = startX + 100; // adjust as needed
-    await page.mouse.move(startX, startY);
-    await page.mouse.down();
-    await page.mouse.move(endX, startY, { steps: 10 }); // Drag to the new position
-    await page.mouse.up();
-  }
-
   // Wait for modal save button to disappear if avatar modal was open
   const saveButtons = page.getByRole('button', { name: 'Save' });
   await expect(saveButtons).toHaveCount(1);
@@ -88,6 +75,10 @@ export const createAssistantWithApi = async (params: CreateAssistantWithApiParam
   };
 
   return (await openAIClient.beta.assistants.create(assistantCreateParams)) as LFAssistant;
+};
+
+export const getAssistantWithApi = async (id: string, openAIClient: OpenAI): Promise<Assistant> => {
+  return await openAIClient.beta.assistants.retrieve(id);
 };
 export const deleteAssistantWithApi = async (id: string, openAIClient: OpenAI) => {
   await openAIClient.beta.assistants.del(id);
@@ -161,7 +152,9 @@ export const fillOutRequiredAssistantFields = async (
   assistantInput: AssistantInput,
   page: Page
 ) => {
-  await page.getByLabel('name').fill(assistantInput.name);
+  const nameField = page.getByLabel('name'); // ensure name field is visible before starting to fill out the form
+  await expect(nameField).toBeVisible();
+  await nameField.fill(assistantInput.name);
   await page.getByLabel('tagline').fill(assistantInput.description);
   await page.getByPlaceholder("You'll act as...").fill(assistantInput.instructions);
 };
@@ -171,7 +164,25 @@ export const saveAssistant = async (assistantName: string, page: Page) => {
   await expect(saveButtons).toHaveCount(1);
   await saveButtons.click();
 
-  await expect(page.getByText('Assistant Created')).toBeVisible();
+  await expect(page.getByText('Assistant Created')).toBeVisible({ timeout: 10000 });
   await page.waitForURL('/chat/assistants-management');
   await expect(page.getByTestId(`assistant-card-${assistantName}`)).toBeVisible();
+};
+
+export const clickOnSliderValue = async (value: number, page: Page) => {
+  const slider = page.getByRole('slider');
+  const boundingBox = await slider.boundingBox();
+  if (!boundingBox) throw new Error('Slider element not found');
+  const sliderWidth = boundingBox.width;
+
+  // calculate the position to click based on value
+  const targetX = boundingBox.x + sliderWidth * value;
+  const targetY = boundingBox.y + boundingBox.height / 2;
+
+  await page.mouse.click(targetX, targetY);
+
+  const sliderValue = await slider?.getAttribute('aria-valuenow');
+  if (!sliderValue) throw new Error('Slider value not found');
+  const normalizedValue = Number(sliderValue) / 100;
+  expect(normalizedValue).toBeCloseTo(value, 0.1);
 };

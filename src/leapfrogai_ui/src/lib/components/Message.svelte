@@ -13,7 +13,7 @@
     UserCircleOutline
   } from 'flowbite-svelte-icons';
   import { twMerge } from 'tailwind-merge';
-  import { threadsStore, toastStore } from '$stores';
+  import { assistantsStore, threadsStore, toastStore } from '$stores';
   import { convertTextToMessageContentArr, getMessageText } from '$helpers/threads';
   import type { Message as OpenAIMessage } from 'openai/resources/beta/threads/messages';
   import {
@@ -41,6 +41,7 @@
 
   // used for code formatting and handling
   const md = markdownit({
+    html: true,
     highlight: function (str: string, language: string) {
       let code: string;
       if (language && hljs.getLanguage(language)) {
@@ -58,7 +59,7 @@
   });
 
   let assistantImage = isRunAssistantMessage(message)
-    ? getAssistantImage($page.data.assistants || [], message.assistant_id!)
+    ? getAssistantImage($assistantsStore.assistants || [], message.assistant_id!)
     : null;
 
   let messageIsHovered = false;
@@ -68,7 +69,8 @@
   const getAssistantName = (id?: string) => {
     if (!id) return 'LeapfrogAI Bot';
     return (
-      $page.data.assistants?.find((assistant) => assistant.id === id)?.name || 'LeapfrogAI Bot'
+      $assistantsStore.assistants?.find((assistant) => assistant.id === id)?.name ||
+      'LeapfrogAI Bot'
     );
   };
 
@@ -82,7 +84,7 @@
       message: { ...message, content: convertTextToMessageContentArr($value) },
       setMessages: setMessages!,
       append: append!,
-      selectedAssistantId: $threadsStore.selectedAssistantId
+      selectedAssistantId: $assistantsStore.selectedAssistantId
     });
   };
 
@@ -177,8 +179,16 @@
             {#if message.role !== 'user' && !messageText}
               <MessagePendingSkeleton size="sm" class="mt-4" darkColor="bg-gray-500" />
             {:else}
-              <!--eslint-disable-next-line svelte/no-at-html-tags -- We use DomPurity to sanitize the code snippet-->
-              {@html md.render(DOMPurify.sanitize(messageText))}
+              <div id="message-content-container">
+                <!--eslint-disable-next-line svelte/no-at-html-tags -- We use DomPurity to sanitize the code snippet-->
+                {@html DOMPurify.sanitize(md.render(messageText), {
+                  CUSTOM_ELEMENT_HANDLING: {
+                    tagNameCheck: /^code-block$/,
+                    attributeNameCheck: /^(code|language)$/,
+                    allowCustomizedBuiltInElements: false
+                  }
+                })}
+              </div>
               <div class="flex flex-col items-start">
                 {#each getCitations(message, $page.data.files) as { component: Component, props }}
                   <svelte:component this={Component} {...props} />
@@ -190,7 +200,7 @@
       {/if}
 
       <div class="flex gap-1 pl-4">
-        {#if message.role === 'user' && !editMode}
+        {#if message.role === 'user' && !editMode && !message.metadata?.wasTranscriptionOrTranslation}
           <IconButton
             class={!messageIsHovered && 'hide'}
             on:click={() => (editMode = true)}
@@ -212,7 +222,7 @@
             <FileCopyOutline />
           </IconButton>
         {/if}
-        {#if message.role !== 'user' && isLastMessage && !$threadsStore.sendingBlocked}
+        {#if message.role !== 'user' && isLastMessage && !$threadsStore.sendingBlocked && !message.metadata?.wasTranscriptionOrTranslation}
           <IconButton
             data-testid="regenerate btn"
             class={!messageIsHovered && 'hide'}
@@ -224,7 +234,7 @@
                 message: messages[messages.length - 2],
                 setMessages,
                 append: append,
-                selectedAssistantId: $threadsStore.selectedAssistantId
+                selectedAssistantId: $assistantsStore.selectedAssistantId
               })}
             aria-label="regenerate message"
             tabindex="0"

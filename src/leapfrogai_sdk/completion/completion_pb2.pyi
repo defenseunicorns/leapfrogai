@@ -14,9 +14,11 @@ DESCRIPTOR: _descriptor.FileDescriptor
 
 class CompletionFinishReason(int, metaclass=_enum_type_wrapper.EnumTypeWrapper):
     __slots__ = ()
+    NONE: _ClassVar[CompletionFinishReason]
     STOP: _ClassVar[CompletionFinishReason]
     LENGTH: _ClassVar[CompletionFinishReason]
 
+NONE: CompletionFinishReason
 STOP: CompletionFinishReason
 LENGTH: CompletionFinishReason
 
@@ -45,6 +47,7 @@ class CompletionRequest(_message.Message):
         "seed",
         "user",
     )
+
     class LogitBiasEntry(_message.Message):
         __slots__ = ("key", "value")
         KEY_FIELD_NUMBER: _ClassVar[int]
@@ -54,6 +57,7 @@ class CompletionRequest(_message.Message):
         def __init__(
             self, key: _Optional[str] = ..., value: _Optional[int] = ...
         ) -> None: ...
+
     PROMPT_FIELD_NUMBER: _ClassVar[int]
     SUFFIX_FIELD_NUMBER: _ClassVar[int]
     MAX_NEW_TOKENS_FIELD_NUMBER: _ClassVar[int]
@@ -90,7 +94,7 @@ class CompletionRequest(_message.Message):
     repetition_penalty: float
     presence_penalty: float
     frequence_penalty: float
-    best_of: int
+    best_of: str
     logit_bias: _containers.ScalarMap[str, int]
     return_full_text: bool
     truncate: int
@@ -114,7 +118,7 @@ class CompletionRequest(_message.Message):
         repetition_penalty: _Optional[float] = ...,
         presence_penalty: _Optional[float] = ...,
         frequence_penalty: _Optional[float] = ...,
-        best_of: _Optional[int] = ...,
+        best_of: _Optional[str] = ...,
         logit_bias: _Optional[_Mapping[str, int]] = ...,
         return_full_text: bool = ...,
         truncate: _Optional[int] = ...,

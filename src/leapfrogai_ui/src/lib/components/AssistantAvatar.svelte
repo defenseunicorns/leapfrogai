@@ -33,8 +33,7 @@
     ignoreLocation: true
   };
 
-  $: fileNotUploaded = !$form.avatarFile; // if on upload tab, you must upload a file to enable save
-
+  $: fileNotUploaded = !$form.avatar && !$form.avatarFile; // if on upload tab, you must upload a file to enable save
   $: avatarToShow = $form.avatarFile ? URL.createObjectURL($form.avatarFile) : $form.avatar;
 
   $: fileTooBig = $form.avatarFile?.size > MAX_AVATAR_SIZE;
@@ -66,9 +65,7 @@
       modalOpen = false;
       $form.avatar = originalAvatar;
       tempPictogram = selectedPictogramName; // reset to original pictogram
-      if ($form.avatar) {
-        $form.avatarFile = $form.avatar; // reset to original file
-      } else {
+      if (!$form.avatar) {
         clearFileInput();
       }
       fileUploaderRef.value = ''; // Reset the file input value to ensure input event detection
@@ -102,7 +99,7 @@
       }
     } else {
       // pictogram tab
-      selectedPictogramName = tempPictogram; // TODO - can we remove this line
+      selectedPictogramName = tempPictogram;
       $form.pictogram = tempPictogram;
       $form.avatar = ''; // remove saved avatar
       clearFileInput();
@@ -197,8 +194,6 @@
             >
               Upload from computer
             </Button>
-
-            <input type="hidden" name="avatar" bind:value={$form.avatar} />
           </div>
 
           {#if hideUploader}
@@ -222,7 +217,9 @@
       </div>
     </div>
   </Modal>
-  <!--    Important! These inputs must be outside of the modal or the image will be lost when the modal closes-->
+  <!--    Important! These inputs must be outside of the modal or the image will be lost when the modal closes
+  The hidden inputs will not be nested inside the parent <form> if they are included inside the modal
+  -->
   <input
     bind:this={fileUploaderRef}
     on:input={(e) => {
@@ -236,5 +233,6 @@
     name="avatarFile"
     class="sr-only"
   />
-  <input type="hidden" name="pictogram" value={selectedPictogramName} />
+  <input type="hidden" name="avatar" bind:value={$form.avatar} />
+  <input type="hidden" name="pictogram" bind:value={selectedPictogramName} />
 </div>

@@ -1,6 +1,6 @@
 import { writable } from 'svelte/store';
-import { MAX_LABEL_SIZE, NO_SELECTED_ASSISTANT_ID } from '$lib/constants';
-import { goto, invalidate } from '$app/navigation';
+import { MAX_LABEL_SIZE } from '$lib/constants';
+import { goto } from '$app/navigation';
 import { error } from '@sveltejs/kit';
 import { type Message as VercelAIMessage } from '@ai-sdk/svelte';
 import { toastStore } from '$stores';
@@ -8,10 +8,10 @@ import type { LFThread, NewThreadInput } from '$lib/types/threads';
 import type { LFMessage } from '$lib/types/messages';
 import { getMessageText } from '$helpers/threads';
 import { saveMessage } from '$helpers/chatHelpers';
+import type { Message } from 'ai';
 
 type ThreadsStore = {
   threads: LFThread[];
-  selectedAssistantId: string;
   sendingBlocked: boolean;
   lastVisitedThreadId: string;
   streamingMessage: VercelAIMessage | null;
@@ -19,7 +19,6 @@ type ThreadsStore = {
 
 const defaultValues: ThreadsStore = {
   threads: [],
-  selectedAssistantId: NO_SELECTED_ASSISTANT_ID,
   sendingBlocked: false,
   lastVisitedThreadId: '',
   streamingMessage: null
@@ -95,11 +94,6 @@ const createThreadsStore = () => {
     },
     setLastVisitedThreadId: (id: string) => {
       update((old) => ({ ...old, lastVisitedThreadId: id }));
-    },
-    setSelectedAssistantId: (selectedAssistantId: string) => {
-      update((old) => {
-        return { ...old, selectedAssistantId };
-      });
     },
     // Important - this method has a built in delay to ensure next user message has a different timestamp when setting to false (unblocking)
     setSendingBlocked: async (status: boolean) => {
@@ -208,6 +202,63 @@ const createThreadsStore = () => {
         });
       }
     },
+    // The following temp empty message methods are for showing a message skeleton in the messages window
+    // while waiting for a full response (e.g. waiting for translation response)
+    addTempEmptyMessage: (threadId: string, tempId: string) => {
+      update((old) => {
+        const updatedThreads = [...old.threads];
+        const threadIndex = old.threads.findIndex((c) => c.id === threadId);
+        const oldThread = old.threads[threadIndex];
+        updatedThreads[threadIndex] = {
+          ...oldThread,
+          messages: [
+            ...(oldThread.messages || []),
+            { id: tempId, role: 'assistant', content: '', createdAt: new Date() }
+          ]
+        };
+        return {
+          ...old,
+          threads: updatedThreads
+        };
+      });
+    },
+    replaceTempMessageWithActual: (threadId: string, tempId: string, newMessage: LFMessage) => {
+      update((old) => {
+        const updatedThreads = [...old.threads];
+        const threadIndex = old.threads.findIndex((c) => c.id === threadId);
+        const tempMessageIndex = old.threads[threadIndex].messages?.findIndex(
+          (m) => m.id === tempId
+        );
+        if (!tempMessageIndex || tempMessageIndex === -1) return { ...old };
+        const oldThread = old.threads[threadIndex];
+        const messagesCopy = [...(oldThread.messages || [])];
+        messagesCopy[tempMessageIndex] = newMessage;
+        updatedThreads[threadIndex] = {
+          ...oldThread,
+          messages: messagesCopy
+        };
+        return {
+          ...old,
+          threads: updatedThreads
+        };
+      });
+    },
+    removeMessageFromStore: (threadId: string, messageId: string) => {
+      update((old) => {
+        const updatedThreads = [...old.threads];
+        const threadIndex = old.threads.findIndex((c) => c.id === threadId);
+        updatedThreads[threadIndex].messages =
+          old.threads[threadIndex].messages?.filter((m) => m.id !== messageId) || [];
+        return { ...old, thread: updatedThreads };
+      });
+    },
+    updateMessagesState: (
+      originalMessages: Message[],
+      setMessages: (messages: Message[]) => void,
+      newMessage: LFMessage
+    ) => {
+      setMessages([...originalMessages, { ...newMessage, content: getMessageText(newMessage) }]);
+    },
     deleteThread: async (id: string) => {
       try {
         await deleteThread(id);
@@ -245,7 +296,6 @@ const createThreadsStore = () => {
           title: 'Error',
           subtitle: `Error deleting message.`
         });
-        await invalidate('lf:threads');
       }
     },
     updateThreadLabel: async (id: string, newLabel: string) => {

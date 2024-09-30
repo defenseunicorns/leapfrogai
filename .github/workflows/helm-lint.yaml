@@ -1,0 +1,76 @@
+name: Helm Lint
+
+on:
+  pull_request:
+    branches:
+      - "main"
+    paths:
+      - "**/chart"
+      - "**/values"
+      - "**/*values.yaml"
+      - ".github/workflows/helm-lint.yaml"
+
+concurrency:
+  group: helm-lint-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  helm-lint:
+    runs-on: ubuntu-latest
+    name: Lint Helm Charts
+
+    permissions:
+      contents: read
+
+    steps:
+      - name: Login to GitHub Container Registry
+        uses: docker/login-action@343f7c4344506bcbf9b4de18042ae17996df046d # v3.0.0
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Checkout Repo
+        uses: actions/checkout@b4ffde65f46336ab88eb53be808477a3936bae11 # v4.1.1
+
+      - name: Setup Helm
+        uses: azure/setup-helm@fe7b79cd5ee1e45176fcad797de68ecaf3ca4814 # v4.2.0
+        with:
+          version: "v3.13.3"
+
+      - name: Lint API Helm Charts
+        if: always()
+        run: |
+          helm lint packages/api/chart --quiet
+
+      - name: Lint llama-cpp-python Helm Charts
+        if: always()
+        run: |
+          helm lint packages/llama-cpp-python/chart --quiet
+
+      - name: Lint text-embeddings Helm Charts
+        if: always()
+        run: |
+          helm lint packages/text-embeddings/chart --quiet
+
+      - name: Lint vllm Helm Charts
+        if: always()
+        run: |
+          helm lint packages/vllm/chart --quiet
+
+      - name: Lint whisper Helm Charts
+        if: always()
+        run: |
+          helm lint packages/whisper/chart --quiet
+
+      - name: Lint repeater Helm Charts
+        if: always()
+        run: |
+          helm lint packages/repeater/chart --quiet
+
+      - name: Lint UI Helm Charts
+        if: always()
+        run: |
+          helm lint packages/ui/chart --quiet
+
+      # TODO: we will not be linting or refactoring Supabase charts until GitHub issue #968 is resolved and a path forward is provided

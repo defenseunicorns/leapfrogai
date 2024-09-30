@@ -22,7 +22,7 @@ jobs:
       contents: read
 
     steps:
-    - uses: yogevbd/enforce-label-action@a3c219da6b8fa73f6ba62b68ff09c469b3a1c024 # v2.2.2
+    - uses: yogevbd/enforce-label-action@a3c219da6b8fa73f6ba62b68ff09c469b3a1c024 # 2.2.2
       with:
         REQUIRED_LABELS_ANY: "feature,bug,test,enhancement,documentation,chore,tech-debt,api,ADR 🧐,EPIC ⚔️,go,javascript,python,question,autorelease: pending,autorelease: tagged"
         BANNED_LABELS: "needs-docs,needs-tests,needs-adr,needs-git-sign-off,needs-tutorial,blocked 🛑,duplicate,needs-design,invalid,wontfix"

@@ -2,7 +2,10 @@ import { expect, test } from './fixtures';
 import { getFakeAssistantInput } from '../testUtils/fakeData';
 import { NO_FILE_ERROR_TEXT } from '../src/lib/constants/index';
 import {
+  createAssistantWithApi,
   deleteAllAssistants,
+  deleteAssistantWithApi,
+  editAssistantCard,
   fillOutRequiredAssistantFields,
   getRandomPictogramName,
   saveAssistant,
@@ -10,6 +13,7 @@ import {
   savePictogram,
   uploadAvatar
 } from './helpers/assistantHelpers';
+import { loadEditAssistantPage, loadNewAssistantPage } from './helpers/navigationHelpers';
 
 test.afterEach(async ({ openAIClient }) => {
   await deleteAllAssistants(openAIClient);
@@ -23,7 +27,7 @@ test('it can search for and choose a pictogram as an avatar', async ({ page }) =
   const assistantInput = getFakeAssistantInput();
   const pictogramName = getRandomPictogramName();
 
-  await page.goto('/chat/assistants-management/new');
+  await loadNewAssistantPage(page);
 
   await fillOutRequiredAssistantFields(assistantInput, page);
 
@@ -51,7 +55,7 @@ test('it can search for and choose a pictogram as an avatar', async ({ page }) =
 test('it can upload an image as an avatar', async ({ page }) => {
   const assistantInput = getFakeAssistantInput();
 
-  await page.goto('/chat/assistants-management/new');
+  await loadNewAssistantPage(page);
 
   await fillOutRequiredAssistantFields(assistantInput, page);
 
@@ -68,8 +72,37 @@ test('it can upload an image as an avatar', async ({ page }) => {
   expect(avatarSrc).toBeDefined();
 });
 
+test('it keeps the avatar when an assistant has been edited', async ({ page }) => {
+  const assistantInput = getFakeAssistantInput();
+
+  await loadNewAssistantPage(page);
+
+  await fillOutRequiredAssistantFields(assistantInput, page);
+
+  await page.getByTestId('mini-avatar-container').click();
+  await uploadAvatar(page);
+
+  await page.getByRole('dialog').getByRole('button', { name: 'Save' }).click();
+
+  await saveAssistant(assistantInput.name, page);
+  const card = page.getByTestId(`assistant-card-${assistantInput.name}`);
+  const avatar = card.getByTestId('assistant-card-avatar');
+  const originalAvatarSrc = await avatar.getAttribute('src');
+
+  expect(originalAvatarSrc).toBeDefined();
+
+  await page.waitForURL('/chat/assistants-management');
+  await expect(page.getByTestId(`assistant-card-${assistantInput.name}`)).toBeVisible();
+  await editAssistantCard(assistantInput.name, page);
+  await page.getByLabel('tagline').fill('new description');
+  await saveAssistant(assistantInput.name, page);
+
+  const avatarSrcAfterUpdate = await avatar.getAttribute('src');
+  expect(avatarSrcAfterUpdate!.split('?v=')[0]).toEqual(originalAvatarSrc?.split('?v=')[0]);
+});
+
 test('it can change an image uploaded as an avatar', async ({ page }) => {
-  await page.goto('/chat/assistants-management/new');
+  await loadNewAssistantPage(page);
 
   await page.getByTestId('mini-avatar-container').click();
   await uploadAvatar(page);
@@ -95,7 +128,7 @@ test('it shows an error when clicking save on the upload tab if no image is uplo
 }) => {
   const assistantInput = getFakeAssistantInput();
 
-  await page.goto('/chat/assistants-management/new');
+  await loadNewAssistantPage(page);
 
   await fillOutRequiredAssistantFields(assistantInput, page);
 
@@ -112,7 +145,7 @@ test('it shows an error when clicking save on the upload tab if no image is uplo
 // Note - not testing too large file size validation because we would have to store a large file just for a test
 
 test('it removes an uploaded image and keeps the original pictogram on save', async ({ page }) => {
-  await page.goto('/chat/assistants-management/new');
+  await loadNewAssistantPage(page);
   await page.getByTestId('mini-avatar-container').click();
 
   await uploadAvatar(page);
@@ -133,7 +166,7 @@ test('it removes an uploaded image and keeps the original pictogram on save', as
 test('it keeps the original pictogram on cancel after uploading an image but not saving it', async ({
   page
 }) => {
-  await page.goto('/chat/assistants-management/new');
+  await loadNewAssistantPage(page);
   await page.getByTestId('mini-avatar-container').click();
 
   await uploadAvatar(page);
@@ -149,7 +182,7 @@ test('it keeps the original pictogram on cancel after changing the pictogram but
   page
 }) => {
   const pictogramName = 'Analytics';
-  await page.goto('/chat/assistants-management/new');
+  await loadNewAssistantPage(page);
   await page.getByTestId('mini-avatar-container').click();
 
   await page.getByPlaceholder('Search').click();
@@ -169,7 +202,7 @@ test('it keeps the original pictogram on close (not cancel) after changing the p
   page
 }) => {
   const pictogramName = 'Analytics';
-  await page.goto('/chat/assistants-management/new');
+  await loadNewAssistantPage(page);
   await page.getByTestId('mini-avatar-container').click();
 
   await page.getByPlaceholder('Search').click();
@@ -189,7 +222,7 @@ test('it saves the pictogram if the save button is clicked on the pictogram tab 
 }) => {
   const pictogramName = 'Analytics';
 
-  await page.goto('/chat/assistants-management/new');
+  await loadNewAssistantPage(page);
   await page.getByTestId('mini-avatar-container').click();
 
   await uploadAvatar(page);
@@ -210,7 +243,7 @@ test('it can upload an image, then change to a pictogram, then change to an imag
   const assistantInput = getFakeAssistantInput();
   const pictogramName = getRandomPictogramName();
 
-  await page.goto('/chat/assistants-management/new');
+  await loadNewAssistantPage(page);
 
   await fillOutRequiredAssistantFields(assistantInput, page);
 
@@ -226,4 +259,33 @@ test('it can upload an image, then change to a pictogram, then change to an imag
   const avatarSrc = await avatar.getAttribute('src');
 
   expect(avatarSrc).toBeDefined();
+});
+
+test('it deletes the avatar image from storage when the avatar', async ({ page, openAIClient }) => {
+  const assistant = await createAssistantWithApi({ openAIClient });
+  await loadEditAssistantPage(assistant.id, page);
+  await saveAvatarImage(page);
+  const saveButton = page.getByRole('button', { name: 'Save' }).nth(0);
+  await saveButton.click();
+
+  const card = page.getByTestId(`assistant-card-${assistant.name}`);
+  const avatar = card.getByTestId('assistant-card-avatar');
+  const avatarSrc = await avatar.getAttribute('src');
+  const res = await fetch(avatarSrc!);
+
+  expect(res.status).toBe(200);
+  const contentType = res.headers.get('content-type');
+  expect(contentType).toMatch(/^image\//);
+
+  await loadEditAssistantPage(assistant.id, page);
+  await savePictogram(getRandomPictogramName(), page);
+  await saveButton.click();
+  await expect(page.getByText('Assistant Updated')).toBeVisible();
+
+  const res2 = await fetch(avatarSrc!);
+  const resJson = await res2.json();
+  expect(resJson.statusCode).toEqual('404');
+
+  //cleanup
+  await deleteAssistantWithApi(assistant.id, openAIClient);
 });

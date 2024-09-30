@@ -2,6 +2,7 @@ ARG LOCAL_VERSION
 FROM ghcr.io/defenseunicorns/leapfrogai/leapfrogai-sdk:${LOCAL_VERSION} AS sdk
 
 FROM ghcr.io/defenseunicorns/leapfrogai/python:3.11-dev AS builder
+
 USER root
 ARG SDK_DEST=src/leapfrogai_sdk/build
 
@@ -14,10 +15,9 @@ ENV PATH="/leapfrogai/.venv/bin:$PATH"
 COPY --from=sdk /leapfrogai/${SDK_DEST} ${SDK_DEST}
 COPY packages/whisper packages/whisper
 
-RUN rm -f packages/whisper/build/*.whl
-RUN python -m pip wheel "packages/whisper[dev]" -w packages/whisper/build --find-links=${SDK_DEST}
-
-RUN pip install packages/whisper/build/lfai_whisper*.whl --no-index --find-links=packages/whisper/build/
+RUN rm -f packages/whisper/build/*.whl &&\
+    python -m pip wheel "packages/whisper[dev]" -w packages/whisper/build --find-links=${SDK_DEST} &&\
+    pip install packages/whisper/build/lfai_whisper*.whl --no-index --find-links=packages/whisper/build/
 
 # Use hardened ffmpeg image to get compiled binaries
 FROM cgr.dev/chainguard/ffmpeg:latest AS ffmpeg
@@ -37,11 +37,11 @@ COPY --from=builder /leapfrogai/.venv/ /leapfrogai/.venv/
 
 # set the path to the cuda 11.8 dependencies
 ENV LD_LIBRARY_PATH \
-/leapfrogai/.venv/lib64/python3.11/site-packages/nvidia/cublas/lib:\
-/leapfrogai/.venv/lib64/python3.11/site-packages/nvidia/cudnn/lib
+    /leapfrogai/.venv/lib64/python3.11/site-packages/nvidia/cublas/lib:\
+    /leapfrogai/.venv/lib64/python3.11/site-packages/nvidia/cudnn/lib
 
 COPY packages/whisper/main.py .
 
-EXPOSE 50051:50051
+EXPOSE 50051
 
 ENTRYPOINT ["python", "-u", "main.py"]

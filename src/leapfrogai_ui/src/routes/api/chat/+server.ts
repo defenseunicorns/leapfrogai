@@ -1,5 +1,5 @@
 import type { RequestHandler } from './$types';
-import { StreamingTextResponse, streamText } from 'ai';
+import { streamText } from 'ai';
 import { createOpenAI } from '@ai-sdk/openai';
 import { env } from '$env/dynamic/private';
 import { error } from '@sveltejs/kit';
@@ -43,5 +43,5 @@ export const POST: RequestHandler = async ({ request, locals: { session } }) => 
     system: env.DEFAULT_SYSTEM_PROMPT
   });
 
-  return new StreamingTextResponse(result.toAIStream());
+  return result.toDataStreamResponse();
 };

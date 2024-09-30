@@ -1,40 +1,38 @@
-# yaml-language-server: $schema=https://raw.githubusercontent.com/defenseunicorns/uds-cli/main/uds.schema.json
+# yaml-language-server: $schema=https://raw.githubusercontent.com/defenseunicorns/uds-cli/v0.14.0/uds.schema.json
 
 kind: UDSBundle
 metadata:
   name: leapfrogai
   description: A UDS bundle for deploying LeapfrogAI
-  # x-release-please-start-version
-  version: 0.12.2
-  # x-release-please-end
+  version: 0.12.2-upstream
 
 packages:
   # Supabase backend for the UI and API to interface with Postgresql
   - name: supabase
-    repository: ghcr.io/defenseunicorns/packages/leapfrogai/supabase
-    ref: 0.11.0
+    repository: ghcr.io/defenseunicorns/packages/uds/leapfrogai/supabase
+    ref: 0.12.2-upstream
 
   # OpenAI-like API
   - name: leapfrogai-api
-    repository: ghcr.io/defenseunicorns/packages/leapfrogai/leapfrogai-api
-    ref: 0.11.0
+    repository: ghcr.io/defenseunicorns/packages/uds/leapfrogai/leapfrogai-api
+    ref: 0.12.2-upstream
 
   # Model for generic chat and summarization
   - name: vllm
-    repository: ghcr.io/defenseunicorns/packages/leapfrogai/vllm
-    ref: 0.11.0
+    repository: ghcr.io/defenseunicorns/packages/uds/leapfrogai/vllm
+    ref: 0.12.2-upstream
 
   # Model for providing vector embeddings for text
   - name: text-embeddings
-    repository: ghcr.io/defenseunicorns/packages/leapfrogai/text-embeddings
-    ref: 0.11.0
+    repository: ghcr.io/defenseunicorns/packages/uds/leapfrogai/text-embeddings
+    ref: 0.12.2-upstream
 
   # Model for converting audio to text
   - name: whisper
-    repository: ghcr.io/defenseunicorns/packages/leapfrogai/whisper
-    ref: 0.11.0
+    repository: ghcr.io/defenseunicorns/packages/uds/leapfrogai/whisper
+    ref: 0.12.2-upstream
 
   # UI
   - name: leapfrogai-ui
-    repository: ghcr.io/defenseunicorns/packages/leapfrogai/leapfrogai-ui
-    ref: 0.11.0
+    repository: ghcr.io/defenseunicorns/packages/uds/leapfrogai/leapfrogai-ui
+    ref: 0.12.2-upstream

@@ -6,11 +6,11 @@
   } from '$lib/constants';
   import { superForm } from 'sveltekit-superforms';
   import { page } from '$app/stores';
-  import { beforeNavigate, goto, invalidate } from '$app/navigation';
+  import { beforeNavigate, goto } from '$app/navigation';
   import { Button, Modal, P } from 'flowbite-svelte';
   import Slider from '$components/Slider.svelte';
   import { yup } from 'sveltekit-superforms/adapters';
-  import { filesStore, toastStore, uiStore } from '$stores';
+  import { assistantsStore, filesStore, toastStore, uiStore } from '$stores';
   import { assistantInputSchema, editAssistantInputSchema } from '$lib/schemas/assistants';
   import type { NavigationTarget } from '@sveltejs/kit';
   import { onMount } from 'svelte';
@@ -24,6 +24,10 @@
   export let isEditMode = $page.url.pathname.includes('edit');
 
   let bypassCancelWarning = false;
+
+  $: assistant = $assistantsStore.assistants.find(
+    (assistant) => assistant.id === $page.params.assistantId
+  );
 
   const { form, errors, enhance, submitting, isTainted, delayed } = superForm(data.form, {
     invalidateAll: false,
@@ -55,8 +59,12 @@
         }
 
         bypassCancelWarning = true;
-        await invalidate('lf:assistants');
-        goto(result.data.redirectUrl);
+        if (isEditMode) {
+          assistantsStore.updateAssistant(result.data.assistant);
+        } else {
+          assistantsStore.addAssistant(result.data.assistant);
+        }
+        await goto(result.data.redirectUrl);
       } else if (result.type === 'failure') {
         // 400 errors will show errors for the respective fields, do not show toast
         if (result.status !== 400) {
@@ -156,12 +164,12 @@
 
     <Slider
       id="temperature"
-      name="temperature"
       label="Temperature"
       bind:value={$form.temperature}
       tooltipText="Adjust the slider to set the creativity level of your assistant's responses"
       showThumb={false}
     />
+    <input type="hidden" name="temperature" value={$form.temperature} />
 
     <div class="mb-6">
       <LFLabel
@@ -174,7 +182,7 @@
     <input
       type="hidden"
       name="vectorStoreId"
-      value={data?.assistant?.tool_resources?.file_search?.vector_store_ids[0] || undefined}
+      value={assistant?.tool_resources?.file_search?.vector_store_ids[0] || undefined}
     />
 
     <div>

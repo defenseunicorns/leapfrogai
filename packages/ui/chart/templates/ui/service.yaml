@@ -1,19 +1,28 @@
 apiVersion: v1
 kind: Service
 metadata:
-  name: {{ .Values.package.name }}
-  namespace: leapfrogai
-  labels:
-    app: {{ .Values.package.name }}
-    service: {{ .Values.package.name }}
-    zarf.dev/connect-name: {{ .Values.package.name }}
+  name: {{ include "chart.fullname" . }}
+  namespace: {{ .Release.Namespace | default "leapfrogai" }}
   annotations:
-    zarf.dev/connect-description: 'The LeapfrogAI UI'
+    app: {{ include "chart.fullname" . }}
+    zarf.dev/connect-description: "Load the LeapfrogAI UI"
+    zarf.dev/connect-url: "/chat"
+  labels:
+    {{- include "chart.labels" . | nindent 4 }}
+    zarf.dev/connect-name: {{ include "chart.fullname" . }}
 spec:
   selector:
-    app: {{ .Values.package.name }}
+    {{- include "chart.selectorLabels" . | nindent 4 }}
   ports:
     - name: http
-      port: 3000
-      targetPort: 3000
       protocol: TCP
+      port: {{ .Values.service.port }}
+      targetPort: {{ .Values.service.port }}
+---
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: {{ include "chart.serviceAccountName" . }}
+  namespace: {{ .Release.Namespace | default "leapfrogai" }}
+  labels:
+    {{- include "chart.labels" . | nindent 4 }}

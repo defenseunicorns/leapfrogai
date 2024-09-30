@@ -62,7 +62,7 @@ jobs:
           uses: actions/checkout@b4ffde65f46336ab88eb53be808477a3936bae11 # v4.1.1
 
         - name: Setup Node
-          uses: actions/setup-node@60edb5dd545a775178f52524783378180af0d1f8 # v4.0.2
+          uses: actions/setup-node@0a44ba7841725637a19e28fa30b79a866c81b0a6 # v4.0.4
           with:
             node-version-file: 'src/leapfrogai_ui/package.json'
 
@@ -116,14 +116,15 @@ jobs:
             rm packages/ui/zarf-package-leapfrogai-ui-amd64-e2e-test.tar.zst
 
         # Run the playwright UI tests using the deployed Supabase endpoint and upload report as an artifact
+        # Note - workflow doesn't need teardown and causes import issues
         - name: UI/API/Supabase E2E Playwright Tests
           run: |
             cp src/leapfrogai_ui/.env.example src/leapfrogai_ui/.env
-            mkdir -p playwright/auth
-            touch playwright/auth.user.json
+            rm src/leapfrogai_ui/tests/global.teardown.ts 
+            mkdir -p src/leapfrogai_ui/playwright/.auth
             SERVICE_ROLE_KEY=$(uds zarf tools kubectl get secret -n leapfrogai supabase-bootstrap-jwt -o jsonpath={.data.service-key} | base64 -d)
             echo "::add-mask::$SERVICE_ROLE_KEY"
-            SERVICE_ROLE_KEY=$SERVICE_ROLE_KEY TEST_ENV=CI USERNAME=doug PASSWORD=$FAKE_E2E_USER_PASSWORD PUBLIC_SUPABASE_ANON_KEY=$ANON_KEY npm --prefix src/leapfrogai_ui run test:integration:ci
+            SERVICE_ROLE_KEY=$SERVICE_ROLE_KEY TEST_ENV=CI USERNAME=doug PASSWORD=$FAKE_E2E_USER_PASSWORD PUBLIC_SUPABASE_ANON_KEY=$ANON_KEY DEFAULT_MODEL=llama-cpp-python npm --prefix src/leapfrogai_ui run test:integration:ci
 
         # Upload the Playwright report as an artifact
         - name: Archive Playwright Report
