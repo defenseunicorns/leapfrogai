@@ -119,7 +119,7 @@ def get_leapfrogai_model() -> str:
 
     model = os.getenv("LEAPFROGAI_MODEL")
 
-    if model is None:
+    if not model:
         model = "vllm"
         logging.warning(
             f"LEAPFROGAI_MODEL is not set, using default model of `{model}`"
