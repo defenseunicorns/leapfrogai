@@ -25,6 +25,8 @@ api:
       value: "*.toml"
     - name: DEFAULT_EMBEDDINGS_MODEL
       value: "text-embeddings"
+    - name: DEV
+      value: "false"
     - name: PORT
       value: "8080"
     - name: SUPABASE_URL

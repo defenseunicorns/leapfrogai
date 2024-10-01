@@ -32,6 +32,7 @@ TEXT_INPUT = (
 )
 TEXT_INPUT_LEN = len(TEXT_INPUT)
 
+
 #########################
 #########################
 
@@ -147,6 +148,7 @@ def test_routes():
         "/openai/v1/files": ["POST"],
         "/openai/v1/assistants": ["POST"],
         "/leapfrogai/v1/count/tokens": ["POST"],
+        "/leapfrogai/v1/rag/configure": ["GET", "PATCH"],
     }
 
     openai_routes = [
@@ -196,10 +198,14 @@ def test_routes():
     ]
 
     actual_routes = app.routes
-    for route in actual_routes:
-        if hasattr(route, "path") and route.path in expected_routes:
-            assert route.methods == set(expected_routes[route.path])
-            del expected_routes[route.path]
+    for expected_route in expected_routes:
+        matching_routes = {expected_route: []}
+        for actual_route in actual_routes:
+            if hasattr(actual_route, "path") and expected_route == actual_route.path:
+                matching_routes[actual_route.path].extend(actual_route.methods)
+        assert set(expected_routes[expected_route]) <= set(
+            matching_routes[expected_route]
+        )
 
     for route, name, methods in openai_routes:
         found = False
@@ -213,8 +219,6 @@ def test_routes():
                 found = True
                 break
         assert found, f"Missing route: {route}, {name}, {methods}"
-
-    assert len(expected_routes) == 0
 
 
 def test_healthz():
@@ -535,3 +539,55 @@ def test_token_count(dummy_auth_middleware):
         assert "token_count" in response_data
         assert isinstance(response_data["token_count"], int)
         assert response_data["token_count"] == len(input_text)
+
+
+@pytest.mark.skipif(
+    os.environ.get("LFAI_RUN_REPEATER_TESTS") != "true"
+    or os.environ.get("DEV") != "true",
+    reason="LFAI_RUN_REPEATER_TESTS envvar was not set to true",
+)
+def test_configure(dummy_auth_middleware):
+    """Test the RAG configuration endpoints."""
+    with TestClient(app) as client:
+        rag_configuration_request = {
+            "enable_reranking": True,
+            "ranking_model": "rankllm",
+            "rag_top_k_when_reranking": 50,
+        }
+        response = client.patch(
+            "/leapfrogai/v1/rag/configure", json=rag_configuration_request
+        )
+        assert response.status_code == 200
+
+        response = client.get("/leapfrogai/v1/rag/configure")
+        assert response.status_code == 200
+        response_data = response.json()
+        assert "enable_reranking" in response_data
+        assert "ranking_model" in response_data
+        assert "rag_top_k_when_reranking" in response_data
+        assert isinstance(response_data["enable_reranking"], bool)
+        assert isinstance(response_data["ranking_model"], str)
+        assert isinstance(response_data["rag_top_k_when_reranking"], int)
+        assert response_data["enable_reranking"] is True
+        assert response_data["ranking_model"] == "rankllm"
+        assert response_data["rag_top_k_when_reranking"] == 50
+
+        # Update only some of the configs to see if the existing ones persist
+        rag_configuration_request = {"ranking_model": "flashrank"}
+        response = client.patch(
+            "/leapfrogai/v1/rag/configure", json=rag_configuration_request
+        )
+        assert response.status_code == 200
+
+        response = client.get("/leapfrogai/v1/rag/configure")
+        assert response.status_code == 200
+        response_data = response.json()
+        assert "enable_reranking" in response_data
+        assert "ranking_model" in response_data
+        assert "rag_top_k_when_reranking" in response_data
+        assert isinstance(response_data["enable_reranking"], bool)
+        assert isinstance(response_data["ranking_model"], str)
+        assert isinstance(response_data["rag_top_k_when_reranking"], int)
+        assert response_data["enable_reranking"] is True
+        assert response_data["ranking_model"] == "flashrank"
+        assert response_data["rag_top_k_when_reranking"] == 50
