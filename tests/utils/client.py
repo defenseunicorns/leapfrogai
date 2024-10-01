@@ -1,8 +1,98 @@
+import json
+import logging
+import traceback
 from urllib.parse import urljoin
 from openai import OpenAI
 import os
+import pytest
 import requests
 from requests import Response
+
+ANON_KEY = os.environ["ANON_KEY"]
+SERVICE_KEY = os.environ["SERVICE_KEY"]
+DEFAULT_TEST_EMAIL = "test-user@test.com"
+DEFAULT_TEST_PASSWORD = "password"
+
+
+def create_test_user(
+    anon_key: str = ANON_KEY,
+    email: str = DEFAULT_TEST_EMAIL,
+    password: str = DEFAULT_TEST_PASSWORD,
+) -> str:
+    """
+    Create a test user in the authentication system.
+
+    This function attempts to create a new user with the given email and password using the specified
+    anonymous API key. If the user already exists, the error is logged. It returns the JWT token
+    for the created or existing user.
+
+    Args:
+        anon_key (str): The anonymous API key for authentication service.
+        email (str): The email address of the test user. Default is "fakeuser1@test.com".
+        password (str): The password for the test user. Default is "password".
+
+    Returns:
+        str: The JWT token for the created or existing user.
+    """
+    headers = {
+        "apikey": f"{anon_key}",
+        "Authorization": f"Bearer {anon_key}",
+        "Content-Type": "application/json",
+    }
+
+    try:
+        requests.post(
+            url="https://supabase-kong.uds.dev/auth/v1/signup",
+            headers=headers,
+            json={
+                "email": email,
+                "password": password,
+                "confirmPassword": password,
+            },
+        )
+    except Exception:
+        logging.error(
+            "Error creating user (likely because the user already exists): %s",
+            traceback.format_exc(),
+        )
+
+    return get_jwt_token(anon_key, email, password)
+
+
+def get_jwt_token(
+    api_key: str,
+    test_email: str = DEFAULT_TEST_EMAIL,
+    test_password: str = DEFAULT_TEST_PASSWORD,
+) -> str:
+    """
+    Retrieve a JWT token for a test user using email and password.
+
+    This function sends a request to the authentication service to obtain a JWT token using
+    the provided API key, email, and password.
+
+    Args:
+        api_key (str): The API key for the authentication service.
+        test_email (str): The email address of the test user. Default is "fakeuser1@test.com".
+        test_password (str): The password for the test user. Default is "password".
+
+    Returns:
+        str: The JWT access token for the authenticated user.
+
+    Raises:
+        AssertionError: If the request fails or the response status code is not 200.
+    """
+    url = "https://supabase-kong.uds.dev/auth/v1/token?grant_type=password"
+    headers = {"apikey": f"{api_key}", "Content-Type": "application/json"}
+    data = {"email": test_email, "password": test_password}
+
+    response = requests.post(url, headers=headers, json=data)
+    if response.status_code != 200:
+        pytest.fail(
+            f"Request for the JWT token failed with status code {response.status_code} expected 200",
+            False,
+        )
+
+    return json.loads(response.content)["access_token"]
 
 
 def get_leapfrogai_model() -> str:
@@ -49,6 +139,7 @@ def get_leapfrogai_api_key() -> str:
 
     Returns:
         str: The API key for the LeapfrogAI API.
+
     Raises:
         ValueError: If LEAPFROGAI_API_KEY or SUPABASE_USER_JWT is not set.
     """
@@ -56,7 +147,10 @@ def get_leapfrogai_api_key() -> str:
     api_key = os.getenv("LEAPFROGAI_API_KEY") or os.getenv("SUPABASE_USER_JWT")
 
     if api_key is None:
-        raise ValueError("LEAPFROGAI_API_KEY or SUPABASE_USER_JWT not set")
+        logging.warning(
+            "LEAPFROGAI_API_KEY or SUPABASE_USER_JWT not set, automatically generating test user."
+        )
+        api_key = create_test_user()
 
     return api_key
 
@@ -74,9 +168,9 @@ def get_leapfrogai_api_url() -> str:
 def get_leapfrogai_api_url_base() -> str:
     """Get the base URL for the LeapfrogAI API.
 
-    Set via the LEAPFRAGAI_API_URL environment variable.
+    Set via the LEAPFROGAI_API_URL environment variable.
 
-    If LEAPFRAGAI_API_URL is set to "https://leapfrogai-api.uds.dev/openai/v1", this will trim off the "/openai/v1" part.
+    If LEAPFROGAI_API_URL is set to "https://leapfrogai-api.uds.dev/openai/v1", this will trim off the "/openai/v1" part.
 
     Returns:
         str: The base URL for the LeapfrogAI API. (default: "https://leapfrogai-api.uds.dev")
