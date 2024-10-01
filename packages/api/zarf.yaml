@@ -50,7 +50,7 @@ components:
         valuesFiles:
           - "values/registry1-values.yaml"
     images:
-      - "registry1.dso.mil/ironbank/opensource/defenseunicorns/leapfrogai/api:v0.12.2"
+      - "registry1.dso.mil/ironbank/opensource/defenseunicorns/leapfrogai/api:v###ZARF_PKG_TMPL_IMAGE_VERSION###"
       # TODO: replace with Ironbank image once hardened: registry1.dso.mil/ironbank/opensource/defenseunicorns/leapfrogai/api/migrations
       - "ghcr.io/defenseunicorns/leapfrogai/api-migrations:###ZARF_PKG_TMPL_IMAGE_VERSION###"
       - "registry1.dso.mil/ironbank/kiwigrid/k8s-sidecar:1.23.3"
