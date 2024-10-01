@@ -17,7 +17,7 @@ from leapfrogai_api.data.crud_vector_store import CRUDVectorStore
 
 from leapfrogai_api.data.crud_vector_store_file import CRUDVectorStoreFile
 
-from .utils import ANON_KEY, create_test_user, SERVICE_KEY
+from tests.client.utils import ANON_KEY, create_test_user, SERVICE_KEY
 from openai.types import FileObject
 
 health_urls = {

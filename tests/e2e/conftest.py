@@ -1,7 +1,7 @@
 from openai import OpenAI
 import pytest
 
-from leapfrogai.tests.utils.client import leapfrogai_client, get_leapfrogai_model
+from tests.utils.client import leapfrogai_client, get_leapfrogai_model
 
 
 @pytest.fixture(scope="module")
