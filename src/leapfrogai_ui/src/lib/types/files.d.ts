@@ -1,15 +1,15 @@
 import type { SuperValidated } from 'sveltekit-superforms';
+import type { FileObject } from 'openai/resources/files';
 
 export type FileUploadStatus = 'uploading' | 'complete' | 'error' | 'hide';
 
 export type VectorStatus = 'in_progress' | 'completed' | 'cancelled' | 'failed';
 
-export type FileRow = {
-  id: string;
-  filename: string;
-  created_at: number | null;
+export type LFFileObject = Omit<FileObject, 'status'> & {
   status: FileUploadStatus;
 };
+
+export type PendingOrErrorFile = Pick<LFFileObject, 'id' | 'filename' | 'status' | 'created_at'>;
 
 // This type is taken from SuperValidated, leaving the any
 export type FilesForm = SuperValidated<

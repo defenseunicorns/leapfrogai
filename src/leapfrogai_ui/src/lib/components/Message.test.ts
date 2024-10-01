@@ -2,13 +2,12 @@ import { render, screen } from '@testing-library/svelte';
 import { afterAll, afterEach, type MockInstance, vi } from 'vitest';
 import { Message } from '$components/index';
 import userEvent from '@testing-library/user-event';
-import { fakeAssistants, fakeThreads, getFakeMessage } from '$testUtils/fakeData';
+import { fakeThreads, getFakeAssistant, getFakeMessage } from '$testUtils/fakeData';
 import MessageWithToast from '$components/MessageWithToast.test.svelte';
 import { convertMessageToVercelAiMessage, getMessageText } from '$helpers/threads';
 import { type Message as VercelAIMessage } from '@ai-sdk/svelte';
 import { chatHelpers } from '$helpers';
-import { threadsStore } from '$stores';
-import { NO_SELECTED_ASSISTANT_ID } from '$constants';
+import { assistantsStore, threadsStore } from '$stores';
 
 const fakeAppend = vi.fn();
 
@@ -27,6 +26,8 @@ const getDefaultMessageProps = () => {
   };
 };
 
+const assistant = getFakeAssistant();
+
 describe('Message component', () => {
   afterEach(() => {
     fakeAppend.mockReset();
@@ -34,6 +35,10 @@ describe('Message component', () => {
 
   afterAll(() => {
     fakeAppend.mockRestore();
+  });
+
+  beforeEach(() => {
+    assistantsStore.setAssistants([assistant]);
   });
 
   it('displays edit text area when edit btn is clicked', async () => {
@@ -129,7 +134,6 @@ describe('Message component', () => {
     it('disables edit submit button when message is loading', async () => {
       threadsStore.set({
         threads: fakeThreads,
-        selectedAssistantId: NO_SELECTED_ASSISTANT_ID,
         sendingBlocked: true,
         lastVisitedThreadId: '',
         streamingMessage: null
@@ -147,7 +151,6 @@ describe('Message component', () => {
     it('has copy and regenerate buttons for the last AI response', () => {
       threadsStore.set({
         threads: fakeThreads,
-        selectedAssistantId: NO_SELECTED_ASSISTANT_ID,
         sendingBlocked: false,
         lastVisitedThreadId: '',
         streamingMessage: null
@@ -190,7 +193,6 @@ describe('Message component', () => {
     it('removes the regenerate buttons when a response is loading', () => {
       threadsStore.set({
         threads: fakeThreads,
-        selectedAssistantId: NO_SELECTED_ASSISTANT_ID,
         sendingBlocked: true,
         lastVisitedThreadId: '',
         streamingMessage: null
@@ -206,7 +208,6 @@ describe('Message component', () => {
     it('leaves the copy button for messages when it is loading', () => {
       threadsStore.set({
         threads: fakeThreads,
-        selectedAssistantId: NO_SELECTED_ASSISTANT_ID,
         sendingBlocked: true,
         lastVisitedThreadId: '',
         streamingMessage: null
@@ -221,7 +222,6 @@ describe('Message component', () => {
     it('leaves the edit button for messages when it is loading', () => {
       threadsStore.set({
         threads: fakeThreads,
-        selectedAssistantId: NO_SELECTED_ASSISTANT_ID,
         sendingBlocked: true,
         lastVisitedThreadId: '',
         streamingMessage: null
@@ -248,11 +248,12 @@ describe('Message component', () => {
       screen.getByText('LeapfrogAI Bot');
     });
     it('Has the title of the assistant name for regular AI responses', () => {
+      assistantsStore.setSelectedAssistantId(assistant.id);
       render(Message, {
         ...getDefaultMessageProps(),
-        message: getFakeMessage({ role: 'assistant', assistant_id: fakeAssistants[0].id })
+        message: getFakeMessage({ role: 'assistant', assistant_id: assistant.id })
       });
-      screen.getByText(fakeAssistants[0].name!);
+      screen.getByText(assistant.name!);
     });
     it('shows a loading skeleton if the message text is empty', () => {
       render(Message, {

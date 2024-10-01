@@ -30,7 +30,6 @@ export const load: PageServerLoad = async ({ depends, locals: { session } }) => 
   if (!res.ok) {
     return error(500, { message: 'Error fetching API keys' });
   }
-
   keys = (await res.json()) as APIKeyRow[];
   // convert from seconds to milliseconds
   keys.forEach((key) => {

@@ -1,11 +1,10 @@
-import type { FileMetadata, FileRow } from '$lib/types/files';
+import type { FileMetadata, LFFileObject } from '$lib/types/files';
 import type { FileObject } from 'openai/resources/files';
 import { FILE_CONTEXT_TOO_LARGE_ERROR_MSG } from '$constants/errors';
 
-export const convertFileObjectToFileRows = (files: FileObject[]): FileRow[] =>
+export const convertFileObjectToLFFileObject = (files: FileObject[]): LFFileObject[] =>
   files.map((file) => ({
-    id: file.id,
-    filename: file.filename,
+    ...file,
     created_at: file.created_at * 1000,
     status: 'hide'
   }));

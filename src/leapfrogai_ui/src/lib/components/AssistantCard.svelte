@@ -1,10 +1,10 @@
 <script lang="ts">
   import { fade } from 'svelte/transition';
-  import { goto, invalidate } from '$app/navigation';
+  import { goto } from '$app/navigation';
   import { Avatar, Button, Card, Dropdown, DropdownItem, Modal, P } from 'flowbite-svelte';
   import { DotsHorizontalOutline, ExclamationCircleOutline } from 'flowbite-svelte-icons';
   import DynamicPictogram from '$components/DynamicPictogram.svelte';
-  import { threadsStore, toastStore } from '$stores';
+  import { assistantsStore, toastStore } from '$stores';
   import { NO_SELECTED_ASSISTANT_ID, STANDARD_FADE_DURATION } from '$constants';
   import type { LFAssistant } from '$lib/types/assistants';
 
@@ -13,33 +13,38 @@
   let deleteModalOpen = false;
 
   const handleDelete = async () => {
-    const res = await fetch('/api/assistants/delete', {
-      method: 'DELETE',
-      body: JSON.stringify({ id: assistant.id }),
-      headers: {
-        'Content-Type': 'application/json'
-      }
-    });
-    if ($threadsStore.selectedAssistantId === assistant.id)
-      threadsStore.setSelectedAssistantId(NO_SELECTED_ASSISTANT_ID);
-
-    deleteModalOpen = false;
-
-    if (res.ok) {
-      await invalidate('lf:assistants');
-      toastStore.addToast({
-        kind: 'info',
-        title: 'Assistant Deleted.',
-        subtitle: `${assistant.name} Assistant deleted.`
+    try {
+      const res = await fetch('/api/assistants/delete', {
+        method: 'DELETE',
+        body: JSON.stringify({ id: assistant.id }),
+        headers: {
+          'Content-Type': 'application/json'
+        }
       });
-      return;
+      if (res.ok) {
+        assistantsStore.removeAssistant(assistant.id);
+        if ($assistantsStore.selectedAssistantId === assistant.id)
+          assistantsStore.setSelectedAssistantId(NO_SELECTED_ASSISTANT_ID);
+        toastStore.addToast({
+          kind: 'info',
+          title: 'Assistant Deleted.',
+          subtitle: `${assistant.name} Assistant deleted.`
+        });
+      } else {
+        toastStore.addToast({
+          kind: 'error',
+          title: 'Error',
+          subtitle: 'Error deleting Assistant.'
+        });
+      }
+    } catch {
+      toastStore.addToast({
+        kind: 'error',
+        title: 'Error',
+        subtitle: 'Error deleting Assistant.'
+      });
     }
-
-    toastStore.addToast({
-      kind: 'error',
-      title: 'Error',
-      subtitle: 'Error deleting Assistant.'
-    });
+    deleteModalOpen = false;
   };
 </script>
 

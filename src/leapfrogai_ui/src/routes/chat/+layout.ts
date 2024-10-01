@@ -1,37 +1,32 @@
 import type { LayoutLoad } from './$types';
 import { browser } from '$app/environment';
-import { filesStore, threadsStore, uiStore } from '$stores';
+import { assistantsStore, filesStore, threadsStore, uiStore } from '$stores';
 import type { LFAssistant } from '$lib/types/assistants';
 import type { FileObject } from 'openai/resources/files';
-import { convertFileObjectToFileRows } from '$helpers/fileHelpers';
-import type { FileRow } from '$lib/types/files';
+import type { LFThread } from '$lib/types/threads';
+import type { LFFileObject } from '$lib/types/files';
+import { convertFileObjectToLFFileObject } from '$helpers/fileHelpers';
 
-// Load the store with the threads fetched by the +layout.server.ts (set store on the client side only)
-// This only runs when the app is first loaded (because it's a higher level layout)
-// After this load, the app keeps the store in sync with data changes and we don't
-// re-fetch all that data from the server
-// The same applies to files, we keep track of them in a store
-export const load: LayoutLoad = async ({ fetch, data, depends }) => {
-  depends('lf:assistants');
-  depends('lf:files');
-
-  const promises: [Promise<Response>, Promise<Response>] = [
+export const load: LayoutLoad = async ({ fetch, data }) => {
+  const promises: Array<Promise<Response>> = [
     fetch('/api/assistants'),
-    fetch('/api/files')
+    fetch('/api/files'),
+    fetch('/api/threads')
   ];
-  const [assistantRes, filesRes] = await Promise.all(promises);
+  const [assistantRes, filesRes, threadsRes] = await Promise.all(promises);
   const assistants = (await assistantRes.json()) as LFAssistant[];
   const files = (await filesRes.json()) as FileObject[];
-
+  const threads = (await threadsRes.json()) as LFThread[];
   if (browser) {
-    let fileRows: FileRow[] = [];
-    if (files && files.length > 0) {
-      fileRows = convertFileObjectToFileRows(files);
-    }
-
-    filesStore.setFiles(fileRows);
-    threadsStore.setThreads(data?.threads || []);
     uiStore.setIsUsingOpenAI(data?.isUsingOpenAI);
+    // Convert files to LFFileObjects and set in store
+    let lfFileObjects: LFFileObject[] = [];
+    if (files && files.length > 0) {
+      lfFileObjects = convertFileObjectToLFFileObject(files);
+    }
+    filesStore.setFiles(lfFileObjects);
+    threadsStore.setThreads(threads || []);
+    assistantsStore.setAssistants(assistants || []);
   }
-  return { assistants };
+  return { assistants, files, threads };
 };

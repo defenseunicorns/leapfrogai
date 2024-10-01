@@ -3,7 +3,7 @@ import type { Actions } from './$types';
 import { yup } from 'sveltekit-superforms/adapters';
 import type { FileObject } from 'openai/resources/files';
 import { filesSchema } from '$schemas/files';
-import type { FileRow } from '$lib/types/files';
+import type { LFFileObject, PendingOrErrorFile } from '$lib/types/files';
 import { getUnixSeconds } from '$helpers/dates';
 import { getOpenAiClient } from '$lib/server/constants';
 
@@ -31,6 +31,8 @@ export const actions: Actions = {
     if (form.data.files) {
       const fileId: string | null = null;
 
+      let uploadedFiles: Array<FileObject | LFFileObject | PendingOrErrorFile> = [];
+
       const uploadPromises = form.data.files.map(async (file) => {
         if (file) {
           try {
@@ -43,7 +45,7 @@ export const actions: Actions = {
             return uploadedFile;
           } catch (e) {
             console.error(`Error uploading file ${file.name}: ${e}`);
-            const item: FileRow = {
+            const item: PendingOrErrorFile = {
               id: `${file.name}-error-${new Date()}`,
               filename: file.name,
               created_at: getUnixSeconds(new Date()),
@@ -66,8 +68,8 @@ export const actions: Actions = {
         }
         return null;
       });
-      const uploadedFiles = (await Promise.all(uploadPromises)).filter(
-        (file): file is FileObject | FileRow => file !== null
+      uploadedFiles = (await Promise.all(uploadPromises)).filter(
+        (file): file is FileObject | LFFileObject => file !== null
       );
 
       return withFiles({ form, uploadedFiles });
