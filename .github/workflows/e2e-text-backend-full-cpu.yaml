@@ -104,5 +104,7 @@ jobs:
         # Test
         ##########
         - name: Test Text Backend
+          env:
+              LEAPFROGAI_MODEL: llama-cpp-python
           run: |
             python -m pytest ./tests/e2e/test_text_backend_full.py -v
