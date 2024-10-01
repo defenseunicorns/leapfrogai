@@ -114,6 +114,7 @@
   bind:ref={fileUploadBtnRef}
   testId="upload-file-btn"
   name="files"
+  unstyled
   outline
   multiple
   size="sm"
