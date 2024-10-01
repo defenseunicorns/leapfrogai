@@ -7,6 +7,7 @@ import os
 import pytest
 import requests
 from requests import Response
+from fastapi import status
 
 ANON_KEY = os.environ["ANON_KEY"]
 SERVICE_KEY = os.environ["SERVICE_KEY"]
@@ -100,7 +101,7 @@ def get_jwt_token(
     data = {"email": test_email, "password": test_password}
 
     response = requests.post(url, headers=headers, json=data)
-    if response.status_code != 200:
+    if response.status_code != status.HTTP_200_OK:
         pytest.fail(
             f"Request for the JWT token failed with status code {response.status_code} expected 200",
             False,
