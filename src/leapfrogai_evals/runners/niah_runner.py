@@ -2,6 +2,7 @@ import logging
 import numpy as np
 import os
 import openai
+import requests
 
 from datasets import load_dataset, concatenate_datasets
 from distutils.util import strtobool
@@ -167,6 +168,23 @@ class NIAH_Runner:
                 for response in response_messages:
                     response_content += response.content[0].text.value + "\n"
 
+                    secret_code = row["secret_code"]
+
+                    # get chunk data from response
+                    chunk_vectors = response.content[0].metadata["vector_ids"]
+
+                    for chunk_vector in chunk_vectors:
+                        request_params = {
+                            "vector_id": chunk_vector,
+                            "bearer": os.getenv("LEAPFROGAI_API_KEY"),
+                        }
+                        vector_response = requests.get(
+                            os.getenv("LEAPFROGAI_BASE_URL"), params=request_params
+                        )
+
+                        if secret_code in vector_response.json():
+                            retrieval_score = 1.0
+
                     # retrieval_score
                     # 1 if needle text was returned by the retrieval step of RAG else 0
                     logging.debug(
@@ -180,7 +198,6 @@ class NIAH_Runner:
 
                     # # response_score
                     # # 1 if needle text was returned by the LLM's final response else 0
-                    secret_code = row["secret_code"]
                     logging.info(f"Response message: {response.content[0].text.value}")
                     if secret_code in response.content[0].text.value:
                         logging.debug("Setting response_score to 1.0")
