@@ -31,9 +31,8 @@ vi.mock('$app/stores', async (): Promise<typeof stores> => {
     data: {
       threads: fakeThreads,
       assistants: fakeAssistants,
-      assistant: undefined,
       files: [],
-      keys: fakeKeys
+      apiKeys: fakeKeys
     }
   });
 });

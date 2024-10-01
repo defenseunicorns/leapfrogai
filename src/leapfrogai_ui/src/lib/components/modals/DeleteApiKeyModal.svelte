@@ -10,10 +10,12 @@
   export let selectedRowIds: string[];
   export let deleting: boolean;
 
+  $: isMultiple = selectedRowIds.length > 1;
+
   const dispatch = createEventDispatcher();
 
-  $: keyNames = $page.data.keys
-    ? $page.data.keys
+  $: keyNames = $page.data.apiKeys
+    ? $page.data.apiKeys
         .map((key) => {
           if (selectedRowIds.includes(key.id)) return key.name;
         })
@@ -25,27 +27,35 @@
     confirmDeleteModalOpen = false;
   };
 
+  const handleDeleteError = () => {
+    toastStore.addToast({
+      kind: 'error',
+      title: `Error Deleting ${isMultiple ? 'Keys' : 'Key'}`
+    });
+  };
+
   const handleDelete = async () => {
     deleting = true;
-    const isMultiple = selectedRowIds.length > 1;
-    const res = await fetch('/api/api-keys/delete', {
-      body: JSON.stringify({ ids: selectedRowIds }),
-      method: 'DELETE'
-    });
-    dispatch('delete', selectedRowIds);
-    deleting = false;
-    if (res.ok) {
-      toastStore.addToast({
-        kind: 'success',
-        title: `${isMultiple ? 'Keys' : 'Key'} Deleted`
+    try {
+      const res = await fetch('/api/api-keys/delete', {
+        body: JSON.stringify({ ids: selectedRowIds }),
+        method: 'DELETE'
       });
-    } else {
-      toastStore.addToast({
-        kind: 'error',
-        title: `Error Deleting ${isMultiple ? 'Keys' : 'Key'}`
-      });
+      if (res.ok) {
+        dispatch('delete', selectedRowIds);
+        toastStore.addToast({
+          kind: 'success',
+          title: `${isMultiple ? 'Keys' : 'Key'} Deleted`
+        });
+        await invalidate('lf:api-keys');
+      } else {
+        handleDeleteError();
+      }
+    } catch {
+      handleDeleteError();
     }
-    await invalidate('lf:api-keys');
+
+    deleting = false;
   };
 </script>
 

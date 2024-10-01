@@ -3,7 +3,6 @@
   import type { Assistant } from 'openai/resources/beta/assistants';
   import { filesStore, toastStore } from '$stores';
   import { ExclamationCircleOutline } from 'flowbite-svelte-icons';
-  import { invalidate } from '$app/navigation';
   import { createEventDispatcher } from 'svelte';
   import vectorStatusStore from '$stores/vectorStatusStore';
 
@@ -11,6 +10,8 @@
   export let affectedAssistantsLoading: boolean;
   export let deleting: boolean;
   export let affectedAssistants: Assistant[];
+
+  $: isMultipleFiles = $filesStore.selectedFileManagementFileIds.length > 1;
 
   const dispatch = createEventDispatcher();
 
@@ -20,34 +21,43 @@
     affectedAssistantsLoading = false;
   };
 
-  const handleConfirmedDelete = async () => {
-    const isMultipleFiles = $filesStore.selectedFileManagementFileIds.length > 1;
-    deleting = true;
-    const res = await fetch('/api/files/delete', {
-      method: 'DELETE',
-      body: JSON.stringify({ ids: $filesStore.selectedFileManagementFileIds }),
-      headers: {
-        'Content-Type': 'application/json'
-      }
+  const handleDeleteError = () => {
+    toastStore.addToast({
+      kind: 'error',
+      title: `Error Deleting ${isMultipleFiles ? 'Files' : 'File'}`
     });
-    open = false;
-    await invalidate('lf:files');
-    if (res.ok) {
-      toastStore.addToast({
-        kind: 'success',
-        title: `${isMultipleFiles ? 'Files' : 'File'} Deleted`
-      });
-    } else {
-      toastStore.addToast({
-        kind: 'error',
-        title: `Error Deleting ${isMultipleFiles ? 'Files' : 'File'}`
-      });
-    }
+  };
 
-    vectorStatusStore.removeFiles($filesStore.selectedFileManagementFileIds);
-    filesStore.setSelectedFileManagementFileIds([]);
+  const handleConfirmedDelete = async () => {
+    deleting = true;
+    try {
+      const res = await fetch('/api/files/delete', {
+        method: 'DELETE',
+        body: JSON.stringify({ ids: $filesStore.selectedFileManagementFileIds }),
+        headers: {
+          'Content-Type': 'application/json'
+        }
+      });
+
+      if (res.ok) {
+        open = false;
+        for (const id of $filesStore.selectedFileManagementFileIds) {
+          filesStore.removeFile(id);
+        }
+        vectorStatusStore.removeFiles($filesStore.selectedFileManagementFileIds);
+        filesStore.setSelectedFileManagementFileIds([]);
+        toastStore.addToast({
+          kind: 'success',
+          title: `${isMultipleFiles ? 'Files' : 'File'} Deleted`
+        });
+        dispatch('delete');
+      } else {
+        handleDeleteError();
+      }
+    } catch {
+      handleDeleteError();
+    }
     deleting = false;
-    dispatch('delete');
   };
 
   $: fileNames = $filesStore.files

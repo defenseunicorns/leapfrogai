@@ -142,24 +142,20 @@ test('it cancels the delete confirmation modal', async ({ page, openAIClient }) 
   await deleteFileByName(filename, openAIClient);
 });
 
-test('shows an error toast when there is an error deleting a file', async ({ page }) => {
+test('shows an error toast when there is an error deleting a file when the delete call throws', async ({
+  page,
+  openAIClient
+}) => {
   const filename = await createPDF();
-  let hasBeenCalled = false;
-  await page.route('*/**/api/files/delete', async (route) => {
-    if (!hasBeenCalled && route.request().method() === 'DELETE') {
-      if (!hasBeenCalled && route.request().method() === 'DELETE') {
-        hasBeenCalled = true;
-        await route.fulfill({ status: 500 });
-      } else {
-        const response = await route.fetch();
-        await route.fulfill({ response });
-      }
-    }
-  });
+
   await uploadFiles({ page, filenames: [filename] });
 
-  await expect(page.getByText(`${filename} imported successfully`)).toBeVisible();
+  await expect(page.getByText(`${filename} imported successfully`)).toBeVisible({ timeout: 15000 });
   await expect(page.getByText(`${filename} imported successfully`)).not.toBeVisible(); // wait for upload to finish
+
+  await page.route('*/**/api/files/delete', async (route) => {
+    await route.abort();
+  });
 
   const row = await getTableRow(page, filename, 'file-management-table');
   await row.getByRole('checkbox').check();
@@ -168,14 +164,45 @@ test('shows an error toast when there is an error deleting a file', async ({ pag
   await confirmDeletion(page);
 
   await expect(page.getByText('Error Deleting File')).toBeVisible();
+  await expect(page.getByTestId('table-actions')).toBeVisible(); // keeps delete menu open
+
+  // Cleanup
+  deleteFixtureFile(filename);
+  await deleteFileByName(filename, openAIClient);
+});
+test('shows an error toast when there is an error deleting a file when the delete res is not 200', async ({
+  page,
+  openAIClient
+}) => {
+  const filename = await createPDF();
+
+  await uploadFiles({ page, filenames: [filename] });
+
+  await expect(page.getByText(`${filename} imported successfully`)).toBeVisible({ timeout: 15000 });
+  await expect(page.getByText(`${filename} imported successfully`)).not.toBeVisible(); // wait for upload to finish
+
+  await page.route('*/**/api/files/delete', async (route) => {
+    await route.fulfill({ status: 500 });
+  });
+
+  const row = await getTableRow(page, filename, 'file-management-table');
+  await row.getByRole('checkbox').check();
+
+  await initiateDeletion(page, filename);
+  await confirmDeletion(page);
+
+  await expect(page.getByText('Error Deleting File')).toBeVisible();
+  await expect(page.getByTestId('table-actions')).toBeVisible(); // keeps delete menu open
+
+  // Cleanup
+  deleteFixtureFile(filename);
+  await deleteFileByName(filename, openAIClient);
 });
 
 test('it shows toast when there is an error submitting the form', async ({ page }) => {
   await page.route('*/**/chat/file-management', async (route) => {
     if (route.request().method() === 'POST') {
-      const json = {};
-
-      await route.fulfill({ json });
+      await route.abort('failed');
     } else {
       const response = await route.fetch();
       await route.fulfill({ response });

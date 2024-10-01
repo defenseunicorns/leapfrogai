@@ -13,7 +13,7 @@ import {
 } from '$lib/mocks/file-mocks';
 import { beforeEach, vi } from 'vitest';
 import { filesStore, toastStore } from '$stores';
-import { convertFileObjectToFileRows } from '$helpers/fileHelpers';
+import { convertFileObjectToLFFileObject } from '$helpers/fileHelpers';
 import { superValidate } from 'sveltekit-superforms';
 import { yup } from 'sveltekit-superforms/adapters';
 import { filesSchema } from '$schemas/files';
@@ -32,7 +32,7 @@ describe('file management', () => {
     const data = await load();
 
     form = await superValidate(yup(filesSchema));
-    filesStore.setFiles(convertFileObjectToFileRows(files));
+    filesStore.setFiles(convertFileObjectToLFFileObject(files));
     filesStore.setSelectedFileManagementFileIds([]);
 
     render(FileManagementPage, {
@@ -40,7 +40,6 @@ describe('file management', () => {
         ...data,
         form,
         session: getFakeSession(),
-        assistants: [],
         supabase: {} as unknown as SupabaseClient
       }
     });
@@ -75,7 +74,7 @@ describe('file management', () => {
     const file2 = getFakeFiles({ numFiles: 1, created_at: yesterday })[0];
 
     // Set different files for this test, await tick so component reflect store update
-    filesStore.setFiles(convertFileObjectToFileRows([file1, file2]));
+    filesStore.setFiles(convertFileObjectToLFFileObject([file1, file2]));
     await tick();
     mockGetFiles([file1, file2]);
 
@@ -219,7 +218,7 @@ describe('table pagination', () => {
     const data = await load();
 
     form = await superValidate(yup(filesSchema));
-    filesStore.setFiles(convertFileObjectToFileRows(files));
+    filesStore.setFiles(convertFileObjectToLFFileObject(files));
     filesStore.setSelectedFileManagementFileIds([]);
 
     render(FileManagementPage, {
@@ -227,7 +226,6 @@ describe('table pagination', () => {
         ...data,
         form,
         session: getFakeSession(),
-        assistants: [],
         supabase: {} as unknown as SupabaseClient
       }
     });

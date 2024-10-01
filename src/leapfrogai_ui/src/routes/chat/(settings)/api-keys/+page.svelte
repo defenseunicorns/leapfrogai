@@ -137,7 +137,11 @@
       <!-- Button with color="alternative" adds two pixels to btn height, border-box does not prevent this. h-[42px] prevents slight screen jump-->
       <div class="h-[42px]">
         {#if editMode}
-          <div in:fade={{ duration: STANDARD_FADE_DURATION }} class="flex items-center gap-2">
+          <div
+            in:fade={{ duration: STANDARD_FADE_DURATION }}
+            class="flex items-center gap-2"
+            data-testid="table-actions"
+          >
             {#if deleting}
               <Button color="red" disabled>
                 <Spinner class="me-3" size="4" color="white" />Deleting...

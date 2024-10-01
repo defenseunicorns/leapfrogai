@@ -17,7 +17,6 @@ import {
   mockNewMessageError
 } from '$lib/mocks/chat-mocks';
 import { getMessageText } from '$helpers/threads';
-import { load } from './+page';
 import { mockOpenAI } from '../../../../../vitest-setup';
 import { ERROR_GETTING_AI_RESPONSE_TOAST, ERROR_SAVING_MSG_TOAST } from '$constants/toastMessages';
 
@@ -27,7 +26,6 @@ import type { LFAssistant } from '$lib/types/assistants';
 import { delay } from '$helpers/chatHelpers';
 import { mockGetFiles } from '$lib/mocks/file-mocks';
 import { threadsStore } from '$stores';
-import { NO_SELECTED_ASSISTANT_ID } from '$constants';
 
 type LayoutServerLoad = {
   threads: LFThread[];
@@ -60,17 +58,9 @@ describe('when there is an active thread selected', () => {
     mockOpenAI.setMessages(allMessages);
     mockOpenAI.setFiles(files);
 
-    // @ts-expect-error: full mocking of load function params not necessary and is overcomplicated
-    data = await load({
-      fetch: global.fetch,
-      depends: vi.fn(),
-      params: { thread_id: fakeThreads[0].id }
-    });
-
     threadsStore.set({
       threads: fakeThreads,
       lastVisitedThreadId: fakeThreads[0].id,
-      selectedAssistantId: NO_SELECTED_ASSISTANT_ID,
       sendingBlocked: false,
       streamingMessage: null
     });

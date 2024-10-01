@@ -14,7 +14,6 @@ import { vi } from 'vitest';
 import { getUnixSeconds, monthNames } from '$helpers/dates';
 import * as navigation from '$app/navigation';
 import { getMessageText } from '$helpers/threads';
-import { NO_SELECTED_ASSISTANT_ID } from '$constants';
 
 const openThreadEditDeleteMenu = async (label: string) => {
   const sidebarThreadMenuBtn = screen.getByTestId(`thread-menu-btn-${label}`);
@@ -51,7 +50,6 @@ describe('ChatSidebar', () => {
     threadsStore.set({
       threads: fakeThreads,
       sendingBlocked: false,
-      selectedAssistantId: NO_SELECTED_ASSISTANT_ID,
       lastVisitedThreadId: fakeThreads[0].id,
       streamingMessage: null
     });
@@ -79,7 +77,6 @@ describe('ChatSidebar', () => {
     threadsStore.set({
       threads: [fakeTodayThread, fakeYesterdayThread], // uses date override starting in March
       sendingBlocked: false,
-      selectedAssistantId: NO_SELECTED_ASSISTANT_ID,
       lastVisitedThreadId: '',
       streamingMessage: null
     });
@@ -107,7 +104,6 @@ describe('ChatSidebar', () => {
     threadsStore.set({
       threads: fakeThreads,
       sendingBlocked: false,
-      selectedAssistantId: NO_SELECTED_ASSISTANT_ID,
       lastVisitedThreadId: fakeThreads[0].id,
       streamingMessage: null
     });
@@ -148,7 +144,6 @@ describe('ChatSidebar', () => {
     threadsStore.set({
       threads: fakeThreads,
       sendingBlocked: false,
-      selectedAssistantId: NO_SELECTED_ASSISTANT_ID,
       lastVisitedThreadId: fakeThreads[0].id,
       streamingMessage: null
     });
@@ -184,7 +179,6 @@ describe('ChatSidebar', () => {
     threadsStore.set({
       threads: fakeThreads,
       sendingBlocked: false,
-      selectedAssistantId: NO_SELECTED_ASSISTANT_ID,
       lastVisitedThreadId: fakeThreads[0].id,
       streamingMessage: null
     });
@@ -208,7 +202,6 @@ describe('ChatSidebar', () => {
     threadsStore.set({
       threads: fakeThreads,
       sendingBlocked: false,
-      selectedAssistantId: NO_SELECTED_ASSISTANT_ID,
       lastVisitedThreadId: fakeThreads[0].id,
       streamingMessage: null
     });
@@ -232,7 +225,6 @@ describe('ChatSidebar', () => {
     threadsStore.set({
       threads: fakeThreads,
       sendingBlocked: false,
-      selectedAssistantId: NO_SELECTED_ASSISTANT_ID,
       lastVisitedThreadId: fakeThreads[0].id,
       streamingMessage: null
     });
@@ -264,7 +256,6 @@ describe('ChatSidebar', () => {
     threadsStore.set({
       threads: fakeThreads,
       sendingBlocked: false,
-      selectedAssistantId: NO_SELECTED_ASSISTANT_ID,
       lastVisitedThreadId: fakeThreads[0].id,
       streamingMessage: null
     });
@@ -290,7 +281,6 @@ describe('ChatSidebar', () => {
     threadsStore.set({
       threads: fakeThreads,
       sendingBlocked: false,
-      selectedAssistantId: NO_SELECTED_ASSISTANT_ID,
       lastVisitedThreadId: fakeThreads[0].id,
       streamingMessage: null
     });
@@ -318,7 +308,6 @@ describe('ChatSidebar', () => {
     threadsStore.set({
       threads: fakeThreads,
       sendingBlocked: false,
-      selectedAssistantId: NO_SELECTED_ASSISTANT_ID,
       lastVisitedThreadId: fakeThreads[0].id,
       streamingMessage: null
     });
@@ -342,7 +331,6 @@ describe('ChatSidebar', () => {
     threadsStore.set({
       threads: fakeThreads,
       sendingBlocked: false,
-      selectedAssistantId: NO_SELECTED_ASSISTANT_ID,
       lastVisitedThreadId: fakeThreads[0].id,
       streamingMessage: null
     });
@@ -360,7 +348,6 @@ describe('ChatSidebar', () => {
     threadsStore.set({
       threads: [fakeThread],
       sendingBlocked: false,
-      selectedAssistantId: NO_SELECTED_ASSISTANT_ID,
       lastVisitedThreadId: fakeThreads[0].id,
       streamingMessage: null
     });
@@ -384,7 +371,6 @@ describe('ChatSidebar', () => {
     threadsStore.set({
       threads: [fakeThread1, fakeThread2, fakeThread3],
       sendingBlocked: false,
-      selectedAssistantId: NO_SELECTED_ASSISTANT_ID,
       lastVisitedThreadId: '',
       streamingMessage: null
     });
@@ -417,7 +403,6 @@ describe('ChatSidebar', () => {
     threadsStore.set({
       threads: [fakeThread1, fakeThread2, fakeThread3],
       sendingBlocked: false,
-      selectedAssistantId: NO_SELECTED_ASSISTANT_ID,
       lastVisitedThreadId: '',
       streamingMessage: null
     });
