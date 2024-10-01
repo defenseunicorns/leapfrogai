@@ -8,6 +8,7 @@ LEAPFROGAI_MODEL = os.getenv("LEAPFROGAI_MODEL", "llama-cpp-python")
 OPENAI_MODEL = "gpt-4o-mini"
 ROOT_URL = "https://leapfrogai-api.uds.dev"
 
+
 def get_leapfrogai_model() -> str:
     """Get the model to use for LeapfrogAI.
 
