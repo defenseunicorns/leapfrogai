@@ -2,7 +2,7 @@ name: nightly-uds-badge-verification
 
 on:
   schedule:
-    - cron: "0 11 * * *" # Runs daily at 12 AM PST
+    - cron: "0 11 * * *" # Runs daily at 3 AM PST
   workflow_dispatch: # trigger manually as needed
   pull_request:
     paths:
