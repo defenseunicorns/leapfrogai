@@ -143,6 +143,7 @@ jobs:
         env:
           ANON_KEY: ${{ steps.generate_secrets.outputs.ANON_KEY }}
           SERVICE_KEY: ${{ steps.generate_secrets.outputs.SERVICE_KEY }}
+          LEAPFROGAI_MODEL: llama-cpp-python
         run: |
           python -m pytest -vvv -s ./tests/e2e
 
@@ -156,6 +157,7 @@ jobs:
           SERVICE_ROLE_KEY: ${{ steps.generate_secrets.outputs.SERVICE_KEY }}
           FAKE_E2E_USER_PASSWORD: ${{ steps.generate_secrets.outputs.FAKE_PASSWORD }}
           ANON_KEY: ${{ steps.generate_secrets.outputs.ANON_KEY }}
+          LEAPFROGAI_MODEL: llama-cpp-python
         run: |
           chmod +x ./.github/scripts/createUser.sh
           ./.github/scripts/createUser.sh

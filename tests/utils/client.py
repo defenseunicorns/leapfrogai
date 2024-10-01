@@ -150,7 +150,7 @@ def get_leapfrogai_api_key() -> str:
         logging.warning(
             "LEAPFROGAI_API_KEY or SUPABASE_USER_JWT not set, automatically generating test user."
         )
-        api_key = create_test_user()
+        return create_test_user()
 
     return api_key
 
