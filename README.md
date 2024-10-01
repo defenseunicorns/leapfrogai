@@ -1,9 +1,9 @@
 ![LeapfrogAI](https://github.com/defenseunicorns/leapfrogai/raw/main/docs/imgs/leapfrogai.png)
 
 [![OpenSSF Scorecard](https://api.securityscorecards.dev/projects/github.com/defenseunicorns/leapfrogai/badge)](https://api.securityscorecards.dev/projects/github.com/defenseunicorns/leapfrogai)
-[![Nightly Snapshot and Upgrade Tests](https://github.com/defenseunicorns/leapfrogai/actions/workflows/nightly-snapshot-release.yaml/badge.svg)](https://github.com/defenseunicorns/leapfrogai/actions/workflows/nightly-snapshot-release.yaml)
-[![Nightly Made for UDS Badge Verification Test](https://github.com/defenseunicorns/leapfrogai/actions/workflows/nightly-uds-badge-verification.yaml/badge.svg)](https://github.com/defenseunicorns/leapfrogai/actions/workflows/nightly-uds-badge-verification.yaml)
-[![Weekly Registry1 Tests](https://github.com/defenseunicorns/leapfrogai/actions/workflows/weekly-registry1-flavor-test.yaml/badge.svg)](https://github.com/defenseunicorns/leapfrogai/actions/workflows/weekly-registry1-flavor-test.yaml)
+[![Nightly Snapshot Tests](https://github.com/defenseunicorns/leapfrogai/actions/workflows/nightly-snapshot-release.yaml/badge.svg)](https://github.com/defenseunicorns/leapfrogai/actions/workflows/nightly-snapshot-release.yaml)
+[![Nightly Made for UDS Test](https://github.com/defenseunicorns/leapfrogai/actions/workflows/nightly-uds-badge-verification.yaml/badge.svg)](https://github.com/defenseunicorns/leapfrogai/actions/workflows/nightly-uds-badge-verification.yaml)
+[![Weekly Registry1 Test](https://github.com/defenseunicorns/leapfrogai/actions/workflows/weekly-registry1-flavor-test.yaml/badge.svg)](https://github.com/defenseunicorns/leapfrogai/actions/workflows/weekly-registry1-flavor-test.yaml)
 
 ## Table of Contents
 
