@@ -132,7 +132,8 @@
           role: 'assistant',
           metadata: {
             wasTranscriptionOrTranslation: 'true'
-          }
+          },
+          lengthOverride: true
         });
       } catch {
         await handleGeneralError(toastError);

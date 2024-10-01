@@ -1,5 +1,5 @@
 import { POST } from './+server';
-import { mockOpenAI } from '../../../../../vitest-setup';
+import { mockOpenAI } from '../../../../../../vitest-setup';
 import {
   getFakeAssistant,
   getFakeFiles,
@@ -7,11 +7,11 @@ import {
   getFakeVectorStoreFile
 } from '$testUtils/fakeData';
 import type { RequestEvent } from '@sveltejs/kit';
-import type { RouteParams } from '../../../../../.svelte-kit/types/src/routes/api/messages/new/$types';
+import type { RouteParams } from './$types';
 import { getLocalsMock } from '$lib/mocks/misc';
 
 const validMessageBody = { fileIds: ['file1', 'file2'] };
-describe('/api/files/delete-check', () => {
+describe('/api/files/delete/check', () => {
   it('returns a 401 when there is no session', async () => {
     const request = new Request('http://thisurlhasnoeffect', {
       method: 'POST',
@@ -22,7 +22,7 @@ describe('/api/files/delete-check', () => {
       POST({
         request,
         locals: getLocalsMock({ nullSession: true })
-      } as RequestEvent<RouteParams, '/api/files/delete-check'>)
+      } as RequestEvent<RouteParams, '/api/files/delete/check'>)
     ).rejects.toMatchObject({
       status: 401
     });
@@ -39,7 +39,7 @@ describe('/api/files/delete-check', () => {
       POST({
         request,
         locals: getLocalsMock()
-      } as RequestEvent<RouteParams, '/api/files/delete-check'>)
+      } as RequestEvent<RouteParams, '/api/files/delete/check'>)
     ).rejects.toMatchObject({
       status: 400
     });
@@ -54,7 +54,7 @@ describe('/api/files/delete-check', () => {
       POST({
         request,
         locals: getLocalsMock()
-      } as RequestEvent<RouteParams, '/api/files/delete-check'>)
+      } as RequestEvent<RouteParams, '/api/files/delete/check'>)
     ).rejects.toMatchObject({
       status: 400
     });
@@ -69,7 +69,7 @@ describe('/api/files/delete-check', () => {
       POST({
         request,
         locals: getLocalsMock()
-      } as RequestEvent<RouteParams, '/api/files/delete-check'>)
+      } as RequestEvent<RouteParams, '/api/files/delete/check'>)
     ).rejects.toMatchObject({
       status: 400
     });
@@ -84,7 +84,7 @@ describe('/api/files/delete-check', () => {
       POST({
         request,
         locals: getLocalsMock()
-      } as RequestEvent<RouteParams, '/api/files/delete-check'>)
+      } as RequestEvent<RouteParams, '/api/files/delete/check'>)
     ).rejects.toMatchObject({
       status: 400
     });
@@ -137,7 +137,7 @@ describe('/api/files/delete-check', () => {
     const res = await POST({
       request,
       locals: getLocalsMock()
-    } as RequestEvent<RouteParams, '/api/files/delete-check'>);
+    } as RequestEvent<RouteParams, '/api/files/delete/check'>);
 
     const resData = await res.json();
     expect(res.status).toEqual(200);
@@ -153,7 +153,7 @@ describe('/api/files/delete-check', () => {
     const res2 = await POST({
       request: request2,
       locals: getLocalsMock()
-    } as RequestEvent<RouteParams, '/api/files/delete-check'>);
+    } as RequestEvent<RouteParams, '/api/files/delete/check'>);
 
     const resData2 = await res2.json();
     expect(res2.status).toEqual(200);
@@ -173,7 +173,7 @@ describe('/api/files/delete-check', () => {
       POST({
         request,
         locals: getLocalsMock()
-      } as RequestEvent<RouteParams, '/api/files/delete-check'>)
+      } as RequestEvent<RouteParams, '/api/files/delete/check'>)
     ).rejects.toMatchObject({
       status: 500
     });

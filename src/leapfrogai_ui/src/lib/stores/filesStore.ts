@@ -1,14 +1,16 @@
 import { derived, writable } from 'svelte/store';
 import type { FileObject } from 'openai/resources/files';
-import type { FileRow } from '$lib/types/files';
+import type { LFFileObject, PendingOrErrorFile } from '$lib/types/files';
 import { toastStore } from '$stores/index';
+import { getUnixSeconds } from '$helpers/dates';
 
 type FilesStore = {
-  files: FileRow[];
+  files: LFFileObject[];
   selectedFileManagementFileIds: string[];
   selectedAssistantFileIds: string[];
   uploading: boolean;
-  pendingUploads: FileRow[];
+  pendingUploads: PendingOrErrorFile[];
+  needsUpdate?: boolean;
 };
 
 const defaultValues: FilesStore = {
@@ -16,7 +18,8 @@ const defaultValues: FilesStore = {
   selectedFileManagementFileIds: [],
   selectedAssistantFileIds: [],
   uploading: false,
-  pendingUploads: []
+  pendingUploads: [],
+  needsUpdate: false
 };
 
 const createFilesStore = () => {
@@ -27,15 +30,31 @@ const createFilesStore = () => {
     set,
     update,
     setUploading: (status: boolean) => update((old) => ({ ...old, uploading: status })),
-
-    setFiles: (newFiles: FileRow[]) => {
+    removeFile: (id: string) => {
+      update((old) => {
+        const updatedFiles = [...old.files];
+        const fileIndex = updatedFiles.findIndex((file) => file.id === id);
+        if (fileIndex > -1) {
+          updatedFiles.splice(fileIndex, 1);
+        }
+        return { ...old, files: updatedFiles };
+      });
+    },
+    setFiles: (newFiles: LFFileObject[]) => {
       update((old) => ({ ...old, files: [...newFiles] }));
     },
-    setPendingUploads: (newFiles: FileRow[]) => {
+    setPendingUploads: (newFiles: LFFileObject[]) => {
       update((old) => ({ ...old, pendingUploads: [...newFiles] }));
     },
     setSelectedFileManagementFileIds: (newIds: string[]) => {
       update((old) => ({ ...old, selectedFileManagementFileIds: newIds }));
+    },
+    setNeedsUpdate: (status: boolean) => {
+      update((old) => ({ ...old, needsUpdate: status }));
+    },
+    fetchFiles: async () => {
+      const files = await fetch('/api/files').then((res) => res.json());
+      update((old) => ({ ...old, files, needsUpdate: false }));
     },
     addSelectedFileManagementFileId: (id: string) => {
       update((old) => ({
@@ -66,7 +85,7 @@ const createFilesStore = () => {
     },
     addUploadingFiles: (files: File[], { autoSelectUploadedFiles = false } = {}) => {
       update((old) => {
-        const newFiles: FileRow[] = [];
+        const newFiles: Pick<LFFileObject, 'id' | 'filename' | 'status' | 'created_at'>[] = [];
         const newFileIds: string[] = [];
         for (const file of files) {
           const id = `${file.name}-${new Date()}`; // temp id
@@ -74,7 +93,7 @@ const createFilesStore = () => {
             id,
             filename: file.name,
             status: 'uploading',
-            created_at: null
+            created_at: getUnixSeconds(new Date())
           });
           newFileIds.push(id);
         }
@@ -87,16 +106,14 @@ const createFilesStore = () => {
         };
       });
     },
-    updateWithUploadErrors: (newFiles: Array<FileObject | FileRow>) => {
+    updateWithUploadErrors: (newFiles: Array<FileObject | LFFileObject>) => {
       update((old) => {
-        const failedRows: FileRow[] = [];
+        const failedRows: LFFileObject[] = [];
 
         for (const file of newFiles) {
           if (file.status === 'error') {
-            const row: FileRow = {
-              id: file.id,
-              filename: file.filename,
-              created_at: file.created_at,
+            const row: LFFileObject = {
+              ...file,
               status: 'error'
             };
 
@@ -126,15 +143,13 @@ const createFilesStore = () => {
         };
       });
     },
-    updateWithUploadSuccess: (newFiles: Array<FileObject | FileRow>) => {
+    updateWithUploadSuccess: (newFiles: Array<FileObject | LFFileObject>) => {
       update((old) => {
         const successRows = [...old.files];
 
         for (const file of newFiles) {
-          const row: FileRow = {
-            id: file.id,
-            filename: file.filename,
-            created_at: file.created_at,
+          const row: LFFileObject = {
+            ...file,
             status: 'complete'
           };
 

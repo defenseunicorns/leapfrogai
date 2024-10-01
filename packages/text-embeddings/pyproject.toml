@@ -3,7 +3,7 @@ name = "lfai-text-embeddings"
 description = "A LeapfrogAI API-compatible embeddings library wrapper for text-based embedding generation."
 
 # x-release-please-start-version
-version = "0.13.0"
+version = "0.13.1"
 # x-release-please-end
 
 dependencies = [

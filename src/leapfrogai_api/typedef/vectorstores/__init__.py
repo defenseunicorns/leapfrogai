@@ -7,6 +7,7 @@ from .vectorstore_types import (
     ListVectorStoresResponse as ListVectorStoresResponse,
 )
 from .search_types import (
+    Vector as Vector,
     SearchItem as SearchItem,
     SearchResponse as SearchResponse,
 )
