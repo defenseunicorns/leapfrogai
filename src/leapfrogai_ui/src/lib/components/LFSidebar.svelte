@@ -89,7 +89,7 @@
       {/each}
     </SidebarGroup>
     <Hr classHr="my-2" />
-    <SidebarGroup class="px-3">
+    <SidebarGroup class="px-3 py-2">
       <ImportExport />
     </SidebarGroup>
   </SidebarWrapper>
