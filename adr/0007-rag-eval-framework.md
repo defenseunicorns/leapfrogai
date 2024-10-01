@@ -127,7 +127,7 @@ As time goes on, additional models will be considered and added as comparison po
   - [Answer Correctness](https://docs.confident-ai.com/docs/metrics-llm-evals) (for evaluating generation)
   - [Faithfulness](https://docs.confident-ai.com/docs/metrics-faithfulness) (for evaluating generation)
   
-  Non-llm-enabled evaluations:
+  Non-LLM-enabled evaluations:
   - Needle in a Haystack (for evaluating retrieval and generation)
   - Annotation Relevancy (for evaluating retrieval)
 
