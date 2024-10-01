@@ -157,6 +157,6 @@ repos:
     hooks:
       - id: check-jsonschema
         name: "Validate UDS Bundles Against Schema"
-        files: "uds-bundle.yaml"
+        files: "tasks.yaml"
         types: [yaml]
         args: ["--schemafile", "tasks-v0.14.0.schema.json"]
