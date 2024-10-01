@@ -360,13 +360,14 @@
     </div>
   </div>
   <Hr classHr="my-2" />
-  <div id="chat-tools" data-testid="chat-tools" class="flex gap-2 px-8">
+  <div id="chat-tools" data-testid="chat-tools" class="flex min-w-0 items-end gap-2 px-8">
     <SelectAssistantDropdown />
 
     <div
       class={twMerge(
         'flex flex-grow flex-col gap-1 rounded-lg bg-gray-50 px-4 py-0 dark:bg-gray-700',
-        attachedFileMetadata.length > 0 && 'py-4'
+        attachedFileMetadata.length > 0 && 'py-4',
+        'min-w-0'
       )}
     >
       <LFCarousel
@@ -378,7 +379,7 @@
         <UploadedFileCards bind:attachedFileMetadata bind:attachedFiles />
       </LFCarousel>
 
-      <div id="chat-row" class="flex w-full items-center gap-1">
+      <div id="chat-row" class="flex w-full min-w-0 items-center gap-1">
         {#if !assistantMode}
           <ChatFileUploadForm bind:uploadingFiles bind:attachedFiles bind:attachedFileMetadata />
         {/if}
