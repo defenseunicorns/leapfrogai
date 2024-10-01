@@ -7,7 +7,7 @@ import pytest
 from tests.utils.data_path import data_path
 
 from leapfrogai_api.typedef.rag.rag_types import ConfigurationPayload
-from tests.utils.client import ROOT_URL, client_config_factory
+from tests.utils.client import client_config_factory, get_leapfrogai_api_url_base
 
 
 def make_test_assistant(client, model, vector_store_id):
@@ -96,7 +96,7 @@ def configure_rag(
         ranking_model: The ranking model to use.
         rag_top_k_when_reranking: The top-k results to return before reranking.
     """
-    url = f"{ROOT_URL}/leapfrogai/v1/rag/configure"
+    url = f"{get_leapfrogai_api_url_base()}/leapfrogai/v1/rag/configure"
     configuration = ConfigurationPayload(
         enable_reranking=enable_reranking,
         ranking_model=ranking_model,
@@ -121,7 +121,7 @@ def get_rag_configuration() -> Optional[ConfigurationPayload]:
     Returns:
         The RAG configuration, or None if there was an error.
     """
-    url = f"{ROOT_URL}/leapfrogai/v1/rag/configure"
+    url = f"{get_leapfrogai_api_url_base()}/leapfrogai/v1/rag/configure"
 
     try:
         response = requests.get(url)
