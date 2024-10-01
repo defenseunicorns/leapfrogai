@@ -167,7 +167,7 @@ As time goes on, additional models will be considered and added as comparison po
 
   The next steps for the execution and delivery of evals will likely be the following:
   - Using the `leapfrogai_evals` module, evaluations will be run at a regular cadence in a Github workflow so that we have a standardized way of running evaluations that we can compare against.
-  - These evaluation results will be stored as artifacts in Github so that peformance can be tracked over time across version releases.
+  - These evaluation results will be stored as artifacts in GitHub so that performance can be tracked over time across version releases.
 
 </details>
 
