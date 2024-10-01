@@ -14,6 +14,8 @@ api:
       value: "*.toml"
     - name: DEFAULT_EMBEDDINGS_MODEL
       value: "###ZARF_VAR_DEFAULT_EMBEDDINGS_MODEL###"
+    - name: DEV
+      value: "###ZARF_VAR_DEV###"
     - name: PORT
       value: "8080"
     - name: SUPABASE_URL
