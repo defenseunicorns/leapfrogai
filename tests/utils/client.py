@@ -119,7 +119,7 @@ def get_leapfrogai_model() -> str:
 
     model = os.getenv("LEAPFROGAI_MODEL")
 
-    if model is None:
+    if not model:
         model = "vllm"
         logging.warning(
             f"LEAPFROGAI_MODEL is not set, using default model of `{model}`"
@@ -169,7 +169,7 @@ def get_leapfrogai_api_key() -> str:
 
     api_key = os.getenv("LEAPFROGAI_API_KEY") or os.getenv("SUPABASE_USER_JWT")
 
-    if api_key is None:
+    if not api_key:
         logging.warning(
             "LEAPFROGAI_API_KEY or SUPABASE_USER_JWT not set, automatically generating test user."
         )
