@@ -168,7 +168,7 @@ jobs:
           SERVICE_ROLE_KEY=$SERVICE_ROLE_KEY TEST_ENV=CI USERNAME=doug PASSWORD=$FAKE_E2E_USER_PASSWORD PUBLIC_SUPABASE_ANON_KEY=$ANON_KEY DEFAULT_MODEL=llama-cpp-python npm --prefix src/leapfrogai_ui run test:integration:ci
 
       - name: Archive Playwright Report
-        uses: actions/upload-artifact@834a144ee995460fba8ed112a2fc961b36a5ec5a # v4.3.6
+        uses: actions/upload-artifact@50769540e7f4bd5e21e526ee35c689e35e0d6874 # v4.4.0
         if: ${{ !cancelled() }}
         with:
           name: playwright-report
