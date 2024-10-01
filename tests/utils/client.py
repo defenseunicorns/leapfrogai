@@ -68,7 +68,7 @@ def create_test_user(
             traceback.format_exc(),
         )
 
-    return get_jwt_token(anon_key, email, password, supabase_base_url)
+    return get_jwt_token(supabase_base_url, anon_key, email, password)
 
 
 def get_jwt_token(
