@@ -102,7 +102,7 @@ repos:
           if [ -f "$(git rev-parse --show-toplevel)/$FILE" ]; then
             echo "$FILE already exists in the root of the git project, skipping download."
           else
-            curl -o "$FILE" https://raw.githubusercontent.com/defenseunicorns/uds-cli/v0.14.0/zarf.schema.json
+            curl -o "$FILE" https://raw.githubusercontent.com/defenseunicorns/uds-cli/v0.16.0/zarf.schema.json
           fi'
         language: system
 
@@ -125,7 +125,7 @@ repos:
           if [ -f "$(git rev-parse --show-toplevel)/$FILE" ]; then
             echo "$FILE already exists in the root of the git project, skipping download."
           else
-            curl -o "$FILE" https://raw.githubusercontent.com/defenseunicorns/uds-cli/v0.14.0/uds.schema.json
+            curl -o "$FILE" https://raw.githubusercontent.com/defenseunicorns/uds-cli/v0.16.0/uds.schema.json
           fi'
         language: system
 
@@ -148,7 +148,7 @@ repos:
           if [ -f "$(git rev-parse --show-toplevel)/$FILE" ]; then
             echo "$FILE already exists in the root of the git project, skipping download."
           else
-            curl -o "$FILE" https://raw.githubusercontent.com/defenseunicorns/uds-cli/v0.14.0/tasks.schema.json
+            curl -o "$FILE" https://raw.githubusercontent.com/defenseunicorns/uds-cli/v0.16.0/tasks.schema.json
           fi'
         language: system
 
