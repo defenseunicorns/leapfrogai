@@ -16,6 +16,9 @@ variables:
     description: "Flag to expose the OpenAPI schema for debugging."
   - name: DEFAULT_EMBEDDINGS_MODEL
     default: "text-embeddings"
+  - name: DEV
+    default: "false"
+    description: "Flag to enable development endpoints."
 
 components:
   - name: leapfrogai-api

@@ -67,6 +67,7 @@ jobs:
         run: make test-api-unit
         env:
           LFAI_RUN_REPEATER_TESTS: true
+          DEV: true
 
   integration:
     runs-on: ai-ubuntu-big-boy-8-core
