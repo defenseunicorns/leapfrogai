@@ -18,10 +18,10 @@ def get_supabase_url() -> str:
     """Get the URL for Supabase.
 
     Returns:
-        str: The URL for Supabase. (default: "https://supabase-kong.uds.dev/auth/v1")
+        str: The URL for Supabase. (default: "https://supabase-kong.uds.dev")
     """
 
-    return os.getenv("SUPABASE_URL", "https://supabase-kong.uds.dev/auth/v1")
+    return os.getenv("SUPABASE_URL", "https://supabase-kong.uds.dev")
 
 
 def create_test_user(
@@ -54,7 +54,7 @@ def create_test_user(
 
     try:
         requests.post(
-            url="https://supabase-kong.uds.dev/auth/v1/signup",
+            url=f"{supabase_base_url}/auth/v1/signup",
             headers=headers,
             json={
                 "email": email,
@@ -95,7 +95,7 @@ def get_jwt_token(
         AssertionError: If the request fails or the response status code is not 200.
     """
 
-    url = f"{supabase_base_url}/token?grant_type=password"
+    url = f"{supabase_base_url}/auth/v1/token?grant_type=password"
     headers = {"apikey": f"{api_key}", "Content-Type": "application/json"}
     data = {"email": test_email, "password": test_password}
 
