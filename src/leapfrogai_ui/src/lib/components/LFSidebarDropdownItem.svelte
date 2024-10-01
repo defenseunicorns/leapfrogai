@@ -131,12 +131,12 @@ It adds a "three-dot" menu button with Dropdown, and delete confirmation Modal
       <button
         data-testid={`thread-menu-btn-${label}`}
         id={`btn-${threadId}`}
-        class={twMerge(popperOpen && 'focus:rounded focus:bg-gray-400', !hovered && 'hidden')}
+        class={!hovered && 'opacity-0'}
         on:click={(e) => {
           e.stopPropagation();
         }}
       >
-        <DotsVerticalOutline color="white" />
+        <DotsVerticalOutline class="dark:text-gray-400 dark:hover:text-white" />
       </button>
     </button>
 

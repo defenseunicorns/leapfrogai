@@ -57,16 +57,16 @@
   data-testid="sidebar"
   class="sidebar-height flex w-[var(--sidebar-width)] border-r border-gray-700  dark:bg-gray-800 "
 >
-  <SidebarWrapper class="flex w-full flex-col px-0">
+  <SidebarWrapper class="flex w-full flex-col p-0">
     <SidebarGroup>
-      <div class="flex flex-col gap-2 px-3">
+      <div class="flex flex-col gap-2 px-3 py-4">
         <Button on:click={() => threadsStore.changeThread('')} class="justify-between">
           New chat <PlusOutline />
         </Button>
         <Input type="txt" placeholder="Search..." bind:value={searchText} maxlength={25}></Input>
       </div>
     </SidebarGroup>
-    <Hr classHr="my-2" />
+    <Hr classHr="my-0" />
     <SidebarGroup class="no-scrollbar flex-grow overflow-y-scroll px-3" data-testid="threads">
       {#each organizedThreads as category}
         {#if category.threads.length > 0}
@@ -88,8 +88,8 @@
         {/if}
       {/each}
     </SidebarGroup>
-    <Hr classHr="my-2" />
-    <SidebarGroup class="px-3 py-2">
+    <Hr classHr="my-0" />
+    <SidebarGroup class="px-3 py-4">
       <ImportExport />
     </SidebarGroup>
   </SidebarWrapper>

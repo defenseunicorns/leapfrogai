@@ -29,7 +29,7 @@
 
 <Button
   color="dark"
-  class="max-h-[42px] w-48 flex-shrink-0 justify-between dark:bg-gray-700  dark:focus-within:ring-1 dark:focus-within:ring-blue-500"
+  class="max-h-[42px] w-48 flex-shrink-0 justify-between border border-gray-600 dark:bg-gray-700  dark:focus-within:ring-1 dark:focus-within:ring-blue-500"
   ><span class="truncate">{selectedAssistantName}</span><ChevronDownOutline
     class="ms-2 h-6 w-6 text-white dark:text-white"
     data-testid="assistants-select-btn"
