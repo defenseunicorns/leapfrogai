@@ -14,6 +14,16 @@ DEFAULT_TEST_EMAIL = "test-user@test.com"
 DEFAULT_TEST_PASSWORD = "password"
 
 
+def get_supabase_url() -> str:
+    """Get the URL for Supabase.
+
+    Returns:
+        str: The URL for Supabase. (default: "https://supabase-kong.uds.dev/auth/v1")
+    """
+
+    return os.getenv("SUPABASE_URL", "https://supabase-kong.uds.dev/auth/v1")
+
+
 def create_test_user(
     anon_key: str = ANON_KEY,
     email: str = DEFAULT_TEST_EMAIL,
@@ -34,6 +44,8 @@ def create_test_user(
     Returns:
         str: The JWT token for the created or existing user.
     """
+    supabase_base_url = get_supabase_url()
+
     headers = {
         "apikey": f"{anon_key}",
         "Authorization": f"Bearer {anon_key}",
@@ -56,10 +68,11 @@ def create_test_user(
             traceback.format_exc(),
         )
 
-    return get_jwt_token(anon_key, email, password)
+    return get_jwt_token(anon_key, email, password, supabase_base_url)
 
 
 def get_jwt_token(
+    supabase_base_url: str,
     api_key: str,
     test_email: str = DEFAULT_TEST_EMAIL,
     test_password: str = DEFAULT_TEST_PASSWORD,
@@ -81,7 +94,8 @@ def get_jwt_token(
     Raises:
         AssertionError: If the request fails or the response status code is not 200.
     """
-    url = "https://supabase-kong.uds.dev/auth/v1/token?grant_type=password"
+
+    url = f"{supabase_base_url}/token?grant_type=password"
     headers = {"apikey": f"{api_key}", "Content-Type": "application/json"}
     data = {"email": test_email, "password": test_password}
 
@@ -102,7 +116,15 @@ def get_leapfrogai_model() -> str:
         str: The model to use for LeapfrogAI. (default: "vllm")
     """
 
-    return os.getenv("LEAPFROGAI_MODEL", "vllm")
+    model = os.getenv("LEAPFROGAI_MODEL")
+
+    if model is None:
+        model = "vllm"
+        logging.warning(
+            f"LEAPFROGAI_MODEL is not set, using default model of `{model}`"
+        )
+
+    return model
 
 
 def get_openai_key() -> str:
