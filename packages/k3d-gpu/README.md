@@ -49,7 +49,20 @@ kubectl apply -f plugin/device-plugin-daemonset.yaml
 To increase or decrease the number of pods per GPU:
 
 ```bash
-kubectl edit nvidia-device-plugin-config -n kube-system
+kubectl patch configmap/nvidia-device-plugin-config \
+  -n kube-system \
+  --type merge \
+  -p '{"data":{"default": |-
+    version: v1
+    flags:
+      migStrategy: none
+    sharing:
+      timeSlicing:
+        resources:
+        # This multiplies the number of GPUs available to the cluster by the number of replicas
+        # For example, 3 replicas means 3x the number of GPUs will be available
+        - name: nvidia.com/gpu
+          replicas: 3}}'
 ```
 
 ## References
