@@ -75,10 +75,17 @@ jobs:
 
       - name: Mutation of the Zarf Packages
         run: |
+          # API
           uds zarf tools yq -i '
             .components[].images[0] |= sub(":v[0-9\.]+$", ":v${{ steps.get_version.outputs.LFAI_VERSION }}")
           ' packages/api/zarf.yaml
           uds zarf tools yq -i '.api.image.tag = "v${{ steps.get_version.outputs.LFAI_VERSION }}"' packages/api/values/registry1-values.yaml
+
+          # UI
+          uds zarf tools yq -i '
+            .components[].images[0] |= sub(":v[0-9\.]+$", ":v${{ steps.get_version.outputs.LFAI_VERSION }}")
+          ' packages/ui/zarf.yaml
+          uds zarf tools yq -i '.ui.image.tag = "v${{ steps.get_version.outputs.LFAI_VERSION }}"' packages/api/values/registry1-values.yaml
 
       - name: Print the Modified Zarf Packages
         run: |
@@ -97,9 +104,15 @@ jobs:
 
           uds zarf tools yq -i '.packages[].ref |= sub("^[^ ]+-upstream$", "${{ steps.get_version.outputs.LFAI_VERSION }}-upstream")' bundles/latest/cpu/uds-bundle.yaml
 
+          # API
           uds zarf tools yq -i '.packages[1] |= del(.repository)' bundles/latest/cpu/uds-bundle.yaml
           uds zarf tools yq -i '.packages[1] |= .ref = "${{ steps.get_version.outputs.LFAI_VERSION }}"' bundles/latest/cpu/uds-bundle.yaml
           uds zarf tools yq -i '.packages[1] |= .path = "../../../"' bundles/latest/cpu/uds-bundle.yaml
+
+          # UI
+          uds zarf tools yq -i '.packages[5] |= del(.repository)' bundles/latest/cpu/uds-bundle.yaml
+          uds zarf tools yq -i '.packages[5] |= .ref = "${{ steps.get_version.outputs.LFAI_VERSION }}"' bundles/latest/cpu/uds-bundle.yaml
+          uds zarf tools yq -i '.packages[5] |= .path = "../../../"' bundles/latest/cpu/uds-bundle.yaml
 
       - name: Print the Modified UDS Bundle
         run: |
