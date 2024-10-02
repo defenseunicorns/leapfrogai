@@ -2,7 +2,11 @@ import logging
 import numpy as np
 import os
 
-from deepeval.metrics import AnswerRelevancyMetric
+from deepeval.metrics import (
+    AnswerRelevancyMetric,
+    ContextualRelevancyMetric,
+    FaithfulnessMetric,
+)
 from deepeval.test_case import LLMTestCase
 
 from leapfrogai_evals.metrics import AnnotationRelevancyMetric, CorrectnessMetric
@@ -27,11 +31,11 @@ def qa_eval(*args, **kwargs) -> dict:
                 actual_output=row["actual_output"],
                 context=row["context"],
                 expected_output=row["expected_output"],
+                retrieval_context=row["retrieval_context"],
                 additional_metadata={
                     "actual_annotations": row["actual_annotations"],
                     "expected_annotations": row["expected_annotations"],
                 },
-                # retrieval_context = row['retrieval_context'] # TODO: add this for more metrics
             )
         )
 
@@ -45,10 +49,14 @@ def qa_eval(*args, **kwargs) -> dict:
     # TODO: Give ability to choose which metrics to run
     correctness_metric = CorrectnessMetric(model=judge_model)
     answer_relevancy_metric = AnswerRelevancyMetric(model=judge_model)
+    contextual_relevancy_metric = ContextualRelevancyMetric(model=judge_model)
+    faithfulness_metric = FaithfulnessMetric(model=judge_model)
     annotation_relevancy_metric = AnnotationRelevancyMetric()
     metrics = [
         correctness_metric,
         answer_relevancy_metric,
+        contextual_relevancy_metric,
+        faithfulness_metric,
         annotation_relevancy_metric,
     ]
 
