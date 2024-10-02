@@ -5,13 +5,12 @@
   import type { LFAssistant } from '$lib/types/assistants';
   import { Button, Heading, TableSearch } from 'flowbite-svelte';
   import { PlusOutline } from 'flowbite-svelte-icons';
-
-  export let data;
+  import { assistantsStore } from '$stores';
 
   let searchText = '';
   let searchResults: FuseResult<LFAssistant>[];
   let filteredAssistants: LFAssistant[] = [];
-  $: assistantsToDisplay = searchText ? filteredAssistants : data.assistants;
+  $: assistantsToDisplay = searchText ? filteredAssistants : $assistantsStore.assistants;
 
   const options: IFuseOptions<unknown> = {
     keys: ['name', 'description', 'instructions'],
@@ -23,7 +22,7 @@
   };
 
   $: if (searchText) {
-    const fuse = new Fuse(data.assistants, options);
+    const fuse = new Fuse($assistantsStore.assistants, options);
     searchResults = fuse.search(searchText);
     filteredAssistants = searchResults.map((result) => result.item);
   }

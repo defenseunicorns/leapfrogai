@@ -62,6 +62,52 @@ Many of the directories and sub-directories within this project contain Make tar
 
 Please refer to each Makefile for more arguments and details on what each target does and is dependent on.
 
+## UDS Tasks
+
+UDS tasks use the UDS CLI runner, and are defined in the root `tasks.yaml` file.
+
+Currently, the only tasks within the file are for checking the progress of the LeapfrogAI towards the `Made for UDS` packaging standards. To run the task verification task you must have a [UDS Kubernetes cluster](../packages/k3d-gpu/README.md) and LeapfrogAI (GPU or CPU) deployed. After deploying both major capabilities, you can execute the following:
+
+```bash
+uds run nightly-uds-badge-verification --no-progress
+```
+
+You should get an output similar to this, depending on how many components of LeapfrogAI are actually deployed:
+
+```bash
+  •  Running "Create Reports Directory"
+
+  ✔  Completed "Create Reports Directory"
+
+  •  Running "Run UDS Badge Verification Task"
+
+  ✔  Completed "Run UDS Badge Verification Task"
+
+  •  Running "Clean Up Final Report"
+-----------------------------
+Package: leapfrogai-api
+
+❌ Errors: 4
+⚠️  Warnings: 3
+
+❌ Error Descriptions:
+  - Endpoint leapfrogai-api.uds.dev is returning 404
+  - Not all applicable network policies are using selectors
+  - Not all applicable network policies are using ports
+  - No monitors defined
+
+⚠️  Warning Descriptions:
+  - Version is not consistent across flavors and package
+  - Network policies with 'remoteGenerated: Anywhere' are present, review needed
+  - No SSO configuration found, review needed
+-----------------------------
+UDS Capability Issues
+
+❌ Error Descriptions:
+  - Not all pods have the istio sidecar
+-----------------------------
+```
+
 ## Environment Variables
 
 Be wary of `*config*.yaml` or `.env*` files that are in individual components of the stack. The component's README will usually tell the developer when to fill them out or supply environment variables to a script.
@@ -81,6 +127,7 @@ uds zarf tools registry prune --confirm
 
 # create and deploy the new package
 # FLAVOR can be upstream (default) or registry1 - see README for availability details
+# See individual sub-directories for any flavor-specific instructions (e.g., packages/api/README.md)
 LOCAL_VERSION=dev FLAVOR=upstream REGISTRY_PORT=5000 ARCH=amd64 make build-api
 LOCAL_VERSION=dev FLAVOR=upstream REGISTRY_PORT=5000 ARCH=amd64 make deploy-api
 ```
@@ -107,6 +154,7 @@ uds zarf package deploy zarf-package-*.tar.zst --confirm
 
     ```bash
     # FLAVOR can be upstream (default) or registry1 - see README for availability details
+    # See individual sub-directories for any flavor-specific instructions (e.g., packages/api/README.md)
     LOCAL_VERSION=dev FLAVOR=upstream ARCH=amd64 make build-cpu    # ui, api, llama-cpp-python, text-embeddings, whisper, supabase
     # OR
     LOCAL_VERSION=dev FLAVOR=upstream ARCH=amd64 make build-gpu    # ui, api, vllm, text-embeddings, whisper, supabase
@@ -120,6 +168,7 @@ uds zarf package deploy zarf-package-*.tar.zst --confirm
 
     ```bash
     # FLAVOR can be upstream (default) or registry1 - see README for availability details
+    # See individual sub-directories for any flavor-specific instructions (e.g., packages/api/README.md)
     LOCAL_VERSION=dev FLAVOR=upstream ARCH=amd64 make build-ui
     LOCAL_VERSION=dev FLAVOR=upstream ARCH=amd64 make build-api
     LOCAL_VERSION=dev FLAVOR=upstream ARCH=amd64 make build-supabase
@@ -154,7 +203,7 @@ Although not provided in the example UDS bundle manifests found in this reposito
   - name: leapfrogai-api
     repository: ghcr.io/defenseunicorns/packages/leapfrogai/leapfrogai-api
     # x-release-please-start-version
-    ref: 0.12.2
+    ref: 0.13.1
     # x-release-please-end
 
     # THE BELOW LINES WERE ADDED FOR DEMONSTRATION PURPOSES
@@ -188,6 +237,7 @@ To demonstrate what this would look like for an Apple Silicon Mac:
 
 ```bash
 # FLAVOR can be upstream (default) or registry1 - see README for availability details
+# See individual sub-directories for any flavor-specific instructions (e.g., packages/api/README.md)
 REG_PORT=5001 ARCH=arm64 LOCAL_VERSION=dev FLAVOR=upstream make build-cpu
 ```
 
@@ -195,6 +245,7 @@ To demonstrate what this would look like for an older Intel Mac:
 
 ```bash
 # FLAVOR can be upstream (default) or registry1 - see README for availability details
+# See individual sub-directories for any flavor-specific instructions (e.g., packages/api/README.md)
 REG_PORT=5001 ARCH=arm64 LOCAL_VERSION=dev FLAVOR=upstream make build-cpu
 ```
 

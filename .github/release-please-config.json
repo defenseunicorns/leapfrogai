@@ -11,7 +11,6 @@
       "versioning": "default",
       "extra-files": [
         "pyproject.toml",
-        ".github/workflows/nightly-snapshot-release.yaml",
         {
           "type": "generic",
           "path": "**/Chart.yaml",
@@ -25,6 +24,11 @@
         {
           "type": "generic",
           "path": "**/zarf.yaml",
+          "glob": true
+        },
+        {
+          "type": "generic",
+          "path": "**/zarf-config.yaml",
           "glob": true
         },
         {

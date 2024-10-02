@@ -8,7 +8,7 @@ import {
   mockNewMessage,
   mockNewThreadError
 } from '$lib/mocks/chat-mocks';
-import { load } from './+page';
+
 import { mockOpenAI } from '../../../../../vitest-setup';
 import ChatPageWithToast from './ChatPageWithToast.test.svelte';
 import type { LFThread } from '$lib/types/threads';
@@ -34,13 +34,6 @@ describe('when there is NO active thread selected', () => {
     mockOpenAI.setThreads(fakeThreads);
     mockOpenAI.setMessages(allMessages);
     mockOpenAI.setFiles(files);
-
-    // @ts-expect-error: full mocking of load function params not necessary and is overcomplicated
-    data = await load({
-      params: {},
-      fetch: global.fetch,
-      depends: vi.fn()
-    });
   });
 
   afterAll(() => {

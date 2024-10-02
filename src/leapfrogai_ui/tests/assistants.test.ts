@@ -59,19 +59,39 @@ test('it creates an assistant and navigates back to the management page', async 
   await deleteAssistantWithApi(assistantId, openAIClient);
 });
 
-test('displays an error toast when there is an error creating an assistant and remains on the assistant page', async ({
+test('displays an error toast when there is an error creating an assistant and remains on the assistant page (form submission returns 200)', async ({
   page
 }) => {
   const assistantInput = getFakeAssistantInput();
 
   await page.route('*/**/chat/assistants-management/new', async (route) => {
     if (route.request().method() === 'POST') {
+      // this returns a 200, but result.type === 'failure'
       const result: ActionResult = {
         type: 'failure',
         status: 500
       };
 
       await route.fulfill({ json: result });
+    } else {
+      const response = await route.fetch();
+      await route.fulfill({ response });
+    }
+  });
+
+  await createAssistant(assistantInput, page);
+
+  await expect(page.getByText('Error Creating Assistant')).toBeVisible();
+});
+test('displays an error toast when there is an error creating an assistant and remains on the assistant page (form submission returns 500)', async ({
+  page
+}) => {
+  const assistantInput = getFakeAssistantInput();
+
+  await page.route('*/**/chat/assistants-management/new', async (route) => {
+    if (route.request().method() === 'POST') {
+      // this returns a 500 and result.type === 'error'
+      await route.abort();
     } else {
       const response = await route.fetch();
       await route.fulfill({ response });
@@ -97,12 +117,8 @@ test('displays an error toast when there is an error editing an assistant and re
 
   await page.route(`*/**/chat/assistants-management/edit/${assistant.id}`, async (route) => {
     if (route.request().method() === 'POST') {
-      const result: ActionResult = {
-        type: 'failure',
-        status: 500
-      };
-
-      await route.fulfill({ json: result });
+      // this returns a 500 and result.type === 'error'
+      await route.abort('failed');
     } else {
       const response = await route.fetch();
       await route.fulfill({ response });
@@ -294,4 +310,35 @@ test('it can delete assistants', async ({ page, openAIClient }) => {
   await deleteAssistantCard(assistant.name!, page);
 
   await expect(page.getByText(`${assistant.name} Assistant deleted.`)).toBeVisible();
+});
+
+test('displays a toast if there is an error deleting an assistant and the call throws', async ({
+  page,
+  openAIClient
+}) => {
+  const assistant = await createAssistantWithApi({ openAIClient });
+  await loadAssistantsManagementPage(page);
+  await page.route('*/**/api/assistants/delete', async (route) => {
+    await route.abort();
+  });
+  await deleteAssistantCard(assistant.name!, page);
+  await expect(page.getByText('Error deleting Assistant.')).toBeVisible();
+
+  //cleanup
+  await deleteAssistantWithApi(assistant.id, openAIClient);
+});
+test('displays a toast if there is an error deleting an assistant and response is not 200', async ({
+  page,
+  openAIClient
+}) => {
+  const assistant = await createAssistantWithApi({ openAIClient });
+  await loadAssistantsManagementPage(page);
+  await page.route('*/**/api/assistants/delete', async (route) => {
+    await route.fulfill({ status: 500 });
+  });
+  await deleteAssistantCard(assistant.name!, page);
+  await expect(page.getByText('Error deleting Assistant.')).toBeVisible();
+
+  //cleanup
+  await deleteAssistantWithApi(assistant.id, openAIClient);
 });

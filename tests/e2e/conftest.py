@@ -1,12 +1,14 @@
+from openai import OpenAI
 import pytest
 
-from openai import OpenAI
-
-from .utils import create_test_user
+from tests.utils.client import leapfrogai_client, get_leapfrogai_model
 
 
 @pytest.fixture(scope="module")
-def client():
-    return OpenAI(
-        base_url="https://leapfrogai-api.uds.dev/openai/v1", api_key=create_test_user()
-    )
+def client() -> OpenAI:
+    return leapfrogai_client()
+
+
+@pytest.fixture(scope="module")
+def model_name() -> str:
+    return get_leapfrogai_model()

@@ -27,6 +27,7 @@ dependencies = [
     "openpyxl == 3.1.5",
     "psutil == 6.0.0",
     "prometheus-fastapi-instrumentator == 7.0.0",
+    "rerankers[flashrank] == 0.5.3"
 ]
 requires-python = "~=3.11"
 
