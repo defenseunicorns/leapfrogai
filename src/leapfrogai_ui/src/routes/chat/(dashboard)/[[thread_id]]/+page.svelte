@@ -359,27 +359,25 @@
       {/if}
     </div>
   </div>
-  <Hr classHr="my-2" />
+  <Hr classHr="mt-0 mb-3" />
   <div id="chat-tools" data-testid="chat-tools" class="flex min-w-0 items-end gap-2 px-8">
     <SelectAssistantDropdown />
 
     <div
       class={twMerge(
-        'flex h-[44px] min-w-0 flex-grow flex-col gap-1 rounded-lg border border-gray-600 bg-gray-50 px-4 py-0 dark:bg-gray-700',
+        'flex min-h-[44px] min-w-0 flex-grow flex-col  gap-1 rounded-lg border border-gray-600 bg-gray-50 px-4 py-0 dark:bg-gray-700',
         attachedFileMetadata.length > 0 && 'py-4'
       )}
     >
-      <div class="flex w-full min-w-0 items-center gap-1">
-        {#if attachedFileMetadata.length > 0}
-          <LFCarousel
-            data-testid="uploaded-files-carousel"
-            hidden={false}
-            btnHeight={14}
-            btnWidth={6}
-          >
-            <UploadedFileCards bind:attachedFileMetadata bind:attachedFiles />
-          </LFCarousel>
-        {/if}
+      <LFCarousel
+        data-testid="uploaded-files-carousel"
+        hidden={attachedFileMetadata.length === 0}
+        btnHeight={14}
+        btnWidth={6}
+      >
+        <UploadedFileCards bind:attachedFileMetadata bind:attachedFiles />
+      </LFCarousel>
+      <div id="chat-row" class="flex w-full min-w-0 items-center gap-1">
         {#if !assistantMode}
           <ChatFileUploadForm bind:uploadingFiles bind:attachedFiles bind:attachedFileMetadata />
         {/if}
@@ -405,15 +403,15 @@
             <span class="sr-only">Cancel message</span></ToolbarButton
           >
         {/if}
-        <FileChatActions
-          bind:attachedFileMetadata
-          threadId={activeThread?.id}
-          bind:attachedFiles
-          originalMessages={$chatMessages}
-          setMessages={setChatMessages}
-          append={chatAppend}
-        />
       </div>
+      <FileChatActions
+        bind:attachedFileMetadata
+        threadId={activeThread?.id}
+        bind:attachedFiles
+        originalMessages={$chatMessages}
+        setMessages={setChatMessages}
+        append={chatAppend}
+      />
     </div>
   </div>
   <PoweredByDU />
