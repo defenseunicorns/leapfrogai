@@ -50,6 +50,10 @@ tasks:
       dockerfile:
         description: "Path to the Dockerfile"
         required: true
+      buildContext:
+        description: "Path to the Docker build context"
+        default: "."
+        required: false
       options:
         description: "Extra Docker CLI options"
         default: "-q"
@@ -79,7 +83,7 @@ tasks:
               -t ${{ .inputs.imageRepository }}:${{ .inputs.version }} \
               -f ${{ .inputs.dockerfile }} \
               --build-arg LOCAL_VERSION=${{ .inputs.version }} \
-              ${{ .inputs.buildOptions }} .
+              ${{ .inputs.buildOptions }} ${{ .inputs.buildContext }}
           else
             echo "Non-upstream flavor detected, skipping image build"
           fi
@@ -168,6 +172,7 @@ tasks:
           architecture: "amd64"
           version: ${VERSION}
           imageRepository: ghcr.io/defenseunicorns/leapfrogai/k3d-gpu
+          buildContext: "packages/k3d-gpu"
 
   - name: sdk-image
     description: "Create the LeapfrogAI SDK Docker image"
