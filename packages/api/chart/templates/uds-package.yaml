@@ -8,7 +8,7 @@ metadata:
     {{- include "chart.labels" . | nindent 4 }}
 spec:
   monitor:
-    - portName: {{ include "chart.fullname" . }}
+    - portName: http
       targetPort: {{ .Values.api.service.port }}
       selector:
         {{- include "chart.selectorLabels" . | nindent 8 }}
