@@ -108,6 +108,7 @@ The LeapfrogAI NIAH evaluation uses the following process:
     - prompt the LLM to provide the secret code hidden in the context
     - record the following:
         - whether or not the needle text was returned by the retrieval step of RAG
+        - which chunk from the retrieval step the needle was found in, if present
         - whether or not the needle text was returned by the LLM's final response
     - delete the contextual document from the vector store
     - delete the assistant
