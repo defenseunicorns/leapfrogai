@@ -1,0 +1,320 @@
+# yaml-language-server: $schema=https://raw.githubusercontent.com/defenseunicorns/uds-cli/v0.14.0/tasks.schema.json
+includes:
+  #########################
+  # UDS COMMON TASK IMPORTS
+  #########################
+  - create-common: https://raw.githubusercontent.com/defenseunicorns/uds-common/82e63be82766a2e550a847af904b2d738c9d3478/tasks/create.yaml
+
+  ###########################
+  # LEAPFROGAI-SPECIFIC TASKS
+  ###########################
+  - publish: ./publish.yaml
+
+tasks:
+  #########
+  # UTILITY
+  #########
+  - name: local-registry
+    description: "Creates a local registry for pushing images to, speeding up the local Zarf package creation process"
+    inputs:
+      port:
+        description: "The port at which to expose the local registry"
+        default: "5000"
+      name:
+        description: "The name of the local registry"
+        default: "registry"
+      # TODO: remove once Ironbank image for api-migrations and ui-migrations exists
+      override:
+        description: "Specifically for packages that are only partially in IronBank (e.g., migrations)"
+        default: "false"
+    actions:
+      - description: "If not running, create a local registry"
+        shell:
+          linux: bash
+          darwin: bash
+        cmd: |
+          if [[ ${FLAVOR} != "upstream" || ${{ .inputs.override }} != "false" ]]; then
+            if [ ! "$(docker ps -q -f name=${{ .inputs.name }})" ]; then
+              docker run -d -p ${{ .inputs.port }}:5000 --restart=always --name ${{ .inputs.name }} registry:2
+            fi
+          else
+            echo "Non-upstream flavor detected, skipping local registry build"
+          fi
+
+  ###########
+  # REUSEABLE
+  ###########
+  - name: image
+    description: "Create a Docker image"
+    inputs:
+      dockerfile:
+        description: "Path to the Dockerfile"
+        required: true
+      options:
+        description: "Extra Docker CLI options"
+        default: "-q"
+        required: false
+      buildOptions:
+        description: "Extra Docker build arguments"
+        default: ""
+        required: false
+      architecture:
+        description: "Architecture of the Docker image being created"
+        required: true
+      version:
+        description: "Set the version of the Docker image"
+        required: true
+      imageRepository:
+        description: "Image repository for the image tag"
+        required: true
+    actions:
+      - description: "Build the Docker image"
+        shell:
+          linux: bash
+          darwin: bash
+        cmd: |
+          if [[ ${FLAVOR} = "upstream" || ${{ .inputs.dockerfile }} = "Dockerfile.migrations" ]]; then
+            docker build ${{ .inputs.options }} \
+              --platform=linux/${{ .inputs.architecture }} \
+              -t ${{ .inputs.imageRepository }}:${{ .inputs.version }} \
+              -f ${{ .inputs.dockerfile }} \
+              --build-arg LOCAL_VERSION=${{ .inputs.version }} \
+              ${{ .inputs.buildOptions }} .
+          else
+            echo "Non-upstream flavor detected, skipping image build"
+          fi
+
+  - name: package
+    description: "Create a Zarf package"
+    inputs:
+      path:
+        description: "Path to the Zarf package being created"
+        required: true
+      outputPath:
+        description: "Output path to the Zarf package being created"
+        required: true
+      zarfConfig:
+        description: "Zarf Config of the Zarf package being created"
+        required: true
+      options:
+        description: "Extra Zarf package creation options"
+        default: "--log-level warn --no-progress"
+        required: false
+      createOptions:
+        description: "Extra Zarf package create arguments"
+        default: ""
+        required: false
+      flavor:
+        description: "Flavor of the Zarf package being created"
+        default: "upstream"
+        required: false
+      architecture:
+        description: "Architecture of the Zarf package being created"
+        required: true
+      version:
+        description: "Set the version of the Zarf package and target image(s)"
+        required: true
+    actions:
+      - description: "Create the Zarf package"
+        task: create-common:package
+        env:
+          - "FLAVOR=${{ .inputs.flavor }}"
+          - "ZARF_CONFIG=${{ .inputs.zarfConfig }}"
+        with:
+          options: ${{ .inputs.createOptions }} ${{ .inputs.options }} -o ${{ .inputs.outputPath }} --set IMAGE_VERSION=${{ .inputs.version }}
+          path: ${{ .inputs.path }}
+          architecture: ${{ .inputs.architecture }}
+
+  - name: bundle
+    description: "Create a UDS bundle"
+    inputs:
+      path:
+        description: "Path to the UDS bundle being created"
+        required: true
+      outputPath:
+        description: "Output path to the UDS bundle being created"
+        required: true
+      udsConfig:
+        description: "UDS configuration manifest for deployment"
+        required: true
+      options:
+        description: "Extra UDS CLI options"
+        default: "--log-level warn --oci-concurrency 8 --no-progress"
+        required: false
+      createOptions:
+        description: "Extra UDS bundle create arguments"
+        default: ""
+        required: false
+    actions:
+      - description: "Create the UDS bundle"
+        task: create-common:test-bundle
+        with:
+          options: ${{ .inputs.options }} -o ${{ .inputs.outputPath }}
+          path: ${{ .inputs.path }}
+          architecture: ${{ .inputs.architecture }}
+          config: ${{ .inputs.udsConfig }}
+
+  ########
+  # IMAGES
+  ########
+
+  - name: sdk-image
+    description: "Create the LeapfrogAI SDK Docker image"
+    inputs:
+      architecture:
+        description: "Architecture of the Zarf package being created"
+        required: true
+      imageRepository:
+        description: "Image repository for the image tag"
+        required: true
+    actions:
+      - description: "Create the SDK image"
+        task: image
+        with:
+          dockerfile: "src/leapfrogai_sdk/Dockerfile"
+          architecture: ${{ .inputs.architecture }}
+          version: ${VERSION}
+          imageRepository: ${{ .inputs.imageRepository }}
+
+  - name: api-migrations-image
+    description: "Build the upstream LeapfrogAI API migrations image"
+    actions:
+      - task: local-registry
+        with:
+          name: ${LOCAL_REGISTRY_NAME}
+          port: ${LOCAL_REGISTRY_PORT}
+          override: "true"
+
+      - description: "Create the API migrations image"
+        task: image
+        with:
+          dockerfile: "Dockerfile.migrations"
+          buildOptions: "--build-arg='MIGRATIONS_DIR=packages/supabase/migrations'"
+          architecture: ${ARCHITECTURE}
+          version: ${VERSION}
+          imageRepository: ghcr.io/defenseunicorns/leapfrogai/api-migrations
+      - task: publish:tag
+        with:
+          current: "ghcr.io/defenseunicorns/leapfrogai/api-migrations:${VERSION}"
+          new: "localhost:${LOCAL_REGISTRY_PORT}/defenseunicorns/leapfrogai/api-migrations:${VERSION}"
+          override: "true"
+      - task: publish:docker
+        with:
+          tag: "localhost:${LOCAL_REGISTRY_PORT}/defenseunicorns/leapfrogai/api-migrations:${VERSION}"
+          override: "true"
+
+  - name: api-image
+    description: "Build the upstream LeapfrogAI API image"
+    actions:
+      - task: local-registry
+        with:
+          name: ${LOCAL_REGISTRY_NAME}
+          port: ${LOCAL_REGISTRY_PORT}
+
+      - description: "Create the SDK image"
+        task: sdk-image
+        with:
+          architecture: ${ARCHITECTURE}
+          imageRepository: ghcr.io/defenseunicorns/leapfrogai/leapfrogai-sdk
+
+      - description: "Create the API image"
+        task: image
+        with:
+          dockerfile: "packages/api/Dockerfile"
+          architecture: ${ARCHITECTURE}
+          version: ${VERSION}
+          imageRepository: ghcr.io/defenseunicorns/leapfrogai/leapfrogai-api
+      - task: publish:tag
+        with:
+          current: "ghcr.io/defenseunicorns/leapfrogai/leapfrogai-api:${VERSION}"
+          new: "localhost:${LOCAL_REGISTRY_PORT}/defenseunicorns/leapfrogai/leapfrogai-api:${VERSION}"
+      - task: publish:docker
+        with:
+          tag: "localhost:${LOCAL_REGISTRY_PORT}/defenseunicorns/leapfrogai/leapfrogai-api:${VERSION}"
+
+  - name: ui-migrations-image
+    description: "Build the upstream LeapfrogAI UI migrations image"
+    actions:
+      - task: local-registry
+        with:
+          name: ${LOCAL_REGISTRY_NAME}
+          port: ${LOCAL_REGISTRY_PORT}
+          override: "true"
+
+      - description: "Create the UI migrations image"
+        task: image
+        with:
+          dockerfile: "Dockerfile.migrations"
+          buildOptions: "--build-arg='MIGRATIONS_DIR=packages/supabase/migrations'"
+          architecture: ${ARCHITECTURE}
+          version: ${VERSION}
+          imageRepository: ghcr.io/defenseunicorns/leapfrogai/ui-migrations
+      - task: publish:tag
+        with:
+          current: "ghcr.io/defenseunicorns/leapfrogai/ui-migrations:${VERSION}"
+          new: "localhost:${LOCAL_REGISTRY_PORT}/defenseunicorns/leapfrogai/ui-migrations:${VERSION}"
+          override: "true"
+      - task: publish:docker
+        with:
+          tag: "localhost:${LOCAL_REGISTRY_PORT}/defenseunicorns/leapfrogai/ui-migrations:${VERSION}"
+          override: "true"
+
+  - name: ui-image
+    description: "Build the upstream LeapfrogAI API image"
+    actions:
+      - task: local-registry
+        with:
+          name: ${LOCAL_REGISTRY_NAME}
+          port: ${LOCAL_REGISTRY_PORT}
+
+      - description: "Create the UI image"
+        task: image
+        with:
+          dockerfile: "packages/api/Dockerfile"
+          architecture: ${ARCHITECTURE}
+          version: ${VERSION}
+          imageRepository: ghcr.io/defenseunicorns/leapfrogai/leapfrogai-ui
+      - task: publish:tag
+        with:
+          current: "ghcr.io/defenseunicorns/leapfrogai/leapfrogai-ui:${VERSION}"
+          new: "localhost:${LOCAL_REGISTRY_PORT}/defenseunicorns/leapfrogai/leapfrogai-ui:${VERSION}"
+      - task: publish:docker
+        with:
+          tag: "localhost:${LOCAL_REGISTRY_PORT}/defenseunicorns/leapfrogai/leapfrogai-ui:${VERSION}"
+
+  ##########
+  # PACKAGES
+  ##########
+
+  - name: api
+    description: "Build the LeapfrogAI API Zarf package"
+    actions:
+      - task: api-migrations-image
+      - task: api-image
+      - task: package
+        with:
+          path: "packages/api"
+          outputPath: "packages/api"
+          zarfConfig: "packages/api/zarf-config.yaml"
+          flavor: ${FLAVOR}
+          architecture: ${ARCHITECTURE}
+          version: ${VERSION}
+          # the build options below do not affect registry1 builds
+          createOptions: "--insecure --registry-override=ghcr.io=localhost:${LOCAL_REGISTRY_PORT}"
+
+  - name: ui
+    description: "Build the LeapfrogAI UI Zarf package"
+    actions:
+      - task: ui-migrations-image
+      - task: ui-image
+      - task: package
+        with:
+          path: "packages/ui"
+          outputPath: "packages/ui"
+          zarfConfig: "packages/ui/zarf-config.yaml"
+          flavor: ${FLAVOR}
+          architecture: ${ARCHITECTURE}
+          version: ${VERSION}
+          # the build options below do not affect registry1 builds
+          # TODO: remove the registry1.dso.mil override once the IronBank image exists for the ui
+          createOptions: "--insecure --registry-override=ghcr.io=localhost:${LOCAL_REGISTRY_PORT} --registry-override=registry1.dso.mil=localhost:${LOCAL_REGISTRY_PORT}"

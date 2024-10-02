@@ -1,0 +1,58 @@
+# yaml-language-server: $schema=https://raw.githubusercontent.com/defenseunicorns/uds-cli/v0.14.0/tasks.schema.json
+
+tasks:
+  ###########
+  # REUSEABLE
+  ###########
+  - name: tag
+    description: "Re-tags an existing Docker image"
+    inputs:
+      current:
+        description: "The current image tag"
+        required: true
+      new:
+        description: "The new image tag"
+        required: true
+      # TODO: remove once Ironbank image for api-migrations and ui-migrations exists
+      override:
+        description: "Specifically for packages that are only partially in IronBank (e.g., migrations)"
+        default: "false"
+        required: false
+    actions:
+      - description: "Re-tag the Docker image"
+        shell:
+          linux: bash
+          darwin: bash
+        cmd: |
+          if [[ ${FLAVOR} = "upstream" || ${{ .inputs.override }} = "true" ]]; then
+            docker tag ${{ .inputs.current }} ${{ .inputs.new }}
+          else
+            echo "Non-upstream flavor detected, skipping image build"
+          fi
+
+  - name: docker
+    description: "Push an existing Docker image to its tagged repository"
+    inputs:
+      tag:
+        description: "The full Docker image tag"
+        required: true
+      options:
+        description: "Extra Docker CLI options"
+        default: "-q"
+        required: false
+      # TODO: remove once Ironbank image for api-migrations and ui-migrations exists
+      override:
+        description: "Specifically for packages that are only partially in IronBank (e.g., migrations)"
+        default: "false"
+        required: false
+    actions:
+      - description: "Push the Docker image"
+        shell:
+          linux: bash
+          darwin: bash
+        cmd: |
+          if [[ ${FLAVOR} = "upstream" || ${{ .inputs.override }} = "true" ]]; then
+            docker push ${{ .inputs.tag }} ${{ .inputs.options }}
+          else
+            echo "Non-upstream flavor detected, skipping image build"
+          fi

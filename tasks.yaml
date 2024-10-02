@@ -1,9 +1,42 @@
 # yaml-language-server: $schema=https://raw.githubusercontent.com/defenseunicorns/uds-cli/v0.14.0/tasks.schema.json
 
+variables:
+  - name: VERSION
+    description: "Explicitly set this to mutate the version away from the latest tagged release (e.g., `dev`)"
+    # x-release-please-start-version
+    default: "0.13.1"
+    # x-release-please-end
+  - name: FLAVOR
+    description: "Explicitly set this to mutate the flavor away from `upstream` (e.g., `registry1`)"
+    default: "upstream"
+  - name: ARCHITECTURE
+    description: "Explicitly set this to mutate the architecture away from `amd64` (e.g., `arm64`)"
+    default: "amd64"
+
+  - name: LOCAL_REGISTRY_NAME
+    description: "Explicitly set this to mutate the local registry name away from `registry`"
+    default: "registry"
+  - name: LOCAL_REGISTRY_PORT
+    description: "Explicitly set this to mutate the local registry port away from `5000` (e.g., `5001` for MacOS)"
+    default: "5000"
+
 includes:
-  - badge: https://raw.githubusercontent.com/defenseunicorns/uds-common/82e63be82766a2e550a847af904b2d738c9d3478/tasks/badge.yaml
+  #########################
+  # UDS COMMON TASK IMPORTS
+  #########################
+  - badge-common: https://raw.githubusercontent.com/defenseunicorns/uds-common/82e63be82766a2e550a847af904b2d738c9d3478/tasks/badge.yaml
+
+  ###########################
+  # LEAPFROGAI-SPECIFIC TASKS
+  ###########################
+  - badge: ./tasks/badge.yaml
+  - create: ./tasks/create.yaml
+  - publish: ./tasks/publish.yaml
 
 tasks:
+  #######
+  # BADGE
+  #######
   - name: nightly-uds-badge-verification
     description: "Runs in a pipeline and produces a report for archiving"
     actions:
@@ -12,122 +45,7 @@ tasks:
           mkdir -p reports
       - description: "Run UDS Badge Verification Task"
         cmd: |
-          uds run verify-uds-badge-cpu --no-progress 2>&1 | tee ./reports/intermediate-report.txt
+          uds run badge:verify-uds-badge-cpu --no-progress 2>&1 | tee ./reports/intermediate-report.txt
       - description: "Clean Up Final Report"
         cmd: |
           python3 .github/scripts/uds_verification_report.py | tee ./reports/final-report.txt
-
-  #############
-  # BADGE TASKS
-  #############
-  - name: verify-uds-badge-cpu
-    description: "Runs through all CPU UDS bundle packages with the UDS badge verification test"
-    actions:
-      - task: verify-uds-badge-api
-      - task: verify-uds-badge-ui
-      - task: verify-uds-badge-llama-cpp-python
-      - task: verify-uds-badge-text-embeddings
-      - task: verify-uds-badge-whisper
-      - task: verify-uds-badge-supabase
-
-  - name: verify-uds-badge-gpu
-    description: "Runs through all GPU UDS bundle packages with the UDS badge verification test"
-    actions:
-      - task: verify-uds-badge-api
-      - task: verify-uds-badge-ui
-      - task: verify-uds-badge-vllm
-      - task: verify-uds-badge-text-embeddings
-      - task: verify-uds-badge-whisper
-      - task: verify-uds-badge-supabase
-
-  #######################
-  # RE-USABLE BADGE TASKS
-  #######################
-
-  - name: verify-uds-badge-api
-    actions:
-      - description: "Verify API"
-        cmd: |
-          uds run badge:verify-badge \
-            --set CHART_PATH="chart" \
-            --set GROUP_NAME="package" \
-            --set COMMON_ZARF="true" \
-            --set PACKAGE_DIR="packages/api" \
-            --no-progress
-
-  - name: verify-uds-badge-ui
-    actions:
-      - description: "Verify UI"
-        cmd: |
-          uds run badge:verify-badge \
-            --set CHART_PATH="chart" \
-            --set GROUP_NAME="package" \
-            --set COMMON_ZARF="false" \
-            --set PACKAGE_DIR="packages/ui" \
-            --no-progress
-
-  - name: verify-uds-badge-llama-cpp-python
-    actions:
-      - description: "Verify LLaMA-CPP-Python"
-        cmd: |
-          uds run badge:verify-badge \
-            --set CHART_PATH="chart" \
-            --set GROUP_NAME="package" \
-            --set COMMON_ZARF="false" \
-            --set PACKAGE_DIR="packages/llama-cpp-python" \
-            --no-progress
-
-  - name: verify-uds-badge-vllm
-    actions:
-      - description: "Verify vLLM"
-        cmd: |
-          uds run badge:verify-badge \
-            --set CHART_PATH="chart" \
-            --set GROUP_NAME="package" \
-            --set COMMON_ZARF="false" \
-            --set PACKAGE_DIR="packages/vllm" \
-            --no-progress
-
-  - name: verify-uds-badge-text-embeddings
-    actions:
-      - description: "Verify Text-Embeddings"
-        cmd: |
-          uds run badge:verify-badge \
-            --set CHART_PATH="chart" \
-            --set GROUP_NAME="package" \
-            --set COMMON_ZARF="false" \
-            --set PACKAGE_DIR="packages/text-embeddings" \
-            --no-progress
-
-  - name: verify-uds-badge-whisper
-    actions:
-      - description: "Verify Whisper"
-        cmd: |
-          uds run badge:verify-badge \
-            --set CHART_PATH="chart" \
-            --set GROUP_NAME="package" \
-            --set COMMON_ZARF="false" \
-            --set PACKAGE_DIR="packages/whisper" \
-            --no-progress
-
-  - name: verify-uds-badge-repeater
-    actions:
-      - description: "Verify Repeater"
-        cmd: |
-          uds run badge:verify-badge \
-            --set CHART_PATH="chart" \
-            --set GROUP_NAME="package" \
-            --set COMMON_ZARF="false" \
-            --set PACKAGE_DIR="packages/repeater" \
-            --no-progress
-
-  - name: verify-uds-badge-supabase
-    actions:
-      - description: "Verify Supabase"
-        cmd: |
-          uds run badge:verify-badge \
-            --set CHART_PATH="chart" \
-            --set GROUP_NAME="package" \
-            --set COMMON_ZARF="false" \
-            --set PACKAGE_DIR="packages/supabase" \
-            --no-progress
