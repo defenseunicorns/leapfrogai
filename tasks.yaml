@@ -54,3 +54,38 @@ tasks:
       - description: "Clean Up Final Report"
         cmd: |
           python3 .github/scripts/uds_verification_report.py | tee ./reports/final-report.txt
+
+  ########
+  # CREATE
+  ########
+  - name: create-all
+    description: "Creates all Zarf packages within the LeapfrogAI repository"
+    actions:
+      - task: create:supabase
+      - task: create:api
+      - task: create:ui
+      - task: create:repeater
+      - task: create:vllm
+      - task: create:llama-cpp-python
+      - task: create:text-embeddings
+      - task: create:whisper
+
+  - name: create-cpu
+    description: "Creates CPU deployment Zarf packages within the LeapfrogAI repository"
+    actions:
+      - task: create:supabase
+      - task: create:api
+      - task: create:ui
+      - task: create:llama-cpp-python
+      - task: create:text-embeddings
+      - task: create:whisper
+
+  - name: create-gpu
+    description: "Creates GPU deployment Zarf packages within the LeapfrogAI repository"
+    actions:
+      - task: create:supabase
+      - task: create:api
+      - task: create:ui
+      - task: create:vllm
+      - task: create:text-embeddings
+      - task: create:whisper

@@ -35,7 +35,7 @@ tasks:
         cmd: |
           if [[ ${FLAVOR} != "upstream" || ${{ .inputs.override }} != "false" ]]; then
             if [ ! "$(docker ps -q -f name=${{ .inputs.name }})" ]; then
-              docker run -d -p ${{ .inputs.port }}:5000 --restart=always --name ${{ .inputs.name }} registry:2
+              docker run -d -p ${{ .inputs.port }}:5000 --restart=always --name ${{ .inputs.name }} registry:2 -q
             fi
           else
             echo "Non-upstream flavor detected, skipping local registry build"
@@ -99,7 +99,8 @@ tasks:
         required: true
       zarfConfig:
         description: "Zarf Config of the Zarf package being created"
-        required: true
+        default: ""
+        required: false
       options:
         description: "Extra Zarf package creation options"
         default: "--log-level warn --no-progress"
@@ -286,7 +287,8 @@ tasks:
       - description: "Create the UI image"
         task: image
         with:
-          dockerfile: "packages/api/Dockerfile"
+          dockerfile: "src/leapfrogai_ui/Dockerfile"
+          buildContext: "src/leapfrogai_ui"
           architecture: ${ARCHITECTURE}
           version: ${VERSION}
           imageRepository: ghcr.io/defenseunicorns/leapfrogai/leapfrogai-ui
@@ -297,6 +299,148 @@ tasks:
       - task: publish:docker
         with:
           tag: "localhost:${LOCAL_REGISTRY_PORT}/defenseunicorns/leapfrogai/leapfrogai-ui:${VERSION}"
+
+  - name: supabase-migrations-image
+    description: "Build the upstream Supabase migrations image"
+    actions:
+      - task: local-registry
+        with:
+          name: ${LOCAL_REGISTRY_NAME}
+          port: ${LOCAL_REGISTRY_PORT}
+          override: "true"
+
+      - description: "Create the Supabase migrations image"
+        task: image
+        with:
+          dockerfile: "Dockerfile.migrations"
+          buildOptions: "--build-arg='MIGRATIONS_DIR=packages/supabase/migrations'"
+          architecture: ${ARCHITECTURE}
+          version: ${VERSION}
+          imageRepository: ghcr.io/defenseunicorns/leapfrogai/supabase-migrations
+      - task: publish:tag
+        with:
+          current: "ghcr.io/defenseunicorns/leapfrogai/supabase-migrations:${VERSION}"
+          new: "localhost:${LOCAL_REGISTRY_PORT}/defenseunicorns/leapfrogai/supabase-migrations:${VERSION}"
+          override: "true"
+      - task: publish:docker
+        with:
+          tag: "localhost:${LOCAL_REGISTRY_PORT}/defenseunicorns/leapfrogai/supabase-migrations:${VERSION}"
+          override: "true"
+
+  - name: repeater-image
+    description: "Build the upstream Repeater image"
+    actions:
+      - task: local-registry
+        with:
+          name: ${LOCAL_REGISTRY_NAME}
+          port: ${LOCAL_REGISTRY_PORT}
+
+      - description: "Create the Repeater image"
+        task: image
+        with:
+          dockerfile: "packages/repeater/Dockerfile"
+          architecture: ${ARCHITECTURE}
+          version: ${VERSION}
+          imageRepository: ghcr.io/defenseunicorns/leapfrogai/repeater
+      - task: publish:tag
+        with:
+          current: "ghcr.io/defenseunicorns/leapfrogai/repeater:${VERSION}"
+          new: "localhost:${LOCAL_REGISTRY_PORT}/defenseunicorns/leapfrogai/repeater:${VERSION}"
+      - task: publish:docker
+        with:
+          tag: "localhost:${LOCAL_REGISTRY_PORT}/defenseunicorns/leapfrogai/repeater:${VERSION}"
+
+  - name: vllm-image
+    description: "Build the upstream vLLM image"
+    actions:
+      - task: local-registry
+        with:
+          name: ${LOCAL_REGISTRY_NAME}
+          port: ${LOCAL_REGISTRY_PORT}
+
+      - description: "Create the vLLM image"
+        task: image
+        with:
+          dockerfile: "packages/vllm/Dockerfile"
+          architecture: ${ARCHITECTURE}
+          version: ${VERSION}
+          imageRepository: ghcr.io/defenseunicorns/leapfrogai/vllm
+      - task: publish:tag
+        with:
+          current: "ghcr.io/defenseunicorns/leapfrogai/vllm:${VERSION}"
+          new: "localhost:${LOCAL_REGISTRY_PORT}/defenseunicorns/leapfrogai/vllm:${VERSION}"
+      - task: publish:docker
+        with:
+          tag: "localhost:${LOCAL_REGISTRY_PORT}/defenseunicorns/leapfrogai/vllm:${VERSION}"
+
+  - name: llama-cpp-python-image
+    description: "Build the upstream LLaMA-CPP-Python image"
+    actions:
+      - task: local-registry
+        with:
+          name: ${LOCAL_REGISTRY_NAME}
+          port: ${LOCAL_REGISTRY_PORT}
+
+      - description: "Create the LLaMA-CPP-Python image"
+        task: image
+        with:
+          dockerfile: "packages/llama-cpp-python/Dockerfile"
+          architecture: ${ARCHITECTURE}
+          version: ${VERSION}
+          imageRepository: ghcr.io/defenseunicorns/leapfrogai/llama-cpp-python
+      - task: publish:tag
+        with:
+          current: "ghcr.io/defenseunicorns/leapfrogai/llama-cpp-python:${VERSION}"
+          new: "localhost:${LOCAL_REGISTRY_PORT}/defenseunicorns/leapfrogai/llama-cpp-python:${VERSION}"
+      - task: publish:docker
+        with:
+          tag: "localhost:${LOCAL_REGISTRY_PORT}/defenseunicorns/leapfrogai/llama-cpp-python:${VERSION}"
+
+  - name: text-embeddings-image
+    description: "Build the upstream Text-Embeddings image"
+    actions:
+      - task: local-registry
+        with:
+          name: ${LOCAL_REGISTRY_NAME}
+          port: ${LOCAL_REGISTRY_PORT}
+
+      - description: "Create the Text-Embeddings image"
+        task: image
+        with:
+          dockerfile: "packages/text-embeddings/Dockerfile"
+          architecture: ${ARCHITECTURE}
+          version: ${VERSION}
+          imageRepository: ghcr.io/defenseunicorns/leapfrogai/text-embeddings
+      - task: publish:tag
+        with:
+          current: "ghcr.io/defenseunicorns/leapfrogai/text-embeddings:${VERSION}"
+          new: "localhost:${LOCAL_REGISTRY_PORT}/defenseunicorns/leapfrogai/text-embeddings:${VERSION}"
+      - task: publish:docker
+        with:
+          tag: "localhost:${LOCAL_REGISTRY_PORT}/defenseunicorns/leapfrogai/text-embeddings:${VERSION}"
+
+  - name: whisper-image
+    description: "Build the upstream Whisper image"
+    actions:
+      - task: local-registry
+        with:
+          name: ${LOCAL_REGISTRY_NAME}
+          port: ${LOCAL_REGISTRY_PORT}
+
+      - description: "Create the Whisper image"
+        task: image
+        with:
+          dockerfile: "packages/whisper/Dockerfile"
+          architecture: ${ARCHITECTURE}
+          version: ${VERSION}
+          imageRepository: ghcr.io/defenseunicorns/leapfrogai/whisper
+      - task: publish:tag
+        with:
+          current: "ghcr.io/defenseunicorns/leapfrogai/whisper:${VERSION}"
+          new: "localhost:${LOCAL_REGISTRY_PORT}/defenseunicorns/leapfrogai/whisper:${VERSION}"
+      - task: publish:docker
+        with:
+          tag: "localhost:${LOCAL_REGISTRY_PORT}/defenseunicorns/leapfrogai/whisper:${VERSION}"
 
   ##########
   # PACKAGES
@@ -334,3 +478,88 @@ tasks:
           # the build options below do not affect registry1 builds
           # TODO: remove the registry1.dso.mil override once the IronBank image exists for the ui
           createOptions: "--insecure --registry-override=ghcr.io=localhost:${LOCAL_REGISTRY_PORT} --registry-override=registry1.dso.mil=localhost:${LOCAL_REGISTRY_PORT}"
+
+  - name: supabase
+    description: "Build the Supabase Zarf package"
+    actions:
+      - task: supabase-migrations-image
+      - task: package
+        with:
+          path: "packages/supabase"
+          outputPath: "packages/supabase"
+          flavor: ${FLAVOR}
+          architecture: ${ARCHITECTURE}
+          version: ${VERSION}
+          # the build options below do not affect registry1 builds
+          createOptions: "--insecure --registry-override=ghcr.io=localhost:${LOCAL_REGISTRY_PORT}"
+
+  - name: repeater
+    description: "Build the Repeater Zarf package"
+    actions:
+      - task: repeater-image
+      - task: package
+        with:
+          path: "packages/repeater"
+          outputPath: "packages/repeater"
+          flavor: ${FLAVOR}
+          architecture: ${ARCHITECTURE}
+          version: ${VERSION}
+          # the build options below do not affect registry1 builds
+          createOptions: "--insecure --registry-override=ghcr.io=localhost:${LOCAL_REGISTRY_PORT}"
+
+  - name: vllm
+    description: "Build the vLLM Zarf package"
+    actions:
+      - task: vllm-image
+      - task: package
+        with:
+          path: "packages/vllm"
+          outputPath: "packages/vllm"
+          zarfConfig: "packages/vllm/zarf-config.yaml"
+          flavor: ${FLAVOR}
+          architecture: ${ARCHITECTURE}
+          version: ${VERSION}
+          # the build options below do not affect registry1 builds
+          createOptions: "--insecure --registry-override=ghcr.io=localhost:${LOCAL_REGISTRY_PORT}"
+
+  - name: llama-cpp-python
+    description: "Build the LLaMA-CPP-Python Zarf package"
+    actions:
+      - task: llama-cpp-python-image
+      - task: package
+        with:
+          path: "packages/llama-cpp-python"
+          outputPath: "packages/llama-cpp-python"
+          flavor: ${FLAVOR}
+          architecture: ${ARCHITECTURE}
+          version: ${VERSION}
+          # the build options below do not affect registry1 builds
+          createOptions: "--insecure --registry-override=ghcr.io=localhost:${LOCAL_REGISTRY_PORT}"
+
+  - name: text-embeddings
+    description: "Build the Text-Embeddings Zarf package"
+    actions:
+      - task: text-embeddings-image
+      - task: package
+        with:
+          path: "packages/text-embeddings"
+          outputPath: "packages/text-embeddings"
+          flavor: ${FLAVOR}
+          architecture: ${ARCHITECTURE}
+          version: ${VERSION}
+          # the build options below do not affect registry1 builds
+          createOptions: "--insecure --registry-override=ghcr.io=localhost:${LOCAL_REGISTRY_PORT}"
+
+  - name: whisper
+    description: "Build the Whisper Zarf package"
+    actions:
+      - task: whisper-image
+      - task: package
+        with:
+          path: "packages/whisper"
+          outputPath: "packages/whisper"
+          flavor: ${FLAVOR}
+          architecture: ${ARCHITECTURE}
+          version: ${VERSION}
+          # the build options below do not affect registry1 builds
+          createOptions: "--insecure --registry-override=ghcr.io=localhost:${LOCAL_REGISTRY_PORT}"
