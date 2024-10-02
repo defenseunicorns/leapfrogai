@@ -365,21 +365,21 @@
 
     <div
       class={twMerge(
-        'flex flex-grow flex-col gap-1 rounded-lg border border-gray-600 bg-gray-50 px-4 py-0 dark:bg-gray-700',
-        attachedFileMetadata.length > 0 && 'py-4',
-        'min-w-0'
+        'flex min-w-0 flex-grow flex-col gap-1 rounded-lg border border-gray-600 bg-gray-50 px-4 py-0 dark:bg-gray-700',
+        attachedFileMetadata.length > 0 && 'py-4'
       )}
     >
-      <LFCarousel
-        data-testid="uploaded-files-carousel"
-        hidden={attachedFileMetadata.length === 0}
-        btnHeight={14}
-        btnWidth={6}
-      >
-        <UploadedFileCards bind:attachedFileMetadata bind:attachedFiles />
-      </LFCarousel>
-
-      <div id="chat-row" class="flex w-full min-w-0 items-center gap-1">
+      <div class="flex w-full min-w-0 items-center gap-1">
+        {#if attachedFileMetadata.length > 0}
+          <LFCarousel
+            data-testid="uploaded-files-carousel"
+            hidden={false}
+            btnHeight={14}
+            btnWidth={6}
+          >
+            <UploadedFileCards bind:attachedFileMetadata bind:attachedFiles />
+          </LFCarousel>
+        {/if}
         {#if !assistantMode}
           <ChatFileUploadForm bind:uploadingFiles bind:attachedFiles bind:attachedFileMetadata />
         {/if}
@@ -394,7 +394,6 @@
           maxRows={10}
           innerWrappedClass="p-px bg-white dark:bg-gray-700"
         />
-
         {#if !$isLoading && $status !== 'in_progress'}
           <ToolbarButton data-testid="send message" type="submit" disabled={sendDisabled}
             ><ArrowUpOutline class="h-6 w-6 dark:text-gray-400 dark:hover:text-gray-300" />
@@ -406,15 +405,15 @@
             <span class="sr-only">Cancel message</span></ToolbarButton
           >
         {/if}
+        <FileChatActions
+          bind:attachedFileMetadata
+          threadId={activeThread?.id}
+          bind:attachedFiles
+          originalMessages={$chatMessages}
+          setMessages={setChatMessages}
+          append={chatAppend}
+        />
       </div>
-      <FileChatActions
-        bind:attachedFileMetadata
-        threadId={activeThread?.id}
-        bind:attachedFiles
-        originalMessages={$chatMessages}
-        setMessages={setChatMessages}
-        append={chatAppend}
-      />
     </div>
   </div>
   <PoweredByDU />
