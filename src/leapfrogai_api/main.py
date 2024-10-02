@@ -72,7 +72,10 @@ async def root():
 Instrumentator(
     excluded_handlers=["/healthz", "/metrics"],
     should_group_status_codes=False,
-).instrument(app).expose(app)
+).instrument(app).expose(
+    app,
+    include_in_schema=False,
+)
 
 
 @app.exception_handler(RequestValidationError)
