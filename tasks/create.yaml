@@ -158,6 +158,17 @@ tasks:
   # IMAGES
   ########
 
+  - name: k3d-gpu-image
+    description: "Create the K3s CUDA image for K3d"
+    actions:
+      - description: "Create the K3s CUDA image"
+        task: image
+        with:
+          dockerfile: "packages/k3d-gpu/Dockerfile"
+          architecture: "amd64"
+          version: ${VERSION}
+          imageRepository: ghcr.io/defenseunicorns/leapfrogai/k3d-gpu
+
   - name: sdk-image
     description: "Create the LeapfrogAI SDK Docker image"
     inputs:

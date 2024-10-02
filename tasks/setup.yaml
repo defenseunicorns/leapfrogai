@@ -1,0 +1,53 @@
+# yaml-language-server: $schema=https://raw.githubusercontent.com/defenseunicorns/uds-cli/v0.14.0/tasks.schema.json
+includes:
+  #########################
+  # UDS COMMON TASK IMPORTS
+  #########################
+  - setup-common: https://raw.githubusercontent.com/defenseunicorns/uds-common/82e63be82766a2e550a847af904b2d738c9d3478/tasks/setup.yaml
+
+  ###########################
+  # LEAPFROGAI-SPECIFIC TASKS
+  ###########################
+  - create: ./create.yaml
+
+tasks:
+  - name: e2e-test-user
+    description: "Creates a test user in KeyCloak with fake credentials, mainly for CI testing workflows"
+    actions:
+      - task: setup-common:create-doug-user
+
+  - name: k3d-cpu-cluster-slim
+    description: "Creates a UDS K3d cluster with slim UDS Core and CPU-only Capability"
+    actions:
+      - task: setup-common:k3d-test-cluster
+
+  - name: k3d-gpu-cluster-slim
+    description: "Creates a UDS K3d cluster with slim UDS Core and NVIDIA GPU Capability"
+    actions:
+      - task: create:k3d-gpu-image
+      - task: setup-common:k3d-test-cluster
+        with:
+          version: 0.27.3
+          snapshots: "false"
+          insecure_keycloak_admin: ${ENABLE_INSECURE_KEYCLOAK_ADMIN_PASSWORD}
+          options: "--set K3D_EXTRA_ARGS='--gpus=all --image=ghcr.io/defenseunicorns/leapfrogai/k3d-gpu:${VERSION}'"
+
+  - name: k3d-cpu-cluster-full
+    description: "Creates a UDS K3d cluster with full UDS Core and CPU-only Capability"
+    actions:
+      - task: setup-common:k3d-full-cluster
+        with:
+          version: 0.27.3
+          snapshots: "false"
+          insecure_keycloak_admin: ${ENABLE_INSECURE_KEYCLOAK_ADMIN_PASSWORD}
+
+  - name: k3d-gpu-cluster-full
+    description: "Creates a UDS K3d cluster with full UDS Core and NVIDIA GPU Capability"
+    actions:
+      - task: create:k3d-gpu-image
+      - task: setup-common:k3d-full-cluster
+        with:
+          version: 0.27.3
+          snapshots: "false"
+          insecure_keycloak_admin: ${ENABLE_INSECURE_KEYCLOAK_ADMIN_PASSWORD}
+          options: "--set K3D_EXTRA_ARGS='--gpus=all --image=ghcr.io/defenseunicorns/leapfrogai/k3d-gpu:${VERSION}'"

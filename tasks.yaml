@@ -20,6 +20,10 @@ variables:
     description: "Explicitly set this to mutate the local registry port away from `5000` (e.g., `5001` for MacOS)"
     default: "5000"
 
+  - name: ENABLE_INSECURE_KEYCLOAK_ADMIN_PASSWORD
+    description: "Explicitly set this to `false` to disable insecure KeyCloak admin password generation"
+    default: "true"
+
 includes:
   #########################
   # UDS COMMON TASK IMPORTS
@@ -32,6 +36,7 @@ includes:
   - badge: ./tasks/badge.yaml
   - create: ./tasks/create.yaml
   - publish: ./tasks/publish.yaml
+  - setup: ./tasks/setup.yaml
 
 tasks:
   #######
