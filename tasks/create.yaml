@@ -72,6 +72,8 @@ tasks:
         description: "Image repository for the image tag"
         required: true
     actions:
+      - cmd: |
+          printf "\n🐸 Creating image at ${{ .inputs.dockerfile }}\n\n"
       - description: "Build the Docker image"
         shell:
           linux: bash
@@ -120,6 +122,8 @@ tasks:
         description: "Set the version of the Zarf package and target image(s)"
         required: true
     actions:
+      - cmd: |
+          printf "\n🐸 Creating package at ${{ .inputs.path }}\n\n"
       - description: "Create the Zarf package"
         task: create-common:package
         env:
@@ -151,6 +155,8 @@ tasks:
         default: ""
         required: false
     actions:
+      - cmd: |
+          printf "\n🐸 Creating bundle at ${{ .inputs.path }}\n\n"
       - description: "Create the UDS bundle"
         task: create-common:test-bundle
         with:
@@ -515,7 +521,6 @@ tasks:
         with:
           path: "packages/vllm"
           outputPath: "packages/vllm"
-          zarfConfig: "packages/vllm/zarf-config.yaml"
           flavor: ${FLAVOR}
           architecture: ${ARCHITECTURE}
           version: ${VERSION}

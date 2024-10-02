@@ -37,6 +37,7 @@ includes:
   - create: ./tasks/create.yaml
   - publish: ./tasks/publish.yaml
   - setup: ./tasks/setup.yaml
+  - deploy: ./tasks/deploy.yaml
 
 tasks:
   #######
@@ -89,3 +90,38 @@ tasks:
       - task: create:vllm
       - task: create:text-embeddings
       - task: create:whisper
+
+  ########
+  # DEPLOY
+  ########
+  - name: deploy-all
+    description: "Deploys all Zarf packages within the LeapfrogAI repository"
+    actions:
+      - task: deploy:supabase
+      - task: deploy:api
+      - task: deploy:ui
+      - task: deploy:repeater
+      - task: deploy:vllm
+      - task: deploy:llama-cpp-python
+      - task: deploy:text-embeddings
+      - task: deploy:whisper
+
+  - name: deploy-cpu
+    description: "Deploys CPU deployment Zarf packages within the LeapfrogAI repository"
+    actions:
+      - task: deploy:supabase
+      - task: deploy:api
+      - task: deploy:ui
+      - task: deploy:llama-cpp-python
+      - task: deploy:text-embeddings
+      - task: deploy:whisper
+
+  - name: deploy-gpu
+    description: "Deploys GPU deployment Zarf packages within the LeapfrogAI repository"
+    actions:
+      - task: deploy:supabase
+      - task: deploy:api
+      - task: deploy:ui
+      - task: deploy:vllm
+      - task: deploy:text-embeddings
+      - task: deploy:whisper
