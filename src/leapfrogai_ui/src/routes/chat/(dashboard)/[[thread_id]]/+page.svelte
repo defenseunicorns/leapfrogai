@@ -365,7 +365,7 @@
 
     <div
       class={twMerge(
-        'flex min-w-0 flex-grow flex-col gap-1 rounded-lg border border-gray-600 bg-gray-50 px-4 py-0 dark:bg-gray-700',
+        'flex h-[44px] min-w-0 flex-grow flex-col gap-1 rounded-lg border border-gray-600 bg-gray-50 px-4 py-0 dark:bg-gray-700',
         attachedFileMetadata.length > 0 && 'py-4'
       )}
     >
