@@ -7,7 +7,7 @@ nameOverride: "###ZARF_CONST_NAME_OVERRIDE###"
 leapfrogaiConfig:
   model:
     source: "###ZARF_CONST_MODEL_PATH###"
-  maxContextLength: "32768"
+  maxContextLength: "###ZARF_VAR_MAX_CONTEXT_LENGTH###"
   stopTokens: "###ZARF_VAR_STOP_TOKENS###"
   promptFormat:
     chat:
