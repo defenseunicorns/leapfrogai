@@ -4,6 +4,26 @@ metadata:
   name: nvidia
 handler: nvidia
 ---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: nvidia-device-plugin-config
+  namespace: kube-system
+  labels:
+    app: nvidia-device-plugin
+data:
+  default: |-
+    version: v1
+    flags:
+      migStrategy: none
+    sharing:
+      timeSlicing:
+        resources:
+        # This multiplies the number of GPUs available to the cluster by the number of replicas
+        # For example, 3 replicas means 3x the number of GPUs will be available
+        - name: nvidia.com/gpu
+          replicas: 3
+---
 apiVersion: apps/v1
 kind: DaemonSet
 metadata:
@@ -48,6 +68,8 @@ spec:
             value: compute,utility
           - name: MPS_ROOT
             value: /run/nvidia/mps
+          - name: CONFIG_FILE_DST
+            value: "/config/config.yaml"
         securityContext:
           allowPrivilegeEscalation: false
           capabilities:
@@ -55,7 +77,12 @@ spec:
         volumeMounts:
         - name: device-plugin
           mountPath: /var/lib/kubelet/device-plugins
+        - name: config
+          mountPath: /config
       volumes:
       - name: device-plugin
         hostPath:
           path: /var/lib/kubelet/device-plugins
+      - name: config
+        configMap:
+          name: nvidia-device-plugin-config
