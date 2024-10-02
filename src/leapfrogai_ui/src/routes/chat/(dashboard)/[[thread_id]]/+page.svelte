@@ -1,7 +1,7 @@
 <script lang="ts">
   import { beforeNavigate } from '$app/navigation';
   import { LFTextArea, PoweredByDU } from '$components';
-  import { Hr } from 'flowbite-svelte';
+  import { Hr, ToolbarButton } from 'flowbite-svelte';
   import { onMount, tick } from 'svelte';
   import { assistantsStore, threadsStore, toastStore } from '$stores';
   import { type Message as VercelAIMessage, useAssistant, useChat } from '@ai-sdk/svelte';
@@ -396,25 +396,15 @@
         />
 
         {#if !$isLoading && $status !== 'in_progress'}
-          <button
-            data-testid="send message"
-            type="submit"
-            class="remove-btn-style"
-            disabled={sendDisabled}
+          <ToolbarButton data-testid="send message" type="submit" disabled={sendDisabled}
+            ><ArrowUpOutline class="h-6 w-6 dark:text-gray-400 dark:hover:text-gray-300" />
+            <span class="sr-only">Send message</span></ToolbarButton
           >
-            <ArrowUpOutline
-              class={twMerge(
-                'h-6 w-6',
-                'dark:text-gray-400',
-                !sendDisabled && 'dark:hover:text-gray-300'
-              )}
-            /> <span class="sr-only">Send message</span>
-          </button>
         {:else}
-          <button data-testid="cancel message" type="submit" class="remove-btn-style">
-            <StopOutline class={twMerge('h-6 w-6', 'dark:text-red-600 dark:hover:text-red-500')} />
-            <span class="sr-only">Cancel message</span>
-          </button>
+          <ToolbarButton data-testid="cancel message" type="submit" class="dark:focus:ring-red-500"
+            ><StopOutline class="h-6 w-6 dark:text-red-500 dark:hover:text-red-400" />
+            <span class="sr-only">Cancel message</span></ToolbarButton
+          >
         {/if}
       </div>
       <FileChatActions

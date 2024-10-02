@@ -18,6 +18,7 @@
   import { ERROR_UPLOADING_FILE_MSG } from '$constants/errors';
   import { shortenFileName } from '$helpers/stringHelpers';
   import { removeFilesUntilUnderLimit, updateFileMetadata } from '$helpers/fileHelpers';
+  import { ToolbarButton } from 'flowbite-svelte';
 
   export let uploadingFiles;
   export let attachedFileMetadata;
@@ -148,6 +149,8 @@
   disabled={uploadingFiles}
   class="remove-btn-style flex  rounded-lg  p-1.5 hover:bg-inherit dark:hover:bg-inherit "
 >
-  <PaperClipOutline class="dark:text-gray-400 dark:hover:text-gray-300" />
-  <span class="sr-only">Attach file</span>
+  <ToolbarButton>
+    <PaperClipOutline class="dark:text-gray-400 dark:hover:text-gray-300" />
+    <span class="sr-only">Attach file</span>
+  </ToolbarButton>
 </LFFileUploadBtn>
