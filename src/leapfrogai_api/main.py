@@ -66,7 +66,7 @@ app = FastAPI(lifespan=lifespan)
 @app.get("/")
 async def root():
     """Intercepts the root path and redirects to the API documentation."""
-    return RedirectResponse(url="/redoc")
+    return RedirectResponse(url="/docs")
 
 
 Instrumentator(
