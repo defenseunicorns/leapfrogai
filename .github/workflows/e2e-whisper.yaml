@@ -54,3 +54,5 @@ jobs:
         - name: Test whisper
           run: |
             hostnamectl
+            nvidia-smi
+            nvcc --version
