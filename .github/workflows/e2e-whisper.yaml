@@ -2,52 +2,7 @@
 
 name: e2e-whisper
 on:
-  pull_request:
-    types:
-      - opened            # default trigger
-      - reopened          # default trigger
-      - synchronize       # default trigger
-      - ready_for_review  # don't run on draft PRs
-      - milestoned        # allows us to trigger on bot PRs
-      - edited
-    paths:
-      # Catch-all
-      - "**"
-
-      # Ignore updates to the .github directory, unless it's this current file
-      - "!.github/**"
-      - ".github/workflows/e2e-whisper.yaml"
-      - ".github/actions/uds-cluster/action.yaml"
-
-      # Ignore docs and website things
-      - "!**.md"
-      - "!docs/**"
-      - "!adr/**"
-      - "!website/**"
-      - "!netlify.toml"
-
-      # Ignore updates to generic github metadata files
-      - "!CODEOWNERS"
-      - "!.gitignore"
-      - "!LICENSE"
-
-      # Ignore local development files
-      - "!.pre-commit-config.yaml"
-      - "!tasks.yaml"
-
-      # Ignore non e2e tests changes
-      - "!tests/pytest/**"
-
-      # Ignore LFAI-UI source code changes
-      - "!src/leapfrogai_ui/**"
-
-      # Ignore changes to unrelated packages
-      - "!packages/k3d-gpu/**"
-      - "!packages/llama-cpp-python/**"
-      - "!packages/repeater/**"
-      - "!packages/text-embeddings/**"
-      - "!packages/ui/**"
-      - "!packages/vllm/**"
+  pull_request
 
 concurrency:
   group: e2e-whisper-${{ github.ref }}
