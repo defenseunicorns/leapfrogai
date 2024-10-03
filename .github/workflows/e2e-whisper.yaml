@@ -57,4 +57,4 @@ jobs:
             nvidia-smi
             az aks --help
             docker ps
-            top
+            k3d cluster list
