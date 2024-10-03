@@ -56,3 +56,5 @@ jobs:
             hostnamectl
             nvidia-smi
             az aks --help
+            docker ps
+            top
