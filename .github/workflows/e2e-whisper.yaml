@@ -26,13 +26,38 @@ jobs:
           with:
             additionalOptionalDep: dev-whisper
 
-        - name: Setup UDS Cluster
-          uses: ./.github/actions/uds-cluster
+        - name: Setup UDS Environment
+          uses: defenseunicorns/uds-common/.github/actions/setup@822dac4452e6815aadcf09f487406ff258756a0c # v0.14.0
           with:
             registry1Username: ${{ secrets.IRON_BANK_ROBOT_USERNAME }}
             registry1Password: ${{ secrets.IRON_BANK_ROBOT_PASSWORD }}
             ghToken: ${{ secrets.GITHUB_TOKEN }}
-            chainguardIdentity: ${{ secrets.CHAINGUARD_IDENTITY }}
+            udsCliVersion: 0.14.0
+          continue-on-error: true # workaround for permissions issues
+
+        - name: Setup UDS Workaround
+          env:
+            UDS_VERSION: v0.14.0
+          run: |
+            sudo wget -O uds https://github.com/defenseunicorns/uds-cli/releases/download/${{ env.UDS_VERSION }}/uds-cli_${{ env.UDS_VERSION }}_Linux_amd64 && \
+            sudo chmod +x uds && \
+            sudo chown $(whoami) uds && \
+            sudo mv uds /usr/local/bin/
+
+            sudo chown $(whoami) /usr/local/bin/k3d
+
+            uds version
+            k3d version
+
+        - name: Create UDS Cluster
+          shell: bash
+          run: |
+            UDS_CONFIG=.github/config/uds-config.yaml make create-uds-gpu-cluster
+
+        - name: Test UDS GPU Cluster
+          run: |
+            uds zarf tools kubectl logs -n kube-system daemonset/nvidia-device-plugin-daemonset
+            uds zarf tools kubectl apply -f packages/k3d-gpu/test/cuda-vector-add.yaml
 
         - name: Setup LFAI-API and Supabase
           uses: ./.github/actions/lfai-core
