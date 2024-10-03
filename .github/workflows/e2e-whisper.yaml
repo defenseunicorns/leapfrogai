@@ -55,5 +55,4 @@ jobs:
           run: |
             hostnamectl
             nvidia-smi
-            az
-            aks version
+            az aks --help
