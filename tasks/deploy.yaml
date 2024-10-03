@@ -37,6 +37,7 @@ tasks:
         cmd: cat ${{ .inputs.path }}/zarf.yaml | uds zarf tools yq .metadata.name
         setVariables:
           - name: PACKAGE_NAME
+        mute: true
       - description: "Deploy the Zarf package"
         env:
           - ZARF_CONFIG=${{ .inputs.zarfConfig }}

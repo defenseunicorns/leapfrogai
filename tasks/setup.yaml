@@ -64,3 +64,4 @@ tasks:
           snapshots: "false"
           insecure_keycloak_admin: ${ENABLE_INSECURE_KEYCLOAK_ADMIN_PASSWORD}
           options: "--set K3D_EXTRA_ARGS='--gpus=all --image=ghcr.io/defenseunicorns/leapfrogai/k3d-gpu:${VERSION}'"
+# Add dev dependencies installs for local building of all LeapfrogAI components
