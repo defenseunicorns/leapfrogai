@@ -3,12 +3,6 @@
 name: e2e-whisper
 on:
   pull_request:
-    types:
-      - opened            # default trigger
-      - reopened          # default trigger
-      - synchronize       # default trigger
-      - ready_for_review  # don't run on draft PRs
-      - milestoned        # allows us to trigger on bot PRs
     paths:
       # Catch-all
       - "**"
@@ -54,7 +48,7 @@ concurrency:
 
 jobs:
   e2e_whisper:
-    runs-on: ai-ubuntu-big-boy-8-core
+    runs-on: ai-linux-x64-gpu
     if: ${{ !github.event.pull_request.draft }}
 
     permissions:
@@ -87,6 +81,8 @@ jobs:
         ##########
         - name: Deploy whisper
           run: |
+            echo "Image OS: $ImageOS"
+            echo "Image Version: $ImageVersion"
             make build-whisper LOCAL_VERSION=e2e-test
             docker image prune -af
             uds zarf package deploy packages/whisper/zarf-package-whisper-amd64-e2e-test.tar.zst -l=trace --confirm
