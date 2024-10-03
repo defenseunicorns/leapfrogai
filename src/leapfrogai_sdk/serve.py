@@ -13,13 +13,21 @@ from leapfrogai_sdk.counting import counting_pb2_grpc
 from leapfrogai_sdk.embeddings import embeddings_pb2_grpc
 from leapfrogai_sdk.name import name_pb2_grpc
 
+from py_grpc_prometheus.prometheus_server_interceptor import PromServerInterceptor
+from prometheus_client import start_http_server
+
 
 async def serve(o, host="0.0.0.0", port=50051):
     # Create a tuple of all of the services we want to export via reflection.
     services = (reflection.SERVICE_NAME, health.SERVICE_NAME)
 
     # Create a gRPC server
-    server = grpc.aio.server(futures.ThreadPoolExecutor(max_workers=40))
+    server = grpc.aio.server(
+        futures.ThreadPoolExecutor(max_workers=40),
+        interceptors=(PromServerInterceptor(),),
+    )
+
+    start_http_server(8000)
 
     if hasattr(o, "ChatComplete"):
         chat_pb2_grpc.add_ChatCompletionServiceServicer_to_server(o, server)
