@@ -205,9 +205,10 @@ As time goes on, additional models will be considered and added as comparison po
   The model card will ultimately exist in a few forms:
 
   - A tabular representation that shows for a given model (or hyperparameter configuration) as a row, the columns consist of all of the scored metrics that were applied to that configuration.
-  - A deployed instance of LeapfrogAI will likely always accompany UDS runtime. The evaluation results for a deployment will live in a table under its corresponding UDS runtime page.
+  - **Assumption**: A deployed instance of LeapfrogAI will likely always accompany UDS runtime. The evaluation results for a deployment will live in a table under its corresponding UDS runtime page.
     - The evaluation outputs themselves will eventually be provided in `json` format for easier ingestion into observability tools or other additional frameworks.
     - This will likely become more relevant after MVP status.
+    - This assumption will need to be vetted by the UDS team and therefore may have to be adjusted in the future.
 
   A model card report will consist of the table of evaluation metrics as well as a written summary of what the metrics mean, how they relate to specific performance considerations, as well as model recommendations. Therefore, this report can be   generalized for a wide audience, but will need to be customized for a given potential deployment scenario. A metrics table may look something like this:
   ![Screenshot from 2024-09-18 18-03-18](https://github.com/user-attachments/assets/479f385b-1d09-4842-b1f0-e2d8992b0b3d)
