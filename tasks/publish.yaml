@@ -26,9 +26,17 @@ tasks:
         cmd: |
           if [[ ${FLAVOR} = "upstream" || ${{ .inputs.override }} = "true" ]]; then
             docker tag ${{ .inputs.current }} ${{ .inputs.new }}
+            echo "false"
           else
-            echo "Non-upstream flavor detected, skipping image build"
+            echo "true"
           fi
+        mute: true
+        setVariables:
+          - name: ENABLE_LOG
+      - task: utils:log
+        with:
+          log: "Non-upstream flavor detected, skipping local image re-tag"
+          enable: ${ENABLE_LOG}
 
   - name: docker
     description: "Push an existing Docker image to its tagged repository"
@@ -53,6 +61,14 @@ tasks:
         cmd: |
           if [[ ${FLAVOR} = "upstream" || ${{ .inputs.override }} = "true" ]]; then
             docker push ${{ .inputs.tag }} ${{ .inputs.options }}
+            echo "false"
           else
-            echo "Non-upstream flavor detected, skipping image build"
+            echo "true"
           fi
+        mute: true
+        setVariables:
+          - name: ENABLE_LOG
+      - task: utils:log
+        with:
+          log: "Non-upstream flavor detected, skipping local image push"
+          enable: ${ENABLE_LOG}

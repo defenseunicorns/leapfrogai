@@ -25,8 +25,9 @@ tasks:
         default: "--log-level warn --no-progress --confirm"
         required: false
     actions:
-      - cmd: |
-          printf "\n🐸 Deploying package at ${{ .inputs.path }}\n\n"
+      - task: utils:log
+        with:
+          log: "Deploying package at ${{ .inputs.path }}"
       - description: Get the current Zarf package name
         cmd: cat ${{ .inputs.path }}/zarf.yaml | uds zarf tools yq .metadata.name
         setVariables:
@@ -58,8 +59,9 @@ tasks:
         description: "Set the version of the UDS Bundle and target image(s)"
         required: true
     actions:
-      - cmd: |
-          printf "\n🐸 Deploying package at ${{ .inputs.path }}\n\n"
+      - task: utils:log
+        with:
+          log: "Deploying bundle at ${{ .inputs.path }}"
       - task: deploy-common:test-bundle
         env:
           - UDS_ARCH=${{ .inputs.architecture }}

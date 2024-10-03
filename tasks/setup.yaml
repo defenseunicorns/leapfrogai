@@ -19,11 +19,17 @@ tasks:
   - name: k3d-cpu-cluster-slim
     description: "Creates a UDS K3d cluster with slim UDS Core and CPU-only Capability"
     actions:
+      - task: utils:log
+        with:
+          log: "Creating a UDS K3d cluster with slim UDS Core and CPU-only Capability"
       - task: setup-common:k3d-test-cluster
 
   - name: k3d-gpu-cluster-slim
     description: "Creates a UDS K3d cluster with slim UDS Core and NVIDIA GPU Capability"
     actions:
+      - task: utils:log
+        with:
+          log: "Creating a UDS K3d cluster with slim UDS Core and NVIDIA GPU Capability"
       - task: create:k3d-gpu-image
       - task: setup-common:k3d-test-cluster
         with:
@@ -35,6 +41,9 @@ tasks:
   - name: k3d-cpu-cluster-full
     description: "Creates a UDS K3d cluster with full UDS Core and CPU-only Capability"
     actions:
+      - task: utils:log
+        with:
+          log: "Creating a UDS K3d cluster with full UDS Core and CPU-only Capability"
       - task: setup-common:k3d-full-cluster
         with:
           version: 0.27.3
@@ -44,6 +53,9 @@ tasks:
   - name: k3d-gpu-cluster-full
     description: "Creates a UDS K3d cluster with full UDS Core and NVIDIA GPU Capability"
     actions:
+      - task: utils:log
+        with:
+          log: "Creating a UDS K3d cluster with full UDS Core and NVIDIA GPU Capability"
       - task: create:k3d-gpu-image
       - task: setup-common:k3d-full-cluster
         with:

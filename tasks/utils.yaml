@@ -1,0 +1,19 @@
+# yaml-language-server: $schema=https://raw.githubusercontent.com/defenseunicorns/uds-cli/v0.14.0/tasks.schema.json
+
+tasks:
+  - name: log
+    description: "LeapfrogAI logger"
+    inputs:
+      log:
+        description: "Content to be logged to the CLI"
+        required: true
+      enable:
+        description: "Whether to enable or disable the logging"
+        default: "true"
+        required: false
+    actions:
+      - cmd: |
+          if [[ ${{ .inputs.enable }} = "true" ]]
+            printf "\n🐸 ${{ .inputs.log }}\n\n"
+          fi
+        mute: true

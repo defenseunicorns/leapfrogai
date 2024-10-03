@@ -35,11 +35,18 @@ tasks:
         cmd: |
           if [[ ${FLAVOR} != "upstream" || ${{ .inputs.override }} != "false" ]]; then
             if [ ! "$(docker ps -q -f name=${{ .inputs.name }})" ]; then
-              docker run -d -p ${{ .inputs.port }}:5000 --restart=always --name ${{ .inputs.name }} registry:2 -q
-            fi
+              docker run -d -p ${{ .inputs.port }}:5000 --restart=always -q --name ${{ .inputs.name }} registry:2
+              echo "false"
           else
-            echo "Non-upstream flavor detected, skipping local registry build"
+            echo "true"
           fi
+        mute: true
+        setVariables:
+          - name: ENABLE_LOG
+      - task: utils:log
+        with:
+          log: "Non-upstream flavor detected, skipping local image build"
+          enable: ${ENABLE_LOG}
 
   ###########
   # REUSEABLE
@@ -72,8 +79,9 @@ tasks:
         description: "Image repository for the image tag"
         required: true
     actions:
-      - cmd: |
-          printf "\n🐸 Creating image at ${{ .inputs.dockerfile }}\n\n"
+      - task: utils:log
+        with:
+          log: "Creating image at ${{ .inputs.dockerfile }}"
       - description: "Build the Docker image"
         shell:
           linux: bash
@@ -86,9 +94,17 @@ tasks:
               -f ${{ .inputs.dockerfile }} \
               --build-arg LOCAL_VERSION=${{ .inputs.version }} \
               ${{ .inputs.buildOptions }} ${{ .inputs.buildContext }}
+              echo "false"
           else
-            echo "Non-upstream flavor detected, skipping image build"
+            echo "true"
           fi
+        mute: true
+        setVariables:
+          - name: ENABLE_LOG
+      - task: utils:log
+        with:
+          log: "Non-upstream flavor detected, skipping local image build"
+          enable: ${ENABLE_LOG}
 
   - name: package
     description: "Create a Zarf package"
@@ -122,8 +138,9 @@ tasks:
         description: "Set the version of the Zarf package and target image(s)"
         required: true
     actions:
-      - cmd: |
-          printf "\n🐸 Creating package at ${{ .inputs.path }}\n\n"
+      - task: utils:log
+        with:
+          log: "Creating package at ${{ .inputs.path }}"
       - description: "Create the Zarf package"
         task: create-common:package
         env:
@@ -155,8 +172,9 @@ tasks:
         default: ""
         required: false
     actions:
-      - cmd: |
-          printf "\n🐸 Creating bundle at ${{ .inputs.path }}\n\n"
+      - task: utils:log
+        with:
+          log: "Creating bundle at ${{ .inputs.path }}"
       - description: "Create the UDS bundle"
         task: create-common:test-bundle
         with:

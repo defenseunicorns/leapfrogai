@@ -38,6 +38,7 @@ includes:
   - publish: ./tasks/publish.yaml
   - setup: ./tasks/setup.yaml
   - deploy: ./tasks/deploy.yaml
+  - utils: ./tasks/utils.yaml
 
 tasks:
   #######
