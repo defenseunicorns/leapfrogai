@@ -16,9 +16,9 @@ See the LeapfrogAI documentation website for [system requirements](https://docs.
 
 The default model that comes with this backend in this repository's officially released images is a [4-bit quantization of the Synthia-7b model](https://huggingface.co/TheBloke/SynthIA-7B-v2.0-GPTQ).
 
-All of the commands in this sub-section are executed with the `packages/vllm` sub-directory.
+All of the commands in this sub-section are executed within this `packages/vllm` sub-directory.
 
-Optionally, you can specify a different model during Zarf create:
+Optionally, you can specify a different model during Zarf creation:
 
 ```bash
 uds zarf package create --confirm --set MODEL_REPO_ID=defenseunicorns/Hermes-2-Pro-Mistral-7B-4bit-32g --set MODEL_REVISION=main
@@ -26,7 +26,7 @@ uds zarf package create --confirm --set MODEL_REPO_ID=defenseunicorns/Hermes-2-P
 
 If you decide to use a different model, there will likely be a need to change generation and engine runtime configurations, please see the [Zarf Package Config](./zarf-config.yaml) and the [values override file](./values/upstream-values.yaml) for details on what runtime parameters can be modified. These parameters are model-specific, and can be found in the HuggingFace model cards and/or configuration files (e.g., prompt templates).
 
-For example, during deployment, you can override the Zarf Package Config defaults by doing the following:
+For example, during Zarf deployment, you can override the Zarf Package Config defaults by doing the following:
 
 ```bash
 uds zarf package deploy zarf-package-vllm-amd64-dev.tar.zst --confirm --set ENFORCE_EAGER=True
@@ -47,18 +47,25 @@ uds zarf package deploy packages/vllm/zarf-package-vllm-*-dev.tar.zst --confirm
 
 ### Local Development
 
-The [config.yaml](./config.yaml) and [.env.example](./.env.example) must be modified if the model has changed away from the default.
-
-Create a `.env` file based on the [.env.example](./.env.example):
-
-```bash
-cp .env.example .env
-```
-
-To run the vllm backend locally:
+In local development the [config.yaml](./config.yaml) and [.env.example](./.env.example) must be modified if the model has changed away from the default. The LeapfrogAI SDK picks up the `config.yaml` automatically, and the `.env` must be sourced into the Python environment.
 
 > [!IMPORTANT]
 > Execute the following commands from this sub-directory
+
+Create a `.env` file based on the [`.env.example`](./.env.example):
+
+```bash
+cp .env.example .env
+source .env
+```
+
+As necessary, modify the existing [`config.yaml`](./config.yaml):
+
+```bash
+vim config.yaml
+```
+
+To run the vllm backend locally:
 
 ```bash
 # Install dev and runtime dependencies
