@@ -56,3 +56,5 @@ jobs:
             hostnamectl
             nvidia-smi
             nvcc --version
+            kubectl config get-clusters
+            kubectl config get-contexts
