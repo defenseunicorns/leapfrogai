@@ -153,12 +153,12 @@ As time goes on, additional models will be considered and added as comparison po
   - Needle in a Haystack (for evaluating retrieval and generation)
   - Annotation Relevancy (for evaluating retrieval)
 
-  Performance Metrics:
-  - Total Execution Runtime
-  
-  Non-RAG LLM benchmarks:
+  Standard LLM benchmarks:
   - [HumanEval](https://docs.confident-ai.com/docs/benchmarks-human-eval) (for evaluating code generation)
   - [MMLU](https://docs.confident-ai.com/docs/benchmarks-mmlu) (for evaluating reasoning across multiple subjects; generation only)
+
+  Performance Metrics:
+  - Total Execution Runtime
 
   #### Rationale
 
@@ -172,7 +172,7 @@ As time goes on, additional models will be considered and added as comparison po
   - MMLU: Evaluates an LLM's ability to reason on multiple task topics using multiple choice questions (not RAG-enabled, but useful as an established baseline to compare against)
   - Annotation Relevancy: A custom metric that measures how often documents that have nothing to do with the question are cited in the annotations. Higher is better
 
-  Established LLM benchmarks (MMLU and HumanEval) are included in this MVP evaluation framework despite not focusing on RAG. Even though these benchmarks only evaluate the model itself, it's important that this framework have a few generation-only metrics to be better at diagnosing whether issues in performance are happening due to RAG or the model. These benchmarks are standard, and therefore used across many LLMs, including the ones being considered by LeapfrogAI. Therefore, these values can be used when comparing what performance is expected of these models and what is being observed in LeapfrogAI. These benchmarks can assist in diagnosing problems with both quantization (which often don't have these benchmarks) and implementation differences.
+  Established LLM benchmarks (MMLU and HumanEval) are included in this MVP evaluation framework despite not requiring information from a retrieval system. It's important that this framework have a few generation-only metrics to be better at diagnosing whether issues in performance are happening due to RAG or the model. The other metrics included in this MVP evaluate either the retrieval stage on its own or the information-assisted generation. If the metrics evaluated on the information-assisted generation (e.g Faithfulness or NIAH response) are scoring low, it is difficult to parse out whether or not the low score is caused by the information retrieval, the generation itself, or both. Having these benchmarks provides a way to validate whether or not the generation works as expected, indicating a potential problem with the retrieval. These benchmarks are also standard, and therefore used across many LLMs. Therefore, these values can be used when comparing what performance is expected of these models and what is being observed in LeapfrogAI. These benchmarks can assist in diagnosing problems with both quantization (which often don't have these benchmarks) and implementation differences.
 
   While these metrics are going to be utilized first to balance value-gained and time to implement, we will be adding additional evaluation metrics soon following MVP status. Potential options include:
   - RAG retrieval Hit Rate: non-LLM metric that evaluates how often a retrieved context matches the expected context for a question/answer scenario
