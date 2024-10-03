@@ -53,5 +53,4 @@ jobs:
 
         - name: Test whisper
           run: |
-            echo "Image OS: $ImageOS"
-            echo "Image Version: $ImageVersion"
+            hostnamectl
