@@ -24,7 +24,7 @@ defaults:
 
 env:
   SNAPSHOT_VERSION: snapshot-latest
-  SNAPSHOT_SUB_REPOSITORY: /uds/snapshots
+  SNAPSHOT_SUB_REPOSITORY: /uds/snapshots/
 
 permissions:
   contents: read

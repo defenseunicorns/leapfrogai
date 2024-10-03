@@ -7,14 +7,47 @@ from ...backend.constants import DEFAULT_MAX_COMPLETION_TOKENS
 
 
 class FinishReason(Enum):
-    NONE = 0  # Maps to "None"
-    STOP = 1  # Maps to "stop"
-    LENGTH = 2  # Maps to "length"
+    NONE = 0
+    STOP = 1
+    LENGTH = 2
 
-    def to_string(self) -> str | None:
+    def to_finish_reason(self) -> str | None:
+        """
+        Convert the enum member to its corresponding finish reason string.
+
+        Returns:
+            str | None: The finish reason as a lowercase string if it is not NONE; otherwise, None.
+        """
         if self == FinishReason.NONE:
             return None
         return self.name.lower()
+
+    @classmethod
+    def _missing_(cls, value):
+        """
+        Handle missing values when creating an enum instance.
+
+        This method is called when a value passed to the enum constructor does not match any existing enum members.
+        It provides custom logic to map input values to enum members or raises an error if the value is invalid.
+
+        Args:
+            value: The value that was not found among the enum members.
+
+        Returns:
+            FinishReason: The corresponding enum member after applying custom mapping.
+
+        Raises:
+            ValueError: If the value cannot be mapped to any enum member.
+        """
+        # Handle custom value mappings
+        if value is None or value == "None":
+            return cls.NONE
+        elif value == "stop":
+            return cls.STOP
+        elif value == "length":
+            return cls.LENGTH
+        else:
+            raise ValueError(f"Invalid FinishReason value: {value}")
 
 
 class CompletionChoice(BaseModel):
