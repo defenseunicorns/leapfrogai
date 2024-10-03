@@ -25,7 +25,7 @@ jobs:
           uses: mxschmitt/action-tmate@v3
           with:
             ## limits ssh access and adds the ssh public key for the user which triggered the workflow
-            limit-access-to-actor: false
+            limit-access-to-actor: true
 
         - name: Setup Python
           uses: ./.github/actions/python
