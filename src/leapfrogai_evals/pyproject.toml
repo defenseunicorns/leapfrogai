@@ -16,7 +16,8 @@ dependencies = [
     "huggingface-hub == 0.24.6",
     "anthropic ==0.34.2",
     "instructor ==1.4.3",
-    "pyPDF2 == 3.0.1"
+    "pyPDF2 == 3.0.1",
+    "python-dotenv == 1.0.1"
 ]
 requires-python = "~=3.11"
 readme = "README.md"

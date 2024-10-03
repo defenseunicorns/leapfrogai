@@ -33,9 +33,7 @@ async def search(
     """
     query_service = QueryService(db=session)
     return await query_service.query_rag(
-        query=query,
-        vector_store_id=vector_store_id,
-        k=k,
+        query=query, vector_store_id=vector_store_id, k=k
     )
 
 

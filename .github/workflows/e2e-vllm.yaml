@@ -32,6 +32,7 @@ on:
 
       # Ignore local development files
       - "!.pre-commit-config.yaml"
+      - "!tasks.yaml"
 
       # Ignore non e2e tests changes
       - "!tests/pytest/**"
@@ -58,6 +59,11 @@ jobs:
     runs-on: ai-ubuntu-big-boy-8-core
     if: ${{ !github.event.pull_request.draft }}
 
+    permissions:
+      contents: read
+      packages: read
+      id-token: write # This is needed for OIDC federation.
+
     steps:
         - name: Checkout Repo
           uses: actions/checkout@b4ffde65f46336ab88eb53be808477a3936bae11 # v4.1.1
@@ -73,7 +79,7 @@ jobs:
             registry1Username: ${{ secrets.IRON_BANK_ROBOT_USERNAME }}
             registry1Password: ${{ secrets.IRON_BANK_ROBOT_PASSWORD }}
             ghToken: ${{ secrets.GITHUB_TOKEN }}
-            udsCliVersion: 0.14.0
+            chainguardIdentity: ${{ secrets.CHAINGUARD_IDENTITY }}
 
         ##########
         # vLLM
@@ -82,4 +88,4 @@ jobs:
         ##########
         - name: Build vLLM
           run: |
-            make build-vllm LOCAL_VERSION=e2e-test
+            make build-vllm LOCAL_VERSION=e2e-test ZARF_CONFIG=packages/vllm/zarf-config.yaml

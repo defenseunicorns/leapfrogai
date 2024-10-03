@@ -8,12 +8,13 @@ from contextlib import asynccontextmanager
 from fastapi import FastAPI
 from fastapi.exception_handlers import request_validation_exception_handler
 from fastapi.exceptions import RequestValidationError
-
+from fastapi.responses import RedirectResponse
 from leapfrogai_api.routers.base import router as base_router
 from leapfrogai_api.routers.leapfrogai import auth
 from leapfrogai_api.routers.leapfrogai import models as lfai_models
 from leapfrogai_api.routers.leapfrogai import vector_stores as lfai_vector_stores
 from leapfrogai_api.routers.leapfrogai import count as lfai_token_count
+from leapfrogai_api.routers.leapfrogai import rag as lfai_rag
 from leapfrogai_api.routers.openai import (
     assistants,
     audio,
@@ -29,6 +30,7 @@ from leapfrogai_api.routers.openai import (
     vector_stores,
 )
 from leapfrogai_api.utils import get_model_config
+from prometheus_fastapi_instrumentator import Instrumentator
 
 logging.basicConfig(
     level=os.getenv("LFAI_LOG_LEVEL", logging.INFO),
@@ -61,6 +63,21 @@ async def lifespan(app: FastAPI):
 app = FastAPI(lifespan=lifespan)
 
 
+@app.get("/", include_in_schema=False)
+async def root():
+    """Intercepts the root path and redirects to the API documentation."""
+    return RedirectResponse(url="/docs")
+
+
+Instrumentator(
+    excluded_handlers=["/healthz", "/metrics"],
+    should_group_status_codes=False,
+).instrument(app).expose(
+    app,
+    include_in_schema=False,
+)
+
+
 @app.exception_handler(RequestValidationError)
 async def validation_exception_handler(request, exc):
     logger.error(f"The client sent invalid data!: {exc}")
@@ -81,6 +98,8 @@ app.include_router(runs.router)
 app.include_router(messages.router)
 app.include_router(runs_steps.router)
 app.include_router(lfai_vector_stores.router)
+if os.environ.get("DEV"):
+    app.include_router(lfai_rag.router)
 app.include_router(lfai_token_count.router)
 app.include_router(lfai_models.router)
 # This should be at the bottom to prevent it preempting more specific runs endpoints

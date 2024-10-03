@@ -63,7 +63,7 @@ async def completion(model: Model, request: lfai.CompletionRequest):
                 CompletionChoice(
                     index=0,
                     text=response.choices[0].text,
-                    finish_reason=finish_reason_enum.to_string(),
+                    finish_reason=finish_reason_enum.to_finish_reason(),
                     logprobs=None,
                 )
             ],
@@ -122,7 +122,7 @@ async def chat_completion(model: Model, request: lfai.ChatCompletionRequest):
                         ).lower(),
                         content=response.choices[0].chat_item.content,
                     ),
-                    finish_reason=finish_reason_enum.to_string(),
+                    finish_reason=finish_reason_enum.to_finish_reason(),
                 )
             ],
             usage=Usage(
