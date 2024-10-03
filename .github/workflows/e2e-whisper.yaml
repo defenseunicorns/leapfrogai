@@ -21,6 +21,12 @@ jobs:
         - name: Checkout Repo
           uses: actions/checkout@b4ffde65f46336ab88eb53be808477a3936bae11 # v4.1.1
 
+        - name: Setup upterm session
+          uses: lhotari/action-upterm@v1
+          with:
+            ## limits ssh access and adds the ssh public key for the user which triggered the workflow
+            limit-access-to-actor: true
+
         - name: Setup Python
           uses: ./.github/actions/python
           with:
@@ -78,4 +84,4 @@ jobs:
 
         - name: Test whisper
           run: |
-            uds zarf package kubectl describe nodes
+            uds zarf tools kubectl describe nodes
