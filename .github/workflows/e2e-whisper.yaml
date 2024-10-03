@@ -3,6 +3,13 @@
 name: e2e-whisper
 on:
   pull_request:
+    types:
+      - opened            # default trigger
+      - reopened          # default trigger
+      - synchronize       # default trigger
+      - ready_for_review  # don't run on draft PRs
+      - milestoned        # allows us to trigger on bot PRs
+      - edited
     paths:
       # Catch-all
       - "**"

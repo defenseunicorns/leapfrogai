@@ -48,9 +48,3 @@ jobs:
       - name: Skipped
         run: |
           echo skipped
-  e2e_whisper:
-    runs-on: ubuntu-latest
-    steps:
-      - name: Skipped
-        run: |
-          echo skipped
