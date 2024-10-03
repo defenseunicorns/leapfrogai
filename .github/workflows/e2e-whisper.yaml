@@ -55,6 +55,4 @@ jobs:
           run: |
             hostnamectl
             nvidia-smi
-            az aks list
-            az aks nodepool
             az aks --help
