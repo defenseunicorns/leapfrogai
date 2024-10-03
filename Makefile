@@ -123,7 +123,7 @@ build-vllm: local-registry docker-vllm ## Build the vllm container and Zarf pack
 	docker push ${DOCKER_FLAGS} localhost:${REG_PORT}/defenseunicorns/leapfrogai/vllm:${LOCAL_VERSION}
 
 	## Build the Zarf package
-	uds zarf package create packages/vllm --flavor ${FLAVOR} -a ${ARCH} -o packages/vllm --registry-override=ghcr.io=localhost:${REG_PORT} --insecure --set IMAGE_VERSION=${LOCAL_VERSION} ${ZARF_FLAGS} --confirm
+	ZARF_CONFIG=packages/vllm/zarf-config.yaml uds zarf package create packages/vllm --flavor ${FLAVOR} -a ${ARCH} -o packages/vllm --registry-override=ghcr.io=localhost:${REG_PORT} --insecure --set IMAGE_VERSION=${LOCAL_VERSION} ${ZARF_FLAGS} --confirm
 
 docker-text-embeddings: sdk-wheel
 	## Build the image (and tag it for the local registry)
@@ -263,7 +263,7 @@ silent-deploy-llama-cpp-python-package:
 silent-deploy-vllm-package:
 	@echo "Starting VLLM deployment..."
 	@mkdir -p .logs
-	@uds zarf package deploy packages/vllm/zarf-package-vllm-${ARCH}-${LOCAL_VERSION}.tar.zst ${ZARF_FLAGS} --confirm > .logs/deploy-vllm.log 2>&1
+	@ZARF_CONFIG=packages/vllm/zarf-config.yaml uds zarf package deploy packages/vllm/zarf-package-vllm-${ARCH}-${LOCAL_VERSION}.tar.zst ${ZARF_FLAGS} --confirm > .logs/deploy-vllm.log 2>&1
 	@echo "VLLM deployment completed"
 
 silent-deploy-text-embeddings-package:
