@@ -21,10 +21,10 @@ jobs:
         - name: Checkout Repo
           uses: actions/checkout@b4ffde65f46336ab88eb53be808477a3936bae11 # v4.1.1
 
-        - name: Setup Python
-          uses: ./.github/actions/python
-          with:
-            additionalOptionalDep: dev-whisper
+#        - name: Setup Python
+#          uses: ./.github/actions/python
+#          with:
+#            additionalOptionalDep: dev-whisper
 
 #        - name: Setup UDS Cluster
 #          uses: ./.github/actions/uds-cluster
