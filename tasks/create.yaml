@@ -8,7 +8,7 @@ includes:
   ###########################
   # LEAPFROGAI-SPECIFIC TASKS
   ###########################
-  - publish: ./publish.yaml
+  - utils: ./utils.yaml
 
 tasks:
   #########
@@ -35,8 +35,9 @@ tasks:
         cmd: |
           if [[ ${FLAVOR} != "upstream" || ${{ .inputs.override }} != "false" ]]; then
             if [ ! "$(docker ps -q -f name=${{ .inputs.name }})" ]; then
-              docker run -d -p ${{ .inputs.port }}:5000 --restart=always -q --name ${{ .inputs.name }} registry:2
+              docker run -d -p ${{ .inputs.port }}:5000 --restart=always -q --name ${{ .inputs.name }} registry:2 > /dev/null 2>&1
               echo "false"
+            fi
           else
             echo "true"
           fi
@@ -45,7 +46,7 @@ tasks:
           - name: ENABLE_LOG
       - task: utils:log
         with:
-          log: "Non-upstream flavor detected, skipping local image build"
+          log: "Non-upstream flavor detected, skipping local registry creation"
           enable: ${ENABLE_LOG}
 
   ###########
@@ -93,8 +94,9 @@ tasks:
               -t ${{ .inputs.imageRepository }}:${{ .inputs.version }} \
               -f ${{ .inputs.dockerfile }} \
               --build-arg LOCAL_VERSION=${{ .inputs.version }} \
-              ${{ .inputs.buildOptions }} ${{ .inputs.buildContext }}
-              echo "false"
+              ${{ .inputs.buildOptions }} ${{ .inputs.buildContext }} \
+              > /dev/null 2>&1
+            echo "false"
           else
             echo "true"
           fi
@@ -234,12 +236,12 @@ tasks:
           architecture: ${ARCHITECTURE}
           version: ${VERSION}
           imageRepository: ghcr.io/defenseunicorns/leapfrogai/api-migrations
-      - task: publish:tag
+      - task: utils:tag
         with:
           current: "ghcr.io/defenseunicorns/leapfrogai/api-migrations:${VERSION}"
           new: "localhost:${LOCAL_REGISTRY_PORT}/defenseunicorns/leapfrogai/api-migrations:${VERSION}"
           override: "true"
-      - task: publish:docker
+      - task: utils:docker
         with:
           tag: "localhost:${LOCAL_REGISTRY_PORT}/defenseunicorns/leapfrogai/api-migrations:${VERSION}"
           override: "true"
@@ -265,11 +267,11 @@ tasks:
           architecture: ${ARCHITECTURE}
           version: ${VERSION}
           imageRepository: ghcr.io/defenseunicorns/leapfrogai/leapfrogai-api
-      - task: publish:tag
+      - task: utils:tag
         with:
           current: "ghcr.io/defenseunicorns/leapfrogai/leapfrogai-api:${VERSION}"
           new: "localhost:${LOCAL_REGISTRY_PORT}/defenseunicorns/leapfrogai/leapfrogai-api:${VERSION}"
-      - task: publish:docker
+      - task: utils:docker
         with:
           tag: "localhost:${LOCAL_REGISTRY_PORT}/defenseunicorns/leapfrogai/leapfrogai-api:${VERSION}"
 
@@ -290,12 +292,12 @@ tasks:
           architecture: ${ARCHITECTURE}
           version: ${VERSION}
           imageRepository: ghcr.io/defenseunicorns/leapfrogai/ui-migrations
-      - task: publish:tag
+      - task: utils:tag
         with:
           current: "ghcr.io/defenseunicorns/leapfrogai/ui-migrations:${VERSION}"
           new: "localhost:${LOCAL_REGISTRY_PORT}/defenseunicorns/leapfrogai/ui-migrations:${VERSION}"
           override: "true"
-      - task: publish:docker
+      - task: utils:docker
         with:
           tag: "localhost:${LOCAL_REGISTRY_PORT}/defenseunicorns/leapfrogai/ui-migrations:${VERSION}"
           override: "true"
@@ -316,11 +318,11 @@ tasks:
           architecture: ${ARCHITECTURE}
           version: ${VERSION}
           imageRepository: ghcr.io/defenseunicorns/leapfrogai/leapfrogai-ui
-      - task: publish:tag
+      - task: utils:tag
         with:
           current: "ghcr.io/defenseunicorns/leapfrogai/leapfrogai-ui:${VERSION}"
           new: "localhost:${LOCAL_REGISTRY_PORT}/defenseunicorns/leapfrogai/leapfrogai-ui:${VERSION}"
-      - task: publish:docker
+      - task: utils:docker
         with:
           tag: "localhost:${LOCAL_REGISTRY_PORT}/defenseunicorns/leapfrogai/leapfrogai-ui:${VERSION}"
 
@@ -341,12 +343,12 @@ tasks:
           architecture: ${ARCHITECTURE}
           version: ${VERSION}
           imageRepository: ghcr.io/defenseunicorns/leapfrogai/supabase-migrations
-      - task: publish:tag
+      - task: utils:tag
         with:
           current: "ghcr.io/defenseunicorns/leapfrogai/supabase-migrations:${VERSION}"
           new: "localhost:${LOCAL_REGISTRY_PORT}/defenseunicorns/leapfrogai/supabase-migrations:${VERSION}"
           override: "true"
-      - task: publish:docker
+      - task: utils:docker
         with:
           tag: "localhost:${LOCAL_REGISTRY_PORT}/defenseunicorns/leapfrogai/supabase-migrations:${VERSION}"
           override: "true"
@@ -366,11 +368,11 @@ tasks:
           architecture: ${ARCHITECTURE}
           version: ${VERSION}
           imageRepository: ghcr.io/defenseunicorns/leapfrogai/repeater
-      - task: publish:tag
+      - task: utils:tag
         with:
           current: "ghcr.io/defenseunicorns/leapfrogai/repeater:${VERSION}"
           new: "localhost:${LOCAL_REGISTRY_PORT}/defenseunicorns/leapfrogai/repeater:${VERSION}"
-      - task: publish:docker
+      - task: utils:docker
         with:
           tag: "localhost:${LOCAL_REGISTRY_PORT}/defenseunicorns/leapfrogai/repeater:${VERSION}"
 
@@ -389,11 +391,11 @@ tasks:
           architecture: ${ARCHITECTURE}
           version: ${VERSION}
           imageRepository: ghcr.io/defenseunicorns/leapfrogai/vllm
-      - task: publish:tag
+      - task: utils:tag
         with:
           current: "ghcr.io/defenseunicorns/leapfrogai/vllm:${VERSION}"
           new: "localhost:${LOCAL_REGISTRY_PORT}/defenseunicorns/leapfrogai/vllm:${VERSION}"
-      - task: publish:docker
+      - task: utils:docker
         with:
           tag: "localhost:${LOCAL_REGISTRY_PORT}/defenseunicorns/leapfrogai/vllm:${VERSION}"
 
@@ -412,11 +414,11 @@ tasks:
           architecture: ${ARCHITECTURE}
           version: ${VERSION}
           imageRepository: ghcr.io/defenseunicorns/leapfrogai/llama-cpp-python
-      - task: publish:tag
+      - task: utils:tag
         with:
           current: "ghcr.io/defenseunicorns/leapfrogai/llama-cpp-python:${VERSION}"
           new: "localhost:${LOCAL_REGISTRY_PORT}/defenseunicorns/leapfrogai/llama-cpp-python:${VERSION}"
-      - task: publish:docker
+      - task: utils:docker
         with:
           tag: "localhost:${LOCAL_REGISTRY_PORT}/defenseunicorns/leapfrogai/llama-cpp-python:${VERSION}"
 
@@ -435,11 +437,11 @@ tasks:
           architecture: ${ARCHITECTURE}
           version: ${VERSION}
           imageRepository: ghcr.io/defenseunicorns/leapfrogai/text-embeddings
-      - task: publish:tag
+      - task: utils:tag
         with:
           current: "ghcr.io/defenseunicorns/leapfrogai/text-embeddings:${VERSION}"
           new: "localhost:${LOCAL_REGISTRY_PORT}/defenseunicorns/leapfrogai/text-embeddings:${VERSION}"
-      - task: publish:docker
+      - task: utils:docker
         with:
           tag: "localhost:${LOCAL_REGISTRY_PORT}/defenseunicorns/leapfrogai/text-embeddings:${VERSION}"
 
@@ -458,11 +460,11 @@ tasks:
           architecture: ${ARCHITECTURE}
           version: ${VERSION}
           imageRepository: ghcr.io/defenseunicorns/leapfrogai/whisper
-      - task: publish:tag
+      - task: utils:tag
         with:
           current: "ghcr.io/defenseunicorns/leapfrogai/whisper:${VERSION}"
           new: "localhost:${LOCAL_REGISTRY_PORT}/defenseunicorns/leapfrogai/whisper:${VERSION}"
-      - task: publish:docker
+      - task: utils:docker
         with:
           tag: "localhost:${LOCAL_REGISTRY_PORT}/defenseunicorns/leapfrogai/whisper:${VERSION}"
 

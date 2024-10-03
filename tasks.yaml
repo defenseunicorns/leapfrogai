@@ -35,10 +35,9 @@ includes:
   ###########################
   - badge: ./tasks/badge.yaml
   - create: ./tasks/create.yaml
-  - publish: ./tasks/publish.yaml
+  - publish: ./tasks/utils.yaml
   - setup: ./tasks/setup.yaml
   - deploy: ./tasks/deploy.yaml
-  - utils: ./tasks/utils.yaml
 
 tasks:
   #######

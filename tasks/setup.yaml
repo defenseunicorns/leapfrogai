@@ -9,6 +9,7 @@ includes:
   # LEAPFROGAI-SPECIFIC TASKS
   ###########################
   - create: ./create.yaml
+  - utils: ./utils.yaml
 
 tasks:
   - name: e2e-test-user
