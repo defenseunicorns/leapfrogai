@@ -11,6 +11,25 @@ includes:
   - utils: ./utils.yaml
 
 tasks:
+  ############
+  # WORKAROUND
+  ############
+  - name: log
+    description: "LeapfrogAI logger"
+    inputs:
+      log:
+        description: "Content to be logged to the CLI"
+        required: true
+      enable:
+        description: "Whether to enable or disable the logging"
+        default: "true"
+        required: false
+    actions:
+      - task: utils:log
+        with:
+          log: ${{ .inputs.log }}
+          enable: ${{ .inputs.enable }}
+
   #########
   # UTILITY
   #########
