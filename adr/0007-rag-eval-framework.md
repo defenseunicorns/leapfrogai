@@ -19,7 +19,7 @@
 
 ## Status
 
-APPROVED
+ACCEPTED
 
 ## Context
 
