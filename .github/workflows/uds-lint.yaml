@@ -33,7 +33,7 @@ jobs:
         run: pip install check-jsonschema==0.28.0
 
       - name: Download UDS Bundle Schema
-        run: curl -o uds.schema.json https://raw.githubusercontent.com/defenseunicorns/uds-cli/v0.14.0/uds.schema.json
+        run: curl -o uds.schema.json https://raw.githubusercontent.com/defenseunicorns/uds-cli/v0.16.0/uds.schema.json
 
       - name: Validate uds-bundle.yaml (dev)
         if: always()
@@ -48,7 +48,7 @@ jobs:
           check-jsonschema bundles/latest/cpu/uds-bundle.yaml --schemafile uds.schema.json
 
       - name: Download UDS Tasks Schema
-        run: curl -o tasks.schema.json https://raw.githubusercontent.com/defenseunicorns/uds-cli/v0.14.0/tasks.schema.json
+        run: curl -o tasks.schema.json https://raw.githubusercontent.com/defenseunicorns/uds-cli/v0.16.0/tasks.schema.json
 
       - name: Validate tasks.yaml
         if: always()
