@@ -31,7 +31,7 @@ jobs:
 
       - name: Download Zarf Package Schema
         # TODO: renovate setup
-        run: curl -o zarf.schema.json https://raw.githubusercontent.com/defenseunicorns/uds-cli/v0.14.0/zarf.schema.json
+        run: curl -o zarf.schema.json https://raw.githubusercontent.com/defenseunicorns/uds-cli/v0.16.0/zarf.schema.json
 
       - name: Install jsonschema
         run: pip install check-jsonschema==0.28.0
