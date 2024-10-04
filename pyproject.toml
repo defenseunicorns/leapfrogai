@@ -27,13 +27,13 @@ dev = [
     "requests-toolbelt",
     "pytest",
     "supabase == 2.6.0",
-    "huggingface_hub[cli,hf_transfer] == 0.24.5",
+    "huggingface_hub[cli,hf_transfer] ==0.25.1",
     "fastapi == 0.109.1",
 ]
 
 dev-whisper = ["ctranslate2 ==4.4.0", "transformers[torch] == 4.39.3"]
 
-dev-vllm = ["confz == 2.0.1", "huggingface_hub == 0.24.5"]
+dev-vllm = ["confz == 2.0.1", "huggingface_hub ==0.25.1"]
 
 [tool.pip-tools]
 generate-hashes = true

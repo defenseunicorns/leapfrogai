@@ -18,7 +18,7 @@ requires-python = "~=3.11"
 readme = "README.md"
 
 [project.optional-dependencies]
-dev = ["confz == 2.0.1", "huggingface_hub[cli,hf_transfer] == 0.24.5"]
+dev = ["confz == 2.0.1", "huggingface_hub[cli,hf_transfer] ==0.25.1"]
 
 [tool.pip-tools]
 generate-hashes = true
