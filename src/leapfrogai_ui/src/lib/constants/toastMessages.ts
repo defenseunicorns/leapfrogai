@@ -19,7 +19,7 @@ export const ERROR_GETTING_ASSISTANT_MSG_TOAST = (
 ): ToastData => ({
   kind: 'error',
   title: 'Error',
-  subtitle: 'Error getting Assistant Response',
+  subtitle: 'Error getting assistant response',
   ...override
 });
 
