@@ -61,5 +61,5 @@ if __name__ == "__main__":
     logging.basicConfig(level=logging.INFO)
     load_dotenv()
     evaluator = RAGEvaluator()
-    evaluator.set_evaluations(eval_list=["mmlu"])
+    evaluator.set_evaluations()
     evaluator.run_evals()
