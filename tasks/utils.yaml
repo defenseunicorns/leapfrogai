@@ -39,6 +39,7 @@ tasks:
         shell:
           linux: bash
           darwin: bash
+        mute: true
         cmd: |
           if [[ ${FLAVOR} = "upstream" || ${{ .inputs.override }} = "true" ]]; then
             docker tag ${{ .inputs.current }} ${{ .inputs.new }}
@@ -64,6 +65,7 @@ tasks:
         shell:
           linux: bash
           darwin: bash
+        mute: true
         cmd: |
           if [[ ${FLAVOR} = "upstream" || ${{ .inputs.override }} = "true" ]]; then
             docker push ${{ .inputs.tag }} ${{ .inputs.options }}

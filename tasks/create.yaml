@@ -166,11 +166,11 @@ tasks:
         task: create-common:package
         env:
           - "FLAVOR=${{ .inputs.flavor }}"
-          - "ZARF_CONFIG=${{ .inputs.zarfConfig }}"
         with:
           options: ${{ .inputs.createOptions }} ${{ .inputs.options }} -o ${{ .inputs.outputPath }} --set IMAGE_VERSION=${{ .inputs.version }}
           path: ${{ .inputs.path }}
           architecture: ${{ .inputs.architecture }}
+          config: ${{ .inputs.zarfConfig }}
 
   - name: bundle
     description: "Create a UDS bundle"
@@ -563,6 +563,7 @@ tasks:
           flavor: ${FLAVOR}
           architecture: ${ARCHITECTURE}
           version: ${VERSION}
+          zarfConfig: "packages/vllm/zarf-config.yaml"
           # the build options below do not affect registry1 builds
           createOptions: "--insecure --registry-override=ghcr.io=localhost:${LOCAL_REGISTRY_PORT}"
 
