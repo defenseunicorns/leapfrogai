@@ -46,7 +46,6 @@ export const POST: RequestHandler = async ({ request, locals: { session } }) => 
             throw new Error('assistant_id is not set');
           })()
       });
-
       // forward run status would stream message deltas
       let runResult = await forwardStream(runStream);
 
