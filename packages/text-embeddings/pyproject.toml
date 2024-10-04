@@ -19,7 +19,7 @@ requires-python = "~=3.11"
 readme = "README.md"
 
 [project.optional-dependencies]
-dev = ["huggingface_hub == 0.24.5"]
+dev = ["huggingface_hub ==0.25.1"]
 
 [tool.pip-tools]
 generate-hashes = true
