@@ -75,7 +75,7 @@ class QA_Runner:
             )
 
         self.client = openai.OpenAI(
-            base_url=base_url or os.getenv("LEAPFROGAI_API_URL"),
+            base_url=base_url or os.getenv("LEAPFROGAI_API_URL") + "/openai/v1",
             api_key=self.api_key,
         )
         logging.info(f"client url: {self.client.base_url}")
@@ -145,8 +145,8 @@ class QA_Runner:
                     # retrieve context used to generate response
                     for chunk_id in chunk_ids:
                         vector_response = requests.get(
-                            url=os.getenv("LEAPFROGAI_API_LFAI_URL")
-                            + "/vector_stores/vector/"
+                            url=os.getenv("LEAPFROGAI_API_URL")
+                            + "/leapfrogai/v1/vector_stores/vector/"
                             + chunk_id,
                             headers={
                                 "accept": "application/json",

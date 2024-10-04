@@ -18,7 +18,7 @@ cp .env.example .env
 Within `.env`, replace the necessary environment variables:
 
 ```bash
-LEAPFROGAI_API_URL=<LeapfrogAI API url, usually: https://leapfrogai-api.uds.dev/openai/v1 for development>
+LEAPFROGAI_API_URL=<LeapfrogAI API url, usually: https://leapfrogai-api.uds.dev for development>
 LEAPFROGAI_API_KEY=<LeapfrogAI API key>
 ANTHROPIC_API_KEY=<Anthropic API key>
 ```

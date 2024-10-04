@@ -80,7 +80,7 @@ class NIAH_Runner:
             )
 
         self.client = openai.OpenAI(
-            base_url=base_url or os.environ.get("LEAPFROGAI_API_URL"),
+            base_url=base_url or os.environ.get("LEAPFROGAI_API_URL") + "/openai/v1",
             api_key=api_key or os.environ.get("LEAPFROGAI_API_KEY"),
         )
         logging.info(f"client url: {self.client.base_url}")
@@ -178,8 +178,8 @@ class NIAH_Runner:
                     for chunk_num, chunk_id in enumerate(chunk_ids):
                         logging.info(f"chunk {chunk_num} (id: {chunk_id})")
                         vector_response = requests.get(
-                            url=os.getenv("LEAPFROGAI_API_LFAI_URL")
-                            + "/vector_stores/vector/"
+                            url=os.getenv("LEAPFROGAI_API_URL")
+                            + "/leapfrogai/v1/vector_stores/vector/"
                             + chunk_id,
                             headers={
                                 "accept": "application/json",
