@@ -9,27 +9,86 @@ metadata:
 constants:
   - name: IMAGE_VERSION
     value: "###ZARF_PKG_TMPL_IMAGE_VERSION###"
+  - name: MODEL_REPO_ID
+    description: "The HuggingFace repository ID"
+    value: "###ZARF_PKG_TMPL_MODEL_REPO_ID###"
+  - name: MODEL_REVISION
+    description: "The HuggingFace git branch or commit hash"
+    value: "###ZARF_PKG_TMPL_MODEL_REVISION###"
+  - name: MODEL_PATH
+    description: "Defines the location of the Zarf Injected model files in the vLLM container"
+    value: "###ZARF_PKG_TMPL_MODEL_PATH###"
+  - name: NAME_OVERRIDE
+    description: "Provide an override for the name of the deployment (e.g., the model name)"
+    value: "###ZARF_PKG_TMPL_NAME_OVERRIDE###"
 
 variables:
+  # vLLM runtime configuration (usually influenced by .env in local development)
+  - name: TRUST_REMOTE_CODE
+    description: "If True, allows the execution of code within the model files directory"
+    pattern: "^(True|False)$"
+  - name: TENSOR_PARALLEL_SIZE
+    description: "The number of tensor parallelism splits, typically used for model parallelism across GPUs"
+    pattern: "^[1-9][0-9]*$"
+  - name: ENFORCE_EAGER
+    description: "If set to True, enforces eager execution mode instead of lazy execution, impacting performance"
+    pattern: "^(True|False)$"
+  - name: GPU_MEMORY_UTILIZATION
+    description: "The fraction of GPU memory to be utilized, expressed as a decimal value between 0.01 and 0.99"
+    pattern: ^0\.(0[1-9]|[1-9][0-9])$
+  - name: WORKER_USE_RAY
+    description: "If True, uses Ray for distributed worker management"
+    pattern: "^(True|False)$"
+  - name: ENGINE_USE_RAY
+    description: "If True, uses Ray for managing the execution engine"
+    pattern: "^(True|False)$"
+  - name: QUANTIZATION
+    description: "If None, allows vLLM to automatically detect via model files and configuration"
+  - name: LOAD_FORMAT
+    description: "If auto, allows vLLM to automatically detect via model files and configuration"
+  # LeapfrogAI SDK runtime configuration (usually influenced by config.yaml in development)
+  - name: MAX_CONTEXT_LENGTH
+    description: "The maximum number of tokens the model can process in a single input before the inferencing engine's overflow strategy is used"
+    pattern: "^[1-9][0-9]*$"
+  - name: STOP_TOKENS
+    description: "A set of special tokens that signal the model to stop producing further output, delimited using a comma and space"
+    pattern: ^(<[^,]+>\s*,\s*)*<[^,]+>\s*$
+  - name: PROMPT_FORMAT_CHAT_SYSTEM
+    description: "Prompt template format for the LeapfrogAI SDK to consume and wrap"
+  - name: PROMPT_FORMAT_CHAT_USER
+    description: "Prompt template format for the LeapfrogAI SDK to consume and wrap"
+  - name: PROMPT_FORMAT_CHAT_ASSISTANT
+    description: "Prompt template format for the LeapfrogAI SDK to consume and wrap"
+  - name: TEMPERATURE
+    description: "Controls the randomness of the model's output"
+    pattern: ^(0(\.\d+)?|1(\.0+)?)$
+  - name: TOP_P
+    description: "The cumulative probability threshold for token sampling, where 1.0 represents no restriction"
+    pattern: ^(0(\.\d+)?|1(\.0+)?)$
+  - name: TOP_K
+    description: "The number of top-K tokens to consider during sampling, where 0 disables top-K sampling"
+    pattern: ^\d+$
+  - name: REPETITION_PENALTY
+    description: "The penalty value for repetition in generation"
+    pattern: ^(0(\.\d+)?|1(\.0+)?)$
+  - name: MAX_NEW_TOKENS
+    description: "Maximum new tokens to generate"
+    pattern: ^\d+$
+  # Pod deployment configuration
   - name: GPU_LIMIT
-    description: The GPU limit for the model inferencing. Must be 1 or more.
-    default: "1"
+    description: "The GPU limit for the model inferencing. Must be 1 or more."
     pattern: "^[1-9][0-9]*$"
   - name: GPU_RUNTIME
-    description: The GPU runtime name for the model inferencing.
-    default: "nvidia"
+    description: "The GPU runtime name for the model inferencing."
     pattern: "^(nvidia)?$"
   - name: PVC_SIZE
-    description: Size of the PVC used for model storage.
-    default: "15Gi"
+    description: "Size of the PVC used for model storage."
     pattern: "^[0-9]+[a-zA-Z]+$"
   - name: PVC_ACCESS_MODE
-    description: Access mode of the PVC used for model storage.
-    default: "ReadWriteOnce"
+    description: "Access mode of the PVC used for model storage."
     pattern: "^(ReadWriteOnce|ReadOnlyMany|ReadWriteMany)$"
   - name: PVC_STORAGE_CLASS
-    description: Storage class of the PVC used for model storage.
-    default: "local-path"
+    description: "Storage class of the PVC used for model storage."
 
 components:
   - name: vllm-model
@@ -37,33 +96,33 @@ components:
     only:
       flavor: upstream
     charts:
-      - name: vllm-model
+      - name: "###ZARF_PKG_TMPL_NAME_OVERRIDE###-model"
         namespace: leapfrogai
         localPath: chart
-        releaseName: vllm-model
+        releaseName: "###ZARF_PKG_TMPL_NAME_OVERRIDE###-model"
         # x-release-please-start-version
         version: 0.13.1
         # x-release-please-end
         valuesFiles:
           - "values/upstream-values.yaml"
     images:
-      - ghcr.io/defenseunicorns/leapfrogai/vllm:###ZARF_PKG_TMPL_IMAGE_VERSION###
-      - cgr.dev/chainguard/bash:latest
+      - "ghcr.io/defenseunicorns/leapfrogai/vllm:###ZARF_PKG_TMPL_IMAGE_VERSION###"
+      - "cgr.dev/chainguard/bash:latest"
     dataInjections:
-      - source: .model/
+      # location where locally downloaded model files are located
+      - source: ".model/"
         target:
-          namespace: leapfrogai
-          selector: app=lfai-vllm
-          container: data-loader
-          path: /data/.model
+          namespace: "leapfrogai"
+          selector: "app=lfai-###ZARF_PKG_TMPL_NAME_OVERRIDE###"
+          container: "data-loader"
+          # location in the container for injection of the model files
+          path: "###ZARF_PKG_TMPL_MODEL_PATH###"
         compress: true
     actions:
       onCreate:
         before:
           # NOTE: This assumes python is installed and in $PATH and 'huggingface_hub[cli,hf_transfer]' has been installed
-          - cmd: python src/model_download.py
+          - cmd: "python src/model_download.py"
             env:
-              - LAI_REPO_ID=TheBloke/Synthia-7B-v2.0-GPTQ
-              - LAI_REVISION=gptq-4bit-32g-actorder_True
-              - LAI_QUANTIZATION=gptq
-              - LAI_HF_HUB_ENABLE_HF_TRANSFER=1
+              - LFAI_REPO_ID=###ZARF_PKG_TMPL_MODEL_REPO_ID###
+              - LFAI_REVISION=###ZARF_PKG_TMPL_MODEL_REVISION###

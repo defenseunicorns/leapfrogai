@@ -58,6 +58,11 @@ jobs:
     runs-on: ai-ubuntu-big-boy-8-core
     if: ${{ !github.event.pull_request.draft }}
 
+    permissions:
+      contents: read
+      packages: read
+      id-token: write # This is needed for OIDC federation.
+
     steps:
         - name: Checkout Repo
           uses: actions/checkout@b4ffde65f46336ab88eb53be808477a3936bae11 # v4.1.1
@@ -70,6 +75,8 @@ jobs:
           with:
             registry1Username: ${{ secrets.IRON_BANK_ROBOT_USERNAME }}
             registry1Password: ${{ secrets.IRON_BANK_ROBOT_PASSWORD }}
+            ghToken: ${{ secrets.GITHUB_TOKEN }}
+            chainguardIdentity: ${{ secrets.CHAINGUARD_IDENTITY }}
 
         - name: Setup LFAI-API and Supabase
           uses: ./.github/actions/lfai-core
@@ -98,5 +105,7 @@ jobs:
         # Test
         ##########
         - name: Test Text Backend
+          env:
+              LEAPFROGAI_MODEL: llama-cpp-python
           run: |
             python -m pytest ./tests/e2e/test_text_backend_full.py -v

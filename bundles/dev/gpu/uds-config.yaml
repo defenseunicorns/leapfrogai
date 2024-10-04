@@ -9,8 +9,31 @@ variables:
     gpu_limit: 0  # runs on CPU until GPU limit is increased
 
   vllm:
-    gpu_limit: 1 # if <1, vllm won't work, VLLM is GPU only
-    #tensor_parallel_size: 1   # TODO: reintroduce when vllm changes get pulled in
+    trust_remote_code: "True"
+    tensor_parallel_size: "1"
+    enforce_eager: "False"
+    gpu_memory_utilization: "0.90"
+    worker_use_ray: "True"
+    engine_use_ray: "True"
+    quantization: "None"
+    load_format: "auto"
+    # LeapfrogAI SDK runtime configuration (usually influenced by config.yaml in development)
+    max_context_length: "32768"
+    stop_tokens: "</s>, <|im_end|>, <|endoftext|>"
+    prompt_format_chat_system: "SYSTEM: {}\n"
+    prompt_format_chat_user: "USER: {}\n"
+    prompt_format_chat_assistant: "ASSISTANT: {}\n"
+    temperature: "0.1"
+    top_p: "1.0"
+    top_k: "0"
+    repetition_penalty: "1.0"
+    max_new_tokens: "8192"
+    # Pod deployment configuration
+    gpu_limit: "1"
+    gpu_runtime: "nvidia"
+    pvc_size: "15Gi"
+    pvc_access_mode: "ReadWriteOnce"
+    pvc_storage_class: "local-path"
 
   supabase:
     domain: "uds.dev"

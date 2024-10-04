@@ -13,20 +13,20 @@ Please first see the pre-requisites listed on the LeapfrogAI documentation websi
 
 It is **_HIGHLY RECOMMENDED_** that PyEnv be installed on your machine, and a new virtual environment is created for every new development branch.
 
-Follow the installation instructions outlined in the [pyenv](https://github.com/pyenv/pyenv?tab=readme-ov-file#installation) repository to install Python 3.11.6:
+Follow the installation instructions outlined in the [pyenv](https://github.com/pyenv/pyenv?tab=readme-ov-file#installation) repository to install Python 3.11.9:
 
   ```bash
   # install the correct python version
-  pyenv install 3.11.6
+  pyenv install 3.11.9
 
   # create a new virtual environment named "leapfrogai"
-  pyenv virtualenv 3.11.6 leapfrogai
+  pyenv virtualenv 3.11.9 leapfrogai
 
   # activate the virtual environment
   pyenv activate leapfrogai
   ```
 
-If your installation process completes successfully but indicates missing packages such as `sqlite3`, execute the following command to install the required packages then proceed with the reinstallation of Python 3.11.6:
+If your installation process completes successfully but indicates missing packages such as `sqlite3`, execute the following command to install the required packages then proceed with the reinstallation of Python 3.11.9:
 
   ```bash
   sudo apt-get install build-essential zlib1g-dev libffi-dev \
@@ -127,6 +127,7 @@ uds zarf tools registry prune --confirm
 
 # create and deploy the new package
 # FLAVOR can be upstream (default) or registry1 - see README for availability details
+# See individual sub-directories for any flavor-specific instructions (e.g., packages/api/README.md)
 LOCAL_VERSION=dev FLAVOR=upstream REGISTRY_PORT=5000 ARCH=amd64 make build-api
 LOCAL_VERSION=dev FLAVOR=upstream REGISTRY_PORT=5000 ARCH=amd64 make deploy-api
 ```
@@ -153,6 +154,7 @@ uds zarf package deploy zarf-package-*.tar.zst --confirm
 
     ```bash
     # FLAVOR can be upstream (default) or registry1 - see README for availability details
+    # See individual sub-directories for any flavor-specific instructions (e.g., packages/api/README.md)
     LOCAL_VERSION=dev FLAVOR=upstream ARCH=amd64 make build-cpu    # ui, api, llama-cpp-python, text-embeddings, whisper, supabase
     # OR
     LOCAL_VERSION=dev FLAVOR=upstream ARCH=amd64 make build-gpu    # ui, api, vllm, text-embeddings, whisper, supabase
@@ -166,6 +168,7 @@ uds zarf package deploy zarf-package-*.tar.zst --confirm
 
     ```bash
     # FLAVOR can be upstream (default) or registry1 - see README for availability details
+    # See individual sub-directories for any flavor-specific instructions (e.g., packages/api/README.md)
     LOCAL_VERSION=dev FLAVOR=upstream ARCH=amd64 make build-ui
     LOCAL_VERSION=dev FLAVOR=upstream ARCH=amd64 make build-api
     LOCAL_VERSION=dev FLAVOR=upstream ARCH=amd64 make build-supabase
@@ -200,7 +203,7 @@ Although not provided in the example UDS bundle manifests found in this reposito
   - name: leapfrogai-api
     repository: ghcr.io/defenseunicorns/packages/leapfrogai/leapfrogai-api
     # x-release-please-start-version
-    ref: 0.12.2
+    ref: 0.13.1
     # x-release-please-end
 
     # THE BELOW LINES WERE ADDED FOR DEMONSTRATION PURPOSES
@@ -234,6 +237,7 @@ To demonstrate what this would look like for an Apple Silicon Mac:
 
 ```bash
 # FLAVOR can be upstream (default) or registry1 - see README for availability details
+# See individual sub-directories for any flavor-specific instructions (e.g., packages/api/README.md)
 REG_PORT=5001 ARCH=arm64 LOCAL_VERSION=dev FLAVOR=upstream make build-cpu
 ```
 
@@ -241,6 +245,7 @@ To demonstrate what this would look like for an older Intel Mac:
 
 ```bash
 # FLAVOR can be upstream (default) or registry1 - see README for availability details
+# See individual sub-directories for any flavor-specific instructions (e.g., packages/api/README.md)
 REG_PORT=5001 ARCH=arm64 LOCAL_VERSION=dev FLAVOR=upstream make build-cpu
 ```
 

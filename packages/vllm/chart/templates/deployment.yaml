@@ -36,7 +36,7 @@ spec:
             [
               "sh",
               "-c",
-              'while [ ! -f /data/.model/###ZARF_DATA_INJECTION_MARKER### ]; do echo "waiting for zarf data sync" && sleep 1; done; echo "we are done waiting!"',
+              'while [ ! -f ###ZARF_CONST_MODEL_PATH###/###ZARF_DATA_INJECTION_MARKER### ]; do echo "waiting for zarf data sync" && sleep 1; done; echo "we are done waiting!"',
             ]
           resources:
             {{- toYaml .Values.modelInjectionContainer.resources | nindent 12 }}
@@ -46,6 +46,9 @@ spec:
         - name: leapfrogai-pv-storage
           persistentVolumeClaim:
             claimName: lfai-{{ .Values.nameOverride }}-pv-claim
+        - name: leapfrogai-sdk-configmap
+          configMap:
+            name: "{{ .Values.nameOverride }}-sdk-configmap"
       securityContext:
         {{- toYaml .Values.podSecurityContext | nindent 8 }}
       containers:
@@ -58,6 +61,9 @@ spec:
           env:
             {{- toYaml . | nindent 12 }}
           {{- end }}
+          envFrom:
+            - configMapRef:
+                name: "{{ .Values.nameOverride }}-engine-configmap"
           ports:
             - name: http
               containerPort: {{ .Values.service.port }}
@@ -67,6 +73,10 @@ spec:
           volumeMounts:
             - name: leapfrogai-pv-storage
               mountPath: "/data"
+            - name: leapfrogai-sdk-configmap
+              mountPath: "/home/leapfrogai/config.yaml"
+              subPath: "config.yaml"
+              readOnly: true
       {{- with .Values.nodeSelector }}
       nodeSelector:
         {{- toYaml . | nindent 8 }}
