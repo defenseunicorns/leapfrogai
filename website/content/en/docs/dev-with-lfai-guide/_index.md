@@ -1,7 +1,7 @@
 ---
-title: Guide to Development with LeapfrogAI
+title: Development Guide
 type: docs
-weight: 1
+weight: 2
 ---
 
 This documentation serves as a basic guide for getting started doing development leveraging the LeapfrogAI API and the OpenAI SDK.
