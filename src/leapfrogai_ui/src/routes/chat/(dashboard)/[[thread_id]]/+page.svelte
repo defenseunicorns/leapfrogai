@@ -13,6 +13,7 @@
   import { twMerge } from 'tailwind-merge';
   import {
     isRunAssistantMessage,
+    refetchThread,
     resetMessages,
     saveMessage,
     stopThenSave
@@ -29,7 +30,11 @@
   import ChatFileUploadForm from '$components/ChatFileUpload.svelte';
   import FileChatActions from '$components/FileChatActions.svelte';
   import LFCarousel from '$components/LFCarousel.svelte';
+  import { ASSISTANT_ERROR_MSG } from '$constants/errors';
+  import { delay } from 'msw';
   import type { LFThread } from '$lib/types/threads';
+
+  export let data;
 
   /** LOCAL VARS **/
   let lengthInvalid: boolean; // bound to child LFTextArea
@@ -68,6 +73,8 @@
   $: if (assistantMode) {
     resetFiles(); // attachment of files w/assistants disabled
   }
+
+  $: if ($assistantError) handleAssistantResponseError();
 
   /** END REACTIVE STATE **/
 
@@ -134,14 +141,60 @@
 
   const handleCompletedAssistantResponse = async () => {
     if (componentHasMounted && $status === 'awaiting_message') {
-      const assistantResponseId = $assistantMessages[$assistantMessages.length - 1].id;
+      if ($assistantError) return;
+      if (latestAssistantMessage.role === 'user') {
+        await handleAssistantResponseError();
+        return;
+      }
+
+      const assistantResponseId = latestAssistantMessage.id;
       const messageRes = await fetch(
         `/api/messages?thread_id=${$page.params.thread_id}&message_id=${assistantResponseId}`
       );
+      if (!messageRes.ok) {
+        //useAssistants onError hook will handle this
+        return;
+      }
+
       const message = await messageRes.json();
-      await threadsStore.addMessageToStore(message);
-      threadsStore.setStreamingMessage(null);
+      if (message && !getMessageText(message)) {
+        // error with response(empty response)/timeout
+        await handleAssistantResponseError();
+      } else {
+        await threadsStore.addMessageToStore(message);
+        threadsStore.setStreamingMessage(null);
+      }
     }
+  };
+
+  const createAssistantErrorResponse = async () => {
+    await delay(1000); // ensure error response timestamp is after user's msg
+    const newMessage = await saveMessage({
+      thread_id: data.thread.id,
+      content: ASSISTANT_ERROR_MSG,
+      role: 'assistant',
+      metadata: {
+        assistant_id: latestAssistantMessage.assistant_id || $threadsStore.selectedAssistantId
+      }
+    });
+
+    await threadsStore.addMessageToStore(newMessage);
+  };
+
+  const handleAssistantResponseError = async () => {
+    await refetchThread($page.params.thread_id); // if there was an error in the stream, we need to re-fetch to get the user's msg from the db
+    toastStore.addToast({
+      ...ERROR_GETTING_ASSISTANT_MSG_TOAST()
+    });
+    if (latestAssistantMessage.role === 'assistant') {
+      await threadsStore.deleteMessage($page.params.thread_id, latestAssistantMessage.id);
+      threadsStore.removeMessageFromStore($page.params.thread_id, latestAssistantMessage.id);
+      $assistantMessages = [...$assistantMessages.splice(-1)];
+    }
+    await createAssistantErrorResponse();
+
+    threadsStore.setStreamingMessage(null);
+    await threadsStore.setSendingBlocked(false);
   };
 
   /** useChat - streams messages with the /api/chat route**/
@@ -193,19 +246,11 @@
     submitMessage: submitAssistantMessage,
     stop: assistantStop,
     setMessages: setAssistantMessages,
-    append: assistantAppend
+    append: assistantAppend,
+    error: assistantError
   } = useAssistant({
     api: '/api/chat/assistants',
-    threadId: activeThread?.id,
-    onError: async (e) => {
-      // ignore this error b/c it is expected on cancel
-      if (e.message !== 'BodyStreamBuffer was aborted') {
-        toastStore.addToast({
-          ...ERROR_GETTING_ASSISTANT_MSG_TOAST()
-        });
-      }
-      await threadsStore.setSendingBlocked(false);
-    }
+    threadId: activeThread?.id
   });
 
   const sendAssistantMessage = async (e: SubmitEvent | KeyboardEvent) => {

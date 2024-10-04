@@ -59,7 +59,10 @@
   });
 
   let assistantImage = isRunAssistantMessage(message)
-    ? getAssistantImage($assistantsStore.assistants || [], message.assistant_id!)
+    ? getAssistantImage(
+        $assistantsStore.assistants || [],
+        message.assistant_id || message.metadata?.assistant_id
+      )
     : null;
 
   let messageIsHovered = false;
@@ -167,7 +170,9 @@
         >
           <div class="flex flex-col gap-2">
             <div class="font-bold">
-              {message.role === 'user' ? 'You' : getAssistantName(message.assistant_id)}
+              {message.role === 'user'
+                ? 'You'
+                : getAssistantName(message.assistant_id || message.metadata?.assistant_id)}
             </div>
             {#if fileMetadata}
               <div id="uploaded-files" class={'flex max-w-full  gap-2 overflow-x-auto bg-gray-900'}>
