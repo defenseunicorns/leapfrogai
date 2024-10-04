@@ -13,7 +13,7 @@ dependencies = [
     "python-dotenv == 1.0.1",
     "seaborn == 0.13.2",
     "datasets == 2.21.0",
-    "huggingface-hub == 0.24.6",
+    "huggingface-hub ==0.25.1",
     "anthropic ==0.34.2",
     "instructor ==1.4.3",
     "pyPDF2 == 3.0.1",
