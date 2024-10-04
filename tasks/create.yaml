@@ -3,7 +3,7 @@ includes:
   #########################
   # UDS COMMON TASK IMPORTS
   #########################
-  - create-common: https://raw.githubusercontent.com/defenseunicorns/uds-common/975093c7191ba7ab5a70ded39c17b7bfc4f0ea64/tasks/create.yaml
+  - create-common: https://raw.githubusercontent.com/defenseunicorns/uds-common/086215582247e53a69c507a9105b281ba7642c88/tasks/create.yaml
 
   ###########################
   # LEAPFROGAI-SPECIFIC TASKS
