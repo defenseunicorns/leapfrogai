@@ -1,7 +1,6 @@
 """Test the API endpoints for assistants."""
 
 import json
-import os
 import time
 
 import pytest
@@ -19,6 +18,7 @@ from leapfrogai_api.typedef.vectorstores import (
 )
 from leapfrogai_api.routers.openai.vector_stores import router as vector_store_router
 from leapfrogai_api.routers.openai.files import router as files_router
+from tests.utils.client import create_test_user
 from tests.utils.data_path import data_path, TXT_FILE
 
 INSTRUCTOR_XL_EMBEDDING_SIZE: int = 768
@@ -37,11 +37,11 @@ class MissingEnvironmentVariable(Exception):
 headers: dict[str, str] = {}
 
 try:
-    headers = {"Authorization": f"Bearer {os.environ['SUPABASE_USER_JWT']}"}
+    headers = {"Authorization": f"Bearer {create_test_user()}"}
 except KeyError as exc:
     raise MissingEnvironmentVariable(
         "SUPABASE_USER_JWT must be defined for the test to pass. "
-        "Please check the api README for instructions on obtaining this token."
+        "Please check the packages/api and src/leapfrogai_api READMEs for instructions on obtaining this token."
     ) from exc
 
 vector_store_client = TestClient(vector_store_router, headers=headers)

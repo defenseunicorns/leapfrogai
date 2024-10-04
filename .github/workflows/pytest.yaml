@@ -31,7 +31,10 @@ on:
       - "!packages/ui/**"
 
 # Declare default permissions as read only.
-permissions: read-all
+permissions:
+  contents: read
+  packages: read
+  id-token: write # This is needed for OIDC federation.
 
 concurrency:
   group: pytest-integration-${{ github.ref }}
@@ -64,6 +67,7 @@ jobs:
         run: make test-api-unit
         env:
           LFAI_RUN_REPEATER_TESTS: true
+          DEV: true
 
   integration:
     runs-on: ai-ubuntu-big-boy-8-core
@@ -97,6 +101,7 @@ jobs:
           registry1Username: ${{ secrets.IRON_BANK_ROBOT_USERNAME }}
           registry1Password: ${{ secrets.IRON_BANK_ROBOT_PASSWORD }}
           ghToken: ${{ secrets.GITHUB_TOKEN }}
+          chainguardIdentity: ${{ secrets.CHAINGUARD_IDENTITY }}
 
       - name: Setup API and Supabase
         uses: ./.github/actions/lfai-core

@@ -138,7 +138,7 @@ runs:
       run: |
         docker buildx build --build-arg LOCAL_VERSION=${{ inputs.releaseTag }} -t ghcr.io/defenseunicorns/leapfrogai/vllm:${{ inputs.releaseTag }} --push -f packages/vllm/Dockerfile .
 
-        zarf package create packages/vllm --set=IMAGE_VERSION=${{ inputs.releaseTag }} --flavor upstream --confirm
+        ZARF_CONFIG=packages/vllm/zarf-config.yaml zarf package create packages/vllm --set=IMAGE_VERSION=${{ inputs.releaseTag }} --flavor upstream --confirm
 
         zarf package publish zarf-package-vllm-amd64-${{ inputs.releaseTag }}.tar.zst oci://ghcr.io/defenseunicorns/packages${{ inputs.subRepository }}leapfrogai
 
