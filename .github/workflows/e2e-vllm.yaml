@@ -88,4 +88,4 @@ jobs:
         ##########
         - name: Build vLLM
           run: |
-            make build-vllm LOCAL_VERSION=e2e-test
+            make build-vllm LOCAL_VERSION=e2e-test ZARF_CONFIG=packages/vllm/zarf-config.yaml

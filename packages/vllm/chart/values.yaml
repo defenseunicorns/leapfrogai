@@ -13,6 +13,33 @@ image:
 nameOverride: "vllm"
 fullnameOverride: ""
 
+leapfrogaiConfig:
+  model:
+    source: "/data/.model/"
+  maxContextLength: "32768"
+  stopTokens: "</s>, <|im_end|>, <|endoftext|>"
+  promptFormat:
+    chat:
+      system: "SYSTEM: {}\n"
+      assistant: "ASSISTANT: {}\n"
+      user: "USER: {}\n"
+  defaults:
+    temperature: "0.1"
+    topP: "1.0"
+    topK: "0"
+    repetitionPenalty: "1.0"
+    maxNewTokens: "8192"
+
+vllmConfig:
+  trustRemoteCode: "True"
+  tensorParallelSize: "1"
+  enforceEager: "False"
+  gpuMemoryUtilization: "0.90"
+  workerUseRay: "True"
+  engineUseRay: "True"
+  quantization: "None"
+  loadFormat: "auto"
+
 env:
   - name: LFAI_LOG_LEVEL
     value: "INFO"
@@ -41,7 +68,7 @@ resources:
   limits:
     cpu: 0
     memory: 0
-    nvidia.com/gpu: 0
+    nvidia.com/gpu: 1
   requests:
     cpu: 0
     memory: 0

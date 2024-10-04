@@ -1,0 +1,17 @@
+model:
+  source: ".model/"
+max_context_length: 32768
+stop_tokens:
+  - "<|im_end|>"
+  - "<|endoftext|>"
+  - "</s>"
+prompt_format:
+  chat:
+    system: "SYSTEM: {}\n"
+    assistant: "ASSISTANT: {}\n"
+    user: "USER: {}\n"
+defaults:
+  top_p: 1.0
+  top_k: 0
+  repetition_penalty: 1.0
+  max_new_tokens: 8192
