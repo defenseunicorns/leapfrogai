@@ -1,5 +1,5 @@
 ---
-title: App Development using LeapfrogAI
+title: App Development with LeapfrogAI
 type: docs
 weight: 1
 ---
