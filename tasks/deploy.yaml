@@ -115,6 +115,7 @@ tasks:
       - task: package
         with:
           path: "packages/vllm"
+          zarfConfig: "packages/vllm/zarf-config.yaml"
 
   - name: llama-cpp-python
     description: "Deploy the LLaMA-CPP-Python Zarf package"

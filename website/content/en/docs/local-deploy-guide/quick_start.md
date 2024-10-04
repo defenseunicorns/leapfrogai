@@ -61,9 +61,9 @@ If you already have a pre-built UDS bundle, please skip to [Deploying the UDS Bu
 1. Deploy a UDS Kubernetes cluster with **ONE** of the following:
 
     ```bash
-    make create-uds-cpu-cluster     # if you have CPUs only
+    uds run setup:k3d-cpu-cluster-slim    # if you have CPUs only
     # OR
-    make create-uds-gpu-cluster     # if you have GPUs (macOS not supported)
+    uds run setup:k3d-gpu-cluster-slim    # if you have GPUs (macOS not supported)
     ```
 
 2. Deploy the bundle you created in the [previous steps](#building-the-uds-bundle):

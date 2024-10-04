@@ -14,14 +14,15 @@ tasks:
     actions:
       - task: setup-common:create-doug-user
 
+  #########
+  # CLUSTER
+  #########
+
   - name: k3d-cpu-cluster-slim
     description: "Creates a UDS K3d cluster with slim UDS Core and CPU-only Capability"
     actions:
       - task: setup-common:k3d-test-cluster
 
-  #########
-  # CLUSTER
-  #########
   - name: k3d-gpu-cluster-slim
     description: "Creates a UDS K3d cluster with slim UDS Core and NVIDIA GPU Capability"
     actions:
