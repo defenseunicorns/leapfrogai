@@ -12,7 +12,7 @@
 
   const dispatch = createEventDispatcher();
 
-  $: hovered = false;
+  let hovered = false;
 </script>
 
 <div in:fade={{ duration: STANDARD_FADE_DURATION }} out:fade={{ duration: STANDARD_FADE_DURATION }}>

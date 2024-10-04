@@ -32,6 +32,7 @@ on:
 
       # Ignore local development files
       - "!.pre-commit-config.yaml"
+      - "!tasks.yaml"
 
       # Ignore non e2e tests changes
       - "!tests/pytest/**"
@@ -56,9 +57,14 @@ jobs:
     runs-on: ai-ubuntu-big-boy-8-core
     if: ${{ !github.event.pull_request.draft }}
 
+    permissions:
+      contents: read
+      packages: read
+      id-token: write # This is needed for OIDC federation.
+
     steps:
         - name: Checkout Repo
-          uses: actions/checkout@b4ffde65f46336ab88eb53be808477a3936bae11 # v4.1.1
+          uses: actions/checkout@d632683dd7b4114ad314bca15554477dd762a938 # v4.2.0
 
         - name: Setup Python
           uses: ./.github/actions/python
@@ -71,6 +77,7 @@ jobs:
             registry1Username: ${{ secrets.IRON_BANK_ROBOT_USERNAME }}
             registry1Password: ${{ secrets.IRON_BANK_ROBOT_PASSWORD }}
             ghToken: ${{ secrets.GITHUB_TOKEN }}
+            chainguardIdentity: ${{ secrets.CHAINGUARD_IDENTITY }}
 
         - name: Setup LFAI-API and Supabase
           uses: ./.github/actions/lfai-core

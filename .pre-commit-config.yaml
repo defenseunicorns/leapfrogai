@@ -102,7 +102,7 @@ repos:
           if [ -f "$(git rev-parse --show-toplevel)/$FILE" ]; then
             echo "$FILE already exists in the root of the git project, skipping download."
           else
-            curl -o "$FILE" https://raw.githubusercontent.com/defenseunicorns/uds-cli/v0.14.0/zarf.schema.json
+            curl -o "$FILE" https://raw.githubusercontent.com/defenseunicorns/uds-cli/v0.16.0/zarf.schema.json
           fi'
         language: system
 
@@ -125,7 +125,7 @@ repos:
           if [ -f "$(git rev-parse --show-toplevel)/$FILE" ]; then
             echo "$FILE already exists in the root of the git project, skipping download."
           else
-            curl -o "$FILE" https://raw.githubusercontent.com/defenseunicorns/uds-cli/v0.14.0/uds.schema.json
+            curl -o "$FILE" https://raw.githubusercontent.com/defenseunicorns/uds-cli/v0.16.0/uds.schema.json
           fi'
         language: system
 
@@ -137,3 +137,26 @@ repos:
         files: "uds-bundle.yaml"
         types: [yaml]
         args: ["--schemafile", "uds-v0.14.0.schema.json"]
+
+  # UDS TASKS CHECK
+  - repo: local
+    hooks:
+      - id: download-schema
+        name: "Download UDS Tasks Schema"
+        entry: |
+          bash -c 'FILE="tasks-v0.14.0.schema.json"
+          if [ -f "$(git rev-parse --show-toplevel)/$FILE" ]; then
+            echo "$FILE already exists in the root of the git project, skipping download."
+          else
+            curl -o "$FILE" https://raw.githubusercontent.com/defenseunicorns/uds-cli/v0.16.0/tasks.schema.json
+          fi'
+        language: system
+
+  - repo: https://github.com/python-jsonschema/check-jsonschema
+    rev: 0.14.0
+    hooks:
+      - id: check-jsonschema
+        name: "Validate UDS Bundles Against Schema"
+        files: "tasks.yaml"
+        types: [yaml]
+        args: ["--schemafile", "tasks-v0.14.0.schema.json"]

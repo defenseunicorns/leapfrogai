@@ -1,28 +1,26 @@
 <script lang="ts">
   import { goto } from '$app/navigation';
-  import { threadsStore } from '$stores';
+  import { assistantsStore } from '$stores';
   import { NO_SELECTED_ASSISTANT_ID } from '$constants';
   import { Button, Dropdown, DropdownItem } from 'flowbite-svelte';
   import { CheckOutline, ChevronDownOutline, UserSettingsOutline } from 'flowbite-svelte-icons';
-  import type { Assistant } from 'openai/resources/beta/assistants';
-
-  export let assistants: Assistant[] = [];
 
   let assistantSelectDropdownOpen = false;
 
   $: selectedAssistantName =
-    assistants.find((assistant) => assistant.id === $threadsStore.selectedAssistantId)?.name ||
-    'Select assistant...';
+    $assistantsStore.assistants.find(
+      (assistant) => assistant.id === $assistantsStore.selectedAssistantId
+    )?.name || 'Select assistant...';
 
   const handleSelectAssistant = (e) => {
     e.preventDefault();
     const item = e.target.closest('button, [data-value]');
     if (item) {
       const selectedAssistantId = item.dataset.value;
-      if ($threadsStore.selectedAssistantId === selectedAssistantId) {
-        threadsStore.setSelectedAssistantId(NO_SELECTED_ASSISTANT_ID);
+      if ($assistantsStore.selectedAssistantId === selectedAssistantId) {
+        assistantsStore.setSelectedAssistantId(NO_SELECTED_ASSISTANT_ID);
       } else {
-        threadsStore.setSelectedAssistantId(selectedAssistantId);
+        assistantsStore.setSelectedAssistantId(selectedAssistantId);
       }
     }
     assistantSelectDropdownOpen = false;
@@ -49,14 +47,14 @@
       Manage Assistants
     </Button>
   </div>
-  {#each assistants as assistant (assistant.id)}
+  {#each $assistantsStore.assistants as assistant (assistant.id)}
     <DropdownItem
       on:click={handleSelectAssistant}
       data-value={assistant.id}
       class="flex justify-between "
     >
       {assistant.name.length > 20 ? `${assistant.name.slice(0, 20)}...` : assistant.name}
-      {#if $threadsStore.selectedAssistantId === assistant.id}
+      {#if $assistantsStore.selectedAssistantId === assistant.id}
         <CheckOutline data-testid="checked" />
       {/if}
     </DropdownItem>
@@ -67,11 +65,11 @@
   >
     <DropdownItem
       on:click={() => {
-        threadsStore.setSelectedAssistantId(NO_SELECTED_ASSISTANT_ID);
+        assistantsStore.setSelectedAssistantId(NO_SELECTED_ASSISTANT_ID);
         assistantSelectDropdownOpen = false;
       }}
       class="flex justify-between"
-      >None {#if $threadsStore.selectedAssistantId === NO_SELECTED_ASSISTANT_ID}
+      >None {#if $assistantsStore.selectedAssistantId === NO_SELECTED_ASSISTANT_ID}
         <CheckOutline data-testid="checked" />
       {/if}</DropdownItem
     >

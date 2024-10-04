@@ -1,0 +1,212 @@
+name: nightly-snapshot-release
+
+on:
+  schedule:
+    - cron: "0 8 * * *" # Runs daily at 12 AM PST
+  workflow_dispatch: # trigger manually as needed
+  pull_request:
+    types:
+      - opened            # default trigger
+      - reopened          # default trigger
+      - synchronize       # default trigger
+      - ready_for_review  # don't run on draft PRs
+      - milestoned        # allows us to trigger on bot PRs
+    paths:
+      - .github/workflows/nightly-snapshot-release.yaml
+
+concurrency:
+  group: nightly-snapshot-release-${{ github.ref }}
+  cancel-in-progress: true
+
+defaults:
+  run:
+    shell: bash
+
+env:
+  SNAPSHOT_VERSION: snapshot-latest
+  SNAPSHOT_SUB_REPOSITORY: /uds/snapshots/
+
+permissions:
+  contents: read
+  packages: write
+  id-token: write # This is needed for OIDC federation.
+
+jobs:
+  snapshot-release:
+    runs-on: ai-ubuntu-big-boy-8-core
+    name: nightly_snapshot_release
+    if: ${{ !github.event.pull_request.draft }}
+
+    steps:
+      - name: Checkout Repo
+        uses: actions/checkout@d632683dd7b4114ad314bca15554477dd762a938 # v4.2.0
+
+      - name: Release LeapfrogAI ${{ env.SNAPSHOT_VERSION }}
+        uses: ./.github/actions/release
+        with:
+          releaseTag: ${{ env.SNAPSHOT_VERSION }}
+          subRepository: ${{ env.SNAPSHOT_SUB_REPOSITORY }}
+          registry1Username: ${{ secrets.IRON_BANK_ROBOT_USERNAME }}
+          registry1Password: ${{ secrets.IRON_BANK_ROBOT_PASSWORD }}
+          ghToken: ${{ secrets.GITHUB_TOKEN }}
+          chainguardIdentity: ${{ secrets.CHAINGUARD_IDENTITY }}
+
+  test-snapshot:
+    runs-on: ai-ubuntu-big-boy-8-core
+    name: nightly_test_snapshot
+    if: ${{ !github.event.pull_request.draft }}
+    needs: snapshot-release
+
+    permissions:
+      contents: read
+      packages: write
+      id-token: write # This is needed for OIDC federation.
+
+    steps:
+      # Checkout main just to see the latest release in the release-please manifest
+      - name: Checkout Repo (main)
+        uses: actions/checkout@d632683dd7b4114ad314bca15554477dd762a938 # v4.2.0
+        with:
+          ref: main
+
+      - name: Get Latest Release Version
+        id: get_version
+        run: |
+          LFAI_VERSION=$(jq -r '.["."]' .github/.release-please-manifest.json)
+          echo "LFAI_VERSION=$LFAI_VERSION" >> $GITHUB_OUTPUT
+
+      ################
+      # LATEST RELEASE
+      ################
+
+      # Checkout the latest release in the release-please manifest
+      - name: Checkout Repo (v${{ steps.get_version.outputs.LFAI_VERSION }})
+        uses: actions/checkout@d632683dd7b4114ad314bca15554477dd762a938 # v4.2.0
+        with:
+          ref: v${{ steps.get_version.outputs.LFAI_VERSION }}
+
+      - name: Setup UDS Cluster (v${{ steps.get_version.outputs.LFAI_VERSION }})
+        uses: ./.github/actions/uds-cluster
+        with:
+          registry1Username: ${{ secrets.IRON_BANK_ROBOT_USERNAME }}
+          registry1Password: ${{ secrets.IRON_BANK_ROBOT_PASSWORD }}
+          ghToken: ${{ secrets.GITHUB_TOKEN }}
+          chainguardIdentity: ${{ secrets.CHAINGUARD_IDENTITY }}
+
+      # This is needed due to delay in tagged releases versus the version refs within the UDS bundles
+      - name: Mutation of the UDS Bundle (v${{ steps.get_version.outputs.LFAI_VERSION }})
+        run: |
+          uds zarf tools yq -i '.metadata.version = "v${{ steps.get_version.outputs.LFAI_VERSION }}"' bundles/latest/cpu/uds-bundle.yaml
+
+          uds zarf tools yq -i '.packages[].ref |= sub("^[^ ]+-upstream$", "${{ steps.get_version.outputs.LFAI_VERSION }}-upstream")' bundles/latest/cpu/uds-bundle.yaml
+
+      - name: Create and Deploy UDS Bundle (v${{ steps.get_version.outputs.LFAI_VERSION }})
+        run: |
+          cd bundles/latest/cpu
+          uds create . --confirm && \
+            uds deploy uds-bundle-leapfrogai-amd64-v${{ steps.get_version.outputs.LFAI_VERSION }}.tar.zst --confirm --no-progress && \
+            rm -rf uds-bundle-leapfrogai-amd64-v${{ steps.get_version.outputs.LFAI_VERSION }}.tar.zst && \
+            docker system prune -af
+
+      #################
+      # MAIN (SNAPSHOT)
+      #################
+
+      - name: Checkout Repo (main)
+        uses: actions/checkout@d632683dd7b4114ad314bca15554477dd762a938 # v4.2.0
+        with:
+          ref: main
+
+      - name: Print the Commit SHA (main)
+        run: |
+          COMMIT_SHA=$(git rev-parse HEAD)
+          echo "The latest commit on the main branch is: $COMMIT_SHA"
+
+      - name: Setup Python (main)
+        uses: ./.github/actions/python
+
+      # Set UDS CPU bundle refs and repositories to snapshot-latest
+      - name: Mutation of the UDS Bundle (main)
+        run: |
+          uds zarf tools yq -i '.metadata.version = "${{ env.SNAPSHOT_VERSION }}"' bundles/latest/cpu/uds-bundle.yaml
+
+          uds zarf tools yq -i '.packages[].ref |= sub("^[^ ]+-upstream$", "${{ env.SNAPSHOT_VERSION }}-upstream")' bundles/latest/cpu/uds-bundle.yaml
+
+          uds zarf tools yq -i '.packages[].repository |= sub("/uds/", "/uds/snapshots/")' bundles/latest/cpu/uds-bundle.yaml
+
+      - name: Create and Deploy UDS Bundle (main)
+        run: |
+          cd bundles/latest/cpu
+          uds create . --confirm && \
+            uds deploy uds-bundle-leapfrogai-amd64-${{ env.SNAPSHOT_VERSION }}.tar.zst --confirm --no-progress && \
+            rm -rf uds-bundle-leapfrogai-amd64-${{ env.SNAPSHOT_VERSION }}.tar.zst && \
+            docker system prune -af
+
+      #########
+      # TESTING
+      #########
+
+      - name: Generate Secrets
+        id: generate_secrets
+        run: |
+          ANON_KEY=$(uds zarf tools kubectl get secret supabase-bootstrap-jwt -n leapfrogai -o jsonpath='{.data.anon-key}' | base64 -d)
+          echo "::add-mask::$ANON_KEY"
+          echo "ANON_KEY=$ANON_KEY" >> $GITHUB_OUTPUT
+          FAKE_PASSWORD=$(cat <(openssl rand -base64 32 | tr -dc 'a-zA-Z0-9!@#$%^&*()_+-=[]{}|;:,.<>?' | head -c 20) <(echo '!@1Aa') | fold -w1 | shuf | tr -d '\n')
+          echo "::add-mask::$FAKE_PASSWORD"
+          echo "FAKE_PASSWORD=$FAKE_PASSWORD" >> $GITHUB_OUTPUT
+          SERVICE_KEY=$(uds zarf tools kubectl get secret -n leapfrogai supabase-bootstrap-jwt -o jsonpath={.data.service-key} | base64 -d)
+          echo "::add-mask::$SERVICE_KEY"
+          echo "SERVICE_KEY=$SERVICE_KEY" >> $GITHUB_OUTPUT
+
+      - name: Verify Secrets
+        run: |
+          echo "FAKE_PASSWORD is set: ${{ steps.generate_secrets.outputs.FAKE_PASSWORD != '' }}"
+          echo "ANON_KEY is set: ${{ steps.generate_secrets.outputs.ANON_KEY != '' }}"
+          echo "SERVICE_KEY is set: ${{ steps.generate_secrets.outputs.SERVICE_KEY != '' }}"
+
+      # Backends
+      - name: Run Backend E2E Tests
+        env:
+          ANON_KEY: ${{ steps.generate_secrets.outputs.ANON_KEY }}
+          SERVICE_KEY: ${{ steps.generate_secrets.outputs.SERVICE_KEY }}
+          LEAPFROGAI_MODEL: llama-cpp-python
+        run: |
+          python -m pytest -vvv -s ./tests/e2e
+
+      - name: Setup Playwright
+        run: |
+          npm --prefix src/leapfrogai_ui ci
+          npx --prefix src/leapfrogai_ui playwright install
+
+      - name: Run Playwright E2E Tests
+        env:
+          SERVICE_ROLE_KEY: ${{ steps.generate_secrets.outputs.SERVICE_KEY }}
+          FAKE_E2E_USER_PASSWORD: ${{ steps.generate_secrets.outputs.FAKE_PASSWORD }}
+          ANON_KEY: ${{ steps.generate_secrets.outputs.ANON_KEY }}
+        run: |
+          chmod +x ./.github/scripts/createUser.sh
+          ./.github/scripts/createUser.sh
+
+          cp src/leapfrogai_ui/.env.example src/leapfrogai_ui/.env
+          mkdir -p playwright/auth
+          touch playwright/auth.user.json
+
+          SERVICE_ROLE_KEY=$SERVICE_ROLE_KEY TEST_ENV=CI USERNAME=doug PASSWORD=$FAKE_E2E_USER_PASSWORD PUBLIC_SUPABASE_ANON_KEY=$ANON_KEY DEFAULT_MODEL=llama-cpp-python npm --prefix src/leapfrogai_ui run test:integration:ci
+
+      - name: Archive Playwright Report
+        uses: actions/upload-artifact@834a144ee995460fba8ed112a2fc961b36a5ec5a # v4.3.6
+        if: ${{ !cancelled() }}
+        with:
+          name: playwright-report
+          path: src/leapfrogai_ui/e2e-report/
+          retention-days: 30
+
+      - name: Get Cluster Debug Information
+        id: debug
+        if: ${{ !cancelled() }}
+        uses: defenseunicorns/uds-common/.github/actions/debug-output@e3008473beab00b12a94f9fcc7340124338d5c08 # v0.13.1
+
+      - name: Get Cluster Debug Information
+        if: ${{ !cancelled() && steps.debug.conclusion == 'success' }}
+        uses: defenseunicorns/uds-common/.github/actions/save-logs@e3008473beab00b12a94f9fcc7340124338d5c08 # v0.13.1

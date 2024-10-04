@@ -31,7 +31,10 @@ on:
       - "!packages/ui/**"
 
 # Declare default permissions as read only.
-permissions: read-all
+permissions:
+  contents: read
+  packages: read
+  id-token: write # This is needed for OIDC federation.
 
 concurrency:
   group: pytest-integration-${{ github.ref }}
@@ -43,7 +46,7 @@ jobs:
 
     steps:
       - name: Checkout Repo
-        uses: actions/checkout@b4ffde65f46336ab88eb53be808477a3936bae11 # v4.1.1
+        uses: actions/checkout@d632683dd7b4114ad314bca15554477dd762a938 # v4.2.0
 
       - name: Setup Python
         uses: actions/setup-python@f677139bbe7f9c59b41e40162b753c062f5d49a3 # v5.2.0
@@ -64,6 +67,7 @@ jobs:
         run: make test-api-unit
         env:
           LFAI_RUN_REPEATER_TESTS: true
+          DEV: true
 
   integration:
     runs-on: ai-ubuntu-big-boy-8-core
@@ -74,7 +78,7 @@ jobs:
 
     steps:
       - name: Checkout Repo
-        uses: actions/checkout@b4ffde65f46336ab88eb53be808477a3936bae11 # v4.1.1
+        uses: actions/checkout@d632683dd7b4114ad314bca15554477dd762a938 # v4.2.0
 
       - name: Setup Python
         uses: actions/setup-python@f677139bbe7f9c59b41e40162b753c062f5d49a3 # v5.2.0
@@ -97,6 +101,7 @@ jobs:
           registry1Username: ${{ secrets.IRON_BANK_ROBOT_USERNAME }}
           registry1Password: ${{ secrets.IRON_BANK_ROBOT_PASSWORD }}
           ghToken: ${{ secrets.GITHUB_TOKEN }}
+          chainguardIdentity: ${{ secrets.CHAINGUARD_IDENTITY }}
 
       - name: Setup API and Supabase
         uses: ./.github/actions/lfai-core

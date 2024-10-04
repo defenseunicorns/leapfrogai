@@ -1,15 +1,12 @@
 import asyncio
-import json
 import logging
 import os
 import queue
 import random
-import sys
 import threading
 import time
 from typing import Any, Dict, AsyncGenerator
 
-from confz import EnvSource
 from dotenv import load_dotenv
 from vllm import SamplingParams
 from vllm.engine.arg_utils import AsyncEngineArgs
@@ -18,15 +15,8 @@ from vllm.outputs import RequestOutput
 from vllm.utils import random_uuid
 
 from config import AppConfig
-from leapfrogai_sdk import (
-    BackendConfig,
-    ChatCompletionRequest,
-    CompletionRequest,
-)
-from leapfrogai_sdk.llm import (
-    GenerationConfig,
-    LLM,
-)
+from leapfrogai_sdk import BackendConfig
+from leapfrogai_sdk.llm import GenerationConfig, LLM
 
 load_dotenv()
 
@@ -84,60 +74,6 @@ class RandomAsyncIterator:
             pass  # If the iterable is not found, ignore the error
 
 
-def get_backend_configs():
-    # Manually load env var as ConfZ does not handle complex types (list)
-    stop_tokens: str | None = os.getenv("LAI_STOP_TOKENS")
-    if stop_tokens:
-        processed_stop_tokens = json.loads(stop_tokens)
-    else:
-        processed_stop_tokens = []
-    del os.environ["LAI_STOP_TOKENS"]
-
-    env_source = EnvSource(
-        allow_all=True,
-        prefix="LAI_",
-        remap={
-            "model_source": "model.source",
-            "max_context_length": "max_context_length",
-            "stop_tokens": "stop_tokens",
-            "prompt_format_chat_system": "prompt_format.chat.system",
-            "prompt_format_chat_assistant": "prompt_format.chat.assistant",
-            "prompt_format_chat_user": "prompt_format.chat.user",
-            "prompt_format_defaults_top_p": "prompt_format.defaults.top_p",
-            "prompt_format_defaults_top_k": "prompt_format.defaults.top_k",
-        },
-    )
-
-    BackendConfig.CONFIG_SOURCES = env_source
-    # Initialize an immutable config from env variables without stop_tokens list
-    backend_configs: BackendConfig = BackendConfig()
-    # Updates "processed_stop_tokens" without triggering Pydantic validation errors
-    backend_configs.model_copy(update={"stop_tokens": processed_stop_tokens})
-
-    return backend_configs
-
-
-def get_config_from_request(request: ChatCompletionRequest | CompletionRequest):
-    return GenerationConfig(
-        max_new_tokens=request.max_new_tokens,
-        temperature=request.temperature,
-        top_k=request.top_k,
-        top_p=request.top_p,
-        do_sample=request.do_sample,
-        n=request.n,
-        stop=list(request.stop),
-        repetition_penalty=request.repetition_penalty,
-        presence_penalty=request.presence_penalty,
-        best_of=str(request.best_of),
-        logit_bias=request.logit_bias,
-        return_full_text=request.return_full_text,
-        truncate=request.truncate,
-        typical_p=request.typical_p,
-        watermark=request.watermark,
-        seed=request.seed,
-    )
-
-
 @LLM
 class Model:
     """Implements an LLM model with concurrent output generation and management."""
@@ -152,19 +88,26 @@ class Model:
         _thread = threading.Thread(target=asyncio.run, args=(self.iterate_outputs(),))
         _thread.start()
 
-        self.backend_config = get_backend_configs()
-        self.model = self.backend_config.model.source
+        quantization = (
+            None
+            if AppConfig().backend_options.quantization in ["", "None"]
+            else AppConfig().backend_options.quantization
+        )
+
         self.engine_args = AsyncEngineArgs(
-            engine_use_ray=True,
-            model=self.model,
-            trust_remote_code=False,
-            quantization=AppConfig().backend_options.quantization,
-            max_seq_len_to_capture=self.backend_config.max_context_length,
-            max_model_len=self.backend_config.max_context_length,
-            dtype="auto",
-            worker_use_ray=True,
-            gpu_memory_utilization=0.90,
+            # Taken from the LFAI SDK general LLM configuration
+            model=BackendConfig().model.source,
+            max_seq_len_to_capture=BackendConfig().max_context_length,
+            max_model_len=BackendConfig().max_context_length,
+            # Taken from the vLLM-specific configuration
+            enforce_eager=AppConfig().backend_options.enforce_eager,
+            quantization=quantization,
+            load_format=AppConfig().backend_options.load_format,
             tensor_parallel_size=AppConfig().backend_options.tensor_parallel_size,
+            engine_use_ray=AppConfig().backend_options.engine_use_ray,
+            worker_use_ray=AppConfig().backend_options.worker_use_ray,
+            gpu_memory_utilization=AppConfig().backend_options.gpu_memory_utilization,
+            trust_remote_code=AppConfig().backend_options.trust_remote_code,
         )
         self.engine = AsyncLLMEngine.from_engine_args(self.engine_args)
         print(self.engine_args)
@@ -228,18 +171,39 @@ class Model:
         """Initiate a response generation for the given prompt and configuration, adding the result to the iterator
         pool."""
 
-        sampling_params = SamplingParams(
-            temperature=config.temperature,
-            # Clamp top_p value to prevent float errors
-            top_p=clamp(config.top_p, 0.0 + sys.float_info.epsilon, 1.0),
-            # Restrict top_k to valid values, -1 disables top_k
-            top_k=config.top_k if config.top_k >= 1 else -1,
-            stop=self.backend_config.stop_tokens,
-            max_tokens=config.max_new_tokens,
-            skip_special_tokens=False,
-        )
+        # Collect LeapfrogAI SDK-defined parameters not aligned with vLLM SamplingParams
+        params = {
+            "max_tokens": getattr(config, "max_new_tokens"),
+        }
+
+        # Collect LeapfrogAI SDK-defined parameters directly aligned with vLLM SamplingParams
+        aligned_params = [
+            "temperature",
+            "top_p",
+            "top_k",
+            "stop",
+            "n",
+            "repetition_penalty",
+            "presence_penalty",
+            "best_of",
+            "logit_bias",
+            "return_full_text",
+            "truncate",
+            "typical_p",
+            "seed",
+        ]
+
+        # Add only the parameters that exist in the request
+        # vLLM will provide defaults for the rest, if not specified
+        for param in aligned_params:
+            if param in config:
+                params[param] = config[param]
+
+        # Pass the collected params to vLLM SamplingParams
+        sampling_params = SamplingParams(**params)
+
         logger.info(f"Begin generation for request {request_id}")
-        logger.debug(f"{request_id} sampling_paramms: {sampling_params}")
+        logger.debug(f"{request_id} sampling_params: {sampling_params}")
 
         # Generate texts from the prompts. The output is a list of RequestOutput objects
         # that contain the prompt, generated text, and other information.
@@ -284,8 +248,12 @@ class Model:
             request_id
         ):
             result = ""
-            if not self.is_queue_empty(request_id):
-                result = self.delta_queue_by_id.get(request_id).get()
+
+            # Ensure that the queue is not None and contains items before calling .get()
+            cur_queue = self.delta_queue_by_id.get(request_id)
+            if cur_queue is not None and not cur_queue.empty():
+                result = cur_queue.get()
+
             yield result
 
         logger.info(f"Finished request {request_id}")

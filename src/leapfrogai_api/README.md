@@ -56,3 +56,72 @@ See the ["Access" section of the DEVELOPMENT.md](../../docs/DEVELOPMENT.md#acces
 ### Tests
 
 See the [tests directory documentation](../../tests/README.md) for more details.
+
+### Reranking Configuration
+
+The LeapfrogAI API includes a Retrieval Augmented Generation (RAG) pipeline for enhanced question answering. This section details how to configure its reranking options. All RAG configurations are managed through the `/leapfrogai/v1/rag/configure` API endpoint.
+
+#### 1. Enabling/Disabling Reranking
+
+Reranking improves the accuracy and relevance of RAG responses. You can enable or disable it using the `enable_reranking` parameter:
+
+* **Enable Reranking:** Send a PATCH request to `/leapfrogai/v1/rag/configure` with the following JSON payload:
+
+```json
+{
+  "enable_reranking": true
+}
+```
+
+* **Disable Reranking:**  Send a PATCH request with:
+
+```json
+{
+  "enable_reranking": false
+}
+```
+
+#### 2. Selecting a Reranking Model
+
+Multiple reranking models are supported, each offering different performance characteristics.  Choose your preferred model using the `ranking_model` parameter.  Ensure you've installed any necessary Python dependencies for your chosen model (see the [rerankers library documentation](https://github.com/AnswerDotAI/rerankers) on dependencies).
+
+* **Supported Models:**  The system supports several models, including (but not limited to) `flashrank`, `rankllm`, `cross-encoder`, and `colbert`.  Refer to the [rerankers library documentation](https://github.com/AnswerDotAI/rerankers) for a complete list and details on their capabilities.
+
+* **Model Selection:** Use a PATCH request to `/leapfrogai/v1/rag/configure` with the desired model:
+
+```json
+{
+  "enable_reranking": true,  // Reranking must be enabled
+  "ranking_model": "rankllm" // Or another supported model
+}
+```
+
+#### 3. Adjusting the Number of Results Before Reranking (`rag_top_k_when_reranking`)
+
+This parameter sets the number of top results retrieved from the vector database *before* the reranking process begins. A higher value increases the diversity of candidates considered for reranking but also increases processing time. A lower value can lead to missing relevant results if not carefully chosen. This setting is only relevant when reranking is enabled.
+
+* **Configuration:** Use a PATCH request to `/leapfrogai/v1/rag/configure` to set this value:
+
+```json
+{
+  "enable_reranking": true,
+  "ranking_model": "flashrank",
+  "rag_top_k_when_reranking": 150 // Adjust this value as needed
+}
+```
+
+#### 4. Retrieving the Current RAG Configuration
+
+To check the current RAG configuration (including reranking status, model, and `rag_top_k_when_reranking`), send a GET request to `/leapfrogai/v1/rag/configure`. The response will be a JSON object containing all the current settings.
+
+#### 5.  Example Configuration Flow
+
+1. **Initial Setup:**  Start with reranking enabled using the default `flashrank` model and a `rag_top_k_when_reranking` value of 100.
+
+2. **Experiment with Models:**  Test different reranking models (`rankllm`, `colbert`, etc.) by changing the `ranking_model` parameter and observing the impact on response quality.  Adjust `rag_top_k_when_reranking` as needed to find the optimal balance between diversity and performance.
+
+3. **Fine-tuning:** Once you identify a suitable model, fine-tune the `rag_top_k_when_reranking` parameter for optimal performance.  Monitor response times and quality to determine the best setting.
+
+4. **Disabling Reranking:** If needed, disable reranking by setting `"enable_reranking": false`.
+
+Remember to always consult the [rerankers library documentation](https://github.com/AnswerDotAI/rerankers) for information on supported models and their specific requirements.  The API documentation provides further details on request formats and potential error responses.

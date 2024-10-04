@@ -13,7 +13,7 @@
     UserCircleOutline
   } from 'flowbite-svelte-icons';
   import { twMerge } from 'tailwind-merge';
-  import { threadsStore, toastStore } from '$stores';
+  import { assistantsStore, threadsStore, toastStore } from '$stores';
   import { convertTextToMessageContentArr, getMessageText } from '$helpers/threads';
   import type { Message as OpenAIMessage } from 'openai/resources/beta/threads/messages';
   import {
@@ -59,7 +59,10 @@
   });
 
   let assistantImage = isRunAssistantMessage(message)
-    ? getAssistantImage($page.data.assistants || [], message.assistant_id!)
+    ? getAssistantImage(
+        $assistantsStore.assistants || [],
+        message.assistant_id || message.metadata?.assistant_id
+      )
     : null;
 
   let messageIsHovered = false;
@@ -69,7 +72,8 @@
   const getAssistantName = (id?: string) => {
     if (!id) return 'LeapfrogAI Bot';
     return (
-      $page.data.assistants?.find((assistant) => assistant.id === id)?.name || 'LeapfrogAI Bot'
+      $assistantsStore.assistants?.find((assistant) => assistant.id === id)?.name ||
+      'LeapfrogAI Bot'
     );
   };
 
@@ -83,7 +87,7 @@
       message: { ...message, content: convertTextToMessageContentArr($value) },
       setMessages: setMessages!,
       append: append!,
-      selectedAssistantId: $threadsStore.selectedAssistantId
+      selectedAssistantId: $assistantsStore.selectedAssistantId
     });
   };
 
@@ -166,7 +170,9 @@
         >
           <div class="flex flex-col gap-2">
             <div class="font-bold">
-              {message.role === 'user' ? 'You' : getAssistantName(message.assistant_id)}
+              {message.role === 'user'
+                ? 'You'
+                : getAssistantName(message.assistant_id || message.metadata?.assistant_id)}
             </div>
             {#if fileMetadata}
               <div id="uploaded-files" class={'flex max-w-full  gap-2 overflow-x-auto bg-gray-900'}>
@@ -178,14 +184,16 @@
             {#if message.role !== 'user' && !messageText}
               <MessagePendingSkeleton size="sm" class="mt-4" darkColor="bg-gray-500" />
             {:else}
-              <!--eslint-disable-next-line svelte/no-at-html-tags -- We use DomPurity to sanitize the code snippet-->
-              {@html DOMPurify.sanitize(md.render(messageText), {
-                CUSTOM_ELEMENT_HANDLING: {
-                  tagNameCheck: /^code-block$/,
-                  attributeNameCheck: /^(code|language)$/,
-                  allowCustomizedBuiltInElements: false
-                }
-              })}
+              <div id="message-content-container">
+                <!--eslint-disable-next-line svelte/no-at-html-tags -- We use DomPurity to sanitize the code snippet-->
+                {@html DOMPurify.sanitize(md.render(messageText), {
+                  CUSTOM_ELEMENT_HANDLING: {
+                    tagNameCheck: /^code-block$/,
+                    attributeNameCheck: /^(code|language)$/,
+                    allowCustomizedBuiltInElements: false
+                  }
+                })}
+              </div>
               <div class="flex flex-col items-start">
                 {#each getCitations(message, $page.data.files) as { component: Component, props }}
                   <svelte:component this={Component} {...props} />
@@ -231,7 +239,7 @@
                 message: messages[messages.length - 2],
                 setMessages,
                 append: append,
-                selectedAssistantId: $threadsStore.selectedAssistantId
+                selectedAssistantId: $assistantsStore.selectedAssistantId
               })}
             aria-label="regenerate message"
             tabindex="0"

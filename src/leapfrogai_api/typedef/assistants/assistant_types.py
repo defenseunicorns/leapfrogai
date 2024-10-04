@@ -27,14 +27,13 @@ from leapfrogai_api.utils.validate_tools import (
 logger = logging.getLogger(__name__)
 
 
-class CreateAssistantRequest(BaseModel):
-    """Request object for creating an assistant."""
+class BaseAssistantRequest(BaseModel):
+    """
+    Base Request object for creating or modifying an assistant.
+    This class should not be used directly. Use CreateAssistantRequest or ModifyAssistantRequest instead.
+    Model field is required for CreateAssistantRequest, but optional for ModifyAssistantRequest.
+    """
 
-    model: str = Field(
-        default="llama-cpp-python",
-        examples=["llama-cpp-python"],
-        description="The model to be used by the assistant. Default is 'llama-cpp-python'.",
-    )
     name: str | None = Field(
         default=None,
         examples=["Froggy Assistant"],
@@ -202,11 +201,24 @@ class CreateAssistantRequest(BaseModel):
                 self.tool_resources.file_search.vector_stores = None
 
 
-class ModifyAssistantRequest(CreateAssistantRequest):
+class CreateAssistantRequest(BaseAssistantRequest):
+    """Request object for creating an assistant."""
+
+    model: str = Field(
+        default="llama-cpp-python",
+        examples=["llama-cpp-python"],
+        description="The model to be used by the assistant. Default is 'llama-cpp-python'.",
+    )
+
+
+class ModifyAssistantRequest(BaseAssistantRequest):
     """Request object for modifying an assistant."""
 
-    # Inherits all fields from CreateAssistantRequest
-    # All fields are optional for modification
+    model: str | None = Field(
+        default=None,
+        examples=["llama-cpp-python", None],
+        description="The model to be used by the assistant. Default is 'llama-cpp-python'.",
+    )
 
 
 class ListAssistantsResponse(BaseModel):

@@ -2,12 +2,55 @@ image:
   repository: "ghcr.io/defenseunicorns/leapfrogai/vllm"
   tag: "###ZARF_CONST_IMAGE_VERSION###"
 
+nameOverride: "###ZARF_CONST_NAME_OVERRIDE###"
+
+leapfrogaiConfig:
+  model:
+    source: "###ZARF_CONST_MODEL_PATH###"
+  maxContextLength: "###ZARF_VAR_MAX_CONTEXT_LENGTH###"
+  stopTokens: "###ZARF_VAR_STOP_TOKENS###"
+  promptFormat:
+    chat:
+      system: "###ZARF_VAR_PROMPT_FORMAT_CHAT_SYSTEM###"
+      assistant: "###ZARF_VAR_PROMPT_FORMAT_CHAT_ASSISTANT###"
+      user: "###ZARF_VAR_PROMPT_FORMAT_CHAT_USER###"
+  defaults:
+    temperature: "###ZARF_VAR_TEMPERATURE###"
+    topP: "###ZARF_VAR_TOP_P###"
+    topK: "###ZARF_VAR_TOP_K###"
+    repetitionPenalty: "###ZARF_VAR_REPETITION_PENALTY###"
+    maxNewTokens: "###ZARF_VAR_MAX_NEW_TOKENS###"
+
+
+vllmConfig:
+  trustRemoteCode: "###ZARF_VAR_TRUST_REMOTE_CODE###"
+  tensorParallelSize: "###ZARF_VAR_TENSOR_PARALLEL_SIZE###"
+  enforceEager: "###ZARF_VAR_ENFORCE_EAGER###"
+  gpuMemoryUtilization: "###ZARF_VAR_GPU_MEMORY_UTILIZATION###"
+  workerUseRay: "###ZARF_VAR_WORKER_USE_RAY###"
+  engineUseRay: "###ZARF_VAR_ENGINE_USE_RAY###"
+  quantization: "###ZARF_VAR_QUANTIZATION###"
+  loadFormat: "###ZARF_VAR_LOAD_FORMAT###"
+
+env:
+  - name: LFAI_LOG_LEVEL
+    value: "INFO"
+
 gpu:
   runtimeClassName: "###ZARF_VAR_GPU_RUNTIME###"
 
 resources:
+  # We usually recommend not to specify default resources and to leave this as a conscious
+  # choice for the user. This also increases chances charts run on environments with little
+  # resources, such as Minikube. If you do want to specify resources, uncomment the following
+  # lines, adjust them as necessary, and remove the curly braces after 'resources:'.
   limits:
+    cpu: 0
+    memory: 0
     nvidia.com/gpu: "###ZARF_VAR_GPU_LIMIT###"
+  requests:
+    cpu: 0
+    memory: 0
 
 persistence:
   size: "###ZARF_VAR_PVC_SIZE###"

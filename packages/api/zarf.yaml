@@ -1,4 +1,4 @@
-# yaml-language-server: $schema=https://raw.githubusercontent.com/defenseunicorns/uds-cli/v0.14.0/zarf.schema.json
+# yaml-language-server: $schema=https://raw.githubusercontent.com/defenseunicorns/uds-cli/v0.16.0/zarf.schema.json
 
 kind: ZarfPackageConfig
 metadata:
@@ -16,6 +16,9 @@ variables:
     description: "Flag to expose the OpenAPI schema for debugging."
   - name: DEFAULT_EMBEDDINGS_MODEL
     default: "text-embeddings"
+  - name: DEV
+    default: "false"
+    description: "Flag to enable development endpoints."
 
 components:
   - name: leapfrogai-api
@@ -47,7 +50,7 @@ components:
         valuesFiles:
           - "values/registry1-values.yaml"
     images:
-      - "registry1.dso.mil/ironbank/opensource/defenseunicorns/leapfrogai/api:v0.12.2"
+      - "registry1.dso.mil/ironbank/opensource/defenseunicorns/leapfrogai/api:v###ZARF_PKG_TMPL_IMAGE_VERSION###"
       # TODO: replace with Ironbank image once hardened: registry1.dso.mil/ironbank/opensource/defenseunicorns/leapfrogai/api/migrations
       - "ghcr.io/defenseunicorns/leapfrogai/api-migrations:###ZARF_PKG_TMPL_IMAGE_VERSION###"
       - "registry1.dso.mil/ironbank/kiwigrid/k8s-sidecar:1.23.3"

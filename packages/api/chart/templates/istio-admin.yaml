@@ -1,0 +1,24 @@
+{{- if .Capabilities.APIVersions.Has "security.istio.io/v1beta1" }}
+apiVersion: security.istio.io/v1beta1
+kind: AuthorizationPolicy
+metadata:
+  name: api-block-metrics-access-from-public-gateway
+  namespace: {{ .Release.Namespace }}
+spec:
+  selector:
+    matchLabels:
+      {{- include "chart.selectorLabels" . | nindent 6 }}
+  action: DENY
+  rules:
+    - to:
+        - operation:
+            ports:
+              - "8080"
+            paths:
+            - /metrics*
+      from:
+        - source:
+            notNamespaces:
+            - istio-admin-gateway
+            - monitoring
+{{- end }}

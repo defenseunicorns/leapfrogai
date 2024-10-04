@@ -3,7 +3,7 @@
   import { LFTextArea, PoweredByDU } from '$components';
   import { Hr, ToolbarButton } from 'flowbite-svelte';
   import { onMount, tick } from 'svelte';
-  import { threadsStore, toastStore } from '$stores';
+  import { assistantsStore, threadsStore, toastStore } from '$stores';
   import { type Message as VercelAIMessage, useAssistant, useChat } from '@ai-sdk/svelte';
   import { page } from '$app/stores';
   import Message from '$components/Message.svelte';
@@ -13,6 +13,7 @@
   import { twMerge } from 'tailwind-merge';
   import {
     isRunAssistantMessage,
+    refetchThread,
     resetMessages,
     saveMessage,
     stopThenSave
@@ -29,35 +30,32 @@
   import ChatFileUploadForm from '$components/ChatFileUpload.svelte';
   import FileChatActions from '$components/FileChatActions.svelte';
   import LFCarousel from '$components/LFCarousel.svelte';
+  import { ASSISTANT_ERROR_MSG } from '$constants/errors';
+  import { delay } from 'msw';
+  import type { LFThread } from '$lib/types/threads';
 
   export let data;
 
   /** LOCAL VARS **/
   let lengthInvalid: boolean; // bound to child LFTextArea
-  let assistantsList: Array<{ id: string; text: string }>;
   let uploadingFiles = false;
   let attachedFiles: LFFile[] = []; // the actual files uploaded
   let attachedFileMetadata: FileMetadata[] = []; // metadata about the files uploaded, e.g. upload status, extracted text, etc...
+  let activeThread: LFThread | undefined = undefined;
   /** END LOCAL VARS **/
 
   /** REACTIVE STATE **/
   $: componentHasMounted = false;
-  $: $page.params.thread_id, threadsStore.setLastVisitedThreadId($page.params.thread_id);
-  $: $page.params.thread_id,
-    resetMessages({
-      activeThread: data.thread,
-      setChatMessages,
-      setAssistantMessages
-    });
-
-  $: activeThreadMessages =
-    $threadsStore.threads.find((thread) => thread.id === $page.params.thread_id)?.messages || [];
+  $: activeThread = $threadsStore.threads.find(
+    (thread: LFThread) => thread.id === $page.params.thread_id
+  );
+  $: $page.params.thread_id, handleThreadChange();
   $: messageStreaming = $isLoading || $status === 'in_progress';
   $: latestChatMessage = $chatMessages[$chatMessages.length - 1];
   $: latestAssistantMessage = $assistantMessages[$assistantMessages.length - 1];
   $: assistantMode =
-    $threadsStore.selectedAssistantId !== NO_SELECTED_ASSISTANT_ID &&
-    $threadsStore.selectedAssistantId !== 'manage-assistants';
+    $assistantsStore.selectedAssistantId !== NO_SELECTED_ASSISTANT_ID &&
+    $assistantsStore.selectedAssistantId !== 'manage-assistants';
 
   $: if (messageStreaming) threadsStore.setSendingBlocked(true);
 
@@ -76,7 +74,29 @@
     resetFiles(); // attachment of files w/assistants disabled
   }
 
+  $: if ($assistantError) handleAssistantResponseError();
+
   /** END REACTIVE STATE **/
+
+  const handleThreadChange = () => {
+    if ($page.params.thread_id) {
+      if (activeThread) {
+        threadsStore.setLastVisitedThreadId(activeThread.id);
+        resetMessages({
+          activeThread,
+          setChatMessages,
+          setAssistantMessages
+        });
+      }
+    } else {
+      threadsStore.setLastVisitedThreadId('');
+      resetMessages({
+        activeThread,
+        setChatMessages,
+        setAssistantMessages
+      });
+    }
+  };
 
   const resetFiles = () => {
     uploadingFiles = false;
@@ -100,13 +120,13 @@
         );
         const message = await messageRes.json();
         // store the assistant id on the user msg to know it's associated with an assistant
-        message.metadata.assistant_id = $threadsStore.selectedAssistantId;
+        message.metadata.assistant_id = $assistantsStore.selectedAssistantId;
         await threadsStore.addMessageToStore(message);
       } else if (latestAssistantMessage?.role !== 'user') {
         // Streamed assistant responses don't contain an assistant_id, so we add it here
         // and also add a createdAt date if not present
         if (!latestAssistantMessage.assistant_id) {
-          latestAssistantMessage.assistant_id = $threadsStore.selectedAssistantId;
+          latestAssistantMessage.assistant_id = $assistantsStore.selectedAssistantId;
         }
 
         if (!latestAssistantMessage.createdAt)
@@ -121,14 +141,60 @@
 
   const handleCompletedAssistantResponse = async () => {
     if (componentHasMounted && $status === 'awaiting_message') {
-      const assistantResponseId = $assistantMessages[$assistantMessages.length - 1].id;
+      if ($assistantError) return;
+      if (latestAssistantMessage.role === 'user') {
+        await handleAssistantResponseError();
+        return;
+      }
+
+      const assistantResponseId = latestAssistantMessage.id;
       const messageRes = await fetch(
         `/api/messages?thread_id=${$page.params.thread_id}&message_id=${assistantResponseId}`
       );
+      if (!messageRes.ok) {
+        //useAssistants onError hook will handle this
+        return;
+      }
+
       const message = await messageRes.json();
-      await threadsStore.addMessageToStore(message);
-      threadsStore.setStreamingMessage(null);
+      if (message && !getMessageText(message)) {
+        // error with response(empty response)/timeout
+        await handleAssistantResponseError();
+      } else {
+        await threadsStore.addMessageToStore(message);
+        threadsStore.setStreamingMessage(null);
+      }
     }
+  };
+
+  const createAssistantErrorResponse = async () => {
+    await delay(1000); // ensure error response timestamp is after user's msg
+    const newMessage = await saveMessage({
+      thread_id: data.thread.id,
+      content: ASSISTANT_ERROR_MSG,
+      role: 'assistant',
+      metadata: {
+        assistant_id: latestAssistantMessage.assistant_id || $threadsStore.selectedAssistantId
+      }
+    });
+
+    await threadsStore.addMessageToStore(newMessage);
+  };
+
+  const handleAssistantResponseError = async () => {
+    await refetchThread($page.params.thread_id); // if there was an error in the stream, we need to re-fetch to get the user's msg from the db
+    toastStore.addToast({
+      ...ERROR_GETTING_ASSISTANT_MSG_TOAST()
+    });
+    if (latestAssistantMessage.role === 'assistant') {
+      await threadsStore.deleteMessage($page.params.thread_id, latestAssistantMessage.id);
+      threadsStore.removeMessageFromStore($page.params.thread_id, latestAssistantMessage.id);
+      $assistantMessages = [...$assistantMessages.splice(-1)];
+    }
+    await createAssistantErrorResponse();
+
+    threadsStore.setStreamingMessage(null);
+    await threadsStore.setSendingBlocked(false);
   };
 
   /** useChat - streams messages with the /api/chat route**/
@@ -144,10 +210,10 @@
     // Handle completed AI Responses
     onFinish: async (message: VercelAIMessage) => {
       try {
-        if (data.thread?.id) {
+        if (activeThread?.id) {
           // Save with API to db
           const newMessage = await saveMessage({
-            thread_id: data.thread.id,
+            thread_id: activeThread.id,
             content: getMessageText(message),
             role: 'assistant'
           });
@@ -180,24 +246,16 @@
     submitMessage: submitAssistantMessage,
     stop: assistantStop,
     setMessages: setAssistantMessages,
-    append: assistantAppend
+    append: assistantAppend,
+    error: assistantError
   } = useAssistant({
     api: '/api/chat/assistants',
-    threadId: data.thread?.id,
-    onError: async (e) => {
-      // ignore this error b/c it is expected on cancel
-      if (e.message !== 'BodyStreamBuffer was aborted') {
-        toastStore.addToast({
-          ...ERROR_GETTING_ASSISTANT_MSG_TOAST()
-        });
-      }
-      await threadsStore.setSendingBlocked(false);
-    }
+    threadId: activeThread?.id
   });
 
   const sendAssistantMessage = async (e: SubmitEvent | KeyboardEvent) => {
     await threadsStore.setSendingBlocked(true);
-    if (data.thread?.id) {
+    if (activeThread?.id) {
       // assistant mode
       $assistantInput = $chatInput;
       $chatInput = ''; // clear chat input
@@ -206,8 +264,8 @@
         // submit to AI (/api/chat/assistants)
         data: {
           message: $chatInput,
-          assistantId: $threadsStore.selectedAssistantId,
-          threadId: data.thread.id
+          assistantId: $assistantsStore.selectedAssistantId,
+          threadId: activeThread.id
         }
       });
       $assistantInput = '';
@@ -218,13 +276,13 @@
   const sendChatMessage = async (e: SubmitEvent | KeyboardEvent) => {
     try {
       await threadsStore.setSendingBlocked(true);
-      if (data.thread?.id) {
+      if (activeThread?.id) {
         let extractedFilesTextString = JSON.stringify(attachedFileMetadata);
 
         if (attachedFileMetadata.length > 0) {
           // Save the text of the document as its own message before sending actual question
           const contextMsg = await saveMessage({
-            thread_id: data.thread.id,
+            thread_id: activeThread.id,
             content: `${FILE_UPLOAD_PROMPT}: ${extractedFilesTextString}`,
             role: 'user',
             metadata: {
@@ -237,7 +295,7 @@
 
         // Save with API
         const newMessage = await saveMessage({
-          thread_id: data.thread.id,
+          thread_id: activeThread.id,
           content: $chatInput,
           role: 'user',
           ...(attachedFileMetadata.length > 0
@@ -270,11 +328,11 @@
   // setSendingBlocked (when called with the value 'false') automatically handles this delay
   const onSubmit = async (e: SubmitEvent | KeyboardEvent) => {
     e.preventDefault();
-    if (($isLoading || $status === 'in_progress') && data.thread?.id) {
+    if (($isLoading || $status === 'in_progress') && activeThread?.id) {
       const isAssistantChat = $status === 'in_progress';
       // message still sending
       await stopThenSave({
-        activeThreadId: data.thread.id,
+        activeThreadId: activeThread.id,
         messages: isAssistantChat ? $assistantMessages : $chatMessages,
         status: $status,
         isLoading: $isLoading || false,
@@ -285,7 +343,7 @@
       return;
     } else {
       if (sendDisabled) return;
-      if (!data.thread?.id) {
+      if (!activeThread?.id) {
         // create new thread
         await threadsStore.newThread($chatInput);
         await tick(); // allow store to update
@@ -305,19 +363,13 @@
 
   onMount(async () => {
     componentHasMounted = true;
-    assistantsList = [...(data.assistants || [])].map((assistant) => ({
-      id: assistant.id,
-      text: assistant.name || 'unknown'
-    }));
-    assistantsList.unshift({ id: NO_SELECTED_ASSISTANT_ID, text: 'Select assistant...' }); // add dropdown item for no assistant selected
-    assistantsList.unshift({ id: `manage-assistants`, text: 'Manage assistants' }); // add dropdown item for manage assistants button
   });
 
   beforeNavigate(async () => {
-    if (($isLoading || $status === 'in_progress') && data.thread?.id) {
+    if (($isLoading || $status === 'in_progress') && activeThread?.id) {
       const isAssistantChat = $status === 'in_progress';
       await stopThenSave({
-        activeThreadId: data.thread.id,
+        activeThreadId: activeThread.id,
         messages: isAssistantChat ? $assistantMessages : $chatMessages,
         status: $status,
         isLoading: $isLoading || false,
@@ -331,19 +383,21 @@
 <form on:submit={onSubmit} class="flex h-full flex-col">
   <div class="no-scrollbar flex flex-grow flex-col-reverse overflow-auto px-8">
     <div id="messages-container" data-testid="messages-container">
-      {#each activeThreadMessages as message, index (message.id)}
-        {#if message.metadata?.hideMessage !== 'true'}
-          <Message
-            messages={activeThreadMessages}
-            streamedMessages={isRunAssistantMessage(message) ? $assistantMessages : $chatMessages}
-            {message}
-            isLastMessage={!$threadsStore.streamingMessage &&
-              index === activeThreadMessages.length - 1}
-            append={assistantMode ? assistantAppend : chatAppend}
-            setMessages={isRunAssistantMessage(message) ? setAssistantMessages : setChatMessages}
-          />
-        {/if}
-      {/each}
+      {#if activeThread}
+        {#each activeThread.messages as message, index (message.id)}
+          {#if message.metadata?.hideMessage !== 'true'}
+            <Message
+              messages={activeThread.messages}
+              streamedMessages={isRunAssistantMessage(message) ? $assistantMessages : $chatMessages}
+              {message}
+              isLastMessage={!$threadsStore.streamingMessage &&
+                index === activeThread.messages.length - 1}
+              append={assistantMode ? assistantAppend : chatAppend}
+              setMessages={isRunAssistantMessage(message) ? setAssistantMessages : setChatMessages}
+            />
+          {/if}
+        {/each}
+      {/if}
 
       {#if $threadsStore.streamingMessage}
         <Message message={$threadsStore.streamingMessage} isLastMessage />
@@ -352,7 +406,7 @@
   </div>
   <Hr classHr="my-2" />
   <div id="chat-tools" data-testid="chat-tools" class="flex flex-col gap-2 px-8">
-    <SelectAssistantDropdown assistants={data?.assistants || []} />
+    <SelectAssistantDropdown />
 
     <div
       class={twMerge(
@@ -414,7 +468,7 @@
       </div>
       <FileChatActions
         bind:attachedFileMetadata
-        threadId={data.thread?.id}
+        threadId={activeThread?.id}
         bind:attachedFiles
         originalMessages={$chatMessages}
         setMessages={setChatMessages}

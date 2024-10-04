@@ -5,6 +5,7 @@ import {
   createAssistantWithApi,
   deleteAllAssistants,
   deleteAssistantWithApi,
+  editAssistantCard,
   fillOutRequiredAssistantFields,
   getRandomPictogramName,
   saveAssistant,
@@ -69,6 +70,35 @@ test('it can upload an image as an avatar', async ({ page }) => {
   const avatarSrc = await avatar.getAttribute('src');
 
   expect(avatarSrc).toBeDefined();
+});
+
+test('it keeps the avatar when an assistant has been edited', async ({ page }) => {
+  const assistantInput = getFakeAssistantInput();
+
+  await loadNewAssistantPage(page);
+
+  await fillOutRequiredAssistantFields(assistantInput, page);
+
+  await page.getByTestId('mini-avatar-container').click();
+  await uploadAvatar(page);
+
+  await page.getByRole('dialog').getByRole('button', { name: 'Save' }).click();
+
+  await saveAssistant(assistantInput.name, page);
+  const card = page.getByTestId(`assistant-card-${assistantInput.name}`);
+  const avatar = card.getByTestId('assistant-card-avatar');
+  const originalAvatarSrc = await avatar.getAttribute('src');
+
+  expect(originalAvatarSrc).toBeDefined();
+
+  await page.waitForURL('/chat/assistants-management');
+  await expect(page.getByTestId(`assistant-card-${assistantInput.name}`)).toBeVisible();
+  await editAssistantCard(assistantInput.name, page);
+  await page.getByLabel('tagline').fill('new description');
+  await saveAssistant(assistantInput.name, page);
+
+  const avatarSrcAfterUpdate = await avatar.getAttribute('src');
+  expect(avatarSrcAfterUpdate!.split('?v=')[0]).toEqual(originalAvatarSrc?.split('?v=')[0]);
 });
 
 test('it can change an image uploaded as an avatar', async ({ page }) => {

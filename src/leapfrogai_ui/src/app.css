@@ -9,6 +9,17 @@
   scrollbar-color: #4b5563 #1f2937;
 }
 
+/* Override TailwindCSS default Preflight styles for lists in messages */
+#message-content-container {
+  ul {
+    margin: revert;
+    padding: revert;
+    li {
+      list-style: square;
+    }
+  }
+}
+
 /*TODO - can we get rid of some of these?*/
 @layer utilities {
   .content {

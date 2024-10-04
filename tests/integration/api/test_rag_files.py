@@ -1,9 +1,13 @@
 import os
-from pathlib import Path
+from typing import Optional
+
+import requests
 from openai.types.beta.threads.text import Text
 import pytest
+from tests.utils.data_path import data_path
 
-from ...utils.client import client_config_factory
+from leapfrogai_api.typedef.rag.rag_types import ConfigurationPayload
+from tests.utils.client import client_config_factory, get_leapfrogai_api_url_base
 
 
 def make_test_assistant(client, model, vector_store_id):
@@ -33,7 +37,6 @@ def test_rag_needle_haystack():
     client = config.client
 
     vector_store = client.beta.vector_stores.create(name="Test data")
-    file_path = "../../data"
     file_names = [
         "test_rag_1.1.txt",
         "test_rag_1.2.txt",
@@ -44,9 +47,7 @@ def test_rag_needle_haystack():
     ]
     vector_store_files = []
     for file_name in file_names:
-        with open(
-            f"{Path(os.path.dirname(__file__))}/{file_path}/{file_name}", "rb"
-        ) as file:
+        with open(data_path(file_name), "rb") as file:
             vector_store_files.append(
                 client.beta.vector_stores.files.upload(
                     vector_store_id=vector_store.id, file=file
@@ -80,3 +81,66 @@ def test_rag_needle_haystack():
 
     for a in message_content.annotations:
         print(a.text)
+
+
+def configure_rag(
+    enable_reranking: bool,
+    ranking_model: str,
+    rag_top_k_when_reranking: int,
+):
+    """
+    Configures the RAG settings.
+
+    Args:
+        enable_reranking: Whether to enable reranking.
+        ranking_model: The ranking model to use.
+        rag_top_k_when_reranking: The top-k results to return before reranking.
+    """
+    url = f"{get_leapfrogai_api_url_base()}/leapfrogai/v1/rag/configure"
+    configuration = ConfigurationPayload(
+        enable_reranking=enable_reranking,
+        ranking_model=ranking_model,
+        rag_top_k_when_reranking=rag_top_k_when_reranking,
+    )
+
+    try:
+        response = requests.patch(url, json=configuration.model_dump())
+        response.raise_for_status()  # Raise an exception for bad status codes (4xx or 5xx)
+        print("RAG configuration updated successfully.")
+    except requests.exceptions.RequestException as e:
+        print(f"Error configuring RAG: {e}")
+
+
+def get_rag_configuration() -> Optional[ConfigurationPayload]:
+    """
+    Retrieves the current RAG configuration.
+
+    Args:
+        base_url: The base URL of the API.
+
+    Returns:
+        The RAG configuration, or None if there was an error.
+    """
+    url = f"{get_leapfrogai_api_url_base()}/leapfrogai/v1/rag/configure"
+
+    try:
+        response = requests.get(url)
+        response.raise_for_status()
+        config = ConfigurationPayload.model_validate_json(response.text)
+        print(f"Current RAG configuration: {config}")
+        return config
+    except requests.exceptions.RequestException as e:
+        print(f"Error getting RAG configuration: {e}")
+        return None
+
+
+@pytest.mark.skipif(
+    os.environ.get("LFAI_RUN_NIAH_TESTS") != "true",
+    reason="LFAI_RUN_NIAH_TESTS envvar was not set to true",
+)
+def test_rag_needle_haystack_with_reranking():
+    configure_rag(True, "flashrank", 100)
+    config_result = get_rag_configuration()
+    assert config_result is not None
+    assert config_result.enable_reranking is True
+    test_rag_needle_haystack()

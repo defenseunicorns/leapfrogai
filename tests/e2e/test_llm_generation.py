@@ -1,41 +1,28 @@
-import os
-from pathlib import Path
 from typing import Iterable
-import warnings
 
 import pytest
 from openai import InternalServerError, OpenAI
 from openai.types.chat import ChatCompletionMessageParam
+from tests.utils.data_path import data_path, WAV_FILE
 
-DEFAULT_LEAPFROGAI_MODEL = "llama-cpp-python"
-
-
-def get_model_name():
-    model_name = os.getenv("LEAPFROGAI_MODEL")
-    if model_name is None:
-        warnings.warn(
-            f"LEAPFROGAI_MODEL environment variable not set. Defaulting to '{DEFAULT_LEAPFROGAI_MODEL}'.\n"
-            "Consider setting LEAPFROGAI_MODEL explicitly. Examples: 'vllm', 'repeater', 'llama-cpp-python'."
-        )
-        model_name = DEFAULT_LEAPFROGAI_MODEL
-    return model_name
-
-
-@pytest.fixture
-def model_name():
-    return get_model_name()
+# Test generation parameters
+SYSTEM_PROMPT = "You are a helpful assistant."
+USER_PROMPT = "Only return 1 word"
+MAX_TOKENS = 128
+TEMPERATURE = 0
 
 
 def test_chat_completions(client: OpenAI, model_name: str):
     messages: Iterable[ChatCompletionMessageParam] = [
-        {"role": "system", "content": "You are a helpful assistant."},
-        {"role": "user", "content": "What is your name?"},
+        {"role": "system", "content": SYSTEM_PROMPT},
+        {"role": "user", "content": USER_PROMPT},
     ]
 
     chat_completion = client.chat.completions.create(
         model=model_name,
         messages=messages,
-        max_tokens=128,
+        max_tokens=MAX_TOKENS,
+        temperature=TEMPERATURE,
     )
     assert chat_completion.model == model_name
     assert len(chat_completion.choices) == 1
@@ -51,8 +38,9 @@ def test_chat_completions(client: OpenAI, model_name: str):
 def test_completions(client: OpenAI, model_name: str):
     completion = client.completions.create(
         model=model_name,
-        prompt="Only return 1 word",
-        max_tokens=128,
+        prompt=USER_PROMPT,
+        max_tokens=MAX_TOKENS,
+        temperature=TEMPERATURE,
     )
     assert completion.model == model_name
     assert len(completion.choices) == 1
@@ -72,7 +60,8 @@ def test_embeddings(client: OpenAI, model_name: str):
 def test_transcriptions(client: OpenAI, model_name: str):
     with pytest.raises(InternalServerError) as excinfo:
         client.audio.transcriptions.create(
-            model=model_name, file=Path("tests/data/0min12sec.wav")
+            model=model_name,
+            file=data_path(WAV_FILE),
         )
 
     assert str(excinfo.value) == "Internal Server Error"

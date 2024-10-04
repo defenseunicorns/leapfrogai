@@ -1,0 +1,94 @@
+name: nightly-uds-badge-verification
+
+on:
+  schedule:
+    - cron: "0 11 * * *" # Runs daily at 3 AM PST
+  workflow_dispatch: # trigger manually as needed
+  pull_request:
+    paths:
+      - .github/workflows/nightly-uds-badge-verification.yaml
+      - tasks.yaml
+
+concurrency:
+  group: nightly-uds-badge-verification-${{ github.ref }}
+  cancel-in-progress: true
+
+defaults:
+  run:
+    shell: bash
+
+env:
+  SNAPSHOT_VERSION: snapshot-latest
+
+permissions:
+  contents: read
+  packages: read
+  id-token: write # This is needed for OIDC federation.
+
+jobs:
+  uds-badge-verification:
+    runs-on: ai-ubuntu-big-boy-8-core
+    name: nightly_uds_badge_verification
+
+    steps:
+      - name: Checkout Repo
+        uses: actions/checkout@d632683dd7b4114ad314bca15554477dd762a938 # v4.2.0
+        with:
+          ref: main
+
+      - name: Setup UDS Cluster
+        uses: ./.github/actions/uds-cluster
+        with:
+          registry1Username: ${{ secrets.IRON_BANK_ROBOT_USERNAME }}
+          registry1Password: ${{ secrets.IRON_BANK_ROBOT_PASSWORD }}
+          ghToken: ${{ secrets.GITHUB_TOKEN }}
+          chainguardIdentity: ${{ secrets.CHAINGUARD_IDENTITY }}
+
+      - name: Print the Commit SHA
+        run: |
+          COMMIT_SHA=$(git rev-parse HEAD)
+          echo "The latest commit on the main branch is: $COMMIT_SHA"
+
+      # Set UDS CPU bundle refs and repositories to snapshot-latest
+      - name: Mutation of the UDS Bundle
+        run: |
+          uds zarf tools yq -i '.metadata.version = "${{ env.SNAPSHOT_VERSION }}"' bundles/latest/cpu/uds-bundle.yaml
+
+          uds zarf tools yq -i '.packages[].ref |= sub("^[^ ]+-upstream$", "${{ env.SNAPSHOT_VERSION }}-upstream")' bundles/latest/cpu/uds-bundle.yaml
+
+          uds zarf tools yq -i '.packages[].repository |= sub("/uds/", "/uds/snapshots/")' bundles/latest/cpu/uds-bundle.yaml
+
+      - name: Create and Deploy UDS Bundle (${{ env.SNAPSHOT_VERSION }})
+        run: |
+          cd bundles/latest/cpu
+          uds create . --confirm && \
+          uds deploy uds-bundle-leapfrogai-amd64-${{ env.SNAPSHOT_VERSION }}.tar.zst --confirm --no-progress && \
+          rm -rf uds-bundle-leapfrogai-amd64-${{ env.SNAPSHOT_VERSION }}.tar.zst && \
+          docker system prune -af
+
+      # Workaround for handling emojis in the upstream badge verification UDS task
+      - name: Set Locale to UTF-8
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y locales
+          sudo locale-gen en_US.UTF-8
+          export LANG=en_US.UTF-8
+          export LANGUAGE=en_US:en
+          export LC_ALL=en_US.UTF-8
+
+      # Setup Python for the report cleaning script in the next step
+      - name: Set up Python
+        uses: actions/setup-python@f677139bbe7f9c59b41e40162b753c062f5d49a3 # v5.2.0
+        with:
+          python-version-file: "pyproject.toml"
+
+      - name: Run UDS Badge Verification Task
+        run: |
+          uds run nightly-uds-badge-verification --no-progress
+
+      - name: Archive UDS Badge Verification Report
+        uses: actions/upload-artifact@834a144ee995460fba8ed112a2fc961b36a5ec5a # v4.3.6
+        with:
+          name: uds-badge-verification-report
+          path: reports
+          retention-days: 7

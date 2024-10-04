@@ -102,15 +102,14 @@ export const actions: Actions = {
         console.error('Error saving assistant avatar:', error);
         return fail(500, { message: 'Error saving assistant avatar.' });
       }
-
       // update assistant with saved avatar path
       try {
-        await openai.beta.assistants.update(createdAssistant.id, {
+        createdAssistant = (await openai.beta.assistants.update(createdAssistant.id, {
           metadata: {
             ...(createdAssistant.metadata ? createdAssistant.metadata : undefined),
             avatar: getAssistantAvatarUrl(filePath)
           }
-        });
+        })) as LFAssistant;
       } catch (e) {
         console.error(`Error adding avatar to assistant: ${e}`);
         return fail(500, { message: 'Error adding avatar to assistant.' });

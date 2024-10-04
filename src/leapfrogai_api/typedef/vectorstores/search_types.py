@@ -1,4 +1,15 @@
+from typing import Optional
+
 from pydantic import BaseModel, Field
+
+
+class Vector(BaseModel):
+    id: str = ""
+    vector_store_id: str
+    file_id: str
+    content: str
+    metadata: dict
+    embedding: list[float]
 
 
 class SearchItem(BaseModel):
@@ -15,6 +26,14 @@ class SearchItem(BaseModel):
     )
     similarity: float = Field(
         ..., description="Similarity score of this item to the query."
+    )
+    rank: Optional[int] = Field(
+        default=None,
+        description="The rank of this search item after ranking has occurred.",
+    )
+    score: Optional[float] = Field(
+        default=None,
+        description="The score of this search item after ranking has occurred.",
     )
 
 
