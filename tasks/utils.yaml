@@ -12,12 +12,13 @@ tasks:
         default: "true"
         required: false
     actions:
-      - shell:
+      - description: "Printed LeapfrogAI logs"
+        shell:
           linux: bash
           darwin: bash
         cmd: |
           if [[ ${{ .inputs.enable }} == "true" ]]; then
-            printf "\n🐸 ${{ .inputs.log }}\n\n"
+              printf "\n🐸 ${{ .inputs.log }}\n\n"
           fi
 
   - name: tag

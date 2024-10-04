@@ -11,25 +11,6 @@ includes:
   - utils: ./utils.yaml
 
 tasks:
-  ############
-  # WORKAROUND
-  ############
-  - name: log
-    description: "LeapfrogAI logger"
-    inputs:
-      log:
-        description: "Content to be logged to the CLI"
-        required: true
-      enable:
-        description: "Whether to enable or disable the logging"
-        default: "true"
-        required: false
-    actions:
-      - task: utils:log
-        with:
-          log: ${{ .inputs.log }}
-          enable: ${{ .inputs.enable }}
-
   #########
   # UTILITY
   #########
@@ -47,7 +28,7 @@ tasks:
         description: "Specifically for packages that are only partially in IronBank (e.g., migrations)"
         default: "false"
     actions:
-      - description: "If not running, create a local registry"
+      - description: "If not running or if local package development, create a local registry"
         shell:
           linux: bash
           darwin: bash
@@ -55,18 +36,9 @@ tasks:
           if [[ ${FLAVOR} != "upstream" || ${{ .inputs.override }} != "false" ]]; then
             if [ ! "$(docker ps -q -f name=${{ .inputs.name }})" ]; then
               docker run -d -p ${{ .inputs.port }}:5000 --restart=always -q --name ${{ .inputs.name }} registry:2 > /dev/null 2>&1
-              echo "false"
             fi
-          else
-            echo "true"
           fi
         mute: true
-        setVariables:
-          - name: ENABLE_LOG
-      - task: utils:log
-        with:
-          log: "Non-upstream flavor detected, skipping local registry creation"
-          enable: ${ENABLE_LOG}
 
   ###########
   # REUSEABLE

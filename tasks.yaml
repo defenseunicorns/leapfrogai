@@ -35,26 +35,19 @@ includes:
   ###########################
   - badge: ./tasks/badge.yaml
   - create: ./tasks/create.yaml
-  - publish: ./tasks/utils.yaml
+  - publish: ./tasks/publish.yaml
   - setup: ./tasks/setup.yaml
   - deploy: ./tasks/deploy.yaml
 
 tasks:
   #######
-  # BADGE
+  # SETUP
   #######
-  - name: nightly-uds-badge-verification
-    description: "Runs in a pipeline and produces a report for archiving"
+  - name: python-development
+    description: "Check and setup a local Python environment for LeapfrogAI development"
     actions:
-      - description: "Create Reports Directory"
-        cmd: |
-          mkdir -p reports
-      - description: "Run UDS Badge Verification Task"
-        cmd: |
-          uds run badge:verify-uds-badge-cpu --no-progress 2>&1 | tee ./reports/intermediate-report.txt
-      - description: "Clean Up Final Report"
-        cmd: |
-          python3 .github/scripts/uds_verification_report.py | tee ./reports/final-report.txt
+      - task: setup:check-python
+      - task: setup:python-dependencies
 
   ########
   # CREATE
@@ -125,3 +118,19 @@ tasks:
       - task: deploy:vllm
       - task: deploy:text-embeddings
       - task: deploy:whisper
+
+  #######
+  # BADGE
+  #######
+  - name: nightly-uds-badge-verification
+    description: "Runs in a pipeline and produces a report for archiving"
+    actions:
+      - description: "Create Reports Directory"
+        cmd: |
+          mkdir -p reports
+      - description: "Run UDS Badge Verification Task"
+        cmd: |
+          uds run badge:verify-uds-badge-cpu --no-progress 2>&1 | tee ./reports/intermediate-report.txt
+      - description: "Clean Up Final Report"
+        cmd: |
+          python3 .github/scripts/uds_verification_report.py | tee ./reports/final-report.txt
