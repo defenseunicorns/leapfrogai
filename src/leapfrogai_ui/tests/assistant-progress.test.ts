@@ -9,6 +9,7 @@ import {
   uploadFileWithApi
 } from './helpers/fileHelpers';
 import { loadNewAssistantPage } from './helpers/navigationHelpers';
+import type { FileObject } from 'openai/resources/files';
 
 // Note - fully testing the assistant progress toast has proven difficult with Playwright. Sometimes the websocket
 // connection for the Supabase realtime listeners works, and sometimes it does not. Here we test that the
@@ -18,12 +19,17 @@ test('when creating an assistant with files, an assistant progress toast is disp
   openAIClient
 }) => {
   const assistantInput = getFakeAssistantInput();
-  const filename1 = `${faker.word.noun()}-test.pdf`;
-  const filename2 = `${faker.word.noun()}-test.pdf`;
-  await createPDF({ filename: filename1 });
-  await createPDF({ filename: filename2 });
-  const uploadedFile1 = await uploadFileWithApi(filename1, 'application/pdf', openAIClient);
-  const uploadedFile2 = await uploadFileWithApi(filename2, 'application/pdf', openAIClient);
+  const numFiles = 2;
+  const filenames: string[] = [];
+  const uploadedFiles: FileObject[] = [];
+
+  for (let i = 0; i < numFiles; i++) {
+    const filename = `${faker.word.noun()}-test.pdf`;
+    filenames.push(filename);
+    await createPDF({ filename });
+    const uploadedFile = await uploadFileWithApi(filename, 'application/pdf', openAIClient);
+    uploadedFiles.push(uploadedFile);
+  }
 
   await loadNewAssistantPage(page);
 
@@ -33,19 +39,36 @@ test('when creating an assistant with files, an assistant progress toast is disp
 
   await page.getByTestId('file-select-dropdown-btn').click();
   const fileSelectContainer = page.getByTestId('file-select-container');
-  await fileSelectContainer.getByTestId(`${uploadedFile1.id}-checkbox`).check();
-  await fileSelectContainer.getByTestId(`${uploadedFile2.id}-checkbox`).check();
+  for (const file of uploadedFiles) {
+    await fileSelectContainer.getByTestId(`${file.id}-checkbox`).check();
+  }
 
   await page.getByRole('button', { name: 'Save' }).click();
+
+  const inProgressSelector = `file-${uploadedFiles[0].id}-vector-in-progress`;
+  const completedSelector = `file-${uploadedFiles[0].id}-vector-completed`;
+
+  // Second file is pending
+  await expect(page.getByTestId(`file-${uploadedFiles[1].id}-vector-pending`)).toBeVisible();
+
+  // Check for either "in-progress" or "completed" state for the first file, it can happen really fast so this prevents
+  // a flaky test
+  const progressToast = await page.waitForSelector(
+    `[data-testid="${inProgressSelector}"], [data-testid="${completedSelector}"]`,
+    {
+      timeout: 30000
+    }
+  );
+  expect(progressToast).toBeTruthy();
+
   await page.waitForURL('/chat/assistants-management');
 
-  await expect(page.getByTestId(`file-${uploadedFile1.id}-vector-in-progress`)).toBeVisible();
-  await expect(page.getByTestId(`file-${uploadedFile2.id}-vector-pending`)).toBeVisible();
-
   // cleanup
-  deleteFixtureFile(filename1);
-  deleteFixtureFile(filename2);
+  for (const filename of filenames) {
+    deleteFixtureFile(filename);
+  }
+  for (const file of uploadedFiles) {
+    await deleteFileWithApi(file.id, openAIClient);
+  }
   await deleteAssistantCard(assistantInput.name, page);
-  await deleteFileWithApi(uploadedFile1.id, openAIClient);
-  await deleteFileWithApi(uploadedFile2.id, openAIClient);
 });
