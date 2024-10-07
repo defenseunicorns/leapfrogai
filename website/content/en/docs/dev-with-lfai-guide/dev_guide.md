@@ -10,7 +10,7 @@ Prior to developing applications using LeapfrogAI, ensure that you have a valid 
 
 The LeapfrogAI API is an OpenAI-compatible API, meaning that the endpoints built out within the LeapfrogAI API as what is found within the OpenAI API. **Note:** Not all endpoints/functionality in OpenAI is implemented in LeapfrogAI. To see what endpoints are implemented in your deployment, reference the [Quick Start](https://docs.leapfrog.ai/docs/local-deploy-guide/quick_start/#checking-deployment) guide for how to check the API reference.
 
-## Using the OpenAI SDK with LeapfrogAI
+## Basic Usage of the OpenAI SDK with LeapfrogAI
 
 ### OpenAI API Reference
 
@@ -36,9 +36,19 @@ To create a LeapfrogAI API key via the user interface, perform the following in 
 
 TODO: Write this
 
+### Install dependencies
+
+It's recommended to be using Python version `3.11.6` or greater.
+
+You'll need the pip Python package manager and the OpenAI SDK:
+
+```bash
+pip install openai
+```
+
 ### Creating the Client
 
-Now that you have your API key, you can create an OpenAI client using LeapfrogAI on the backend:
+Now that you have your API key, you can create an OpenAI client using LeapfrogAI on the backend in a Python script:
 
 ```python
 import openai
@@ -71,19 +81,28 @@ completion = client.chat.completions.create(
 
 This is just a basic example; check out the [chat completion reference](https://platform.openai.com/docs/api-reference/chat/create) for more options!
 
-### Building a RAG Pipeline using Assistants
+## Building a RAG Pipeline using Assistants
 
 Now that we've seen a basic example, let's leverage OpenAI assistants using LeapfrogAI to handle a more complex task: **Retrieval Augmented Generation (RAG)**.
 
 We'll break this example down into a few steps:
 
-#### Create a Vector Store
+### Requirements
+
+Referencing the [Basic Usage](#basic-usage-of-the-openai-sdk-with-leapfrogai) section, you'll need:
+
+- A LeapfrogAI API key
+- The URL of the LeapfrogAI API instance you'll be using
+- An OpenAI Client using LeapfrogAI
+
+### Create a Vector Store
 
 A [vector database](https://www.pinecone.io/learn/vector-database/) is a fundamental piece of RAG-enabled systems. Vector databases store vectorized representations of  and creating one is the first step to building a RAG pipeline.
 
 Assuming you've created an OpenAI client as detailed above, create a vector store:
 
 ```python
+# create a vector store
 vector_store = client.beta.vector_stores.create(
     name="RAG Demo Vector Store",
     file_ids=[],
@@ -92,7 +111,7 @@ vector_store = client.beta.vector_stores.create(
 )
 ```
 
-#### Upload a file
+### Upload a file
 
 Now that you have a vector store, let's add some documents. For a simple example, let's assume you have two text files with the following contents:
 
@@ -108,28 +127,29 @@ Joseph has a pet frog named Milo.
 Milo the frog's birthday is on October 7th.
 ```
 
-You can add these documents to the vector store:
+Create these documents so you can add them to the vector store:
 
 ```python
 # upload some documents
 documents = ['doc_1.txt','doc_2.txt']
 for doc in documents:
     with open(doc, "rb") as file: # read these files in binary mode
-        _ = client.beta.vector_stores.files.upload(
+        vector_store_file = client.beta.vector_stores.files.upload(
             vector_store_id=vector_store.id, file=file
         )
+        print(f"{doc} vector store file id: {vector_store_file.id}")
 ```
 
-When you upload files to a vector store, this creates a `vector_store_file` object. You can record these to reference later, but it's not necessary to track these when chatting with your documents.
+When you upload files to a vector store, this creates a `VectorStoreFile` object. You can record these for later usage, but for now we'll just print each ID for reference.
 
-#### Create an Assistant
+### Create an Assistant
 
 [OpenAI Assistants](https://platform.openai.com/docs/assistants/overview) carry specific instructions and can reference specific tools to add functionality to your workflows. In this case, we'll add the ability for this assistant to search files in our vector store:
 
 ```python
 # these instructions are for example only, your use case may require different directions
 INSTRUCTIONS = """
-  You are a helpful, frog-themed AI bot that answers questions for a user. Keep your response short and direct.
+  You are a helpful AI bot that answers questions for a user. Keep your response short and direct.
   You may receive a set of context and a question that will relate to the context.
   Do not give information outside the document or repeat your findings.
 """
@@ -146,7 +166,7 @@ assistant = client.beta.assistants.create(
 )
 ```
 
-#### Create a Thread and Get Messages
+### Create a Thread and Get Messages
 
 Now that we have an assistant that is able to pull context from our vector store, let's query the assistant. This is done with the assistance of threads and runs (see the [assistants overview](https://platform.openai.com/docs/assistants/overview) for more info).
 
@@ -172,30 +192,31 @@ run = client.beta.threads.runs.create_and_poll(
 
 You'll notice that both documents are needed in order to answer this question. One contains the actual birthday date, while the other contains the relationship information between Joseph and Milo the frog. This is one of the reasons LLMs are utilized when extracting information from documents; they can integrate specific pieces of information across multiple sources.
 
-#### View the Response
+### View the Response
 
 With the run executed, you can now list the messages associated with that run to get the response to our query
 
 ```python
 # get messages
-messages = self.client.beta.threads.messages.list(
+messages = client.beta.threads.messages.list(
     thread_id=thread.id, run_id=run.id
 ).data
 
 # print messages
-print(messages)
+print(messages[1].content[0].text.value)
+# we need the second message in the list, as the first one is associated with our request to the LLM
 ```
 
-The output of this `print(messages)` command will look something like this:
+The output will look something like this:
 
 ```text
-INSERT OUTPUT
+The birthday of Joseph's pet frog, Milo, is on October 7th. [f1e1f9b7-2ec8-4f72-a0cb-42d4eb97c204] [4e48550b-8cf8-49ba-8398-c69389150903]
 ```
 
-You'll see that our Frog Buddy assistant was able to recieve the contextual information it needed in order to know how to answer the query.
+As you can see, our Frog Buddy assistant was able to recieve the contextual information it needed in order to know how to answer the query. You'll also notice that the attached annotations in the response correspond to the IDs for the vector store files we uploaded earlier, so we know we're pulling our information from the right place!
 
-And this just scratches the surface of what you can create with the OpenAI SDK leveraging LeapfrogAI. This may just be a simple example that doesn't necessarily require the added overhead of RAG, but when you need to search for information hidden in hundreds or thousands of documents, you may not be able to hand your LLM all the data at once, which is where RAG really comes in handy.
+This just scratches the surface of what you can create with the OpenAI SDK leveraging LeapfrogAI. This may be a simple example that doesn't necessarily require the added overhead of RAG, but when you need to search for information hidden in hundreds or thousands of documents, you may not be able to hand your LLM all the data at once, which is where RAG really comes in handy.
 
 ## Questions/Feedback
 
-If you have any questions, feedback, or specific update requests on this development guide, please open an issue on the [LeapfrogAI Github Repository](https://github.com/defenseunicorns/leapfrogai)
+If you have any questions, feedback, or specific update requests on this development guide, please open an issue on the [LeapfrogAI Github Repository](https://github.com/defenseunicorns/leapfrogai).
