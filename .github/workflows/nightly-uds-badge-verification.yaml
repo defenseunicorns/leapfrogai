@@ -4,10 +4,10 @@ on:
   # schedule:
   #   - cron: "0 11 * * *" # Runs daily at 3 AM PST
   workflow_dispatch: # trigger manually as needed
-  pull_request:
-    paths:
-      - .github/workflows/nightly-uds-badge-verification.yaml
-      - tasks.yaml
+  # pull_request:
+  #   paths:
+  #     - .github/workflows/nightly-uds-badge-verification.yaml
+  #     - tasks.yaml
 
 concurrency:
   group: nightly-uds-badge-verification-${{ github.ref }}
