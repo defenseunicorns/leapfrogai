@@ -493,8 +493,7 @@ tasks:
           architecture: ${ARCHITECTURE}
           version: ${VERSION}
           # the build options below do not affect registry1 builds
-          # TODO: remove the registry1.dso.mil override once the IronBank image exists for the ui
-          createOptions: "--insecure --registry-override=ghcr.io=localhost:${LOCAL_REGISTRY_PORT} --registry-override=registry1.dso.mil=localhost:${LOCAL_REGISTRY_PORT}"
+          createOptions: "--insecure --registry-override=ghcr.io=localhost:${LOCAL_REGISTRY_PORT}"
 
   - name: supabase
     description: "Build the Supabase Zarf package"
