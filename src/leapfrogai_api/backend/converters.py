@@ -59,18 +59,18 @@ def from_text_to_message(text: str, search_responses: SearchResponse | None) -> 
         The OpenAI compliant Message object
     """
 
-    all_file_ids: str = ""
+    all_citations = ""
     all_vector_ids: list[str] = []
     annotations: list[FileCitationAnnotation | FilePathAnnotation] = []
 
     if search_responses:
         for search_response in search_responses.data:
-            all_file_ids += f"[{search_response.file_id}]"
             all_vector_ids.append(search_response.id)
             file_name = search_response.metadata.get("source", "source")
+            replacement_text = f"【4:0†{file_name}】"  # TODO: What should these numbers be? https://github.com/defenseunicorns/leapfrogai/issues/1110
             annotations.append(
                 FileCitationAnnotation(
-                    text=f"【4:0†{file_name}】",  # TODO: What should these numbers be? https://github.com/defenseunicorns/leapfrogai/issues/1110
+                    text=replacement_text,
                     file_citation=FileCitation(
                         file_id=search_response.file_id, quote=search_response.content
                     ),
@@ -80,10 +80,12 @@ def from_text_to_message(text: str, search_responses: SearchResponse | None) -> 
                 )
             )
 
+            all_citations += replacement_text
+
     message_content: TextContentBlock = TextContentBlock(
         text=Text(
             annotations=annotations,
-            value=text + all_file_ids,
+            value=text + all_citations,  # TODO: Replace with find/replace test
         ),
         type="text",
     )
