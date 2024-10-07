@@ -89,7 +89,7 @@ test('it can edit an assistant and remove a file', async ({ page, openAIClient }
   await page.getByTestId('file-select-dropdown-btn').click();
   await fileSelectContainer.getByTestId(`${uploadedFile1.id}-checkbox`).uncheck();
   await page.getByRole('button', { name: 'Save' }).click();
-  await expect(page.getByText('Assistant Updated')).toBeVisible(); // also tests no assistant progress toast when no files
+  await expect(page.getByTestId('assistant-progress-toast')).toBeVisible();
 
   // Cleanup
   await deleteFileWithApi(uploadedFile1.id, openAIClient);
