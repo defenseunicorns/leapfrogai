@@ -5,6 +5,11 @@ includes:
   #########################
   - setup-common: https://raw.githubusercontent.com/defenseunicorns/uds-common/086215582247e53a69c507a9105b281ba7642c88/tasks/setup.yaml
 
+  ###########################
+  # LEAPFROGAI-SPECIFIC TASKS
+  ###########################
+  - create: ./create.yaml
+
 tasks:
   #######
   # TESTS
