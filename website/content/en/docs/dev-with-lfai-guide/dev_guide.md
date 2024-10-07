@@ -63,7 +63,7 @@ client = openai.OpenAI(api_key=LEAPFROGAI_API_KEY, base_url=LEAPFROGAI_API_URL+"
 
 ### Running Chat Completions
 
-Now that you have a client created, you can utilize it (with LeapfrogAI on the backend) to handle basic chat completion requests:
+Now that you have a client created, you can utilize it to handle basic chat completion requests:
 
 ```python
 ... # using the same code from above
@@ -83,7 +83,7 @@ This is just a basic example; check out the [chat completion reference](https://
 
 ## Building a RAG Pipeline using Assistants
 
-Now that we've seen a basic example, let's leverage OpenAI assistants using LeapfrogAI to handle a more complex task: **Retrieval Augmented Generation (RAG)**.
+Now that we've seen a basic example, let's leverage OpenAI assistants using LeapfrogAI to handle a more complex task: [**Retrieval Augmented Generation (RAG)**](https://blogs.nvidia.com/blog/what-is-retrieval-augmented-generation/).
 
 We'll break this example down into a few steps:
 
@@ -142,9 +142,16 @@ for doc in documents:
 
 When you upload files to a vector store, this creates a `VectorStoreFile` object. You can record these for later usage, but for now we'll just print each ID for reference.
 
+Output:
+
+```text
+doc_1.txt vector store file id: 4e48550b-8cf8-49ba-8398-c69389150903
+doc_2.txt vector store file id: f1e1f9b7-2ec8-4f72-a0cb-42d4eb97c204
+```
+
 ### Create an Assistant
 
-[OpenAI Assistants](https://platform.openai.com/docs/assistants/overview) carry specific instructions and can reference specific tools to add functionality to your workflows. In this case, we'll add the ability for this assistant to search files in our vector store:
+[OpenAI Assistants](https://platform.openai.com/docs/assistants/overview) carry specific instructions and can reference specific tools to add functionality to your workflows. In this case, we'll add the ability for this assistant to search files in our vector store using the `file_search` tool:
 
 ```python
 # these instructions are for example only, your use case may require different directions
@@ -194,7 +201,7 @@ You'll notice that both documents are needed in order to answer this question. O
 
 ### View the Response
 
-With the run executed, you can now list the messages associated with that run to get the response to our query
+With the run executed, you can now list the messages associated with that run to get the response to our query.
 
 ```python
 # get messages
