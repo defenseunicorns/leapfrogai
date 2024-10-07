@@ -23,6 +23,7 @@ In order to utilize the LeapfrogAI API outside of the User Interface, you'll nee
 #### Via the UI
 
 To create a LeapfrogAI API key via the user interface, perform the following in the UI (reference the [Quick Start](https://docs.leapfrog.ai/docs/local-deploy-guide/quick_start/#checking-deployment) guide for where the UI is deployed):
+
 - Select the **Settings** icon ⚙️ in the top-right corner
 - Select **API Keys**
 - Select **Create New**
@@ -72,21 +73,62 @@ This is just a basic example; check out the [chat completion reference](https://
 
 ### Building a RAG Pipeline using Assistants
 
-Now that we've seen a basic example, let's leverage OpenAI assistants using LeapfrogAI to handle a more complex task: Retrieval Augmented Generation (RAG)
+Now that we've seen a basic example, let's leverage OpenAI assistants using LeapfrogAI to handle a more complex task: **Retrieval Augmented Generation (RAG)**.
 
-We'll break this example down into a few step:
+We'll break this example down into a few steps:
 
 #### Create a Vector Store
 
+A [vector database](https://www.pinecone.io/learn/vector-database/) is a fundamental piece of RAG-enabled systems. Vector databases store vectorized representations of  and creating one is the first step to building a RAG pipeline.
+
+Assuming you've created an OpenAI client as detailed above, create a vector store:
+
+```python
+vector_store = client.beta.vector_stores.create(
+    name="RAG Demo Vector Store",
+    file_ids=[],
+    expires_after={"anchor": "last_active_at", "days": 5},
+    metadata={"project": "RAG Demo", "version": "0.1"},
+)
+```
+
 #### Upload a file
+
+Now that you have a vector store, let's add some documents. For a simple example, let's assume you have two text files with the following contents:
+
+**doc_1.txt**
+
+```text
+Joseph has a pet frog named Milo.
+```
+
+**doc_2.txt**
+
+```text
+Milo the frog's birthday is on October 7th.
+```
+
+You can add these documents to the vector store:
+
+```python
+# upload some documents
+documents = ['doc_1.txt','doc_2.txt']
+for doc in documents:
+    with open(doc, "rb") as file: # read these files in binary mode
+        _ = client.beta.vector_stores.files.upload(
+            vector_store_id=vector_store.id, file=file
+        )
+```
+
+When you upload files to a vector store, this creates a `vector_store_file` object. You can record these to reference later, but it's not necessary to track these when chatting with your documents.
 
 #### Create an Assistant
 
-Assuming you've created an OpenAI as detailed above, create an assistant:
+[OpenAI Assistants](https://platform.openai.com/docs/assistants/overview) carry specific instructions and can reference specific tools to add functionality to your workflows. In this case, we'll add the ability for this assistant to search files in our vector store:
 
 ```python
-# these instructions are for example only, your use case may require more explicit directions
-instructions = """
+# these instructions are for example only, your use case may require different directions
+INSTRUCTIONS = """
   You are a helpful, frog-themed AI bot that answers questions for a user. Keep your response short and direct.
   You may receive a set of context and a question that will relate to the context.
   Do not give information outside the document or repeat your findings.
@@ -95,36 +137,65 @@ instructions = """
 # create an assistant
 assistant = client.beta.assistants.create(
     name="Frog Buddy",
-    instructions=instructions,
+    instructions=INSTRUCTIONS,
     model="vllm",
     tools=[{"type": "file_search"}],
     tool_resources={
-        "file_search": {"vector_store_ids": [self.vector_store.id]}
+        "file_search": {"vector_store_ids": [vector_store.id]}
     },
 )
 ```
+
 #### Create a Thread and Get Messages
 
+Now that we have an assistant that is able to pull context from our vector store, let's query the assistant. This is done with the assistance of threads and runs (see the [assistants overview](https://platform.openai.com/docs/assistants/overview) for more info).
+
+We'll make a query specific to the information in the documents we've uploaded:
+
 ```python
+# this query can only be answered using the uploaded documents
+query = "When is the birthday of Joseph's pet frog?"
+
 # create thread
 thread = client.beta.threads.create()
 client.beta.threads.messages.create(
     thread_id=thread.id,
     role="user",
-    content=message_prompt,
+    content=query,
 )
 
 # create run
 run = client.beta.threads.runs.create_and_poll(
     assistant_id=assistant.id, thread_id=thread.id
 )
+```
 
+You'll notice that both documents are needed in order to answer this question. One contains the actual birthday date, while the other contains the relationship information between Joseph and Milo the frog. This is one of the reasons LLMs are utilized when extracting information from documents; they can integrate specific pieces of information across multiple sources.
+
+#### View the Response
+
+With the run executed, you can now list the messages associated with that run to get the response to our query
+
+```python
 # get messages
 messages = self.client.beta.threads.messages.list(
     thread_id=thread.id, run_id=run.id
 ).data
 
+# print messages
+print(messages)
 ```
 
+The output of this `print(messages)` command will look something like this:
+
+```text
+INSERT OUTPUT
+```
+
+You'll see that our Frog Buddy assistant was able to recieve the contextual information it needed in order to know how to answer the query.
+
+And this just scratches the surface of what you can create with the OpenAI SDK leveraging LeapfrogAI. This may just be a simple example that doesn't necessarily require the added overhead of RAG, but when you need to search for information hidden in hundreds or thousands of documents, you may not be able to hand your LLM all the data at once, which is where RAG really comes in handy.
 
 ## Questions/Feedback
+
+If you have any questions, feedback, or specific update requests on this development guide, please open an issue on the [LeapfrogAI Github Repository](https://github.com/defenseunicorns/leapfrogai)
