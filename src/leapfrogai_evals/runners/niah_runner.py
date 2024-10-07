@@ -1,7 +1,9 @@
+import ast
 import logging
 import numpy as np
 import os
 import openai
+import requests
 
 from datasets import load_dataset, concatenate_datasets
 from distutils.util import strtobool
@@ -78,7 +80,7 @@ class NIAH_Runner:
             )
 
         self.client = openai.OpenAI(
-            base_url=base_url or os.environ.get("LEAPFROGAI_API_URL"),
+            base_url=base_url or os.environ.get("LEAPFROGAI_API_URL") + "/openai/v1",
             api_key=api_key or os.environ.get("LEAPFROGAI_API_KEY"),
         )
         logging.info(f"client url: {self.client.base_url}")
@@ -91,8 +93,6 @@ class NIAH_Runner:
             num_copies=int(os.environ.get("NIAH_NUM_COPIES", num_copies)),
         )
         self._create_vector_store()
-        self.retrieval_score = None
-        self.response_score = None
 
     def run_experiment(self, cleanup: bool = True) -> None:
         """
@@ -110,6 +110,7 @@ class NIAH_Runner:
         try:
             retrieval_scores = []
             response_scores = []
+            chunk_ranks = []
             response_contents = []
 
             for row in tqdm(self.niah_data, desc="Evaluating data rows"):
@@ -162,25 +163,43 @@ class NIAH_Runner:
 
                 retrieval_score = 0.0
                 response_score = 0.0
+                chunk_rank = 0.0
                 response_content = ""
 
                 for response in response_messages:
                     response_content += response.content[0].text.value + "\n"
+                    secret_code = row["secret_code"]
+                    chunk_ids = ast.literal_eval(response.metadata["vector_ids"])
 
                     # retrieval_score
-                    # 1 if needle text was returned by the retrieval step of RAG else 0
-                    logging.debug(
-                        f"number of annotations in response: {len(response.content[0].text.annotations)}"
-                    )
-                    for annotation in response.content[0].text.annotations:
-                        annotation_id = annotation.file_citation.file_id
-                        if annotation_id == self.current_file:
-                            logging.debug("Setting retrieval_score to 1.0")
+                    # 1 if needle text is found in any chunk in the context, else 0
+                    # chunk_rank
+                    # see _calculate_chunk_rank for explanation
+                    for chunk_num, chunk_id in enumerate(chunk_ids):
+                        logging.info(f"chunk {chunk_num} (id: {chunk_id})")
+                        vector_response = requests.get(
+                            url=os.getenv("LEAPFROGAI_API_URL")
+                            + "/leapfrogai/v1/vector_stores/vector/"
+                            + chunk_id,
+                            headers={
+                                "accept": "application/json",
+                                "Authorization": "Bearer "
+                                + os.getenv("LEAPFROGAI_API_KEY"),
+                            },
+                        ).json()
+                        logging.info(f"chunk_data: {vector_response['content']}")
+
+                        if secret_code in vector_response["content"]:
+                            logging.info(
+                                f"secret code {secret_code} found in chunk {chunk_num} with id {vector_response['id']}"
+                            )
+                            chunk_rank = self._calculate_chunk_rank(
+                                chunk_place=chunk_num, total_chunks=len(chunk_ids)
+                            )
                             retrieval_score = 1.0
 
-                    # # response_score
-                    # # 1 if needle text was returned by the LLM's final response else 0
-                    secret_code = row["secret_code"]
+                    # response_score
+                    # 1 if needle text was returned by the LLM's final response else 0
                     logging.info(f"Response message: {response.content[0].text.value}")
                     if secret_code in response.content[0].text.value:
                         logging.debug("Setting response_score to 1.0")
@@ -188,6 +207,7 @@ class NIAH_Runner:
 
                 retrieval_scores.append(retrieval_score)
                 response_scores.append(response_score)
+                chunk_ranks.append(chunk_rank)
                 response_contents.append(response_content)
 
                 # delete file to clean up the vector store
@@ -211,14 +231,15 @@ class NIAH_Runner:
                 name="response_score", column=response_scores
             )
             self.niah_data = self.niah_data.add_column(
+                name="chunk_rank", column=chunk_ranks
+            )
+            self.niah_data = self.niah_data.add_column(
                 name="response", column=response_contents
             )
 
-            self.retrieval_score = np.mean(retrieval_scores)
-            self.response_score = np.mean(response_scores)
-
-            logging.info(f"Retrieval Score {self.retrieval_score}")
-            logging.info(f"Response Score {self.response_score}")
+            logging.info(f"Retrieval Score: {np.mean(retrieval_scores)}")
+            logging.info(f"Response Score: {np.mean(response_scores)}")
+            logging.info(f"Chunk Rank Score: {np.mean(chunk_ranks)}")
 
         # remove artifacts from the API if the experiment fails
         except Exception as exc:
@@ -264,7 +285,8 @@ class NIAH_Runner:
         """
         logging.info(f"Downloading dataset: {dataset_name} from HuggingFace")
         niah_dataset = load_dataset(dataset_name)
-        self.padding = niah_dataset["padding"]
+        if self.add_padding:
+            self.padding = niah_dataset["padding"]
         niah_dataset = concatenate_datasets(
             [
                 niah_dataset["base_eval"],
@@ -339,8 +361,11 @@ class NIAH_Runner:
             logging.debug(
                 f"Added {len(self.padding)} files as padding to the haystack vector store"
             )
+            self.padding = self.padding.add_column(
+                name="padding_id", column=padding_ids
+            )
+
         self.vector_store = vector_store
-        self.padding = self.padding.add_column(name="padding_id", column=padding_ids)
 
     def _delete_vector_store(self, vector_store_id: str) -> None:
         """Deletes the vector store used for all NIAH evaluations"""
@@ -360,3 +385,28 @@ class NIAH_Runner:
                 file_id=file_id, vector_store_id=self.vector_store.id
             )
         self.client.files.delete(file_id=file_id)
+
+    def _calculate_chunk_rank(self, chunk_place: int, total_chunks: int) -> float:
+        """
+        Calculate an individual chunk's rank
+
+        When a needle is found in a certain chunk, we caclulate the rank of that chunk
+        This rank is based on what place in the responses it came (between 0 and total_chunks-1)
+        using this formula:
+
+        chunk_rank_score = (total_chunks - chunk_place) / total_chunks
+
+        e.g
+        total_chunks = 5
+        chunk_place = 0 (first in the list)
+        chunk_rank_score = (5 - 0) / 5 = 1.0
+
+        e.g
+        total_chunks = 5
+        chunk_place = 4 (last in 0 indexed list)
+        chunk_rank_score = (5 - 4) / 5 = 0.2
+
+        not finding the needle results in a score of 0 (set outside this function)
+        """
+        chunk_rank_score = float(total_chunks - chunk_place) / float(total_chunks)
+        return chunk_rank_score

@@ -1,6 +1,8 @@
+import ast
 import logging
 import os
 import openai
+import requests
 import shutil
 import zipfile
 
@@ -52,6 +54,7 @@ class QA_Runner:
         self.vector_store = None
         self.file_dict = None
         self.current_assistant = None
+        self.api_key = api_key or os.getenv("LEAPFROGAI_API_KEY")
         self.dataset_name = os.environ.get("QA_DATASET", dataset)
         self.model = os.environ.get("MODEL_TO_EVALUATE", model)
         self.temperature = float(os.environ.get("TEMPERATURE", temperature))
@@ -72,8 +75,8 @@ class QA_Runner:
             )
 
         self.client = openai.OpenAI(
-            base_url=base_url or os.getenv("LEAPFROGAI_API_URL"),
-            api_key=api_key or os.getenv("LEAPFROGAI_API_KEY"),
+            base_url=base_url or os.getenv("LEAPFROGAI_API_URL") + "/openai/v1",
+            api_key=self.api_key,
         )
         logging.info(f"client url: {self.client.base_url}")
         try:  # use existing vector store if supplied
@@ -101,6 +104,7 @@ class QA_Runner:
 
         try:
             response_contents = []
+            retrieved_contexts = []
             expected_annotations = []
             actual_annotations = []
 
@@ -132,21 +136,40 @@ class QA_Runner:
                         response_messages.append(message)
 
                 response_content = ""
+                retrieved_context = []
                 response_annotations = []
                 for response in response_messages:
                     response_content += response.content[0].text.value + "\n"
+                    chunk_ids = ast.literal_eval(response.metadata["vector_ids"])
+
+                    # retrieve context used to generate response
+                    for chunk_id in chunk_ids:
+                        vector_response = requests.get(
+                            url=os.getenv("LEAPFROGAI_API_URL")
+                            + "/leapfrogai/v1/vector_stores/vector/"
+                            + chunk_id,
+                            headers={
+                                "accept": "application/json",
+                                "Authorization": "Bearer " + self.api_key,
+                            },
+                        ).json()
+                        retrieved_context.append(vector_response["content"])
 
                     for annotation in response.content[0].text.annotations:
                         annotation_id = annotation.file_citation.file_id
                         response_annotations.append(annotation_id)
 
-                    logging.debug(
+                    logging.info(
                         f"number of annotations in response: {len(response.content[0].text.annotations)}"
                     )
 
                 expected_annotations.append([self.file_dict[row["source_file"]]])
                 actual_annotations.append(response_annotations)
 
+                logging.info(
+                    f"Retrieved context recorded: {vector_response['content']}"
+                )
+                retrieved_contexts.append(retrieved_context)
                 logging.info(f"Response recorded:\n{response_content}")
                 response_contents.append(response_content)
 
@@ -158,6 +181,9 @@ class QA_Runner:
             self.qa_data = self.qa_data.remove_columns("actual_output")
             self.qa_data = self.qa_data.add_column(
                 name="actual_output", column=response_contents
+            )
+            self.qa_data = self.qa_data.add_column(
+                name="retrieval_context", column=retrieved_contexts
             )
             self.qa_data = self.qa_data.add_column(
                 name="expected_annotations", column=expected_annotations
