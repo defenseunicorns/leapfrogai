@@ -3,7 +3,7 @@ import numpy as np
 
 from deepeval.test_case import LLMTestCase
 
-from leapfrogai_evals.metrics import NIAH_Retrieval, NIAH_Response
+from leapfrogai_evals.metrics import NIAH_Retrieval, NIAH_Response, NIAH_Chunk_Rank
 from leapfrogai_evals.runners import NIAH_Runner
 
 
@@ -26,6 +26,7 @@ def niah_eval(*args, **kwargs) -> dict:
                 additional_metadata={
                     "retrieval_score": row["retrieval_score"],
                     "response_score": row["response_score"],
+                    "chunk_rank": row["chunk_rank"],
                 },
             )
         )
@@ -34,7 +35,8 @@ def niah_eval(*args, **kwargs) -> dict:
     # TODO: Give ability to choose which metrics to run
     retrieval_metric = NIAH_Retrieval()
     response_metric = NIAH_Response()
-    metrics = [retrieval_metric, response_metric]
+    chunk_rank_metric = NIAH_Chunk_Rank()
+    metrics = [retrieval_metric, response_metric, chunk_rank_metric]
 
     # record scores and return results
     for metric in metrics:

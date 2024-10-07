@@ -24,7 +24,7 @@ class LFAI_Model(DeepEvalBaseLLM):
     ):
         self.model = model or os.getenv("MODEL_TO_EVALUATE")
         self.api_key = api_key or os.getenv("LEAPFROGAI_API_KEY")
-        self.base_url = base_url or os.getenv("LEAPFROGAI_API_URL")
+        self.base_url = base_url or os.getenv("LEAPFROGAI_API_URL") + "/openai/v1"
         self.client = openai.OpenAI(api_key=self.api_key, base_url=self.base_url)
 
     def load_model(self):
