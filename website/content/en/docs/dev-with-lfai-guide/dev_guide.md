@@ -22,7 +22,7 @@ In order to utilize the LeapfrogAI API outside of the User Interface, you'll nee
 
 #### Via the UI
 
-To create a LeapfrogAI API key via the user interface, perform the following in the UI (reference the [Quick Start](https://docs.leapfrog.ai/docs/local-deploy-guide/quick_start/#checking-deployment) guide for where the UI is deployed):
+The easiest way to create a LeapfrogAI API key is via the user interface. Perform the following in the UI (reference the [Quick Start](https://docs.leapfrog.ai/docs/local-deploy-guide/quick_start/#checking-deployment) guide for where the UI is deployed):
 
 - Select the **Settings** icon ⚙️ in the top-right corner
 - Select **API Keys**
@@ -34,7 +34,11 @@ To create a LeapfrogAI API key via the user interface, perform the following in 
 
 #### Via the deployment
 
-TODO: Write this
+If you prefer not use the UI (or the UI is not deployed), you can use the following guides to create an API key:
+
+1-hour JWT via Supabase: [instructions](https://github.com/defenseunicorns/leapfrogai/blob/main/packages/supabase/README.md#troubleshooting)
+
+Long-lived API key via the API: [instructions](https://github.com/defenseunicorns/leapfrogai/blob/main/src/leapfrogai_api/README.md#running)
 
 ### Install dependencies
 
