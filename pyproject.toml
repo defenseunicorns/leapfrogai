@@ -11,7 +11,7 @@ readme = "README.md"
 license = { file = "LICENSE" }
 
 dependencies = [ # Dev dependencies needed for all of LeapfrogAI
-    "openai == 1.32.1",
+    "openai ==1.51.1",
     "pip-tools == 7.3.0",
     "httpx == 0.27.2",
     "ruff == 0.4.3",

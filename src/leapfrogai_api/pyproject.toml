@@ -9,7 +9,7 @@ version = "0.13.1"
 dependencies = [
     "fastapi == 0.109.1",
     "pydantic == 2.8.2",
-    "openai == 1.32.1",
+    "openai ==1.51.1",
     "uvicorn == 0.23.2",
     "docx2txt == 0.8",
     "python-multipart ==0.0.10",            #indirect dep of FastAPI to receive form data for file uploads
