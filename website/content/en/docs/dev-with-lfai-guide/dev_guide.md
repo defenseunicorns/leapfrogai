@@ -138,20 +138,12 @@ Create these documents so you can add them to the vector store:
 documents = ['doc_1.txt','doc_2.txt']
 for doc in documents:
     with open(doc, "rb") as file: # read these files in binary mode
-        vector_store_file = client.beta.vector_stores.files.upload(
+        _ = client.beta.vector_stores.files.upload(
             vector_store_id=vector_store.id, file=file
         )
-        print(f"{doc} vector store file id: {vector_store_file.id}")
 ```
 
-When you upload files to a vector store, this creates a `VectorStoreFile` object. You can record these for later usage, but for now we'll just print each ID for reference.
-
-Output (the IDs will be randomly generated each time):
-
-```text
-doc_1.txt vector store file id: 4e48550b-8cf8-49ba-8398-c69389150903
-doc_2.txt vector store file id: f1e1f9b7-2ec8-4f72-a0cb-42d4eb97c204
-```
+When you upload files to a vector store, this creates a `VectorStoreFile` object. You can record these for later usage, but for now they aren't needed for simple chatting with your documents.
 
 ### Create an Assistant
 
@@ -221,10 +213,10 @@ print(messages[1].content[0].text.value)
 The output will look something like this:
 
 ```text
-The birthday of Joseph's pet frog, Milo, is on October 7th. [f1e1f9b7-2ec8-4f72-a0cb-42d4eb97c204] [4e48550b-8cf8-49ba-8398-c69389150903]
+The birthday of Joseph's pet frog, Milo, is on October 7th. 【4:0†doc_2.txt】 【4:0†doc_1.txt】
 ```
 
-As you can see, our Frog Buddy assistant was able to recieve the contextual information it needed in order to know how to answer the query. You'll also notice that the attached annotations in the response correspond to the IDs for the vector store files we uploaded earlier, so we know we're pulling our information from the right place!
+As you can see, our Frog Buddy assistant was able to recieve the contextual information it needed in order to know how to answer the query. You'll also notice that the attached annotations correspond to the files we uploaded earlier, so we know we're pulling our information from the right place!
 
 This just scratches the surface of what you can create with the OpenAI SDK leveraging LeapfrogAI. This may be a simple example that doesn't necessarily require the added overhead of RAG, but when you need to search for information hidden in hundreds or thousands of documents, you may not be able to hand your LLM all the data at once, which is where RAG really comes in handy.
 
