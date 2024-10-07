@@ -142,7 +142,7 @@ for doc in documents:
 
 When you upload files to a vector store, this creates a `VectorStoreFile` object. You can record these for later usage, but for now we'll just print each ID for reference.
 
-Output:
+Output (the IDs will be randomly generated each time):
 
 ```text
 doc_1.txt vector store file id: 4e48550b-8cf8-49ba-8398-c69389150903
@@ -224,6 +224,8 @@ As you can see, our Frog Buddy assistant was able to recieve the contextual info
 
 This just scratches the surface of what you can create with the OpenAI SDK leveraging LeapfrogAI. This may be a simple example that doesn't necessarily require the added overhead of RAG, but when you need to search for information hidden in hundreds or thousands of documents, you may not be able to hand your LLM all the data at once, which is where RAG really comes in handy.
 
+As a reminder, the [OpenAI API Reference](https://platform.openai.com/docs/api-reference/introduction) has lots of information on using the OpenAI SDK, and much of it is compatible with LeapfrogAI!
+
 ## Questions/Feedback
 
-If you have any questions, feedback, or specific update requests on this development guide, please open an issue on the [LeapfrogAI Github Repository](https://github.com/defenseunicorns/leapfrogai).
+If you have any questions, feedback, or specific update requests on this development guide, please open an issue on the [LeapfrogAI Github Repository](https://github.com/defenseunicorns/leapfrogai). Additionally, if you have specific feature requests for the LeapfrogAI API (for example, certain endpoints that are not yet compatible with OpenAI), please create an issue in Github.
