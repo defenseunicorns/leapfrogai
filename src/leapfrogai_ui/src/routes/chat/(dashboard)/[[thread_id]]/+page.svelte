@@ -24,7 +24,7 @@
     ERROR_SAVING_MSG_TOAST
   } from '$constants/toastMessages';
   import SelectAssistantDropdown from '$components/SelectAssistantDropdown.svelte';
-  import { PaperPlaneOutline, StopOutline } from 'flowbite-svelte-icons';
+  import { ArrowUpOutline, StopOutline } from 'flowbite-svelte-icons';
   import type { FileMetadata, LFFile } from '$lib/types/files';
   import UploadedFileCards from '$components/UploadedFileCards.svelte';
   import ChatFileUploadForm from '$components/ChatFileUpload.svelte';
@@ -404,13 +404,13 @@
       {/if}
     </div>
   </div>
-  <Hr classHr="my-2" />
-  <div id="chat-tools" data-testid="chat-tools" class="flex flex-col gap-2 px-8">
+  <Hr classHr="mt-0 mb-3" />
+  <div id="chat-tools" data-testid="chat-tools" class="flex min-w-0 items-end gap-2 px-8">
     <SelectAssistantDropdown />
 
     <div
       class={twMerge(
-        'flex flex-grow flex-col gap-1 rounded-lg bg-gray-50 px-4 py-0 dark:bg-gray-700',
+        'flex min-h-[44px] min-w-0 flex-grow flex-col  gap-1 rounded-lg border border-gray-600 bg-gray-50 px-4 py-0 dark:bg-gray-700',
         attachedFileMetadata.length > 0 && 'py-4'
       )}
     >
@@ -422,8 +422,7 @@
       >
         <UploadedFileCards bind:attachedFileMetadata bind:attachedFiles />
       </LFCarousel>
-
-      <div id="chat-row" class="flex w-full items-center gap-1">
+      <div id="chat-row" class="flex w-full min-w-0 items-center gap-1">
         {#if !assistantMode}
           <ChatFileUploadForm bind:uploadingFiles bind:attachedFiles bind:attachedFileMetadata />
         {/if}
@@ -438,31 +437,15 @@
           maxRows={10}
           innerWrappedClass="p-px bg-white dark:bg-gray-700"
         />
-
         {#if !$isLoading && $status !== 'in_progress'}
-          <ToolbarButton
-            data-testid="send message"
-            type="submit"
-            color="blue"
-            class={twMerge(
-              'rounded-full text-primary-600 dark:text-primary-500',
-              sendDisabled && 'hover:dark:bg-gray-700 '
-            )}
-            disabled={sendDisabled}
+          <ToolbarButton data-testid="send message" type="submit" disabled={sendDisabled}
+            ><ArrowUpOutline class="h-6 w-6 dark:text-gray-400 dark:hover:text-gray-300" />
+            <span class="sr-only">Send message</span></ToolbarButton
           >
-            <PaperPlaneOutline
-              class={twMerge('h-6 w-6 rotate-45', sendDisabled && 'text-primary-100')}
-            />
-            <span class="sr-only">Send message</span>
-          </ToolbarButton>
         {:else}
-          <ToolbarButton
-            data-testid="cancel message"
-            type="submit"
-            color="gray"
-            class="rounded-full text-primary-600 dark:text-primary-500"
-            ><StopOutline class="h-6 w-6" color="red" /><span class="sr-only">Cancel message</span
-            ></ToolbarButton
+          <ToolbarButton data-testid="cancel message" type="submit" class="dark:focus:ring-red-500"
+            ><StopOutline class="h-6 w-6 dark:text-red-500 dark:hover:text-red-400" />
+            <span class="sr-only">Cancel message</span></ToolbarButton
           >
         {/if}
       </div>

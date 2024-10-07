@@ -57,7 +57,7 @@ test('it saves in progress responses when interrupted by changing threads', asyn
   await sendMessage(page, uniqueLongMessagePrompt);
   await expect(messages).toHaveCount(2);
 
-  await page.getByText('New Chat').click();
+  await page.getByText('New chat').click();
   await expect(messages).toHaveCount(0);
   await page.getByText(uniqueLongMessagePrompt).click(); // switch back to original thread
   await expect(messages).toHaveCount(2);

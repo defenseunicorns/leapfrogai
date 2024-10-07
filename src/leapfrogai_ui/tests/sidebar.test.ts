@@ -33,6 +33,8 @@ test('can edit thread labels', async ({ page, openAIClient }) => {
   await sendMessage(page, newMessage1);
   await expect(messages).toHaveCount(2);
 
+  const threads = page.getByTestId('threads');
+  await threads.getByText(newMessage1).hover();
   const threadMenuBtn = page.getByTestId(`thread-menu-btn-${newMessage1}`);
   await threadMenuBtn.click();
 
@@ -60,7 +62,7 @@ test('Can switch threads', async ({ page, openAIClient }) => {
   await waitForResponseToComplete(page);
   await expect(messages).toHaveCount(4);
 
-  await page.getByText('New Chat').click();
+  await page.getByText('New chat').click();
   await expect(messages).toHaveCount(0);
   await sendMessage(page, newMessage3);
   await waitForResponseToComplete(page);

@@ -1,27 +1,28 @@
 <!--
 This is a modified version of Flowbite Svelte's SidebarDropdownItem.svelte component
-It adds a "three-dot" menu button with Popover, and delete confirmation Modal
+It adds a "three-dot" menu button with Dropdown, and delete confirmation Modal
 -->
 <script lang="ts">
   import { twMerge } from 'tailwind-merge';
-  import { Button, Input, P, Popover } from 'flowbite-svelte';
+  import { Button, Dropdown, DropdownItem, Input, Modal, P } from 'flowbite-svelte';
   import { DotsVerticalOutline, ExclamationCircleOutline } from 'flowbite-svelte-icons';
   import { threadsStore } from '$stores';
   import { goto } from '$app/navigation';
   import { page } from '$app/stores';
   import { MAX_LABEL_SIZE } from '$constants';
-  import { Modal } from 'flowbite-svelte';
 
   export let sClass: string =
-    'flex items-center p-2 ps-11 w-full text-base font-normal text-gray-900 rounded-lg transition duration-75 group hover:bg-gray-100 dark:text-white dark:hover:bg-gray-700';
+    'flex items-center p-2 ps-4 w-full text-base font-normal text-gray-900 rounded-lg transition duration-75 group hover:bg-gray-100 dark:text-white dark:hover:bg-gray-700';
   export let threadId: string;
   export let label: string = '';
   export let activeClass: string =
-    'flex items-center p-2 ps-11 text-base font-normal text-gray-900 bg-gray-200 dark:bg-gray-700 rounded-lg dark:text-white hover:bg-gray-100 dark:hover:bg-gray-700';
+    'flex items-center p-2 ps-4 text-base font-normal text-gray-900 bg-gray-200 dark:bg-gray-700 rounded-lg dark:text-white hover:bg-gray-100 dark:hover:bg-gray-700';
   export let active: boolean = false;
+  export let labelClass: string = '';
   let deleteModalOpen = false;
   let editLabelText: string | undefined = label;
   let editLabelInputDisabled = false;
+  let hovered = false;
 
   $: popperOpen = false;
   $: editMode = false;
@@ -71,7 +72,13 @@ It adds a "three-dot" menu button with Popover, and delete confirmation Modal
   };
 </script>
 
-<li class="flex flex-grow justify-between">
+<li
+  class="flex flex-grow justify-between"
+  on:mouseover={() => (hovered = true)}
+  on:mouseout={() => (hovered = false)}
+  on:focus
+  on:blur
+>
   {#if editMode}
     <Input
       data-testid="edit-thread-input"
@@ -108,48 +115,48 @@ It adds a "three-dot" menu button with Popover, and delete confirmation Modal
       on:click={async () => {
         await threadsStore.changeThread(threadId);
       }}
+      aria-label={label}
       class={twMerge(
         active ? activeClass : sClass,
         'truncate',
         'flex-grow',
         'cursor-pointer',
+        'justify-between',
         $$props.class
       )}
     >
-      <P size="sm" class="truncate whitespace-nowrap">
+      <P size="sm" class={twMerge('truncate whitespace-nowrap', labelClass)}>
         {label}
       </P>
+      <button
+        data-testid={`thread-menu-btn-${label}`}
+        id={`btn-${threadId}`}
+        class={!hovered && 'opacity-0'}
+        on:click={(e) => {
+          e.stopPropagation();
+        }}
+      >
+        <DotsVerticalOutline class="dark:text-gray-400 dark:hover:text-white" />
+      </button>
     </button>
-    <button
-      data-testid={`thread-menu-btn-${label}`}
-      id={`btn-${threadId}`}
-      class={popperOpen && 'focus:rounded focus:bg-gray-400'}
-    >
-      <DotsVerticalOutline color="white" />
-    </button>
-    <Popover
+
+    <Dropdown
       data-testid={'sidebar-popover'}
-      class="w-32 border-none border-none text-sm font-light"
-      defaultClass="p-0"
       placement="right"
       trigger="click"
       triggeredBy={`#btn-${threadId}`}
-      arrow={false}
       on:show={() => {
         popperOpen = !popperOpen;
       }}
-      ><div class="flex flex-col items-center gap-1">
-        <Button size="xs" class="w-full" on:click={handleEditClick}>Edit</Button>
-        <Button
-          size="xs"
-          class="w-full"
-          on:click={(e) => {
-            e.stopPropagation();
-            deleteModalOpen = true;
-          }}>Delete</Button
-        >
-      </div></Popover
     >
+      <DropdownItem on:click={handleEditClick}>Edit</DropdownItem>
+      <DropdownItem
+        on:click={(e) => {
+          e.stopPropagation();
+          deleteModalOpen = true;
+        }}>Delete</DropdownItem
+      >
+    </Dropdown>
   {/if}
 </li>
 
@@ -162,7 +169,7 @@ It adds a "three-dot" menu button with Popover, and delete confirmation Modal
 >
   <div class="flex flex-col gap-4">
     <ExclamationCircleOutline class="mx-auto  h-12 w-12 text-gray-400 dark:text-white" />
-    <P size="xl" class="text-center dark:text-gray-400">
+    <P size="xl" class={twMerge('text-center dark:text-gray-400', labelClass)}>
       Are you sure you want to delete your <strong>{label.substring(0, MAX_LABEL_SIZE)}</strong> chat?
     </P>
     <div class="flex justify-end gap-2">

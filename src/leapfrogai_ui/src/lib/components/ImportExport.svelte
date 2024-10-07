@@ -1,6 +1,6 @@
 <script lang="ts">
   import { Button, Spinner } from 'flowbite-svelte';
-  import { DownloadOutline } from 'flowbite-svelte-icons';
+  import { FileExportOutline, FileImportOutline } from 'flowbite-svelte-icons';
   import { threadsStore, toastStore } from '$stores';
   import { threadsSchema } from '$schemas/threadSchema';
   import type { LFThread } from '$lib/types/threads';
@@ -84,19 +84,21 @@
   {:else}
     <LFFileUploadBtn
       data-testid="import-chat-history-input"
+      color="alternative"
       outline
       size="sm"
       on:change={(e) => onUpload(e.detail)}
       accept={['application/json']}
       disabled={importing}
+      btnColor="alternative"
     >
-      Import chat history <DownloadOutline /></LFFileUploadBtn
+      Import chat history <FileImportOutline /></LFFileUploadBtn
     >
   {/if}
 
-  <Button id="export-btn" outline size="sm" on:click={onExport} class="w-full">
+  <Button id="export-btn" outline size="sm" color="alternative" on:click={onExport} class="w-full">
     <div class="flex w-full justify-between">
-      Export chat history <DownloadOutline />
+      Export chat history <FileExportOutline />
     </div>
   </Button>
 </div>

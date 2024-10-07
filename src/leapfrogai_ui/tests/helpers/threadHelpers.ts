@@ -4,6 +4,8 @@ import type { Profile } from '$lib/types/profile';
 import { supabase } from './helpers';
 
 export const clickToDeleteThread = async (page: Page, label: string) => {
+  const threads = page.getByTestId('threads');
+  await threads.getByText(label).hover();
   await page.getByTestId(`thread-menu-btn-${label}`).click();
   await page.getByRole('button', { name: /delete/i }).click();
   const deleteBtns = await page.getByRole('button', { name: /delete/i }).all();

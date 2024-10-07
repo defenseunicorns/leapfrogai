@@ -6,7 +6,7 @@
   --header-height: 3rem;
   --message-input-height: 2.5rem;
   --sidebar-width: 255px;
-  scrollbar-color: #4b5563 #1f2937;
+  scrollbar-color: #4b5563 transparent;
 }
 
 /* Override TailwindCSS default Preflight styles for lists in messages */

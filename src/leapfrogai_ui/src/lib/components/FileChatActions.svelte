@@ -122,7 +122,6 @@
         }
         return;
       }
-
       // save translation response
       let responseMessage;
       try {
@@ -139,7 +138,7 @@
         await handleGeneralError(toastError);
         responseMessage = await saveMessage({
           thread_id: threadId,
-          content: 'There was an error translating the file',
+          content: 'There was an error processing the file',
           role: 'assistant',
           metadata: {
             wasTranscriptionOrTranslation: 'true'

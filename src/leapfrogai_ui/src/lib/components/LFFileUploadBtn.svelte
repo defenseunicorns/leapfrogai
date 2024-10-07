@@ -12,6 +12,8 @@
   export let size: 'xs' | 'sm' | 'md' | 'lg' | 'xl' | 'none' = 'sm';
   export let outline: boolean = false;
   export let testId: string | null = null; // for the button element
+  export let btnColor = 'primary';
+  export let unstyled = false;
 
   const dispatch = createEventDispatcher();
 </script>
@@ -36,16 +38,30 @@
     {...$$restProps}
     class="sr-only"
   />
-  <Button
-    data-testid={testId}
-    {outline}
-    {size}
-    {disabled}
-    on:click={() => ref?.click()}
-    class={twMerge('w-full', $$props.class)}
-  >
-    <div class="flex w-full justify-between">
-      <slot />
-    </div>
-  </Button>
+  {#if unstyled}
+    <button
+      data-testid={testId}
+      {disabled}
+      on:click={() => ref?.click()}
+      class={twMerge('w-full', $$props.class)}
+    >
+      <div class="flex w-full justify-between">
+        <slot />
+      </div>
+    </button>
+  {:else}
+    <Button
+      data-testid={testId}
+      color={btnColor}
+      {outline}
+      {size}
+      {disabled}
+      on:click={() => ref?.click()}
+      class={twMerge('w-full', $$props.class)}
+    >
+      <div class="flex w-full justify-between">
+        <slot />
+      </div>
+    </Button>
+  {/if}
 </div>

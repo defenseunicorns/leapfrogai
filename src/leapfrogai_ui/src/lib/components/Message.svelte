@@ -214,6 +214,7 @@
             tabindex="0"
           >
             <EditOutline />
+            <span class="sr-only">Edit Message</span>
           </IconButton>
         {/if}
         {#if message.role !== 'user'}
@@ -245,6 +246,7 @@
             tabindex="0"
           >
             <RedoOutline />
+            <span class="sr-only">Regenerate Message</span>
           </IconButton>
         {/if}
       </div>

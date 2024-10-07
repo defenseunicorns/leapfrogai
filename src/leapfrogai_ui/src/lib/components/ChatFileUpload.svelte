@@ -145,8 +145,8 @@
   }}
   accept={ACCEPTED_DOC_AND_AUDIO_FILE_TYPES}
   disabled={uploadingFiles}
-  class="remove-btn-style flex  rounded-lg  p-1.5 text-gray-500 hover:bg-inherit dark:hover:bg-inherit"
+  class="remove-btn-style flex  rounded-lg  p-1.5 hover:bg-inherit dark:hover:bg-inherit dark:focus:ring-0"
 >
-  <PaperClipOutline class="text-gray-300" />
+  <PaperClipOutline class="dark:text-gray-400 dark:hover:text-gray-300" />
   <span class="sr-only">Attach file</span>
 </LFFileUploadBtn>
