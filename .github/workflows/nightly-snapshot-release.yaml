@@ -1,8 +1,8 @@
 name: nightly-snapshot-release
 
 on:
-  schedule:
-    - cron: "0 8 * * *" # Runs daily at 12 AM PST
+  # schedule:
+  #   - cron: "0 8 * * *" # Runs daily at 12 AM PST
   workflow_dispatch: # trigger manually as needed
   pull_request:
     types:

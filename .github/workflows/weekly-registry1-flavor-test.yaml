@@ -1,8 +1,8 @@
 name: weekly-registry1-flavor-test
 
 on:
-  schedule:
-    - cron: "0 8 * * 0" # Run every Sunday at 12 AM PST
+  # schedule:
+  #   - cron: "0 8 * * 0" # Run every Sunday at 12 AM PST
   workflow_dispatch: # trigger manually as needed
   pull_request:
     types:
