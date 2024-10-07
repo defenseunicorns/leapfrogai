@@ -189,7 +189,7 @@ tasks:
           dockerfile: "packages/k3d-gpu/Dockerfile"
           architecture: "amd64"
           version: ${VERSION}
-          imageRepository: ghcr.io/defenseunicorns/leapfrogai/k3d-gpu
+          imageRepository: "ghcr.io/defenseunicorns/leapfrogai/k3d-gpu"
           buildContext: "packages/k3d-gpu"
 
   - name: sdk-image
@@ -226,16 +226,7 @@ tasks:
           buildOptions: "--build-arg='MIGRATIONS_DIR=packages/supabase/migrations'"
           architecture: ${ARCHITECTURE}
           version: ${VERSION}
-          imageRepository: ghcr.io/defenseunicorns/leapfrogai/api-migrations
-      - task: utils:tag
-        with:
-          current: "ghcr.io/defenseunicorns/leapfrogai/api-migrations:${VERSION}"
-          new: "localhost:${LOCAL_REGISTRY_PORT}/defenseunicorns/leapfrogai/api-migrations:${VERSION}"
-          override: "true"
-      - task: utils:docker
-        with:
-          tag: "localhost:${LOCAL_REGISTRY_PORT}/defenseunicorns/leapfrogai/api-migrations:${VERSION}"
-          override: "true"
+          imageRepository: "ghcr.io/defenseunicorns/leapfrogai/api-migrations"
 
   - name: api-image
     description: "Build the upstream LeapfrogAI API image"
@@ -249,7 +240,7 @@ tasks:
         task: sdk-image
         with:
           architecture: ${ARCHITECTURE}
-          imageRepository: ghcr.io/defenseunicorns/leapfrogai/leapfrogai-sdk
+          imageRepository: "ghcr.io/defenseunicorns/leapfrogai/leapfrogai-sdk"
 
       - description: "Create the API image"
         task: image
@@ -257,14 +248,7 @@ tasks:
           dockerfile: "packages/api/Dockerfile"
           architecture: ${ARCHITECTURE}
           version: ${VERSION}
-          imageRepository: ghcr.io/defenseunicorns/leapfrogai/leapfrogai-api
-      - task: utils:tag
-        with:
-          current: "ghcr.io/defenseunicorns/leapfrogai/leapfrogai-api:${VERSION}"
-          new: "localhost:${LOCAL_REGISTRY_PORT}/defenseunicorns/leapfrogai/leapfrogai-api:${VERSION}"
-      - task: utils:docker
-        with:
-          tag: "localhost:${LOCAL_REGISTRY_PORT}/defenseunicorns/leapfrogai/leapfrogai-api:${VERSION}"
+          imageRepository: "ghcr.io/defenseunicorns/leapfrogai/leapfrogai-api"
 
   - name: ui-migrations-image
     description: "Build the upstream LeapfrogAI UI migrations image"
@@ -282,16 +266,7 @@ tasks:
           buildOptions: "--build-arg='MIGRATIONS_DIR=packages/supabase/migrations'"
           architecture: ${ARCHITECTURE}
           version: ${VERSION}
-          imageRepository: ghcr.io/defenseunicorns/leapfrogai/ui-migrations
-      - task: utils:tag
-        with:
-          current: "ghcr.io/defenseunicorns/leapfrogai/ui-migrations:${VERSION}"
-          new: "localhost:${LOCAL_REGISTRY_PORT}/defenseunicorns/leapfrogai/ui-migrations:${VERSION}"
-          override: "true"
-      - task: utils:docker
-        with:
-          tag: "localhost:${LOCAL_REGISTRY_PORT}/defenseunicorns/leapfrogai/ui-migrations:${VERSION}"
-          override: "true"
+          imageRepository: "ghcr.io/defenseunicorns/leapfrogai/ui-migrations"
 
   - name: ui-image
     description: "Build the upstream LeapfrogAI API image"
@@ -308,14 +283,7 @@ tasks:
           buildContext: "src/leapfrogai_ui"
           architecture: ${ARCHITECTURE}
           version: ${VERSION}
-          imageRepository: ghcr.io/defenseunicorns/leapfrogai/leapfrogai-ui
-      - task: utils:tag
-        with:
-          current: "ghcr.io/defenseunicorns/leapfrogai/leapfrogai-ui:${VERSION}"
-          new: "localhost:${LOCAL_REGISTRY_PORT}/defenseunicorns/leapfrogai/leapfrogai-ui:${VERSION}"
-      - task: utils:docker
-        with:
-          tag: "localhost:${LOCAL_REGISTRY_PORT}/defenseunicorns/leapfrogai/leapfrogai-ui:${VERSION}"
+          imageRepository: "ghcr.io/defenseunicorns/leapfrogai/leapfrogai-ui"
 
   - name: supabase-migrations-image
     description: "Build the upstream Supabase migrations image"
@@ -333,16 +301,7 @@ tasks:
           buildOptions: "--build-arg='MIGRATIONS_DIR=packages/supabase/migrations'"
           architecture: ${ARCHITECTURE}
           version: ${VERSION}
-          imageRepository: ghcr.io/defenseunicorns/leapfrogai/supabase-migrations
-      - task: utils:tag
-        with:
-          current: "ghcr.io/defenseunicorns/leapfrogai/supabase-migrations:${VERSION}"
-          new: "localhost:${LOCAL_REGISTRY_PORT}/defenseunicorns/leapfrogai/supabase-migrations:${VERSION}"
-          override: "true"
-      - task: utils:docker
-        with:
-          tag: "localhost:${LOCAL_REGISTRY_PORT}/defenseunicorns/leapfrogai/supabase-migrations:${VERSION}"
-          override: "true"
+          imageRepository: "ghcr.io/defenseunicorns/leapfrogai/supabase-migrations"
 
   - name: repeater-image
     description: "Build the upstream Repeater image"
@@ -352,20 +311,19 @@ tasks:
           name: ${LOCAL_REGISTRY_NAME}
           port: ${LOCAL_REGISTRY_PORT}
 
+      - description: "Create the SDK image"
+        task: sdk-image
+        with:
+          architecture: ${ARCHITECTURE}
+          imageRepository: "ghcr.io/defenseunicorns/leapfrogai/leapfrogai-sdk"
+
       - description: "Create the Repeater image"
         task: image
         with:
           dockerfile: "packages/repeater/Dockerfile"
           architecture: ${ARCHITECTURE}
           version: ${VERSION}
-          imageRepository: ghcr.io/defenseunicorns/leapfrogai/repeater
-      - task: utils:tag
-        with:
-          current: "ghcr.io/defenseunicorns/leapfrogai/repeater:${VERSION}"
-          new: "localhost:${LOCAL_REGISTRY_PORT}/defenseunicorns/leapfrogai/repeater:${VERSION}"
-      - task: utils:docker
-        with:
-          tag: "localhost:${LOCAL_REGISTRY_PORT}/defenseunicorns/leapfrogai/repeater:${VERSION}"
+          imageRepository: "ghcr.io/defenseunicorns/leapfrogai/repeater"
 
   - name: vllm-image
     description: "Build the upstream vLLM image"
@@ -375,20 +333,19 @@ tasks:
           name: ${LOCAL_REGISTRY_NAME}
           port: ${LOCAL_REGISTRY_PORT}
 
+      - description: "Create the SDK image"
+        task: sdk-image
+        with:
+          architecture: ${ARCHITECTURE}
+          imageRepository: "ghcr.io/defenseunicorns/leapfrogai/leapfrogai-sdk"
+
       - description: "Create the vLLM image"
         task: image
         with:
           dockerfile: "packages/vllm/Dockerfile"
           architecture: ${ARCHITECTURE}
           version: ${VERSION}
-          imageRepository: ghcr.io/defenseunicorns/leapfrogai/vllm
-      - task: utils:tag
-        with:
-          current: "ghcr.io/defenseunicorns/leapfrogai/vllm:${VERSION}"
-          new: "localhost:${LOCAL_REGISTRY_PORT}/defenseunicorns/leapfrogai/vllm:${VERSION}"
-      - task: utils:docker
-        with:
-          tag: "localhost:${LOCAL_REGISTRY_PORT}/defenseunicorns/leapfrogai/vllm:${VERSION}"
+          imageRepository: "ghcr.io/defenseunicorns/leapfrogai/vllm"
 
   - name: llama-cpp-python-image
     description: "Build the upstream LLaMA-CPP-Python image"
@@ -398,20 +355,19 @@ tasks:
           name: ${LOCAL_REGISTRY_NAME}
           port: ${LOCAL_REGISTRY_PORT}
 
+      - description: "Create the SDK image"
+        task: sdk-image
+        with:
+          architecture: ${ARCHITECTURE}
+          imageRepository: "ghcr.io/defenseunicorns/leapfrogai/leapfrogai-sdk"
+
       - description: "Create the LLaMA-CPP-Python image"
         task: image
         with:
           dockerfile: "packages/llama-cpp-python/Dockerfile"
           architecture: ${ARCHITECTURE}
           version: ${VERSION}
-          imageRepository: ghcr.io/defenseunicorns/leapfrogai/llama-cpp-python
-      - task: utils:tag
-        with:
-          current: "ghcr.io/defenseunicorns/leapfrogai/llama-cpp-python:${VERSION}"
-          new: "localhost:${LOCAL_REGISTRY_PORT}/defenseunicorns/leapfrogai/llama-cpp-python:${VERSION}"
-      - task: utils:docker
-        with:
-          tag: "localhost:${LOCAL_REGISTRY_PORT}/defenseunicorns/leapfrogai/llama-cpp-python:${VERSION}"
+          imageRepository: "ghcr.io/defenseunicorns/leapfrogai/llama-cpp-python"
 
   - name: text-embeddings-image
     description: "Build the upstream Text-Embeddings image"
@@ -421,20 +377,19 @@ tasks:
           name: ${LOCAL_REGISTRY_NAME}
           port: ${LOCAL_REGISTRY_PORT}
 
+      - description: "Create the SDK image"
+        task: sdk-image
+        with:
+          architecture: ${ARCHITECTURE}
+          imageRepository: "ghcr.io/defenseunicorns/leapfrogai/leapfrogai-sdk"
+
       - description: "Create the Text-Embeddings image"
         task: image
         with:
           dockerfile: "packages/text-embeddings/Dockerfile"
           architecture: ${ARCHITECTURE}
           version: ${VERSION}
-          imageRepository: ghcr.io/defenseunicorns/leapfrogai/text-embeddings
-      - task: utils:tag
-        with:
-          current: "ghcr.io/defenseunicorns/leapfrogai/text-embeddings:${VERSION}"
-          new: "localhost:${LOCAL_REGISTRY_PORT}/defenseunicorns/leapfrogai/text-embeddings:${VERSION}"
-      - task: utils:docker
-        with:
-          tag: "localhost:${LOCAL_REGISTRY_PORT}/defenseunicorns/leapfrogai/text-embeddings:${VERSION}"
+          imageRepository: "ghcr.io/defenseunicorns/leapfrogai/text-embeddings"
 
   - name: whisper-image
     description: "Build the upstream Whisper image"
@@ -444,20 +399,19 @@ tasks:
           name: ${LOCAL_REGISTRY_NAME}
           port: ${LOCAL_REGISTRY_PORT}
 
+      - description: "Create the SDK image"
+        task: sdk-image
+        with:
+          architecture: ${ARCHITECTURE}
+          imageRepository: "ghcr.io/defenseunicorns/leapfrogai/leapfrogai-sdk"
+
       - description: "Create the Whisper image"
         task: image
         with:
           dockerfile: "packages/whisper/Dockerfile"
           architecture: ${ARCHITECTURE}
           version: ${VERSION}
-          imageRepository: ghcr.io/defenseunicorns/leapfrogai/whisper
-      - task: utils:tag
-        with:
-          current: "ghcr.io/defenseunicorns/leapfrogai/whisper:${VERSION}"
-          new: "localhost:${LOCAL_REGISTRY_PORT}/defenseunicorns/leapfrogai/whisper:${VERSION}"
-      - task: utils:docker
-        with:
-          tag: "localhost:${LOCAL_REGISTRY_PORT}/defenseunicorns/leapfrogai/whisper:${VERSION}"
+          imageRepository: "ghcr.io/defenseunicorns/leapfrogai/whisper"
 
   ##########
   # PACKAGES
@@ -467,7 +421,25 @@ tasks:
     description: "Build the LeapfrogAI API Zarf package"
     actions:
       - task: api-migrations-image
+      - task: utils:tag
+        with:
+          current: "ghcr.io/defenseunicorns/leapfrogai/api-migrations:${VERSION}"
+          new: "localhost:${LOCAL_REGISTRY_PORT}/defenseunicorns/leapfrogai/api-migrations:${VERSION}"
+          override: "true"
+      - task: utils:docker
+        with:
+          tag: "localhost:${LOCAL_REGISTRY_PORT}/defenseunicorns/leapfrogai/api-migrations:${VERSION}"
+          override: "true"
+
       - task: api-image
+      - task: utils:tag
+        with:
+          current: "ghcr.io/defenseunicorns/leapfrogai/leapfrogai-api:${VERSION}"
+          new: "localhost:${LOCAL_REGISTRY_PORT}/defenseunicorns/leapfrogai/leapfrogai-api:${VERSION}"
+      - task: utils:docker
+        with:
+          tag: "localhost:${LOCAL_REGISTRY_PORT}/defenseunicorns/leapfrogai/leapfrogai-api:${VERSION}"
+
       - task: package
         with:
           path: "packages/api"
@@ -483,7 +455,25 @@ tasks:
     description: "Build the LeapfrogAI UI Zarf package"
     actions:
       - task: ui-migrations-image
+      - task: utils:tag
+        with:
+          current: "ghcr.io/defenseunicorns/leapfrogai/ui-migrations:${VERSION}"
+          new: "localhost:${LOCAL_REGISTRY_PORT}/defenseunicorns/leapfrogai/ui-migrations:${VERSION}"
+          override: "true"
+      - task: utils:docker
+        with:
+          tag: "localhost:${LOCAL_REGISTRY_PORT}/defenseunicorns/leapfrogai/ui-migrations:${VERSION}"
+          override: "true"
+
       - task: ui-image
+      - task: utils:tag
+        with:
+          current: "ghcr.io/defenseunicorns/leapfrogai/leapfrogai-ui:${VERSION}"
+          new: "localhost:${LOCAL_REGISTRY_PORT}/defenseunicorns/leapfrogai/leapfrogai-ui:${VERSION}"
+      - task: utils:docker
+        with:
+          tag: "localhost:${LOCAL_REGISTRY_PORT}/defenseunicorns/leapfrogai/leapfrogai-ui:${VERSION}"
+
       - task: package
         with:
           path: "packages/ui"
@@ -499,6 +489,16 @@ tasks:
     description: "Build the Supabase Zarf package"
     actions:
       - task: supabase-migrations-image
+      - task: utils:tag
+        with:
+          current: "ghcr.io/defenseunicorns/leapfrogai/supabase-migrations:${VERSION}"
+          new: "localhost:${LOCAL_REGISTRY_PORT}/defenseunicorns/leapfrogai/supabase-migrations:${VERSION}"
+          override: "true"
+      - task: utils:docker
+        with:
+          tag: "localhost:${LOCAL_REGISTRY_PORT}/defenseunicorns/leapfrogai/supabase-migrations:${VERSION}"
+          override: "true"
+
       - task: package
         with:
           path: "packages/supabase"
@@ -513,6 +513,14 @@ tasks:
     description: "Build the Repeater Zarf package"
     actions:
       - task: repeater-image
+      - task: utils:tag
+        with:
+          current: "ghcr.io/defenseunicorns/leapfrogai/repeater:${VERSION}"
+          new: "localhost:${LOCAL_REGISTRY_PORT}/defenseunicorns/leapfrogai/repeater:${VERSION}"
+      - task: utils:docker
+        with:
+          tag: "localhost:${LOCAL_REGISTRY_PORT}/defenseunicorns/leapfrogai/repeater:${VERSION}"
+
       - task: package
         with:
           path: "packages/repeater"
@@ -527,6 +535,14 @@ tasks:
     description: "Build the vLLM Zarf package"
     actions:
       - task: vllm-image
+      - task: utils:tag
+        with:
+          current: "ghcr.io/defenseunicorns/leapfrogai/vllm:${VERSION}"
+          new: "localhost:${LOCAL_REGISTRY_PORT}/defenseunicorns/leapfrogai/vllm:${VERSION}"
+      - task: utils:docker
+        with:
+          tag: "localhost:${LOCAL_REGISTRY_PORT}/defenseunicorns/leapfrogai/vllm:${VERSION}"
+
       - task: package
         with:
           path: "packages/vllm"
@@ -542,6 +558,14 @@ tasks:
     description: "Build the LLaMA-CPP-Python Zarf package"
     actions:
       - task: llama-cpp-python-image
+      - task: utils:tag
+        with:
+          current: "ghcr.io/defenseunicorns/leapfrogai/llama-cpp-python:${VERSION}"
+          new: "localhost:${LOCAL_REGISTRY_PORT}/defenseunicorns/leapfrogai/llama-cpp-python:${VERSION}"
+      - task: utils:docker
+        with:
+          tag: "localhost:${LOCAL_REGISTRY_PORT}/defenseunicorns/leapfrogai/llama-cpp-python:${VERSION}"
+
       - task: package
         with:
           path: "packages/llama-cpp-python"
@@ -556,6 +580,14 @@ tasks:
     description: "Build the Text-Embeddings Zarf package"
     actions:
       - task: text-embeddings-image
+      - task: utils:tag
+        with:
+          current: "ghcr.io/defenseunicorns/leapfrogai/text-embeddings:${VERSION}"
+          new: "localhost:${LOCAL_REGISTRY_PORT}/defenseunicorns/leapfrogai/text-embeddings:${VERSION}"
+      - task: utils:docker
+        with:
+          tag: "localhost:${LOCAL_REGISTRY_PORT}/defenseunicorns/leapfrogai/text-embeddings:${VERSION}"
+
       - task: package
         with:
           path: "packages/text-embeddings"
@@ -570,6 +602,14 @@ tasks:
     description: "Build the Whisper Zarf package"
     actions:
       - task: whisper-image
+      - task: utils:tag
+        with:
+          current: "ghcr.io/defenseunicorns/leapfrogai/whisper:${VERSION}"
+          new: "localhost:${LOCAL_REGISTRY_PORT}/defenseunicorns/leapfrogai/whisper:${VERSION}"
+      - task: utils:docker
+        with:
+          tag: "localhost:${LOCAL_REGISTRY_PORT}/defenseunicorns/leapfrogai/whisper:${VERSION}"
+
       - task: package
         with:
           path: "packages/whisper"

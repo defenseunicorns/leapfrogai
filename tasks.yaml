@@ -39,6 +39,7 @@ includes:
   - setup: ./tasks/setup.yaml
   - deploy: ./tasks/deploy.yaml
   - utils: ./tasks/utils.yaml
+  - test: ./tasks/test.yaml
 
 tasks:
   #######

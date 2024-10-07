@@ -15,6 +15,45 @@ tasks:
   # REUSEABLE
   ###########
 
+  - name: image
+    description: "Run a Docker image"
+    inputs:
+      name:
+        description: "Name to tag the running container with"
+        required: true
+      options:
+        description: "Extra Docker CLI options"
+        default: "-q -d --rm"
+        required: false
+      version:
+        description: "Set the version of the Docker image"
+        required: true
+      imageRepository:
+        description: "Image repository for the image tag"
+        required: true
+      containerPort:
+        description: "Container port to expose"
+        required: true
+      hostPort:
+        description: "Host port to expose container port at"
+        required: true
+    actions:
+      - task: utils:log
+        with:
+          log: "Running the image ${{ .inputs.name }}"
+      - description: "Run the Docker image"
+        shell:
+          linux: bash
+          darwin: bash
+        cmd: |
+          docker run \
+            -p ${{ .inputs.hostPort }}:${{ .inputs.containerPort }} \
+            --name=${{ .inputs.name }} ${{ .inputs.options }} \
+            ${{ .inputs.imageRepository }}:${{ .inputs.version }}
+      - task: utils:log
+        with:
+          log: "Docker image, ${{ .inputs.name }}, is now running!"
+
   - name: package
     description: "Deploy a Zarf package"
     inputs:
@@ -74,6 +113,21 @@ tasks:
         with:
           options: ${{ .inputs.options }}
           path: ${{ .inputs.path }}
+
+  ########
+  # IMAGES
+  ########
+
+  - name: repeater-image
+    description: "Run the Repeater Docker container"
+    actions:
+      - task: image
+        with:
+          name: "repeater"
+          version: ${VERSION}
+          imageRepository: "ghcr.io/defenseunicorns/leapfrogai/repeater"
+          containerPort: "50051"
+          hostPort: "50051"
 
   ##########
   # PACKAGES
