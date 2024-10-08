@@ -1,19 +1,19 @@
 name: weekly-registry1-flavor-test
 
 on:
-  schedule:
-    - cron: "0 8 * * 0" # Run every Sunday at 12 AM PST
+  # schedule:
+  #   - cron: "0 8 * * 0" # Run every Sunday at 12 AM PST
   workflow_dispatch: # trigger manually as needed
-  pull_request:
-    types:
-      - opened # default trigger
-      - reopened # default trigger
-      - synchronize # default trigger
-      - ready_for_review # don't run on draft PRs
-      - milestoned # allows us to trigger on bot PRs
-    paths:
-      - .github/workflows/weekly-registry1-flavor-test.yaml
-      - bundles/latest/**
+  # pull_request:
+  #   types:
+  #     - opened # default trigger
+  #     - reopened # default trigger
+  #     - synchronize # default trigger
+  #     - ready_for_review # don't run on draft PRs
+  #     - milestoned # allows us to trigger on bot PRs
+    # paths:
+    #   - .github/workflows/weekly-registry1-flavor-test.yaml
+    #   - bundles/latest/**
 
 concurrency:
   group: weekly-registry1-flavor-test-${{ github.ref }}

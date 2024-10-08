@@ -1,18 +1,18 @@
 name: nightly-snapshot-release
 
 on:
-  schedule:
-    - cron: "0 8 * * *" # Runs daily at 12 AM PST
+  # schedule:
+  #   - cron: "0 8 * * *" # Runs daily at 12 AM PST
   workflow_dispatch: # trigger manually as needed
-  pull_request:
-    types:
-      - opened            # default trigger
-      - reopened          # default trigger
-      - synchronize       # default trigger
-      - ready_for_review  # don't run on draft PRs
-      - milestoned        # allows us to trigger on bot PRs
-    paths:
-      - .github/workflows/nightly-snapshot-release.yaml
+  # pull_request:
+  #   types:
+  #     - opened            # default trigger
+  #     - reopened          # default trigger
+  #     - synchronize       # default trigger
+  #     - ready_for_review  # don't run on draft PRs
+  #     - milestoned        # allows us to trigger on bot PRs
+    # paths:
+    #   - .github/workflows/nightly-snapshot-release.yaml
 
 concurrency:
   group: nightly-snapshot-release-${{ github.ref }}
