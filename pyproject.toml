@@ -4,7 +4,7 @@ description = "OpenAI-like capabilities for secure, local, air-gapped systems."
 authors = [{ name = "LeapfrogAI Team", email = "ai@defenseunicorns.com" }]
 
 # x-release-please-start-version
-version = "0.13.1"
+version = "0.14.0"
 # x-release-please-end
 
 readme = "README.md"

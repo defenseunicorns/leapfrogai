@@ -7,7 +7,7 @@ image:
   pullPolicy: Always
   # Overrides the image tag whose default is the chart appVersion.
   # x-release-please-start-version
-  tag: 0.13.1
+  tag: 0.14.0
   # x-release-please-end
 
 nameOverride: "llama-cpp-python"
