@@ -2,7 +2,7 @@ package:
   create:
     set:
       # x-release-please-start-version
-      image_version: "0.13.0"
+      image_version: "0.14.0"
       # x-release-please-end
 
       model_repo_id: "TheBloke/Synthia-7B-v2.0-GPTQ"

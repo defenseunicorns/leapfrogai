@@ -1,5 +1,52 @@
 # Changelog
 
+## [0.14.0](https://github.com/defenseunicorns/leapfrogai/compare/v0.13.1...v0.14.0) (2024-10-10)
+
+
+### ⚠ BREAKING CHANGES
+
+* **vllm:** upgrade vllm backend and refactor deployment ([#854](https://github.com/defenseunicorns/leapfrogai/issues/854))
+
+### Features
+
+* **api:** add prometheus monitoring ([#1166](https://github.com/defenseunicorns/leapfrogai/issues/1166)) ([81ff6a3](https://github.com/defenseunicorns/leapfrogai/commit/81ff6a3d7a714e0920bea0f75d47189c2f47fdb9))
+* **api:** openai compliant annotations and vector_content retrieval ([#1164](https://github.com/defenseunicorns/leapfrogai/issues/1164)) ([96d89f0](https://github.com/defenseunicorns/leapfrogai/commit/96d89f0351d743b6f4150e5a8f28da6975eb61b5))
+* **api:** reranking backend integrated in with rag ([#1090](https://github.com/defenseunicorns/leapfrogai/issues/1090)) ([2f80d87](https://github.com/defenseunicorns/leapfrogai/commit/2f80d879c218a72b9ce5bf370dc1f9124394d50f))
+* use chunk data in NIAH and QA evals ([#1176](https://github.com/defenseunicorns/leapfrogai/issues/1176)) ([ad697cd](https://github.com/defenseunicorns/leapfrogai/commit/ad697cdf2bf3f9f7c2bfd241383e0bded0644a01))
+* **vllm:** upgrade vllm backend and refactor deployment ([#854](https://github.com/defenseunicorns/leapfrogai/issues/854)) ([fd3cbc4](https://github.com/defenseunicorns/leapfrogai/commit/fd3cbc4178fed7b29e474f05ab1712b1a9f70481))
+
+
+### Bug Fixes
+
+* **api:** make model field optional in ModifyAssistantRequest type ([#1159](https://github.com/defenseunicorns/leapfrogai/issues/1159)) ([75cf696](https://github.com/defenseunicorns/leapfrogai/commit/75cf696ea4859a2f21a29e98290840b01b4f25f9))
+* **docs:** cron-job badges should look at main branch workflows only ([31178d1](https://github.com/defenseunicorns/leapfrogai/commit/31178d12887e0866ca4ea1fb3e4673e0ea88e743))
+* nightly snapshots repository typo ([#1177](https://github.com/defenseunicorns/leapfrogai/issues/1177)) ([432b380](https://github.com/defenseunicorns/leapfrogai/commit/432b380da1355c5f0f6e9612d257a0dba0015a3c))
+* remove nightly snapshots release workflow from release-please ([#1163](https://github.com/defenseunicorns/leapfrogai/issues/1163)) ([48507da](https://github.com/defenseunicorns/leapfrogai/commit/48507da66cd74721b2e133c20bf399a29f9d8006))
+* replace file ids with replacement text ([#1201](https://github.com/defenseunicorns/leapfrogai/issues/1201)) ([bf14dde](https://github.com/defenseunicorns/leapfrogai/commit/bf14dde1fcbfbc50b043ba1444124d81a8be5ea1))
+* **ui:** allow large transcribe and translate responses ([185dcbb](https://github.com/defenseunicorns/leapfrogai/commit/185dcbb85e91c67654a801ea7c4e39d4861acc21))
+* **ui:** assistants chat ([#1151](https://github.com/defenseunicorns/leapfrogai/issues/1151)) ([04ae4b0](https://github.com/defenseunicorns/leapfrogai/commit/04ae4b0243f38124e6e83e4bdd7dc30022c7b106))
+* **ui:** bullets item styling ([b6fff15](https://github.com/defenseunicorns/leapfrogai/commit/b6fff15b061a1d692fc2b4f7811f72e746c25efc))
+* **whisper:** failing gpu pod due to mangled env variable ([bb5e58c](https://github.com/defenseunicorns/leapfrogai/commit/bb5e58c7ad4014d01a13986644e8fbbc8d665618))
+
+
+### Miscellaneous
+
+* add Made for UDS badge verification task and workflow ([#1149](https://github.com/defenseunicorns/leapfrogai/issues/1149)) ([228c55c](https://github.com/defenseunicorns/leapfrogai/commit/228c55caf491173668e0b16bdeb670b1b3a454ae))
+* **api, tests:** refactor api tests to centralize file pathing ([#1165](https://github.com/defenseunicorns/leapfrogai/issues/1165)) ([e2ce0f4](https://github.com/defenseunicorns/leapfrogai/commit/e2ce0f435fc65d9aee9e5cfec0f4f7915a19e144))
+* **deps:** update actions/checkout action to v4.2.0 ([#1059](https://github.com/defenseunicorns/leapfrogai/issues/1059)) ([fcd8087](https://github.com/defenseunicorns/leapfrogai/commit/fcd80879c8aa734c9eb6d8203cbafbaf335ccff0))
+* **deps:** update actions/upload-artifact action to v4.4.0 ([#1133](https://github.com/defenseunicorns/leapfrogai/issues/1133)) ([e2bd44f](https://github.com/defenseunicorns/leapfrogai/commit/e2bd44fc30d838fa366f5409070d4f46c6e66492))
+* **deps:** update dependency defenseunicorns/uds-cli to v0.16.0 ([#1139](https://github.com/defenseunicorns/leapfrogai/issues/1139)) ([c3824c2](https://github.com/defenseunicorns/leapfrogai/commit/c3824c219bec89dd910905361d7b0717273a6cd1))
+* **deps:** update dependency grpcio to v1.66.1 ([#1145](https://github.com/defenseunicorns/leapfrogai/issues/1145)) ([cd5ca6f](https://github.com/defenseunicorns/leapfrogai/commit/cd5ca6f93b11d95b5fe602cabefd0618372037be))
+* **deps:** update dependency huggingface-hub to v0.25.1 ([#1189](https://github.com/defenseunicorns/leapfrogai/issues/1189)) ([8129c34](https://github.com/defenseunicorns/leapfrogai/commit/8129c34d0408975045c28f708203b1ca582f7106))
+* disables renovate and cron-job workflows ([#1202](https://github.com/defenseunicorns/leapfrogai/issues/1202)) ([d1e26df](https://github.com/defenseunicorns/leapfrogai/commit/d1e26dfee597d0ac44909d6891abc847eca4450f))
+* **docs:** add workflow badges to readme ([#1152](https://github.com/defenseunicorns/leapfrogai/issues/1152)) ([6880569](https://github.com/defenseunicorns/leapfrogai/commit/6880569ae010fde79353e4e49d3e06be984212fe))
+* release 0.14.0 ([#1203](https://github.com/defenseunicorns/leapfrogai/issues/1203)) ([b95dd44](https://github.com/defenseunicorns/leapfrogai/commit/b95dd449ee9178104a8bf7618f2a9b6600259932))
+* **test, release:** nightly snapshot release and upgrade testing ([#1141](https://github.com/defenseunicorns/leapfrogai/issues/1141)) ([b43c30c](https://github.com/defenseunicorns/leapfrogai/commit/b43c30c7cf583fb6c9bcd5a70e8e761fd17e43dc))
+* **ui:** better assistant error handling ([#1158](https://github.com/defenseunicorns/leapfrogai/issues/1158)) ([0596115](https://github.com/defenseunicorns/leapfrogai/commit/0596115e1db25853519ec587d4778429d13fde77))
+* **ui:** bump @sveltejs/kit and fix e2es ([b9f6413](https://github.com/defenseunicorns/leapfrogai/commit/b9f6413cfd0b749d235290583074092a8cf3e4a4))
+* **ui:** style updates part1 ([#1168](https://github.com/defenseunicorns/leapfrogai/issues/1168)) ([bab2dcd](https://github.com/defenseunicorns/leapfrogai/commit/bab2dcd4a0a9c9b6a11ffc42cc0a534e4634b4fa))
+* update registry1 weekly to 0.13.1, API, and testing workflows ([#1101](https://github.com/defenseunicorns/leapfrogai/issues/1101)) ([022e98d](https://github.com/defenseunicorns/leapfrogai/commit/022e98df481f13728d4cb370b4548bd09cfaee0c))
+
 ## [0.13.1](https://github.com/defenseunicorns/leapfrogai/compare/v0.13.0...v0.13.1) (2024-09-26)
 
 

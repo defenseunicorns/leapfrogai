@@ -2,7 +2,7 @@ image:
   repository: "ghcr.io/defenseunicorns/leapfrogai/leapfrogai-ui"
   pullPolicy: Always
   # x-release-please-start-version
-  tag: 0.13.1
+  tag: 0.14.0
   # x-release-please-end
 
 service:
@@ -66,7 +66,7 @@ migration:
   image:
     repository: ghcr.io/defenseunicorns/leapfrogai/ui-migrations
     # x-release-please-start-version
-    tag: 0.13.1
+    tag: 0.14.0
     # x-release-please-end
     imagePullPolicy: Always
 
