@@ -1,0 +1,20 @@
+# yaml-language-server: $schema=https://raw.githubusercontent.com/defenseunicorns/uds-cli/v0.14.0/tasks.schema.json
+
+tasks:
+  #########
+  # CLUSTER
+  #########
+
+  - name: k3d-gpu-cluster
+    description: "Tests CUDA GPU scheduling and capability within the UDS K3d cluster"
+    actions:
+      - description: "Deploy the vector addition test pod to the cluster"
+        cmd: |
+          uds zarf tools kubectl apply -f packages/k3d-gpu/test/cuda-vector-add.yaml
+      - description: "Await test completion and then display the test results"
+        cmd: |
+          uds zarf tools wait-for Pod gpu-pod '{.status.phase}'=Succeeded -n default --no-progress
+          uds zarf tools kubectl logs -l app=gpu-pod -n default
+      - description: "Remove the completed test pod"
+        cmd: |
+          uds zarf tools kubectl delete Pod gpu-pod

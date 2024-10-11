@@ -1,0 +1,621 @@
+# yaml-language-server: $schema=https://raw.githubusercontent.com/defenseunicorns/uds-cli/v0.14.0/tasks.schema.json
+includes:
+  #########################
+  # UDS COMMON TASK IMPORTS
+  #########################
+  - create-common: https://raw.githubusercontent.com/defenseunicorns/uds-common/086215582247e53a69c507a9105b281ba7642c88/tasks/create.yaml
+
+  ###########################
+  # LEAPFROGAI-SPECIFIC TASKS
+  ###########################
+  - utils: ./utils.yaml
+
+tasks:
+  #########
+  # UTILITY
+  #########
+  - name: local-registry
+    description: "Creates a local registry for pushing images to, speeding up the local Zarf package creation process"
+    inputs:
+      port:
+        description: "The port at which to expose the local registry"
+        default: "5000"
+      name:
+        description: "The name of the local registry"
+        default: "registry"
+      # TODO: remove once Ironbank image for api-migrations and ui-migrations exists
+      override:
+        description: "Specifically for packages that are only partially in IronBank (e.g., migrations)"
+        default: "false"
+    actions:
+      - description: "If not running or if local package development, create a local registry"
+        shell:
+          linux: bash
+          darwin: bash
+        cmd: |
+          if [[ ${FLAVOR} != "upstream" || ${{ .inputs.override }} != "false" ]]; then
+            if [ ! "$(docker ps -q -f name=${{ .inputs.name }})" ]; then
+              docker run -d -p ${{ .inputs.port }}:5000 --restart=always -q --name ${{ .inputs.name }} registry:2 > /dev/null 2>&1
+            fi
+          fi
+        mute: true
+
+  ###########
+  # REUSEABLE
+  ###########
+  - name: image
+    description: "Create a Docker image"
+    inputs:
+      dockerfile:
+        description: "Path to the Dockerfile"
+        required: true
+      buildContext:
+        description: "Path to the Docker build context"
+        default: "."
+        required: false
+      options:
+        description: "Extra Docker CLI options"
+        default: "-q"
+        required: false
+      buildOptions:
+        description: "Extra Docker build arguments"
+        default: ""
+        required: false
+      architecture:
+        description: "Architecture of the Docker image being created"
+        required: true
+      version:
+        description: "Set the version of the Docker image"
+        required: true
+      imageRepository:
+        description: "Image repository for the image tag"
+        required: true
+    actions:
+      - task: utils:log
+        with:
+          log: "Creating image at ${{ .inputs.dockerfile }}"
+      - description: "Build the Docker image"
+        shell:
+          linux: bash
+          darwin: bash
+        cmd: |
+          if [[ ${FLAVOR} = "upstream" || ${{ .inputs.dockerfile }} = "Dockerfile.migrations" ]]; then
+            docker build ${{ .inputs.options }} \
+              --platform=linux/${{ .inputs.architecture }} \
+              -t ${{ .inputs.imageRepository }}:${{ .inputs.version }} \
+              -f ${{ .inputs.dockerfile }} \
+              --build-arg LOCAL_VERSION=${{ .inputs.version }} \
+              ${{ .inputs.buildOptions }} ${{ .inputs.buildContext }} \
+              > /dev/null 2>&1
+            echo "false"
+          else
+            echo "true"
+          fi
+        mute: true
+        setVariables:
+          - name: ENABLE_LOG
+      - task: utils:log
+        with:
+          log: "Non-upstream flavor detected, skipping local image build"
+          enable: ${ENABLE_LOG}
+
+  - name: package
+    description: "Create a Zarf package"
+    inputs:
+      path:
+        description: "Path to the Zarf package being created"
+        required: true
+      outputPath:
+        description: "Output path to the Zarf package being created"
+        required: true
+      zarfConfig:
+        description: "Zarf Config of the Zarf package being created"
+        default: ""
+        required: false
+      options:
+        description: "Extra Zarf package creation options"
+        default: "--log-level warn --no-progress"
+        required: false
+      createOptions:
+        description: "Extra Zarf package create arguments"
+        default: ""
+        required: false
+      flavor:
+        description: "Flavor of the Zarf package being created"
+        default: "upstream"
+        required: false
+      architecture:
+        description: "Architecture of the Zarf package being created"
+        required: true
+      version:
+        description: "Set the version of the Zarf package and target image(s)"
+        required: true
+    actions:
+      - task: utils:log
+        with:
+          log: "Creating package at ${{ .inputs.path }}"
+      - description: "Create the Zarf package"
+        task: create-common:package
+        env:
+          - "FLAVOR=${{ .inputs.flavor }}"
+        with:
+          options: ${{ .inputs.createOptions }} ${{ .inputs.options }} -o ${{ .inputs.outputPath }} --set IMAGE_VERSION=${{ .inputs.version }}
+          path: ${{ .inputs.path }}
+          architecture: ${{ .inputs.architecture }}
+          config: ${{ .inputs.zarfConfig }}
+
+  - name: bundle
+    description: "Create a UDS bundle"
+    inputs:
+      path:
+        description: "Path to the UDS bundle being created"
+        required: true
+      outputPath:
+        description: "Output path to the UDS bundle being created"
+        required: true
+      udsConfig:
+        description: "UDS configuration manifest for deployment"
+        required: true
+      options:
+        description: "Extra UDS CLI options"
+        default: "--log-level warn --oci-concurrency 8 --no-progress"
+        required: false
+      createOptions:
+        description: "Extra UDS bundle create arguments"
+        default: ""
+        required: false
+    actions:
+      - task: utils:log
+        with:
+          log: "Creating bundle at ${{ .inputs.path }}"
+      - description: "Create the UDS bundle"
+        task: create-common:test-bundle
+        with:
+          options: ${{ .inputs.options }} -o ${{ .inputs.outputPath }}
+          path: ${{ .inputs.path }}
+          architecture: ${{ .inputs.architecture }}
+          config: ${{ .inputs.udsConfig }}
+
+  ########
+  # IMAGES
+  ########
+
+  - name: k3d-gpu-image
+    description: "Create the K3s CUDA image for K3d"
+    actions:
+      - description: "Create the K3s CUDA image"
+        task: image
+        with:
+          dockerfile: "packages/k3d-gpu/Dockerfile"
+          architecture: "amd64"
+          version: ${VERSION}
+          imageRepository: "ghcr.io/defenseunicorns/leapfrogai/k3d-gpu"
+          buildContext: "packages/k3d-gpu"
+
+  - name: sdk-image
+    description: "Create the LeapfrogAI SDK Docker image"
+    inputs:
+      architecture:
+        description: "Architecture of the Zarf package being created"
+        required: true
+      imageRepository:
+        description: "Image repository for the image tag"
+        required: true
+    actions:
+      - description: "Create the SDK image"
+        task: image
+        with:
+          dockerfile: "src/leapfrogai_sdk/Dockerfile"
+          architecture: ${{ .inputs.architecture }}
+          version: ${VERSION}
+          imageRepository: ${{ .inputs.imageRepository }}
+
+  - name: api-migrations-image
+    description: "Build the upstream LeapfrogAI API migrations image"
+    actions:
+      - task: local-registry
+        with:
+          name: ${LOCAL_REGISTRY_NAME}
+          port: ${LOCAL_REGISTRY_PORT}
+          override: "true"
+
+      - description: "Create the API migrations image"
+        task: image
+        with:
+          dockerfile: "Dockerfile.migrations"
+          buildOptions: "--build-arg='MIGRATIONS_DIR=packages/supabase/migrations'"
+          architecture: ${ARCHITECTURE}
+          version: ${VERSION}
+          imageRepository: "ghcr.io/defenseunicorns/leapfrogai/api-migrations"
+
+  - name: api-image
+    description: "Build the upstream LeapfrogAI API image"
+    actions:
+      - task: local-registry
+        with:
+          name: ${LOCAL_REGISTRY_NAME}
+          port: ${LOCAL_REGISTRY_PORT}
+
+      - description: "Create the SDK image"
+        task: sdk-image
+        with:
+          architecture: ${ARCHITECTURE}
+          imageRepository: "ghcr.io/defenseunicorns/leapfrogai/leapfrogai-sdk"
+
+      - description: "Create the API image"
+        task: image
+        with:
+          dockerfile: "packages/api/Dockerfile"
+          architecture: ${ARCHITECTURE}
+          version: ${VERSION}
+          imageRepository: "ghcr.io/defenseunicorns/leapfrogai/leapfrogai-api"
+
+  - name: ui-migrations-image
+    description: "Build the upstream LeapfrogAI UI migrations image"
+    actions:
+      - task: local-registry
+        with:
+          name: ${LOCAL_REGISTRY_NAME}
+          port: ${LOCAL_REGISTRY_PORT}
+          override: "true"
+
+      - description: "Create the UI migrations image"
+        task: image
+        with:
+          dockerfile: "Dockerfile.migrations"
+          buildOptions: "--build-arg='MIGRATIONS_DIR=packages/supabase/migrations'"
+          architecture: ${ARCHITECTURE}
+          version: ${VERSION}
+          imageRepository: "ghcr.io/defenseunicorns/leapfrogai/ui-migrations"
+
+  - name: ui-image
+    description: "Build the upstream LeapfrogAI API image"
+    actions:
+      - task: local-registry
+        with:
+          name: ${LOCAL_REGISTRY_NAME}
+          port: ${LOCAL_REGISTRY_PORT}
+
+      - description: "Create the UI image"
+        task: image
+        with:
+          dockerfile: "src/leapfrogai_ui/Dockerfile"
+          buildContext: "src/leapfrogai_ui"
+          architecture: ${ARCHITECTURE}
+          version: ${VERSION}
+          imageRepository: "ghcr.io/defenseunicorns/leapfrogai/leapfrogai-ui"
+
+  - name: supabase-migrations-image
+    description: "Build the upstream Supabase migrations image"
+    actions:
+      - task: local-registry
+        with:
+          name: ${LOCAL_REGISTRY_NAME}
+          port: ${LOCAL_REGISTRY_PORT}
+          override: "true"
+
+      - description: "Create the Supabase migrations image"
+        task: image
+        with:
+          dockerfile: "Dockerfile.migrations"
+          buildOptions: "--build-arg='MIGRATIONS_DIR=packages/supabase/migrations'"
+          architecture: ${ARCHITECTURE}
+          version: ${VERSION}
+          imageRepository: "ghcr.io/defenseunicorns/leapfrogai/supabase-migrations"
+
+  - name: repeater-image
+    description: "Build the upstream Repeater image"
+    actions:
+      - task: local-registry
+        with:
+          name: ${LOCAL_REGISTRY_NAME}
+          port: ${LOCAL_REGISTRY_PORT}
+
+      - description: "Create the SDK image"
+        task: sdk-image
+        with:
+          architecture: ${ARCHITECTURE}
+          imageRepository: "ghcr.io/defenseunicorns/leapfrogai/leapfrogai-sdk"
+
+      - description: "Create the Repeater image"
+        task: image
+        with:
+          dockerfile: "packages/repeater/Dockerfile"
+          architecture: ${ARCHITECTURE}
+          version: ${VERSION}
+          imageRepository: "ghcr.io/defenseunicorns/leapfrogai/repeater"
+
+  - name: vllm-image
+    description: "Build the upstream vLLM image"
+    actions:
+      - task: local-registry
+        with:
+          name: ${LOCAL_REGISTRY_NAME}
+          port: ${LOCAL_REGISTRY_PORT}
+
+      - description: "Create the SDK image"
+        task: sdk-image
+        with:
+          architecture: ${ARCHITECTURE}
+          imageRepository: "ghcr.io/defenseunicorns/leapfrogai/leapfrogai-sdk"
+
+      - description: "Create the vLLM image"
+        task: image
+        with:
+          dockerfile: "packages/vllm/Dockerfile"
+          architecture: ${ARCHITECTURE}
+          version: ${VERSION}
+          imageRepository: "ghcr.io/defenseunicorns/leapfrogai/vllm"
+
+  - name: llama-cpp-python-image
+    description: "Build the upstream LLaMA-CPP-Python image"
+    actions:
+      - task: local-registry
+        with:
+          name: ${LOCAL_REGISTRY_NAME}
+          port: ${LOCAL_REGISTRY_PORT}
+
+      - description: "Create the SDK image"
+        task: sdk-image
+        with:
+          architecture: ${ARCHITECTURE}
+          imageRepository: "ghcr.io/defenseunicorns/leapfrogai/leapfrogai-sdk"
+
+      - description: "Create the LLaMA-CPP-Python image"
+        task: image
+        with:
+          dockerfile: "packages/llama-cpp-python/Dockerfile"
+          architecture: ${ARCHITECTURE}
+          version: ${VERSION}
+          imageRepository: "ghcr.io/defenseunicorns/leapfrogai/llama-cpp-python"
+
+  - name: text-embeddings-image
+    description: "Build the upstream Text-Embeddings image"
+    actions:
+      - task: local-registry
+        with:
+          name: ${LOCAL_REGISTRY_NAME}
+          port: ${LOCAL_REGISTRY_PORT}
+
+      - description: "Create the SDK image"
+        task: sdk-image
+        with:
+          architecture: ${ARCHITECTURE}
+          imageRepository: "ghcr.io/defenseunicorns/leapfrogai/leapfrogai-sdk"
+
+      - description: "Create the Text-Embeddings image"
+        task: image
+        with:
+          dockerfile: "packages/text-embeddings/Dockerfile"
+          architecture: ${ARCHITECTURE}
+          version: ${VERSION}
+          imageRepository: "ghcr.io/defenseunicorns/leapfrogai/text-embeddings"
+
+  - name: whisper-image
+    description: "Build the upstream Whisper image"
+    actions:
+      - task: local-registry
+        with:
+          name: ${LOCAL_REGISTRY_NAME}
+          port: ${LOCAL_REGISTRY_PORT}
+
+      - description: "Create the SDK image"
+        task: sdk-image
+        with:
+          architecture: ${ARCHITECTURE}
+          imageRepository: "ghcr.io/defenseunicorns/leapfrogai/leapfrogai-sdk"
+
+      - description: "Create the Whisper image"
+        task: image
+        with:
+          dockerfile: "packages/whisper/Dockerfile"
+          architecture: ${ARCHITECTURE}
+          version: ${VERSION}
+          imageRepository: "ghcr.io/defenseunicorns/leapfrogai/whisper"
+
+  ##########
+  # PACKAGES
+  ##########
+
+  - name: api
+    description: "Build the LeapfrogAI API Zarf package"
+    actions:
+      - task: api-migrations-image
+      - task: utils:tag
+        with:
+          current: "ghcr.io/defenseunicorns/leapfrogai/api-migrations:${VERSION}"
+          new: "localhost:${LOCAL_REGISTRY_PORT}/defenseunicorns/leapfrogai/api-migrations:${VERSION}"
+          override: "true"
+      - task: utils:docker
+        with:
+          tag: "localhost:${LOCAL_REGISTRY_PORT}/defenseunicorns/leapfrogai/api-migrations:${VERSION}"
+          override: "true"
+
+      - task: api-image
+      - task: utils:tag
+        with:
+          current: "ghcr.io/defenseunicorns/leapfrogai/leapfrogai-api:${VERSION}"
+          new: "localhost:${LOCAL_REGISTRY_PORT}/defenseunicorns/leapfrogai/leapfrogai-api:${VERSION}"
+      - task: utils:docker
+        with:
+          tag: "localhost:${LOCAL_REGISTRY_PORT}/defenseunicorns/leapfrogai/leapfrogai-api:${VERSION}"
+
+      - task: package
+        with:
+          path: "packages/api"
+          outputPath: "packages/api"
+          zarfConfig: "packages/api/zarf-config.yaml"
+          flavor: ${FLAVOR}
+          architecture: ${ARCHITECTURE}
+          version: ${VERSION}
+          # the build options below do not affect registry1 builds
+          createOptions: "--insecure --registry-override=ghcr.io=localhost:${LOCAL_REGISTRY_PORT}"
+
+  - name: ui
+    description: "Build the LeapfrogAI UI Zarf package"
+    actions:
+      - task: ui-migrations-image
+      - task: utils:tag
+        with:
+          current: "ghcr.io/defenseunicorns/leapfrogai/ui-migrations:${VERSION}"
+          new: "localhost:${LOCAL_REGISTRY_PORT}/defenseunicorns/leapfrogai/ui-migrations:${VERSION}"
+          override: "true"
+      - task: utils:docker
+        with:
+          tag: "localhost:${LOCAL_REGISTRY_PORT}/defenseunicorns/leapfrogai/ui-migrations:${VERSION}"
+          override: "true"
+
+      - task: ui-image
+      - task: utils:tag
+        with:
+          current: "ghcr.io/defenseunicorns/leapfrogai/leapfrogai-ui:${VERSION}"
+          new: "localhost:${LOCAL_REGISTRY_PORT}/defenseunicorns/leapfrogai/leapfrogai-ui:${VERSION}"
+      - task: utils:docker
+        with:
+          tag: "localhost:${LOCAL_REGISTRY_PORT}/defenseunicorns/leapfrogai/leapfrogai-ui:${VERSION}"
+
+      - task: package
+        with:
+          path: "packages/ui"
+          outputPath: "packages/ui"
+          zarfConfig: "packages/ui/zarf-config.yaml"
+          flavor: ${FLAVOR}
+          architecture: ${ARCHITECTURE}
+          version: ${VERSION}
+          # the build options below do not affect registry1 builds
+          createOptions: "--insecure --registry-override=ghcr.io=localhost:${LOCAL_REGISTRY_PORT}"
+
+  - name: supabase
+    description: "Build the Supabase Zarf package"
+    actions:
+      - task: supabase-migrations-image
+      - task: utils:tag
+        with:
+          current: "ghcr.io/defenseunicorns/leapfrogai/supabase-migrations:${VERSION}"
+          new: "localhost:${LOCAL_REGISTRY_PORT}/defenseunicorns/leapfrogai/supabase-migrations:${VERSION}"
+          override: "true"
+      - task: utils:docker
+        with:
+          tag: "localhost:${LOCAL_REGISTRY_PORT}/defenseunicorns/leapfrogai/supabase-migrations:${VERSION}"
+          override: "true"
+
+      - task: package
+        with:
+          path: "packages/supabase"
+          outputPath: "packages/supabase"
+          flavor: ${FLAVOR}
+          architecture: ${ARCHITECTURE}
+          version: ${VERSION}
+          # the build options below do not affect registry1 builds
+          createOptions: "--insecure --registry-override=ghcr.io=localhost:${LOCAL_REGISTRY_PORT}"
+
+  - name: repeater
+    description: "Build the Repeater Zarf package"
+    actions:
+      - task: repeater-image
+      - task: utils:tag
+        with:
+          current: "ghcr.io/defenseunicorns/leapfrogai/repeater:${VERSION}"
+          new: "localhost:${LOCAL_REGISTRY_PORT}/defenseunicorns/leapfrogai/repeater:${VERSION}"
+      - task: utils:docker
+        with:
+          tag: "localhost:${LOCAL_REGISTRY_PORT}/defenseunicorns/leapfrogai/repeater:${VERSION}"
+
+      - task: package
+        with:
+          path: "packages/repeater"
+          outputPath: "packages/repeater"
+          flavor: ${FLAVOR}
+          architecture: ${ARCHITECTURE}
+          version: ${VERSION}
+          # the build options below do not affect registry1 builds
+          createOptions: "--insecure --registry-override=ghcr.io=localhost:${LOCAL_REGISTRY_PORT}"
+
+  - name: vllm
+    description: "Build the vLLM Zarf package"
+    actions:
+      - task: vllm-image
+      - task: utils:tag
+        with:
+          current: "ghcr.io/defenseunicorns/leapfrogai/vllm:${VERSION}"
+          new: "localhost:${LOCAL_REGISTRY_PORT}/defenseunicorns/leapfrogai/vllm:${VERSION}"
+      - task: utils:docker
+        with:
+          tag: "localhost:${LOCAL_REGISTRY_PORT}/defenseunicorns/leapfrogai/vllm:${VERSION}"
+
+      - task: package
+        with:
+          path: "packages/vllm"
+          outputPath: "packages/vllm"
+          flavor: ${FLAVOR}
+          architecture: ${ARCHITECTURE}
+          version: ${VERSION}
+          zarfConfig: "packages/vllm/zarf-config.yaml"
+          # the build options below do not affect registry1 builds
+          createOptions: "--insecure --registry-override=ghcr.io=localhost:${LOCAL_REGISTRY_PORT}"
+
+  - name: llama-cpp-python
+    description: "Build the LLaMA-CPP-Python Zarf package"
+    actions:
+      - task: llama-cpp-python-image
+      - task: utils:tag
+        with:
+          current: "ghcr.io/defenseunicorns/leapfrogai/llama-cpp-python:${VERSION}"
+          new: "localhost:${LOCAL_REGISTRY_PORT}/defenseunicorns/leapfrogai/llama-cpp-python:${VERSION}"
+      - task: utils:docker
+        with:
+          tag: "localhost:${LOCAL_REGISTRY_PORT}/defenseunicorns/leapfrogai/llama-cpp-python:${VERSION}"
+
+      - task: package
+        with:
+          path: "packages/llama-cpp-python"
+          outputPath: "packages/llama-cpp-python"
+          flavor: ${FLAVOR}
+          architecture: ${ARCHITECTURE}
+          version: ${VERSION}
+          # the build options below do not affect registry1 builds
+          createOptions: "--insecure --registry-override=ghcr.io=localhost:${LOCAL_REGISTRY_PORT}"
+
+  - name: text-embeddings
+    description: "Build the Text-Embeddings Zarf package"
+    actions:
+      - task: text-embeddings-image
+      - task: utils:tag
+        with:
+          current: "ghcr.io/defenseunicorns/leapfrogai/text-embeddings:${VERSION}"
+          new: "localhost:${LOCAL_REGISTRY_PORT}/defenseunicorns/leapfrogai/text-embeddings:${VERSION}"
+      - task: utils:docker
+        with:
+          tag: "localhost:${LOCAL_REGISTRY_PORT}/defenseunicorns/leapfrogai/text-embeddings:${VERSION}"
+
+      - task: package
+        with:
+          path: "packages/text-embeddings"
+          outputPath: "packages/text-embeddings"
+          flavor: ${FLAVOR}
+          architecture: ${ARCHITECTURE}
+          version: ${VERSION}
+          # the build options below do not affect registry1 builds
+          createOptions: "--insecure --registry-override=ghcr.io=localhost:${LOCAL_REGISTRY_PORT}"
+
+  - name: whisper
+    description: "Build the Whisper Zarf package"
+    actions:
+      - task: whisper-image
+      - task: utils:tag
+        with:
+          current: "ghcr.io/defenseunicorns/leapfrogai/whisper:${VERSION}"
+          new: "localhost:${LOCAL_REGISTRY_PORT}/defenseunicorns/leapfrogai/whisper:${VERSION}"
+      - task: utils:docker
+        with:
+          tag: "localhost:${LOCAL_REGISTRY_PORT}/defenseunicorns/leapfrogai/whisper:${VERSION}"
+
+      - task: package
+        with:
+          path: "packages/whisper"
+          outputPath: "packages/whisper"
+          flavor: ${FLAVOR}
+          architecture: ${ARCHITECTURE}
+          version: ${VERSION}
+          # the build options below do not affect registry1 builds
+          createOptions: "--insecure --registry-override=ghcr.io=localhost:${LOCAL_REGISTRY_PORT}"

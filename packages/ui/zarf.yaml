@@ -63,9 +63,12 @@ variables:
 
 components:
   - name: leapfrogai-ui
+    description: "A UI for LeapfrogAI"
     required: true
     only:
       flavor: upstream
+    import:
+      path: common
     charts:
       - name: leapfrogai-ui
         namespace: leapfrogai
@@ -78,18 +81,20 @@ components:
     images:
       - ghcr.io/defenseunicorns/leapfrogai/leapfrogai-ui:###ZARF_PKG_TMPL_IMAGE_VERSION###
       - ghcr.io/defenseunicorns/leapfrogai/ui-migrations:###ZARF_PKG_TMPL_IMAGE_VERSION###
-    actions:
-      onDeploy:
-        after:
-          - wait:
-              cluster:
-                kind: Job
-                name: leapfrogai-ui-migrations-###ZARF_PKG_TMPL_IMAGE_VERSION###
-                namespace: leapfrogai
-                condition: complete
-          - wait:
-              cluster:
-                kind: Deployment
-                name: leapfrogai-ui
-                namespace: leapfrogai
-                condition: Available
+
+  - name: leapfrogai-ui
+    description: "A Python API that shadows the OpenAI API specification"
+    only:
+      flavor: registry1
+    required: true
+    import:
+      path: common
+    charts:
+      - name: leapfrogai-ui
+        namespace: leapfrogai
+        valuesFiles:
+          - "values/registry1-values.yaml"
+    images:
+      - "registry1.dso.mil/ironbank/opensource/defenseunicorns/leapfrogai/ui:v###ZARF_PKG_TMPL_IMAGE_VERSION###"
+      # TODO: replace with Ironbank image once hardened: registry1.dso.mil/ironbank/opensource/defenseunicorns/leapfrogai/ui/migrations
+      - "ghcr.io/defenseunicorns/leapfrogai/ui-migrations:###ZARF_PKG_TMPL_IMAGE_VERSION###"

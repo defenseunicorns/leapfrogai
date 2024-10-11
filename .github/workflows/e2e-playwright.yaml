@@ -123,7 +123,7 @@ jobs:
             rm packages/ui/zarf-package-leapfrogai-ui-amd64-e2e-test.tar.zst
 
         # Run the playwright UI tests using the deployed Supabase endpoint and upload report as an artifact
-        # Note - workflow doesn't need teardown and causes import issues
+        # NOTE: the workflow doesn't need `global.teardown.ts` and it also causes import issues
         - name: UI/API/Supabase E2E Playwright Tests
           run: |
             cp src/leapfrogai_ui/.env.example src/leapfrogai_ui/.env

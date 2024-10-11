@@ -1,0 +1,107 @@
+# yaml-language-server: $schema=https://raw.githubusercontent.com/defenseunicorns/uds-cli/v0.14.0/tasks.schema.json
+includes:
+  #########################
+  # UDS COMMON TASK IMPORTS
+  #########################
+  - setup-common: https://raw.githubusercontent.com/defenseunicorns/uds-common/086215582247e53a69c507a9105b281ba7642c88/tasks/setup.yaml
+
+  ###########################
+  # LEAPFROGAI-SPECIFIC TASKS
+  ###########################
+  - create: ./create.yaml
+
+tasks:
+  #######
+  # TESTS
+  #######
+  - name: e2e-test-user
+    description: "Creates a test user in KeyCloak with fake credentials, mainly for CI testing workflows"
+    actions:
+      - task: setup-common:create-doug-user
+
+  #########
+  # CLUSTER
+  #########
+
+  - name: k3d-cpu-cluster-slim
+    description: "Creates a UDS K3d cluster with slim UDS Core and CPU-only Capability"
+    actions:
+      - task: setup-common:k3d-test-cluster
+
+  - name: k3d-gpu-cluster-slim
+    description: "Creates a UDS K3d cluster with slim UDS Core and NVIDIA GPU Capability"
+    actions:
+      - task: create:k3d-gpu-image
+      - task: setup-common:k3d-test-cluster
+        with:
+          version: 0.27.3
+          snapshots: "false"
+          insecure_keycloak_admin: ${ENABLE_INSECURE_KEYCLOAK_ADMIN_PASSWORD}
+          options: "--set K3D_EXTRA_ARGS='--gpus=all --image=ghcr.io/defenseunicorns/leapfrogai/k3d-gpu:${VERSION}'"
+
+  - name: k3d-cpu-cluster-full
+    description: "Creates a UDS K3d cluster with full UDS Core and CPU-only Capability"
+    actions:
+      - task: setup-common:k3d-full-cluster
+        with:
+          version: 0.27.3
+          snapshots: "false"
+          insecure_keycloak_admin: ${ENABLE_INSECURE_KEYCLOAK_ADMIN_PASSWORD}
+
+  - name: k3d-gpu-cluster-full
+    description: "Creates a UDS K3d cluster with full UDS Core and NVIDIA GPU Capability"
+    actions:
+      - task: create:k3d-gpu-image
+      - task: setup-common:k3d-full-cluster
+        with:
+          version: 0.27.3
+          snapshots: "false"
+          insecure_keycloak_admin: ${ENABLE_INSECURE_KEYCLOAK_ADMIN_PASSWORD}
+          options: "--set K3D_EXTRA_ARGS='--gpus=all --image=ghcr.io/defenseunicorns/leapfrogai/k3d-gpu:${VERSION}'"
+
+  ########
+  # PYTHON
+  ########
+
+  - name: python-dependencies
+    description: "Install or re-install all development dependencies into a local Python environment"
+    actions:
+      - description: "Fresh installation of all Python dependencies"
+        cmd: |
+          python -m pip install ".[dev,dev-vllm,dev-whisper]" "src/leapfrogai_api" "src/leapfrogai_sdk" --no-cache-dir --force-reinstall
+        mute: true
+
+  - name: check-python
+    description: "Checks the local Python environment"
+    inputs:
+      path:
+        description: "Path to the pyproject.toml"
+        default: "pyproject.toml"
+        required: false
+    actions:
+      - description: "Check the local Python environment version"
+        shell:
+          linux: bash
+          darwin: bash
+        env:
+          - PYPROJECT_TOML=${{ .inputs.path }}
+        cmd: |
+          # Extract Python version requirement from pyproject.toml
+          PYTHON_REQ=$(uds zarf tools yq -o yaml -p toml '.project."requires-python"' "$PYPROJECT_TOML")
+
+          # Get the local Python version (e.g., 3.11.9)
+          LOCAL_PYTHON_VERSION=$(python3 -c "import sys; print(f'{sys.version_info.major}.{sys.version_info.minor}.{sys.version_info.micro}')")
+
+          # Function to compare versions using 'packaging.specifiers' library
+          version_satisfies() {
+            python3 -c "from packaging.version import Version; from packaging.specifiers import SpecifierSet; \
+            import sys; sys.exit(0) if Version('$LOCAL_PYTHON_VERSION') in SpecifierSet('$1') else sys.exit(1)"
+          }
+
+          # Check if local Python version satisfies the requirements
+          if ! version_satisfies "$PYTHON_REQ"; then
+            exit 1
+          else
+            echo "Python version matches the requirement: $LOCAL_PYTHON_VERSION"
+          fi
+        mute: true
