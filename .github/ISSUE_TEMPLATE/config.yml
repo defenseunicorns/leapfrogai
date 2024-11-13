@@ -1,0 +1,9 @@
+blank_issues_enabled: false
+contact_links:
+  - name: Report a bug
+    url: https://defenseunicorns.com/contactus
+    about: Report a possible bug to help improve LeapfrogAI.
+  - name: Submit a feature request
+    url: https://defenseunicorns.com/contactus
+    about: Suggest an idea for improving LeapfrogAI. 
+
