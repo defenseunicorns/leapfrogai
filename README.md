@@ -5,6 +5,14 @@
 [![Nightly Made for UDS Test](https://github.com/defenseunicorns/leapfrogai/actions/workflows/nightly-uds-badge-verification.yaml/badge.svg?branch=main)](https://github.com/defenseunicorns/leapfrogai/actions/workflows/nightly-uds-badge-verification.yaml)
 [![Weekly Registry1 Test](https://github.com/defenseunicorns/leapfrogai/actions/workflows/weekly-registry1-flavor-test.yaml/badge.svg?branch=main)](https://github.com/defenseunicorns/leapfrogai/actions/workflows/weekly-registry1-flavor-test.yaml)
 
+## 📣 LeapfrogAI Status Update 📣
+
+Thank you for your interest in LeapfrogAI!
+
+**At this time, we are pausing new feature development as we explore other AI capabilities.** If you are working with LeapfrogAI or looking to get started, we encourage you to use the resources within this repository.
+
+For any issues or feature requests, please reach out to us at: [https://defenseunicorns.com/contactus](https://defenseunicorns.com/contactus)
+
 ## Table of Contents
 
 - [Overview](#overview)
