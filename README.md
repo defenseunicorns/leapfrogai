@@ -85,6 +85,8 @@ leapfrogai/
 ├── bundles/
 │   ├── dev/              # uds bundles for local uds dev deployments
 │   └── latest/           # uds bundles for the most current uds deployments
+├── tasks/                # uds task sub-modules (e.g., create, deploy, setup, etc.)
+├── task.yaml             # uds tasks for declarative, local development and CI, workflows
 ├── Makefile
 ├── pyproject.toml
 ├── README.md
@@ -144,7 +146,7 @@ Below is the current component flavors list:
 | Component                                      |  `upstream`  |  `registry1`  |
 | ---------------------------------------------- | ------------ | ------------- |
 | [api](packages/api/)                           |      ✅      |      ✅      |
-| [ui](packages/ui/)                             |      ✅      |      🚧      |
+| [ui](packages/ui/)                             |      ✅      |      ✅      |
 | [supabase](packages/supabase/)                 |      ✅      |      🚧      |
 | [migrations](./Dockerfile.migrations)          |      ✅      |      🚧      |
 | [llama-cpp-python](packages/llama-cpp-python/) |      ✅      |      🚧      |

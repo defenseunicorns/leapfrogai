@@ -3,11 +3,11 @@ name: pytest
 on:
   pull_request:
     types:
-      - opened            # default trigger
-      - reopened          # default trigger
-      - synchronize       # default trigger
-      - ready_for_review  # don't run on draft PRs
-      - milestoned        # allows us to trigger on bot PRs
+      - opened # default trigger
+      - reopened # default trigger
+      - synchronize # default trigger
+      - ready_for_review # don't run on draft PRs
+      - milestoned # allows us to trigger on bot PRs
     paths:
       - "**"
       - "!.github/**"
@@ -58,10 +58,10 @@ jobs:
 
       - name: Setup Repeater
         env:
-          LOCAL_VERSION: e2e-test
+          VERSION: e2e-test
         run: |
-          make docker-repeater
-          docker run -p 50051:50051 -d --name=repeater ghcr.io/defenseunicorns/leapfrogai/repeater:$LOCAL_VERSION
+          uds run create:repeater-image --set VERSION=${VERSION}
+          uds run deploy:repeater-image --set VERSION=${VERSION}
 
       - name: Run Pytest
         run: make test-api-unit
@@ -90,10 +90,10 @@ jobs:
 
       - name: Setup Repeater
         env:
-          LOCAL_VERSION: e2e-test
+          VERSION: e2e-test
         run: |
-          make docker-repeater
-          docker run -p 50051:50051 -d --name=repeater ghcr.io/defenseunicorns/leapfrogai/repeater:$LOCAL_VERSION
+          uds run create:repeater-image --set VERSION=${VERSION}
+          uds run deploy:repeater-image --set VERSION=${VERSION}
 
       - name: Setup UDS Cluster
         uses: ./.github/actions/uds-cluster

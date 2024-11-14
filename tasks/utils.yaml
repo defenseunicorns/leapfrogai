@@ -1,0 +1,154 @@
+# yaml-language-server: $schema=https://raw.githubusercontent.com/defenseunicorns/uds-cli/v0.14.0/tasks.schema.json
+
+tasks:
+  - name: log
+    description: "LeapfrogAI logger"
+    inputs:
+      log:
+        description: "Content to be logged to the CLI"
+        required: true
+      enable:
+        description: "Whether to enable or disable the logging"
+        default: "true"
+        required: false
+    actions:
+      - description: "Printed LeapfrogAI logs"
+        shell:
+          linux: bash
+          darwin: bash
+        cmd: |
+          if [[ ${{ .inputs.enable }} == "true" ]]; then
+              printf "\n🐸 ${{ .inputs.log }}\n\n"
+          fi
+
+  - name: tag
+    description: "Re-tags an existing Docker image"
+    inputs:
+      current:
+        description: "The current image tag"
+        required: true
+      new:
+        description: "The new image tag"
+        required: true
+      # TODO: remove once Ironbank image for api-migrations and ui-migrations exists
+      override:
+        description: "Specifically for packages that are only partially in IronBank (e.g., migrations)"
+        default: "false"
+        required: false
+    actions:
+      - description: "Re-tag the Docker image"
+        shell:
+          linux: bash
+          darwin: bash
+        mute: true
+        cmd: |
+          if [[ ${FLAVOR} = "upstream" || ${{ .inputs.override }} = "true" ]]; then
+            docker tag ${{ .inputs.current }} ${{ .inputs.new }}
+          fi
+
+  - name: docker
+    description: "Push an existing Docker image to its tagged repository"
+    inputs:
+      tag:
+        description: "The full Docker image tag"
+        required: true
+      options:
+        description: "Extra Docker CLI options"
+        default: "-q"
+        required: false
+      # TODO: remove once Ironbank image for api-migrations and ui-migrations exists
+      override:
+        description: "Specifically for packages that are only partially in IronBank (e.g., migrations)"
+        default: "false"
+        required: false
+    actions:
+      - description: "Push the Docker image"
+        shell:
+          linux: bash
+          darwin: bash
+        mute: true
+        cmd: |
+          if [[ ${FLAVOR} = "upstream" || ${{ .inputs.override }} = "true" ]]; then
+            docker push ${{ .inputs.tag }} ${{ .inputs.options }}
+          fi
+
+  #########
+  # CLEANUP
+  #########
+  - name: clean-artifacts
+    actions:
+      - description: "Clean artifacts"
+        shell:
+          linux: bash
+          darwin: bash
+        cmd: |
+          rm -f zarf-package-*.tar.zst
+          rm -f packages/**/zarf-package-*.tar.zst
+          rm -rf build
+          rm -rf src/**/build
+          rm -rf packages/**/build
+          find . -name 'uds-bundle-*-*.tar.zst' -delete
+          find . -type d -name 'zarf-sbom' -exec rm -rf {} +
+          find . -name '*.whl' -delete
+          find . -type d -name '*.egg-info' -exec rm -rf {} +
+        mute: true
+
+  - name: clean-ui
+    actions:
+      - description: "Clean UI artifacts"
+        shell:
+          linux: bash
+          darwin: bash
+        cmd: |
+          rm -rf src/leapfrogai_ui/playwright
+          rm -rf src/leapfrogai_ui/.svelte-kit
+          rm -rf src/leapfrogai_ui/node_modules
+          rm -rf src/leapfrogai_ui/test-results
+          rm -f src/leapfrogai_ui/.env
+          rm -rf src/leapfrogai_ui/e2e-report
+        mute: true
+
+  - name: clean-cache
+    actions:
+      - description: "Clean cache"
+        shell:
+          linux: bash
+          darwin: bash
+        cmd: |
+          rm -rf ./**/__pycache__ ./**/*/__pycache__ ./**/**/*/__pycache__
+          rm -rf ./.ruff_cache ./**/*/.ruff_cache ./**/.ruff_cache
+          rm -rf ./.pytest_cache ./**/.pytest_cache ./**/*/.pytest_cache
+          rm -rf ./.mypy_cache
+        mute: true
+
+  - name: clean-env
+    actions:
+      - description: "Clean env files"
+        shell:
+          linux: bash
+          darwin: bash
+        cmd: |
+          rm -f .env
+          rm -f .env.email
+          rm -f .env.password
+        mute: true
+
+  - name: clean-logs
+    actions:
+      - description: "Clean log files"
+        shell:
+          linux: bash
+          darwin: bash
+        cmd: |
+          rm -rf ./.logs
+        mute: true
+
+  - name: clean-models
+    actions:
+      - description: "Clean model files"
+        shell:
+          linux: bash
+          darwin: bash
+        cmd: |
+          rm -rf ./packages/**/.model
+        mute: true

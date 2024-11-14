@@ -33,7 +33,7 @@ Below is the current component flavors list:
 | Component                                      |  `upstream`  |  `registry1`  |
 | ---------------------------------------------- | ------------ | ------------- |
 | [api](packages/api/)                           |      ✅      |      ✅      |
-| [ui](packages/ui/)                             |      ✅      |      🚧      |
+| [ui](packages/ui/)                             |      ✅      |      ✅      |
 | [supabase](packages/supabase/)                 |      ✅      |      🚧      |
 | [migrations](./Dockerfile.migrations)          |      ✅      |      🚧      |
 | [llama-cpp-python](packages/llama-cpp-python/) |      ✅      |      🚧      |

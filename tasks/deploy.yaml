@@ -1,0 +1,193 @@
+# yaml-language-server: $schema=https://raw.githubusercontent.com/defenseunicorns/uds-cli/v0.14.0/tasks.schema.json
+includes:
+  #########################
+  # UDS COMMON TASK IMPORTS
+  #########################
+  - deploy-common: https://raw.githubusercontent.com/defenseunicorns/uds-common/086215582247e53a69c507a9105b281ba7642c88/tasks/deploy.yaml
+
+  ###########################
+  # LEAPFROGAI-SPECIFIC TASKS
+  ###########################
+  - utils: ./utils.yaml
+
+tasks:
+  ###########
+  # REUSEABLE
+  ###########
+
+  - name: image
+    description: "Run a Docker image"
+    inputs:
+      name:
+        description: "Name to tag the running container with"
+        required: true
+      options:
+        description: "Extra Docker CLI options"
+        default: "-q -d --rm"
+        required: false
+      version:
+        description: "Set the version of the Docker image"
+        required: true
+      imageRepository:
+        description: "Image repository for the image tag"
+        required: true
+      containerPort:
+        description: "Container port to expose"
+        required: true
+      hostPort:
+        description: "Host port to expose container port at"
+        required: true
+    actions:
+      - task: utils:log
+        with:
+          log: "Running the image ${{ .inputs.name }}"
+      - description: "Run the Docker image"
+        shell:
+          linux: bash
+          darwin: bash
+        cmd: |
+          docker run \
+            -p ${{ .inputs.hostPort }}:${{ .inputs.containerPort }} \
+            --name=${{ .inputs.name }} ${{ .inputs.options }} \
+            ${{ .inputs.imageRepository }}:${{ .inputs.version }}
+      - task: utils:log
+        with:
+          log: "Docker image, ${{ .inputs.name }}, is now running!"
+
+  - name: package
+    description: "Deploy a Zarf package"
+    inputs:
+      path:
+        description: "Path to the Zarf package to being deployed"
+        required: true
+      zarfConfig:
+        description: "Zarf Config of the Zarf package being deployed"
+        default: ""
+        required: false
+      options:
+        description: "Extra Zarf package deployment options"
+        default: "--log-level warn --no-progress --confirm"
+        required: false
+    actions:
+      - task: utils:log
+        with:
+          log: "Deploying package at ${{ .inputs.path }}"
+      - description: Get the current Zarf package name
+        cmd: cat ${{ .inputs.path }}/zarf.yaml | uds zarf tools yq .metadata.name
+        setVariables:
+          - name: PACKAGE_NAME
+        mute: true
+      - description: "Deploy the Zarf package"
+        env:
+          - ZARF_CONFIG=${{ .inputs.zarfConfig }}
+        cmd: |
+          uds zarf package deploy ${{ .inputs.path }}/zarf-package-${PACKAGE_NAME}-${ARCHITECTURE}-${VERSION}.tar.zst ${{ .inputs.options }}
+
+  - name: bundle
+    description: "Deploy a UDS bundle"
+    inputs:
+      path:
+        description: "Path to the UDS Bundle to being deployed"
+        required: true
+      udsConfig:
+        description: "UDS Config of the UDS Bundle being deployed"
+        default: ""
+        required: false
+      options:
+        description: "Extra UDS Bundle deployment options"
+        default: "--log-level warn"
+        required: false
+      architecture:
+        description: "Architecture of the UDS Bundle being created"
+        required: true
+      version:
+        description: "Set the version of the UDS Bundle and target image(s)"
+        required: true
+    actions:
+      - task: utils:log
+        with:
+          log: "Deploying bundle at ${{ .inputs.path }}"
+      - task: deploy-common:test-bundle
+        env:
+          - UDS_ARCH=${{ .inputs.architecture }}
+        with:
+          options: ${{ .inputs.options }}
+          path: ${{ .inputs.path }}
+
+  ########
+  # IMAGES
+  ########
+
+  - name: repeater-image
+    description: "Run the Repeater Docker container"
+    actions:
+      - task: image
+        with:
+          name: "repeater"
+          version: ${VERSION}
+          imageRepository: "ghcr.io/defenseunicorns/leapfrogai/repeater"
+          containerPort: "50051"
+          hostPort: "50051"
+
+  ##########
+  # PACKAGES
+  ##########
+
+  - name: api
+    description: "Deploy the LeapfrogAI API Zarf package"
+    actions:
+      - task: package
+        with:
+          path: "packages/api"
+          zarfConfig: "packages/api/zarf-config.yaml"
+
+  - name: ui
+    description: "Deploy the LeapfrogAI API Zarf package"
+    actions:
+      - task: package
+        with:
+          path: "packages/ui"
+          zarfConfig: "packages/ui/zarf-config.yaml"
+
+  - name: supabase
+    description: "Deploy the Supabase Zarf package"
+    actions:
+      - task: package
+        with:
+          path: "packages/supabase"
+
+  - name: repeater
+    description: "Deploy the Repeater Zarf package"
+    actions:
+      - task: package
+        with:
+          path: "packages/repeater"
+
+  - name: vllm
+    description: "Deploy the vLLM Zarf package"
+    actions:
+      - task: package
+        with:
+          path: "packages/vllm"
+          zarfConfig: "packages/vllm/zarf-config.yaml"
+
+  - name: llama-cpp-python
+    description: "Deploy the LLaMA-CPP-Python Zarf package"
+    actions:
+      - task: package
+        with:
+          path: "packages/llama-cpp-python"
+
+  - name: text-embeddings
+    description: "Deploy the Text-Embeddings Zarf package"
+    actions:
+      - task: package
+        with:
+          path: "packages/text-embeddings"
+
+  - name: whisper
+    description: "Deploy the Whisper Zarf package"
+    actions:
+      - task: package
+        with:
+          path: "packages/whisper"
